@@ -2,5 +2,7 @@
 set -eu
 
 export HERMES_HOME="${HERMES_HOME:-$HOME/.local/share/ranex}"
+export RANEX_HERMES_VENV="${RANEX_HERMES_VENV:-$HERMES_HOME/venvs/dev}"
+export HERMES_PYTHON="$RANEX_HERMES_VENV/bin/python"
 export PYTHONUNBUFFERED=1
-export PATH="$HOME/.local/share/ranex/venvs/dev/bin:$HOME/.local/bin:$PATH"
+export PATH="$RANEX_HERMES_VENV/bin:$HOME/.local/bin:$PATH"

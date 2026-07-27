@@ -275,6 +275,11 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/fork/UPSTREAM_BASELINE.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
       "path": "docs/fork/UPSTREAM_SYNC.md",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
