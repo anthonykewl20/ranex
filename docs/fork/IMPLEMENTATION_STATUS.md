@@ -67,9 +67,14 @@ added. A live no-provider/no-model-override smoke then resolved those persistent
 defaults and returned `RANEX_HERMES_CONFIG_OK`.
 
 The first local dashboard build was then exercised successfully. The generated
-web UI served HTTP `200` on loopback at `http://127.0.0.1:9119` and was stopped
-cleanly after verification. Its ignored build output remains available for
-later launches. No persistent dashboard service was installed.
+web UI serves HTTP `200` on loopback at `http://127.0.0.1:9119`.
+
+At the owner's subsequent request, the dashboard was installed as the
+`ranex-hermes-dashboard.service` systemd user unit. It is enabled under
+`default.target`, active, and restricted to `127.0.0.1:9119`. User lingering is
+enabled, so the service starts after a reboot without requiring an open
+terminal. The machine-local unit is stored at
+`~/.config/systemd/user/ranex-hermes-dashboard.service`.
 
 ## Runtime selection
 

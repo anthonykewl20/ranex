@@ -62,9 +62,12 @@ the reviewed Git subject or the unedited HY3 response below.
 
 The dashboard's first production build was also completed after review. A
 transient isolated launch served the expected dashboard document with HTTP
-`200` at `http://127.0.0.1:9119`; the process was then stopped cleanly. This
-closes the first-build uncertainty while deliberately leaving the optional
-always-on service uninstalled.
+`200` at `http://127.0.0.1:9119`; the process was then stopped cleanly. After
+the owner explicitly requested reboot persistence, a loopback-only systemd user
+service was installed, enabled, restart-tested, and verified at the same URL.
+User lingering is enabled, so it does not require an open terminal after login
+or reboot. The unedited response below correctly retains the service's
+not-yet-installed state at review time.
 
 The three inherited Python failures were assigned stable `BL-001` through
 `BL-003` identities in [`../BASELINE_DEFECTS.md`](../BASELINE_DEFECTS.md), with
