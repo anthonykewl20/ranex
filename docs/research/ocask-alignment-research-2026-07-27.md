@@ -1,13 +1,13 @@
 # OCAsk-to-Ranex alignment research
 
-**Research date:** 2026-07-27  
-**Decision status:** design-time adoption study; no OCAsk or Ranex runtime integration was implemented  
-**Ranex revision reviewed:** `3844673b0bfa743de3c351566b6ffa9ffd67e0b8`  
-**OCAsk product revision reviewed:** default branch `main` at `340151fc6ef43958adaf15776cee93147c42aeda`  
-**OCAsk experimental revision reviewed separately:** divergent branch `master` at `4e2778d1b0a72b527b5674e56ac5ef02183d8fef`  
-**Upstream repository:** <https://github.com/anthonykewl20/ocask>  
-**Primary Ranex authority:** `RANEX_IMPLEMENTATION_GUIDE.md` plus the owner-fixed architecture boundary recorded in `docs/research/cookbook-alignment-research-2026-07-27.md`  
-**Internal review status:** parallel source, Ranex-gap, and report-structure reviews were completed in this research session; these are not organizationally or model-family independent, and no external security audit, legal opinion, or live-provider qualification was performed  
+**Research date:** 2026-07-27<br>
+**Decision status:** design-time adoption study; no OCAsk or Ranex runtime integration was implemented<br>
+**Ranex revision reviewed:** `3844673b0bfa743de3c351566b6ffa9ffd67e0b8`<br>
+**OCAsk product revision reviewed:** default branch `main` at `340151fc6ef43958adaf15776cee93147c42aeda`<br>
+**OCAsk experimental revision reviewed separately:** divergent branch `master` at `4e2778d1b0a72b527b5674e56ac5ef02183d8fef`<br>
+**Upstream repository:** <https://github.com/anthonykewl20/ocask><br>
+**Primary Ranex authority:** `RANEX_IMPLEMENTATION_GUIDE.md` plus the owner-fixed architecture boundary recorded in `docs/research/cookbook-alignment-research-2026-07-27.md`<br>
+**Internal review status:** parallel source, Ranex-gap, and report-structure reviews were completed in this research session; these are not organizationally or model-family independent, and no external security audit, legal opinion, or live-provider qualification was performed<br>
 **Validation performed:** pinned-source inspection, Git and GitHub state inspection, the complete `main` offline Node test command, the repository sync check, and the documented experimental Intent Assurance test command
 
 ## Executive answer
@@ -365,23 +365,23 @@ separation is directionally correct.
 
 OCAsk exposes five design gaps that Ranex should resolve before implementation:
 
-1. **A direct analytical model transport is not a code-writing worker.**  
+1. **A direct analytical model transport is not a code-writing worker.**<br>
    The guide's `WorkerAdapter` is broad enough to execute CLIs, but a direct HTTP
    reviewer needs a narrower, non-tool-bearing `AnalyticalTransport` contract.
 
-2. **A provider attempt is not a review verdict.**  
+2. **A provider attempt is not a review verdict.**<br>
    Requested route, actual route, retry chain, usage, failure, parse result, and
    model observation need separate records before normalization.
 
-3. **Timeout is not the whole budget.**  
+3. **Timeout is not the whole budget.**<br>
    The caller must own wall-clock, attempt, token, dollar, output-byte, and
    tool/side-effect budgets across all nested work.
 
-4. **Model identity and execution capability are independent.**  
+4. **Model identity and execution capability are independent.**<br>
    A native API and an OpenCode process may claim the same model while exposing
    radically different context and tool surfaces.
 
-5. **Operational diagnosis needs a typed causal record.**  
+5. **Operational diagnosis needs a typed causal record.**<br>
    Ranex's current guide does not yet define a complete attempt/failure taxonomy,
    censored latency handling, or route-health aggregation.
 
