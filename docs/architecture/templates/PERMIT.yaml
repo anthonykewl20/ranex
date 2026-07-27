@@ -1,0 +1,56 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: permit
+permit_id: "permit_<uuidv7>"
+status: ISSUED
+
+issuer_principal_id: ""
+authority_policy_digest: ""
+
+subject:
+  subject_schema: "exact-subject/v1"
+  project_id: ""
+  work_item_id: ""
+  run_id: ""
+  activity_id: ""
+  effect_id: ""
+  workspace_id: ""
+  repository_id: ""
+  repository_uri_digest: ""
+  base_commit: ""
+  candidate_commit: ""
+  artifact_digest: null
+  packet_id: ""
+  packet_digest: ""
+  workflow_definition_id: ""
+  workflow_definition_digest: ""
+  workflow_interpreter_version: ""
+  policy_activation_id: ""
+  evidence_snapshot_digest: ""
+  policy_decision_digest: ""
+  module_profile_id: ""
+  module_profile_digest: ""
+  capability_grant_digest: ""
+  route_lock_id: ""
+  schema_registry_version: ""
+  expected_run_aggregate_version: 0
+
+action:
+  action_type: ""
+  canonical_argument_digest: ""
+  destination: ""
+  adapter_id: ""
+  adapter_version: ""
+  idempotency_key: ""
+
+scope: []
+nonce: ""
+issued_at: ""
+expires_at: ""
+consumed_at: null
+revoked_at: null
+decision_refs: []
+authority_grant_id: ""
+gate_evaluation_id: ""
+evidence_refs: []
+digest: ""

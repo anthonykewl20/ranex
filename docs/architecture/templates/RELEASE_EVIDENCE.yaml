@@ -1,0 +1,23 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: release_evidence
+release_evidence_id: "release_evidence_<uuidv7>"
+release_id: "release_<uuidv7>"
+work_item_id: "work_<uuidv7>"
+artifact_digest: ""
+release_manifest_digest: ""
+configuration_baseline_id: ""
+schema_registry_version: ""
+sbom_ref: ""
+provenance_ref: ""
+migration_ref: null
+recovery_point_ref: ""
+permit_id: ""
+destination: ""
+deployment_event_refs: []
+health_gate_refs: []
+rollback_ref: null
+status: ""
+started_at: ""
+finished_at: ""
+digest: ""

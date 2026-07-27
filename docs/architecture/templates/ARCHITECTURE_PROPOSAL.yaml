@@ -1,0 +1,20 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: architecture_proposal
+proposal_id: "proposal_<uuidv7>"
+architecture_review_packet_id: "archpkt_<uuidv7>"
+producer_attempt_id: "attempt_<uuidv7>"
+subject_digest: ""
+bounded_context_changes: []
+public_api_changes: []
+state_and_effect_ownership_changes: []
+repository_tree_changes: []
+dependency_rule_changes: []
+trust_and_security_changes: []
+migration_and_rollback: []
+alternatives: []
+acceptance_tests: []
+explicit_exclusions: []
+unknowns: []
+evidence_refs: []
+digest: ""

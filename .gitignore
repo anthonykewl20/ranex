@@ -185,3 +185,11 @@ infographics/
 infograficos/
 infografico/
 native/fts5_cjk/*.so
+
+# Ranex local worktrees, host-specific decisions, and runtime evidence.
+.claude/worktrees/
+.local/*
+!.local/*.example
+evidence/runtime/
+*.secret
+decisions/local-values.env

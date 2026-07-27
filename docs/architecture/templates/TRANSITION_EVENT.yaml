@@ -1,0 +1,22 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: transition_event
+transition_id: "transition_<uuidv7>"
+owner_context: ""
+aggregate_type: ""
+aggregate_id: ""
+aggregate_version_before: 0
+aggregate_version_after: 1
+from_state: ""
+to_state: ""
+reason_code: ""
+command_id: ""
+correlation_id: ""
+causation_id: ""
+subject_digest: ""
+policy_decision_digest: ""
+authority_refs: []
+evidence_refs: []
+invalidated_artifact_refs: []
+occurred_at: ""
+digest: ""

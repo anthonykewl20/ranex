@@ -1,0 +1,18 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: landing_record
+landing_id: "landing_<uuidv7>"
+subject_ref: "exact-subject/v1"
+candidate_commit: ""
+target_branch: ""
+target_head_before: ""
+landed_commit: ""
+landing_strategy: ""
+permit_id: ""
+actor_principal_id: ""
+provider_receipt_ref: ""
+started_at: ""
+finished_at: ""
+status: COMPLETE
+evidence_refs: []
+digest: ""

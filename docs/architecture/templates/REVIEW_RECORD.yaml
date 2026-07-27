@@ -1,0 +1,19 @@
+# Generated read projection only. The five referenced records are immutable
+# authority/evidence sources and must not be replaced by this bundle.
+schema_version: "1"
+artifact_type: review_record_projection
+projection_id: "review_projection_<uuidv7>"
+
+review_request_id: "review_<uuidv7>"
+review_request_digest: ""
+analysis_attempt_refs: []
+review_observation_refs: []
+independence_evaluation_id: "independence_<uuidv7>"
+independence_evaluation_digest: ""
+review_verdict_id: "verdict_<uuidv7>"
+review_verdict_digest: ""
+gate_evaluation_ref: null
+
+generated_at: ""
+source_registry_version: ""
+digest: ""

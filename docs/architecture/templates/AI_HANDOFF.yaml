@@ -1,0 +1,33 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: agent_handoff
+handoff_id: "handoff_<uuidv7>"
+
+producer:
+  principal_id: ""
+  role_id: ""
+  provider_id: ""
+  model_id: ""
+  transport_id: ""
+  session_id: ""
+
+consumer_role_id: ""
+
+subject:
+  project_id: ""
+  work_item_id: ""
+  run_id: ""
+  workspace_id: ""
+  packet_id: ""
+  packet_digest: ""
+  base_commit: ""
+  candidate_commit: ""
+
+run_result_id: "result_<uuidv7>"
+run_result_digest: ""
+evidence_refs: []
+finding_refs: []
+artifact_refs: []
+limitations: []
+requested_next_action: ""
+digest: ""

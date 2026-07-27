@@ -1,0 +1,37 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: analysis_attempt
+attempt_id: "attempt_<uuidv7>"
+review_request_id: "review_<uuidv7>"
+previous_attempt_id: null
+
+reviewer:
+  principal_id: ""
+  role_id: ""
+  session_id: ""
+
+route:
+  route_lock_id: ""
+  actual_provider_id: ""
+  actual_model_id: ""
+  actual_model_snapshot: null
+  transport_id: ""
+  transport_digest: ""
+  executable_digest: ""
+  parser_version: ""
+  isolation_profile_id: ""
+
+input_artifact_refs: []
+input_manifest_digest: ""
+granted_capabilities: []
+write_attempt_evidence_refs: []
+started_at: ""
+finished_at: ""
+absolute_deadline: ""
+status: COMPLETE
+failure_domain: null
+retry_class: null
+usage: {}
+raw_output_artifact_ref: ""
+raw_output_digest: ""
+digest: ""

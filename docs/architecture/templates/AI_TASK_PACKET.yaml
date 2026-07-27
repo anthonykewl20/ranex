@@ -1,0 +1,104 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: ai_task_packet
+packet_id: "pkt_<uuidv7>"
+status: READY
+
+subject:
+  subject_schema: "exact-subject/v1"
+  project_id: "prj_<uuidv7>"
+  work_item_id: "work_<uuidv7>"
+  run_id: "run_<uuidv7>"
+  activity_id: null
+  effect_id: null
+  workspace_id: "wsp_<uuidv7>"
+  repository_id: "repo_<uuidv7>"
+  repository_uri_digest: "sha256:<hex>"
+  base_commit: ""
+  candidate_commit: null
+  artifact_digest: null
+  workflow_definition_id: ""
+  workflow_definition_digest: ""
+  workflow_interpreter_version: ""
+  policy_activation_id: ""
+  policy_decision_digest: ""
+  module_profile_id: ""
+  module_profile_digest: ""
+  capability_grant_digest: ""
+  route_lock_id: null
+  schema_registry_version: ""
+  expected_run_aggregate_version: 0
+
+core_sdlc:
+  work_item_status: READY
+  work_class: ""
+  risk_lane: ""
+  risk_decision_ref: ""
+  definition_of_ready_evidence_ref: ""
+  owner_refs: []
+  outcome_measure_ids: []
+  requirement_ids: []
+  acceptance_criterion_ids: []
+  configuration_baseline_id: ""
+  configuration_baseline_digest: ""
+  invalidation_dependency_ids: []
+
+objective: ""
+scope: []
+non_goals: []
+acceptance_criteria: []
+
+authority:
+  architecture_revision: ""
+  accepted_adr_refs: []
+  contract_digests: []
+  policy_activation_id: ""
+  policy_digest: ""
+  risk_lane: ""
+
+architecture_bounds:
+  contexts_allowed_to_change: []
+  public_apis_allowed_to_change: []
+  paths_allowed: []
+  paths_forbidden: []
+  dependency_edges_allowed: []
+  dependency_edges_forbidden: []
+  state_owners_affected: []
+  effect_owners_affected: []
+  attachment_points_to_preserve: []
+  exclusions_to_preserve: []
+
+context:
+  source_manifest: []
+  known_facts: []
+  assumptions: []
+  unknowns: []
+  conflicts: []
+  omissions: []
+
+grants:
+  capabilities: []
+  tools: []
+  network_destinations: []
+  data_classifications: []
+  secret_handles: []
+
+budgets:
+  absolute_deadline: ""
+  cost: null
+  tokens: null
+  output_bytes: null
+  tool_calls: null
+
+verification:
+  required_test_families: []
+  required_commands: []
+  required_evidence: []
+  requirement_to_check_mappings: []
+  withheld_verification_profile_id: ""
+  rollback_requirements: []
+
+escalate_when: []
+required_result_schema: "run-result/v1"
+required_handoff_schema: "agent-handoff/v1"
+digest: ""

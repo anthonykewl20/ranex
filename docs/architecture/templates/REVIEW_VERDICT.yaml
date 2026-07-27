@@ -1,0 +1,18 @@
+# Produced by the review application service after independence validation.
+schema_version: "1"
+artifact_type: review_verdict
+verdict_id: "verdict_<uuidv7>"
+review_request_id: "review_<uuidv7>"
+observation_ids: []
+independence_evaluation_id: "independence_<uuidv7>"
+subject_digest: ""
+verdict: INCOMPLETE
+open_finding_refs: []
+resolved_finding_refs: []
+reconciliation_refs: []
+evidence_refs: []
+limitations: []
+producer_service_id: ""
+produced_at: ""
+digest: ""
+# This is not GateOutcome and cannot authorize a transition.
