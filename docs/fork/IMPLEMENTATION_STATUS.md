@@ -39,6 +39,38 @@ already aligned.
 The detailed test and warning record is
 [`UPSTREAM_BASELINE.md`](UPSTREAM_BASELINE.md).
 
+## Independent runtime review
+
+A fresh tool-less HY3 review audited the published adoption, isolated runtime,
+configuration boundary, baseline claims, and immediate development readiness at
+revision `beee3cdc431e38b6e82ec5628263f743932022e4`.
+
+- Review verdict: `PASS`
+- Readiness: `READY_WITH_REQUIRED_REMEDIATIONS`
+- Immediate blockers: none
+- Preserved phase state: Phase 0A `PARTIAL`, Phase 1 `PARTIAL`, Phase 2 `PASS`,
+  Phase 3 `PARTIAL`
+
+The [full unedited verdict and execution metadata](reviews/2026-07-27-hy3-runtime-bootstrap-final-review.md)
+and [frozen review packet](reviews/artifacts/2026-07-27-hy3-runtime-bootstrap-review-packet.md)
+are retained in the repository. HY3 is advisory evidence; it did not receive
+gate authority or rerun the baseline suites.
+
+The three inherited failures now have stable comparison identities in
+[`BASELINE_DEFECTS.md`](BASELINE_DEFECTS.md). Phase 0A and the deferred primary
+checkout switch remain visibly `PARTIAL`.
+
+After the frozen review, Hermes' own config migrator updated the isolated
+configuration from schema version `0` to `33`. A subsequent configuration check
+passed and reconfirmed `openai-codex` / `gpt-5.6-sol`. No optional API key was
+added. A live no-provider/no-model-override smoke then resolved those persistent
+defaults and returned `RANEX_HERMES_CONFIG_OK`.
+
+The first local dashboard build was then exercised successfully. The generated
+web UI served HTTP `200` on loopback at `http://127.0.0.1:9119` and was stopped
+cleanly after verification. Its ignored build output remains available for
+later launches. No persistent dashboard service was installed.
+
 ## Runtime selection
 
 - Provider: `openai-codex`

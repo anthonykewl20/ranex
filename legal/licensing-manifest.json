@@ -265,6 +265,11 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/fork/BASELINE_DEFECTS.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
       "path": "docs/fork/FORK_POLICY.md",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
@@ -273,6 +278,20 @@
       "path": "docs/fork/IMPLEMENTATION_STATUS.md",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/fork/reviews/2026-07-27-hy3-runtime-bootstrap-final-review.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, reconciliation, and commentary only, if owned by Anthony Garces",
+      "notes": "Contains advisory HY3 model output and local execution metadata; provider/model rights remain excluded from Ranex ownership."
+    },
+    {
+      "path": "docs/fork/reviews/artifacts/2026-07-27-hy3-runtime-bootstrap-review-packet.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, and commentary only, if owned by Anthony Garces",
+      "notes": "Frozen advisory-review input containing repository evidence summaries; underlying third-party source rights remain excluded."
     },
     {
       "path": "docs/fork/UPSTREAM_BASELINE.md",

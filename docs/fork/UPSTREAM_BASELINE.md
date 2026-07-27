@@ -164,6 +164,7 @@ isolated configuration before the first live call.
 
 ## Follow-up
 
-1. Track the three inherited Python failures as baseline defects; do not
-   silently weaken their assertions.
+1. Keep the three inherited Python failures under their stable
+   [`BASELINE_DEFECTS.md`](BASELINE_DEFECTS.md) identities; do not silently
+   weaken their assertions.
 2. Compare future Ranex changes against these exact counts and failure names.
