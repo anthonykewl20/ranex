@@ -70,8 +70,8 @@ worktree, independently reviewed, human-merged, and recorded at its landed
 commit without Ranex editing or approving its own primary checkout.
 
 Local Git is required now and already exists. A GitHub origin is not required
-for this document edit or Phase 0. The existing empty public origin becomes
-required when Phase 1 begins.
+for this document edit, Phase 0, or the human-controlled clean-slate Phase 0A.
+The existing empty public origin becomes required when Phase 1 begins.
 
 Every phase or pull-request job that may write repository files must run in a
 named worktree under `.claude/worktrees/<branch-folder>`. The task prompt must
@@ -166,6 +166,8 @@ These values were observed on 2026-07-27 in Asia/Manila:
 | Local Git repository | Present; no remote configured |
 | Codex CLI | 0.145.0 |
 | Claude Code | 2.1.220 |
+| OpenCode | 1.18.7 |
+| Docker Engine | 29.6.2 |
 | uv | 0.11.26 |
 | System Python | 3.14.6 |
 | Node.js | 24.18.0 |
@@ -906,7 +908,362 @@ primary checkout and is never copied into a task worktree.
 
 The human confirms the local paths and authorizes use of the existing empty
 public `anthonykewl20/ranex` origin. The human also reviews the locked Ranex
-identity values and authorizes Phase 1.
+identity values and authorizes the human-controlled Phase 0A cleanup.
+
+---
+
+# PHASE 0A — Human-controlled clean-slate preparation
+
+## Goal
+
+Remove host pollution before Ranex installation while preserving the exact
+projects, credentials, and Docker workloads approved by the owner. This phase
+also prevents stale Docker build state from crossing into Ranex builds.
+
+Phase 0A is deliberately separate from the read-only Phase 0 worker. It is a
+host-maintenance operation and requires an explicit human instruction naming
+the cleanup scope. Never infer that permission from this guide.
+
+## Preconditions
+
+- Phase 0 is `PASS`.
+- The human has explicitly authorized Phase 0A.
+- No package install, build, backup, restore, or database migration is active.
+- Every deletion candidate is resolved to an exact canonical path.
+- Open files and running processes under each candidate were checked.
+- The protected allowlist below was revalidated on the current host.
+- Docker protection was derived from live container labels and attachments.
+- Before and after evidence locations exist outside every deletion target.
+
+Stop with `BLOCKED` if a path is foreign-owned, a protected resource appears in
+the deletion set, a live process cannot be closed normally, or local-only work
+has not been explicitly authorized for deletion.
+
+## 0A.1 Protected allowlist on this host
+
+The current allowlist is:
+
+| Protected item | Current location or identity |
+|---|---|
+| Ranex repository | `/home/soultransit/devtony/ranex` |
+| Mightybox repository and its worktrees | `/home/soultransit/mbdev/mightybox` and registered Mightybox worktrees |
+| Mightybox local secrets and runtime data | Existing ignored secret files, attached Docker volumes, and `/home/soultransit/.cache/mightybox` |
+| Claude Code authentication | `/home/soultransit/.claude/.credentials.json` |
+| Codex authentication | `/home/soultransit/.codex/auth.json` |
+| OpenCode authentication | `/home/soultransit/.local/share/opencode/auth.json` |
+| GitHub CLI authentication | `/home/soultransit/.config/gh/hosts.yml` |
+| Nonstandard provider credentials | `/home/soultransit/.config/ai-credentials` |
+| Standard host identity | `/home/soultransit/.ssh`, `/home/soultransit/.gnupg`, `/home/soultransit/.gitconfig`, and `/home/soultransit/.git-credentials` |
+| Protected Compose projects | Exact labels `mightybox` and `mightybox-dokploy-local` |
+
+The credential directory must be mode `0700`; each contained credential file
+must be mode `0600`. Authentication files remain in their official CLI stores.
+Do not copy them into Ranex, an evidence folder, a shell transcript, or another
+backup.
+
+Personal files such as downloads and media remain outside the Ranex build
+context. They are not cleanup targets merely because they consume disk.
+
+This allowlist is host-specific evidence. Re-discover locations and Compose
+labels before using the procedure on another machine.
+
+## 0A.2 No-backup cleanup policy
+
+The owner has declined cleanup backups on this host. That means:
+
+1. Do not create archive, snapshot, duplicate, Trash, or `*-backup` copies.
+2. Delete only an exact, reviewed manifest of owner-discarded projects,
+   reinstallable tools, caches, logs, or remote-confirmed clean checkouts.
+3. Record a remote commit check before deleting a checkout on the basis that it
+   is recoverable remotely.
+4. Treat unknown ownership, open files, active processes, and undeclared
+   local-only work as blockers.
+5. Never use a wildcard, unresolved environment variable, home directory, or
+   workspace root as a recursive deletion target.
+6. Confirm every target is absent after deletion, then re-run the protected
+   allowlist checks.
+
+The human may explicitly authorize deletion of local-only work without a
+backup. Record that instruction and the exact repository paths before deleting
+them.
+
+## 0A.3 Secret consolidation
+
+Keep CLI login material in the official authentication stores listed above.
+Place other provider credentials under:
+
+```text
+/home/soultransit/.config/ai-credentials/
+├── claude/
+├── github/
+├── opencode/
+├── openrouter/
+└── zai/
+```
+
+Use one consumer-specific file per credential. Directory modes are `0700` and
+file modes are `0600`. Shell startup files must not print or automatically
+source provider keys, alternate model routes, or model overrides.
+
+Validation records may contain file paths, modes, and authentication status.
+They must never contain credential values, authorization headers, environment
+dumps, or command output that embeds a token.
+
+## 0A.4 Reset Claude Code, Codex, and OpenCode
+
+First record each CLI version and redacted authentication status:
+
+```bash
+claude --version
+claude auth status
+codex --version
+codex login status
+opencode --version
+opencode auth list
+gh auth status
+```
+
+Close Claude Code and OpenCode normally before resetting their state. Close all
+Codex sessions normally before removing Codex runtime state. Never terminate a
+session with a broad process-kill command. An agent running inside a CLI cannot
+truthfully reset the files that its own process holds open.
+
+Use an exact, reviewed deletion manifest for each CLI:
+
+| CLI | Preserve | Remove before official reinstall |
+|---|---|---|
+| Claude Code | `.claude/.credentials.json` | Global settings, hooks, agents, plugins, skills, rules, history, caches, and project registry |
+| Codex | `.codex/auth.json` | Global configuration, hooks, plugins, skills, rules, history, sessions, caches, and state databases |
+| OpenCode | `.local/share/opencode/auth.json` | Global configuration, plugins, commands, dependencies, cache, logs, databases, and state |
+
+Project-scoped files tracked by a protected repository are not global CLI
+configuration. Preserve them unless the owner separately authorizes a project
+change. Remove ignored experiment artifacts such as OMO or Model Flow when the
+owner has identified them as pollution.
+
+Reinstall only through the current official publisher:
+
+```bash
+curl -fsSL https://claude.ai/install.sh | bash
+npm install --global @openai/codex
+curl -fsSL https://opencode.ai/install | bash
+```
+
+Official references:
+
+- <https://docs.anthropic.com/en/docs/claude-code/getting-started>
+- <https://developers.openai.com/codex/cli/>
+- <https://opencode.ai/docs/>
+- <https://opencode.ai/docs/providers/>
+
+After reinstall, repeat the version and authentication checks. Confirm that no
+unapproved global hook, rule, skill, plugin, MCP server, launcher, or alternate
+model route remains. Global configuration changes take effect only after every
+live CLI session has restarted.
+
+## 0A.5 Remove stale host material
+
+The human-reviewed manifest may include:
+
+- discarded project checkouts;
+- named backup folders and Trash contents;
+- SWE-bench and DeepEval environments, datasets, and caches;
+- experimental agent and model-routing tools;
+- abandoned Python environments;
+- obsolete global packages and launchers;
+- package-manager, browser-test, model, and build caches;
+- shell-history and tool-log files selected by the owner.
+
+Search by both filename and installed-package metadata. A successful removal
+requires all applicable checks to agree: path absent, package absent, service
+absent, launcher absent, process absent, and no active shell startup reference.
+
+Do not delete operating-system data, personal files, standard SSH/Git identity,
+the allowlisted projects, or a credential store merely because its name is
+hidden.
+
+## 0A.6 Inventory and protect Docker
+
+Capture the following before any Docker mutation:
+
+```bash
+docker version
+docker context show
+docker system df -v
+docker ps -a --format '{{.ID}}\t{{.Label "com.docker.compose.project"}}\t{{.Names}}\t{{.Status}}'
+docker volume ls --format '{{.Name}}\t{{.Label "com.docker.compose.project"}}'
+docker network ls --format '{{.ID}}\t{{.Name}}\t{{.Label "com.docker.compose.project"}}'
+docker buildx ls
+```
+
+Confirm no build is active. Build a protected resource map from:
+
+- the exact Compose labels `mightybox` and `mightybox-dokploy-local`;
+- every image referenced by their containers;
+- every volume and network attached to their containers;
+- their current running, stopped, and health states.
+
+Generate a separate nonprotected manifest. Prove the intersection between the
+protected and nonprotected manifests is empty before continuing.
+
+Never run a blind global `docker system prune`. Remove only exact nonprotected
+containers, volumes, and networks from the reviewed manifest. Stopped protected
+containers must remain because they retain required image references. Only
+after that proof may unused images be pruned.
+
+Clear stale BuildKit cache after confirming no build is active:
+
+```bash
+docker buildx prune --builder default --all --force
+```
+
+Then repeat the full inventory. The acceptance target is zero BuildKit cache,
+all protected resource identities present, and protected runtime state
+unchanged. Official behavior is documented at:
+
+- <https://docs.docker.com/reference/cli/docker/system/prune/>
+- <https://docs.docker.com/reference/cli/docker/buildx/prune/>
+- <https://docs.docker.com/build/cache/invalidation/>
+
+## 0A.7 Isolate future Ranex builds
+
+Create a dedicated BuildKit builder instead of sharing another project's
+builder:
+
+```bash
+docker buildx create \
+  --name ranex-builder \
+  --driver docker-container \
+  --use
+docker buildx inspect ranex-builder --bootstrap
+```
+
+Use the exact Compose project name `ranex`. The first clean-slate build must
+pull current base images and bypass cache:
+
+```bash
+BUILDX_BUILDER=ranex-builder \
+COMPOSE_PROJECT_NAME=ranex \
+docker compose build --pull --no-cache
+
+COMPOSE_PROJECT_NAME=ranex docker compose up -d
+```
+
+Later builds may use the dedicated cache only after the first build passes.
+Ranex volumes, networks, containers, and labels must use the `ranex` project
+identity. Do not reuse Mightybox names or resources.
+
+Remove only Ranex resources with the exact project scope:
+
+```bash
+docker compose --project-name ranex down --remove-orphans --volumes
+docker buildx rm ranex-builder
+```
+
+The second command is allowed only after confirming that no Ranex build is
+active and its cache is no longer needed. Official builder and Compose project
+references:
+
+- <https://docs.docker.com/build/builders/manage/>
+- <https://docs.docker.com/reference/cli/docker/buildx/create/>
+- <https://docs.docker.com/compose/how-tos/project-name/>
+
+## 0A.8 Required evidence
+
+The Phase 0A report must include:
+
+- explicit human authorization and the exact cleanup manifest;
+- before and after disk use;
+- retained and removed paths;
+- ownership or live-process blockers;
+- CLI versions and redacted authentication results;
+- global hook, rule, plugin, skill, MCP, and launcher inventory;
+- secret-path permission checks without values;
+- Docker before and after counts, sizes, labels, attachments, and health;
+- proof that protected Docker identities remained present;
+- BuildKit cache size;
+- SWE-bench and DeepEval absence checks;
+- shell startup and service residue checks;
+- every command, exit code, and deviation.
+
+A phase with any unresolved permission, process, protected-resource, or
+local-only-data blocker is `PARTIAL` or `BLOCKED`, never `PASS`.
+
+## 0A.9 Measured cleanup record for 2026-07-27
+
+The owner explicitly authorized permanent deletion without cleanup backups.
+The following results were measured on this host:
+
+| Measurement | Before | After |
+|---|---:|---:|
+| Root filesystem used | about 524 GiB | 116 GiB |
+| Root filesystem available | about 363 GiB | 771 GiB |
+| Docker images | 100; 24.84 GB | 13; 6.102 GB |
+| Docker containers | 71; 16 active | 15; 8 active |
+| Docker volumes | 121; 11.63 GB | 11; 1.053 GB |
+| Docker build cache | 335 entries; 22.79 GB | 0 entries; 0 B |
+
+Claude Code `2.1.220`, Codex `0.145.0`, OpenCode `1.18.7`, and GitHub CLI
+`2.96.0` were reinstalled or verified through their official distributions.
+Their authentication status passed without exposing credential values.
+
+The cleanup removed discarded projects, user-designated backups, Trash,
+SWE-bench and DeepEval environments/caches, experimental agent tools, obsolete
+global packages, custom launchers, and package/build caches. It consolidated
+loose provider credentials under the protected credential directory. Four
+additional stale repositories with local-only changes were permanently deleted
+after the owner's full-clean and no-backup instruction.
+
+The protected Mightybox Docker resources remain present. The
+`mightybox-dokploy-local` backend, frontend, Mailpit, PostgreSQL, and Redis
+containers are healthy; Traefik is running. Its queue and scheduler were
+unhealthy both before and after cleanup. The seven `mightybox` project
+containers remain stopped as they were before cleanup.
+
+The current result is `PARTIAL`, not `PASS`, because:
+
+1. `/home/soultransit/.no-mistakes` retains 6,040 foreign-owned entries and
+   about 72 MB of data.
+2. `/home/soultransit/devtony/opzava` retains two foreign-owned entries; its
+   exact size is unreadable without administrator access.
+3. A root-owned 3,257-byte OMO artifact remains at
+   `/home/soultransit/mbdev/mightybox/.claude/worktrees/mcp-789-governance/.omo`.
+4. Three live Codex processes currently hold 53 records open under
+   `/home/soultransit/.codex`; the directory is about 3.94 GB. The live session
+   also recreates normal runtime caches and state.
+
+The owner must first inspect those three exact foreign-owned targets, then may
+remove them interactively with administrator access:
+
+```bash
+sudo find /home/soultransit/.no-mistakes -xdev -mindepth 1 -maxdepth 2 -printf '%u:%g %p\n'
+sudo find /home/soultransit/devtony/opzava -xdev -mindepth 1 -maxdepth 5 -printf '%u:%g %p\n'
+sudo find /home/soultransit/mbdev/mightybox/.claude/worktrees/mcp-789-governance/.omo -xdev -mindepth 1 -maxdepth 5 -printf '%u:%g %p\n'
+
+sudo rm -r --one-file-system -- \
+  /home/soultransit/.no-mistakes \
+  /home/soultransit/devtony/opzava \
+  /home/soultransit/mbdev/mightybox/.claude/worktrees/mcp-789-governance/.omo
+```
+
+Never enter an administrator password into an agent prompt or transcript.
+Afterward, restart all live Codex sessions normally. Preserve
+`/home/soultransit/.codex/auth.json`, remove the old runtime state through an
+exact manifest, then re-run authentication and residue checks.
+
+## HUMAN GATE 0A
+
+Phase 0A becomes `PASS` only when:
+
+- all three foreign-owned targets are absent;
+- old Codex runtime state has been cleared after a normal session restart;
+- Claude Code, Codex, OpenCode, and GitHub authentication still passes;
+- global CLI pollution searches are empty;
+- protected Mightybox resources match the recorded identities;
+- Docker BuildKit cache remains `0 B`;
+- an independent HY3 audit returns `PASS`.
+
+The human records acceptance of the cleanup result before authorizing Phase 1.
 
 ---
 
@@ -934,6 +1291,7 @@ and the adopted Git history retains the Hermes commits.
 ## Preconditions
 
 - Phase 0 is `PASS`.
+- Phase 0A is `PASS`.
 - Required values are filled and validated.
 - `gh api user --jq .login` returns `anthonykewl20`.
 - The human has authorized the public standalone origin.
@@ -7208,6 +7566,7 @@ Each unresolved value has an owner, discovery command, evidence path, and human 
 The system is not complete merely because the UI is rebranded or agents can launch CLIs.
 
 - [ ] Phase 0 system facts captured.
+- [ ] Phase 0A clean-slate gate passed.
 - [ ] Public standalone origin and both remotes verified.
 - [ ] Upstream baseline green.
 - [ ] Brand manifest approved.
