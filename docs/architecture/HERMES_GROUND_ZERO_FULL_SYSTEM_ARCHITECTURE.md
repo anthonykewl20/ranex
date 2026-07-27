@@ -70,30 +70,36 @@ service, release, configuration, and V&V roles.
 ### 1.2 Fork-lineage reality and required preflight
 
 The fork relationship is an owner requirement and target constraint, not a
-claim that the current local Git metadata already proves it. At this
+claim that the current Ranex branch already shares upstream ancestry. At this
 documentation snapshot:
 
 - current Ranex `HEAD` is
-  `fee61eb61d8f2df2f28adbe3a59cf8c2340ab5f4`;
-- the clone has seven Ranex-only tracked commits and no configured remotes;
-- the audited Hermes candidate baseline
-  `d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012` is not in the local object graph;
-- its upstream Git tree is
+  `3ad04f089c6fe674139f10bfadb1fe7df3e0e4f7` on
+  `bootstrap/pre-upstream`;
+- `origin` fetch/push points at `anthonykewl20/ranex`;
+- `upstream` fetch points at `NousResearch/hermes-agent` and its push URL is
+  disabled;
+- the audited Hermes baseline
+  `d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012` exists locally as
+  `upstream/main` and `phase/1-adopt-upstream`;
+- its verified upstream Git tree is
   `129a441930d11bc6bace9c72e81c960289008898`;
-- the root upstream `LICENSE` is not present in this working tree; and
+- `bootstrap/pre-upstream` still has no merge base with that upstream baseline;
+- the root upstream `LICENSE` exists on the upstream baseline but is not yet
+  present on the bootstrap branch; and
 - `legal/licensing-manifest.json` records `github_network_fork: false`.
 
 A software-derived fork, shared Git ancestry, and GitHub's network-fork flag
 are separate facts. Before implementation begins, `FORK-PREFLIGHT` must:
 
 1. preserve the current Ranex commits under an immutable safety ref;
-2. fetch the exact audited upstream commit into a pristine mirror/worktree and
+2. retain the exact audited upstream commit in a pristine mirror/worktree and
    verify its tree, license, notices, tags, and source manifest;
-3. record the human-selected lineage strategy—prefer replaying the Ranex
+3. record the human-selected adoption strategy—prefer replaying the Ranex
    documentation commits on the pinned upstream base when it preserves both
    histories cleanly; otherwise use a provenance-complete history import;
-4. configure `upstream` as fetch-only, disable its push URL, and define the
-   Ranex branch/worktree topology;
+4. keep `upstream` fetch-only and define the final Ranex branch/worktree
+   topology;
 5. distinguish the observed, audited, incorporated, and latest-seen upstream
    baselines;
 6. restore the unchanged upstream license and classify every retained,
@@ -102,8 +108,8 @@ are separate facts. Before implementation begins, `FORK-PREFLIGHT` must:
    field to the actual hosting fact.
 
 Until this gate passes, documentation says **fork target / derived relationship,
-lineage repair pending**. It must not say retained upstream Git history is
-already proven.
+upstream fetched, ancestry adoption pending**. It must not say retained upstream
+Git history is already proven on the Ranex branch.
 
 ## 2. Root architecture decision
 
@@ -1048,12 +1054,47 @@ One overloaded “office stage” is prohibited.
 `WorkflowNodeId` is a versioned node from the pinned workflow definition; it is
 not another run-status enum. A waiver is a `HumanDecision`, not a gate outcome.
 
+### 16.1 Core-SDLC and execution boundary
+
+- `product_definition` owns capabilities, needs, requirements, outcomes, and
+  product validation.
+- `work_management` alone transitions `WorkItemStatus`.
+- one work item may have many `Run` attempts; `governed_execution` alone
+  transitions each `RunStatus`.
+- `operations` owns incidents; `release_management` owns release/update state;
+  `service_management` owns service commitments and lifecycle triggers.
+- maintenance, retirement, and incident response create linked work items with
+  the applicable `WorkClass`; they do not smuggle new values into
+  `WorkItemStatus`.
+- a run success, merge, release, model verdict, board move, incident mitigation,
+  or capability state change is evidence/input to a work transition, never the
+  transition itself.
+- cross-aggregate mappings and invalidation rules live in
+  `lifecycle-crosswalks.yaml` and `invalidation-graph.yaml`.
+
+`RuleStage` is derived from the owning lifecycle state solely to select
+applicable policy. It is not independently writable.
+
+### 16.2 Gate namespaces
+
+| Namespace | Meaning | Authority |
+|---|---|---|
+| `SDLC-*` | Core-SDLC stage/cross-lifecycle controls | Owning SDLC roles plus deterministic requirements |
+| `AI-G0`–`AI-G10` | Evidence gates for one agent-assisted execution | Qualified checker/gate evaluator |
+| `MAP-*` | Architecture-map completeness | Architecture review plus owner decision |
+| `SDLC-ADOPT-*` | Adoption/calibration of the process itself | Process owner/human governor |
+| `GateOutcome` | Runtime exact-subject result | Qualified deterministic gate |
+| Human decision point | Product, architecture, risk, release, destructive or exception authority | Authenticated named human |
+
+IDs never cross namespaces by alias, and no passing namespace implies another
+one passed.
+
 ## 17. Command, event, and effect vocabulary
 
 Commands request work; events state facts that already occurred. They are
 different types and cannot share one generic payload.
 
-Minimum authoritative event vocabulary:
+Minimum governed-execution event vocabulary:
 
 ```text
 RunCreated
@@ -1082,6 +1123,32 @@ RunFailed
 PolicyChangeBlockedRun
 SourceDivergenceDetected
 ```
+
+Minimum work-management integration vocabulary:
+
+```text
+WorkItemCreated
+WorkItemClassified
+RiskLaneBound
+OutcomeRequirementRefsBound
+WorkItemTransitioned
+WorkItemBlocked
+WorkItemUnblocked
+WorkItemCancelled
+RunRequestedForWorkItem
+RunEvidenceLinked
+ReleaseEvidenceLinked
+OperationalEvidenceLinked
+OutcomeDecisionLinked
+FollowUpWorkLinked
+WorkItemClosed
+```
+
+Product, service, configuration, supplier, resource, interaction, process,
+incident, release, migration, and upstream-sync contexts publish their own
+namespaced events through their local transactional outboxes. The event
+registry assigns one owner and schema to each event. No generic
+`StatusChanged`, `Updated`, or untyped payload is accepted across contexts.
 
 Every schema is versioned. Upcasters operate on frozen historical fixtures.
 An upcaster that changes terminal meaning, authority, or evidence binding is a
@@ -1113,6 +1180,13 @@ draft definitions, never activate them.
 
 ## 19. Effects, idempotency, and reconciliation
 
+An `Activity` is one logical unit of workflow work. It may be pure, invoke a
+worker, or request `0..N` external `Effect` records. Each effect has its own
+identity, destination, authority, idempotency/retry policy, result, and
+reconciliation history. An activity resolves only when its required effects
+have acceptable terminal facts; optional effects and compensation are declared
+in the workflow definition.
+
 Every `ActivityRequest` declares:
 
 - exact subject;
@@ -1136,6 +1210,12 @@ The outbox relay:
 6. retries only when policy permits;
 7. sends ambiguous outcomes to an adapter-specific reconciler; and
 8. records the reconciled fact before the run advances.
+
+Reconciliation is an orthogonal record, not a terminal effect outcome. It
+transitions `PENDING -> RUNNING -> RESOLVED | UNRESOLVED`; `RESOLVED` stores the
+discovered effect disposition and moves `EffectStatus` from `OUTCOME_UNKNOWN`
+to the proven `SUCCEEDED`, `FAILED_*`, or `DENIED` value. History never erases
+that the original acknowledgement was unknown.
 
 GitHub, Git, messaging, provider, filesystem, and database effects each define
 how to query or prove outcome after a lost acknowledgement. “Probably happened”
@@ -1188,6 +1268,13 @@ receive no real operator home and no authority database mount.
 The same `HumanDecision` contract is used by CLI, TUI, local web, phone, and
 GitHub edges. Each surface may render differently, but none defines a separate
 approval authority.
+
+IAM authenticates the principal and presentation/challenge. `policy` records
+the decision and evaluates its eligibility. `governed_execution` copies the
+eligible exact-subject decision into a one-shot `ConsumableAuthorityGrant`.
+Only the grant/permit has `CONSUMED`; the append-only human decision remains
+`APPROVED`, `DENIED`, `EXPIRED`, or `REVOKED`. Revocation and currency are
+checked again before permit issue and effect dispatch.
 
 ## 22. Modules, routes, and qualification
 
@@ -1311,6 +1398,14 @@ $RANEX_HOME/
 Configuration shipped in the repository is immutable input. Runtime state lives
 under `$RANEX_HOME`; it is never written into the source tree.
 
+`$RANEX_HOME` has one local-owner identity, mode `0700` or platform-equivalent
+ACL, no worker mount, and explicit subdirectory ownership for authority state,
+artifacts, interaction history, indexes, backups, logs, temporary material, and
+compatibility data. Files containing secrets or classified content use `0600`
+or equivalent. Data classified as sensitive requires an accepted at-rest
+encryption/key-recovery profile; encryption keys never live in the same backup
+payload as the protected data.
+
 ### 26.2 Ownership
 
 - Core contexts share one physical SQLite file but own distinct logical tables
@@ -1320,7 +1415,13 @@ under `$RANEX_HOME`; it is never written into the source tree.
 - Artifacts are written by exclusive temporary creation, fsync, atomic rename,
   and digest verification before a database record references them.
 - Safe unreferenced blobs may be garbage-collected after policy delay.
-- A missing referenced artifact is corruption and cannot satisfy a gate.
+- A missing referenced `AVAILABLE` or `LEGAL_HOLD` artifact is corruption and
+  cannot satisfy a gate.
+- Authorized purge first writes a durable tombstone containing artifact ID,
+  former digest, classification, retention/legal decision, authorization,
+  purge method and time. `PURGED` artifacts are intentionally unavailable and
+  cannot satisfy replay or a gate; replay yields typed `EVIDENCE_PURGED`, not
+  generic corruption.
 - Retention, legal hold, expiry, purge, and backup inclusion are explicit
   artifact states.
 
@@ -1354,6 +1455,20 @@ Required controls:
 - attribution of every denial and attempted bypass; and
 - current-policy recheck before each new effect.
 
+All network traffic crosses the named egress adapter. It pins the authorized
+scheme/host/port and resolved IP set, denies loopback/link-local/private/cloud
+metadata destinations unless explicitly required, revalidates DNS to prevent
+rebinding, constrains redirects and proxies, enforces TLS policy and response
+limits, and records the destination/receipt without secrets. Direct socket,
+SDK, subprocess, browser, MCP, plugin, and compatibility egress outside this
+adapter fails architecture and real-sandbox tests.
+
+The local web adapter validates the exact bind address, `Host` and `Origin`,
+uses authenticated short-lived sessions, same-site/secure cookie policy where
+applicable, CSRF protection for state changes, restrictive CORS/content
+security policy, replay-resistant decision challenges, and no credential in a
+URL. Loopback does not itself count as authentication.
+
 ## 28. Observability, operations, backup, and restore
 
 Three records remain separate:
@@ -1369,10 +1484,20 @@ provider-response IDs, artifact references, origin (`test`, `probe`, `eval`,
 `production`), and privacy classification. Raw source/prompts/output are
 separately controlled artifacts.
 
-Backup covers the authority database, artifact store, active configuration,
-release manifest, schema registry, migration state, and required compatibility
-state. Restore is not complete until external effects, projections, workspaces,
-outbox, and provider/GitHub state reconcile.
+One backup set binds a common consistency cutoff across the SQLite online
+backup/WAL boundary, artifact catalog and blobs, active configuration, release
+manifest, schema registry, migration state, interaction retention state, and
+required compatibility state. The manifest records every digest, omission,
+encryption/key identifier, release/schema version, cutoff event, RPO/RTO target,
+and restore dependency.
+
+Backup/restore owns quiesce/drain rules, worker and outbox lease expiry, safe
+shutdown, online-backup fallback, off-host copy, key escrow/recovery authority,
+restore into isolated safe mode, integrity/replay checks, and post-restore
+reconciliation. Secrets are backed up only through their secret backend's
+explicit recovery mechanism; removed commercial credentials/data are excluded
+and tested. Restore is not complete until external effects, projections,
+workspaces, outbox, provider/GitHub state, and service objectives reconcile.
 
 RPO, RTO, encryption, retention, restore target, and off-host destination are
 owner decisions recorded in configuration and an ADR, not hard-coded folklore.
@@ -1403,13 +1528,23 @@ Upstream sync is a permanent product capability because Ranex remains a fork.
 It uses a dedicated worktree and lifecycle:
 
 ```text
-FETCHED -> CLASSIFIED -> CHALLENGED -> ACCEPTED | REJECTED
-        -> PORTED -> VERIFIED
+OBSERVED -> FETCHED -> PINNED -> CLASSIFIED
+  -> DISPOSITIONED (REJECTED | DEFERRED | PORT_PLANNED)
+  -> PORTING -> PORT_CANDIDATE -> VERIFIED
+  -> RELEASED -> BASELINE_RECORDED
 ```
 
-No upstream commit merges automatically into the product branch. Every candidate
-is classified by context, capability, security, legal provenance, commercial
-surface, schema/state impact, test value, and compatibility cost.
+`BLOCKED` and `ROLLED_BACK` are explicit branches. The registry separately
+records latest observed, audited, incorporated, and released upstream
+baselines. Every commit/path has a disposition, target Ranex commit, owner,
+reason, compatibility evidence, and legal/commercial classification.
+
+No upstream commit merges automatically into the product branch. Target-mode
+adoption uses selective porting or reimplementation in the sync worktree;
+broad merges require a future human-accepted ADR and the same per-path
+disposition proof. Every candidate is classified by context, capability,
+security, legal provenance, commercial surface, schema/state impact, test
+value, and compatibility cost.
 
 The sync gate fails if a candidate:
 
@@ -1420,6 +1555,18 @@ The sync gate fails if a candidate:
 - breaks the compatibility facade;
 - changes a canonical contract without migration; or
 - lacks required license/provenance treatment.
+
+Desktop exclusion is executable: upstream-sync and release gates reject a
+selected port set, build graph, package, or manifest containing Electron/
+desktop application code, bootstrap/updater scripts, desktop settings
+migrations, generated bundles, desktop-only endpoints, or transitive desktop
+runtime dependencies. Inherited desktop files may exist only in the pristine
+upstream/frozen legacy evidence tree; they are never built, installed, migrated,
+or shipped by Ranex.
+
+Inherited batch, trajectory, mini-SWE, and characterization assets remain
+parity/evaluation evidence until the corresponding retained/replaced behavior
+passes its disposition and compatibility tests.
 
 ### 29.3 Migration
 
