@@ -2,9 +2,12 @@
 
 | Field | Value |
 |---|---|
+| Architecture ID | `ARCH-RANEX-001` |
+| Version | `1.0.0` |
 | Status | **NORMATIVE TARGET — CONDITIONALLY ACCEPTED, NOT YET RUNTIME-VALIDATED** |
 | Scope | Complete target-system architecture and complete attachment map |
 | Date | 2026-07-27 |
+| Repository snapshot basis | `bootstrap/pre-upstream`; exact file digests are bound by the final architecture-review evidence packet |
 | Product | Ranex |
 | Required upstream lineage | Governed software fork of [`nousresearch/hermes-agent`](https://github.com/nousresearch/hermes-agent); current-clone lineage preflight is not yet satisfied |
 | Research baseline | Every file under `docs/research/`, read in full |
@@ -13,6 +16,9 @@
 | Primary architecture collaborator | DeepSeek V4 Pro through `deepseek/deepseek-v4-pro` |
 | Independent architecture challenger | HY3 through `openrouter/tencent/hy3` |
 | Decision authority | Human owner |
+| Compatibility/migration class | New Ranex authority core plus strangler migration of an attributed Hermes-derived fork |
+| Security/data class | Architecture metadata; public unless an attached evidence packet is explicitly classified |
+| Review trigger | Any `MAP-*` failure, authority/boundary change, upstream-baseline adoption, or first runtime tracer |
 
 > **This is the full map, not an MVP map.**
 >
@@ -70,12 +76,14 @@ service, release, configuration, and V&V roles.
 ### 1.2 Fork-lineage reality and required preflight
 
 The fork relationship is an owner requirement and target constraint, not a
-claim that the current Ranex branch already shares upstream ancestry. At this
-documentation snapshot:
+claim that the current Ranex branch already shares upstream ancestry. The
+preflight facts were first bound to the architecture at Ranex documentation
+commit `3ad04f089c6fe674139f10bfadb1fe7df3e0e4f7`. Later documentation-only
+checkpoints do not change the ancestry conclusion; a live head is captured
+mechanically in each review/release evidence packet rather than embedded as a
+self-invalidating “current” value here. At the recorded preflight:
 
-- current Ranex `HEAD` is
-  `3ad04f089c6fe674139f10bfadb1fe7df3e0e4f7` on
-  `bootstrap/pre-upstream`;
+- the Ranex branch was `bootstrap/pre-upstream`;
 - `origin` fetch/push points at `anthonykewl20/ranex`;
 - `upstream` fetch points at `NousResearch/hermes-agent` and its push URL is
   disabled;
@@ -401,7 +409,7 @@ delivery is at least once; duplicates and out-of-order messages are tested.
 | `policy` | Roles, grants, risk-lane derivation, policy packages, activation, authorization decisions, waivers and authenticated human-decision records | Authorization request/decision, active-policy and human-decision snapshots | Policy definitions and append-only decision history; never consumes the execution grant |
 | `assurance` | Claims, evidence envelopes, review observations, checker results and gate-evaluation inputs | Evidence ingestion/query, checker result, exact-subject evidence snapshot | Assurance catalog; does not qualify components or commit run state |
 | `module_governance` | Module catalog, descriptors, capability vocabulary, grants, compatibility, activation lifecycle | Module/grant/profile snapshots | Module and grant authority |
-| `identity_access` | Human/service identities, authentication, sessions, nonces, remote decision authentication, data classification, secret references | Principal/session/secret-handle and egress-decision APIs | Identity and access authority |
+| `identity_access` | Human/service identities, authentication, sessions, nonces, remote decision authentication, data classification, destination facts, secret references | Principal/session/secret-handle and destination-fact APIs | Identity and access authority; policy decides and the egress adapter enforces |
 
 ### 9.2 Product and development contexts
 
@@ -439,7 +447,7 @@ delivery is at least once; duplicates and out-of-order messages are tested.
 | `upstream_sync` | Upstream baseline, diff classification, anti-recontamination gates, selective porting, sync evidence | Git worktrees and upstream remote |
 | `migration` | Schema ordering, upcasters, module migrations, legacy readers, verification, rollback/tombstones | Persistence and compatibility readers |
 | `extension_host` | Lower-trust extension protocol, capability grants, lifecycle, quarantine | Out-of-process RPC/MCP-like bridge |
-| `compatibility` | Hermes anti-corruption facade, legacy state/CLI/tool-name translation, contained plugin execution | Frozen inherited Hermes subset |
+| `compatibility` boundary package | Hermes anti-corruption facade, legacy state/CLI/tool-name translation, contained plugin execution; no canonical lifecycle state | Frozen inherited Hermes subset; `service_management` owns the legacy-surface compatibility lifecycle |
 | `provenance_compliance` | File classification, licenses, notices, de-commercialization denylist, SBOM policy | CI, release, upstream sync |
 
 ## 10. Full capability attachment matrix
@@ -481,7 +489,9 @@ Every target capability must resolve all columns before implementation.
 | Upstream sync | `upstream_sync` | Git sync worktree | sync-candidate lifecycle | Accepted/rejected port set |
 | Migrations | `migration` | schema/legacy readers | migration lifecycle | Verified migration record |
 | External extensions | `extension_host` | isolated RPC bridge | extension lifecycle | Typed proposal/effect request |
+| Legacy Hermes compatibility | `service_management` for lifecycle; `compatibility` for translation/execution | anti-corruption facade and constrained legacy worker | `service_management` owns `CompatibilityStatus` | Versioned compatibility contract, translation result, and removal evidence |
 | Legal/de-commercialization | `provenance_compliance` | CI scanners/SBOM | release and sync gates | Compliance decision |
+| Contract/schema generation | `configuration_management` orchestrates from accepted source-owner registries | deterministic contract compiler and language generators | source context owns semantics; `configuration_management` owns baseline/reproducibility | Registry digest, generated Python/TypeScript packages, drift/audit result |
 
 ## 11. Complete target repository map
 
@@ -640,6 +650,18 @@ ranex/
 │       │   │   ├── network/
 │       │   │   ├── process/
 │       │   │   └── filesystem/
+│       │   ├── authentication/
+│       │   │   ├── local_os/
+│       │   │   ├── web_session/
+│       │   │   ├── github/
+│       │   │   └── telegram/
+│       │   ├── qualification/
+│       │   │   ├── fixture_runner/
+│       │   │   ├── grader/
+│       │   │   └── canary/
+│       │   ├── migration/
+│       │   │   ├── sqlite/
+│       │   │   └── legacy_hermes/
 │       │   ├── triggers/
 │       │   │   ├── local_scheduler/
 │       │   │   ├── cron/
@@ -694,10 +716,21 @@ ranex/
 │   ├── routes/
 │   ├── isolation/
 │   ├── retention/
+│   ├── services/
+│   ├── suppliers/
+│   ├── budgets/
+│   ├── process-tailoring/
 │   └── upstream-sync/
 ├── schemas/
 │   ├── identity/
 │   ├── work/
+│   ├── product/
+│   ├── services/
+│   ├── configuration/
+│   ├── suppliers/
+│   ├── resources/
+│   ├── interactions/
+│   ├── process/
 │   ├── execution/
 │   ├── policy/
 │   ├── assurance/
@@ -753,6 +786,11 @@ ranex/
 │   ├── release/
 │   ├── migration/
 │   └── upstream-sync/
+├── tools/
+│   └── contract-codegen/
+│       ├── README.md
+│       ├── fixtures/
+│       └── src/
 ├── legacy/
 │   └── hermes/
 │       ├── agent/
@@ -822,11 +860,11 @@ their mapped file rather than an ad hoc manager or utility file.
 | `policy` | `api/{commands,queries,views}.py`; `domain/{principals,roles,grants,risk,policy_packages,activation,authorization,human_decisions,waivers,invariants}.py` | `application/{authorization_service,risk_service,human_decision_service}.py`; `application/ports/{policy_engine,decision_store}.py` |
 | `assurance` | `api/{commands,queries,views}.py`; `domain/{claims,evidence,observations,checker_results,coverage,freshness,independence,evidence_snapshots}.py` | `application/{ingestion_service,checker_service,snapshot_service}.py`; `application/ports/{checker_transport,evidence_repository}.py` |
 | `module_governance` | `api/{commands,queries,views}.py`; `domain/{descriptors,interfaces,capabilities,grants,profiles,lifecycle,qualification_refs,invariants}.py` | `application/{catalog_service,activation_service,grant_service,profile_service}.py`; `application/ports/{module_factory,module_state_store}.py` |
-| `identity_access` | `api/{commands,queries,views}.py`; `domain/{principals,authentication,sessions,nonces,data_classification,egress,secret_refs,invariants}.py` | `application/{authentication_service,session_service,egress_service,secret_projection_service}.py`; `application/ports/{authenticator,secret_backend,egress_gateway}.py` |
+| `identity_access` | `api/{commands,queries,views}.py`; `domain/{principals,authentication,sessions,nonces,data_classification,destination_facts,secret_refs,invariants}.py` | `application/{authentication_service,session_service,destination_fact_service,secret_projection_service}.py`; `application/ports/{authenticator,secret_backend,destination_resolver}.py` |
 | `product_definition` | `api/{commands,queries,events,views}.py`; `domain/{actors,needs,hypotheses,capabilities,requirements,acceptance_examples,outcome_measures,validation_decisions,capability_status,invariants}.py` | `application/{discovery_service,requirements_service,validation_service,capability_lifecycle_service}.py`; `application/ports/{research_source,outcome_analytics}.py` |
 | `work_management` | `api/{commands,queries,events,views}.py`; `domain/{projects,work_items,work_item_status,work_classes,outcome_refs,requirement_refs,configuration_refs,accountable_roles,queues,external_refs,projections,invariants}.py` | `application/{intake_service,transition_service,link_service,queue_service,projection_service}.py`; `application/ports/{issue_tracker,work_repository}.py` |
 | `service_management` | `api/{commands,queries,events,views}.py`; `domain/{services,owners,supported_versions,slis,slos,error_budgets,support,maintenance_triggers,retirement_triggers,invariants}.py` | `application/{catalog_service,objective_service,support_service,lifecycle_trigger_service}.py`; `application/ports/{service_catalog,operational_evidence}.py` |
-| `configuration_management` | `api/{commands,queries,events,views}.py`; `domain/{configuration_items,baselines,status_accounting,trace_links,audits,drift,invariants}.py` | `application/{baseline_service,traceability_service,audit_service,drift_service}.py`; `application/ports/{configuration_scanner,baseline_store}.py` |
+| `configuration_management` | `api/{commands,queries,events,views}.py`; `domain/{configuration_items,baselines,status_accounting,trace_links,audits,drift,generation_manifests,invariants}.py` | `application/{baseline_service,traceability_service,audit_service,drift_service,contract_generation_service}.py`; `application/ports/{configuration_scanner,baseline_store,contract_registry,code_generator}.py` |
 | `supplier_governance` | `api/{commands,queries,events,views}.py`; `domain/{suppliers,dependencies,adoption_decisions,shared_responsibility,monitoring,concentration,exit_plans,invariants}.py` | `application/{adoption_service,monitoring_service,reassessment_service,exit_service}.py`; `application/ports/{dependency_inventory,supplier_probe}.py` |
 | `resource_governance` | `api/{commands,queries,events,views}.py`; `domain/{budgets,reservations,quotas,usage,attribution,provider_limits,invariants}.py` | `application/{reservation_service,usage_service,quota_service,reconciliation_service}.py`; `application/ports/{usage_meter,rate_card,host_capacity}.py` |
 | `interaction_history` | `api/{commands,queries,events,views}.py`; `domain/{threads,messages,participants,continuity,classification,retention,export,deletion,invariants}.py` | `application/{thread_service,message_service,search_service,retention_service}.py`; `application/ports/{history_store,search_index,legacy_session_reader}.py` |
@@ -851,6 +889,7 @@ their mapped file rather than an ad hoc manager or utility file.
 | `migration` | `api/{commands,queries,views}.py`; `domain/{migration_plans,dependencies,upcasters,active_run_policy,rollback,tombstones,lifecycle,invariants}.py` | `application/{planning_service,apply_service,verify_service,rollback_service}.py`; `application/ports/{schema_backend,legacy_reader}.py` |
 | `extension_host` | `api/{commands,queries,views}.py`; `domain/{extension_descriptor,protocol_versions,capabilities,grants,lifecycle,quarantine,invariants}.py` | `application/{registration_service,session_service,quarantine_service}.py`; `application/ports/{extension_transport}.py` |
 | `provenance_compliance` | `api/{commands,queries,views}.py`; `domain/{file_classification,licenses,notices,source_records,denylist,sbom_policy,compliance_decisions}.py` | `application/{classification_service,license_service,decommercialization_service,release_gate}.py`; `application/ports/{source_scanner,sbom_scanner,network_probe}.py` |
+| `compatibility` (exceptional boundary package, not an authority context) | `api/{legacy_requests,legacy_results,views}.py`; `hermes_legacy/`, `legacy_plugins/`, `legacy_state/`, `legacy_cli/`, `old_tool_names/` | `application/{translation_service,legacy_worker_service}.py`; `application/ports/{legacy_process,legacy_state_reader}.py`; it owns no canonical state and submits only typed results/proposals |
 
 `governed_execution` remains the only expanded authority cell in the physical
 tree because its exact internal partition is itself a critical invariant. The
@@ -968,6 +1007,7 @@ namespaced external references.
 
 ```text
 ProjectId        prj_<uuidv7>
+RepositoryId     repo_<uuidv7>
 WorkItemId       work_<uuidv7>
 RequirementId    req_<uuidv7>
 CapabilityId     cap_<uuidv7>
@@ -1043,7 +1083,7 @@ One overloaded “office stage” is prohibited.
 | `ModuleStatus` | `PACKAGED`, `DISABLED`, `QUALIFIED`, `CANARY`, `ACTIVE`, `RESTRICTED`, `QUARANTINED`, `RETIRED` |
 | `RouteStatus` | `UNCONFIGURED`, `AUTHENTICATED`, `SMOKE_TESTED`, `PROBATION`, `APPROVED`, `RESTRICTED`, `SUSPENDED`, `RETIRED` |
 | `ExtensionStatus` | `DISCOVERED`, `QUARANTINED`, `REVIEWED`, `QUALIFIED`, `PINNED`, `ENABLED`, `SUSPENDED`, `RETIRED` |
-| `CompatibilityStatus` | `SUPPORTED`, `DEPRECATED`, `READ_ONLY`, `REMOVED` |
+| `CompatibilityStatus` | `SUPPORTED`, `DEPRECATED`, `READ_ONLY`, `REMOVED`; owned by `service_management` for each registered legacy surface |
 | `InstructionStatus` | `DRAFT`, `ACTIVE`, `DEPRECATED`, `RETIRED` |
 | `ArtifactStatus` | `INGESTED`, `QUARANTINED`, `AVAILABLE`, `EXPIRED`, `LEGAL_HOLD`, `PURGED` |
 | `MigrationStatus` | `PLANNED`, `TESTED`, `APPLIED`, `VERIFIED`, `ROLLED_BACK`, `FAILED` |
@@ -1107,7 +1147,7 @@ ActivityDispatched
 ActivityResolved
 EvidenceSnapshotBound
 GateEvaluated
-HumanDecisionRecorded
+HumanDecisionSnapshotBound
 PermitIssued
 PermitConsumed
 EffectIntentRecorded
@@ -1258,8 +1298,9 @@ unproven `NOT_APPLICABLE` block.
 - authenticated sessions and remote-device bindings;
 - nonce, expiry, replay prevention, and challenge confirmation;
 - secret metadata and opaque secret references;
-- data classification and egress destinations; and
-- credential projection policy.
+- data classification and authenticated destination identity/resolution facts;
+  and
+- credential projection records under policy-defined rules.
 
 Secret values are not canonical domain fields. A granted adapter receives the
 smallest read-only projection for one bounded operation. Tool-bearing processes
@@ -1753,9 +1794,10 @@ define bounded implementation work.
 
 ## 36. Research reconciliation
 
-All six Markdown research files were required inputs. The separately supplied
-`ranex-sdlc-full-spec.svg` was inspected as a visual research artifact and does
-not override the normative prose/contracts.
+Every research artifact present at the final review snapshot was a required
+input: seven Markdown records, the semantic HTML visual guide, and the generated
+SVG. The HTML/SVG are non-normative projections; they cannot override the Core
+SDLC, control catalog, architecture, or machine contracts.
 
 1. `cookbook-alignment-research-2026-07-27.md` supplies stable-process,
    stranger-ready packet, maker/checker, evidence/verdict, evaluation, and
@@ -1777,13 +1819,20 @@ not override the normative prose/contracts.
    evidence, project/configuration/V&V/traceability/supplier controls,
    maintenance/retirement, and the requirement that AI remain a worker
    subprocess.
+7. `ranex-sdlc-visual-hy3-review-2026-07-27.md` supplies an advisory HY3
+   challenge of the lifecycle visual, including namespace, rollback/re-entry,
+   accessibility, maturity-language, and release/update corrections.
+8. `ranex-sdlc-visual-guide.html` is the accessible, non-normative human
+   projection of the selected lifecycle.
+9. `ranex-sdlc-full-spec.svg` is the generated diagram projection inspected
+   visually and by extracted labels.
 
 DeepSeek V4 Pro was used as the primary architecture/file-structure collaborator
 for two initial passes. HY3 independently challenged the same frozen
 five-document historical corpus, then performed a second full-map completeness
-pass. A final six-document/current-architecture pass is required and recorded
-separately in the reconciliation document. Neither model is a decision
-authority or proof that the architecture works.
+pass. The final all-research/current-architecture pass, including exact prompt
+and response artifacts, is recorded separately in the reconciliation document.
+Neither model is a decision authority or proof that the architecture works.
 
 ## 37. Architecture definition of done
 

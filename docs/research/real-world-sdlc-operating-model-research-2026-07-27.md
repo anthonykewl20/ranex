@@ -11,6 +11,7 @@
 | Upstream | [NousResearch/hermes-agent](https://github.com/nousresearch/hermes-agent) |
 | Companion normative policy | [Ranex Core SDLC Operating Model](../architecture/CORE_SDLC_OPERATING_MODEL.md) |
 | Owner decision | [ADR-0001: Established Software-Development Lifecycle Governs AI Work](../architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md) |
+| Independent visual review | [HY3 SDLC visual review](./ranex-sdlc-visual-hy3-review-2026-07-27.md) |
 | File mutations | This research report, its companion policy/control catalog, and documentation links |
 
 ## Executive recommendation

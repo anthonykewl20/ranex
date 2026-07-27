@@ -295,6 +295,13 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/research/ranex-sdlc-visual-hy3-review-2026-07-27.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, reconciliation, and commentary only, if owned by Anthony Garces",
+      "notes": "Contains advisory model output and third-party-source discussion; preserve provider and source provenance."
+    },
+    {
       "path": "docs/research/real-world-sdlc-operating-model-research-2026-07-27.md",
       "classification": "CURATED_RESEARCH",
       "license": "NOASSERTION",
