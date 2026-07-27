@@ -1,0 +1,77 @@
+{
+  "schema_version": 1,
+  "policy_version": "1.0",
+  "repository": {
+    "name": "anthonykewl20/ranex",
+    "visibility": "public",
+    "github_network_fork": false
+  },
+  "licenses": {
+    "upstream": {
+      "id": "MIT",
+      "file": "LICENSE",
+      "owner": "Nous Research",
+      "applies_to": "Hermes Agent and other material received under the MIT License"
+    },
+    "ranex": {
+      "id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "file": "LICENSE-RANEX.md",
+      "owner": "Anthony Garces",
+      "permission_contact": "GitHub account anthonykewl20",
+      "applies_to": "Original Ranex Material owned by Anthony Garces",
+      "personal_learning_use": "permitted",
+      "recipient_redistribution": "prohibited",
+      "recipient_business_use": "prohibited",
+      "false_ownership_claims": "prohibited"
+    }
+  },
+  "public_platform_exception": {
+    "source": "GitHub Terms of Service",
+    "scope": "Limited use, display, performance, and reproduction through GitHub as permitted by its functionality, including forking",
+    "additional_off_platform_rights": false
+  },
+  "classification_rules": {
+    "UPSTREAM_UNCHANGED": "The existing third-party license applies.",
+    "RANEX_ORIGINAL": "LICENSE-RANEX.md applies.",
+    "MIXED_MODIFIED": "The existing license applies to upstream portions and LICENSE-RANEX.md applies to original Ranex modifications."
+  },
+  "files": [
+    {
+      "path": ".gitignore",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "RANEX_IMPLEMENTATION_GUIDE.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "LICENSE-RANEX.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "NOTICE.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/research/gemini-research.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0",
+      "notes": "Owner-curated research; third-party material and rights remain excluded from the Ranex license."
+    },
+    {
+      "path": "legal/licensing-manifest.json",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    }
+  ],
+  "phase_1_requirements": [
+    "Retain upstream LICENSE unchanged.",
+    "Classify every new Ranex file.",
+    "Add an explicit entry for every modified upstream file.",
+    "Never claim ownership of upstream material."
+  ]
+}

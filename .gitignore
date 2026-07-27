@@ -1,0 +1,13 @@
+.claude/worktrees/
+
+# Local helpers, runtime evidence, credentials, and machine-specific decisions.
+.local/*
+!.local/*.example
+evidence/runtime/
+*.secret
+decisions/local-values.env
+.env
+.env.local
+.env.*
+!.env.example
+!*.env.example

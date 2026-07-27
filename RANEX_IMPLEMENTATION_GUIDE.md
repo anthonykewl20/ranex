@@ -1,15 +1,22 @@
 # Ranex Local Fork, Rebrand, and Multi-Agent Office Implementation Guide
 
-**Document status:** Implementation specification and execution playbook  
-**Primary executor:** GPT-5.6 Sol running through Codex CLI  
-**Target host:** A single local elementary OS machine  
-**Product brand:** **Ranex**  
-**Public CLI command:** `ranex`  
-**Brand slug:** `ranex`  
-**Primary brand environment prefix:** `RANEX`  
-**Upstream project:** `NousResearch/hermes-agent`  
-**Research snapshot date:** 2026-07-27, Asia/Manila  
-**Upstream commit observed while preparing this guide:** `215ec101be1dde26a3e4dabe6944e9789b8ead91`  
+| Field | Value |
+|---|---|
+| Document status | Implementation specification and living execution playbook |
+| Purpose | Install Hermes Agent locally, then evolve it into Ranex |
+| Primary executor | Codex |
+| Target host | elementary OS 8.1 on Ubuntu 24.04 Noble |
+| Local project root | `/home/soultransit/devtony/ranex` |
+| Product brand | **Ranex** |
+| Public CLI command | `ranex` |
+| Brand slug | `ranex` |
+| Environment prefix | `RANEX` |
+| Upstream project | `NousResearch/hermes-agent` |
+| GitHub origin | Existing public standalone `anthonykewl20/ranex` |
+| Ranex license | Personal use only; no redistribution or business use |
+| Research snapshot | 2026-07-27, Asia/Manila |
+| Observed upstream commit | `d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012` |
+
 **Important:** The executor must record the actual current upstream commit at execution time. The commit above is evidence of the research snapshot, not a permanent pin.
 
 ---
@@ -22,15 +29,21 @@ Use these exact meanings throughout implementation:
 
 | Term | Exact meaning |
 |---|---|
-| **Ranex** | The independent fork and the new public product identity |
+| **Ranex** | The independent software fork and the new public product identity |
 | **Hermes Agent** | The upstream project maintained by Nous Research |
 | `ranex` | The new primary public CLI command |
 | `hermes` | A temporary compatibility alias retained during migration |
 | `RANEX_HOME` | The new highest-precedence state-home override |
 | `HERMES_HOME` | A retained legacy compatibility environment variable |
-| `ranex` | The product slug, default fork repository name, and service-name prefix |
+| `ranex` | The product slug, origin repository name, and service-name prefix |
+| **Ranex Material** | Original additions and modifications owned by Anthony Garces |
+| **Upstream Material** | Hermes Agent and third-party material retained under their existing licenses |
 
 Do not rename legitimate upstream attribution, license text, Git remote names, historical references, compatibility identifiers, or code symbols merely because they contain `Hermes`. Public branding and internal compatibility are separate concerns.
+
+Ranex is a software fork stored in the existing public standalone
+`anthonykewl20/ranex` repository. GitHub reports it is not a network fork.
+The `upstream` remote and retained Git history record the Hermes relationship.
 
 ---
 
@@ -38,10 +51,40 @@ Do not rename legitimate upstream attribution, license text, Git remote names, h
 
 This document is an execution contract. It is not permission to implement the whole system in one uncontrolled pass.
 
+The guide already lives inside the future Ranex repository. Use it to install
+and adapt Hermes in place. Keep updating the guide and evidence as Ranex gains
+the ability to help develop itself.
+
+The repository has three states:
+
+| State | Repository contents |
+|---|---|
+| Bootstrap | This guide, decisions, and evidence in local Git |
+| Upstream adoption | Hermes history becomes the base; bootstrap files are retained |
+| Self-development | Ranex code and this guide evolve together in isolated worktrees |
+
+Phase 18.13 closes the loop by registering Ranex as its own isolated office
+project after the disposable-project proof and all safety gates pass.
+
+Local Git is required now and already exists. A GitHub origin is not required
+for this document edit or Phase 0. The existing empty public origin becomes
+required when Phase 1 begins.
+
+Every phase or pull-request job that may write repository files must run in a
+named worktree under `.claude/worktrees/<branch-folder>`. The task prompt must
+name both the worktree path and branch.
+
+Before removing a worktree on this host, run `worktree-hygiene --lock-secrets`,
+then its dry run. Remove only the worktree created for that job, and only after
+its commit is reachable from the landed base.
+
 The implementing agent must:
 
 1. Read this entire document before editing anything.
-2. Read the checked-out upstream repository's root `AGENTS.md`, `README.md`, `LICENSE`, `pyproject.toml`, `package.json`, and relevant implementation files before proposing changes.
+2. Before changing source code, read the checked-out upstream `AGENTS.md`,
+   `README.md`, `LICENSE`, `pyproject.toml`, and `package.json`. Also read
+   Ranex's `LICENSE-RANEX.md`, `NOTICE.md`, `legal/licensing-manifest.json`,
+   and the relevant implementation files.
 3. Execute exactly one numbered phase at a time.
 4. Stop at every explicit **HUMAN GATE**.
 5. Never claim a command, test, authentication, provider, model, or feature works unless it was actually executed and its result was captured.
@@ -57,24 +100,33 @@ The implementing agent must:
 
 ### 0.1 First instruction to give Codex
 
-Put this Markdown file in a neutral bootstrap directory, for example:
+On this machine, prepare the Phase 0 worktree before starting Codex:
 
 ```bash
-mkdir -p "$HOME/mbdev/ranex-bootstrap"
-cp /path/to/this/file.md \
-  "$HOME/mbdev/ranex-bootstrap/IMPLEMENTATION_GUIDE.md"
-cd "$HOME/mbdev/ranex-bootstrap"
+cd /home/soultransit/devtony/ranex
+export RANEX_PRIMARY_ROOT="$(git rev-parse --show-toplevel)"
+export PHASE_BRANCH="phase/0-preflight"
+export PHASE_WORKTREE="$RANEX_PRIMARY_ROOT/.claude/worktrees/phase-0-preflight"
+
+test -f "$RANEX_PRIMARY_ROOT/RANEX_IMPLEMENTATION_GUIDE.md"
+mkdir -p "$RANEX_PRIMARY_ROOT/.claude/worktrees"
+git worktree add -b "$PHASE_BRANCH" "$PHASE_WORKTREE" main
+test -f "$PHASE_WORKTREE/RANEX_IMPLEMENTATION_GUIDE.md"
 ```
 
 Then start Codex and give it this exact instruction:
 
 ```text
-Read IMPLEMENTATION_GUIDE.md completely.
+Work only in /home/soultransit/devtony/ranex/.claude/worktrees/phase-0-preflight
+on branch phase/0-preflight.
+
+Read RANEX_IMPLEMENTATION_GUIDE.md completely.
 
 Execute PHASE 0 only.
 
-Do not clone, fork, install packages, authenticate services, modify repositories,
-change shell configuration, or run sudo.
+Do not adopt upstream history, create or change remotes, install packages,
+authenticate services, edit application source, change shell configuration,
+or run sudo.
 
 Create the Phase 0 evidence and decision files exactly as specified. Mark every
 unverified item UNKNOWN. Stop at HUMAN GATE 0.
@@ -83,20 +135,45 @@ unverified item UNKNOWN. Stop at HUMAN GATE 0.
 For non-interactive execution, inspect `codex exec --help` first because CLI flags can change. A current compatible pattern is:
 
 ```bash
-mkdir -p evidence/bootstrap
+mkdir -p "$PHASE_WORKTREE/evidence/bootstrap"
 
 codex exec \
-  -C "$HOME/mbdev/ranex-bootstrap" \
+  -C "$PHASE_WORKTREE" \
   --sandbox workspace-write \
   --ephemeral \
   --json \
-  --output-last-message evidence/bootstrap/final-message.txt \
-  "Read IMPLEMENTATION_GUIDE.md completely. Execute PHASE 0 only. Stop at HUMAN GATE 0." \
-  > evidence/bootstrap/events.jsonl \
-  2> evidence/bootstrap/stderr.log
+  --output-last-message "$PHASE_WORKTREE/evidence/bootstrap/final-message.txt" \
+  "Work only in the named phase/0-preflight worktree. Read RANEX_IMPLEMENTATION_GUIDE.md completely. Execute PHASE 0 only. Stop at HUMAN GATE 0." \
+  > "$PHASE_WORKTREE/evidence/bootstrap/events.jsonl" \
+  2> "$PHASE_WORKTREE/evidence/bootstrap/stderr.log"
 ```
 
 Do not use `danger-full-access`, `--yolo`, a permission-bypass flag, or an equivalent option on the host.
+
+### 0.2 Observed local host snapshot
+
+These values were observed on 2026-07-27 in Asia/Manila:
+
+| Item | Observed value |
+|---|---|
+| OS | elementary OS 8.1; Ubuntu 24.04 Noble base |
+| Kernel | Linux 7.0.0-28-generic x86_64 |
+| Git | 2.43.0 |
+| GitHub CLI | 2.96.0; active account `anthonykewl20` |
+| Local Git repository | Present; no remote configured |
+| Codex CLI | 0.145.0 |
+| Claude Code | 2.1.220 |
+| uv | 0.11.26 |
+| System Python | 3.14.6 |
+| Node.js | 24.18.0 |
+| npm | 11.16.0 |
+
+The system Python is outside upstream's current `>=3.11,<3.14` range.
+Phase 2 must use an isolated supported Python and must not replace the system
+interpreter.
+
+This table is evidence, not a permanent requirement. Every phase must re-run
+the checks it depends on and record any change.
 
 ---
 
@@ -104,7 +181,16 @@ Do not use `danger-full-access`, `--yolo`, a permission-bypass flag, or an equiv
 
 > **Executor invariant:** `Ranex` is the fork being implemented. `Hermes Agent` is upstream. Public surfaces must use Ranex; upstream attribution and compatibility identifiers must remain accurate.
 
-Build **Ranex**, a private, locally hosted, deeply customizable fork of Hermes Agent that operates as a structured AI software-development office.
+Install Hermes Agent from verified upstream history on this machine. Then
+evolve that same codebase into **Ranex**, a locally hosted, deeply customizable
+software fork and future distributable product.
+
+Future distribution is owner-controlled. It does not grant recipients the
+right to redistribute original Ranex Material or use it for business.
+
+Early phases use the compatible `hermes` command from this checkout. After the
+branded CLI passes Phase 5, later phases use `ranex` as the primary interface.
+This keeps the product usable while it helps develop itself.
 
 The system must support:
 
@@ -174,7 +260,8 @@ The first usable release is complete only when all of these are true:
 
 1. The fork builds and its baseline upstream tests pass.
 2. Public-facing identity uses **Ranex**.
-3. The original MIT license and attribution remain intact.
+3. The original MIT license remains intact, and original Ranex Material carries
+   the separate personal-use license.
 4. The legacy `hermes` CLI still works during the compatibility period.
 5. A branded CLI alias works.
 6. The fork uses its own origin and safe updater.
@@ -192,6 +279,8 @@ The first usable release is complete only when all of these are true:
 18. Telegram access is allowlisted to the owner.
 19. The browser dashboard is not publicly exposed.
 20. A full seeded end-to-end evaluation passes.
+21. Ranex is registered as its own isolated project and completes one governed
+    self-development task.
 
 ## 1.4 Explicit non-goals for the first release
 
@@ -212,17 +301,24 @@ Do not build these in the first release:
 
 ---
 
-# 2. Verified upstream constraints
+# 2. Upstream constraints and current installation facts
 
 The implementation must begin from the actual checked-out code, not from this summary alone.
 
-At the research snapshot, the upstream repository had these relevant properties:
+The install-critical metadata below was rechecked at upstream commit
+`d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012` on 2026-07-27:
 
+- Upstream version: `0.19.0`.
 - Python distribution: `hermes-agent`.
 - Python version requirement: `>=3.11,<3.14`.
 - Primary command: `hermes = "hermes_cli.main:main"`.
 - Additional commands: `hermes-agent` and `hermes-acp`.
 - Node engine requirement: `>=20`.
+- Project license: MIT.
+
+The draft's wider architecture snapshot reported these additional properties.
+Recheck each one against the adopted source before depending on it:
+
 - State defaults to `~/.hermes`, mediated through `HERMES_HOME`.
 - Named profiles isolate configuration, memory, sessions, skills, logs, and gateway state.
 - Profiles do not create a filesystem sandbox by themselves.
@@ -232,7 +328,7 @@ At the research snapshot, the upstream repository had these relevant properties:
 - The current `review-required:` behavior is partly convention-driven and is not sufficient as the final hard gate.
 - The local terminal backend executes with the permissions of the current OS user and provides no isolation.
 - The upstream installer and updater assume the upstream repository and Hermes identity in several places.
-- The repository is MIT licensed. Modification and redistribution are allowed, but the original copyright and permission notice must remain in copies or substantial portions.
+- The MIT notice must remain in copies or substantial portions.
 
 These are design constraints, not invitations to edit all affected code immediately.
 
@@ -384,6 +480,9 @@ branding/
 │   ├── product.py
 │   └── product.ts
 └── README.md
+
+legal/
+└── licensing-manifest.json
 ```
 
 Initial manifest shape:
@@ -412,19 +511,26 @@ environment:
   legacy_prefix: "HERMES"
 
 source:
-  fork_repository: "https://github.com/<GITHUB_OWNER>/ranex"
+  origin_repository: "https://github.com/anthonykewl20/ranex"
+  origin_visibility: "public"
+  github_network_fork: false
   upstream_repository: "https://github.com/NousResearch/hermes-agent"
   upstream_product_name: "Hermes Agent"
   upstream_author: "Nous Research"
 
 legal:
-  license: "MIT"
+  upstream_license: "MIT"
+  upstream_license_file: "LICENSE"
+  ranex_license: "LicenseRef-Ranex-Personal-Use-1.0"
+  ranex_license_file: "LICENSE-RANEX.md"
+  ranex_redistribution_by_recipients: false
+  ranex_business_use_by_recipients: false
   preserve_upstream_license: true
   attribution_file: "NOTICE.md"
 
 support:
-  documentation_url: "https://github.com/<GITHUB_OWNER>/ranex/tree/main/docs"
-  issue_tracker_url: "https://github.com/<GITHUB_OWNER>/ranex/issues"
+  documentation_url: "https://github.com/anthonykewl20/ranex/tree/main/docs"
+  issue_tracker_url: "https://github.com/anthonykewl20/ranex/issues"
 ```
 
 ## 4.3 Layer C: compatibility aliases
@@ -468,13 +574,34 @@ This optional internal rename is not part of the first release.
 
 Do not remove or rewrite the upstream MIT license notice.
 
-Add a separate `NOTICE.md` that clearly states:
+Keep these separate files:
 
-- this is an independent fork;
-- it includes software originally developed by Nous Research;
-- the original project is MIT licensed;
-- the fork is not endorsed by Nous Research;
-- new modifications have the fork owner's copyright where applicable.
+```text
+LICENSE             Upstream Hermes Agent MIT license; unchanged
+LICENSE-RANEX.md    Personal-use terms for original Ranex Material
+NOTICE.md           Attribution and the boundary between both scopes
+```
+
+The Ranex license permits private personal learning, experimentation, and
+evaluation. It prohibits recipient redistribution, business use, removal of
+notices, and false ownership claims without prior written permission from
+Anthony Garces through the `anthonykewl20` GitHub account.
+
+The restriction applies only to Ranex Material owned by Anthony Garces.
+Upstream Material remains MIT licensed. An unchanged upstream file is MIT
+licensed; a modified upstream file may contain both MIT upstream material and
+separately licensed original Ranex modifications.
+
+The bootstrap `legal/licensing-manifest.json` identifies current Ranex files.
+Phase 1 must extend it for the adopted source, and Phase 4 must make validation
+deterministic. File headers, the manifest, provenance records, and Git history
+must agree.
+
+GitHub's Terms grant limited use, display, performance, and reproduction rights
+through GitHub while the repository is public, including forking. Do not claim
+the Ranex license can remove those platform rights. They grant no permission
+for business use, redistribution outside GitHub, notice removal, or false
+authorship.
 
 Do not reuse logos or trademarks unless separately authorized.
 
@@ -484,7 +611,9 @@ Do not reuse logos or trademarks unless separately authorized.
 
 ## 5.1 Human-supplied values
 
-Phase 0 must create `decisions/local-values.env.example`. The Ranex values are already locked and must be prefilled. The human must copy it to `decisions/local-values.env`, confirm the discovered GitHub owner and fork visibility, and approve it before Phase 1.
+Phase 0 must create `decisions/local-values.env.example`. The known Ranex
+values are prefilled. The human copies it to `decisions/local-values.env`,
+checks the paths, and approves it before Phase 1.
 
 ```bash
 # Never commit decisions/local-values.env.
@@ -497,19 +626,23 @@ BRAND_SLUG="ranex"
 BRAND_CLI="ranex"
 BRAND_ENV_PREFIX="RANEX"
 
-# Still requires the human's GitHub account or organization decision.
-GITHUB_OWNER=""  # REQUIRED: discover with `gh api user --jq .login`, then human-confirm
-FORK_REPO_NAME="ranex"
+# Confirmed by the owner on 2026-07-27. Re-check active authentication.
+GITHUB_OWNER="anthonykewl20"
+ORIGIN_REPO_NAME="ranex"
+GITHUB_VISIBILITY="public"
+GITHUB_NETWORK_FORK="false"
 
-SOURCE_PARENT="$HOME/mbdev"
-SOURCE_DIR="$HOME/mbdev/$BRAND_SLUG"
+SOURCE_PARENT="$HOME/devtony"
+SOURCE_DIR="$SOURCE_PARENT/$BRAND_SLUG"
+PROJECTS_ROOT="$HOME/devtony"
+EVALUATION_REPO="$PROJECTS_ROOT/ranex-evaluation"
 APP_HOME="$HOME/.local/share/$BRAND_SLUG"
 STATE_HOME="$HOME/.local/state/$BRAND_SLUG"
 CACHE_HOME="$HOME/.cache/$BRAND_SLUG"
 DEV_VENV="$HOME/.local/share/$BRAND_SLUG/venvs/dev"
 
 UPSTREAM_REPO="https://github.com/NousResearch/hermes-agent.git"
-FORK_REPO="https://github.com/$GITHUB_OWNER/$FORK_REPO_NAME.git"
+ORIGIN_REPO="https://github.com/$GITHUB_OWNER/$ORIGIN_REPO_NAME.git"
 
 DEFAULT_BRANCH="main"
 DEVELOP_BRANCH="develop"
@@ -527,10 +660,14 @@ The executor must validate:
 - `BRAND_SLUG` must equal `ranex`;
 - `BRAND_CLI` must equal `ranex`;
 - `BRAND_ENV_PREFIX` must equal `RANEX`;
-- `SOURCE_DIR`: under `SOURCE_PARENT`;
-- `SOURCE_DIR`: must not already contain an unrelated repository;
+- `GITHUB_OWNER` must equal `anthonykewl20`;
+- `ORIGIN_REPO_NAME` must equal `ranex`;
+- `GITHUB_VISIBILITY` must equal `public`;
+- `GITHUB_NETWORK_FORK` must equal `false`;
+- `SOURCE_DIR` must equal the canonical root of this bootstrap repository;
+- `SOURCE_DIR` must contain this guide and must not contain unrelated work;
 - `APP_HOME`, `STATE_HOME`, and `CACHE_HOME`: must be dedicated to this fork;
-- GitHub owner and fork repository: must exist or be explicitly approved for creation;
+- the GitHub origin must be empty, public, and standalone;
 - none of the chosen values may collide with an existing executable or active service without a migration plan.
 
 ## 5.3 Secrets policy
@@ -621,11 +758,12 @@ A phase ends with exactly one:
 
 ---
 
-# PHASE 0 — Decision capture and read-only preflight
+# PHASE 0 — Decision capture and host-read-only preflight
 
 ## Goal
 
-Capture the host state and unresolved human decisions without changing the machine.
+Capture host state and unresolved decisions without changing host
+configuration. Only the required repository evidence files may be written.
 
 ## Permitted actions
 
@@ -634,19 +772,20 @@ Capture the host state and unresolved human decisions without changing the machi
 - inspect disk and memory;
 - inspect Git/GitHub authentication status without changing it;
 - inspect existing CLI authentication status without logging in;
-- create files only inside the neutral bootstrap directory.
+- create Phase 0 files only inside the assigned `PHASE_WORKTREE`.
 
 ## Forbidden actions
 
 - `sudo`;
 - package installation;
-- repository cloning or forking;
+- upstream cloning or history adoption;
+- GitHub origin creation or remote changes;
 - authentication;
 - token creation;
 - shell profile edits;
 - service installation;
 - deletion;
-- writes outside the bootstrap directory.
+- writes outside the assigned `PHASE_WORKTREE`.
 
 ## Commands to execute
 
@@ -700,10 +839,21 @@ Do not treat `command not found` as a failure in this phase. Record it.
 ```text
 decisions/
 ├── local-values.env.example
-├── local-values.env              # human-created, gitignored later
 ├── decision-register.md
 └── access-inventory.md
 ```
+
+The Phase 0 worker must not create `local-values.env`. After the reviewed Phase
+0 commit lands on `main`, the human creates it in the primary checkout:
+
+```bash
+cd /home/soultransit/devtony/ranex
+cp decisions/local-values.env.example decisions/local-values.env
+chmod 600 decisions/local-values.env
+```
+
+The human checks its values before Phase 1. The ignored file remains in the
+primary checkout and is never copied into a task worktree.
 
 `decision-register.md` must contain:
 
@@ -712,8 +862,9 @@ decisions/
 | Product display name | LOCKED: `Ranex` | Resolved |
 | Brand slug | LOCKED: `ranex` | Resolved |
 | Branded CLI command | LOCKED: `ranex` | Resolved |
-| GitHub owner | DISCOVER with `gh api user --jq .login`, then human-confirm | 1 |
-| Fork repository name | PROPOSED: `ranex`; human confirmation required | 1 |
+| GitHub owner | CONFIRMED: `anthonykewl20`; re-check active login | 1 |
+| Origin repository | CONFIRMED: empty public standalone `anthonykewl20/ranex` | 1 |
+| Ranex license | LOCKED: personal use; no recipient redistribution or business use | 1 |
 | Default phone interface | Proposed: Telegram | 15 |
 | Dashboard remote method | Proposed: Tailscale Serve | 15 |
 | Opus access method | Proposed: Claude Code Max login | 9 |
@@ -729,143 +880,190 @@ decisions/
 - Required human values are explicitly listed.
 - Missing tools are marked `UNKNOWN` or `MISSING`, not silently installed.
 - No secret value appears in evidence.
+- Repository writes are confined to the named Phase 0 worktree.
 
 ## HUMAN GATE 0
 
-The human confirms `GITHUB_OWNER`, accepts `FORK_REPO_NAME=ranex`, reviews the locked Ranex identity values, and authorizes Phase 1.
+The human confirms the local paths and authorizes use of the existing empty
+public `anthonykewl20/ranex` origin. The human also reviews the locked Ranex
+identity values and authorizes Phase 1.
 
 ---
 
-# PHASE 1 — Create the fork and Git topology
+# PHASE 1 — Use the public origin and adopt upstream history
 
 ## Goal
 
-Create a private or public fork under the chosen GitHub owner, clone it locally, preserve upstream history, and establish a safe branching strategy.
+Use the existing standalone public GitHub origin. Then base this local
+repository on Hermes history without cloning over the contained folder,
+merging unrelated histories, or force-pushing.
+
+## Why the public origin remains standalone
+
+The owner approved the existing empty public standalone repository. Do not
+destroy or recreate it with GitHub's **Fork** button. GitHub documents both
+network-fork behavior and repository duplication:
+
+<https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-permissions-and-visibility-of-forks>
+
+<https://docs.github.com/en/repositories/creating-and-managing-repositories/duplicating-a-repository>
+
+Ranex remains a software fork. Its `upstream` remote records the relationship,
+and the adopted Git history retains the Hermes commits.
 
 ## Preconditions
 
 - Phase 0 is `PASS`.
 - Required values are filled and validated.
-- `gh auth status` succeeds for the intended GitHub account.
-- The human has approved whether the fork is private or public.
-- `SOURCE_DIR` does not contain another project.
+- `gh api user --jq .login` returns `anthonykewl20`.
+- The human has authorized the public standalone origin.
+- Phase 0's sanitized files are committed on local `main`.
+- `decisions/local-values.env` is ignored and is not committed.
+- `decisions/local-values.env` exists only in the primary checkout.
+- The tracked working tree is clean.
+- `SOURCE_DIR` is the canonical root of this repository.
+- Phase 0's worktree has been landed and cleared.
 
-## Preferred GitHub CLI flow
+## 1.1 Verify the empty public origin
 
-First inspect the command installed on this machine:
+The human owner has created `anthonykewl20/ranex` as an empty public standalone
+repository. Do not use GitHub's **Fork** button. Do not add a README, license,
+or `.gitignore` before Phase 1 publishes the validated candidate.
+
+Verify the result:
 
 ```bash
-gh repo fork --help
-gh repo clone --help
-```
+cd /home/soultransit/devtony/ranex
 
-Then perform the fork. A compatible current flow is:
-
-```bash
 set -a
 source decisions/local-values.env
 set +a
 
-gh repo fork NousResearch/hermes-agent \
-  --fork-name "$FORK_REPO_NAME" \
-  --clone=false
-```
-
-Verify:
-
-```bash
-gh repo view "$GITHUB_OWNER/$FORK_REPO_NAME" \
+gh repo view "$GITHUB_OWNER/$ORIGIN_REPO_NAME" \
   --json nameWithOwner,isFork,parent,visibility,defaultBranchRef
+
+git ls-remote "$ORIGIN_REPO"
 ```
 
-Clone with the fork as `origin` and upstream as `upstream`:
+The repository must be public, `isFork` must be `false`, and no branch refs
+may exist. Stop if it contains commits. Never overwrite an initialized remote.
+
+Launch both Phase 1 jobs from this exported shell, or pass the same nonsecret
+values through their task packets. Never copy `local-values.env` into a task
+worktree.
+
+## 1.2 Prepare remotes from a named worktree
+
+Create the preparation worktree before starting the Phase 1 preparation job:
 
 ```bash
-mkdir -p "$SOURCE_PARENT"
+PHASE1_PREP_BRANCH="phase/1-prepare"
+PHASE1_PREP_WORKTREE="$SOURCE_DIR/.claude/worktrees/phase-1-prepare"
 
-gh repo clone "$GITHUB_OWNER/$FORK_REPO_NAME" "$SOURCE_DIR" \
-  --upstream-remote-name upstream
+git -C "$SOURCE_DIR" worktree add \
+  -b "$PHASE1_PREP_BRANCH" \
+  "$PHASE1_PREP_WORKTREE" \
+  "$DEFAULT_BRANCH"
 ```
 
-If the installed `gh` behavior differs, use plain Git only after inspecting and documenting the difference:
+Run the preparation job only inside that worktree:
 
 ```bash
-git clone "$FORK_REPO" "$SOURCE_DIR"
-git -C "$SOURCE_DIR" remote add upstream "$UPSTREAM_REPO"
+cd "$PHASE1_PREP_WORKTREE"
+
+BOOTSTRAP_BRANCH="bootstrap/pre-upstream"
+BOOTSTRAP_SHA="$(git rev-parse "$DEFAULT_BRANCH")"
+
+test "$(git branch --show-current)" = "$PHASE1_PREP_BRANCH"
+test -z "$(git status --porcelain)"
+git branch "$BOOTSTRAP_BRANCH" "$BOOTSTRAP_SHA"
 ```
 
-## Remote safety
-
-Verify:
+This branch preserves the exact local guide and Phase 0 record. Keep it until
+the upstream-based `main` is landed, backed up, and verified.
 
 ```bash
-git -C "$SOURCE_DIR" remote -v
-git -C "$SOURCE_DIR" remote get-url origin
-git -C "$SOURCE_DIR" remote get-url upstream
+git remote add origin "$ORIGIN_REPO"
+git remote add upstream "$UPSTREAM_REPO"
+git remote set-url --push upstream DISABLED
+
+git fetch upstream --prune --tags
+git rev-parse --verify upstream/main
 ```
 
-`origin` must point to the fork. `upstream` must point to `NousResearch/hermes-agent`.
+If either remote name already exists, inspect it first. Continue only when its
+URL exactly matches the approved value.
 
-Disable accidental pushes to upstream:
-
-```bash
-git -C "$SOURCE_DIR" remote set-url --push upstream DISABLED
-```
-
-Do not disable upstream fetch.
-
-## Record baseline
+Verify remote safety:
 
 ```bash
-cd "$SOURCE_DIR"
-
-git status --short
-git branch --show-current
-git rev-parse HEAD
-git log -1 --format=fuller
 git remote -v
-git tag --list
+test "$(git remote get-url origin)" = "$ORIGIN_REPO"
+test "$(git remote get-url upstream)" = "$UPSTREAM_REPO"
+test "$(git remote get-url --push upstream)" = "DISABLED"
 ```
 
-Create a local annotated baseline tag after confirming a clean tree:
+The preparation job stops here. It must not edit repository files.
+
+## 1.3 Create the upstream-based adoption worktree
+
+After the preparation job stops, create the writing worktree from
+`upstream/main`:
 
 ```bash
-BASELINE_SHA="$(git rev-parse HEAD)"
-git tag -a "upstream-baseline-$(date +%Y%m%d)" \
-  "$BASELINE_SHA" \
-  -m "Upstream baseline before fork customization"
+PHASE1_BRANCH="phase/1-adopt-upstream"
+PHASE1_WORKTREE="$SOURCE_DIR/.claude/worktrees/phase-1-adopt-upstream"
+
+git -C "$SOURCE_DIR" worktree add \
+  -b "$PHASE1_BRANCH" \
+  "$PHASE1_WORKTREE" \
+  upstream/main
 ```
 
-Push the tag only after human approval.
+Run the adoption job only inside `PHASE1_WORKTREE`. Name the path and branch in
+its prompt.
 
-## Branch policy
-
-Create:
+## 1.4 Build the Ranex candidate on Hermes history
 
 ```bash
-git switch -c "$DEVELOP_BRANCH"
-git push -u origin "$DEVELOP_BRANCH"
+cd "$PHASE1_WORKTREE"
+test "$(git branch --show-current)" = "$PHASE1_BRANCH"
 
-git switch -c "$UPSTREAM_SYNC_BRANCH" "$DEFAULT_BRANCH"
-git push -u origin "$UPSTREAM_SYNC_BRANCH"
-
-git switch "$DEVELOP_BRANCH"
+for bootstrap_path in \
+  RANEX_IMPLEMENTATION_GUIDE.md \
+  LICENSE-RANEX.md \
+  NOTICE.md \
+  legal/licensing-manifest.json \
+  docs/research \
+  decisions \
+  evidence
+do
+  if git cat-file -e "upstream/main:$bootstrap_path" 2>/dev/null; then
+    printf 'Path collision: %s\n' "$bootstrap_path" >&2
+    exit 1
+  fi
+done
 ```
 
-Policy:
+Restore the approved bootstrap records without merging their unrelated root
+commit:
 
-- `main`: stable releases only;
-- `develop`: integrated customization work;
-- `upstream-sync`: clean upstream integration branch;
-- `feature/<issue>-<slug>`: one bounded implementation;
-- `review/<task-id>`: only when a separate reviewer branch is necessary;
-- no direct implementation on `main`;
-- no force pushes from agents;
-- no automatic deletion of worktrees or branches.
+```bash
+git restore --source="$BOOTSTRAP_BRANCH" -- \
+  RANEX_IMPLEMENTATION_GUIDE.md \
+  LICENSE-RANEX.md \
+  NOTICE.md \
+  legal/licensing-manifest.json \
+  docs/research \
+  decisions \
+  evidence
+```
 
-## Add initial fork governance files
+Do not restore the bootstrap `.gitignore` wholesale. Read both versions and
+add only the Ranex worktree and local-secret rules to upstream's file.
 
-Create:
+Retain the restored `LICENSE-RANEX.md` and `NOTICE.md`. Create the initial
+governance files in the same worktree:
 
 ```text
 docs/fork/
@@ -873,21 +1071,131 @@ docs/fork/
 ├── UPSTREAM_SYNC.md
 ├── BRANDING_STRATEGY.md
 └── IMPLEMENTATION_STATUS.md
-
-NOTICE.md
 ```
 
-Do not edit upstream `LICENSE`.
+Do not edit upstream `LICENSE`. Confirm the three legal files state distinct,
+non-conflicting scopes before committing.
 
-## Upstream sync policy
+Before the first public push, add a short license-scope notice at the top of
+the adopted `README.md`. It must link `LICENSE`, `LICENSE-RANEX.md`,
+`NOTICE.md`, and `legal/licensing-manifest.json`. Do not describe the whole
+repository as MIT licensed or open source.
 
-The future sync procedure must be:
+Classify that `README.md` as `MIXED_MODIFIED` in the licensing manifest. Add
+entries for every other restored or newly created Ranex file.
+
+Then review and commit the import:
 
 ```bash
+git add \
+  RANEX_IMPLEMENTATION_GUIDE.md \
+  LICENSE-RANEX.md \
+  NOTICE.md \
+  legal/licensing-manifest.json \
+  README.md \
+  docs/research \
+  decisions \
+  evidence \
+  docs/fork \
+  .gitignore
+
+git diff --cached --check
+git diff --cached
+git commit -m "docs: adopt Ranex guide and governance"
+```
+
+The candidate commit must have `upstream/main` as an ancestor. Do not use
+`--allow-unrelated-histories`, rebase the bootstrap branch, or force-push.
+
+## 1.5 Validate and publish the candidate
+
+Freeze the candidate and run the completion gate before publishing it. Any edit
+or rebase invalidates that gate.
+
+```bash
+git merge-base --is-ancestor upstream/main HEAD
+
+CANDIDATE_SHA="$(git rev-parse HEAD)"
+git push -u origin "HEAD:refs/heads/$DEFAULT_BRANCH"
+git push origin "HEAD:refs/heads/$DEVELOP_BRANCH"
+git push origin "upstream/main:refs/heads/$UPSTREAM_SYNC_BRANCH"
+
+gh repo view "$GITHUB_OWNER/$ORIGIN_REPO_NAME" \
+  --json nameWithOwner,isFork,visibility,defaultBranchRef
+```
+
+The first push is allowed only because the origin was proven empty.
+
+Create local policy branches without checking them out:
+
+```bash
+git branch "$DEVELOP_BRANCH" "$CANDIDATE_SHA"
+git branch "$UPSTREAM_SYNC_BRANCH" upstream/main
+git branch --set-upstream-to="origin/$DEVELOP_BRANCH" "$DEVELOP_BRANCH"
+git branch --set-upstream-to="origin/$UPSTREAM_SYNC_BRANCH" "$UPSTREAM_SYNC_BRANCH"
+```
+
+## 1.6 Align the primary checkout
+
+The primary checkout still points to the bootstrap history. Move it only after
+the candidate commit is validated and present on the public origin:
+
+```bash
+PRIMARY_BOOTSTRAP_SHA="$(git -C "$SOURCE_DIR" rev-parse "$DEFAULT_BRANCH")"
+test "$PRIMARY_BOOTSTRAP_SHA" = "$(git rev-parse "$BOOTSTRAP_BRANCH")"
+
+git -C "$SOURCE_DIR" switch "$BOOTSTRAP_BRANCH"
+git -C "$SOURCE_DIR" update-ref \
+  "refs/heads/$DEFAULT_BRANCH" \
+  "$CANDIDATE_SHA" \
+  "$PRIMARY_BOOTSTRAP_SHA"
+git -C "$SOURCE_DIR" switch "$DEFAULT_BRANCH"
+git -C "$SOURCE_DIR" branch \
+  --set-upstream-to="origin/$DEFAULT_BRANCH" \
+  "$DEFAULT_BRANCH"
+
+git -C "$SOURCE_DIR" merge-base \
+  --is-ancestor upstream/main "$DEFAULT_BRANCH"
+```
+
+`update-ref` includes the expected old SHA. It must fail if local `main`
+changed after validation.
+
+## 1.7 Record the upstream baseline
+
+```bash
+BASELINE_SHA="$(git rev-parse upstream/main)"
+git tag -a "upstream-baseline-$(date +%Y%m%d)" \
+  "$BASELINE_SHA" \
+  -m "Upstream baseline before fork customization"
+```
+
+The tag points to the unmodified upstream commit. Push it only after human
+approval.
+
+## 1.8 Branch policy
+
+Policy:
+
+- `main`: the initial upstream-based import, then stable releases only;
+- `develop`: integrated customization work;
+- `upstream-sync`: clean tracking branch based on `upstream/main`;
+- `bootstrap/pre-upstream`: temporary local recovery branch;
+- `feature/<issue>-<slug>`: one bounded implementation;
+- `review/<task-id>`: only when a separate reviewer branch is necessary;
+- no direct implementation on `main`;
+- no force pushes from agents;
+- no automatic deletion of worktrees or branches.
+
+## 1.9 Upstream sync policy
+
+The future sync procedure runs in its own named worktree:
+
+```bash
+test "$(git branch --show-current)" = "$UPSTREAM_SYNC_BRANCH"
 git fetch upstream --prune
-git switch upstream-sync
 git merge --ff-only upstream/main
-git push origin upstream-sync
+git push origin "$UPSTREAM_SYNC_BRANCH"
 ```
 
 Then open a reviewed PR from `upstream-sync` into `develop`.
@@ -896,27 +1204,43 @@ If `--ff-only` fails, stop. Do not merge an unknown divergent history automatica
 
 ## Acceptance criteria
 
-- Fork ownership and visibility verified.
-- `origin` is the fork.
+- Ranex origin ownership and visibility verified.
+- `origin` is the public standalone Ranex repository.
+- GitHub reports `isFork: false`.
 - `upstream` fetch URL is official upstream.
 - upstream push URL is disabled.
+- `upstream/main` is an ancestor of local `main`.
+- The local bootstrap branch remains available for recovery.
+- No unrelated-history merge or force push occurred.
 - baseline SHA and tag captured.
 - branch policy files exist.
-- no branding modifications yet.
-- clean working tree after committed governance files.
-- all changes are on `develop`, not `main`.
+- no branding modifications exist beyond the required license-scope banner.
+- Governance files are part of the validated import commit.
+- the approved bootstrap research record remains present.
+- `LICENSE` remains MIT, while `LICENSE-RANEX.md` and `NOTICE.md` clearly scope
+  original Ranex Material.
+- the public `README.md` links every legal file and the manifest contains no
+  unclassified Ranex or mixed file.
+- The primary checkout and task worktrees are clean.
+- Future customization starts from `develop`, never directly from `main`.
 
 ## Rollback
 
-Delete only the local clone after explicit human approval. Do not delete the remote fork automatically.
+Return the primary checkout to `bootstrap/pre-upstream` if local alignment
+fails. The candidate remains recoverable by commit SHA and on the public
+origin.
+
+Do not delete the contained folder, recovery branch, or GitHub repository
+automatically.
 
 ## HUMAN GATE 1
 
-Human reviews remotes, visibility, baseline SHA, governance files, and authorizes local environment installation.
+Human reviews remotes, visibility, history ancestry, baseline SHA, and
+governance files. The human then authorizes local environment installation.
 
 ---
 
-# PHASE 2 — Establish the isolated elementary OS development environment
+# PHASE 2 — Establish the isolated elementary OS 8.1 development environment
 
 ## Goal
 
@@ -1112,7 +1436,8 @@ Do not replace the lockfile or run an automatic audit fix.
 Ensure these are ignored:
 
 ```gitignore
-.local/
+.local/*
+!.local/*.example
 decisions/local-values.env
 evidence/runtime/
 *.secret
@@ -1353,8 +1678,22 @@ tests/branding/
 - require all public identity fields;
 - validate slug/CLI/environment prefix patterns;
 - require upstream attribution fields;
+- require both license identifiers and their file paths;
+- require the recipient redistribution and business-use flags to remain
+  `false`;
 - reject additional unknown top-level fields;
 - contain a schema version.
+
+Extend the bootstrap `legal/licensing-manifest.json` to classify:
+
+```text
+UPSTREAM_UNCHANGED   Existing third-party license only
+RANEX_ORIGINAL       Ranex Personal-Use Source License 1.0
+MIXED_MODIFIED       Existing license for upstream portions plus Ranex license
+```
+
+Every entry records the path, base upstream commit, applicable license file,
+copyright owner, and evidence used for classification.
 
 `generate.py` must:
 
@@ -1375,6 +1714,9 @@ Tests must verify:
 - upstream attribution is present;
 - no user-facing code adds a new hardcoded product display name outside allowed locations;
 - the original `LICENSE` hash is unchanged from the baseline unless a human-approved legal decision says otherwise.
+- `LICENSE-RANEX.md`, `NOTICE.md`, and the licensing manifest agree;
+- every new Ranex source file and mixed modified file has an applicable
+  manifest entry.
 
 ## Acceptance criteria
 
@@ -1548,20 +1890,32 @@ Do not hardcode role-specific technical rules into the universal identity. Those
 
 Keep `LICENSE` intact.
 
-Add or update `NOTICE.md`:
+Keep `LICENSE-RANEX.md` limited to original Ranex Material. Keep `NOTICE.md`
+explicit about both scopes:
 
 ```text
 This project is an independent fork of Hermes Agent, originally developed by
 Nous Research and distributed under the MIT License.
 
-The original copyright and MIT permission notice are retained in LICENSE.
+The original copyright and MIT permission notice remain in LICENSE and continue
+to govern Upstream Material.
 
-This fork and its modifications are not endorsed by, sponsored by, or affiliated
-with Nous Research unless explicitly stated otherwise.
+Original Ranex Material is governed by LICENSE-RANEX.md. Recipients may use it
+privately for personal learning, experimentation, and evaluation. They may not
+redistribute it, use it for business, remove its notices, or claim it as their
+own without prior written permission from Anthony Garces.
 ```
 
-Add the fork owner's copyright for new work without claiming ownership of
-upstream code.
+Add `Copyright (c) 2026 Anthony Garces` only to original Ranex work. Never
+claim ownership of upstream code.
+
+Update `legal/licensing-manifest.json` in the same commit as each new or
+modified source file. A modified upstream file must preserve its existing
+license notice and identify the separately licensed Ranex modification.
+
+Public packaging, installer text, repository pages, and release notes must not
+describe the whole repository as simply "MIT" or "open source." Describe it as
+a multi-license, source-available fork and link both license files.
 
 ## 5.7 Branding regression test
 
@@ -1608,6 +1962,8 @@ Build the web and desktop packages using the scripts found in their actual packa
 - branded home resolution has deterministic precedence.
 - no state migration occurs implicitly.
 - original license notice remains.
+- original Ranex Material is covered by the personal-use license and licensing
+  manifest.
 - brand checker passes.
 - baseline tests do not regress.
 - no bulk rename was used.
@@ -1658,6 +2014,11 @@ The Linux installer must:
 - quote all paths;
 - have ShellCheck coverage;
 - have a dry-run mode;
+- display both license scopes before installing;
+- require explicit acceptance of `LICENSE-RANEX.md` before installing original
+  Ranex Material;
+- install `LICENSE`, `LICENSE-RANEX.md`, `NOTICE.md`, and the licensing
+  manifest together;
 - include rollback instructions.
 
 Do not delete the upstream installer. Keep it as an upstream reference or rename it clearly in documentation.
@@ -1734,6 +2095,10 @@ Create a machine-readable release manifest:
   "python_requires": ">=3.11,<3.14",
   "node_requires": ">=20",
   "legacy_cli_compatible": true,
+  "upstream_license": "MIT",
+  "ranex_license": "LicenseRef-Ranex-Personal-Use-1.0",
+  "ranex_redistribution_by_recipients": false,
+  "ranex_business_use_by_recipients": false,
   "state_schema_version": 1
 }
 ```
@@ -1752,6 +2117,9 @@ Add tests for:
 - unavailable network;
 - target branch missing;
 - fork commit pin;
+- missing or rejected Ranex license acceptance;
+- missing, stale, or contradictory licensing manifest;
+- release artifact missing any required legal file;
 - no silent force reset.
 
 ## Acceptance criteria
@@ -1760,6 +2128,7 @@ Add tests for:
 - fork updater cannot update from upstream accidentally.
 - upstream sync is a separate reviewed workflow.
 - service names are isolated.
+- installer and release artifacts present the MIT and Ranex scopes separately.
 - installer/updater tests pass.
 - rollback was tested in a disposable clone.
 
@@ -2004,29 +2373,36 @@ Keep scheduling state and governance state separate.
 
 Upstream Kanban scheduling states control whether a worker is queued, running, reviewing, blocked, or finished.
 
-The office governance stage should be stored separately:
+The office governance stage must use this canonical vocabulary:
 
 ```text
 INTAKE
-QUALIFICATION
-RESEARCH
-PLANNING
-PLAN_REVIEW
+QUALIFIED
+RESEARCHED
+PLANNED
+PLAN_APPROVED
 READY_TO_IMPLEMENT
 IMPLEMENTING
-IMPLEMENTATION_SUBMITTED
-TECHNICAL_REVIEW
-REVIEW_CHALLENGE
-REWORK
-TECHNICALLY_VERIFIED
-CUSTOMER_VALIDATION
-HUMAN_REVIEW
-READY_TO_MERGE
+REVIEW_PENDING
+REVIEWED
+TEST_PENDING
+TESTED
+CUSTOMER_VALIDATION_PENDING
+CUSTOMER_VALIDATED
+RELEASE_APPROVAL_PENDING
+APPROVED_FOR_MERGE
 MERGED
+CLOSED
 BLOCKED
+REJECTED
 CANCELLED
-FAILED
+SUPERSEDED
+ROLLED_BACK
 ```
+
+The transition order is defined in section 13.2. Schemas, APIs, gates, task
+records, and UI labels must import one shared enum. Do not create aliases such
+as `QUALIFICATION`, `PLAN_REVIEW`, `TECHNICAL_REVIEW`, or `READY_TO_MERGE`.
 
 Do not add all these values directly to the upstream Kanban status enum. Use a dedicated table or task metadata and map it to Kanban states.
 
@@ -2035,16 +2411,23 @@ Example mapping:
 | Office stage | Kanban status |
 |---|---|
 | `INTAKE` | `triage` or `todo` |
-| `PLANNING` | `running` |
-| `PLAN_REVIEW` | `review` |
+| `QUALIFIED` | `triage` or `todo` |
+| `RESEARCHED` | `running` |
+| `PLANNED` | `running` |
+| `PLAN_APPROVED` | `review` |
 | `READY_TO_IMPLEMENT` | `ready` |
 | `IMPLEMENTING` | `running` |
-| `IMPLEMENTATION_SUBMITTED` | `review` |
-| `TECHNICAL_REVIEW` | `running` or `review` according to current upstream contract |
-| `REWORK` | `ready` |
-| `HUMAN_REVIEW` | `blocked` with `needs_input` |
-| `READY_TO_MERGE` | `review` or a nonterminal governed state |
+| `REVIEW_PENDING` | `review` |
+| `REVIEWED` | `review` |
+| `TEST_PENDING` | `ready` |
+| `TESTED` | `review` |
+| `CUSTOMER_VALIDATION_PENDING` | `review` |
+| `CUSTOMER_VALIDATED` | `review` |
+| `RELEASE_APPROVAL_PENDING` | `blocked` with `needs_input` |
+| `APPROVED_FOR_MERGE` | `review` or a nonterminal governed state |
 | `MERGED` | `done` |
+| `CLOSED` | `done` |
+| `BLOCKED` | `blocked` |
 
 The final mapping must be based on the current checked-out Kanban implementation and tests.
 
@@ -3994,7 +4377,7 @@ Never coerce `UNKNOWN` to `PASS`.
 
 ## 13.2 Workflow transitions
 
-Initial governed state machine:
+This is the transition order for the canonical vocabulary in section 7.4:
 
 ```text
 INTAKE
@@ -4026,7 +4409,11 @@ SUPERSEDED
 ROLLED_BACK
 ```
 
-Do not collapse `IMPLEMENTED`, `REVIEWED`, `TESTED`, `CUSTOMER_VALIDATED`, and `APPROVED_FOR_MERGE` into one “done” state.
+Do not collapse `REVIEW_PENDING`, `REVIEWED`, `TESTED`,
+`CUSTOMER_VALIDATED`, and `APPROVED_FOR_MERGE` into one “done” state.
+
+The state model, gate schemas, task records, and UI must all reference the
+shared enum defined in section 7.4. A second state vocabulary is forbidden.
 
 ## 13.3 Gate definitions
 
@@ -4417,7 +4804,7 @@ project_id: example-project
 display_name: Example Project
 status: PROBATION
 repository:
-  local_root: /home/<USER>/mbdev/projects/example-project
+  local_root: /absolute/path/to/example-project
   github: OWNER/REPOSITORY
   remote_name: origin
   default_branch: main
@@ -4425,7 +4812,7 @@ repository:
 board:
   slug: example-project
 policy_root: .office
-allowed_workspace_root: /home/<USER>/mbdev/projects/example-project/.worktrees
+allowed_workspace_root: /absolute/path/to/example-project/.claude/worktrees
 supervisor_profile: supervisor-example-project
 human_owner: tony
 timezone: Asia/Manila
@@ -4441,7 +4828,7 @@ Implement:
 ```bash
 ranex office project add \
   --project-id example-project \
-  --repo /home/<USER>/mbdev/projects/example-project \
+  --repo "$PROJECTS_ROOT/example-project" \
   --github OWNER/REPOSITORY \
   --default-branch main \
   --board example-project \
@@ -4503,7 +4890,8 @@ Board invariants:
 - board slug is immutable after project activation;
 - one project maps to one board;
 - the board default workdir maps to exactly one repository;
-- task worktrees remain under the canonical repository's `.worktrees/` area or another explicit project-owned root;
+- task worktrees remain under the canonical repository's
+  `.claude/worktrees/` area or another explicit project-owned root;
 - board database paths never overlap;
 - no project agent can switch boards by supplying an arbitrary tool argument;
 - only the office orchestrator may route across boards;
@@ -4748,6 +5136,7 @@ office-sol                  Duty orchestrator and main phone-facing assistant
 executive-opus              Scarce executive assistant / critical arbitrator
 ops-glm                     Operations and evidence clerk
 supervisor-example-project  Project-specific supervisor for the first project
+supervisor-ranex            Project-specific supervisor for Ranex self-development
 head-chef-glm               Routine technical planner
 head-chef-sol               Complex technical planner
 reviewer-hy3                Chief code reviewer
@@ -4775,6 +5164,9 @@ ranex profile create ops-glm \
 
 ranex profile create supervisor-example-project \
   --description "Project supervisor for example-project only. Maintains project state and delegates bounded planning work."
+
+ranex profile create supervisor-ranex \
+  --description "Project supervisor for Ranex only. Maintains Ranex project state and delegates bounded planning work."
 
 ranex profile create head-chef-glm \
   --description "Routine technical planner. Produces implementation handbooks and tasks but does not write production code."
@@ -4809,6 +5201,7 @@ ranex -p office-sol model
 ranex -p executive-opus model
 ranex -p ops-glm model
 ranex -p supervisor-example-project model
+ranex -p supervisor-ranex model
 ranex -p head-chef-glm model
 ranex -p head-chef-sol model
 ranex -p reviewer-hy3 model
@@ -4826,6 +5219,7 @@ Desired assignments:
 | `executive-opus` | Anthropic or Claude credential route / Claude Opus 5 |
 | `ops-glm` | verified GLM entitlement / GLM-5.2 |
 | `supervisor-example-project` | verified GLM entitlement / GLM-5.2 |
+| `supervisor-ranex` | verified GLM entitlement / GLM-5.2 |
 | `head-chef-glm` | verified GLM entitlement / GLM-5.2 |
 | `head-chef-sol` | OpenAI Codex OAuth / GPT-5.6 Sol |
 | `reviewer-hy3` | OpenRouter / exact locked HY3 ID |
@@ -4838,7 +5232,7 @@ After selection:
 
 ```bash
 for p in \
-  office-sol executive-opus ops-glm supervisor-example-project \
+  office-sol executive-opus ops-glm supervisor-example-project supervisor-ranex \
   head-chef-glm head-chef-sol reviewer-hy3 challenger-v4-flash \
   specialist-v4-pro customer-taster-sol release-clerk-glm
 do
@@ -4912,7 +5306,7 @@ toolsets:
 
 terminal:
   backend: local
-  cwd: /home/<USER>/mbdev/ranex
+  cwd: /absolute/path/to/ranex
   home_mode: auto
 
 approvals:
@@ -4935,7 +5329,7 @@ Pin `terminal.cwd` to the exact project root, but remember this does not sandbox
 ```yaml
 terminal:
   backend: local
-  cwd: /home/<USER>/mbdev/projects/example-project
+  cwd: /absolute/path/to/example-project
   home_mode: profile
 ```
 
@@ -5451,7 +5845,7 @@ A provider or model update may force re-probation.
 Create a dedicated repository under:
 
 ```text
-~/mbdev/labs/office-evaluation-repo
+$EVALUATION_REPO
 ```
 
 It must contain:
@@ -5837,6 +6231,9 @@ The first internal release requires:
 
 - approved public brand identity;
 - original MIT notice preserved;
+- Ranex personal-use license and licensing manifest validated;
+- release artifacts prohibit recipient redistribution and business use of
+  original Ranex Material;
 - compatibility CLI and state migration documented;
 - baseline upstream tests green;
 - office plugin and schemas versioned;
@@ -5847,10 +6244,12 @@ The first internal release requires:
 - one isolated project proof complete;
 - remote access proof complete;
 - backup and restore test complete;
+- one governed Ranex self-development proof complete;
 - no unresolved blocking security finding;
 - human-signed roster decision.
 
-Tag only from a clean, reviewed commit:
+Do not create the tag until section 18.13 passes and the owner approves Human
+Gate 18. Then tag only from a clean, reviewed commit:
 
 ```bash
 git status --short
@@ -5866,7 +6265,8 @@ Recommended branches:
 
 ```text
 main                         Human-approved stable local releases
-upstream-main                Optional local tracking branch for upstream/main
+develop                      Integrated, validated customization work
+upstream-sync                Local tracking branch for upstream/main
 integration/upstream-<date>  Temporary upstream integration work
 feature/*                    One bounded implementation change
 fix/*                        One bounded defect correction
@@ -5882,16 +6282,20 @@ Never run `hermes update` and assume it understands the fork's policy.
 Use a controlled integration sequence:
 
 ```bash
-cd ~/mbdev/ranex
+cd "$SOURCE_DIR"
 git status --short
 git fetch --prune upstream
 git fetch --prune origin
 
 DATE_UTC="$(date -u +%Y%m%dT%H%M%SZ)"
-git switch main
-git pull --ff-only origin main
+git switch upstream-sync
+git merge --ff-only upstream/main
+git push origin upstream-sync
+
+git switch develop
+git pull --ff-only origin develop
 git switch -c "integration/upstream-${DATE_UTC}"
-git merge --no-commit --no-ff upstream/main
+git merge --no-commit --no-ff upstream-sync
 ```
 
 Before committing the merge:
@@ -5915,6 +6319,10 @@ Abort safely when necessary:
 git merge --abort
 ```
 
+After all checks pass, commit the integration branch and open a reviewed PR
+into `develop`. Promote `develop` to `main` only through a separate human
+release decision.
+
 Do not rebase published stable branches. Do not resolve conflicts by choosing “ours” or “theirs” wholesale on security/governance files.
 
 ## 18.4 Pin upstream provenance
@@ -5930,6 +6338,9 @@ upstream_merge_commit: ...
 python_lock_digest: ...
 node_lock_digest: ...
 brand_manifest_digest: ...
+upstream_license_digest: ...
+ranex_license_digest: ...
+licensing_manifest_digest: ...
 office_schema_versions: {}
 ```
 
@@ -6136,6 +6547,61 @@ gh pr merge <number> --squash --delete-branch
 
 The exact merge method is a project policy. Do not let a worker choose it ad hoc.
 
+## 18.13 Close the Ranex self-development loop
+
+Do this only after the disposable project passes Phase 14, the model roster
+passes Phase 17, and the owner approves the earlier human gates. Ranex then
+becomes the second office project, never the first proof target.
+
+Create and verify a dedicated `supervisor-ranex` profile in Phase 15. Then run
+the same dry-run onboarding path used for the disposable project:
+
+```bash
+ranex office project add \
+  --project-id ranex \
+  --repo "$SOURCE_DIR" \
+  --github "$GITHUB_OWNER/$ORIGIN_REPO_NAME" \
+  --default-branch "$DEFAULT_BRANCH" \
+  --board ranex \
+  --supervisor supervisor-ranex \
+  --dry-run
+```
+
+Review the resolved path, origin, branch, board, policy root, and proposed
+files. Create the dedicated board:
+
+```bash
+ranex kanban boards create ranex \
+  --name "Ranex" \
+  --description "Isolated self-development board for Ranex" \
+  --switch
+```
+
+Then repeat the onboarding command with the exact confirmation token produced
+by the installed command.
+
+The self-development cycle is:
+
+```text
+1. Capture a bounded Ranex issue.
+2. Qualify it on the ranex board.
+3. Plan it without editing product code.
+4. Dispatch Codex into a named Ranex worktree.
+5. Bind tests and evidence to the exact commit.
+6. Obtain independent review.
+7. Stop at the human merge gate.
+8. Record the landed commit and update this guide when behavior changes.
+```
+
+Never let Ranex edit its primary checkout, approve its own work, issue its own
+gate permit, or bypass the disposable-project proof. Its workers use only
+`$SOURCE_DIR/.claude/worktrees/<branch-folder>`.
+
+The first proof task must be small and reversible, such as correcting one
+documentation inconsistency. Success requires a reviewed commit, passing
+tests, an intact evidence chain, a human-approved merge, and no access outside
+the Ranex project boundary.
+
 ## Acceptance criteria
 
 - first internal release is reproducible and provenance-linked;
@@ -6145,11 +6611,15 @@ The exact merge method is a project policy. Do not let a worker choose it ad hoc
 - services run without root and with one dispatcher;
 - retention and incident response are documented;
 - monthly audit is defined;
-- automatic merge remains disabled.
+- automatic merge remains disabled;
+- Ranex is onboarded only after the disposable-project proof;
+- one governed Ranex self-development task completes without self-approval or
+  primary-checkout editing.
 
 ## HUMAN GATE 18
 
-Human approves the release, backup/restore evidence, service units, upstream-sync report, and operating runbook.
+Human approves the release, backup/restore evidence, service units,
+upstream-sync report, self-development proof, and operating runbook.
 
 ---
 
@@ -6479,7 +6949,7 @@ Do not ask one Codex run to implement the full document. Use bounded pull reques
 | 18 | Profiles, SOUL templates, tool restrictions, memory policy | Telegram/Tailscale |
 | 19 | Telegram gateway, loopback dashboard, Tailscale runbook | Public Funnel |
 | 20 | Evaluation repository, seeded tests, roster probation | Automatic merge |
-| 21 | Backup/restore, upstream sync, release and incident runbook | New features |
+| 21 | Backup/restore, upstream sync, release, self-onboarding, incident runbook | New features |
 
 Every PR must include:
 
@@ -6505,7 +6975,7 @@ Every PR must include:
 You are implementing one bounded phase of a local fork of NousResearch/hermes-agent.
 
 Read these files before acting:
-1. docs/RANEX_LOCAL_FORK_MULTI_AGENT_IMPLEMENTATION_GUIDE.md
+1. RANEX_IMPLEMENTATION_GUIDE.md
 2. AGENTS.md
 3. the current phase's ADRs and schemas
 4. the upstream source files touched by the phase
@@ -6514,10 +6984,13 @@ Execute ONLY the requested phase or PR scope. Do not continue to the next phase.
 
 Hard requirements:
 - Do not guess commands, config keys, model IDs, file paths, or upstream behavior.
+- Work only in the named `.claude/worktrees/` path and branch from the task packet.
 - Inspect the installed CLI help and repository source first.
 - Preserve upstream behavior unless this phase explicitly changes it.
 - Do not perform a global Hermes→brand replacement.
 - Preserve the upstream MIT license and attribution.
+- Preserve `LICENSE-RANEX.md`, `NOTICE.md`, and the licensing manifest; do not
+  describe the whole repository as MIT licensed.
 - Never print or commit secrets.
 - Never push, merge, release, deploy, delete remote data, or rewrite shared history.
 - Keep work inside the assigned branch and repository.
@@ -6583,12 +7056,12 @@ STOP: waiting at HUMAN GATE <N>.
 ## First Codex prompt: execute Phase 0 only
 
 ```text
-Read docs/RANEX_LOCAL_FORK_MULTI_AGENT_IMPLEMENTATION_GUIDE.md completely, then execute
+Read RANEX_IMPLEMENTATION_GUIDE.md completely, then execute
 PHASE 0 only.
 
-This is a read-only discovery phase. Do not install packages, create a GitHub
-fork, edit source, change authentication, change services, or modify system
-configuration.
+This is a host-read-only discovery phase. Do not install packages, create a
+GitHub origin, edit application source, change authentication, change services,
+or modify system configuration.
 
 Create the exact Phase 0 evidence tree and PHASE_REPORT.md. Any unavailable fact
 must be reported as UNKNOWN with the failed command and error evidence. Stop at
@@ -6679,9 +7152,9 @@ Do not guess these values:
 
 ```text
 - logo, color system, and other visual-identity assets beyond the locked `Ranex` name;
-- GitHub owner or organization; the proposed fork repository name is locked to `ranex` unless the human records a deliberate exception;
-- exact elementary OS version and Ubuntu base;
-- exact installed Python, Node, uv, npm, Git, and CLI versions;
+- whether the public `anthonykewl20/ranex` origin remains empty when Phase 1 begins;
+- whether the host still matches the observed elementary OS 8.1 snapshot;
+- exact tool versions when each phase executes;
 - whether the current Claude Max credential route works natively in Hermes;
 - exact OpenRouter HY3 model ID and provider routing options;
 - whether the GLM annual MAX subscription exposes API, OAuth, or only client access;
@@ -6702,10 +7175,13 @@ Each unresolved value has an owner, discovery command, evidence path, and human 
 The system is not complete merely because the UI is rebranded or agents can launch CLIs.
 
 - [ ] Phase 0 system facts captured.
-- [ ] Fork and remotes verified.
+- [ ] Public standalone origin and both remotes verified.
 - [ ] Upstream baseline green.
 - [ ] Brand manifest approved.
 - [ ] MIT notice retained.
+- [ ] Ranex personal-use license, notice, and licensing manifest agree.
+- [ ] Original Ranex Material cannot be redistributed or used for business
+      under recipient release terms.
 - [ ] Public rebrand preserves compatibility.
 - [ ] Branded state migration dry run and rollback tested.
 - [ ] Fork installer/updater no longer points blindly to upstream.
@@ -6761,7 +7237,7 @@ Codex must re-fetch current official sources during implementation and record re
 Research baseline used while writing this guide:
 
 ```text
-upstream commit snapshot: 215ec101be1dde26a3e4dabe6944e9789b8ead91
+upstream commit snapshot: d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012
 ```
 
 Implementation must record the actual current upstream commit and review differences from this snapshot.
@@ -6770,8 +7246,16 @@ Implementation must record the actual current upstream commit and review differe
 
 - Authentication: <https://cli.github.com/manual/gh_auth_login>
 - Git credential setup: <https://cli.github.com/manual/gh_auth_setup-git>
-- Forking: <https://cli.github.com/manual/gh_repo_fork>
+- Repository licensing: <https://docs.github.com/en/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/licensing-a-repository>
+- Public-repository user rights: <https://docs.github.com/en/site-policy/github-terms/github-terms-of-service>
+- Fork visibility: <https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/about-permissions-and-visibility-of-forks>
+- Repository duplication: <https://docs.github.com/en/repositories/creating-and-managing-repositories/duplicating-a-repository>
 - Issue capture: <https://cli.github.com/manual/gh_issue_view>
+
+## Copyright scope
+
+- U.S. Copyright Office derivative-work guidance:
+  <https://www.copyright.gov/eco/help-limitation.html>
 
 ## OpenAI / Codex
 
