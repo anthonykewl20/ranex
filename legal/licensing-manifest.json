@@ -33,7 +33,8 @@
   "classification_rules": {
     "UPSTREAM_UNCHANGED": "The existing third-party license applies.",
     "RANEX_ORIGINAL": "LICENSE-RANEX.md applies.",
-    "MIXED_MODIFIED": "The existing license applies to upstream portions and LICENSE-RANEX.md applies to original Ranex modifications."
+    "MIXED_MODIFIED": "The existing license applies to upstream portions and LICENSE-RANEX.md applies to original Ranex modifications.",
+    "CURATED_RESEARCH": "Third-party ideas and source material remain outside Ranex ownership; only original selection, organization, and commentary may be Ranex Material."
   },
   "files": [
     {
@@ -58,9 +59,10 @@
     },
     {
       "path": "docs/research/gemini-research.md",
-      "classification": "RANEX_ORIGINAL",
-      "license": "LicenseRef-Ranex-Personal-Use-1.0",
-      "notes": "Owner-curated research; third-party material and rights remain excluded from the Ranex license."
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, and commentary only, if owned by Anthony Garces",
+      "notes": "Third-party ideas and source rights remain excluded. Add source citations and complete a rights review before public distribution."
     },
     {
       "path": "legal/licensing-manifest.json",

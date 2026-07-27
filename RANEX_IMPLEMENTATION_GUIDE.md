@@ -33,7 +33,7 @@ Use these exact meanings throughout implementation:
 | **Hermes Agent** | The upstream project maintained by Nous Research |
 | `ranex` | The new primary public CLI command |
 | `hermes` | A temporary compatibility alias retained during migration |
-| `RANEX_HOME` | The new highest-precedence state-home override |
+| `RANEX_HOME` | The highest-precedence application-data home override |
 | `HERMES_HOME` | A retained legacy compatibility environment variable |
 | `ranex` | The product slug, origin repository name, and service-name prefix |
 | **Ranex Material** | Original additions and modifications owned by Anthony Garces |
@@ -65,6 +65,9 @@ The repository has three states:
 
 Phase 18.13 closes the loop by registering Ranex as its own isolated office
 project after the disposable-project proof and all safety gates pass.
+Its measurable proof is one bounded documentation task completed in a named
+worktree, independently reviewed, human-merged, and recorded at its landed
+commit without Ranex editing or approving its own primary checkout.
 
 Local Git is required now and already exists. A GitHub origin is not required
 for this document edit or Phase 0. The existing empty public origin becomes
@@ -504,6 +507,8 @@ cli:
 
 paths:
   default_home: "~/.local/share/ranex"
+  state_home: "~/.local/state/ranex"
+  cache_home: "~/.cache/ranex"
   legacy_home: "~/.hermes"
 
 environment:
@@ -546,7 +551,16 @@ During the first stable versions:
 - retain legacy config import;
 - warn before deprecating anything.
 
-Example desired home resolution:
+`RANEX_HOME` and `HERMES_HOME` resolve only the compatibility application-data
+home. That home contains the configuration, profiles, memory, sessions,
+skills, databases, and other state that Hermes currently groups together.
+
+`STATE_HOME` is separate. Reserve it for new Ranex-native logs, audit records,
+supervisor metadata, and runtime state. `CACHE_HOME` contains disposable
+caches only. Neither path participates in `RANEX_HOME` precedence, and no
+component may move data between these roots without a documented migration.
+
+Desired application-data home resolution:
 
 ```text
 RANEX_HOME
@@ -554,9 +568,11 @@ RANEX_HOME
 HERMES_HOME
         ↓ when absent
 `~/.local/share/ranex`
-        ↓ optional first-run import
-legacy ~/.hermes
 ```
+
+Legacy `~/.hermes` is a possible source for the explicit, dry-run-first
+migration command. It is never another resolution fallback and is never
+imported automatically, whether `HERMES_HOME` is set or unset.
 
 ## 4.4 Layer D: optional later internal rename
 
@@ -666,7 +682,11 @@ The executor must validate:
 - `GITHUB_NETWORK_FORK` must equal `false`;
 - `SOURCE_DIR` must equal the canonical root of this bootstrap repository;
 - `SOURCE_DIR` must contain this guide and must not contain unrelated work;
-- `APP_HOME`, `STATE_HOME`, and `CACHE_HOME`: must be dedicated to this fork;
+- `APP_HOME` must be the compatibility application-data root;
+- `STATE_HOME` must hold only Ranex-native durable logs, audit records,
+  supervisor metadata, and runtime state;
+- `CACHE_HOME` must hold only disposable cache data;
+- all three homes must be dedicated to this fork and remain distinct;
 - the GitHub origin must be empty, public, and standalone;
 - none of the chosen values may collide with an existing executable or active service without a migration plan.
 
@@ -1351,7 +1371,7 @@ python --version
 
 The version must be at least 3.11 and below 3.14.
 
-## 2.4 Configure compatibility state home
+## 2.4 Configure the compatibility application-data home
 
 Until the branded home resolver exists:
 
@@ -1359,6 +1379,10 @@ Until the branded home resolver exists:
 mkdir -p "$APP_HOME" "$STATE_HOME" "$CACHE_HOME"
 export HERMES_HOME="$APP_HOME"
 ```
+
+`HERMES_HOME` points only to `APP_HOME`. Creating `STATE_HOME` and `CACHE_HOME`
+reserves those roots for the categories defined in section 4.3; it does not
+make legacy Hermes write to them.
 
 Create a local noncommitted helper:
 
@@ -1690,10 +1714,14 @@ Extend the bootstrap `legal/licensing-manifest.json` to classify:
 UPSTREAM_UNCHANGED   Existing third-party license only
 RANEX_ORIGINAL       Ranex Personal-Use Source License 1.0
 MIXED_MODIFIED       Existing license for upstream portions plus Ranex license
+CURATED_RESEARCH     Third-party rights retained; Ranex claims only original
+                     selection, organization, and commentary
 ```
 
 Every entry records the path, base upstream commit, applicable license file,
 copyright owner, and evidence used for classification.
+`CURATED_RESEARCH` entries must identify their sources or record `NOASSERTION`
+until a source-and-rights review is complete.
 
 `generate.py` must:
 
@@ -1791,6 +1819,10 @@ Expected precedence:
 3. `~/.local/share/ranex` from the Ranex product manifest
 ```
 
+This resolver chooses `APP_HOME` only. New Ranex-native components obtain
+`STATE_HOME` and `CACHE_HOME` from their separate manifest fields. They must
+not put audit records in the cache or silently relocate compatibility data.
+
 Requirements:
 
 - expand `~`;
@@ -1826,7 +1858,8 @@ The exact command surface must follow the current CLI registration conventions.
 The migration must:
 
 - detect legacy state;
-- detect target state;
+- use legacy `~/.hermes` only as an explicit source;
+- detect the resolved application-data target;
 - refuse to overwrite nonempty target state;
 - report file counts and total bytes;
 - preserve permissions;

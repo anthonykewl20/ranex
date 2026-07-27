@@ -39,6 +39,14 @@ material.
 The current path classifications are recorded in
 `legal/licensing-manifest.json`.
 
+## Curated research
+
+Files classified as `CURATED_RESEARCH` summarize or organize third-party
+ideas. Ranex claims no ownership of those ideas or their source material.
+Only original selection, organization, and commentary may be Ranex Material.
+An entry marked `NOASSERTION` requires a source-and-rights review before public
+distribution.
+
 ## Public GitHub access
 
 The repository is public. GitHub's Terms of Service grant limited use,
