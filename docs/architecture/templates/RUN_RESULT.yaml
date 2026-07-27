@@ -1,3 +1,4 @@
+# Provisional example shape; executable schema is defined by AI-G2.
 schema_version: "1"
 artifact_type: run_result
 result_id: "result_<uuidv7>"
@@ -12,17 +13,47 @@ producer:
   session_id: ""
 
 subject:
+  subject_schema: "exact-subject/v1"
   project_id: ""
   work_item_id: ""
   run_id: ""
+  activity_id: null
+  effect_id: null
   workspace_id: ""
+  repository_id: ""
+  repository_uri_digest: ""
   packet_id: ""
   packet_digest: ""
   base_commit: ""
   candidate_commit: ""
+  artifact_digest: null
+  workflow_definition_id: ""
+  workflow_definition_digest: ""
+  workflow_interpreter_version: ""
+  policy_activation_id: ""
+  policy_decision_digest: ""
+  module_profile_id: ""
+  module_profile_digest: ""
+  capability_grant_digest: ""
+  route_lock_id: ""
+  schema_registry_version: ""
+  expected_run_aggregate_version: 0
   dirty_state: false
 
-status: ""
+core_sdlc:
+  work_item_status_at_dispatch: IN_PROGRESS
+  work_class: ""
+  risk_lane: ""
+  risk_decision_ref: ""
+  outcome_measure_ids: []
+  requirement_ids: []
+  acceptance_criterion_ids: []
+  configuration_baseline_id: ""
+  configuration_baseline_digest: ""
+  requirement_to_evidence_mappings: []
+  invalidation_dependency_ids: []
+
+status: SUCCEEDED
 completed_scope: []
 uncompleted_scope: []
 files_changed: []
@@ -32,12 +63,19 @@ generated_files_changed: []
 
 commands:
   - command_id: ""
-    canonical_command: ""
+    argv: []
+    cwd_repository_relative: ""
+    environment_allowlist_digest: ""
+    executable_id: ""
+    executable_digest: ""
+    subject_commit: ""
     exit_status: null
     started_at: ""
     finished_at: ""
     stdout_artifact_ref: ""
     stderr_artifact_ref: ""
+    redaction_status: ""
+    classification: ""
 
 tests: []
 artifacts: []

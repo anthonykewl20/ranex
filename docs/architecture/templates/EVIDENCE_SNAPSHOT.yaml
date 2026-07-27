@@ -1,0 +1,19 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: evidence_snapshot
+snapshot_id: "snapshot_<uuidv7>"
+subject_ref: "exact-subject/v1"
+subject_digest: ""
+policy_activation_id: ""
+required_claim_ids: []
+eligible_evidence_refs: []
+ineligible_evidence:
+  - evidence_ref: ""
+    reason_code: ""
+freshness_cutoff: ""
+coverage: []
+missing_claim_ids: []
+conflicts: []
+created_by_service_id: ""
+created_at: ""
+digest: ""

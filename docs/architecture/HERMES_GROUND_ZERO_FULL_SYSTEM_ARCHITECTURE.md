@@ -1735,8 +1735,12 @@ concrete implementation is accepted:
 
 This architecture is supported by:
 
+- [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md);
+- [SDLC Control Catalog](./SDLC_CONTROL_CATALOG.md);
 - [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md);
 - [AI-Agent Development Lifecycle](./AI_AGENT_DEVELOPMENT_LIFECYCLE.md);
+- [AI-Work Artifact Contract Specification](./AI_ARTIFACT_CONTRACTS.md);
+- [ADR-0001: Established Software-Development Lifecycle Governs AI Work](./decisions/ADR-0001-established-sdlc-governs-ai-work.md);
 - [DeepSeek V4 Pro and HY3 Reconciliation Record](./reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md);
 - architecture contracts under future `architecture/contracts/`;
 - accepted ADRs and RFCs;
@@ -1749,7 +1753,9 @@ define bounded implementation work.
 
 ## 36. Research reconciliation
 
-All five research files were required inputs:
+All six Markdown research files were required inputs. The separately supplied
+`ranex-sdlc-full-spec.svg` was inspected as a visual research artifact and does
+not override the normative prose/contracts.
 
 1. `cookbook-alignment-research-2026-07-27.md` supplies stable-process,
    stranger-ready packet, maker/checker, evidence/verdict, evaluation, and
@@ -1766,11 +1772,17 @@ All five research files were required inputs:
 5. `ocask-alignment-research-2026-07-27.md` supplies the analytical-review,
    route-identity, attempt/failure, deadline, privacy, qualification, and
    tool-bearing isolation corrections.
+6. `real-world-sdlc-operating-model-research-2026-07-27.md` supplies the
+   established human software-development lifecycle, standards/practice
+   evidence, project/configuration/V&V/traceability/supplier controls,
+   maintenance/retirement, and the requirement that AI remain a worker
+   subprocess.
 
 DeepSeek V4 Pro was used as the primary architecture/file-structure collaborator
-for two passes. HY3 independently challenged the same frozen five-document
-corpus, then performed a second full-map completeness pass. Their material
-changes are recorded in the reconciliation document. Neither model is a decision
+for two initial passes. HY3 independently challenged the same frozen
+five-document historical corpus, then performed a second full-map completeness
+pass. A final six-document/current-architecture pass is required and recorded
+separately in the reconciliation document. Neither model is a decision
 authority or proof that the architecture works.
 
 ## 37. Architecture definition of done
@@ -1781,7 +1793,8 @@ The **map** is complete when:
 - every context, capability, surface, lifecycle, data owner, and exclusion is
   represented in the architecture contracts;
 - the target and transitional fork layouts are explicit;
-- the AI lifecycle and source-of-truth policy are active;
+- the Core SDLC, control catalog, AI-worker lifecycle, artifact contracts, and
+  source-of-truth policy are mutually mapped;
 - DeepSeek V4 Pro and independent HY3 findings are reconciled;
 - blocking disagreements have human decisions; and
 - all files are classified in the licensing manifest.
@@ -1800,5 +1813,5 @@ The **architecture is runtime-validated** only when:
 
 Until then, the correct label is:
 
-> **Complete target map; conditionally accepted architecture; implementation
-> and validation in progress.**
+> **Full target map documented; formal MAP/contract and runtime validation in
+> progress.**

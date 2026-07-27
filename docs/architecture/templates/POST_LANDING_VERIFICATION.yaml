@@ -1,0 +1,17 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: post_landing_verification
+verification_id: "postlanding_<uuidv7>"
+landing_id: "landing_<uuidv7>"
+landed_commit: ""
+subject_digest: ""
+checker_result_refs: []
+projection_reconciliation_refs: []
+orphan_authority_checks: []
+release_state_checks: []
+rollback_point_ref: ""
+worktree_cleanup_ref: ""
+outcome: UNKNOWN
+limitations: []
+created_at: ""
+digest: ""

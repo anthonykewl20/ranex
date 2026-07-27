@@ -1,3 +1,4 @@
+# Provisional example shape; executable schema is defined by AI-G2.
 schema_version: "1"
 artifact_type: agent_handoff
 handoff_id: "handoff_<uuidv7>"
@@ -22,32 +23,11 @@ subject:
   base_commit: ""
   candidate_commit: ""
 
-completed_scope: []
-deliberately_uncompleted_scope: []
-files_changed: []
-dependency_edges_changed: []
-migrations_changed: []
-generated_files_changed: []
-
-commands_executed: []
-tests:
-  - command: ""
-    exit_status: null
-    artifact_ref: ""
-    subject_commit: ""
-
-claims:
-  - claim: ""
-    status: fact
-    evidence_refs: []
-
-assumptions: []
-unknowns: []
-conflicts: []
-deviations: []
-security_impact: []
-compatibility_impact: []
-upstream_sync_impact: []
-rollback: []
+run_result_id: "result_<uuidv7>"
+run_result_digest: ""
+evidence_refs: []
+finding_refs: []
+artifact_refs: []
+limitations: []
 requested_next_action: ""
 digest: ""

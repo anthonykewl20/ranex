@@ -68,6 +68,11 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/architecture/AI_ARTIFACT_CONTRACTS.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
       "path": "docs/architecture/CORE_SDLC_OPERATING_MODEL.md",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
@@ -110,6 +115,11 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/architecture/templates/ANALYSIS_ATTEMPT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
       "path": "docs/architecture/templates/AI_HANDOFF.yaml",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
@@ -125,7 +135,32 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/architecture/templates/ARCHITECTURE_PROPOSAL.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/ARCHITECTURE_RECONCILIATION.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/AUTHORITY_GRANT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
       "path": "docs/architecture/templates/CHECKER_RESULT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/EVIDENCE_SNAPSHOT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/GATE_EVALUATION.yaml",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
@@ -135,7 +170,37 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/architecture/templates/INDEPENDENCE_EVALUATION.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/LANDING_RECORD.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/OPERATION_EVIDENCE.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/OUTCOME_REVIEW.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
       "path": "docs/architecture/templates/PERMIT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/POST_LANDING_VERIFICATION.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/RELEASE_EVIDENCE.yaml",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
@@ -150,12 +215,32 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "docs/architecture/templates/REVIEW_OBSERVATION.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/REVIEW_REQUEST.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/REVIEW_VERDICT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
       "path": "docs/architecture/templates/RFC.md",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
       "path": "docs/architecture/templates/RUN_RESULT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/TRANSITION_EVENT.yaml",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
@@ -201,6 +286,11 @@
     },
     {
       "path": "docs/research/ranex-sdlc-full-spec.svg",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/research/ranex-sdlc-visual-guide.html",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },

@@ -1,0 +1,19 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: architecture_reconciliation
+reconciliation_id: "archreconcile_<uuidv7>"
+architecture_review_packet_id: "archpkt_<uuidv7>"
+proposal_ids: []
+challenge_observation_ids: []
+subject_digest: ""
+findings:
+  - finding_id: "finding_<uuidv7>"
+    disposition: ""
+    rationale: ""
+    evidence_refs: []
+    resulting_change_refs: []
+    human_decision_ref: null
+unresolved_conflicts: []
+resulting_architecture_digest: ""
+resulting_adr_ref: ""
+digest: ""

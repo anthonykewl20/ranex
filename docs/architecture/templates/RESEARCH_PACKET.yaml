@@ -1,7 +1,8 @@
+# Provisional example shape; executable schema is defined by AI-G2.
 schema_version: "1"
 artifact_type: research_packet
 research_id: "research_<uuidv7>"
-status: complete
+status: COMPLETE
 
 subject:
   project_id: ""

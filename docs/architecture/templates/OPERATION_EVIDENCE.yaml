@@ -1,0 +1,20 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: operation_evidence
+operation_evidence_id: "operation_evidence_<uuidv7>"
+release_id: "release_<uuidv7>"
+service_id: "svc_<uuidv7>"
+work_item_id: "work_<uuidv7>"
+observation_window:
+  started_at: ""
+  ended_at: ""
+sli_slo_evidence_refs: []
+support_evidence_refs: []
+security_evidence_refs: []
+backup_restore_evidence_refs: []
+incident_refs: []
+reconciliation_refs: []
+service_owner_decision_ref: ""
+outcome: UNKNOWN
+limitations: []
+digest: ""

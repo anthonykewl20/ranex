@@ -1,20 +1,41 @@
+# Provisional example shape; executable schema is defined by AI-G2.
 schema_version: "1"
 artifact_type: work_intake
 intake_id: "intake_<uuidv7>"
-status: proposed
+status: PROPOSED
 
 requester_principal_id: ""
 decision_owner_principal_id: ""
 project_id: ""
 work_item_id: ""
-repository: ""
+repository_id: ""
+repository_uri_digest: ""
 base_revision: ""
 
 objective: ""
 user_outcome: ""
+outcome_measure_ids: []
+requirement_ids: []
+acceptance_criterion_ids: []
 scope: []
 non_goals: []
 acceptance_criteria: []
+
+core_sdlc:
+  work_item_status: FUNNEL
+  work_class: ""
+  derived_risk_lane: ""
+  risk_decision_ref: ""
+  owner_refs:
+    product: null
+    technical: null
+    service: null
+    security_data: null
+    delivery: null
+    vv: null
+    configuration: null
+    supplier: null
+    release: null
 
 full_map_zones: []
 affected_capabilities: []
@@ -24,4 +45,5 @@ reversibility: ""
 initial_risk_signals: []
 required_human_decisions: []
 known_constraints: []
+invalidation_dependency_ids: []
 digest: ""

@@ -1,0 +1,19 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: outcome_review
+outcome_review_id: "outcome_review_<uuidv7>"
+work_item_id: "work_<uuidv7>"
+capability_id: "cap_<uuidv7>"
+release_id: "release_<uuidv7>"
+hypothesis_ref: ""
+baseline_measure_refs: []
+observed_measure_refs: []
+data_quality_evidence_refs: []
+side_effects: []
+segments: []
+decision: ""
+product_owner_decision_ref: ""
+follow_up_work_item_ids: []
+limitations: []
+reviewed_at: ""
+digest: ""

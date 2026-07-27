@@ -1,0 +1,27 @@
+# Provisional example shape; executable schema is defined by AI-G2.
+schema_version: "1"
+artifact_type: review_observation
+observation_id: "observation_<uuidv7>"
+review_request_id: "review_<uuidv7>"
+analysis_attempt_id: "attempt_<uuidv7>"
+subject_digest: ""
+state: OPINION_PRODUCED
+summary: ""
+findings:
+  - finding_id: "finding_<uuidv7>"
+    category: ""
+    severity: ""
+    confidence: ""
+    epistemic_status: INFERENCE
+    location: ""
+    claim: ""
+    impact: ""
+    evidence_refs: []
+    required_action: ""
+    owner_ref: null
+    state: OPEN
+    reconciliation_ref: null
+uncertainties: []
+limitations: []
+proposed_actions: []
+digest: ""

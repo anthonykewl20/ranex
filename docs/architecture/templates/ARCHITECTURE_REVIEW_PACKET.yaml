@@ -1,7 +1,8 @@
+# Provisional example shape; executable schema is defined by AI-G2.
 schema_version: "1"
 artifact_type: architecture_review_packet
 packet_id: "archpkt_<uuidv7>"
-status: draft
+status: DRAFT
 
 subject:
   repository: ""
@@ -49,14 +50,21 @@ evidence:
 review_roles:
   primary_specialist:
     role_id: architecture-specialist
-    preferred_route: deepseek-v4-pro
+    preferred_route: deepseek/deepseek-v4-pro
+    required_qualification_scope: architecture-and-file-structure
+    actual_route_lock_id: null
   independent_challenger:
     role_id: adversarial-reviewer
-    preferred_route: hy3
+    preferred_route: openrouter/tencent/hy3
+    required_qualification_scope: independent-architecture-challenge
+    actual_route_lock_id: null
   independence_requirements:
     blind_to_primary_initially: true
     read_only: true
     exact_subject: true
+    actual_route_facts_compared: true
+    hidden_verification_withheld: true
+  unavailable_route_behavior: "BLOCK_OR_OWNER_APPROVED_RECOMPILE"
 
 required_output:
   bounded_context_map: true

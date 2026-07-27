@@ -402,8 +402,8 @@ sprint boundary.
 
 | State | Primary question | Minimum output | Exit authority |
 |---|---|---|---|
-| Funnel | Is the signal recorded? | Idea/problem/incident/vulnerability record | Product owner or duty owner |
-| Triage | Is it ours and how urgent/risky is it? | Classification, owner, severity, risk lane | Product + engineering triage |
+| Funnel | Is the signal recorded? | Idea/problem/incident/vulnerability record | Intake owner |
+| Triage | Is it ours and how urgent/risky is it? | Classification, owner, severity, risk lane | Product/duty owner |
 | Discovery | Is the problem real and worth solving? | Evidence, users, current behavior, hypothesis | Product owner |
 | Definition | What must be true? | Outcome, requirements, constraints, acceptance examples, measures | Product + engineering + affected owner |
 | Design | How can it be changed safely? | Design record, threat/ops/data impact, test and rollout strategy | Technical owner; ADR authority if material |
@@ -474,9 +474,9 @@ flowchart TB
       direction LR
       DESIGN["DESIGN<br/>Choose boundaries and controls"]
       READY["READY<br/>Commit a feasible vertical slice"]
-      BUILD["IN PROGRESS<br/>Build in an isolated worktree"]
+      BUILD["IN_PROGRESS<br/>Build in an isolated worktree"]
       VERIFY["VERIFICATION<br/>Independent review, V&V, and gates"]
-      RELEASE_READY["RELEASE READY<br/>Immutable artifact and rollback"]
+      RELEASE_READY["RELEASE_READY<br/>Immutable artifact and rollback"]
       RELEASING["RELEASING<br/>Stage, migrate, expose, observe"]
       DESIGN --> READY --> BUILD --> VERIFY --> RELEASE_READY --> RELEASING
     end
@@ -484,7 +484,7 @@ flowchart TB
     subgraph RUN["Run, learn, and close the work item"]
       direction LR
       OPERATING["OPERATING<br/>Own health, support, and recovery"]
-      OUTCOME["OUTCOME REVIEW<br/>Compare result with hypothesis"]
+      OUTCOME["OUTCOME_REVIEW<br/>Compare result with hypothesis"]
       CLOSED["CLOSED<br/>Reconcile evidence and follow-ups"]
       RELEASING --> OPERATING --> OUTCOME -->|outcome decision recorded| CLOSED
     end
@@ -499,12 +499,17 @@ flowchart TB
   %% ---------- Rejection, feedback, and recovery ----------
   subgraph RECOVERY["Feedback, failure, and recovery"]
     direction LR
+    ACTIVE_RULE["ROUTING RULE — NOT A STATE<br/>Any active WorkItemStatus"]
     BLOCKED["BLOCKED<br/>Owner + reason + next decision"]
+    RESUME_RULE["ROUTING RULE — NOT A STATE<br/>Resume an allowed prior state or terminal disposition"]
+    PRE_RELEASE_RULE["ROUTING RULE — NOT A STATE<br/>Any pre-release WorkItemStatus"]
     CANCELLED["CANCELLED<br/>Reason and durable history"]
-    ROLLED_BACK["ROLLED BACK<br/>Restore and reconcile"]
-    INCIDENT["INCIDENT<br/>Command, mitigate, communicate"]
-    RECOVERY_VERIFIED["RECOVERY VERIFIED<br/>Health and state proven"]
-    IMPROVEMENT["IMPROVEMENT INTAKE<br/>Owned corrective work"]
+    ROLLED_BACK["ROLLED_BACK<br/>Restore and reconcile"]
+    INCIDENT["IncidentStatus: INCIDENT<br/>Command, mitigate, communicate"]
+    RECOVERY_VERIFIED["IncidentStatus: RECOVERY_VERIFIED<br/>Health and state proven"]
+    IMPROVEMENT["IMPROVEMENT_INTAKE<br/>Owned corrective work"]
+    ACTIVE_RULE -->|dependency, conflict, or evidence gap| BLOCKED --> RESUME_RULE
+    PRE_RELEASE_RULE -->|authorized cancellation| CANCELLED
     INCIDENT --> RECOVERY_VERIFIED --> IMPROVEMENT
   end
 
@@ -521,20 +526,22 @@ flowchart TB
   RELEASING -->|health threshold breached| ROLLED_BACK
   ROLLED_BACK --> RECOVERY_VERIFIED
   ROLLED_BACK -->|user impact| INCIDENT
+  ROLLED_BACK -->|safe prior state verified; new attempt linked| TRIAGE
   OPERATING -->|material impact| INCIDENT
   RETIRING -->|retirement fails| RECOVERY_VERIFIED
   RECOVERY_VERIFIED --> OPERATING
   IMPROVEMENT --> TRIAGE
   OUTCOME -->|hypothesis falsified| DISCOVERY
+  OUTCOME -->|contract must change| DEFINITION
 
   %% ---------- Linked capability lifecycles ----------
   subgraph SERVICE_LIFECYCLES["Linked service lifecycles — separate status namespaces"]
     direction LR
-    MAINT_TRIGGER["MAINTENANCE TRIGGER<br/>defect · dependency · vulnerability · debt"]
+    MAINT_TRIGGER["CapabilityStatus: MAINTENANCE TRIGGER<br/>defect · dependency · vulnerability · debt"]
     MAINT_WORK["LINKED MAINTENANCE WORK<br/>normal WorkItemStatus lifecycle"]
-    RETIRE_READY["RETIRE READY<br/>consumer, data, access, and rollback plan"]
-    RETIRING["RETIRING<br/>migrate, revoke, archive, tear down"]
-    RETIRED["RETIRED<br/>audit absence and residual ownership"]
+    RETIRE_READY["CapabilityStatus: RETIRE_READY<br/>consumer, data, access, and rollback plan"]
+    RETIRING["CapabilityStatus: RETIRING<br/>migrate, revoke, archive, tear down"]
+    RETIRED["CapabilityStatus: RETIRED<br/>audit absence and residual ownership"]
     MAINT_TRIGGER --> MAINT_WORK
     RETIRE_READY --> RETIRING --> RETIRED
   end
@@ -654,6 +661,19 @@ flowchart TB
       C_LIMITED --> C_DEFAULT["TARGET DEFAULT"] --> C_FROZEN["LEGACY FROZEN"]
       C_FROZEN --> C_REMOVED["LEGACY REMOVED"]
     end
+
+    subgraph UPDATE["Release/update lifecycle — source reset is not rollback"]
+      direction LR
+      UP_CHECK["CHECKED"] --> UP_DOWNLOAD["DOWNLOADED"] --> UP_VERIFIED["VERIFIED"]
+      UP_VERIFIED --> UP_SNAPSHOT["SNAPSHOTTED"] --> UP_STAGE["STAGED"]
+      UP_STAGE --> UP_MIGRATE["MIGRATED"] --> UP_ACTIVATE["ACTIVATED"]
+      UP_ACTIVATE --> UP_HEALTH["HEALTH_VERIFIED"] --> UP_COMPLETE["COMPLETED"]
+      UP_STAGE -->|post-snapshot failure| UP_ROLLBACK["ROLLED_BACK"]
+      UP_MIGRATE -->|failure| UP_ROLLBACK
+      UP_ACTIVATE -->|failure| UP_ROLLBACK
+      UP_HEALTH -->|failure| UP_ROLLBACK
+      UP_ROLLBACK --> UP_RECOVERY["RECOVERY_VERIFIED"]
+    end
   end
 
   HERMES --> U_OBS
@@ -679,19 +699,34 @@ flowchart TB
   HUMAN_RELEASE -.-> RELEASING
   OBSERVE_N1 -.-> OUTCOME
 
+  %% ---------- Text-and-line-style legend ----------
+  subgraph LEGEND["Legend — labels and line styles carry meaning; color is secondary"]
+    direction LR
+    LEG_STATE["WorkItemStatus<br/>solid border"]
+    LEG_GATE["Gate / permit<br/>gold solid border"]
+    LEG_RISK["Failure / risk<br/>red solid border"]
+    LEG_LINKED["Linked lifecycle<br/>dashed purple border"]
+    LEG_EVIDENCE["Evidence<br/>green solid border"]
+    LEG_TERMINAL["Terminal / disposition<br/>gray solid border"]
+    LEG_SOLID["solid arrow = lifecycle transition"]
+    LEG_DASH["dashed arrow = evidence, guard, or typed-event link"]
+  end
+
   classDef state fill:#e8f1ff,stroke:#2457a7,color:#10254a,stroke-width:1.5px;
   classDef gate fill:#fff4cf,stroke:#9b6b00,color:#4d3500,stroke-width:1.5px;
   classDef risk fill:#ffe8e8,stroke:#a83232,color:#4f1717,stroke-width:1.5px;
   classDef evidence fill:#e8f8ef,stroke:#247247,color:#123d27,stroke-width:1.5px;
   classDef fork fill:#f3eaff,stroke:#6941a5,color:#321d56,stroke-width:1.5px;
+  classDef linked fill:#faf6ff,stroke:#6941a5,color:#321d56,stroke-width:2px,stroke-dasharray:6 4;
   classDef terminal fill:#eef0f3,stroke:#4f5965,color:#222831,stroke-width:1.5px;
 
-  class FUNNEL,TRIAGE,DISCOVERY,DEFINITION,DESIGN,READY,BUILD,OPERATING,OUTCOME,MAINT_WORK,RETIRE_READY,RETIRING state;
+  class FUNNEL,TRIAGE,DISCOVERY,DEFINITION,DESIGN,READY,BUILD,OPERATING,OUTCOME state;
   class VERIFY,RELEASE_READY,RELEASING,CHECKERS,OWNERS,PERMIT gate;
-  class RISK,BLOCKED,ROLLED_BACK,INCIDENT risk;
+  class RISK,BLOCKED,ROLLED_BACK risk;
+  class INCIDENT,RECOVERY_VERIFIED,IMPROVEMENT,MAINT_TRIGGER,MAINT_WORK,RETIRE_READY,RETIRING,RETIRED linked;
   class E_SIGNAL,E_OUTCOME,E_REQ,E_DESIGN,E_SUBJECT,E_PROOF,E_RELEASE,E_OPERATION,E_LEARNING evidence;
-  class U_OBS,U_FETCH,U_PIN,U_CLASS,U_DISP,U_PORT,U_CAND,U_VERIFY,U_RELEASE,U_BASE,DISPOSITION,SUPPORTED,DEPRECATED,READ_ONLY,X_DISC,X_QUAR,X_REVIEW,X_QUAL,X_PIN,X_ENABLE,C_BOOT,C_BASE,C_DUAL,C_SHADOW,C_LIMITED,C_DEFAULT,C_FROZEN fork;
-  class CLOSED,RETIRED,CANCELLED,U_REJECT,U_DEFER,REMOVED,X_SUSPEND,C_REMOVED terminal;
+  class U_OBS,U_FETCH,U_PIN,U_CLASS,U_DISP,U_PORT,U_CAND,U_VERIFY,U_RELEASE,U_BASE,DISPOSITION,SUPPORTED,DEPRECATED,READ_ONLY,X_DISC,X_QUAR,X_REVIEW,X_QUAL,X_PIN,X_ENABLE,C_BOOT,C_BASE,C_DUAL,C_SHADOW,C_LIMITED,C_DEFAULT,C_FROZEN,UP_CHECK,UP_DOWNLOAD,UP_VERIFIED,UP_SNAPSHOT,UP_STAGE,UP_MIGRATE,UP_ACTIVATE,UP_HEALTH,UP_COMPLETE,UP_ROLLBACK,UP_RECOVERY fork;
+  class CLOSED,CANCELLED,U_REJECT,U_DEFER,REMOVED,X_SUSPEND,C_REMOVED terminal;
 ```
 
 ### 4.5 Full-spec ASCII diagram
@@ -714,11 +749,11 @@ The same model in a terminal-safe form:
      +----------------------------+<-----------------+
                                                      |
                                                      v
- +--------+   +-------+   +-------------+   +--------------+   +-----------+
- | DESIGN |-->| READY |-->| IN PROGRESS |-->| VERIFICATION |-->| RELEASE   |
- | safe   |   | commit|   | build one   |   | review + V&V |   | READY     |
- | choice |   | slice |   | exact change|   | + exact gates|   | immutable |
- +--------+   +-------+   +-------------+   +--------------+   +-----------+
+ +--------+   +-------+   +-------------+   +--------------+   +---------------+
+ | DESIGN |-->| READY |-->| IN_PROGRESS |-->| VERIFICATION |-->| RELEASE_READY |
+ | safe   |   | commit|   | build one   |   | review + V&V |   | immutable     |
+ | choice |   | slice |   | exact change|   | + exact gates|   | artifact      |
+ +--------+   +-------+   +-------------+   +--------------+   +---------------+
      ^            |              ^            |    |    |             |
      | infeasible-+              +--code fail-+    |    |             |
      +-----------------------------design fail-----+    |             |
@@ -732,14 +767,15 @@ The same model in a terminal-safe form:
      |                                                           |         |
      |                                                     healthy|         |threshold fail
      |                                                           v         v
-     |                                                     +-----------+  +-----------+
-     +------------------------------------------------------ | OPERATING |  | ROLLED    |
-                                                            | own health|  | BACK      |
-                                                            +-----------+  +-----------+
+     |                                                     +-----------+  +-------------+
+     +------------------------------------------------------ | OPERATING |  | ROLLED_BACK |
+                                                            | own health|  | restore +   |
+                                                            +-----------+  | reconcile   |
+                                                                           +-------------+
                                                                   |             |
                                                                   v             v
                                                            +----------------+  +------------------+
-                                                           | OUTCOME REVIEW |  | RECOVERY VERIFIED|
+                                                           | OUTCOME_REVIEW |  | RECOVERY_VERIFIED|
                                                            | did it help?   |  +------------------+
                                                            +----------------+          |
                                                               |        |               |
@@ -750,15 +786,22 @@ The same model in a terminal-safe form:
                                                          +--------+
 
  INCIDENT LOOP
-   OPERATING / ROLLBACK / FAILED RETIREMENT
-          -> INCIDENT -> MITIGATE -> RECOVERY VERIFIED
-          -> IMPROVEMENT INTAKE -> TRIAGE
+   OPERATING / ROLLED_BACK / FAILED RETIREMENT
+          -> INCIDENT -> MITIGATE -> RECOVERY_VERIFIED
+          -> IMPROVEMENT_INTAKE -> TRIAGE
+
+ CANONICAL RE-ENTRY
+   ROLLED_BACK --safe prior state verified; linked new attempt--> TRIAGE
+   OUTCOME_REVIEW --learn more--> DISCOVERY
+   OUTCOME_REVIEW --change the contract--> DEFINITION
+   any active WorkItemStatus --recorded blocker--> BLOCKED
+   any pre-release WorkItemStatus --authorized reason--> CANCELLED
 
  LINKED SERVICE LIFECYCLES (separate status namespaces)
    maintenance trigger (defect/dependency/vulnerability/debt)
       -> linked maintenance work item -> TRIAGE -> normal lifecycle
 
-   OUTCOME REVIEW --remove decision--> RETIRE READY -> RETIRING -> RETIRED
+   OUTCOME_REVIEW --remove decision--> RETIRE_READY -> RETIRING -> RETIRED
                                          |                |
                                          +--failure------> RECOVERY VERIFIED
    RETIRED --verified residual owner and evidence--> CLOSED
@@ -797,6 +840,12 @@ The same model in a terminal-safe form:
      BOOTSTRAP -> LEGACY BASELINE -> TRANSITIONAL DUAL RUN -> TARGET SHADOW
        -> TARGET LIMITED -> TARGET DEFAULT -> LEGACY FROZEN -> LEGACY REMOVED
 
+   immutable release/update:
+     CHECKED -> DOWNLOADED -> VERIFIED -> SNAPSHOTTED -> STAGED -> MIGRATED
+       -> ACTIVATED -> HEALTH_VERIFIED -> COMPLETED
+     any post-snapshot failure -> ROLLED_BACK -> RECOVERY_VERIFIED
+     source reset is not product rollback
+
  SAFE SELF-DEVELOPMENT
    immutable Ranex release N
       --governs--> candidate N+1
@@ -812,6 +861,14 @@ The same model in a terminal-safe form:
   failure to hide.
 - The control and evidence rails apply to every state even where a line is not
   drawn to avoid an unreadable graph.
+- Canonical enum names use underscores. Short natural-language text beneath
+  them is explanatory, not a second state vocabulary.
+- Linked incident, maintenance, retirement, update, compatibility, extension,
+  and cutover nodes use separate namespaces and communicate through typed
+  events or linked work. They are not extra `WorkItemStatus` values.
+- The policy is `ACCEPTED`; implementation maturity remains `R_AND_D` until
+  adoption gates `SDLC-ADOPT-A` through `SDLC-ADOPT-E` pass. The diagram is a
+  target specification, not proof that Ranex implements it today.
 - `MERGED` is intentionally absent as a lifecycle state. It is one authorized
   landing event between verification and release readiness.
 - “Dual run” in the fork lane never permits dual authority: exactly one

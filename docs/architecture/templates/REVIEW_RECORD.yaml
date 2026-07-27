@@ -1,66 +1,19 @@
+# Generated read projection only. The five referenced records are immutable
+# authority/evidence sources and must not be replaced by this bundle.
 schema_version: "1"
-artifact_type: review_record
+artifact_type: review_record_projection
+projection_id: "review_projection_<uuidv7>"
 
-request:
-  request_id: "review_<uuidv7>"
-  review_spec_id: ""
-  review_spec_version: ""
-  packet_id: ""
-  packet_digest: ""
-  subject_commit: ""
-  subject_manifest_digest: ""
-  required_independence: []
+review_request_id: "review_<uuidv7>"
+review_request_digest: ""
+analysis_attempt_refs: []
+review_observation_refs: []
+independence_evaluation_id: "independence_<uuidv7>"
+independence_evaluation_digest: ""
+review_verdict_id: "verdict_<uuidv7>"
+review_verdict_digest: ""
+gate_evaluation_ref: null
 
-attempt:
-  attempt_id: "attempt_<uuidv7>"
-  route_lock_id: ""
-  actual_provider_id: ""
-  actual_model_id: ""
-  transport_id: ""
-  transport_digest: ""
-  parser_version: ""
-  isolation_profile_id: ""
-  started_at: ""
-  finished_at: ""
-  status: ""
-  failure_domain: null
-  retry_class: null
-  token_usage: null
-  estimated_cost: null
-  raw_artifact_refs: []
-
-observation:
-  observation_id: "observation_<uuidv7>"
-  state: "OPINION_PRODUCED"
-  summary: ""
-  findings:
-    - finding_id: ""
-      severity: ""
-      location: ""
-      claim: ""
-      impact: ""
-      evidence_refs: []
-      required_action: ""
-  uncertainties: []
-  limitations: []
-  proposed_actions: []
-
-independence_facts:
-  different_execution_identity: false
-  did_not_edit_subject: false
-  blind_to_maker_rationale: false
-  exact_subject_verified: false
-  separate_packet: false
-  read_only_capability: false
-  model_family_diversity: null
-
-validated_verdict:
-  eligible: false
-  reviewer_principal_id: ""
-  subject_commit: ""
-  finding_refs: []
-  evidence_refs: []
-  limitations: []
-  # This is not a GateOutcome and cannot authorize a transition.
-
+generated_at: ""
+source_registry_version: ""
 digest: ""

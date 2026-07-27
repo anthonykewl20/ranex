@@ -144,7 +144,7 @@ aggregates:
 | `RunStatus` | `governed_execution` | One bounded execution attempt serving a work item |
 | `IncidentStatus` | `operations` | Detection, mitigation, recovery, review, and action tracking |
 | `ReleaseStatus` | `release_management` | Build, readiness, rollout, rollback, operation, withdrawal |
-| `CapabilityStatus` | Product/service owner through `work_management` | Supported, deprecated, retirement, and retired product capability |
+| `CapabilityStatus` | `product_definition` with accountable product/service owner | Supported, deprecated, retirement, and retired product capability |
 | `L0`–`L12` | AI-agent lifecycle policy | Activity protocol inside applicable work-item states; never canonical work state |
 | `SDLC-*` | Core SDLC control catalog | Per-work and cross-lifecycle controls |
 | `AI-G0`–`AI-G10` | AI-agent lifecycle | Evidence gates for an agent-assisted execution |
@@ -167,20 +167,23 @@ Each item has exactly one primary class:
 
 | Class | Starts from | Special obligation |
 |---|---|---|
-| Product | User, stakeholder, strategy, experiment | Measurable user/product outcome |
-| Defect | Expected behavior differs from observed behavior | Reproduction and regression evidence |
-| Reliability | SLO, incident, capacity, toil, recovery gap | Service impact and reliability measure |
-| Security/privacy | Threat, vulnerability, policy or data gap | Restricted handling, severity and response policy |
-| Architecture/platform | Fitness failure, dependency, capability or enablement need | Named consumer/outcome; ADR when material |
-| Compliance/provenance | License, SBOM, attribution, supply-chain requirement | Evidence-bound compliance decision |
-| Upstream sync | Pinned Hermes upstream candidate | Provenance, classification, selective port and anti-recontamination |
-| Emergency | Active material impact needing immediate mitigation | Emergency lane, retrospective evidence and follow-up |
-| Maintenance | Supported capability, dependency, vulnerability, defect or debt | Supported-version and regression policy |
-| Retirement | Product/capability/version end of life | Consumer, data, access, archive and residual-risk disposition |
+| `PRODUCT` | User, stakeholder, strategy, experiment | Measurable user/product outcome |
+| `DEFECT` | Expected behavior differs from observed behavior | Reproduction and regression evidence |
+| `RELIABILITY` | SLO, capacity, toil, recovery gap | Service impact and reliability measure |
+| `SECURITY_PRIVACY` | Threat, vulnerability, policy or data gap | Restricted handling, severity and response policy |
+| `ARCHITECTURE_PLATFORM` | Fitness failure, dependency, capability or enablement need | Named consumer/outcome; ADR when material |
+| `COMPLIANCE_PROVENANCE` | License, SBOM, attribution, supply-chain requirement | Evidence-bound compliance decision |
+| `UPSTREAM_SYNC` | Pinned Hermes upstream candidate | Provenance, classification, selective port and anti-recontamination |
+| `MAINTENANCE` | Supported capability, dependency, vulnerability, defect or debt | Supported-version and regression policy |
+| `RETIREMENT` | Product/capability/version end of life | Consumer, data, access, archive and residual-risk disposition |
+| `INCIDENT_RESPONSE` | Active or recent operating impact | Incident linkage, mitigation/recovery evidence and follow-up |
 
 Classes affect routing, not priority automatically. Priority is an explicit
 decision using impact, urgency, risk reduction, cost of delay, dependencies,
 evidence confidence, and capacity.
+
+`EMERGENCY` is a risk/assurance and service lane, not a work class. An incident
+response item may be `EMERGENCY`, `CRITICAL`, or another policy-derived lane.
 
 ## 5. Risk and assurance lanes
 

@@ -5,7 +5,7 @@ Ranex.
 
 ## Read in this order
 
-1. [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md)  
+1. [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md)<br>
    The core product-to-production process: governance, discovery,
    requirements, design, planning, implementation, verification, release,
    operation, improvement, risk lanes, decision rights, and measurable flow.
@@ -14,27 +14,33 @@ Ranex.
    The owner decision making this established SDLC primary and AI work
    subordinate is [ADR-0001](./decisions/ADR-0001-established-sdlc-governs-ai-work.md).
 
-2. [Hermes-to-Ranex Ground-Zero Full-System Architecture](./HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md)  
+2. [Hermes-to-Ranex Ground-Zero Full-System Architecture](./HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md)<br>
    The complete target map: product boundaries, bounded contexts, ownership,
    source tree, dependencies, state, effects, security, operations, migration,
    upstream sync, exclusions, and acceptance gates.
 
-3. [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md)  
+3. [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md)<br>
    Defines authority, evidence, machine contracts, conflicts, RFC/ADR changes,
    and how sliced delivery preserves the full map.
 
-4. [AI-Agent Development Lifecycle](./AI_AGENT_DEVELOPMENT_LIFECYCLE.md)  
+4. [AI-Agent Development Lifecycle](./AI_AGENT_DEVELOPMENT_LIFECYCLE.md)<br>
    Defines roles, packets, handoffs, independent review, verification, permits,
    landing, post-landing checks, and definition of done. It is the governed
    execution subprocess inside the core SDLC.
 
-5. [DeepSeek V4 Pro and HY3 Full-Map Review](./reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md)  
+5. [AI-Work Artifact Contract Specification](./AI_ARTIFACT_CONTRACTS.md)<br>
+   Defines exact subjects, Core-SDLC traceability, canonical digests, review
+   separation, gate/decision/permit ordering, artifact producers, and the full
+   target schema family.
+
+6. [DeepSeek V4 Pro and HY3 Full-Map Review](./reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md)<br>
    Records the model collaboration, evidence corpus, limitations, and material
    changes introduced through reconciliation.
 
-6. [`templates/`](./templates/)  
-   Initial document-level contracts for architecture reviews, tasks, handoffs,
-   reviews, human decisions, RFCs, and ADRs.
+7. [`templates/`](./templates/)<br>
+   Provisional example shapes for architecture, task, handoff, review,
+   evidence, authority, release/operation, RFC, and ADR contracts. They do not
+   become executable schemas until `AI-G2` passes.
 
 ## Scope rule
 

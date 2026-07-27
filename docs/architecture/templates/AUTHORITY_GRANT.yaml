@@ -1,0 +1,22 @@
+# Owned and consumed only by governed_execution.
+schema_version: "1"
+artifact_type: consumable_authority_grant
+grant_id: "grant_<uuidv7>"
+status: ISSUED
+human_decision_id: "dec_<uuidv7>"
+human_decision_digest: ""
+gate_evaluation_id: "gate_<uuidv7>"
+gate_evaluation_digest: ""
+subject_ref: "exact-subject/v1"
+subject_digest: ""
+action_type: ""
+canonical_argument_digest: ""
+scope: []
+conditions: []
+issued_at: ""
+expires_at: ""
+revoked_at: null
+consumed_at: null
+consumed_by_transition_id: null
+expected_run_aggregate_version: 0
+digest: ""

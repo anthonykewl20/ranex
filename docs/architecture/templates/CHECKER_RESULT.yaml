@@ -1,3 +1,4 @@
+# Provisional example shape; executable schema is defined by AI-G2.
 schema_version: "1"
 artifact_type: checker_result
 checker_result_id: "check_<uuidv7>"
@@ -10,14 +11,34 @@ checker:
   qualification_id: ""
 
 subject:
+  subject_schema: "exact-subject/v1"
   project_id: ""
   work_item_id: ""
   run_id: ""
+  activity_id: null
+  effect_id: null
+  workspace_id: ""
+  repository_id: ""
+  repository_uri_digest: ""
+  base_commit: ""
   candidate_commit: ""
+  artifact_digest: null
+  packet_id: ""
   packet_digest: ""
+  workflow_definition_id: ""
+  workflow_definition_digest: ""
+  workflow_interpreter_version: ""
+  policy_activation_id: ""
   evidence_snapshot_digest: ""
+  policy_decision_digest: ""
+  module_profile_id: ""
+  module_profile_digest: ""
+  capability_grant_digest: ""
+  route_lock_id: null
+  schema_registry_version: ""
+  expected_run_aggregate_version: 0
 
-status: ""
+status: COMPLETE
 outcome: "UNKNOWN"
 failure_code: null
 applicability_proof_ref: null
