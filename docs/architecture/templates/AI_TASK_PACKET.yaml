@@ -1,0 +1,72 @@
+schema_version: "1"
+artifact_type: ai_task_packet
+packet_id: "pkt_<uuidv7>"
+status: ready
+
+subject:
+  project_id: "prj_<uuidv7>"
+  work_item_id: "work_<uuidv7>"
+  run_id: "run_<uuidv7>"
+  workspace_id: "wsp_<uuidv7>"
+  repository: ""
+  base_commit: ""
+  expected_head: null
+
+objective: ""
+scope: []
+non_goals: []
+acceptance_criteria: []
+
+authority:
+  architecture_revision: ""
+  accepted_adr_refs: []
+  contract_digests: []
+  policy_activation_id: ""
+  policy_digest: ""
+  risk_class: ""
+
+architecture_bounds:
+  contexts_allowed_to_change: []
+  public_apis_allowed_to_change: []
+  paths_allowed: []
+  paths_forbidden: []
+  dependency_edges_allowed: []
+  dependency_edges_forbidden: []
+  state_owners_affected: []
+  effect_owners_affected: []
+  attachment_points_to_preserve: []
+  exclusions_to_preserve: []
+
+context:
+  source_manifest: []
+  known_facts: []
+  assumptions: []
+  unknowns: []
+  conflicts: []
+  omissions: []
+
+grants:
+  capabilities: []
+  tools: []
+  network_destinations: []
+  data_classifications: []
+  secret_handles: []
+
+budgets:
+  absolute_deadline: ""
+  cost: null
+  tokens: null
+  output_bytes: null
+  tool_calls: null
+
+verification:
+  required_test_families: []
+  required_commands: []
+  required_evidence: []
+  hidden_fixtures: []
+  rollback_requirements: []
+
+escalate_when: []
+required_result_schema: "run-result/v1"
+required_handoff_schema: "agent-handoff/v1"
+digest: ""

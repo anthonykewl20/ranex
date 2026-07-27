@@ -1220,7 +1220,7 @@ containers are healthy; Traefik is running. Its queue and scheduler were
 unhealthy both before and after cleanup. The seven `mightybox` project
 containers remain stopped as they were before cleanup.
 
-The current result is `PARTIAL`, not `PASS`, because:
+At the end of the initial pass, the result was `PARTIAL`, not `PASS`, because:
 
 1. `/home/soultransit/.no-mistakes` retains 6,040 foreign-owned entries and
    about 72 MB of data.
@@ -1250,6 +1250,61 @@ Never enter an administrator password into an agent prompt or transcript.
 Afterward, restart all live Codex sessions normally. Preserve
 `/home/soultransit/.codex/auth.json`, remove the old runtime state through an
 exact manifest, then re-run authentication and residue checks.
+
+## 0A.10 Resumed checkpoint for 2026-07-27
+
+The owner resumed Phase 0A after removing the three administrator-owned
+targets. The owner also explicitly deferred Codex and VS Code cleanup because
+both tools were in active use and stated that the cleanup would be completed
+later. This instruction did not authorize closing either tool or changing its
+live state.
+
+The resumed checks established:
+
+- `/home/soultransit/.no-mistakes`,
+  `/home/soultransit/devtony/opzava`, and the root-owned Mightybox `.omo`
+  artifact are absent.
+- The root filesystem has `125240360960` bytes used and `826418409472` bytes
+  available.
+- Claude Code `2.1.220`, Codex `0.145.0`, OpenCode `1.18.7`, and GitHub CLI
+  `2.96.0` remain authenticated. Authentication output was reviewed only in
+  redacted form.
+- The provider credential directory and its child directories are mode `0700`;
+  its credential files and all four official CLI authentication files are
+  mode `0600`.
+- The `omo`, `model-flow`, `swebench`, and `deepeval` launchers are absent.
+  No matching user service or residue path was found outside the protected
+  repositories and the explicitly deferred Codex and VS Code state.
+- Shell startup contains only the expected official Codex and OpenCode paths
+  plus the owner-created `cnn` launcher for the Ranex workspace.
+- A newly generated, owner-owned 50-byte Claude settings backup at
+  `/home/soultransit/.claude/backups/.claude.json.backup.1785155030211` was
+  found with no open process and permanently removed under the no-backup
+  policy. The Claude directory again contains only its protected credential
+  file.
+- Docker remains on context `default` with 13 images, 15 containers, 11
+  volumes, and 5 networks. Eight containers are active. Every non-default
+  resource remains attached to or labeled for `mightybox` or
+  `mightybox-dokploy-local`; BuildKit cache remains `0 B`.
+- The protected Docker health state is unchanged: the
+  `mightybox-dokploy-local` queue and scheduler remain unhealthy, its other
+  active services are healthy or running, and all seven `mightybox`
+  containers remain stopped.
+
+A previously scheduled transient user service,
+`ranex-codex-state-clear.service`, was discovered waiting to delete every
+top-level Codex state entry except `auth.json` after all Codex processes
+exited. Because that delayed deletion conflicted with the owner's new
+deferral, the exact service was stopped. Its final state was
+`LoadState=not-found`, `ActiveState=inactive`, and `SubState=dead`. Codex and
+VS Code themselves were not stopped or modified.
+
+At this checkpoint, three Codex processes and three `codex-code-mode` helper
+processes hold 98 records open below `/home/soultransit/.codex`. The directory
+contains `3981623296` bytes. Phase 0A therefore remains `PARTIAL` by explicit
+owner deferral. It cannot become `PASS` until the Codex cleanup and residue
+checks are completed after a normal shutdown, an independent HY3 audit passes,
+and the owner accepts the result.
 
 ## HUMAN GATE 0A
 

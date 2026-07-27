@@ -1,0 +1,55 @@
+schema_version: "1"
+artifact_type: run_result
+result_id: "result_<uuidv7>"
+
+producer:
+  principal_id: ""
+  role_id: ""
+  provider_id: ""
+  model_id: ""
+  transport_id: ""
+  route_lock_id: ""
+  session_id: ""
+
+subject:
+  project_id: ""
+  work_item_id: ""
+  run_id: ""
+  workspace_id: ""
+  packet_id: ""
+  packet_digest: ""
+  base_commit: ""
+  candidate_commit: ""
+  dirty_state: false
+
+status: ""
+completed_scope: []
+uncompleted_scope: []
+files_changed: []
+dependency_edges_changed: []
+migrations_changed: []
+generated_files_changed: []
+
+commands:
+  - command_id: ""
+    canonical_command: ""
+    exit_status: null
+    started_at: ""
+    finished_at: ""
+    stdout_artifact_ref: ""
+    stderr_artifact_ref: ""
+
+tests: []
+artifacts: []
+evidence_refs: []
+claims: []
+assumptions: []
+unknowns: []
+conflicts: []
+deviations: []
+security_impact: []
+compatibility_impact: []
+upstream_sync_impact: []
+rollback: []
+limitations: []
+digest: ""

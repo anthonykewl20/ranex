@@ -1,0 +1,30 @@
+schema_version: "1"
+artifact_type: checker_result
+checker_result_id: "check_<uuidv7>"
+
+checker:
+  checker_id: ""
+  checker_version: ""
+  code_digest: ""
+  fixture_suite_digest: ""
+  qualification_id: ""
+
+subject:
+  project_id: ""
+  work_item_id: ""
+  run_id: ""
+  candidate_commit: ""
+  packet_digest: ""
+  evidence_snapshot_digest: ""
+
+status: ""
+outcome: "UNKNOWN"
+failure_code: null
+applicability_proof_ref: null
+evidence_refs: []
+raw_artifact_refs: []
+coverage: []
+limitations: []
+started_at: ""
+finished_at: ""
+digest: ""

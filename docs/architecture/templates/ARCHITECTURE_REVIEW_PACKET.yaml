@@ -1,0 +1,79 @@
+schema_version: "1"
+artifact_type: architecture_review_packet
+packet_id: "archpkt_<uuidv7>"
+status: draft
+
+subject:
+  repository: ""
+  base_revision: ""
+  candidate_revision: null
+  working_tree_digest: ""
+  architecture_revision: ""
+
+decision:
+  question: ""
+  owner_principal_id: ""
+  scope: []
+  non_goals: []
+  alternatives: []
+
+full_map_impact:
+  affected_contexts: []
+  affected_public_apis: []
+  affected_data_owners: []
+  affected_effect_owners: []
+  affected_lifecycles: []
+  affected_trust_boundaries: []
+  preserved_attachment_points: []
+  changed_exclusions: []
+
+current_state:
+  repository_tree_artifact: ""
+  dependency_graph_artifact: ""
+  state_ownership_artifact: ""
+  path_ownership_artifact: ""
+  accepted_adr_refs: []
+
+evidence:
+  source_manifest:
+    - path_or_uri: ""
+      revision: ""
+      digest: ""
+      authority: ""
+      freshness: current
+  known_facts: []
+  assumptions: []
+  unknowns: []
+  conflicts: []
+
+review_roles:
+  primary_specialist:
+    role_id: architecture-specialist
+    preferred_route: deepseek-v4-pro
+  independent_challenger:
+    role_id: adversarial-reviewer
+    preferred_route: hy3
+  independence_requirements:
+    blind_to_primary_initially: true
+    read_only: true
+    exact_subject: true
+
+required_output:
+  bounded_context_map: true
+  repository_tree: true
+  dependency_rules: true
+  public_api_map: true
+  state_and_effect_ownership: true
+  migration_and_rollback: true
+  threat_and_failure_analysis: true
+  acceptance_tests: true
+  explicit_exclusions: true
+  remaining_unknowns: true
+
+budgets:
+  absolute_deadline: ""
+  token_budget: null
+  cost_budget: null
+  output_byte_budget: null
+
+digest: ""

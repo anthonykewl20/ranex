@@ -58,11 +58,158 @@
       "license": "LicenseRef-Ranex-Personal-Use-1.0"
     },
     {
+      "path": "decisions/local-values.env.example",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/CORE_SDLC_OPERATING_MODEL.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/README.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/SDLC_CONTROL_CATALOG.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/SOURCE_OF_TRUTH.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, reconciliation, and commentary only, if owned by Anthony Garces",
+      "notes": "Model outputs are advisory evidence. Provider/model and source rights remain excluded from Ranex ownership."
+    },
+    {
+      "path": "docs/architecture/templates/ADR.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/AI_HANDOFF.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/AI_TASK_PACKET.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/ARCHITECTURE_REVIEW_PACKET.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/CHECKER_RESULT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/HUMAN_DECISION.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/PERMIT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/RESEARCH_PACKET.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/REVIEW_RECORD.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/RFC.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/RUN_RESULT.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/architecture/templates/WORK_INTAKE.yaml",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/research/cookbook-alignment-research-2026-07-27.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, and commentary only, if owned by Anthony Garces",
+      "notes": "Third-party ideas and source rights remain excluded. Preserve cited source provenance."
+    },
+    {
       "path": "docs/research/gemini-research.md",
       "classification": "CURATED_RESEARCH",
       "license": "NOASSERTION",
       "ranex_license_scope": "Original selection, organization, and commentary only, if owned by Anthony Garces",
       "notes": "Third-party ideas and source rights remain excluded. Add source citations and complete a rights review before public distribution."
+    },
+    {
+      "path": "docs/research/hermes-core-architecture-hy3-review-2026-07-27.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, reconciliation, and commentary only, if owned by Anthony Garces",
+      "notes": "Contains advisory model output and third-party-source discussion; preserve provider and source provenance."
+    },
+    {
+      "path": "docs/research/hermes-core-architecture-research-2026-07-27.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, and commentary only, if owned by Anthony Garces",
+      "notes": "Third-party ideas, quoted names, and source rights remain excluded. Preserve cited Hermes and standards provenance."
+    },
+    {
+      "path": "docs/research/ocask-alignment-research-2026-07-27.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, and commentary only, if owned by Anthony Garces",
+      "notes": "OCAsk source is Apache-2.0 with NOTICE obligations; this research entry does not authorize copying source into Ranex."
+    },
+    {
+      "path": "docs/research/ranex-sdlc-full-spec.svg",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0"
+    },
+    {
+      "path": "docs/research/real-world-sdlc-operating-model-research-2026-07-27.md",
+      "classification": "CURATED_RESEARCH",
+      "license": "NOASSERTION",
+      "ranex_license_scope": "Original selection, organization, and commentary only, if owned by Anthony Garces",
+      "notes": "Third-party standards, methods, and source rights remain excluded. Preserve cited source provenance."
     },
     {
       "path": "legal/licensing-manifest.json",

@@ -1,0 +1,45 @@
+schema_version: "1"
+artifact_type: research_packet
+research_id: "research_<uuidv7>"
+status: complete
+
+subject:
+  project_id: ""
+  work_item_id: ""
+  repository: ""
+  base_revision: ""
+
+question: ""
+scope: []
+method: []
+
+source_manifest:
+  - path_or_uri: ""
+    revision: ""
+    digest: ""
+    source_type: ""
+    authority: ""
+    observed_at: ""
+    freshness: ""
+
+claims:
+  - claim_id: ""
+    statement: ""
+    epistemic_status: "FACT"
+    evidence_refs: []
+    confidence: ""
+    limitations: []
+
+contradictions: []
+negative_results: []
+unknowns:
+  - unknown: ""
+    priority: ""
+    risk_if_guessed: ""
+    closure_evidence: ""
+    acceptance_test: ""
+
+recommendations: []
+full_map_impact: []
+file_mutations: []
+digest: ""

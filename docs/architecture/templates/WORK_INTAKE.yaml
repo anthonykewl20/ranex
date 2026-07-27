@@ -1,0 +1,27 @@
+schema_version: "1"
+artifact_type: work_intake
+intake_id: "intake_<uuidv7>"
+status: proposed
+
+requester_principal_id: ""
+decision_owner_principal_id: ""
+project_id: ""
+work_item_id: ""
+repository: ""
+base_revision: ""
+
+objective: ""
+user_outcome: ""
+scope: []
+non_goals: []
+acceptance_criteria: []
+
+full_map_zones: []
+affected_capabilities: []
+external_effects: []
+data_classifications: []
+reversibility: ""
+initial_risk_signals: []
+required_human_decisions: []
+known_constraints: []
+digest: ""

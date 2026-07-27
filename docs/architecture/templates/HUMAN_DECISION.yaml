@@ -1,0 +1,40 @@
+schema_version: "1"
+artifact_type: human_decision
+decision_id: "dec_<uuidv7>"
+
+principal_id: ""
+authentication_context_id: ""
+status: pending
+decision_type: ""
+
+subject:
+  project_id: ""
+  work_item_id: ""
+  run_id: ""
+  activity_or_effect_id: ""
+  workspace_id: ""
+  base_commit: ""
+  candidate_commit: ""
+  packet_digest: ""
+  evidence_snapshot_digest: ""
+  policy_decision_digest: ""
+  capability_grant_digest: ""
+  expected_aggregate_version: null
+
+action:
+  action_type: ""
+  canonical_argument_digest: ""
+  destination: ""
+  adapter_id: ""
+  adapter_version: ""
+
+reason: ""
+scope: []
+conditions: []
+nonce: ""
+issued_at: ""
+expires_at: ""
+consumed_at: null
+supersedes: null
+evidence_refs: []
+digest: ""
