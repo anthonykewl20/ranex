@@ -39,11 +39,19 @@ already aligned.
 The detailed test and warning record is
 [`UPSTREAM_BASELINE.md`](UPSTREAM_BASELINE.md).
 
+## Runtime selection
+
+- Provider: `openai-codex`
+- Default model: `gpt-5.6-sol`
+- Credential boundary: Hermes uses its own device login under the isolated
+  Ranex application home; it does not import or mutate Codex/VS Code
+  authentication.
+
 ## Active objective
 
-Complete the separate OpenAI Codex device login and one-shot model smoke, then
-use Hermes itself from the isolated development checkout to drive bounded
-Ranex implementation work.
+Use the verified Hermes runtime from the isolated development checkout to
+drive bounded Ranex implementation work. The separate OpenAI Codex device
+login and a one-call `gpt-5.6-sol` smoke have passed.
 
 ## Recorded deviation
 
@@ -55,10 +63,8 @@ not authorize an automated shutdown or state deletion.
 
 ## Next implementation slices
 
-1. Complete and record the live model smoke.
-2. Integrate the runtime-bootstrap evidence into `develop`.
-3. Build the brand/integration inventory.
-4. Start the compatibility-first public rebrand from a bounded branch based on
+1. Build the brand/integration inventory.
+2. Start the compatibility-first public rebrand from a bounded branch based on
    `develop`.
 
 Authoritative architecture and lifecycle rules are indexed from

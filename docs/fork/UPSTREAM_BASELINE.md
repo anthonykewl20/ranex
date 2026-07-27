@@ -52,8 +52,8 @@ system Python.
 
 The initial doctor run also reported a missing `.env`, missing `config.yaml`,
 and missing provider login. The isolated `.env` and `config.yaml` were then
-created with mode `0600`; provider authentication and the live model smoke
-test are recorded separately because they require a human device-code action.
+created with mode `0600`. Provider authentication and the live model smoke
+were completed after the credential-free baseline.
 
 ## Python baseline
 
@@ -119,6 +119,37 @@ jsdom canvas and build-size/CSS notices, and one TUI subprocess that invoked
 system `python` and could not import `yaml`. The TUI suite still passed all
 1,394 of its tests.
 
+## Post-baseline live model smoke
+
+Hermes received a separate OpenAI Codex device-code credential in its isolated
+application home. It did not import, copy, or mutate the credential store used
+by Codex or VS Code. The resulting `auth.json` has mode `0600`.
+
+The smoke invocation explicitly pinned both provider and model:
+
+```bash
+HERMES_HOME=/home/soultransit/.local/share/ranex \
+hermes \
+  --provider openai-codex \
+  --model gpt-5.6-sol \
+  --toolsets safe \
+  --oneshot 'Reply exactly: RANEX_HERMES_OK'
+```
+
+| Measurement | Observed result |
+|---|---|
+| Authentication | `openai-codex: logged in` |
+| Provider | `openai-codex` |
+| Model | `gpt-5.6-sol` |
+| API calls | 1 |
+| Output | `RANEX_HERMES_OK` |
+| Input tokens | 17,088 |
+| Output tokens | 11 |
+| Usage-report error | `null` |
+
+No inference request was sent with `gpt-5.4`; that value was replaced in the
+isolated configuration before the first live call.
+
 ## Worktree and credential boundaries
 
 - The package lock and Python lock were unchanged.
@@ -133,7 +164,6 @@ system `python` and could not import `yaml`. The TUI suite still passed all
 
 ## Follow-up
 
-1. Complete the separate OpenAI Codex device login and one-shot model smoke.
-2. Track the three inherited Python failures as baseline defects; do not
+1. Track the three inherited Python failures as baseline defects; do not
    silently weaken their assertions.
-3. Compare future Ranex changes against these exact counts and failure names.
+2. Compare future Ranex changes against these exact counts and failure names.
