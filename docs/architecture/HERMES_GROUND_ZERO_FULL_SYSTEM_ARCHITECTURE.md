@@ -393,7 +393,7 @@ delivery is at least once; duplicates and out-of-order messages are tested.
 |---|---|---|---|
 | `governed_execution` | Run, pinned workflow, activities, gate bindings, consumable authority grants, permit issuance/consumption, effect intents/outcomes, reconciliation | Commands, queries, integration events, immutable views | Sole run/execution-transition authority |
 | `policy` | Roles, grants, risk-lane derivation, policy packages, activation, authorization decisions, waivers and authenticated human-decision records | Authorization request/decision, active-policy and human-decision snapshots | Policy definitions and append-only decision history; never consumes the execution grant |
-| `assurance` | Claims, evidence envelopes, review observations, checker qualification, gate evaluation inputs | Evidence ingestion/query, checker result, exact-subject evidence snapshot | Assurance catalog; does not commit run state |
+| `assurance` | Claims, evidence envelopes, review observations, checker results and gate-evaluation inputs | Evidence ingestion/query, checker result, exact-subject evidence snapshot | Assurance catalog; does not qualify components or commit run state |
 | `module_governance` | Module catalog, descriptors, capability vocabulary, grants, compatibility, activation lifecycle | Module/grant/profile snapshots | Module and grant authority |
 | `identity_access` | Human/service identities, authentication, sessions, nonces, remote decision authentication, data classification, secret references | Principal/session/secret-handle and egress-decision APIs | Identity and access authority |
 
@@ -401,7 +401,14 @@ delivery is at least once; duplicates and out-of-order messages are tested.
 
 | Context | Owns | Attachment points |
 |---|---|---|
-| `work_management` | Projects, canonical `WorkItemStatus`, work class, outcomes/requirements/traceability, accountable roles, queue, external issue mapping, Kanban projections | Core-SDLC transition API, GitHub intake, project policy, governed-run/evidence integration |
+| `product_definition` | Actors, problems/needs, hypotheses, product capabilities, requirements, acceptance examples, outcome measures, validation decisions, `CapabilityStatus` | Discovery/user research, product decisions, work intake, outcome review |
+| `work_management` | Projects, canonical `WorkItemStatus`, work class, portfolio/queues/WIP, dependencies/risks/issues, technical-debt records, accountable work roles, external issue mapping, Kanban projections | Core-SDLC transition API, GitHub intake, product/requirement links, governed-run/evidence integration |
+| `service_management` | Service catalog, service/capability ownership, supported versions, SLIs/SLOs/error budgets, support/escalation, maintenance and retirement triggers | Operations evidence, release catalog, product capability lifecycle |
+| `configuration_management` | Configuration-item registry, content-addressed baselines, status accounting, bidirectional traceability graph, functional/physical configuration audits | Product requirements, source/build/test/docs, release manifests, assurance evidence |
+| `supplier_governance` | Supplier/dependency adoption and reuse decisions, shared responsibility, version/support/vulnerability monitoring, concentration/exit plans | Packages, toolchains, providers, APIs, extensions, hosted services, Hermes upstream |
+| `resource_governance` | Local capacity, cost/token/tool/output/network budgets, reservations, quotas, usage attribution and provider-limit facts | Policy, routing, scheduling, agent runs, operations; never commercial billing |
+| `interaction_history` | User conversation/thread/message identity, continuity, search lifecycle, classification, retention, export and deletion | Delivery channels, context compilation, legacy session import |
+| `process_assurance` | SDLC policy conformance, tailoring profiles, human-role competence, process audits/nonconformance/corrective action, process improvement evidence | Core SDLC, work records, metrics, training/qualification evidence |
 | `workspace` | Repository identity, worktree plans, branch/head validation, landing and cleanup | Git adapter, sandbox mounts |
 | `instruction_registry` | Atomic versioned instructions, precedence, applicability, checker bindings | Policy and packet compilation |
 | `context_compilation` | Resolved source manifests, packet compilation, context budget, conflicts, provenance | Deterministic and recorded stochastic retrieval |
@@ -420,7 +427,7 @@ delivery is at least once; duplicates and out-of-order messages are tested.
 
 | Context | Owns | Attachment points |
 |---|---|---|
-| `operations` | Health, alerts, incidents, capacity, reconciliation jobs, operator runbooks | Telemetry, delivery, external-system probes |
+| `operations` | Observed health, alerts, `IncidentStatus`, response/recovery evidence, reconciliation scheduling and operator runbooks | Telemetry, delivery, service objectives, external-system probes |
 | `backup_restore` | Backup sets, encryption, RPO/RTO policy, restore drills, reconciliation | SQLite, artifacts, configuration, remote stores |
 | `release_management` | Build manifest, release profile, install/update/rollback, package/SBOM verification | Installer and updater adapters |
 | `upstream_sync` | Upstream baseline, diff classification, anti-recontamination gates, selective porting, sync evidence | Git worktrees and upstream remote |
@@ -438,11 +445,18 @@ Every target capability must resolve all columns before implementation.
 | Workflow and run control | `governed_execution` | workflow runtime | `governed_execution` | Run events and state |
 | Policy and risk | `policy` | built-in/OPA PDP | `policy` | Authorization decision snapshot |
 | Human decisions | `policy` + `identity_access` | CLI/web/phone/GitHub challenge | `policy` | Authenticated exact-subject decision |
-| Evidence and checks | `assurance` | deterministic/model/human checkers | `qualification` | Evidence/checker result |
+| Evidence and checks | `assurance` | deterministic/model/human checker modules | checker module state in `module_governance`; qualification evidence in `qualification` | Evidence/checker result |
 | Permits and effects | `governed_execution` | capability bus/outbox | `governed_execution` | Consumed permit + effect intent/result |
 | Modules and capabilities | `module_governance` | composition catalog | `module_governance` | Qualified module profile |
-| Routes/providers | `routing` | native model/provider adapters | `routing` + `qualification` | Route lock and attempt |
+| Routes/providers | `routing` | native model/provider adapters | route state in `routing`; qualification evidence in `qualification` | Route lock and attempt |
+| Product discovery/requirements/outcomes | `product_definition` | research, decision and analytics adapters | `product_definition` | Versioned need, requirement, measure and validation decision |
 | Core-SDLC projects/work/traceability | `work_management` | transition, portfolio, GitHub and projection adapters | `work_management` | Canonical work item, requirements/outcome links, and projections |
+| Services/SLOs/support/lifecycle | `service_management` | service catalog and operational projections | `service_management` | Service objective and capability/support state |
+| Configuration/baselines/traceability | `configuration_management` | repository/build/test/release scanners | `configuration_management` | Audited baseline and trace graph |
+| Suppliers/dependencies | `supplier_governance` | package/provider/upstream monitors | `supplier_governance` | Adoption/monitoring/exit decision |
+| Resource budgets/usage | `resource_governance` | provider/tool/host usage meters | `resource_governance` | Reservation, quota and attributed usage |
+| Conversation/session history | `interaction_history` | channel/session/search adapters | `interaction_history` | Classified thread/message record |
+| Process assurance | `process_assurance` | conformance/audit/competence adapters | `process_assurance` | Tailoring, nonconformance and corrective-action record |
 | Repositories/worktrees | `workspace` | Git/filesystem/sandbox | `workspace` | Validated workspace identity |
 | Instructions/context | `instruction_registry`, `context_compilation` | source/retrieval adapters | respective owner | Content-addressed packet |
 | Agent collaboration | `agent_collaboration` | Hermes/Codex/Claude/OpenCode | `module_governance` | Worker result/proposal |
@@ -454,7 +468,7 @@ Every target capability must resolve all columns before implementation.
 | CLI/TUI/web/phone/GitHub | `delivery` | inbound/outbound adapters | channel config lifecycle | Typed command/receipt |
 | Authentication/secrets | `identity_access` | keyring/file/vault/OAuth adapters | identity/session/secret lifecycle | Principal or secret handle |
 | Artifacts | `artifact_management` | filesystem/object store | retention lifecycle | Content digest/reference |
-| Evaluation/qualification | `qualification`, `effectiveness` | runners/graders | evaluation protocol | Qualification or metric vector |
+| Evaluation/qualification | `qualification`, `effectiveness` | runners/graders | immutable trial/qualification/experiment protocol; subject owner changes activation state | Qualification or metric vector |
 | Observability/operations | `operations` | OTLP/log/metric exporters | incident/health lifecycle | Noncanonical telemetry |
 | Backup/restore | `backup_restore` | encrypted local/remote stores | backup-set lifecycle | Verified recovery point |
 | Install/update/release | `release_management` | package/installer/updater | release lifecycle | Signed/pinned release manifest |
@@ -528,7 +542,14 @@ ranex/
 │       ├── assurance/
 │       ├── module_governance/
 │       ├── identity_access/
+│       ├── product_definition/
 │       ├── work_management/
+│       ├── service_management/
+│       ├── configuration_management/
+│       ├── supplier_governance/
+│       ├── resource_governance/
+│       ├── interaction_history/
+│       ├── process_assurance/
 │       ├── workspace/
 │       ├── instruction_registry/
 │       ├── context_compilation/
@@ -796,7 +817,14 @@ their mapped file rather than an ad hoc manager or utility file.
 | `assurance` | `api/{commands,queries,views}.py`; `domain/{claims,evidence,observations,checker_results,coverage,freshness,independence,evidence_snapshots}.py` | `application/{ingestion_service,checker_service,snapshot_service}.py`; `application/ports/{checker_transport,evidence_repository}.py` |
 | `module_governance` | `api/{commands,queries,views}.py`; `domain/{descriptors,interfaces,capabilities,grants,profiles,lifecycle,qualification_refs,invariants}.py` | `application/{catalog_service,activation_service,grant_service,profile_service}.py`; `application/ports/{module_factory,module_state_store}.py` |
 | `identity_access` | `api/{commands,queries,views}.py`; `domain/{principals,authentication,sessions,nonces,data_classification,egress,secret_refs,invariants}.py` | `application/{authentication_service,session_service,egress_service,secret_projection_service}.py`; `application/ports/{authenticator,secret_backend,egress_gateway}.py` |
-| `work_management` | `api/{commands,queries,events,views}.py`; `domain/{projects,work_items,work_item_status,work_classes,outcomes,requirements,traceability,accountable_roles,queues,external_refs,projections,invariants}.py` | `application/{intake_service,transition_service,traceability_service,queue_service,projection_service}.py`; `application/ports/{issue_tracker,work_repository}.py` |
+| `product_definition` | `api/{commands,queries,events,views}.py`; `domain/{actors,needs,hypotheses,capabilities,requirements,acceptance_examples,outcome_measures,validation_decisions,capability_status,invariants}.py` | `application/{discovery_service,requirements_service,validation_service,capability_lifecycle_service}.py`; `application/ports/{research_source,outcome_analytics}.py` |
+| `work_management` | `api/{commands,queries,events,views}.py`; `domain/{projects,work_items,work_item_status,work_classes,outcome_refs,requirement_refs,configuration_refs,accountable_roles,queues,external_refs,projections,invariants}.py` | `application/{intake_service,transition_service,link_service,queue_service,projection_service}.py`; `application/ports/{issue_tracker,work_repository}.py` |
+| `service_management` | `api/{commands,queries,events,views}.py`; `domain/{services,owners,supported_versions,slis,slos,error_budgets,support,maintenance_triggers,retirement_triggers,invariants}.py` | `application/{catalog_service,objective_service,support_service,lifecycle_trigger_service}.py`; `application/ports/{service_catalog,operational_evidence}.py` |
+| `configuration_management` | `api/{commands,queries,events,views}.py`; `domain/{configuration_items,baselines,status_accounting,trace_links,audits,drift,invariants}.py` | `application/{baseline_service,traceability_service,audit_service,drift_service}.py`; `application/ports/{configuration_scanner,baseline_store}.py` |
+| `supplier_governance` | `api/{commands,queries,events,views}.py`; `domain/{suppliers,dependencies,adoption_decisions,shared_responsibility,monitoring,concentration,exit_plans,invariants}.py` | `application/{adoption_service,monitoring_service,reassessment_service,exit_service}.py`; `application/ports/{dependency_inventory,supplier_probe}.py` |
+| `resource_governance` | `api/{commands,queries,events,views}.py`; `domain/{budgets,reservations,quotas,usage,attribution,provider_limits,invariants}.py` | `application/{reservation_service,usage_service,quota_service,reconciliation_service}.py`; `application/ports/{usage_meter,rate_card,host_capacity}.py` |
+| `interaction_history` | `api/{commands,queries,events,views}.py`; `domain/{threads,messages,participants,continuity,classification,retention,export,deletion,invariants}.py` | `application/{thread_service,message_service,search_service,retention_service}.py`; `application/ports/{history_store,search_index,legacy_session_reader}.py` |
+| `process_assurance` | `api/{commands,queries,events,views}.py`; `domain/{tailoring_profiles,competence_profiles,audits,nonconformances,corrective_actions,process_measures,improvement_proposals,invariants}.py` | `application/{tailoring_service,audit_service,competence_service,corrective_action_service}.py`; `application/ports/{process_evidence,training_registry}.py` |
 | `workspace` | `api/{commands,queries,views}.py`; `domain/{repository_identity,workspace_identity,worktree_plan,branch_policy,landing_plan,invariants}.py` | `application/{workspace_service,head_validation,landing_service,cleanup_service}.py`; `application/ports/{git,filesystem,sandbox_mount}.py` |
 | `instruction_registry` | `api/{commands,queries,views}.py`; `domain/{instructions,scope,applicability,precedence,coverage,lifecycle,invariants}.py` | `application/{registry_service,activation_service,coverage_service}.py`; `application/ports/{instruction_repository}.py` |
 | `context_compilation` | `api/{commands,queries,views}.py`; `domain/{source_records,precedence,freshness,conflicts,budgets,manifests,packets,invariants}.py` | `application/{source_resolver,packet_compiler,rendering_service}.py`; `application/ports/{source_provider,retrieval_activity}.py` |
@@ -935,6 +963,11 @@ namespaced external references.
 ```text
 ProjectId        prj_<uuidv7>
 WorkItemId       work_<uuidv7>
+RequirementId    req_<uuidv7>
+CapabilityId     cap_<uuidv7>
+ServiceId        svc_<uuidv7>
+ConfigurationId  ci_<uuidv7>
+BaselineId       baseline_<uuidv7>
 RunId            run_<uuidv7>
 ActivityId       act_<uuidv7>
 EffectId         eff_<uuidv7>
@@ -949,6 +982,11 @@ PrincipalId      principal_<uuidv7>
 ModuleId         stable dotted identifier
 RouteLockId      route_<uuidv7>
 MigrationId      mig_<uuidv7>
+IncidentId       incident_<uuidv7>
+ReleaseId        release_<uuidv7>
+ThreadId         thread_<uuidv7>
+SupplierId       supplier_<uuidv7>
+ReservationId    reservation_<uuidv7>
 ```
 
 `ExecutionSubject`, `AuthorizationSubject`, `EvidenceSubject`, and
@@ -980,20 +1018,32 @@ One overloaded “office stage” is prohibited.
 
 | Axis | Canonical values |
 |---|---|
+| `WorkItemStatus` | `FUNNEL`, `TRIAGE`, `DISCOVERY`, `DEFINITION`, `DESIGN`, `READY`, `IN_PROGRESS`, `VERIFICATION`, `RELEASE_READY`, `RELEASING`, `OPERATING`, `OUTCOME_REVIEW`, `CLOSED`, `BLOCKED`, `CANCELLED`, `ROLLED_BACK` |
+| `WorkClass` | `PRODUCT`, `DEFECT`, `RELIABILITY`, `SECURITY_PRIVACY`, `ARCHITECTURE_PLATFORM`, `COMPLIANCE_PROVENANCE`, `UPSTREAM_SYNC`, `MAINTENANCE`, `RETIREMENT`, `INCIDENT_RESPONSE` |
+| `RiskLane` | `STANDARD`, `ENHANCED`, `CRITICAL`, `EMERGENCY` |
 | `RunStatus` | `PROPOSED`, `READY`, `RUNNING`, `WAITING`, `BLOCKED`, `SUCCEEDED`, `FAILED`, `CANCELLED` |
-| `RuleStage` | `INTAKE`, `RESEARCH`, `PLANNING`, `IMPLEMENTATION`, `REVIEW`, `VERIFICATION`, `RELEASE`, `OPERATIONS` |
+| `RuleStage` | Derived policy classifier: `GOVERNANCE`, `DISCOVERY`, `REQUIREMENTS`, `DESIGN`, `PLANNING`, `IMPLEMENTATION`, `VERIFICATION`, `RELEASE`, `OPERATIONS`, `OUTCOME_REVIEW`, `MAINTENANCE`, `RETIREMENT` |
+| `IncidentStatus` | `DETECTED`, `ACKNOWLEDGED`, `MITIGATING`, `MITIGATED`, `RECOVERY_VERIFIED`, `REVIEWED`, `ACTIONS_TRACKED`, `CLOSED` |
+| `ReleaseStatus` | `PLANNED`, `BUILT`, `VERIFIED`, `RELEASE_READY`, `RELEASING`, `OPERATING`, `ROLLED_BACK`, `WITHDRAWN` |
+| `CapabilityStatus` | `PROPOSED`, `SUPPORTED`, `DEPRECATED`, `RETIRE_READY`, `RETIRING`, `RETIRED` |
 | `ActivityStatus` | `REQUESTED`, `DISPATCHED`, `SUCCEEDED`, `FAILED_RETRYABLE`, `FAILED_PERMANENT`, `TIMED_OUT`, `CANCELLED`, `DENIED`, `OUTCOME_UNKNOWN` |
 | `GateOutcome` | `PASS`, `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT` |
 | `ObservationState` | `OPINION_PRODUCED`, `NO_OPINION`, `OPINION_UNUSABLE`, `EVALUATION_INCOMPLETE` |
 | `PermitStatus` | `ISSUED`, `CONSUMED`, `EXPIRED`, `REVOKED` |
-| `HumanDecisionStatus` | `PENDING`, `APPROVED`, `DENIED`, `EXPIRED`, `REVOKED`, `CONSUMED` |
-| `EffectStatus` | `INTENDED`, `DISPATCHED`, `SUCCEEDED`, `FAILED_RETRYABLE`, `FAILED_PERMANENT`, `DENIED`, `OUTCOME_UNKNOWN`, `RECONCILED` |
+| `HumanDecisionRecordStatus` | `PENDING`, `APPROVED`, `DENIED`, `EXPIRED`, `REVOKED` |
+| `AuthorityGrantStatus` | `ISSUED`, `CONSUMED`, `EXPIRED`, `REVOKED` |
+| `EffectStatus` | `INTENDED`, `DISPATCHED`, `SUCCEEDED`, `FAILED_RETRYABLE`, `FAILED_PERMANENT`, `DENIED`, `OUTCOME_UNKNOWN` |
+| `ReconciliationStatus` | `NOT_REQUIRED`, `PENDING`, `RUNNING`, `RESOLVED`, `UNRESOLVED` with preserved discovered effect disposition |
 | `ModuleStatus` | `PACKAGED`, `DISABLED`, `QUALIFIED`, `CANARY`, `ACTIVE`, `RESTRICTED`, `QUARANTINED`, `RETIRED` |
 | `RouteStatus` | `UNCONFIGURED`, `AUTHENTICATED`, `SMOKE_TESTED`, `PROBATION`, `APPROVED`, `RESTRICTED`, `SUSPENDED`, `RETIRED` |
+| `ExtensionStatus` | `DISCOVERED`, `QUARANTINED`, `REVIEWED`, `QUALIFIED`, `PINNED`, `ENABLED`, `SUSPENDED`, `RETIRED` |
+| `CompatibilityStatus` | `SUPPORTED`, `DEPRECATED`, `READ_ONLY`, `REMOVED` |
 | `InstructionStatus` | `DRAFT`, `ACTIVE`, `DEPRECATED`, `RETIRED` |
 | `ArtifactStatus` | `INGESTED`, `QUARANTINED`, `AVAILABLE`, `EXPIRED`, `LEGAL_HOLD`, `PURGED` |
 | `MigrationStatus` | `PLANNED`, `TESTED`, `APPLIED`, `VERIFIED`, `ROLLED_BACK`, `FAILED` |
-| `SyncCandidateStatus` | `FETCHED`, `CLASSIFIED`, `CHALLENGED`, `ACCEPTED`, `REJECTED`, `PORTED`, `VERIFIED` |
+| `SyncCandidateStatus` | `OBSERVED`, `FETCHED`, `PINNED`, `CLASSIFIED`, `DISPOSITIONED`, `PORTING`, `PORT_CANDIDATE`, `VERIFIED`, `RELEASED`, `BASELINE_RECORDED`, `REJECTED`, `DEFERRED`, `BLOCKED`, `ROLLED_BACK` |
+| `UpdateStatus` | `CHECKED`, `DOWNLOADED`, `VERIFIED`, `SNAPSHOTTED`, `STAGED`, `MIGRATED`, `ACTIVATED`, `HEALTH_VERIFIED`, `COMPLETED`, `ROLLED_BACK`, `RECOVERY_VERIFIED` |
+| `CutoverStatus` | `BOOTSTRAP`, `LEGACY_BASELINE`, `TRANSITIONAL_DUAL_RUN`, `TARGET_SHADOW`, `TARGET_LIMITED`, `TARGET_DEFAULT`, `LEGACY_FROZEN`, `LEGACY_REMOVED` |
 
 `WorkflowNodeId` is a versioned node from the pinned workflow definition; it is
 not another run-status enum. A waiver is a `HumanDecision`, not a gate outcome.
