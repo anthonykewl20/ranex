@@ -68,9 +68,9 @@ correctness against formatting compliance and computational overhead:
 
 $$R(\text{workflow}) = r_{\text{format}} + r_{\text{correctness}} - \gamma \cdot C_{\text{compute}}$$
 
-Where $r_{\text{format}} \in \{0, 1\}$ penalizes malformed output specifications,
-$r_{\text{correctness}} \in \{0, 0.5, 1.0\}$ rewards verified execution success on benchmark test
-suites, and $C_{\text{compute}}$ penalizes token consumption and model latency to discourage
+Where `r_format ∈ {0, 1}` penalizes malformed output specifications,
+`r_correctness ∈ {0, 0.5, 1.0}` rewards verified execution success on benchmark test
+suites, and `C_compute` penalizes token consumption and model latency to discourage
 redundant agent calls. Through pure reward maximization, the Conductor automatically discovers
 adaptive coordination behaviors: single-shot dispatches for simple bugs, and complex multi-stage
 planner-executor-verifier pipelines for complex engineering tasks. The Conductor sets performance
@@ -84,7 +84,7 @@ demonstrates that fleet routing can be offloaded to an extremely compact coordin
 small language model (SLM) router (~0.6B parameters, based on fine-tuned Qwen) paired with a
 lightweight classification head (~10,000 parameters).
 
-TRINITY manages multi-turn software development by mapping context hidden-state vectors $h_t$ to
+TRINITY manages multi-turn software development by mapping context hidden-state vectors `h_t` to
 specialized operational roles:
 
 - **Thinker:** Assigned to high-capacity reasoning models to analyze root causes, design architectural strategies, and evaluate dependencies.
@@ -136,39 +136,39 @@ To provide global context within strict token budgets, advanced agent harnesses 
 mappings, such as Aider's RepoMap architecture. RepoMap constructs structural relationship graphs
 across entire repositories using Abstract Syntax Trees:
 
-- **AST Parsing and Tag Capture:** Tree-sitter parses every source file in the repository into language-specific ASTs. Specialized query patterns extract identifier nodes categorized into definition tags (@name.definition.class, @name.definition.function) and reference tags (@name.reference.call, @name.reference.type).
+- **AST Parsing and Tag Capture:** Tree-sitter parses every source file in the repository into language-specific ASTs. Specialized query patterns extract identifier nodes categorized into definition tags (`@name.definition.class`, `@name.definition.function`) and reference tags (`@name.reference.call`, `@name.reference.type`).
 
-- **Directed Dependency Graph Construction:** The system constructs a directed graph $G = (V, E)$, where vertices $V$ represent code symbols (classes, functions, interfaces) and directed edges $E$ represent reference dependencies between files.
+- **Directed Dependency Graph Construction:** The system constructs a directed graph `G = (V, E)`, where vertices `V` represent code symbols (classes, functions, interfaces) and directed edges `E` represent reference dependencies between files.
 
-- **Personalized PageRank Ranking:** Personalized PageRank measures symbol relevance relative to active task edits. The system configures a non-uniform personalization vector $p$, assigning higher weight to files currently being edited or identified in user issue reports. The rank vector $R$ is computed iteratively:
+- **Personalized PageRank Ranking:** Personalized PageRank measures symbol relevance relative to active task edits. The system configures a non-uniform personalization vector `p`, assigning higher weight to files currently being edited or identified in user issue reports. The rank vector `R` is computed iteratively:
 
 $$R = (1 - d) p + d \cdot M R$$
 
-Where $M$ is the normalized adjacency matrix derived from symbol reference edges, and $d \approx
-0.85$ is the standard damping factor. Symbols with high PageRank centrality represent structural
+Where `M` is the normalized adjacency matrix derived from symbol reference edges, and `d ≈ 0.85`
+is the standard damping factor. Symbols with high PageRank centrality represent structural
 dependencies tightly coupled to the edit locations.
 
-- **Scope-Aware Code Elision:** Top-ranked symbols are rendered into a structural representation where function implementations are elided and replaced with comment placeholders (e.g., # ...), preserving function signatures, type annotations, and class hierarchies. This scope-aware compression packs global repository architecture into context prompts using minimal tokens.
+- **Scope-Aware Code Elision:** Top-ranked symbols are rendered into a structural representation where function implementations are elided and replaced with comment placeholders (e.g., `# ...`), preserving function signatures, type annotations, and class hierarchies. This scope-aware compression packs global repository architecture into context prompts using minimal tokens.
 
 ### Model Context Protocol (MCP) Standard for Tool Integration
 
-As model fleets scale, maintaining custom tool integration code across $M$ distinct models and $N$
-development tools creates an unsustainable $M \times N$ engineering overhead. The Model Context
+As model fleets scale, maintaining custom tool integration code across `M` distinct models and `N`
+development tools creates an unsustainable `M × N` engineering overhead. The Model Context
 Protocol (MCP), an open standard governed under the Linux Foundation's Agentic AI Foundation,
-simplifies this into an $M + N$ architecture.
+simplifies this into an `M + N` architecture.
 
-MCP enforces a client-server boundary using JSON-RPC 2.0 over standard I/O (stdio) or Streamable
+MCP enforces a client-server boundary using `JSON-RPC 2.0` over standard I/O (`stdio`) or Streamable
 HTTP transports. The MCP Host acts as the execution environment, containing an MCP Client that
 maintains connections to external tool providers. MCP Servers expose capabilities via three
 primitive structures:
 
-- **Tools:** Executable functions invoked by the model (e.g., execute_sql_query, apply_git_diff, run_unit_tests).
+- **Tools:** Executable functions invoked by the model (e.g., `execute_sql_query`, `apply_git_diff`, `run_unit_tests`).
 
 - **Resources:** Read-only contextual data sources (e.g., AST snapshots, database schemas, log streams).
 
 - **Prompts:** Parameterized prompt templates engineered for specific software tools.
 
-Standardizing tool execution behind JSON-RPC interfaces allows fleet orchestrators to attach tools to any compatible LLM without custom code wrappers, while capturing structured, enterprise-wide audit logs of all tool invocations.
+Standardizing tool execution behind `JSON-RPC` interfaces allows fleet orchestrators to attach tools to any compatible LLM without custom code wrappers, while capturing structured, enterprise-wide audit logs of all tool invocations.
 
 ## Runtime Execution, Isolation, and MicroVM State Infrastructure
 
@@ -203,13 +203,13 @@ coupled transactional state pair using two specialized Linux OS abstractions:
 
 - **DeltaFS Filesystem Layering:** Implemented as a copy-on-write (CoW) overlay filesystem. Upon receiving a checkpoint request, DeltaFS freezes the writable layer and mounts a new layer on top. File modifications write deltas to the upper layer without altering base data. Rolling back to a prior checkpoint reduces to dropping the top delta layer.
 
-- **DeltaCR Process Checkpointing:** Built as an extension to CRIU (Checkpoint/Restore in Userspace). Rather than performing full memory dumps, DeltaCR issues incremental, single-process memory dumps. The Guest State Daemon issues a brief SIGSTOP signal to target application processes, writes an incremental diff of process heap pages to tmpfs, and resumes execution via SIGCONT.
+- **DeltaCR Process Checkpointing:** Built as an extension to CRIU (Checkpoint/Restore in Userspace). Rather than performing full memory dumps, DeltaCR issues incremental, single-process memory dumps. The Guest State Daemon issues a brief `SIGSTOP` signal to target application processes, writes an incremental diff of process heap pages to `tmpfs`, and resumes execution via `SIGCONT`.
 
-- **Constant-Time Backtracking:** Pairing DeltaFS layers with DeltaCR process dumps allows the sandbox to restore any historical checkpoint in constant time ($O(1)$) without restarting virtual machines.
+- **Constant-Time Backtracking:** Pairing DeltaFS layers with DeltaCR process dumps allows the sandbox to restore any historical checkpoint in constant time (`O(1)`) without restarting virtual machines.
 
 ### Asynchronous Checkpointing and eBPF Tracing (Crab Engine)
 
-To prevent snapshot overhead from adding latency to agent turn times, engines like Crab offload state tracking to the host kernel using eBPF (Extended Berkeley Packet Filter) probes. Host eBPF tracing monitors system calls (write, unlink, execve, fork) inside guest sandboxes.
+To prevent snapshot overhead from adding latency to agent turn times, engines like Crab offload state tracking to the host kernel using eBPF (Extended Berkeley Packet Filter) probes. Host eBPF tracing monitors system calls (`write`, `unlink`, `execve`, `fork`) inside guest sandboxes.
 
 If an agent turn produces no filesystem or process modifications (e.g., executing a read-only search), the runtime skips snapshot generation entirely. When state changes occur, snapshot serialization runs asynchronously, overlapping with the network round-trip latency of the subsequent LLM API call.
 
@@ -219,7 +219,7 @@ When restoring an "Agent-with-a-Sandbox" configuration, Crab uses a request-resp
 | --- | --- | --- | --- | --- |
 | Standard Docker runtime | Namespaces and cgroups | Full-image `docker commit` (filesystem only) | High (1,000–10,000 ms+) | Universal tool support; lacks process-memory persistence and requires linear replay from scratch |
 | Native Firecracker microVM | KVM hardware hypervisor | Full guest physical-memory dirty-page snapshot | Moderate (300–1,000 ms) | High security isolation; snapshots capture kernel and background daemon memory overhead |
-| DeltaBox (DeltaFS + DeltaCR) | MicroVM + copy-on-write OS layer | Coupled incremental process dump + CoW file layer | Sub-100 milliseconds ($O(1)$ constant time) | Sub-second state restoration; optimized for deep tree-search algorithms and error backtracking |
+| DeltaBox (DeltaFS + DeltaCR) | MicroVM + copy-on-write OS layer | Coupled incremental process dump + CoW file layer | Sub-100 milliseconds (`O(1)` constant time) | Sub-second state restoration; optimized for deep tree-search algorithms and error backtracking |
 | AgentTier architecture | KVM or gVisor via Kubernetes pods | Persistent Volume Claim (PVC) snapshotting | Moderate (500–2,000 ms) | Native Kubernetes scheduling, default-deny network security policies, enterprise cloud scaling |
 
 ## Integrated Implementation and Testable Engineering Blueprint
@@ -244,7 +244,7 @@ MicroVM Execution Sandbox Tier
 
 Deploy a fine-tuned SLM router (such as a 0.6B TRINITY model) at the entry point of the
 infrastructure. The router parses incoming task prompts, extracts hidden-state context
-representations $h_t$, and assigns downstream models to specialized roles:
+representations `h_t`, and assigns downstream models to specialized roles:
 
 - Assign architectural planning and root-cause analysis to frontier reasoning models (Thinker role).
 
@@ -252,7 +252,7 @@ representations $h_t$, and assigns downstream models to specialized roles:
 
 - Assign static analysis, syntax verification, and test execution to lightweight evaluation models or symbolic verification tools (Verifier role).
 
-The system routes straightforward bug fixes through deterministic multi-phase pipelines (localization $\rightarrow$ patch generation $\rightarrow$ test verification). Complex, open-ended refactoring tasks escalate to dynamic meta-orchestrators capable of recursive test-time scaling.
+The system routes straightforward bug fixes through deterministic multi-phase pipelines: localization → patch generation → test verification. Complex, open-ended refactoring tasks escalate to dynamic meta-orchestrators capable of recursive test-time scaling.
 
 ### Tier 2: Context Engineering and Repository Mapping System
 
@@ -289,7 +289,7 @@ without replaying trajectories from scratch.
 
 ## Strategic Insights and System Recommendations
 
-- **Prioritize Workflow Determinism:** Avoid open-ended, unconstrained autonomous loops where structured workflows suffice. Relying on structured multi-phase pipelines (localization $\rightarrow$ candidate patch generation $\rightarrow$ test validation) reduces execution costs, eliminates non-deterministic error loops, and improves resolution accuracy on complex coding benchmarks.
+- **Prioritize Workflow Determinism:** Avoid open-ended, unconstrained autonomous loops where structured workflows suffice. Relying on structured multi-phase pipelines—localization → candidate patch generation → test validation—reduces execution costs, eliminates non-deterministic error loops, and improves resolution accuracy on complex coding benchmarks.
 
 - **Deploy Lightweight Meta-Coordinators:** Use small language model routers optimized via Evolutionary Strategies (e.g., TRINITY) or Reinforcement Learning (e.g., Conductor) to direct fleet operations. Delegating tasks to specialized roles (Thinker, Worker, Verifier) preserves model context, lowers token overhead, and outperforms single-model self-routing.
 
@@ -297,6 +297,6 @@ without replaying trajectories from scratch.
 
 - **Construct AST Graph Context Maps:** Replace naive text-chunking vector RAG with language-aware AST symbol dependency mapping. Combining AST parsing with Personalized PageRank graph centrality provides deep codebase context while preserving token budgets.
 
-- **Implement Transactional State Rollbacks:** Isolate untrusted model execution inside hardware-virtualized microVMs equipped with transactional state management. Sub-100 millisecond process and filesystem snapshotting enables $O(1)$ backtracking, allowing agents to recover from errors without re-running long execution trajectories.
+- **Implement Transactional State Rollbacks:** Isolate untrusted model execution inside hardware-virtualized microVMs equipped with transactional state management. Sub-100 millisecond process and filesystem snapshotting enables `O(1)` backtracking, allowing agents to recover from errors without re-running long execution trajectories.
 
 AI software engineering infrastructure is evolving away from basic prompt wrappers and single-agent loops toward modular, transactional platforms. Combining specialized meta-orchestration models, graph-based context engineering, standard tool protocols, and fast microVM state rollbacks enables organizations to control AI developer fleets that operate reliably, safely, and efficiently at scale.
