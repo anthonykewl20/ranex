@@ -1,0 +1,33 @@
+{
+  "expected_error": "TOPOLOGY_EXCEPTION_WHOLE_LAYER_WILDCARD",
+  "instance": {
+    "accountable_human_role": "HUMAN_ARCHITECTURE_OWNER",
+    "allowed_dependency_edges": [
+      "EDGE-GE-ARTIFACT"
+    ],
+    "approval_ref": "ADR-0007",
+    "exact_path": "src/ranex/adapters/**",
+    "exception_class": "HOST_EDGE_ADAPTER",
+    "exception_id": "TOPOLOGY-EXCEPTION-BROAD-HOST-EDGE-001",
+    "owner_context": "configuration_management",
+    "rationale": "Negative fixture proving whole-layer grants fail.",
+    "removal_criteria": [
+      "Move each adapter to its owning context."
+    ],
+    "required_test_refs": [
+      "tests/architecture/test_host_edges.py"
+    ],
+    "review_expires_at": "2099-01-01T00:00:00Z",
+    "rule_ids": [
+      "ORG-LAYER-001",
+      "ORG-EXEMPTION-001"
+    ],
+    "schema_version": "topology-exception/v1",
+    "scope": "All host adapters.",
+    "security_data_constraints": [
+      "INHERIT_EXACT_SUBJECT"
+    ],
+    "source": "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md",
+    "status": "ACTIVE"
+  }
+}

@@ -1,0 +1,239 @@
+{
+  "$id": "https://schemas.ranex.dev/resources/resource-reservation-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "activated_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "admission_decision_ref": {
+      "type": "string"
+    },
+    "admission_evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "aggregate_version": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "artifact_type": {
+      "const": "resource_reservation"
+    },
+    "core_sdlc_trace_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "expires_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "issued_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "limits": {
+      "additionalProperties": false,
+      "properties": {
+        "absolute_deadline": {
+          "type": "string",
+          "x-ranex-runtime-format": "date-time"
+        },
+        "cost": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "output_bytes": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tool_calls": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "worker_attempts": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "absolute_deadline",
+        "cost",
+        "tokens",
+        "output_bytes",
+        "tool_calls",
+        "worker_attempts"
+      ],
+      "type": "object"
+    },
+    "observed_usage": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "owner_principal_id": {
+      "type": "string"
+    },
+    "parent_aggregate_version_at_admission": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_reservation_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "parent_reservation_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "policy_activation_id": {
+      "type": "string"
+    },
+    "policy_activation_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "provider_receipt_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "reservation_id": {
+      "type": "string"
+    },
+    "reserved_usage": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "settled_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "settled_usage": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "terminal_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "terminal_reason_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "reservation_id",
+    "parent_reservation_id",
+    "parent_reservation_digest",
+    "parent_aggregate_version_at_admission",
+    "status",
+    "aggregate_version",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "owner_principal_id",
+    "policy_activation_id",
+    "policy_activation_manifest_digest",
+    "admission_decision_ref",
+    "admission_evidence_refs",
+    "currency",
+    "limits",
+    "reserved_usage",
+    "observed_usage",
+    "settled_usage",
+    "provider_receipt_refs",
+    "issued_at",
+    "activated_at",
+    "expires_at",
+    "terminal_at",
+    "settled_at",
+    "terminal_reason_code",
+    "digest"
+  ],
+  "title": "resource_reservation",
+  "type": "object",
+  "x-ranex-canonical-producer": "resource_governance",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/RESOURCE_RESERVATION.yaml"
+}

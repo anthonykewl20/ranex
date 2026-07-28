@@ -1,0 +1,649 @@
+{
+  "$id": "https://schemas.ranex.dev/work/task-packet-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_criteria": {
+      "items": {},
+      "type": "array"
+    },
+    "architecture_bounds": {
+      "additionalProperties": false,
+      "properties": {
+        "attachment_points_to_preserve": {
+          "items": {},
+          "type": "array"
+        },
+        "contexts_allowed_to_change": {
+          "items": {},
+          "type": "array"
+        },
+        "dependency_edges_allowed": {
+          "items": {},
+          "type": "array"
+        },
+        "dependency_edges_forbidden": {
+          "items": {},
+          "type": "array"
+        },
+        "effect_owners_affected": {
+          "items": {},
+          "type": "array"
+        },
+        "exclusions_to_preserve": {
+          "items": {},
+          "type": "array"
+        },
+        "paths_allowed": {
+          "items": {},
+          "type": "array"
+        },
+        "paths_forbidden": {
+          "items": {},
+          "type": "array"
+        },
+        "public_apis_allowed_to_change": {
+          "items": {},
+          "type": "array"
+        },
+        "state_owners_affected": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "contexts_allowed_to_change",
+        "public_apis_allowed_to_change",
+        "paths_allowed",
+        "paths_forbidden",
+        "dependency_edges_allowed",
+        "dependency_edges_forbidden",
+        "state_owners_affected",
+        "effect_owners_affected",
+        "attachment_points_to_preserve",
+        "exclusions_to_preserve"
+      ],
+      "type": "object"
+    },
+    "artifact_type": {
+      "const": "ai_task_packet"
+    },
+    "authority": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_adr_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "architecture_revision": {
+          "type": "string"
+        },
+        "contract_digests": {
+          "items": {},
+          "type": "array"
+        },
+        "policy_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "risk_lane": {
+          "type": "string"
+        },
+        "rule_activation_manifest": {
+          "additionalProperties": false,
+          "properties": {
+            "conflict_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "context_budget": {
+              "additionalProperties": false,
+              "properties": {
+                "rule_tokens": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "task_tokens": {
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                }
+              },
+              "required": [
+                "rule_tokens",
+                "task_tokens"
+              ],
+              "type": "object"
+            },
+            "excluded_rules": {
+              "items": {
+                "additionalProperties": false,
+                "properties": {
+                  "applicability_result": {
+                    "type": "string"
+                  },
+                  "evidence_refs": {
+                    "items": {},
+                    "type": "array"
+                  },
+                  "reason_code": {
+                    "type": "string"
+                  },
+                  "rule_ref": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "rule_ref",
+                  "applicability_result",
+                  "reason_code",
+                  "evidence_refs"
+                ],
+                "type": "object"
+              },
+              "type": "array"
+            },
+            "included_rule_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "instruction_registry_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "instruction_registry_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "instruction_registry_version",
+            "instruction_registry_digest",
+            "included_rule_refs",
+            "excluded_rules",
+            "conflict_refs",
+            "context_budget"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "architecture_revision",
+        "accepted_adr_refs",
+        "contract_digests",
+        "policy_digest",
+        "risk_lane",
+        "rule_activation_manifest"
+      ],
+      "type": "object"
+    },
+    "budgets": {
+      "additionalProperties": false,
+      "properties": {
+        "absolute_deadline": {
+          "type": "string",
+          "x-ranex-runtime-format": "date-time"
+        },
+        "cost": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "output_bytes": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tokens": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "tool_calls": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "absolute_deadline",
+        "cost",
+        "tokens",
+        "output_bytes",
+        "tool_calls"
+      ],
+      "type": "object"
+    },
+    "context": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {},
+          "type": "array"
+        },
+        "conflicts": {
+          "items": {},
+          "type": "array"
+        },
+        "known_facts": {
+          "items": {},
+          "type": "array"
+        },
+        "omissions": {
+          "items": {},
+          "type": "array"
+        },
+        "source_manifest": {
+          "items": {},
+          "type": "array"
+        },
+        "unknowns": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_manifest",
+        "known_facts",
+        "assumptions",
+        "unknowns",
+        "conflicts",
+        "omissions"
+      ],
+      "type": "object"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "engineering_practice_profile": {
+      "additionalProperties": false,
+      "properties": {
+        "applicable_practices": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "practice_id": {
+                "type": "string"
+              },
+              "required_behavior": {
+                "type": "string"
+              },
+              "verification_refs": {
+                "items": {},
+                "type": "array"
+              }
+            },
+            "required": [
+              "practice_id",
+              "required_behavior",
+              "verification_refs"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "application_map_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "application_map_revision": {
+          "type": "string"
+        },
+        "deviations": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "consequence": {
+                "type": "string"
+              },
+              "decision_ref": {
+                "type": "string"
+              },
+              "practice_id": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "practice_id",
+              "reason",
+              "consequence",
+              "decision_ref"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "material_unknowns": {
+          "items": {},
+          "type": "array"
+        },
+        "registry_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "registry_version": {
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "engineering-practice-profile/v1"
+        },
+        "source_coverage": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "applicability": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "items": {},
+                "type": "array"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "source_family_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "source_family_id",
+              "applicability",
+              "reason",
+              "evidence_refs"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        }
+      },
+      "required": [
+        "schema_version",
+        "registry_version",
+        "registry_digest",
+        "application_map_revision",
+        "application_map_digest",
+        "source_coverage",
+        "applicable_practices",
+        "deviations",
+        "material_unknowns",
+        "digest"
+      ],
+      "type": "object"
+    },
+    "escalate_when": {
+      "items": {},
+      "type": "array"
+    },
+    "grants": {
+      "additionalProperties": false,
+      "properties": {
+        "capabilities": {
+          "items": {},
+          "type": "array"
+        },
+        "data_classifications": {
+          "items": {},
+          "type": "array"
+        },
+        "network_destinations": {
+          "items": {},
+          "type": "array"
+        },
+        "secret_handles": {
+          "items": {},
+          "type": "array"
+        },
+        "tools": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "capabilities",
+        "tools",
+        "network_destinations",
+        "data_classifications",
+        "secret_handles"
+      ],
+      "type": "object"
+    },
+    "non_goals": {
+      "items": {},
+      "type": "array"
+    },
+    "objective": {
+      "type": "string"
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "required_handoff_schema": {
+      "type": "string"
+    },
+    "required_result_schema": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "scope": {
+      "items": {},
+      "type": "array"
+    },
+    "status": {
+      "type": "string"
+    },
+    "subject": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "base_commit": {
+          "type": "string"
+        },
+        "candidate_commit": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "capability_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effect_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_run_aggregate_version": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "module_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "module_profile_id": {
+          "type": "string"
+        },
+        "policy_activation_id": {
+          "type": "string"
+        },
+        "policy_activation_manifest_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "policy_decision_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "repository_id": {
+          "type": "string"
+        },
+        "repository_uri_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "route_lock_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "schema_registry_version": {
+          "type": "string"
+        },
+        "subject_schema": {
+          "type": "string"
+        },
+        "work_item_id": {
+          "type": "string"
+        },
+        "workflow_definition_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "workflow_definition_id": {
+          "type": "string"
+        },
+        "workflow_interpreter_version": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "project_id",
+        "work_item_id",
+        "run_id",
+        "activity_id",
+        "effect_id",
+        "workspace_id",
+        "repository_id",
+        "repository_uri_digest",
+        "base_commit",
+        "candidate_commit",
+        "artifact_digest",
+        "workflow_definition_id",
+        "workflow_definition_digest",
+        "workflow_interpreter_version",
+        "policy_activation_id",
+        "policy_activation_manifest_digest",
+        "policy_decision_digest",
+        "module_profile_id",
+        "module_profile_digest",
+        "capability_grant_digest",
+        "route_lock_id",
+        "schema_registry_version",
+        "expected_run_aggregate_version"
+      ],
+      "type": "object"
+    },
+    "verification": {
+      "additionalProperties": false,
+      "properties": {
+        "required_commands": {
+          "items": {},
+          "type": "array"
+        },
+        "required_evidence": {
+          "items": {},
+          "type": "array"
+        },
+        "required_test_families": {
+          "items": {},
+          "type": "array"
+        },
+        "requirement_to_check_mappings": {
+          "items": {},
+          "type": "array"
+        },
+        "rollback_requirements": {
+          "items": {},
+          "type": "array"
+        },
+        "withheld_verification_profile_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "required_test_families",
+        "required_commands",
+        "required_evidence",
+        "requirement_to_check_mappings",
+        "withheld_verification_profile_id",
+        "rollback_requirements"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "packet_id",
+    "status",
+    "subject",
+    "core_sdlc_trace_ref",
+    "objective",
+    "scope",
+    "non_goals",
+    "acceptance_criteria",
+    "authority",
+    "engineering_practice_profile",
+    "architecture_bounds",
+    "context",
+    "grants",
+    "budgets",
+    "verification",
+    "escalate_when",
+    "required_result_schema",
+    "required_handoff_schema",
+    "digest"
+  ],
+  "title": "ai_task_packet",
+  "type": "object",
+  "x-ranex-canonical-producer": "context_compilation",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/AI_TASK_PACKET.yaml"
+}

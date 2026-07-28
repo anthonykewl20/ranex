@@ -1,0 +1,129 @@
+{
+  "$id": "https://schemas.ranex.dev/work/transition-event-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "aggregate_id": {
+      "type": "string"
+    },
+    "aggregate_type": {
+      "type": "string"
+    },
+    "aggregate_version_after": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "aggregate_version_before": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "artifact_type": {
+      "const": "transition_event"
+    },
+    "authority_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "causation_id": {
+      "type": "string"
+    },
+    "command_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "from_state": {
+      "type": "string"
+    },
+    "invalidated_artifact_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "occurred_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "owner_context": {
+      "type": "string"
+    },
+    "policy_decision_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "reason_code": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "to_state": {
+      "type": "string"
+    },
+    "transition_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "transition_id",
+    "owner_context",
+    "aggregate_type",
+    "aggregate_id",
+    "aggregate_version_before",
+    "aggregate_version_after",
+    "from_state",
+    "to_state",
+    "reason_code",
+    "command_id",
+    "correlation_id",
+    "causation_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "policy_decision_digest",
+    "authority_refs",
+    "evidence_refs",
+    "invalidated_artifact_refs",
+    "occurred_at",
+    "digest"
+  ],
+  "title": "transition_event",
+  "type": "object",
+  "x-ranex-canonical-producer": "owning_aggregate_uow",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/TRANSITION_EVENT.yaml"
+}

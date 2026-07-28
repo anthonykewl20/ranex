@@ -1,0 +1,275 @@
+{
+  "schema_version": "1.0.0",
+  "corpus_id": "ENGREF-CORPUS-2026-07-28-01",
+  "captured_on": "2026-07-28",
+  "corpus_root": "docs/research/books",
+  "artifact_count": 17,
+  "conceptual_work_count": 9,
+  "total_bytes": 86856268,
+  "counting_rule": "Representations of the same intellectual work share one source_family_id and do not count as independent corroboration.",
+  "manifest": {
+    "path": "docs/architecture/reviews/artifacts/foundational-reference-corpus/2026-07-28-live-corpus.sha256",
+    "sha256": "24517b0975ed5c4c601ac482f6403c28b3570719333c1f1f1c83bff7c59a8e18"
+  },
+  "authority": {
+    "status": "CURATED_RESEARCH",
+    "conformance_claim": "NONE",
+    "rule": "The corpus informs original Ranex synthesis; it does not override accepted policy, standards, law, owner decisions, or runtime evidence."
+  },
+  "default_rights_disposition": {
+    "license": "NOASSERTION",
+    "repository_inclusion": "LOCAL_ONLY",
+    "redistribution": "PROHIBITED_PENDING_RIGHTS",
+    "release_blocker": true,
+    "meaning": "Local possession and hashing do not establish acquisition, copying, conversion, model-input, derivative-work, publication, or redistribution rights."
+  },
+  "common_provenance_gaps": [
+    "acquisition URL or transaction/loan record",
+    "uploader and custody history",
+    "permission or license grant covering the stored copy",
+    "PDF-to-Markdown conversion command, tool version, run identity, and log",
+    "page-to-line derivation map",
+    "proofreading and extraction-validation record"
+  ],
+  "works": [
+    {
+      "source_family_id": "ENGREF-SWEBOK-V4A",
+      "title": "Guide to the Software Engineering Body of Knowledge (SWEBOK Guide), Version 4.0a",
+      "authors_or_body": ["IEEE Computer Society"],
+      "observed_edition": "Version 4.0a; September 2025 release",
+      "public_bibliographic_url": "https://www.computer.org/education/bodies-of-knowledge/software-engineering/v4",
+      "scope_limit": "Consensus knowledge-area map, not a prescriptive lifecycle or a claim of ISO/IEC/IEEE 12207:2026 clause conformity.",
+      "rights_signals": ["IEEE copyright and use conditions; no blanket public-repository redistribution grant established."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-SWEBOK-V4A-PDF",
+          "path": "docs/research/books/PDFs/swebok-v4.pdf",
+          "media_type": "application/pdf",
+          "bytes": 6030184,
+          "sha256": "b3cb8028fecb9607f757504c861947fa3bf423087ea8bf08c58020f0ba3596dc",
+          "observed_scope": "Authoritative-layout local reference; extraction and redistribution rights unresolved."
+        },
+        {
+          "representation_id": "ENGREF-SWEBOK-V4A-MD",
+          "path": "docs/research/books/swebok-v4.md",
+          "media_type": "text/markdown",
+          "bytes": 1288253,
+          "sha256": "26a2eb8585c93cf77a60bed26e15695892941c14e38a2587054034904e291ce7",
+          "observed_scope": "15,441-line searchable derivative; layout, tables, figures, and reading order require PDF verification."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-CODE-COMPLETE-CH5",
+      "title": "Code Complete, Second Edition",
+      "authors_or_body": ["Steve McConnell"],
+      "observed_edition": "Second Edition; retained local content is a 120-page excerpt centered on Chapter 5",
+      "public_bibliographic_url": "https://www.microsoftpressstore.com/articles/article.aspx?p=2222451",
+      "scope_limit": "Only retained content is evidence. Contents/index references do not establish possession or review of absent chapters.",
+      "rights_signals": ["Microsoft Press copyright and reproduction restrictions."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-CODE-COMPLETE-CH5-PDF",
+          "path": "docs/research/books/PDFs/Code.Complete.Steve.McConnel.pdf",
+          "media_type": "application/pdf",
+          "bytes": 2951468,
+          "sha256": "018235406bd1a515e361b579382cce72fa0e773f1796dbf316d91947a0e3d252",
+          "observed_scope": "120-page excerpt, not the complete book."
+        },
+        {
+          "representation_id": "ENGREF-CODE-COMPLETE-CH5-MD",
+          "path": "docs/research/books/code-complete.md",
+          "media_type": "text/markdown",
+          "bytes": 328316,
+          "sha256": "081150569d686a3f38ec471e86cf61151ebc33eeaa19937c38d5940a0e6e28aa",
+          "observed_scope": "3,274-line derivative; contents/index text must not be mistaken for retained chapter bodies."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-CLEAN-CODE",
+      "title": "Clean Code: A Handbook of Agile Software Craftsmanship",
+      "authors_or_body": ["Robert C. Martin"],
+      "observed_edition": "Pearson first-edition text; 2009-era Java/TDD practice context",
+      "public_bibliographic_url": "https://www.informit.com/store/clean-code-a-handbook-of-agile-software-craftsmanship-9780132350884",
+      "scope_limit": "Opinionated construction guidance; language-specific heuristics and code-only authority claims are not universal Ranex rules.",
+      "rights_signals": ["Pearson copyright and permission-required language."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-CLEAN-CODE-PDF",
+          "path": "docs/research/books/PDFs/Clean.Code.A.Handbook.of.Agile.Software.Craftsmanship.pdf",
+          "media_type": "application/pdf",
+          "bytes": 3782924,
+          "sha256": "034292d5e0a2e27bc3444ff41216139537b4e0729661c79ee0a8ad3298db3857",
+          "observed_scope": "Atypical 27-page PDF container holding book-scale content; page-number assumptions require visual verification."
+        },
+        {
+          "representation_id": "ENGREF-CLEAN-CODE-MD",
+          "path": "docs/research/books/clean-code.md",
+          "media_type": "text/markdown",
+          "bytes": 897666,
+          "sha256": "f44a1ba7b8da08642c7ee4a557ba4e9aea7b9befedac4686c2d141d4a916377c",
+          "observed_scope": "9,185-line derivative with picture-text substitutions and unreliable code/image fidelity."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-PRAGMATIC-PROGRAMMER-1E",
+      "title": "The Pragmatic Programmer: From Journeyman to Master",
+      "authors_or_body": ["Andrew Hunt", "David Thomas"],
+      "observed_edition": "Original first-edition text; local 25th printing dated 2010",
+      "public_bibliographic_url": "https://www.informit.com/store/pragmatic-programmer-from-journeyman-to-master-9780201616224",
+      "scope_limit": "Contextual 2000-era guidance; tooling prescriptions and team structures require current risk and organizational fit.",
+      "rights_signals": ["Restrictive notice.", "Local ebook and derivative repeatedly identify a named third-party purchaser."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-PRAGMATIC-PROGRAMMER-1E-PDF",
+          "path": "docs/research/books/PDFs/the-pragmatic-programmer.pdf",
+          "media_type": "application/pdf",
+          "bytes": 1676158,
+          "sha256": "7c8ad03780b2905e0cd47e3f5c60bd0474a718e7e7133ca226ef05828011ef20",
+          "observed_scope": "352-page personalized ebook."
+        },
+        {
+          "representation_id": "ENGREF-PRAGMATIC-PROGRAMMER-1E-MD",
+          "path": "docs/research/books/the-pragmatic-programmer.md",
+          "media_type": "text/markdown",
+          "bytes": 646629,
+          "sha256": "fcd45290aa0d53e6468d5110caed549dbfcac1b8d3ad3183737447bbd05f0768",
+          "observed_scope": "10,055-line derivative that repeats third-party personalization."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-SYSTEM-DESIGN-INTERVIEW-2E",
+      "title": "System Design Interview: An Insider's Guide",
+      "authors_or_body": ["Alex Xu"],
+      "observed_edition": "Second Edition; 2020 interview-preparation context",
+      "public_bibliographic_url": "https://openlibrary.org/works/OL21947791W/System_Design_Interview_-_an_Insider%27s_Guide",
+      "scope_limit": "Interview framework and simplified web-scale pattern catalogue, not a Ranex reference architecture.",
+      "rights_signals": ["Copyright, all-rights-reserved, and no-reproduction language."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-SYSTEM-DESIGN-INTERVIEW-2E-PDF",
+          "path": "docs/research/books/PDFs/SystemDesignInterview.pdf",
+          "media_type": "application/pdf",
+          "bytes": 23088726,
+          "sha256": "d2bafdef03246a64e3c58049c5ae188d8be9d74c6b23f05045637b07ad7167df",
+          "observed_scope": "269-page Calibre-produced ebook container."
+        },
+        {
+          "representation_id": "ENGREF-SYSTEM-DESIGN-INTERVIEW-2E-MD",
+          "path": "docs/research/books/system-design-interview.md",
+          "media_type": "text/markdown",
+          "bytes": 294939,
+          "sha256": "340ed9c4e03d88ea89f949cb1d038f15cea855a7e3004718992c588d5372f972",
+          "observed_scope": "4,916-line derivative; all 207 referenced figures are absent."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-CLEAN-CODER",
+      "title": "The Clean Coder: A Code of Conduct for Professional Programmers",
+      "authors_or_body": ["Robert C. Martin"],
+      "observed_edition": "2011 first-edition practice context",
+      "public_bibliographic_url": "https://www.informit.com/store/clean-coder-a-code-of-conduct-for-professional-programmers-9780137081073",
+      "scope_limit": "One author's professional-practice position; fixed hours, percentages, staffing ratios, and TDD prescriptions are not universal controls.",
+      "rights_signals": ["Pearson copyright and permission-required language.", "Ebook-origin metadata without acquisition record."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-CLEAN-CODER-PDF",
+          "path": "docs/research/books/PDFs/The Clean Coder-A Code of Conduct for Professional Programmers.pdf",
+          "media_type": "application/pdf",
+          "bytes": 6349234,
+          "sha256": "73f64ac2e6f2bb18f0cbc2879b636c031ee3fe98eba0cc0a04ce8203d7aec90b",
+          "observed_scope": "248-page ebook."
+        },
+        {
+          "representation_id": "ENGREF-CLEAN-CODER-MD",
+          "path": "docs/research/books/The Clean Coder-A Code of Conduct for Professional Programmers.md",
+          "media_type": "text/markdown",
+          "bytes": 398378,
+          "sha256": "b37771c0dc990b225bcbc5f0de1b5dbd6c496240e9fa47bacfce12bc7bf2f899",
+          "observed_scope": "4,797-line derivative; images are absent and some estimation formulas are materially corrupted."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-DDIA-1E-ER6",
+      "title": "Designing Data-Intensive Applications",
+      "authors_or_body": ["Martin Kleppmann"],
+      "observed_edition": "Sixth Early Release dated 2016-07-11; unfinished pre-publication text",
+      "public_bibliographic_url": "https://www.oreilly.com/library/view/designing-data-intensive-applications/9781491903063/",
+      "scope_limit": "The local copy explicitly says several chapters were unwritten and excludes deployment, operations, security, ethics, and management. Claims must be checked against a lawful final edition or cited primary source before becoming high-consequence decision evidence.",
+      "rights_signals": ["Copyright 2016 Martin Kleppmann; all rights reserved.", "Front matter contains production placeholders and an incomplete ISBN field."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-DDIA-1E-ER6-PDF",
+          "path": "docs/research/books/PDFs/Designing-Data-Intensive-Applications.pdf",
+          "media_type": "application/pdf",
+          "bytes": 4377248,
+          "sha256": "905e1348c2b7955a3e799998ce9b45993b5c8cfa9ef6b93931af7a780b71ac02",
+          "observed_scope": "491-page early-release PDF."
+        },
+        {
+          "representation_id": "ENGREF-DDIA-1E-ER6-MD",
+          "path": "docs/research/books/Designing-Data-Intensive-Applications.md",
+          "media_type": "text/markdown",
+          "bytes": 1185973,
+          "sha256": "5ffa700462ce50dc05067d052c3742fdc79809c840b4412805b70dee6acd204f",
+          "observed_scope": "11,177-line, 186,496-word searchable derivative of the unfinished copy."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-FUNDAMENTALS-SOFTWARE-ARCHITECTURE-1E",
+      "title": "Fundamentals of Software Architecture: An Engineering Approach",
+      "authors_or_body": ["Mark Richards", "Neal Ford"],
+      "observed_edition": "First Edition, February 2020; local front matter records fourth release 2021-02-12",
+      "public_bibliographic_url": "https://www.oreilly.com/library/view/fundamentals-of-software/9781492043447/",
+      "scope_limit": "Experience-based architecture guidance and qualitative style comparisons; generic star ratings and topology preferences are not universal Ranex scores.",
+      "rights_signals": ["Copyright 2020 Mark Richards and Neal Ford; all rights reserved.", "ISBN 978-1-492-04345-4."],
+      "representations": [
+        {
+          "representation_id": "ENGREF-FUNDAMENTALS-SOFTWARE-ARCHITECTURE-1E-PDF",
+          "path": "docs/research/books/PDFs/Fundamentals.of.Software.Architecture.pdf",
+          "media_type": "application/pdf",
+          "bytes": 24625023,
+          "sha256": "5008352574b214d08e4e831288a4e628355557fb73a927f91eda411c2ba1a546",
+          "observed_scope": "Full-book-structure PDF; container page count was not independently established by the available file inspector."
+        },
+        {
+          "representation_id": "ENGREF-FUNDAMENTALS-SOFTWARE-ARCHITECTURE-1E-MD",
+          "path": "docs/research/books/Fundamentals-of-Software-Architecture.md",
+          "media_type": "text/markdown",
+          "bytes": 776041,
+          "sha256": "3aa8f1351047d0900abe793c543b280fee188c7d93525d8455ec2050683873a1",
+          "observed_scope": "7,167-line, 113,162-word searchable derivative; tables, diagrams, and star ratings require PDF verification."
+        }
+      ]
+    },
+    {
+      "source_family_id": "ENGREF-CLEAN-ARCHITECTURE-1E",
+      "title": "Clean Architecture: A Craftsman's Guide to Software Structure and Design",
+      "authors_or_body": ["Robert C. Martin"],
+      "observed_edition": "Pearson first edition; PDF metadata date 2017-09-12 and copyright page 2018",
+      "public_bibliographic_url": "https://www.informit.com/store/clean-architecture-a-craftsmans-guide-to-software-structure-9780134494166",
+      "scope_limit": "Opinionated object/component architecture guidance. The dependency rule and boundary patterns require contextual tradeoff analysis; database/framework/UI-as-detail language must not erase data, operational, security, or platform constraints.",
+      "rights_signals": [
+        "Copyright 2018 Pearson Education, Inc.; all rights reserved and permission required for prohibited reproduction.",
+        "Calibre-produced PDF with no acquisition or conversion record.",
+        "XMP ebook ISBN 9780134494326 differs from copyright-page ISBN-13 9780134494166."
+      ],
+      "representations": [
+        {
+          "representation_id": "ENGREF-CLEAN-ARCHITECTURE-1E-PDF",
+          "path": "docs/research/books/PDFs/Clean.Architecture.Code.Design.pdf",
+          "media_type": "application/pdf",
+          "bytes": 8159108,
+          "sha256": "1973f36809f8bd696578e05a6975f5b96117a26359a51e1eb1b036f3c615ff07",
+          "observed_scope": "364-page Calibre 2.51 PDF; searchable text and bookmarks present; no paired Markdown derivative."
+        }
+      ]
+    }
+  ]
+}

@@ -2,12 +2,19 @@
 
 | Field | Value |
 |---|---|
+| Policy ID | `POL-SOT-001` |
+| Version | `1.3.0` |
 | Status | Normative supporting policy |
 | Owner | Human governor |
+| Effective date | 2026-07-27 |
+| Repository snapshot basis | `bootstrap/pre-upstream`; release/review manifests bind the exact revision and file digest |
 | Applies to | Architecture, implementation, AI-agent work, review, release, and operations |
 | Parent process | [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md) |
 | Parent architecture | [Hermes-to-Ranex Ground-Zero Full-System Architecture](./HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md) |
-| Owner decision | [ADR-0001: Established Software-Development Lifecycle Governs AI Work](./decisions/ADR-0001-established-sdlc-governs-ai-work.md) |
+| Owner decisions | [ADR-0001](./decisions/ADR-0001-established-sdlc-governs-ai-work.md); [ADR-0002](./decisions/ADR-0002-retire-legacy-implementation-guide.md); [ADR-0003](./decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md); [ADR-0004](./decisions/ADR-0004-establish-initial-quality-attribute-baselines.md); [ADR-0005](./decisions/ADR-0005-select-local-static-orchestration-defaults.md); [ADR-0006](./decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md); [ADR-0007](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md); [ADR-0008](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md); [ADR-0009](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md) |
+| Compatibility/migration class | New governing policy; older source precedence is mapped, never silently discarded |
+| Security/data class | Public policy metadata; attached evidence retains its own classification |
+| Review trigger | First two end-to-end tracers, then quarterly or on authority/source-precedence change |
 
 ## 1. Purpose
 
@@ -31,12 +38,14 @@ Authority and empirical truth are not the same hierarchy.
 
 ### 2.1 Scoped normative authority
 
-Human decision is the highest accountable authority, but the remaining sources
-govern different subjects rather than forming a misleading total ordering:
+For internal product decisions, authenticated human decision is the highest
+accountable authority within applicable law, contract, license, privacy, and
+third-party rights. The remaining sources govern different subjects rather
+than forming a misleading total ordering:
 
 | Authority source | Governing scope | Cannot do |
 |---|---|---|
-| Authenticated human decision and accepted ADR | Exact product, architecture, risk, policy, release, or effect decision | Rewrite empirical evidence or bypass exact-subject rules |
+| Authenticated human decision and accepted ADR | Exact product, architecture, risk, policy, release, or effect decision | Rewrite empirical evidence, bypass exact-subject rules, or waive applicable external obligations |
 | [Core SDLC](./CORE_SDLC_OPERATING_MODEL.md) and [control catalog](./SDLC_CONTROL_CATALOG.md) | Product-to-production process, work-item lifecycle, roles, assurance, traceability, release/operate/improve semantics | Define target package ownership or claim a runtime fact |
 | Full-system architecture and accepted architecture ADRs | Product boundaries, bounded contexts, source layout, state/effect ownership, dependencies, trust and migration | Redefine the core SDLC or claim implementation proof |
 | Active policy/instruction package | Risk derivation, authorization and required controls within the accepted SDLC and architecture | Relax a higher owner requirement or manufacture evidence |
@@ -80,6 +89,10 @@ Human owner decisions
                                       exact task packet for one SDLC activity
                                                    |
                                                    v
+                                  typed assignment + fenced lease
+                                  governor/budget/isolation profile
+                                                   |
+                                                   v
                           bounded AI worker -> independent review -> gate evidence
                                                    |
                                      human decision/permit where required
@@ -90,27 +103,34 @@ Human owner decisions
 ```
 
 Research feeds RFCs and architecture review. It does not directly change a
-runtime contract.
+runtime contract. A research directory is never an implicit live subject:
+reviews bind explicit sorted path/digest manifests, including separate addendum
+manifests when files arrive after a review freeze.
 
-### 3.1 Relationship to `RANEX_IMPLEMENTATION_GUIDE.md`
+### 3.1 Retired legacy implementation guide
 
-The implementation guide remains a capability checklist, host/bootstrap
-playbook, and source of operational requirements. It is not allowed to override
-this full-system architecture with an older plugin-first layout, conflicting
-role/state/path examples, or phase ordering that consumes a permit before the
-gate/authority seam exists.
+The owner removed the former root implementation guide through
+[ADR-0002](./decisions/ADR-0002-retire-legacy-implementation-guide.md). It is
+not a capability checklist, bootstrap playbook, operational-requirement source,
+construction input, or migration plan for new work.
 
-Until the guide is regenerated or amended:
+- Agents must not restore or use the deleted guide from Git history, another
+  branch, a review bundle, a source manifest, quoted research, or prior model
+  context.
+- Historical research, review records, manifests, and phase records may name
+  it only to preserve what was actually inspected or executed at that time.
+  Such a reference grants no present authority.
+- A still-useful observation from the retired guide must be re-observed,
+  reconciled against the current Core SDLC and architecture, and accepted as a
+  new requirement, control, RFC/ADR, runbook, or machine contract before use.
+- New implementation itineraries are derived from the Core SDLC, this policy,
+  the full-system architecture, the Engineering Reference Application Map,
+  accepted ADRs, and machine contracts.
 
-- this architecture controls target ownership, boundaries, source layout,
-  dependency direction, state, authority, evidence, effects, migration, and
-  product exclusions;
-- accepted ADRs and machine contracts control their exact executable
-  vocabulary;
-- the guide supplies applicable operational detail that does not conflict with
-  those higher sources; and
-- a conflict is recorded as `CONFLICT`, not resolved by choosing whichever
-  document is easier for the current task.
+The older plugin-first layout, duplicate role/state/path vocabularies, separate
+office authority model, and pre-authority phase ordering are rejected
+construction sources. They cannot be revived through a lower-precedence
+artifact.
 
 ## 4. Document classes
 
@@ -118,6 +138,7 @@ Until the guide is regenerated or amended:
 |---|---|---:|---|
 | Core SDLC policy/control | Product-to-production process, state, roles and assurance | Yes | Human-accepted superseding ADR and versioned migration |
 | Architecture | Full target shape, ownership, boundaries, dependencies | Yes | RFC, independent review, human-accepted ADR |
+| Worker/fleet control | Assignment, liveness, fencing, governor, topology, budget, isolation, handoff, measurement | Yes only as a subordinate projection of Core SDLC/architecture | RFC/ADR plus exact contract and adoption-gate evidence |
 | Machine contract | Exact IDs, enums, schemas, ownership, paths, lifecycles | Yes | Versioned contract change and compatibility proof |
 | ADR | Accepted architecture decision and consequences | Yes | New superseding ADR; never rewrite history silently |
 | RFC | Explores a decision and alternatives | No until accepted | Review and human decision |
@@ -150,6 +171,12 @@ Every normative or decision artifact carries one status:
 capability still needs a mapped final boundary or an explicit `REJECTED` product
 decision.
 
+Normative status and proof maturity are separate fields. The full-system target
+is `ACCEPTED` by ADR-0003 while executable-contract maturity remains pending
+`AI-G2` and runtime qualification remains unvalidated. No document may encode
+those three facts in one ambiguous status or infer a gate result from an
+accepted decision.
+
 ## 6. Required metadata
 
 Every normative artifact includes:
@@ -168,6 +195,12 @@ Every normative artifact includes:
 - security and data-classification impact; and
 - approval or decision record.
 
+The content digest and exact repository revision are stored in the immutable
+review/release source manifest rather than in the artifact's own digest-bearing
+body. This avoids a self-referential digest and the false claim that a commit
+containing the document can name itself. A display table may name the
+repository snapshot basis, but the manifest is the exact machine binding.
+
 Every research or review artifact additionally states:
 
 - evidence corpus and exact revisions/digests;
@@ -179,33 +212,53 @@ Every research or review artifact additionally states:
 
 ## 7. Machine contract registry
 
-Before feature implementation, these registries become the executable source of
-truth:
+The executable documentation-contract baseline uses these canonical JSON
+registries:
 
 ```text
 architecture/contracts/
-├── identities.yaml
-├── states.yaml
-├── roles.yaml
-├── work-classes.yaml
-├── risk-lanes.yaml
-├── capabilities.yaml
-├── module-graph.yaml
-├── state-ownership.yaml
-├── path-ownership.yaml
-├── lifecycles.yaml
-├── lifecycle-crosswalks.yaml
-├── gate-namespaces.yaml
-├── invalidation-graph.yaml
-├── event-registry.yaml
-├── authority-matrix.yaml
-├── schema-compatibility.yaml
-└── source-precedence.yaml
+├── applicability-rules.json
+├── architecture-elements.json
+├── architecture-rule-assessments.json
+├── artifact-types.json
+├── context-boundary-fitness.json
+├── context-coupling-policy.json
+├── context-dependency-edges.json
+├── contexts.json
+├── data-ownership.json
+├── decisions.json
+├── effects.json
+├── engineering-practice-profiles.json
+├── engineering-practices.json
+├── events.json
+├── feedback-fitness.json
+├── identities.json
+├── paths.json
+├── priority-rules.json
+├── schema-registry.json
+├── states.json
+├── test-practice-profiles.json
+├── test-practices.json
+├── topology-rules.json
+├── vital-profile.json
+└── registry-manifest.json
 ```
+
+The artifact schemas and canonicalization rules are specified in
+[Ranex AI-Work Artifact Contract Specification](./AI_ARTIFACT_CONTRACTS.md).
+The manifest content-binds every registry except itself to avoid a circular
+digest. Enactment of this documentation-contract layer does not make runtime
+producers, generated consumers, repository topology, tests, or `AI-G2` pass.
+`engineering-practice-profiles.json` projects the exact
+[`ENGPROFILE-RANEX-ARCHITECTURE-DESIGN-001`](../research/ranex-architecture-practice-application-profile.json):
+all nine source families and 34 practices are dispositioned for the design,
+while all 33 applicable runtime outcomes remain `NOT_ASSESSED` and the profile
+remains nonsealing.
 
 They resolve the previously documented conflicts:
 
-1. `WorkItemStatus`, `RunStatus`, `IncidentStatus`, `ReleaseStatus`,
+1. `WorkItemStatus`, `RunStatus`, `AssignmentStatus`, `LeaseStatus`,
+   `MailboxDeliveryStatus`, `IncidentStatus`, `ReleaseStatus`,
    `CapabilityStatus`, `WorkflowNodeId`, and derived `RuleStage` are different
    fields with one owner each.
 2. Role IDs are domain-neutral and presentation aliases never grant authority.
@@ -227,9 +280,118 @@ They resolve the previously documented conflicts:
     human decision points are distinct typed namespaces.
 12. L0–L12 are worker-protocol activities mapped to the core SDLC; they are not
     a parallel work-item lifecycle.
+13. agent assignment, lease, heartbeat, mailbox, governor termination, and
+    fleet experiment records cannot alias work/run/gate/decision authority.
+14. the ADR-0006 register contains exactly the contiguous 29 fixed decision IDs,
+    their alternatives, owners, governing ADRs, and fitness functions.
+15. ADR-0007 fixes the sole context root, internal layer/port/adapter placement,
+    public-import/dependency/cycle/composition/messaging/persistence rules,
+    tests/source mirroring, schema/generated/migration/legacy rules,
+    ownership/navigation/package discovery, and exact exception protocol.
+16. ADR-0008 fixes production-path TDD, one built exact artifact, allowed test
+    roots, declared deterministic seams, fake/real parity, ephemeral SQLite,
+    the full failure-mode matrix, closed-transition exhaustiveness,
+    open-space exploration, fixture/data/flakiness/generated/migration/lane/
+    observability/mutation/exception rules, and noncompensating signals.
+17. ADR-0009 fixes the exact deny-by-default public-API edge ledger, one
+    falsifiable boundary-fit record per registered context, governed-execution
+    coupling measures/triggers, exact-host feedback objectives, deterministic
+    selection/sharding/escalation, and noncompensating review behavior.
+
+The contract compiler projects, without semantic edits, the fenced YAML
+decision register in
+[ADR-0006](./decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md)
+into `decisions.json` and `architecture-elements.json`, and projects ADR-0004
+baselines into those owned records. It projects ADR-0007 through
+`contexts.json`, `paths.json`, and `topology-rules.json`; it projects ADR-0008
+through `test-practices.json`, `test-practice-profiles.json`, and
+`schemas/common/test-practice-profile-v1.schema.json`. ADR-0009 projects to
+`context-dependency-edges.json`, `context-boundary-fitness.json`,
+`context-coupling-policy.json`, and `feedback-fitness.json`. The exact 47
+rule-level evaluation records live in `architecture-rule-assessments.json` and validate
+against `schemas/common/architecture-rule-assessment-v1.schema.json`; its
+`noncompensating_summary` has no score or independent `PASS` authority. A
+missing rule, changed meaning, duplicate owner, invalid exception, unregistered
+test root, or other projection mismatch is `CONFLICT`.
+
+### 7.1 Single-owner authority records
+
+| Record/transition | Sole source owner | Allowed downstream use |
+|---|---|---|
+| `WorkItemStatus` | `work_management` | Other contexts consume immutable work facts and request transitions |
+| `RunStatus`, gate binding, grant/permit, effect intent/outcome/reconciliation | `governed_execution` | Adapters execute only a valid, exact-subject permit |
+| Rule/risk/authorization snapshot and `HumanDecisionRecord` requirements | `policy` | Governed execution evaluates eligibility; policy does not issue/consume permits |
+| Principal/session/challenge/secret handle | `identity_access` | Policy and adapters consume authenticated facts/opaque handles |
+| Claim, evidence envelope, checker result, snapshot, `GateEvaluation` | `assurance` | Governed execution binds a fresh immutable evaluation |
+| Review request/attempt/observation/verdict/independence evaluation | `analytical_review` | Assurance ingests immutable references; it does not rewrite them |
+| Process audit/capability assessment/fleet experiment | `process_assurance` | Improvement input only; never runtime gate authority |
+
+Duplicate or missing owners fail the applicable `contexts.json`,
+`data-ownership.json`, and `paths.json` closure checks. A model, board, worker,
+review transport, delivery channel, generated view, or adapter is never an
+authority owner.
 
 Prose examples are generated from or validated against these registries. An
 example cannot create a new state, role, path, or capability.
+
+### 7.2 Repository-organization and TDD projections
+
+[ADR-0007](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md)
+is the semantic owner for modular-DDD organization. Its canonical port path is
+only `src/ranex/<context>/application/ports/`. Context-exclusive adapters live
+under `src/ranex/<context>/adapters/<technology>/`; central
+`src/ranex/adapters/<boundary>/<technology>/` paths require an exact
+`HOST_EDGE_ADAPTER` exception. `topology-rules.json` owns the executable rule
+IDs, allowed exception classes/record shape, ownership/reviewer constraints,
+and package-discovery constraints. `contexts.json` and `paths.json` project
+registered instances; every path row validates against
+`schemas/common/path-contract-v1.schema.json`. A generated CODEOWNERS view
+requests review but never owns semantics.
+
+[ADR-0008](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md)
+is the semantic owner for test-first construction and verification policy.
+The only top-level test roots are `unit`, `contract`, `integration`,
+`architecture`, `acceptance`, `system`, `e2e`, `security`, `performance`,
+`resilience`, `migration`, `replay`, `operations`, `qualification`,
+`effectiveness`, `evaluation`, `fixtures`, and `builders`.
+`test-practices.json` projects the complete `TDD-*` and `FF-TDD-*` policy;
+`test-practice-profiles.json` binds applicability profiles; the common schema
+validates those profiles. `tests/persistence` and `tests/crash` are not
+alternate roots.
+
+`architecture-rule-assessments.json.entries` contains exactly one row for every
+one of the 18 `ORG-*`, 19 `TDD-*`, and ten ADR-0009 rules: 47 total. Each row
+carries its own exact subject, applicability/result, evidence,
+observation/freshness, owner, and N/A/exception basis under the common
+assessment schema. The
+`noncompensating_summary` may report denominators and blocking-state counts
+only; it cannot average, score, promote, or override a row.
+
+### 7.3 Boundary-fit, dependency, coupling, and feedback projections
+
+[ADR-0009](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md)
+owns the exact 67-edge deny-by-default public-API graph, 34 boundary-fit
+hypotheses, six governed-execution coupling measures/triggers, four
+reference-host feedback objectives, deterministic selection/sharding/
+escalation, and ten noncompensating rule definitions. Its four registries
+validate against the exact `context-dependency-edge-v1`,
+`context-boundary-fit-v1`, `context-coupling-policy-v1`, and
+`feedback-fitness-policy-v1` schemas under `schemas/common/`.
+
+Every edge names caller/callee owners, rationale, interaction, consistency,
+failure, and recovery; actual imports must be a public-API-only subset and
+acyclic. Every canonical context has one stable `BOUNDARYFIT-*` element,
+merge/split alternatives, and a tracer falsifier. Coupling and feedback
+thresholds trigger owned review/remediation; they neither force a service
+split nor compensate for another failed/unknown rule.
+
+For all three ADRs, accepted prose owns meaning and the registries own exact
+executable vocabulary. Neither may silently repair the other. Mismatch is
+`CONFLICT`; absent or insufficient material proof is `UNKNOWN`; either blocks
+the applicable gate. A `NOT_APPLICABLE` result needs a registered rule and
+evidence. Documentation acceptance and registry generation do not establish
+source-tree conformance, TDD enactment, runtime correctness, or an overall
+quality score.
 
 ## 8. Source precedence and conflict behavior
 
@@ -307,6 +469,9 @@ Every task packet names:
 - public APIs it may change;
 - allowed and forbidden dependency edges;
 - state/effect ownership affected;
+- the exact engineering-practice registry and application profile, including
+  applicable practices, explicit non-applicability decisions, required
+  behavior, deviations, and verification evidence;
 - mapped future attachment points that must remain intact;
 - explicit exclusions it must not reintroduce; and
 - architecture fitness tests that prove the slice did not wall off later
@@ -334,12 +499,16 @@ Before architecture or implementation work, an agent receives:
 2. the applicable Core-SDLC state/control/risk-lane projection;
 3. this source-of-truth policy;
 4. the full-system architecture;
-5. applicable accepted ADRs;
-6. applicable machine contract revisions;
-7. applicable policy/instruction records;
-8. only the research required by the packet;
-9. exact repository/workspace identity; and
-10. output and evidence schemas.
+5. the applicable projection of the Engineering Reference Application Map and
+   its machine-registered engineering-practice profile;
+6. applicable accepted ADRs;
+7. applicable machine contract revisions;
+8. the applicable fleet assignment, lease, fencing, budget, isolation, and
+   topology profile when a worker is dispatched;
+9. applicable policy/instruction records;
+10. only the research required by the packet;
+11. exact repository/workspace identity; and
+12. output and evidence schemas.
 
 The packet manifest proves what was delivered. It does not prove attention or
 compliance; behavior and evidence are evaluated separately.

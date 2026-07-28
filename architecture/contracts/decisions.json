@@ -1,0 +1,321 @@
+{
+  "entries": [
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "One release-pinned modular monolith, not a microservice fleet.",
+      "decision_id": "ARCHDEC-PRODUCT-FORM",
+      "name": "Product form",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "The accepted Core SDLC is the governing process; AI-agent L0–L12 is a subordinate worker protocol.",
+      "decision_id": "ARCHDEC-DEVELOPMENT-PROCESS",
+      "name": "Development process",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "The frozen SWEBOK/book corpus is a major practice base under the Core SDLC hierarchy; it closes unclear work but cannot override policy or become authority.",
+      "decision_id": "ARCHDEC-ENGINEERING-REFERENCES",
+      "name": "Engineering references",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Every architecture and implementation packet binds a machine-registered applicability profile, required behavior, deviations, and verification evidence; citation without demonstrated application is insufficient.",
+      "decision_id": "ARCHDEC-ENGINEERING-PRACTICE-APPLICATION",
+      "name": "Engineering-practice application",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Deleted and retired by ADR-0002; historical references grant no construction authority and new route plans derive from this architecture.",
+      "decision_id": "ARCHDEC-LEGACY-IMPLEMENTATION-GUIDE",
+      "name": "Legacy implementation guide",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Ranex is a Hermes-derived software fork; lineage/history/license proof is a blocking preflight, and GitHub network-fork status is tracked separately.",
+      "decision_id": "ARCHDEC-UPSTREAM-RELATIONSHIP",
+      "name": "Upstream relationship",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Authority, domain, and application code outside the named compatibility adapter has no dependency on inherited Hermes internals.",
+      "decision_id": "ARCHDEC-NEW-CORE",
+      "name": "New core",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Strangler migration inside the fork; no big-bang rewrite.",
+      "decision_id": "ARCHDEC-MIGRATION",
+      "name": "Migration",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "work_management owns WorkItemStatus; boards, runs, models, and Hermes sessions do not.",
+      "decision_id": "ARCHDEC-WORK-LIFECYCLE-AUTHORITY",
+      "name": "Work lifecycle authority",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "One governed_execution consistency cell owns run transitions, gate bindings, permit consumption, and effect intent.",
+      "decision_id": "ARCHDEC-CANONICAL-AUTHORITY",
+      "name": "Canonical authority",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "One physical SQLite authority database for the local target, with logical context ownership, an append-only journal, and a transactional outbox.",
+      "decision_id": "ARCHDEC-STATE-STORAGE",
+      "name": "State storage",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Selective replay journal for governed execution; the whole product is not event sourced.",
+      "decision_id": "ARCHDEC-EVENT-SOURCING",
+      "name": "Event sourcing",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "A runtime port with a local durable runner as the product default; another engine may implement the same port after an ADR and parity tests.",
+      "decision_id": "ARCHDEC-WORKFLOW-RUNTIME",
+      "name": "Workflow runtime",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "At-least-once or at-most-once attempt semantics with idempotency and reconciliation; never claim exactly once.",
+      "decision_id": "ARCHDEC-EFFECTS",
+      "name": "Effects",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Deny visibly. Missing, stale, malformed, unavailable, or conflicting blocking proof cannot pass.",
+      "decision_id": "ARCHDEC-POLICY-FAILURE",
+      "name": "Policy failure",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Models produce proposals and observations. They cannot emit an accepted transition, gate decision, permit, waiver, or human decision.",
+      "decision_id": "ARCHDEC-MODEL-AUTHORITY",
+      "name": "Model authority",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "One worker is the default; parallelism uses fenced assignments, measured topology, isolated writes, verifier backpressure, and human-controlled landing.",
+      "decision_id": "ARCHDEC-AI-WORKER-FLEET",
+      "name": "AI-worker fleet",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Shipped with Ranex behind stable internal interfaces; not user-installed prerequisites.",
+      "decision_id": "ARCHDEC-FIRST-PARTY-CAPABILITIES",
+      "name": "First-party capabilities",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Lower-trust, out-of-process, capability-scoped, and permanently outside the authority path.",
+      "decision_id": "ARCHDEC-EXTERNAL-EXTENSIONS",
+      "name": "External extensions",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Excluded from the Ranex target. No Electron desktop, desktop bootstrap, or desktop updater.",
+      "decision_id": "ARCHDEC-DESKTOP-APP",
+      "name": "Desktop app",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "CLI, TUI, loopback-only web dashboard, GitHub edge, and a text-phone delivery port.",
+      "decision_id": "ARCHDEC-LOCAL-UX",
+      "name": "Local UX",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Telegram is the first mapped text-phone adapter; other channels implement the same delivery/auth contracts.",
+      "decision_id": "ARCHDEC-PHONE-IMPLEMENTATION",
+      "name": "Phone implementation",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Mapped as an optional media/transcription adapter, inactive unless a future accepted decision requires it. It never enters the kernel.",
+      "decision_id": "ARCHDEC-VOICE",
+      "name": "Voice",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Excluded. The web dashboard binds to loopback; private tailnet publication is an explicit delivery adapter and policy decision.",
+      "decision_id": "ARCHDEC-PUBLIC-DASHBOARD",
+      "name": "Public dashboard",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "BYOK/local qualified routes only. Ranex has no first-party paid model account.",
+      "decision_id": "ARCHDEC-PROVIDERS",
+      "name": "Providers",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Removed, not hidden: no Portal, billing, credits, subscriptions, managed tool pool, purchase path, or commercial fallback.",
+      "decision_id": "ARCHDEC-NOUS-COMMERCIAL-PRODUCT",
+      "name": "Nous commercial product",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Cannot activate models. The qualified route catalog is release-pinned.",
+      "decision_id": "ARCHDEC-REMOTE-MODEL-CATALOG",
+      "name": "Remote model catalog",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Deterministic policy derives risk; worker-supplied risk can only be an untrusted observation.",
+      "decision_id": "ARCHDEC-RISK",
+      "name": "Risk",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "Human-controlled landing until a later accepted decision changes the policy.",
+      "decision_id": "ARCHDEC-MERGE",
+      "name": "Merge",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#3",
+      "status": "ACCEPTED_TARGET"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0001",
+      "name": "ADR-0001: Established Software-Development Lifecycle Governs AI Work",
+      "source": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
+      "source_digest": "sha256:1d2ea7ddd155dcb29f80ee9006ac061c4f7a0c6075b8c003d61d817e7989a532",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0002",
+      "name": "ADR-0002: Retire the Legacy Implementation Guide and Require Engineering-Practice Profiles",
+      "source": "docs/architecture/decisions/ADR-0002-retire-legacy-implementation-guide.md",
+      "source_digest": "sha256:3fee3e69327948aa5101f801390ac6d0001f71d413ea0d71dbf230a6bc8844bc",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0003",
+      "name": "ADR-0003: Accept the Ranex Target Architecture and Authority Kernel",
+      "source": "docs/architecture/decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md",
+      "source_digest": "sha256:3563a4368a0ca18d457b27ddef298c34c2a027a0ab2102b1a81549e83103ffc5",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0004",
+      "name": "ADR-0004: Establish Initial Quality-Attribute Baselines",
+      "source": "docs/architecture/decisions/ADR-0004-establish-initial-quality-attribute-baselines.md",
+      "source_digest": "sha256:3e08978d1a43eb70ee6d1d06174deab82c93429242a5c85e8d4a4a1f06c09667",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0005",
+      "name": "ADR-0005: Select Local Static Orchestration Defaults and Substitution Gates",
+      "source": "docs/architecture/decisions/ADR-0005-select-local-static-orchestration-defaults.md",
+      "source_digest": "sha256:6b49b2e93de772299c68eddd30ae7b9eedc7231556d47bd8b3fbf494036fde05",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0006",
+      "name": "ADR-0006: Register the Fixed Decisions and Fitness Crosswalk",
+      "source": "docs/architecture/decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md",
+      "source_digest": "sha256:e86c89880310c6068faeb94b7f63dd6d14bb1d973836429a3506eb87c7c22364",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0007",
+      "name": "ADR-0007: Establish Modular-DDD Repository Organization",
+      "source": "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md",
+      "source_digest": "sha256:2ecc6323dcc3fbdaca0e301eee4689a2539a5b067709583111727cc8699561f3",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0008",
+      "name": "ADR-0008: Make TDD the Default Development Discipline",
+      "source": "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md",
+      "source_digest": "sha256:f2073ab9effb843c30c4669438613eb1c5aedce00d94ea3127025eee3953fe72",
+      "status": "ACCEPTED"
+    },
+    {
+      "authority": "HUMAN_GOVERNOR",
+      "canonical_position": "See immutable ADR.",
+      "decision_id": "ADR-0009",
+      "name": "ADR-0009: Register Boundary Fit, Dependencies, Coupling, and Feedback Fitness",
+      "source": "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md",
+      "source_digest": "sha256:727ac9b9be3d5b560967d4ce43504bd12c0e91cdb028988a16b23ef55c500041",
+      "status": "ACCEPTED"
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-DECISIONS-001",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

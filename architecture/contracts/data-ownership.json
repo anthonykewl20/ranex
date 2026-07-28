@@ -1,0 +1,212 @@
+{
+  "entries": [
+    {
+      "owned_data": "Run, pinned workflow, activities, gate bindings, consumable authority grants, permit issuance/consumption, effect intents/outcomes, reconciliation",
+      "owner_context": "governed_execution",
+      "persistence_authority": "Sole run/execution-transition authority",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1"
+    },
+    {
+      "owned_data": "Roles, authorization-eligibility rules, risk-lane derivation, policy packages, activation, authorization snapshots, waivers and authenticated human-decision records",
+      "owner_context": "policy",
+      "persistence_authority": "Policy definitions and append-only decision history; never issues or consumes execution grants/permits",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1"
+    },
+    {
+      "owned_data": "Claims, evidence envelopes, qualified checker results, exact-subject evidence snapshots, and GateEvaluation",
+      "owner_context": "assurance",
+      "persistence_authority": "Sole evidence/gate-evaluation record owner; does not own review observations, qualify components, bind a run gate, or commit run state",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1"
+    },
+    {
+      "owned_data": "Module catalog, descriptors, capability vocabulary, grants, compatibility, activation lifecycle",
+      "owner_context": "module_governance",
+      "persistence_authority": "Module and grant authority",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1"
+    },
+    {
+      "owned_data": "Human/service identities, authentication, sessions, nonces, remote decision authentication, data classification, destination facts, secret references",
+      "owner_context": "identity_access",
+      "persistence_authority": "Identity and access authority; policy decides and the egress adapter enforces",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1"
+    },
+    {
+      "owned_data": "Actors, problems/needs, hypotheses, product capabilities, requirements, acceptance examples, outcome measures, validation decisions, CapabilityStatus",
+      "owner_context": "product_definition",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Projects, canonical WorkItemStatus, work class, portfolio/queues/WIP, dependencies/risks/issues, technical-debt records, accountable work roles, external issue mapping, Kanban projections",
+      "owner_context": "work_management",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Service catalog, service/capability ownership, supported versions, SLIs/SLOs/error budgets, support/escalation, maintenance and retirement triggers",
+      "owner_context": "service_management",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Configuration-item registry, content-addressed baselines, status accounting, bidirectional traceability graph, functional/physical configuration audits",
+      "owner_context": "configuration_management",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Supplier/dependency adoption and reuse decisions, shared responsibility, version/support/vulnerability monitoring, concentration/exit plans",
+      "owner_context": "supplier_governance",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Local capacity, hierarchical cost/token/tool/output/network budgets, parent/child reservations, quotas, transitive usage attribution and provider-limit facts",
+      "owner_context": "resource_governance",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "User conversation/thread/message identity, continuity, search lifecycle, classification, retention, export and deletion",
+      "owner_context": "interaction_history",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "SDLC policy conformance, tailoring profiles, human-role competence, process audits/nonconformance/corrective action, process improvement evidence, fleet experiment and calibration records",
+      "owner_context": "process_assurance",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Repository identity, worktree plans, branch/head validation, landing and cleanup",
+      "owner_context": "workspace",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Atomic versioned instructions, precedence, applicability, checker bindings",
+      "owner_context": "instruction_registry",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Resolved source manifests, packet compilation, context budget, conflicts, provenance",
+      "owner_context": "context_compilation",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Review specifications, requests, attempts, observations, verdicts, parsing and independence evaluations",
+      "owner_context": "analytical_review",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Provider/model/transport identities, route locks, health, fallback policy inputs",
+      "owner_context": "routing",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Checker, module, route, and isolation-profile qualification",
+      "owner_context": "qualification",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Whole-workflow paired evaluation, causal ablations, owner-facing scorecards",
+      "owner_context": "effectiveness",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Typed worker assignments/offers, atomic claims, fenced leases, heartbeats/liveness, mailboxes, delegation topology, role separation, worker attempts, results and handoffs",
+      "owner_context": "agent_collaboration",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Source graph/index, language coverage, freshness, unsupported-analysis states",
+      "owner_context": "repository_intelligence",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Skills, project memory, learned records, quarantine, sanitization, transfer approvals",
+      "owner_context": "knowledge",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Schedules, authenticated triggers, catch-up rules, trigger lifecycle",
+      "owner_context": "scheduling",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Channel-neutral messages, commands, decision challenges, rendering, delivery receipts",
+      "owner_context": "delivery",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Content-addressed blobs, classification, access, retention, legal hold, expiry, purge",
+      "owner_context": "artifact_management",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2"
+    },
+    {
+      "owned_data": "Observed health, alerts, IncidentStatus, response/recovery evidence, reconciliation scheduling and operator runbooks",
+      "owner_context": "operations",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    },
+    {
+      "owned_data": "Backup sets, encryption, RPO/RTO policy, restore drills, reconciliation",
+      "owner_context": "backup_restore",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    },
+    {
+      "owned_data": "Build manifest, release profile, install/update/rollback, package/SBOM verification",
+      "owner_context": "release_management",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    },
+    {
+      "owned_data": "Upstream baseline, diff classification, anti-recontamination gates, selective porting, sync evidence",
+      "owner_context": "upstream_sync",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    },
+    {
+      "owned_data": "Schema ordering, upcasters, module migrations, legacy readers, verification, rollback/tombstones",
+      "owner_context": "migration",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    },
+    {
+      "owned_data": "Lower-trust extension protocol, capability grants, lifecycle, quarantine",
+      "owner_context": "extension_host",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    },
+    {
+      "owned_data": "Hermes anti-corruption facade, legacy state/CLI/tool-name translation, contained plugin execution; no canonical lifecycle state",
+      "owner_context": "compatibility",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    },
+    {
+      "owned_data": "File classification, licenses, notices, de-commercialization denylist, SBOM policy",
+      "owner_context": "provenance_compliance",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3"
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-DATA-OWNERSHIP-001",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

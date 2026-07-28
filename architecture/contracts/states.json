@@ -1,0 +1,1275 @@
+{
+  "entries": [
+    {
+      "axis_id": "WorkItemStatus",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "CLOSED",
+        "CANCELLED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "FUNNEL",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "TRIAGE"
+        },
+        {
+          "from": "TRIAGE",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "DISCOVERY"
+        },
+        {
+          "from": "DISCOVERY",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "DEFINITION",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "DESIGN"
+        },
+        {
+          "from": "DESIGN",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "READY"
+        },
+        {
+          "from": "READY",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "IN_PROGRESS"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "VERIFICATION"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "RELEASE_READY"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "RELEASING"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "OPERATING"
+        },
+        {
+          "from": "OPERATING",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "OUTCOME_REVIEW"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "CLOSED"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "VERIFICATION_REJECTION",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "VERIFICATION_REJECTION",
+          "to": "DESIGN"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "VERIFICATION_REJECTION",
+          "to": "IN_PROGRESS"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "ROLLOUT_HEALTH_BREACH",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "ROLLED_BACK",
+          "guard_id": "SAFE_STATE_VERIFIED_AND_RETRIAGE_LINKED",
+          "to": "TRIAGE"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "OUTCOME_FALSIFIED",
+          "to": "DISCOVERY"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "OUTCOME_REQUIRES_REDEFINITION",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "FUNNEL",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "TRIAGE",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "DISCOVERY",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "DEFINITION",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "DESIGN",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "READY",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "OPERATING",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "FUNNEL"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "TRIAGE"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "DISCOVERY"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "DESIGN"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "READY"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "IN_PROGRESS"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "VERIFICATION"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "RELEASE_READY"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "RELEASING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "OPERATING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "OUTCOME_REVIEW"
+        },
+        {
+          "from": "FUNNEL",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "TRIAGE",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "DISCOVERY",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "DEFINITION",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "DESIGN",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "READY",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        }
+      ],
+      "values": [
+        "FUNNEL",
+        "TRIAGE",
+        "DISCOVERY",
+        "DEFINITION",
+        "DESIGN",
+        "READY",
+        "IN_PROGRESS",
+        "VERIFICATION",
+        "RELEASE_READY",
+        "RELEASING",
+        "OPERATING",
+        "OUTCOME_REVIEW",
+        "CLOSED",
+        "BLOCKED",
+        "CANCELLED",
+        "ROLLED_BACK"
+      ]
+    },
+    {
+      "axis_id": "RunStatus",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PROPOSED",
+          "guard_id": "PACKET_AND_POLICY_VALID",
+          "to": "READY"
+        },
+        {
+          "from": "READY",
+          "guard_id": "AUTHORIZED_START",
+          "to": "RUNNING"
+        },
+        {
+          "from": "READY",
+          "guard_id": "BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "READY",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "DURABLE_WAIT_ENTERED",
+          "to": "WAITING"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "TERMINAL_SUCCESS_EVIDENCE",
+          "to": "SUCCEEDED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "TERMINAL_FAILURE_EVIDENCE",
+          "to": "FAILED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "SIGNAL_OR_TIMER_RESOLVED",
+          "to": "RUNNING"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "WAIT_FAILED",
+          "to": "FAILED"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED",
+          "to": "RUNNING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "TERMINAL_FAILURE_EVIDENCE",
+          "to": "FAILED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        }
+      ],
+      "values": [
+        "PROPOSED",
+        "READY",
+        "RUNNING",
+        "WAITING",
+        "BLOCKED",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    {
+      "axis_id": "WorkClass",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PRODUCT",
+        "DEFECT",
+        "RELIABILITY",
+        "SECURITY_PRIVACY",
+        "ARCHITECTURE_PLATFORM",
+        "COMPLIANCE_PROVENANCE",
+        "UPSTREAM_SYNC",
+        "MAINTENANCE",
+        "RETIREMENT",
+        "INCIDENT_RESPONSE"
+      ]
+    },
+    {
+      "axis_id": "RiskLane",
+      "owner_context": "policy",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "STANDARD",
+        "ENHANCED",
+        "CRITICAL",
+        "EMERGENCY"
+      ]
+    },
+    {
+      "axis_id": "AssignmentStatus",
+      "owner_context": "agent_collaboration",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "COMPLETED",
+        "FAILED",
+        "EXPIRED",
+        "CANCELLED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PENDING",
+        "OFFERED",
+        "CLAIMED",
+        "RUNNING",
+        "HANDOFF_READY",
+        "COMPLETED",
+        "FAILED",
+        "EXPIRED",
+        "CANCELLED"
+      ]
+    },
+    {
+      "axis_id": "DispatchOfferStatus",
+      "owner_context": "agent_collaboration",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "CLAIMED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "OPEN",
+        "CLAIMED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "LeaseStatus",
+      "owner_context": "agent_collaboration",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "RELEASED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "ACTIVE",
+        "RELEASED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "MailboxDeliveryStatus",
+      "owner_context": "agent_collaboration",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "ACKNOWLEDGED",
+        "DEAD_LETTERED",
+        "EXPIRED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "QUEUED",
+        "DELIVERED",
+        "ACKNOWLEDGED",
+        "DEAD_LETTERED",
+        "EXPIRED"
+      ]
+    },
+    {
+      "axis_id": "ReservationStatus",
+      "owner_context": "resource_governance",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "SETTLED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PENDING",
+        "ACTIVE",
+        "EXHAUSTED",
+        "RELEASED",
+        "EXPIRED",
+        "REVOKED",
+        "SETTLED"
+      ]
+    },
+    {
+      "axis_id": "IntakeStatus",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "ACCEPTED",
+        "REJECTED",
+        "DUPLICATE",
+        "WITHDRAWN"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PROPOSED",
+        "ACCEPTED",
+        "REJECTED",
+        "DUPLICATE",
+        "WITHDRAWN"
+      ]
+    },
+    {
+      "axis_id": "PacketStatus",
+      "owner_context": "packet_producer",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "SUPERSEDED",
+        "INVALIDATED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "DRAFT",
+        "SEALED",
+        "SUPERSEDED",
+        "INVALIDATED"
+      ]
+    },
+    {
+      "axis_id": "FleetExperimentStatus",
+      "owner_context": "process_assurance",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "COMPLETED",
+        "STOPPED",
+        "INVALIDATED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "DRAFT",
+        "REGISTERED",
+        "RUNNING",
+        "COMPLETED",
+        "STOPPED",
+        "INVALIDATED"
+      ]
+    },
+    {
+      "axis_id": "CapabilityAssessmentStatus",
+      "owner_context": "process_assurance",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "COMPLETE",
+        "SUPERSEDED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "NOT_ASSESSED",
+        "IN_PROGRESS",
+        "COMPLETE",
+        "SUPERSEDED"
+      ]
+    },
+    {
+      "axis_id": "ActivityStatus",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "SUCCEEDED",
+        "FAILED_PERMANENT",
+        "TIMED_OUT",
+        "CANCELLED",
+        "DENIED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "REQUESTED",
+        "DISPATCHED",
+        "SUCCEEDED",
+        "FAILED_RETRYABLE",
+        "FAILED_PERMANENT",
+        "TIMED_OUT",
+        "CANCELLED",
+        "DENIED",
+        "OUTCOME_UNKNOWN"
+      ]
+    },
+    {
+      "axis_id": "GateOutcome",
+      "owner_context": "assurance",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PASS",
+        "FAIL",
+        "UNKNOWN",
+        "CONFLICT",
+        "NOT_APPLICABLE",
+        "CHECKER_FAULT"
+      ]
+    },
+    {
+      "axis_id": "ObservationState",
+      "owner_context": "analytical_review",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "OPINION_PRODUCED",
+        "NO_OPINION",
+        "OPINION_UNUSABLE",
+        "EVALUATION_INCOMPLETE"
+      ]
+    },
+    {
+      "axis_id": "PermitStatus",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "ISSUED",
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "HumanDecisionRecordStatus",
+      "owner_context": "policy",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "APPROVED",
+        "DENIED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PENDING",
+        "APPROVED",
+        "DENIED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "AuthorityGrantStatus",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "ISSUED",
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "EffectStatus",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "SUCCEEDED",
+        "FAILED_PERMANENT",
+        "DENIED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "INTENDED",
+        "DISPATCHED",
+        "SUCCEEDED",
+        "FAILED_RETRYABLE",
+        "FAILED_PERMANENT",
+        "DENIED",
+        "OUTCOME_UNKNOWN"
+      ]
+    },
+    {
+      "axis_id": "ReconciliationStatus",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "NOT_REQUIRED",
+        "RESOLVED",
+        "UNRESOLVED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PENDING",
+          "guard_id": "RECONCILIATION_STARTED",
+          "to": "RUNNING"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "OUTCOME_PROVEN",
+          "to": "RESOLVED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "OUTCOME_NOT_PROVEN",
+          "to": "UNRESOLVED"
+        }
+      ],
+      "values": [
+        "NOT_REQUIRED",
+        "PENDING",
+        "RUNNING",
+        "RESOLVED",
+        "UNRESOLVED"
+      ]
+    },
+    {
+      "axis_id": "IncidentStatus",
+      "owner_context": "operations",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "CLOSED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "DETECTED",
+        "ACKNOWLEDGED",
+        "MITIGATING",
+        "MITIGATED",
+        "RECOVERY_VERIFIED",
+        "REVIEWED",
+        "ACTIONS_TRACKED",
+        "CLOSED"
+      ]
+    },
+    {
+      "axis_id": "ReleaseStatus",
+      "owner_context": "release_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "OPERATING",
+        "ROLLED_BACK",
+        "WITHDRAWN"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PLANNED",
+        "BUILT",
+        "VERIFIED",
+        "RELEASE_READY",
+        "RELEASING",
+        "OPERATING",
+        "ROLLED_BACK",
+        "WITHDRAWN"
+      ]
+    },
+    {
+      "axis_id": "CapabilityStatus",
+      "owner_context": "product_definition",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PROPOSED",
+        "SUPPORTED",
+        "DEPRECATED",
+        "RETIRE_READY",
+        "RETIRING",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "ModuleStatus",
+      "owner_context": "module_governance",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PACKAGED",
+        "DISABLED",
+        "QUALIFIED",
+        "CANARY",
+        "ACTIVE",
+        "RESTRICTED",
+        "QUARANTINED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "RouteStatus",
+      "owner_context": "routing",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "UNCONFIGURED",
+        "AUTHENTICATED",
+        "SMOKE_TESTED",
+        "PROBATION",
+        "APPROVED",
+        "RESTRICTED",
+        "SUSPENDED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "ExtensionStatus",
+      "owner_context": "extension_host",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "DISCOVERED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "REVIEWED"
+        },
+        {
+          "from": "REVIEWED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "QUALIFIED"
+        },
+        {
+          "from": "QUALIFIED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "PINNED"
+        },
+        {
+          "from": "PINNED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "ENABLED"
+        },
+        {
+          "from": "ENABLED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "SUSPENDED"
+        },
+        {
+          "from": "SUSPENDED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "RETIRED"
+        }
+      ],
+      "values": [
+        "DISCOVERED",
+        "QUARANTINED",
+        "REVIEWED",
+        "QUALIFIED",
+        "PINNED",
+        "ENABLED",
+        "SUSPENDED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "CompatibilityStatus",
+      "owner_context": "service_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "REMOVED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "SUPPORTED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "DEPRECATED"
+        },
+        {
+          "from": "DEPRECATED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "READ_ONLY"
+        },
+        {
+          "from": "READ_ONLY",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "REMOVED"
+        }
+      ],
+      "values": [
+        "SUPPORTED",
+        "DEPRECATED",
+        "READ_ONLY",
+        "REMOVED"
+      ]
+    },
+    {
+      "axis_id": "InstructionStatus",
+      "owner_context": "instruction_registry",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "DRAFT",
+        "ACTIVE",
+        "DEPRECATED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "ArtifactStatus",
+      "owner_context": "artifact_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "PURGED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "INGESTED",
+        "QUARANTINED",
+        "AVAILABLE",
+        "EXPIRED",
+        "LEGAL_HOLD",
+        "PURGED"
+      ]
+    },
+    {
+      "axis_id": "MigrationStatus",
+      "owner_context": "migration",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "VERIFIED",
+        "ROLLED_BACK",
+        "FAILED"
+      ],
+      "transition_definition_status": "VALUES_ONLY_WAVE_2",
+      "transitions": [],
+      "values": [
+        "PLANNED",
+        "TESTED",
+        "APPLIED",
+        "VERIFIED",
+        "ROLLED_BACK",
+        "FAILED"
+      ]
+    },
+    {
+      "axis_id": "SyncCandidateStatus",
+      "owner_context": "upstream_sync",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "BASELINE_RECORDED",
+        "REJECTED",
+        "DEFERRED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "OBSERVED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "FETCHED"
+        },
+        {
+          "from": "FETCHED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "PINNED"
+        },
+        {
+          "from": "PINNED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "CLASSIFIED"
+        },
+        {
+          "from": "CLASSIFIED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "DISPOSITIONED"
+        },
+        {
+          "from": "DISPOSITIONED",
+          "guard_id": "DISPOSITION_REJECT",
+          "to": "REJECTED"
+        },
+        {
+          "from": "DISPOSITIONED",
+          "guard_id": "DISPOSITION_DEFER",
+          "to": "DEFERRED"
+        },
+        {
+          "from": "DISPOSITIONED",
+          "guard_id": "DISPOSITION_PORT",
+          "to": "PORTING"
+        },
+        {
+          "from": "PORTING",
+          "guard_id": "PORT_COMPLETE",
+          "to": "PORT_CANDIDATE"
+        },
+        {
+          "from": "PORT_CANDIDATE",
+          "guard_id": "PORT_VERIFIED",
+          "to": "VERIFIED"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "RELEASED_PORT_SET",
+          "to": "RELEASED"
+        },
+        {
+          "from": "RELEASED",
+          "guard_id": "BASELINE_EVIDENCE_RECORDED",
+          "to": "BASELINE_RECORDED"
+        },
+        {
+          "from": "RELEASED",
+          "guard_id": "AUTHORIZED_ROLLBACK",
+          "to": "ROLLED_BACK"
+        }
+      ],
+      "values": [
+        "OBSERVED",
+        "FETCHED",
+        "PINNED",
+        "CLASSIFIED",
+        "DISPOSITIONED",
+        "PORTING",
+        "PORT_CANDIDATE",
+        "VERIFIED",
+        "RELEASED",
+        "BASELINE_RECORDED",
+        "REJECTED",
+        "DEFERRED",
+        "BLOCKED",
+        "ROLLED_BACK"
+      ]
+    },
+    {
+      "axis_id": "UpdateStatus",
+      "owner_context": "release_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "COMPLETED",
+        "RECOVERY_VERIFIED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "CHECKED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "DOWNLOADED"
+        },
+        {
+          "from": "DOWNLOADED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "VERIFIED"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "SNAPSHOTTED"
+        },
+        {
+          "from": "SNAPSHOTTED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "STAGED"
+        },
+        {
+          "from": "STAGED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "MIGRATED"
+        },
+        {
+          "from": "MIGRATED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "ACTIVATED"
+        },
+        {
+          "from": "ACTIVATED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "HEALTH_VERIFIED"
+        },
+        {
+          "from": "HEALTH_VERIFIED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "COMPLETED"
+        },
+        {
+          "from": "COMPLETED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "ROLLED_BACK",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "RECOVERY_VERIFIED"
+        }
+      ],
+      "values": [
+        "CHECKED",
+        "DOWNLOADED",
+        "VERIFIED",
+        "SNAPSHOTTED",
+        "STAGED",
+        "MIGRATED",
+        "ACTIVATED",
+        "HEALTH_VERIFIED",
+        "COMPLETED",
+        "ROLLED_BACK",
+        "RECOVERY_VERIFIED"
+      ]
+    },
+    {
+      "axis_id": "CutoverStatus",
+      "owner_context": "migration",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#16",
+      "terminal_values": [
+        "LEGACY_REMOVED"
+      ],
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "BOOTSTRAP",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "LEGACY_BASELINE"
+        },
+        {
+          "from": "LEGACY_BASELINE",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "TRANSITIONAL_DUAL_RUN"
+        },
+        {
+          "from": "TRANSITIONAL_DUAL_RUN",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "TARGET_SHADOW"
+        },
+        {
+          "from": "TARGET_SHADOW",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "TARGET_LIMITED"
+        },
+        {
+          "from": "TARGET_LIMITED",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "TARGET_DEFAULT"
+        },
+        {
+          "from": "TARGET_DEFAULT",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "LEGACY_FROZEN"
+        },
+        {
+          "from": "LEGACY_FROZEN",
+          "guard_id": "OWNER_POLICY_AND_EVIDENCE",
+          "to": "LEGACY_REMOVED"
+        }
+      ],
+      "values": [
+        "BOOTSTRAP",
+        "LEGACY_BASELINE",
+        "TRANSITIONAL_DUAL_RUN",
+        "TARGET_SHADOW",
+        "TARGET_LIMITED",
+        "TARGET_DEFAULT",
+        "LEGACY_FROZEN",
+        "LEGACY_REMOVED"
+      ]
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-STATES-001",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

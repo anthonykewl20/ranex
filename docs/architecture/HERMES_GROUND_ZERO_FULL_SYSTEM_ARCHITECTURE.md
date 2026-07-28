@@ -3,16 +3,18 @@
 | Field | Value |
 |---|---|
 | Architecture ID | `ARCH-RANEX-001` |
-| Version | `1.0.0` |
-| Status | **NORMATIVE TARGET — CONDITIONALLY ACCEPTED, NOT YET RUNTIME-VALIDATED** |
+| Version | `2.3.0` |
+| Status | **ACCEPTED NORMATIVE TARGET — PAPER-CONTRACTED; EXECUTABLE CONTRACT AND RUNTIME NOT YET VALIDATED** |
 | Scope | Complete target-system architecture and complete attachment map |
-| Date | 2026-07-27 |
+| Date | 2026-07-28 |
 | Repository snapshot basis | `bootstrap/pre-upstream`; exact file digests are bound by the final architecture-review evidence packet |
 | Product | Ranex |
 | Required upstream lineage | Governed software fork of [`nousresearch/hermes-agent`](https://github.com/nousresearch/hermes-agent); current-clone lineage preflight is not yet satisfied |
-| Research baseline | Every file under `docs/research/`, read in full |
+| Fork preflight | [`SDLC-FORK-000 = BLOCKED`](./reviews/2026-07-28-sdlc-fork-000-preflight.md); blocking for every runtime implementation commit |
+| Research baseline | 110 frozen artifacts: nine original top-level research files, the 89-file Kimi addendum, and twelve local foundational-reference files representing six works; no live directory-glob claim |
 | Governing development process | [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md) and [control catalog](./SDLC_CONTROL_CATALOG.md) |
-| Owner decision | [ADR-0001: Established Software-Development Lifecycle Governs AI Work](./decisions/ADR-0001-established-sdlc-governs-ai-work.md) |
+| Major engineering references | [Ranex Engineering Reference Application Map](./ENGINEERING_REFERENCE_APPLICATION_MAP.md) |
+| Owner decisions | [ADR-0001](./decisions/ADR-0001-established-sdlc-governs-ai-work.md); [ADR-0002](./decisions/ADR-0002-retire-legacy-implementation-guide.md); [ADR-0003](./decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md); [ADR-0004](./decisions/ADR-0004-establish-initial-quality-attribute-baselines.md); [ADR-0005](./decisions/ADR-0005-select-local-static-orchestration-defaults.md); [ADR-0006](./decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md); [ADR-0007](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md); [ADR-0008](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md); [ADR-0009](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md) |
 | Primary architecture collaborator | DeepSeek V4 Pro through `deepseek/deepseek-v4-pro` |
 | Independent architecture challenger | HY3 through `openrouter/tencent/hy3` |
 | Decision authority | Human owner |
@@ -54,10 +56,13 @@ It does **not** mean:
 - a big-bang production cutover; or
 - allowing upstream layout or implementation details to define the new domain.
 
-The architecture is conditionally accepted as the target. It becomes
-runtime-validated only after the acceptance tests in this document pass. Model
-review, including DeepSeek V4 Pro and HY3 review, is advisory evidence and is
-never an architecture decision by itself.
+The architecture is accepted as the paper target by
+[ADR-0003](./decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md).
+That decision does not claim executable-contract or runtime validation.
+`SDLC-FORK-000`, `AI-G2`, applicable behavioral/security/recovery gates, and a
+complete exact-subject tracer remain separately reportable proof obligations.
+Model review, including DeepSeek V4 Pro and HY3 review, is advisory evidence
+and is never an architecture decision by itself.
 
 ### 1.1 Software-development process foundation
 
@@ -73,32 +78,53 @@ They cannot redefine the process, create work-item authority, lower assurance,
 approve their own output, or replace accountable product, technical, security,
 service, release, configuration, and V&V roles.
 
+SWEBOK and the saved engineering books are major references for filling in
+discipline coverage and practice detail. Their application is governed by the
+[Engineering Reference Application Map](./ENGINEERING_REFERENCE_APPLICATION_MAP.md):
+standards and Core SDLC define the lifecycle, books deepen how its work is
+performed, and AI research only informs bounded worker control. Architecture
+fog is closed through an owned requirements/quality-attribute question,
+complete high-level map, risk deep dives, alternatives, file/API/state/effect/
+failure placement, falsification evidence, independent challenge, and an
+accountable decision—not through improvised code or model consensus.
+
 ### 1.2 Fork-lineage reality and required preflight
 
 The fork relationship is an owner requirement and target constraint, not a
 claim that the current Ranex branch already shares upstream ancestry. The
-preflight facts were first bound to the architecture at Ranex documentation
-commit `3ad04f089c6fe674139f10bfadb1fe7df3e0e4f7`. Later documentation-only
-checkpoints do not change the ancestry conclusion; a live head is captured
-mechanically in each review/release evidence packet rather than embedded as a
-self-invalidating “current” value here. At the recorded preflight:
+first preflight facts were bound at Ranex documentation commit
+`3ad04f089c6fe674139f10bfadb1fe7df3e0e4f7`. The deterministic
+[2026-07-28 preflight](./reviews/2026-07-28-sdlc-fork-000-preflight.md) and its
+machine evidence supersede any later-looking prose observation for the tested
+subject. It reports:
 
-- the Ranex branch was `bootstrap/pre-upstream`;
+- the tested subject as
+  `bootstrap/pre-upstream@4baad4a67843b02d5970f442fb54aed8d6525dda`;
 - `origin` fetch/push points at `anthonykewl20/ranex`;
 - `upstream` fetch points at `NousResearch/hermes-agent` and its push URL is
   disabled;
 - the audited Hermes baseline
-  `d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012` exists locally as
-  `upstream/main` and `phase/1-adopt-upstream`;
+  `d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012` is bound by the annotated
+  `upstream-baseline-20260727` tag;
 - its verified upstream Git tree is
   `129a441930d11bc6bace9c72e81c960289008898`;
-- `bootstrap/pre-upstream` still has no merge base with that upstream baseline;
+- `phase/1-adopt-upstream` is a direct child of that baseline and `develop`
+  continues from it, but the tested bootstrap subject has no merge base with
+  either the audited baseline or phase-1 line;
+- the local `upstream/main` and latest live remote observation are newer,
+  separately recorded observations, not silently substituted audited or
+  incorporated baselines;
 - the root upstream `LICENSE` exists on the upstream baseline but is not yet
-  present on the bootstrap branch; and
-- `legal/licensing-manifest.json` records `github_network_fork: false`.
+  present on the bootstrap subject;
+- no protected bootstrap safety ref or complete pristine-upstream provenance
+  manifest was proven; and
+- GitHub reports a separately hosted repository (`fork=false`, with no
+  parent/source relationship), which is a hosting fact rather than Git
+  ancestry evidence.
 
 A software-derived fork, shared Git ancestry, and GitHub's network-fork flag
-are separate facts. Before implementation begins, `FORK-PREFLIGHT` must:
+are separate facts. Before implementation begins, the machine-registerable
+gate `SDLC-FORK-000` (**fork ancestry and provenance preflight**) must:
 
 1. preserve the current Ranex commits under an immutable safety ref;
 2. retain the exact audited upstream commit in a pristine mirror/worktree and
@@ -112,12 +138,33 @@ are separate facts. Before implementation begins, `FORK-PREFLIGHT` must:
    baselines;
 6. restore the unchanged upstream license and classify every retained,
    modified, removed, or original file; and
-7. prove ancestry/baseline/provenance and update the manifest's network-fork
-   field to the actual hosting fact.
+7. prove ancestry/baseline/provenance and record the manifest's network-fork
+   field as the actual hosting fact, which may legitimately remain `false`.
 
-Until this gate passes, documentation says **fork target / derived relationship,
-upstream fetched, ancestry adoption pending**. It must not say retained upstream
-Git history is already proven on the Ranex branch.
+The gate's required evidence is:
+
+- immutable Ranex safety-ref name and resolved commit;
+- upstream repository URL, pinned commit, verified tree, license/notices, tags,
+  and pristine-source manifest;
+- recorded human decision naming the ancestry-adoption strategy;
+- post-adoption merge-base/ancestry proof and final branch/worktree topology;
+- fetch-only upstream remote configuration evidence;
+- observed, audited, incorporated, and latest-seen baseline records;
+- restored upstream license plus per-file provenance/classification coverage;
+- actual GitHub network-fork observation recorded as a separate hosting fact;
+  and
+- deterministic gate evaluation bound to the exact repository/revision and
+  evidence manifest.
+
+The current deterministic result is `BLOCKED`, not merely unevaluated. The
+minimal landing is to preserve the bootstrap head and dirty delta under a
+protected safety binding, apply only the intended Ranex delta in a clean
+worktree based on the published upstream-derived `develop` line, preserve the
+audited license/provenance, record strategy and topology, bind the resulting
+clean subject, and rerun the gate. Until it passes, documentation says **fork
+target / derived relationship; accepted subject is not upstream-derived**. It
+must not say retained upstream Git history is already proven on the Ranex
+product branch, and no runtime implementation commit may be accepted there.
 
 ## 2. Root architecture decision
 
@@ -148,10 +195,18 @@ remains a P0 implementation proof obligation.
 
 ## 3. Fixed decisions
 
+The stable IDs, alternatives, owners, governing ADRs, and fitness functions for
+all 29 rows are machine-checkably registered in
+[ADR-0006](./decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md).
+This prose table is the readable projection; a mismatch is `CONFLICT`.
+
 | Decision | Canonical position |
 |---|---|
 | Product form | One release-pinned modular monolith, not a microservice fleet. |
 | Development process | The accepted Core SDLC is the governing process; AI-agent L0–L12 is a subordinate worker protocol. |
+| Engineering references | The frozen SWEBOK/book corpus is a major practice base under the Core SDLC hierarchy; it closes unclear work but cannot override policy or become authority. |
+| Engineering-practice application | Every architecture and implementation packet binds a machine-registered applicability profile, required behavior, deviations, and verification evidence; citation without demonstrated application is insufficient. |
+| Legacy implementation guide | Deleted and retired by `ADR-0002`; historical references grant no construction authority and new route plans derive from this architecture. |
 | Upstream relationship | Ranex is a Hermes-derived software fork; lineage/history/license proof is a blocking preflight, and GitHub network-fork status is tracked separately. |
 | New core | Authority, domain, and application code outside the named compatibility adapter has no dependency on inherited Hermes internals. |
 | Migration | Strangler migration inside the fork; no big-bang rewrite. |
@@ -163,6 +218,7 @@ remains a P0 implementation proof obligation.
 | Effects | At-least-once or at-most-once attempt semantics with idempotency and reconciliation; never claim exactly once. |
 | Policy failure | Deny visibly. Missing, stale, malformed, unavailable, or conflicting blocking proof cannot pass. |
 | Model authority | Models produce proposals and observations. They cannot emit an accepted transition, gate decision, permit, waiver, or human decision. |
+| AI-worker fleet | One worker is the default; parallelism uses fenced assignments, measured topology, isolated writes, verifier backpressure, and human-controlled landing. |
 | First-party capabilities | Shipped with Ranex behind stable internal interfaces; not user-installed prerequisites. |
 | External extensions | Lower-trust, out-of-process, capability-scoped, and permanently outside the authority path. |
 | Desktop app | Excluded from the Ranex target. No Electron desktop, desktop bootstrap, or desktop updater. |
@@ -225,6 +281,16 @@ remains a P0 implementation proof obligation.
 24. L0–L12 worker activities, `AI-G*` evidence gates, `MAP-*` map gates, and
     `SDLC-ADOPT-*` process-adoption gates are typed namespaces, not alternative
     work-item states.
+25. Assignment claims and lease renewal are compare-and-swap operations with a
+    monotonically increasing fencing epoch; an expired or superseded worker
+    cannot write, spend, submit an eligible result, or request an effect.
+26. Worker liveness, planning, collaboration messages, model consensus, and
+    queue completion never prove semantic progress or transfer authority.
+27. Prompt instructions may configure a worker but never replace tool-boundary
+    permissions, workspace isolation, budget enforcement, gates, or permits.
+28. Child-worker/model/tool usage is charged transitively to every parent
+    reservation, and verification/human capacity applies admission
+    backpressure before assurance is reduced.
 
 ## 5. The full system planes
 
@@ -406,8 +472,8 @@ delivery is at least once; duplicates and out-of-order messages are tested.
 | Context | Owns | Public API | Persistence authority |
 |---|---|---|---|
 | `governed_execution` | Run, pinned workflow, activities, gate bindings, consumable authority grants, permit issuance/consumption, effect intents/outcomes, reconciliation | Commands, queries, integration events, immutable views | Sole run/execution-transition authority |
-| `policy` | Roles, grants, risk-lane derivation, policy packages, activation, authorization decisions, waivers and authenticated human-decision records | Authorization request/decision, active-policy and human-decision snapshots | Policy definitions and append-only decision history; never consumes the execution grant |
-| `assurance` | Claims, evidence envelopes, review observations, checker results and gate-evaluation inputs | Evidence ingestion/query, checker result, exact-subject evidence snapshot | Assurance catalog; does not qualify components or commit run state |
+| `policy` | Roles, authorization-eligibility rules, risk-lane derivation, policy packages, activation, authorization snapshots, waivers and authenticated human-decision records | Authorization request/decision, active-policy and human-decision snapshots | Policy definitions and append-only decision history; never issues or consumes execution grants/permits |
+| `assurance` | Claims, evidence envelopes, qualified checker results, exact-subject evidence snapshots, and `GateEvaluation` | Evidence ingestion/query, checker result, snapshot and gate-evaluation APIs | Sole evidence/gate-evaluation record owner; does not own review observations, qualify components, bind a run gate, or commit run state |
 | `module_governance` | Module catalog, descriptors, capability vocabulary, grants, compatibility, activation lifecycle | Module/grant/profile snapshots | Module and grant authority |
 | `identity_access` | Human/service identities, authentication, sessions, nonces, remote decision authentication, data classification, destination facts, secret references | Principal/session/secret-handle and destination-fact APIs | Identity and access authority; policy decides and the egress adapter enforces |
 
@@ -420,17 +486,17 @@ delivery is at least once; duplicates and out-of-order messages are tested.
 | `service_management` | Service catalog, service/capability ownership, supported versions, SLIs/SLOs/error budgets, support/escalation, maintenance and retirement triggers | Operations evidence, release catalog, product capability lifecycle |
 | `configuration_management` | Configuration-item registry, content-addressed baselines, status accounting, bidirectional traceability graph, functional/physical configuration audits | Product requirements, source/build/test/docs, release manifests, assurance evidence |
 | `supplier_governance` | Supplier/dependency adoption and reuse decisions, shared responsibility, version/support/vulnerability monitoring, concentration/exit plans | Packages, toolchains, providers, APIs, extensions, hosted services, Hermes upstream |
-| `resource_governance` | Local capacity, cost/token/tool/output/network budgets, reservations, quotas, usage attribution and provider-limit facts | Policy, routing, scheduling, agent runs, operations; never commercial billing |
+| `resource_governance` | Local capacity, hierarchical cost/token/tool/output/network budgets, parent/child reservations, quotas, transitive usage attribution and provider-limit facts | Policy, routing, scheduling, agent runs, operations; never commercial billing |
 | `interaction_history` | User conversation/thread/message identity, continuity, search lifecycle, classification, retention, export and deletion | Delivery channels, context compilation, legacy session import |
-| `process_assurance` | SDLC policy conformance, tailoring profiles, human-role competence, process audits/nonconformance/corrective action, process improvement evidence | Core SDLC, work records, metrics, training/qualification evidence |
+| `process_assurance` | SDLC policy conformance, tailoring profiles, human-role competence, process audits/nonconformance/corrective action, process improvement evidence, fleet experiment and calibration records | Core SDLC, work records, metrics, training/qualification and measurement-harness evidence |
 | `workspace` | Repository identity, worktree plans, branch/head validation, landing and cleanup | Git adapter, sandbox mounts |
 | `instruction_registry` | Atomic versioned instructions, precedence, applicability, checker bindings | Policy and packet compilation |
 | `context_compilation` | Resolved source manifests, packet compilation, context budget, conflicts, provenance | Deterministic and recorded stochastic retrieval |
-| `analytical_review` | Review specifications, requests, attempts, observations, parsing, independence facts | Native and tool-bearing review transports |
+| `analytical_review` | Review specifications, requests, attempts, observations, verdicts, parsing and independence evaluations | Native and tool-bearing review transports; publishes immutable review references to assurance |
 | `routing` | Provider/model/transport identities, route locks, health, fallback policy inputs | Provider and harness adapters |
 | `qualification` | Checker, module, route, and isolation-profile qualification | Frozen fixtures, canaries, holdouts |
 | `effectiveness` | Whole-workflow paired evaluation, causal ablations, owner-facing scorecards | Evaluation runners and artifacts |
-| `agent_collaboration` | Typed worker assignments, delegation workflows, role separation, worker results | Hermes, Codex, Claude, OpenCode, direct agents |
+| `agent_collaboration` | Typed worker assignments/offers, atomic claims, fenced leases, heartbeats/liveness, mailboxes, delegation topology, role separation, worker attempts, results and handoffs | Hermes, Codex, Claude, OpenCode, direct agents; never owns `RunStatus`, work state, gate, permit, effect, merge, or release |
 | `repository_intelligence` | Source graph/index, language coverage, freshness, unsupported-analysis states | Atlas/tree-sitter or simpler index strategies |
 | `knowledge` | Skills, project memory, learned records, quarantine, sanitization, transfer approvals | Packet sources and explicitly scoped worker reads |
 | `scheduling` | Schedules, authenticated triggers, catch-up rules, trigger lifecycle | Cron, webhooks, external timers |
@@ -473,10 +539,10 @@ Every target capability must resolve all columns before implementation.
 | Process assurance | `process_assurance` | conformance/audit/competence adapters | `process_assurance` | Tailoring, nonconformance and corrective-action record |
 | Repositories/worktrees | `workspace` | Git/filesystem/sandbox | `workspace` | Validated workspace identity |
 | Instructions/context | `instruction_registry`, `context_compilation` | source/retrieval adapters | respective owner | Content-addressed packet |
-| Agent collaboration | `agent_collaboration` | Hermes/Codex/Claude/OpenCode | `module_governance` | Worker result/proposal |
-| Analytical review | `analytical_review` | native API/isolated CLI | `qualification` | Review observation |
+| Agent collaboration | `agent_collaboration` | Hermes/Codex/Claude/OpenCode | assignment/run handoff state in `agent_collaboration`; worker-module activation in `module_governance` | Worker result/proposal |
+| Analytical review | `analytical_review` | native API/isolated CLI | review request/attempt/observation state in `analytical_review`; transport/parser qualification evidence in `qualification` | Review observation |
 | Tools | `module_governance` catalog | terminal/file/git/browser/search/GitHub/MCP | module + grant lifecycle | Typed activity result |
-| Repository intelligence | `repository_intelligence` | parsers/indexers | `qualification` | Versioned derived evidence |
+| Repository intelligence | `repository_intelligence` | parsers/indexers | index/snapshot lifecycle in `repository_intelligence`; parser qualification evidence in `qualification` | Versioned derived evidence |
 | Skills/memory/learning | `knowledge` | storage/retrieval | quarantine/approval lifecycle | Scoped knowledge record |
 | Schedules/triggers | `scheduling` | cron/webhook/timer source | schedule lifecycle | Authenticated trigger event |
 | CLI/TUI/web/phone/GitHub | `delivery` | inbound/outbound adapters | channel config lifecycle | Typed command/receipt |
@@ -533,27 +599,38 @@ ranex/
 │       │   │   ├── permits.py
 │       │   │   ├── effects.py
 │       │   │   ├── decisions.py
+│       │   │   ├── governor.py
+│       │   │   ├── termination.py
+│       │   │   ├── progress_window.py
 │       │   │   ├── invariants.py
 │       │   │   └── reducer.py
-│       │   └── application/
-│       │       ├── handlers/
-│       │       ├── authorized_transition.py
-│       │       ├── process_manager.py
-│       │       ├── capability_bus.py
-│       │       ├── reconciliation.py
-│       │       ├── outbox_relay.py
-│       │       └── ports/
-│       │           ├── unit_of_work.py
-│       │           ├── workflow_runtime.py
-│       │           ├── activity_transport.py
-│       │           ├── effect_dispatch.py
-│       │           ├── policy_decision.py
-│       │           ├── evidence_catalog.py
-│       │           ├── artifact_store.py
-│       │           ├── clock.py
-│       │           ├── id_source.py
-│       │           ├── secret_resolver.py
-│       │           └── telemetry.py
+│       │   ├── application/
+│       │   │   ├── handlers/
+│       │   │   ├── authorized_transition.py
+│       │   │   ├── process_manager.py
+│       │   │   ├── cancellation_service.py
+│       │   │   ├── capability_bus.py
+│       │   │   ├── reconciliation.py
+│       │   │   ├── outbox_relay.py
+│       │   │   └── ports/
+│       │   │       ├── unit_of_work.py
+│       │   │       ├── workflow_runtime.py
+│       │   │       ├── worker_runtime.py
+│       │   │       ├── activity_transport.py
+│       │   │       ├── effect_dispatch.py
+│       │   │       ├── policy_decision.py
+│       │   │       ├── evidence_catalog.py
+│       │   │       ├── artifact_store.py
+│       │   │       ├── clock.py
+│       │   │       ├── id_source.py
+│       │   │       ├── secret_resolver.py
+│       │   │       └── telemetry.py
+│       │   └── adapters/
+│       │       └── persistence/
+│       │           └── sqlite/
+│       │               ├── repository.py
+│       │               ├── integration_event_outbox.py
+│       │               └── migrations/
 │       ├── policy/
 │       ├── assurance/
 │       ├── module_governance/
@@ -614,8 +691,8 @@ ranex/
 │       │   │   └── notifications/
 │       │   ├── persistence/
 │       │   │   └── sqlite/
-│       │   │       ├── repositories/
-│       │   │       └── migrations/
+│       │   │       ├── connection.py
+│       │   │       └── transaction.py
 │       │   ├── artifacts/
 │       │   │   ├── filesystem/
 │       │   │   └── object_store/
@@ -632,6 +709,11 @@ ranex/
 │       │   │   ├── anthropic/
 │       │   │   └── local_openai_compatible/
 │       │   ├── harnesses/
+│       │   │   ├── common/
+│       │   │   │   ├── governor_bridge.py
+│       │   │   │   ├── fencing_guard.py
+│       │   │   │   ├── permission_hook.py
+│       │   │   │   └── usage_meter.py
 │       │   │   ├── hermes/
 │       │   │   ├── codex/
 │       │   │   ├── claude/
@@ -659,6 +741,11 @@ ranex/
 │       │   │   ├── fixture_runner/
 │       │   │   ├── grader/
 │       │   │   └── canary/
+│       │   ├── process_assurance/
+│       │   │   ├── fleet_measurement_reader.py
+│       │   │   └── experiment_runner.py
+│       │   ├── workers/
+│       │   │   └── local_process/
 │       │   ├── migration/
 │       │   │   ├── sqlite/
 │       │   │   └── legacy_hermes/
@@ -721,9 +808,16 @@ ranex/
 │   ├── budgets/
 │   ├── process-tailoring/
 │   └── upstream-sync/
+├── deploy/
+│   ├── packages/
+│   ├── services/
+│   └── host-profiles/
 ├── schemas/
+│   ├── common/
 │   ├── identity/
 │   ├── work/
+│   ├── research/
+│   ├── architecture/
 │   ├── product/
 │   ├── services/
 │   ├── configuration/
@@ -734,6 +828,8 @@ ranex/
 │   ├── execution/
 │   ├── policy/
 │   ├── assurance/
+│   ├── authority/
+│   ├── fleet/
 │   ├── modules/
 │   ├── routes/
 │   ├── review/
@@ -748,6 +844,31 @@ ranex/
 │   │   ├── roles.yaml
 │   │   ├── work-classes.yaml
 │   │   ├── risk-lanes.yaml
+│   │   ├── engineering-practices.yaml
+│   │   ├── contexts.json
+│   │   ├── paths.json
+│   │   ├── topology-rules.json
+│   │   ├── test-practices.json
+│   │   ├── test-practice-profiles.json
+│   │   ├── architecture-rule-assessments.json
+│   │   ├── context-dependency-edges.json
+│   │   ├── context-boundary-fitness.json
+│   │   ├── context-coupling-policy.json
+│   │   ├── feedback-fitness.json
+│   │   ├── intake-status.yaml
+│   │   ├── packet-status.yaml
+│   │   ├── assignment-status.yaml
+│   │   ├── dispatch-offer-status.yaml
+│   │   ├── lease-status.yaml
+│   │   ├── mailbox-delivery-status.yaml
+│   │   ├── reservation-status.yaml
+│   │   ├── fleet-experiment-status.yaml
+│   │   ├── capability-assessment-status.yaml
+│   │   ├── rule-enforcement-classes.yaml
+│   │   ├── termination-causes.yaml
+│   │   ├── fleet-topologies.yaml
+│   │   ├── fleet-experiment-policy.yaml
+│   │   ├── fleet-control-crosswalk.yaml
 │   │   ├── capabilities.yaml
 │   │   ├── module-graph.yaml
 │   │   ├── state-ownership.yaml
@@ -762,24 +883,36 @@ ranex/
 │   │   └── source-precedence.yaml
 │   └── generated/
 ├── tests/
-│   ├── architecture/
 │   ├── unit/
 │   ├── contract/
-│   ├── replay/
-│   ├── persistence/
 │   ├── integration/
-│   ├── security/
-│   ├── crash/
+│   │   └── fleet_control/
+│   ├── architecture/
+│   ├── acceptance/
+│   ├── system/
 │   ├── e2e/
+│   ├── security/
+│   │   └── bypass_matrix/
+│   ├── performance/
+│   ├── resilience/
+│   │   └── fleet_control/
+│   ├── migration/
+│   ├── replay/
+│   ├── operations/
 │   ├── qualification/
 │   ├── effectiveness/
-│   └── operations/
+│   ├── evaluation/
+│   │   └── fleet_control/
+│   ├── fixtures/
+│   └── builders/
 ├── docs/
 │   ├── architecture/
+│   │   ├── decisions/
+│   │   ├── rfcs/
+│   │   ├── reviews/
+│   │   ├── specifications/
+│   │   └── templates/
 │   ├── research/
-│   ├── adr/
-│   ├── rfc/
-│   ├── specifications/
 │   └── operations/
 ├── scripts/
 │   ├── architecture/
@@ -805,7 +938,44 @@ ranex/
     └── decommercialization-denylist.yaml
 ```
 
+The tree is governed together with
+[ADR-0007](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md)
+and
+[ADR-0008](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md).
+The JSON executable documentation-contract baseline projects organization
+rules through `contexts.json`, `paths.json`, and `topology-rules.json`, and test
+policy through `test-practices.json` and `test-practice-profiles.json`.
+`architecture-rule-assessments.json` holds the exact 18 `ORG-*`, 19 `TDD-*`,
+and ten ADR-0009 boundary/feedback noncompensating rule assessments. ADR-0009
+also projects the exact dependency-edge, boundary-fit, central-coupling, and
+feedback-fitness registries shown above. The more granular YAML names in this
+end-state map are future runtime-domain projections; they may not become
+competing semantic sources.
+
+Every top-level test directory shown is an allowed root, not a requirement to
+create empty suites. `tests/persistence/` is invalid; persistence tests belong
+to the owning context under `integration/` or `migration/`.
+`tests/crash/` is invalid; crash/fault work belongs under `resilience/`.
+Likewise, empty context layers, adapters, packages, and generated views are not
+architecture compliance. A path is created only for enacted behavior with a
+registered owner.
+
+The expanded `governed_execution` adapter illustrates a context-exclusive
+implementation. The central `src/ranex/adapters/<boundary>/<technology>/`
+space is reserved for genuine multi-context, delivery, or platform host-edge
+integration and every such use requires an exact `HOST_EDGE_ADAPTER`
+exception. Context-owned repositories, row models, schemas, and migrations
+remain below `src/ranex/<context>/adapters/`; central SQLite code owns shared
+connection mechanics only.
+
 There is deliberately no `apps/desktop/`.
+
+The `schemas/` namespace in this full-system tree is the system-wide superset.
+[AI-Work Artifact Contract Specification §12](./AI_ARTIFACT_CONTRACTS.md#12-target-schema-tree)
+fixes the exact schema filenames for the AI-work artifact subset. A schema in
+that subset has one canonical path only; the future contract generator and
+architecture fitness checks must reject a missing, duplicated, or differently
+homed definition.
 
 ### 11.1 Physical coexistence during the strangler
 
@@ -830,35 +1000,59 @@ Every stateful context follows:
 
 ```text
 <context>/
-├── README.md             # vocabulary, owner, invariants, public seams
-├── contract.yaml         # allowed dependencies, capabilities, schemas, events
-├── api/                  # the only cross-context source import surface
-├── domain/               # pure model and decisions
-└── application/          # use cases, handlers, ports, orchestration
+├── __init__.py
+├── README.md                 # vocabulary, owner, invariants, navigation
+├── contract.yaml             # generated/validated registry projection
+├── api/                      # only cross-context source import surface
+├── domain/                   # aggregates, values, events, domain decisions
+├── application/              # use cases, handlers, orchestration
+│   └── ports/                # repository/external-capability protocols
+└── adapters/                 # optional context-exclusive implementations
 ```
 
 Rules:
 
 - `api/` exposes commands, queries, integration events, and immutable views.
-- `domain/` contains no clients, repositories, SDKs, callbacks, ORM models,
-  environment reads, or framework decorators.
-- `application/` owns use cases and ports but imports another context only
-  through its `api/`.
+- `domain/` contains aggregates, roots, entities, immutable value objects,
+  domain events, invariants, and narrowly named pure domain services. It
+  contains no clients, repositories, SDKs, callbacks, ORM models, environment
+  reads, or framework decorators.
+- `application/` owns use cases and orchestration; repository and external
+  capability protocols live only in `application/ports/`. It imports another
+  context only through that context's `api/`.
+- `adapters/` is optional and contains only technology translation and
+  context-exclusive port implementations. Shared/host-edge placement follows
+  the exact exception rule above.
 - database row models and wire payload models live in adapters, not domain.
+- `contract.yaml` is generated or validated from the canonical registries; it
+  is not a second hand-maintained owner of dependencies or public contracts.
 - no generic `utils.py`, `common.py`, `manager.py`, or `service.py` dumping
   ground is allowed without a narrow named responsibility.
 - a module descriptor names its factory; import does not register the module.
+- only folders needed by enacted behavior are created; cargo-cult empty layers
+  and copied boilerplate fail review.
 
 ### 12.1 Canonical file-responsibility catalog
 
 The table fixes the intended file names and responsibility centers. A slice may
 create only the files it implements, but new responsibilities must land in
 their mapped file rather than an ad hoc manager or utility file.
+The table maps each context's internal `api`, `domain`, `application`, and port
+homes. Every context package uses the single canonical root
+`src/ranex/<context>/`; `src/ranex/contexts/<context>/` is invalid. Adapter
+homes follow ADR-0007: context-exclusive implementations live in the owning
+context; central host-edge implementations require a registered exception. In
+particular, a central
+`src/ranex/adapters/process_assurance/<technology>/` implementation may
+implement the
+`process_evidence`/`measurement_runner` boundary for fleet measurement and
+experiment execution; it owns neither process policy nor canonical assessment,
+projection, or experiment state and requires `HOST_EDGE_ADAPTER` evidence.
 
 | Context | Domain/API files | Application/port files |
 |---|---|---|
-| `policy` | `api/{commands,queries,views}.py`; `domain/{principals,roles,grants,risk,policy_packages,activation,authorization,human_decisions,waivers,invariants}.py` | `application/{authorization_service,risk_service,human_decision_service}.py`; `application/ports/{policy_engine,decision_store}.py` |
-| `assurance` | `api/{commands,queries,views}.py`; `domain/{claims,evidence,observations,checker_results,coverage,freshness,independence,evidence_snapshots}.py` | `application/{ingestion_service,checker_service,snapshot_service}.py`; `application/ports/{checker_transport,evidence_repository}.py` |
+| `policy` | `api/{commands,queries,views}.py`; `domain/{principals,roles,eligibility_rules,risk,policy_packages,activation,authorization_snapshots,human_decisions,waivers,invariants}.py` | `application/{authorization_service,risk_service,human_decision_service}.py`; `application/ports/{policy_engine,decision_store}.py` |
+| `assurance` | `api/{commands,queries,views}.py`; `domain/{claims,evidence,checker_results,coverage,freshness,evidence_snapshots,gate_evaluations,invariants}.py` | `application/{ingestion_service,checker_service,snapshot_service,gate_evaluation_service}.py`; `application/ports/{checker_transport,evidence_repository}.py` |
 | `module_governance` | `api/{commands,queries,views}.py`; `domain/{descriptors,interfaces,capabilities,grants,profiles,lifecycle,qualification_refs,invariants}.py` | `application/{catalog_service,activation_service,grant_service,profile_service}.py`; `application/ports/{module_factory,module_state_store}.py` |
 | `identity_access` | `api/{commands,queries,views}.py`; `domain/{principals,authentication,sessions,nonces,data_classification,destination_facts,secret_refs,invariants}.py` | `application/{authentication_service,session_service,destination_fact_service,secret_projection_service}.py`; `application/ports/{authenticator,secret_backend,destination_resolver}.py` |
 | `product_definition` | `api/{commands,queries,events,views}.py`; `domain/{actors,needs,hypotheses,capabilities,requirements,acceptance_examples,outcome_measures,validation_decisions,capability_status,invariants}.py` | `application/{discovery_service,requirements_service,validation_service,capability_lifecycle_service}.py`; `application/ports/{research_source,outcome_analytics}.py` |
@@ -866,17 +1060,17 @@ their mapped file rather than an ad hoc manager or utility file.
 | `service_management` | `api/{commands,queries,events,views}.py`; `domain/{services,owners,supported_versions,slis,slos,error_budgets,support,maintenance_triggers,retirement_triggers,invariants}.py` | `application/{catalog_service,objective_service,support_service,lifecycle_trigger_service}.py`; `application/ports/{service_catalog,operational_evidence}.py` |
 | `configuration_management` | `api/{commands,queries,events,views}.py`; `domain/{configuration_items,baselines,status_accounting,trace_links,audits,drift,generation_manifests,invariants}.py` | `application/{baseline_service,traceability_service,audit_service,drift_service,contract_generation_service}.py`; `application/ports/{configuration_scanner,baseline_store,contract_registry,code_generator}.py` |
 | `supplier_governance` | `api/{commands,queries,events,views}.py`; `domain/{suppliers,dependencies,adoption_decisions,shared_responsibility,monitoring,concentration,exit_plans,invariants}.py` | `application/{adoption_service,monitoring_service,reassessment_service,exit_service}.py`; `application/ports/{dependency_inventory,supplier_probe}.py` |
-| `resource_governance` | `api/{commands,queries,events,views}.py`; `domain/{budgets,reservations,quotas,usage,attribution,provider_limits,invariants}.py` | `application/{reservation_service,usage_service,quota_service,reconciliation_service}.py`; `application/ports/{usage_meter,rate_card,host_capacity}.py` |
+| `resource_governance` | `api/{commands,queries,events,views}.py`; `domain/{budgets,reservations,reservation_tree,quotas,usage,usage_settlement,attribution,provider_limits,invariants}.py` | `application/{reservation_service,usage_service,quota_service,budget_gateway,reconciliation_service}.py`; `application/ports/{usage_meter,rate_card,host_capacity}.py` |
 | `interaction_history` | `api/{commands,queries,events,views}.py`; `domain/{threads,messages,participants,continuity,classification,retention,export,deletion,invariants}.py` | `application/{thread_service,message_service,search_service,retention_service}.py`; `application/ports/{history_store,search_index,legacy_session_reader}.py` |
-| `process_assurance` | `api/{commands,queries,events,views}.py`; `domain/{tailoring_profiles,competence_profiles,audits,nonconformances,corrective_actions,process_measures,improvement_proposals,invariants}.py` | `application/{tailoring_service,audit_service,competence_service,corrective_action_service}.py`; `application/ports/{process_evidence,training_registry}.py` |
+| `process_assurance` | `api/{commands,queries,events,views}.py`; `domain/{tailoring_profiles,competence_profiles,audits,nonconformances,corrective_actions,process_measures,capability_assessments,capability_domain_projections,fleet_experiments,calibration_records,improvement_proposals,invariants}.py` | `application/{tailoring_service,audit_service,competence_service,corrective_action_service,capability_assessment_service,capability_projection_service,fleet_experiment_service}.py`; `application/ports/{process_evidence,training_registry,measurement_runner}.py` |
 | `workspace` | `api/{commands,queries,views}.py`; `domain/{repository_identity,workspace_identity,worktree_plan,branch_policy,landing_plan,invariants}.py` | `application/{workspace_service,head_validation,landing_service,cleanup_service}.py`; `application/ports/{git,filesystem,sandbox_mount}.py` |
 | `instruction_registry` | `api/{commands,queries,views}.py`; `domain/{instructions,scope,applicability,precedence,coverage,lifecycle,invariants}.py` | `application/{registry_service,activation_service,coverage_service}.py`; `application/ports/{instruction_repository}.py` |
 | `context_compilation` | `api/{commands,queries,views}.py`; `domain/{source_records,precedence,freshness,conflicts,budgets,manifests,packets,invariants}.py` | `application/{source_resolver,packet_compiler,rendering_service}.py`; `application/ports/{source_provider,retrieval_activity}.py` |
-| `analytical_review` | `api/{commands,queries,views}.py`; `domain/{review_specs,requests,attempts,observations,parsing,independence,failure_taxonomy,invariants}.py` | `application/{review_service,normalization_service,independence_service}.py`; `application/ports/{analytical_transport,review_artifacts}.py` |
+| `analytical_review` | `api/{commands,queries,views}.py`; `domain/{review_specs,requests,attempts,observations,verdicts,parsing,independence_evaluations,failure_taxonomy,invariants}.py` | `application/{review_service,normalization_service,independence_service}.py`; `application/ports/{analytical_transport,review_artifacts}.py` |
 | `routing` | `api/{commands,queries,views}.py`; `domain/{model_identity,transport_identity,route_locks,catalog,health,fallback_policy,lifecycle,invariants}.py` | `application/{route_service,health_service,fallback_service}.py`; `application/ports/{provider_probe,usage_pricing}.py` |
 | `qualification` | `api/{commands,queries,views}.py`; `domain/{subjects,fixture_suites,trials,thresholds,calibration,qualification_records,expiry,invariants}.py` | `application/{qualification_service,canary_service,requalification_service}.py`; `application/ports/{trial_runner,grader}.py` |
 | `effectiveness` | `api/{commands,queries,views}.py`; `domain/{experiments,arms,trials,metrics,uncertainty,scorecards,ablation,invariants}.py` | `application/{experiment_service,analysis_service,report_service}.py`; `application/ports/{workflow_runner,effectiveness_grader}.py` |
-| `agent_collaboration` | `api/{commands,queries,views}.py`; `domain/{assignments,worker_identity,roles,delegation,results,handoffs,independence,invariants}.py` | `application/{dispatch_service,delegation_service,handoff_service}.py`; `application/ports/{agent_driver,harness_transport}.py` |
+| `agent_collaboration` | `api/{commands,queries,events,views}.py`; `domain/{assignments,dispatch_offers,worker_attempts,worker_identity,roles,leases,heartbeats,mailboxes,delegation,topology,results,handoffs,independence,invariants}.py` | `application/{assignment_service,claim_service,dispatch_service,liveness_service,mailbox_service,delegation_service,handoff_service}.py`; `application/ports/{agent_driver,harness_transport,worker_dispatch,coordinator_clock,collaboration_store}.py` |
 | `repository_intelligence` | `api/{commands,queries,views}.py`; `domain/{repository_snapshot,symbols,dependencies,coverage,unsupported,freshness,findings}.py` | `application/{index_service,query_service,evidence_service}.py`; `application/ports/{parser,index_store}.py` |
 | `knowledge` | `api/{commands,queries,views}.py`; `domain/{skills,memory_records,learning_records,provenance,quarantine,sanitization,transfer,lifecycle,invariants}.py` | `application/{ingestion_service,approval_service,retrieval_service,transfer_service}.py`; `application/ports/{knowledge_store,sanitizer}.py` |
 | `scheduling` | `api/{commands,queries,events,views}.py`; `domain/{schedules,triggers,authentication,catch_up,lifecycle,invariants}.py` | `application/{schedule_service,trigger_service}.py`; `application/ports/{trigger_source,schedule_store}.py` |
@@ -955,6 +1149,86 @@ gate rule, permit rule, risk rule, or provider credential.
     install/update/migration/restore effect.
 16. Only `compatibility.hermes_legacy` may import inherited Hermes roots during
     the strangler; no authority, domain, or other application package may.
+17. `governed_execution.application.process_manager` is orchestration-only. It
+    may call registered public application services and ports, but contains no
+    policy, gate, permit, transition, risk, evidence-eligibility, or product
+    business rule; those remain in their named domain/application owners.
+18. Ports exist only below
+    `src/ranex/<context>/application/ports/`; a sibling `<context>/ports/`
+    package is invalid.
+19. Cross-context imports target the other context's public `api` package.
+    Imports of another context's `domain`, `application`, `ports`, `adapters`,
+    or private modules fail even if Python can resolve them.
+20. Importing a module performs no network/database/filesystem mutation,
+    process spawn, migration, discovery registration, environment-dependent
+    decision, or other effect.
+21. A context-exclusive implementation lives below
+    `src/ranex/<context>/adapters/<technology>/`. A central
+    `src/ranex/adapters/<boundary>/<technology>/` implementation is valid only
+    with an exact, owned, expiring `HOST_EDGE_ADAPTER` exception and must
+    contain no domain rule.
+22. Every governed path resolves to one semantic owner and required reviewer;
+    the generated CODEOWNERS projection and actual package discovery must agree
+    with that registry. CODEOWNERS never becomes domain or transition
+    authority.
+23. Python package discovery is explicit, excludes tests/docs/tools/legacy and
+    unrelated worktrees, and never depends on import-time scanning.
+24. Each context README makes its owner, vocabulary, public API, invariants,
+    dependencies, data/migrations, operations, and tests navigable without
+    duplicating the machine contracts.
+
+[ADR-0007](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md)
+owns the complete `ORG-*` rule set, placement catalog, allowed exception
+classes, mirror rules, migration/legacy quarantine, and `FF-ORG-*` evidence.
+That ADR is an accepted structural contract, not a claim that the current
+source tree conforms.
+
+[ADR-0009](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md)
+owns the deny-by-default 67-edge public-API dependency ledger. Every actual
+cross-context import must be a subset of those exact acyclic edges; a new edge
+is an architecture change, not an implementation convenience. The same ADR
+owns one falsifiable boundary-fit row for each of the 34 registered contexts,
+six governed-execution coupling measures/triggers, and four reference-host
+feedback-latency objectives. All observations remain `NOT_ASSESSED`.
+
+### 13.1 AI-worker fleet control plane
+
+Multiple workers do not create a second orchestration authority. The normative
+[AI-Worker Fleet Control-Plane Specification](./AI_AGENT_FLEET_CONTROL_PLANE.md)
+maps the complete assignment, lease, liveness, topology, budget, handoff,
+verification, measurement, failure, and recovery design.
+
+The irreducible boundary is:
+
+```text
+Core-SDLC WorkItem + exact packet
+  -> agent_collaboration assignment/offer
+  -> atomic claim + expiring fenced lease
+  -> governed_execution Run + deterministic governor
+  -> isolated harness/tool boundary
+  -> immutable result/evidence/handoff
+  -> qualified verification + accountable transition/landing
+```
+
+- one worker is the default;
+- read-only work may fan out, but writing work uses validated isolated
+  worktrees and declared path/API ownership;
+- a coordinator or planner may propose decomposition but cannot accept scope,
+  lower risk, transition work, or land code;
+- every heartbeat proves liveness only, and stale attempts are fenced at every
+  write/model/tool/result boundary;
+- every child worker/model/tool call consumes its parent reservation
+  transitively;
+- verifier, integration, and human-decision capacity impose admission
+  backpressure;
+- result-aware loop detection and hard ceilings wrap every attempt; and
+- all landing remains human-controlled under the active Core-SDLC policy.
+
+The Kimi fleet-control research's direct operator-to-gateway action,
+full-permission workers, self-merge/reconciler authority, generic `.fleet/`
+source of truth, and pre-governance build order are explicitly rejected. Its
+sound distributed-systems controls are translated into the owning Ranex
+contexts rather than copied as a parallel process.
 
 ## 14. Composition and boot
 
@@ -994,6 +1268,25 @@ bypasses. A minimal signed `maintenance_controller`:
 - uses plan/verify/apply/verify/reconcile phases with idempotent steps; and
 - hands the final state to the normal authority host, which refuses readiness
   until reconciliation passes.
+
+Signing authority is separated:
+
+- the human release authority approves key generation, activation, rotation,
+  revocation, recovery, and emergency replacement ceremonies;
+- `release_management` owns the accepted signing policy, signer/key IDs,
+  signature requirements, release-manifest binding, and append-only
+  rotation/revocation records;
+- `identity_access` and its secret backend custody private key material behind
+  opaque handles and ceremony-scoped access; `release_management` never reads
+  or stores raw private keys;
+- the release-pinned `bootstrap` package contains the public trust roots and
+  verification algorithm/profile used by the controller;
+- changing a trust root requires a separately signed release and applicable
+  human decision; the running controller cannot silently trust a new signer;
+  and
+- lost, suspected-compromised, expired, or revoked signing authority forces
+  safe mode and the documented offline recovery ceremony before further
+  maintenance effects.
 
 Command-line scripts are clients of this controller. A recovery procedure that
 cannot run the normal PEP uses this smaller signed authority—not raw adapter or
@@ -1052,7 +1345,7 @@ base commit
 candidate commit or artifact digest
 task-packet digest
 workflow definition + interpreter version
-policy activation + decision digest
+policy/rule activation manifest + decision digest
 module profile + grant digest
 schema registry version
 expected run aggregate version
@@ -1068,6 +1361,16 @@ One overloaded “office stage” is prohibited.
 | `WorkClass` | `PRODUCT`, `DEFECT`, `RELIABILITY`, `SECURITY_PRIVACY`, `ARCHITECTURE_PLATFORM`, `COMPLIANCE_PROVENANCE`, `UPSTREAM_SYNC`, `MAINTENANCE`, `RETIREMENT`, `INCIDENT_RESPONSE` |
 | `RiskLane` | `STANDARD`, `ENHANCED`, `CRITICAL`, `EMERGENCY` |
 | `RunStatus` | `PROPOSED`, `READY`, `RUNNING`, `WAITING`, `BLOCKED`, `SUCCEEDED`, `FAILED`, `CANCELLED` |
+| `AssignmentStatus` | `PENDING`, `OFFERED`, `CLAIMED`, `RUNNING`, `HANDOFF_READY`, `COMPLETED`, `FAILED`, `EXPIRED`, `CANCELLED`; owned by `agent_collaboration` and never a work/run completion alias |
+| `DispatchOfferStatus` | `OPEN`, `CLAIMED`, `EXPIRED`, `REVOKED`; owned by `agent_collaboration`; invitation currency only |
+| `LeaseStatus` | `ACTIVE`, `RELEASED`, `EXPIRED`, `REVOKED`; owned by `agent_collaboration` with a monotonically increasing fencing epoch |
+| `MailboxDeliveryStatus` | `QUEUED`, `DELIVERED`, `ACKNOWLEDGED`, `DEAD_LETTERED`, `EXPIRED`; coordination delivery only, never authority |
+| `ReservationStatus` | `PENDING`, `ACTIVE`, `EXHAUSTED`, `RELEASED`, `EXPIRED`, `REVOKED`, `SETTLED`; owned by `resource_governance`; never work completion or authority beyond its ancestor tree |
+| `IntakeStatus` | `PROPOSED`, `ACCEPTED`, `REJECTED`, `DUPLICATE`, `WITHDRAWN`; owned by `work_management`; it does not alias `WorkItemStatus` |
+| `PacketStatus` | `DRAFT`, `SEALED`, `SUPERSEDED`, `INVALIDATED`; owned by each packet producer under the shared schema; only `SEALED` is dispatch/review eligible |
+| `FleetExperimentStatus` | `DRAFT`, `REGISTERED`, `RUNNING`, `COMPLETED`, `STOPPED`, `INVALIDATED`; owned by `process_assurance`; completion cannot activate policy |
+| `CapabilityAssessmentStatus` | `NOT_ASSESSED`, `IN_PROGRESS`, `COMPLETE`, `SUPERSEDED`; owned by `process_assurance` and shared by immutable control assessments and domain projections; neither acts as a gate |
+| `RuleEnforcementClass` | `ADVISORY`, `REQUIRED`, `BLOCKING`, `EXPERIMENTAL`; separate `DETERMINISTIC` or `HUMAN_DECISION_REQUIRED` resolution metadata prevents human authority from being overloaded as severity |
 | `RuleStage` | Derived policy classifier: `GOVERNANCE`, `DISCOVERY`, `REQUIREMENTS`, `DESIGN`, `PLANNING`, `IMPLEMENTATION`, `VERIFICATION`, `RELEASE`, `OPERATIONS`, `OUTCOME_REVIEW`, `MAINTENANCE`, `RETIREMENT` |
 | `IncidentStatus` | `DETECTED`, `ACKNOWLEDGED`, `MITIGATING`, `MITIGATED`, `RECOVERY_VERIFIED`, `REVIEWED`, `ACTIONS_TRACKED`, `CLOSED` |
 | `ReleaseStatus` | `PLANNED`, `BUILT`, `VERIFIED`, `RELEASE_READY`, `RELEASING`, `OPERATING`, `ROLLED_BACK`, `WITHDRAWN` |
@@ -1088,11 +1391,30 @@ One overloaded “office stage” is prohibited.
 | `ArtifactStatus` | `INGESTED`, `QUARANTINED`, `AVAILABLE`, `EXPIRED`, `LEGAL_HOLD`, `PURGED` |
 | `MigrationStatus` | `PLANNED`, `TESTED`, `APPLIED`, `VERIFIED`, `ROLLED_BACK`, `FAILED` |
 | `SyncCandidateStatus` | `OBSERVED`, `FETCHED`, `PINNED`, `CLASSIFIED`, `DISPOSITIONED`, `PORTING`, `PORT_CANDIDATE`, `VERIFIED`, `RELEASED`, `BASELINE_RECORDED`, `REJECTED`, `DEFERRED`, `BLOCKED`, `ROLLED_BACK` |
+| `SyncDisposition` | `REJECT`, `DEFER`, `PORT`; a decision value recorded at `DISPOSITIONED`, never an overloaded status |
 | `UpdateStatus` | `CHECKED`, `DOWNLOADED`, `VERIFIED`, `SNAPSHOTTED`, `STAGED`, `MIGRATED`, `ACTIVATED`, `HEALTH_VERIFIED`, `COMPLETED`, `ROLLED_BACK`, `RECOVERY_VERIFIED` |
 | `CutoverStatus` | `BOOTSTRAP`, `LEGACY_BASELINE`, `TRANSITIONAL_DUAL_RUN`, `TARGET_SHADOW`, `TARGET_LIMITED`, `TARGET_DEFAULT`, `LEGACY_FROZEN`, `LEGACY_REMOVED` |
 
 `WorkflowNodeId` is a versioned node from the pinned workflow definition; it is
 not another run-status enum. A waiver is a `HumanDecision`, not a gate outcome.
+
+`RunStatus` has one legal transition graph:
+
+```text
+PROPOSED -> READY | CANCELLED
+READY -> RUNNING | BLOCKED | CANCELLED
+RUNNING -> WAITING | BLOCKED | SUCCEEDED | FAILED | CANCELLED
+WAITING -> RUNNING | BLOCKED | FAILED | CANCELLED
+BLOCKED -> <recorded blocked_from_status> | FAILED | CANCELLED
+```
+
+Entering `BLOCKED` records the prior nonterminal state, reason, owner, time,
+blocking evidence/dependency, invalidated inputs, and review deadline. Resume
+is permitted only to that recorded state after fresh policy/evidence confirms
+the blocker is resolved; it is not a generic jump. `SUCCEEDED`, `FAILED`, and
+`CANCELLED` are terminal for one run attempt. Retry creates a new `RunId`
+linked to the prior attempt. A terminal run remains only input to the
+independently owned work-item transition.
 
 ### 16.1 Core-SDLC and execution boundary
 
@@ -1119,10 +1441,10 @@ applicable policy. It is not independently writable.
 
 | Namespace | Meaning | Authority |
 |---|---|---|
-| `SDLC-*` | Core-SDLC stage/cross-lifecycle controls | Owning SDLC roles plus deterministic requirements |
-| `AI-G0`–`AI-G10` | Evidence gates for one agent-assisted execution | Qualified checker/gate evaluator |
-| `MAP-*` | Architecture-map completeness | Architecture review plus owner decision |
-| `SDLC-ADOPT-*` | Adoption/calibration of the process itself | Process owner/human governor |
+| `SDLC-*` | Core-SDLC stage/cross-lifecycle controls, including `SDLC-FORK-000` preflight | Owning SDLC roles plus deterministic requirements |
+| `AI-G0`–`AI-G10` | Exact-subject evidence gates for one agent-assisted execution | `assurance` creates `GateEvaluation`; `governed_execution` only binds a fresh pass |
+| `MAP-*` | Architecture-map completeness assertions over one `ArchitectureSubject` | `assurance` records qualified deterministic evaluation; architecture owner accepts/rejects |
+| `SDLC-ADOPT-*` | Adoption/calibration of the process itself, including `SDLC-ADOPT-FLEET-*` | Process owner/human governor |
 | `GateOutcome` | Runtime exact-subject result | Qualified deterministic gate |
 | Human decision point | Product, architecture, risk, release, destructive or exception authority | Authenticated named human |
 
@@ -1268,7 +1590,7 @@ The data flow is deliberately one-way:
 ```text
 raw artifact
   -> EvidenceEnvelope
-  -> ReviewObservation or deterministic CheckerResult
+  -> immutable ReviewObservation reference or qualified CheckerResult
   -> validated exact-subject evidence snapshot
   -> GateEvaluation
   -> optional authenticated HumanDecision
@@ -1288,6 +1610,13 @@ Forbidden flows:
 A blocking gate advances automatically only on a fresh exact-subject `PASS`.
 `FAIL`, `UNKNOWN`, `CONFLICT`, `CHECKER_FAULT`, missing/stale evidence, and
 unproven `NOT_APPLICABLE` block.
+
+`analytical_review` alone owns `ReviewObservation` and related review lifecycle
+records. `assurance` alone owns the qualified evidence snapshot and immutable
+`GateEvaluation`. `governed_execution` may bind that evaluation and consume an
+eligible permit in its authority transaction; it cannot create or edit the
+evaluation. `policy` determines requirements/eligibility but does not issue or
+consume the permit.
 
 ## 21. Policy, identity, secrets, and human decisions
 
@@ -1540,8 +1869,11 @@ explicit recovery mechanism; removed commercial credentials/data are excluded
 and tested. Restore is not complete until external effects, projections,
 workspaces, outbox, provider/GitHub state, and service objectives reconcile.
 
-RPO, RTO, encryption, retention, restore target, and off-host destination are
-owner decisions recorded in configuration and an ADR, not hard-coded folklore.
+The initial RPO, RTO, availability/latency, encryption, retention, restore,
+external-anchor, and disposal decisions are fixed by
+[ADR-0004](./decisions/ADR-0004-establish-initial-quality-attribute-baselines.md)
+and projected into release-pinned configuration. Values are targets until
+exact-subject measurement/restore evidence proves them.
 
 ## 29. Install, update, release, upstream sync, and migration
 
@@ -1569,16 +1901,30 @@ Upstream sync is a permanent product capability because Ranex remains a fork.
 It uses a dedicated worktree and lifecycle:
 
 ```text
-OBSERVED -> FETCHED -> PINNED -> CLASSIFIED
-  -> DISPOSITIONED (REJECTED | DEFERRED | PORT_PLANNED)
-  -> PORTING -> PORT_CANDIDATE -> VERIFIED
+OBSERVED -> FETCHED -> PINNED -> CLASSIFIED -> DISPOSITIONED
+  -> disposition REJECT -> REJECTED
+  -> disposition DEFER -> DEFERRED
+  -> disposition PORT -> PORTING -> PORT_CANDIDATE -> VERIFIED
   -> RELEASED -> BASELINE_RECORDED
 ```
 
-`BLOCKED` and `ROLLED_BACK` are explicit branches. The registry separately
-records latest observed, audited, incorporated, and released upstream
-baselines. Every commit/path has a disposition, target Ranex commit, owner,
-reason, compatibility evidence, and legal/commercial classification.
+`BLOCKED` and `ROLLED_BACK` are explicit, deterministic branches:
+
+- any nonterminal state from `FETCHED` through `RELEASED` may enter `BLOCKED`
+  with `blocked_from_status`, reason, owner, required evidence, and review
+  deadline; resolution returns only to that recorded state, while abandonment
+  must re-enter `CLASSIFIED` for a fresh `REJECT` or `DEFER` disposition;
+- only `RELEASED` may enter `ROLLED_BACK`; the rollback must reconcile product,
+  schema, data, credential, package, and external effects, then re-enter
+  `CLASSIFIED` as a new candidate revision before any new disposition; and
+- `REJECTED`, `DEFERRED`, and `BASELINE_RECORDED` are terminal for that candidate
+  revision. Reconsideration creates a new revision rather than rewriting
+  history.
+
+The registry separately records latest observed, audited, incorporated, and
+released upstream baselines. Every commit/path has a disposition, target Ranex
+commit, owner, reason, compatibility evidence, and legal/commercial
+classification.
 
 No upstream commit merges automatically into the product branch. Target-mode
 adoption uses selective porting or reimplementation in the sync worktree;
@@ -1696,8 +2042,10 @@ These routes are traversal order, not scope reduction.
    evolve inherited Hermes into a proposal driver.
 6. **Native capability route:** providers, tools, repository intelligence,
    review, delivery, and scheduling through Ranex-owned ports.
-7. **Concurrency and recovery route:** multiple work items/projects, crash
-   matrix, reconciliation, backup/restore, and incident handling.
+7. **Fleet, concurrency, and recovery route:** atomic assignments/claims,
+   fenced leases, liveness/mailboxes, transitive budgets, isolated parallel
+   work, verifier backpressure, multiple work items/projects, crash matrix,
+   reconciliation, backup/restore, and incident handling.
 8. **Qualification route:** checker/module/route/isolation qualification and
    whole-system effectiveness evaluation.
 9. **Operations route:** phone/web/GitHub operations, release/update/rollback,
@@ -1724,18 +2072,40 @@ map.
 | `MAP-007` | Security, operations, data lifecycle, and compliance each have a named owner. |
 | `MAP-008` | Knowledge, tools/MCP, routes, extensions, backup, release, sync, and migration have final attachment points even when inactive. |
 
+Each row is evaluated against the same immutable `ArchitectureSubject`
+manifest. A qualified deterministic map checker produces evidence;
+`assurance` records its `GateEvaluation`; the architecture owner records the
+accept/reject decision. The aggregate map passes only when all applicable rows
+are fresh `PASS` and no blocking `UNKNOWN` or `CONFLICT` exists. `AI-G1`
+consumes those exact evaluations for a run. Accepted paper architecture,
+`AI-G1`, `AI-G2`, and runtime qualification remain distinct facts.
+
 ### 33.2 Structural gates
 
-- forbidden-import and public-API-only contracts;
-- no dependency cycles;
-- no side-effectful imports;
-- deterministic composition from the same catalog/profile;
+- canonical context/path/layer/public placement:
+  `ORG-PATH-001`, `ORG-CONTEXT-001`, `ORG-LAYER-001`, and `ORG-PUBLIC-001`;
+- allowed-edge, no-cycle, effect-free import, and sole-composition checks:
+  `ORG-DEPENDENCY-001`, `ORG-CYCLE-001`, `ORG-IMPORT-001`, and
+  `ORG-COMPOSE-001`;
+- public messaging, single-owner persistence, test mirroring, generated drift,
+  migration, and legacy quarantine: `ORG-MESSAGE-001`, `ORG-PERSIST-001`,
+  `ORG-TEST-MIRROR-001`, `ORG-GENERATED-001`, `ORG-MIGRATION-001`, and
+  `ORG-LEGACY-001`;
+- semantic owner/reviewer resolution, explicit package discovery, navigation,
+  and exact non-transitive exceptions: `ORG-OWNERSHIP-001`,
+  `ORG-DISCOVERY-001`, `ORG-NAV-001`, and `ORG-EXEMPTION-001`;
 - no inactive module registration or migration;
 - no canonical write outside the authority UoW;
 - no `ExecutionContext` in domain method signatures;
-- no compatibility/legacy import outside its adapter;
 - generated schema/config/example drift check; and
 - architecture graph diff on every change.
+
+All eighteen `ORG-*` evaluations bind the same exact subject. A missing
+applicable evaluation, unknown/duplicate path owner, private cross-context
+import, unregistered central adapter, or expired/broad exception fails
+structural readiness. Only `ORG-NAV-001` and risk-selected diagnostic evidence
+may be nonblocking when policy explicitly says so; an enforcement label never
+permits a higher invariant to be waived.
 
 ### 33.3 Behavioral P0 gates
 
@@ -1747,6 +2117,13 @@ map.
 - packet digest stability over resolved inputs;
 - target-host secret/read/write/process/argv/network/output denial;
 - real Hermes/Codex/Claude/OpenCode bypass matrix;
+- double-claim, lease-expiry, stale-epoch fencing, heartbeat/reclaim, mailbox
+  dead-letter, child-budget escape, and orphan-worker matrix;
+- result-aware loop detection across syntactic variants and unchanged failure
+  results;
+- path/worktree enforcement through symlink, subprocess, helper, alternate Git,
+  generated-path, and new-fixture collision routes;
+- verifier/human-capacity backpressure without assurance reduction;
 - split-source reconciliation with Hermes/Kanban/projections;
 - ambiguous external effect reconciliation;
 - route identity and re-probation;
@@ -1754,23 +2131,81 @@ map.
 - clean backup and restore with external reconciliation; and
 - upstream-sync anti-recontamination gate.
 
-## 34. Open research gates that do not shrink the map
+### 33.4 Default TDD construction and verification gates
 
-These choices have complete attachment points but require evidence before a
-concrete implementation is accepted:
+[ADR-0008](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md)
+requires acceptance/risk/failure modeling followed by inspectable
+RED → GREEN → REFACTOR → architecture-check evidence. Gate-bearing tests
+exercise one built, content-digested production artifact and release profile.
+Test-only domain branches, weakened controls, alternate reducers, subject
+mocks, and bypass composition are prohibited. Determinism enters only through
+declared ports with recorded seeds/clocks/fault programs; every fake has parity
+and representative real-adapter evidence, and persistence proof uses ephemeral
+real SQLite with production migrations and UoW.
 
-| Decision | Current target | Closure test |
-|---|---|---|
-| Local runner versus Temporal | Local runner behind runtime port | Replay/signal/timer/cancellation/upgrade/crash matrix |
-| Built-in policy versus OPA | Built-in deterministic PDP behind port | Expressiveness, offline failure, versioning, latency, authoring |
-| Bubblewrap versus Docker per lane | Named host profiles behind sandbox port | Real denial/escape/performance tests |
-| Simple context selection versus graph ranking | Deterministic simple baseline | Paired holdout value after cost/latency/failure |
-| Static routes versus learned routing | Static explainable routing | Repeated paired holdout with safety hard gates |
-| Repository-intelligence language coverage | Explicit supported set | Unsupported construct yields honest `UNKNOWN` |
-| External extension wire protocol | Versioned out-of-process port | Capability, migration, crash, quarantine, and compatibility suite |
-| Artifact trust anchoring | Local tamper-evident baseline | Threat model and external-anchor value test |
-| Voice/media activation | Inactive mapped adapter | Accepted product requirement and privacy/security qualification |
-| Multi-host control | Explicitly outside current product | New product-scope architecture decision |
+Its complete machine obligations are grouped without compensation:
+
+- construction/production subject: `TDD-LOOP-001`, `TDD-PROD-001`,
+  `TDD-ARTIFACT-001`, `TDD-SEAM-001`, and `TDD-SQLITE-001`;
+- allowed taxonomy, full failure applicability, exhaustive closed transition
+  pairs, and bounded open-space exploration: `TDD-TAXONOMY-001`,
+  `TDD-FAILURE-001`, `TDD-STATE-001`, and `TDD-OPEN-001`;
+- owned fixtures, honest flaky quarantine, generated-output substitution,
+  migration/replay, and classified test data: `TDD-FIXTURE-001`,
+  `TDD-FLAKE-001`, `TDD-GENERATED-001`, `TDD-MIGRATION-001`, and
+  `TDD-DATA-001`; and
+- risk/release lane scheduling, selective critical mutation evidence,
+  production-equivalent observability, noncompensating signals, and exact
+  exceptions: `TDD-LANES-001`, `TDD-MUTATION-001`, `TDD-OBS-001`,
+  `TDD-NONCOMP-001`, and `TDD-EXEMPTION-001`.
+
+The allowed top-level roots are exactly those in ADR-0008 and the §11 tree.
+Each capability's failure matrix records applicability and result for every
+required category. A material `UNKNOWN`, stale subject, flaky blocking test,
+missing real-seam proof, or surviving critical falsifier blocks its gate.
+`NOT_APPLICABLE` requires registered rule plus evidence. Coverage, test count,
+pyramid ratio, mutation percentage, snapshots, speed, and green rate remain
+diagnostics; none can compensate. TDD policy acceptance does not claim any
+current implementation or runtime lane passes.
+
+### 33.5 Boundary-fit, dependency, coupling, and feedback gates
+
+[ADR-0009](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md)
+adds ten noncompensating rules:
+
+- exact owned dependency semantics, actual-import subset, and acyclicity:
+  `ARCH-EDGE-001`, `ARCH-EDGE-002`, and `ARCH-EDGE-003`;
+- exact 34-context boundary hypotheses and falsifier disposition:
+  `ARCH-BOUNDARY-001` and `ARCH-BOUNDARY-002`;
+- governed-execution responsibility/fan-in/fan-out/interaction/change/
+  ownership-concentration measurement and trigger response:
+  `ARCH-COUPLING-001` and `ARCH-COUPLING-002`;
+- exact-host/artifact feedback distributions plus deterministic selection,
+  sharding, and risk escalation: `TDD-FEEDBACK-001` and
+  `TDD-FEEDBACK-002`; and
+- no compensation across any of them: `ARCH9-NONCOMP-001`.
+
+The approved source graph has 67 unique caller/callee edges, no cycle, and
+`governed_execution` fan-out/fan-in of 10/3. Those are paper definitions, not
+observed source facts. Each boundary row has a keep/merge/split alternative
+and tracer falsifier. A coupling threshold starts an independent review; it
+does not automatically mandate a split or microservice. Feedback objectives
+never authorize omitted tests or a different candidate artifact.
+
+## 34. Selected defaults and evidence-triggered substitution gates
+
+[ADR-0005](./decisions/ADR-0005-select-local-static-orchestration-defaults.md)
+selects the local durable runner, built-in deterministic PDP, qualified Linux
+`bubblewrap` lane, deterministic context/routing/workflow rules, single-worker
+default, release-pinned lease profile, versioned stdio extension protocol,
+separately protected artifact anchor, inactive voice, and exclusion of
+multi-host control. Those are construction defaults, not open implementation
+choices.
+
+Each named `SUB-*` gate in ADR-0005 is a substitution gate: evidence may
+trigger an owner decision and superseding ADR, but cannot silently activate an
+alternative. None of the selected defaults is claimed runtime-qualified until
+its corresponding fitness evidence passes on an exact build and host profile.
 
 ## 35. Supporting documentation contract
 
@@ -1778,12 +2213,22 @@ This architecture is supported by:
 
 - [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md);
 - [SDLC Control Catalog](./SDLC_CONTROL_CATALOG.md);
+- [Ranex Engineering Reference Application Map](./ENGINEERING_REFERENCE_APPLICATION_MAP.md);
 - [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md);
 - [AI-Agent Development Lifecycle](./AI_AGENT_DEVELOPMENT_LIFECYCLE.md);
+- [AI-Worker Fleet Control-Plane Specification](./AI_AGENT_FLEET_CONTROL_PLANE.md);
 - [AI-Work Artifact Contract Specification](./AI_ARTIFACT_CONTRACTS.md);
 - [ADR-0001: Established Software-Development Lifecycle Governs AI Work](./decisions/ADR-0001-established-sdlc-governs-ai-work.md);
+- [ADR-0002: Retire the Legacy Implementation Guide and Require Engineering-Practice Profiles](./decisions/ADR-0002-retire-legacy-implementation-guide.md);
+- [ADR-0007: Establish Modular-DDD Repository Organization](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md);
+- [ADR-0008: Make TDD the Default Development Discipline](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md);
+- [ADR-0009: Register Boundary Fit, Dependencies, Coupling, and Feedback Fitness](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md);
+- [SDLC-FORK-000 deterministic preflight](./reviews/2026-07-28-sdlc-fork-000-preflight.md);
 - [DeepSeek V4 Pro and HY3 Reconciliation Record](./reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md);
-- architecture contracts under future `architecture/contracts/`;
+- [Kimi Agent-Fleet Research Reconciliation](./reviews/2026-07-27-kimi-agent-fleet-research-reconciliation.md);
+- [Foundational Reference Corpus Reconciliation](./reviews/2026-07-27-foundational-reference-corpus-reconciliation.md);
+- [Exact architecture-design engineering-practice profile](../research/ranex-architecture-practice-application-profile.json);
+- executable documentation contracts under `architecture/contracts/`;
 - accepted ADRs and RFCs;
 - generated schemas and examples; and
 - immutable research snapshots under `docs/research/`.
@@ -1794,10 +2239,20 @@ define bounded implementation work.
 
 ## 36. Research reconciliation
 
-Every research artifact present at the final review snapshot was a required
-input: seven Markdown records, the semantic HTML visual guide, and the generated
-SVG. The HTML/SVG are non-normative projections; they cannot override the Core
-SDLC, control catalog, architecture, or machine contracts.
+Every research artifact present in the exact review manifests was a required
+input. The original top-level corpus contains seven Markdown records, the
+semantic HTML visual guide, and the generated SVG. The later Kimi addendum
+contains 89 content-addressed files: Markdown/text research stages, JSON/JSONL
+citation data, Mermaid sources and PNG projections, and three DOCX renderings.
+The addendum is bound by its own frozen manifest rather than an unsafe live
+directory glob. HTML/SVG/PNG/DOCX renderings are non-normative projections;
+they cannot override the Core SDLC, control catalog, architecture, or machine
+contracts.
+The foundational-reference corpus adds twelve local files—six PDFs and six
+lossy Markdown extractions—representing six intellectual works. Each pair is
+one source, not independent corroboration. The exact file identities remain in
+the frozen foundational-reference manifest; the full texts are `LOCAL_ONLY`
+and blocked from public inclusion pending documented redistribution rights.
 
 1. `cookbook-alignment-research-2026-07-27.md` supplies stable-process,
    stranger-ready packet, maker/checker, evidence/verdict, evaluation, and
@@ -1826,13 +2281,40 @@ SDLC, control catalog, architecture, or machine contracts.
    projection of the selected lifecycle.
 9. `ranex-sdlc-full-spec.svg` is the generated diagram projection inspected
    visually and by extracted labels.
-
+10. `kimi-research/` supplies advisory evidence about agent fleets as
+    distributed execution systems: atomic claims and fenced leases, liveness
+    and dead-letter handling, deterministic governors, tool-boundary
+    enforcement, transitive resource accounting, artifact handoffs, verifier
+    capacity, measurement uncertainty, topology/concurrency selection, and
+    learned-orchestration caution. Its generic task/status/path schema,
+    direct operator-to-gateway action, full-permission workers, self-merge,
+    human-review-removal option, and pre-governance build order are rejected or
+    resequenced in the named Kimi reconciliation.
+11. The saved foundational-reference corpus supplies major practice guidance:
+    SWEBOK provides a broad, non-comprehensive engineering knowledge-area map;
+    the retained *Code Complete* chapter deepens design during construction;
+    *Clean Code* informs local construction and boundary discipline;
+    *The Pragmatic Programmer* informs responsibility, orthogonality,
+    reversibility, contracts, automation, and full-map tracer routes; *System
+    Design Interview* supplies clarification, decomposition, estimation, and
+    trade-off prompts; and *The Clean Coder* supplies professional commitment,
+    disclosure, acceptance, collaboration, and sustainable-practice guidance.
+    Their adopted and rejected uses, edition/extraction limits, conflicts, and
+    rights controls are recorded in the
+    [Engineering Reference Application Map](./ENGINEERING_REFERENCE_APPLICATION_MAP.md)
+    and [Foundational Reference Corpus Reconciliation](./reviews/2026-07-27-foundational-reference-corpus-reconciliation.md).
 DeepSeek V4 Pro was used as the primary architecture/file-structure collaborator
 for two initial passes. HY3 independently challenged the same frozen
 five-document historical corpus, then performed a second full-map completeness
-pass. The final all-research/current-architecture pass, including exact prompt
-and response artifacts, is recorded separately in the reconciliation document.
+pass. Later retained direct-API rounds use separate content-addressed source and
+attachment manifests. A current-review claim is valid only when both independent
+responses are retained and bound to the same final exact subject in the named
+[review reconciliation](./reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md);
+no earlier verdict is inherited automatically.
 Neither model is a decision authority or proof that the architecture works.
+The Kimi corpus is also advisory research: headline numbers, theoretical claims,
+and build sequencing remain subject to claim-level verification and local
+Ranex evidence.
 
 ## 37. Architecture definition of done
 
@@ -1841,20 +2323,55 @@ The **map** is complete when:
 - every `MAP-*` gate passes;
 - every context, capability, surface, lifecycle, data owner, and exclusion is
   represented in the architecture contracts;
+- every adopted engineering practice has a stable ID, source/limitation,
+  applicability rule, required behavior, and verification method, and task
+  packets bind exact practice profiles;
+- every repository path, bounded-context layer, dependency, public seam,
+  adapter, migration, generated artifact, test mirror, legacy exception,
+  owner/reviewer, and package-discovery rule is represented by the complete
+  ADR-0007 `ORG-*` set;
+- every production change binds the applicable ADR-0008 TDD loop, production
+  artifact, test taxonomy, failure matrix, closed/open-space exploration,
+  seam/fixture/data/flakiness/migration/observability/mutation/exception, and
+  noncompensation rules;
+- the exact ADR-0009 edge ledger, 34 boundary-fit rows, governed-execution
+  coupling triggers, feedback objectives, deterministic selection/sharding,
+  and ten noncompensating rule assessments are projected without drift;
 - the target and transitional fork layouts are explicit;
 - the Core SDLC, control catalog, AI-worker lifecycle, artifact contracts, and
   source-of-truth policy are mutually mapped;
+- the AI-worker fleet control plane maps assignment, liveness, fencing,
+  topology, budgets, isolation, verification capacity, measurement, and
+  recovery without creating a second SDLC;
+- all six saved foundational works have named lifecycle/architecture uses,
+  rejected overclaims, exact local identities, and enforceable
+  public-distribution controls;
 - DeepSeek V4 Pro and independent HY3 findings are reconciled;
 - blocking disagreements have human decisions; and
 - all files are classified in the licensing manifest.
 
+ADR-0003 accepts this document as the normative paper destination. A formal
+`MAP-*` pass still requires one immutable `ArchitectureSubject`, generated
+registries/projections, deterministic evaluation records, and the named owner
+decision. Paper acceptance never aliases `AI-G2` or runtime qualification.
+
 The **architecture is runtime-validated** only when:
 
+- `SDLC-FORK-000` passes on the exact upstream-derived construction subject;
 - the canonical contract set is generated and conflict-free;
+- every applicable `ORG-*`, `TDD-*`, and ADR-0009 rule has fresh exact-subject
+  evidence with no material `UNKNOWN`, conflict, stale result, or unexpired
+  blocking exception;
+- actual cross-context imports are a subset of the approved acyclic edge set,
+  every boundary falsifier has a disposition, and coupling/feedback windows
+  have exact-host/artifact evidence;
 - the pure reducer and atomic authority boundary pass replay/crash tests;
 - the target-host sandbox and real-harness bypass matrix pass;
 - the first complete governed tracer passes all denial paths;
 - concurrency, reconciliation, backup, restore, and upstream-sync gates pass;
+- fleet double-claim, stale-worker fencing, mailbox, transitive-budget,
+  loop-governor, path-escape, verifier-backpressure, and measured-topology gates
+  pass before concurrency is raised;
 - model/module/checker/route qualification is repeated and exact-tuple bound;
 - the de-commercialized fork passes clean-host, runtime, package, network, and
   SBOM tests; and

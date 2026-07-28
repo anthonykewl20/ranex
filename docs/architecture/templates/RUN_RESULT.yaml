@@ -1,4 +1,4 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: run_result
 result_id: "result_<uuidv7>"
@@ -31,6 +31,7 @@ subject:
   workflow_definition_digest: ""
   workflow_interpreter_version: ""
   policy_activation_id: ""
+  policy_activation_manifest_digest: ""
   policy_decision_digest: ""
   module_profile_id: ""
   module_profile_digest: ""
@@ -38,22 +39,15 @@ subject:
   route_lock_id: ""
   schema_registry_version: ""
   expected_run_aggregate_version: 0
-  dirty_state: false
 
-core_sdlc:
-  work_item_status_at_dispatch: IN_PROGRESS
-  work_class: ""
-  risk_lane: ""
-  risk_decision_ref: ""
-  outcome_measure_ids: []
-  requirement_ids: []
-  acceptance_criterion_ids: []
-  configuration_baseline_id: ""
-  configuration_baseline_digest: ""
-  requirement_to_evidence_mappings: []
-  invalidation_dependency_ids: []
+core_sdlc_trace_ref: ""
+workspace_observation:
+  dirty_state: null
+  workspace_tree_digest: null
+  status_artifact_ref: ""
+  observed_at: ""
 
-status: SUCCEEDED
+status: null
 completed_scope: []
 uncompleted_scope: []
 files_changed: []

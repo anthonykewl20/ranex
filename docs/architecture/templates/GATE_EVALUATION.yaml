@@ -1,3 +1,4 @@
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 # Produced by a qualified gate evaluator, never by a model or maker.
 schema_version: "1"
 artifact_type: gate_evaluation
@@ -9,11 +10,15 @@ evaluator_id: ""
 evaluator_version: ""
 evaluator_code_digest: ""
 qualification_id: ""
-subject_ref: "exact-subject/v1"
+subject_schema: null
+subject_ref: ""
 subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
 evidence_snapshot_id: "snapshot_<uuidv7>"
 evidence_snapshot_digest: ""
 policy_activation_id: ""
+policy_activation_manifest_digest: ""
 required_claim_ids: []
 observed_claim_ids: []
 checker_result_refs: []

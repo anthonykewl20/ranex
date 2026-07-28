@@ -1,0 +1,153 @@
+{
+  "$id": "https://schemas.ranex.dev/fleet/assignment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "absolute_deadline": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "aggregate_version": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "allowed_path_ownership_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "artifact_type": {
+      "const": "agent_assignment"
+    },
+    "assignment_id": {
+      "type": "string"
+    },
+    "capability_profile_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "capability_profile_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "created_by_service_id": {
+      "type": "string"
+    },
+    "dependency_assignment_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "expected_reservation_aggregate_version": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "maker_checker_separation_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "offer_policy_id": {
+      "type": "string"
+    },
+    "required_harness_qualification_scope": {
+      "type": "string"
+    },
+    "required_isolation_profile_id": {
+      "type": "string"
+    },
+    "required_role_id": {
+      "type": "string"
+    },
+    "required_route_qualification_scope": {
+      "type": "string"
+    },
+    "reservation_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "reservation_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "status": {
+      "type": "string"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "task_packet_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "task_packet_id": {
+      "type": "string"
+    },
+    "topology_class": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "assignment_id",
+    "status",
+    "aggregate_version",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "task_packet_id",
+    "task_packet_digest",
+    "required_role_id",
+    "required_route_qualification_scope",
+    "required_harness_qualification_scope",
+    "required_isolation_profile_id",
+    "workspace_id",
+    "allowed_path_ownership_refs",
+    "dependency_assignment_ids",
+    "topology_class",
+    "capability_profile_id",
+    "capability_profile_digest",
+    "reservation_id",
+    "reservation_digest",
+    "expected_reservation_aggregate_version",
+    "absolute_deadline",
+    "offer_policy_id",
+    "maker_checker_separation_refs",
+    "created_by_service_id",
+    "created_at",
+    "digest"
+  ],
+  "title": "agent_assignment",
+  "type": "object",
+  "x-ranex-canonical-producer": "agent_collaboration",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/AGENT_ASSIGNMENT.yaml"
+}

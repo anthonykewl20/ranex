@@ -1,0 +1,33 @@
+{
+  "algorithm": "RFC8785+SHA-256",
+  "fixtures": [
+    {
+      "canonical_utf8": "{\"a\":\"é\",\"array\":[3,2,1],\"nested\":{\"a\":null,\"b\":true},\"z\":3}",
+      "fixture_id": "RFC8785-ORDER-UTF8-001",
+      "input": {
+        "a": "é",
+        "array": [
+          3,
+          2,
+          1
+        ],
+        "nested": {
+          "a": null,
+          "b": true
+        },
+        "z": 3
+      },
+      "sha256": "08ab3b15ef901c725c10a8e83e3ec47a31ecc8b2ae6eed136e2bfa1d5917591d"
+    },
+    {
+      "canonical_utf8": "{\"artifact_type\":\"fixture\",\"schema_version\":\"1\",\"subject_digest\":\"sha256:1111111111111111111111111111111111111111111111111111111111111111\"}",
+      "fixture_id": "RFC8785-DIGEST-EXCLUSION-001",
+      "input": {
+        "artifact_type": "fixture",
+        "schema_version": "1",
+        "subject_digest": "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+      },
+      "sha256": "c8d7aba8f9b9f8d1c8266d067df3f45727c64df0bb9a1ff8ea542cc6714ecd0b"
+    }
+  ]
+}

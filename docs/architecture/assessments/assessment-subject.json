@@ -1,0 +1,17 @@
+{
+  "digest": "sha256:aa254ba3f56fc8876a35300e1087a27e5ca8a1c006a809e26915a5f1ed7d124c",
+  "subject": {
+    "base_revision": "0000000000000000000000000000000000000000",
+    "observed_at": "2026-07-28T00:00:00Z",
+    "project_id": "prj_019fa605-6800-7b12-ac97-2c091f7d8627",
+    "question_digest": "sha256:6b52d629205ca4fc77dccff3fa30b42c1a9ec73caef5efab7bcc5aa4e36b5464",
+    "repository_id": "repo_019fa605-6800-716e-b1b3-ccc9aafd208e",
+    "repository_uri_digest": "sha256:a1cd62f860db60c5776098d41610b27ce243b358fe374672911c4e537a95ecf9",
+    "research_prompt_digest": "sha256:16f6d474b1985dc8e2be8f003bb156b5f52c3ad6d05e40c23f82d3d6556e0367",
+    "scope_digest": "sha256:226331d24a21bf452c78e430363a7f29c2134f5dcd699290c09883b441aaaecb",
+    "source_manifest_digest": "sha256:e4944ffa195a139eb31503a1032c73eecc3e580438927716819b65f75afa49bd",
+    "subject_schema": "research-subject/v1",
+    "work_item_id": "work_019fa605-6800-78de-8e99-f867d9561a41"
+  },
+  "subject_id": "art_019fa605-6800-7900-9950-db32813e6dca"
+}

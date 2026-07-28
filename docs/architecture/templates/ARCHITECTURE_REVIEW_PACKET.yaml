@@ -1,15 +1,27 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: architecture_review_packet
 packet_id: "archpkt_<uuidv7>"
-status: DRAFT
+status: DRAFT # PacketStatus
 
 subject:
-  repository: ""
+  subject_schema: "architecture-subject/v1"
+  project_id: "prj_<uuidv7>"
+  work_item_id: "work_<uuidv7>"
+  repository_id: "repo_<uuidv7>"
+  repository_uri_digest: "sha256:<hex>"
   base_revision: ""
   candidate_revision: null
-  working_tree_digest: ""
-  architecture_revision: ""
+  working_tree_digest: null
+  architecture_document_path: "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md"
+  architecture_document_digest: "sha256:<hex>"
+  architecture_subject_manifest_digest: "sha256:<hex>"
+  research_manifest_digests: []
+  contract_and_template_manifest_digest: "sha256:<hex>"
+  accepted_adr_registry_digest: "sha256:<hex>"
+  review_prompt_digest: "sha256:<hex>"
+
+core_sdlc_trace_ref: ""
 
 decision:
   question: ""
@@ -41,7 +53,7 @@ evidence:
       revision: ""
       digest: ""
       authority: ""
-      freshness: current
+      freshness: UNKNOWN
   known_facts: []
   assumptions: []
   unknowns: []

@@ -1,0 +1,7 @@
+{
+  "$id": "https://schemas.ranex.dev/common/identifiers.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "pattern": "^[a-z][a-z0-9_]*_[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+  "title": "Ranex prefixed UUIDv7 identifier",
+  "type": "string"
+}

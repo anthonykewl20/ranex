@@ -1,0 +1,124 @@
+{
+  "$id": "https://schemas.ranex.dev/common/topology-exception-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "accountable_human_role": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "allowed_dependency_edges": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "approval_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "exact_path": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "exception_class": {
+      "enum": [
+        "FOUNDATION_PRIMITIVE",
+        "BOOTSTRAP_COMPOSITION",
+        "HOST_EDGE_ADAPTER",
+        "GENERATED_PROJECTION",
+        "COMPATIBILITY_QUARANTINE"
+      ]
+    },
+    "exception_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "owner_context": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "rationale": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "removal_criteria": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "required_test_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "review_expires_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "rule_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "schema_version": {
+      "const": "topology-exception/v1"
+    },
+    "scope": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "security_data_constraints": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "source": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "status": {
+      "const": "ACTIVE"
+    }
+  },
+  "required": [
+    "schema_version",
+    "exception_id",
+    "exception_class",
+    "exact_path",
+    "rule_ids",
+    "scope",
+    "owner_context",
+    "accountable_human_role",
+    "rationale",
+    "allowed_dependency_edges",
+    "security_data_constraints",
+    "approval_ref",
+    "review_expires_at",
+    "required_test_refs",
+    "removal_criteria",
+    "status",
+    "source"
+  ],
+  "title": "Ranex exact topology exception",
+  "type": "object"
+}

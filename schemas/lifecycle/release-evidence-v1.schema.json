@@ -1,0 +1,142 @@
+{
+  "$id": "https://schemas.ranex.dev/lifecycle/release-evidence-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "artifact_type": {
+      "const": "release_evidence"
+    },
+    "configuration_baseline_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "deployment_event_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "destination": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "finished_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "health_gate_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "migration_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "permit_id": {
+      "type": "string"
+    },
+    "provenance_ref": {
+      "type": "string"
+    },
+    "recovery_point_ref": {
+      "type": "string"
+    },
+    "release_evidence_id": {
+      "type": "string"
+    },
+    "release_id": {
+      "type": "string"
+    },
+    "release_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "rollback_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "sbom_ref": {
+      "type": "string"
+    },
+    "schema_registry_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "started_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "work_item_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "release_evidence_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "release_id",
+    "work_item_id",
+    "artifact_digest",
+    "release_manifest_digest",
+    "configuration_baseline_id",
+    "schema_registry_version",
+    "sbom_ref",
+    "provenance_ref",
+    "migration_ref",
+    "recovery_point_ref",
+    "permit_id",
+    "destination",
+    "deployment_event_refs",
+    "health_gate_refs",
+    "rollback_ref",
+    "status",
+    "started_at",
+    "finished_at",
+    "digest"
+  ],
+  "title": "release_evidence",
+  "type": "object",
+  "x-ranex-canonical-producer": "release_management",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/RELEASE_EVIDENCE.yaml"
+}

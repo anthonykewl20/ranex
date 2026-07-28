@@ -2,14 +2,19 @@
 
 | Field | Value |
 |---|---|
+| ADR ID | `ADR-0001` |
+| Version | `1.0.0` |
 | Status | `ACCEPTED` |
 | Decision owner | Human owner |
 | Decision date | 2026-07-27 |
 | Effective revision | Working tree based on `fee61eb61d8f2df2f28adbe3a59cf8c2340ab5f4` |
+| Content binding | Exact digest is recorded externally in each immutable review/release source manifest |
 | Affected contexts | All Ranex product, architecture, development, release, operations, and upstream-sync work |
 | RFC | Not required; direct owner requirement |
 | Supersedes | None |
 | Review/expiry date | After two end-to-end tracers, then quarterly |
+| Compatibility/migration class | New governing decision; existing Hermes/Ranex process records require mappings |
+| Security/data class | Public architecture decision |
 
 ## Decision
 
@@ -35,6 +40,9 @@ The normative process is
 [Ranex Core SDLC Operating Model](../CORE_SDLC_OPERATING_MODEL.md). The
 [full-system architecture](../HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md)
 defines the system that this process builds. The
+[Engineering Reference Application Map](../ENGINEERING_REFERENCE_APPLICATION_MAP.md)
+makes the frozen SWEBOK and saved-book corpus a major practice base for closing
+unclear engineering details without transferring lifecycle authority. The
 [AI-Agent Development Lifecycle](../AI_AGENT_DEVELOPMENT_LIFECYCLE.md) is a
 subordinate execution protocol inside the core SDLC.
 

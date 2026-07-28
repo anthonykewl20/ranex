@@ -1,0 +1,21 @@
+{
+  "files": [
+    {
+      "digest": "sha256:0cd5e2957af74b62d4d488364b2947e995f8ed36ddc1529b35fa426f15f7583b",
+      "path": "docs/architecture/SDLC_CONTROL_CATALOG.md"
+    },
+    {
+      "digest": "sha256:4373717fb42b5e155b7cc0cd6aee6797737f2b6f59adbd391c83caf4597cdf5d",
+      "path": "docs/architecture/AI_ARTIFACT_CONTRACTS.md"
+    },
+    {
+      "digest": "sha256:226331d24a21bf452c78e430363a7f29c2134f5dcd699290c09883b441aaaecb",
+      "path": "architecture/contracts/vital-profile.json"
+    },
+    {
+      "digest": "sha256:bac092fd747bba4ec4e9f2309d50067e47e3540eeceef5bac250e131b55ce4b5",
+      "path": "architecture/contracts/states.json"
+    }
+  ],
+  "manifest_id": "ASSESSMENT-SOURCE-MANIFEST-001"
+}

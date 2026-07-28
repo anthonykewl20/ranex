@@ -1,0 +1,103 @@
+{
+  "entries": [
+    {
+      "digest": "sha256:70aa533eb87375970768ee6effc259aa26bf425c2277886d7a88e11c03619042",
+      "path": "architecture/contracts/applicability-rules.json"
+    },
+    {
+      "digest": "sha256:4bbfab04ff3c14c38616804368dfe431d42c4f648e7b0bafe526e46ceeb5d390",
+      "path": "architecture/contracts/architecture-elements.json"
+    },
+    {
+      "digest": "sha256:2454938f8ea1eaa5bcbcba0cddb04fb09d28fb74184ae4124b4bbec1e6cf44c1",
+      "path": "architecture/contracts/architecture-rule-assessments.json"
+    },
+    {
+      "digest": "sha256:3d0eabab29438a6d98d60c8162fa7f598a045d7bd2224529719de44adf0d5311",
+      "path": "architecture/contracts/artifact-types.json"
+    },
+    {
+      "digest": "sha256:d9d49e8b965b7550b3dbd215eb5b1a10fbb550d39bb300ee99d0ccd35c85797c",
+      "path": "architecture/contracts/context-boundary-fitness.json"
+    },
+    {
+      "digest": "sha256:086dc86488006a8ae858e1ecc1529b81f5c4430ccb730efd67d3202262607a8c",
+      "path": "architecture/contracts/context-coupling-policy.json"
+    },
+    {
+      "digest": "sha256:470a7da702de2d8f263b19c2a34fbdc072d8db6318cbe119bbf39c03069d37b8",
+      "path": "architecture/contracts/context-dependency-edges.json"
+    },
+    {
+      "digest": "sha256:edff7fbf3b6284d86cb3efac4e35530d80dca509e1629921f6b3662054c0ca1e",
+      "path": "architecture/contracts/contexts.json"
+    },
+    {
+      "digest": "sha256:661bc635a6771447de011086843a03bdc9b3a8c933536beacd3616d036c4af71",
+      "path": "architecture/contracts/data-ownership.json"
+    },
+    {
+      "digest": "sha256:da9804e58df176bc3a67f6bc120f30797194be9d195cc527fde8fd8980e3dda1",
+      "path": "architecture/contracts/decisions.json"
+    },
+    {
+      "digest": "sha256:5c5733ddebbb4b750a1cb61a08f63b47dd46b24900972e0c907b725969e7a2f4",
+      "path": "architecture/contracts/effects.json"
+    },
+    {
+      "digest": "sha256:7f143dae0c6fff91ae11943a9b22225dade8f7dc2d50e80641af7ae504dcfe78",
+      "path": "architecture/contracts/engineering-practice-profiles.json"
+    },
+    {
+      "digest": "sha256:99e33cdc8ca4f4e14e414c1667f91c10e8b124f23c648c8c7cae68d594b55619",
+      "path": "architecture/contracts/engineering-practices.json"
+    },
+    {
+      "digest": "sha256:47c921f30e87fa3869b3c7f4112b57b085e048abb34b0f5dd47ad5cc098df404",
+      "path": "architecture/contracts/events.json"
+    },
+    {
+      "digest": "sha256:f0f84ca06ab12e68ca2ef115ec5602969c73ef0b69184d329a4671af5c49794c",
+      "path": "architecture/contracts/feedback-fitness.json"
+    },
+    {
+      "digest": "sha256:8ddf236f2f5dd42526389939a348b42717c53fb2f79e4880e47061a7d01a8b64",
+      "path": "architecture/contracts/identities.json"
+    },
+    {
+      "digest": "sha256:14b307d66d8eec2b2652ccdd04d5e6dcdbb52911739e394dcd7ab426462c0a92",
+      "path": "architecture/contracts/paths.json"
+    },
+    {
+      "digest": "sha256:7ce8ccde49b5c9e0cab085ddbe56f0e382c224a2595d08924c5c575a447c5f88",
+      "path": "architecture/contracts/priority-rules.json"
+    },
+    {
+      "digest": "sha256:31bf64d730a1950836ace543c3c6a0b468c013e3b5af3d176e24ad84e94bda59",
+      "path": "architecture/contracts/schema-registry.json"
+    },
+    {
+      "digest": "sha256:bac092fd747bba4ec4e9f2309d50067e47e3540eeceef5bac250e131b55ce4b5",
+      "path": "architecture/contracts/states.json"
+    },
+    {
+      "digest": "sha256:00285bdd50fc917ca00c2f8703a4b9f7fadad59d1bd660a8ae2a0612015e3f30",
+      "path": "architecture/contracts/test-practice-profiles.json"
+    },
+    {
+      "digest": "sha256:7835779fdc6c41fde23292e6c6964b124c69d4d5fa6f2d0f1cbedc092804f8de",
+      "path": "architecture/contracts/test-practices.json"
+    },
+    {
+      "digest": "sha256:eca3d9d1ebb2061bbfb9c689fbd7660582cfb78d8d616aaf9df6df7db4ceeff3",
+      "path": "architecture/contracts/topology-rules.json"
+    },
+    {
+      "digest": "sha256:226331d24a21bf452c78e430363a7f29c2134f5dcd699290c09883b441aaaecb",
+      "path": "architecture/contracts/vital-profile.json"
+    }
+  ],
+  "manifest_id": "RANEX-CONTRACT-REGISTRY-MANIFEST-001",
+  "self_listing_rule": "This manifest excludes itself to avoid a circular digest.",
+  "version": "1.0.0"
+}

@@ -1,7 +1,8 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: checker_result
 checker_result_id: "check_<uuidv7>"
+core_sdlc_trace_ref: ""
 
 checker:
   checker_id: ""
@@ -29,7 +30,7 @@ subject:
   workflow_definition_digest: ""
   workflow_interpreter_version: ""
   policy_activation_id: ""
-  evidence_snapshot_digest: ""
+  policy_activation_manifest_digest: ""
   policy_decision_digest: ""
   module_profile_id: ""
   module_profile_digest: ""
@@ -38,7 +39,7 @@ subject:
   schema_registry_version: ""
   expected_run_aggregate_version: 0
 
-status: COMPLETE
+status: null
 outcome: "UNKNOWN"
 failure_code: null
 applicability_proof_ref: null

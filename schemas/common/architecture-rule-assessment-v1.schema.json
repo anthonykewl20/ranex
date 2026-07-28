@@ -1,0 +1,209 @@
+{
+  "$id": "https://schemas.ranex.dev/common/architecture-rule-assessment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "applicability": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_ref": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "APPLICABLE",
+            "NOT_APPLICABLE",
+            "UNKNOWN"
+          ]
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "result",
+        "rule_id",
+        "reason",
+        "evidence_refs",
+        "approval_ref"
+      ],
+      "type": "object"
+    },
+    "assessment_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "assessor_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "definition_evidence_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "freshness_status": {
+      "enum": [
+        "NOT_ASSESSED",
+        "CURRENT",
+        "STALE",
+        "UNKNOWN"
+      ]
+    },
+    "noncompensating": {
+      "const": true
+    },
+    "numeric_score": {
+      "type": "null"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        null
+      ],
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "result": {
+      "enum": [
+        "NOT_ASSESSED",
+        "UNKNOWN",
+        "NOT_APPLICABLE",
+        "EVALUATED"
+      ]
+    },
+    "rule_definition_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "rule_family": {
+      "enum": [
+        "ORG",
+        "TDD",
+        "ADR9"
+      ]
+    },
+    "rule_id": {
+      "pattern": "^(ORG|TDD|ARCH|ARCH9)-[A-Z0-9-]+$",
+      "type": "string"
+    },
+    "rule_owner_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runtime_evidence_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "runtime_evidence_status": {
+      "enum": [
+        "NOT_ASSESSED",
+        "PASS",
+        "FAIL",
+        "UNKNOWN"
+      ]
+    },
+    "runtime_subject_digest": {
+      "type": "null"
+    },
+    "runtime_subject_ref": {
+      "type": "null"
+    },
+    "schema_version": {
+      "const": "architecture-rule-assessment/v1"
+    },
+    "subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "architecture-subject/v1"
+    },
+    "subject_scope": {
+      "const": "DEFINITION_CONTRACT_ONLY"
+    }
+  },
+  "required": [
+    "schema_version",
+    "assessment_id",
+    "rule_id",
+    "rule_family",
+    "rule_definition_digest",
+    "subject_schema",
+    "subject_scope",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "runtime_subject_ref",
+    "runtime_subject_digest",
+    "rule_owner_id",
+    "assessor_id",
+    "applicability",
+    "result",
+    "outcome",
+    "numeric_score",
+    "definition_evidence_refs",
+    "runtime_evidence_refs",
+    "recorded_at",
+    "observed_at",
+    "expires_at",
+    "freshness_status",
+    "noncompensating",
+    "runtime_evidence_status",
+    "digest"
+  ],
+  "title": "Ranex per-rule architecture assessment",
+  "type": "object"
+}

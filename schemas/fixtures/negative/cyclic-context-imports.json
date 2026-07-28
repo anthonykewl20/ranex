@@ -1,0 +1,13 @@
+{
+  "expected_error": "TOPOLOGY_CONTEXT_IMPORT_CYCLE",
+  "modules": [
+    {
+      "path": "src/ranex/work_management/application/example.py",
+      "source": "from ranex.policy.api import AuthorizationSnapshot\n"
+    },
+    {
+      "path": "src/ranex/policy/application/example.py",
+      "source": "from ranex.work_management.api import WorkItemView\n"
+    }
+  ]
+}

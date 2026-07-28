@@ -1,0 +1,65 @@
+{
+  "$id": "https://schemas.ranex.dev/common/research-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "base_revision": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "project_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "question_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "repository_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "repository_uri_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "research_prompt_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "scope_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "source_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "research-subject/v1"
+    },
+    "work_item_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_schema",
+    "project_id",
+    "work_item_id",
+    "repository_id",
+    "repository_uri_digest",
+    "base_revision",
+    "question_digest",
+    "scope_digest",
+    "source_manifest_digest",
+    "research_prompt_digest",
+    "observed_at"
+  ],
+  "title": "research-subject-v1",
+  "type": "object"
+}

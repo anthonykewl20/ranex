@@ -1,0 +1,254 @@
+{
+  "$id": "https://schemas.ranex.dev/assurance/checker-result-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "applicability_proof_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifact_type": {
+      "const": "checker_result"
+    },
+    "checker": {
+      "additionalProperties": false,
+      "properties": {
+        "checker_id": {
+          "type": "string"
+        },
+        "checker_version": {
+          "type": "string"
+        },
+        "code_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "fixture_suite_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "qualification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "checker_id",
+        "checker_version",
+        "code_digest",
+        "fixture_suite_digest",
+        "qualification_id"
+      ],
+      "type": "object"
+    },
+    "checker_result_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "coverage": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "failure_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "finished_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "limitations": {
+      "items": {},
+      "type": "array"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "raw_artifact_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "started_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "base_commit": {
+          "type": "string"
+        },
+        "candidate_commit": {
+          "type": "string"
+        },
+        "capability_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effect_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_run_aggregate_version": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "module_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "module_profile_id": {
+          "type": "string"
+        },
+        "packet_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "packet_id": {
+          "type": "string"
+        },
+        "policy_activation_id": {
+          "type": "string"
+        },
+        "policy_activation_manifest_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "policy_decision_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "repository_id": {
+          "type": "string"
+        },
+        "repository_uri_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "route_lock_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "schema_registry_version": {
+          "type": "string"
+        },
+        "subject_schema": {
+          "type": "string"
+        },
+        "work_item_id": {
+          "type": "string"
+        },
+        "workflow_definition_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "workflow_definition_id": {
+          "type": "string"
+        },
+        "workflow_interpreter_version": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "project_id",
+        "work_item_id",
+        "run_id",
+        "activity_id",
+        "effect_id",
+        "workspace_id",
+        "repository_id",
+        "repository_uri_digest",
+        "base_commit",
+        "candidate_commit",
+        "artifact_digest",
+        "packet_id",
+        "packet_digest",
+        "workflow_definition_id",
+        "workflow_definition_digest",
+        "workflow_interpreter_version",
+        "policy_activation_id",
+        "policy_activation_manifest_digest",
+        "policy_decision_digest",
+        "module_profile_id",
+        "module_profile_digest",
+        "capability_grant_digest",
+        "route_lock_id",
+        "schema_registry_version",
+        "expected_run_aggregate_version"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "checker_result_id",
+    "core_sdlc_trace_ref",
+    "checker",
+    "subject",
+    "status",
+    "outcome",
+    "failure_code",
+    "applicability_proof_ref",
+    "evidence_refs",
+    "raw_artifact_refs",
+    "coverage",
+    "limitations",
+    "started_at",
+    "finished_at",
+    "digest"
+  ],
+  "title": "checker_result",
+  "type": "object",
+  "x-ranex-canonical-producer": "assurance",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/CHECKER_RESULT.yaml"
+}

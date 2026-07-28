@@ -1,0 +1,141 @@
+{
+  "$id": "https://schemas.ranex.dev/fleet/mailbox-envelope-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acknowledged_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifact_type": {
+      "const": "mailbox_envelope"
+    },
+    "causation_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "correlation_id": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "dead_letter_reason_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "delivered_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "envelope_id": {
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "message_type": {
+      "type": "string"
+    },
+    "payload_artifact_ref": {
+      "type": "string"
+    },
+    "payload_schema_id": {
+      "type": "string"
+    },
+    "recipient_assignment_id": {
+      "type": "string"
+    },
+    "recipient_principal_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "sender_attempt_id": {
+      "type": "string"
+    },
+    "sender_fencing_epoch": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "sender_principal_id": {
+      "type": "string"
+    },
+    "sequence": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "envelope_id",
+    "status",
+    "sequence",
+    "sender_principal_id",
+    "sender_attempt_id",
+    "sender_fencing_epoch",
+    "recipient_principal_id",
+    "recipient_assignment_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "message_type",
+    "payload_schema_id",
+    "payload_artifact_ref",
+    "correlation_id",
+    "causation_id",
+    "created_at",
+    "expires_at",
+    "delivered_at",
+    "acknowledged_at",
+    "dead_letter_reason_code",
+    "digest"
+  ],
+  "title": "mailbox_envelope",
+  "type": "object",
+  "x-ranex-canonical-producer": "agent_collaboration",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/MAILBOX_ENVELOPE.yaml"
+}

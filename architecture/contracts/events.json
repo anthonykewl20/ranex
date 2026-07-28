@@ -1,0 +1,328 @@
+{
+  "entries": [
+    {
+      "event_id": "EVENT-RUNCREATED",
+      "event_name": "RunCreated",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKFLOWPINNED",
+      "event_name": "WorkflowPinned",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-PACKETBOUND",
+      "event_name": "PacketBound",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNMARKEDREADY",
+      "event_name": "RunMarkedReady",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-ACTIVITYREQUESTED",
+      "event_name": "ActivityRequested",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-AUTHORIZATIONEVALUATED",
+      "event_name": "AuthorizationEvaluated",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-ACTIVITYDISPATCHED",
+      "event_name": "ActivityDispatched",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-ACTIVITYRESOLVED",
+      "event_name": "ActivityResolved",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-EVIDENCESNAPSHOTBOUND",
+      "event_name": "EvidenceSnapshotBound",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-GATEEVALUATED",
+      "event_name": "GateEvaluated",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-HUMANDECISIONSNAPSHOTBOUND",
+      "event_name": "HumanDecisionSnapshotBound",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-PERMITISSUED",
+      "event_name": "PermitIssued",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-PERMITCONSUMED",
+      "event_name": "PermitConsumed",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-EFFECTINTENTRECORDED",
+      "event_name": "EffectIntentRecorded",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-EFFECTDISPATCHED",
+      "event_name": "EffectDispatched",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-EFFECTRESOLVED",
+      "event_name": "EffectResolved",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-EFFECTOUTCOMEMARKEDUNKNOWN",
+      "event_name": "EffectOutcomeMarkedUnknown",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-EFFECTRECONCILED",
+      "event_name": "EffectReconciled",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNBLOCKED",
+      "event_name": "RunBlocked",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNUNBLOCKED",
+      "event_name": "RunUnblocked",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNCANCELLED",
+      "event_name": "RunCancelled",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNSUCCEEDED",
+      "event_name": "RunSucceeded",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNFAILED",
+      "event_name": "RunFailed",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-POLICYCHANGEBLOCKEDRUN",
+      "event_name": "PolicyChangeBlockedRun",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-SOURCEDIVERGENCEDETECTED",
+      "event_name": "SourceDivergenceDetected",
+      "owner_context": "governed_execution",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKITEMCREATED",
+      "event_name": "WorkItemCreated",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKITEMCLASSIFIED",
+      "event_name": "WorkItemClassified",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RISKLANEBOUND",
+      "event_name": "RiskLaneBound",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-OUTCOMEREQUIREMENTREFSBOUND",
+      "event_name": "OutcomeRequirementRefsBound",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKITEMTRANSITIONED",
+      "event_name": "WorkItemTransitioned",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKITEMBLOCKED",
+      "event_name": "WorkItemBlocked",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKITEMUNBLOCKED",
+      "event_name": "WorkItemUnblocked",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKITEMCANCELLED",
+      "event_name": "WorkItemCancelled",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNREQUESTEDFORWORKITEM",
+      "event_name": "RunRequestedForWorkItem",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RUNEVIDENCELINKED",
+      "event_name": "RunEvidenceLinked",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-RELEASEEVIDENCELINKED",
+      "event_name": "ReleaseEvidenceLinked",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-OPERATIONALEVIDENCELINKED",
+      "event_name": "OperationalEvidenceLinked",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-OUTCOMEDECISIONLINKED",
+      "event_name": "OutcomeDecisionLinked",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-FOLLOWUPWORKLINKED",
+      "event_name": "FollowUpWorkLinked",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    },
+    {
+      "event_id": "EVENT-WORKITEMCLOSED",
+      "event_name": "WorkItemClosed",
+      "owner_context": "work_management",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "schema_status": "DEFINED_NAME_ONLY",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17"
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-EVENTS-001",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

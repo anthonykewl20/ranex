@@ -1,0 +1,298 @@
+{
+  "approved_at": "",
+  "artifact_type": "capability_domain_projection",
+  "assessment_authority": {
+    "approver_id": "UNASSIGNED_WAVE_2",
+    "independence_evidence_ref": "",
+    "projector_id": "scripts/architecture/generate_contracts.py"
+  },
+  "core_sdlc_trace_ref": "",
+  "correction_reason": "",
+  "created_at": "2026-07-28T00:00:00Z",
+  "decision_ref": "",
+  "definition_evidence_refs": [
+    "architecture/contracts/vital-profile.json"
+  ],
+  "definition_status": "DEFINED",
+  "derivation": {
+    "applicable_member_count": 0,
+    "arithmetic_aggregation_prohibited": true,
+    "begun_applicable_member_count": 0,
+    "bound_member_count": 15,
+    "derived_level": null,
+    "derived_result": "UNKNOWN",
+    "lowest_control_ids": [],
+    "not_applicable_member_count": 0,
+    "registered_member_count": 15,
+    "scored_applicable_member_count": 0
+  },
+  "digest": "sha256:60be96e30ff4eadb12f311628bf1a8dffa72b30efd8d2697cf8fc872cddadb1e",
+  "members": [
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-BASE-001",
+      "assessment_digest": "sha256:ddca633096477d854d68c0dd13071dacc30dc82c6e1b1b48463fa1f40b4f308c",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-000.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:9f40c5fdec3f653b3ceeda1a4a63c2f8611152121db50ae806526b740fad7bec",
+      "control_id": "SDLC-FORK-000",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-BASE-001",
+      "assessment_digest": "sha256:76df19f70eb1de40177c56a02cb58e2c74f745d65227581644e015b45dc12e84",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:e853039fe516e33cbe66e83a14c14226ef7f76ff6bfe301f68d5b20d29dc0352",
+      "control_id": "SDLC-FORK-001",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-SYNC-001",
+      "assessment_digest": "sha256:bfa8e271e3c1ca4b0d30641f361ead18f725c8f2bf91a118b44f4ae33017a8bf",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-002.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:c6a3da421cc705c9d5c506b1dde93ef8fcb8a02371dad00ee671f3c3ddc5294c",
+      "control_id": "SDLC-FORK-002",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-UPDATE-001",
+      "assessment_digest": "sha256:3d45487e00f64867865f51ee6932d4f6fcb35471036bb4bab3d82ded62c35a88",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-003.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:668f9b8c1d44105dfe9cb0db92eb5b672c73a1712427f95fff8f10cc76c933a2",
+      "control_id": "SDLC-FORK-003",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-BASE-001",
+      "assessment_digest": "sha256:c343835ce7be47a65a044193a3f73967a12df7276649e302bc08298ad1c5cacb",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-004.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:582d51568b713f55e702096cd33e89a6c82da969518a17fa8bd31473fd0f14ec",
+      "control_id": "SDLC-FORK-004",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-BASE-001",
+      "assessment_digest": "sha256:d4d98f7efc770ea251e3c1daffb555603f550d98f7969b273fc4f9269a0df997",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-005.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:a72812ff6d5b0d69fc97a338ed9ee9849db6099cd9a910b978928a13ce8f37d8",
+      "control_id": "SDLC-FORK-005",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-CUTOVER-001",
+      "assessment_digest": "sha256:7a22b2a55aca1f40712c50d94a98ed403ef170d4e79ef465fb54d92c6bef25b8",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-006.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:d59581db250f99f7a5a517a4881729bda718181ba643d84205aba81e3e9c4bf9",
+      "control_id": "SDLC-FORK-006",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-FORK-BASE-001",
+      "assessment_digest": "sha256:68be1db0f8a40616197db4d180a541fe0a08e25c0f061583c6f6cf096588eab5",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-007.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:1ebe4fc489dc5ac4194769350a0608f9d1e1e549dbf0aca64a0c77ec22dac0d8",
+      "control_id": "SDLC-FORK-007",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-AIW-001",
+      "assessment_digest": "sha256:a364b9007b7d4a6113edc90d466a4f41aed8e1fe6bf6a300ef6f7a2f4ad88547",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:ec4ec349d64d140893d6fb66699d21a87ef21f30074ec7013c35cea46c0c6709",
+      "control_id": "SDLC-AIW-001",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-AIW-001",
+      "assessment_digest": "sha256:a9faa8eadd0259b95f7d3a547dbab71d3db3a72d35d6f2b9223cd8f5488adda7",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-002.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:6677f0b4b843f0b366ec0939b9332cfb9b131f688c933280605160b4cadb8317",
+      "control_id": "SDLC-AIW-002",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-AIW-001",
+      "assessment_digest": "sha256:2a85709366be1457b653e478271a85695f5c8db6c09cec640a3138f0cb255910",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-003.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:4dbb445623ef7ecbb8c928c84540bc6bbe3f891d8f2d41f339583870834bb683",
+      "control_id": "SDLC-AIW-003",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-AIW-001",
+      "assessment_digest": "sha256:8794ef54ce6a59716e432028d7069ad5a6b0e1fce32bdbba4d5d6eb4519ebdcb",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-004.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:1421deed614015cc8a6480ec3c937c736affc4327cc54368b8250f1810f65054",
+      "control_id": "SDLC-AIW-004",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-AIW-001",
+      "assessment_digest": "sha256:0870f933f79fb00eca62d1931395b0ebb1ad96c0003f2bea685a55e5115fa116",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-005.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:85c87c8eca2fd93f90db000fb55029cedce4aef27fa265537169545451926fc1",
+      "control_id": "SDLC-AIW-005",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-AIW-001",
+      "assessment_digest": "sha256:73eedb6648fb76647f963d376ac376baf45f6b8cb5b6c04d84f871a26921a2f2",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-006.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:54421d7e1ec7ac421cf88c75b1bb70a0367a800c647ff9a9e0eab7b1d7ad94fa",
+      "control_id": "SDLC-AIW-006",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-AIW-001",
+      "assessment_digest": "sha256:7934604b676a7b9da8f419c5ede4dc45b6002383659c191000cd3adbbcd2d751",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-007.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:6f761ecafdf53fdd5c47c679f96ab733399b752d73cac49d276f5ca9b2039926",
+      "control_id": "SDLC-AIW-007",
+      "domain_id": "CAP-HERMES-AI-HEALTH",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    }
+  ],
+  "policy_id": "POL-SDLC-001",
+  "policy_version": "1.4.0",
+  "prior_projection_ref": "",
+  "priority_projection": {
+    "arithmetic_aggregation_prohibited": true,
+    "decisive_control_ids": [],
+    "derived_tier": null,
+    "priority_rule_digest": "sha256:7ce8ccde49b5c9e0cab085ddbe56f0e382c224a2595d08924c5c575a447c5f88",
+    "priority_rule_id": "PRIORITY-SDLC-001",
+    "priority_rule_version": "1.0.0",
+    "result": "NOT_EVALUATED"
+  },
+  "projection_id": "capability_domain_projection_019fa605-6800-7e8c-bee1-a00808244aa2",
+  "revision": 1,
+  "rubric_id": "SDLC-MEA-002",
+  "rubric_version": "3.0.0",
+  "schema_version": "1",
+  "scope": {
+    "domain_id": "CAP-HERMES-AI-HEALTH",
+    "risk_lanes": [
+      "STANDARD",
+      "ENHANCED",
+      "CRITICAL",
+      "EMERGENCY"
+    ],
+    "scope_digest": "sha256:b21dba23f2b5ce5429a3cf24781d334bfcd80c2e64aaa006260a1a2e63978412",
+    "service_ids": [
+      "RANEX_TARGET"
+    ],
+    "value_stream_ids": [
+      "ARCHITECTURE_CONTRACTING"
+    ],
+    "window_end": "2026-07-28T00:00:00Z",
+    "window_start": "2026-07-28T00:00:00Z",
+    "work_classes": [
+      "PRODUCT",
+      "DEFECT",
+      "RELIABILITY",
+      "SECURITY_PRIVACY",
+      "ARCHITECTURE_PLATFORM",
+      "COMPLIANCE_PROVENANCE",
+      "UPSTREAM_SYNC",
+      "MAINTENANCE",
+      "RETIREMENT",
+      "INCIDENT_RESPONSE"
+    ]
+  },
+  "status": "NOT_ASSESSED",
+  "subject_digest": "sha256:aa254ba3f56fc8876a35300e1087a27e5ca8a1c006a809e26915a5f1ed7d124c",
+  "subject_manifest_digest": "sha256:e4944ffa195a139eb31503a1032c73eecc3e580438927716819b65f75afa49bd",
+  "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
+  "subject_schema": "research-subject/v1",
+  "supersedes_ref": "",
+  "validation": {
+    "applicability_rating_consistency_result": "PASS",
+    "exact_tuple_set_result": "PASS",
+    "identical_scope_and_window_result": "PASS",
+    "immutable_binding_result": "PASS",
+    "no_duplicate_or_extra_member_result": "PASS",
+    "validation_evidence_refs": [
+      "scripts/architecture/validate_contracts.py"
+    ]
+  },
+  "vital_profile": {
+    "applicability_registry_digest": "sha256:70aa533eb87375970768ee6effc259aa26bf425c2277886d7a88e11c03619042",
+    "applicability_registry_id": "APPLICABILITY-SDLC-001",
+    "applicability_registry_version": "1.1.0",
+    "profile_digest": "sha256:226331d24a21bf452c78e430363a7f29c2134f5dcd699290c09883b441aaaecb",
+    "profile_id": "VITAL-SDLC-001",
+    "profile_version": "1.1.0"
+  }
+}

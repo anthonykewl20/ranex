@@ -1,8 +1,8 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: ai_task_packet
 packet_id: "pkt_<uuidv7>"
-status: READY
+status: DRAFT # PacketStatus
 
 subject:
   subject_schema: "exact-subject/v1"
@@ -21,6 +21,7 @@ subject:
   workflow_definition_digest: ""
   workflow_interpreter_version: ""
   policy_activation_id: ""
+  policy_activation_manifest_digest: ""
   policy_decision_digest: ""
   module_profile_id: ""
   module_profile_digest: ""
@@ -29,19 +30,7 @@ subject:
   schema_registry_version: ""
   expected_run_aggregate_version: 0
 
-core_sdlc:
-  work_item_status: READY
-  work_class: ""
-  risk_lane: ""
-  risk_decision_ref: ""
-  definition_of_ready_evidence_ref: ""
-  owner_refs: []
-  outcome_measure_ids: []
-  requirement_ids: []
-  acceptance_criterion_ids: []
-  configuration_baseline_id: ""
-  configuration_baseline_digest: ""
-  invalidation_dependency_ids: []
+core_sdlc_trace_ref: ""
 
 objective: ""
 scope: []
@@ -52,9 +41,80 @@ authority:
   architecture_revision: ""
   accepted_adr_refs: []
   contract_digests: []
-  policy_activation_id: ""
   policy_digest: ""
   risk_lane: ""
+  # Deterministically compiled by instruction_registry/context_compilation.
+  # An excluded rule requires a typed applicability reason and evidence; it is
+  # never omitted merely to fit the model context.
+  rule_activation_manifest:
+    instruction_registry_version: ""
+    instruction_registry_digest: ""
+    included_rule_refs: []
+    excluded_rules:
+      - rule_ref: ""
+        applicability_result: UNKNOWN # APPLICABLE | NOT_APPLICABLE | UNKNOWN
+        reason_code: ""
+        evidence_refs: []
+    conflict_refs: []
+    context_budget:
+      rule_tokens: null
+      task_tokens: null
+
+engineering_practice_profile:
+  schema_version: "engineering-practice-profile/v1"
+  registry_version: ""
+  registry_digest: "sha256:<hex>"
+  application_map_revision: ""
+  application_map_digest: "sha256:<hex>"
+  # Every source family is evaluated. A material UNKNOWN blocks SEALED/READY.
+  source_coverage:
+    - source_family_id: ENGREF-SWEBOK-V4A
+      applicability: UNKNOWN # APPLICABLE | NOT_APPLICABLE | UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CODE-COMPLETE-CH5
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CLEAN-CODE
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-PRAGMATIC-PROGRAMMER-1E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-SYSTEM-DESIGN-INTERVIEW-2E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CLEAN-CODER
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-DDIA-1E-ER6
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-FUNDAMENTALS-SOFTWARE-ARCHITECTURE-1E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CLEAN-ARCHITECTURE-1E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+  applicable_practices:
+    - practice_id: ""
+      required_behavior: ""
+      verification_refs: []
+  deviations:
+    - practice_id: ""
+      reason: ""
+      consequence: ""
+      decision_ref: ""
+  material_unknowns: []
+  digest: "sha256:<hex>"
 
 architecture_bounds:
   contexts_allowed_to_change: []

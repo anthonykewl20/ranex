@@ -193,3 +193,23 @@ native/fts5_cjk/*.so
 evidence/runtime/
 *.secret
 decisions/local-values.env
+
+# Ranex local worktrees, runtime evidence, credentials, and machine-specific decisions.
+.claude/worktrees/
+.local/*
+!.local/*.example
+evidence/runtime/
+*.secret
+decisions/local-values.env
+.env.*
+!.env.example
+!*.env.example
+
+# Full-text reference books are consultation-only local artifacts.
+docs/research/books/
+
+# Raw Kimi research/rendering corpus is local pending rights and privacy clearance.
+docs/research/kimi-research/
+
+# Local running-Hermes configuration; not a Ranex architecture input.
+RULES-THERY.md

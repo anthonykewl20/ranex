@@ -2,12 +2,21 @@
 
 | Field | Value |
 |---|---|
+| Policy ID | `POL-AI-LIFECYCLE-001` |
+| Version | `1.1.0` |
 | Status | Normative supporting policy |
+| Effective date | 2026-07-27 |
+| Repository snapshot basis | `bootstrap/pre-upstream`; exact digest/revision is supplied by the review or release source manifest |
 | Applies to | All architecture, code, configuration, migration, security, release, and documentation work |
 | Architecture | [Hermes-to-Ranex Ground-Zero Full-System Architecture](./HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md) |
 | Parent operating model | [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md) |
+| Fleet control | [AI-Worker Fleet Control-Plane Specification](./AI_AGENT_FLEET_CONTROL_PLANE.md) |
 | Authority policy | [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md) |
+| Owner decisions | [ADR-0001](./decisions/ADR-0001-established-sdlc-governs-ai-work.md); [ADR-0003](./decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md); [ADR-0005](./decisions/ADR-0005-select-local-static-orchestration-defaults.md) |
 | Final authority | Human governor |
+| Compatibility/migration class | New worker-control policy; historical agent runs remain evidence and require versioned mappings |
+| Security/data class | Public policy metadata; packets and run artifacts are classified independently |
+| Review trigger | Any role/authority/gate change, failed independence control, or first two end-to-end tracers |
 
 ## 1. Objective
 
@@ -118,6 +127,7 @@ implemented rather than treating YAML parsing as contract validity.
 | Research | `ResearchPacket` and claim/evidence register |
 | Architecture | `ArchitectureReviewPacket`, `ArchitectureProposal`, independent challenge, `ArchitectureReconciliation`, ADR |
 | Planning | `TaskPacket` |
+| Worker allocation | `AgentAssignment`, expiring `DispatchOffer`, immutable `WorkerAttempt`, fenced `WorkerLease`, hierarchical `ResourceReservation`, and durable `MailboxEnvelope` when coordination is used |
 | Implementation | `RunResult` and candidate commit |
 | Handoff | `AgentHandoff` |
 | Review | `ReviewRequest`, one or more `AnalysisAttempt`/`ReviewObservation`, deterministic `IndependenceEvaluation`, `ReviewVerdict` |
@@ -127,9 +137,18 @@ implemented rather than treating YAML parsing as contract validity.
 | Landing | `LandingRecord` |
 | Post-landing | `PostLandingVerification` |
 | Operations | `ReleaseEvidence`, `OperationEvidence`, `OutcomeReview`, backup/restore/incident/sync evidence |
+| Process/fleet calibration | `CapabilityAssessment` plus `FleetExperiment` with controls, uncertainty, raw evidence, limitations, and human decision reference |
 
 No hidden chain-of-thought is required or stored. Agents provide findings,
 decisions proposed, evidence, limitations, assumptions, and unknowns.
+
+Artifact ownership is non-overlapping: `analytical_review` owns the review
+request/attempt/observation/verdict/independence records; `assurance` owns
+claims, evidence envelopes, qualified checker results, exact-subject snapshots,
+and `GateEvaluation`; `policy` owns rules/risk/authorization snapshots and
+human-decision requirements; `governed_execution` alone owns `RunStatus`,
+authority grants, permits, gate binding, transitions, and effects. A consumer
+holds an immutable reference, never a second authoritative copy.
 
 ## 5. Lifecycle
 
@@ -151,7 +170,7 @@ work-item state remains owned by `work_management`.
 | `OPERATING` | L12 operational evidence, incident/recovery assistance and learning quarantine | Service owner accepts the observation window; incidents use their own aggregate and linked work |
 | `OUTCOME_REVIEW` | L12 may prepare product/operational analysis | Product owner makes keep/change/remove decision |
 | `CLOSED` | No execution authority; archival/retrieval assistance only | Work owner closes only after evidence and follow-ups reconcile |
-| `BLOCKED`, `CANCELLED`, `ROLLED_BACK` | Only explicitly authorized diagnosis, cleanup, recovery or new-packet activity | Owning Core-SDLC role controls the next transition |
+| `BLOCKED`, `CANCELLED`, `ROLLED_BACK` | Only explicitly authorized diagnosis, cleanup, recovery or new-packet activity | `BLOCKED` resumes only to its recorded prior state after refreshed proof; terminal/recovery routes remain Core-SDLC-owned |
 
 One work item may invoke many AI runs, and one run may implement only one
 activity. `RunStatus=SUCCEEDED`, a merge, or an `AI-G*` pass never implies a
@@ -236,6 +255,8 @@ Required for a boundary-changing task:
 The architecture packet includes:
 
 - exact research/source digests;
+- exact architecture-document digest and complete architecture-subject manifest
+  digest, including every contract example in review scope;
 - current and target repository trees;
 - affected bounded contexts;
 - current public APIs and dependency graph;
@@ -265,6 +286,14 @@ The task packet binds:
   baseline, and traceability references/digests;
 - objective, scope, non-goals, and acceptance criteria;
 - accepted ADR and machine-contract digests;
+- Engineering Reference Application Map revision/digest plus an exact
+  engineering-practice profile that evaluates all six source families, binds
+  applicable practice IDs to required behavior and verification, and records
+  non-applicability, unknowns, and authorized deviations;
+- the deterministic rule-activation manifest: instruction-registry
+  version/digest, applicable project/role/stage/technology/risk/task/trigger
+  rules, typed excluded-rule decisions/evidence, conflicts, and rule/context
+  budget;
 - bounded contexts/public APIs allowed to change;
 - allowed and forbidden paths;
 - allowed and forbidden dependency edges;
@@ -291,11 +320,31 @@ The compiler:
 A material source, contract, base commit, policy, risk, grant, or scope change
 invalidates the packet and requires recompilation.
 
+#### 5.4.1 Worker assignment and fleet compilation
+
+Packet readiness does not let a model seize work. `agent_collaboration` creates
+a typed assignment and issues an expiring, compare-and-swap lease only after
+principal/session, role, route, workspace, capability, budget, and independence
+eligibility pass.
+
+One worker is the default. A planner may propose parallel decomposition, but
+the deterministic scheduler admits it only when reads are independent or
+writes have disjoint registered ownership and isolated worktrees. The plan must
+also fit qualified verifier, integration, and human-decision capacity.
+
+Every attempt carries a monotonically increasing fencing epoch. Expired,
+revoked, cancelled, or superseded attempts are denied at model, tool, write,
+mailbox, result, and effect boundaries. Child-worker/model/tool use is charged
+transitively to the parent reservation. Full lease, liveness, governor,
+topology, backpressure, and recovery rules are defined in the
+[fleet control-plane specification](./AI_AGENT_FLEET_CONTROL_PLANE.md).
+
 ### 5.5 L4 — Isolated implementation
 
 One implementation worker receives:
 
 - one task packet;
+- one typed assignment and current fenced lease;
 - one validated worktree;
 - one capability profile;
 - one deadline/budget;
@@ -315,10 +364,15 @@ Implementation rules:
 - record deviations immediately;
 - stop on a material architecture conflict; and
 - do not perform an externally irreversible action without a separate effect
-  permit.
+  permit;
+- heartbeat only through the coordinator protocol and never treat liveness as
+  progress; and
+- stop submitting work when the lease epoch is stale or revoked.
 
 The worker may make multiple local commits if the packet permits it. The final
-candidate commit and clean/dirty state are explicit.
+candidate commit and clean/dirty state are explicit. Parallel workers never
+self-merge; integration is a separately packeted proposal and landing remains
+human-controlled.
 
 ### 5.6 L5 — Submission and handoff
 
@@ -416,7 +470,7 @@ blocking checks cannot become pass.
 
 ### 5.10 L9 — Decision, gate, and permit
 
-The deterministic gate evaluates:
+The qualified `assurance` gate evaluator evaluates:
 
 - exact subject;
 - active policy and risk;
@@ -430,6 +484,12 @@ The deterministic gate evaluates:
 
 Only a qualified exact-subject `PASS` satisfies a blocking gate automatically.
 A scoped human waiver is recorded separately.
+
+`assurance` creates the immutable `GateEvaluation`. `policy` evaluates
+requirements and grant eligibility. `governed_execution` atomically binds the
+fresh evaluation, issues/consumes the `ConsumableAuthorityGrant` and `Permit`,
+and records the transition/effect. None may author the preceding owner's
+record.
 
 A permit is:
 
@@ -494,8 +554,8 @@ After release or operational use:
 | Gate | Name | Required proof |
 |---|---|---|
 | `AI-G0` | Source readiness | Exact subject, source precedence, no blocking unknown/conflict |
-| `AI-G1` | Full-map architecture | Owners/boundaries/attachments/exclusions complete; specialist + independent challenge; accepted ADR |
-| `AI-G2` | Contract readiness | Canonical IDs, states, roles, paths, capabilities, lifecycles, mappings and executable schemas validate |
+| `AI-G1` | Architecture readiness for this run | Accepted target/ADR plus current `MAP-*` evaluations for one immutable `ArchitectureSubject` covering the run; no implied executable/runtime pass |
+| `AI-G2` | Contract readiness | Canonical IDs, states, roles, paths, capabilities, engineering practices/profiles, lifecycles, mappings and executable schemas validate |
 | `AI-G3` | Packet readiness | Deterministic exact packet, bounded scope/grants, current inputs |
 | `AI-G4` | Submission readiness | Exact candidate, allowed paths/edges, schema-valid result, raw evidence |
 | `AI-G5` | Review readiness | Independently validated exact-subject review; no maker contamination or write access |
@@ -507,6 +567,12 @@ After release or operational use:
 
 These IDs are distinct from `SDLC-*`, `MAP-*`, `SDLC-ADOPT-*`, runtime
 `GateOutcome`, and human decision points.
+
+`MAP-*` evaluates paper-map assertions. `AI-G1` consumes those exact-subject
+results for a run; it does not recreate them. `AI-G2` separately proves that
+the accepted prose is projected into executable registries and schemas.
+`AI-G6` onward supplies implementation/runtime evidence. No pass implies
+another namespace passed.
 
 ## 7. Review finding lifecycle
 
@@ -544,6 +610,12 @@ Every attempt records:
 The caller owns one absolute deadline and cost/token/output/tool budgets across
 all nested attempts. A route/model/transport change is a new attempt and cannot
 inherit qualification implicitly.
+
+The `RunStatus` transition graph is defined by the full-system architecture.
+`SUCCEEDED`, `FAILED`, and `CANCELLED` are terminal for one `RunId`; retry uses
+a linked new run. A blocked run stores its prior nonterminal status and may
+resume only there after refreshed policy/evidence, or terminate as failed/
+cancelled. Run completion never advances `WorkItemStatus`.
 
 ## 9. AI-execution completion criteria
 
@@ -605,12 +677,28 @@ The target contract is
 `AI-G2` passes, use these as field examples and never label them validated
 schemas:
 
+The 36 YAML templates map one-to-one to the 36 artifact/value-object producer
+rows in the contract specification: 35 have artifact-specific target schemas,
+while `CoreSDLCTrace` is the shared embedded trace schema. The ADR and RFC
+Markdown templates below are governance-document forms, not two additional
+runtime artifact-schema claims.
+
 - [Work intake](./templates/WORK_INTAKE.yaml);
 - [Research packet](./templates/RESEARCH_PACKET.yaml);
 - [Architecture review packet](./templates/ARCHITECTURE_REVIEW_PACKET.yaml);
 - [Architecture proposal](./templates/ARCHITECTURE_PROPOSAL.yaml);
 - [Architecture reconciliation](./templates/ARCHITECTURE_RECONCILIATION.yaml);
 - [AI task packet](./templates/AI_TASK_PACKET.yaml);
+- [Agent assignment](./templates/AGENT_ASSIGNMENT.yaml);
+- [Dispatch offer](./templates/DISPATCH_OFFER.yaml);
+- [Worker attempt](./templates/WORKER_ATTEMPT.yaml);
+- [Worker lease](./templates/WORKER_LEASE.yaml);
+- [Resource reservation](./templates/RESOURCE_RESERVATION.yaml);
+- [Mailbox envelope](./templates/MAILBOX_ENVELOPE.yaml);
+- [Fleet experiment](./templates/FLEET_EXPERIMENT.yaml);
+- [Capability assessment](./templates/CAPABILITY_ASSESSMENT.yaml);
+- [Capability domain projection](./templates/CAPABILITY_DOMAIN_PROJECTION.yaml);
+- [Core-SDLC trace block](./templates/CORE_SDLC_TRACE.yaml);
 - [Run result](./templates/RUN_RESULT.yaml);
 - [AI handoff](./templates/AI_HANDOFF.yaml);
 - [Review request](./templates/REVIEW_REQUEST.yaml);

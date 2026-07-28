@@ -9,6 +9,9 @@
 | Review by | |
 | Affected contexts | |
 | Supersedes | |
+| Architecture subject digest | |
+| Subject-manifest digest | |
+| Core SDLC trace ref/digest | |
 
 ## Decision question
 

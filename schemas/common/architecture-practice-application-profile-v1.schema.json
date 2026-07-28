@@ -1,0 +1,441 @@
+{
+  "$id": "https://schemas.ranex.dev/common/architecture-practice-application-profile-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "disposition_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed_dispositions": {
+          "items": {
+            "enum": [
+              "APPLICABLE",
+              "NOT_APPLICABLE",
+              "UNKNOWN"
+            ]
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "arithmetic_aggregation_prohibited": {
+          "const": true
+        },
+        "design_application_does_not_imply_runtime_enactment": {
+          "const": true
+        },
+        "not_applicable_requires_rationale": {
+          "const": true
+        },
+        "runtime_pass_requires_separate_exact_subject_evidence": {
+          "const": true
+        },
+        "unknown_requires_materiality_and_blocking_effect": {
+          "const": true
+        }
+      },
+      "required": [
+        "allowed_dispositions",
+        "not_applicable_requires_rationale",
+        "unknown_requires_materiality_and_blocking_effect",
+        "design_application_does_not_imply_runtime_enactment",
+        "runtime_pass_requires_separate_exact_subject_evidence",
+        "arithmetic_aggregation_prohibited"
+      ],
+      "type": "object"
+    },
+    "family_dispositions": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "disposition": {
+            "enum": [
+              "APPLICABLE",
+              "NOT_APPLICABLE",
+              "UNKNOWN"
+            ]
+          },
+          "practice_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "rationale": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "runtime_verification_required": {
+            "type": "boolean"
+          },
+          "source_family_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_family_id",
+          "disposition",
+          "practice_ids",
+          "rationale",
+          "runtime_verification_required"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "material_unknowns": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "blocking_effect": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "detail": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "practice_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "unknown_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "unknown_id",
+          "practice_ids",
+          "detail",
+          "blocking_effect"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "practice_applications": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "adr_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "architecture_element_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "decision_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "design_application_status": {
+            "enum": [
+              "APPLIED",
+              "PARTIAL",
+              "NOT_APPLICABLE",
+              "UNKNOWN"
+            ]
+          },
+          "design_behavior": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "design_evidence_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "disposition": {
+            "enum": [
+              "APPLICABLE",
+              "NOT_APPLICABLE",
+              "UNKNOWN"
+            ]
+          },
+          "limitation_or_conflict": {
+            "type": "string"
+          },
+          "material_unknown": {
+            "type": "boolean"
+          },
+          "not_applicable_rationale": {
+            "type": "string"
+          },
+          "org_rule_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "practice_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "runtime_enactment_status": {
+            "enum": [
+              "NOT_ASSESSED",
+              "NOT_APPLICABLE",
+              "UNKNOWN",
+              "PASS",
+              "FAIL"
+            ]
+          },
+          "runtime_verification_required": {
+            "type": "boolean"
+          },
+          "source_family_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "source_locators": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "tdd_rule_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "practice_id",
+          "source_family_id",
+          "disposition",
+          "design_application_status",
+          "material_unknown",
+          "design_behavior",
+          "architecture_element_ids",
+          "adr_ids",
+          "decision_ids",
+          "org_rule_ids",
+          "tdd_rule_ids",
+          "source_locators",
+          "design_evidence_refs",
+          "limitation_or_conflict",
+          "not_applicable_rationale",
+          "runtime_verification_required",
+          "runtime_enactment_status"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "profile_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runtime_claim": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "architecture-practice-application-profile/v1"
+    },
+    "source_registry_binding": {
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "registry_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "required_practice_count": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "required_source_family_count": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "version": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "registry_id",
+        "version",
+        "sha256",
+        "required_source_family_count",
+        "required_practice_count"
+      ],
+      "type": "object"
+    },
+    "status": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "subject": {
+      "additionalProperties": false,
+      "properties": {
+        "basis_revision": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        "normative_source_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "runtime_subject_included": {
+          "type": "boolean"
+        },
+        "subject_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "subject_kind": {
+          "const": "ARCHITECTURE_DESIGN"
+        },
+        "working_tree_status": {
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_id",
+        "subject_kind",
+        "basis_revision",
+        "working_tree_status",
+        "normative_source_refs",
+        "runtime_subject_included"
+      ],
+      "type": "object"
+    },
+    "summary": {
+      "additionalProperties": false,
+      "properties": {
+        "applicable_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "arithmetic_score": {
+          "type": "null"
+        },
+        "design_applied_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "design_partial_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "material_unknown_practice_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "not_applicable_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "practice_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "runtime_not_applicable_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "runtime_not_assessed_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "sealing_eligible": {
+          "type": "boolean"
+        },
+        "source_family_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "unknown_applicability_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_family_count",
+        "practice_count",
+        "applicable_count",
+        "not_applicable_count",
+        "unknown_applicability_count",
+        "design_applied_count",
+        "design_partial_count",
+        "material_unknown_practice_count",
+        "runtime_not_assessed_count",
+        "runtime_not_applicable_count",
+        "sealing_eligible",
+        "arithmetic_score"
+      ],
+      "type": "object"
+    },
+    "version": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile_id",
+    "version",
+    "status",
+    "subject",
+    "source_registry_binding",
+    "disposition_policy",
+    "family_dispositions",
+    "material_unknowns",
+    "practice_applications",
+    "summary",
+    "runtime_claim"
+  ],
+  "title": "Ranex architecture practice application profile",
+  "type": "object"
+}

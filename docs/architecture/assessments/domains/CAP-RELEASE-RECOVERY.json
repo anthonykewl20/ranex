@@ -1,0 +1,155 @@
+{
+  "approved_at": "",
+  "artifact_type": "capability_domain_projection",
+  "assessment_authority": {
+    "approver_id": "UNASSIGNED_WAVE_2",
+    "independence_evidence_ref": "",
+    "projector_id": "scripts/architecture/generate_contracts.py"
+  },
+  "core_sdlc_trace_ref": "",
+  "correction_reason": "",
+  "created_at": "2026-07-28T00:00:00Z",
+  "decision_ref": "",
+  "definition_evidence_refs": [
+    "architecture/contracts/vital-profile.json"
+  ],
+  "definition_status": "DEFINED",
+  "derivation": {
+    "applicable_member_count": 0,
+    "arithmetic_aggregation_prohibited": true,
+    "begun_applicable_member_count": 0,
+    "bound_member_count": 4,
+    "derived_level": null,
+    "derived_result": "UNKNOWN",
+    "lowest_control_ids": [],
+    "not_applicable_member_count": 0,
+    "registered_member_count": 4,
+    "scored_applicable_member_count": 0
+  },
+  "digest": "sha256:8e3188e716fc1ac802a152d81a939880e172a65c18a1906bc86b9366034fd19e",
+  "members": [
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-CROSS-001",
+      "assessment_digest": "sha256:f20a63ea76844df6ac8230a7fc0d2bb5f06632a3c735341b39ee7f950e2d7c2c",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-CM-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:1679d4ec5f8724bb8ecb6f053f07813e5adb29a8c24b0b9c1a0658ece30de346",
+      "control_id": "SDLC-CM-001",
+      "domain_id": "CAP-RELEASE-RECOVERY",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-STAGE-001",
+      "assessment_digest": "sha256:757d683a876600ed212c87d0b43a8b6e45825ad434731e6af969bfd4be771b19",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-RDY-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:922a8d820fc6e08a72044c2dac8cd9775178a85a3b7dd2477b4a612be955df84",
+      "control_id": "SDLC-RDY-001",
+      "domain_id": "CAP-RELEASE-RECOVERY",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-STAGE-001",
+      "assessment_digest": "sha256:ec6b0f8b356aedee63e20e7946b6dac8657c02039934c2e409eb14d77c183367",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-REL-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:56459b24af3ec738ecd5324ee55b81db6393f88fc9cbf58763af6fb92e75fc76",
+      "control_id": "SDLC-REL-001",
+      "domain_id": "CAP-RELEASE-RECOVERY",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-TRIGGER-001",
+      "assessment_digest": "sha256:20f6a73f40fc9a44109cea4730e644a5f6fb96662cf9eced2f551ae601579dc6",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-RBK-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:f42b6e1c3def1c423cfd34b1e324d73c8e3fd31dea26b6a4ab35683deb8d2fa6",
+      "control_id": "SDLC-RBK-001",
+      "domain_id": "CAP-RELEASE-RECOVERY",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    }
+  ],
+  "policy_id": "POL-SDLC-001",
+  "policy_version": "1.4.0",
+  "prior_projection_ref": "",
+  "priority_projection": {
+    "arithmetic_aggregation_prohibited": true,
+    "decisive_control_ids": [],
+    "derived_tier": null,
+    "priority_rule_digest": "sha256:7ce8ccde49b5c9e0cab085ddbe56f0e382c224a2595d08924c5c575a447c5f88",
+    "priority_rule_id": "PRIORITY-SDLC-001",
+    "priority_rule_version": "1.0.0",
+    "result": "NOT_EVALUATED"
+  },
+  "projection_id": "capability_domain_projection_019fa605-6800-71b1-96f0-35238a7965c8",
+  "revision": 1,
+  "rubric_id": "SDLC-MEA-002",
+  "rubric_version": "3.0.0",
+  "schema_version": "1",
+  "scope": {
+    "domain_id": "CAP-RELEASE-RECOVERY",
+    "risk_lanes": [
+      "STANDARD",
+      "ENHANCED",
+      "CRITICAL",
+      "EMERGENCY"
+    ],
+    "scope_digest": "sha256:9c0de756a8c462251e2956db987bf89a1431e21bdb9e88f10afa1eab4c7b8e4c",
+    "service_ids": [
+      "RANEX_TARGET"
+    ],
+    "value_stream_ids": [
+      "ARCHITECTURE_CONTRACTING"
+    ],
+    "window_end": "2026-07-28T00:00:00Z",
+    "window_start": "2026-07-28T00:00:00Z",
+    "work_classes": [
+      "PRODUCT",
+      "DEFECT",
+      "RELIABILITY",
+      "SECURITY_PRIVACY",
+      "ARCHITECTURE_PLATFORM",
+      "COMPLIANCE_PROVENANCE",
+      "UPSTREAM_SYNC",
+      "MAINTENANCE",
+      "RETIREMENT",
+      "INCIDENT_RESPONSE"
+    ]
+  },
+  "status": "NOT_ASSESSED",
+  "subject_digest": "sha256:aa254ba3f56fc8876a35300e1087a27e5ca8a1c006a809e26915a5f1ed7d124c",
+  "subject_manifest_digest": "sha256:e4944ffa195a139eb31503a1032c73eecc3e580438927716819b65f75afa49bd",
+  "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
+  "subject_schema": "research-subject/v1",
+  "supersedes_ref": "",
+  "validation": {
+    "applicability_rating_consistency_result": "PASS",
+    "exact_tuple_set_result": "PASS",
+    "identical_scope_and_window_result": "PASS",
+    "immutable_binding_result": "PASS",
+    "no_duplicate_or_extra_member_result": "PASS",
+    "validation_evidence_refs": [
+      "scripts/architecture/validate_contracts.py"
+    ]
+  },
+  "vital_profile": {
+    "applicability_registry_digest": "sha256:70aa533eb87375970768ee6effc259aa26bf425c2277886d7a88e11c03619042",
+    "applicability_registry_id": "APPLICABILITY-SDLC-001",
+    "applicability_registry_version": "1.1.0",
+    "profile_digest": "sha256:226331d24a21bf452c78e430363a7f29c2134f5dcd699290c09883b441aaaecb",
+    "profile_id": "VITAL-SDLC-001",
+    "profile_version": "1.1.0"
+  }
+}

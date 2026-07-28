@@ -1,0 +1,159 @@
+{
+  "$id": "https://schemas.ranex.dev/fleet/worker-attempt-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "const": "worker_attempt"
+    },
+    "assignment_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "denial_evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "fencing_epoch": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "finished_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "handoff_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "harness_id": {
+      "type": "string"
+    },
+    "harness_version": {
+      "type": "string"
+    },
+    "isolation_profile_id": {
+      "type": "string"
+    },
+    "lease_id": {
+      "type": "string"
+    },
+    "previous_attempt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "principal_id": {
+      "type": "string"
+    },
+    "result_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "route_lock_id": {
+      "type": "string"
+    },
+    "run_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "termination_cause": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "usage_evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "worker_attempt_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "worker_attempt_id",
+    "assignment_id",
+    "previous_attempt_id",
+    "lease_id",
+    "fencing_epoch",
+    "principal_id",
+    "session_id",
+    "route_lock_id",
+    "harness_id",
+    "harness_version",
+    "isolation_profile_id",
+    "workspace_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "run_id",
+    "created_at",
+    "started_at",
+    "finished_at",
+    "termination_cause",
+    "result_ref",
+    "handoff_ref",
+    "denial_evidence_refs",
+    "usage_evidence_refs",
+    "digest"
+  ],
+  "title": "worker_attempt",
+  "type": "object",
+  "x-ranex-canonical-producer": "agent_collaboration",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/WORKER_ATTEMPT.yaml"
+}

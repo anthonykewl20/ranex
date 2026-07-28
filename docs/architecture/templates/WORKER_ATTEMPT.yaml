@@ -1,0 +1,33 @@
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
+schema_version: "1"
+artifact_type: worker_attempt
+worker_attempt_id: "wattempt_<uuidv7>"
+assignment_id: "assignment_<uuidv7>"
+previous_attempt_id: null
+lease_id: "lease_<uuidv7>"
+fencing_epoch: 0
+
+principal_id: ""
+session_id: ""
+route_lock_id: ""
+harness_id: ""
+harness_version: ""
+isolation_profile_id: ""
+workspace_id: "wsp_<uuidv7>"
+
+subject_schema: "exact-subject/v1"
+subject_ref: ""
+subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
+run_id: "run_<uuidv7>"
+
+created_at: ""
+started_at: null
+finished_at: null
+termination_cause: null
+result_ref: null
+handoff_ref: null
+denial_evidence_refs: []
+usage_evidence_refs: []
+digest: ""

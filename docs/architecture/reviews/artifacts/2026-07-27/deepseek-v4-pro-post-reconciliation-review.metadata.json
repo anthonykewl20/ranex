@@ -1,0 +1,33 @@
+{
+  "provider": "deepseek",
+  "endpoint": "https://api.deepseek.com/chat/completions",
+  "requested_model": "deepseek-v4-pro",
+  "actual_model": "deepseek-v4-pro",
+  "response_id": "7d7ea097-7d93-4dfe-8675-688f3a5818f2",
+  "started_at": "2026-07-27T14:56:46.410Z",
+  "completed_at": "2026-07-27T14:58:46.289Z",
+  "request_sha256": "6f258c6c78a05820596dccca3a3aeacfc70fd7537687d676a9d1b51509ace249",
+  "user_payload_sha256": "0a67ed37b90eb702421d68e3baad45d8862560a8fbf6f6bd76724fb395db4210",
+  "system_role_sha256": "d3d23417f856ad5ea7a18e6c4c9d122be75f4354f1b43c299845fff64a6f1d57",
+  "source_manifest_sha256": "619fe0bee1fd68e67211de87b7d12741d97cfb82f91cca0f70ec1663c9df6528",
+  "review_bundle_manifest_sha256": "36777e3cd55ee1356b6af698d43811ee27f646276e4046932618f74b9138e75e",
+  "prompt_sha256": "040461e190492328daa1fea81bc93d3e0ba9cdf492607954f142804124ae0503",
+  "finish_reason": "stop",
+  "content_length": 8109,
+  "response_sha256": "8be87ba82feb6af75b61e9400444c48693d396004ecaeac51c077c8cf43c67c5",
+  "reasoning_length": 21658,
+  "usage": {
+    "prompt_tokens": 142448,
+    "completion_tokens": 6627,
+    "total_tokens": 149075,
+    "prompt_tokens_details": {
+      "cached_tokens": 0
+    },
+    "completion_tokens_details": {
+      "reasoning_tokens": 4865
+    },
+    "prompt_cache_hit_tokens": 0,
+    "prompt_cache_miss_tokens": 142448
+  },
+  "independence_note": "Primary architecture/file-structure specialist review; HY3 output was not available to this request."
+}

@@ -1,4 +1,4 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: transition_event
 transition_id: "transition_<uuidv7>"
@@ -13,7 +13,11 @@ reason_code: ""
 command_id: ""
 correlation_id: ""
 causation_id: ""
+subject_schema: null
+subject_ref: ""
 subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
 policy_decision_digest: ""
 authority_refs: []
 evidence_refs: []

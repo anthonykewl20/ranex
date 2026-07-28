@@ -1,0 +1,36 @@
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
+schema_version: "1"
+artifact_type: agent_assignment
+assignment_id: "assignment_<uuidv7>"
+status: PENDING
+aggregate_version: 0
+
+subject_schema: "exact-subject/v1"
+subject_ref: ""
+subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
+task_packet_id: "pkt_<uuidv7>"
+task_packet_digest: ""
+
+required_role_id: ""
+required_route_qualification_scope: ""
+required_harness_qualification_scope: ""
+required_isolation_profile_id: ""
+workspace_id: "wsp_<uuidv7>"
+allowed_path_ownership_refs: []
+dependency_assignment_ids: []
+topology_class: SINGLE_WORKER
+
+capability_profile_id: ""
+capability_profile_digest: ""
+reservation_id: "reservation_<uuidv7>"
+reservation_digest: ""
+expected_reservation_aggregate_version: 0
+absolute_deadline: ""
+offer_policy_id: ""
+maker_checker_separation_refs: []
+
+created_by_service_id: ""
+created_at: ""
+digest: ""
