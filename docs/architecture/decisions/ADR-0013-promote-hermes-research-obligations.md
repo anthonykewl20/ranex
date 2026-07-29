@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | ADR ID | `ADR-0013` |
-| Version | `1.1.0` |
+| Version | `1.3.0` |
 | Status | `ACCEPTED` |
 | Decision owner | Human owner |
 | Decision date | 2026-07-29 |
@@ -18,10 +18,69 @@
 
 ## Revision history
 
+### 1.3.0 — 2026-07-30
+
+This revision records the second full-row fidelity audit and closes the
+remaining unpinned-row blind spot.
+
+- **DEFECT 6** — `HERMES-PROMOTION-002` now states only that the new
+  dependency-clean kernel is built beside Hermes; `HERMES-PROMOTION-004`
+  removes the unsupported `only` exclusivity; `HERMES-PROMOTION-009` removes
+  the unsupported `replaceable` qualifier; `HERMES-PROMOTION-014` restores
+  first-party module access to application/kernel public APIs; and
+  `HERMES-PROMOTION-017` uses the cited side-effect-free requirement without
+  an invented example list.
+- **DEFECT 7** — The 1.2.0 history now records its previously omitted
+  normative changes to `HERMES-PROMOTION-058` and
+  `HERMES-PROMOTION-059`.
+- **DEFECT 8** — Exact-text fidelity pins now cover all 65 promoted
+  provisions, all 20 owner-decision subjects, and all 13 research-only
+  dispositions. Any paraphrase of a pinned text fails generation and
+  validation.
+
+### 1.2.0 — 2026-07-29
+
+This revision records the result of placing every promoted provision beside
+its cited research excerpt and comparing obligation class, scope, and
+specificity.
+
+- **Previously omitted 1.2.0 normative changes (recorded retroactively in
+  1.3.0)** — `HERMES-PROMOTION-058` renamed
+  `SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION_DEFINE_KERNEL_RECORDS` to
+  `CLEAN_KERNEL_PROVIDES_SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION` and
+  removed the unsupported `kernel records` scope.
+  `HERMES-PROMOTION-059` replaced “whose state evolution is computed by a pure
+  reducer without observable side effects” with “every Execution state
+  transition is computed by its pure reducer.”
+- **DEFECT 1** — `HERMES-PROMOTION-011` again requires removal of the Nous
+  commercial subsystem, and `HERMES-PROMOTION-041` again requires removal of
+  Hermes/Nous branding. Neither action is represented as an asserted
+  absent-state.
+- **DEFECT 2** — `HERMES-PROMOTION-040` restores rebranding as the specific
+  context that does not authorize erasing legal notices or Git history.
+- **DEFECT 3** — `HERMES-PROMOTION-041` restores package metadata, remote
+  endpoints, headers, telemetry tags, help text, screenshots, generated
+  assets, and defaults as eight separately checkable surfaces. The same
+  row-by-row specificity check restores the cited item-level terms in
+  `HERMES-PROMOTION-037`, `HERMES-PROMOTION-038`,
+  `HERMES-PROMOTION-044`, `HERMES-PROMOTION-045`,
+  `HERMES-PROMOTION-050`, `HERMES-PROMOTION-051`,
+  `HERMES-PROMOTION-053`, `HERMES-PROMOTION-054`, and
+  `HERMES-PROMOTION-057`.
+- **DEFECT 4** — `HERMES-PROMOTION-005`, `HERMES-PROMOTION-010`,
+  `HERMES-PROMOTION-012`, and `HERMES-PROMOTION-018` remove the unsupported
+  `governed`, `accepted`, generalized domain-package, and `authority`
+  qualifiers and restore their exact cited scopes.
+- **DEFECT 5** — Phase 1 lines 1899–1912 remain represented by
+  `HERMES-PROMOTION-058` through `HERMES-PROMOTION-065`, rather than by an
+  exclusion-equivalence claim. Phase 0/0A activity and Phase 2–6 sequencing
+  and exit material remain research-only and are not represented by promoted
+  gates.
+
 ### 1.1.0 — 2026-07-29
 
-The owner rejects the prior classification of all migration phases as
-“implementation sequencing, not fixed authority” for Phase 1. Research lines
+By owner decision, this revision overturns the prior “implementation
+sequencing, not fixed authority” exclusion for Phase 1. Research lines
 1899–1912 define the clean kernel's binding structural inventory and behavior,
 not a delivery schedule.
 
@@ -89,7 +148,7 @@ uniqueness, and fail-closed outcomes. Runtime evidence begins
 ```yaml
 schema_version: "hermes-research-promotion-catalog/v1"
 catalog_id: "RANEX-HERMES-RESEARCH-PROMOTIONS"
-catalog_version: "1.1.0"
+catalog_version: "1.3.0"
 catalog_status: "DEFINITION_ONLY"
 governing_adr: "ADR-0013"
 research_source: "docs/research/hermes-core-architecture-research-2026-07-27.md"
@@ -114,7 +173,7 @@ promoted_provisions:
     source_end_line: 2266
     check_class: "ARCHITECTURE_CONTRACT"
     blocking_stage: "IMPLEMENTATION_START"
-    provision: "The Ranex authority kernel is dependency-clean and built beside, not inward through, Hermes."
+    provision: "A new dependency-clean kernel is built beside Hermes."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-003"
@@ -134,7 +193,7 @@ promoted_provisions:
     source_end_line: 2270
     check_class: "RUNTIME_FITNESS"
     blocking_stage: "PRODUCTION_READY"
-    provision: "Hermes is contained as a replaceable worker and evolves only into a typed action-proposal driver."
+    provision: "Hermes is contained as a replaceable worker and evolves into a typed action-proposal driver."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-005"
@@ -144,7 +203,7 @@ promoted_provisions:
     source_end_line: 2271
     check_class: "AUTHORITY_FITNESS"
     blocking_stage: "EFFECT_DISPATCH"
-    provision: "One fail-closed capability bus mediates every governed effect."
+    provision: "One fail-closed capability bus mediates every effect."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-006"
@@ -184,7 +243,7 @@ promoted_provisions:
     source_end_line: 2277
     check_class: "ARCHITECTURE_CONTRACT"
     blocking_stage: "IMPLEMENTATION_START"
-    provision: "The first SQLite-backed tracer retains a replaceable workflow-runtime port."
+    provision: "Ranex starts with a small SQLite-backed tracer and retains a workflow-runtime port."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-010"
@@ -194,7 +253,7 @@ promoted_provisions:
     source_end_line: 2278
     check_class: "STATIC_FITNESS"
     blocking_stage: "IMPLEMENTATION_START"
-    provision: "Import and runtime fitness tests enforce the accepted architecture."
+    provision: "Import and runtime fitness tests enforce the architecture."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-011"
@@ -204,7 +263,7 @@ promoted_provisions:
     source_end_line: 2281
     check_class: "RELEASE_FITNESS"
     blocking_stage: "RELEASE"
-    provision: "The Nous commercial provider and account, credit, subscription, payment, entitlement, Portal, and promotional infrastructure are absent while provider-neutral cost and budget measurement remains."
+    provision: "Remove the Nous commercial model provider and all account, credit, subscription, payment, entitlement, Portal, and promotional infrastructure; retain only provider-neutral cost and budget measurement."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-012"
@@ -214,7 +273,7 @@ promoted_provisions:
     source_end_line: 1812
     check_class: "STATIC_FITNESS"
     blocking_stage: "IMPLEMENTATION_START"
-    provision: "Domain packages cannot import Hermes, CLI, gateway, database, provider, filesystem, HTTP, or tool packages."
+    provision: "`ranex.*.domain` cannot import Hermes, CLI, gateway, database, provider, filesystem, HTTP, or tool packages."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-013"
@@ -234,7 +293,7 @@ promoted_provisions:
     source_end_line: 1815
     check_class: "STATIC_FITNESS"
     blocking_stage: "IMPLEMENTATION_START"
-    provision: "First-party modules may depend on kernel public APIs, but the kernel cannot depend on modules."
+    provision: "First-party modules may depend on application/kernel public APIs, but the kernel cannot depend on modules."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-015"
@@ -264,7 +323,7 @@ promoted_provisions:
     source_end_line: 1819
     check_class: "STATIC_FITNESS"
     blocking_stage: "IMPLEMENTATION_START"
-    provision: "Importing a module causes no registration, I/O, migration, thread, or other side effect."
+    provision: "Importing any module is side-effect free."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-018"
@@ -274,7 +333,7 @@ promoted_provisions:
     source_end_line: 1820
     check_class: "AUTHORITY_FITNESS"
     blocking_stage: "EFFECT_DISPATCH"
-    provision: "Canonical state writes occur only through the authority unit of work."
+    provision: "No direct canonical-state writes occur outside the unit of work."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-019"
@@ -464,7 +523,7 @@ promoted_provisions:
     source_end_line: 1607
     check_class: "MIGRATION_FITNESS"
     blocking_stage: "MIGRATION"
-    provision: "Any time-bounded legacy commercial reader is absent from normal startup and can only warn, redact, or translate to explicit BYOK without refreshing credentials or contacting Portal."
+    provision: "Any legacy migration reader must be standalone and time-bounded, may recognize old Nous provider/account fields only to warn, redact, or translate a user to an explicit BYOK provider, must not be imported by normal startup, and cannot refresh a token or contact a Portal."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-038"
@@ -474,7 +533,7 @@ promoted_provisions:
     source_end_line: 1613
     check_class: "MIGRATION_FITNESS"
     blocking_stage: "MIGRATION"
-    provision: "Legacy Nous auth and catalog data stays quarantined, reports an unsupported provider, and never silently transfers OAuth credentials into Ranex."
+    provision: "Legacy `$HERMES_HOME/auth.json` entries (`providers.nous`, `credential_pool.nous`, `active_provider=\"nous\"`), shared `nous_auth.json`, and model/recommendation caches remain quarantined metadata. The reader reports “unsupported legacy provider,” offers explicit secret deletion, requires a new provider selection, and never silently moves an OAuth token into Ranex."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-039"
@@ -494,7 +553,7 @@ promoted_provisions:
     source_end_line: 1617
     check_class: "LEGAL_COMPLIANCE_FITNESS"
     blocking_stage: "RELEASE"
-    provision: "License, copyright, provenance, required upstream attribution, legal notices, and Git history are preserved."
+    provision: "Preserve license, copyright, provenance, and required upstream attribution. Rebranding does not authorize erasing legal notices or Git history."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-041"
@@ -504,7 +563,7 @@ promoted_provisions:
     source_end_line: 1621
     check_class: "RELEASE_FITNESS"
     blocking_stage: "RELEASE"
-    provision: "Hermes and Nous branding is absent from Ranex product surfaces except historical research citations and legally required attribution."
+    provision: "Remove Hermes/Nous branding from all Ranex product surfaces and, as separately checkable items, from package metadata; remote endpoints; headers; telemetry tags; help text; screenshots; generated assets; and defaults. Historical research citations and legally required attribution are exceptions."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-042"
@@ -534,7 +593,7 @@ promoted_provisions:
     source_end_line: 1675
     check_class: "RELEASE_FITNESS"
     blocking_stage: "RELEASE"
-    provision: "Top-up, subscription, billing RPC, checkout, card, auto-reload, and Portal proxy commands, schemas, and routes are unregistered."
+    provision: "`/topup` and `/subscription` commands, billing and subscription RPCs, checkout, card, and auto-reload schemas, and Portal proxy routes are unregistered."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-045"
@@ -544,7 +603,7 @@ promoted_provisions:
     source_end_line: 1678
     check_class: "RELEASE_FITNESS"
     blocking_stage: "RELEASE"
-    provision: "Runtime packages exclude Nous credit headers, billing scopes, providers.nous state, Portal OAuth scopes, managed-tool entitlements, and product=hermes-agent tags."
+    provision: "Runtime packages exclude `x-nous-credits-*`, `billing:manage`, `providers.nous`, Portal OAuth scopes, managed tool-pool entitlement, and `product=hermes-agent` request tags."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-046"
@@ -594,7 +653,7 @@ promoted_provisions:
     source_end_line: 1691
     check_class: "RUNTIME_FITNESS"
     blocking_stage: "EFFECT_DISPATCH"
-    provision: "A tool without direct credentials becomes unavailable and never tries a Nous managed gateway or commercial-subscription check."
+    provision: "A configured tool without direct credentials becomes unavailable and never attempts a Nous managed gateway or checks a commercial subscription."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-051"
@@ -604,7 +663,7 @@ promoted_provisions:
     source_end_line: 1693
     check_class: "RUNTIME_FITNESS"
     blocking_stage: "EFFECT_DISPATCH"
-    provision: "Missing or failed model configuration fails closed and never selects Nous as an auxiliary or fallback model."
+    provision: "An auxiliary or model fallback never selects Nous when the configured provider is missing or fails; missing configuration fails closed."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-052"
@@ -624,7 +683,7 @@ promoted_provisions:
     source_end_line: 1697
     check_class: "RUNTIME_FITNESS"
     blocking_stage: "PRODUCTION_READY"
-    provision: "Fuzzed x-nous headers cannot create state, notices, prompt content, tier selection, or tool gating."
+    provision: "Fuzzed `x-nous-*` headers cannot create state, notices, prompt content, tier selection, or tool gating."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-054"
@@ -634,7 +693,7 @@ promoted_provisions:
     source_end_line: 1699
     check_class: "SUPPLY_CHAIN_FITNESS"
     blocking_stage: "RELEASE"
-    provision: "Built wheel, npm bundle, and container scans find no dedicated commercial file, billing bundle, provider plugin, or @nous-research/ui package."
+    provision: "Built wheel, npm bundle, and container scans find no dedicated commercial file, generated billing bundle, provider plugin, or `@nous-research/ui` package."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-055"
@@ -664,17 +723,17 @@ promoted_provisions:
     source_end_line: 1706
     check_class: "RELEASE_FITNESS"
     blocking_stage: "RELEASE"
-    provision: "Product-facing packages, commands, configuration roots, headers, telemetry, help, screenshots, assets, and defaults do not present Hermes or Nous branding outside migration warnings or legally required attribution."
+    provision: "No product-facing package name, CLI command, config root, header, telemetry tag, help screen, screenshot, generated asset, or default presents Hermes/Nous branding outside an explicit migration warning or legally required attribution."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-058"
     status: "PROMOTED"
-    guard_id: "SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION_DEFINE_KERNEL_RECORDS"
+    guard_id: "CLEAN_KERNEL_PROVIDES_SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION"
     source_ref: "docs/research/hermes-core-architecture-research-2026-07-27.md:1901"
     source_end_line: 1901
     check_class: "ARCHITECTURE_CONTRACT"
     blocking_stage: "IMPLEMENTATION_START"
-    provision: "The clean kernel contains implemented shared-identity and canonical-serialization contracts that supply shared identities and canonical serialized representations for kernel records."
+    provision: "The clean kernel contains a shared-identity facility that provides shared identity and a canonical-serialization facility that provides canonical serialization."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-059"
@@ -684,7 +743,7 @@ promoted_provisions:
     source_end_line: 1902
     check_class: "RUNTIME_FITNESS"
     blocking_stage: "GATE_ADVANCE"
-    provision: "The clean kernel contains an Execution aggregate whose state evolution is computed by a pure reducer without observable side effects."
+    provision: "The clean kernel contains an Execution aggregate, and every Execution state transition is computed by its pure reducer."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-060"

@@ -1139,8 +1139,23 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
 
     text = HERMES_RESEARCH_PROMOTION_ADR.read_text(encoding="utf-8")
     required_revision_fragments = {
-        "| Version | `1.1.0` |",
+        "| Version | `1.3.0` |",
+        "### 1.3.0 — 2026-07-30",
+        "**DEFECT 6**",
+        "**DEFECT 7**",
+        "**DEFECT 8**",
+        "Previously omitted 1.2.0 normative changes",
+        "`SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION_DEFINE_KERNEL_RECORDS`",
+        "`CLEAN_KERNEL_PROVIDES_SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION`",
+        "### 1.2.0 — 2026-07-29",
+        "**DEFECT 1**",
+        "**DEFECT 2**",
+        "**DEFECT 3**",
+        "**DEFECT 4**",
+        "**DEFECT 5**",
         "### 1.1.0 — 2026-07-29",
+        "By owner decision, this revision overturns the prior",
+        "sequencing, not fixed authority” exclusion for Phase 1.",
         "`HERMES-PROMOTION-058` through `HERMES-PROMOTION-065`",
         "`HERMES-OWNER-DECISION-020`",
         "narrows `HERMES-RESEARCH-ONLY-008`",
@@ -1200,7 +1215,7 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
         == "hermes-research-promotion-catalog/v1"
         and catalog["catalog_id"]
         == "RANEX-HERMES-RESEARCH-PROMOTIONS"
-        and catalog["catalog_version"] == "1.1.0"
+        and catalog["catalog_version"] == "1.3.0"
         and catalog["catalog_status"] == "DEFINITION_ONLY"
         and catalog["governing_adr"] == "ADR-0013"
         and catalog["research_source"] == research_relative
@@ -1255,19 +1270,504 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
             collection,
         )
 
+    fidelity_pinned_provisions = {
+        "HERMES-PROMOTION-005": (
+            "One fail-closed capability bus mediates every effect."
+        ),
+        "HERMES-PROMOTION-010": (
+            "Import and runtime fitness tests enforce the architecture."
+        ),
+        "HERMES-PROMOTION-011": (
+            "Remove the Nous commercial model provider and all account, "
+            "credit, subscription, payment, entitlement, Portal, and "
+            "promotional infrastructure; retain only provider-neutral cost "
+            "and budget measurement."
+        ),
+        "HERMES-PROMOTION-012": (
+            "`ranex.*.domain` cannot import Hermes, CLI, gateway, database, "
+            "provider, filesystem, HTTP, or tool packages."
+        ),
+        "HERMES-PROMOTION-018": (
+            "No direct canonical-state writes occur outside the unit of "
+            "work."
+        ),
+        "HERMES-PROMOTION-037": (
+            "Any legacy migration reader must be standalone and "
+            "time-bounded, may recognize old Nous provider/account fields "
+            "only to warn, redact, or translate a user to an explicit BYOK "
+            "provider, must not be imported by normal startup, and cannot "
+            "refresh a token or contact a Portal."
+        ),
+        "HERMES-PROMOTION-038": (
+            "Legacy `$HERMES_HOME/auth.json` entries (`providers.nous`, "
+            "`credential_pool.nous`, `active_provider=\"nous\"`), shared "
+            "`nous_auth.json`, and model/recommendation caches remain "
+            "quarantined metadata. The reader reports “unsupported legacy "
+            "provider,” offers explicit secret deletion, requires a new "
+            "provider selection, and never silently moves an OAuth token "
+            "into Ranex."
+        ),
+        "HERMES-PROMOTION-040": (
+            "Preserve license, copyright, provenance, and required upstream "
+            "attribution. Rebranding does not authorize erasing legal "
+            "notices or Git history."
+        ),
+        "HERMES-PROMOTION-041": (
+            "Remove Hermes/Nous branding from all Ranex product surfaces "
+            "and, as separately checkable items, from package metadata; "
+            "remote endpoints; headers; telemetry tags; help text; "
+            "screenshots; generated assets; and defaults. Historical "
+            "research citations and legally required attribution are "
+            "exceptions."
+        ),
+        "HERMES-PROMOTION-044": (
+            "`/topup` and `/subscription` commands, billing and subscription "
+            "RPCs, checkout, card, and auto-reload schemas, and Portal proxy "
+            "routes are unregistered."
+        ),
+        "HERMES-PROMOTION-045": (
+            "Runtime packages exclude `x-nous-credits-*`, `billing:manage`, "
+            "`providers.nous`, Portal OAuth scopes, managed tool-pool "
+            "entitlement, and `product=hermes-agent` request tags."
+        ),
+        "HERMES-PROMOTION-050": (
+            "A configured tool without direct credentials becomes "
+            "unavailable and never attempts a Nous managed gateway or "
+            "checks a commercial subscription."
+        ),
+        "HERMES-PROMOTION-051": (
+            "An auxiliary or model fallback never selects Nous when the "
+            "configured provider is missing or fails; missing configuration "
+            "fails closed."
+        ),
+        "HERMES-PROMOTION-053": (
+            "Fuzzed `x-nous-*` headers cannot create state, notices, prompt "
+            "content, tier selection, or tool gating."
+        ),
+        "HERMES-PROMOTION-054": (
+            "Built wheel, npm bundle, and container scans find no dedicated "
+            "commercial file, generated billing bundle, provider plugin, or "
+            "`@nous-research/ui` package."
+        ),
+        "HERMES-PROMOTION-057": (
+            "No product-facing package name, CLI command, config root, "
+            "header, telemetry tag, help screen, screenshot, generated "
+            "asset, or default presents Hermes/Nous branding outside an "
+            "explicit migration warning or legally required attribution."
+        ),
+        "HERMES-PROMOTION-001": (
+            "Ranex defines its core domain as governed deterministic "
+            "execution rather than the agent loop."
+        ),
+        "HERMES-PROMOTION-002": (
+            "A new dependency-clean kernel is built beside Hermes."
+        ),
+        "HERMES-PROMOTION-003": (
+            "Workflow semantics and the execution reducer are first-class "
+            "kernel responsibilities."
+        ),
+        "HERMES-PROMOTION-004": (
+            "Hermes is contained as a replaceable worker and evolves into a "
+            "typed action-proposal driver."
+        ),
+        "HERMES-PROMOTION-006": (
+            "Policy enforcement, evidence and gate semantics, permit "
+            "authority, module governance, and atomic event/outbox state "
+            "remain kernel-owned."
+        ),
+        "HERMES-PROMOTION-007": (
+            "Required capabilities ship as qualified first-party modules "
+            "in one product release."
+        ),
+        "HERMES-PROMOTION-008": (
+            "Legacy Hermes plugins execute only behind a constrained "
+            "compatibility boundary."
+        ),
+        "HERMES-PROMOTION-009": (
+            "Ranex starts with a small SQLite-backed tracer and retains a "
+            "workflow-runtime port."
+        ),
+        "HERMES-PROMOTION-013": (
+            "A bounded context imports another context only through its "
+            "public API."
+        ),
+        "HERMES-PROMOTION-014": (
+            "First-party modules may depend on application/kernel public "
+            "APIs, but the kernel cannot depend on modules."
+        ),
+        "HERMES-PROMOTION-015": (
+            "Domain and application code do not import adapters; the "
+            "composition root alone constructs them."
+        ),
+        "HERMES-PROMOTION-016": (
+            "The module dependency graph is acyclic and equals a checked-in "
+            "manifest."
+        ),
+        "HERMES-PROMOTION-017": (
+            "Importing any module is side-effect free."
+        ),
+        "HERMES-PROMOTION-019": (
+            "No external effect occurs without a capability grant and "
+            "recorded activity identity."
+        ),
+        "HERMES-PROMOTION-020": (
+            "The module catalog cannot override a permit issuer or policy "
+            "enforcement point."
+        ),
+        "HERMES-PROMOTION-021": (
+            "A disabled, incompatible, unqualified, or quarantined module "
+            "cannot register, migrate, receive traffic, or perform an "
+            "effect."
+        ),
+        "HERMES-PROMOTION-022": (
+            "Only the execution kernel chooses a legal next canonical state."
+        ),
+        "HERMES-PROMOTION-023": (
+            "Only nonreplaceable application control authorizes and "
+            "dispatches capabilities and effects using domain authorization "
+            "decisions."
+        ),
+        "HERMES-PROMOTION-024": (
+            "Every target-mode effect is completely mediated and no special "
+            "agent-tool bypass exists."
+        ),
+        "HERMES-PROMOTION-025": (
+            "Policy or checker unavailability and error deny a blocking "
+            "action."
+        ),
+        "HERMES-PROMOTION-026": (
+            "A maker cannot approve its own subject."
+        ),
+        "HERMES-PROMOTION-027": (
+            "Evidence and approval bind the exact project, run, packet, "
+            "commits, workflow version, and policy activation."
+        ),
+        "HERMES-PROMOTION-028": (
+            "An approval or permit is single-use, scoped, expiring, and "
+            "invalidated by material change."
+        ),
+        "HERMES-PROMOTION-029": (
+            "Canonical state and version, audit or domain record, permit "
+            "consumption, and outbox intent commit atomically."
+        ),
+        "HERMES-PROMOTION-030": (
+            "Every retry uses the same logical idempotency identity."
+        ),
+        "HERMES-PROMOTION-031": (
+            "The reducer has no hidden nondeterministic dependency."
+        ),
+        "HERMES-PROMOTION-032": (
+            "Replay of the same definition, version, and history yields the "
+            "same state and commands."
+        ),
+        "HERMES-PROMOTION-033": (
+            "Historical decisions remain explainable and new effects use "
+            "fresh authority."
+        ),
+        "HERMES-PROMOTION-034": (
+            "Module code cannot write canonical state or grant itself "
+            "capability."
+        ),
+        "HERMES-PROMOTION-035": (
+            "External plugin failure cannot weaken a gate."
+        ),
+        "HERMES-PROMOTION-036": (
+            "A human waiver remains visible as a waiver and never becomes "
+            "machine PASS."
+        ),
+        "HERMES-PROMOTION-039": (
+            "Payment methods, subscriptions, balances, entitlements, and "
+            "billing authorization data are never copied into Ranex."
+        ),
+        "HERMES-PROMOTION-042": (
+            "A clean-host Ranex run makes no DNS or HTTP request to a Nous, "
+            "Portal, or Nous inference host."
+        ),
+        "HERMES-PROMOTION-043": (
+            "nous, nous-portal, and nousresearch do not resolve as a runtime "
+            "provider or model-catalog owner."
+        ),
+        "HERMES-PROMOTION-046": (
+            "A remote model catalog cannot introduce or activate a model "
+            "outside the release-pinned Ranex catalog and qualification "
+            "record."
+        ),
+        "HERMES-PROMOTION-047": (
+            "Sessions, canonical databases, exports, and backups contain no "
+            "payment method, subscription, commercial balance, Portal "
+            "entitlement, or Nous auth token."
+        ),
+        "HERMES-PROMOTION-048": (
+            "The wheel, container, and SBOM exclude dedicated billing UI, "
+            "purchase clients, Nous provider plugins, generated billing "
+            "bundles, and monetization-only dependencies."
+        ),
+        "HERMES-PROMOTION-049": (
+            "Static and runtime route-census tests find no hidden import, "
+            "command, hook, RPC, environment variable, URL, or feature flag "
+            "that can reactivate the commercial subsystem."
+        ),
+        "HERMES-PROMOTION-052": (
+            "Legacy auth and config loading remains quarantined and cannot "
+            "load a token, refresh credentials, log in, mint a key, or send "
+            "network traffic."
+        ),
+        "HERMES-PROMOTION-055": (
+            "Provider-neutral token, cost, and budget telemetry continues "
+            "to work after commercial deletion."
+        ),
+        "HERMES-PROMOTION-056": (
+            "License and attribution verification passes."
+        ),
+        "HERMES-PROMOTION-058": (
+            "The clean kernel contains a shared-identity facility that "
+            "provides shared identity and a canonical-serialization "
+            "facility that provides canonical serialization."
+        ),
+        "HERMES-PROMOTION-059": (
+            "The clean kernel contains an Execution aggregate, and every "
+            "Execution state transition is computed by its pure reducer."
+        ),
+        "HERMES-PROMOTION-060": (
+            "The clean kernel persists canonical execution state and its "
+            "associated version in relational storage."
+        ),
+        "HERMES-PROMOTION-061": (
+            "The clean kernel contains an append-only transition and audit "
+            "journal and an outbox, and persists them with canonical "
+            "execution state and version through one SQLite unit of work."
+        ),
+        "HERMES-PROMOTION-062": (
+            "The clean kernel permits event sourcing only for the Execution "
+            "aggregate and only if its replay and migration tests justify "
+            "that choice; every other module remains outside that "
+            "event-sourcing scope."
+        ),
+        "HERMES-PROMOTION-063": (
+            "The clean kernel contains an application-control "
+            "policy-enforcement point that is fail-closed, uses pure domain "
+            "decisions, and invokes a simple deterministic policy adapter."
+        ),
+        "HERMES-PROMOTION-064": (
+            "Architecture import tests are part of the clean-kernel contract "
+            "and must be present and passing before feature code is admitted."
+        ),
+        "HERMES-PROMOTION-065": (
+            "The clean-kernel gate advances only when reducer replay tests "
+            "and crash-boundary tests pass and the tested kernel has no "
+            "Hermes import."
+        ),
+    }
+    promoted_by_id = {
+        row["provision_id"]: row
+        for row in catalog["promoted_provisions"]
+    }
+    require(
+        set(promoted_by_id) == set(fidelity_pinned_provisions),
+        "HERMES_RESEARCH_PROMOTION_FIDELITY_COVERAGE",
+        "",
+    )
+    for provision_id, provision in fidelity_pinned_provisions.items():
+        require(
+            promoted_by_id[provision_id]["provision"] == provision,
+            "HERMES_RESEARCH_PROMOTION_FIDELITY",
+            provision_id,
+        )
+
+    fidelity_pinned_owner_decisions = {
+        "HERMES-OWNER-DECISION-001": (
+            "Canonical Ranex workflow and event schema and upcaster policy."
+        ),
+        "HERMES-OWNER-DECISION-002": (
+            "Whether the local runner passes the required crash and recovery "
+            "tests or a mature durable runtime is justified."
+        ),
+        "HERMES-OWNER-DECISION-003": (
+            "Exact transaction ownership across execution, evidence, permit, "
+            "and work projections."
+        ),
+        "HERMES-OWNER-DECISION-004": (
+            "Atlas supported-language coverage and the conditions that "
+            "produce UNKNOWN."
+        ),
+        "HERMES-OWNER-DECISION-005": (
+            "Dynamic parallelism, map or fan-out, and compensation semantics."
+        ),
+        "HERMES-OWNER-DECISION-006": (
+            "Whether and how hot module activation is allowed while "
+            "executions are running."
+        ),
+        "HERMES-OWNER-DECISION-007": (
+            "State migration and rollback for active module versions."
+        ),
+        "HERMES-OWNER-DECISION-008": (
+            "Secure external-extension protocol and capability vocabulary."
+        ),
+        "HERMES-OWNER-DECISION-009": (
+            "Policy authoring language, including typed Python or JSON rules "
+            "versus OPA or Cedar."
+        ),
+        "HERMES-OWNER-DECISION-010": (
+            "Reviewer independence and calibrated model-judge thresholds."
+        ),
+        "HERMES-OWNER-DECISION-011": (
+            "Host isolation profile and acceptable performance."
+        ),
+        "HERMES-OWNER-DECISION-012": (
+            "How much inherited Hermes session and search behavior Ranex "
+            "retains."
+        ),
+        "HERMES-OWNER-DECISION-013": (
+            "Whether Kanban is a projection of canonical state or selected "
+            "tables are adapted behind work management."
+        ),
+        "HERMES-OWNER-DECISION-014": (
+            "Whether a future release qualifies an independently hosted "
+            "open-weight model originally published by Nous through a "
+            "provider-neutral catalog."
+        ),
+        "HERMES-OWNER-DECISION-015": (
+            "Whether an unrelated third-party payment-system tool belongs in "
+            "Ranex product scope and risk policy."
+        ),
+        "HERMES-OWNER-DECISION-016": (
+            "Whether voice becomes an explicit requirement and therefore "
+            "permits a separately qualified TTS or STT delivery adapter."
+        ),
+        "HERMES-OWNER-DECISION-017": (
+            "Whether Electron and desktop bootstrap applications remain "
+            "after selection of the local web or TUI product path."
+        ),
+        "HERMES-OWNER-DECISION-018": (
+            "Whether an existing-user transition requires a time-bounded "
+            "hermes CLI migration shim."
+        ),
+        "HERMES-OWNER-DECISION-019": (
+            "Whether execution, gate, permit, and effect intent are "
+            "submodules of one strong-consistency Governed Execution context "
+            "or independently persistent contexts."
+        ),
+        "HERMES-OWNER-DECISION-020": (
+            "Whether to activate event sourcing for the Execution aggregate "
+            "after its replay and migration tests justify that choice; the "
+            "decision cannot authorize event sourcing for any other module."
+        ),
+    }
+    owner_decisions_by_id = {
+        row["provision_id"]: row
+        for row in catalog["owner_decisions"]
+    }
+    require(
+        set(owner_decisions_by_id)
+        == set(fidelity_pinned_owner_decisions),
+        "HERMES_RESEARCH_OWNER_DECISION_FIDELITY_COVERAGE",
+        "",
+    )
+    for provision_id, decision_subject in (
+        fidelity_pinned_owner_decisions.items()
+    ):
+        require(
+            owner_decisions_by_id[provision_id]["decision_subject"]
+            == decision_subject,
+            "HERMES_RESEARCH_OWNER_DECISION_FIDELITY",
+            provision_id,
+        )
+
+    fidelity_pinned_research_only = {
+        "HERMES-RESEARCH-ONLY-001": (
+            "The pinned-source audit and scorecard are historical evidence "
+            "about Hermes 0.19.0, not Ranex runtime obligations."
+        ),
+        "HERMES-RESEARCH-ONLY-002": (
+            "The reusable-seam assessments guide characterization and "
+            "extraction, but each retained asset still needs exact-version "
+            "qualification."
+        ),
+        "HERMES-RESEARCH-ONLY-003": (
+            "The research explicitly labels the execution-state sketch "
+            "illustrative and not the canonical enum."
+        ),
+        "HERMES-RESEARCH-ONLY-004": (
+            "The suggested layout is a research map; ADR-0007 now owns the "
+            "exact canonical repository topology."
+        ),
+        "HERMES-RESEARCH-ONLY-005": (
+            "Exact upstream file deletion and salvage rows are "
+            "pinned-revision migration inputs; the promoted release gates "
+            "check outcomes without assuming those paths still exist."
+        ),
+        "HERMES-RESEARCH-ONLY-006": (
+            "The broad first-release profile list mixes accepted exclusions "
+            "with conditional product-scope candidates and cannot be "
+            "promoted as one blanket rule."
+        ),
+        "HERMES-RESEARCH-ONLY-007": (
+            "Archive and source-removal candidates depend on compatibility "
+            "windows and parity evidence that do not yet exist."
+        ),
+        "HERMES-RESEARCH-ONLY-008": (
+            "The Phase 0 and Phase 0A freeze, characterization, and "
+            "commercial-removal activities remain migration planning; the "
+            "owner explicitly removed Phase 1 lines 1899-1912 from this "
+            "disposition."
+        ),
+        "HERMES-RESEARCH-ONLY-009": (
+            "The validation inventory is a test-design source; exact "
+            "executable fixtures require an enacted runtime subject and are "
+            "not fabricated by the documentation validator."
+        ),
+        "HERMES-RESEARCH-ONLY-010": (
+            "Maturity labels and rejected foundations are advisory "
+            "assessment; the genuine choices are separately registered as "
+            "OWNER_DECISION_REQUIRED."
+        ),
+        "HERMES-RESEARCH-ONLY-011": (
+            "Limitations, HY3 execution facts, and reviewer-model maturity "
+            "are provenance and evidence, not deterministic Ranex authority."
+        ),
+        "HERMES-RESEARCH-ONLY-012": (
+            "Deferred capabilities and remove-from-core guidance do not "
+            "authorize source deletion or activation; later scope ADRs and "
+            "module contracts govern them."
+        ),
+        "HERMES-RESEARCH-ONLY-013": (
+            "Phases 2 through 6 remain implementation planning in this "
+            "revision; the owner decision promoting Phase 1 does not "
+            "silently promote their sequencing or exit schedules."
+        ),
+    }
+    research_only_by_id = {
+        row["provision_id"]: row
+        for row in catalog["research_only"]
+    }
+    require(
+        set(research_only_by_id)
+        == set(fidelity_pinned_research_only),
+        "HERMES_RESEARCH_ONLY_FIDELITY_COVERAGE",
+        "",
+    )
+    for provision_id, reason in fidelity_pinned_research_only.items():
+        require(
+            research_only_by_id[provision_id]["reason"] == reason,
+            "HERMES_RESEARCH_ONLY_FIDELITY",
+            provision_id,
+        )
+
     phase_one_specs = (
         (
             "HERMES-PROMOTION-058",
-            "SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION_DEFINE_KERNEL_RECORDS",
+            (
+                "CLEAN_KERNEL_PROVIDES_SHARED_IDENTITY_AND_CANONICAL_"
+                "SERIALIZATION"
+            ),
             1901,
             1901,
             "ARCHITECTURE_CONTRACT",
             "IMPLEMENTATION_START",
             (
-                "The clean kernel contains implemented shared-identity and "
-                "canonical-serialization contracts that supply shared "
-                "identities and canonical serialized representations for "
-                "kernel records."
+                "The clean kernel contains a shared-identity facility that "
+                "provides shared identity and a canonical-serialization "
+                "facility that provides canonical serialization."
             ),
         ),
         (
@@ -1278,9 +1778,9 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
             "RUNTIME_FITNESS",
             "GATE_ADVANCE",
             (
-                "The clean kernel contains an Execution aggregate whose "
-                "state evolution is computed by a pure reducer without "
-                "observable side effects."
+                "The clean kernel contains an Execution aggregate, and "
+                "every Execution state transition is computed by its pure "
+                "reducer."
             ),
         ),
         (
@@ -1752,7 +2252,7 @@ def hermes_research_promotion_registry_errors(
     catalog = expected["catalog"]
     expected_metadata = {
         "registry_id": "REG-HERMES-RESEARCH-PROMOTIONS-001",
-        "version": "1.1.0",
+        "version": "1.3.0",
         "status": "ACTIVE_DOCUMENTATION_CONTRACT",
         "generated_by": "scripts/architecture/generate_contracts.py",
         "catalog_id": catalog["catalog_id"],

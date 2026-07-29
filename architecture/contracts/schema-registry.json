@@ -204,7 +204,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:30896969385106af68c926064c27676b960a45c71eb593300f5f6d35cb0aaf61",
+      "digest": "sha256:1e4b3a1fe5e2be0507363ae1a94cca024c51c3f43e24a523940f243915ce4662",
       "draft": "2020-12",
       "path": "schemas/common/hermes-research-provision-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/common/hermes-research-provision-v1.schema.json",

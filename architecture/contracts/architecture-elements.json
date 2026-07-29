@@ -25843,9 +25843,9 @@
       "source": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md"
     },
     {
-      "definition_contract_digest": "sha256:0d2a6f82729bc50ac5695c48437c2adf946ecb5b0f8be3b1d4b1bab2586ae69a",
+      "definition_contract_digest": "sha256:247d47188ccdf3b643c9f1cfde8b13b37115a743d15be6877ccebc37cb3fe948",
       "definition_contract_ref": "architecture/contracts/accepted-adrs.json#entries/ADR-0013",
-      "definition_source_digest": "sha256:dfd749b42f8466b00356c2b60d1080d34bb7cb1b72ee7360c5a6b2c86337db74",
+      "definition_source_digest": "sha256:7fa5f5baa3b5c8d64b488aed52ae03f3e08651f067759ac2586db84d1076c301",
       "definition_source_path": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
       "definition_status": "DEFINED",
       "element_id": "ADR-0013",
