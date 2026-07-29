@@ -1123,7 +1123,11 @@ def parse_state_axis_catalog(text: str) -> dict[str, Any]:
             allowed_lifecycle_fields = (
                 required_common
                 | lifecycle_semantics
-                | {"outward_event_policy", "referencing_events"}
+                | {
+                    "nonterminal",
+                    "outward_event_policy",
+                    "referencing_events",
+                }
             )
             if (
                 not set(axis) <= allowed_lifecycle_fields
@@ -1131,6 +1135,17 @@ def parse_state_axis_catalog(text: str) -> dict[str, Any]:
             ):
                 raise ValueError(
                     f"Lifecycle {axis_id} has unknown or missing fields"
+                )
+            nonterminal = axis.get("nonterminal") is True
+            if (
+                (
+                    "nonterminal" in axis
+                    and axis["nonterminal"] is not True
+                )
+                or nonterminal == bool(terminal_values)
+            ):
+                raise ValueError(
+                    f"Invalid terminality declaration for {axis_id}"
                 )
             if (
                 not lifecycle_semantics <= set(axis)
@@ -1184,7 +1199,7 @@ def parse_state_axis_catalog(text: str) -> dict[str, Any]:
                 raise ValueError(
                     f"Unreachable lifecycle values {axis_id}:{missing}"
                 )
-            if terminal_values:
+            if not nonterminal:
                 can_reach_terminal = set(terminal_values)
                 while True:
                     expanded = can_reach_terminal | {
@@ -4629,6 +4644,8 @@ def parse_adr12_readiness_contract() -> dict[str, Any]:
         or registered_state_axes[0]["values"] != state_axis["values"]
         or registered_state_axes[0]["initial_values"]
         != [state_axis["initial_state"]]
+        or registered_state_axes[0]["terminal_values"] != []
+        or registered_state_axes[0].get("nonterminal") is not True
         or registered_state_axes[0]["transitions"]
         != state_axis["transitions"]
     ):
@@ -9176,6 +9193,45 @@ def build_state_event_fixture_suite(
     readiness_acceptance_fact["digest"] = digest_value(
         readiness_acceptance_fact
     )
+    declared_axis_negative_cases = [
+        {
+            "case_id": (
+                "DECLARED-AXIS-DENY-UNREGISTERED-READINESS"
+            ),
+            "mutation": (
+                "REMOVE_DECLARED_AXIS_FROM_STATE_REGISTRY"
+            ),
+            "axis_id": "READINESS-STATE-1.0",
+            "expected_error": "DECLARED_STATE_AXIS_UNREGISTERED",
+        },
+        {
+            "case_id": (
+                "DECLARED-AXIS-DENY-EMPTY-TERMINALS-"
+                "WITHOUT-NONTERMINAL"
+            ),
+            "mutation": "REMOVE_NONTERMINAL_DECLARATION",
+            "axis_id": "READINESS-STATE-1.0",
+            "expected_error": (
+                "STATE_SOURCE_TERMINALITY_DECLARATION"
+            ),
+        },
+        {
+            "case_id": (
+                "DECLARED-AXIS-DENY-NONTERMINAL-"
+                "UNREACHABLE-VALUE"
+            ),
+            "mutation": (
+                "REMOVE_INCOMING_TRANSITIONS_TO_VALUE"
+            ),
+            "axis_id": "READINESS-STATE-1.0",
+            "value": "PRODUCTION_READY",
+            "expected_error": "STATE_SOURCE_UNREACHABLE_VALUE",
+        },
+    ]
+    if len(declared_axis_negative_cases) != 3:
+        raise ValueError(
+            "Declared-axis seam negative-case denominator drift"
+        )
     return {
         "fixture_suite": "HERMES_STATE_EVENT_EXHAUSTIVE_V1",
         "source_catalog_id": catalog["catalog_id"],
@@ -9199,23 +9255,12 @@ def build_state_event_fixture_suite(
             "evidence_scope": "SYNTHETIC_CONTRACT_FIXTURE_ONLY",
             "live_evidence": False,
             "readiness_tier_declared": False,
+            "acceptance_case_count": 1,
+            "negative_case_count": 3,
             "transition_fact": copy.deepcopy(
                 readiness_acceptance_fact
             ),
-            "negative_cases": [
-                {
-                    "case_id": (
-                        "DECLARED-AXIS-DENY-UNREGISTERED-READINESS"
-                    ),
-                    "mutation": (
-                        "REMOVE_DECLARED_AXIS_FROM_STATE_REGISTRY"
-                    ),
-                    "axis_id": "READINESS-STATE-1.0",
-                    "expected_error": (
-                        "DECLARED_STATE_AXIS_UNREGISTERED"
-                    ),
-                }
-            ],
+            "negative_cases": declared_axis_negative_cases,
         },
     }
 

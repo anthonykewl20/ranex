@@ -3,7 +3,7 @@
   "catalog_id": "STATE-AXIS-CONTRACT-1.0",
   "catalog_schema_version": "state-axis-contract/v1",
   "classifier_axis_count": 13,
-  "digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+  "digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
   "entries": [
     {
       "axis_id": "WorkItemStatus",
@@ -1227,13 +1227,14 @@
       "backward_semantics": "Only listed evidence or prerequisite invalidation edges move a ready or production-evaluating state backward",
       "cancellation_semantics": "NOT_APPLICABLE:readiness is continuously revocable repository standing rather than a cancellable attempt",
       "contract_ref": "states.json#READINESS-STATE-1.0@1.0.0",
-      "digest": "sha256:6202f4639a6c4be92feef4a2b563785bee1e61c79548298459065212be5054cd",
+      "digest": "sha256:83424fd4f9b050e316cbe003712decd892b1e7ce79c8e2458757f4d76bf868ff",
       "emitted_fact": "TransitionEventV1(axis_id=READINESS-STATE-1.0)",
       "expiry_semantics": "Expired or invalidated bound evidence moves the affected ready state to its listed blocked state",
       "initial_values": [
         "NOT_ASSESSED"
       ],
       "integration_events": [],
+      "nonterminal": true,
       "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
       "owner_context": "process_assurance",
       "recovery_semantics": "Fresh exact-subject reassessment is required; no blocked or ready fact is edited or reused",
@@ -1242,7 +1243,7 @@
       "revocation_semantics": "Tier-specific evidence revocation blocks that tier; Tier 1 prerequisite revocation blocks both tiers",
       "runtime_validation_status": "NOT_ASSESSED",
       "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
-      "source_catalog_row_digest": "sha256:a91c6dc85278ecadb2c19e6d0a824c12dd9e9570f3808b3b11abbff17fe45464",
+      "source_catalog_row_digest": "sha256:8bffca6382523069ff14a047b7ebb1ee7411b2a37e4118af32b22556cad62bf1",
       "terminal_values": [],
       "transition_authority": "readiness resolver with authenticated human governor authority on READY edges",
       "transition_definition_status": "DEFINED",
@@ -3598,8 +3599,8 @@
     "result": "REJECT_NO_MUTATION_NO_TRANSITION_FACT_NO_OUTBOX_EVENT"
   },
   "runtime_validation_status": "NOT_ASSESSED",
-  "source_catalog_digest": "sha256:593a9516a2cca09511e3f4657e09416429be1ef7ff5c23abe7fa9dc55c23401d",
-  "source_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+  "source_catalog_digest": "sha256:86445b89f83ebcb9e69804b5a0af5c37c28cea91bde3404b417c0d3ebdac452c",
+  "source_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
   "source_path": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "transition_count": 376,

@@ -89,7 +89,7 @@
     "docs/architecture/SDLC_CONTROL_CATALOG.md#sdlc-can-001"
   ],
   "definition_status": "DEFINED",
-  "digest": "sha256:abcd5d0702f6e406c166d3deb4990a82e4ca69c474f9c27b4ad6bc7c1ce0bfe8",
+  "digest": "sha256:e1cbef76e6ea2f5711985e5dfd5946012f939da727aee6f437febfd570200866",
   "effectiveness": {
     "baseline_refs": [],
     "comparator_refs": [],
@@ -784,8 +784,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:028e82c057e88f1bf89f3e5e3f6041f4c58170bd0963799f0c82593743bb53af",
-  "subject_manifest_digest": "sha256:83ac19685c50b95d1837862fa62d015f2d2030d2f2e14474e72679030a89ac40",
+  "subject_digest": "sha256:ad8984288561261020ceb854ba431cd1afab4895e5217cfe056035d5da051941",
+  "subject_manifest_digest": "sha256:d825b06114752dc8371e12a3a8eeaed06785753183f1b0b4500e264422acee49",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": ""

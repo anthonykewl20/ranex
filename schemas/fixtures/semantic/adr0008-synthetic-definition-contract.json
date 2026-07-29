@@ -1183,12 +1183,12 @@
         "TDD-STATE-001",
         "TDD-TAXONOMY-001"
       ],
-      "digest": "sha256:bbb424fb990ee01d8871086a95202ae75069892e5de3a13a2cbe588d8e2f5cb0",
+      "digest": "sha256:99410a172f67d00e85698d0f3779555dcecfdef501961f921663858195ff107d",
       "evaluated_at": "2026-07-28T00:09:00Z",
       "evaluator_code_digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
       "evaluator_id": "TDD-GATE-EVALUATOR",
       "evaluator_version": "1.0.0",
-      "evidence_snapshot_digest": "sha256:035808af409af67841122d5576530250a65ca75d154f1df461a105d1b430121d",
+      "evidence_snapshot_digest": "sha256:7fc9f5b5edb8b25916f1e5fa288f190a6b2e49cc71ab8d98b25960a1f036e2a9",
       "evidence_snapshot_id": "SNAPSHOT-TDD-TRACER-001",
       "freshness_evaluation": [],
       "gate_definition_id": "TDD-CYCLE-GATE",
@@ -1217,7 +1217,7 @@
       ],
       "review_verdict_refs": [],
       "schema_version": "1",
-      "subject_digest": "sha256:98d8baf3fa715344c24d418c75a7edc8c6ee8a7e1d77e6a1175db2ae99f9e671",
+      "subject_digest": "sha256:bf9832a46422824a53e184b2ab702efd9499f610283a7698b77e000afa05cd74",
       "subject_manifest_digest": null,
       "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
       "subject_schema": "tdd-cycle-subject/v1"
@@ -1235,7 +1235,7 @@
       ],
       "created_at": "2026-07-28T00:08:30Z",
       "created_by_service_id": "ASSURANCE-SNAPSHOT-SERVICE",
-      "digest": "sha256:035808af409af67841122d5576530250a65ca75d154f1df461a105d1b430121d",
+      "digest": "sha256:7fc9f5b5edb8b25916f1e5fa288f190a6b2e49cc71ab8d98b25960a1f036e2a9",
       "eligible_evidence_refs": [
         "CHECKER-TDD-TRACER-001",
         "CHECKER-TDD-TRACER-002",
@@ -1257,8 +1257,8 @@
       ],
       "schema_version": "1",
       "snapshot_id": "SNAPSHOT-TDD-TRACER-001",
-      "subject_digest": "sha256:98d8baf3fa715344c24d418c75a7edc8c6ee8a7e1d77e6a1175db2ae99f9e671",
-      "subject_manifest_digest": "sha256:98d8baf3fa715344c24d418c75a7edc8c6ee8a7e1d77e6a1175db2ae99f9e671",
+      "subject_digest": "sha256:bf9832a46422824a53e184b2ab702efd9499f610283a7698b77e000afa05cd74",
+      "subject_manifest_digest": "sha256:bf9832a46422824a53e184b2ab702efd9499f610283a7698b77e000afa05cd74",
       "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
       "subject_schema": "tdd-cycle-subject/v1"
     }
@@ -1492,7 +1492,7 @@
       ],
       "coverage_manifest_digest": "sha256:d36733044fc3b4c066d805fa76ecc60ea9c101249f5fee8657be038fbeb2f705",
       "not_applicable_rule_ids": [],
-      "rule_registry_digest": "sha256:ea6b3988bb87e6194980126bdad8f51d81d0c6fb9e82b2e1a44c6f0cea78e300",
+      "rule_registry_digest": "sha256:ec74d87ccdc00c3ce30b5e9b8b4649d040568ab50069c5c86ec0d41083be9172",
       "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
       "rule_registry_version": "1.0.0"
     },
@@ -2979,7 +2979,7 @@
     "artifact_type": "landing_record",
     "candidate_commit": "4444444444444444444444444444444444444444",
     "core_sdlc_trace_ref": "TRACE-TDD-TRACER-001",
-    "digest": "sha256:6936a8587354537d0a7d09fdab70e397370147582cab0ca2d12e688ba091e0ee",
+    "digest": "sha256:d8a13d4298d87104acf80f9eedf4435736cb0ddabad9efd705fb5615c62631c2",
     "evidence_refs": [
       "GATE-TDD-TRACER-001"
     ],
@@ -2992,8 +2992,8 @@
     "schema_version": "1",
     "started_at": "2026-07-28T00:12:00Z",
     "status": "SUCCEEDED",
-    "subject_digest": "sha256:98d8baf3fa715344c24d418c75a7edc8c6ee8a7e1d77e6a1175db2ae99f9e671",
-    "subject_manifest_digest": "sha256:98d8baf3fa715344c24d418c75a7edc8c6ee8a7e1d77e6a1175db2ae99f9e671",
+    "subject_digest": "sha256:bf9832a46422824a53e184b2ab702efd9499f610283a7698b77e000afa05cd74",
+    "subject_manifest_digest": "sha256:bf9832a46422824a53e184b2ab702efd9499f610283a7698b77e000afa05cd74",
     "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
     "subject_schema": "tdd-cycle-subject/v1",
     "target_branch": "main",
@@ -3071,14 +3071,14 @@
         "not_applicable_rule_ids": [
           "TDD-TAXONOMY-001"
         ],
-        "rule_registry_digest": "sha256:ea6b3988bb87e6194980126bdad8f51d81d0c6fb9e82b2e1a44c6f0cea78e300",
+        "rule_registry_digest": "sha256:ec74d87ccdc00c3ce30b5e9b8b4649d040568ab50069c5c86ec0d41083be9172",
         "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
         "rule_registry_version": "1.0.0"
       },
       "architecture_rule_not_applicable_proofs": [
         {
           "proof_ref": {
-            "artifact_digest": "sha256:20b07f54b9a7ea4fa3a045a31bf299e7660aa10c39acdda5df3d0ad99cd9055a",
+            "artifact_digest": "sha256:57e783eced1cb72785b4417d2370a6ff532fdc4ce0482d310395d593f999b72a",
             "artifact_ref": "VERDICT-TDD-RULE-NA-001",
             "artifact_type": "review_verdict"
           },
@@ -3119,7 +3119,7 @@
         "run_id": "RUN-TDD-TRACER-001"
       },
       "evidence_snapshot_ref": null,
-      "exact_subject_digest": "sha256:e88af87f1c780b37d1e0fd3820653d43869560f3036ed858230712fe262f3ff4",
+      "exact_subject_digest": "sha256:0f7834064f9a2b91b80ed89113979820b46c16ea1766b72d0219d1490d506edb",
       "exact_subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
       "failure_denominator_manifest_digest": "sha256:9a44646c90413ad8fcfa097f704745a4870ae684adfb1ea4178ecbd22a30a6f5",
       "gated_at": null,
@@ -3425,7 +3425,7 @@
         "not_applicable_rule_ids": [
           "TDD-TAXONOMY-001"
         ],
-        "rule_registry_digest": "sha256:ea6b3988bb87e6194980126bdad8f51d81d0c6fb9e82b2e1a44c6f0cea78e300",
+        "rule_registry_digest": "sha256:ec74d87ccdc00c3ce30b5e9b8b4649d040568ab50069c5c86ec0d41083be9172",
         "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
         "rule_registry_version": "1.0.0"
       },
@@ -3687,7 +3687,7 @@
       "VERDICT-TDD-RULE-NA-001": {
         "artifact_type": "review_verdict",
         "core_sdlc_trace_ref": "TRACE-TDD-TRACER-NA-001",
-        "digest": "sha256:20b07f54b9a7ea4fa3a045a31bf299e7660aa10c39acdda5df3d0ad99cd9055a",
+        "digest": "sha256:57e783eced1cb72785b4417d2370a6ff532fdc4ce0482d310395d593f999b72a",
         "evidence_refs": [
           "TDD-TAXONOMY-001"
         ],
@@ -3701,7 +3701,7 @@
         "resolved_finding_refs": [],
         "review_request_id": "REVIEW-TDD-RULE-NA-001",
         "schema_version": "1",
-        "subject_digest": "sha256:e88af87f1c780b37d1e0fd3820653d43869560f3036ed858230712fe262f3ff4",
+        "subject_digest": "sha256:0f7834064f9a2b91b80ed89113979820b46c16ea1766b72d0219d1490d506edb",
         "subject_manifest_digest": null,
         "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
         "subject_schema": "tdd-cycle-subject/v1",
@@ -4569,7 +4569,7 @@
         ],
         "coverage_manifest_digest": "sha256:d36733044fc3b4c066d805fa76ecc60ea9c101249f5fee8657be038fbeb2f705",
         "not_applicable_rule_ids": [],
-        "rule_registry_digest": "sha256:ea6b3988bb87e6194980126bdad8f51d81d0c6fb9e82b2e1a44c6f0cea78e300",
+        "rule_registry_digest": "sha256:ec74d87ccdc00c3ce30b5e9b8b4649d040568ab50069c5c86ec0d41083be9172",
         "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
         "rule_registry_version": "1.0.0"
       },
@@ -4985,7 +4985,7 @@
           ],
           "coverage_manifest_digest": "sha256:d36733044fc3b4c066d805fa76ecc60ea9c101249f5fee8657be038fbeb2f705",
           "not_applicable_rule_ids": [],
-          "rule_registry_digest": "sha256:ea6b3988bb87e6194980126bdad8f51d81d0c6fb9e82b2e1a44c6f0cea78e300",
+          "rule_registry_digest": "sha256:ec74d87ccdc00c3ce30b5e9b8b4649d040568ab50069c5c86ec0d41083be9172",
           "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
           "rule_registry_version": "1.0.0"
         },
@@ -5008,7 +5008,7 @@
         },
         "change_profile": "BEHAVIOR_CHANGE",
         "cycle_gate_evaluation_ref": {
-          "artifact_digest": "sha256:bbb424fb990ee01d8871086a95202ae75069892e5de3a13a2cbe588d8e2f5cb0",
+          "artifact_digest": "sha256:99410a172f67d00e85698d0f3779555dcecfdef501961f921663858195ff107d",
           "artifact_ref": "GATE-TDD-TRACER-001",
           "artifact_type": "gate_evaluation"
         },
@@ -5028,11 +5028,11 @@
           "run_id": "RUN-TDD-TRACER-001"
         },
         "evidence_snapshot_ref": {
-          "artifact_digest": "sha256:035808af409af67841122d5576530250a65ca75d154f1df461a105d1b430121d",
+          "artifact_digest": "sha256:7fc9f5b5edb8b25916f1e5fa288f190a6b2e49cc71ab8d98b25960a1f036e2a9",
           "artifact_ref": "SNAPSHOT-TDD-TRACER-001",
           "artifact_type": "evidence_snapshot"
         },
-        "exact_subject_digest": "sha256:98d8baf3fa715344c24d418c75a7edc8c6ee8a7e1d77e6a1175db2ae99f9e671",
+        "exact_subject_digest": "sha256:bf9832a46422824a53e184b2ab702efd9499f610283a7698b77e000afa05cd74",
         "exact_subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
         "failure_denominator_manifest_digest": "sha256:9a44646c90413ad8fcfa097f704745a4870ae684adfb1ea4178ecbd22a30a6f5",
         "gated_at": "2026-07-28T00:10:00Z",

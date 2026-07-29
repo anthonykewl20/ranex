@@ -3119,6 +3119,95 @@ def hermes_event_state_binding_catalog(
     return catalog
 
 
+def validate_state_source_lifecycle_topology(
+    axis: dict[str, Any],
+) -> int:
+    """Validate one source lifecycle's explicit terminality and graph."""
+
+    axis_id = axis["axis_id"]
+    values = axis["values"]
+    initial_values = axis["initial_values"]
+    terminal_values = axis["terminal_values"]
+    nonterminal = axis.get("nonterminal") is True
+    require(
+        (
+            "nonterminal" not in axis
+            and bool(terminal_values)
+        )
+        or (
+            axis.get("nonterminal") is True
+            and not terminal_values
+        ),
+        "STATE_SOURCE_TERMINALITY_DECLARATION",
+        axis_id,
+    )
+
+    transition_pattern = re.compile(
+        r"^([A-Z][A-Z0-9_]*)>([A-Z][A-Z0-9_]*)@"
+        r"([A-Z][A-Z0-9_]*)$"
+    )
+    pairs: set[tuple[str, str]] = set()
+    edges: list[tuple[str, str]] = []
+    for transition in axis["transitions"]:
+        match = (
+            transition_pattern.fullmatch(transition)
+            if isinstance(transition, str)
+            else None
+        )
+        require(
+            match is not None,
+            "STATE_SOURCE_TRANSITION_GRAMMAR",
+            f"{axis_id}:{transition}",
+        )
+        source, target, guard_id = match.groups()
+        pair = (source, target)
+        require(
+            source in values
+            and target in values
+            and source not in terminal_values
+            and pair not in pairs
+            and bool(guard_id),
+            "STATE_SOURCE_TRANSITION_INVALID",
+            f"{axis_id}:{transition}",
+        )
+        pairs.add(pair)
+        edges.append(pair)
+
+    reachable = set(initial_values)
+    while True:
+        expanded = reachable | {
+            target
+            for source, target in edges
+            if source in reachable
+        }
+        if expanded == reachable:
+            break
+        reachable = expanded
+    require(
+        reachable == set(values),
+        "STATE_SOURCE_UNREACHABLE_VALUE",
+        axis_id,
+    )
+
+    if not nonterminal:
+        terminal_reachable = set(terminal_values)
+        while True:
+            expanded = terminal_reachable | {
+                source
+                for source, target in edges
+                if target in terminal_reachable
+            }
+            if expanded == terminal_reachable:
+                break
+            terminal_reachable = expanded
+        require(
+            terminal_reachable == set(values),
+            "STATE_SOURCE_TERMINAL_PATH",
+            axis_id,
+        )
+    return len(edges)
+
+
 def hermes_state_axis_catalog() -> dict[str, Any]:
     """Independently parse and validate the normative §16.1 catalog."""
 
@@ -3221,10 +3310,6 @@ def hermes_state_axis_catalog() -> dict[str, Any]:
     classifier_count = 0
     value_count = 0
     transition_count = 0
-    transition_pattern = re.compile(
-        r"^([A-Z][A-Z0-9_]*)>([A-Z][A-Z0-9_]*)@"
-        r"([A-Z][A-Z0-9_]*)$"
-    )
     for axis in axes:
         axis_id = axis["axis_id"]
         require(
@@ -3311,7 +3396,11 @@ def hermes_state_axis_catalog() -> dict[str, Any]:
                 and set(axis)
                 <= common_fields
                 | lifecycle_fields
-                | {"outward_event_policy", "referencing_events"}
+                | {
+                    "nonterminal",
+                    "outward_event_policy",
+                    "referencing_events",
+                }
                 and initial_values
                 and axis["transitions"]
                 and axis["transition_authority"] != "NONE"
@@ -3320,60 +3409,9 @@ def hermes_state_axis_catalog() -> dict[str, Any]:
                 "STATE_SOURCE_LIFECYCLE_CONTRACT",
                 axis_id,
             )
-            pairs: set[tuple[str, str]] = set()
-            edges: list[tuple[str, str]] = []
-            for transition in axis["transitions"]:
-                match = transition_pattern.fullmatch(transition)
-                require(
-                    match is not None,
-                    "STATE_SOURCE_TRANSITION_GRAMMAR",
-                    f"{axis_id}:{transition}",
-                )
-                source, target, guard_id = match.groups()
-                pair = (source, target)
-                require(
-                    source in values
-                    and target in values
-                    and source not in terminal_values
-                    and pair not in pairs
-                    and bool(guard_id),
-                    "STATE_SOURCE_TRANSITION_INVALID",
-                    f"{axis_id}:{transition}",
-                )
-                pairs.add(pair)
-                edges.append(pair)
-            reachable = set(initial_values)
-            while True:
-                expanded = reachable | {
-                    target
-                    for source, target in edges
-                    if source in reachable
-                }
-                if expanded == reachable:
-                    break
-                reachable = expanded
-            require(
-                reachable == set(values),
-                "STATE_SOURCE_UNREACHABLE_VALUE",
-                axis_id,
+            transition_count += (
+                validate_state_source_lifecycle_topology(axis)
             )
-            if terminal_values:
-                terminal_reachable = set(terminal_values)
-                while True:
-                    expanded = terminal_reachable | {
-                        source
-                        for source, target in edges
-                        if target in terminal_reachable
-                    }
-                    if expanded == terminal_reachable:
-                        break
-                    terminal_reachable = expanded
-                require(
-                    terminal_reachable == set(values),
-                    "STATE_SOURCE_TERMINAL_PATH",
-                    axis_id,
-                )
-            transition_count += len(edges)
         value_count += len(values)
 
     require(
@@ -4767,6 +4805,8 @@ def validate_declared_state_axis_transition_seam(
         and readiness_registry_axis["owner_context"]
         == readiness["owner_context"]
         and readiness_registry_axis["values"] == readiness["values"]
+        and readiness_registry_axis["terminal_values"] == []
+        and readiness_registry_axis.get("nonterminal") is True
         and readiness_registry_axis["transitions"]
         == expected_transitions,
         "DECLARED_STATE_AXIS_REGISTRY_DRIFT",
@@ -5333,15 +5373,71 @@ def validate_state_transition_fixture_suite(
             positive_facts,
         )
     )
+    require(
+        checks["declared_state_axes_schema_valid"]
+        == state_registry["lifecycle_axis_count"],
+        "DECLARED_STATE_AXIS_SCHEMA_VALID_COUNT",
+        str(checks["declared_state_axes_schema_valid"]),
+    )
     seam_fixture = suite["declared_axis_transition_seam"]
+    expected_negative_cases = [
+        {
+            "case_id": (
+                "DECLARED-AXIS-DENY-UNREGISTERED-READINESS"
+            ),
+            "mutation": (
+                "REMOVE_DECLARED_AXIS_FROM_STATE_REGISTRY"
+            ),
+            "axis_id": "READINESS-STATE-1.0",
+            "expected_error": "DECLARED_STATE_AXIS_UNREGISTERED",
+        },
+        {
+            "case_id": (
+                "DECLARED-AXIS-DENY-EMPTY-TERMINALS-"
+                "WITHOUT-NONTERMINAL"
+            ),
+            "mutation": "REMOVE_NONTERMINAL_DECLARATION",
+            "axis_id": "READINESS-STATE-1.0",
+            "expected_error": (
+                "STATE_SOURCE_TERMINALITY_DECLARATION"
+            ),
+        },
+        {
+            "case_id": (
+                "DECLARED-AXIS-DENY-NONTERMINAL-"
+                "UNREACHABLE-VALUE"
+            ),
+            "mutation": (
+                "REMOVE_INCOMING_TRANSITIONS_TO_VALUE"
+            ),
+            "axis_id": "READINESS-STATE-1.0",
+            "value": "PRODUCTION_READY",
+            "expected_error": "STATE_SOURCE_UNREACHABLE_VALUE",
+        },
+    ]
     acceptance_fact = seam_fixture["transition_fact"]
     require(
-        seam_fixture["fixture_id"]
+        set(seam_fixture)
+        == {
+            "fixture_id",
+            "evidence_scope",
+            "live_evidence",
+            "readiness_tier_declared",
+            "acceptance_case_count",
+            "negative_case_count",
+            "transition_fact",
+            "negative_cases",
+        }
+        and seam_fixture["fixture_id"]
         == "FIXTURE-READINESS-TRANSITION-SCHEMA-SEAM-001"
         and seam_fixture["evidence_scope"]
         == "SYNTHETIC_CONTRACT_FIXTURE_ONLY"
         and seam_fixture["live_evidence"] is False
         and seam_fixture["readiness_tier_declared"] is False
+        and seam_fixture["acceptance_case_count"] == 1
+        and seam_fixture["negative_case_count"] == 3
+        and seam_fixture["negative_cases"]
+        == expected_negative_cases
         and acceptance_fact["axis_id"] == "READINESS-STATE-1.0"
         and acceptance_fact["from_state"] == "NOT_ASSESSED"
         and acceptance_fact["to_state"]
@@ -5365,28 +5461,54 @@ def validate_state_transition_fixture_suite(
         acceptance_fact,
         state_registry,
     )
+    checks["declared_state_axis_acceptance_cases"] += 1
+    source_axes = {
+        axis["axis_id"]: axis
+        for axis in hermes_state_axis_catalog()["axes"]
+    }
     for case in seam_fixture["negative_cases"]:
-        mutated_registry = copy.deepcopy(state_registry)
-        if (
-            case["mutation"]
-            == "REMOVE_DECLARED_AXIS_FROM_STATE_REGISTRY"
-        ):
-            mutated_registry["entries"] = [
-                axis
-                for axis in mutated_registry["entries"]
-                if axis["axis_id"] != case["axis_id"]
-            ]
-        else:
-            raise ContractFailure(
-                "DECLARED_STATE_AXIS_FIXTURE_MUTATION_UNKNOWN:"
-                + case["mutation"]
-            )
         try:
-            validate_declared_state_axis_transition_seam(
-                mutated_registry,
-                transition_schema,
-                positive_facts,
-            )
+            mutation = case["mutation"]
+            if (
+                mutation
+                == "REMOVE_DECLARED_AXIS_FROM_STATE_REGISTRY"
+            ):
+                mutated_registry = copy.deepcopy(state_registry)
+                mutated_registry["entries"] = [
+                    axis
+                    for axis in mutated_registry["entries"]
+                    if axis["axis_id"] != case["axis_id"]
+                ]
+                validate_declared_state_axis_transition_seam(
+                    mutated_registry,
+                    transition_schema,
+                    positive_facts,
+                )
+            else:
+                mutated_axis = copy.deepcopy(
+                    source_axes[case["axis_id"]]
+                )
+                if mutation == "REMOVE_NONTERMINAL_DECLARATION":
+                    del mutated_axis["nonterminal"]
+                elif (
+                    mutation
+                    == "REMOVE_INCOMING_TRANSITIONS_TO_VALUE"
+                ):
+                    mutated_axis["transitions"] = [
+                        transition
+                        for transition in mutated_axis["transitions"]
+                        if parse_state_edge_text(transition)[1]
+                        != case["value"]
+                    ]
+                else:
+                    raise ContractFailure(
+                        "DECLARED_STATE_AXIS_FIXTURE_"
+                        "MUTATION_UNKNOWN:"
+                        + mutation
+                    )
+                validate_state_source_lifecycle_topology(
+                    mutated_axis
+                )
         except ContractFailure as exc:
             require(
                 str(exc).startswith(case["expected_error"] + ":"),
@@ -5399,6 +5521,17 @@ def validate_state_transition_fixture_suite(
                 + case["case_id"]
             )
         checks["declared_state_axis_negative_cases"] += 1
+    require(
+        checks["declared_state_axis_acceptance_cases"]
+        == seam_fixture["acceptance_case_count"]
+        and checks["declared_state_axis_negative_cases"]
+        == seam_fixture["negative_case_count"],
+        "DECLARED_STATE_AXIS_FIXTURE_COUNTS",
+        (
+            f"{checks['declared_state_axis_acceptance_cases']}/"
+            f"{checks['declared_state_axis_negative_cases']}"
+        ),
+    )
 
     event_registry = load_json(CONTRACTS / "events.json")
     envelope_validator = jsonschema.Draft202012Validator(
@@ -9668,6 +9801,8 @@ def adr12_readiness_contract() -> dict[str, Any]:
         and registered_state_axes[0]["values"] == state_axis["values"]
         and registered_state_axes[0]["initial_values"]
         == [state_axis["initial_state"]]
+        and registered_state_axes[0]["terminal_values"] == []
+        and registered_state_axes[0].get("nonterminal") is True
         and registered_state_axes[0]["transitions"]
         == state_axis["transitions"],
         "ADR12_STATE_AXIS_RECONCILIATION",

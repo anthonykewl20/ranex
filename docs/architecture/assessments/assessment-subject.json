@@ -1,5 +1,5 @@
 {
-  "digest": "sha256:028e82c057e88f1bf89f3e5e3f6041f4c58170bd0963799f0c82593743bb53af",
+  "digest": "sha256:ad8984288561261020ceb854ba431cd1afab4895e5217cfe056035d5da051941",
   "subject": {
     "base_revision": "0000000000000000000000000000000000000000",
     "observed_at": "2026-07-28T00:00:00Z",
@@ -9,7 +9,7 @@
     "repository_uri_digest": "sha256:a1cd62f860db60c5776098d41610b27ce243b358fe374672911c4e537a95ecf9",
     "research_prompt_digest": "sha256:16f6d474b1985dc8e2be8f003bb156b5f52c3ad6d05e40c23f82d3d6556e0367",
     "scope_digest": "sha256:4a8bbc57831194d46bec0fe86121443b6fdfd2fb850c3cf9852b3a497f121550",
-    "source_manifest_digest": "sha256:83ac19685c50b95d1837862fa62d015f2d2030d2f2e14474e72679030a89ac40",
+    "source_manifest_digest": "sha256:d825b06114752dc8371e12a3a8eeaed06785753183f1b0b4500e264422acee49",
     "subject_schema": "research-subject/v1",
     "work_item_id": "work_019fa605-6800-78de-8e99-f867d9561a41"
   },

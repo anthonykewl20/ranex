@@ -25,7 +25,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:7842740b5d7f73b1c3fe92919223aadf2ac0efee4011371bccdd3c7c26969b5c",
+      "digest": "sha256:b6f8ab3f6ee434559ffd42e53ed4bb8e1e275674fa727305261c9c467bd4564f",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -129,7 +129,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `run_service`; `work_management`, `process_assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `work_item_id:Id<WorkItem>`, `initial_status:Enum<RunStatus>=PROPOSED`, `created_by_principal_id:Id<Principal>`, `workflow_request_ref:Ref<WorkflowRequest>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "INITIAL_STATE_FACT",
         "event_name": "RunCreated",
@@ -142,7 +142,7 @@
         ]
       },
       "state_binding_digest": "sha256:ca3eccc40e824021484d274c0e7264ba6b79fca34755037e6649e5c45b713ec0",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "accepted unique run request, work item not terminal"
     },
@@ -171,7 +171,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:bc7e48f3442e7b1696a74bb0928dfdd80af4f49b266e5d0de55de7db077d8d50",
+      "digest": "sha256:402b20bf28631b5de78479a860d54728cd185ca855c4be276d56a7288093820a",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -264,14 +264,14 @@
         "owner_producer_and_consumers": "`governed_execution` / `workflow_service`; `assurance`, `process_assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `workflow_definition_ref:Ref<WorkflowDefinition>`, `workflow_interpreter_version:String`, `workflow_policy_ref:Ref<PolicyActivation>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "WorkflowPinned",
         "referenced_axis_ids": []
       },
       "state_binding_digest": "sha256:960fb1b4c7bf2bca0008c5b8785d303aab17446a1ff718a421e5d3f7c185ed10",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "run `PROPOSED`, definition approved and compatible"
     },
@@ -300,7 +300,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:65171b4957abd77335b2b18ccb2cfd818763bf9501f430dc77e19ff4e0f3031c",
+      "digest": "sha256:bfd2a4a7a815f0ba1aecfdd0e12bd426b647ad119881491bc0e18285a822ad66",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -393,7 +393,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `packet_binding_service`; `agent_collaboration`, `assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `task_packet_ref:Ref<TaskPacket>`, `test_practice_profile_ref:Ref<TestPracticeProfile>`, `engineering_practice_profile_ref:Ref<EngineeringPracticeProfile>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "PacketBound",
@@ -402,7 +402,7 @@
         ]
       },
       "state_binding_digest": "sha256:845634900c532d06e46f4afe973249d5a3829b2748bc796ba43500fb874ce99f",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "workflow pinned, packet sealed for same work/subject"
     },
@@ -431,7 +431,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:9d43774dc9a57229859e0de8bb557053aa986282c09f41590ed9c1ef9f3430a9",
+      "digest": "sha256:5e25210bc101a2c270069dd2714d144fdf6e38c327482af615584e882bddbb38",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -524,7 +524,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `run_lifecycle_service`; `agent_collaboration`, `work_management`",
         "required_payload_fields": "`run_id:Id<Run>`, `from_status:Enum<RunStatus>`, `to_status:Enum<RunStatus>=READY`, `readiness_snapshot_ref:Ref<EvidenceSnapshot>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -540,7 +540,7 @@
         "event_name": "RunMarkedReady"
       },
       "state_binding_digest": "sha256:f065182e08b1ed22da18b4c50e3a4819485437ff79632ff46306a82f212c3ef5",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "workflow/packet/profiles bound, reservation and policy current"
     },
@@ -569,7 +569,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:2fa6e0acc7332912507fa4610c01bda50f6b17fef2ea2871ce701befd94139df",
+      "digest": "sha256:cc59b41d5997c3643ef05383cb199e96c1d25e5c064557827c8f9c8fe2897256",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -695,7 +695,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `workflow_service`; `agent_collaboration`, `policy`",
         "required_payload_fields": "`run_id:Id<Run>`, `activity_id:Id<Activity>`, `activity_type:String`, `workflow_node_id:String`, `argument_digest:Sha256`, `deadline_at:Utc`, `budget_snapshot_ref:Ref<ResourceReservation>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "INITIAL_STATE_FACT",
         "event_name": "ActivityRequested",
@@ -708,7 +708,7 @@
         ]
       },
       "state_binding_digest": "sha256:c282cf341bf1f7d67ed2a22fa7d3f29621bcde924bfd338bdddf194cd9c8eff9",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "active run reaches one enabled immutable workflow node"
     },
@@ -737,7 +737,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:8ef7bc9a10400e8b924dd04c7d02c4b587c2194d3247495168adf10584cf10eb",
+      "digest": "sha256:3b9210d24938e8c47791375c6c7a1364cd3ff006ccc912c44a96c12b892ae446",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -841,7 +841,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `authorization_service`; `policy`, `assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `activity_id:Id<Activity>`, `authorization_snapshot_ref:Ref<AuthorizationSnapshot>`, `decision:Enum<AuthorizationOutcome>`, `reason_codes:Set<String>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "AuthorizationEvaluated",
@@ -850,7 +850,7 @@
         ]
       },
       "state_binding_digest": "sha256:40aea6ff0ebe1df735371f3a060dd53b52f5a93d49333cd85efb1b9692f4db40",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "requested activity has current identity/policy/subject"
     },
@@ -879,7 +879,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:5e03a9f47198d7f3f31f8922738cfc69997edf650183f14c8da019923626d5a1",
+      "digest": "sha256:8fc5da70a5ff9dbf41325200948000afe34fbba73fbea056b7232ca9a1c65005",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -994,7 +994,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `dispatch_service`; `agent_collaboration`, `resource_governance`",
         "required_payload_fields": "`run_id:Id<Run>`, `activity_id:Id<Activity>`, `assignment_ref:Ref<AgentAssignment>`, `worker_attempt_id:Id<WorkerAttempt>`, `lease_ref:Ref<WorkerLease>`, `dispatch_attempt:UInt`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -1011,7 +1011,7 @@
         "event_name": "ActivityDispatched"
       },
       "state_binding_digest": "sha256:dc89b65082ab34ae61515639b0cb9bcc8d4e2dac607a0d926e2db13f3aeaf375",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "authorization allowed, assignment/lease/reservation current"
     },
@@ -1040,7 +1040,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:5ab45a37eae1d09f26845df98645cfd218dbce52bb37a4aeeb9bddd7c1088290",
+      "digest": "sha256:4a70e0c236a2261efafd403b3c4005f978997e2e183b827671c36e4770be5a5d",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -1155,7 +1155,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `activity_resolution_service`; `assurance`, `work_management`",
         "required_payload_fields": "`run_id:Id<Run>`, `activity_id:Id<Activity>`, `run_result_ref:Ref<RunResult>`, `resolution:Enum<ActivityStatus>` restricted by `ActivityResolution`, `required_effect_ids:Set<EffectId>[0..N]` (empty exactly for a declared pure zero-effect activity), `resolved_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -1188,7 +1188,7 @@
         "event_name": "ActivityResolved"
       },
       "state_binding_digest": "sha256:f7149274bf242d9b6db3d1120b1af72a25897e9b282a110e8b3a80d575c57226",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "typed result normalized and every required effect has the attempt disposition/reconciliation required by the selected activity edge"
     },
@@ -1216,7 +1216,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:8b84b95ee9687b3c3409237c6aa16037626d7e0987676e3e823bf57c69dda055",
+      "digest": "sha256:e99eb0ae2a32bd2f6829e8306a41f55703a9f87cd15cdc3a32f03b3e73389e80",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -1320,14 +1320,14 @@
         "owner_producer_and_consumers": "`governed_execution` / `evidence_binding_service`; `assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `gate_id:Id<Gate>`, `evidence_snapshot_ref:Ref<EvidenceSnapshot>`, `required_claim_ids:Set<ClaimId>`, `freshness_cutoff:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "EvidenceSnapshotBound",
         "referenced_axis_ids": []
       },
       "state_binding_digest": "sha256:e8b5c6b80ad3b45ee03f129701f1705861137162036791d5e1bfeb6a32ac0c8f",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "eligible fresh snapshot resolves to exact run subject"
     },
@@ -1356,7 +1356,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:d2a28fa457d1d8ba6276dec2ab96fb6f165486739b7c5ee0e09520c7ffcee89f",
+      "digest": "sha256:6b82e53539a4e10ba13c3785b313c95b35bc3a07a7895dc4e1cfe26e8bd992cf",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -1460,7 +1460,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `gate_binding_service`; `assurance`, `work_management`",
         "required_payload_fields": "`run_id:Id<Run>`, `gate_evaluation_ref:Ref<GateEvaluation>`, `gate_id:Id<Gate>`, `outcome:Enum<GateOutcome>`, `reason_codes:Set<String>[0..N]` (empty only for a qualified warning-free `PASS`; every other outcome has at least one reason)"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "GateEvaluated",
@@ -1469,7 +1469,7 @@
         ]
       },
       "state_binding_digest": "sha256:a2655807a6e2f9a1592f2d3b470c27f83c902007c65eb8bb33c45a7beff1ad56",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "qualified gate evaluation matches bound snapshot/subject"
     },
@@ -1498,7 +1498,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:cf4be6668686e50dc594b4a68388fc90afc07e48964c9e2e28089f62ed685a18",
+      "digest": "sha256:8e2e90662860a338a1daad4692cc08b2f1707fe4f0d8d6472f1ac24a12efd073",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -1602,7 +1602,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `decision_binding_service`; `policy`, `assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `decision_ref:Ref<HumanDecisionRecord>`, `decision_kind:Enum<HumanDecisionKind>`, `decision_status:Enum<HumanDecisionRecordStatus>=APPROVED`, `decision_snapshot_digest:Sha256`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "HumanDecisionSnapshotBound",
@@ -1612,7 +1612,7 @@
         ]
       },
       "state_binding_digest": "sha256:3650bacc205d719f198d90521231f1c7872e3894bb2d789e6b87c1abad051b17",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "policy requires human choice and authenticated decision is current/exact"
     },
@@ -1641,7 +1641,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:3a52b22b1e3f88c7c978743d0bf7af9775b515e9b6e9ba10dde96828a0d4e23b",
+      "digest": "sha256:e89cab480f344403d01af490f6c68cf9c8398c92c2d210e9f4252c8b61601726",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -1745,7 +1745,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `permit_service`; `policy`, `operations`",
         "required_payload_fields": "`run_id:Id<Run>`, `permit_ref:Ref<Permit>`, `authority_grant_ref:Ref<ConsumableAuthorityGrant>`, `action_type:String`, `expires_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "INITIAL_STATE_FACT",
         "event_name": "PermitIssued",
@@ -1763,7 +1763,7 @@
         ]
       },
       "state_binding_digest": "sha256:3b137bd06fbedd5f2e13a0420320f32ad7bc0ddae66d094bb60d0d91c8b1f42d",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "fresh gate pass and required decision produce eligible one-shot grant"
     },
@@ -1792,7 +1792,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:3da4786d8849525b1de4b8b7f6d5a780b1fc8180387a49e1cf31ac1182f80940",
+      "digest": "sha256:30e4adab4d39a72b853833ae71a4cb11440a86b3fcaa6b20ccb5cca4b21b167b",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -1896,7 +1896,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `permit_service`; `operations`, `process_assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `permit_id:Id<Permit>`, `consumed_for_effect_id:Id<Effect>`, `consumption_version:UInt`, `consumed_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -1912,7 +1912,7 @@
         "event_name": "PermitConsumed"
       },
       "state_binding_digest": "sha256:81cfbaa61549e12816bddbc7fd1c38939a29122061090677cf966aefad2d03d2",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "atomic compare-and-swap consumes unused current permit once"
     },
@@ -1941,7 +1941,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:8dae0ea2dbe57b88e880a2e0ba639498552b2be0015d24deb88d832cfcf663ed",
+      "digest": "sha256:8ae78c0bd2e5e9c88041c8b304bdc2c801d6f4e06e6fb85713179d17569871b9",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -2067,7 +2067,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `effect_service`; `operations`, `artifact_management`",
         "required_payload_fields": "`run_id:Id<Run>`, `activity_id:Id<Activity>`, `effect_id:Id<Effect>`, `permit_id:Id<Permit>`, `effect_type:String`, `destination_fact_ref:Ref<DestinationFact>`, `argument_digest:Sha256`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "INITIAL_STATE_FACT",
         "event_name": "EffectIntentRecorded",
@@ -2080,7 +2080,7 @@
         ]
       },
       "state_binding_digest": "sha256:5020dab820f8c38a3715faae8374f51a8dece2916af0633c5f258b670c5c3a3a",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "permit consumption and durable intent occur in one UoW"
     },
@@ -2108,7 +2108,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:9604f54d20af5de0132064492c6f65972ff63173d59b078e1c756753b6c9d3bf",
+      "digest": "sha256:6b59c3d2495ad45ae9ab3ff1d2d7f73ca8538ea03f3aa260a7448dc43787648c",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -2223,7 +2223,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `effect_dispatch_service`; `operations`",
         "required_payload_fields": "`effect_id:Id<Effect>`, `dispatch_attempt:UInt`, `adapter_id:String`, `adapter_version:String`, `provider_request_id:String`, `dispatched_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -2240,7 +2240,7 @@
         "event_name": "EffectDispatched"
       },
       "state_binding_digest": "sha256:addb6ee7f86e3c7755604498c07141fa9afb4bbf4966fccc2aecb020b2ef1eb4",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "committed intent leased, deadline/retry policy allows attempt"
     },
@@ -2269,7 +2269,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:ac92956e1135b4696d04c753bdca50fc9c3287c38baf6db6547cbb8dcae228c7",
+      "digest": "sha256:2a8cf941641a244c50aa9820721fb4f5092ed563444f3d166f507857d223092d",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -2373,7 +2373,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `effect_resolution_service`; `operations`, `assurance`",
         "required_payload_fields": "`effect_id:Id<Effect>`, `outcome:Enum<EffectStatus>` restricted by `EffectKnownOutcome`, `provider_receipt_ref:Ref<ProviderReceipt>`, `result_artifact_ref:Ref<Artifact>`, `resolved_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -2392,7 +2392,7 @@
         "event_name": "EffectResolved"
       },
       "state_binding_digest": "sha256:bd71f9965551c60c24cca50d51785e3416c79716b44c4afa160fb8681e69e143",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "typed provider result proves a known disposition for the completed attempt"
     },
@@ -2421,7 +2421,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:79bc9457418cc176853fb0806435dab5477e805174cff8bb30cb3cc4c8b219d8",
+      "digest": "sha256:bb3664d0f065478bfaeefe6a54e91c71edd32f526953966ca571bb9fbf4a36f2",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -2525,7 +2525,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `effect_resolution_service`; `operations`, `assurance`",
         "required_payload_fields": "`effect_id:Id<Effect>`, `dispatch_attempt:UInt`, `ambiguity_code:String`, `last_provider_receipt_ref:Ref<ProviderReceipt>?`, `reconciliation_policy_ref:Ref<ReconciliationPolicy>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -2541,7 +2541,7 @@
         "event_name": "EffectOutcomeMarkedUnknown"
       },
       "state_binding_digest": "sha256:e2ed0683bab6cea4ccd2471bc0b2319fb77b318e08fdbabb34be33bf0ce6369a",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "acknowledgement lost/ambiguous and outcome cannot yet be proved"
     },
@@ -2570,7 +2570,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:f38f0d404f124ab27e5b98dadfc413f0cb0ae3166a1edf564747c4672a13be5f",
+      "digest": "sha256:a62974fefbb5e9d0126d38e9126f94cd30b81318f5fab1ca79924b2d6ce02698",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -2674,7 +2674,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `reconciliation_service`; `operations`, `assurance`",
         "required_payload_fields": "`effect_id:Id<Effect>`, `reconciliation_ref:Ref<ReconciliationRecord>`, `prior_status:Enum<EffectStatus>=OUTCOME_UNKNOWN`, `proven_outcome:Enum<EffectStatus>` restricted by `EffectKnownOutcome`, `reconciled_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -2701,7 +2701,7 @@
         "event_name": "EffectReconciled"
       },
       "state_binding_digest": "sha256:607ab14ca1b15100585718aaafda4bbd91c6c9f432be243d4e716637417e6f56",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "qualified reconciler proves disposition of prior unknown outcome"
     },
@@ -2730,7 +2730,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:f07acf317afaf22e99bb829f0c076de3b95e1bf0f02b16866fd4ecfc00edfc22",
+      "digest": "sha256:a99cdeca8daa20a616e43cd9d256d343869aa6bd449dfabcfa63edc07131269c",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -2834,7 +2834,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `run_lifecycle_service`; `work_management`, `operations`",
         "required_payload_fields": "`run_id:Id<Run>`, `from_status:Enum<RunStatus>`, `block_reason_code:String`, `blocking_refs:Set<ArtifactRef>`, `blocked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -2852,7 +2852,7 @@
         "event_name": "RunBlocked"
       },
       "state_binding_digest": "sha256:fd53664ce6e9210cbd4b33780f0e6613f0966576b0f866da2aa06de7cb308a8a",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "blocking gate/policy/dependency/unknown prevents next transition"
     },
@@ -2881,7 +2881,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:5ce1e6ff6918ee7ef4e99dc8cda4be789c6ecfa0125d053f7a3370efd98b0a47",
+      "digest": "sha256:f884ea5b292244780c9bca74feda17646d0644dbeca7aa691d38125e66aef164",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -2985,7 +2985,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `run_lifecycle_service`; `work_management`, `operations`",
         "required_payload_fields": "`run_id:Id<Run>`, `from_status:Enum<RunStatus>=BLOCKED`, `to_status:Enum<RunStatus>`, `resolution_refs:Set<ArtifactRef>`, `unblocked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -3003,7 +3003,7 @@
         "event_name": "RunUnblocked"
       },
       "state_binding_digest": "sha256:af35a29b112ee1e62fe5de29ea97f6b6bf67ddc89dd00302e9d87897dec1f283",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "all named blockers resolved by fresh evidence/decision"
     },
@@ -3032,7 +3032,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:a254bf598fdfcf369c1354394bb23bdc99a694c96de704aa3172ee51c44a6993",
+      "digest": "sha256:eee7d212e6f6aac161265749b4d67dbbf62ae655ad7302ec3dd3e91570f4026f",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -3136,7 +3136,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `run_lifecycle_service`; `work_management`, `operations`",
         "required_payload_fields": "`run_id:Id<Run>`, `from_status:Enum<RunStatus>`, `cancellation_decision_ref:Ref<HumanDecisionRecord>`, `reason_code:String`, `compensation_refs:Set<ArtifactRef>[0..N]` (empty only when the workflow's exact compensation contract declares none applicable)"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -3156,7 +3156,7 @@
         "event_name": "RunCancelled"
       },
       "state_binding_digest": "sha256:8b71e69c5fa945f040f2afd979f48a475c2edd18a88acbd6892fe166365dc760",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "authenticated cancellation accepted from cancellable state"
     },
@@ -3186,7 +3186,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:1e67fd035f634775783f01445f744d2484338159bbaf0bcad07e4af11f5e71df",
+      "digest": "sha256:307f772faa82cfbdad42f6dda734edb723906f2ba6c2979dd4dab5eb177fcc28",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -3290,7 +3290,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `run_lifecycle_service`; `work_management`, `release_management`, `process_assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `from_status:Enum<RunStatus>`, `to_status:Enum<RunStatus>=SUCCEEDED`, `completion_evidence_snapshot_ref:Ref<EvidenceSnapshot>`, `completed_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -3306,7 +3306,7 @@
         "event_name": "RunSucceeded"
       },
       "state_binding_digest": "sha256:01fb7c3b7b97b01f99d10441ee32fa652d62920ffa8a22755c89bec709da2bd0",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "all required activities/effects/gates terminal successful, no blocker"
     },
@@ -3336,7 +3336,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:19c22e85f4eb4ffd176f557d2c23674f1bc6c1980ad86d25c876dbd60e0d801f",
+      "digest": "sha256:aecedf4faf375d158d62829759f19c1dce4333c02c5262a4d040dc30a1acaebb",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -3451,7 +3451,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `run_lifecycle_service`; `work_management`, `operations`, `process_assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `from_status:Enum<RunStatus>`, `to_status:Enum<RunStatus>=FAILED`, `failure_code:String`, `failure_evidence_refs:Set<ArtifactRef>`, `failed_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -3469,7 +3469,7 @@
         "event_name": "RunFailed"
       },
       "state_binding_digest": "sha256:ff4f87386e07e3e3e041e006711bbd91a48396472b5f8d566d8875f06a51e3bb",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "terminal classified failure under workflow policy"
     },
@@ -3498,7 +3498,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:6e72ef2a0fbce9e41fe08aa4c054ce2502f82316b4d54b31a8c84105f1dd11e0",
+      "digest": "sha256:319c56f6d63eb9fc5b57c8d2cfb7a281ba1b4f0e632c31ac4688e567d35f9542",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -3602,7 +3602,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `policy_guard_service`; `policy`, `work_management`",
         "required_payload_fields": "`run_id:Id<Run>`, `old_policy_ref:Ref<PolicyActivation>`, `new_policy_ref:Ref<PolicyActivation>`, `invalidation_reason_codes:Set<String>`, `reevaluation_required:Boolean`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "PolicyChangeBlockedRun",
@@ -3611,7 +3611,7 @@
         ]
       },
       "state_binding_digest": "sha256:1f9d870bcd82ccfeb3c167603b30814ba42d6cee9ec3d276ed6448b53d5fb9b0",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "newer mandatory policy invalidates pinned authorization/eligibility"
     },
@@ -3641,7 +3641,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:c0ec398082e1cfefc2c63b719f786f37920693d13f59c314f3e9174d1f0ec643",
+      "digest": "sha256:0981f01b867538a7f96215d29632d10bc56f00b753a4075b88b212cd58a217f0",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -3756,7 +3756,7 @@
         "owner_producer_and_consumers": "`governed_execution` / `source_divergence_service`; `configuration_management`, `work_management`, `assurance`",
         "required_payload_fields": "`run_id:Id<Run>`, `expected_subject_ref:ArtifactRef`, `expected_subject_digest:Sha256`, `observed_subject_ref:ArtifactRef`, `observed_subject_digest:Sha256`, `divergence_class:Enum<SourceDivergenceClass>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "SourceDivergenceDetected",
@@ -3765,7 +3765,7 @@
         ]
       },
       "state_binding_digest": "sha256:61ccc105f6f3b31ec8f27f8f7406ea4bca515770f1a492552e594bdf7d1dac19",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "observed source/subject differs from pinned exact digest"
     },
@@ -3794,7 +3794,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:5999fb113c7c048c1a59a403f4dc813aa073d5f80294a24c833694a7d3d1c00c",
+      "digest": "sha256:563645e1e13a43be29da9bada16987bee315485111a0730222c80afae7513ea5",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -3898,7 +3898,7 @@
         "owner_producer_and_consumers": "`work_management` / `work_intake_service`; `product_definition`, `process_assurance`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `intake_ref:Ref<WorkIntake>`, `initial_status:Enum<WorkItemStatus>=FUNNEL`, `owner_id:Id<PrincipalOrTeam>`, `scope_digest:Sha256`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "INITIAL_STATE_FACT",
         "event_name": "WorkItemCreated",
@@ -3911,7 +3911,7 @@
         ]
       },
       "state_binding_digest": "sha256:f9dc99521933ff41e85c8fba4a64811703ae5f9614a1a5f63bfcd24e28528a15",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "accepted nonduplicate intake with owner and initial scope"
     },
@@ -3940,7 +3940,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:458a1b734289fb2cc57f090f15135a4d5249587a4edc0b6df37845c88abf5520",
+      "digest": "sha256:3990a4ddb7e0edb0cb2b7af6cfa36703ca3aa92576084c6a1538b2399f9ff0d6",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -4044,7 +4044,7 @@
         "owner_producer_and_consumers": "`work_management` / `classification_service`; `product_definition`, `governed_execution`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `work_class:Enum<WorkClass>`, `capability_ids:Set<CapabilityId>`, `context_ids:Set<ContextId>`, `classification_decision_ref:Ref<HumanDecisionRecord>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "WorkItemClassified",
@@ -4053,7 +4053,7 @@
         ]
       },
       "state_binding_digest": "sha256:8cb48989112d070db4146cabfecbcc4b1b8d34144cedce8d688ccadd38e990c3",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "current item has complete classification inputs"
     },
@@ -4083,7 +4083,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:243e39044e7af84bb349a4a38d2e8294ed25b4970cc88fc7012b7ba2c263ec69",
+      "digest": "sha256:922c10b5f6b42b387cfe9611312c10b5b0b4c505bf0b92c704074d2eaf292f54",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -4187,7 +4187,7 @@
         "owner_producer_and_consumers": "`work_management` / `risk_binding_service`; `policy`, `governed_execution`, `assurance`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `risk_assessment_ref:Ref<RiskAssessment>`, `risk_lane:Enum<RiskLane>`, `required_gate_ids:Set<GateId>`, `required_review_roles:Set<RoleId>`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "RiskLaneBound",
@@ -4196,7 +4196,7 @@
         ]
       },
       "state_binding_digest": "sha256:ebc7d3417ebd49115707b4e635837684bd08c7c21218681e31da8749438c06e5",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "classification and risk assessment current"
     },
@@ -4225,7 +4225,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:128ffec5686dadc168860ca3e11c16b4c16606fee08ffe600ec57bd4222d524e",
+      "digest": "sha256:86550cb958fcc4394d486e37d4e390ba551d920251a003473fe8cfe9f5a73c53",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -4329,14 +4329,14 @@
         "owner_producer_and_consumers": "`work_management` / `traceability_service`; `product_definition`, `assurance`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `outcome_refs:Set<ArtifactRef>`, `requirement_refs:Set<ArtifactRef>`, `acceptance_criterion_refs:Set<ArtifactRef>`, `trace_manifest_digest:Sha256`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "OutcomeRequirementRefsBound",
         "referenced_axis_ids": []
       },
       "state_binding_digest": "sha256:5e071a39c4395350d0f1a2a5ff5fb0ee71ebd1a22c86867a84650a1f3950a6d7",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "owned outcomes/requirements/criteria resolve without conflict"
     },
@@ -4366,7 +4366,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:44bcac01198c1e6b0050b929bb1c5c0ef9d67a3db7609234a505ce15ace42df8",
+      "digest": "sha256:6349ec214709bfa559f64ca0d680e0a726a8094a1d0009c04976e4f66e2c9bc6",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -4481,7 +4481,7 @@
         "owner_producer_and_consumers": "`work_management` / `work_lifecycle_service`; `governed_execution`, `product_definition`, `process_assurance`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `from_status:Enum<WorkItemStatus>`, `to_status:Enum<WorkItemStatus>`, `transition_rule_id:String`, `gate_evaluation_ref:Ref<GateEvaluation>`, `decision_ref:Ref<HumanDecisionRecord>?`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -4514,7 +4514,7 @@
         "event_name": "WorkItemTransitioned"
       },
       "state_binding_digest": "sha256:57bda435aa86c853e243c1064fab66e5362d653eb212ef9903fea41aa2d1baf7",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "registered legal transition passes gate/decision/version checks"
     },
@@ -4543,7 +4543,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:ec8625783ce316d6db9542af3a58a3d1604ae7990489ddd8431c7b999dd65a08",
+      "digest": "sha256:c2d603f137e2cf198ba9201108a1083cbc0032ad7df162e2b35496d9a849bb21",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -4647,7 +4647,7 @@
         "owner_producer_and_consumers": "`work_management` / `work_lifecycle_service`; `governed_execution`, `product_definition`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `from_status:Enum<WorkItemStatus>`, `block_reason_code:String`, `blocking_refs:Set<ArtifactRef>`, `blocked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -4674,7 +4674,7 @@
         "event_name": "WorkItemBlocked"
       },
       "state_binding_digest": "sha256:f7490e9746f04f4db158f4fffef94b44e12c794fe86d5e08d0cb6a26aa167b75",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "named material blocker prevents legal progression"
     },
@@ -4703,7 +4703,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:53fd1629f381c357bf01e6702b910372915fa3349309a96a602d19c6de5d36db",
+      "digest": "sha256:e8093ab97b6e1c9896edb6ae46bce0d1fb1b7636da8fbf6a4f001569f97839ad",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -4807,7 +4807,7 @@
         "owner_producer_and_consumers": "`work_management` / `work_lifecycle_service`; `governed_execution`, `product_definition`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `from_status:Enum<WorkItemStatus>=BLOCKED`, `to_status:Enum<WorkItemStatus>`, `resolution_refs:Set<ArtifactRef>`, `unblocked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -4834,7 +4834,7 @@
         "event_name": "WorkItemUnblocked"
       },
       "state_binding_digest": "sha256:5fae91d6ad4ecbfbc464367999ad7ce3d25ded5d4d207d05c3f9499a575add10",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "every named blocker has fresh resolution"
     },
@@ -4863,7 +4863,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:e0cdfe2e65ee0eb4115664ef0e414ae27564a582d6f9a81be29a8aae92724973",
+      "digest": "sha256:7a62221fce7f91f04301b3c8ba5a6e451f34bc1e37db7c5d30932a617f739ea5",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -4967,7 +4967,7 @@
         "owner_producer_and_consumers": "`work_management` / `work_lifecycle_service`; `governed_execution`, `product_definition`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `from_status:Enum<WorkItemStatus>`, `decision_ref:Ref<HumanDecisionRecord>`, `active_run_disposition_refs:Set<ArtifactRef>[0..N]` (empty only when the exact pre-cancellation snapshot proves no active run), `cancelled_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -4992,7 +4992,7 @@
         "event_name": "WorkItemCancelled"
       },
       "state_binding_digest": "sha256:65a41c650ff94f52b16cb71242c541a7a2391dc6be4c83828b6ca37a0544c5a6",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "authenticated cancellation accepted; active runs dispositioned"
     },
@@ -5020,7 +5020,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:e9e32b29bea312ecb662f2ec894bf8d1d2d8cc6bfb9f2f456baeb3c3b8aa8470",
+      "digest": "sha256:5600e5917beb9ae329bb247bed9d2902e9d84da55791395ac1012e0268d86aee",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -5135,14 +5135,14 @@
         "owner_producer_and_consumers": "`work_management` / `run_request_service`; `governed_execution`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `run_request_id:Id<RunRequest>`, `requested_subject_ref:ArtifactRef`, `requested_subject_digest:Sha256`, `workflow_request_ref:Ref<WorkflowRequest>`, `requested_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "RunRequestedForWorkItem",
         "referenced_axis_ids": []
       },
       "state_binding_digest": "sha256:2d8181524fd8e644fc7928bca2f0ee0ac1850cf31747844251711c316bfc13e1",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "item ready, no conflicting active run, exact subject/profile bound"
     },
@@ -5171,7 +5171,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:17abb725244c76b3ff402e3fe2328e4fa82c330722b9023116e4b2ea10d3bec3",
+      "digest": "sha256:b2bf0edc740092d77917a3341edbedd0e8939e979580ba2ffa7a5b84971e3a1b",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -5275,7 +5275,7 @@
         "owner_producer_and_consumers": "`work_management` / `evidence_link_service`; `assurance`, `product_definition`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `run_id:Id<Run>`, `run_evidence_ref:Ref<EvidenceSnapshot>`, `relation:Enum<EvidenceRelation>`, `linked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "RunEvidenceLinked",
@@ -5284,7 +5284,7 @@
         ]
       },
       "state_binding_digest": "sha256:251e17734674548e8afe4059827b7bb27ae3228aa463e3bead1b01f07efcbf30",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "run evidence exact-subject relation and provenance validate"
     },
@@ -5313,7 +5313,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:c0eae0e2802508279afdcf1874b1802f748b546c6ab1acd8100de0fe79824abf",
+      "digest": "sha256:3bd1db269874210f78b481a0fa7975f83ddacd150b574527d22354f7e80f191a",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -5417,7 +5417,7 @@
         "owner_producer_and_consumers": "`work_management` / `evidence_link_service`; `release_management`, `product_definition`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `release_evidence_ref:Ref<ReleaseEvidence>`, `release_id:Id<Release>`, `relation:Enum<EvidenceRelation>`, `linked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "ReleaseEvidenceLinked",
@@ -5427,7 +5427,7 @@
         ]
       },
       "state_binding_digest": "sha256:1c0e361b688c79c3b94b824e8c1fbdebe0bedbf8423ea67ef3bcd9f38722bd2d",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "release evidence resolves to accepted candidate/work item"
     },
@@ -5456,7 +5456,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:72da3904615b4e84ca46e7f005475bf5c7ab210b10653ca636f345f6be600626",
+      "digest": "sha256:5f4d83d7415000f5809715220e60cf0cdb3234ab2d9a15876e68f7d758bda97b",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -5560,14 +5560,14 @@
         "owner_producer_and_consumers": "`work_management` / `evidence_link_service`; `operations`, `product_definition`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `operation_evidence_ref:Ref<OperationEvidence>`, `service_id:Id<Service>`, `observation_window_ref:Ref<ObservationWindow>`, `linked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "OperationalEvidenceLinked",
         "referenced_axis_ids": []
       },
       "state_binding_digest": "sha256:67ee70a233098f3ead3ca1daf92f089cc589aa35bea8d248a8b607227f75c095",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "operational evidence resolves to released subject/outcome window"
     },
@@ -5596,7 +5596,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:de7ea86197f4606c19b246fa0d978182ccdbe20f0bb8025722d011c29dd15110",
+      "digest": "sha256:6dcf0d32b7651efa6eabaaf4edd0340a939546f1e4b626a20416107bd104b5ba",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -5700,7 +5700,7 @@
         "owner_producer_and_consumers": "`work_management` / `outcome_link_service`; `product_definition`, `process_assurance`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `outcome_review_ref:Ref<OutcomeReview>`, `decision_ref:Ref<HumanDecisionRecord>`, `outcome:Enum<ProductOutcomeDecision>`, `linked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "OutcomeDecisionLinked",
@@ -5709,7 +5709,7 @@
         ]
       },
       "state_binding_digest": "sha256:bb48425bf3645eaae6c3702762bd0508d64d115c36e35154831f46df3ff4da68",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "authenticated outcome decision matches owned measure/subject"
     },
@@ -5738,7 +5738,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:187b25bad18a230693eaaf9cf50466f07150cb034a235700c39a12d2c7808c0a",
+      "digest": "sha256:bf86a3be1ea2b310d0596adff951c1042d9c2eeb2e9ae15f949609f1ddd7f631",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -5842,7 +5842,7 @@
         "owner_producer_and_consumers": "`work_management` / `work_link_service`; `product_definition`, `process_assurance`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `followup_work_item_id:Id<WorkItem>`, `relation:Enum<WorkRelation>`, `reason_ref:ArtifactRef`, `linked_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "REFERENCE_ONLY",
         "event_name": "FollowUpWorkLinked",
@@ -5851,7 +5851,7 @@
         ]
       },
       "state_binding_digest": "sha256:88ecb227e9a8b0c4869641912c0b959d225fb968506ba40521888dc2eb23c5b3",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "both items exist, relation legal/acyclic, scope explicit"
     },
@@ -5881,7 +5881,7 @@
         "retry_identity_policy": "REUSE_SAME_EVENT_ID_AND_BYTES",
         "state_event_outbox_atomicity": "REQUIRED"
       },
-      "digest": "sha256:11b3af87040edfca60a7638fdca586f475b79322c7fee698005624b87f09050e",
+      "digest": "sha256:ebcbd87b02f35924446d6d6c39e6ec0a9e4a3aa128cf54b57993cdc2fd3b5c20",
       "envelope_schema_digest": "sha256:fd95718c62f23dfa9d699d8692a939a35cac69176e88ed010765882624e6c5b3",
       "envelope_schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "envelope_schema_ref": "schemas/events/domain-event-envelope-v1.schema.json",
@@ -5996,7 +5996,7 @@
         "owner_producer_and_consumers": "`work_management` / `work_lifecycle_service`; `product_definition`, `process_assurance`, `release_management`",
         "required_payload_fields": "`work_item_id:Id<WorkItem>`, `from_status:Enum<WorkItemStatus>`, `to_status:Enum<WorkItemStatus>=CLOSED`, `closure_snapshot_ref:Ref<EvidenceSnapshot>`, `closure_decision_ref:Ref<HumanDecisionRecord>`, `closed_at:Utc`"
       },
-      "source_file_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
+      "source_file_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
       "state_binding": {
         "binding_kind": "EDGE_EVENT",
         "edge_bindings": [
@@ -6012,7 +6012,7 @@
         "event_name": "WorkItemClosed"
       },
       "state_binding_digest": "sha256:874751df1003dded1d0be99f556e407b75297a0799c71615845691f97b53f5cc",
-      "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+      "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
       "state_catalog_ref": "architecture/contracts/states.json",
       "trigger_and_preconditions": "required run/release/operation/outcome evidence linked, no blocker"
     }
@@ -6172,7 +6172,7 @@
   "schema_status": "DEFINED_CONTRACT",
   "state_binding_catalog_digest": "sha256:44ef74e74558252aae7ac3cb572ffb4fdce6f7fc0f5945032628fc5ab601e1e4",
   "state_binding_catalog_id": "EVENT-STATE-BINDING-1.0",
-  "state_catalog_digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
+  "state_catalog_digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
   "state_catalog_ref": "architecture/contracts/states.json",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"

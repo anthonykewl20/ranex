@@ -1614,7 +1614,9 @@ idempotency_and_replay:
 The catalog below is normative and machine-parseable. Each transition string
 uses exact grammar `FROM>TO@GUARD_ID`; absence is denial.
 `NOT_APPLICABLE:<reason>` is an exact non-applicability result, not a pass or a
-missing assessment.
+missing assessment. A lifecycle may use `terminal_values: []` only when the
+same row declares `nonterminal: true`; that declaration is invalid on a
+classifier or on a lifecycle with any terminal value.
 
 ```yaml
 schema_version: "state-axis-contract/v1"
@@ -1901,6 +1903,7 @@ axes:
     transition_authority: "readiness resolver with authenticated human governor authority on READY edges"
     initial_values: ["NOT_ASSESSED"]
     terminal_values: []
+    nonterminal: true
     emitted_fact: "TransitionEventV1(axis_id=READINESS-STATE-1.0)"
     integration_events: []
     outward_event_policy: "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS"

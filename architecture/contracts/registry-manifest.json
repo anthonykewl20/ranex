@@ -9,15 +9,15 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:e4afe50f2e8298110fb9573c422164b2b1e18e9494d75f5ce2a4a60f92422197",
+      "digest": "sha256:9d32ab859dfb95bd2697161d864ade898d06bc89b292195cbf4acd7a225851b1",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:1a1e4706bc709d1d40e7a297ad37861196559c755ad9b7c2f4c1daa49bc0288b",
+      "digest": "sha256:47ac40c0041e28d3972d75a26beaad9b58b504b83680becae9469de6588dbf58",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {
-      "digest": "sha256:3c772a3b62b9262869321262894c5a0a307be2d2e0036ad15b2b7339218f3ea9",
+      "digest": "sha256:0ef1470a7369e9d7ef3ac5d51a87fafc2f22f82db6a5495e4f990b7db09d3b03",
       "path": "architecture/contracts/architecture-rule-assessments.json"
     },
     {
@@ -65,7 +65,7 @@
       "path": "architecture/contracts/estimate-commitment-control.json"
     },
     {
-      "digest": "sha256:0c837a86df72fa92a02509c90d1fb5de76467454b7d575f194857e3bee05e9b3",
+      "digest": "sha256:bcae076ddb975d28aeb153b12eab192f3114cc8caee58462df8b73649ac6036e",
       "path": "architecture/contracts/events.json"
     },
     {
@@ -129,11 +129,11 @@
       "path": "architecture/contracts/runtime-adapters.json"
     },
     {
-      "digest": "sha256:b2fa1c3535ac5d652f82b015bd89f6d22107a1a5e267952f25c13fc437489974",
+      "digest": "sha256:8bf846164a1e930cfc57ae05cbe465dd4de8f3c1c42bf2c29e754eb34c2a8553",
       "path": "architecture/contracts/schema-registry.json"
     },
     {
-      "digest": "sha256:787e788f049ce52c13ec64c10d53bce4774037214454f0fc403c91cc42c697d3",
+      "digest": "sha256:807e8dd19000936fe00f6a38885248075ff147ff6e2007d2b833a54e6b4c87f5",
       "path": "architecture/contracts/states.json"
     },
     {

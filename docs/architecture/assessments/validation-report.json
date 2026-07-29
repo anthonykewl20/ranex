@@ -1,6 +1,6 @@
 {
   "architecture_practice_profile_digest": "sha256:f24995ddf5c5516fa685396e74f6c138068da1e6578764b0320e1f44c3e507a6",
-  "assessment_subject_digest": "sha256:028e82c057e88f1bf89f3e5e3f6041f4c58170bd0963799f0c82593743bb53af",
+  "assessment_subject_digest": "sha256:ad8984288561261020ceb854ba431cd1afab4895e5217cfe056035d5da051941",
   "checks": {
     "accepted_adr_elements": 12,
     "accepted_adr_negative_cases": 8,
@@ -57,7 +57,8 @@
     "coupling_measures": 6,
     "declared_context_dependency_edges": 67,
     "declared_state_axes_schema_valid": 31,
-    "declared_state_axis_negative_cases": 1,
+    "declared_state_axis_acceptance_cases": 1,
+    "declared_state_axis_negative_cases": 3,
     "domain_projections": 10,
     "element_parent_mutation_cases": 3,
     "estimate_commitment_projection_entries": 1,
@@ -202,13 +203,13 @@
   "concurrency_regression_path": "scripts/architecture/test_contract_concurrency.py",
   "contract_tree_lock_digest": "sha256:154840742565911607afe9837c2d6e1d26f9097453561bfaf3f8a0d94a7fed2f",
   "contract_tree_lock_path": "scripts/architecture/contract_tree_lock.py",
-  "generator_digest": "sha256:b71d65eb2c816ff39ebc4109d610140273d11c8f8c4d3d59d2780f453d00ece8",
+  "generator_digest": "sha256:62af192badf741c77ce8ed1f1fa611da7e62c0440d78ab8a05c592bd97ab5fd8",
   "generator_path": "scripts/architecture/generate_contracts.py",
   "production_test_construct_validation": "NOT_ASSESSED",
-  "registry_manifest_digest": "sha256:d9810e887b01869fc00fca2531880aafc99f7cd3bec36a28e019fbd0055723ba",
+  "registry_manifest_digest": "sha256:f551409a7db3e813c888d134232806766a542c0b389a16595850872981d4f2ff",
   "report_id": "RANEX-WAVE1-CONTRACT-VALIDATION-001",
   "runtime_validation": "NOT_ASSESSED",
-  "schema_registry_digest": "sha256:b2fa1c3535ac5d652f82b015bd89f6d22107a1a5e267952f25c13fc437489974",
+  "schema_registry_digest": "sha256:8bf846164a1e930cfc57ae05cbe465dd4de8f3c1c42bf2c29e754eb34c2a8553",
   "scope": "EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY",
   "source_topology_validation": "NOT_ASSESSED",
   "status": "PASS",
@@ -221,6 +222,6 @@
   },
   "test_layout_migration": "NOT_ASSESSED",
   "test_layout_validation": "NOT_ASSESSED",
-  "validator_digest": "sha256:d6713389a00985af5f694b4a44ef75c4a79cae77181ccc2dbb840c69c3fb8cd7",
+  "validator_digest": "sha256:c27eb560484a1e43a6248131be3919931635c3237b746c5af60126cd62eb9a37",
   "validator_path": "scripts/architecture/validate_contracts.py"
 }

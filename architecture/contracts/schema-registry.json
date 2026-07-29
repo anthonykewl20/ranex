@@ -1051,7 +1051,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:bb320c37c7e6643c8c9628ff37963618dc4397b467fa87c16aef023a89298e00",
+      "digest": "sha256:7f277226eb3b876b22107e76dfca4eabcca64cf0ac0b5cc74f7c453b2da845da",
       "draft": "2020-12",
       "path": "schemas/work/transition-event-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/work/transition-event-v1.schema.json",
