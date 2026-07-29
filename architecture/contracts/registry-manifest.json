@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "digest": "sha256:79bc187481b5015bdbd221912e910b373e7f6a277d09d6e33f42599457ea705e",
+      "digest": "sha256:e4071ecb057a1a4a997dc1f24b8f268c22256a5ce4b033e90b29b23a23b5bdc9",
       "path": "architecture/contracts/accepted-adrs.json"
     },
     {
@@ -9,19 +9,19 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:3d5f4ebf1f8ec9adbbc861ab2e712e58267f7aee8b388693aaf0254425ab659d",
+      "digest": "sha256:f31780cc7a27785dc332e0a6d4545fc80e113faa73a48e9d494ff5c30d2a552c",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:e8bd6805f9159d1772949a6b68b5e88cde78f513f409e1ddced81a758663bfd8",
+      "digest": "sha256:9c3ca93b5a65842943cc88a9658769e81bddd34f176d1306fc88802f51f5a1db",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {
-      "digest": "sha256:e0f408e57e905549324e854ba5abf68c9e8b296a7227bffd2b577c3910707091",
+      "digest": "sha256:13fbea3447696f6ed85be2ac76fcdff81a9c7f121fbf6e351b1b6175dcfd13a2",
       "path": "architecture/contracts/architecture-rule-assessments.json"
     },
     {
-      "digest": "sha256:97427f4b4142d0f279fdc04c0b6144f14fe68e7c966e882c443874a5e5d52da6",
+      "digest": "sha256:569b577284b50dc14380aa60b25ad9c0b4c8e5f708bc86ddc9da0e6b72d9f930",
       "path": "architecture/contracts/artifact-types.json"
     },
     {
@@ -37,31 +37,35 @@
       "path": "architecture/contracts/context-dependency-edges.json"
     },
     {
-      "digest": "sha256:64738439284bc5c0991c13f993a38ab8ac76e4235c8f50852a064cbdd9c5596e",
+      "digest": "sha256:9b94f1201d7dab4e13c044e88314f4576ec11263439956fd115c916f78a6907c",
       "path": "architecture/contracts/contexts.json"
     },
     {
-      "digest": "sha256:8f418b8d1991cb76355c413f0c51e9935868e9261435fede0a1b12aca4942320",
+      "digest": "sha256:731bfb25920d8a939423711c9e9ca404bd1b51e9e1b666443c1ebb5450fe5d3d",
       "path": "architecture/contracts/data-ownership.json"
     },
     {
-      "digest": "sha256:4880e6773aab9de46fc33594d838a1e54bd24b9880b9a758f3c3e811646ed72e",
+      "digest": "sha256:ae364239c16119a284172b442b35f5704502232e6496e8e59741fff591137490",
       "path": "architecture/contracts/decisions.json"
     },
     {
-      "digest": "sha256:5c5733ddebbb4b750a1cb61a08f63b47dd46b24900972e0c907b725969e7a2f4",
+      "digest": "sha256:5670280a5be17fe00d461a5a698c6bba507ba2e464e60973f5a4bed2d1a61cd6",
       "path": "architecture/contracts/effects.json"
     },
     {
-      "digest": "sha256:6f6b0cdcea9cecb2b4d3dbc1c9ec53cbc1eae717c84f0b4a087ceef623016cc4",
+      "digest": "sha256:b5f26ba55d3eeba416dbbddaff26a12019569299e543b105d8796f08730bf61a",
       "path": "architecture/contracts/engineering-practice-profiles.json"
     },
     {
-      "digest": "sha256:da41a73f556acca35ec3a6b3bd28d1e788bb4f1edc10a5eaf4e4370d94cbb43a",
+      "digest": "sha256:589e20455000b53183ef39b80df5568ddafb41eea3a079948c33c901cb140530",
       "path": "architecture/contracts/engineering-practices.json"
     },
     {
-      "digest": "sha256:76b82774fca031a295791fc0a211b9570285707f49101e3b6f6da9fcdbc147d1",
+      "digest": "sha256:fbb721a47ea9dc3ed3afd83ff3fd129c3b3d2cf99baeb429ceb98833c8f4de00",
+      "path": "architecture/contracts/estimate-commitment-control.json"
+    },
+    {
+      "digest": "sha256:4053afe2bb79da7e1dc7f4f55d539a6add71c03b1b267e8b6b462019ce021201",
       "path": "architecture/contracts/events.json"
     },
     {
@@ -69,8 +73,24 @@
       "path": "architecture/contracts/feedback-fitness.json"
     },
     {
+      "digest": "sha256:2194c549336f499fdf078caede95969a04939e26f6b13403e243920071e9f5e7",
+      "path": "architecture/contracts/generated-output-authority.json"
+    },
+    {
       "digest": "sha256:8ddf236f2f5dd42526389939a348b42717c53fb2f79e4880e47061a7d01a8b64",
       "path": "architecture/contracts/identities.json"
+    },
+    {
+      "digest": "sha256:de2e6d32835747a948a47431de84b8dede7e48120b41e5fed57fc8b5e748d51e",
+      "path": "architecture/contracts/legacy-test-direct-source-classifications.json"
+    },
+    {
+      "digest": "sha256:e3aba0f4631f84c2a9baba9bbacfe7c29115b781cf1f45dc12c37e6f70fef421",
+      "path": "architecture/contracts/legacy-test-layout-policy-v1.json"
+    },
+    {
+      "digest": "sha256:786ab204030d7ec79b5b5f834cc77434c86965b405a19454c04390b55b7c0a2e",
+      "path": "architecture/contracts/legacy-test-layout-policy-v2.json"
     },
     {
       "digest": "sha256:e3aba0f4631f84c2a9baba9bbacfe7c29115b781cf1f45dc12c37e6f70fef421",
@@ -78,10 +98,18 @@
     },
     {
       "digest": "sha256:9b94991b635995759dd8c8244f2d747701bc06c44d24de1e009bc137ad66b07b",
+      "path": "architecture/contracts/legacy-test-layout-records-v1.json"
+    },
+    {
+      "digest": "sha256:0f2201084a9738f088d3f66fc767a8c9209ca7b91b4d50cd26e53c48982a1496",
+      "path": "architecture/contracts/legacy-test-layout-records-v2.json"
+    },
+    {
+      "digest": "sha256:9b94991b635995759dd8c8244f2d747701bc06c44d24de1e009bc137ad66b07b",
       "path": "architecture/contracts/legacy-test-layout-records.json"
     },
     {
-      "digest": "sha256:ff742137c320606d2c60998baedbfab1e8784d30d5c77f91b7aeb3aaadf01aae",
+      "digest": "sha256:d9e535e774552956d538fc4aa80a53dfb9a72977803d84f5bd50267c71fb0daf",
       "path": "architecture/contracts/paths.json"
     },
     {
@@ -89,15 +117,23 @@
       "path": "architecture/contracts/priority-rules.json"
     },
     {
+      "digest": "sha256:afaad1b0b587c573799d831a21d8853101e844c137ede7c361fa0299dc3ed86e",
+      "path": "architecture/contracts/readiness-assessments.json"
+    },
+    {
+      "digest": "sha256:c07271fe6c4b315099cf0979188d9904342947c489365283bed087813a1491cf",
+      "path": "architecture/contracts/readiness-tiers.json"
+    },
+    {
       "digest": "sha256:cc2a2c81f1618317cf1f87dcdbd68d89cd885e48672e7fe92128b2be9f541f82",
       "path": "architecture/contracts/runtime-adapters.json"
     },
     {
-      "digest": "sha256:4db1adb330f2c9b1cc0abd78b4b0285dccef5cfef41bef80281a7c45ec1ccdc3",
+      "digest": "sha256:bf3eece7624de80e3dae2713b769922136e3e99fe49d8016ac408da414bbe53f",
       "path": "architecture/contracts/schema-registry.json"
     },
     {
-      "digest": "sha256:bb416d727f856429ce8a01685a55db34ea7ce77b45d5d601e2c6cd669aa84ea1",
+      "digest": "sha256:455a8c6e6cc59ad9eb2ea8822168006508f5a205823aed865082fc115a83de8d",
       "path": "architecture/contracts/states.json"
     },
     {
@@ -109,15 +145,19 @@
       "path": "architecture/contracts/tdd-exception-records.json"
     },
     {
+      "digest": "sha256:eec274d75250097e490405e9637712ddb1b287871c035d1a5df560a0514968dc",
+      "path": "architecture/contracts/test-behaviors.json"
+    },
+    {
       "digest": "sha256:c9ca9d4f5c6ee4617af2b4d289d41d9486b6d48984a7091d3dcd0b6dd5d9e5c5",
       "path": "architecture/contracts/test-deletion-records.json"
     },
     {
-      "digest": "sha256:4b25d4e2c2e09d78a373749a8a107b947d0b2836e601fd11bb61bf80f0c3c398",
+      "digest": "sha256:d92f286bf83f857b7414e93c2329d832b3ee199a8f3f2363302f27fb596c3bc1",
       "path": "architecture/contracts/test-practice-profiles.json"
     },
     {
-      "digest": "sha256:de683eb889c2e0c889c94b4b375d1611b995d375f39eb1f1ee3c92eb8675ace3",
+      "digest": "sha256:f8b7edc47a4c0537218b907b6aa3d399dc2b2a08f6cf0d6d080e5febb7e42430",
       "path": "architecture/contracts/test-practices.json"
     },
     {
@@ -125,11 +165,11 @@
       "path": "architecture/contracts/test-quarantine-records.json"
     },
     {
-      "digest": "sha256:bcd45350e29e4848a7f9c62de3cdcdf148a9b783bcc4ceef6135958a33e4cddd",
+      "digest": "sha256:59b1d257ee0fb0a3b64d4e70ff512bd78eb6832492d801a9db9fc2384dd5d55d",
       "path": "architecture/contracts/topology-rules.json"
     },
     {
-      "digest": "sha256:226331d24a21bf452c78e430363a7f29c2134f5dcd699290c09883b441aaaecb",
+      "digest": "sha256:4a8bbc57831194d46bec0fe86121443b6fdfd2fb850c3cf9852b3a497f121550",
       "path": "architecture/contracts/vital-profile.json"
     },
     {

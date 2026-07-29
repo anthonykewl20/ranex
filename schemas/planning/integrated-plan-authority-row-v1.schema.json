@@ -1,0 +1,174 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/integrated-plan-authority-row-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "acceptance_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "capacity_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "capacity_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "commitment_window_end": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "commitment_window_start": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "dependency_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "dependency_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "estimate_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "observed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "owner_assignment_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "owner_assignment_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "plan_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "plan_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "plan_version": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "record_type": {
+      "const": "INTEGRATED_PLAN_AUTHORITY"
+    },
+    "risk_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "risk_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "scope_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "scope_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "supersedes_plan_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "valid_until": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "plan_id",
+    "plan_version",
+    "work_item_id",
+    "plan_ref",
+    "scope_ref",
+    "scope_digest",
+    "estimate_ids",
+    "capacity_snapshot_ref",
+    "capacity_snapshot_digest",
+    "dependency_snapshot_ref",
+    "dependency_snapshot_digest",
+    "risk_snapshot_ref",
+    "risk_snapshot_digest",
+    "acceptance_snapshot_ref",
+    "acceptance_snapshot_digest",
+    "owner_assignment_ref",
+    "owner_assignment_digest",
+    "commitment_window_start",
+    "commitment_window_end",
+    "observed_at",
+    "valid_until",
+    "supersedes_plan_id",
+    "digest"
+  ],
+  "title": "IntegratedPlanAuthorityRowV1",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "plan_id identifies one immutable plan row and is nonreusable. Within a work item, a successor has a globally new plan_id, strictly increases plan_version and observed_at, and supersedes_plan_id names the immediate prior plan_id.",
+    "The one CURRENT plan for work_item_id declares the complete exact set of CURRENT admitted estimate IDs for that work item at the trusted instant. It cannot omit, add, duplicate, reorder, cross-bind, or delegate this set to a caller.",
+    "commitment_window_start and commitment_window_end are business authority fields: observed_at <= commitment_window_start < commitment_window_end <= valid_until. No resolver, fixture, default, or policy constant may substitute or clamp them.",
+    "Every paired scope, capacity, dependency, risk, acceptance, and owner ref/digest resolves one CURRENT same-work-item authority row."
+  ],
+  "x-ranex-source-authority-contract-id": "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0",
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "IntegratedPlanAuthorityRowV1"
+}

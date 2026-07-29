@@ -1,0 +1,129 @@
+{
+  "approved_at": "",
+  "artifact_type": "capability_domain_projection",
+  "assessment_authority": {
+    "approver_id": "UNASSIGNED_WAVE_2",
+    "independence_evidence_ref": "",
+    "projector_id": "scripts/architecture/generate_contracts.py"
+  },
+  "core_sdlc_trace_ref": "",
+  "correction_reason": "",
+  "created_at": "2026-07-28T00:00:00Z",
+  "decision_ref": "",
+  "definition_evidence_refs": [
+    "architecture/contracts/vital-profile.json"
+  ],
+  "definition_status": "DEFINED",
+  "derivation": {
+    "applicable_member_count": 0,
+    "arithmetic_aggregation_prohibited": true,
+    "begun_applicable_member_count": 0,
+    "bound_member_count": 2,
+    "derived_level": null,
+    "derived_result": "UNKNOWN",
+    "lowest_control_ids": [],
+    "not_applicable_member_count": 0,
+    "registered_member_count": 2,
+    "scored_applicable_member_count": 0
+  },
+  "digest": "sha256:1f53d39793416404762542d99bc9f0e10152858793d7094d7ca7c1a7e2820359",
+  "members": [
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-STAGE-001",
+      "assessment_digest": "sha256:613b407199d2ebb0fd4b7c5b2c79773280b2eca128b875fb8522fd611656f6c9",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-DIS-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:aa5ebd7d67d5452c4ffc20b060b98392ada5a09ae4ffa2aadc71fa1cea9f4711",
+      "control_id": "SDLC-DIS-001",
+      "domain_id": "CAP-DISCOVERY-DEFINITION",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    },
+    {
+      "applicability_result": "UNKNOWN",
+      "applicability_rule_id": "APP-STAGE-001",
+      "assessment_digest": "sha256:3685f5e4d654f0e7de220926ffeba317d2a34200d30530734c04730303716b37",
+      "assessment_ref": "docs/architecture/assessments/controls/SDLC-DEF-001.json",
+      "assessment_revision": 1,
+      "assessment_scope_digest": "sha256:12aa42d85f79a3fa7d699bb165975cccaf2db05baa8ed1c34bcbb5f47a898961",
+      "control_id": "SDLC-DEF-001",
+      "domain_id": "CAP-DISCOVERY-DEFINITION",
+      "level": null,
+      "priority_tier": null,
+      "rating_result": "NOT_ASSESSED"
+    }
+  ],
+  "policy_id": "POL-SDLC-001",
+  "policy_version": "1.4.0",
+  "prior_projection_ref": "",
+  "priority_projection": {
+    "arithmetic_aggregation_prohibited": true,
+    "decisive_control_ids": [],
+    "derived_tier": null,
+    "priority_rule_digest": "sha256:7ce8ccde49b5c9e0cab085ddbe56f0e382c224a2595d08924c5c575a447c5f88",
+    "priority_rule_id": "PRIORITY-SDLC-001",
+    "priority_rule_version": "1.0.0",
+    "result": "NOT_EVALUATED"
+  },
+  "projection_id": "capability_domain_projection_019fa605-6800-7e47-8229-70c8279fdd04",
+  "revision": 1,
+  "rubric_id": "SDLC-MEA-002",
+  "rubric_version": "3.0.0",
+  "schema_version": "1",
+  "scope": {
+    "domain_id": "CAP-DISCOVERY-DEFINITION",
+    "risk_lanes": [
+      "STANDARD",
+      "ENHANCED",
+      "CRITICAL",
+      "EMERGENCY"
+    ],
+    "scope_digest": "sha256:fc3d0db684991eb70676feb3d73ed4aabc94eb9d3b41ed5e2cdee06e41662378",
+    "service_ids": [
+      "RANEX_TARGET"
+    ],
+    "value_stream_ids": [
+      "ARCHITECTURE_CONTRACTING"
+    ],
+    "window_end": "2026-07-28T00:00:00Z",
+    "window_start": "2026-07-28T00:00:00Z",
+    "work_classes": [
+      "PRODUCT",
+      "DEFECT",
+      "RELIABILITY",
+      "SECURITY_PRIVACY",
+      "ARCHITECTURE_PLATFORM",
+      "COMPLIANCE_PROVENANCE",
+      "UPSTREAM_SYNC",
+      "MAINTENANCE",
+      "RETIREMENT",
+      "INCIDENT_RESPONSE"
+    ]
+  },
+  "status": "NOT_ASSESSED",
+  "subject_digest": "sha256:8a0b0e7b1654eeb43e75742f10af356c9cba6cd9bc27f31e6fc5c056d6246278",
+  "subject_manifest_digest": "sha256:84f8680f12ec6e5d9ababb7e10c1d0fd81a6896ce53c411b21be26c1bd4f502b",
+  "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
+  "subject_schema": "research-subject/v1",
+  "supersedes_ref": "",
+  "validation": {
+    "applicability_rating_consistency_result": "PASS",
+    "exact_tuple_set_result": "PASS",
+    "identical_scope_and_window_result": "PASS",
+    "immutable_binding_result": "PASS",
+    "no_duplicate_or_extra_member_result": "PASS",
+    "validation_evidence_refs": [
+      "scripts/architecture/validate_contracts.py"
+    ]
+  },
+  "vital_profile": {
+    "applicability_registry_digest": "sha256:70aa533eb87375970768ee6effc259aa26bf425c2277886d7a88e11c03619042",
+    "applicability_registry_id": "APPLICABILITY-SDLC-001",
+    "applicability_registry_version": "1.1.0",
+    "profile_digest": "sha256:4a8bbc57831194d46bec0fe86121443b6fdfd2fb850c3cf9852b3a497f121550",
+    "profile_id": "VITAL-SDLC-001",
+    "profile_version": "1.1.0"
+  }
+}

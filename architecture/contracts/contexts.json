@@ -11,7 +11,7 @@
         "governed_execution"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-WORKFLOW-AND-RUN-CONTROL"
     },
     {
@@ -24,7 +24,7 @@
         "policy"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-POLICY-AND-RISK"
     },
     {
@@ -38,7 +38,7 @@
         "identity_access"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-HUMAN-DECISIONS"
     },
     {
@@ -51,7 +51,7 @@
         "assurance"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-EVIDENCE-AND-CHECKS"
     },
     {
@@ -64,7 +64,7 @@
         "governed_execution"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-PERMITS-AND-EFFECTS"
     },
     {
@@ -77,7 +77,7 @@
         "module_governance"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-MODULES-AND-CAPABILITIES"
     },
     {
@@ -90,7 +90,7 @@
         "routing"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-ROUTES-PROVIDERS"
     },
     {
@@ -103,7 +103,7 @@
         "product_definition"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-PRODUCT-DISCOVERY-REQUIREMENTS-OUTCOMES"
     },
     {
@@ -116,7 +116,7 @@
         "work_management"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-CORE-SDLC-PROJECTS-WORK-TRACEABILITY"
     },
     {
@@ -129,7 +129,7 @@
         "service_management"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-SERVICES-SLOS-SUPPORT-LIFECYCLE"
     },
     {
@@ -142,7 +142,7 @@
         "configuration_management"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-CONFIGURATION-BASELINES-TRACEABILITY"
     },
     {
@@ -155,7 +155,7 @@
         "supplier_governance"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-SUPPLIERS-DEPENDENCIES"
     },
     {
@@ -168,7 +168,7 @@
         "resource_governance"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-RESOURCE-BUDGETS-USAGE"
     },
     {
@@ -181,7 +181,7 @@
         "interaction_history"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-CONVERSATION-SESSION-HISTORY"
     },
     {
@@ -194,7 +194,7 @@
         "process_assurance"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-PROCESS-ASSURANCE"
     },
     {
@@ -207,7 +207,7 @@
         "workspace"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-REPOSITORIES-WORKTREES"
     },
     {
@@ -221,7 +221,7 @@
         "context_compilation"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-INSTRUCTIONS-CONTEXT"
     },
     {
@@ -234,7 +234,7 @@
         "agent_collaboration"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-AGENT-COLLABORATION"
     },
     {
@@ -247,7 +247,7 @@
         "analytical_review"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-ANALYTICAL-REVIEW"
     },
     {
@@ -260,7 +260,7 @@
         "module_governance"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-TOOLS"
     },
     {
@@ -273,7 +273,7 @@
         "repository_intelligence"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-REPOSITORY-INTELLIGENCE"
     },
     {
@@ -286,7 +286,7 @@
         "knowledge"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-SKILLS-MEMORY-LEARNING"
     },
     {
@@ -299,7 +299,7 @@
         "scheduling"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-SCHEDULES-TRIGGERS"
     },
     {
@@ -312,7 +312,7 @@
         "delivery"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-CLI-TUI-WEB-PHONE-GITHUB"
     },
     {
@@ -325,7 +325,7 @@
         "identity_access"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-AUTHENTICATION-SECRETS"
     },
     {
@@ -338,7 +338,7 @@
         "artifact_management"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-ARTIFACTS"
     },
     {
@@ -352,7 +352,7 @@
         "effectiveness"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-EVALUATION-QUALIFICATION"
     },
     {
@@ -365,7 +365,7 @@
         "operations"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-OBSERVABILITY-OPERATIONS"
     },
     {
@@ -378,7 +378,7 @@
         "backup_restore"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-BACKUP-RESTORE"
     },
     {
@@ -391,7 +391,7 @@
         "release_management"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-INSTALL-UPDATE-RELEASE"
     },
     {
@@ -404,7 +404,7 @@
         "upstream_sync"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-UPSTREAM-SYNC"
     },
     {
@@ -417,7 +417,7 @@
         "migration"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-MIGRATIONS"
     },
     {
@@ -430,7 +430,7 @@
         "extension_host"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-EXTERNAL-EXTENSIONS"
     },
     {
@@ -444,7 +444,7 @@
         "compatibility"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-LEGACY-HERMES-COMPATIBILITY"
     },
     {
@@ -457,7 +457,7 @@
         "provenance_compliance"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-LEGAL-DE-COMMERCIALIZATION"
     },
     {
@@ -470,7 +470,7 @@
         "configuration_management"
       ],
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
       "zone_id": "ZONE-CONTRACT-SCHEMA-GENERATION"
     }
   ],
@@ -491,7 +491,7 @@
       "public_api_path": "src/ranex/governed_execution/api/",
       "public_boundary": "Commands, queries, integration events, immutable views",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -509,7 +509,7 @@
       "public_api_path": "src/ranex/policy/api/",
       "public_boundary": "Authorization request/decision, active-policy and human-decision snapshots",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -527,7 +527,7 @@
       "public_api_path": "src/ranex/assurance/api/",
       "public_boundary": "Evidence ingestion/query, checker result, snapshot and gate-evaluation APIs",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -545,7 +545,7 @@
       "public_api_path": "src/ranex/module_governance/api/",
       "public_boundary": "Module/grant/profile snapshots",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -563,7 +563,7 @@
       "public_api_path": "src/ranex/identity_access/api/",
       "public_boundary": "Principal/session/secret-handle and destination-fact APIs",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -581,7 +581,7 @@
       "public_api_path": "src/ranex/product_definition/api/",
       "public_boundary": "Discovery/user research, product decisions, work intake, outcome review",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -599,7 +599,7 @@
       "public_api_path": "src/ranex/work_management/api/",
       "public_boundary": "Core-SDLC transition API, GitHub intake, product/requirement links, governed-run/evidence integration",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -617,7 +617,7 @@
       "public_api_path": "src/ranex/service_management/api/",
       "public_boundary": "Operations evidence, release catalog, product capability lifecycle",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -635,7 +635,7 @@
       "public_api_path": "src/ranex/configuration_management/api/",
       "public_boundary": "Product requirements, source/build/test/docs, release manifests, assurance evidence",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -653,7 +653,7 @@
       "public_api_path": "src/ranex/supplier_governance/api/",
       "public_boundary": "Packages, toolchains, providers, APIs, extensions, hosted services, Hermes upstream",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -671,7 +671,7 @@
       "public_api_path": "src/ranex/resource_governance/api/",
       "public_boundary": "Policy, routing, scheduling, agent runs, operations; never commercial billing",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -689,7 +689,7 @@
       "public_api_path": "src/ranex/interaction_history/api/",
       "public_boundary": "Delivery channels, context compilation, legacy session import",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -707,7 +707,7 @@
       "public_api_path": "src/ranex/process_assurance/api/",
       "public_boundary": "Core SDLC, work records, metrics, training/qualification and measurement-harness evidence",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -725,7 +725,7 @@
       "public_api_path": "src/ranex/workspace/api/",
       "public_boundary": "Git adapter, sandbox mounts",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -743,7 +743,7 @@
       "public_api_path": "src/ranex/instruction_registry/api/",
       "public_boundary": "Policy and packet compilation",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -761,7 +761,7 @@
       "public_api_path": "src/ranex/context_compilation/api/",
       "public_boundary": "Deterministic and recorded stochastic retrieval",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -779,7 +779,7 @@
       "public_api_path": "src/ranex/analytical_review/api/",
       "public_boundary": "Native and tool-bearing review transports; publishes immutable review references to assurance",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -797,7 +797,7 @@
       "public_api_path": "src/ranex/routing/api/",
       "public_boundary": "Official runtime and provider adapters; no fallback chain",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -815,7 +815,7 @@
       "public_api_path": "src/ranex/qualification/api/",
       "public_boundary": "Frozen fixtures, canaries, holdouts",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -833,7 +833,7 @@
       "public_api_path": "src/ranex/effectiveness/api/",
       "public_boundary": "Evaluation runners and artifacts",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -851,7 +851,7 @@
       "public_api_path": "src/ranex/agent_collaboration/api/",
       "public_boundary": "Official leaf runtime adapters; workers cannot delegate or coordinate and the context never owns RunStatus, work state, gate, permit, effect, merge, or release",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -869,7 +869,7 @@
       "public_api_path": "src/ranex/repository_intelligence/api/",
       "public_boundary": "Atlas/tree-sitter or simpler index strategies",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -887,7 +887,7 @@
       "public_api_path": "src/ranex/knowledge/api/",
       "public_boundary": "Packet sources and explicitly scoped worker reads",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -905,7 +905,7 @@
       "public_api_path": "src/ranex/scheduling/api/",
       "public_boundary": "Cron, webhooks, external timers",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -923,7 +923,7 @@
       "public_api_path": "src/ranex/delivery/api/",
       "public_boundary": "CLI, TUI, web, phone, GitHub adapters",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -941,7 +941,7 @@
       "public_api_path": "src/ranex/artifact_management/api/",
       "public_boundary": "Filesystem/object-store adapters",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -959,7 +959,7 @@
       "public_api_path": "src/ranex/operations/api/",
       "public_boundary": "Telemetry, delivery, service objectives, external-system probes",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -977,7 +977,7 @@
       "public_api_path": "src/ranex/backup_restore/api/",
       "public_boundary": "SQLite, artifacts, configuration, remote stores",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -995,7 +995,7 @@
       "public_api_path": "src/ranex/release_management/api/",
       "public_boundary": "Installer and updater adapters",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -1013,7 +1013,7 @@
       "public_api_path": "src/ranex/upstream_sync/api/",
       "public_boundary": "Git worktrees and upstream remote",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -1031,7 +1031,7 @@
       "public_api_path": "src/ranex/migration/api/",
       "public_boundary": "Persistence and compatibility readers",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -1049,7 +1049,7 @@
       "public_api_path": "src/ranex/extension_host/api/",
       "public_boundary": "Out-of-process RPC/MCP-like bridge",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -1067,7 +1067,7 @@
       "public_api_path": "src/ranex/compatibility/api/",
       "public_boundary": "Frozen inherited Hermes subset; service_management owns the legacy-surface compatibility lifecycle",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     },
@@ -1085,7 +1085,7 @@
       "public_api_path": "src/ranex/provenance_compliance/api/",
       "public_boundary": "CI, release, upstream sync",
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "topology_exception_ids": [],
       "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
     }

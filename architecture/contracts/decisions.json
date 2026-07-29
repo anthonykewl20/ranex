@@ -30,7 +30,7 @@
         "FF-SDLC-001"
       ],
       "governing_adr": "ADR-0001",
-      "governing_adr_digest": "sha256:1d2ea7ddd155dcb29f80ee9006ac061c4f7a0c6075b8c003d61d817e7989a532",
+      "governing_adr_digest": "sha256:a1eec2c60576f0c5c6b7117555b6ec9abf949e983f129a402089a61affbe49b4",
       "governing_adr_source": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
       "name": "development-process",
       "owner": "human-owner",
@@ -49,7 +49,7 @@
         "FF-REF-001"
       ],
       "governing_adr": "ADR-0001",
-      "governing_adr_digest": "sha256:1d2ea7ddd155dcb29f80ee9006ac061c4f7a0c6075b8c003d61d817e7989a532",
+      "governing_adr_digest": "sha256:a1eec2c60576f0c5c6b7117555b6ec9abf949e983f129a402089a61affbe49b4",
       "governing_adr_source": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
       "name": "engineering-references",
       "owner": "human-owner",
@@ -306,7 +306,7 @@
         "FF-SAFE-001"
       ],
       "governing_adr": "ADR-0001",
-      "governing_adr_digest": "sha256:1d2ea7ddd155dcb29f80ee9006ac061c4f7a0c6075b8c003d61d817e7989a532",
+      "governing_adr_digest": "sha256:a1eec2c60576f0c5c6b7117555b6ec9abf949e983f129a402089a61affbe49b4",
       "governing_adr_source": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
       "name": "model-authority",
       "owner": "human-owner",
@@ -575,7 +575,7 @@
         "FF-LANDING-001"
       ],
       "governing_adr": "ADR-0001",
-      "governing_adr_digest": "sha256:1d2ea7ddd155dcb29f80ee9006ac061c4f7a0c6075b8c003d61d817e7989a532",
+      "governing_adr_digest": "sha256:a1eec2c60576f0c5c6b7117555b6ec9abf949e983f129a402089a61affbe49b4",
       "governing_adr_source": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
       "name": "merge",
       "owner": "release-owner",

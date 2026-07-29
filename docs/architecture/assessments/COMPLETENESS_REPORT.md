@@ -7,11 +7,11 @@ runtime, producer-enforcement, isolation, or production-readiness claim.
 
 | Denominator | Count |
 |---|---:|
-| Governed YAML artifact templates/schemas | 42 |
+| Governed YAML artifact templates/schemas | 46 |
 | Capability zones | 36 |
-| VITAL control tuples / assessments | 40 / 40 |
+| VITAL control tuples / assessments | 41 / 41 |
 | Capability domains / projections | 10 / 10 |
-| Architecture elements inventoried | 1003 |
+| Architecture elements inventoried | 1008 |
 | Fixed decisions / role profiles / runtime adapters | 29 / 3 / 2 |
 | Worker-runtime negative semantic cases | 22 |
 | ADR-0007 topology rules | 18 |
@@ -22,10 +22,10 @@ runtime, producer-enforcement, isolation, or production-readiness claim.
 | ADR-0010 rules / fitness obligations | 10 / 9 |
 | ADR-0010 inherited files / directory exceptions / active records | 2444 / 29 / 0 |
 | Coupling measures / feedback objectives | 6 / 4 |
-| Negative semantic fixtures | 31 |
-| Positive semantic fixtures | 2 |
+| Negative semantic fixtures | 35 |
+| Positive semantic fixtures | 7 |
 
-All 40 control records are `NOT_ASSESSED` with separately recorded
+All 41 control records are `NOT_ASSESSED` with separately recorded
 `definition_status: DEFINED`. All ten domain projections derive `UNKNOWN`
 because applicability and runtime evidence are unresolved. No numeric maturity
 score is fabricated.

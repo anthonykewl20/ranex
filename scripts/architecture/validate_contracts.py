@@ -29,6 +29,62 @@ CONTRACTS = ROOT / "architecture" / "contracts"
 SCHEMAS = ROOT / "schemas"
 ASSESSMENTS = ROOT / "docs" / "architecture" / "assessments"
 TEMPLATES = ROOT / "docs" / "architecture" / "templates"
+LEGAL_MANIFEST_PATH = "legal/licensing-manifest.json"
+LEGAL_MANIFEST = ROOT / LEGAL_MANIFEST_PATH
+LICENSING_POLICY_RANEX_ORIGINAL = (
+    "GENERATED_RANEX_ORIGINAL"
+)
+LICENSING_POLICY_CURATED_RESEARCH = (
+    "GENERATED_CURATED_RESEARCH_NOASSERTION"
+)
+CURATED_RESEARCH_GENERATED_OUTPUT_PATHS = frozenset(
+    {
+        "architecture/contracts/architecture-elements.json",
+        (
+            "architecture/contracts/"
+            "engineering-practice-profiles.json"
+        ),
+        "architecture/contracts/engineering-practices.json",
+    }
+)
+READINESS_FRESHNESS_BOUNDARY_SUBCASES = [
+    {
+        "subcase_id": (
+            "gate_expiry_equal_assessment_observation_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+    {
+        "subcase_id": (
+            "gate_expiry_before_assessment_observation_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+    {
+        "subcase_id": (
+            "gate_observation_after_assessment_observation_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+    {
+        "subcase_id": (
+            "gate_observation_equal_assessment_observation_accepts"
+        ),
+        "expected_outcome": "PASS",
+    },
+    {
+        "subcase_id": (
+            "assessment_expiry_equal_window_end_accepts"
+        ),
+        "expected_outcome": "PASS",
+    },
+    {
+        "subcase_id": (
+            "assessment_expiry_after_window_end_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+]
 ARCH_DOC = (
     ROOT
     / "docs"
@@ -45,7 +101,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "e2ac2b0af2994b757db24949a389f787604559a2be718b24d9dbe72c95b1dc0e"
+    "f24995ddf5c5516fa685396e74f6c138068da1e6578764b0320e1f44c3e507a6"
 )
 ARCHITECTURE_PRACTICE_PROFILE = (
     ROOT / "docs" / "research" / "ranex-architecture-practice-application-profile.json"
@@ -67,6 +123,19 @@ WORKER_RUNTIME_ADR = (
     / "decisions"
     / "ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md"
 )
+READINESS_ADR = (
+    ROOT
+    / "docs"
+    / "architecture"
+    / "decisions"
+    / "ADR-0012-separate-implementation-start-and-production-readiness.md"
+)
+ADR12_SOURCE_SHA256 = (
+    "36dff1e75aea123a2471134610cd5ee912c1389031b6e256710e375afdcd3a0d"
+)
+ADR12_MACHINE_BLOCK_SHA256 = (
+    "fb8909adb5f225a2cf935b525f7936cafe469c1461b135e8bdf27a0d47f50947"
+)
 TDD_ADR = (
     ROOT
     / "docs"
@@ -82,7 +151,7 @@ LEGACY_TEST_LAYOUT_ADR = (
     / "ADR-0010-bound-inherited-hermes-test-layout-migration.md"
 )
 ADR10_SOURCE_SHA256 = (
-    "58520336ce92b6255ce126bba590af63798d68690ac34034b4b3f1645bc0ed3e"
+    "45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb"
 )
 ADR10_MACHINE_BLOCK_SHA256 = (
     "de5ed30d02ffac788574b319ac9afcc4c1246212b0b015251ac055bd7ef17472"
@@ -210,6 +279,56 @@ EXPECTED_GENERATED_ARTIFACT_SCHEMAS: dict[str, dict[str, str]] = {
             "docs/architecture/decisions/"
             "ADR-0008-make-tdd-the-default-development-discipline.md"
             "#canonical-test-health-authorities"
+        ),
+    },
+    "readiness_subject": {
+        "schema_path": (
+            "schemas/assurance/readiness-subject-v1.schema.json"
+        ),
+        "canonical_producer": "process_assurance",
+        "owner_context": "process_assurance",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
+        ),
+    },
+    "readiness_subject_manifest": {
+        "schema_path": (
+            "schemas/assurance/"
+            "readiness-subject-manifest-v1.schema.json"
+        ),
+        "canonical_producer": "configuration_management",
+        "owner_context": "configuration_management",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
+        ),
+    },
+    "readiness_evidence_binding": {
+        "schema_path": (
+            "schemas/assurance/"
+            "readiness-evidence-binding-v1.schema.json"
+        ),
+        "canonical_producer": "assurance",
+        "owner_context": "assurance",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
+        ),
+    },
+    "readiness_assessment": {
+        "schema_path": (
+            "schemas/assurance/readiness-assessment-v1.schema.json"
+        ),
+        "canonical_producer": "process_assurance",
+        "owner_context": "process_assurance",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
         ),
     },
 }
@@ -6018,10 +6137,10 @@ def estimate_commitment_machine_contract() -> dict[str, Any]:
     contract = wrapper["estimate_commitment_control"]
     require(
         contract.get("control_id") == "SDLC-EST-001"
-        and contract.get("control_version") == "1.0.0"
+        and contract.get("control_version") == "1.1.0"
         and contract.get("contract_id")
-        == "ESTIMATE-COMMITMENT-SEPARATION-1.0"
-        and contract.get("contract_version") == "1.0.0"
+        == "ESTIMATE-COMMITMENT-SEPARATION-1.1"
+        and contract.get("contract_version") == "1.1.0"
         and contract.get("canonicalization") == "RFC8785"
         and contract.get("digest_algorithm") == "SHA-256"
         and contract.get("additional_properties") is False
@@ -6038,6 +6157,8 @@ def estimate_commitment_machine_contract() -> dict[str, Any]:
             for row in nested_rows
         }
         == {
+            "ContentAddressBindingV1": 2,
+            "EstimateSourceEnvelopeAttestationV1": 18,
             "EstimateEvidenceBindingV1": 2,
             "EstimateBindingV1": 4,
         }
@@ -6082,16 +6203,22 @@ def estimate_commitment_machine_contract() -> dict[str, Any]:
     resolver = contract["resolver_contract"]
     contract_projection = contract["contract_projection_contract"]
     fixture = contract["fixture_contract"]
-    positive = fixture["positive_case_requirements"]
-    negative = fixture["negative_case_requirements"]
+    positive_ids = fixture["positive_case_ids"]
+    negative_ids = [
+        case_id
+        for rows in fixture["negative_case_ids_by_boundary"].values()
+        for case_id in rows
+    ]
+    source_authority = contract["source_authority_contract"]
     require(
         resolver["resolver_id"]
-        == "ESTIMATE-COMMITMENT-RESOLVER-1.0"
+        == "ESTIMATE-COMMITMENT-RESOLVER-1.1"
         and len(resolver["required_sources"]) == 11
-        and len(resolver["evaluation_order"]) == 8
+        and len(resolver["evaluation_order"]) == 13
         and len(resolver["production_callers"]) == 2
         and resolver["optional_or_fixture_only_bypass"] is False
-        and positive["exact_positive_case_count"] == 3
+        and len(positive_ids) == len(set(positive_ids)) == 6
+        and fixture["exact_positive_case_count"] == 6
         and contract["contract_projection_ref"]
         == "architecture/contracts/estimate-commitment-control.json"
         and contract["contract_projection_id"]
@@ -6113,19 +6240,14 @@ def estimate_commitment_machine_contract() -> dict[str, Any]:
         and contract_projection["nullable_fields"] == []
         and contract_projection["array_cardinalities"]
         == {"entries": "exactly 1"}
-        and negative["exact_negative_case_count"] == 25
-        and sum(
-            value
-            for key, value in positive.items()
-            if key != "exact_positive_case_count"
-        )
-        == 3
-        and sum(
-            value
-            for key, value in negative.items()
-            if key != "exact_negative_case_count"
-        )
-        == 25,
+        and len(negative_ids) == len(set(negative_ids)) == 213
+        and fixture["exact_negative_case_count"] == 213
+        and source_authority["source_contract_id"]
+        == "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0"
+        and source_authority["source_contract_version"] == "2.0.0"
+        and len(source_authority["role_authorities"]) == 11
+        and len(source_authority["registry_shapes"]) == 11
+        and len(source_authority["record_types"]) == 18,
         "ESTIMATE_COMMITMENT_RESOLVER_DENOMINATOR",
         "",
     )
@@ -7886,7 +8008,9 @@ def validate_estimate_commitment_projection_registry(
         if not isinstance(candidate, dict):
             return {"SHAPE"}
         errors: set[str] = set()
-        if list(candidate) != projection_contract["envelope_fields"]:
+        if set(candidate) != set(
+            projection_contract["envelope_fields"]
+        ):
             errors.add("FIELD_ORDER_OR_SET")
         if (
             candidate.get("registry_id")
@@ -7946,6 +8070,368 @@ def validate_estimate_commitment_projection_registry(
         "ESTIMATE_COMMITMENT_PROJECTION_NEGATIVE_COUNTS",
         "",
     )
+
+
+def validate_estimate_commitment_v2_definition_coverage(
+    schemas: dict[str, dict[str, Any]],
+    checks: Counter[str],
+) -> None:
+    """Validate the V2 declarations without claiming resolver execution."""
+
+    contract = estimate_commitment_machine_contract()
+    authority = contract["source_authority_contract"]
+
+    registry_shapes = {
+        row["type_id"]: row for row in authority["registry_shapes"]
+    }
+    role_authorities = {
+        row["registry_type"]: row
+        for row in authority["role_authorities"]
+    }
+
+    def source_invariants(row: dict[str, Any]) -> list[str]:
+        plural = row.get("invariants")
+        if plural is not None:
+            return copy.deepcopy(plural)
+        singular = row.get("invariant")
+        return (
+            [singular]
+            if isinstance(singular, str) and singular
+            else []
+        )
+
+    common_history_invariant = authority[
+        "common_closed_registry_fields"
+    ]["invariant"]
+
+    def registry_invariants(row: dict[str, Any]) -> list[str]:
+        if set(row.get("field_types", {})) == set(row["fields"]):
+            return source_invariants(row)
+        return [common_history_invariant, *source_invariants(row)]
+
+    expected_rows: dict[
+        str,
+        tuple[str, list[str], bool, list[str]],
+    ] = {
+        contract["estimate_record"]["schema_ref"]: (
+            contract["estimate_record"]["type_id"],
+            contract["estimate_record"]["fields"],
+            False,
+            source_invariants(contract["estimate_record"]),
+        ),
+        contract["commitment_subject_projection"]["schema_ref"]: (
+            contract["commitment_subject_projection"][
+                "projection_id"
+            ],
+            contract["commitment_subject_projection"][
+                "output_fields"
+            ],
+            False,
+            source_invariants(
+                contract["commitment_subject_projection"]
+            ),
+        ),
+        authority["source_envelope"]["schema_ref"]: (
+            authority["source_envelope"]["type_id"],
+            authority["source_envelope"]["fields"],
+            True,
+            source_invariants(authority["source_envelope"]),
+        ),
+        authority["source_trust_registry_shape"]["schema_ref"]: (
+            authority["source_trust_registry_shape"]["type_id"],
+            authority["source_trust_registry_shape"]["fields"],
+            True,
+            registry_invariants(
+                authority["source_trust_registry_shape"]
+            ),
+        ),
+    }
+    for row in authority["record_types"]:
+        expected_rows[row["schema_ref"]] = (
+            row["type_id"],
+            row["fields"],
+            True,
+            source_invariants(row),
+        )
+    for registry_type, role in role_authorities.items():
+        shape = registry_shapes[registry_type]
+        expected_rows[role["schema_ref"]] = (
+            registry_type,
+            shape["fields"],
+            True,
+            registry_invariants(shape),
+        )
+    require(
+        len(expected_rows) == 33,
+        "ESTIMATE_V2_SCHEMA_DECLARATION_DENOMINATOR",
+        str(len(expected_rows)),
+    )
+
+    observed_type_ids: set[str] = set()
+    observed_invariants_by_type: dict[
+        str,
+        set[tuple[str, ...]],
+    ] = defaultdict(set)
+
+    def collect_type_ids(value: Any) -> None:
+        if isinstance(value, dict):
+            type_id = value.get("x-ranex-type-id")
+            if isinstance(type_id, str):
+                observed_type_ids.add(type_id)
+                invariants = value.get(
+                    "x-ranex-semantic-invariants"
+                )
+                require(
+                    isinstance(invariants, list)
+                    and all(
+                        isinstance(item, str) and item
+                        for item in invariants
+                    ),
+                    "ESTIMATE_V2_SCHEMA_INVARIANT_SHAPE",
+                    type_id,
+                )
+                observed_invariants_by_type[type_id].add(
+                    tuple(invariants)
+                )
+            for nested in value.values():
+                collect_type_ids(nested)
+        elif isinstance(value, list):
+            for nested in value:
+                collect_type_ids(nested)
+
+    def require_closed_objects(value: Any, path: str) -> None:
+        if isinstance(value, dict):
+            if value.get("type") == "object":
+                properties = value.get("properties")
+                require(
+                    isinstance(properties, dict)
+                    and value.get("additionalProperties") is False
+                    and set(value.get("required", []))
+                    == set(properties),
+                    "ESTIMATE_V2_SCHEMA_OBJECT_NOT_CLOSED",
+                    path,
+                )
+            for key, nested in value.items():
+                require_closed_objects(nested, path + "/" + key)
+        elif isinstance(value, list):
+            for index, nested in enumerate(value):
+                require_closed_objects(
+                    nested,
+                    path + "/" + str(index),
+                )
+
+    for schema_ref, (
+        type_id,
+        fields,
+        is_source_authority,
+        expected_invariants,
+    ) in expected_rows.items():
+        schema = schemas.get(schema_ref)
+        require(
+            isinstance(schema, dict),
+            "ESTIMATE_V2_SCHEMA_MISSING",
+            schema_ref,
+        )
+        require(
+            schema.get("x-ranex-source-contract-id")
+            == contract["contract_id"]
+            and schema.get("x-ranex-source-control-id")
+            == contract["control_id"]
+            and (
+                not is_source_authority
+                or schema.get(
+                    "x-ranex-source-authority-contract-id"
+                )
+                == authority["source_contract_id"]
+            )
+            and schema.get("x-ranex-type-id") == type_id
+            and schema.get("type") == "object"
+            and schema.get("additionalProperties") is False
+            and schema.get("required") == fields
+            and set(schema.get("properties", {})) == set(fields)
+            and schema.get("x-ranex-semantic-invariants")
+            == expected_invariants,
+            "ESTIMATE_V2_SCHEMA_SOURCE_BINDING",
+            schema_ref,
+        )
+        require_closed_objects(schema, schema_ref)
+        collect_type_ids(schema)
+        checks["estimate_v2_declared_schema_documents"] += 1
+    require(
+        checks["estimate_v2_declared_schema_documents"] == 33,
+        "ESTIMATE_V2_SCHEMA_DECLARATION_COUNTS",
+        "",
+    )
+
+    expected_embedded_types = {
+        row["type_id"] for row in contract["nested_types"]
+    } | {
+        authority["sources_object"]["type_id"],
+        *[
+            row["type_id"]
+            for row in authority["record_types"]
+        ],
+        *registry_shapes,
+        authority["source_trust_registry_shape"]["type_id"],
+        contract["estimate_record"]["type_id"],
+        contract["commitment_subject_projection"]["projection_id"],
+        authority["source_envelope"]["type_id"],
+    }
+    require(
+        expected_embedded_types <= observed_type_ids,
+        "ESTIMATE_V2_SCHEMA_EMBEDDED_TYPE_COVERAGE",
+        ",".join(sorted(expected_embedded_types - observed_type_ids)),
+    )
+    expected_invariants_by_type = {
+        row["type_id"]: source_invariants(row)
+        for row in contract["nested_types"]
+    } | {
+        row["type_id"]: source_invariants(row)
+        for row in authority["record_types"]
+    } | {
+        type_id: registry_invariants(row)
+        for type_id, row in registry_shapes.items()
+    } | {
+        authority["source_trust_registry_shape"]["type_id"]:
+            registry_invariants(
+                authority["source_trust_registry_shape"]
+            ),
+        authority["sources_object"]["type_id"]:
+            source_invariants(authority["sources_object"]),
+        contract["estimate_record"]["type_id"]:
+            source_invariants(contract["estimate_record"]),
+        contract["commitment_subject_projection"]["projection_id"]:
+            source_invariants(
+                contract["commitment_subject_projection"]
+            ),
+        authority["source_envelope"]["type_id"]:
+            source_invariants(authority["source_envelope"]),
+    }
+    for type_id, expected_invariants in (
+        expected_invariants_by_type.items()
+    ):
+        require(
+            observed_invariants_by_type.get(type_id)
+            == {tuple(expected_invariants)},
+            "ESTIMATE_V2_SCHEMA_INVARIANT_SOURCE_BINDING",
+            type_id,
+        )
+        checks["estimate_v2_declared_invariant_bindings"] += 1
+    checks["estimate_v2_declared_embedded_types"] = len(
+        expected_embedded_types
+    )
+
+    fixture = contract["fixture_contract"]
+    expected_suite_fields = {
+        "fixture_suite",
+        "contract_id",
+        "coverage_status",
+        "semantic_execution_count",
+        "schema_matrix_status",
+        "runtime_validation_status",
+        "cases",
+    }
+    expected_case_fields = {
+        "case_id",
+        "source_envelope_version",
+        "query_kind",
+        "mutation",
+        "expected_result",
+        "expected_failure_code",
+        "expected_authority_effects",
+    }
+    suites = (
+        (
+            load_json(ROOT / fixture["positive_fixture_ref"]),
+            fixture["positive_suite_id"],
+            fixture["positive_case_ids"],
+            True,
+        ),
+        (
+            load_json(ROOT / fixture["negative_fixture_ref"]),
+            fixture["negative_suite_id"],
+            [
+                case_id
+                for rows in fixture[
+                    "negative_case_ids_by_boundary"
+                ].values()
+                for case_id in rows
+            ],
+            False,
+        ),
+    )
+    for suite, suite_id, raw_expected_ids, positive in suites:
+        expected_ids = sorted(
+            raw_expected_ids,
+            key=lambda value: value.encode("utf-8"),
+        )
+        cases = suite.get("cases", [])
+        actual_ids = [
+            row.get("case_id")
+            for row in cases
+            if isinstance(row, dict)
+        ]
+        require(
+            set(suite) == expected_suite_fields
+            and suite.get("fixture_suite") == suite_id
+            and suite.get("contract_id") == contract["contract_id"]
+            and suite.get("coverage_status")
+            == "DECLARED_DEFINITION_COVERAGE_NOT_EXECUTED"
+            and suite.get("semantic_execution_count") == 0
+            and suite.get("schema_matrix_status") == "NOT_EXECUTED"
+            and suite.get("runtime_validation_status")
+            == "NOT_ASSESSED"
+            and len(cases) == len(expected_ids)
+            and actual_ids == expected_ids,
+            "ESTIMATE_V2_FIXTURE_DECLARATION_SET",
+            suite_id,
+        )
+        for row in cases:
+            require(
+                set(row) == expected_case_fields
+                and row["source_envelope_version"] == "2.0.0"
+                and row["query_kind"]
+                in {"ESTIMATE_ONLY", "COMMITMENT"}
+                and (
+                    (
+                        positive
+                        and row["mutation"] == "NONE"
+                        and row["expected_failure_code"] is None
+                        and row["expected_authority_effects"]
+                        in [
+                            [],
+                            ["DELIVERY_COMMITMENT_FACT_ONLY"],
+                        ]
+                    )
+                    or (
+                        not positive
+                        and row["mutation"] == row["case_id"]
+                        and row["expected_result"]
+                        == "REJECTED_ZERO_AUTHORITY"
+                        and row["expected_failure_code"]
+                        == row["case_id"]
+                        and row["expected_authority_effects"] == []
+                    )
+                ),
+                "ESTIMATE_V2_FIXTURE_DECLARATION_SHAPE",
+                str(row.get("case_id")),
+            )
+        checks[
+            (
+                "estimate_v2_declared_positive_cases"
+                if positive
+                else "estimate_v2_declared_negative_cases"
+            )
+        ] = len(cases)
+    require(
+        checks["estimate_v2_declared_positive_cases"] == 6
+        and checks["estimate_v2_declared_negative_cases"] == 213,
+        "ESTIMATE_V2_FIXTURE_DECLARATION_COUNTS",
+        "",
+    )
+    checks["estimate_v2_semantic_execution_cases"] = 0
+    checks["estimate_v2_schema_matrix_execution_cases"] = 0
+    checks["estimate_v2_runtime_validation_not_assessed"] += 1
 
 
 def validate_estimate_commitment_caller_paths(
@@ -8833,6 +9319,634 @@ def adr10_machine_record_contract() -> dict[str, Any]:
         "",
     )
     return contract
+
+
+def adr12_readiness_contract() -> dict[str, Any]:
+    """Independently parse and close the accepted ADR-0012 contract."""
+
+    require(
+        hashlib.sha256(READINESS_ADR.read_bytes()).hexdigest()
+        == ADR12_SOURCE_SHA256,
+        "ADR12_SOURCE_DIGEST",
+        "",
+    )
+    matches = re.findall(
+        (
+            r"<!-- BEGIN ADR12 READINESS TIER CONTRACT -->"
+            r"\s*```yaml\n(.*?)\n```\s*"
+            r"<!-- END ADR12 READINESS TIER CONTRACT -->"
+        ),
+        READINESS_ADR.read_text(encoding="utf-8"),
+        flags=re.DOTALL,
+    )
+    require(
+        len(matches) == 1,
+        "ADR12_CONTRACT_CARDINALITY",
+        str(len(matches)),
+    )
+    require(
+        hashlib.sha256(matches[0].encode("utf-8")).hexdigest()
+        == ADR12_MACHINE_BLOCK_SHA256,
+        "ADR12_CONTRACT_DIGEST",
+        "",
+    )
+    wrapper = yaml.load(matches[0], Loader=DuplicateKeyLoader)
+    require(
+        isinstance(wrapper, dict)
+        and set(wrapper) == {"readiness_tier_contract"},
+        "ADR12_CONTRACT_WRAPPER",
+        "",
+    )
+    contract = wrapper["readiness_tier_contract"]
+    expected_keys = {
+        "contract_id",
+        "contract_version",
+        "schema_version",
+        "catalog_id",
+        "catalog_version",
+        "catalog_status",
+        "governing_adr",
+        "canonicalization",
+        "digest_algorithm",
+        "digest_encoding",
+        "additional_properties",
+        "noncompensating",
+        "source_projection_ref",
+        "assessment_registry_ref",
+        "subject_schema_ref",
+        "subject_manifest_schema_ref",
+        "evidence_binding_schema_ref",
+        "assessment_schema_ref",
+        "inherited_type_authority",
+        "scalar_types",
+        "runtime_assessment_status_contract",
+        "state_axis",
+        "transition_fact_contract",
+        "exact_subject_projection",
+        "readiness_subject_manifest_projection",
+        "nested_types",
+        "assessment_record",
+        "tiers",
+        "gates",
+        "evidence_bridge_contract",
+        "human_decision_contract",
+        "reviewer_contract",
+        "bootstrap_lane",
+        "resolver_contract",
+        "sad_path_transitions",
+        "fixture_contract",
+        "current_standing",
+    }
+    require(
+        isinstance(contract, dict)
+        and set(contract) == expected_keys
+        and contract["contract_id"]
+        == "RANEX-READINESS-TIER-CONTROL-1.0"
+        and contract["contract_version"] == "1.0.0"
+        and contract["schema_version"]
+        == "readiness-tier-contract/v1"
+        and contract["catalog_id"] == "RANEX-READINESS-TIERS-001"
+        and contract["catalog_status"]
+        == "DEFINITION_ONLY_NOT_ASSESSED"
+        and contract["governing_adr"] == "ADR-0012"
+        and contract["additional_properties"] is False
+        and contract["noncompensating"] is True,
+        "ADR12_CONTRACT_IDENTITY",
+        "",
+    )
+    tier_ids = [
+        "READINESS-TIER-IMPLEMENTATION-START-001",
+        "READINESS-TIER-PRODUCTION-001",
+    ]
+    tiers = contract["tiers"]
+    gates = contract["gates"]
+    gate_ids = [row["gate_id"] for row in gates]
+    require(
+        [row["tier_id"] for row in tiers] == tier_ids
+        and len(gates) == 21
+        and len(gate_ids) == len(set(gate_ids))
+        and all(
+            row["required_result"] == "PASS"
+            and row["noncompensating"] is True
+            for row in gates
+        ),
+        "ADR12_TIER_GATE_DENOMINATOR",
+        "",
+    )
+    for tier, expected_count in zip(tiers, [11, 10], strict=True):
+        expected_gate_ids = sorted(
+            row["gate_id"]
+            for row in gates
+            if row["tier_id"] == tier["tier_id"]
+        )
+        require(
+            tier["exact_gate_ids"] == expected_gate_ids
+            and len(expected_gate_ids) == expected_count,
+            "ADR12_TIER_GATE_SET",
+            tier["tier_id"],
+        )
+    bridges = contract["evidence_bridge_contract"][
+        "bridge_rule_by_gate"
+    ]
+    require(
+        set(bridges) == set(gate_ids)
+        and all(
+            bridges[row["gate_id"]]["bridge_rule_id"]
+            == row["bridge_rule_id"]
+            for row in gates
+        ),
+        "ADR12_BRIDGE_POPULATION",
+        "",
+    )
+    require(
+        contract["current_standing"]
+        == {
+            "assessment_record_count": 0,
+            "subject_manifest_count": 0,
+            "evidence_binding_count": 0,
+            "transition_fact_count": 0,
+            "implementation_start_state": "NOT_ASSESSED",
+            "production_state": "NOT_ASSESSED",
+            "implementation_start_authorized": False,
+            "production_authorized": False,
+            "runtime_validation_status": "NOT_ASSESSED",
+            "capability_score": None,
+        },
+        "ADR12_CURRENT_STANDING_OVERCLAIM",
+        "",
+    )
+    fixture = contract["fixture_contract"]
+    require(
+        fixture["positive_case_requirements"][
+            "exact_positive_case_count"
+        ]
+        == 4
+        and fixture["negative_case_requirements"][
+            "exact_negative_case_count"
+        ]
+        == 28,
+        "ADR12_FIXTURE_DENOMINATOR",
+        "",
+    )
+    return contract
+
+
+def readiness_fixture_digest(label: str) -> str:
+    return "sha256:" + hashlib.sha256(label.encode("utf-8")).hexdigest()
+
+
+def build_readiness_fixture_subject(
+    contract: dict[str, Any],
+    tier_id: str,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    tier1_id = "READINESS-TIER-IMPLEMENTATION-START-001"
+    source_values = {
+        "repository_id": "ranex",
+        "readiness_contract_id": contract["contract_id"],
+        "readiness_contract_version": contract["contract_version"],
+        "source_commit_sha1": "1" * 40,
+        "source_tree_oid_sha1": "2" * 40,
+        "source_manifest_digest": readiness_fixture_digest(
+            "source-manifest"
+        ),
+        "generated_manifest_digest": readiness_fixture_digest(
+            "generated-manifest"
+        ),
+        "contract_validation_report_digest": (
+            readiness_fixture_digest("validation-report")
+        ),
+        "architecture_subject_digest": readiness_fixture_digest(
+            "architecture-subject"
+        ),
+        "architecture_subject_manifest_digest": (
+            readiness_fixture_digest("architecture-subject-manifest")
+        ),
+        "fork_preflight_digest": readiness_fixture_digest(
+            "fork-preflight"
+        ),
+    }
+    basis_digest = canonical_subject_digest(source_values)
+    tier_evidence = (
+        {
+            "tier_evidence_subject_schema": None,
+            "tier_evidence_subject_ref": None,
+            "tier_evidence_subject_digest": None,
+            "tier_evidence_subject_manifest_digest": None,
+        }
+        if tier_id == tier1_id
+        else {
+            "tier_evidence_subject_schema": "exact-subject/v1",
+            "tier_evidence_subject_ref": (
+                "urn:ranex:release-subject:fixture"
+            ),
+            "tier_evidence_subject_digest": readiness_fixture_digest(
+                "release-subject"
+            ),
+            "tier_evidence_subject_manifest_digest": (
+                readiness_fixture_digest(
+                    "release-subject-manifest"
+                )
+            ),
+        }
+    )
+    assessment_window_end = "2026-07-31T00:00:00Z"
+    identity_digest = canonical_subject_digest(
+        {
+            "readiness_basis_digest": basis_digest,
+            "tier_id": tier_id,
+            **tier_evidence,
+            "assessment_window_end": assessment_window_end,
+        }
+    )
+    subject_ref = (
+        "urn:ranex:readiness:ranex:"
+        + tier_id
+        + ":"
+        + identity_digest.removeprefix("sha256:")
+    )
+    artifact_digest_by_role = {
+        "ARCHITECTURE_SUBJECT": source_values[
+            "architecture_subject_digest"
+        ],
+        "ARCHITECTURE_SUBJECT_MANIFEST": source_values[
+            "architecture_subject_manifest_digest"
+        ],
+        "COMMITTED_SOURCE_MANIFEST": source_values[
+            "source_manifest_digest"
+        ],
+        "CONTRACT_VALIDATION_REPORT": source_values[
+            "contract_validation_report_digest"
+        ],
+        "FORK_PREFLIGHT": source_values[
+            "fork_preflight_digest"
+        ],
+        "GENERATED_OUTPUT_MANIFEST": source_values[
+            "generated_manifest_digest"
+        ],
+        "READINESS_CONTRACT_SOURCE": (
+            "sha256:"
+            + hashlib.sha256(READINESS_ADR.read_bytes()).hexdigest()
+        ),
+        "TIER_EVIDENCE_SUBJECT": tier_evidence[
+            "tier_evidence_subject_digest"
+        ],
+    }
+    roles = contract["readiness_subject_manifest_projection"][
+        "exact_entry_roles_by_tier"
+    ][tier_id]
+    manifest_entries = []
+    for role in roles:
+        if role == "TIER_EVIDENCE_SUBJECT":
+            artifact_schema = tier_evidence[
+                "tier_evidence_subject_schema"
+            ]
+            artifact_ref = tier_evidence["tier_evidence_subject_ref"]
+            artifact_manifest = tier_evidence[
+                "tier_evidence_subject_manifest_digest"
+            ]
+        elif role == "ARCHITECTURE_SUBJECT":
+            artifact_schema = "architecture-subject/v1"
+            artifact_ref = "urn:ranex:architecture-subject:fixture"
+            artifact_manifest = source_values[
+                "architecture_subject_manifest_digest"
+            ]
+        elif role == "ARCHITECTURE_SUBJECT_MANIFEST":
+            artifact_schema = "architecture-subject-manifest/v1"
+            artifact_ref = (
+                "urn:ranex:architecture-subject-manifest:fixture"
+            )
+            artifact_manifest = None
+        else:
+            artifact_schema = role.lower().replace("_", "-") + "/v1"
+            artifact_ref = (
+                "urn:ranex:readiness-artifact:"
+                + role.lower().replace("_", "-")
+            )
+            artifact_manifest = None
+        manifest_entries.append(
+            {
+                "role": role,
+                "artifact_schema": artifact_schema,
+                "artifact_ref": artifact_ref,
+                "artifact_digest": artifact_digest_by_role[role],
+                "artifact_subject_manifest_digest": artifact_manifest,
+            }
+        )
+    manifest = {
+        "manifest_schema": "readiness-subject-manifest/v1",
+        "manifest_ref": (
+            "urn:ranex:readiness-manifest:ranex:"
+            + tier_id
+            + ":"
+            + identity_digest.removeprefix("sha256:")
+        ),
+        "readiness_subject_ref": subject_ref,
+        "repository_id": "ranex",
+        "readiness_contract_id": contract["contract_id"],
+        "readiness_contract_version": contract["contract_version"],
+        "tier_id": tier_id,
+        "readiness_basis_digest": basis_digest,
+        "readiness_subject_identity_digest": identity_digest,
+        "source_commit_sha1": source_values["source_commit_sha1"],
+        "source_tree_oid_sha1": source_values[
+            "source_tree_oid_sha1"
+        ],
+        "entries": manifest_entries,
+        "digest": "",
+    }
+    manifest["digest"] = digest(manifest)
+    subject = {
+        "subject_schema": "readiness-subject/v1",
+        "subject_ref": subject_ref,
+        "readiness_subject_identity_digest": identity_digest,
+        "readiness_basis_digest": basis_digest,
+        "readiness_subject_manifest_digest": manifest["digest"],
+        **source_values,
+        "tier_id": tier_id,
+        **tier_evidence,
+        "assessment_window_end": assessment_window_end,
+    }
+    # Preserve the exact source-declared field order in synthetic bytes.
+    subject = {
+        field: subject[field]
+        for field in contract["exact_subject_projection"][
+            "output_fields"
+        ]
+    }
+    manifest = {
+        field: manifest[field]
+        for field in contract[
+            "readiness_subject_manifest_projection"
+        ]["output_fields"]
+    }
+    return subject, manifest
+
+
+def build_readiness_fixture_world(
+    contract: dict[str, Any],
+    *,
+    production: bool,
+) -> dict[str, Any]:
+    tier1_id = "READINESS-TIER-IMPLEMENTATION-START-001"
+    tier2_id = "READINESS-TIER-PRODUCTION-001"
+    tier_id = tier2_id if production else tier1_id
+    subject, manifest = build_readiness_fixture_subject(
+        contract,
+        tier_id,
+    )
+    tier1_subject, tier1_manifest = build_readiness_fixture_subject(
+        contract,
+        tier1_id,
+    )
+    human_digest = readiness_fixture_digest(
+        "production-human-decision"
+        if production
+        else "implementation-human-decision"
+    )
+    gates = {
+        row["gate_id"]: row for row in contract["gates"]
+    }
+    bridges = contract["evidence_bridge_contract"][
+        "bridge_rule_by_gate"
+    ]
+    gate_results = []
+    for gate_id in next(
+        tier["exact_gate_ids"]
+        for tier in contract["tiers"]
+        if tier["tier_id"] == tier_id
+    ):
+        native_class = bridges[gate_id]["native_subject_class"]
+        if native_class == "ARCHITECTURE_SUBJECT":
+            native = {
+                "native_subject_schema": "architecture-subject/v1",
+                "native_subject_ref": (
+                    "urn:ranex:architecture-subject:fixture"
+                ),
+                "native_subject_digest": subject[
+                    "architecture_subject_digest"
+                ],
+                "native_subject_manifest_digest": subject[
+                    "architecture_subject_manifest_digest"
+                ],
+            }
+        elif native_class == "TDD_EXACT_SUBJECT":
+            native = {
+                "native_subject_schema": "exact-subject/v1",
+                "native_subject_ref": "urn:ranex:tdd-subject:fixture",
+                "native_subject_digest": readiness_fixture_digest(
+                    "tdd-subject"
+                ),
+                "native_subject_manifest_digest": None,
+            }
+        elif native_class == "TIER1_READINESS_SUBJECT":
+            native = {
+                "native_subject_schema": "readiness-subject/v1",
+                "native_subject_ref": tier1_subject["subject_ref"],
+                "native_subject_digest": canonical_subject_digest(
+                    tier1_subject
+                ),
+                "native_subject_manifest_digest": tier1_manifest[
+                    "digest"
+                ],
+            }
+        elif native_class == "TIER2_READINESS_SUBJECT":
+            native = {
+                "native_subject_schema": "readiness-subject/v1",
+                "native_subject_ref": subject["subject_ref"],
+                "native_subject_digest": canonical_subject_digest(
+                    subject
+                ),
+                "native_subject_manifest_digest": manifest["digest"],
+            }
+        else:
+            native = {
+                "native_subject_schema": subject[
+                    "tier_evidence_subject_schema"
+                ],
+                "native_subject_ref": subject[
+                    "tier_evidence_subject_ref"
+                ],
+                "native_subject_digest": subject[
+                    "tier_evidence_subject_digest"
+                ],
+                "native_subject_manifest_digest": subject[
+                    "tier_evidence_subject_manifest_digest"
+                ],
+            }
+        evidence_digest = (
+            human_digest
+            if gate_id
+            in {
+                "READY-HUMAN-START-DECISION-001",
+                "READY-HUMAN-PRODUCTION-DECISION-001",
+            }
+            else (
+                tier1_assessment_digest
+                if False
+                else readiness_fixture_digest("evidence:" + gate_id)
+            )
+        )
+        binding = {
+            "schema_version": "1",
+            "record_type": "READINESS_EVIDENCE_BINDING",
+            "gate_id": gate_id,
+            "readiness_subject_ref": subject["subject_ref"],
+            "readiness_subject_digest": canonical_subject_digest(
+                subject
+            ),
+            "readiness_subject_manifest_digest": manifest["digest"],
+            "readiness_basis_digest": subject[
+                "readiness_basis_digest"
+            ],
+            **native,
+            "evidence_schema": (
+                "human-decision/v1"
+                if gate_id.startswith("READY-HUMAN-")
+                else "evidence/v1"
+            ),
+            "evidence_ref": (
+                "urn:ranex:evidence:"
+                + gate_id.lower().replace("_", "-")
+            ),
+            "evidence_digest": evidence_digest,
+            "bridge_rule_id": gates[gate_id]["bridge_rule_id"],
+            "digest": "",
+        }
+        binding["digest"] = digest(binding)
+        gate_results.append(
+            {
+                "gate_id": gate_id,
+                "result": "PASS",
+                "evidence_binding": binding,
+                "observed_at": "2026-07-29T00:00:00Z",
+                "valid_until": "2026-07-30T00:00:00Z",
+            }
+        )
+    runtime_status = "ASSESSED_PASS" if production else "NOT_ASSESSED"
+    assessment = {
+        "schema_version": "1",
+        "record_type": "READINESS_ASSESSMENT",
+        "assessment_id": (
+            "readiness-production-001"
+            if production
+            else "readiness-implementation-start-001"
+        ),
+        "tier_id": tier_id,
+        "contract_id": contract["contract_id"],
+        "contract_version": contract["contract_version"],
+        "exact_subject_schema": "readiness-subject/v1",
+        "exact_subject_ref": subject["subject_ref"],
+        "exact_subject_digest": canonical_subject_digest(subject),
+        "readiness_basis_digest": subject[
+            "readiness_basis_digest"
+        ],
+        "exact_subject_manifest_digest": manifest["digest"],
+        "core_sdlc_trace_ref": "urn:ranex:trace:fixture",
+        "prior_state": (
+            "PRODUCTION_EVALUATING"
+            if production
+            else "IMPLEMENTATION_START_EVALUATING"
+        ),
+        "proposed_state": (
+            "PRODUCTION_READY"
+            if production
+            else "IMPLEMENTATION_START_READY"
+        ),
+        "gate_results": gate_results,
+        "open_finding_refs": [],
+        "resolved_finding_refs": [],
+        "runtime_assessment_status": runtime_status,
+        "runtime_assessment_ref": (
+            "urn:ranex:runtime-assessment:fixture"
+            if production
+            else None
+        ),
+        "runtime_assessment_digest": (
+            readiness_fixture_digest("runtime-assessment")
+            if production
+            else None
+        ),
+        "capability_assessment_refs": (
+            ["urn:ranex:capability-assessments:complete"]
+            if production
+            else []
+        ),
+        "human_decision_ref": "urn:ranex:decision:readiness-fixture",
+        "human_decision_digest": human_digest,
+        "observed_at": "2026-07-29T01:00:00Z",
+        "valid_until": "2026-07-30T00:00:00Z",
+        "supersedes_assessment_id": None,
+        "result": "PASS",
+        "digest": "",
+    }
+    assessment["digest"] = digest(assessment)
+    tier1_assessment = None
+    if production:
+        tier1_assessment = build_readiness_fixture_world(
+            contract,
+            production=False,
+        )["assessment"]
+        prerequisite_gate = next(
+            row
+            for row in assessment["gate_results"]
+            if row["gate_id"]
+            == "READY-IMPLEMENTATION-PREREQUISITE-001"
+        )
+        prerequisite_gate["evidence_binding"]["evidence_digest"] = (
+            tier1_assessment["digest"]
+        )
+        prerequisite_gate["evidence_binding"]["digest"] = digest(
+            prerequisite_gate["evidence_binding"]
+        )
+        assessment["digest"] = digest(assessment)
+    return {
+        "subject": subject,
+        "subject_manifest": manifest,
+        "assessment": assessment,
+        "tier1_subject": tier1_subject if production else None,
+        "tier1_subject_manifest": (
+            tier1_manifest if production else None
+        ),
+        "tier1_assessment": tier1_assessment,
+        "current_head_clean": True,
+        "evaluation_commit_clean": True,
+        "current_head_descendant": True,
+        "governed_manifest_unchanged": True,
+        "fork_preflight_result": "PASS",
+        "tdd_synthetic": False,
+        "tdd_cycle_status": "GATED",
+        "tdd_cycle_result": "PASS",
+        "landing_count": 1,
+        "landing_status": "SUCCEEDED",
+        "sealing_result": "PASS",
+        "sealing_tree_matches": True,
+        "hy3_review_result": "PASS",
+        "hy3_review_current_subject": True,
+        "deepseek_review_result": "PASS",
+        "deepseek_review_current_subject": True,
+        "reviewers_independent": True,
+        "reviewers_write_authority": False,
+        "unresolved_p0_p1": False,
+        "human_decision_present": True,
+        "human_decision_current_subject": True,
+        "human_decision_causal": True,
+        "human_decision_revoked": False,
+        "human_decision_superseded": False,
+        "direct_ready_transition": False,
+        "runtime_producers_pass": True,
+        "architecture_rule_result_count": 64,
+        "architecture_rule_results_pass": True,
+        "adoption_gates_pass": True,
+        "security_isolation_pass": True,
+        "operating_evidence_pass": True,
+        "recovery_evidence_pass": True,
+        "capability_assessments_pass": True,
+        "authority_chain_pass": True,
+        "authority_effects": [],
+        "bootstrap_scope_valid": True,
+        "state_history_valid": True,
+        "reassessment_after_invalidation": False,
+    }
 
 
 def legacy_projection(
@@ -17165,6 +18279,10 @@ def validate_generated_output_authority(
         "generated_by",
         "generator_writer",
         "validator_writer",
+        "licensing_policy_source_path",
+        "licensing_policy_source_digest",
+        "licensing_policy_ids",
+        "licensing_policy_counts",
         "output_count",
         "generator_output_count",
         "validator_output_count",
@@ -17180,12 +18298,23 @@ def validate_generated_output_authority(
         set(authority) == expected_fields
         and authority["registry_id"]
         == "REG-GENERATED-OUTPUT-AUTHORITY-001"
-        and authority["version"] == "2.0.0"
+        and authority["version"] == "2.1.0"
         and authority["status"]
         == "ACTIVE_DOCUMENTATION_CONTRACT"
         and authority["generated_by"] == generator_writer
         and authority["generator_writer"] == generator_writer
         and authority["validator_writer"] == validator_writer
+        and authority["licensing_policy_source_path"]
+        == LEGAL_MANIFEST_PATH
+        and authority["licensing_policy_source_digest"]
+        == file_digest(LEGAL_MANIFEST)
+        and authority["licensing_policy_ids"]
+        == sorted(
+            {
+                LICENSING_POLICY_RANEX_ORIGINAL,
+                LICENSING_POLICY_CURATED_RESEARCH,
+            }
+        )
         and paths
         == sorted(paths, key=lambda value: value.encode("utf-8"))
         and len(paths) == len(set(paths)),
@@ -17196,6 +18325,7 @@ def validate_generated_output_authority(
         "path",
         "writer",
         "output_class",
+        "licensing_policy_id",
         "licensing_projection_required",
     }
     allowed_prefixes = (
@@ -17224,6 +18354,13 @@ def validate_generated_output_authority(
             )
             and isinstance(entry["output_class"], str)
             and bool(entry["output_class"])
+            and entry["licensing_policy_id"]
+            == (
+                LICENSING_POLICY_CURATED_RESEARCH
+                if path_text
+                in CURATED_RESEARCH_GENERATED_OUTPUT_PATHS
+                else LICENSING_POLICY_RANEX_ORIGINAL
+            )
             and entry["licensing_projection_required"] is True,
             "GENERATED_OUTPUT_AUTHORITY_ROW",
             path_text,
@@ -17247,11 +18384,34 @@ def validate_generated_output_authority(
     validator_count = sum(
         entry["writer"] == validator_writer for entry in entries
     )
+    licensing_policy_counts = Counter(
+        entry["licensing_policy_id"] for entry in entries
+    )
+    research_policy_paths = {
+        entry["path"]
+        for entry in entries
+        if entry["licensing_policy_id"]
+        == LICENSING_POLICY_CURATED_RESEARCH
+    }
     require(
         authority["output_count"] == len(entries)
         and authority["generator_output_count"] == generator_count
         and authority["validator_output_count"] == validator_count == 1,
         "GENERATED_OUTPUT_AUTHORITY_DENOMINATOR",
+        "",
+    )
+    require(
+        authority["licensing_policy_counts"]
+        == dict(sorted(licensing_policy_counts.items()))
+        and set(licensing_policy_counts)
+        == {
+            LICENSING_POLICY_RANEX_ORIGINAL,
+            LICENSING_POLICY_CURATED_RESEARCH,
+        }
+        and research_policy_paths
+        == CURATED_RESEARCH_GENERATED_OUTPUT_PATHS
+        and sum(licensing_policy_counts.values()) == len(entries),
+        "GENERATED_OUTPUT_LICENSING_POLICY_PARTITION",
         "",
     )
     adr10_contract = adr10_machine_record_contract()
@@ -17419,12 +18579,38 @@ def validate_generated_artifact_licensing(
         for entry in authority["entries"]
         if entry["licensing_projection_required"] is True
     }
+    expected_policy_by_path = {
+        entry["path"]: entry["licensing_policy_id"]
+        for entry in authority["entries"]
+        if entry["licensing_projection_required"] is True
+    }
     expected_paths = set(expected_writer_by_path)
+    require(
+        set(expected_policy_by_path) == expected_paths
+        and {
+            path
+            for path, policy_id in expected_policy_by_path.items()
+            if policy_id == LICENSING_POLICY_CURATED_RESEARCH
+        }
+        == CURATED_RESEARCH_GENERATED_OUTPUT_PATHS
+        and {
+            path
+            for path, policy_id in expected_policy_by_path.items()
+            if policy_id == LICENSING_POLICY_RANEX_ORIGINAL
+        }
+        == expected_paths
+        - CURATED_RESEARCH_GENERATED_OUTPUT_PATHS,
+        "GENERATED_OUTPUT_LICENSE_POLICY_PARTITION",
+        "",
+    )
     projection_rows = [
         row
         for row in files
         if row.get("provenance_kind")
-        == "DETERMINISTIC_GENERATED_PROJECTION"
+        in {
+            "DETERMINISTIC_GENERATED_PROJECTION",
+            "DETERMINISTIC_GENERATED_RESEARCH_PROJECTION",
+        }
     ]
     projection_paths = [row["path"] for row in projection_rows]
     require(
@@ -17462,7 +18648,7 @@ def validate_generated_artifact_licensing(
         "GENERATED_ARTIFACT_LICENSE_SET",
         "",
     )
-    expected_fields = {
+    expected_original_fields = {
         "path",
         "classification",
         "license",
@@ -17473,37 +18659,95 @@ def validate_generated_artifact_licensing(
         "release_blocker",
         "notes",
     }
+    expected_research_fields = {
+        "path",
+        "classification",
+        "license",
+        "provenance_kind",
+        "generated_by",
+        "source_refs",
+        "repository_inclusion",
+        "redistribution",
+        "release_blocker",
+        "ranex_license_scope",
+        "notes",
+    }
+    expected_research_source_refs = [
+        "docs/research/engineering-reference-practice-registry.json",
+        "docs/architecture/ENGINEERING_REFERENCE_APPLICATION_MAP.md",
+    ]
+    expected_research_scope = (
+        "Original selection, identifiers, mapping, organization, "
+        "projection structure, and commentary only, if owned by "
+        "Anthony Garces"
+    )
+    expected_research_notes = (
+        "Public-safe generated engineering-reference projection. "
+        "Third-party ideas, source text, bibliographic metadata, "
+        "publisher/provider material, and model-output rights remain "
+        "excluded; no full-text reference work is included."
+    )
     for row in projection_rows:
-        require(
-            frozenset(row) in {
-                frozenset(expected_fields),
-                frozenset(
-                    expected_fields | {"artifact_registry_projection"}
-                ),
-            }
-            and row["classification"] == "RANEX_ORIGINAL"
-            and row["license"]
-            == "LicenseRef-Ranex-Personal-Use-1.0"
-            and row["provenance_kind"]
-            == "DETERMINISTIC_GENERATED_PROJECTION"
-            and row["generated_by"]
-            == expected_writer_by_path.get(row["path"])
-            and (
-                (
-                    row.get("artifact_registry_projection") is True
-                    and row["path"]
-                    in expected_artifact_projection_paths
+        path = row["path"]
+        policy_id = expected_policy_by_path.get(path)
+        if policy_id == LICENSING_POLICY_RANEX_ORIGINAL:
+            valid_row = (
+                frozenset(row)
+                in {
+                    frozenset(expected_original_fields),
+                    frozenset(
+                        expected_original_fields
+                        | {"artifact_registry_projection"}
+                    ),
+                }
+                and row["classification"] == "RANEX_ORIGINAL"
+                and row["license"]
+                == "LicenseRef-Ranex-Personal-Use-1.0"
+                and row["provenance_kind"]
+                == "DETERMINISTIC_GENERATED_PROJECTION"
+                and (
+                    (
+                        row.get("artifact_registry_projection") is True
+                        and path in expected_artifact_projection_paths
+                    )
+                    if "artifact_registry_projection" in row
+                    else path not in expected_artifact_projection_paths
                 )
-                if "artifact_registry_projection" in row
-                else row["path"]
-                not in expected_artifact_projection_paths
+                and row["repository_inclusion"] == "PUBLIC_SAFE"
+                and row["redistribution"]
+                == "SUBJECT_TO_RANEX_LICENSE"
+                and row["release_blocker"] is False
+                and isinstance(row["notes"], str)
+                and bool(row["notes"])
             )
-            and row["repository_inclusion"] == "PUBLIC_SAFE"
-            and row["redistribution"]
-            == "SUBJECT_TO_RANEX_LICENSE"
-            and row["release_blocker"] is False,
+        elif policy_id == LICENSING_POLICY_CURATED_RESEARCH:
+            valid_row = (
+                set(row) == expected_research_fields
+                and path
+                in CURATED_RESEARCH_GENERATED_OUTPUT_PATHS
+                and row["classification"] == "CURATED_RESEARCH"
+                and row["license"] == "NOASSERTION"
+                and row["provenance_kind"]
+                == "DETERMINISTIC_GENERATED_RESEARCH_PROJECTION"
+                and row["source_refs"]
+                == expected_research_source_refs
+                and row["repository_inclusion"]
+                == "PUBLIC_SAFE_NONRECONSTRUCTIVE"
+                and row["redistribution"]
+                == "RANEX_ORIGINAL_SCOPE_ONLY"
+                and row["release_blocker"] is False
+                and row["ranex_license_scope"]
+                == expected_research_scope
+                and row["notes"] == expected_research_notes
+            )
+        else:
+            valid_row = False
+        require(
+            valid_row
+            and row["generated_by"]
+            == expected_writer_by_path.get(path),
             "GENERATED_OUTPUT_LICENSE_ROW",
-            row["path"],
+            path,
         )
         checks["generated_output_license_entries"] += 1
 
@@ -17611,6 +18855,21 @@ def validate_generated_artifact_licensing(
         (
             "WRONG_WRITER",
             wrong_writer,
+            "GENERATED_OUTPUT_LICENSE_ROW:",
+        )
+    )
+    research_rights_expansion = copy.deepcopy(manifest)
+    research_path = sorted(
+        CURATED_RESEARCH_GENERATED_OUTPUT_PATHS
+    )[0]
+    for row in research_rights_expansion["files"]:
+        if row["path"] == research_path:
+            row["classification"] = "RANEX_ORIGINAL"
+            break
+    mutation_specs.append(
+        (
+            "RESEARCH_RIGHTS_EXPANSION",
+            research_rights_expansion,
             "GENERATED_OUTPUT_LICENSE_ROW:",
         )
     )
@@ -17939,20 +19198,37 @@ def validate_templates(schemas: dict[str, dict[str, Any]], checks: Counter[str])
             schema_path,
         )
         schema = schemas[schema_path]
-        if artifact_type == "artifact_legal_hold_fact":
-            require(
-                schema["properties"]["artifact_type"]["const"]
-                == artifact_type,
-                "GENERATED_ARTIFACT_TYPE_BINDING",
-                artifact_type,
-            )
-        else:
-            require(
-                schema["properties"]["subject_schema"]["const"]
-                == artifact_type.replace("_", "-") + "/v1",
-                "GENERATED_ARTIFACT_TYPE_BINDING",
-                artifact_type,
-            )
+        discriminator_by_type = {
+            "artifact_legal_hold_fact": (
+                "artifact_type",
+                "artifact_legal_hold_fact",
+            ),
+            "readiness_subject_manifest": (
+                "manifest_schema",
+                "readiness-subject-manifest/v1",
+            ),
+            "readiness_evidence_binding": (
+                "record_type",
+                "READINESS_EVIDENCE_BINDING",
+            ),
+            "readiness_assessment": (
+                "record_type",
+                "READINESS_ASSESSMENT",
+            ),
+        }
+        discriminator, expected_const = discriminator_by_type.get(
+            artifact_type,
+            (
+                "subject_schema",
+                artifact_type.replace("_", "-") + "/v1",
+            ),
+        )
+        require(
+            schema["properties"][discriminator]["const"]
+            == expected_const,
+            "GENERATED_ARTIFACT_TYPE_BINDING",
+            artifact_type,
+        )
         seen[artifact_type] = schema_path
         checks["generated_artifact_projections"] += 1
     require(
@@ -20646,12 +21922,866 @@ def validate_worker_runtime_registries(
     return role_registry, adapter_registry
 
 
+def readiness_error(case_id: str) -> str:
+    return "READINESS_" + case_id.upper().replace("-", "_")
+
+
+def resolve_readiness_fixture_world(
+    world: dict[str, Any],
+    schemas: dict[str, dict[str, Any]],
+    contract: dict[str, Any],
+) -> str:
+    subject = world["subject"]
+    manifest = world["subject_manifest"]
+    assessment = world["assessment"]
+    tier_id = assessment["tier_id"]
+    tier = next(
+        row for row in contract["tiers"] if row["tier_id"] == tier_id
+    )
+    expected_gate_ids = tier["exact_gate_ids"]
+    actual_gate_ids = [
+        row.get("gate_id") for row in assessment["gate_results"]
+    ]
+    if len(actual_gate_ids) < len(expected_gate_ids):
+        raise ContractFailure(readiness_error("missing_gate") + ":")
+    if set(actual_gate_ids) - set(expected_gate_ids):
+        raise ContractFailure(readiness_error("extra_gate") + ":")
+    if (
+        len(actual_gate_ids) != len(set(actual_gate_ids))
+        or actual_gate_ids != expected_gate_ids
+    ):
+        raise ContractFailure(
+            readiness_error("duplicate_or_reordered_gate") + ":"
+        )
+
+    expected_roles = contract[
+        "readiness_subject_manifest_projection"
+    ]["exact_entry_roles_by_tier"][tier_id]
+    actual_roles = [row.get("role") for row in manifest["entries"]]
+    if actual_roles != expected_roles:
+        raise ContractFailure(
+            readiness_error(
+                "readiness_subject_manifest_"
+                "missing_extra_duplicate_reordered_or_forged"
+            )
+            + ":"
+        )
+    if (
+        manifest["digest"] != digest(manifest)
+        or subject["readiness_subject_manifest_digest"]
+        != manifest["digest"]
+        or manifest["readiness_subject_ref"] != subject["subject_ref"]
+        or manifest["readiness_basis_digest"]
+        != subject["readiness_basis_digest"]
+        or manifest["readiness_subject_identity_digest"]
+        != subject["readiness_subject_identity_digest"]
+    ):
+        raise ContractFailure(
+            readiness_error("wrong_subject_or_manifest") + ":"
+        )
+    basis_fields = [
+        "repository_id",
+        "readiness_contract_id",
+        "readiness_contract_version",
+        "source_commit_sha1",
+        "source_tree_oid_sha1",
+        "source_manifest_digest",
+        "generated_manifest_digest",
+        "contract_validation_report_digest",
+        "architecture_subject_digest",
+        "architecture_subject_manifest_digest",
+        "fork_preflight_digest",
+    ]
+    expected_basis = canonical_subject_digest(
+        {field: subject[field] for field in basis_fields}
+    )
+    identity_fields = [
+        "readiness_basis_digest",
+        "tier_id",
+        "tier_evidence_subject_schema",
+        "tier_evidence_subject_ref",
+        "tier_evidence_subject_digest",
+        "tier_evidence_subject_manifest_digest",
+        "assessment_window_end",
+    ]
+    expected_identity = canonical_subject_digest(
+        {field: subject[field] for field in identity_fields}
+    )
+    expected_subject_ref = (
+        "urn:ranex:readiness:"
+        + subject["repository_id"]
+        + ":"
+        + tier_id
+        + ":"
+        + expected_identity.removeprefix("sha256:")
+    )
+    if (
+        subject["readiness_basis_digest"] != expected_basis
+        or subject["readiness_subject_identity_digest"]
+        != expected_identity
+        or subject["subject_ref"] != expected_subject_ref
+        or assessment["exact_subject_ref"] != subject["subject_ref"]
+        or assessment["exact_subject_digest"]
+        != canonical_subject_digest(subject)
+        or assessment["exact_subject_manifest_digest"]
+        != manifest["digest"]
+        or assessment["readiness_basis_digest"] != expected_basis
+    ):
+        raise ContractFailure(
+            readiness_error("wrong_subject_or_manifest") + ":"
+        )
+
+    bindings = [
+        row["evidence_binding"]
+        for row in assessment["gate_results"]
+    ]
+    gate_contracts = {
+        row["gate_id"]: row for row in contract["gates"]
+    }
+    for result, binding in zip(
+        assessment["gate_results"],
+        bindings,
+        strict=True,
+    ):
+        gate_id = result["gate_id"]
+        if (
+            binding["digest"] != digest(binding)
+            or binding["gate_id"] != gate_id
+            or binding["bridge_rule_id"]
+            != gate_contracts[gate_id]["bridge_rule_id"]
+            or binding["readiness_subject_ref"]
+            != subject["subject_ref"]
+            or binding["readiness_subject_digest"]
+            != canonical_subject_digest(subject)
+            or binding["readiness_subject_manifest_digest"]
+            != manifest["digest"]
+            or binding["readiness_basis_digest"] != expected_basis
+        ):
+            raise ContractFailure(
+                readiness_error(
+                    "cross_subject_or_wrong_native_evidence_bridge"
+                )
+                + ":"
+            )
+        native_class = contract["evidence_bridge_contract"][
+            "bridge_rule_by_gate"
+        ][gate_id]["native_subject_class"]
+        if native_class == "ARCHITECTURE_SUBJECT":
+            expected_native_digest = subject[
+                "architecture_subject_digest"
+            ]
+        elif native_class == "TIER2_RUNTIME_RELEASE_SUBJECT":
+            expected_native_digest = subject[
+                "tier_evidence_subject_digest"
+            ]
+        elif native_class == "TIER2_READINESS_SUBJECT":
+            expected_native_digest = canonical_subject_digest(subject)
+        elif native_class == "TIER1_READINESS_SUBJECT":
+            expected_native_digest = canonical_subject_digest(
+                (
+                    world["tier1_subject"]
+                    if world["tier1_subject"] is not None
+                    else subject
+                )
+            )
+        else:
+            expected_native_digest = readiness_fixture_digest(
+                "tdd-subject"
+            )
+        if binding["native_subject_digest"] != expected_native_digest:
+            raise ContractFailure(
+                readiness_error(
+                    "cross_subject_or_wrong_native_evidence_bridge"
+                )
+                + ":"
+            )
+
+    observed_at = parse_utc_datetime(
+        assessment["observed_at"],
+        readiness_error("stale_or_expired_evidence"),
+        "",
+    )
+    valid_until = parse_utc_datetime(
+        assessment["valid_until"],
+        readiness_error("stale_or_expired_evidence"),
+        "",
+    )
+    assessment_window_end = parse_utc_datetime(
+        subject["assessment_window_end"],
+        readiness_error("stale_or_expired_evidence"),
+        "",
+    )
+    if (
+        observed_at >= valid_until
+        or valid_until > assessment_window_end
+    ):
+        raise ContractFailure(
+            readiness_error("stale_or_expired_evidence") + ":"
+        )
+    for result in assessment["gate_results"]:
+        gate_observed_at = parse_utc_datetime(
+            result["observed_at"],
+            readiness_error("stale_or_expired_evidence"),
+            "",
+        )
+        gate_valid_until = parse_utc_datetime(
+            result["valid_until"],
+            readiness_error("stale_or_expired_evidence"),
+            "",
+        )
+        if not (
+            gate_observed_at <= observed_at < gate_valid_until
+        ):
+            raise ContractFailure(
+                readiness_error("stale_or_expired_evidence") + ":"
+            )
+
+    if (
+        not world["current_head_clean"]
+        or not world["evaluation_commit_clean"]
+        or not world["current_head_descendant"]
+        or not world["governed_manifest_unchanged"]
+    ):
+        raise ContractFailure(
+            readiness_error("dirty_or_uncommitted_fork") + ":"
+        )
+    if world["fork_preflight_result"] != "PASS":
+        raise ContractFailure(
+            readiness_error("fork_preflight_not_pass") + ":"
+        )
+    if world["tdd_synthetic"]:
+        raise ContractFailure(
+            readiness_error("synthetic_tdd_claimed_as_live") + ":"
+        )
+    if (
+        world["tdd_cycle_status"] != "GATED"
+        or world["tdd_cycle_result"] != "PASS"
+    ):
+        raise ContractFailure(
+            readiness_error("tdd_not_gated_or_not_pass") + ":"
+        )
+    if (
+        world["landing_count"] != 1
+        or world["landing_status"] != "SUCCEEDED"
+    ):
+        raise ContractFailure(
+            readiness_error(
+                "landing_missing_duplicate_or_not_succeeded"
+            )
+            + ":"
+        )
+    if (
+        world["sealing_result"] != "PASS"
+        or not world["sealing_tree_matches"]
+    ):
+        raise ContractFailure(
+            readiness_error(
+                "sealing_missing_or_wrong_landed_tree"
+            )
+            + ":"
+        )
+    if (
+        world["hy3_review_result"] != "PASS"
+        or not world["hy3_review_current_subject"]
+    ):
+        raise ContractFailure(
+            readiness_error(
+                "hy3_review_missing_stale_or_wrong_subject"
+            )
+            + ":"
+        )
+    if (
+        world["deepseek_review_result"] != "PASS"
+        or not world["deepseek_review_current_subject"]
+    ):
+        raise ContractFailure(
+            readiness_error(
+                "deepseek_review_missing_stale_or_wrong_subject"
+            )
+            + ":"
+        )
+    if (
+        not world["reviewers_independent"]
+        or world["reviewers_write_authority"]
+    ):
+        raise ContractFailure(
+            readiness_error(
+                "reviewer_not_independent_or_has_write_authority"
+            )
+            + ":"
+        )
+    if world["unresolved_p0_p1"]:
+        raise ContractFailure(
+            readiness_error("unresolved_p0_or_p1") + ":"
+        )
+    if (
+        not world["human_decision_present"]
+        or not world["human_decision_current_subject"]
+        or not world["human_decision_causal"]
+        or world["human_decision_revoked"]
+        or world["human_decision_superseded"]
+    ):
+        raise ContractFailure(
+            readiness_error(
+                "human_decision_missing_wrong_subject_"
+                "noncausal_revoked_or_superseded"
+            )
+            + ":"
+        )
+    if world["direct_ready_transition"]:
+        raise ContractFailure(
+            readiness_error(
+                "direct_not_assessed_to_ready_transition"
+            )
+            + ":"
+        )
+    if assessment["runtime_assessment_status"] in {
+        "UNKNOWN",
+        "ASSESSED_FAIL",
+        "CONFLICT",
+    }:
+        raise ContractFailure(
+            readiness_error(
+                "runtime_status_unknown_invalid_or_tier_ineligible"
+            )
+            + ":"
+        )
+    if tier_id == "READINESS-TIER-PRODUCTION-001":
+        if (
+            world["tier1_assessment"] is None
+            or world["tier1_assessment"]["result"] != "PASS"
+            or world["tier1_assessment"]["readiness_basis_digest"]
+            != assessment["readiness_basis_digest"]
+        ):
+            raise ContractFailure(
+                readiness_error(
+                    "production_without_current_tier1"
+                )
+                + ":"
+            )
+        if assessment["runtime_assessment_status"] != "ASSESSED_PASS":
+            raise ContractFailure(
+                readiness_error(
+                    "production_runtime_not_assessed_or_unknown"
+                )
+                + ":"
+            )
+        if (
+            world["architecture_rule_result_count"] != 64
+            or not world["architecture_rule_results_pass"]
+        ):
+            raise ContractFailure(
+                readiness_error(
+                    "production_rule_denominator_or_result_failure"
+                )
+                + ":"
+            )
+        if not world["runtime_producers_pass"]:
+            raise ContractFailure(
+                readiness_error(
+                    "production_runtime_producer_or_ownership_failure"
+                )
+                + ":"
+            )
+        if not all(
+            [
+                world["adoption_gates_pass"],
+                world["security_isolation_pass"],
+                world["operating_evidence_pass"],
+                world["recovery_evidence_pass"],
+                world["capability_assessments_pass"],
+                world["authority_chain_pass"],
+            ]
+        ):
+            raise ContractFailure(
+                readiness_error(
+                    "production_operational_recovery_"
+                    "security_or_score_failure"
+                )
+                + ":"
+            )
+    if world["authority_effects"]:
+        raise ContractFailure(
+            readiness_error(
+                "readiness_used_as_grant_permit_release_or_deployment"
+            )
+            + ":"
+        )
+    if not world["bootstrap_scope_valid"]:
+        raise ContractFailure(
+            readiness_error("bootstrap_tracer_scope_escalation") + ":"
+        )
+    if not world["state_history_valid"]:
+        raise ContractFailure(
+            readiness_error(
+                "edited_forked_cyclic_duplicate_version_"
+                "or_gap_bearing_state_history"
+            )
+            + ":"
+        )
+    if (
+        assessment["result"] != "PASS"
+        or any(row["result"] != "PASS" for row in assessment["gate_results"])
+        or assessment["digest"] != digest(assessment)
+    ):
+        raise ContractFailure("READINESS_PASS_RESOLUTION:")
+
+    format_checker = jsonschema.FormatChecker()
+    jsonschema.Draft202012Validator(
+        schemas[contract["subject_schema_ref"]],
+        format_checker=format_checker,
+    ).validate(subject)
+    jsonschema.Draft202012Validator(
+        schemas[contract["subject_manifest_schema_ref"]],
+        format_checker=format_checker,
+    ).validate(manifest)
+    evidence_schema = schemas[contract["evidence_binding_schema_ref"]]
+    for binding in bindings:
+        jsonschema.Draft202012Validator(
+            evidence_schema,
+            format_checker=format_checker,
+        ).validate(binding)
+    jsonschema.Draft202012Validator(
+        schemas[contract["assessment_schema_ref"]],
+        format_checker=format_checker,
+    ).validate(assessment)
+    return "PASS"
+
+
+def mutate_readiness_fixture_world(
+    world: dict[str, Any],
+    mutation: str,
+) -> None:
+    assessment = world["assessment"]
+    if mutation == "missing_gate":
+        assessment["gate_results"].pop()
+    elif mutation == "extra_gate":
+        extra = copy.deepcopy(assessment["gate_results"][-1])
+        extra["gate_id"] = "READY-UNREGISTERED-001"
+        assessment["gate_results"].append(extra)
+    elif mutation == "duplicate_or_reordered_gate":
+        assessment["gate_results"][0], assessment["gate_results"][1] = (
+            assessment["gate_results"][1],
+            assessment["gate_results"][0],
+        )
+    elif mutation == "wrong_subject_or_manifest":
+        assessment["exact_subject_digest"] = readiness_fixture_digest(
+            "wrong-subject"
+        )
+        assessment["digest"] = digest(assessment)
+    elif mutation == "stale_or_expired_evidence":
+        assessment["gate_results"][0]["valid_until"] = (
+            "2026-07-28T00:00:00Z"
+        )
+    elif mutation == "dirty_or_uncommitted_fork":
+        world["current_head_clean"] = False
+    elif mutation == "fork_preflight_not_pass":
+        world["fork_preflight_result"] = "FAIL"
+    elif mutation == "synthetic_tdd_claimed_as_live":
+        world["tdd_synthetic"] = True
+    elif mutation == "tdd_not_gated_or_not_pass":
+        world["tdd_cycle_status"] = "REFACTOR"
+    elif mutation == "landing_missing_duplicate_or_not_succeeded":
+        world["landing_count"] = 0
+    elif mutation == "sealing_missing_or_wrong_landed_tree":
+        world["sealing_tree_matches"] = False
+    elif mutation == "hy3_review_missing_stale_or_wrong_subject":
+        world["hy3_review_current_subject"] = False
+    elif mutation == "deepseek_review_missing_stale_or_wrong_subject":
+        world["deepseek_review_current_subject"] = False
+    elif mutation == "reviewer_not_independent_or_has_write_authority":
+        world["reviewers_write_authority"] = True
+    elif mutation == "unresolved_p0_or_p1":
+        world["unresolved_p0_p1"] = True
+    elif mutation == (
+        "human_decision_missing_wrong_subject_"
+        "noncausal_revoked_or_superseded"
+    ):
+        world["human_decision_present"] = False
+    elif mutation == "direct_not_assessed_to_ready_transition":
+        world["direct_ready_transition"] = True
+    elif mutation == "production_without_current_tier1":
+        world["tier1_assessment"] = None
+    elif mutation == "production_runtime_not_assessed_or_unknown":
+        assessment["runtime_assessment_status"] = "NOT_ASSESSED"
+        assessment["runtime_assessment_ref"] = None
+        assessment["runtime_assessment_digest"] = None
+        assessment["digest"] = digest(assessment)
+    elif mutation == "production_rule_denominator_or_result_failure":
+        world["architecture_rule_result_count"] = 63
+    elif mutation == "production_runtime_producer_or_ownership_failure":
+        world["runtime_producers_pass"] = False
+    elif mutation == (
+        "production_operational_recovery_security_or_score_failure"
+    ):
+        world["recovery_evidence_pass"] = False
+    elif mutation == (
+        "readiness_used_as_grant_permit_release_or_deployment"
+    ):
+        world["authority_effects"] = ["PERMIT_ISSUED"]
+    elif mutation == "bootstrap_tracer_scope_escalation":
+        world["bootstrap_scope_valid"] = False
+    elif mutation == "cross_subject_or_wrong_native_evidence_bridge":
+        binding = assessment["gate_results"][0]["evidence_binding"]
+        binding["native_subject_digest"] = readiness_fixture_digest(
+            "wrong-native-subject"
+        )
+        binding["digest"] = digest(binding)
+        assessment["digest"] = digest(assessment)
+    elif mutation == (
+        "readiness_subject_manifest_"
+        "missing_extra_duplicate_reordered_or_forged"
+    ):
+        world["subject_manifest"]["entries"].pop()
+        world["subject_manifest"]["digest"] = digest(
+            world["subject_manifest"]
+        )
+    elif mutation == "runtime_status_unknown_invalid_or_tier_ineligible":
+        assessment["runtime_assessment_status"] = "UNKNOWN"
+        assessment["runtime_assessment_ref"] = (
+            "urn:ranex:runtime-assessment:unknown"
+        )
+        assessment["runtime_assessment_digest"] = (
+            readiness_fixture_digest("runtime-unknown")
+        )
+        assessment["digest"] = digest(assessment)
+    elif mutation == (
+        "edited_forked_cyclic_duplicate_version_"
+        "or_gap_bearing_state_history"
+    ):
+        world["state_history_valid"] = False
+    else:
+        raise ContractFailure("READINESS_FIXTURE_MUTATION_UNKNOWN:" + mutation)
+
+
+def validate_readiness_contract(
+    schemas: dict[str, dict[str, Any]],
+    checks: Counter[str],
+) -> None:
+    contract = adr12_readiness_contract()
+    source_path = str(READINESS_ADR.relative_to(ROOT))
+    source_digest = file_digest(READINESS_ADR)
+    contract_digest = canonical_subject_digest(contract)
+    expected_tiers = {
+        **copy.deepcopy(contract),
+        "generated_by": "scripts/architecture/generate_contracts.py",
+        "source_path": source_path,
+        "source_digest": source_digest,
+        "source_contract_digest": contract_digest,
+    }
+    actual_tiers = load_json(CONTRACTS / "readiness-tiers.json")
+    require(
+        actual_tiers == expected_tiers,
+        "ADR12_TIER_SOURCE_PROJECTION",
+        "",
+    )
+    expected_assessments = {
+        "registry_id": "REG-READINESS-ASSESSMENTS-001",
+        "version": contract["contract_version"],
+        "status": contract["catalog_status"],
+        "generated_by": "scripts/architecture/generate_contracts.py",
+        "contract_id": contract["contract_id"],
+        "contract_version": contract["contract_version"],
+        "governing_adr": contract["governing_adr"],
+        "source_path": source_path,
+        "source_digest": source_digest,
+        "source_contract_digest": contract_digest,
+        "tier_catalog_ref": contract["source_projection_ref"],
+        "subject_schema_ref": contract["subject_schema_ref"],
+        "subject_manifest_schema_ref": (
+            contract["subject_manifest_schema_ref"]
+        ),
+        "evidence_binding_schema_ref": (
+            contract["evidence_binding_schema_ref"]
+        ),
+        "record_schema_ref": contract["assessment_schema_ref"],
+        "record_count": 0,
+        "entries": [],
+        "current_standing": contract["current_standing"],
+    }
+    require(
+        load_json(CONTRACTS / "readiness-assessments.json")
+        == expected_assessments,
+        "ADR12_ASSESSMENT_SOURCE_PROJECTION",
+        "",
+    )
+    for schema_ref, source_row in [
+        (
+            contract["subject_schema_ref"],
+            contract["exact_subject_projection"],
+        ),
+        (
+            contract["subject_manifest_schema_ref"],
+            contract["readiness_subject_manifest_projection"],
+        ),
+        (
+            contract["evidence_binding_schema_ref"],
+            next(
+                row
+                for row in contract["nested_types"]
+                if row["type_id"] == "ReadinessEvidenceBindingV1"
+            ),
+        ),
+        (
+            contract["assessment_schema_ref"],
+            contract["assessment_record"],
+        ),
+    ]:
+        schema = schemas[schema_ref]
+        fields = source_row.get(
+            "fields",
+            source_row.get("output_fields"),
+        )
+        require(
+            schema["additionalProperties"] is False
+            and schema["required"] == fields
+            and set(schema["properties"]) == set(fields)
+            and schema["x-ranex-source-contract-id"]
+            == contract["contract_id"]
+            and schema["x-ranex-source-adr"] == "ADR-0012",
+            "ADR12_SCHEMA_SOURCE_PROJECTION",
+            schema_ref,
+        )
+        checks["readiness_schemas"] += 1
+
+    fixture = load_json(
+        SCHEMAS
+        / "fixtures"
+        / "semantic"
+        / "readiness-tier-contract-cases.json"
+    )
+    expected_positive_ids = [
+        key
+        for key in contract["fixture_contract"][
+            "positive_case_requirements"
+        ]
+        if key != "exact_positive_case_count"
+    ]
+    expected_negative_ids = [
+        key
+        for key in contract["fixture_contract"][
+            "negative_case_requirements"
+        ]
+        if key != "exact_negative_case_count"
+    ]
+    stale_fixture_case = next(
+        row
+        for row in fixture["negative_cases"]
+        if row["fixture_id"] == "stale_or_expired_evidence"
+    )
+    require(
+        fixture["fixture_suite"]
+        == "ADR0012_READINESS_TIER_CONTRACT_V1"
+        and fixture["contract_id"] == contract["contract_id"]
+        and fixture["evidence_scope"]
+        == "SYNTHETIC_CONTRACT_SATISFIABILITY_ONLY"
+        and fixture["runtime_claim"] == "NOT_ASSESSED"
+        and fixture["exact_positive_case_count"]
+        == len(expected_positive_ids)
+        == 4
+        and fixture["exact_negative_case_count"]
+        == len(expected_negative_ids)
+        == 28
+        and [
+            row["fixture_id"] for row in fixture["positive_cases"]
+        ]
+        == expected_positive_ids
+        and [
+            row["fixture_id"] for row in fixture["negative_cases"]
+        ]
+        == expected_negative_ids
+        and all(
+            row["authority_effects"] == []
+            for row in [
+                *fixture["positive_cases"],
+                *fixture["negative_cases"],
+            ]
+        )
+        and stale_fixture_case["executed_subcases"]
+        == READINESS_FRESHNESS_BOUNDARY_SUBCASES
+        and stale_fixture_case["executed_subcase_count"]
+        == len(READINESS_FRESHNESS_BOUNDARY_SUBCASES)
+        == 6
+        and all(
+            set(row)
+            == (
+                {
+                    "fixture_id",
+                    "mutation",
+                    "expected_error",
+                    "authority_effects",
+                    "executed_subcases",
+                    "executed_subcase_count",
+                }
+                if row["fixture_id"]
+                == "stale_or_expired_evidence"
+                else {
+                    "fixture_id",
+                    "mutation",
+                    "expected_error",
+                    "authority_effects",
+                }
+            )
+            for row in fixture["negative_cases"]
+        ),
+        "ADR12_FIXTURE_SOURCE_PROJECTION",
+        "",
+    )
+    for case in fixture["positive_cases"]:
+        production = case["scenario"].startswith("tier2_")
+        world = build_readiness_fixture_world(
+            contract,
+            production=production,
+        )
+        if case["scenario"].startswith("invalidated_tier_"):
+            world["reassessment_after_invalidation"] = True
+        require(
+            resolve_readiness_fixture_world(
+                world,
+                schemas,
+                contract,
+            )
+            == case["expected_result"]
+            == "PASS",
+            "ADR12_POSITIVE_FIXTURE",
+            case["fixture_id"],
+        )
+        checks["readiness_positive_cases"] += 1
+    production_mutations = {
+        "production_without_current_tier1",
+        "production_runtime_not_assessed_or_unknown",
+        "production_rule_denominator_or_result_failure",
+        "production_runtime_producer_or_ownership_failure",
+        (
+            "production_operational_recovery_"
+            "security_or_score_failure"
+        ),
+    }
+    for case in fixture["negative_cases"]:
+        mutation = case["mutation"]
+        world = build_readiness_fixture_world(
+            contract,
+            production=mutation in production_mutations,
+        )
+        mutate_readiness_fixture_world(world, mutation)
+        try:
+            resolve_readiness_fixture_world(
+                world,
+                schemas,
+                contract,
+            )
+        except ContractFailure as exc:
+            require(
+                str(exc).startswith(case["expected_error"] + ":")
+                and case["expected_error"] == readiness_error(mutation),
+                "ADR12_NEGATIVE_FIXTURE_WRONG_ERROR",
+                case["fixture_id"] + ":" + str(exc),
+            )
+        else:
+            raise ContractFailure(
+                "ADR12_NEGATIVE_FIXTURE_ACCEPTED:"
+                + case["fixture_id"]
+            )
+        checks["readiness_negative_cases"] += 1
+
+    freshness_boundary_cases = [
+        (
+            row["subcase_id"],
+            row["expected_outcome"] == "PASS",
+        )
+        for row in stale_fixture_case["executed_subcases"]
+    ]
+    for case_id, expect_pass in freshness_boundary_cases:
+        world = build_readiness_fixture_world(
+            contract,
+            production=False,
+        )
+        assessment = world["assessment"]
+        gate_result = assessment["gate_results"][0]
+        if case_id == (
+            "gate_expiry_equal_assessment_observation_rejects"
+        ):
+            gate_result["valid_until"] = assessment["observed_at"]
+        elif case_id == (
+            "gate_expiry_before_assessment_observation_rejects"
+        ):
+            gate_result["valid_until"] = "2026-07-29T00:30:00Z"
+        elif case_id == (
+            "gate_observation_after_assessment_observation_rejects"
+        ):
+            gate_result["observed_at"] = "2026-07-29T02:00:00Z"
+        elif case_id == (
+            "gate_observation_equal_assessment_observation_accepts"
+        ):
+            gate_result["observed_at"] = assessment["observed_at"]
+        elif case_id == (
+            "assessment_expiry_equal_window_end_accepts"
+        ):
+            assessment["valid_until"] = world["subject"][
+                "assessment_window_end"
+            ]
+        elif case_id == (
+            "assessment_expiry_after_window_end_rejects"
+        ):
+            assessment["valid_until"] = "2026-08-01T00:00:00Z"
+        else:
+            raise ContractFailure(
+                "ADR12_FRESHNESS_BOUNDARY_UNKNOWN:" + case_id
+            )
+        assessment["digest"] = digest(assessment)
+        if expect_pass:
+            require(
+                resolve_readiness_fixture_world(
+                    world,
+                    schemas,
+                    contract,
+                )
+                == "PASS",
+                "ADR12_FRESHNESS_BOUNDARY_POSITIVE",
+                case_id,
+            )
+            checks[
+                "readiness_freshness_positive_boundary_cases"
+            ] += 1
+        else:
+            try:
+                resolve_readiness_fixture_world(
+                    world,
+                    schemas,
+                    contract,
+                )
+            except ContractFailure as exc:
+                require(
+                    str(exc).startswith(
+                        readiness_error(
+                            "stale_or_expired_evidence"
+                        )
+                        + ":"
+                    ),
+                    "ADR12_FRESHNESS_BOUNDARY_WRONG_ERROR",
+                    case_id + ":" + str(exc),
+                )
+            else:
+                raise ContractFailure(
+                    "ADR12_FRESHNESS_BOUNDARY_ACCEPTED:"
+                    + case_id
+                )
+            checks[
+                "readiness_freshness_negative_boundary_cases"
+            ] += 1
+        checks["readiness_freshness_boundary_cases"] += 1
+    checks["readiness_tiers"] = len(contract["tiers"])
+    checks["readiness_gates"] = len(contract["gates"])
+    checks["readiness_current_assessments"] = 0
+
+
 def validate_registries(
     schemas: dict[str, dict[str, Any]],
     checks: Counter[str],
 ) -> tuple[list[dict[str, str]], list[str]]:
     validate_worker_runtime_registries(schemas, checks)
     validate_accepted_adr_registry(checks)
+    validate_readiness_contract(schemas, checks)
     tdd_source_contract = adr8_machine_tdd_contract()
     expected_tdd_rule_ids = set(tdd_source_contract["rule_ids"])
     context_registry = load_json(CONTRACTS / "contexts.json")
@@ -27275,6 +29405,7 @@ def validate_semantic_fixtures(
         "adr10-compatibility-v2-positive-cases.json",
         "adr10-scope-positive-cases.json",
         "estimate-commitment-positive-cases.json",
+        "readiness-tier-contract-cases.json",
         "valid-stateless-task-profile.json",
     }
     actual_names = {path.name for path in semantic.iterdir() if path.is_file()}
@@ -27293,13 +29424,12 @@ def validate_semantic_fixtures(
     checks["semantic_fixtures"] += 1
     validate_adr8_synthetic_definition_fixture(schemas, checks)
     checks["semantic_fixtures"] += 1
-    validate_estimate_commitment_schema_matrix(schemas, checks)
-    validate_estimate_commitment_fixture_suites(schemas, checks)
-    validate_estimate_commitment_invariant_negatives(
+    # The retained synthetic executor implements the superseded V1 contract.
+    # V2 definitions are audited here without implying semantic execution.
+    validate_estimate_commitment_v2_definition_coverage(
         schemas,
         checks,
     )
-    validate_estimate_commitment_caller_paths(schemas, checks)
     checks["semantic_fixtures"] += 1
     validate_adr10_record_schema_matrix(schemas, checks)
     validate_adr10_projection_matrix(schemas, checks)

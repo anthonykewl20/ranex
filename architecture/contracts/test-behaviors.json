@@ -1,0 +1,13 @@
+{
+  "active_entry_count": 0,
+  "entries": [],
+  "entry_count": 0,
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-TEST-BEHAVIORS-001",
+  "runtime_authority_resolution_status": "NOT_ASSESSED",
+  "source_bijection_status": "PASS",
+  "source_count": 0,
+  "source_pattern": "architecture/records/test-governance/behavior-authorities/<behavior_id>@<behavior_version>.json",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

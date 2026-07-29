@@ -309,7 +309,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:9927021e1fb3d6c1d84f935ad914916afa49c037fd9d2edd8aeda7d925d9a64c"
+              "const": "sha256:3760c20065930410f5606a1f8beaa8188f85a080c37addc47d57d066fd62192d"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunCreated:v1"
@@ -420,7 +420,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:b2041c6c74239c8af25f728f410d0b9bbd2445ce2ab7c1a182ada6562eab54e8"
+              "const": "sha256:cd8b0543757ba3bf5420c081b0b6f731cf5753ce5b3aa4b2f12832577ce40159"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkflowPinned:v1"
@@ -548,7 +548,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:d3dfd3d5e553312276ba5ebb1470e49f6730191dba0454d436a3d79190beb233"
+              "const": "sha256:9df35073457ef61bbe945b312740f542c3abf90c866f9ab28d9b2d335fd0fc58"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:PacketBound:v1"
@@ -750,7 +750,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:cea500f28eb6966606d2eb630145cd2bdd458e7fc5283b655b668edc894d77fc"
+              "const": "sha256:ac5af2280c127c0c5dcbea0dfcf641cec2853dceaa56eed4cfe43b1f019c0e9a"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunMarkedReady:v1"
@@ -1075,7 +1075,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:1f0ac99aa23eb259d90f3c2ffdf0ac8cdd6ad8258fdd3246e9921e084e3fdf0d"
+              "const": "sha256:a04bccbc79a2d891d834a626db72f5c4617759430c3e008f2f529af487bb5aeb"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:ActivityRequested:v1"
@@ -1189,7 +1189,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:69eb4a4a43f55ee431027591318d6ed914b2929560a5b9171b690e6931efb150"
+              "const": "sha256:b7817b7810af2a76be7b5db14ad8a1606ceab9312b880eef339e87e3c31e60c1"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:AuthorizationEvaluated:v1"
@@ -1407,7 +1407,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:4d5d73dfc696ce33be162dc6bd4647ec95317ef516f4a91ef15266d4cf6b23b5"
+              "const": "sha256:e31423a848033d6f6ba159fa21ac8c5871a23f4dfbe664f3f4d10328297238b3"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:ActivityDispatched:v1"
@@ -1622,7 +1622,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:77ac3ffadf7617cb6253bd5c5b6f4c25fd3a49a68982cf42c4e19fb1bc121b75"
+              "const": "sha256:8ab1f8670cabc03c3ea938bfe9e364c0d7ed99d96448f3849d335aa58c3219f9"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:ActivityResolved:v1"
@@ -1732,7 +1732,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:a912364fe202434fd5b6d213d0509f4e5f3ee0c44c85e7616bc4de28f02392dd"
+              "const": "sha256:ab3e0756f23a6e2e869348ad4bb85021210dfb8033a152cafd93e9a3b0d5c426"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EvidenceSnapshotBound:v1"
@@ -1847,7 +1847,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:c7b567afd8fd44eadef9dfd31666995fe703f80b52bafdf6be340aafba98b142"
+              "const": "sha256:4f319de115fc39a414b83c26bcc513c877de3957a4a047e32bc67c8cc25a141e"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:GateEvaluated:v1"
@@ -1958,7 +1958,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:ff6b9393e2a1d241a080f0f8bf4006215d25e19d3f0aebfd2e57d0f573f4a37c"
+              "const": "sha256:aae0a7810701f851dbd8bda4121499d804fc4eabb684b79daa7bd06aa0bb6cde"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:HumanDecisionSnapshotBound:v1"
@@ -2286,7 +2286,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:9155e1965f2d65af30bcffc0cdf88e274e8f4b7105a0b1f0267bb107412efeeb"
+              "const": "sha256:9fb5d68606910b0c878121e85ab6c29bad18a684321c7d387dbdc8a75ee201a5"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:PermitIssued:v1"
@@ -2462,7 +2462,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:a6094b2af39df63bf479531e6bb3afdcb290e79fbcf3f554341c580263adbb19"
+              "const": "sha256:57ed5373f1d3d40c2661f8637d6d5a4bbe35c312cfcb20b8d2c13f482b2d2ab4"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:PermitConsumed:v1"
@@ -2792,7 +2792,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:db1c5a20a17242b1fbe8c9d754b08cf9b4af660fa4e4caf643e0d56621d6cf5f"
+              "const": "sha256:bf265037739f56cf0ddf01f9adb3492fb6485147dc11b0c1f52cde498e5df342"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectIntentRecorded:v1"
@@ -2971,7 +2971,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:843953cbc3c06d4bd164736ff0f96b427bca4d2ce4f352777f800ca398e0d11d"
+              "const": "sha256:dd818850cdd8410fa11533ff2233edfe91fe49c217efb177f06fe4a436e9cffe"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectDispatched:v1"
@@ -3183,7 +3183,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:45c70acb9dce50cd9cae02c185a8b61d2dc35cead667dbb1b4ff77280b88c30c"
+              "const": "sha256:c8277c463d1664ef42050648bd5b409caa9ccff36e860218d429555e045d37b4"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectResolved:v1"
@@ -3397,7 +3397,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:c6f5ce6c9b6ca3cb183bd12419ca1e0e9b29b92d6097cb0f2657864a79159d02"
+              "const": "sha256:4c6b704f2979e3a8ac83f9adaaff37bbe173ae8d9f9e8c411ce24cc84618dd7f"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectOutcomeMarkedUnknown:v1"
@@ -3600,7 +3600,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:5393a25a68656230340be368ccbf9d5bacd6d2441d057673670943286b20f3d3"
+              "const": "sha256:cd7999d42e8b8bf238e105de2202dd65e0c668f889efc50f3c939bebfec02155"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectReconciled:v1"
@@ -3805,7 +3805,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:3f9c240c64cf15fc76d4e8310051c12f35953e3991b6366079f150654746bcde"
+              "const": "sha256:2cef2fd01aecb9e549459505e9bb39a621a279d96bcc3d8a385325bdaedc9336"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunBlocked:v1"
@@ -4019,7 +4019,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:67421191bea8d4fa4d35ab102e67deb23244896384cb70a2d8c3f4dc47fe3dd3"
+              "const": "sha256:371596df4b0be94daaafab74dc67887337c9de574bf446b7fde9f8abd448c6ea"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunUnblocked:v1"
@@ -4242,7 +4242,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:93bd3ed88aed7a0a78aaae0684c9c5df82cf60997269dfacf356d839238b61fd"
+              "const": "sha256:f92444aa5e6f85e193c283b0c993b3fdf8a29288d2dbc7f780f6b463770456d0"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunCancelled:v1"
@@ -4450,7 +4450,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:9fbf2dc24f82ce0fc2cd45276e445f7f343c6a742b4517242f91a4288ce616a5"
+              "const": "sha256:2dcc4aa52eda004133f98aa622a1df1274dbffd009dac48b9e8287f356436979"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunSucceeded:v1"
@@ -4671,7 +4671,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:721d752fe84943a1b4c4a6ba5eea40e685f119bc5fdff7eb161970a5b0b60655"
+              "const": "sha256:a6063b91c1daa1247cfd0d12630849e4b9c1a0b39703559502fff0a43ccecb43"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunFailed:v1"
@@ -4792,7 +4792,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:d98d1121df90342bb1b7e3b049a888ea379b2f72c929eec55fa409e6b296c6ec"
+              "const": "sha256:ed53fe8df9efac9fd6100fdf64140eb47cdda83376dac9fa9f35683b2732b6a7"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:PolicyChangeBlockedRun:v1"
@@ -4920,7 +4920,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:e91327d862208c5c985ef519ef2243e8ee9893645e9b5fb3a9b38ca01eec9461"
+              "const": "sha256:6653fb2dc6ebabab49256c3ba439872ab2a6e57f9ddbcb071f7f915111a277b2"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:SourceDivergenceDetected:v1"
@@ -5249,7 +5249,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:f608d3f015d193b9cb642424d1042e2d08a25d1657664d4b85aeb390f6f2a3ec"
+              "const": "sha256:9bd0722ecd5e346a9a6b7d3e1a309b5936a629448391c3254f37e95b2735c8f3"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemCreated:v1"
@@ -5376,7 +5376,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:b2b48f2942c6ace41cce6a28db372aa1c54ebbe15b3edc559643f7119fcccf78"
+              "const": "sha256:9dca7b49df2d880ecc6571f89cfd57f73deddee4168415bf4d195e5060aebd82"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemClassified:v1"
@@ -5497,7 +5497,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:ca5b2b2095c0ab053f9f2bd2a963a2770f158a21e5b4c357f93ecb5dc0a363e1"
+              "const": "sha256:616e6ff997cd64e4c69ec5569114c69ff6820fa001ea9d8283115d477a35a722"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RiskLaneBound:v1"
@@ -5648,7 +5648,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:56dd38548898bf231b24f5e76069d148cd22e485598a16bbdd45a9363f3ca02a"
+              "const": "sha256:3bca38def429e68c8801978f21016fad77f753767c3db9a74177a11ee05e2889"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:OutcomeRequirementRefsBound:v1"
@@ -5903,7 +5903,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:ecbdf2ead99905949c8516060440c4c697acda30dd53b712a5376eda91d46603"
+              "const": "sha256:9b171b54bcf0005cbb3872755b6ced2cac86fc530c82e2ccaef49f07a269aab7"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemTransitioned:v1"
@@ -6116,7 +6116,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:6c87d7aeedf51eb0dcac773435b7250e573c256c49dc55f4b04b0c7893bfbe26"
+              "const": "sha256:97db1fb6868ae7d2e37ad3b78f5176221e69bd9c0f748e492fbd7b15487c39f5"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemBlocked:v1"
@@ -6346,7 +6346,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:ca9f3c8a89485cb0ca27023294ca8155fc155dec7cbba2725436a5509138ba80"
+              "const": "sha256:7db12c270f7a57b709b7ec58bc5d991464e7aa8fb3046d6711baedc5a5c7b96b"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemUnblocked:v1"
@@ -6576,7 +6576,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:8c9f6ed53c6411318eea532d6013dbc1143f412adffe18aed701d459b8c91cb3"
+              "const": "sha256:372a481b9bb5d6433f4b74620e315fe4935bc9a8cbbdaf13198f3247ea9433a9"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemCancelled:v1"
@@ -6700,7 +6700,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:b8159463a2e30f68af4716d474ce692f207ff596878c7862784a3ca8bdd90d5f"
+              "const": "sha256:0fdfb306ec36b9797967ba048ed9d796a85e5e898b2078d83c96be5dcd0457f9"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunRequestedForWorkItem:v1"
@@ -6806,7 +6806,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:4684de3ff568b47bb1356f4d86b123ab173725f276c681bd2aabbcfb0033ef12"
+              "const": "sha256:8879a8835cc13a06a79f42dce8afb342ae1c093eef27903f263c6d9ebd489805"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunEvidenceLinked:v1"
@@ -6912,7 +6912,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:27b317b15a066cec08f6283e77e3bc76945de57598a7d62de294244b7be26d76"
+              "const": "sha256:339a59f850c49b64c24311db0fe5692648489de505c6f3e306ee0d0a0e442876"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:ReleaseEvidenceLinked:v1"
@@ -7031,7 +7031,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:bfca154a89d2f88d85cc2a98c11e385d9f09ccd81e436de4ef8a741540d7c827"
+              "const": "sha256:bfc06fd9f927bbf4b789e3f7d05bbbf0e46ee18dbf8699b83142c08ce7b54853"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:OperationalEvidenceLinked:v1"
@@ -7151,7 +7151,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:e1e82392f03f5c5ac295c7bd8d1da16321557289e8cbe1b301ac8abe6e75d84b"
+              "const": "sha256:6e2b1c8af71a78a2fc825faf4d167d16bfa383bc0c43c40a8df24008e384f580"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:OutcomeDecisionLinked:v1"
@@ -7258,7 +7258,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:17f8a59c197ff701791bb54a1ba99e8a94c49f5d583c35322815a4a744d2b031"
+              "const": "sha256:9c867441d63946f46497b00bfbc1690f43396384028bf36be84cc4dbf4a2aaf8"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:FollowUpWorkLinked:v1"
@@ -7506,7 +7506,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:342f274532f327aefdd8a4303adc3f1746ec810f0cf45cf02f3d4a7b325b470c"
+              "const": "sha256:ce907ce2319aaeb72255e3d3f5b630d0635f70936f9b99365853ca5b38a33330"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemClosed:v1"

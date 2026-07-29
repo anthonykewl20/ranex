@@ -1,0 +1,702 @@
+{
+  "$id": "https://schemas.ranex.dev/common/legacy-test-cutover-removal-record-v2.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "accepted_at": {
+      "oneOf": [
+        {
+          "format": "date-time",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "adr0008_checker_result_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "artifact_ref": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "artifact_type": {
+            "enum": [
+              "evidence_snapshot",
+              "checker_result",
+              "gate_evaluation",
+              "human_decision",
+              "review_verdict"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_type",
+          "artifact_ref",
+          "artifact_digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "artifact_ref equals the resolved artifact's per-kind ID",
+          "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+        ],
+        "x-ranex-type-id": "TypedArtifactRefV1",
+        "x-ranex-type-version": "1.0.0"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "after_commit_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "after_tests_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "after_tests_tree_oid_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "architecture_checker_result_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "artifact_ref": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "artifact_type": {
+            "enum": [
+              "evidence_snapshot",
+              "checker_result",
+              "gate_evaluation",
+              "human_decision",
+              "review_verdict"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_type",
+          "artifact_ref",
+          "artifact_digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "artifact_ref equals the resolved artifact's per-kind ID",
+          "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+        ],
+        "x-ranex-type-id": "TypedArtifactRefV1",
+        "x-ranex-type-version": "1.0.0"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "baseline_disposition_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "baseline_file_manifest_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "baseline_id": {
+      "const": "HERMES-TEST-BASELINE-001"
+    },
+    "before_commit_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "before_tests_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "before_tests_tree_oid_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "compatibility_owner_acceptance_ref": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "artifact_ref": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "artifact_type": {
+              "enum": [
+                "evidence_snapshot",
+                "checker_result",
+                "gate_evaluation",
+                "human_decision",
+                "review_verdict"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_type",
+            "artifact_ref",
+            "artifact_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "artifact_ref equals the resolved artifact's per-kind ID",
+            "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+          ],
+          "x-ranex-type-id": "TypedArtifactRefV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cutover_evidence_snapshot_ref": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "artifact_ref": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "artifact_type": {
+              "enum": [
+                "evidence_snapshot",
+                "checker_result",
+                "gate_evaluation",
+                "human_decision",
+                "review_verdict"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_type",
+            "artifact_ref",
+            "artifact_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "artifact_ref equals the resolved artifact's per-kind ID",
+            "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+          ],
+          "x-ranex-type-id": "TypedArtifactRefV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cutover_gate_evaluation_ref": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "artifact_ref": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "artifact_type": {
+              "enum": [
+                "evidence_snapshot",
+                "checker_result",
+                "gate_evaluation",
+                "human_decision",
+                "review_verdict"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_type",
+            "artifact_ref",
+            "artifact_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "artifact_ref equals the resolved artifact's per-kind ID",
+            "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+          ],
+          "x-ranex-type-id": "TypedArtifactRefV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "cutover_removal_record_id": {
+      "const": "LEGACY-TEST-CUTOVER-001"
+    },
+    "destination_lineage_checker_result_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "artifact_ref": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "artifact_type": {
+            "enum": [
+              "evidence_snapshot",
+              "checker_result",
+              "gate_evaluation",
+              "human_decision",
+              "review_verdict"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_type",
+          "artifact_ref",
+          "artifact_digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "artifact_ref equals the resolved artifact's per-kind ID",
+          "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+        ],
+        "x-ranex-type-id": "TypedArtifactRefV1",
+        "x-ranex-type-version": "1.0.0"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "exact_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "exact_subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "independent_cutover_review_ref": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "artifact_ref": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "artifact_type": {
+              "enum": [
+                "evidence_snapshot",
+                "checker_result",
+                "gate_evaluation",
+                "human_decision",
+                "review_verdict"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_type",
+            "artifact_ref",
+            "artifact_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "artifact_ref equals the resolved artifact's per-kind ID",
+            "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+          ],
+          "x-ranex-type-id": "TypedArtifactRefV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "landing_record_ref": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "migration_owner_acceptance_ref": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "artifact_ref": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "artifact_type": {
+              "enum": [
+                "evidence_snapshot",
+                "checker_result",
+                "gate_evaluation",
+                "human_decision",
+                "review_verdict"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_type",
+            "artifact_ref",
+            "artifact_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "artifact_ref equals the resolved artifact's per-kind ID",
+            "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+          ],
+          "x-ranex-type-id": "TypedArtifactRefV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "migration_transition_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "open_change_exception_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "ordered_migration_subset_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "policy_id": {
+      "const": "RANEX-LEGACY-TEST-LAYOUT-2.0"
+    },
+    "policy_version": {
+      "const": "2.0.0"
+    },
+    "process_assurance_owner_acceptance_ref": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "artifact_ref": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "artifact_type": {
+              "enum": [
+                "evidence_snapshot",
+                "checker_result",
+                "gate_evaluation",
+                "human_decision",
+                "review_verdict"
+              ],
+              "type": "string"
+            }
+          },
+          "required": [
+            "artifact_type",
+            "artifact_ref",
+            "artifact_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "artifact_ref equals the resolved artifact's per-kind ID",
+            "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+          ],
+          "x-ranex-type-id": "TypedArtifactRefV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "profile_freshness_status": {
+      "enum": [
+        "CURRENT",
+        "STALE",
+        "NOT_ASSESSED"
+      ],
+      "type": "string"
+    },
+    "record_type": {
+      "const": "LEGACY_TEST_CUTOVER_REMOVAL_RECORD_V2"
+    },
+    "recorded_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "registry_closure_checker_result_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "artifact_ref": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "artifact_type": {
+            "enum": [
+              "evidence_snapshot",
+              "checker_result",
+              "gate_evaluation",
+              "human_decision",
+              "review_verdict"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_type",
+          "artifact_ref",
+          "artifact_digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "artifact_ref equals the resolved artifact's per-kind ID",
+          "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+        ],
+        "x-ranex-type-id": "TypedArtifactRefV1",
+        "x-ranex-type-version": "1.0.0"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "remaining_inherited_file_count": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNKNOWN"
+      ],
+      "type": "string"
+    },
+    "resulting_test_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "runner_import_configuration_checker_result_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "artifact_ref": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "artifact_type": {
+            "enum": [
+              "evidence_snapshot",
+              "checker_result",
+              "gate_evaluation",
+              "human_decision",
+              "review_verdict"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_type",
+          "artifact_ref",
+          "artifact_digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "artifact_ref equals the resolved artifact's per-kind ID",
+          "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+        ],
+        "x-ranex-type-id": "TypedArtifactRefV1",
+        "x-ranex-type-version": "1.0.0"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "schema_version": {
+      "const": "2"
+    },
+    "status": {
+      "enum": [
+        "PROPOSED",
+        "ACCEPTED",
+        "REJECTED"
+      ],
+      "type": "string"
+    },
+    "test_lineage_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "test_practice_profile_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "test_practice_profile_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "test_practice_profile_version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "tests_delta_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "zero_legacy_checker_result_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "artifact_ref": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "artifact_type": {
+            "enum": [
+              "evidence_snapshot",
+              "checker_result",
+              "gate_evaluation",
+              "human_decision",
+              "review_verdict"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "artifact_type",
+          "artifact_ref",
+          "artifact_digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "artifact_ref equals the resolved artifact's per-kind ID",
+          "artifact_digest equals both the resolved digest field and RFC8785 SHA-256 of canonical artifact bytes excluding digest"
+        ],
+        "x-ranex-type-id": "TypedArtifactRefV1",
+        "x-ranex-type-version": "1.0.0"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "cutover_removal_record_id",
+    "policy_id",
+    "policy_version",
+    "baseline_id",
+    "baseline_file_manifest_sha256",
+    "test_practice_profile_id",
+    "test_practice_profile_version",
+    "test_practice_profile_digest",
+    "profile_freshness_status",
+    "landing_record_ref",
+    "before_commit_sha1",
+    "after_commit_sha1",
+    "before_tests_tree_oid_sha1",
+    "after_tests_tree_oid_sha1",
+    "before_tests_snapshot_digest",
+    "after_tests_snapshot_digest",
+    "tests_delta_manifest_digest",
+    "baseline_disposition_count",
+    "remaining_inherited_file_count",
+    "open_change_exception_count",
+    "resulting_test_snapshot_digest",
+    "migration_transition_count",
+    "ordered_migration_subset_digest",
+    "test_lineage_digest",
+    "cutover_evidence_snapshot_ref",
+    "runner_import_configuration_checker_result_refs",
+    "destination_lineage_checker_result_refs",
+    "adr0008_checker_result_refs",
+    "architecture_checker_result_refs",
+    "zero_legacy_checker_result_refs",
+    "registry_closure_checker_result_refs",
+    "cutover_gate_evaluation_ref",
+    "compatibility_owner_acceptance_ref",
+    "migration_owner_acceptance_ref",
+    "process_assurance_owner_acceptance_ref",
+    "independent_cutover_review_ref",
+    "exact_subject_ref",
+    "exact_subject_digest",
+    "accepted_at",
+    "recorded_at",
+    "result",
+    "status"
+  ],
+  "title": "Ranex legacy-test cutover and removal record",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "baseline_file_manifest_sha256 equals the immutable 2,444-row baseline manifest and baseline_disposition_count == 2444",
+    "after_commit_sha1 has exactly before_commit_sha1 as its sole parent; the tests tree is byte-identical, the two tree OIDs are equal, and tests_delta_manifest_digest is the RFC8785 digest of an empty LegacyTestsDeltaRowV1 array",
+    "remaining_inherited_file_count == 0 and open_change_exception_count == 0",
+    "resulting_test_snapshot_digest is the RFC8785 SHA-256 of complete bytewise-path LegacyResultingTestRowV1 rows; ordered_migration_subset_digest is the RFC8785 SHA-256 of complete LegacyOrderedMigrationSubsetRowV2 rows whose proof IDs/digests resolve only V2 members; test_lineage_digest is the RFC8785 SHA-256 of complete bytewise-test-ID LegacyTestLineageRowV1 rows",
+    "ACCEPTED requires result PASS, profile CURRENT, all twelve noncompensating artifact roles, three distinct eligible owner principals, and nonnull accepted_at; authority additionally requires the separate successful cutover LandingRecord role",
+    "PROPOSED has null accepted_at; REJECTED grants no authority and cannot carry result PASS"
+  ],
+  "x-ranex-source-contract-id": "ADR10-LEGACY-TEST-RECORDS-2.0",
+  "x-ranex-type-id": "LegacyTestCutoverRemovalRecordV2"
+}

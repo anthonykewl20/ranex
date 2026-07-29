@@ -29,7 +29,7 @@
       "semantic_owner_context": "governed_execution",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -66,7 +66,7 @@
       "semantic_owner_context": "policy",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -103,7 +103,7 @@
       "semantic_owner_context": "assurance",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -140,7 +140,7 @@
       "semantic_owner_context": "module_governance",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -177,7 +177,7 @@
       "semantic_owner_context": "identity_access",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.1",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -214,7 +214,7 @@
       "semantic_owner_context": "product_definition",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -251,7 +251,7 @@
       "semantic_owner_context": "work_management",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -288,7 +288,7 @@
       "semantic_owner_context": "service_management",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -325,7 +325,7 @@
       "semantic_owner_context": "configuration_management",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -362,7 +362,7 @@
       "semantic_owner_context": "supplier_governance",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -399,7 +399,7 @@
       "semantic_owner_context": "resource_governance",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -436,7 +436,7 @@
       "semantic_owner_context": "interaction_history",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -473,7 +473,7 @@
       "semantic_owner_context": "process_assurance",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -510,7 +510,7 @@
       "semantic_owner_context": "workspace",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -547,7 +547,7 @@
       "semantic_owner_context": "instruction_registry",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -584,7 +584,7 @@
       "semantic_owner_context": "context_compilation",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -621,7 +621,7 @@
       "semantic_owner_context": "analytical_review",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -658,7 +658,7 @@
       "semantic_owner_context": "routing",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -695,7 +695,7 @@
       "semantic_owner_context": "qualification",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -732,7 +732,7 @@
       "semantic_owner_context": "effectiveness",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -769,7 +769,7 @@
       "semantic_owner_context": "agent_collaboration",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -806,7 +806,7 @@
       "semantic_owner_context": "repository_intelligence",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -843,7 +843,7 @@
       "semantic_owner_context": "knowledge",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -880,7 +880,7 @@
       "semantic_owner_context": "scheduling",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -917,7 +917,7 @@
       "semantic_owner_context": "delivery",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -954,7 +954,7 @@
       "semantic_owner_context": "artifact_management",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.2",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -991,7 +991,7 @@
       "semantic_owner_context": "operations",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -1028,7 +1028,7 @@
       "semantic_owner_context": "backup_restore",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -1065,7 +1065,7 @@
       "semantic_owner_context": "release_management",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -1102,7 +1102,7 @@
       "semantic_owner_context": "upstream_sync",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -1139,7 +1139,7 @@
       "semantic_owner_context": "migration",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -1176,7 +1176,7 @@
       "semantic_owner_context": "extension_host",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -1213,7 +1213,7 @@
       "semantic_owner_context": "compatibility",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -1250,7 +1250,7 @@
       "semantic_owner_context": "provenance_compliance",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#9.3",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -9247,7 +9247,7 @@
       "semantic_owner_context": "configuration_management",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/AI_ARTIFACT_CONTRACTS.md#12",
+      "source": "docs/architecture/AI_ARTIFACT_CONTRACTS.md#12-executable-schema-tree",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -9284,7 +9284,7 @@
       "semantic_owner_context": "configuration_management",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/AI_ARTIFACT_CONTRACTS.md#12",
+      "source": "docs/architecture/AI_ARTIFACT_CONTRACTS.md#12-executable-schema-tree",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -9321,7 +9321,7 @@
       "semantic_owner_context": "process_assurance",
       "semantic_owner_kind": "EXACT_CONTEXT",
       "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
-      "source": "docs/architecture/SDLC_CONTROL_CATALOG.md#3",
+      "source": "docs/architecture/SDLC_CONTROL_CATALOG.md#3-cross-lifecycle-control-systems",
       "tdd_rule_ids": [],
       "topology_rule_ids": [
         "ORG-EXEMPTION-001",
@@ -9337,7 +9337,7 @@
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "tdd_decision_binding": {
     "decision_id": "ADR-0008",
-    "digest": "sha256:594351ba900f3e71cc625614bd8a04c03d357abaef9480fe5f7c5d8ac74b166f",
+    "digest": "sha256:f2391238817bdda9303dbfd82b440399a162448463a850e35733c76bbe09612f",
     "path": "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md",
     "runtime_enactment_status": "NOT_ASSESSED",
     "status": "ACCEPTED_PAPER_DECISION"

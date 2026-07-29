@@ -1,0 +1,2207 @@
+{
+  "entries": [
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/accepted-adrs.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/applicability-rules.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/architecture-element-assessments.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_CURATED_RESEARCH_NOASSERTION",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/architecture-elements.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/architecture-rule-assessments.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/artifact-types.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/context-boundary-fitness.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/context-coupling-policy.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/context-dependency-edges.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/contexts.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/data-ownership.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/decisions.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/effects.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_CURATED_RESEARCH_NOASSERTION",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/engineering-practice-profiles.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_CURATED_RESEARCH_NOASSERTION",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/engineering-practices.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/estimate-commitment-control.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/events.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/feedback-fitness.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/generated-output-authority.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/identities.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/legacy-test-direct-source-classifications.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/legacy-test-layout-policy-v2.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/legacy-test-layout-records-v2.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/paths.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/priority-rules.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/readiness-assessments.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/readiness-tiers.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/registry-manifest.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/runtime-adapters.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/schema-registry.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/states.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/tdd-cycle-records.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/tdd-exception-records.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/test-behaviors.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/test-deletion-records.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/test-practice-profiles.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/test-practices.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/test-quarantine-records.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/topology-rules.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/vital-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/worker-role-profiles.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "ASSESSMENT_SUPPORT",
+      "path": "docs/architecture/assessments/COMPLETENESS_REPORT.md",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "ASSESSMENT_SUPPORT",
+      "path": "docs/architecture/assessments/assessment-source-manifest.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "ASSESSMENT_SUPPORT",
+      "path": "docs/architecture/assessments/assessment-subject.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "ASSESSMENT_SUPPORT",
+      "path": "docs/architecture/assessments/completeness-report.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-AIW-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-AIW-002.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-AIW-003.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-AIW-004.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-AIW-005.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-AIW-006.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-AIW-007.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-BLD-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-BLK-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-CAN-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-CLS-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-CM-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-DEF-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-DES-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-DIS-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-EST-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-000.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-002.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-003.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-004.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-005.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-006.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-FORK-007.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-INT-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-MEA-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-MEA-002.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-MNT-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-OPS-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-OUT-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-PA-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-PLN-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-RBK-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-RDY-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-REL-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-RET-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-TAIL-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-TR-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-TRI-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-VER-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTROL_ASSESSMENT",
+      "path": "docs/architecture/assessments/controls/SDLC-VV-001.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-BUILD-FLOW.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-DESIGN-READINESS.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-DISCOVERY-DEFINITION.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-GOVERN-EVIDENCE.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-HERMES-AI-HEALTH.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-INTAKE-TRIAGE.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-OPERATE-MAINTAIN.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-OUTCOME-CLOSE-RETIRE.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-RELEASE-RECOVERY.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "DOMAIN_PROJECTION",
+      "path": "docs/architecture/assessments/domains/CAP-VERIFY-VALIDATE.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "VALIDATION_REPORT",
+      "path": "docs/architecture/assessments/validation-report.json",
+      "writer": "scripts/architecture/validate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/architecture/proposal-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/architecture/reconciliation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/architecture/review-packet-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/artifacts/artifact-legal-hold-fact-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/checker-execution-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/checker-result-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/evidence-snapshot-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/gate-evaluation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/readiness-assessment-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/readiness-evidence-binding-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/readiness-subject-manifest-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/assurance/readiness-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/authority/authority-grant-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/authority/human-decision-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/authority/permit-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/architecture-element-assessment-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/architecture-practice-application-profile-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/architecture-rule-assessment-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/architecture-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/canonical-digest.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/context-boundary-fit-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/context-coupling-policy-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/context-dependency-edge-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/core-sdlc-trace-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/direct-source-classification-authority-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/engineering-practice-profile-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/evidence-ref.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/exact-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/feedback-fitness-policy-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/identifiers.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/legacy-test-change-exception-v2.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/legacy-test-cutover-removal-record-v2.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/legacy-test-layout-policy-v2.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/legacy-test-migration-record-v2.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/path-contract-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/research-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/resource-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/runtime-adapter-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/subject-binding-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/tdd-cycle-record-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/tdd-cycle-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/tdd-exception-record-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/tdd-exception-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/test-behavior-authority-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/test-deletion-record-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/test-deletion-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/test-practice-profile-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/test-quarantine-record-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/test-quarantine-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/topology-exception-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/work-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/worker-role-profile-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/domain-event-envelope-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/activity-dispatched-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/activity-requested-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/activity-resolved-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/authorization-evaluated-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/effect-dispatched-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/effect-intent-recorded-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/effect-outcome-marked-unknown-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/effect-reconciled-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/effect-resolved-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/evidence-snapshot-bound-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/gate-evaluated-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/human-decision-snapshot-bound-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/packet-bound-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/permit-consumed-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/permit-issued-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/policy-change-blocked-run-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/run-blocked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/run-cancelled-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/run-created-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/run-failed-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/run-marked-ready-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/run-succeeded-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/run-unblocked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/source-divergence-detected-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/governed_execution/workflow-pinned-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/follow-up-work-linked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/operational-evidence-linked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/outcome-decision-linked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/outcome-requirement-refs-bound-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/release-evidence-linked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/risk-lane-bound-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/run-evidence-linked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/run-requested-for-work-item-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/work-item-blocked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/work-item-cancelled-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/work-item-classified-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/work-item-closed-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/work-item-created-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/work-item-transitioned-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/events/work_management/work-item-unblocked-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/execution/agent-handoff-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/execution/post-landing-verification-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/execution/run-result-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/canonical/rfc8785-golden.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/adr10-authority-negative-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/adr10-compatibility-v2-negative-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/adr10-scope-negative-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/architecture-element-parent-mutations.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/artifact-legal-hold-fact-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/blanket-test-root-owner.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/broad-host-edge-exception.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/cyclic-context-imports.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/duplicate-key.yaml",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/estimate-commitment-negative-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/event-contract-mutations.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forbidden-cross-context-private-import.py",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forbidden-test-bypass.py",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forbidden-test-only-production-branch.py",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forced-transition-boilerplate-test-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forged-digest.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forged-pass-missing-production-evidence.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forged-pass-unbound-production-evidence.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/forged-task-aggregate-pass.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/happy-path-only-test-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/import-resolution-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/legacy-test-policy-mutations.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/legacy-test-snapshot-mutations.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/material-unknown-test-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/permit-reuse.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/stale-subject.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/state-transition-contract-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/subject-mismatch.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/synthetic-runtime-promotion-test-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/test-health-authority-population-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/unjustified-edge-na-test-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/unknown-field.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/unregistered-public-api-import.py",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/unsupported-na-test-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/negative/worker-runtime-contract-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/semantic/adr0008-synthetic-definition-contract.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/semantic/adr10-authority-positive-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/semantic/adr10-compatibility-v2-positive-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/semantic/adr10-scope-positive-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/semantic/estimate-commitment-positive-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/semantic/readiness-tier-contract-cases.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_FIXTURE",
+      "path": "schemas/fixtures/semantic/valid-stateless-task-profile.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/fleet/assignment-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/fleet/dispatch-offer-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/fleet/fleet-experiment-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/fleet/lease-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/fleet/mailbox-envelope-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/fleet/worker-attempt-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/lifecycle/operation-evidence-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/lifecycle/outcome-review-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/lifecycle/release-evidence-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/acceptance-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/acceptance-basis-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/accountable-delivery-owner-assignment-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/accountable-owner-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/capacity-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/capacity-snapshot-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/commitment-decision-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/core-sdlc-trace-authority-binding-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/core-sdlc-trace-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/decision-artifact-registry-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/decision-authentication-binding-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/delivery-commitment-subject-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/dependency-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/dependency-snapshot-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-authority-registry-v2.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-commitment-source-envelope-v2.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-evidence-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-id-reservation-history-generation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-id-reservation-history-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-id-reservation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-method-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-observation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-preparer-provenance-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-source-replay-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/estimate-source-replay-reservation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/integrated-plan-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/integrated-plan-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/risk-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/risk-snapshot-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/scope-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/scope-authority-row-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/trusted-time-authority-registry-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/planning/trusted-time-observation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/process/capability-assessment-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/process/capability-domain-projection-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/research/research-packet-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/resources/resource-reservation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/review/analysis-attempt-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/review/independence-evaluation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/review/review-observation-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/review/review-record-projection-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/review/review-request-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/review/review-verdict-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/work/task-packet-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/work/transition-event-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/work/work-intake-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "generator_output_count": 290,
+  "generator_writer": "scripts/architecture/generate_contracts.py",
+  "immutable_input_count": 9,
+  "immutable_inputs": [
+    {
+      "artifact_class": "HISTORICAL_VERSIONED_PROJECTION",
+      "disposition": "READ_ONLY_SUPERSEDED",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "architecture/contracts/legacy-test-layout-policy-v1.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:e3aba0f4631f84c2a9baba9bbacfe7c29115b781cf1f45dc12c37e6f70fef421",
+      "superseded_by": "architecture/contracts/legacy-test-layout-policy-v2.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "HISTORICAL_UNVERSIONED_ALIAS",
+      "disposition": "READ_ONLY_V1_ALIAS",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "architecture/contracts/legacy-test-layout-policy.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:e3aba0f4631f84c2a9baba9bbacfe7c29115b781cf1f45dc12c37e6f70fef421",
+      "superseded_by": "architecture/contracts/legacy-test-layout-policy-v2.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "HISTORICAL_VERSIONED_MANIFEST",
+      "disposition": "READ_ONLY_SUPERSEDED",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "architecture/contracts/legacy-test-layout-records-v1.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:9b94991b635995759dd8c8244f2d747701bc06c44d24de1e009bc137ad66b07b",
+      "superseded_by": "architecture/contracts/legacy-test-layout-records-v2.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "HISTORICAL_UNVERSIONED_ALIAS",
+      "disposition": "READ_ONLY_V1_ALIAS",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "architecture/contracts/legacy-test-layout-records.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:9b94991b635995759dd8c8244f2d747701bc06c44d24de1e009bc137ad66b07b",
+      "superseded_by": "architecture/contracts/legacy-test-layout-records-v2.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "HISTORICAL_SCHEMA",
+      "disposition": "READ_ONLY_SUPERSEDED",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "schemas/common/legacy-test-change-exception-v1.schema.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:3daadc7e930fa061e4cbf82f32e5aa5a7f2b8ca9a9b50b8b04cda446b813a0f9",
+      "superseded_by": "schemas/common/legacy-test-change-exception-v2.schema.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "HISTORICAL_SCHEMA",
+      "disposition": "READ_ONLY_SUPERSEDED",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "schemas/common/legacy-test-cutover-removal-record-v1.schema.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:1c93edb7478654660ff763bbc707ce13871c3c34b0beaebe14fe7730ead67a05",
+      "superseded_by": "schemas/common/legacy-test-cutover-removal-record-v2.schema.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "HISTORICAL_SCHEMA",
+      "disposition": "READ_ONLY_SUPERSEDED",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "schemas/common/legacy-test-layout-policy-v1.schema.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:11b6222ddcb8aef7b8958136876dd2f28cc8c1e487d4d2a67355c30a33f07be8",
+      "superseded_by": "schemas/common/legacy-test-layout-policy-v2.schema.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "HISTORICAL_SCHEMA",
+      "disposition": "READ_ONLY_SUPERSEDED",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "schemas/common/legacy-test-migration-record-v1.schema.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:d0c1fef4a913cf0877b8750fcf87a495d7f8feb919d8138daf0a8d32c186d61a",
+      "superseded_by": "schemas/common/legacy-test-migration-record-v2.schema.json",
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    },
+    {
+      "artifact_class": "SHARED_ACTIVE_SCHEMA",
+      "disposition": "READ_ONLY_SHARED_ACTIVE",
+      "generator_role": "VERIFY_ONLY_NO_CREATE_UPDATE_DELETE_REFORMAT",
+      "input_class": "ADR10_IMMUTABLE_V1_INPUT",
+      "legal_manifest_binding_required": true,
+      "license_id": "LicenseRef-Ranex-Personal-Use-1.0",
+      "licensing_classification": "RANEX_ORIGINAL",
+      "owner_class": "ADR10_PREDECESSOR_CONTRACT_1_0",
+      "path": "schemas/execution/landing-record-v1.schema.json",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_TOOLING",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "sha256": "sha256:9c0be4ac04542b9cd26561d06f4b3d401e84c4acbf3e855f628a67d3e58a070e",
+      "superseded_by": null,
+      "writer": "NONE_IMMUTABLE_COMMITTED_INPUT"
+    }
+  ],
+  "licensing_policy_counts": {
+    "GENERATED_CURATED_RESEARCH_NOASSERTION": 3,
+    "GENERATED_RANEX_ORIGINAL": 288
+  },
+  "licensing_policy_ids": [
+    "GENERATED_CURATED_RESEARCH_NOASSERTION",
+    "GENERATED_RANEX_ORIGINAL"
+  ],
+  "licensing_policy_source_digest": "sha256:7a4b703d953741cf8a87ce60d38299452fc6ad75d252171fd41e5e74385072cd",
+  "licensing_policy_source_path": "legal/licensing-manifest.json",
+  "output_count": 291,
+  "registry_id": "REG-GENERATED-OUTPUT-AUTHORITY-001",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "validator_output_count": 1,
+  "validator_writer": "scripts/architecture/validate_contracts.py",
+  "version": "2.1.0"
+}

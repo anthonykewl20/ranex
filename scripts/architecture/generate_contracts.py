@@ -36,6 +36,62 @@ ASSESSMENTS = ROOT / "docs" / "architecture" / "assessments"
 TEMPLATES = ROOT / "docs" / "architecture" / "templates"
 GENERATOR_WRITER = "scripts/architecture/generate_contracts.py"
 VALIDATOR_WRITER = "scripts/architecture/validate_contracts.py"
+LEGAL_MANIFEST_PATH = "legal/licensing-manifest.json"
+LEGAL_MANIFEST = ROOT / LEGAL_MANIFEST_PATH
+LICENSING_POLICY_RANEX_ORIGINAL = (
+    "GENERATED_RANEX_ORIGINAL"
+)
+LICENSING_POLICY_CURATED_RESEARCH = (
+    "GENERATED_CURATED_RESEARCH_NOASSERTION"
+)
+CURATED_RESEARCH_GENERATED_OUTPUT_PATHS = frozenset(
+    {
+        "architecture/contracts/architecture-elements.json",
+        (
+            "architecture/contracts/"
+            "engineering-practice-profiles.json"
+        ),
+        "architecture/contracts/engineering-practices.json",
+    }
+)
+READINESS_FRESHNESS_BOUNDARY_SUBCASES = [
+    {
+        "subcase_id": (
+            "gate_expiry_equal_assessment_observation_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+    {
+        "subcase_id": (
+            "gate_expiry_before_assessment_observation_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+    {
+        "subcase_id": (
+            "gate_observation_after_assessment_observation_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+    {
+        "subcase_id": (
+            "gate_observation_equal_assessment_observation_accepts"
+        ),
+        "expected_outcome": "PASS",
+    },
+    {
+        "subcase_id": (
+            "assessment_expiry_equal_window_end_accepts"
+        ),
+        "expected_outcome": "PASS",
+    },
+    {
+        "subcase_id": (
+            "assessment_expiry_after_window_end_rejects"
+        ),
+        "expected_outcome": "REJECT",
+    },
+]
 GENERATED_OUTPUT_PATHS: set[str] = set()
 ARCH_DOC = ROOT / "docs" / "architecture" / "HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md"
 ARTIFACT_DOC = ROOT / "docs" / "architecture" / "AI_ARTIFACT_CONTRACTS.md"
@@ -55,6 +111,19 @@ WORKER_RUNTIME_ADR = (
     / "decisions"
     / "ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md"
 )
+READINESS_ADR = (
+    ROOT
+    / "docs"
+    / "architecture"
+    / "decisions"
+    / "ADR-0012-separate-implementation-start-and-production-readiness.md"
+)
+ADR12_SOURCE_SHA256 = (
+    "36dff1e75aea123a2471134610cd5ee912c1389031b6e256710e375afdcd3a0d"
+)
+ADR12_MACHINE_BLOCK_SHA256 = (
+    "fb8909adb5f225a2cf935b525f7936cafe469c1461b135e8bdf27a0d47f50947"
+)
 TOPOLOGY_ADR = ROOT / "docs" / "architecture" / "decisions" / "ADR-0007-establish-modular-ddd-repository-organization.md"
 TDD_ADR = ROOT / "docs" / "architecture" / "decisions" / "ADR-0008-make-tdd-the-default-development-discipline.md"
 BOUNDARY_FITNESS_ADR = (
@@ -72,7 +141,7 @@ LEGACY_TEST_LAYOUT_ADR = (
     / "ADR-0010-bound-inherited-hermes-test-layout-migration.md"
 )
 ADR10_SOURCE_SHA256 = (
-    "58520336ce92b6255ce126bba590af63798d68690ac34034b4b3f1645bc0ed3e"
+    "45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb"
 )
 ADR10_MACHINE_BLOCK_SHA256 = (
     "de5ed30d02ffac788574b319ac9afcc4c1246212b0b015251ac055bd7ef17472"
@@ -180,7 +249,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "e2ac2b0af2994b757db24949a389f787604559a2be718b24d9dbe72c95b1dc0e"
+    "f24995ddf5c5516fa685396e74f6c138068da1e6578764b0320e1f44c3e507a6"
 )
 
 
@@ -302,6 +371,60 @@ GENERATED_ARTIFACT_SCHEMAS: tuple[dict[str, str], ...] = (
             "docs/architecture/decisions/"
             "ADR-0008-make-tdd-the-default-development-discipline.md"
             "#canonical-test-health-authorities"
+        ),
+    },
+    {
+        "artifact_type": "readiness_subject",
+        "schema_path": (
+            "schemas/assurance/readiness-subject-v1.schema.json"
+        ),
+        "canonical_producer": "process_assurance",
+        "owner_context": "process_assurance",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
+        ),
+    },
+    {
+        "artifact_type": "readiness_subject_manifest",
+        "schema_path": (
+            "schemas/assurance/"
+            "readiness-subject-manifest-v1.schema.json"
+        ),
+        "canonical_producer": "configuration_management",
+        "owner_context": "configuration_management",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
+        ),
+    },
+    {
+        "artifact_type": "readiness_evidence_binding",
+        "schema_path": (
+            "schemas/assurance/"
+            "readiness-evidence-binding-v1.schema.json"
+        ),
+        "canonical_producer": "assurance",
+        "owner_context": "assurance",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
+        ),
+    },
+    {
+        "artifact_type": "readiness_assessment",
+        "schema_path": (
+            "schemas/assurance/readiness-assessment-v1.schema.json"
+        ),
+        "canonical_producer": "process_assurance",
+        "owner_context": "process_assurance",
+        "generation_contract_ref": (
+            "docs/architecture/decisions/"
+            "ADR-0012-separate-implementation-start-and-production-readiness.md"
+            "#exact-machine-contract"
         ),
     },
 )
@@ -4269,6 +4392,301 @@ def parse_adr10_legacy_record_contract() -> dict[str, Any]:
     return contract
 
 
+def parse_adr12_readiness_contract() -> dict[str, Any]:
+    """Parse the complete closed readiness contract from accepted ADR-0012."""
+
+    if sha256_file(READINESS_ADR) != ADR12_SOURCE_SHA256:
+        raise ValueError("ADR-0012 source digest drift")
+    matches = re.findall(
+        (
+            r"<!-- BEGIN ADR12 READINESS TIER CONTRACT -->"
+            r"\s*```yaml\n(.*?)\n```\s*"
+            r"<!-- END ADR12 READINESS TIER CONTRACT -->"
+        ),
+        read(READINESS_ADR),
+        flags=re.DOTALL,
+    )
+    if len(matches) != 1:
+        raise ValueError("ADR-0012 marked readiness contract count drift")
+    if (
+        hashlib.sha256(matches[0].encode("utf-8")).hexdigest()
+        != ADR12_MACHINE_BLOCK_SHA256
+    ):
+        raise ValueError("ADR-0012 marked contract digest drift")
+    wrapper = load_yaml_text_strict(matches[0])
+    if set(wrapper) != {"readiness_tier_contract"}:
+        raise ValueError("ADR-0012 marked contract wrapper drift")
+    contract = wrapper["readiness_tier_contract"]
+    expected_keys = {
+        "contract_id",
+        "contract_version",
+        "schema_version",
+        "catalog_id",
+        "catalog_version",
+        "catalog_status",
+        "governing_adr",
+        "canonicalization",
+        "digest_algorithm",
+        "digest_encoding",
+        "additional_properties",
+        "noncompensating",
+        "source_projection_ref",
+        "assessment_registry_ref",
+        "subject_schema_ref",
+        "subject_manifest_schema_ref",
+        "evidence_binding_schema_ref",
+        "assessment_schema_ref",
+        "inherited_type_authority",
+        "scalar_types",
+        "runtime_assessment_status_contract",
+        "state_axis",
+        "transition_fact_contract",
+        "exact_subject_projection",
+        "readiness_subject_manifest_projection",
+        "nested_types",
+        "assessment_record",
+        "tiers",
+        "gates",
+        "evidence_bridge_contract",
+        "human_decision_contract",
+        "reviewer_contract",
+        "bootstrap_lane",
+        "resolver_contract",
+        "sad_path_transitions",
+        "fixture_contract",
+        "current_standing",
+    }
+    if (
+        not isinstance(contract, dict)
+        or set(contract) != expected_keys
+        or contract["contract_id"]
+        != "RANEX-READINESS-TIER-CONTROL-1.0"
+        or contract["contract_version"] != "1.0.0"
+        or contract["schema_version"] != "readiness-tier-contract/v1"
+        or contract["catalog_id"] != "RANEX-READINESS-TIERS-001"
+        or contract["catalog_version"] != "1.0.0"
+        or contract["catalog_status"]
+        != "DEFINITION_ONLY_NOT_ASSESSED"
+        or contract["governing_adr"] != "ADR-0012"
+        or contract["canonicalization"] != "RFC8785"
+        or contract["digest_algorithm"] != "SHA-256"
+        or contract["additional_properties"] is not False
+        or contract["noncompensating"] is not True
+    ):
+        raise ValueError("ADR-0012 readiness contract identity drift")
+    expected_refs = {
+        "source_projection_ref": (
+            "architecture/contracts/readiness-tiers.json"
+        ),
+        "assessment_registry_ref": (
+            "architecture/contracts/readiness-assessments.json"
+        ),
+        "subject_schema_ref": (
+            "schemas/assurance/readiness-subject-v1.schema.json"
+        ),
+        "subject_manifest_schema_ref": (
+            "schemas/assurance/"
+            "readiness-subject-manifest-v1.schema.json"
+        ),
+        "evidence_binding_schema_ref": (
+            "schemas/assurance/"
+            "readiness-evidence-binding-v1.schema.json"
+        ),
+        "assessment_schema_ref": (
+            "schemas/assurance/readiness-assessment-v1.schema.json"
+        ),
+    }
+    if any(contract[key] != value for key, value in expected_refs.items()):
+        raise ValueError("ADR-0012 readiness projection reference drift")
+
+    tier_ids = [
+        "READINESS-TIER-IMPLEMENTATION-START-001",
+        "READINESS-TIER-PRODUCTION-001",
+    ]
+    tiers = contract["tiers"]
+    gates = contract["gates"]
+    if (
+        [row.get("tier_id") for row in tiers] != tier_ids
+        or len(gates) != 21
+        or len({row.get("gate_id") for row in gates}) != len(gates)
+        or any(row.get("noncompensating") is not True for row in gates)
+        or any(row.get("required_result") != "PASS" for row in gates)
+    ):
+        raise ValueError("ADR-0012 readiness tier/gate denominator drift")
+    gates_by_tier = {
+        tier_id: sorted(
+            row["gate_id"]
+            for row in gates
+            if row["tier_id"] == tier_id
+        )
+        for tier_id in tier_ids
+    }
+    if any(
+        tier["exact_gate_ids"] != gates_by_tier[tier["tier_id"]]
+        for tier in tiers
+    ) or [len(gates_by_tier[tier_id]) for tier_id in tier_ids] != [11, 10]:
+        raise ValueError("ADR-0012 exact tier gate-set drift")
+    bridge_rows = contract["evidence_bridge_contract"][
+        "bridge_rule_by_gate"
+    ]
+    if (
+        set(bridge_rows) != {row["gate_id"] for row in gates}
+        or any(
+            bridge_rows[row["gate_id"]]["bridge_rule_id"]
+            != row["bridge_rule_id"]
+            for row in gates
+        )
+        or len(
+            {
+                row["bridge_rule_id"]
+                for row in gates
+            }
+        )
+        != len(gates)
+    ):
+        raise ValueError("ADR-0012 evidence bridge population drift")
+
+    nested = {
+        row.get("type_id"): row for row in contract["nested_types"]
+    }
+    if set(nested) != {
+        "ReadinessSubjectManifestEntryV1",
+        "ReadinessEvidenceBindingV1",
+        "ReadinessGateResultV1",
+    }:
+        raise ValueError("ADR-0012 nested type denominator drift")
+    type_rows = [
+        contract["exact_subject_projection"],
+        contract["readiness_subject_manifest_projection"],
+        *contract["nested_types"],
+        contract["assessment_record"],
+    ]
+    for row in type_rows:
+        fields = row.get("fields", row.get("output_fields"))
+        if (
+            row.get("additional_properties") is not False
+            or not isinstance(fields, list)
+            or len(fields) != len(set(fields))
+            or set(fields) != set(row.get("field_types", {}))
+            or not set(row.get("nullable_fields", [])) <= set(fields)
+            or not set(row.get("array_cardinalities", {})) <= set(fields)
+        ):
+            raise ValueError(
+                "ADR-0012 closed type field drift: "
+                + str(
+                    row.get(
+                        "type_id",
+                        row.get("projection_id"),
+                    )
+                )
+            )
+    runtime_status = contract["runtime_assessment_status_contract"]
+    if runtime_status["values"] != [
+        "NOT_ASSESSED",
+        "UNKNOWN",
+        "ASSESSED_PASS",
+        "ASSESSED_FAIL",
+        "CONFLICT",
+    ]:
+        raise ValueError("ADR-0012 runtime status axis drift")
+    state_axis = contract["state_axis"]
+    if (
+        state_axis["axis_id"] != "READINESS-STATE-1.0"
+        or state_axis["initial_state"] != "NOT_ASSESSED"
+        or len(state_axis["values"]) != 7
+        or len(state_axis["transitions"]) != 13
+        or len(state_axis["forbidden_transitions"]) != 6
+    ):
+        raise ValueError("ADR-0012 readiness state axis drift")
+    standing = contract["current_standing"]
+    if standing != {
+        "assessment_record_count": 0,
+        "subject_manifest_count": 0,
+        "evidence_binding_count": 0,
+        "transition_fact_count": 0,
+        "implementation_start_state": "NOT_ASSESSED",
+        "production_state": "NOT_ASSESSED",
+        "implementation_start_authorized": False,
+        "production_authorized": False,
+        "runtime_validation_status": "NOT_ASSESSED",
+        "capability_score": None,
+    }:
+        raise ValueError("ADR-0012 current standing overclaim or drift")
+    fixture = contract["fixture_contract"]
+    if (
+        fixture["positive_case_requirements"].get(
+            "exact_positive_case_count"
+        )
+        != 4
+        or fixture["negative_case_requirements"].get(
+            "exact_negative_case_count"
+        )
+        != 28
+        or any(
+            value != 1
+            for key, value in fixture[
+                "positive_case_requirements"
+            ].items()
+            if key != "exact_positive_case_count"
+        )
+        or any(
+            value != 1
+            for key, value in fixture[
+                "negative_case_requirements"
+            ].items()
+            if key != "exact_negative_case_count"
+        )
+    ):
+        raise ValueError("ADR-0012 fixture denominator drift")
+    return contract
+
+
+def build_readiness_registries() -> dict[str, dict[str, Any]]:
+    contract = parse_adr12_readiness_contract()
+    source_path = str(READINESS_ADR.relative_to(ROOT))
+    source_digest = "sha256:" + sha256_file(READINESS_ADR)
+    contract_digest = (
+        "sha256:" + sha256_bytes(canonical_bytes(contract))
+    )
+    tier_projection = {
+        **copy.deepcopy(contract),
+        "generated_by": GENERATOR_WRITER,
+        "source_path": source_path,
+        "source_digest": source_digest,
+        "source_contract_digest": contract_digest,
+    }
+    assessment_projection = {
+        "registry_id": "REG-READINESS-ASSESSMENTS-001",
+        "version": contract["contract_version"],
+        "status": contract["catalog_status"],
+        "generated_by": GENERATOR_WRITER,
+        "contract_id": contract["contract_id"],
+        "contract_version": contract["contract_version"],
+        "governing_adr": contract["governing_adr"],
+        "source_path": source_path,
+        "source_digest": source_digest,
+        "source_contract_digest": contract_digest,
+        "tier_catalog_ref": contract["source_projection_ref"],
+        "subject_schema_ref": contract["subject_schema_ref"],
+        "subject_manifest_schema_ref": (
+            contract["subject_manifest_schema_ref"]
+        ),
+        "evidence_binding_schema_ref": (
+            contract["evidence_binding_schema_ref"]
+        ),
+        "record_schema_ref": contract["assessment_schema_ref"],
+        "record_count": 0,
+        "entries": [],
+        "current_standing": copy.deepcopy(
+            contract["current_standing"]
+        ),
+    }
+    return {
+        "readiness-tiers.json": tier_projection,
+        "readiness-assessments.json": assessment_projection,
+    }
+
+
 def parse_legacy_test_layout_decision() -> dict[str, Any]:
     text = read(LEGACY_TEST_LAYOUT_ADR)
     marked_contract_pattern = (
@@ -5898,14 +6316,15 @@ def parse_estimate_commitment_control() -> dict[str, Any]:
         "commitment_decision_role",
         "resolver_contract",
         "fixture_contract",
+        "source_authority_contract",
     }
     if (
         set(contract) != expected_keys
         or contract["control_id"] != "SDLC-EST-001"
-        or contract["control_version"] != "1.0.0"
+        or contract["control_version"] != "1.1.0"
         or contract["contract_id"]
-        != "ESTIMATE-COMMITMENT-SEPARATION-1.0"
-        or contract["contract_version"] != "1.0.0"
+        != "ESTIMATE-COMMITMENT-SEPARATION-1.1"
+        or contract["contract_version"] != "1.1.0"
         or contract["canonicalization"] != "RFC8785"
         or contract["digest_algorithm"] != "SHA-256"
         or contract["additional_properties"] is not False
@@ -5918,6 +6337,8 @@ def parse_estimate_commitment_control() -> dict[str, Any]:
     if {
         row["type_id"]: len(row["fields"]) for row in nested_rows
     } != {
+        "ContentAddressBindingV1": 2,
+        "EstimateSourceEnvelopeAttestationV1": 18,
         "EstimateEvidenceBindingV1": 2,
         "EstimateBindingV1": 4,
     }:
@@ -5994,9 +6415,9 @@ def parse_estimate_commitment_control() -> dict[str, Any]:
         )
     if (
         resolver["resolver_id"]
-        != "ESTIMATE-COMMITMENT-RESOLVER-1.0"
+        != "ESTIMATE-COMMITMENT-RESOLVER-1.1"
         or len(resolver["required_sources"]) != 11
-        or len(resolver["evaluation_order"]) != 8
+        or len(resolver["evaluation_order"]) != 13
         or len(resolver["production_callers"]) != 2
         or resolver["optional_or_fixture_only_bypass"] is not False
     ):
@@ -6004,64 +6425,59 @@ def parse_estimate_commitment_control() -> dict[str, Any]:
             "Estimate/commitment resolver denominator drift"
         )
     fixture = contract["fixture_contract"]
-    positive = fixture["positive_case_requirements"]
-    negative = fixture["negative_case_requirements"]
-    positive_counts = {
-        key: value
-        for key, value in positive.items()
-        if key != "exact_positive_case_count"
-    }
-    negative_counts = {
-        key: value
-        for key, value in negative.items()
-        if key != "exact_negative_case_count"
-    }
+    positive_ids = fixture["positive_case_ids"]
+    negative_by_boundary = fixture["negative_case_ids_by_boundary"]
+    negative_ids = [
+        case_id
+        for rows in negative_by_boundary.values()
+        for case_id in rows
+    ]
     if (
         fixture["positive_suite_id"]
-        != "SDLC_ESTIMATE_COMMITMENT_POSITIVE_V1"
+        != "SDLC_ESTIMATE_COMMITMENT_POSITIVE_V2"
         or fixture["negative_suite_id"]
-        != "SDLC_ESTIMATE_COMMITMENT_NEGATIVE_V1"
-        or set(positive_counts)
+        != "SDLC_ESTIMATE_COMMITMENT_NEGATIVE_V2"
+        or len(positive_ids) != len(set(positive_ids))
+        or len(positive_ids) != 6
+        or positive_ids
+        != sorted(positive_ids, key=lambda value: value.encode("utf-8"))
+        or set(negative_by_boundary)
         != {
-            "estimate_only_remains_non_authoritative",
-            "exact_current_human_commitment_resolves",
-            "fresh_recommitment_after_binding_change_resolves",
+            "source_envelope_and_migration",
+            "estimate_identity_and_history",
+            "method_evidence_and_preparer",
+            "estimate_value_and_currentness",
+            "plan_population_and_window",
+            "business_role_authorities",
+            "owner_trace_and_time",
+            "decision_authority",
+            "authority_boundary",
         }
-        or set(negative_counts)
-        != {
-            "estimate_used_as_commitment",
-            "missing_commitment_decision",
-            "wrong_commitment_subject_ref",
-            "wrong_commitment_subject_digest",
-            "cross_work_item_binding",
-            "stale_estimate_binding",
-            "expired_estimate_binding",
-            "stale_capacity_snapshot",
-            "stale_dependency_snapshot",
-            "stale_risk_snapshot",
-            "stale_acceptance_snapshot",
-            "decision_status_not_approved",
-            "wrong_decision_kind",
-            "wrong_decision_outcome",
-            "wrong_decision_action",
-            "wrong_canonical_argument_digest",
-            "wrong_core_sdlc_trace",
-            "expired_decision",
-            "revoked_decision",
-            "superseded_decision",
-            "unauthenticated_decision",
-            "wrong_commitment_owner",
-            "incomplete_or_mutated_recommit_trigger_set",
-            "changed_binding_without_fresh_recommitment",
-            "authority_escalation_attempt",
-        }
-        or any(value != 1 for value in positive_counts.values())
-        or any(value != 1 for value in negative_counts.values())
-        or positive["exact_positive_case_count"] != 3
-        or negative["exact_negative_case_count"] != 25
+        or len(negative_ids) != len(set(negative_ids))
+        or len(negative_ids) != 213
+        or fixture["exact_positive_case_count"] != 6
+        or fixture["exact_negative_case_count"] != 213
     ):
         raise ValueError(
             "Estimate/commitment fixture denominator drift"
+        )
+    source_authority = contract["source_authority_contract"]
+    if (
+        source_authority["source_contract_id"]
+        != "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0"
+        or source_authority["source_contract_version"] != "2.0.0"
+        or source_authority["compatibility_class"]
+        != "BREAKING_SOURCE_ENVELOPE"
+        or len(source_authority["role_authorities"]) != 11
+        or len(source_authority["registry_shapes"]) != 11
+        or len(source_authority["record_types"]) != 18
+        or len(
+            source_authority["supersession_pointer_catalog"]
+        )
+        != 15
+    ):
+        raise ValueError(
+            "Estimate/commitment source authority denominator drift"
         )
     return contract
 
@@ -14008,6 +14424,11 @@ def legacy_test_layout_policy_schema() -> dict[str, Any]:
 
 
 def adr10_primitive_schema(type_name: str) -> dict[str, Any]:
+    if type_name == "ed25519_signature_base64url":
+        return {
+            "type": "string",
+            "pattern": r"^[A-Za-z0-9_-]{86}$",
+        }
     if type_name == "git_mode":
         return {"const": "100644"}
     if type_name == "hex_sha256":
@@ -14065,7 +14486,26 @@ def adr10_field_schema(
             "1",
             adr8_rows,
         )
+    if type_spec in {"HumanDecisionRecord", "CoreSdlcTrace"}:
+        template_name = {
+            "HumanDecisionRecord": "HUMAN_DECISION.yaml",
+            "CoreSdlcTrace": "CORE_SDLC_TRACE.yaml",
+        }[type_spec]
+        template = yaml.safe_load(read(TEMPLATES / template_name))
+        return infer_schema(
+            template,
+            "",
+            template["artifact_type"],
+        )
     return adr10_primitive_schema(type_spec)
+
+
+def contract_row_invariants(row: dict[str, Any]) -> list[str]:
+    plural = row.get("invariants")
+    if plural is not None:
+        return copy.deepcopy(plural)
+    singular = row.get("invariant")
+    return [singular] if isinstance(singular, str) and singular else []
 
 
 def adr10_closed_object_schema(
@@ -14104,9 +14544,7 @@ def adr10_closed_object_schema(
         "required": copy.deepcopy(row["fields"]),
         "additionalProperties": False,
         "x-ranex-type-id": row.get("type_id"),
-        "x-ranex-semantic-invariants": copy.deepcopy(
-            row.get("invariants", [])
-        ),
+        "x-ranex-semantic-invariants": contract_row_invariants(row),
     }
 
 
@@ -14154,10 +14592,87 @@ def legacy_test_record_schema(
 
 def estimate_commitment_contract_schemas() -> dict[str, dict[str, Any]]:
     contract = parse_estimate_commitment_control()
-    nested_rows = {
+    nested_rows: dict[str, dict[str, Any]] = {
         row["type_id"]: row for row in contract["nested_types"]
     }
     estimate = contract["estimate_record"]
+    source_authority = contract["source_authority_contract"]
+    for row in source_authority["record_types"]:
+        nested_rows[row["type_id"]] = row
+    nested_rows[estimate["type_id"]] = estimate
+
+    publication = source_authority["registry_publication_fields"]
+    common_registry = source_authority[
+        "common_closed_registry_fields"
+    ]
+    role_authorities = {
+        row["registry_type"]: row
+        for row in source_authority["role_authorities"]
+    }
+
+    def normalized_registry_row(
+        shape: dict[str, Any],
+    ) -> dict[str, Any]:
+        if set(shape.get("field_types", {})) == set(shape["fields"]):
+            return {
+                "type_id": shape["type_id"],
+                "fields": copy.deepcopy(shape["fields"]),
+                "field_types": copy.deepcopy(shape["field_types"]),
+                "nullable_fields": copy.deepcopy(
+                    shape.get("nullable_fields", [])
+                ),
+                "array_cardinalities": copy.deepcopy(
+                    shape.get("array_cardinalities", {})
+                ),
+                "invariants": contract_row_invariants(shape),
+            }
+        field_types = copy.deepcopy(publication["field_types"])
+        constants = shape["constants"]
+        field_types["schema_version"] = {
+            "const": constants["schema_version"]
+        }
+        field_types["record_type"] = {
+            "const": constants["record_type"]
+        }
+        if "row_type" in shape:
+            field_types["rows"] = shape["row_type"] + "[]"
+        field_types.update(copy.deepcopy(shape.get("field_types", {})))
+        return {
+            "type_id": shape["type_id"],
+            "fields": copy.deepcopy(shape["fields"]),
+            "field_types": {
+                field: field_types[field]
+                for field in shape["fields"]
+            },
+            "nullable_fields": copy.deepcopy(
+                common_registry["nullable_fields"]
+            ),
+            "array_cardinalities": (
+                {"rows": shape["row_cardinality"]}
+                if "row_type" in shape
+                else copy.deepcopy(
+                    shape.get("array_cardinalities", {})
+                )
+            ),
+            "invariants": [
+                common_registry["invariant"],
+                *contract_row_invariants(shape),
+            ],
+        }
+
+    registry_rows: dict[str, dict[str, Any]] = {}
+    for shape in source_authority["registry_shapes"]:
+        normalized = normalized_registry_row(shape)
+        registry_rows[normalized["type_id"]] = normalized
+        nested_rows[normalized["type_id"]] = normalized
+    replay_shape = normalized_registry_row(
+        source_authority["source_trust_registry_shape"]
+    )
+    registry_rows[replay_shape["type_id"]] = replay_shape
+    nested_rows[replay_shape["type_id"]] = replay_shape
+    sources_object = source_authority["sources_object"]
+    nested_rows[sources_object["type_id"]] = sources_object
+
     estimate_schema = adr10_closed_object_schema(
         estimate,
         nested_rows,
@@ -14202,7 +14717,439 @@ def estimate_commitment_contract_schemas() -> dict[str, dict[str, Any]]:
             "x-ranex-source-control-id": contract["control_id"],
             **schema,
         }
+
+    source_rows: list[tuple[dict[str, Any], str]] = [
+        *[
+            (row, row["schema_ref"])
+            for row in source_authority["record_types"]
+        ],
+        (
+            source_authority["source_envelope"],
+            source_authority["source_envelope"]["schema_ref"],
+        ),
+        *[
+            (
+                row,
+                role_authorities[row["type_id"]]["schema_ref"],
+            )
+            for row in registry_rows.values()
+            if row["type_id"] in role_authorities
+        ],
+        (
+            replay_shape,
+            source_authority["source_trust_registry_shape"][
+                "schema_ref"
+            ],
+        ),
+    ]
+    for source_row, schema_ref in source_rows:
+        source_schema = adr10_closed_object_schema(
+            source_row,
+            nested_rows,
+            {},
+        )
+        relative = str(Path(schema_ref).relative_to("schemas"))
+        result[relative] = {
+            "$schema": "https://json-schema.org/draft/2020-12/schema",
+            "$id": "https://schemas.ranex.dev/" + relative,
+            "title": source_row["type_id"],
+            "x-ranex-source-contract-id": contract["contract_id"],
+            "x-ranex-source-control-id": contract["control_id"],
+            "x-ranex-source-authority-contract-id": (
+                source_authority["source_contract_id"]
+            ),
+            **source_schema,
+        }
+    expected_schema_refs = {
+        estimate["schema_ref"],
+        projection["schema_ref"],
+        source_authority["source_envelope"]["schema_ref"],
+        source_authority["source_trust_registry_shape"][
+            "schema_ref"
+        ],
+        *[
+            row["schema_ref"]
+            for row in source_authority["record_types"]
+        ],
+        *[
+            row["schema_ref"]
+            for row in source_authority["role_authorities"]
+        ],
+    }
+    actual_schema_refs = {"schemas/" + path for path in result}
+    if actual_schema_refs != expected_schema_refs:
+        raise ValueError(
+            "Estimate/commitment schema projection set drift: "
+            + ",".join(
+                sorted(actual_schema_refs ^ expected_schema_refs)
+            )
+        )
     return result
+
+
+def readiness_scalar_schema(
+    type_spec: Any,
+    named_types: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    if isinstance(type_spec, dict):
+        if set(type_spec) == {"const"}:
+            return {"const": type_spec["const"]}
+        if set(type_spec) == {"enum"}:
+            return {"enum": copy.deepcopy(type_spec["enum"])}
+        if set(type_spec) == {"enum_ref"}:
+            if (
+                type_spec["enum_ref"]
+                != "ENUM-READINESS-RUNTIME-ASSESSMENT-STATUS-1.0"
+            ):
+                raise ValueError(
+                    "ADR-0012 unknown enum reference: "
+                    + type_spec["enum_ref"]
+                )
+            return {
+                "enum": copy.deepcopy(
+                    parse_adr12_readiness_contract()[
+                        "runtime_assessment_status_contract"
+                    ]["values"]
+                )
+            }
+        raise ValueError(
+            "ADR-0012 unsupported inline type: " + repr(type_spec)
+        )
+    if not isinstance(type_spec, str):
+        raise ValueError(
+            "ADR-0012 non-string field type: " + repr(type_spec)
+        )
+    if type_spec.endswith("[]"):
+        member = type_spec[:-2]
+        return {
+            "type": "array",
+            "items": readiness_scalar_schema(member, named_types),
+        }
+    if type_spec.endswith("|null"):
+        return {
+            "oneOf": [
+                readiness_scalar_schema(type_spec[:-5], named_types),
+                {"type": "null"},
+            ]
+        }
+    if type_spec in named_types:
+        return readiness_closed_object_schema(
+            named_types[type_spec],
+            named_types,
+        )
+    scalars = {
+        "safe_id": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 256,
+            "pattern": r"^[A-Za-z0-9][A-Za-z0-9._-]*$",
+        },
+        "safe_ref": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": (
+                r"^(?:[A-Za-z0-9][A-Za-z0-9._-]*|"
+                r"urn:ranex:[A-Za-z0-9._:-]+)$"
+            ),
+        },
+        "sha1": {
+            "type": "string",
+            "pattern": r"^[0-9a-f]{40}$",
+        },
+        "sha256": {
+            "type": "string",
+            "pattern": r"^sha256:[0-9a-f]{64}$",
+        },
+        "strict_utc": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": (
+                r"^[0-9]{4}-(?:0[1-9]|1[0-2])-"
+                r"(?:0[1-9]|[12][0-9]|3[01])T"
+                r"(?:[01][0-9]|2[0-3]):[0-5][0-9]:"
+                r"[0-5][0-9](?:\.[0-9]+)?Z$"
+            ),
+        },
+        "nonempty_string": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096,
+            "pattern": r".*\S.*",
+        },
+    }
+    if type_spec not in scalars:
+        raise ValueError(
+            "ADR-0012 unsupported scalar type: " + type_spec
+        )
+    return copy.deepcopy(scalars[type_spec])
+
+
+def readiness_closed_object_schema(
+    row: dict[str, Any],
+    named_types: dict[str, dict[str, Any]],
+) -> dict[str, Any]:
+    fields = row.get("fields", row.get("output_fields"))
+    properties = {
+        field: readiness_scalar_schema(
+            row["field_types"][field],
+            named_types,
+        )
+        for field in fields
+    }
+    for field, cardinality in row.get(
+        "array_cardinalities", {}
+    ).items():
+        schema = properties[field]
+        if schema.get("type") != "array":
+            raise ValueError(
+                "ADR-0012 non-array cardinality field: " + field
+            )
+        if cardinality == "0..N":
+            schema["minItems"] = 0
+        elif cardinality == "1..N":
+            schema["minItems"] = 1
+        elif cardinality.startswith("exactly 7 for Tier 1"):
+            # Tier-specific cardinality and role order are added below.
+            pass
+        else:
+            raise ValueError(
+                "ADR-0012 unsupported array cardinality: "
+                + cardinality
+            )
+        schema["uniqueItems"] = True
+    return {
+        "type": "object",
+        "properties": properties,
+        "required": copy.deepcopy(fields),
+        "additionalProperties": False,
+        "x-ranex-type-id": row.get(
+            "type_id",
+            row.get("projection_id"),
+        ),
+        "x-ranex-semantic-invariants": copy.deepcopy(
+            row.get("invariants", [])
+        ),
+    }
+
+
+def readiness_contract_schemas() -> dict[str, dict[str, Any]]:
+    contract = parse_adr12_readiness_contract()
+    named_types = {
+        row["type_id"]: row for row in contract["nested_types"]
+    }
+    subject = readiness_closed_object_schema(
+        contract["exact_subject_projection"],
+        named_types,
+    )
+    tier1_id = "READINESS-TIER-IMPLEMENTATION-START-001"
+    tier2_id = "READINESS-TIER-PRODUCTION-001"
+    tier_subject_fields = [
+        "tier_evidence_subject_schema",
+        "tier_evidence_subject_ref",
+        "tier_evidence_subject_digest",
+        "tier_evidence_subject_manifest_digest",
+    ]
+    subject["allOf"] = [
+        {
+            "if": {
+                "properties": {"tier_id": {"const": tier1_id}},
+                "required": ["tier_id"],
+            },
+            "then": {
+                "properties": {
+                    field: {"type": "null"}
+                    for field in tier_subject_fields
+                }
+            },
+        },
+        {
+            "if": {
+                "properties": {"tier_id": {"const": tier2_id}},
+                "required": ["tier_id"],
+            },
+            "then": {
+                "properties": {
+                    "tier_evidence_subject_schema": (
+                        readiness_scalar_schema(
+                            "nonempty_string",
+                            named_types,
+                        )
+                    ),
+                    "tier_evidence_subject_ref": readiness_scalar_schema(
+                        "safe_ref",
+                        named_types,
+                    ),
+                    "tier_evidence_subject_digest": (
+                        readiness_scalar_schema(
+                            "sha256",
+                            named_types,
+                        )
+                    ),
+                }
+            },
+        },
+    ]
+
+    manifest_contract = contract[
+        "readiness_subject_manifest_projection"
+    ]
+    manifest = readiness_closed_object_schema(
+        manifest_contract,
+        named_types,
+    )
+    manifest_conditions = []
+    for tier_id, roles in manifest_contract[
+        "exact_entry_roles_by_tier"
+    ].items():
+        entry_base = manifest["properties"]["entries"]["items"]
+        manifest_conditions.append(
+            {
+                "if": {
+                    "properties": {"tier_id": {"const": tier_id}},
+                    "required": ["tier_id"],
+                },
+                "then": {
+                    "properties": {
+                        "entries": {
+                            "type": "array",
+                            "minItems": len(roles),
+                            "maxItems": len(roles),
+                            "prefixItems": [
+                                {
+                                    "allOf": [
+                                        copy.deepcopy(entry_base),
+                                        {
+                                            "properties": {
+                                                "role": {
+                                                    "const": role
+                                                }
+                                            }
+                                        },
+                                    ]
+                                }
+                                for role in roles
+                            ],
+                            "items": False,
+                        }
+                    }
+                },
+            }
+        )
+    manifest["allOf"] = manifest_conditions
+
+    evidence = readiness_closed_object_schema(
+        named_types["ReadinessEvidenceBindingV1"],
+        named_types,
+    )
+    assessment = readiness_closed_object_schema(
+        contract["assessment_record"],
+        named_types,
+    )
+    assessment["allOf"] = [
+        {
+            "if": {
+                "properties": {
+                    "runtime_assessment_status": {
+                        "const": "NOT_ASSESSED"
+                    }
+                },
+                "required": ["runtime_assessment_status"],
+            },
+            "then": {
+                "properties": {
+                    "runtime_assessment_ref": {"type": "null"},
+                    "runtime_assessment_digest": {"type": "null"},
+                }
+            },
+            "else": {
+                "properties": {
+                    "runtime_assessment_ref": readiness_scalar_schema(
+                        "safe_ref",
+                        named_types,
+                    ),
+                    "runtime_assessment_digest": (
+                        readiness_scalar_schema(
+                            "sha256",
+                            named_types,
+                        )
+                    ),
+                }
+            },
+        },
+        {
+            "if": {
+                "properties": {"result": {"const": "PASS"}},
+                "required": ["result"],
+            },
+            "then": {
+                "properties": {
+                    "human_decision_ref": readiness_scalar_schema(
+                        "safe_ref",
+                        named_types,
+                    ),
+                    "human_decision_digest": readiness_scalar_schema(
+                        "sha256",
+                        named_types,
+                    ),
+                }
+            },
+        },
+        {
+            "if": {
+                "properties": {"tier_id": {"const": tier2_id}},
+                "required": ["tier_id"],
+            },
+            "then": {
+                "properties": {
+                    "runtime_assessment_status": {
+                        "const": "ASSESSED_PASS"
+                    }
+                }
+            },
+        },
+    ]
+    source_id = contract["contract_id"]
+    schemas = {
+        "assurance/readiness-subject-v1.schema.json": subject,
+        (
+            "assurance/readiness-subject-manifest-v1.schema.json"
+        ): manifest,
+        (
+            "assurance/readiness-evidence-binding-v1.schema.json"
+        ): evidence,
+        "assurance/readiness-assessment-v1.schema.json": assessment,
+    }
+    titles = {
+        "assurance/readiness-subject-v1.schema.json": (
+            "Ranex exact readiness subject"
+        ),
+        "assurance/readiness-subject-manifest-v1.schema.json": (
+            "Ranex closed readiness subject manifest"
+        ),
+        "assurance/readiness-evidence-binding-v1.schema.json": (
+            "Ranex readiness native-subject evidence binding"
+        ),
+        "assurance/readiness-assessment-v1.schema.json": (
+            "Ranex immutable readiness assessment"
+        ),
+    }
+    for relative, schema in schemas.items():
+        schema.update(
+            {
+                "$schema": (
+                    "https://json-schema.org/draft/2020-12/schema"
+                ),
+                "$id": "https://schemas.ranex.dev/" + relative,
+                "title": titles[relative],
+                "x-ranex-source-contract-id": source_id,
+                "x-ranex-source-adr": "ADR-0012",
+                "x-ranex-runtime-semantics": (
+                    "scripts/architecture/validate_contracts.py"
+                ),
+            }
+        )
+    return schemas
 
 
 def enrich_path_contract(entry: dict[str, Any], context_ids: set[str]) -> dict[str, Any]:
@@ -16373,6 +17320,7 @@ def generate_registries() -> dict[str, Any]:
             "Estimate/commitment projection field order drift"
         )
     registries.update(adr10_authority_catalogs)
+    registries.update(build_readiness_registries())
     registries["estimate-commitment-control.json"] = (
         estimate_projection_values
     )
@@ -16892,6 +17840,7 @@ def generate_registries() -> dict[str, Any]:
 def generate_schemas(registries: dict[str, Any]) -> None:
     schemas = {**common_schemas(), **build_subject_schemas()}
     schemas.update(estimate_commitment_contract_schemas())
+    schemas.update(readiness_contract_schemas())
     worker_role_schema = infer_schema(
         registries["worker-role-profiles.json"]["entries"][0],
         "",
@@ -17494,6 +18443,71 @@ def generate_fixtures(registries: dict[str, Any]) -> None:
             for path in directory.iterdir():
                 if path.is_file():
                     path.unlink()
+    readiness = parse_adr12_readiness_contract()
+    readiness_fixture = readiness["fixture_contract"]
+    readiness_positive_ids = [
+        key
+        for key in readiness_fixture[
+            "positive_case_requirements"
+        ]
+        if key != "exact_positive_case_count"
+    ]
+    readiness_negative_ids = [
+        key
+        for key in readiness_fixture[
+            "negative_case_requirements"
+        ]
+        if key != "exact_negative_case_count"
+    ]
+    write_json(
+        semantic_dir / "readiness-tier-contract-cases.json",
+        {
+            "fixture_suite": "ADR0012_READINESS_TIER_CONTRACT_V1",
+            "contract_id": readiness["contract_id"],
+            "evidence_scope": readiness_fixture["evidence_scope"],
+            "runtime_claim": readiness_fixture["runtime_claim"],
+            "positive_cases": [
+                {
+                    "fixture_id": case_id,
+                    "scenario": case_id,
+                    "expected_result": "PASS",
+                    "authority_effects": [],
+                }
+                for case_id in readiness_positive_ids
+            ],
+            "negative_cases": [
+                {
+                    "fixture_id": case_id,
+                    "mutation": case_id,
+                    "expected_error": (
+                        "READINESS_"
+                        + case_id.upper().replace("-", "_")
+                    ),
+                    "authority_effects": [],
+                    **(
+                        {
+                            "executed_subcases": copy.deepcopy(
+                                READINESS_FRESHNESS_BOUNDARY_SUBCASES
+                            ),
+                            "executed_subcase_count": len(
+                                READINESS_FRESHNESS_BOUNDARY_SUBCASES
+                            ),
+                        }
+                        if case_id
+                        == "stale_or_expired_evidence"
+                        else {}
+                    ),
+                }
+                for case_id in readiness_negative_ids
+            ],
+            "exact_positive_case_count": len(
+                readiness_positive_ids
+            ),
+            "exact_negative_case_count": len(
+                readiness_negative_ids
+            ),
+        },
+    )
     golden_values = [
         {"fixture_id": "RFC8785-ORDER-UTF8-001", "value": {"z": 3, "a": "é", "nested": {"b": True, "a": None}, "array": [3, 2, 1]}},
         {"fixture_id": "RFC8785-DIGEST-EXCLUSION-001", "value": {"artifact_type": "fixture", "schema_version": "1", "subject_digest": "sha256:" + "1" * 64}},
@@ -17512,17 +18526,6 @@ def generate_fixtures(registries: dict[str, Any]) -> None:
     write_json(golden_dir / "rfc8785-golden.json", {"algorithm": "RFC8785+SHA-256", "fixtures": fixtures})
     estimate_contract = parse_estimate_commitment_control()
     estimate_fixture_contract = estimate_contract["fixture_contract"]
-    positive_expectations = {
-        "estimate_only_remains_non_authoritative": (
-            "ESTIMATE_ONLY_NON_AUTHORITATIVE"
-        ),
-        "exact_current_human_commitment_resolves": (
-            "COMMITMENT_CURRENT"
-        ),
-        "fresh_recommitment_after_binding_change_resolves": (
-            "COMMITMENT_CURRENT"
-        ),
-    }
     write_json(
         ROOT / estimate_fixture_contract["positive_fixture_ref"],
         {
@@ -17530,96 +18533,62 @@ def generate_fixtures(registries: dict[str, Any]) -> None:
                 "positive_suite_id"
             ],
             "contract_id": estimate_contract["contract_id"],
+            "coverage_status": (
+                "DECLARED_DEFINITION_COVERAGE_NOT_EXECUTED"
+            ),
+            "semantic_execution_count": 0,
+            "schema_matrix_status": "NOT_EXECUTED",
+            "runtime_validation_status": "NOT_ASSESSED",
             "cases": [
                 {
-                    "fixture_id": case_id,
-                    "scenario": case_id,
-                    "expected_result": positive_expectations[case_id],
+                    "case_id": case_id,
+                    "source_envelope_version": "2.0.0",
+                    "query_kind": (
+                        "COMMITMENT"
+                        if (
+                            "COMMITMENT" in case_id
+                            or "RECOMMIT" in case_id
+                        )
+                        and "NO-COMMITMENT" not in case_id
+                        else "ESTIMATE_ONLY"
+                    ),
+                    "mutation": "NONE",
+                    "expected_result": (
+                        "CURRENT_DELIVERY_COMMITMENT"
+                        if (
+                            "COMMITMENT" in case_id
+                            or "RECOMMIT" in case_id
+                        )
+                        and "NO-COMMITMENT" not in case_id
+                        else "ESTIMATE_ONLY_NON_AUTHORITATIVE"
+                    ),
+                    "expected_failure_code": None,
+                    "expected_authority_effects": (
+                        ["DELIVERY_COMMITMENT_FACT_ONLY"]
+                        if (
+                            "COMMITMENT" in case_id
+                            or "RECOMMIT" in case_id
+                        )
+                        and "NO-COMMITMENT" not in case_id
+                        else []
+                    ),
                 }
                 for case_id in estimate_fixture_contract[
-                    "positive_case_requirements"
+                    "positive_case_ids"
                 ]
-                if case_id != "exact_positive_case_count"
             ],
         },
     )
-    estimate_negative_errors = {
-        "estimate_used_as_commitment": (
-            "ESTIMATE_CANNOT_GRANT_COMMITMENT"
+    estimate_negative_ids = sorted(
+        (
+            case_id
+            for rows in estimate_fixture_contract[
+                "negative_case_ids_by_boundary"
+            ].values()
+            for case_id in rows
         ),
-        "missing_commitment_decision": (
-            "DELIVERY_COMMITMENT_DECISION_MISSING"
-        ),
-        "wrong_commitment_subject_ref": (
-            "DELIVERY_COMMITMENT_SUBJECT_REF"
-        ),
-        "wrong_commitment_subject_digest": (
-            "DELIVERY_COMMITMENT_SUBJECT_DIGEST"
-        ),
-        "cross_work_item_binding": (
-            "DELIVERY_COMMITMENT_WORK_ITEM"
-        ),
-        "stale_estimate_binding": (
-            "DELIVERY_COMMITMENT_ESTIMATE_CURRENTNESS"
-        ),
-        "expired_estimate_binding": (
-            "DELIVERY_COMMITMENT_ESTIMATE_EXPIRED"
-        ),
-        "stale_capacity_snapshot": (
-            "DELIVERY_COMMITMENT_CAPACITY_BINDING"
-        ),
-        "stale_dependency_snapshot": (
-            "DELIVERY_COMMITMENT_DEPENDENCY_BINDING"
-        ),
-        "stale_risk_snapshot": (
-            "DELIVERY_COMMITMENT_RISK_BINDING"
-        ),
-        "stale_acceptance_snapshot": (
-            "DELIVERY_COMMITMENT_ACCEPTANCE_BINDING"
-        ),
-        "decision_status_not_approved": (
-            "DELIVERY_COMMITMENT_DECISION_STATUS"
-        ),
-        "wrong_decision_kind": (
-            "DELIVERY_COMMITMENT_DECISION_KIND"
-        ),
-        "wrong_decision_outcome": (
-            "DELIVERY_COMMITMENT_DECISION_OUTCOME"
-        ),
-        "wrong_decision_action": (
-            "DELIVERY_COMMITMENT_DECISION_ACTION"
-        ),
-        "wrong_canonical_argument_digest": (
-            "DELIVERY_COMMITMENT_ARGUMENT_DIGEST"
-        ),
-        "wrong_core_sdlc_trace": (
-            "DELIVERY_COMMITMENT_TRACE"
-        ),
-        "expired_decision": (
-            "DELIVERY_COMMITMENT_DECISION_EXPIRED"
-        ),
-        "revoked_decision": (
-            "DELIVERY_COMMITMENT_DECISION_REVOKED"
-        ),
-        "superseded_decision": (
-            "DELIVERY_COMMITMENT_DECISION_SUPERSEDED"
-        ),
-        "unauthenticated_decision": (
-            "DELIVERY_COMMITMENT_AUTHENTICATION"
-        ),
-        "wrong_commitment_owner": (
-            "DELIVERY_COMMITMENT_OWNER"
-        ),
-        "incomplete_or_mutated_recommit_trigger_set": (
-            "DELIVERY_COMMITMENT_TRIGGER_SET"
-        ),
-        "changed_binding_without_fresh_recommitment": (
-            "DELIVERY_COMMITMENT_RECOMMIT_REQUIRED"
-        ),
-        "authority_escalation_attempt": (
-            "DELIVERY_COMMITMENT_AUTHORITY_BOUNDARY"
-        ),
-    }
+        key=lambda value: value.encode("utf-8"),
+    )
     write_json(
         ROOT / estimate_fixture_contract["negative_fixture_ref"],
         {
@@ -17627,16 +18596,23 @@ def generate_fixtures(registries: dict[str, Any]) -> None:
                 "negative_suite_id"
             ],
             "contract_id": estimate_contract["contract_id"],
+            "coverage_status": (
+                "DECLARED_DEFINITION_COVERAGE_NOT_EXECUTED"
+            ),
+            "semantic_execution_count": 0,
+            "schema_matrix_status": "NOT_EXECUTED",
+            "runtime_validation_status": "NOT_ASSESSED",
             "cases": [
                 {
-                    "fixture_id": case_id,
-                    "scenario": case_id,
-                    "expected_error": estimate_negative_errors[case_id],
+                    "case_id": case_id,
+                    "source_envelope_version": "2.0.0",
+                    "query_kind": "COMMITMENT",
+                    "mutation": case_id,
+                    "expected_result": "REJECTED_ZERO_AUTHORITY",
+                    "expected_failure_code": case_id,
+                    "expected_authority_effects": [],
                 }
-                for case_id in estimate_fixture_contract[
-                    "negative_case_requirements"
-                ]
-                if case_id != "exact_negative_case_count"
+                for case_id in estimate_negative_ids
             ],
         },
     )
@@ -19635,6 +20611,82 @@ def generated_output_class(path: str) -> str:
     raise ValueError("Unclassified generated output path: " + path)
 
 
+def generated_output_licensing_policies(
+    paths: set[str],
+) -> dict[str, str]:
+    manifest = load_json_strict(LEGAL_MANIFEST)
+    rows = manifest.get("files")
+    if not isinstance(rows, list):
+        raise ValueError(
+            "Legal manifest files must be an array: "
+            + LEGAL_MANIFEST_PATH
+        )
+    legal_by_path: dict[str, dict[str, Any]] = {}
+    for row in rows:
+        path = row.get("path") if isinstance(row, dict) else None
+        if not isinstance(path, str) or path in legal_by_path:
+            raise ValueError(
+                "Legal manifest path missing or duplicated: "
+                + str(path)
+            )
+        legal_by_path[path] = row
+
+    policies: dict[str, str] = {}
+    for path in paths:
+        row = legal_by_path.get(path)
+        if row is None:
+            raise ValueError(
+                "Generated output lacks an explicit legal policy row: "
+                + path
+            )
+        if (
+            row.get("classification") == "CURATED_RESEARCH"
+            and row.get("license") == "NOASSERTION"
+            and row.get("provenance_kind")
+            == "DETERMINISTIC_GENERATED_RESEARCH_PROJECTION"
+        ):
+            policy_id = LICENSING_POLICY_CURATED_RESEARCH
+        elif (
+            row.get("classification") == "RANEX_ORIGINAL"
+            and row.get("license")
+            == "LicenseRef-Ranex-Personal-Use-1.0"
+            and row.get("provenance_kind")
+            == "DETERMINISTIC_GENERATED_PROJECTION"
+        ):
+            policy_id = LICENSING_POLICY_RANEX_ORIGINAL
+        else:
+            raise ValueError(
+                "Generated output legal policy is unrecognized: "
+                + path
+            )
+        policies[path] = policy_id
+
+    research_paths = {
+        path
+        for path, policy_id in policies.items()
+        if policy_id == LICENSING_POLICY_CURATED_RESEARCH
+    }
+    if research_paths != CURATED_RESEARCH_GENERATED_OUTPUT_PATHS:
+        raise ValueError(
+            "Curated-research generated-output partition drift: "
+            + "missing="
+            + ",".join(
+                sorted(
+                    CURATED_RESEARCH_GENERATED_OUTPUT_PATHS
+                    - research_paths
+                )
+            )
+            + ";unexpected="
+            + ",".join(
+                sorted(
+                    research_paths
+                    - CURATED_RESEARCH_GENERATED_OUTPUT_PATHS
+                )
+            )
+        )
+    return policies
+
+
 def generate_output_authority() -> set[str]:
     authority_path = (
         "architecture/contracts/generated-output-authority.json"
@@ -19658,11 +20710,15 @@ def generate_output_authority() -> set[str]:
         **{path: GENERATOR_WRITER for path in generator_paths},
         **{path: VALIDATOR_WRITER for path in validator_paths},
     }
+    licensing_policy_by_path = (
+        generated_output_licensing_policies(set(writer_by_path))
+    )
     entries = [
         {
             "path": path,
             "writer": writer_by_path[path],
             "output_class": generated_output_class(path),
+            "licensing_policy_id": licensing_policy_by_path[path],
             "licensing_projection_required": True,
         }
         for path in sorted(
@@ -19697,11 +20753,28 @@ def generate_output_authority() -> set[str]:
         ROOT / authority_path,
         {
             "registry_id": "REG-GENERATED-OUTPUT-AUTHORITY-001",
-            "version": "2.0.0",
+            "version": "2.1.0",
             "status": "ACTIVE_DOCUMENTATION_CONTRACT",
             "generated_by": GENERATOR_WRITER,
             "generator_writer": GENERATOR_WRITER,
             "validator_writer": VALIDATOR_WRITER,
+            "licensing_policy_source_path": LEGAL_MANIFEST_PATH,
+            "licensing_policy_source_digest": (
+                "sha256:" + sha256_file(LEGAL_MANIFEST)
+            ),
+            "licensing_policy_ids": sorted(
+                {
+                    LICENSING_POLICY_RANEX_ORIGINAL,
+                    LICENSING_POLICY_CURATED_RESEARCH,
+                }
+            ),
+            "licensing_policy_counts": dict(
+                sorted(
+                    Counter(
+                        licensing_policy_by_path.values()
+                    ).items()
+                )
+            ),
             "output_count": len(entries),
             "generator_output_count": len(generator_paths),
             "validator_output_count": len(validator_paths),

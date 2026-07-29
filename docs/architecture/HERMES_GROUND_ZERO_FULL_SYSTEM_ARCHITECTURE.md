@@ -3872,9 +3872,9 @@ execution.
 
 ### 33.7 Exact architecture-element inventory and assessment subjects
 
-`architecture-elements.json` is not a name/owner index. Every one of its 989
-current elements is a closed, content-bound definition subject with these
-required fields:
+`architecture-elements.json` is not a name/owner index. Every element in the
+current 1,008-row architecture inventory is a closed, content-bound definition
+subject with these required fields:
 
 - `definition_contract_ref`: the exact canonical registry/schema row or
   normative decision fragment that owns the complete definition;
@@ -3906,15 +3906,20 @@ does not claim runtime enactment: all current element results remain
 `NOT_ASSESSED` until exact design/source/runtime evidence is independently
 populated.
 
-The frozen inventory is 989 elements after the §16 omitted-axis and §17
-event-enum closure, including 43 `STATE_AXIS` and 278 `STATE_VALUE` elements.
+The current inventory includes 43 `STATE_AXIS` and 278 `STATE_VALUE` elements.
 `RuleEnforcementClass`, `RuleStage`, and `SyncDisposition` are included as
 canonical axes rather than silently treated as prose. Engineering-practice
-disposition covers every element exactly once: 180 `DIRECT`, 29
-`PROFILE_INHERITANCE`, 343 `RULE_INHERITANCE`, and 437
-`OWNER_INHERITANCE`, with zero `NOT_APPLICABLE`, `UNKNOWN`, unclassified,
+disposition covers the current 1,008 elements exactly once: 191 `DIRECT`, 30
+`INHERITED_FROM_PROFILE`, 346 `INHERITED_FROM_RULE`, and 441
+`INHERITED_FROM_OWNER`, with zero `NOT_APPLICABLE`, `UNKNOWN`, unclassified,
 cyclic, or multiply parented rows. These are trace dispositions, not numeric
 achievement scores.
+
+Accepted additive ADRs may append versioned element kinds through the contract
+compiler. The generated `architecture-elements.json` registry, its
+`counts_by_kind`, and the exact matching assessment registry are authoritative
+for the resulting current denominator; an accepted additive row inherits the
+same closed-definition, parent-resolution, and `NOT_ASSESSED` runtime rules.
 
 ## 34. Selected defaults and evidence-triggered substitution gates
 

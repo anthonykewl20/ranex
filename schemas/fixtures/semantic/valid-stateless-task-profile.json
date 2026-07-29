@@ -513,7 +513,7 @@
     },
     "created_at": "2026-07-28T00:00:00Z",
     "derived_result": "NOT_ASSESSED",
-    "digest": "sha256:53db3f961910974d0827d1ebac3a4747e3cc6a1aa63c233eafff7cee1bb338fa",
+    "digest": "sha256:76a48ef0880fa7d48f64c151195bd4dc0e2438d8f1c778257159778c6d7a09c7",
     "edge_case_partitions": [
       {
         "applicability": {
@@ -1203,7 +1203,7 @@
       "reason_required": true,
       "silent_skip_forbidden": true
     },
-    "registry_digest": "sha256:704ee12926e01b8854e91a6dfd2aa689d71eb6cfb1a0346ae6a1661d036d6f96",
+    "registry_digest": "sha256:4ae71c7a9aec1fdc0e24a133b166fad6a3f0e41ff45eecd5b0e681afed46e44c",
     "registry_id": "REG-TEST-PRACTICES-001",
     "registry_version": "1.0.0",
     "runtime_evidence_status": "NOT_ASSESSED",

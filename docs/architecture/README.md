@@ -254,7 +254,7 @@ replay remain `NOT_ASSESSED`. `DEFINED_NAME_ONLY` blocks
 `IMPLEMENTATION_START_READY`; explicit runtime `NOT_ASSESSED` remains permitted
 at that tier but blocks `PRODUCTION_READY`.
 
-Every one of the 989 current architecture elements binds its complete canonical
+Every one of the 1,008 current architecture elements binds its complete canonical
 definition row, RFC 8785 row digest, full source-file digest, and semantic
 parent elements. State values bind their state axis; artifacts bind their
 schema row; paths, edges, boundaries, events, and rules bind full registry
@@ -342,12 +342,13 @@ Each gate retains its native evidence subject through an exact ADR-0012 bridge
 to a closed readiness subject and manifest; cross-subject relabeling is
 forbidden. Neither state has a current assessment or authorization.
 
-The separate architecture-element ledger covers all 989 current elements.
+The separate architecture-element ledger covers all 1,008 current elements.
 Definition dispositions describe book/practice traceability and exact
-definition closure: 180 direct, 29 profile-inherited, 343 rule-inherited, and
-437 owner-inherited, with zero N/A, unknown, unclassified, cyclic, or
-multiply parented rows. They are not achievement scores. Every runtime result
-is still `NOT_ASSESSED`.
+definition closure: 191 `DIRECT`, 30 `INHERITED_FROM_PROFILE`, 346
+`INHERITED_FROM_RULE`, and 441 `INHERITED_FROM_OWNER`, with zero
+`NOT_APPLICABLE`, `UNKNOWN`, unclassified, cyclic, or multiply parented rows.
+They are not achievement scores. Every runtime result is still
+`NOT_ASSESSED`.
 
 ## Research inputs
 

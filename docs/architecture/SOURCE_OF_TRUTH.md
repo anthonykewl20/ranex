@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Policy ID | `POL-SOT-001` |
-| Version | `1.8.0` |
+| Version | `1.9.0` |
 | Status | Normative supporting policy |
 | Owner | Human governor |
 | Effective date | 2026-07-29 |
@@ -240,6 +240,7 @@ registries:
 
 ```text
 architecture/contracts/
+├── accepted-adrs.json
 ├── applicability-rules.json
 ├── architecture-element-assessments.json
 ├── architecture-elements.json
@@ -254,32 +255,64 @@ architecture/contracts/
 ├── effects.json
 ├── engineering-practice-profiles.json
 ├── engineering-practices.json
+├── estimate-commitment-control.json
 ├── events.json
 ├── feedback-fitness.json
+├── generated-output-authority.json
 ├── identities.json
-├── legacy-test-layout-records.json
+├── legacy-test-direct-source-classifications.json
+├── legacy-test-layout-policy-v1.json
+├── legacy-test-layout-policy-v2.json
 ├── legacy-test-layout-policy.json
+├── legacy-test-layout-records-v1.json
+├── legacy-test-layout-records-v2.json
+├── legacy-test-layout-records.json
 ├── paths.json
 ├── priority-rules.json
+├── readiness-assessments.json
+├── readiness-tiers.json
+├── registry-manifest.json
 ├── runtime-adapters.json
 ├── schema-registry.json
 ├── states.json
-├── test-practice-profiles.json
-├── test-practices.json
 ├── tdd-cycle-records.json
 ├── tdd-exception-records.json
-├── test-quarantine-records.json
+├── test-behaviors.json
 ├── test-deletion-records.json
+├── test-practice-profiles.json
+├── test-practices.json
+├── test-quarantine-records.json
 ├── topology-rules.json
 ├── vital-profile.json
-├── worker-role-profiles.json
-└── registry-manifest.json
+└── worker-role-profiles.json
 ```
 
 The artifact schemas and canonicalization rules are specified in
 [Ranex AI-Work Artifact Contract Specification](./AI_ARTIFACT_CONTRACTS.md).
 The manifest content-binds every registry except itself to avoid a circular
-digest. Enactment of this documentation-contract layer does not make runtime
+digest. `generated-output-authority.json` declares every generator- or
+validator-owned output and separately identifies the immutable ADR-0010
+predecessor inputs. Its per-path licensing-policy partition is projected from
+the hand-maintained legal manifest and content-binds that source; generation
+does not assign or expand ownership. The validator independently requires the
+three engineering-reference projections to remain
+`CURATED_RESEARCH`/`NOASSERTION`. `accepted-adrs.json` is the exact
+accepted-decision projection. The unversioned and `-v1` legacy layout files are immutable
+predecessor/compatibility inputs, not active generator-owned policy.
+`legacy-test-layout-policy-v2.json`,
+`legacy-test-layout-records-v2.json`,
+`legacy-test-direct-source-classifications.json`, and
+`test-behaviors.json` are the active ADR-0010 projections.
+`estimate-commitment-control.json` is the exact `SDLC-EST-001` source
+projection and remains `DEFINED_RUNTIME_NOT_ASSESSED`. Its 33 source-declared
+schemas and exact six-positive/213-negative V2 case catalogs currently prove
+definition coverage only: semantic execution is zero, the schema mutation
+matrix is `NOT_EXECUTED`, and runtime validation is `NOT_ASSESSED`.
+`readiness-tiers.json` and `readiness-assessments.json` project ADR-0012;
+both tiers currently remain `NOT_ASSESSED`, with zero assessment records and
+no authorization.
+
+Enactment of this documentation-contract layer does not make runtime
 producers, generated consumers, repository topology, tests, or `AI-G2` pass.
 `engineering-practice-profiles.json` projects the exact
 [`ENGPROFILE-RANEX-ARCHITECTURE-DESIGN-001`](../research/ranex-architecture-practice-application-profile.json):
@@ -366,12 +399,17 @@ instances project from `architecture/records/test-health/` to
 the corresponding `schemas/common/*-record-v1.schema.json` schemas. ADR-0009 projects to
 `context-dependency-edges.json`, `context-boundary-fitness.json`,
 `context-coupling-policy.json`, and `feedback-fitness.json`. ADR-0010 projects
-to `legacy-test-layout-policy.json`,
-`legacy-test-layout-records.json`,
-`schemas/common/legacy-test-layout-policy-v1.schema.json`,
-`schemas/common/legacy-test-change-exception-v1.schema.json`,
-`schemas/common/legacy-test-migration-record-v1.schema.json`, and
-`schemas/common/legacy-test-cutover-removal-record-v1.schema.json`. ADR-0011
+to `legacy-test-layout-policy-v2.json`,
+`legacy-test-layout-records-v2.json`,
+`legacy-test-direct-source-classifications.json`, `test-behaviors.json`,
+`schemas/common/legacy-test-layout-policy-v2.schema.json`,
+`schemas/common/legacy-test-change-exception-v2.schema.json`,
+`schemas/common/legacy-test-migration-record-v2.schema.json`,
+`schemas/common/legacy-test-cutover-removal-record-v2.schema.json`,
+`schemas/common/direct-source-classification-authority-v1.schema.json`, and
+`schemas/common/test-behavior-authority-v1.schema.json`. The corresponding
+unversioned and `-v1` contract files remain immutable verify-only inputs and
+are never regenerated. ADR-0011
 projects its strict fenced YAML catalog, without semantic edits, to
 `worker-role-profiles.json` and `runtime-adapters.json`; both remain
 definition-only until separately implemented and qualified. ADR-0012 projects
@@ -502,9 +540,10 @@ quality score.
 
 [ADR-0010](./decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md)
 is the semantic owner for time-bounded coexistence of the accepted Hermes test
-tree. `legacy-test-layout-policy.json` embeds the immutable source commit/tree,
-the exact `git ls-tree` digest, and all 2,444 bytewise path-sorted file rows
-with mode, Git blob OID, and content SHA-256. It expands exactly
+tree. `legacy-test-layout-policy-v2.json` embeds the immutable source
+commit/tree, the exact `git ls-tree` digest, and all 2,444 bytewise
+path-sorted file rows with mode, Git blob OID, and content SHA-256. It expands
+exactly
 `LEGACY-TEST-ROOT-001..029`, `LEGACY-TEST-TOPLEVEL-001`, and the two inherited
 canonical scopes with their owners, destinations, trigger, expiry, and removal
 proof.
@@ -512,7 +551,7 @@ proof.
 The sole active/accepted instance sources are bytewise-sorted JSON records
 under
 `architecture/records/legacy-test-layout/{change-exceptions,migration-records,cutover-removal-records}/`.
-They project to `legacy-test-layout-records.json`
+They project to `legacy-test-layout-records-v2.json`
 (`REG-LEGACY-TEST-LAYOUT-RECORDS-001`) and are also embedded in the policy;
 the global manifest content-binds both projections. Landed bytes are immutable;
 closure/removal occurs only through a governed commit with Git and landing
@@ -523,7 +562,10 @@ nothing. Retirement is not duplicated here: accepted
 committed Git subject, rejects dirty/staged/untracked mixing, unused
 exceptions/proofs, retained derived-closed active sources, and omitted
 applicable deletion lineage, and independently recomputes source and cutover
-state.
+state. The unversioned and `-v1` layout files are retained byte-for-byte as
+immutable predecessor/compatibility inputs under the generated-output
+authority; they are not the active projection and cannot be rewritten by the
+generator.
 
 Change-exception subjects are exact path transitions. Accepted migration
 records are MIGRATED-only and form one contiguous predecessor-linked sequence
@@ -675,14 +717,16 @@ bind their schema/artifact row; paths, edges, boundaries, events, rules, and
 other generated children bind their complete canonical definition row and
 semantic parents. `DEFINED` cannot mean only name/owner/source path.
 `architecture-element-assessments.json` exact-subjects those complete
-bindings; any row/source/parent change stales the assessment. The 989 current
+bindings; any row/source/parent change stales the assessment. The 1,008 current
 elements include 43 state axes and 278 state values; the canonical §16
 `RuleEnforcementClass`, `RuleStage`, and `SyncDisposition` axes are included.
-Practice disposition is
-complete and singular: 180 direct, 29 profile-inherited, 343 rule-inherited,
-and 437 owner-inherited, with zero N/A, unknown, unclassified, cyclic, or
-multiply parented rows. Those are trace classifications, not an arithmetic or
-compensating score, and all runtime outcomes remain `NOT_ASSESSED`.
+The matching current assessment registry resolves 191 `DIRECT`, 30
+`INHERITED_FROM_PROFILE`, 346 `INHERITED_FROM_RULE`, and 441
+`INHERITED_FROM_OWNER` dispositions. In the element registry, 191 elements
+carry 533 explicit typed engineering-practice mappings and 817 carry
+`NO_EXPLICIT_MAPPING`. That latter value is not `NOT_APPLICABLE`, a runtime
+result, or a compensating score. All parent references and complete definition
+bindings validate, and all runtime outcomes remain `NOT_ASSESSED`.
 
 ## 8. Source precedence and conflict behavior
 

@@ -2,7 +2,7 @@
   "decision_bindings": [
     {
       "decision_id": "ADR-0008",
-      "digest": "sha256:594351ba900f3e71cc625614bd8a04c03d357abaef9480fe5f7c5d8ac74b166f",
+      "digest": "sha256:f2391238817bdda9303dbfd82b440399a162448463a850e35733c76bbe09612f",
       "path": "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md",
       "runtime_enactment_status": "NOT_ASSESSED",
       "status": "ACCEPTED_PAPER_DECISION"
@@ -23,7 +23,7 @@
     },
     {
       "decision_id": "ADR-0010",
-      "digest": "sha256:3fac5d7fbca705f9b9c70a9b51f208f7e43f12883f586b66f8035f13b92f1ca3",
+      "digest": "sha256:45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb",
       "path": "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md",
       "runtime_enactment_status": "NOT_ASSESSED",
       "status": "ACCEPTED_PAPER_DECISION"
@@ -420,9 +420,9 @@
     "ENGREF-FUNDAMENTALS-SOFTWARE-ARCHITECTURE-1E-FITNESS-FUNCTIONS",
     "ENGREF-PRAGMATIC-PROGRAMMER-1E-TRACER-ROUTE"
   ],
-  "legacy_test_layout_policy_digest": "sha256:11195e17c54981f5e1902da8ebacc63190b3d6ee38f9b8e35bcb6771b154423f",
-  "legacy_test_layout_policy_id": "RANEX-LEGACY-TEST-LAYOUT-1.0",
-  "legacy_test_layout_policy_ref": "architecture/contracts/legacy-test-layout-policy.json",
+  "legacy_test_layout_policy_digest": "sha256:f63bfe023c0380a638fcfa006a604c40d11f40ca3bbde7275df95b7b5d12123d",
+  "legacy_test_layout_policy_id": "RANEX-LEGACY-TEST-LAYOUT-2.0",
+  "legacy_test_layout_policy_ref": "architecture/contracts/legacy-test-layout-policy-v2.json",
   "production_evidence_obligation_policy": [
     {
       "obligation_id": "BUILT_ARTIFACT_AND_COMPOSITION_IDENTITY",

@@ -1,0 +1,792 @@
+{
+  "applicability": {
+    "not_applicable_approval_ref": "",
+    "not_applicable_audit_ref": "",
+    "not_applicable_reason": "",
+    "population_ref": "#/population",
+    "qualifying_trigger_query_digest": "",
+    "qualifying_trigger_query_ref": "",
+    "registry_digest": "sha256:70aa533eb87375970768ee6effc259aa26bf425c2277886d7a88e11c03619042",
+    "registry_id": "APPLICABILITY-SDLC-001",
+    "registry_version": "1.1.0",
+    "result": "UNKNOWN",
+    "rule_id": "APP-STAGE-001"
+  },
+  "approved_at": "",
+  "artifact_type": "capability_assessment",
+  "assessment_authority": {
+    "approver_id": "UNASSIGNED_WAVE_2",
+    "assessor_id": "UNASSIGNED_WAVE_2",
+    "conflicts": [
+      "No runtime population, independent assessor, or approval evidence exists."
+    ],
+    "independence_evidence_ref": ""
+  },
+  "assessment_id": "capability_assessment_019fa605-6800-76cb-9d99-5822c58a0e42",
+  "capability_rating": {
+    "arithmetic_aggregation_prohibited": true,
+    "criterion_evidence": [],
+    "label": "",
+    "level": null,
+    "ordinal_label_only": true,
+    "result": "NOT_ASSESSED"
+  },
+  "confidence": {
+    "adequacy_rule": {
+      "approval_ref": "",
+      "rule_digest": "",
+      "rule_id": "",
+      "rule_version": ""
+    },
+    "derivation_result": "NOT_CHECKED",
+    "derived_level": "LOW",
+    "gap_register_ref": "#/gap_register",
+    "independent_assurance_signoff_ref": "",
+    "rationale": "No qualified runtime population or measurement evidence exists.",
+    "tests": {
+      "authenticity": {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED"
+      },
+      "data_quality": {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED"
+      },
+      "duration": {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED"
+      },
+      "freshness": {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED"
+      },
+      "missingness": {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED"
+      },
+      "representativeness": {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED"
+      },
+      "sample": {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED"
+      }
+    }
+  },
+  "core_sdlc_trace_ref": "",
+  "correction_reason": "",
+  "coverage": {
+    "by_joint_strata_ref": "#/population/joint_strata",
+    "percentage": null,
+    "percentage_formula": "population.totals.included / population.totals.eligible * 100; null when eligible = 0",
+    "population_ref": "#/population",
+    "reconciliation_result": "NOT_CHECKED"
+  },
+  "created_at": "2026-07-28T00:00:00Z",
+  "decision_ref": "",
+  "definition_evidence_refs": [
+    "docs/architecture/SDLC_CONTROL_CATALOG.md#sdlc-rdy-001"
+  ],
+  "definition_status": "DEFINED",
+  "digest": "sha256:8b6c735f014576a0aba82eced0978a6b3bf7777522d4ae24971a11dfa9c027e4",
+  "effectiveness": {
+    "baseline_refs": [],
+    "comparator_refs": [],
+    "distribution_and_trend_refs": [],
+    "guardrail_result_refs": [],
+    "metric_spec_ids": [],
+    "observed_result_refs": [],
+    "result": "UNKNOWN"
+  },
+  "evidence": {
+    "artifact_and_provenance_refs": [
+      "docs/architecture/SDLC_CONTROL_CATALOG.md#sdlc-rdy-001"
+    ],
+    "data_quality_result_ref": "",
+    "enacted_practice_refs": [],
+    "event_query_digest": "",
+    "event_query_ref": "",
+    "evidence_snapshot_refs": [],
+    "limitations": [
+      "Definition evidence exists; enacted runtime, rejection-path, population, outcome, and guardrail evidence do not."
+    ],
+    "normal_path_event_refs": [],
+    "outcome_and_guardrail_refs": [],
+    "traversed_rejection_invalidation_exception_or_backward_event_refs": []
+  },
+  "findings": {
+    "active_harm_refs": [],
+    "exception_refs": [],
+    "gate_outcome_refs": [],
+    "invariant_breach_refs": [],
+    "nonconformity_refs": []
+  },
+  "gap_register": {
+    "entries": [
+      {
+        "disposition": "OPEN",
+        "disposition_evidence_ref": "",
+        "gap_id": "GAP-SDLC-RDY-001-EVIDENCE",
+        "materiality": "UNKNOWN",
+        "source_dimension": "EVIDENCE",
+        "source_ref": ""
+      },
+      {
+        "disposition": "OPEN",
+        "disposition_evidence_ref": "",
+        "gap_id": "GAP-SDLC-RDY-001-POPULATION",
+        "materiality": "UNKNOWN",
+        "source_dimension": "POPULATION",
+        "source_ref": ""
+      },
+      {
+        "disposition": "OPEN",
+        "disposition_evidence_ref": "",
+        "gap_id": "GAP-SDLC-RDY-001-COVERAGE",
+        "materiality": "UNKNOWN",
+        "source_dimension": "COVERAGE",
+        "source_ref": ""
+      },
+      {
+        "disposition": "OPEN",
+        "disposition_evidence_ref": "",
+        "gap_id": "GAP-SDLC-RDY-001-MEASUREMENT",
+        "materiality": "UNKNOWN",
+        "source_dimension": "MEASUREMENT",
+        "source_ref": ""
+      },
+      {
+        "disposition": "OPEN",
+        "disposition_evidence_ref": "",
+        "gap_id": "GAP-SDLC-RDY-001-APPLICABILITY",
+        "materiality": "UNKNOWN",
+        "source_dimension": "APPLICABILITY",
+        "source_ref": ""
+      }
+    ],
+    "inventory_query_digest": "",
+    "inventory_query_ref": "",
+    "reconciliation": {
+      "every_gap_disposed_result": "NOT_CHECKED",
+      "result": "NOT_CHECKED",
+      "scored_eligibility_result": "NOT_CHECKED",
+      "source_inventory_complete_result": "NOT_CHECKED",
+      "unresolved_material_gap_refs": [
+        "GAP-SDLC-RDY-001-EVIDENCE",
+        "GAP-SDLC-RDY-001-POPULATION",
+        "GAP-SDLC-RDY-001-COVERAGE",
+        "GAP-SDLC-RDY-001-MEASUREMENT",
+        "GAP-SDLC-RDY-001-APPLICABILITY"
+      ]
+    }
+  },
+  "improvement": {
+    "bounded_change": "",
+    "causal_control_id": "",
+    "causal_stage": "",
+    "decision": "",
+    "effectiveness_review_ref": "",
+    "evidence_window_end": "",
+    "hypothesis": "",
+    "linked_work_item_id": "",
+    "measurement_design_digest": "",
+    "measurement_design_ref": "",
+    "owner_id": "",
+    "review_date": "",
+    "stop_or_revert_criteria": []
+  },
+  "measurement_design": {
+    "analysis_assumption_check_refs": [],
+    "analysis_method_ref": "",
+    "decision_rule_evaluation_ref": "",
+    "decision_rule_frozen_at": "",
+    "design_digest": "",
+    "design_id": "",
+    "design_version": "",
+    "fixed_comparator_ref": "",
+    "goal_question_decision_refs": [],
+    "harness": {
+      "configuration_digest": "",
+      "configuration_ref": "",
+      "data_quality_test_refs": [],
+      "harness_digest": "",
+      "harness_id": "",
+      "harness_version": "",
+      "qualification_ref": "",
+      "qualification_result": "NOT_CHECKED",
+      "repeatability_test_refs": []
+    },
+    "metric_registry_id": "METRIC-SDLC-001",
+    "metric_registry_version": "1.0.0",
+    "metric_spec_refs": [],
+    "minimum_detectable_effect": "",
+    "minimum_meaningful_effect": "",
+    "noise": {
+      "floor": null,
+      "method_ref": "",
+      "status": "NOT_ASSESSED",
+      "uncertainty_na_approval_ref": "",
+      "uncertainty_na_rule_ref": "",
+      "zero_claim_evidence_ref": "",
+      "zero_claim_independent_approval_ref": ""
+    },
+    "outcome_accounting": {
+      "infrastructure_error_count": 0,
+      "infrastructure_error_ledger_ref": "",
+      "subject_failure_count": 0
+    },
+    "prospective_decision_rule_ref": ""
+  },
+  "policy_id": "POL-SDLC-001",
+  "policy_version": "1.4.0",
+  "population": {
+    "adverse_categories": [
+      {
+        "category_id": "CONTROL_OR_EXECUTION_OUTCOME_FAIL",
+        "derived_result": "NOT_CHECKED",
+        "dimension": "CONTROL_OR_EXECUTION_OUTCOME",
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "predicate_rule_ref": "",
+        "query_digest": "",
+        "query_ref": "",
+        "selector": "FAIL"
+      },
+      {
+        "category_id": "WORK_STATUS_BLOCKED",
+        "derived_result": "NOT_CHECKED",
+        "dimension": "WORK_STATUS_HISTORY",
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "predicate_rule_ref": "",
+        "query_digest": "",
+        "query_ref": "",
+        "selector": "BLOCKED"
+      },
+      {
+        "category_id": "WORK_STATUS_CANCELLED",
+        "derived_result": "NOT_CHECKED",
+        "dimension": "WORK_STATUS_HISTORY",
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "predicate_rule_ref": "",
+        "query_digest": "",
+        "query_ref": "",
+        "selector": "CANCELLED"
+      },
+      {
+        "category_id": "WORK_STATUS_ROLLED_BACK",
+        "derived_result": "NOT_CHECKED",
+        "dimension": "WORK_STATUS_HISTORY",
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "predicate_rule_ref": "",
+        "query_digest": "",
+        "query_ref": "",
+        "selector": "ROLLED_BACK"
+      },
+      {
+        "category_id": "REOPENED_ATTEMPT",
+        "derived_result": "NOT_CHECKED",
+        "dimension": "ATTEMPT_HISTORY",
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "predicate_rule_ref": "",
+        "query_digest": "",
+        "query_ref": "",
+        "selector": "REOPENED"
+      },
+      {
+        "category_id": "RISK_LANE_EMERGENCY",
+        "derived_result": "NOT_CHECKED",
+        "dimension": "RISK_LANE",
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "predicate_rule_ref": "",
+        "query_digest": "",
+        "query_ref": "",
+        "selector": "EMERGENCY"
+      }
+    ],
+    "adverse_reconciliation_result": "NOT_CHECKED",
+    "eligibility_query_digest": "",
+    "eligibility_query_ref": "",
+    "eligibility_rule_ref": "",
+    "exclusions": [],
+    "joint_strata": [
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "PRODUCT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "PRODUCT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "PRODUCT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "PRODUCT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "DEFECT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "DEFECT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "DEFECT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "DEFECT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "RELIABILITY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "RELIABILITY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "RELIABILITY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "RELIABILITY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "SECURITY_PRIVACY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "SECURITY_PRIVACY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "SECURITY_PRIVACY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "SECURITY_PRIVACY"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "ARCHITECTURE_PLATFORM"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "ARCHITECTURE_PLATFORM"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "ARCHITECTURE_PLATFORM"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "ARCHITECTURE_PLATFORM"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "COMPLIANCE_PROVENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "COMPLIANCE_PROVENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "COMPLIANCE_PROVENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "COMPLIANCE_PROVENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "UPSTREAM_SYNC"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "UPSTREAM_SYNC"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "UPSTREAM_SYNC"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "UPSTREAM_SYNC"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "MAINTENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "MAINTENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "MAINTENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "MAINTENANCE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "RETIREMENT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "RETIREMENT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "RETIREMENT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "RETIREMENT"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "STANDARD",
+        "work_class": "INCIDENT_RESPONSE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "ENHANCED",
+        "work_class": "INCIDENT_RESPONSE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "CRITICAL",
+        "work_class": "INCIDENT_RESPONSE"
+      },
+      {
+        "eligible": 0,
+        "excluded": 0,
+        "included": 0,
+        "risk_lane": "EMERGENCY",
+        "work_class": "INCIDENT_RESPONSE"
+      }
+    ],
+    "reconciliation": {
+      "evidence_refs": [],
+      "exclusions_sum_to_excluded_result": "NOT_CHECKED",
+      "result": "NOT_CHECKED",
+      "strata_complete_result": "NOT_CHECKED",
+      "strata_sum_to_totals_result": "NOT_CHECKED",
+      "totals_identity_result": "NOT_CHECKED"
+    },
+    "sampling_method": "NOT_ASSESSED",
+    "snapshot_digest": "",
+    "snapshot_ref": "",
+    "totals": {
+      "eligible": 0,
+      "excluded": 0,
+      "included": 0
+    }
+  },
+  "prior_assessment_ref": "",
+  "priority": {
+    "capability_gap": "",
+    "consequence": "",
+    "decisive_trigger_code": "",
+    "derivation_result": "NOT_CHECKED",
+    "derived_tier": null,
+    "downstream_blocking": "",
+    "evaluated_trigger_results": [
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "ACTIVE_HARM"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "NONTAILORABLE_INVARIANT_BREACH"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "NONTAILORABLE_TRUTH_BREACH"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "NONTAILORABLE_AUTHORITY_BREACH"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "NONTAILORABLE_EVIDENCE_BREACH"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "NONTAILORABLE_RECOVERY_BREACH"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "RESULT_NOT_ASSESSED"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "RESULT_UNKNOWN"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "LEVEL_0"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "LEVEL_1"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "OVERDUE_CRITICAL_OBLIGATION"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "REPEATED_ESCAPE"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "HIGH_EXPOSURE_DOWNSTREAM_BLOCKAGE"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "LOW_CONFIDENCE_INSTRUMENTATION"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "LEVEL_2"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "EFFECTIVENESS_UNKNOWN"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "EFFECTIVENESS_REGRESSING"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "EFFECTIVENESS_MIXED"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "MATERIAL_FLOW_QUALITY_OUTCOME_HARM"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "P3_CRITERIA_UNPROVEN"
+      },
+      {
+        "evidence_refs": [],
+        "result": "NOT_CHECKED",
+        "trigger_code": "P3_ALL_CRITERIA_PROVEN"
+      }
+    ],
+    "exposure": "",
+    "instrumentation_action_ref": "",
+    "matched_trigger_codes": [],
+    "priority_rule_digest": "sha256:7ce8ccde49b5c9e0cab085ddbe56f0e382c224a2595d08924c5c575a447c5f88",
+    "priority_rule_id": "PRIORITY-SDLC-001",
+    "priority_rule_version": "1.0.0",
+    "recurrence": "",
+    "result": "NOT_EVALUATED",
+    "trigger_set_validation": {
+      "exact_registry_trigger_set_result": "NOT_CHECKED",
+      "no_duplicate_trigger_result": "NOT_CHECKED",
+      "validation_evidence_refs": []
+    }
+  },
+  "revision": 1,
+  "rubric_id": "SDLC-MEA-002",
+  "rubric_version": "3.0.0",
+  "schema_version": "1",
+  "scope": {
+    "capability_id": "CAP-RELEASE-RECOVERY",
+    "control_id": "SDLC-RDY-001",
+    "risk_lanes": [
+      "STANDARD",
+      "ENHANCED",
+      "CRITICAL",
+      "EMERGENCY"
+    ],
+    "scope_digest": "sha256:922a8d820fc6e08a72044c2dac8cd9775178a85a3b7dd2477b4a612be955df84",
+    "service_ids": [
+      "RANEX_TARGET"
+    ],
+    "value_stream_ids": [
+      "ARCHITECTURE_CONTRACTING"
+    ],
+    "window_end": "2026-07-28T00:00:00Z",
+    "window_start": "2026-07-28T00:00:00Z",
+    "work_classes": [
+      "PRODUCT",
+      "DEFECT",
+      "RELIABILITY",
+      "SECURITY_PRIVACY",
+      "ARCHITECTURE_PLATFORM",
+      "COMPLIANCE_PROVENANCE",
+      "UPSTREAM_SYNC",
+      "MAINTENANCE",
+      "RETIREMENT",
+      "INCIDENT_RESPONSE"
+    ]
+  },
+  "status": "NOT_ASSESSED",
+  "subject_digest": "sha256:8a0b0e7b1654eeb43e75742f10af356c9cba6cd9bc27f31e6fc5c056d6246278",
+  "subject_manifest_digest": "sha256:84f8680f12ec6e5d9ababb7e10c1d0fd81a6896ce53c411b21be26c1bd4f502b",
+  "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
+  "subject_schema": "research-subject/v1",
+  "supersedes_ref": ""
+}

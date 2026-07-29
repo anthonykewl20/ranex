@@ -1,0 +1,132 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/dependency-snapshot-authority-row-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "dependency_basis_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "dependency_basis_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "dependency_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "dependency_snapshot_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "dependency_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "external_dependency_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "ref": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "ref",
+          "digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [],
+        "x-ranex-type-id": "ContentAddressBindingV1"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "observed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "predecessor_work_item_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "record_type": {
+      "const": "DEPENDENCY_SNAPSHOT_AUTHORITY"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "supersedes_dependency_snapshot_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "valid_until": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "dependency_snapshot_id",
+    "work_item_id",
+    "dependency_snapshot_ref",
+    "dependency_ids",
+    "predecessor_work_item_ids",
+    "external_dependency_bindings",
+    "dependency_basis_ref",
+    "dependency_basis_digest",
+    "observed_at",
+    "valid_until",
+    "supersedes_dependency_snapshot_id",
+    "digest"
+  ],
+  "title": "DependencySnapshotAuthorityRowV1",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "The three dependency populations and basis artifact are complete exact business payload; a missing-dependency representation is an explicit empty array, never an omitted or defaulted field."
+  ],
+  "x-ranex-source-authority-contract-id": "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0",
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "DependencySnapshotAuthorityRowV1"
+}

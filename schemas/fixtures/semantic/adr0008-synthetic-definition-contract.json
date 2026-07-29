@@ -721,7 +721,7 @@
       "coverage": [
         "TDD_CYCLE_BUILT_ARTIFACT_CHECKER"
       ],
-      "digest": "sha256:93ffa607be0d80dd6ed2f44c26f273d5411d11884872001453ce4ec6e6082d61",
+      "digest": "sha256:cdd2d0fe9682393f3277e2722e2564ed36dc9b959c3146f12a6522c092042a40",
       "evidence_refs": [],
       "failure_code": null,
       "failure_fingerprint": null,
@@ -757,7 +757,7 @@
         "run_id": "Fixture-1ae205c4960b9a2f",
         "schema_registry_version": "Fixture-52a7e2c27b15775e",
         "subject_schema": "Fixture-05514d8b786f7f04",
-        "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+        "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
         "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
         "test_practice_profile_version": "1.0.0",
         "work_item_id": "Fixture-c264cd75565e4064",
@@ -785,7 +785,7 @@
       "coverage": [
         "TDD_CYCLE_STEP_CHECKER"
       ],
-      "digest": "sha256:cbe670fb1ea99b331adcd5d969fa28c2345b54cd15c02023024fd4c9ec6581e8",
+      "digest": "sha256:52cc30f2a53d9940d8be3ace71d64de4fbf3ad4c7604f3fe2614fd4745b1aeb0",
       "evidence_refs": [
         "TEST-DENOMINATOR-TDD-TRACER-001",
         "FAILURE-DENOMINATOR-TDD-TRACER-001",
@@ -837,7 +837,7 @@
         "run_id": "Fixture-86f58264cf0c6678",
         "schema_registry_version": "Fixture-22aef09906f77f3a",
         "subject_schema": "Fixture-83bc0c8f984e9c0f",
-        "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+        "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
         "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
         "test_practice_profile_version": "1.0.0",
         "work_item_id": "Fixture-aadc103bf5e01a0c",
@@ -865,7 +865,7 @@
       "coverage": [
         "TDD_CYCLE_STEP_CHECKER"
       ],
-      "digest": "sha256:607833d965d093d563eee245c1ee4809a6eb0bc65feab4bf22dd2718cf93c092",
+      "digest": "sha256:7f0981adf0ada95e29906df62cc10ea2764f58175b18294c2b9cc28ff8a6e1d4",
       "evidence_refs": [],
       "failure_code": null,
       "failure_fingerprint": null,
@@ -901,7 +901,7 @@
         "run_id": "Fixture-1a1e1895a449b10c",
         "schema_registry_version": "Fixture-48e993958ed328fb",
         "subject_schema": "Fixture-88f1c358f8680f69",
-        "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+        "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
         "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
         "test_practice_profile_version": "1.0.0",
         "work_item_id": "Fixture-e67b4f39cdefea5b",
@@ -929,7 +929,7 @@
       "coverage": [
         "TDD_CYCLE_STEP_CHECKER"
       ],
-      "digest": "sha256:d09344469129968e0c583940e9ab2bbaa9dec06cb1dad1c8ca7232c4829f376b",
+      "digest": "sha256:effae4a49a35e409e6cae251bd087d1d7fb31b4d934e80a02d0a788d4d9b8deb",
       "evidence_refs": [],
       "failure_code": null,
       "failure_fingerprint": null,
@@ -965,7 +965,7 @@
         "run_id": "Fixture-8986dcfa8c459ccf",
         "schema_registry_version": "Fixture-8abe69d87f108933",
         "subject_schema": "Fixture-9b60c87c29d65f30",
-        "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+        "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
         "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
         "test_practice_profile_version": "1.0.0",
         "work_item_id": "Fixture-f9ad060be10e46f6",
@@ -1056,7 +1056,7 @@
         "TDD-STATE-001",
         "TDD-TAXONOMY-001"
       ],
-      "digest": "sha256:8d7a03984a2b779b7e6d9177d724eb788eb76f97c7388e1695e8cb3fc0b76a9f",
+      "digest": "sha256:4752226b385b1240b26ed93efc8bcfcbc54f6305e47c87038403fed31ae21ede",
       "evidence_refs": [],
       "failure_code": null,
       "failure_fingerprint": null,
@@ -1092,7 +1092,7 @@
         "run_id": "Fixture-38e4f3c8687ab2ea",
         "schema_registry_version": "Fixture-b6baeed2c2dadc59",
         "subject_schema": "Fixture-54aa14d47e5e6e40",
-        "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+        "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
         "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
         "test_practice_profile_version": "1.0.0",
         "work_item_id": "Fixture-ad09f9c27a479fef",
@@ -1183,12 +1183,12 @@
         "TDD-STATE-001",
         "TDD-TAXONOMY-001"
       ],
-      "digest": "sha256:0f5d011d5ba7c96e2f6b37c93a2919ad4a5f2a2ba75c092a535ae9c81624a117",
+      "digest": "sha256:2417e72dc2b44524f7733af51d271b9d24c8c2b04982bbb3299ee52467086030",
       "evaluated_at": "2026-07-28T00:09:00Z",
       "evaluator_code_digest": "sha256:7777777777777777777777777777777777777777777777777777777777777777",
       "evaluator_id": "TDD-GATE-EVALUATOR",
       "evaluator_version": "1.0.0",
-      "evidence_snapshot_digest": "sha256:d70eacb6fed6acb1f819c4ff4953d02e0bd03be919196283babae8456516336a",
+      "evidence_snapshot_digest": "sha256:5d5cf7df8682382b8cd81570a290c6122bfc08338d3d1294f802ab533ba2367d",
       "evidence_snapshot_id": "SNAPSHOT-TDD-TRACER-001",
       "freshness_evaluation": [],
       "gate_definition_id": "TDD-CYCLE-GATE",
@@ -1217,7 +1217,7 @@
       ],
       "review_verdict_refs": [],
       "schema_version": "1",
-      "subject_digest": "sha256:04f5161461ae91746f26a5626816b6956e7c1d1aaec95bd77a6423d3cc5f414c",
+      "subject_digest": "sha256:0a50416a83d0a1386590f0b87227f9a1cc8b99868570e64022d9e58a5da040ec",
       "subject_manifest_digest": null,
       "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
       "subject_schema": "tdd-cycle-subject/v1"
@@ -1235,7 +1235,7 @@
       ],
       "created_at": "2026-07-28T00:08:30Z",
       "created_by_service_id": "ASSURANCE-SNAPSHOT-SERVICE",
-      "digest": "sha256:d70eacb6fed6acb1f819c4ff4953d02e0bd03be919196283babae8456516336a",
+      "digest": "sha256:5d5cf7df8682382b8cd81570a290c6122bfc08338d3d1294f802ab533ba2367d",
       "eligible_evidence_refs": [
         "CHECKER-TDD-TRACER-001",
         "CHECKER-TDD-TRACER-002",
@@ -1257,8 +1257,8 @@
       ],
       "schema_version": "1",
       "snapshot_id": "SNAPSHOT-TDD-TRACER-001",
-      "subject_digest": "sha256:04f5161461ae91746f26a5626816b6956e7c1d1aaec95bd77a6423d3cc5f414c",
-      "subject_manifest_digest": "sha256:04f5161461ae91746f26a5626816b6956e7c1d1aaec95bd77a6423d3cc5f414c",
+      "subject_digest": "sha256:0a50416a83d0a1386590f0b87227f9a1cc8b99868570e64022d9e58a5da040ec",
+      "subject_manifest_digest": "sha256:0a50416a83d0a1386590f0b87227f9a1cc8b99868570e64022d9e58a5da040ec",
       "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
       "subject_schema": "tdd-cycle-subject/v1"
     }
@@ -1492,7 +1492,7 @@
       ],
       "coverage_manifest_digest": "sha256:d36733044fc3b4c066d805fa76ecc60ea9c101249f5fee8657be038fbeb2f705",
       "not_applicable_rule_ids": [],
-      "rule_registry_digest": "sha256:bfcb80213374d4f2f469175cfb2767dd90ee47045f37536638471512bd9c4f20",
+      "rule_registry_digest": "sha256:6ba522591f02a6150921326e5fde6acb409ec8aa3a7a2072b9f23d45b2210e28",
       "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
       "rule_registry_version": "1.0.0"
     },
@@ -1511,7 +1511,7 @@
     "cycle_id": "TDD-CYCLE-DEFINITION-TRACER-001",
     "cycle_journal_binding": {
       "journal_end_sequence": 16,
-      "journal_manifest_digest": "sha256:833ffaa1ed8660b5783c69c040ac52ee30947fd7603f2680886df154f16ec7a2",
+      "journal_manifest_digest": "sha256:5fa97f7e328c2d69f8bd00c626a91f711303682e799a2afe510e721197f88ffe",
       "journal_ref": "urn:ranex:journal:tdd-tracer-001",
       "journal_start_sequence": 1,
       "phase_activity_ids": [
@@ -1520,7 +1520,7 @@
         "ACTIVITY-TDD-TRACER-003",
         "ACTIVITY-TDD-TRACER-004"
       ],
-      "phase_activity_manifest_digest": "sha256:20a65c2d522ac5b43b4c21468352b3d41b1010c9b95c4de2a0d6d9f1906c9576",
+      "phase_activity_manifest_digest": "sha256:55e3313a277f38a76728c7e510eae3c3cf6ae51455863a02a7b615f1947e0182",
       "run_id": "RUN-TDD-TRACER-001"
     },
     "failure_denominator_manifest_digest": "sha256:9a44646c90413ad8fcfa097f704745a4870ae684adfb1ea4178ecbd22a30a6f5",
@@ -1727,7 +1727,7 @@
     "task_packet_id": "TASKPACKET-TDD-TRACER-001",
     "tdd_exception_ids": [],
     "test_denominator_manifest_digest": "sha256:51c02dc1c57ef67afe41e9d787fa615069a592d110cc47916bb21f649e5d9b44",
-    "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+    "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
     "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
     "test_practice_profile_version": "1.0.0",
     "work_item_id": "WORK-TDD-TRACER-001"
@@ -2183,7 +2183,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-001",
         "checker_result_ref": {
-          "artifact_digest": "sha256:cbe670fb1ea99b331adcd5d969fa28c2345b54cd15c02023024fd4c9ec6581e8",
+          "artifact_digest": "sha256:52cc30f2a53d9940d8be3ace71d64de4fbf3ad4c7604f3fe2614fd4745b1aeb0",
           "artifact_ref": "CHECKER-TDD-TRACER-001",
           "artifact_type": "checker_result"
         },
@@ -2259,7 +2259,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-002",
         "checker_result_ref": {
-          "artifact_digest": "sha256:607833d965d093d563eee245c1ee4809a6eb0bc65feab4bf22dd2718cf93c092",
+          "artifact_digest": "sha256:7f0981adf0ada95e29906df62cc10ea2764f58175b18294c2b9cc28ff8a6e1d4",
           "artifact_ref": "CHECKER-TDD-TRACER-002",
           "artifact_type": "checker_result"
         },
@@ -2335,7 +2335,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-003",
         "checker_result_ref": {
-          "artifact_digest": "sha256:d09344469129968e0c583940e9ab2bbaa9dec06cb1dad1c8ca7232c4829f376b",
+          "artifact_digest": "sha256:effae4a49a35e409e6cae251bd087d1d7fb31b4d934e80a02d0a788d4d9b8deb",
           "artifact_ref": "CHECKER-TDD-TRACER-003",
           "artifact_type": "checker_result"
         },
@@ -2411,7 +2411,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-004",
         "checker_result_ref": {
-          "artifact_digest": "sha256:8d7a03984a2b779b7e6d9177d724eb788eb76f97c7388e1695e8cb3fc0b76a9f",
+          "artifact_digest": "sha256:4752226b385b1240b26ed93efc8bcfcbc54f6305e47c87038403fed31ae21ede",
           "artifact_ref": "CHECKER-TDD-TRACER-004",
           "artifact_type": "checker_result"
         },
@@ -2483,7 +2483,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-001",
         "checker_result_ref": {
-          "artifact_digest": "sha256:cbe670fb1ea99b331adcd5d969fa28c2345b54cd15c02023024fd4c9ec6581e8",
+          "artifact_digest": "sha256:52cc30f2a53d9940d8be3ace71d64de4fbf3ad4c7604f3fe2614fd4745b1aeb0",
           "artifact_ref": "CHECKER-TDD-TRACER-001",
           "artifact_type": "checker_result"
         },
@@ -2551,7 +2551,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-002",
         "checker_result_ref": {
-          "artifact_digest": "sha256:607833d965d093d563eee245c1ee4809a6eb0bc65feab4bf22dd2718cf93c092",
+          "artifact_digest": "sha256:7f0981adf0ada95e29906df62cc10ea2764f58175b18294c2b9cc28ff8a6e1d4",
           "artifact_ref": "CHECKER-TDD-TRACER-002",
           "artifact_type": "checker_result"
         },
@@ -2619,7 +2619,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-003",
         "checker_result_ref": {
-          "artifact_digest": "sha256:d09344469129968e0c583940e9ab2bbaa9dec06cb1dad1c8ca7232c4829f376b",
+          "artifact_digest": "sha256:effae4a49a35e409e6cae251bd087d1d7fb31b4d934e80a02d0a788d4d9b8deb",
           "artifact_ref": "CHECKER-TDD-TRACER-003",
           "artifact_type": "checker_result"
         },
@@ -2687,7 +2687,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-004",
         "checker_result_ref": {
-          "artifact_digest": "sha256:8d7a03984a2b779b7e6d9177d724eb788eb76f97c7388e1695e8cb3fc0b76a9f",
+          "artifact_digest": "sha256:4752226b385b1240b26ed93efc8bcfcbc54f6305e47c87038403fed31ae21ede",
           "artifact_ref": "CHECKER-TDD-TRACER-004",
           "artifact_type": "checker_result"
         },
@@ -2706,7 +2706,7 @@
       }
     ],
     "journal_end_sequence": 16,
-    "journal_manifest_digest": "sha256:833ffaa1ed8660b5783c69c040ac52ee30947fd7603f2680886df154f16ec7a2",
+    "journal_manifest_digest": "sha256:5fa97f7e328c2d69f8bd00c626a91f711303682e799a2afe510e721197f88ffe",
     "journal_ref": "urn:ranex:journal:tdd-tracer-001",
     "journal_start_sequence": 1,
     "owner_cycle_id": "TDD-CYCLE-DEFINITION-TRACER-001",
@@ -2714,7 +2714,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-001",
         "checker_result_ref": {
-          "artifact_digest": "sha256:cbe670fb1ea99b331adcd5d969fa28c2345b54cd15c02023024fd4c9ec6581e8",
+          "artifact_digest": "sha256:52cc30f2a53d9940d8be3ace71d64de4fbf3ad4c7604f3fe2614fd4745b1aeb0",
           "artifact_ref": "CHECKER-TDD-TRACER-001",
           "artifact_type": "checker_result"
         },
@@ -2741,7 +2741,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-002",
         "checker_result_ref": {
-          "artifact_digest": "sha256:607833d965d093d563eee245c1ee4809a6eb0bc65feab4bf22dd2718cf93c092",
+          "artifact_digest": "sha256:7f0981adf0ada95e29906df62cc10ea2764f58175b18294c2b9cc28ff8a6e1d4",
           "artifact_ref": "CHECKER-TDD-TRACER-002",
           "artifact_type": "checker_result"
         },
@@ -2768,7 +2768,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-003",
         "checker_result_ref": {
-          "artifact_digest": "sha256:d09344469129968e0c583940e9ab2bbaa9dec06cb1dad1c8ca7232c4829f376b",
+          "artifact_digest": "sha256:effae4a49a35e409e6cae251bd087d1d7fb31b4d934e80a02d0a788d4d9b8deb",
           "artifact_ref": "CHECKER-TDD-TRACER-003",
           "artifact_type": "checker_result"
         },
@@ -2795,7 +2795,7 @@
       {
         "activity_id": "ACTIVITY-TDD-TRACER-004",
         "checker_result_ref": {
-          "artifact_digest": "sha256:8d7a03984a2b779b7e6d9177d724eb788eb76f97c7388e1695e8cb3fc0b76a9f",
+          "artifact_digest": "sha256:4752226b385b1240b26ed93efc8bcfcbc54f6305e47c87038403fed31ae21ede",
           "artifact_ref": "CHECKER-TDD-TRACER-004",
           "artifact_type": "checker_result"
         },
@@ -2820,7 +2820,7 @@
         }
       }
     ],
-    "phase_activity_manifest_digest": "sha256:20a65c2d522ac5b43b4c21468352b3d41b1010c9b95c4de2a0d6d9f1906c9576",
+    "phase_activity_manifest_digest": "sha256:55e3313a277f38a76728c7e510eae3c3cf6ae51455863a02a7b615f1947e0182",
     "run_id": "RUN-TDD-TRACER-001",
     "schema_version": "1.0.0"
   },
@@ -2878,7 +2878,7 @@
     "subject_digest": "sha256:d0a30f151b676d98210773d73b6d1ee9cd02acbe3d206b8e88d8acf41d2488f4",
     "subject_ref": "urn:ranex:exact-subject:candidate",
     "subject_schema": "exact-subject/v1",
-    "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+    "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
     "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
     "test_practice_profile_version": "1.0.0",
     "tree_digest": "sha256:5874a345464c29d4286d661fd46f062e288daebeb8dd84093a3bd9742a9d3a00"
@@ -2979,7 +2979,7 @@
     "artifact_type": "landing_record",
     "candidate_commit": "4444444444444444444444444444444444444444",
     "core_sdlc_trace_ref": "TRACE-TDD-TRACER-001",
-    "digest": "sha256:83a3ac858146b1865504e5a091310cf5ea1098fcae4bf71d906d3fc21c58cf85",
+    "digest": "sha256:85f97536c952e804b852619f24fe5191123dd14658e602797b07378c687ffb81",
     "evidence_refs": [
       "GATE-TDD-TRACER-001"
     ],
@@ -2992,8 +2992,8 @@
     "schema_version": "1",
     "started_at": "2026-07-28T00:12:00Z",
     "status": "SUCCEEDED",
-    "subject_digest": "sha256:04f5161461ae91746f26a5626816b6956e7c1d1aaec95bd77a6423d3cc5f414c",
-    "subject_manifest_digest": "sha256:04f5161461ae91746f26a5626816b6956e7c1d1aaec95bd77a6423d3cc5f414c",
+    "subject_digest": "sha256:0a50416a83d0a1386590f0b87227f9a1cc8b99868570e64022d9e58a5da040ec",
+    "subject_manifest_digest": "sha256:0a50416a83d0a1386590f0b87227f9a1cc8b99868570e64022d9e58a5da040ec",
     "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
     "subject_schema": "tdd-cycle-subject/v1",
     "target_branch": "main",
@@ -3071,14 +3071,14 @@
         "not_applicable_rule_ids": [
           "TDD-TAXONOMY-001"
         ],
-        "rule_registry_digest": "sha256:bfcb80213374d4f2f469175cfb2767dd90ee47045f37536638471512bd9c4f20",
+        "rule_registry_digest": "sha256:6ba522591f02a6150921326e5fde6acb409ec8aa3a7a2072b9f23d45b2210e28",
         "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
         "rule_registry_version": "1.0.0"
       },
       "architecture_rule_not_applicable_proofs": [
         {
           "proof_ref": {
-            "artifact_digest": "sha256:c8281114ca589717bad9a1fb0c1655f551fc52085f2464a70e94b42cb6e6e6c3",
+            "artifact_digest": "sha256:2df027e36c16d13de341e338758bf20eaafd4e5ac5cad0bb5199eebd76e8f2a7",
             "artifact_ref": "VERDICT-TDD-RULE-NA-001",
             "artifact_type": "review_verdict"
           },
@@ -3092,7 +3092,7 @@
       },
       "built_artifact_digest": "sha256:cad656b7322ebc9c26eb7e2cc1213f2b662be83ce0f41e800f36c875ee5d250e",
       "built_artifact_evidence_ref": {
-        "artifact_digest": "sha256:93ffa607be0d80dd6ed2f44c26f273d5411d11884872001453ce4ec6e6082d61",
+        "artifact_digest": "sha256:cdd2d0fe9682393f3277e2722e2564ed36dc9b959c3146f12a6522c092042a40",
         "artifact_ref": "CHECKER-TDD-BUILT-ARTIFACT-001",
         "artifact_type": "checker_result"
       },
@@ -3106,7 +3106,7 @@
       "cycle_id": "TDD-CYCLE-DEFINITION-TRACER-001",
       "cycle_journal_binding": {
         "journal_end_sequence": 16,
-        "journal_manifest_digest": "sha256:833ffaa1ed8660b5783c69c040ac52ee30947fd7603f2680886df154f16ec7a2",
+        "journal_manifest_digest": "sha256:5fa97f7e328c2d69f8bd00c626a91f711303682e799a2afe510e721197f88ffe",
         "journal_ref": "urn:ranex:journal:tdd-tracer-001",
         "journal_start_sequence": 1,
         "phase_activity_ids": [
@@ -3115,11 +3115,11 @@
           "ACTIVITY-TDD-TRACER-003",
           "ACTIVITY-TDD-TRACER-004"
         ],
-        "phase_activity_manifest_digest": "sha256:20a65c2d522ac5b43b4c21468352b3d41b1010c9b95c4de2a0d6d9f1906c9576",
+        "phase_activity_manifest_digest": "sha256:55e3313a277f38a76728c7e510eae3c3cf6ae51455863a02a7b615f1947e0182",
         "run_id": "RUN-TDD-TRACER-001"
       },
       "evidence_snapshot_ref": null,
-      "exact_subject_digest": "sha256:3c661d59af3628d88d2233d6f980d01d5cd439ae7bc7d8d6d12633f914d29081",
+      "exact_subject_digest": "sha256:c05623b3250bc47185225d87f955a79de4595aa2e493daa7c2ef6b7291dbbb6a",
       "exact_subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
       "failure_denominator_manifest_digest": "sha256:9a44646c90413ad8fcfa097f704745a4870ae684adfb1ea4178ecbd22a30a6f5",
       "gated_at": null,
@@ -3158,7 +3158,7 @@
       "steps": [
         {
           "checker_result_ref": {
-            "artifact_digest": "sha256:cbe670fb1ea99b331adcd5d969fa28c2345b54cd15c02023024fd4c9ec6581e8",
+            "artifact_digest": "sha256:52cc30f2a53d9940d8be3ace71d64de4fbf3ad4c7604f3fe2614fd4745b1aeb0",
             "artifact_ref": "CHECKER-TDD-TRACER-001",
             "artifact_type": "checker_result"
           },
@@ -3187,7 +3187,7 @@
         },
         {
           "checker_result_ref": {
-            "artifact_digest": "sha256:607833d965d093d563eee245c1ee4809a6eb0bc65feab4bf22dd2718cf93c092",
+            "artifact_digest": "sha256:7f0981adf0ada95e29906df62cc10ea2764f58175b18294c2b9cc28ff8a6e1d4",
             "artifact_ref": "CHECKER-TDD-TRACER-002",
             "artifact_type": "checker_result"
           },
@@ -3206,7 +3206,7 @@
         },
         {
           "checker_result_ref": {
-            "artifact_digest": "sha256:d09344469129968e0c583940e9ab2bbaa9dec06cb1dad1c8ca7232c4829f376b",
+            "artifact_digest": "sha256:effae4a49a35e409e6cae251bd087d1d7fb31b4d934e80a02d0a788d4d9b8deb",
             "artifact_ref": "CHECKER-TDD-TRACER-003",
             "artifact_type": "checker_result"
           },
@@ -3225,7 +3225,7 @@
         },
         {
           "checker_result_ref": {
-            "artifact_digest": "sha256:8d7a03984a2b779b7e6d9177d724eb788eb76f97c7388e1695e8cb3fc0b76a9f",
+            "artifact_digest": "sha256:4752226b385b1240b26ed93efc8bcfcbc54f6305e47c87038403fed31ae21ede",
             "artifact_ref": "CHECKER-TDD-TRACER-004",
             "artifact_type": "checker_result"
           },
@@ -3349,7 +3349,7 @@
       "task_packet_id": "TASKPACKET-TDD-TRACER-001",
       "tdd_exception_ids": [],
       "test_denominator_manifest_digest": "sha256:51c02dc1c57ef67afe41e9d787fa615069a592d110cc47916bb21f649e5d9b44",
-      "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+      "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
       "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
       "test_practice_profile_version": "1.0.0",
       "work_item_id": "WORK-TDD-TRACER-001"
@@ -3425,7 +3425,7 @@
         "not_applicable_rule_ids": [
           "TDD-TAXONOMY-001"
         ],
-        "rule_registry_digest": "sha256:bfcb80213374d4f2f469175cfb2767dd90ee47045f37536638471512bd9c4f20",
+        "rule_registry_digest": "sha256:6ba522591f02a6150921326e5fde6acb409ec8aa3a7a2072b9f23d45b2210e28",
         "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
         "rule_registry_version": "1.0.0"
       },
@@ -3444,7 +3444,7 @@
       "cycle_id": "TDD-CYCLE-DEFINITION-TRACER-001",
       "cycle_journal_binding": {
         "journal_end_sequence": 16,
-        "journal_manifest_digest": "sha256:833ffaa1ed8660b5783c69c040ac52ee30947fd7603f2680886df154f16ec7a2",
+        "journal_manifest_digest": "sha256:5fa97f7e328c2d69f8bd00c626a91f711303682e799a2afe510e721197f88ffe",
         "journal_ref": "urn:ranex:journal:tdd-tracer-001",
         "journal_start_sequence": 1,
         "phase_activity_ids": [
@@ -3453,7 +3453,7 @@
           "ACTIVITY-TDD-TRACER-003",
           "ACTIVITY-TDD-TRACER-004"
         ],
-        "phase_activity_manifest_digest": "sha256:20a65c2d522ac5b43b4c21468352b3d41b1010c9b95c4de2a0d6d9f1906c9576",
+        "phase_activity_manifest_digest": "sha256:55e3313a277f38a76728c7e510eae3c3cf6ae51455863a02a7b615f1947e0182",
         "run_id": "RUN-TDD-TRACER-001"
       },
       "failure_denominator_manifest_digest": "sha256:9a44646c90413ad8fcfa097f704745a4870ae684adfb1ea4178ecbd22a30a6f5",
@@ -3660,7 +3660,7 @@
       "task_packet_id": "TASKPACKET-TDD-TRACER-001",
       "tdd_exception_ids": [],
       "test_denominator_manifest_digest": "sha256:51c02dc1c57ef67afe41e9d787fa615069a592d110cc47916bb21f649e5d9b44",
-      "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+      "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
       "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
       "test_practice_profile_version": "1.0.0",
       "work_item_id": "WORK-TDD-TRACER-001"
@@ -3687,7 +3687,7 @@
       "VERDICT-TDD-RULE-NA-001": {
         "artifact_type": "review_verdict",
         "core_sdlc_trace_ref": "TRACE-TDD-TRACER-NA-001",
-        "digest": "sha256:c8281114ca589717bad9a1fb0c1655f551fc52085f2464a70e94b42cb6e6e6c3",
+        "digest": "sha256:2df027e36c16d13de341e338758bf20eaafd4e5ac5cad0bb5199eebd76e8f2a7",
         "evidence_refs": [
           "TDD-TAXONOMY-001"
         ],
@@ -3701,7 +3701,7 @@
         "resolved_finding_refs": [],
         "review_request_id": "REVIEW-TDD-RULE-NA-001",
         "schema_version": "1",
-        "subject_digest": "sha256:3c661d59af3628d88d2233d6f980d01d5cd439ae7bc7d8d6d12633f914d29081",
+        "subject_digest": "sha256:c05623b3250bc47185225d87f955a79de4595aa2e493daa7c2ef6b7291dbbb6a",
         "subject_manifest_digest": null,
         "subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
         "subject_schema": "tdd-cycle-subject/v1",
@@ -4569,7 +4569,7 @@
         ],
         "coverage_manifest_digest": "sha256:d36733044fc3b4c066d805fa76ecc60ea9c101249f5fee8657be038fbeb2f705",
         "not_applicable_rule_ids": [],
-        "rule_registry_digest": "sha256:bfcb80213374d4f2f469175cfb2767dd90ee47045f37536638471512bd9c4f20",
+        "rule_registry_digest": "sha256:6ba522591f02a6150921326e5fde6acb409ec8aa3a7a2072b9f23d45b2210e28",
         "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
         "rule_registry_version": "1.0.0"
       },
@@ -4588,7 +4588,7 @@
       "cycle_id": "TDD-CYCLE-DEFINITION-TRACER-001",
       "cycle_journal_binding": {
         "journal_end_sequence": 16,
-        "journal_manifest_digest": "sha256:833ffaa1ed8660b5783c69c040ac52ee30947fd7603f2680886df154f16ec7a2",
+        "journal_manifest_digest": "sha256:5fa97f7e328c2d69f8bd00c626a91f711303682e799a2afe510e721197f88ffe",
         "journal_ref": "urn:ranex:journal:tdd-tracer-001",
         "journal_start_sequence": 1,
         "phase_activity_ids": [
@@ -4597,7 +4597,7 @@
           "ACTIVITY-TDD-TRACER-003",
           "ACTIVITY-TDD-TRACER-004"
         ],
-        "phase_activity_manifest_digest": "sha256:20a65c2d522ac5b43b4c21468352b3d41b1010c9b95c4de2a0d6d9f1906c9576",
+        "phase_activity_manifest_digest": "sha256:55e3313a277f38a76728c7e510eae3c3cf6ae51455863a02a7b615f1947e0182",
         "run_id": "RUN-TDD-TRACER-001"
       },
       "failure_denominator_manifest_digest": "sha256:9a44646c90413ad8fcfa097f704745a4870ae684adfb1ea4178ecbd22a30a6f5",
@@ -4804,7 +4804,7 @@
       "task_packet_id": "TASKPACKET-TDD-TRACER-001",
       "tdd_exception_ids": [],
       "test_denominator_manifest_digest": "sha256:51c02dc1c57ef67afe41e9d787fa615069a592d110cc47916bb21f649e5d9b44",
-      "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+      "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
       "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
       "test_practice_profile_version": "1.0.0",
       "work_item_id": "WORK-TDD-TRACER-001"
@@ -4985,7 +4985,7 @@
           ],
           "coverage_manifest_digest": "sha256:d36733044fc3b4c066d805fa76ecc60ea9c101249f5fee8657be038fbeb2f705",
           "not_applicable_rule_ids": [],
-          "rule_registry_digest": "sha256:bfcb80213374d4f2f469175cfb2767dd90ee47045f37536638471512bd9c4f20",
+          "rule_registry_digest": "sha256:6ba522591f02a6150921326e5fde6acb409ec8aa3a7a2072b9f23d45b2210e28",
           "rule_registry_id": "REG-ARCHITECTURE-RULE-ASSESSMENTS-001",
           "rule_registry_version": "1.0.0"
         },
@@ -4997,7 +4997,7 @@
         },
         "built_artifact_digest": "sha256:cad656b7322ebc9c26eb7e2cc1213f2b662be83ce0f41e800f36c875ee5d250e",
         "built_artifact_evidence_ref": {
-          "artifact_digest": "sha256:93ffa607be0d80dd6ed2f44c26f273d5411d11884872001453ce4ec6e6082d61",
+          "artifact_digest": "sha256:cdd2d0fe9682393f3277e2722e2564ed36dc9b959c3146f12a6522c092042a40",
           "artifact_ref": "CHECKER-TDD-BUILT-ARTIFACT-001",
           "artifact_type": "checker_result"
         },
@@ -5008,14 +5008,14 @@
         },
         "change_profile": "BEHAVIOR_CHANGE",
         "cycle_gate_evaluation_ref": {
-          "artifact_digest": "sha256:0f5d011d5ba7c96e2f6b37c93a2919ad4a5f2a2ba75c092a535ae9c81624a117",
+          "artifact_digest": "sha256:2417e72dc2b44524f7733af51d271b9d24c8c2b04982bbb3299ee52467086030",
           "artifact_ref": "GATE-TDD-TRACER-001",
           "artifact_type": "gate_evaluation"
         },
         "cycle_id": "TDD-CYCLE-DEFINITION-TRACER-001",
         "cycle_journal_binding": {
           "journal_end_sequence": 16,
-          "journal_manifest_digest": "sha256:833ffaa1ed8660b5783c69c040ac52ee30947fd7603f2680886df154f16ec7a2",
+          "journal_manifest_digest": "sha256:5fa97f7e328c2d69f8bd00c626a91f711303682e799a2afe510e721197f88ffe",
           "journal_ref": "urn:ranex:journal:tdd-tracer-001",
           "journal_start_sequence": 1,
           "phase_activity_ids": [
@@ -5024,15 +5024,15 @@
             "ACTIVITY-TDD-TRACER-003",
             "ACTIVITY-TDD-TRACER-004"
           ],
-          "phase_activity_manifest_digest": "sha256:20a65c2d522ac5b43b4c21468352b3d41b1010c9b95c4de2a0d6d9f1906c9576",
+          "phase_activity_manifest_digest": "sha256:55e3313a277f38a76728c7e510eae3c3cf6ae51455863a02a7b615f1947e0182",
           "run_id": "RUN-TDD-TRACER-001"
         },
         "evidence_snapshot_ref": {
-          "artifact_digest": "sha256:d70eacb6fed6acb1f819c4ff4953d02e0bd03be919196283babae8456516336a",
+          "artifact_digest": "sha256:5d5cf7df8682382b8cd81570a290c6122bfc08338d3d1294f802ab533ba2367d",
           "artifact_ref": "SNAPSHOT-TDD-TRACER-001",
           "artifact_type": "evidence_snapshot"
         },
-        "exact_subject_digest": "sha256:04f5161461ae91746f26a5626816b6956e7c1d1aaec95bd77a6423d3cc5f414c",
+        "exact_subject_digest": "sha256:0a50416a83d0a1386590f0b87227f9a1cc8b99868570e64022d9e58a5da040ec",
         "exact_subject_ref": "urn:ranex:tdd-cycle-subject:TDD-CYCLE-DEFINITION-TRACER-001",
         "failure_denominator_manifest_digest": "sha256:9a44646c90413ad8fcfa097f704745a4870ae684adfb1ea4178ecbd22a30a6f5",
         "gated_at": "2026-07-28T00:10:00Z",
@@ -5071,7 +5071,7 @@
         "steps": [
           {
             "checker_result_ref": {
-              "artifact_digest": "sha256:cbe670fb1ea99b331adcd5d969fa28c2345b54cd15c02023024fd4c9ec6581e8",
+              "artifact_digest": "sha256:52cc30f2a53d9940d8be3ace71d64de4fbf3ad4c7604f3fe2614fd4745b1aeb0",
               "artifact_ref": "CHECKER-TDD-TRACER-001",
               "artifact_type": "checker_result"
             },
@@ -5100,7 +5100,7 @@
           },
           {
             "checker_result_ref": {
-              "artifact_digest": "sha256:607833d965d093d563eee245c1ee4809a6eb0bc65feab4bf22dd2718cf93c092",
+              "artifact_digest": "sha256:7f0981adf0ada95e29906df62cc10ea2764f58175b18294c2b9cc28ff8a6e1d4",
               "artifact_ref": "CHECKER-TDD-TRACER-002",
               "artifact_type": "checker_result"
             },
@@ -5119,7 +5119,7 @@
           },
           {
             "checker_result_ref": {
-              "artifact_digest": "sha256:d09344469129968e0c583940e9ab2bbaa9dec06cb1dad1c8ca7232c4829f376b",
+              "artifact_digest": "sha256:effae4a49a35e409e6cae251bd087d1d7fb31b4d934e80a02d0a788d4d9b8deb",
               "artifact_ref": "CHECKER-TDD-TRACER-003",
               "artifact_type": "checker_result"
             },
@@ -5138,7 +5138,7 @@
           },
           {
             "checker_result_ref": {
-              "artifact_digest": "sha256:8d7a03984a2b779b7e6d9177d724eb788eb76f97c7388e1695e8cb3fc0b76a9f",
+              "artifact_digest": "sha256:4752226b385b1240b26ed93efc8bcfcbc54f6305e47c87038403fed31ae21ede",
               "artifact_ref": "CHECKER-TDD-TRACER-004",
               "artifact_type": "checker_result"
             },
@@ -5262,7 +5262,7 @@
         "task_packet_id": "TASKPACKET-TDD-TRACER-001",
         "tdd_exception_ids": [],
         "test_denominator_manifest_digest": "sha256:51c02dc1c57ef67afe41e9d787fa615069a592d110cc47916bb21f649e5d9b44",
-        "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+        "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
         "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
         "test_practice_profile_version": "1.0.0",
         "work_item_id": "WORK-TDD-TRACER-001"
@@ -5829,7 +5829,7 @@
       "subject_digest": "sha256:4c35783b483c11f5d5f47708a8c60a17027337023bd1fe9ab018dda4a0e6c175",
       "subject_ref": "urn:ranex:exact-subject:base",
       "subject_schema": "exact-subject/v1",
-      "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+      "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
       "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
       "test_practice_profile_version": "1.0.0",
       "tree_digest": "sha256:6b3c784b07863cf274c287cd39fb14f478969e11a5e2e8346dea5d17039b7a82"
@@ -5871,7 +5871,7 @@
       "subject_digest": "sha256:fc18fed061ff68bf15563b50917bd5c07457f757e5d198e08028efa1f9b65c05",
       "subject_ref": "urn:ranex:exact-subject:red",
       "subject_schema": "exact-subject/v1",
-      "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+      "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
       "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
       "test_practice_profile_version": "1.0.0",
       "tree_digest": "sha256:5a9c228f377e173028468f37076d337004838a4d542919991999c306f6a76eb1"
@@ -5913,7 +5913,7 @@
       "subject_digest": "sha256:60bcf8db7dd0b0df1f5ba2d239435ac53cebe4db1fc818ed4ec1d452fb1bf9b2",
       "subject_ref": "urn:ranex:exact-subject:green",
       "subject_schema": "exact-subject/v1",
-      "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+      "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
       "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
       "test_practice_profile_version": "1.0.0",
       "tree_digest": "sha256:5d6a0bee449798c512f5ce9d4190814cf02ed608dc5982dee45e4b51c345f1be"
@@ -5955,7 +5955,7 @@
       "subject_digest": "sha256:d0a30f151b676d98210773d73b6d1ee9cd02acbe3d206b8e88d8acf41d2488f4",
       "subject_ref": "urn:ranex:exact-subject:candidate",
       "subject_schema": "exact-subject/v1",
-      "test_practice_profile_digest": "sha256:842a8f5e07bb0cd94c17368b0a6664713239d42f73645f02a6595f79d0eec91f",
+      "test_practice_profile_digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
       "test_practice_profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
       "test_practice_profile_version": "1.0.0",
       "tree_digest": "sha256:5874a345464c29d4286d661fd46f062e288daebeb8dd84093a3bd9742a9d3a00"

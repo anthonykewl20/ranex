@@ -620,7 +620,7 @@ Wave 1 establishes the executable documentation-contract baseline:
 - all 18 ADR-0007 topology rules, all 26 ADR-0008 TDD rules, all ten ADR-0009
   boundary/feedback rules, all ten ADR-0010 inherited-test-layout rules, all
   18 allowed test roots, all 232 path contracts,
-  and all 909 inventoried architecture elements have explicit generated
+  and all 1,008 inventoried architecture elements have explicit generated
   denominators;
 - all 67 declared context edges, all 34 boundary-fit hypotheses, all six
   governed-execution coupling measures, all four feedback objectives, and all
@@ -634,13 +634,18 @@ Wave 1 establishes the executable documentation-contract baseline:
   imported from the public-safe reconciled registry, while applicability and
   behavioral evidence remain `UNKNOWN`/`NOT_ASSESSED`;
 - RFC 8785/SHA-256 golden fixtures pass; and
-- the exact 25-fixture negative corpus rejects duplicate keys, unknown fields,
-  forged digests, permit reuse, wrong/stale subjects, incomplete or forged test
-  profiles, blanket test-root ownership, test-only production bypasses, private
-  and undeclared cross-context imports, cyclic context imports, broad topology
+- the authority-bound negative-fixture directory contains exactly 35 files.
+  Executed suites reject duplicate keys, unknown fields, forged digests,
+  permit reuse, wrong/stale subjects, incomplete or forged test profiles,
+  blanket test-root ownership, test-only production bypasses, private and
+  undeclared cross-context imports, cyclic context imports, broad topology
   exceptions, unjustified N/A, forced boilerplate, expired quarantine,
-  retry-to-pass, incomplete deletion, and unbound production evidence. Missing
-  or orphan fixture files fail validation.
+  retry-to-pass, incomplete deletion, and unbound production evidence.
+  ADR-0012 separately executes 28 declared negative scenarios plus six
+  freshness boundary subcases. The 213 estimate-commitment V2 case rows remain
+  a declared, unexecuted definition catalog, so 35 is a file denominator
+  rather than a claim that every catalog row executed. Missing or orphan
+  fixture files fail validation.
 
 [ADR-0012](./decisions/ADR-0012-separate-implementation-start-and-production-readiness.md)
 governs two separate readiness tiers.

@@ -1,0 +1,231 @@
+{
+  "contract_id": "RANEX-READINESS-TIER-CONTROL-1.0",
+  "evidence_scope": "SYNTHETIC_CONTRACT_SATISFIABILITY_ONLY",
+  "exact_negative_case_count": 28,
+  "exact_positive_case_count": 4,
+  "fixture_suite": "ADR0012_READINESS_TIER_CONTRACT_V1",
+  "negative_cases": [
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_MISSING_GATE",
+      "fixture_id": "missing_gate",
+      "mutation": "missing_gate"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_EXTRA_GATE",
+      "fixture_id": "extra_gate",
+      "mutation": "extra_gate"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_DUPLICATE_OR_REORDERED_GATE",
+      "fixture_id": "duplicate_or_reordered_gate",
+      "mutation": "duplicate_or_reordered_gate"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_WRONG_SUBJECT_OR_MANIFEST",
+      "fixture_id": "wrong_subject_or_manifest",
+      "mutation": "wrong_subject_or_manifest"
+    },
+    {
+      "authority_effects": [],
+      "executed_subcase_count": 6,
+      "executed_subcases": [
+        {
+          "expected_outcome": "REJECT",
+          "subcase_id": "gate_expiry_equal_assessment_observation_rejects"
+        },
+        {
+          "expected_outcome": "REJECT",
+          "subcase_id": "gate_expiry_before_assessment_observation_rejects"
+        },
+        {
+          "expected_outcome": "REJECT",
+          "subcase_id": "gate_observation_after_assessment_observation_rejects"
+        },
+        {
+          "expected_outcome": "PASS",
+          "subcase_id": "gate_observation_equal_assessment_observation_accepts"
+        },
+        {
+          "expected_outcome": "PASS",
+          "subcase_id": "assessment_expiry_equal_window_end_accepts"
+        },
+        {
+          "expected_outcome": "REJECT",
+          "subcase_id": "assessment_expiry_after_window_end_rejects"
+        }
+      ],
+      "expected_error": "READINESS_STALE_OR_EXPIRED_EVIDENCE",
+      "fixture_id": "stale_or_expired_evidence",
+      "mutation": "stale_or_expired_evidence"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_DIRTY_OR_UNCOMMITTED_FORK",
+      "fixture_id": "dirty_or_uncommitted_fork",
+      "mutation": "dirty_or_uncommitted_fork"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_FORK_PREFLIGHT_NOT_PASS",
+      "fixture_id": "fork_preflight_not_pass",
+      "mutation": "fork_preflight_not_pass"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_SYNTHETIC_TDD_CLAIMED_AS_LIVE",
+      "fixture_id": "synthetic_tdd_claimed_as_live",
+      "mutation": "synthetic_tdd_claimed_as_live"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_TDD_NOT_GATED_OR_NOT_PASS",
+      "fixture_id": "tdd_not_gated_or_not_pass",
+      "mutation": "tdd_not_gated_or_not_pass"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_LANDING_MISSING_DUPLICATE_OR_NOT_SUCCEEDED",
+      "fixture_id": "landing_missing_duplicate_or_not_succeeded",
+      "mutation": "landing_missing_duplicate_or_not_succeeded"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_SEALING_MISSING_OR_WRONG_LANDED_TREE",
+      "fixture_id": "sealing_missing_or_wrong_landed_tree",
+      "mutation": "sealing_missing_or_wrong_landed_tree"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_HY3_REVIEW_MISSING_STALE_OR_WRONG_SUBJECT",
+      "fixture_id": "hy3_review_missing_stale_or_wrong_subject",
+      "mutation": "hy3_review_missing_stale_or_wrong_subject"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_DEEPSEEK_REVIEW_MISSING_STALE_OR_WRONG_SUBJECT",
+      "fixture_id": "deepseek_review_missing_stale_or_wrong_subject",
+      "mutation": "deepseek_review_missing_stale_or_wrong_subject"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_REVIEWER_NOT_INDEPENDENT_OR_HAS_WRITE_AUTHORITY",
+      "fixture_id": "reviewer_not_independent_or_has_write_authority",
+      "mutation": "reviewer_not_independent_or_has_write_authority"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_UNRESOLVED_P0_OR_P1",
+      "fixture_id": "unresolved_p0_or_p1",
+      "mutation": "unresolved_p0_or_p1"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_HUMAN_DECISION_MISSING_WRONG_SUBJECT_NONCAUSAL_REVOKED_OR_SUPERSEDED",
+      "fixture_id": "human_decision_missing_wrong_subject_noncausal_revoked_or_superseded",
+      "mutation": "human_decision_missing_wrong_subject_noncausal_revoked_or_superseded"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_DIRECT_NOT_ASSESSED_TO_READY_TRANSITION",
+      "fixture_id": "direct_not_assessed_to_ready_transition",
+      "mutation": "direct_not_assessed_to_ready_transition"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_PRODUCTION_WITHOUT_CURRENT_TIER1",
+      "fixture_id": "production_without_current_tier1",
+      "mutation": "production_without_current_tier1"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_PRODUCTION_RUNTIME_NOT_ASSESSED_OR_UNKNOWN",
+      "fixture_id": "production_runtime_not_assessed_or_unknown",
+      "mutation": "production_runtime_not_assessed_or_unknown"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_PRODUCTION_RULE_DENOMINATOR_OR_RESULT_FAILURE",
+      "fixture_id": "production_rule_denominator_or_result_failure",
+      "mutation": "production_rule_denominator_or_result_failure"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_PRODUCTION_RUNTIME_PRODUCER_OR_OWNERSHIP_FAILURE",
+      "fixture_id": "production_runtime_producer_or_ownership_failure",
+      "mutation": "production_runtime_producer_or_ownership_failure"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_PRODUCTION_OPERATIONAL_RECOVERY_SECURITY_OR_SCORE_FAILURE",
+      "fixture_id": "production_operational_recovery_security_or_score_failure",
+      "mutation": "production_operational_recovery_security_or_score_failure"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_READINESS_USED_AS_GRANT_PERMIT_RELEASE_OR_DEPLOYMENT",
+      "fixture_id": "readiness_used_as_grant_permit_release_or_deployment",
+      "mutation": "readiness_used_as_grant_permit_release_or_deployment"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_BOOTSTRAP_TRACER_SCOPE_ESCALATION",
+      "fixture_id": "bootstrap_tracer_scope_escalation",
+      "mutation": "bootstrap_tracer_scope_escalation"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_CROSS_SUBJECT_OR_WRONG_NATIVE_EVIDENCE_BRIDGE",
+      "fixture_id": "cross_subject_or_wrong_native_evidence_bridge",
+      "mutation": "cross_subject_or_wrong_native_evidence_bridge"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_READINESS_SUBJECT_MANIFEST_MISSING_EXTRA_DUPLICATE_REORDERED_OR_FORGED",
+      "fixture_id": "readiness_subject_manifest_missing_extra_duplicate_reordered_or_forged",
+      "mutation": "readiness_subject_manifest_missing_extra_duplicate_reordered_or_forged"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_RUNTIME_STATUS_UNKNOWN_INVALID_OR_TIER_INELIGIBLE",
+      "fixture_id": "runtime_status_unknown_invalid_or_tier_ineligible",
+      "mutation": "runtime_status_unknown_invalid_or_tier_ineligible"
+    },
+    {
+      "authority_effects": [],
+      "expected_error": "READINESS_EDITED_FORKED_CYCLIC_DUPLICATE_VERSION_OR_GAP_BEARING_STATE_HISTORY",
+      "fixture_id": "edited_forked_cyclic_duplicate_version_or_gap_bearing_state_history",
+      "mutation": "edited_forked_cyclic_duplicate_version_or_gap_bearing_state_history"
+    }
+  ],
+  "positive_cases": [
+    {
+      "authority_effects": [],
+      "expected_result": "PASS",
+      "fixture_id": "tier1_exact_pass_with_explicit_runtime_not_assessed",
+      "scenario": "tier1_exact_pass_with_explicit_runtime_not_assessed"
+    },
+    {
+      "authority_effects": [],
+      "expected_result": "PASS",
+      "fixture_id": "tier1_retained_after_authorized_clean_descendant_product_landing_with_unchanged_governed_manifest",
+      "scenario": "tier1_retained_after_authorized_clean_descendant_product_landing_with_unchanged_governed_manifest"
+    },
+    {
+      "authority_effects": [],
+      "expected_result": "PASS",
+      "fixture_id": "tier2_exact_pass_after_current_tier1_and_complete_runtime_evidence",
+      "scenario": "tier2_exact_pass_after_current_tier1_and_complete_runtime_evidence"
+    },
+    {
+      "authority_effects": [],
+      "expected_result": "PASS",
+      "fixture_id": "invalidated_tier_reassessed_on_new_exact_subject",
+      "scenario": "invalidated_tier_reassessed_on_new_exact_subject"
+    }
+  ],
+  "runtime_claim": "NOT_ASSESSED"
+}

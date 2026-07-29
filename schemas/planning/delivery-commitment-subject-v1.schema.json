@@ -1,0 +1,205 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/delivery-commitment-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "acceptance_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "capacity_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "capacity_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "commitment_owner_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "commitment_window_end": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "commitment_window_start": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "dependency_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "dependency_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "estimate_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "estimate_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "estimate_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "estimate_kind": {
+            "enum": [
+              "ELAPSED_TIME",
+              "EFFORT",
+              "COST",
+              "CAPACITY",
+              "OTHER"
+            ],
+            "type": "string"
+          },
+          "unit": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "type": "string"
+          }
+        },
+        "required": [
+          "estimate_id",
+          "estimate_digest",
+          "estimate_kind",
+          "unit"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [],
+        "x-ranex-type-id": "EstimateBindingV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "plan_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "plan_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "recommit_trigger_ids": {
+      "const": [
+        "ACCEPTANCE_BASIS_CHANGED",
+        "CAPACITY_CHANGED",
+        "COMMITMENT_WINDOW_EXPIRED",
+        "DEPENDENCY_CHANGED",
+        "ESTIMATE_BINDING_CHANGED",
+        "ESTIMATE_EXPIRED",
+        "RISK_CHANGED",
+        "SCOPE_CHANGED"
+      ],
+      "items": {
+        "enum": [
+          "ACCEPTANCE_BASIS_CHANGED",
+          "CAPACITY_CHANGED",
+          "COMMITMENT_WINDOW_EXPIRED",
+          "DEPENDENCY_CHANGED",
+          "ESTIMATE_BINDING_CHANGED",
+          "ESTIMATE_EXPIRED",
+          "RISK_CHANGED",
+          "SCOPE_CHANGED"
+        ],
+        "type": "string"
+      },
+      "maxItems": 8,
+      "minItems": 8,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "risk_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "risk_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "scope_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "scope_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "delivery-commitment-subject/v1"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_schema",
+    "subject_ref",
+    "work_item_id",
+    "plan_ref",
+    "plan_digest",
+    "scope_ref",
+    "scope_digest",
+    "estimate_bindings",
+    "capacity_snapshot_ref",
+    "capacity_snapshot_digest",
+    "dependency_snapshot_ref",
+    "dependency_snapshot_digest",
+    "risk_snapshot_ref",
+    "risk_snapshot_digest",
+    "acceptance_snapshot_ref",
+    "acceptance_snapshot_digest",
+    "commitment_owner_id",
+    "commitment_window_start",
+    "commitment_window_end",
+    "recommit_trigger_ids"
+  ],
+  "title": "Ranex exact delivery commitment subject",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "commitment_window_start < commitment_window_end.",
+    "plan_ref/digest resolve the unique CURRENT IntegratedPlanAuthorityRowV1 for work_item_id. scope, capacity, dependency, risk, acceptance, commitment window, and owner are copied exactly from that row and independently re-resolved; the resolver cannot accept caller-supplied replacements.",
+    "estimate_bindings are derived from, and have exactly the same ID population as, the plan's duplicate-free bytewise estimate_ids. That population equals every CURRENT admitted estimate for work_item_id in the complete EstimateAuthorityRegistryV2; omitted, extra, stale, superseded, cross-plan, cross-work-item, duplicate, or reordered rows fail.",
+    "Every estimate is CURRENT, has this work_item_id, has subject_ref/digest equal to scope_ref/digest, has capacity and dependency refs/digests equal to this projection, and independently equals its exact immutable row digest and reservation.",
+    "Plan, scope, capacity, dependency, risk, acceptance, and owner refs each resolve exactly one CURRENT immutable row whose digest equals the paired digest and whose work_item_id equals work_item_id.",
+    "commitment_window_end is no later than valid_until for every bound estimate, plan, scope, capacity, dependency, risk, acceptance, owner assignment, and trace binding. A commitment cannot knowingly outlive a supporting authority row.",
+    "commitment_owner_id is the principal_id of the exact CURRENT AccountableDeliveryOwnerAssignmentV1 bound by the plan; its role_id is exactly ACCOUNTABLE_DELIVERY_OWNER.",
+    "commitment_window_start/end are copied byte-for-byte from the plan's business-authoritative window. No fixed duration, constant date, fixture value, caller override, or resolver default is normative.",
+    "The eight recommit triggers are a closed exact set; an unknown, missing, duplicate, or reordered trigger fails."
+  ],
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "DELIVERY_COMMITMENT_SUBJECT_V1"
+}

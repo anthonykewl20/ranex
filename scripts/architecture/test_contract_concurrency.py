@@ -29,13 +29,35 @@ GENERATED_ROOTS = (
     Path("schemas"),
     Path("docs/architecture/assessments"),
 )
+PROCESS_TIMEOUT_SECONDS = 180.0
 
 
 def copy_test_repository(destination: Path) -> None:
+    clone = subprocess.run(
+        [
+            "git",
+            "clone",
+            "--quiet",
+            "--shared",
+            "--no-checkout",
+            str(ROOT),
+            str(destination),
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        check=False,
+    )
+    if clone.returncode != 0:
+        raise AssertionError(
+            "disposable repository clone failed: " + clone.stderr
+        )
     for relative in (
         Path("architecture"),
         Path("schemas"),
         Path("docs/architecture"),
+        Path("docs/research"),
+        Path("legal"),
         Path("scripts/architecture"),
     ):
         shutil.copytree(
@@ -43,13 +65,6 @@ def copy_test_repository(destination: Path) -> None:
             destination / relative,
             ignore=shutil.ignore_patterns("__pycache__", "*.pyc"),
         )
-    research_inputs = (
-        Path("docs/research/engineering-reference-practice-registry.json"),
-        Path("docs/research/ranex-architecture-practice-application-profile.json"),
-    )
-    for research_input in research_inputs:
-        (destination / research_input.parent).mkdir(parents=True, exist_ok=True)
-        shutil.copy2(ROOT / research_input, destination / research_input)
 
 
 def launch(repository: Path, script_name: str) -> subprocess.Popen[str]:
@@ -66,7 +81,9 @@ def launch(repository: Path, script_name: str) -> subprocess.Popen[str]:
 
 
 def finish(process: subprocess.Popen[str], label: str) -> dict[str, Any]:
-    stdout, stderr = process.communicate(timeout=30)
+    stdout, stderr = process.communicate(
+        timeout=PROCESS_TIMEOUT_SECONDS
+    )
     if process.returncode != 0:
         raise AssertionError(
             f"{label} failed with {process.returncode}: stdout={stdout!r} stderr={stderr!r}"

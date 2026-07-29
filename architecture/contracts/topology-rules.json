@@ -9,7 +9,7 @@
     },
     {
       "decision_id": "ADR-0008",
-      "digest": "sha256:594351ba900f3e71cc625614bd8a04c03d357abaef9480fe5f7c5d8ac74b166f",
+      "digest": "sha256:f2391238817bdda9303dbfd82b440399a162448463a850e35733c76bbe09612f",
       "path": "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md",
       "runtime_enactment_status": "NOT_ASSESSED",
       "status": "ACCEPTED_PAPER_DECISION"
@@ -23,7 +23,7 @@
     },
     {
       "decision_id": "ADR-0010",
-      "digest": "sha256:3fac5d7fbca705f9b9c70a9b51f208f7e43f12883f586b66f8035f13b92f1ca3",
+      "digest": "sha256:45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb",
       "path": "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md",
       "runtime_enactment_status": "NOT_ASSESSED",
       "status": "ACCEPTED_PAPER_DECISION"

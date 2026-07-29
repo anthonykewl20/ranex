@@ -33,6 +33,21 @@ The validation report binds the exact generator, validator, lock module, and
 concurrency-regression script digests alongside the registry, schema, practice
 profile, and assessment-subject digests.
 
+Full validation has two prerequisites that are intentionally outside a normal
+working-tree file snapshot:
+
+- the repository must retain its Git history and object database because
+  inherited-layout validation resolves committed ancestry and the bound legacy
+  baseline; and
+- the separately provisioned 18-file, content-addressed research corpus must
+  exist under `docs/research/books/` and match both the published live-corpus
+  index and SHA-256 manifest exactly.
+
+The corpus is ignored, consultation-only, and must not be committed, packaged,
+or redistributed. A clean Git clone alone is therefore insufficient for full
+validation; provision the local corpus lawfully before running the validator.
+Generation does not make this prerequisite a redistribution grant.
+
 The tooling validates executable documentation contracts. It does not claim
 that runtime producers, storage, policy enforcement, or isolation controls
 exist.

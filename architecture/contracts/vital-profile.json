@@ -39,6 +39,12 @@
     },
     {
       "applicability_rule_id": "APP-STAGE-001",
+      "control_id": "SDLC-EST-001",
+      "domain_id": "CAP-DESIGN-READINESS",
+      "domain_name": "Design and readiness"
+    },
+    {
+      "applicability_rule_id": "APP-STAGE-001",
       "control_id": "SDLC-BLD-001",
       "domain_id": "CAP-BUILD-FLOW",
       "domain_name": "Build and flow"
@@ -245,6 +251,6 @@
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "VITAL-SDLC-001",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
-  "tuple_count": 40,
-  "version": "1.1.0"
+  "tuple_count": 41,
+  "version": "1.2.0"
 }

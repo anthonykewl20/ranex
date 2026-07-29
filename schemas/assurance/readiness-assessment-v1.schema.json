@@ -1,0 +1,500 @@
+{
+  "$id": "https://schemas.ranex.dev/assurance/readiness-assessment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "else": {
+        "properties": {
+          "runtime_assessment_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "runtime_assessment_ref": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+            "type": "string"
+          }
+        }
+      },
+      "if": {
+        "properties": {
+          "runtime_assessment_status": {
+            "const": "NOT_ASSESSED"
+          }
+        },
+        "required": [
+          "runtime_assessment_status"
+        ]
+      },
+      "then": {
+        "properties": {
+          "runtime_assessment_digest": {
+            "type": "null"
+          },
+          "runtime_assessment_ref": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "result": {
+            "const": "PASS"
+          }
+        },
+        "required": [
+          "result"
+        ]
+      },
+      "then": {
+        "properties": {
+          "human_decision_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "human_decision_ref": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+            "type": "string"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tier_id": {
+            "const": "READINESS-TIER-PRODUCTION-001"
+          }
+        },
+        "required": [
+          "tier_id"
+        ]
+      },
+      "then": {
+        "properties": {
+          "runtime_assessment_status": {
+            "const": "ASSESSED_PASS"
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "assessment_id": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "type": "string"
+    },
+    "capability_assessment_refs": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "contract_id": {
+      "const": "RANEX-READINESS-TIER-CONTROL-1.0"
+    },
+    "contract_version": {
+      "const": "1.0.0"
+    },
+    "core_sdlc_trace_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "exact_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "exact_subject_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "exact_subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+      "type": "string"
+    },
+    "exact_subject_schema": {
+      "const": "readiness-subject/v1"
+    },
+    "gate_results": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_binding": {
+            "additionalProperties": false,
+            "properties": {
+              "bridge_rule_id": {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                "type": "string"
+              },
+              "digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "evidence_digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "evidence_ref": {
+                "maxLength": 1024,
+                "minLength": 1,
+                "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+                "type": "string"
+              },
+              "evidence_schema": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "type": "string"
+              },
+              "gate_id": {
+                "maxLength": 256,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+                "type": "string"
+              },
+              "native_subject_digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "native_subject_manifest_digest": {
+                "oneOf": [
+                  {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "native_subject_ref": {
+                "maxLength": 1024,
+                "minLength": 1,
+                "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+                "type": "string"
+              },
+              "native_subject_schema": {
+                "maxLength": 4096,
+                "minLength": 1,
+                "pattern": ".*\\S.*",
+                "type": "string"
+              },
+              "readiness_basis_digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "readiness_subject_digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "readiness_subject_manifest_digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "readiness_subject_ref": {
+                "maxLength": 1024,
+                "minLength": 1,
+                "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+                "type": "string"
+              },
+              "record_type": {
+                "const": "READINESS_EVIDENCE_BINDING"
+              },
+              "schema_version": {
+                "const": "1"
+              }
+            },
+            "required": [
+              "schema_version",
+              "record_type",
+              "gate_id",
+              "readiness_subject_ref",
+              "readiness_subject_digest",
+              "readiness_subject_manifest_digest",
+              "readiness_basis_digest",
+              "native_subject_schema",
+              "native_subject_ref",
+              "native_subject_digest",
+              "native_subject_manifest_digest",
+              "evidence_schema",
+              "evidence_ref",
+              "evidence_digest",
+              "bridge_rule_id",
+              "digest"
+            ],
+            "type": "object",
+            "x-ranex-semantic-invariants": [
+              "digest is RFC8785 SHA-256 over every field except digest",
+              "the four readiness fields equal the containing assessment's independently resolved exact subject and basis",
+              "evidence_ref/digest resolves immutable bytes whose native subject tuple exactly equals the four native_subject_* fields",
+              "bridge_rule_id is the one registered rule for gate_id; the resolver independently proves its relation and rejects caller-selected relabeling"
+            ],
+            "x-ranex-type-id": "ReadinessEvidenceBindingV1"
+          },
+          "gate_id": {
+            "maxLength": 256,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+            "type": "string"
+          },
+          "observed_at": {
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?Z$",
+            "type": "string"
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN",
+              "CONFLICT",
+              "NOT_APPLICABLE"
+            ]
+          },
+          "valid_until": {
+            "format": "date-time",
+            "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?Z$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "gate_id",
+          "result",
+          "evidence_binding",
+          "observed_at",
+          "valid_until"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "observed_at < valid_until",
+          "evidence_binding.gate_id equals gate_id and resolves the exact per-gate native-subject bridge"
+        ],
+        "x-ranex-type-id": "ReadinessGateResultV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "human_decision_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "human_decision_ref": {
+      "oneOf": [
+        {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observed_at": {
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?Z$",
+      "type": "string"
+    },
+    "open_finding_refs": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "prior_state": {
+      "enum": [
+        "NOT_ASSESSED",
+        "IMPLEMENTATION_START_EVALUATING",
+        "IMPLEMENTATION_START_BLOCKED",
+        "IMPLEMENTATION_START_READY",
+        "PRODUCTION_EVALUATING",
+        "PRODUCTION_BLOCKED",
+        "PRODUCTION_READY"
+      ]
+    },
+    "proposed_state": {
+      "enum": [
+        "IMPLEMENTATION_START_EVALUATING",
+        "IMPLEMENTATION_START_BLOCKED",
+        "IMPLEMENTATION_START_READY",
+        "PRODUCTION_EVALUATING",
+        "PRODUCTION_BLOCKED",
+        "PRODUCTION_READY"
+      ]
+    },
+    "readiness_basis_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "READINESS_ASSESSMENT"
+    },
+    "resolved_finding_refs": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "result": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNKNOWN",
+        "CONFLICT"
+      ]
+    },
+    "runtime_assessment_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "runtime_assessment_ref": {
+      "oneOf": [
+        {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "runtime_assessment_status": {
+      "enum": [
+        "NOT_ASSESSED",
+        "UNKNOWN",
+        "ASSESSED_PASS",
+        "ASSESSED_FAIL",
+        "CONFLICT"
+      ]
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "supersedes_assessment_id": {
+      "oneOf": [
+        {
+          "maxLength": 256,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tier_id": {
+      "enum": [
+        "READINESS-TIER-IMPLEMENTATION-START-001",
+        "READINESS-TIER-PRODUCTION-001"
+      ]
+    },
+    "valid_until": {
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?Z$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "assessment_id",
+    "tier_id",
+    "contract_id",
+    "contract_version",
+    "exact_subject_schema",
+    "exact_subject_ref",
+    "exact_subject_digest",
+    "readiness_basis_digest",
+    "exact_subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "prior_state",
+    "proposed_state",
+    "gate_results",
+    "open_finding_refs",
+    "resolved_finding_refs",
+    "runtime_assessment_status",
+    "runtime_assessment_ref",
+    "runtime_assessment_digest",
+    "capability_assessment_refs",
+    "human_decision_ref",
+    "human_decision_digest",
+    "observed_at",
+    "valid_until",
+    "supersedes_assessment_id",
+    "result",
+    "digest"
+  ],
+  "title": "Ranex immutable readiness assessment",
+  "type": "object",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-semantic-invariants": [
+    "digest is RFC8785 SHA-256 over every field except digest; assessment_id and digest are immutable and nonreusable",
+    "observed_at < valid_until, valid_until is no later than the exact subject assessment_window_end, and every gate result is current at observed_at",
+    "exact_subject_schema/ref/digest/manifest digest and readiness_basis_digest resolve one complete READINESS_SUBJECT_V1 plus its exact closed READINESS_SUBJECT_MANIFEST_V1; missing, extra, duplicate, reordered, forged, or cross-subject manifest entries fail",
+    "gate_results is the exact gate set for tier_id with no duplicate, omission, extra, or reordered row; the production tier resolves its prerequisite through READY-IMPLEMENTATION-PREREQUISITE-001, whose exact current assessment independently contains the complete Tier 1 gate set",
+    "PASS requires every noncompensating gate PASS, no open P0/P1 finding, one exact authenticated human decision issued strictly after all non-human-decision gate evidence observation/admission instants, and the corresponding READY proposed_state",
+    "Any FAIL, UNKNOWN, CONFLICT, stale, wrong-subject, missing, or duplicate required input forbids a READY proposed_state",
+    "human_decision_ref and human_decision_digest are paired; PASS requires both nonnull and an exact APPROVED decision, while a non-PASS assessment may carry no decision or an exact denied/ineligible decision",
+    "readiness_basis_digest equals the independently derived exact-subject readiness_basis_digest",
+    "Tier 1 READY permits runtime_assessment_status only NOT_ASSESSED or ASSESSED_PASS; Tier 2 READY requires ASSESSED_PASS; UNKNOWN, ASSESSED_FAIL, or CONFLICT forbids any READY proposed_state",
+    "runtime_assessment_ref and runtime_assessment_digest are paired; NOT_ASSESSED requires both null, while every other status requires both to resolve one exact immutable runtime-assurance reconciliation whose derived status equals runtime_assessment_status",
+    "A production assessment resolves one CURRENT IMPLEMENTATION_START_READY assessment with the identical readiness_basis_digest; the two tier-specific subject refs and digests necessarily differ because tier_id differs",
+    "supersedes_assessment_id is null for the first assessment of this repository and tier and otherwise names the unique immediate prior assessment; the complete append-only chain is chronological, single-predecessor, single-successor, acyclic, and gap-free",
+    "CURRENT, SUPERSEDED, INVALIDATED, and current state are resolver-derived eligibility facts over immutable assessments plus TransitionEventV1 history; no assessment field or digest is edited"
+  ],
+  "x-ranex-source-adr": "ADR-0012",
+  "x-ranex-source-contract-id": "RANEX-READINESS-TIER-CONTROL-1.0",
+  "x-ranex-type-id": "ReadinessAssessmentV1"
+}

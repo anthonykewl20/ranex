@@ -2,10 +2,10 @@
   "entries": [
     {
       "adr_id": "ADR-0001",
-      "source_digest": "sha256:1d2ea7ddd155dcb29f80ee9006ac061c4f7a0c6075b8c003d61d817e7989a532",
+      "source_digest": "sha256:a1eec2c60576f0c5c6b7117555b6ec9abf949e983f129a402089a61affbe49b4",
       "source_path": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
       "status": "ACCEPTED",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "adr_id": "ADR-0002",
@@ -51,10 +51,10 @@
     },
     {
       "adr_id": "ADR-0008",
-      "source_digest": "sha256:594351ba900f3e71cc625614bd8a04c03d357abaef9480fe5f7c5d8ac74b166f",
+      "source_digest": "sha256:f2391238817bdda9303dbfd82b440399a162448463a850e35733c76bbe09612f",
       "source_path": "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md",
       "status": "ACCEPTED",
-      "version": "1.5.0"
+      "version": "1.6.0"
     },
     {
       "adr_id": "ADR-0009",
@@ -65,10 +65,10 @@
     },
     {
       "adr_id": "ADR-0010",
-      "source_digest": "sha256:3fac5d7fbca705f9b9c70a9b51f208f7e43f12883f586b66f8035f13b92f1ca3",
+      "source_digest": "sha256:45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb",
       "source_path": "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md",
       "status": "ACCEPTED",
-      "version": "1.6.0"
+      "version": "2.0.1"
     },
     {
       "adr_id": "ADR-0011",
@@ -76,13 +76,20 @@
       "source_path": "docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md",
       "status": "ACCEPTED",
       "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0012",
+      "source_digest": "sha256:36dff1e75aea123a2471134610cd5ee912c1389031b6e256710e375afdcd3a0d",
+      "source_path": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "REG-ACCEPTED-ADRS-001",
-  "required_count": 11,
+  "required_count": 12,
   "source": "docs/architecture/SOURCE_OF_TRUTH.md",
-  "source_digest": "sha256:20dabc84b6578e0232c687027b3cc54d0ea969a18dbfee00638c87cda9e2fee8",
+  "source_digest": "sha256:c5cd70f6e7188da3b726580348ee3220e437d5804db2adfef0339a5bc605c0e2",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"
 }

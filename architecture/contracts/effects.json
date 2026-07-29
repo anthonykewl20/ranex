@@ -7,7 +7,7 @@
       "name": "GIT",
       "reconciliation_required_for_unknown_outcome": true,
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19"
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
     },
     {
       "adapter_owner": "delivery",
@@ -16,7 +16,7 @@
       "name": "GITHUB",
       "reconciliation_required_for_unknown_outcome": true,
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19"
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
     },
     {
       "adapter_owner": "delivery",
@@ -25,7 +25,7 @@
       "name": "MESSAGING",
       "reconciliation_required_for_unknown_outcome": true,
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19"
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
     },
     {
       "adapter_owner": "routing",
@@ -34,7 +34,7 @@
       "name": "PROVIDER",
       "reconciliation_required_for_unknown_outcome": true,
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19"
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
     },
     {
       "adapter_owner": "workspace",
@@ -43,7 +43,7 @@
       "name": "FILESYSTEM",
       "reconciliation_required_for_unknown_outcome": true,
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19"
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
     },
     {
       "adapter_owner": "owning_context_repository",
@@ -52,7 +52,7 @@
       "name": "DATABASE",
       "reconciliation_required_for_unknown_outcome": true,
       "runtime_validation_status": "NOT_ASSESSED",
-      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19"
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",

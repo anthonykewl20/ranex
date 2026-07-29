@@ -23,7 +23,8 @@
       "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md",
       "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md",
       "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md",
-      "docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md"
+      "docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md",
+      "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md"
     ],
     "runtime_subject_included": false
   },
@@ -629,7 +630,7 @@
       "design_application_status": "APPLIED",
       "material_unknown": false,
       "design_behavior": "Initial implementation routes are production-shaped end-to-end tracers that preserve the full destination map and explicitly retain missing coverage; ADR-0010 preserves the exact inherited test baseline only as nonsealing characterization evidence while replacement proceeds in canonical slices.",
-      "architecture_element_ids": ["TEST-CATEGORY-E2E", "PATH-BOOTSTRAP-COMPOSITION", "RANEX-LEGACY-TEST-LAYOUT-1.0", "HERMES-TEST-BASELINE-001", "LEGACYTEST-MIGRATION-001", "LEGACYTEST-CUTOVER-001", "FF-LEGACYTEST-006", "FF-LEGACYTEST-008"],
+      "architecture_element_ids": ["TEST-CATEGORY-E2E", "PATH-BOOTSTRAP-COMPOSITION", "RANEX-LEGACY-TEST-LAYOUT-2.0", "HERMES-TEST-BASELINE-001", "LEGACYTEST-MIGRATION-001", "LEGACYTEST-CUTOVER-001", "FF-LEGACYTEST-006", "FF-LEGACYTEST-008"],
       "adr_ids": ["ADR-0003", "ADR-0008", "ADR-0010"],
       "decision_ids": ["DEC-RANEX-007", "DEC-RANEX-008"],
       "org_rule_ids": ["ORG-COMPOSE-001", "ORG-PUBLIC-001"],
@@ -876,7 +877,7 @@
       "design_application_status": "APPLIED",
       "material_unknown": false,
       "design_behavior": "The ADRs define ORG/TDD invariants and fitness evidence, with 64 noncompensating per-rule assessments for every exact subject; ADR-0010 additionally binds the inherited test baseline by exact path, mode, blob and content digest and makes expansion, drift, expiry and incomplete cutover independently falsifiable.",
-      "architecture_element_ids": ["ORG-DEPENDENCY-001", "TDD-PROD-001", "CTX-PROCESS-ASSURANCE", "RANEX-CONTEXT-DEPENDENCIES-1.0", "RANEX-CONTEXT-BOUNDARY-FIT-1.0", "RANEX-GE-COUPLING-1.0", "RANEX-BOUNDARY-FITNESS-1.0", "RANEX-TDD-FEEDBACK-1.0", "TDD-FEEDBACK-FAST-P50", "TDD-FEEDBACK-FAST-P95", "TDD-FEEDBACK-PREVERIFY-P50", "TDD-FEEDBACK-PREVERIFY-P95", "ARCH-EDGE-001", "ARCH-EDGE-002", "ARCH-EDGE-003", "ARCH-BOUNDARY-001", "ARCH-BOUNDARY-002", "ARCH-COUPLING-001", "ARCH-COUPLING-002", "TDD-FEEDBACK-001", "TDD-FEEDBACK-002", "ARCH9-NONCOMP-001", "FF-EDGE-001", "FF-EDGE-002", "FF-BOUNDARYFIT-001", "FF-BOUNDARY-002", "FF-COUPLING-001", "FF-COUPLING-002", "FF-FEEDBACK-001", "FF-FEEDBACK-002", "FF-ARCH9-NONCOMP-001", "RANEX-LEGACY-TEST-LAYOUT-1.0", "HERMES-TEST-BASELINE-001", "LEGACYTEST-BASELINE-001", "LEGACYTEST-ROOTSET-001", "LEGACYTEST-TOPLEVEL-001", "LEGACYTEST-NOEXPAND-001", "LEGACYTEST-CHANGE-001", "LEGACYTEST-CANONICAL-001", "LEGACYTEST-MIGRATION-001", "LEGACYTEST-EXPIRY-001", "LEGACYTEST-CUTOVER-001", "LEGACYTEST-NONCOMP-001", "FF-LEGACYTEST-001", "FF-LEGACYTEST-002", "FF-LEGACYTEST-003", "FF-LEGACYTEST-004", "FF-LEGACYTEST-005", "FF-LEGACYTEST-006", "FF-LEGACYTEST-007", "FF-LEGACYTEST-008", "FF-LEGACYTEST-009", "ARTIFACT-TDD-EXCEPTION-SUBJECT"],
+      "architecture_element_ids": ["ORG-DEPENDENCY-001", "TDD-PROD-001", "CTX-PROCESS-ASSURANCE", "RANEX-CONTEXT-DEPENDENCIES-1.0", "RANEX-CONTEXT-BOUNDARY-FIT-1.0", "RANEX-GE-COUPLING-1.0", "RANEX-BOUNDARY-FITNESS-1.0", "RANEX-TDD-FEEDBACK-1.0", "TDD-FEEDBACK-FAST-P50", "TDD-FEEDBACK-FAST-P95", "TDD-FEEDBACK-PREVERIFY-P50", "TDD-FEEDBACK-PREVERIFY-P95", "ARCH-EDGE-001", "ARCH-EDGE-002", "ARCH-EDGE-003", "ARCH-BOUNDARY-001", "ARCH-BOUNDARY-002", "ARCH-COUPLING-001", "ARCH-COUPLING-002", "TDD-FEEDBACK-001", "TDD-FEEDBACK-002", "ARCH9-NONCOMP-001", "FF-EDGE-001", "FF-EDGE-002", "FF-BOUNDARYFIT-001", "FF-BOUNDARY-002", "FF-COUPLING-001", "FF-COUPLING-002", "FF-FEEDBACK-001", "FF-FEEDBACK-002", "FF-ARCH9-NONCOMP-001", "RANEX-LEGACY-TEST-LAYOUT-2.0", "HERMES-TEST-BASELINE-001", "LEGACYTEST-BASELINE-001", "LEGACYTEST-ROOTSET-001", "LEGACYTEST-TOPLEVEL-001", "LEGACYTEST-NOEXPAND-001", "LEGACYTEST-CHANGE-001", "LEGACYTEST-CANONICAL-001", "LEGACYTEST-MIGRATION-001", "LEGACYTEST-EXPIRY-001", "LEGACYTEST-CUTOVER-001", "LEGACYTEST-NONCOMP-001", "FF-LEGACYTEST-001", "FF-LEGACYTEST-002", "FF-LEGACYTEST-003", "FF-LEGACYTEST-004", "FF-LEGACYTEST-005", "FF-LEGACYTEST-006", "FF-LEGACYTEST-007", "FF-LEGACYTEST-008", "FF-LEGACYTEST-009", "ARTIFACT-TDD-EXCEPTION-SUBJECT"],
       "adr_ids": ["ADR-0004", "ADR-0006", "ADR-0007", "ADR-0008", "ADR-0009", "ADR-0010"],
       "decision_ids": ["DEC-RANEX-004", "DEC-RANEX-028"],
       "org_rule_ids": ["ORG-PATH-001", "ORG-DEPENDENCY-001", "ORG-CYCLE-001", "ORG-OWNERSHIP-001"],
@@ -1009,7 +1010,7 @@
       "design_application_status": "APPLIED",
       "material_unknown": false,
       "design_behavior": "Domain/application policy imports inward, cross-context imports target only public APIs, adapter types stay outside policy and composition is isolated; inherited tests move toward owning canonical boundaries and public behavior, while folder relocation alone never proves dependency direction.",
-      "architecture_element_ids": ["PATH-BOOTSTRAP-COMPOSITION", "PATH-HOST-EDGE-ADAPTERS", "RANEX-CONTEXT-DEPENDENCIES-1.0", "ARCH-EDGE-001", "ARCH-EDGE-002", "ARCH-EDGE-003", "RANEX-LEGACY-TEST-LAYOUT-1.0", "LEGACYTEST-CANONICAL-001", "LEGACYTEST-MIGRATION-001", "FF-LEGACYTEST-005", "FF-LEGACYTEST-006"],
+      "architecture_element_ids": ["PATH-BOOTSTRAP-COMPOSITION", "PATH-HOST-EDGE-ADAPTERS", "RANEX-CONTEXT-DEPENDENCIES-1.0", "ARCH-EDGE-001", "ARCH-EDGE-002", "ARCH-EDGE-003", "RANEX-LEGACY-TEST-LAYOUT-2.0", "LEGACYTEST-CANONICAL-001", "LEGACYTEST-MIGRATION-001", "FF-LEGACYTEST-005", "FF-LEGACYTEST-006"],
       "adr_ids": ["ADR-0007", "ADR-0009", "ADR-0010"],
       "decision_ids": ["DEC-RANEX-001", "DEC-RANEX-007"],
       "org_rule_ids": ["ORG-PUBLIC-001", "ORG-DEPENDENCY-001", "ORG-CYCLE-001", "ORG-IMPORT-001"],

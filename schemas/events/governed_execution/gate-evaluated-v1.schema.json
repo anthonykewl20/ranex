@@ -80,7 +80,7 @@
   "x-ranex-event-name": "GateEvaluated",
   "x-ranex-event-version": 1,
   "x-ranex-payload-schema-ref": "ranex:event-payload:GateEvaluated:v1",
-  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
   "x-ranex-state-binding": {
     "binding_kind": "REFERENCE_ONLY",
     "event_name": "GateEvaluated",

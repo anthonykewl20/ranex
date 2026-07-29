@@ -670,7 +670,7 @@
     "any failed invariant yields STATE-REJECTION-FAIL-CLOSED-1.0 with no aggregate mutation, fact, or outbox row"
   ],
   "x-ranex-source-contract-digest": "sha256:159564ef43d173f17c383126b57f8e405d2c24c734a7e404261ab626ccc5636a",
-  "x-ranex-state-catalog-digest": "sha256:d4c55556e6401fb50c35116f596af2600f9191657113bf62d48f16273cb1b2bb",
+  "x-ranex-state-catalog-digest": "sha256:8fe55b98993d783ce7803d966c96f017867af52c62dccf5de75db073764ea60a",
   "x-ranex-state-catalog-ref": "architecture/contracts/states.json",
   "x-ranex-template": "docs/architecture/templates/TRANSITION_EVENT.yaml"
 }

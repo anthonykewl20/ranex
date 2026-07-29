@@ -27,7 +27,7 @@
     },
     {
       "application_status": "DEFINED_NOT_RUNTIME_ASSESSED",
-      "decision_digest": "sha256:594351ba900f3e71cc625614bd8a04c03d357abaef9480fe5f7c5d8ac74b166f",
+      "decision_digest": "sha256:f2391238817bdda9303dbfd82b440399a162448463a850e35733c76bbe09612f",
       "decision_id": "ADR-0008",
       "practice_ids": [
         "ENGREF-CLEAN-ARCHITECTURE-1E-ENCAPSULATION-AND-TESTABILITY",
@@ -65,7 +65,7 @@
     },
     {
       "application_status": "DEFINED_MIGRATION_EXCEPTION_ACTIVE_NOT_RUNTIME_ASSESSED",
-      "decision_digest": "sha256:3fac5d7fbca705f9b9c70a9b51f208f7e43f12883f586b66f8035f13b92f1ca3",
+      "decision_digest": "sha256:45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb",
       "decision_id": "ADR-0010",
       "practice_ids": [
         "ENGREF-CLEAN-ARCHITECTURE-1E-DEPENDENCY-RULE",

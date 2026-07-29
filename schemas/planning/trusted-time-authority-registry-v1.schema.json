@@ -1,0 +1,177 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/trusted-time-authority-registry-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "generation_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "generation_number": {
+      "minimum": 1,
+      "type": "integer"
+    },
+    "history_anchor_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "history_anchor_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "prior_registry_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "published_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "TRUSTED_TIME_AUTHORITY_REGISTRY"
+    },
+    "registry_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "registry_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "rows": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "attested_at": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+            "type": "string"
+          },
+          "digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "instant": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+            "type": "string"
+          },
+          "maximum_age_milliseconds": {
+            "minimum": 1,
+            "type": "integer"
+          },
+          "monotonic_counter": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "previous_observation_digest": {
+            "oneOf": [
+              {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "record_type": {
+            "const": "TRUSTED_TIME_OBSERVATION"
+          },
+          "schema_version": {
+            "const": "1"
+          },
+          "source_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "source_ref": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+            "type": "string"
+          },
+          "time_observation_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "trusted_source_id": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "uncertainty_milliseconds": {
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "schema_version",
+          "record_type",
+          "time_observation_id",
+          "trusted_source_id",
+          "source_ref",
+          "source_digest",
+          "instant",
+          "uncertainty_milliseconds",
+          "maximum_age_milliseconds",
+          "monotonic_counter",
+          "previous_observation_digest",
+          "attested_at",
+          "digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [
+          "source_ref/digest resolves a registered trusted-time policy; maximum_age_milliseconds comes from that authority and cannot be caller- or fixture-selected. attested_at <= instant and instant minus attested_at is no greater than maximum_age_milliseconds.",
+          "The accepted row is the unique latest row for trusted_source_id; monotonic_counter and instant strictly increase, previous_observation_digest names the unique immediate predecessor, and the chain is complete, single-successor, and acyclic.",
+          "Temporal eligibility is conservative over the closed uncertainty interval [instant - uncertainty_milliseconds, instant + uncertainty_milliseconds]: a required not-before predicate must hold at the lower endpoint and every current/not-expired predicate must hold at the upper endpoint. An interval crossing a boundary fails closed."
+        ],
+        "x-ranex-type-id": "TrustedTimeObservationV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "schema_version": {
+      "const": "1"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "registry_id",
+    "registry_ref",
+    "generation_id",
+    "generation_number",
+    "prior_registry_digest",
+    "history_anchor_ref",
+    "history_anchor_digest",
+    "published_at",
+    "rows",
+    "digest"
+  ],
+  "title": "TrustedTimeAuthorityRegistryV1",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "The rows array is the complete retained history, not a work-item-filtered response. The registry publication prefix and prior-publication/history-anchor rules apply exactly; published_at is no later than the trusted TIME instant."
+  ],
+  "x-ranex-source-authority-contract-id": "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0",
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "TrustedTimeAuthorityRegistryV1"
+}
