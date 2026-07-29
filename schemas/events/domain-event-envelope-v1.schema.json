@@ -91,6 +91,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -168,6 +169,9 @@
                           "FUNNEL",
                           "HANDOFF_READY",
                           "HEALTH_VERIFIED",
+                          "IMPLEMENTATION_START_BLOCKED",
+                          "IMPLEMENTATION_START_EVALUATING",
+                          "IMPLEMENTATION_START_READY",
                           "INGESTED",
                           "INTENDED",
                           "INVALIDATED",
@@ -194,6 +198,9 @@
                           "PORTING",
                           "PORT_CANDIDATE",
                           "PROBATION",
+                          "PRODUCTION_BLOCKED",
+                          "PRODUCTION_EVALUATING",
+                          "PRODUCTION_READY",
                           "PROPOSED",
                           "PURGED",
                           "QUALIFIED",
@@ -309,7 +316,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:3760c20065930410f5606a1f8beaa8188f85a080c37addc47d57d066fd62192d"
+              "const": "sha256:803724ccce2e6cdb60fd3ff4a3fa13a69a8558c89799fdcbe50655735ba33ba5"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunCreated:v1"
@@ -651,6 +658,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -678,7 +686,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -750,7 +758,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:ac5af2280c127c0c5dcbea0dfcf641cec2853dceaa56eed4cfe43b1f019c0e9a"
+              "const": "sha256:84bd9a8b40a2e31f8d481847bac0e218a34a95b190432c5a2ac16abc331bbe54"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunMarkedReady:v1"
@@ -880,6 +888,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -957,6 +966,9 @@
                           "FUNNEL",
                           "HANDOFF_READY",
                           "HEALTH_VERIFIED",
+                          "IMPLEMENTATION_START_BLOCKED",
+                          "IMPLEMENTATION_START_EVALUATING",
+                          "IMPLEMENTATION_START_READY",
                           "INGESTED",
                           "INTENDED",
                           "INVALIDATED",
@@ -983,6 +995,9 @@
                           "PORTING",
                           "PORT_CANDIDATE",
                           "PROBATION",
+                          "PRODUCTION_BLOCKED",
+                          "PRODUCTION_EVALUATING",
+                          "PRODUCTION_READY",
                           "PROPOSED",
                           "PURGED",
                           "QUALIFIED",
@@ -1075,7 +1090,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:a04bccbc79a2d891d834a626db72f5c4617759430c3e008f2f529af487bb5aeb"
+              "const": "sha256:57a89e2afd306fadc7dcbb6817be9103c59e53d3ce9be0cd3cba2c568d64ed4e"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:ActivityRequested:v1"
@@ -1313,6 +1328,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -1340,7 +1356,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -1407,7 +1423,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:e31423a848033d6f6ba159fa21ac8c5871a23f4dfbe664f3f4d10328297238b3"
+              "const": "sha256:0ef59f2de458420d39f8522c0d945e8b9a584c8f4a671c5686aa236d9b185db7"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:ActivityDispatched:v1"
@@ -1536,6 +1552,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -1563,7 +1580,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -1622,7 +1639,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:8ab1f8670cabc03c3ea938bfe9e364c0d7ed99d96448f3849d335aa58c3219f9"
+              "const": "sha256:6f774bb3d0d6b9e7f14a5da4392237a925011220ae7921736d29f3124d589065"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:ActivityResolved:v1"
@@ -2099,6 +2116,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -2176,6 +2194,9 @@
                           "FUNNEL",
                           "HANDOFF_READY",
                           "HEALTH_VERIFIED",
+                          "IMPLEMENTATION_START_BLOCKED",
+                          "IMPLEMENTATION_START_EVALUATING",
+                          "IMPLEMENTATION_START_READY",
                           "INGESTED",
                           "INTENDED",
                           "INVALIDATED",
@@ -2202,6 +2223,9 @@
                           "PORTING",
                           "PORT_CANDIDATE",
                           "PROBATION",
+                          "PRODUCTION_BLOCKED",
+                          "PRODUCTION_EVALUATING",
+                          "PRODUCTION_READY",
                           "PROPOSED",
                           "PURGED",
                           "QUALIFIED",
@@ -2286,7 +2310,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:9fb5d68606910b0c878121e85ab6c29bad18a684321c7d387dbdc8a75ee201a5"
+              "const": "sha256:36408f2119c5242abc4076f72b9a1eac629f264bc94f597ff2a2e3208dd7daae"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:PermitIssued:v1"
@@ -2377,6 +2401,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -2404,7 +2429,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -2462,7 +2487,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:57ed5373f1d3d40c2661f8637d6d5a4bbe35c312cfcb20b8d2c13f482b2d2ab4"
+              "const": "sha256:9cea00fac4108f03ab41b16b306bc4d1573c93f25a72f8f406aa529e7e6329f1"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:PermitConsumed:v1"
@@ -2603,6 +2628,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -2680,6 +2706,9 @@
                           "FUNNEL",
                           "HANDOFF_READY",
                           "HEALTH_VERIFIED",
+                          "IMPLEMENTATION_START_BLOCKED",
+                          "IMPLEMENTATION_START_EVALUATING",
+                          "IMPLEMENTATION_START_READY",
                           "INGESTED",
                           "INTENDED",
                           "INVALIDATED",
@@ -2706,6 +2735,9 @@
                           "PORTING",
                           "PORT_CANDIDATE",
                           "PROBATION",
+                          "PRODUCTION_BLOCKED",
+                          "PRODUCTION_EVALUATING",
+                          "PRODUCTION_READY",
                           "PROPOSED",
                           "PURGED",
                           "QUALIFIED",
@@ -2792,7 +2824,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:bf265037739f56cf0ddf01f9adb3492fb6485147dc11b0c1f52cde498e5df342"
+              "const": "sha256:fd12631ea470c1b3baaee80e2a2f5051760538eebb925c895a1051eee52623dd"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectIntentRecorded:v1"
@@ -2885,6 +2917,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -2912,7 +2945,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -2971,7 +3004,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:dd818850cdd8410fa11533ff2233edfe91fe49c217efb177f06fe4a436e9cffe"
+              "const": "sha256:6d95816c2be2c7dce65fa6229750ea6632b14125d865733b04bd09940bc5cefe"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectDispatched:v1"
@@ -3098,6 +3131,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -3125,7 +3159,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -3183,7 +3217,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:c8277c463d1664ef42050648bd5b409caa9ccff36e860218d429555e045d37b4"
+              "const": "sha256:728d49f1e1d109616ea226a2f1191e4f7b7df56fb7ca302f4dcbfa1c6b4dc38e"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectResolved:v1"
@@ -3312,6 +3346,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -3339,7 +3374,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -3397,7 +3432,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:4c6b704f2979e3a8ac83f9adaaff37bbe173ae8d9f9e8c411ce24cc84618dd7f"
+              "const": "sha256:36fd38304b4a9aa5f4bc5a348166569122147bf4d28ba1cd73a31b8a52f62351"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectOutcomeMarkedUnknown:v1"
@@ -3515,6 +3550,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -3542,7 +3578,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -3600,7 +3636,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:cd7999d42e8b8bf238e105de2202dd65e0c668f889efc50f3c939bebfec02155"
+              "const": "sha256:737d82b697ee326613da9afcb73475670e2daa979401d49c9ac4ed5c4d3a766f"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:EffectReconciled:v1"
@@ -3720,6 +3756,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -3747,7 +3784,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -3805,7 +3842,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:2cef2fd01aecb9e549459505e9bb39a621a279d96bcc3d8a385325bdaedc9336"
+              "const": "sha256:fcbb5ca1ff0d6e342519c595b67fa07ce1191da3ab9b1b643d40577e72c272c1"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunBlocked:v1"
@@ -3915,6 +3952,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -3942,7 +3980,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -4019,7 +4057,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:371596df4b0be94daaafab74dc67887337c9de574bf446b7fde9f8abd448c6ea"
+              "const": "sha256:1d19614caa7301ebfe12348e8a1f7f7693012f4f0f93c50e0e44429a992d6cd8"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunUnblocked:v1"
@@ -4157,6 +4195,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -4184,7 +4223,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -4242,7 +4281,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:f92444aa5e6f85e193c283b0c993b3fdf8a29288d2dbc7f780f6b463770456d0"
+              "const": "sha256:acc3c15b8b13613c6d837b9ebe5e3c1bce7bf04100fb76de4c79ad2eb831734f"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunCancelled:v1"
@@ -4350,6 +4389,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -4377,7 +4417,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -4450,7 +4490,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:2dcc4aa52eda004133f98aa622a1df1274dbffd009dac48b9e8287f356436979"
+              "const": "sha256:37c0ca72e971e76754e4293ecfcf6eff5c2ee229e002b21c5476aa530ea7c4a5"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunSucceeded:v1"
@@ -4570,6 +4610,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -4597,7 +4638,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -4671,7 +4712,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:a6063b91c1daa1247cfd0d12630849e4b9c1a0b39703559502fff0a43ccecb43"
+              "const": "sha256:02821208d95219469243e5c603a8589ac117a81a346f0f570595f030bf1d1c71"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:RunFailed:v1"
@@ -5054,6 +5095,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -5131,6 +5173,9 @@
                           "FUNNEL",
                           "HANDOFF_READY",
                           "HEALTH_VERIFIED",
+                          "IMPLEMENTATION_START_BLOCKED",
+                          "IMPLEMENTATION_START_EVALUATING",
+                          "IMPLEMENTATION_START_READY",
                           "INGESTED",
                           "INTENDED",
                           "INVALIDATED",
@@ -5157,6 +5202,9 @@
                           "PORTING",
                           "PORT_CANDIDATE",
                           "PROBATION",
+                          "PRODUCTION_BLOCKED",
+                          "PRODUCTION_EVALUATING",
+                          "PRODUCTION_READY",
                           "PROPOSED",
                           "PURGED",
                           "QUALIFIED",
@@ -5249,7 +5297,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:9bd0722ecd5e346a9a6b7d3e1a309b5936a629448391c3254f37e95b2735c8f3"
+              "const": "sha256:9c8244236a7c2412dc34a5fc879ab2c03dbf2eb883aa06711f14b5fb4575d46c"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemCreated:v1"
@@ -5781,6 +5829,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -5808,7 +5857,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -5903,7 +5952,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:9b171b54bcf0005cbb3872755b6ced2cac86fc530c82e2ccaef49f07a269aab7"
+              "const": "sha256:512fac67addefdbdc8fdeaf8602b4937906677501190f45a449da4ea9a2dfd29"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemTransitioned:v1"
@@ -6023,6 +6072,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -6050,7 +6100,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -6116,7 +6166,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:97db1fb6868ae7d2e37ad3b78f5176221e69bd9c0f748e492fbd7b15487c39f5"
+              "const": "sha256:8151a07716c791f5b0e3cddcd3260dbde60993427300313a24763483c55b2212"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemBlocked:v1"
@@ -6226,6 +6276,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -6253,7 +6304,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -6346,7 +6397,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:7db12c270f7a57b709b7ec58bc5d991464e7aa8fb3046d6711baedc5a5c7b96b"
+              "const": "sha256:2db66dbb3d49344212ffd95cc4d1eebb78187a3eb42c6e98ef802353ab857b6d"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemUnblocked:v1"
@@ -6483,6 +6534,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -6510,7 +6562,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -6576,7 +6628,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:372a481b9bb5d6433f4b74620e315fe4935bc9a8cbbdaf13198f3247ea9433a9"
+              "const": "sha256:266b3f02ac028e9f3b82f49795845b5fbcf8b10a2f5e90c07f14f2fdc8c26ade"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemCancelled:v1"
@@ -7389,6 +7441,7 @@
                           "PacketStatus",
                           "FleetExperimentStatus",
                           "CapabilityAssessmentStatus",
+                          "READINESS-STATE-1.0",
                           "ActivityStatus",
                           "PermitStatus",
                           "HumanDecisionRecordStatus",
@@ -7416,7 +7469,7 @@
                         "type": "string"
                       },
                       "edge_id": {
-                        "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+                        "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
                         "type": "string"
                       },
                       "state_catalog_digest": {
@@ -7506,7 +7559,7 @@
               "type": "object"
             },
             "payload_schema_digest": {
-              "const": "sha256:ce907ce2319aaeb72255e3d3f5b630d0635f70936f9b99365853ca5b38a33330"
+              "const": "sha256:ac4e7a085b8fe47b3fef7250757c341f5c4619c58216fa3b7806943f29b4c8fa"
             },
             "payload_schema_ref": {
               "const": "ranex:event-payload:WorkItemClosed:v1"

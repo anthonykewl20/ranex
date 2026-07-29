@@ -119,10 +119,10 @@ READINESS_ADR = (
     / "ADR-0012-separate-implementation-start-and-production-readiness.md"
 )
 ADR12_SOURCE_SHA256 = (
-    "36dff1e75aea123a2471134610cd5ee912c1389031b6e256710e375afdcd3a0d"
+    "2707cfe0b1b4111f5b9ec1e41f9c71f0fbf75ac7f438c6df2d0829ea2ff54d02"
 )
 ADR12_MACHINE_BLOCK_SHA256 = (
-    "fb8909adb5f225a2cf935b525f7936cafe469c1461b135e8bdf27a0d47f50947"
+    "90690d00db63ef4a6f9d8008f78532b36cf94a3d75290c98766cf020fe36042d"
 )
 TOPOLOGY_ADR = ROOT / "docs" / "architecture" / "decisions" / "ADR-0007-establish-modular-ddd-repository-organization.md"
 TDD_ADR = ROOT / "docs" / "architecture" / "decisions" / "ADR-0008-make-tdd-the-default-development-discipline.md"
@@ -1043,7 +1043,11 @@ def parse_state_axis_catalog(text: str) -> dict[str, Any]:
         axis_id = axis["axis_id"]
         if (
             not isinstance(axis_id, str)
-            or not re.fullmatch(r"[A-Z][A-Za-z0-9]*", axis_id)
+            or not re.fullmatch(
+                r"(?:[A-Z][A-Za-z0-9]*|"
+                r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*(?:\.[0-9]+)+)",
+                axis_id,
+            )
             or axis_id in axis_ids
         ):
             raise ValueError(f"Invalid or duplicate state axis: {axis_id}")
@@ -1131,7 +1135,6 @@ def parse_state_axis_catalog(text: str) -> dict[str, Any]:
             if (
                 not lifecycle_semantics <= set(axis)
                 or not initial_values
-                or not terminal_values
                 or not transitions
                 or axis["transition_authority"] == "NONE"
                 or axis["emitted_fact"]
@@ -1181,23 +1184,24 @@ def parse_state_axis_catalog(text: str) -> dict[str, Any]:
                 raise ValueError(
                     f"Unreachable lifecycle values {axis_id}:{missing}"
                 )
-            can_reach_terminal = set(terminal_values)
-            while True:
-                expanded = can_reach_terminal | {
-                    source
-                    for source, target in edges
-                    if target in can_reach_terminal
-                }
-                if expanded == can_reach_terminal:
-                    break
-                can_reach_terminal = expanded
-            if can_reach_terminal != set(values):
-                missing = ",".join(
-                    sorted(set(values) - can_reach_terminal)
-                )
-                raise ValueError(
-                    f"No terminal route for {axis_id}:{missing}"
-                )
+            if terminal_values:
+                can_reach_terminal = set(terminal_values)
+                while True:
+                    expanded = can_reach_terminal | {
+                        source
+                        for source, target in edges
+                        if target in can_reach_terminal
+                    }
+                    if expanded == can_reach_terminal:
+                        break
+                    can_reach_terminal = expanded
+                if can_reach_terminal != set(values):
+                    missing = ",".join(
+                        sorted(set(values) - can_reach_terminal)
+                    )
+                    raise ValueError(
+                        f"No terminal route for {axis_id}:{missing}"
+                    )
         else:
             raise ValueError(f"Unknown axis_kind for {axis_id}")
         value_count += len(values)
@@ -2240,6 +2244,9 @@ def state_edge_binding_ref_schema(
         for axis in state_registry["entries"]
         if axis["axis_kind"] == "LIFECYCLE"
     ]
+    lifecycle_axis_pattern = "(?:" + "|".join(
+        re.escape(axis["axis_id"]) for axis in lifecycle_axes
+    ) + ")"
     return {
         "type": "object",
         "properties": {
@@ -2258,7 +2265,7 @@ def state_edge_binding_ref_schema(
             "edge_id": {
                 "type": "string",
                 "pattern": (
-                    r"^[A-Z][A-Za-z0-9]*:"
+                    "^" + lifecycle_axis_pattern + ":"
                     r"[0-9]+\.[0-9]+\.[0-9]+:"
                     r"[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@"
                     r"[A-Z][A-Z0-9_]*$"
@@ -4590,12 +4597,40 @@ def parse_adr12_readiness_contract() -> dict[str, Any]:
     ]:
         raise ValueError("ADR-0012 runtime status axis drift")
     state_axis = contract["state_axis"]
+    registered_state_axes = [
+        axis
+        for axis in STATE_AXIS_CATALOG["axes"]
+        if axis["axis_id"] == state_axis.get("axis_id")
+    ]
     if (
         state_axis["axis_id"] != "READINESS-STATE-1.0"
+        or state_axis["axis_version"] != "1.0.0"
+        or state_axis["owner_context"] != "process_assurance"
+        or state_axis["state_catalog_ref"]
+        != "architecture/contracts/states.json"
         or state_axis["initial_state"] != "NOT_ASSESSED"
         or len(state_axis["values"]) != 7
         or len(state_axis["transitions"]) != 13
         or len(state_axis["forbidden_transitions"]) != 6
+        or any(
+            re.fullmatch(
+                r"[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@"
+                r"[A-Z][A-Z0-9_]*",
+                transition,
+            )
+            is None
+            for transition in state_axis["transitions"]
+        )
+        or len(registered_state_axes) != 1
+        or registered_state_axes[0]["axis_version"]
+        != state_axis["axis_version"]
+        or registered_state_axes[0]["owner_context"]
+        != state_axis["owner_context"]
+        or registered_state_axes[0]["values"] != state_axis["values"]
+        or registered_state_axes[0]["initial_values"]
+        != [state_axis["initial_state"]]
+        or registered_state_axes[0]["transitions"]
+        != state_axis["transitions"]
     ):
         raise ValueError("ADR-0012 readiness state axis drift")
     standing = contract["current_standing"]
@@ -6651,6 +6686,9 @@ def transition_event_schema(
             for value in axis["values"]
         }
     )
+    lifecycle_axis_pattern = "(?:" + "|".join(
+        re.escape(axis["axis_id"]) for axis in lifecycle_axes
+    ) + ")"
     sha = {
         "type": "string",
         "pattern": r"^sha256:[0-9a-f]{64}$",
@@ -6691,7 +6729,7 @@ def transition_event_schema(
         "edge_id": {
             "type": "string",
             "pattern": (
-                r"^[A-Z][A-Za-z0-9]*:"
+                "^" + lifecycle_axis_pattern + ":"
                 r"[0-9]+\.[0-9]+\.[0-9]+:"
                 r"[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@"
                 r"[A-Z][A-Z0-9_]*$"
@@ -8065,7 +8103,7 @@ def mutate_and_redigest(
 def build_state_event_fixture_suite(
     registries: dict[str, Any],
 ) -> dict[str, Any]:
-    """Generate the exact 9,747-case HERMES state/event test matrix."""
+    """Generate the source-declared exhaustive state/event test matrix."""
 
     text = read(ARCH_DOC)
     catalog = parse_state_axis_catalog(text)
@@ -9120,6 +9158,24 @@ def build_state_event_fixture_suite(
                 sort_keys=True,
             )
         )
+    readiness_axis = axis_by_id["READINESS-STATE-1.0"]
+    readiness_acceptance_fact = canonical_transition_fact(
+        state_registry,
+        readiness_axis,
+        "NOT_ASSESSED",
+        "IMPLEMENTATION_START_EVALUATING",
+        "READINESS_ASSESSMENT_OPENED",
+        "FIXTURE-READINESS-ASSESSMENT-OPENED",
+        aggregate_type="RepositoryReadiness",
+        aggregate_id="ranex",
+        aggregate_version_before=0,
+    )
+    readiness_acceptance_fact["reason_code"] = (
+        "READINESS_ASSESSMENT_OPENED"
+    )
+    readiness_acceptance_fact["digest"] = digest_value(
+        readiness_acceptance_fact
+    )
     return {
         "fixture_suite": "HERMES_STATE_EVENT_EXHAUSTIVE_V1",
         "source_catalog_id": catalog["catalog_id"],
@@ -9136,6 +9192,31 @@ def build_state_event_fixture_suite(
         "outward_edge_events": outward,
         "initial_state_events": initial_events,
         "reference_only_events": reference_events,
+        "declared_axis_transition_seam": {
+            "fixture_id": (
+                "FIXTURE-READINESS-TRANSITION-SCHEMA-SEAM-001"
+            ),
+            "evidence_scope": "SYNTHETIC_CONTRACT_FIXTURE_ONLY",
+            "live_evidence": False,
+            "readiness_tier_declared": False,
+            "transition_fact": copy.deepcopy(
+                readiness_acceptance_fact
+            ),
+            "negative_cases": [
+                {
+                    "case_id": (
+                        "DECLARED-AXIS-DENY-UNREGISTERED-READINESS"
+                    ),
+                    "mutation": (
+                        "REMOVE_DECLARED_AXIS_FROM_STATE_REGISTRY"
+                    ),
+                    "axis_id": "READINESS-STATE-1.0",
+                    "expected_error": (
+                        "DECLARED_STATE_AXIS_UNREGISTERED"
+                    ),
+                }
+            ],
+        },
     }
 
 
@@ -16837,6 +16918,45 @@ def generate_registries() -> dict[str, Any]:
         }
         for entry in special_paths
     ]
+    readiness_paths = [
+        {
+            "path_id": "PATH-READINESS-TIER-CATALOG",
+            "owner_context": "process_assurance",
+            "path_pattern": "architecture/contracts/readiness-tiers.json",
+            "responsibility_class": "READINESS_DEFINITION_CATALOG",
+        },
+        {
+            "path_id": "PATH-READINESS-ASSESSMENT-REGISTRY",
+            "owner_context": "process_assurance",
+            "path_pattern": (
+                "architecture/contracts/readiness-assessments.json"
+            ),
+            "responsibility_class": "READINESS_ASSESSMENT_REGISTRY",
+        },
+        {
+            "path_id": "PATH-READINESS-RECORDS",
+            "owner_context": "process_assurance",
+            "path_pattern": "architecture/records/readiness/**",
+            "responsibility_class": "READINESS_RECORD_ROOT",
+        },
+        {
+            "path_id": "PATH-READINESS-SCHEMAS",
+            "owner_context": "configuration_management",
+            "path_pattern": (
+                "schemas/assurance/readiness-*.schema.json"
+            ),
+            "responsibility_class": "EXECUTABLE_SCHEMA",
+        },
+    ]
+    readiness_paths = [
+        {
+            **entry,
+            "definition_status": "DEFINED",
+            "runtime_validation_status": "NOT_ASSESSED",
+            "source": str(READINESS_ADR.relative_to(ROOT)),
+        }
+        for entry in readiness_paths
+    ]
     topology_engineering_practice_ids = referenced_practice_ids(TOPOLOGY_ADR, source_registry)
     tdd_engineering_practice_ids = referenced_practice_ids(TDD_ADR, source_registry)
     legacy_test_engineering_practice_ids = referenced_practice_ids(
@@ -17056,6 +17176,7 @@ def generate_registries() -> dict[str, Any]:
             + context_layer_paths
             + test_root_paths
             + special_paths
+            + readiness_paths
             + [
                 {"path_id": "PATH-CONTRACT-REGISTRIES", "owner_context": "configuration_management", "path_pattern": "architecture/contracts/**", "responsibility_class": "CANONICAL_REGISTRY", "definition_status": "DEFINED", "runtime_validation_status": "NOT_ASSESSED", "source": "docs/architecture/AI_ARTIFACT_CONTRACTS.md#12-executable-schema-tree"},
                 {"path_id": "PATH-CONTRACT-SCHEMAS", "owner_context": "configuration_management", "path_pattern": "schemas/**", "responsibility_class": "EXECUTABLE_SCHEMA", "definition_status": "DEFINED", "runtime_validation_status": "NOT_ASSESSED", "source": "docs/architecture/AI_ARTIFACT_CONTRACTS.md#12-executable-schema-tree"},

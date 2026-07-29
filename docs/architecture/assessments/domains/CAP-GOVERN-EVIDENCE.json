@@ -26,12 +26,12 @@
     "registered_member_count": 5,
     "scored_applicable_member_count": 0
   },
-  "digest": "sha256:7b4555c3b098aa08ba50ec88c804dda9006d306854c0c81fe65cd195d93e21ba",
+  "digest": "sha256:c568f84d4451d2293b26b6a73ec09b7ecd380f9295652ab7bb460cdacff434be",
   "members": [
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-CROSS-001",
-      "assessment_digest": "sha256:51f3c7cd4202ed138bbd1ff5d875370ac6c1409c8e463f13d662a106e0a56aa1",
+      "assessment_digest": "sha256:aced2c6b73ad5e15500b9ac7f7c3a008741a9bf3b6cad49848900fa16289bee9",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-TR-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:6dbfa32750fa3f035f1c3ace98464aa672eb30c1ed18956e3c330cd3684e83b7",
@@ -44,7 +44,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-CROSS-001",
-      "assessment_digest": "sha256:697ecaa4de6bfa3e7a211a93cc4793408bae2395e518c8aa692cee9d07a2fee3",
+      "assessment_digest": "sha256:ba1791ff2184f96d6410a58014ef8ad8d6989ce5f60d49fb705b3b3ab8ef7a55",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-TAIL-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:4bcca29532e6fea8704179e85acf6b93b1e1b92a57972173865545068718e2b5",
@@ -57,7 +57,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-CROSS-001",
-      "assessment_digest": "sha256:f9b3a2c24f68ccd751bb600c4ee3da6e3fdf01d3bddfb649d70fef2f216e27d0",
+      "assessment_digest": "sha256:257acdc054cb0d40b71b1a59acceecb3bca39d2174cef4a45c04e5de144b933c",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-MEA-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:b27db7f74f2645fc7b5c81479e1ed7b27de66232b8a538ce13f0d50d3ed59784",
@@ -70,7 +70,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-CROSS-001",
-      "assessment_digest": "sha256:454f2f26b8392e57cc15a507727b58c44593cd3751be5f02b35998e26361fd48",
+      "assessment_digest": "sha256:f398b274ac46d8f55b3b15d0c5a0301653b789dfdbfdfa74f2f230de357bafce",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-MEA-002.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:70bf55eb5acc35e3c7da218ac256dba67eae620d412c3cb1eeb7c1e808f25980",
@@ -83,7 +83,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-CROSS-001",
-      "assessment_digest": "sha256:5d5a7c4a05df7bc84c2cdd3dea025d0208e40108d66ab4b02ac1368c46107b2b",
+      "assessment_digest": "sha256:ba0a834674fa0e04f8a968c550f7554af9c3a3bbc981001c165fdc11372c73f7",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-PA-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:2d7e11191e33c32a9399f6f928ef31a029f46c80749b7d99bc0d3fdaffd36b10",
@@ -142,8 +142,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:8a0b0e7b1654eeb43e75742f10af356c9cba6cd9bc27f31e6fc5c056d6246278",
-  "subject_manifest_digest": "sha256:84f8680f12ec6e5d9ababb7e10c1d0fd81a6896ce53c411b21be26c1bd4f502b",
+  "subject_digest": "sha256:028e82c057e88f1bf89f3e5e3f6041f4c58170bd0963799f0c82593743bb53af",
+  "subject_manifest_digest": "sha256:83ac19685c50b95d1837862fa62d015f2d2030d2f2e14474e72679030a89ac40",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": "",

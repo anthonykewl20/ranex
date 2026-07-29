@@ -11,7 +11,7 @@ runtime, producer-enforcement, isolation, or production-readiness claim.
 | Capability zones | 36 |
 | VITAL control tuples / assessments | 41 / 41 |
 | Capability domains / projections | 10 / 10 |
-| Architecture elements inventoried | 1008 |
+| Architecture elements inventoried | 1020 |
 | Fixed decisions / role profiles / runtime adapters | 29 / 3 / 2 |
 | Worker-runtime negative semantic cases | 22 |
 | ADR-0007 topology rules | 18 |

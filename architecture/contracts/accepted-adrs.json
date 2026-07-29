@@ -79,10 +79,10 @@
     },
     {
       "adr_id": "ADR-0012",
-      "source_digest": "sha256:36dff1e75aea123a2471134610cd5ee912c1389031b6e256710e375afdcd3a0d",
+      "source_digest": "sha256:2707cfe0b1b4111f5b9ec1e41f9c71f0fbf75ac7f438c6df2d0829ea2ff54d02",
       "source_path": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
       "status": "ACCEPTED",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",

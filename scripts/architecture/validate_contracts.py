@@ -131,10 +131,10 @@ READINESS_ADR = (
     / "ADR-0012-separate-implementation-start-and-production-readiness.md"
 )
 ADR12_SOURCE_SHA256 = (
-    "36dff1e75aea123a2471134610cd5ee912c1389031b6e256710e375afdcd3a0d"
+    "2707cfe0b1b4111f5b9ec1e41f9c71f0fbf75ac7f438c6df2d0829ea2ff54d02"
 )
 ADR12_MACHINE_BLOCK_SHA256 = (
-    "fb8909adb5f225a2cf935b525f7936cafe469c1461b135e8bdf27a0d47f50947"
+    "90690d00db63ef4a6f9d8008f78532b36cf94a3d75290c98766cf020fe36042d"
 )
 TDD_ADR = (
     ROOT
@@ -3228,7 +3228,12 @@ def hermes_state_axis_catalog() -> dict[str, Any]:
     for axis in axes:
         axis_id = axis["axis_id"]
         require(
-            re.fullmatch(r"[A-Z][A-Za-z0-9]*", axis_id) is not None,
+            re.fullmatch(
+                r"(?:[A-Z][A-Za-z0-9]*|"
+                r"[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)*(?:\.[0-9]+)+)",
+                axis_id,
+            )
+            is not None,
             "STATE_SOURCE_AXIS_ID",
             axis_id,
         )
@@ -3308,7 +3313,6 @@ def hermes_state_axis_catalog() -> dict[str, Any]:
                 | lifecycle_fields
                 | {"outward_event_policy", "referencing_events"}
                 and initial_values
-                and terminal_values
                 and axis["transitions"]
                 and axis["transition_authority"] != "NONE"
                 and axis["emitted_fact"]
@@ -3353,21 +3357,22 @@ def hermes_state_axis_catalog() -> dict[str, Any]:
                 "STATE_SOURCE_UNREACHABLE_VALUE",
                 axis_id,
             )
-            terminal_reachable = set(terminal_values)
-            while True:
-                expanded = terminal_reachable | {
-                    source
-                    for source, target in edges
-                    if target in terminal_reachable
-                }
-                if expanded == terminal_reachable:
-                    break
-                terminal_reachable = expanded
-            require(
-                terminal_reachable == set(values),
-                "STATE_SOURCE_TERMINAL_PATH",
-                axis_id,
-            )
+            if terminal_values:
+                terminal_reachable = set(terminal_values)
+                while True:
+                    expanded = terminal_reachable | {
+                        source
+                        for source, target in edges
+                        if target in terminal_reachable
+                    }
+                    if expanded == terminal_reachable:
+                        break
+                    terminal_reachable = expanded
+                require(
+                    terminal_reachable == set(values),
+                    "STATE_SOURCE_TERMINAL_PATH",
+                    axis_id,
+                )
             transition_count += len(edges)
         value_count += len(values)
 
@@ -4729,6 +4734,78 @@ def validate_state_transition_fact_stream(
     return "IDEMPOTENT_REPLAY" if replayed else "ACCEPT"
 
 
+def validate_declared_state_axis_transition_seam(
+    state_registry: dict[str, Any],
+    transition_schema: dict[str, Any],
+    positive_facts: list[dict[str, Any]],
+) -> int:
+    """Require every declared lifecycle axis to yield a valid fact."""
+
+    axes = {
+        axis["axis_id"]: axis for axis in state_registry["entries"]
+    }
+    readiness = adr12_readiness_contract()["state_axis"]
+    require(
+        readiness["axis_id"] in axes,
+        "DECLARED_STATE_AXIS_UNREGISTERED",
+        readiness["axis_id"],
+    )
+    readiness_registry_axis = axes[readiness["axis_id"]]
+    expected_transitions = [
+        {
+            "from": parse_state_edge_text(edge)[0],
+            "to": parse_state_edge_text(edge)[1],
+            "guard_id": parse_state_edge_text(edge)[2],
+        }
+        for edge in readiness["transitions"]
+    ]
+    require(
+        readiness["state_catalog_ref"]
+        == "architecture/contracts/states.json"
+        and readiness_registry_axis["axis_version"]
+        == readiness["axis_version"]
+        and readiness_registry_axis["owner_context"]
+        == readiness["owner_context"]
+        and readiness_registry_axis["values"] == readiness["values"]
+        and readiness_registry_axis["transitions"]
+        == expected_transitions,
+        "DECLARED_STATE_AXIS_REGISTRY_DRIFT",
+        readiness["axis_id"],
+    )
+
+    validator = jsonschema.Draft202012Validator(
+        transition_schema,
+        format_checker=jsonschema.FormatChecker(),
+    )
+    facts_by_axis: dict[str, list[dict[str, Any]]] = {}
+    for fact in positive_facts:
+        facts_by_axis.setdefault(fact["axis_id"], []).append(fact)
+    validated = 0
+    for axis in state_registry["entries"]:
+        if axis["axis_kind"] != "LIFECYCLE":
+            continue
+        candidates = facts_by_axis.get(axis["axis_id"], [])
+        require(
+            bool(candidates),
+            "DECLARED_STATE_AXIS_NO_TRANSITION_FIXTURE",
+            axis["axis_id"],
+        )
+        fact = candidates[0]
+        errors = list(validator.iter_errors(fact))
+        require(
+            not errors,
+            "DECLARED_STATE_AXIS_SCHEMA_INVALID",
+            (
+                axis["axis_id"]
+                + ":"
+                + ";".join(error.message for error in errors)
+            ),
+        )
+        validate_transition_fact_semantics(fact, state_registry)
+        validated += 1
+    return validated
+
+
 def recompute_state_event_denominator() -> dict[str, Any]:
     catalog = hermes_state_axis_catalog()
     events = hermes_event_catalog()
@@ -5242,6 +5319,86 @@ def validate_state_transition_fixture_suite(
                         case["case_id"],
                     )
             checks["transition_fact_" + category + "_cases"] += 1
+
+    positive_facts = [
+        case["fact"]
+        for case in suite["transition_facts"][
+            "schema_valid_positive"
+        ]
+    ]
+    checks["declared_state_axes_schema_valid"] = (
+        validate_declared_state_axis_transition_seam(
+            state_registry,
+            transition_schema,
+            positive_facts,
+        )
+    )
+    seam_fixture = suite["declared_axis_transition_seam"]
+    acceptance_fact = seam_fixture["transition_fact"]
+    require(
+        seam_fixture["fixture_id"]
+        == "FIXTURE-READINESS-TRANSITION-SCHEMA-SEAM-001"
+        and seam_fixture["evidence_scope"]
+        == "SYNTHETIC_CONTRACT_FIXTURE_ONLY"
+        and seam_fixture["live_evidence"] is False
+        and seam_fixture["readiness_tier_declared"] is False
+        and acceptance_fact["axis_id"] == "READINESS-STATE-1.0"
+        and acceptance_fact["from_state"] == "NOT_ASSESSED"
+        and acceptance_fact["to_state"]
+        == "IMPLEMENTATION_START_EVALUATING"
+        and acceptance_fact["guard_id"]
+        == "READINESS_ASSESSMENT_OPENED"
+        and acceptance_fact["aggregate_type"]
+        == "RepositoryReadiness"
+        and acceptance_fact["aggregate_id"] == "ranex"
+        and acceptance_fact["reason_code"]
+        == "READINESS_ASSESSMENT_OPENED",
+        "DECLARED_STATE_AXIS_ACCEPTANCE_FIXTURE",
+        "",
+    )
+    require(
+        not list(transition_validator.iter_errors(acceptance_fact)),
+        "DECLARED_STATE_AXIS_ACCEPTANCE_SCHEMA_INVALID",
+        "",
+    )
+    validate_transition_fact_semantics(
+        acceptance_fact,
+        state_registry,
+    )
+    for case in seam_fixture["negative_cases"]:
+        mutated_registry = copy.deepcopy(state_registry)
+        if (
+            case["mutation"]
+            == "REMOVE_DECLARED_AXIS_FROM_STATE_REGISTRY"
+        ):
+            mutated_registry["entries"] = [
+                axis
+                for axis in mutated_registry["entries"]
+                if axis["axis_id"] != case["axis_id"]
+            ]
+        else:
+            raise ContractFailure(
+                "DECLARED_STATE_AXIS_FIXTURE_MUTATION_UNKNOWN:"
+                + case["mutation"]
+            )
+        try:
+            validate_declared_state_axis_transition_seam(
+                mutated_registry,
+                transition_schema,
+                positive_facts,
+            )
+        except ContractFailure as exc:
+            require(
+                str(exc).startswith(case["expected_error"] + ":"),
+                "DECLARED_STATE_AXIS_FIXTURE_WRONG_ERROR",
+                f"{case['case_id']}:{exc}",
+            )
+        else:
+            raise ContractFailure(
+                "DECLARED_STATE_AXIS_FIXTURE_ACCEPTED:"
+                + case["case_id"]
+            )
+        checks["declared_state_axis_negative_cases"] += 1
 
     event_registry = load_json(CONTRACTS / "events.json")
     envelope_validator = jsonschema.Draft202012Validator(
@@ -5971,6 +6128,9 @@ def expected_state_edge_binding_schema(
         for axis in state_axes.values()
         if axis["axis_kind"] == "LIFECYCLE"
     ]
+    lifecycle_axis_pattern = "(?:" + "|".join(
+        re.escape(axis["axis_id"]) for axis in lifecycle
+    ) + ")"
     return {
         "type": "object",
         "properties": {
@@ -5989,7 +6149,7 @@ def expected_state_edge_binding_schema(
             "edge_id": {
                 "type": "string",
                 "pattern": (
-                    r"^[A-Z][A-Za-z0-9]*:"
+                    "^" + lifecycle_axis_pattern + ":"
                     r"[0-9]+\.[0-9]+\.[0-9]+:"
                     r"[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@"
                     r"[A-Z][A-Z0-9_]*$"
@@ -9474,6 +9634,44 @@ def adr12_readiness_contract() -> dict[str, Any]:
         },
         "ADR12_CURRENT_STANDING_OVERCLAIM",
         "",
+    )
+    state_axis = contract["state_axis"]
+    registered_state_axes = [
+        axis
+        for axis in hermes_state_axis_catalog()["axes"]
+        if axis["axis_id"] == state_axis.get("axis_id")
+    ]
+    require(
+        state_axis["axis_id"] == "READINESS-STATE-1.0"
+        and state_axis["axis_version"] == "1.0.0"
+        and state_axis["owner_context"] == "process_assurance"
+        and state_axis["state_catalog_ref"]
+        == "architecture/contracts/states.json"
+        and state_axis["initial_state"] == "NOT_ASSESSED"
+        and len(state_axis["values"]) == 7
+        and len(state_axis["transitions"]) == 13
+        and len(state_axis["forbidden_transitions"]) == 6
+        and all(
+            re.fullmatch(
+                r"[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@"
+                r"[A-Z][A-Z0-9_]*",
+                transition,
+            )
+            is not None
+            for transition in state_axis["transitions"]
+        )
+        and len(registered_state_axes) == 1
+        and registered_state_axes[0]["axis_version"]
+        == state_axis["axis_version"]
+        and registered_state_axes[0]["owner_context"]
+        == state_axis["owner_context"]
+        and registered_state_axes[0]["values"] == state_axis["values"]
+        and registered_state_axes[0]["initial_values"]
+        == [state_axis["initial_state"]]
+        and registered_state_axes[0]["transitions"]
+        == state_axis["transitions"],
+        "ADR12_STATE_AXIS_RECONCILIATION",
+        state_axis.get("axis_id", ""),
     )
     fixture = contract["fixture_contract"]
     require(
@@ -22459,6 +22657,31 @@ def validate_readiness_contract(
     checks: Counter[str],
 ) -> None:
     contract = adr12_readiness_contract()
+    readiness_paths = {
+        row["path_id"]: row["path_pattern"]
+        for row in load_json(CONTRACTS / "paths.json")["entries"]
+        if row["path_id"].startswith("PATH-READINESS-")
+    }
+    require(
+        readiness_paths
+        == {
+            "PATH-READINESS-ASSESSMENT-REGISTRY": (
+                "architecture/contracts/readiness-assessments.json"
+            ),
+            "PATH-READINESS-RECORDS": (
+                "architecture/records/readiness/**"
+            ),
+            "PATH-READINESS-SCHEMAS": (
+                "schemas/assurance/readiness-*.schema.json"
+            ),
+            "PATH-READINESS-TIER-CATALOG": (
+                "architecture/contracts/readiness-tiers.json"
+            ),
+        },
+        "ADR12_READINESS_PATH_REGISTRATION",
+        "",
+    )
+    checks["readiness_paths"] = len(readiness_paths)
     source_path = str(READINESS_ADR.relative_to(ROOT))
     source_digest = file_digest(READINESS_ADR)
     contract_digest = canonical_subject_digest(contract)

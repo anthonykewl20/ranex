@@ -26,12 +26,12 @@
     "registered_member_count": 4,
     "scored_applicable_member_count": 0
   },
-  "digest": "sha256:82347063bcf8e750b0a354b544edbe9125b8756ad24b8b4425224d7767b07d4a",
+  "digest": "sha256:675ebe956f68a077d98511ca947c9ffc1224ce26c6752b8a0726b8e89f3c0f5f",
   "members": [
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-CROSS-001",
-      "assessment_digest": "sha256:8ec2cc4fd70603addbbf77a65e2f772da3cf59097ff09617419c10ad645b6705",
+      "assessment_digest": "sha256:6e6c7866ce1a2c993a8faa4c068bd860a8c8f7251443a8911dcc59b85bffb6d8",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-CM-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:1679d4ec5f8724bb8ecb6f053f07813e5adb29a8c24b0b9c1a0658ece30de346",
@@ -44,7 +44,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-STAGE-001",
-      "assessment_digest": "sha256:8b6c735f014576a0aba82eced0978a6b3bf7777522d4ae24971a11dfa9c027e4",
+      "assessment_digest": "sha256:ae2ff4ba2faad0263e1b0c357a9680aee143ad11c3684bd203008da4b52a0a42",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-RDY-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:922a8d820fc6e08a72044c2dac8cd9775178a85a3b7dd2477b4a612be955df84",
@@ -57,7 +57,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-STAGE-001",
-      "assessment_digest": "sha256:58451719ff4941ac03cb861203bd35280b9f760c830aa75917c6cf0c995890e9",
+      "assessment_digest": "sha256:1b1644a5ce1e2629707367885b12cdfbf06ec2b19c5c5213d03b47209c46b2d3",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-REL-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:56459b24af3ec738ecd5324ee55b81db6393f88fc9cbf58763af6fb92e75fc76",
@@ -70,7 +70,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-TRIGGER-001",
-      "assessment_digest": "sha256:4b8456f85fa943520936108cf331122bbc66093ceae3e33d495f854222ded279",
+      "assessment_digest": "sha256:c706902bf9bae19b41f3f2ef8f9f614d7a554181fb9e72c1b4878a29b41ffef0",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-RBK-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:f42b6e1c3def1c423cfd34b1e324d73c8e3fd31dea26b6a4ab35683deb8d2fa6",
@@ -129,8 +129,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:8a0b0e7b1654eeb43e75742f10af356c9cba6cd9bc27f31e6fc5c056d6246278",
-  "subject_manifest_digest": "sha256:84f8680f12ec6e5d9ababb7e10c1d0fd81a6896ce53c411b21be26c1bd4f502b",
+  "subject_digest": "sha256:028e82c057e88f1bf89f3e5e3f6041f4c58170bd0963799f0c82593743bb53af",
+  "subject_manifest_digest": "sha256:83ac19685c50b95d1837862fa62d015f2d2030d2f2e14474e72679030a89ac40",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": "",

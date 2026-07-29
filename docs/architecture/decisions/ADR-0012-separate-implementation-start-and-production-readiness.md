@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | ADR ID | `ADR-0012` |
-| Version | `1.0.0` |
+| Version | `1.1.0` |
 | Status | `ACCEPTED` |
 | Decision owner | Human owner |
 | Decision date | 2026-07-29 |
@@ -15,6 +15,13 @@
 | Review/expiry date | Review on any readiness tier, gate, evidence role, reviewer route, architecture-rule denominator, production-admission, or authority-boundary change |
 | Compatibility/migration class | New typed readiness namespace; historical unqualified readiness statements become nonauthoritative prose until mapped to this contract |
 | Security/data class | Public decision and gate metadata; referenced source, review, security, operational, and production evidence retains its own classification |
+
+## Revision history
+
+| Version | Date | Change and rationale |
+|---|---|---|
+| `1.1.0` | 2026-07-29 | Reconciled the readiness lifecycle with the shared state/transition conventions: registered `READINESS-STATE-1.0` in the main state catalog, changed guard identifiers to underscore form, and bound transition facts to the standard `architecture/contracts/states.json` catalog. This corrects the prior cross-contract incompatibility without changing or versioning `TransitionEventV1` and declares no readiness tier. |
+| `1.0.0` | 2026-07-29 | Initial accepted definition-only readiness contract. |
 
 ## Decision
 
@@ -138,7 +145,7 @@ readiness_tier_contract:
     axis_kind: "LIFECYCLE"
     axis_version: "1.0.0"
     owner_context: "process_assurance"
-    state_catalog_ref: "architecture/contracts/readiness-tiers.json#state_axis"
+    state_catalog_ref: "architecture/contracts/states.json"
     aggregate_type: "RepositoryReadiness"
     aggregate_id_rule: "aggregate_id equals repository_id"
     emitted_fact: "TransitionEventV1(axis_id=READINESS-STATE-1.0)"
@@ -155,19 +162,19 @@ readiness_tier_contract:
       - "PRODUCTION_READY"
     transition_notation: "FROM>TO@GUARD_ID"
     transitions:
-      - "NOT_ASSESSED>IMPLEMENTATION_START_EVALUATING@READINESS-ASSESSMENT-OPENED"
-      - "IMPLEMENTATION_START_EVALUATING>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION-START-NOT-PASS"
-      - "IMPLEMENTATION_START_EVALUATING>IMPLEMENTATION_START_READY@IMPLEMENTATION-START-EXACT-PASS-AND-HUMAN-DECISION"
-      - "IMPLEMENTATION_START_BLOCKED>IMPLEMENTATION_START_EVALUATING@FRESH-EXACT-SUBJECT-REASSESSMENT"
-      - "IMPLEMENTATION_START_READY>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION-START-EVIDENCE-INVALIDATED"
-      - "IMPLEMENTATION_START_READY>PRODUCTION_EVALUATING@PRODUCTION-ASSESSMENT-OPENED"
-      - "PRODUCTION_EVALUATING>PRODUCTION_BLOCKED@PRODUCTION-NOT-PASS"
-      - "PRODUCTION_EVALUATING>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION-START-PREREQUISITE-INVALIDATED"
-      - "PRODUCTION_EVALUATING>PRODUCTION_READY@PRODUCTION-EXACT-PASS-AND-HUMAN-DECISION"
-      - "PRODUCTION_BLOCKED>PRODUCTION_EVALUATING@FRESH-EXACT-SUBJECT-REASSESSMENT"
-      - "PRODUCTION_BLOCKED>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION-START-PREREQUISITE-INVALIDATED"
-      - "PRODUCTION_READY>PRODUCTION_BLOCKED@PRODUCTION-EVIDENCE-INVALIDATED"
-      - "PRODUCTION_READY>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION-START-PREREQUISITE-INVALIDATED"
+      - "NOT_ASSESSED>IMPLEMENTATION_START_EVALUATING@READINESS_ASSESSMENT_OPENED"
+      - "IMPLEMENTATION_START_EVALUATING>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_NOT_PASS"
+      - "IMPLEMENTATION_START_EVALUATING>IMPLEMENTATION_START_READY@IMPLEMENTATION_START_EXACT_PASS_AND_HUMAN_DECISION"
+      - "IMPLEMENTATION_START_BLOCKED>IMPLEMENTATION_START_EVALUATING@FRESH_EXACT_SUBJECT_REASSESSMENT"
+      - "IMPLEMENTATION_START_READY>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_EVIDENCE_INVALIDATED"
+      - "IMPLEMENTATION_START_READY>PRODUCTION_EVALUATING@PRODUCTION_ASSESSMENT_OPENED"
+      - "PRODUCTION_EVALUATING>PRODUCTION_BLOCKED@PRODUCTION_NOT_PASS"
+      - "PRODUCTION_EVALUATING>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_PREREQUISITE_INVALIDATED"
+      - "PRODUCTION_EVALUATING>PRODUCTION_READY@PRODUCTION_EXACT_PASS_AND_HUMAN_DECISION"
+      - "PRODUCTION_BLOCKED>PRODUCTION_EVALUATING@FRESH_EXACT_SUBJECT_REASSESSMENT"
+      - "PRODUCTION_BLOCKED>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_PREREQUISITE_INVALIDATED"
+      - "PRODUCTION_READY>PRODUCTION_BLOCKED@PRODUCTION_EVIDENCE_INVALIDATED"
+      - "PRODUCTION_READY>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_PREREQUISITE_INVALIDATED"
     forbidden_transitions:
       - "NOT_ASSESSED>IMPLEMENTATION_START_READY"
       - "NOT_ASSESSED>PRODUCTION_READY"

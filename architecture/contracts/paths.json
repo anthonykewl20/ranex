@@ -9227,6 +9227,154 @@
       "content_status": "MANUAL",
       "data_classification": "INHERITS_SUBJECT_CLASSIFICATION",
       "data_ownership_refs": [
+        "architecture/contracts/contexts.json#process_assurance",
+        "architecture/contracts/data-ownership.json#process_assurance"
+      ],
+      "definition_status": "DEFINED",
+      "dependency_direction": "INWARD_ONLY_AND_CROSS_CONTEXT_API_ONLY",
+      "exception_metadata": {
+        "allowed_classes": [],
+        "current_exception_ids": [],
+        "required": false
+      },
+      "governance_owner_context": "process_assurance",
+      "owner_context": "process_assurance",
+      "path_id": "PATH-READINESS-TIER-CATALOG",
+      "path_pattern": "architecture/contracts/readiness-tiers.json",
+      "required_reviewer_role": "INDEPENDENT_ARCHITECTURE_REVIEWER",
+      "responsibility_class": "READINESS_DEFINITION_CATALOG",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "semantic_owner_context": "process_assurance",
+      "semantic_owner_kind": "EXACT_CONTEXT",
+      "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
+      "source": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
+      "tdd_rule_ids": [],
+      "topology_rule_ids": [
+        "ORG-EXEMPTION-001",
+        "ORG-OWNERSHIP-001",
+        "ORG-PATH-001"
+      ]
+    },
+    {
+      "accountable_human_role": "HUMAN_CONTEXT_OWNER",
+      "allowed_dependency_targets": [
+        "DECLARED_CONTEXT_LAYER_RULES"
+      ],
+      "applicability": "REQUIRED_BY_REGISTERED_SCOPE",
+      "content_status": "MANUAL",
+      "data_classification": "INHERITS_SUBJECT_CLASSIFICATION",
+      "data_ownership_refs": [
+        "architecture/contracts/contexts.json#process_assurance",
+        "architecture/contracts/data-ownership.json#process_assurance"
+      ],
+      "definition_status": "DEFINED",
+      "dependency_direction": "INWARD_ONLY_AND_CROSS_CONTEXT_API_ONLY",
+      "exception_metadata": {
+        "allowed_classes": [],
+        "current_exception_ids": [],
+        "required": false
+      },
+      "governance_owner_context": "process_assurance",
+      "owner_context": "process_assurance",
+      "path_id": "PATH-READINESS-ASSESSMENT-REGISTRY",
+      "path_pattern": "architecture/contracts/readiness-assessments.json",
+      "required_reviewer_role": "INDEPENDENT_ARCHITECTURE_REVIEWER",
+      "responsibility_class": "READINESS_ASSESSMENT_REGISTRY",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "semantic_owner_context": "process_assurance",
+      "semantic_owner_kind": "EXACT_CONTEXT",
+      "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
+      "source": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
+      "tdd_rule_ids": [],
+      "topology_rule_ids": [
+        "ORG-EXEMPTION-001",
+        "ORG-OWNERSHIP-001",
+        "ORG-PATH-001"
+      ]
+    },
+    {
+      "accountable_human_role": "HUMAN_CONTEXT_OWNER",
+      "allowed_dependency_targets": [
+        "DECLARED_CONTEXT_LAYER_RULES"
+      ],
+      "applicability": "REQUIRED_BY_REGISTERED_SCOPE",
+      "content_status": "MANUAL",
+      "data_classification": "INHERITS_SUBJECT_CLASSIFICATION",
+      "data_ownership_refs": [
+        "architecture/contracts/contexts.json#process_assurance",
+        "architecture/contracts/data-ownership.json#process_assurance"
+      ],
+      "definition_status": "DEFINED",
+      "dependency_direction": "INWARD_ONLY_AND_CROSS_CONTEXT_API_ONLY",
+      "exception_metadata": {
+        "allowed_classes": [],
+        "current_exception_ids": [],
+        "required": false
+      },
+      "governance_owner_context": "process_assurance",
+      "owner_context": "process_assurance",
+      "path_id": "PATH-READINESS-RECORDS",
+      "path_pattern": "architecture/records/readiness/**",
+      "required_reviewer_role": "INDEPENDENT_ARCHITECTURE_REVIEWER",
+      "responsibility_class": "READINESS_RECORD_ROOT",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "semantic_owner_context": "process_assurance",
+      "semantic_owner_kind": "EXACT_CONTEXT",
+      "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
+      "source": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
+      "tdd_rule_ids": [],
+      "topology_rule_ids": [
+        "ORG-EXEMPTION-001",
+        "ORG-OWNERSHIP-001",
+        "ORG-PATH-001"
+      ]
+    },
+    {
+      "accountable_human_role": "HUMAN_CONTEXT_OWNER",
+      "allowed_dependency_targets": [
+        "DECLARED_CONTEXT_LAYER_RULES"
+      ],
+      "applicability": "REQUIRED_BY_REGISTERED_SCOPE",
+      "content_status": "GENERATED",
+      "data_classification": "INHERITS_SUBJECT_CLASSIFICATION",
+      "data_ownership_refs": [
+        "architecture/contracts/contexts.json#configuration_management",
+        "architecture/contracts/data-ownership.json#configuration_management"
+      ],
+      "definition_status": "DEFINED",
+      "dependency_direction": "INWARD_ONLY_AND_CROSS_CONTEXT_API_ONLY",
+      "exception_metadata": {
+        "allowed_classes": [],
+        "current_exception_ids": [],
+        "required": false
+      },
+      "governance_owner_context": "configuration_management",
+      "owner_context": "configuration_management",
+      "path_id": "PATH-READINESS-SCHEMAS",
+      "path_pattern": "schemas/assurance/readiness-*.schema.json",
+      "required_reviewer_role": "INDEPENDENT_ARCHITECTURE_REVIEWER",
+      "responsibility_class": "EXECUTABLE_SCHEMA",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "semantic_owner_context": "configuration_management",
+      "semantic_owner_kind": "EXACT_CONTEXT",
+      "semantic_owner_resolution": "The exact registered context is both governance and semantic leaf owner.",
+      "source": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
+      "tdd_rule_ids": [],
+      "topology_rule_ids": [
+        "ORG-EXEMPTION-001",
+        "ORG-OWNERSHIP-001",
+        "ORG-PATH-001"
+      ]
+    },
+    {
+      "accountable_human_role": "HUMAN_CONTEXT_OWNER",
+      "allowed_dependency_targets": [
+        "DECLARED_CONTEXT_LAYER_RULES"
+      ],
+      "applicability": "REQUIRED_BY_REGISTERED_SCOPE",
+      "content_status": "MANUAL",
+      "data_classification": "INHERITS_SUBJECT_CLASSIFICATION",
+      "data_ownership_refs": [
         "architecture/contracts/contexts.json#configuration_management",
         "architecture/contracts/data-ownership.json#configuration_management"
       ],

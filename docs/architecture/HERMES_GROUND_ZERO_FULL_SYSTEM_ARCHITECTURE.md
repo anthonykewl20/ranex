@@ -1465,6 +1465,7 @@ One overloaded “office stage” is prohibited.
 | `PacketStatus` | `DRAFT`, `SEALED`, `SUPERSEDED`, `INVALIDATED`; owned by each packet producer under the shared schema; only `SEALED` is dispatch/review eligible |
 | `FleetExperimentStatus` | `DRAFT`, `REGISTERED`, `RUNNING`, `COMPLETED`, `STOPPED`, `INVALIDATED`; owned by `process_assurance`; completion cannot activate policy |
 | `CapabilityAssessmentStatus` | `NOT_ASSESSED`, `IN_PROGRESS`, `COMPLETE`, `SUPERSEDED`; owned by `process_assurance` and shared by immutable control assessments and domain projections; neither acts as a gate |
+| `READINESS-STATE-1.0` | `NOT_ASSESSED`, `IMPLEMENTATION_START_EVALUATING`, `IMPLEMENTATION_START_BLOCKED`, `IMPLEMENTATION_START_READY`, `PRODUCTION_EVALUATING`, `PRODUCTION_BLOCKED`, `PRODUCTION_READY`; owned by `process_assurance`; definition-only and governed by ADR-0012 |
 | `RuleEnforcementClass` | `ADVISORY`, `REQUIRED`, `BLOCKING`, `EXPERIMENTAL`; `STATE-RULE-ENFORCEMENT-CLASS-1.0`, owned by `policy`; separate `DETERMINISTIC` or `HUMAN_DECISION_REQUIRED` resolution metadata prevents human authority from being overloaded as severity |
 | `RuleStage` | Derived policy classifier `STATE-RULE-STAGE-1.0`, owned by `policy`: `GOVERNANCE`, `DISCOVERY`, `REQUIREMENTS`, `DESIGN`, `PLANNING`, `IMPLEMENTATION`, `VERIFICATION`, `RELEASE`, `OPERATIONS`, `OUTCOME_REVIEW`, `MAINTENANCE`, `RETIREMENT` |
 | `IncidentStatus` | `DETECTED`, `ACKNOWLEDGED`, `MITIGATING`, `MITIGATED`, `RECOVERY_VERIFIED`, `REVIEWED`, `ACTIONS_TRACKED`, `CLOSED` |
@@ -1618,10 +1619,10 @@ missing assessment.
 ```yaml
 schema_version: "state-axis-contract/v1"
 catalog_id: "STATE-AXIS-CONTRACT-1.0"
-axis_count: 43
-lifecycle_axis_count: 30
+axis_count: 44
+lifecycle_axis_count: 31
 classifier_axis_count: 13
-value_count: 278
+value_count: 285
 transition_notation: "FROM>TO@GUARD_ID"
 transition_fact_ref: "schemas/work/transition-event-v1.schema.json"
 rejection_policy:
@@ -1890,6 +1891,27 @@ axes:
     revocation_semantics: "Approval/evidence revocation SUPERSEDES the affected assessment"
     recovery_semantics: "Replacement begins NOT_ASSESSED under new subject/window and links predecessor"
     transitions: ["NOT_ASSESSED>IN_PROGRESS@ASSESSMENT_SCOPE_AND_ASSIGNEES_BOUND", "IN_PROGRESS>COMPLETE@COMPLETE_ELIGIBLE_EVIDENCE_AND_APPROVAL", "NOT_ASSESSED>SUPERSEDED@SCOPE_REPLACED_BEFORE_ATTEMPT", "IN_PROGRESS>SUPERSEDED@SCOPE_OR_EVIDENCE_INVALIDATED", "COMPLETE>SUPERSEDED@NEWER_WINDOW_OR_EVIDENCE_INVALIDATION"]
+
+  - axis_id: "READINESS-STATE-1.0"
+    axis_kind: "LIFECYCLE"
+    axis_version: "1.0.0"
+    contract_ref: "states.json#READINESS-STATE-1.0@1.0.0"
+    values: ["NOT_ASSESSED", "IMPLEMENTATION_START_EVALUATING", "IMPLEMENTATION_START_BLOCKED", "IMPLEMENTATION_START_READY", "PRODUCTION_EVALUATING", "PRODUCTION_BLOCKED", "PRODUCTION_READY"]
+    owner_context: "process_assurance"
+    transition_authority: "readiness resolver with authenticated human governor authority on READY edges"
+    initial_values: ["NOT_ASSESSED"]
+    terminal_values: []
+    emitted_fact: "TransitionEventV1(axis_id=READINESS-STATE-1.0)"
+    integration_events: []
+    outward_event_policy: "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS"
+    rejection_policy_ref: "STATE-REJECTION-FAIL-CLOSED-1.0"
+    retry_semantics: "A blocked tier re-enters its evaluating state only through fresh exact-subject reassessment"
+    backward_semantics: "Only listed evidence or prerequisite invalidation edges move a ready or production-evaluating state backward"
+    expiry_semantics: "Expired or invalidated bound evidence moves the affected ready state to its listed blocked state"
+    cancellation_semantics: "NOT_APPLICABLE:readiness is continuously revocable repository standing rather than a cancellable attempt"
+    revocation_semantics: "Tier-specific evidence revocation blocks that tier; Tier 1 prerequisite revocation blocks both tiers"
+    recovery_semantics: "Fresh exact-subject reassessment is required; no blocked or ready fact is edited or reused"
+    transitions: ["NOT_ASSESSED>IMPLEMENTATION_START_EVALUATING@READINESS_ASSESSMENT_OPENED", "IMPLEMENTATION_START_EVALUATING>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_NOT_PASS", "IMPLEMENTATION_START_EVALUATING>IMPLEMENTATION_START_READY@IMPLEMENTATION_START_EXACT_PASS_AND_HUMAN_DECISION", "IMPLEMENTATION_START_BLOCKED>IMPLEMENTATION_START_EVALUATING@FRESH_EXACT_SUBJECT_REASSESSMENT", "IMPLEMENTATION_START_READY>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_EVIDENCE_INVALIDATED", "IMPLEMENTATION_START_READY>PRODUCTION_EVALUATING@PRODUCTION_ASSESSMENT_OPENED", "PRODUCTION_EVALUATING>PRODUCTION_BLOCKED@PRODUCTION_NOT_PASS", "PRODUCTION_EVALUATING>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_PREREQUISITE_INVALIDATED", "PRODUCTION_EVALUATING>PRODUCTION_READY@PRODUCTION_EXACT_PASS_AND_HUMAN_DECISION", "PRODUCTION_BLOCKED>PRODUCTION_EVALUATING@FRESH_EXACT_SUBJECT_REASSESSMENT", "PRODUCTION_BLOCKED>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_PREREQUISITE_INVALIDATED", "PRODUCTION_READY>PRODUCTION_BLOCKED@PRODUCTION_EVIDENCE_INVALIDATED", "PRODUCTION_READY>IMPLEMENTATION_START_BLOCKED@IMPLEMENTATION_START_PREREQUISITE_INVALIDATED"]
 
   - axis_id: "RuleEnforcementClass"
     axis_kind: "CLASSIFIER"
@@ -2514,7 +2536,8 @@ fixture_denominator:
 <!-- ARTIFACT_LEGAL_HOLD_CONTRACT_END -->
 
 `DEFINED` for a lifecycle requires its row, all referenced values, a nonempty
-complete transition allowlist, reachable terminal handling, and generated
+complete transition allowlist, reachable terminal handling or an explicitly
+nonterminal continuously revocable lifecycle, and generated
 positive/negative fixtures for every edge and prohibited pair. `DEFINED` for a
 classifier requires an empty transition set and explicit N/A rationale.
 `VALUES_ONLY_WAVE_2`, an orphan value, an edge from a true terminal, a duplicate
@@ -2530,39 +2553,39 @@ closed denominator is:
 ```yaml
 schema_version: "state-event-fixture-denominator/v1"
 state_catalog_shape:
-  lifecycle_axes: 30
+  lifecycle_axes: 31
   classifier_axes: 13
-  ordered_nonself_lifecycle_pairs: 1454
-  allowed_edges: 363
-  prohibited_pairs: 1091
+  ordered_nonself_lifecycle_pairs: 1496
+  allowed_edges: 376
+  prohibited_pairs: 1120
 transition_request_suite:
-  allowed_edge_positive: 363
-  allowed_edge_unsatisfied_guard_negative: 363
-  prohibited_pair_negative: 1091
-  wrong_owner_negative: 363
-  wrong_authority_negative: 363
-  stale_aggregate_version_negative: 363
-  missing_evidence_negative: 363
-  stale_evidence_negative: 363
+  allowed_edge_positive: 376
+  allowed_edge_unsatisfied_guard_negative: 376
+  prohibited_pair_negative: 1120
+  wrong_owner_negative: 376
+  wrong_authority_negative: 376
+  stale_aggregate_version_negative: 376
+  missing_evidence_negative: 376
+  stale_evidence_negative: 376
   wrong_recorded_prior_negative: 50
   unknown_axis_negative: 1
-  unknown_lifecycle_from_value_negative: 30
-  unknown_lifecycle_to_value_negative: 30
+  unknown_lifecycle_from_value_negative: 31
+  unknown_lifecycle_to_value_negative: 31
   classifier_mutation_negative: 13
-  exact_case_count: 3756
+  exact_case_count: 3878
 transition_fact_suite:
-  schema_valid_positive: 363
-  wrong_axis_negative: 363
-  wrong_guard_negative: 363
-  wrong_catalog_digest_negative: 363
-  nonincrementing_aggregate_version_negative: 363
-  wrong_fact_digest_negative: 363
-  prohibited_pair_fact_negative: 1091
+  schema_valid_positive: 376
+  wrong_axis_negative: 376
+  wrong_guard_negative: 376
+  wrong_catalog_digest_negative: 376
+  nonincrementing_aggregate_version_negative: 376
+  wrong_fact_digest_negative: 376
+  prohibited_pair_fact_negative: 1120
   wrong_recorded_prior_fact_negative: 50
   required_field_omission_negative: 32
   wrong_field_type_negative: 32
   additional_property_negative: 1
-  exact_case_count: 3384
+  exact_case_count: 3491
 outward_edge_event_suite:
   valid_edge_binding_combinations: 101
   wrong_axis_negative_per_valid_combination: 101
@@ -2584,7 +2607,7 @@ reference_only_event_suite:
   injected_initial_binding_negative: 17
   injected_edge_binding_negative: 17
   exact_case_count: 51
-total_exact_cases: 9747
+total_exact_cases: 9976
 ```
 
 Every fixture in these counts is a complete schema-valid instance except for
@@ -2592,7 +2615,7 @@ the one dimension intentionally falsified by that negative. Reusing a partial
 synthetic object, silently dropping a case, or counting a schema rejection as
 a semantic transition rejection fails the suite.
 The orthogonal legal-hold contract adds its separately enumerated 51 cases, so
-the combined §16.1 state/event/hold denominator is exactly `9,798`.
+the combined §16.1 state/event/hold denominator is exactly `10,027`.
 
 ### 16.2 Core-SDLC and execution boundary
 

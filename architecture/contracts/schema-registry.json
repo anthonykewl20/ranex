@@ -365,28 +365,28 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:3bae043f6fb02e993de85f3b1147ea8e7dc458e8f7c7c7298a3fcf12f3ac094d",
+      "digest": "sha256:56adc5ce1d1982a3e7e3054a27d7b21475c4f9a5ec9fe7df22a2dcc1dd6fb511",
       "draft": "2020-12",
       "path": "schemas/events/domain-event-envelope-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/domain-event-envelope-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:cbc030a346b7ab9a2ebb89accfdf0992430396bf33f6e5b705baea16f110f390",
+      "digest": "sha256:d136ce6ea6a86ef7f635ddffe14c381a448cb46c2817f4ab03c691d3c077696d",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/activity-dispatched-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/activity-dispatched-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:2baaf07aceb6734b4a3492a5116e39e01ff365a546007dafd1c110eeae14ce82",
+      "digest": "sha256:4551284fe5d0a933eaf0e0b33f17d5c3c5d79043c3061e71487ccc81c802d785",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/activity-requested-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/activity-requested-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:b0740f42962571f08f73fe41f6b5df5201ee5524d0072ba9250051da75a02828",
+      "digest": "sha256:6a58061befaf1967a7ba8d2825f5546a13ba3ce3f70908da6ace9c26b1acafde",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/activity-resolved-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/activity-resolved-v1.schema.json",
@@ -400,35 +400,35 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:8761cd29b6f4c9968eaa54bc0a179a2581ed3ce1550290d5506972f8885c0496",
+      "digest": "sha256:1807c085679d7b1743ea3d0730be862bfa603e0652bb9e0227c089fa6c856b4d",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/effect-dispatched-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/effect-dispatched-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:b515131ed1b7c3bf14963b67c732fdd88b376fdc56d62394cf190f553bb0a04e",
+      "digest": "sha256:86a5ad6f6539ee9f8541274f7dde570356b01326eaf45706911281bfccc0e481",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/effect-intent-recorded-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/effect-intent-recorded-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:e50a54f4cce99085675f34868d303831acec83bbd88bcecfb71f0053bec5c4b6",
+      "digest": "sha256:783bf644199171f2aed29bb93da5389d7e6be2d53c2867c9e87acdc69f6126bd",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/effect-outcome-marked-unknown-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/effect-outcome-marked-unknown-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:927a79b88183cabf10f2aaa8202da5720a1350793aa21b03e31ed82e0af468c9",
+      "digest": "sha256:04f4e1281147bf102a4adead60433db50fbb2149a7511ee43fbad6b1e5a0c362",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/effect-reconciled-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/effect-reconciled-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:14fe6d3b6b6e73194955cb402c68412766c38c7d3681f2310528a0a2940346bb",
+      "digest": "sha256:c6bd708ab905d212d04f19e6f7456a2d4c673c55bc2c5c12fe814c303c3b3465",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/effect-resolved-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/effect-resolved-v1.schema.json",
@@ -463,14 +463,14 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:5d3ee1147565961b497ac04f8d01904951ab7c8858145f91c07a353e913b0e0b",
+      "digest": "sha256:0a15bf1f0a5ff8d16c840b96ecab89ddd9ee94524be37f59ef0c63c0a46aa4ae",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/permit-consumed-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/permit-consumed-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:85b5bcba80825091fffdce075bc70bd8f8458b219c80f890989e5c09c513152f",
+      "digest": "sha256:78c99dd3c54a3307537412f66d6a1f2b91a8631cdbe9fc5f9b703d61b76e9348",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/permit-issued-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/permit-issued-v1.schema.json",
@@ -484,49 +484,49 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:7266d437a87fe3c73a923f0d32cec49594105395ffe668ffb35418d1f1785977",
+      "digest": "sha256:7c3264490a6f48a73cfa3b3261fd847e8f37ebca6739ef508aa456e1480108d9",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/run-blocked-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/run-blocked-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:f0c11e32b081e4ca69794ac2a9364b698b386a85767e77b4c8be1ee3538f79e6",
+      "digest": "sha256:a68d4912bf0cec271ebb47ab562f28beb516b90f07348005bdf3d781eb61546d",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/run-cancelled-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/run-cancelled-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:7952c012e41793fd16da715ed74a17af88f9a8d68fc77cbd98210e03c3feeafb",
+      "digest": "sha256:ba4a670caeeacfe68223e801492f605c1b83087a649546a9b7a85f3c5c0779a2",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/run-created-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/run-created-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:39ef4a844af5c6ef5b352ac5b737757a31dba0573d755db281f1769f58a48526",
+      "digest": "sha256:3b32abd374b6068af90721b73e3f14dcd21f06571ff18c0c605b48930affb9ea",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/run-failed-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/run-failed-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:b00eba718bbbb1dd602eacbab7d81fe74ebc791c2b6ff4d2da4cb6040ed4f529",
+      "digest": "sha256:58ad6e121489f5cb3ddc0f5502b94e5862d1e80c8c688c2caf004118519ca9e6",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/run-marked-ready-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/run-marked-ready-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:6e78acd79a7e4fc06ebaa6b31bb14af7291aff8c9f07d9ffc11ca5577989a886",
+      "digest": "sha256:11170b683e47979ed513302ab8e7c2c14ee7ed62030d20fdf70d84171ce74076",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/run-succeeded-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/run-succeeded-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:dca8132d3949b97516fe5d36d5d712fd4e1002356c67eb4a03c9ae77bd828f7a",
+      "digest": "sha256:b087962fd6d20e430060b250b34521a6e9b626ed545fcb045d5c09c25f244004",
       "draft": "2020-12",
       "path": "schemas/events/governed_execution/run-unblocked-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/governed_execution/run-unblocked-v1.schema.json",
@@ -603,14 +603,14 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:389ac156343ea7590fdb02bf6182834cf70d3b04da9223d07356455b9195a08e",
+      "digest": "sha256:7e956b512379505f4999e523a9065e5a11b4bdb499beaf74dca0c6bfd7d420b4",
       "draft": "2020-12",
       "path": "schemas/events/work_management/work-item-blocked-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/work_management/work-item-blocked-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:b458b74f09e0dc23f9e2de16faa30cac41bc90a6720c517698c5736f11f8c5e2",
+      "digest": "sha256:03065930373f044d9ab16ca187a9cf465733d7de166d57fc5ef10711f5e20528",
       "draft": "2020-12",
       "path": "schemas/events/work_management/work-item-cancelled-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/work_management/work-item-cancelled-v1.schema.json",
@@ -624,28 +624,28 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:4deb86776316e08378b0821b9f296dd55b21759882aef686512616bb85155bb9",
+      "digest": "sha256:6c4d4c7caccccde13771456d87d53aa06e8c15bd086ad2d2b8a09372a96820eb",
       "draft": "2020-12",
       "path": "schemas/events/work_management/work-item-closed-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/work_management/work-item-closed-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:0fb7fc38bf9feb3b33a11452cbbcb8034761d783c93a9b22eeec2ac55994ead9",
+      "digest": "sha256:50bda405ba066b8f4853531b661d8bfda481b24df5bb1b3b49eedee97cb0320d",
       "draft": "2020-12",
       "path": "schemas/events/work_management/work-item-created-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/work_management/work-item-created-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:ea93bf5c9490139d046467f327ab69c2c1ecac97583b17ae4edafa4bfff3e7e0",
+      "digest": "sha256:e5a69b3fa27c72a7b8d08a387a19e64b8e7413810ce8fe451c1400eb45015831",
       "draft": "2020-12",
       "path": "schemas/events/work_management/work-item-transitioned-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/work_management/work-item-transitioned-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:c10d1717828fd0628c50a0658e1e26dbca4fce25f51523d1b4372838d7dd2644",
+      "digest": "sha256:2e86e8f9e75774906fb53e8e9c080aa4f328744aca7893c584363acdc099cbf5",
       "draft": "2020-12",
       "path": "schemas/events/work_management/work-item-unblocked-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/events/work_management/work-item-unblocked-v1.schema.json",
@@ -1051,7 +1051,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:89b462283d4761a053c64ae9bc65b19fb8ad9ba19f7a48180ed0accb29ec4e76",
+      "digest": "sha256:bb320c37c7e6643c8c9628ff37963618dc4397b467fa87c16aef023a89298e00",
       "draft": "2020-12",
       "path": "schemas/work/transition-event-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/work/transition-event-v1.schema.json",

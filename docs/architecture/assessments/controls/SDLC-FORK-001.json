@@ -89,7 +89,7 @@
     "docs/architecture/SDLC_CONTROL_CATALOG.md#sdlc-fork-001"
   ],
   "definition_status": "DEFINED",
-  "digest": "sha256:6357d2c52098cfee73bb6fa1dce5b5f0d61ee37e421553536b7d6b10d0b5d1b0",
+  "digest": "sha256:fdc6506623880062c66d029bfb8b2f669fc10345aef19e8b8f22c9fff949deef",
   "effectiveness": {
     "baseline_refs": [],
     "comparator_refs": [],
@@ -784,8 +784,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:8a0b0e7b1654eeb43e75742f10af356c9cba6cd9bc27f31e6fc5c056d6246278",
-  "subject_manifest_digest": "sha256:84f8680f12ec6e5d9ababb7e10c1d0fd81a6896ce53c411b21be26c1bd4f502b",
+  "subject_digest": "sha256:028e82c057e88f1bf89f3e5e3f6041f4c58170bd0963799f0c82593743bb53af",
+  "subject_manifest_digest": "sha256:83ac19685c50b95d1837862fa62d015f2d2030d2f2e14474e72679030a89ac40",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": ""

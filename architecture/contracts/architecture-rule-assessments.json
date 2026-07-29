@@ -38,7 +38,7 @@
           "registry_id": "REG-CONTEXTS-001"
         },
         {
-          "digest": "sha256:aa2a54666a792596cc10d139b767603cd9f584820291e8b3fbb04d7f7c6d3d1b",
+          "digest": "sha256:701ced7b2ed0f55ed2e2c52f102de5433c49e2d0fdd672c361becbcffbfb6b0e",
           "registry_id": "REG-PATHS-001"
         }
       ],
@@ -73,13 +73,13 @@
           "status": "ACCEPTED_PAPER_DECISION"
         },
         {
-          "digest": "sha256:c37a42a75bd7ae4f8bcd5ae234ceca2eca9bc48db392c404db5d4559bd050093",
+          "digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
           "path": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md"
         }
       ]
     },
-    "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-    "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+    "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+    "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
     "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
     "subject_schema": "architecture-subject/v1",
     "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -98,7 +98,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:89b3404feb40fbede1dee9c7321b0a7522823b969525b82f8c37a6f18308330d",
+      "digest": "sha256:9ade3a46d36b997a4023e3955bea3547077654a2c5cc527cf0c9a3c4e0474d60",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -116,8 +116,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -135,7 +135,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:58e317a9f6dade78249c63955f3351abfa1c4ed3a28d51f4f563234922b56118",
+      "digest": "sha256:af0985250a4da8443e3824baf4a2f4c944e33bd827c18d22123e59671b4a27be",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -153,8 +153,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -172,7 +172,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:c2d399a7ac11ca7c1ea79f5d3365cd75fa43b5479122879d37d33e60615f7ac7",
+      "digest": "sha256:ab0c0941ccc52a1ce66fe9c34b6729d4de66f2e44b8d3ff453e8f5a7e77d8bf3",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -190,8 +190,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -209,7 +209,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:bdfeaf16963c04709857d63649e22197ad4262f94e70d7ce61b45f8a61b94436",
+      "digest": "sha256:6438cb507eddcc0a4b6b521788b452acbd7cc52af2e3eeac7689b6ccc93b5bf1",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -227,8 +227,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -246,7 +246,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:b7c24121d5ac8490a5ed3ce0823dfdb24226ebbd3ed6a227a5dfe2ad8fc73f5a",
+      "digest": "sha256:6fb9538d26fe816168382d229daa7cc382c60ac81c3544a1ac1e954cf45a6d85",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -264,8 +264,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -283,7 +283,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:7317853bde27fe753ad58134f8c2e5e48cff874c77940c50a35ec9dccca4dbc3",
+      "digest": "sha256:5e4e8c11d998df7556e7f3e954cab5c19258eb7db38bec33d86c9ddd5ff4d705",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -301,8 +301,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -320,7 +320,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:bda4ed32d08491d0032b56968e624e174cfc9cebdcbeb3a06fce147f63e488f9",
+      "digest": "sha256:a68c3c32da32b7c9ae3526282091ebcd070337d8051c028815d1bbb99cc5105c",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -338,8 +338,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -357,7 +357,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:25660025a30bd53721b5274360da9fdae7beb5570600c553d4904cb57c2a579e",
+      "digest": "sha256:16b3c5a753797e8c4207e303a2bf04aab75d2a0437bd1900e7855cdc026729c2",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -375,8 +375,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -394,7 +394,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:501a5b7562617b60726135d2591388aa6e4b7a6831d4e3475115dc81ec47246d",
+      "digest": "sha256:964b2a34feb1204e50975169e2468509e173d168e99be0520eba29be8f6ec6c9",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -412,8 +412,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -431,7 +431,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:9ecd022abea3d8d7f7f3630ce18b86a9dafc30a4c1a7fef2e2fa3ad29740bc19",
+      "digest": "sha256:1c6a136713bd44d52d17159b90e44d0eb969cd73175cb6dc9d07509ec0450169",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -449,8 +449,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -468,7 +468,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:ae457206b89196f9dfce42de1aab4f871caee367a104390da6a8fa0b70935776",
+      "digest": "sha256:3553164d103fda24b5d19e49878bd33d937e5a26a4a93032249c4763fa15c5d7",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -486,8 +486,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -505,7 +505,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:221ec49f377562f55a37802a9f06cea50dc62c63da751d72fae2ee69857eb868",
+      "digest": "sha256:fa7f0967ba68b444a43602079f23447489b5109bdf0237ac87f969e467bff7d7",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -523,8 +523,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -542,7 +542,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:c4ad47237520b68c33e30299748422a3a83ac892a543babd8a3426286280012c",
+      "digest": "sha256:5b1efe635b678868a2b095ca99b7006abef685bd59ff9a200c4aafe223dbc671",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -560,8 +560,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -579,7 +579,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:586701c74e88a4a208808bb482a67c94ac7b08a11c1a603e38d3be7b9bcc8e0c",
+      "digest": "sha256:fa908281c4f84a170d359c25b352d1c56472b7d08f3c2544ddda883bd20eddff",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -597,8 +597,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -616,7 +616,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:364eeb8f557d5ad6aa7b7644a0a5b61ddb6ecbcb3ea39586771be66f1bd57ed1",
+      "digest": "sha256:075ff8e9c9d3cd070a0dc4b017d4c736676cf9cca741e3059e5fd3c6697bfe45",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -634,8 +634,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -653,7 +653,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:d7807919b8db066cf6f04c573602af139003e7700614f715806e2042cc8ac22c",
+      "digest": "sha256:f5ce1aef1f854dee62e20e77c06646bc58d9e539dfae1ef440412f25ab8b4423",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -671,8 +671,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -690,7 +690,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:b96baa5813c445cc7ab264b73785a40c4d1ca447ff53325900afe26952ac83d5",
+      "digest": "sha256:7b3f1ef2c39fe787778a66983bddb77dea7337d6d5f13f25794bd3f6c88d6340",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -708,8 +708,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -727,7 +727,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md"
       ],
-      "digest": "sha256:096e454a986dc54cb42d3b26ef7a593259e1b6b97514582d2ce09ce08f99c66e",
+      "digest": "sha256:e7daea4c14a76fb53ffdad9ec711a53b2dfea475132a44f0d448a86bcd33dc80",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -745,8 +745,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -764,7 +764,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:1f8a394d10e49034f5bc08c8bd062148c1478e010ef0d0995298208d6f529b11",
+      "digest": "sha256:57d241714a83e0f8e79746845f5b93f64826ee026b732737174381e9dd65d81e",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -782,8 +782,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -801,7 +801,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:a4d73f3c7bce71124ff2bc7704384854a8c2976a0e526904e55f2e2f2e3f550c",
+      "digest": "sha256:77ba9df7a965940295fb3203e86cdc03c9a0aeab804424d9247da0860616ae7d",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -819,8 +819,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -838,7 +838,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:ecef0dd8c23411839d8a57b62d69cc1888258355b7d0838b6cb8c470f646acea",
+      "digest": "sha256:35aa7a09209152d43f1300251f9c690164df574352f6fec8d5fb4a12c871dbea",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -856,8 +856,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -875,7 +875,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:6e42cc000ec20e8804bc4bdd9e2660c0b6305ecae92cc4ee60d470ec69471730",
+      "digest": "sha256:d48e955a4c1f315d82b4127a103ef48d2cc057b9cae212732820cd4dd9dbde82",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -893,8 +893,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -912,7 +912,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:8abead7fcab2a94fc9b06f078df83973c535dd475f503bedfe3c8fc24724dbcb",
+      "digest": "sha256:984437c6d1e29af7b8758e4af06c84fe1be87948ce591c8fa9350c370474c5b4",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -930,8 +930,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -949,7 +949,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:782531f05a0bc5777322430184e630b51c51833f288c34b10554396127b4d686",
+      "digest": "sha256:720dd4a37781698e02782dd5dde383c87d9aa012e37c04c1999fbfd0f81d57e8",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -967,8 +967,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -986,7 +986,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:63909ca23bd058c38b664819865af5c87894c71dfedb2cf00cbaf5ae08a67ede",
+      "digest": "sha256:590c3693cb2c7f667e82f942baecf709327681dec63b312e5b21490bd30ee487",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1004,8 +1004,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1023,7 +1023,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:1a7c11d1c8ce97872640010c4586e49e90f2f1a16b174f6e8c05a39320702faf",
+      "digest": "sha256:49b1ded603748759b4a17a925f3c754a0eee6ccf2be5fde2062384636d21d0f5",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1041,8 +1041,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1060,7 +1060,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:22ad5a8c3a71770749c338acc7fc6ffb602b49e005686c0325fd29de3b31cde9",
+      "digest": "sha256:5ad70b328a4f9f5df6670b79b19537b465f047a914a435460537d56a8c90af6c",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1078,8 +1078,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1097,7 +1097,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:716418ef4697882f22be9fd8cba043c3f6caa39cb06f863284009322f778ead9",
+      "digest": "sha256:9c9a4efb480e0cb9753a5dd25a33afd53d1447e754feea76279309a8ee39c677",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1115,8 +1115,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1134,7 +1134,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:c739053a864abda6f90bb03fdddf280e3e5d747ec00f52aa4e00a48662c1bae8",
+      "digest": "sha256:b50acb14a9597073c5ea85a5b633e5d3d49be2fd34becbda4f222e322ad0d7e5",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1152,8 +1152,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1171,7 +1171,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:2a480a425bd4f070aa676282f3c9e000c0d91c6b12473b5a1cafe92cd8f7091c",
+      "digest": "sha256:7f959a108f72b1ec2bd4c1b866677786f8360bf2402b63f33404c6ada0c0f70b",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1189,8 +1189,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1208,7 +1208,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:3a86a2664e4d838ffd8fd61d3b4119ece82d234ab6a4976aa030c273bad67783",
+      "digest": "sha256:0ab49f83f89e3bc54a55688ae1b93def04726851d93d3a28f0b026c4886ae6c4",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1226,8 +1226,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1245,7 +1245,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:b45e2fca87e45d0fb6454dafc04bd4b19f238cceb6300ee3a5af8625b2047566",
+      "digest": "sha256:5e8d3de0b6ba203cfceaa1dcafff6d116459f09c095ff24d3af099d9389e2cb1",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1263,8 +1263,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1282,7 +1282,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:dce0af2eb5a683bbb8e8d2d4f387aa94e11072fc80d525e4cc63ffd558cb0809",
+      "digest": "sha256:2f3a5a45b322b691c482ef090336580107222e6f05581133746d78da8253e14a",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1300,8 +1300,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1319,7 +1319,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:afcfd82ac3052b5f9f417b719d523c2142cc22c65a32ef2a7e96b862862481a6",
+      "digest": "sha256:29a8fe321f695a406e3ff65204b6b962806a344623dd9c087a30b315034f996c",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1337,8 +1337,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1356,7 +1356,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:21a5da4250f5988acf10adc4faf6d33eff6633c23b3ece7caa73e3c7477359a0",
+      "digest": "sha256:e68cc3483b92ef13f2c281ef3232088a32654a772ca4544301a1208379607f90",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1374,8 +1374,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1393,7 +1393,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md"
       ],
-      "digest": "sha256:175b2bc58c7616e5d73dce7f80ec52ffba2afe548edf7ce702d89d776c2e1653",
+      "digest": "sha256:7ffa4d8b5a1aa7132fcabd991a33435cd86e1ccdc064370a1c1c1831a6ae70ff",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1411,8 +1411,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1430,7 +1430,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:363c99c27672b0ede169af8411ddd20a4ad43e0ef195a88affbb8c421e98147a",
+      "digest": "sha256:2e62206db6e3dc9c830d859e760c1280f0ec7269da163f1078693a5d756195de",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1448,8 +1448,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1467,7 +1467,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:c2bcbd27312f28cf68f5b33462cabc377f0ed1399103e487519d450f4360adb8",
+      "digest": "sha256:3a290fdaeaf84ee2d9bacc81f004276a468b5d68dddd86b6d31fc926c01c1926",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1485,8 +1485,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1504,7 +1504,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:4f7452d5710737cad0b7448391688cf281607b494d039d9e33fd5a0e708b2ce7",
+      "digest": "sha256:822b6f54ddbcd79167056c8e4b09888ff0e33ca6c961c2246590abb064c790b5",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1522,8 +1522,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1541,7 +1541,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:5acb3e1903ff88e107d3095b29587c2dd62064d486fb0809b434cc34542c8a37",
+      "digest": "sha256:537cd8e5867fc67558d6bc9dc955140235a110ddfd4e73e409589411d65fc3b5",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1559,8 +1559,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1578,7 +1578,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:3cdf25ac02ea6cea84b0c6385ba6b8f36fe493064b9ea4268681b296af1aaa9e",
+      "digest": "sha256:21c0e5f202d013a6c9d7b05399a0d546402d016b5af243ebe5bd0c00e774a7dc",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1596,8 +1596,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1615,7 +1615,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:3cbed74b5495e44aa66954e725ae81c14ace3e3f7f2ff5d6ef4ba912e2f640be",
+      "digest": "sha256:e8621c9d7952b39b62e495d991bbf7b6f92d9cf9896c91d99f0316d9a6b7ca7f",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1633,8 +1633,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1652,7 +1652,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md"
       ],
-      "digest": "sha256:983216a3c354230e40a264981d24891e4f76ad71fea97562ca3345d46021d669",
+      "digest": "sha256:de5a2e4f89ba76e4713fa36cdf2777f70a7e9cf11fa2950367fce6f9f2ca54a0",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1670,8 +1670,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1689,7 +1689,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:b47e3f23a7d89c78fcf2393c6750cc1f9daa5f2cb12c83807ed6d2f678c4d2fc",
+      "digest": "sha256:7d2910490e68a7780debadc2cb1809162a50cd228a3236d124e6670e3f851463",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1707,8 +1707,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1726,7 +1726,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:d286f5282ffdd9c4463bf017dc45fd88e2af7374c782a1c9b6b7b47f1fc75bdf",
+      "digest": "sha256:d2dfc1fa5971801efbfe910d451aed9e3d9811353181122a4706c61c085709e3",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1744,8 +1744,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1763,7 +1763,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:fa593a0829e5c32b550279239d0c4e3f0305294b155ed6374ffcb4c72d9719f4",
+      "digest": "sha256:5e4e6478521dd8ee1fdda548bb4c624b0703e1c825e3263139c66f2b3864ac35",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1781,8 +1781,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1800,7 +1800,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:0f270138b05886ea3ccfb0caadf71393252cacb0075ca1981579558568f001fb",
+      "digest": "sha256:758ccdc742d6f24a431b0c95c978d240999e43320d3058f3a6d15a777f0495bb",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1818,8 +1818,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1837,7 +1837,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:99f89e0c5ea1bf4620e61db0b245946f19f98cc4b1146c8b763111089b2a0299",
+      "digest": "sha256:7fc6d2f17c9af0ef097357be042c2fabda74c7397470a83711ba720d131d275e",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1855,8 +1855,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1874,7 +1874,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:198ef3ae9d9dc1d5ba0220946461a7155dfdffbfa27b0e10247c2c2ee7bdf6bb",
+      "digest": "sha256:6875204eaed83849cb2b1667eccb45f79ca9d1dd605411c476204f8ceed7317f",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1892,8 +1892,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1911,7 +1911,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:a491f94c3eb5a34fa1f1607a3c7fba91b09cb305be88b918a3e497af63dc93e5",
+      "digest": "sha256:25801a596316a3415e04a41bdcea00bc3f1207333d20787da1b486c3e90feb28",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1929,8 +1929,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1948,7 +1948,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:f2a6c279606aff0d9c135c302e9b162f21e354176eac08491aa7d338919b6cbc",
+      "digest": "sha256:a51ea8ae56c0f2c9ddc344fdff3bdeaae0a9e85be0cfa13e4091a65e1d24af06",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -1966,8 +1966,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -1985,7 +1985,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:5c0377c7fbd40852b809ba03d7fa12a5c30682f80a69eb7b8c8dd4ef46819b5e",
+      "digest": "sha256:4febab7a7fd0e1f3865af82590481d8e281d67d868486c7f2aed2082411cf9a0",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2003,8 +2003,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2022,7 +2022,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:b7676b53d3a20102e887a5c2640ec5cb7073e9e449f67667d1fd123e0f7f4a66",
+      "digest": "sha256:1309d160e57083a1942ada5a223caa971ce8d830f22197ddabf4caf27f95fb0b",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2040,8 +2040,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2059,7 +2059,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:e7827e9baf4267b98f529137c3a3b9628c832fb788571a28a9d5494d6a2ca59e",
+      "digest": "sha256:23a5d22f97d6558a2be136e8fd5b3d6f76a2e735231b3cc5cd90095265605c8f",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2077,8 +2077,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2096,7 +2096,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:11068fd093217669a5a57cfb55cc3f509194ad59730a722c43784e86ac86c111",
+      "digest": "sha256:e3c2fa335a8127e80b6d517714749caf7b3c5e825757886aa1d7868830a36d7e",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2114,8 +2114,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2133,7 +2133,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:10b06bdd7fdd5192fadd10be5d32974b615d54d6dbd280c4596951fdec9f4a5f",
+      "digest": "sha256:ee4675b8c53ccaedf050191e389df6a87dbcd9493754ef01d1ded9f6cb2baf4d",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2151,8 +2151,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2170,7 +2170,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:12bf96b681e6adb65e5742b4dab81d615249924a78c2c58732a28a248284a464",
+      "digest": "sha256:ccb714f995f30562ada613779b5a110d0ab06b0d89024f4544c51e9c3420fb10",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2188,8 +2188,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2207,7 +2207,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:6d0449658c0bdbec15f46b72f4cd16995abe824be6e6cf83e8473baeb11b271f",
+      "digest": "sha256:ab00bb497e84d15092e60d88ca9a2d85d6ff9abc22d42aa2b8aa264597bdc1f4",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2225,8 +2225,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2244,7 +2244,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:ea89204fb0a6e182b2bbb908ea17cb314efcc34192547ac57f8384deffd3e290",
+      "digest": "sha256:e7515af272d8e1943cc10a8aabf68e783e24268c5aa440be4c107d11f4a4b34b",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2262,8 +2262,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2281,7 +2281,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:0cac9279e879f4ee6e22cf935e58350d7f942af0c3c2aac04b86099d3ae5314d",
+      "digest": "sha256:67711d39160203d8c235f20e479b3292ab7f10ac027f623704f4bfb175311d8f",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2299,8 +2299,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2318,7 +2318,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:6dfae6d2c01c2bb08ec3321146962ceaebf6a2b5834f48e7d18124164d2e9b37",
+      "digest": "sha256:096deb4f33480dc0ba61804eaf6a0d3776f6d75ae3042975d8d6cccc8c9b3a1f",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2336,8 +2336,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2355,7 +2355,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:a03c7a64752ab21cc6f6b44748ff7b2f357e01b3040283bd17a5d36dfd2f716c",
+      "digest": "sha256:b74c5d0fcb49d28775f66e2ce75d665fabf76a656bad26676a5c4e645495a572",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2373,8 +2373,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2392,7 +2392,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:2a2cfe93b1f516c63184e2018e5510015e8a5204fae8c2c2fad8d69702a17d22",
+      "digest": "sha256:636d420e5fcd9fedae976db2a073ec9118201a5c8064513cf00b3cfa027402d3",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2410,8 +2410,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"
@@ -2429,7 +2429,7 @@
       "definition_evidence_refs": [
         "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
       ],
-      "digest": "sha256:8ee0b730f81c2897d0c9523206c8beb1bd9a88ef602ba9eba2af089dbbee09be",
+      "digest": "sha256:cd5c78734979edc3da75ac5f05f6b6460f98703c87e9702493a6e13b1872f67e",
       "expires_at": null,
       "freshness_status": "NOT_ASSESSED",
       "noncompensating": true,
@@ -2447,8 +2447,8 @@
       "runtime_subject_digest": null,
       "runtime_subject_ref": null,
       "schema_version": "architecture-rule-assessment/v1",
-      "subject_digest": "sha256:c736a872333cf64986f903b9f66f17947c62157daf1df5a8be9f8b2a8a2173a4",
-      "subject_manifest_digest": "sha256:6bb6000b7d9d848ddb9f53431d32a9160df1e82d328469837d479f222af1aad9",
+      "subject_digest": "sha256:c9bb0a5e8bc6dac1e2cc3833274cab56241933d21401fae9ad8ebe41f52a3476",
+      "subject_manifest_digest": "sha256:cc58170f2aa8b6f3c42d6dbd6b103ed64b25d52ec54cebc549ccc49a1a89a528",
       "subject_ref": "art_019fa605-6800-7769-b8d1-b3d7c0c02d19",
       "subject_schema": "architecture-subject/v1",
       "subject_scope": "DEFINITION_CONTRACT_ONLY"

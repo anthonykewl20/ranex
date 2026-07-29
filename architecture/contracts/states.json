@@ -1,9 +1,9 @@
 {
-  "axis_count": 43,
+  "axis_count": 44,
   "catalog_id": "STATE-AXIS-CONTRACT-1.0",
   "catalog_schema_version": "state-axis-contract/v1",
   "classifier_axis_count": 13,
-  "digest": "sha256:8fe55b98993d783ce7803d966c96f017867af52c62dccf5de75db073764ea60a",
+  "digest": "sha256:f6b78afc389183f12b5db0e3b4b84fb466380b573d0ac0db300840104ef992ce",
   "entries": [
     {
       "axis_id": "WorkItemStatus",
@@ -1218,6 +1218,109 @@
         "IN_PROGRESS",
         "COMPLETE",
         "SUPERSEDED"
+      ]
+    },
+    {
+      "axis_id": "READINESS-STATE-1.0",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "Only listed evidence or prerequisite invalidation edges move a ready or production-evaluating state backward",
+      "cancellation_semantics": "NOT_APPLICABLE:readiness is continuously revocable repository standing rather than a cancellable attempt",
+      "contract_ref": "states.json#READINESS-STATE-1.0@1.0.0",
+      "digest": "sha256:6202f4639a6c4be92feef4a2b563785bee1e61c79548298459065212be5054cd",
+      "emitted_fact": "TransitionEventV1(axis_id=READINESS-STATE-1.0)",
+      "expiry_semantics": "Expired or invalidated bound evidence moves the affected ready state to its listed blocked state",
+      "initial_values": [
+        "NOT_ASSESSED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "process_assurance",
+      "recovery_semantics": "Fresh exact-subject reassessment is required; no blocked or ready fact is edited or reused",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "A blocked tier re-enters its evaluating state only through fresh exact-subject reassessment",
+      "revocation_semantics": "Tier-specific evidence revocation blocks that tier; Tier 1 prerequisite revocation blocks both tiers",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:a91c6dc85278ecadb2c19e6d0a824c12dd9e9570f3808b3b11abbff17fe45464",
+      "terminal_values": [],
+      "transition_authority": "readiness resolver with authenticated human governor authority on READY edges",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "NOT_ASSESSED",
+          "guard_id": "READINESS_ASSESSMENT_OPENED",
+          "to": "IMPLEMENTATION_START_EVALUATING"
+        },
+        {
+          "from": "IMPLEMENTATION_START_EVALUATING",
+          "guard_id": "IMPLEMENTATION_START_NOT_PASS",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "IMPLEMENTATION_START_EVALUATING",
+          "guard_id": "IMPLEMENTATION_START_EXACT_PASS_AND_HUMAN_DECISION",
+          "to": "IMPLEMENTATION_START_READY"
+        },
+        {
+          "from": "IMPLEMENTATION_START_BLOCKED",
+          "guard_id": "FRESH_EXACT_SUBJECT_REASSESSMENT",
+          "to": "IMPLEMENTATION_START_EVALUATING"
+        },
+        {
+          "from": "IMPLEMENTATION_START_READY",
+          "guard_id": "IMPLEMENTATION_START_EVIDENCE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "IMPLEMENTATION_START_READY",
+          "guard_id": "PRODUCTION_ASSESSMENT_OPENED",
+          "to": "PRODUCTION_EVALUATING"
+        },
+        {
+          "from": "PRODUCTION_EVALUATING",
+          "guard_id": "PRODUCTION_NOT_PASS",
+          "to": "PRODUCTION_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_EVALUATING",
+          "guard_id": "IMPLEMENTATION_START_PREREQUISITE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_EVALUATING",
+          "guard_id": "PRODUCTION_EXACT_PASS_AND_HUMAN_DECISION",
+          "to": "PRODUCTION_READY"
+        },
+        {
+          "from": "PRODUCTION_BLOCKED",
+          "guard_id": "FRESH_EXACT_SUBJECT_REASSESSMENT",
+          "to": "PRODUCTION_EVALUATING"
+        },
+        {
+          "from": "PRODUCTION_BLOCKED",
+          "guard_id": "IMPLEMENTATION_START_PREREQUISITE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_READY",
+          "guard_id": "PRODUCTION_EVIDENCE_INVALIDATED",
+          "to": "PRODUCTION_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_READY",
+          "guard_id": "IMPLEMENTATION_START_PREREQUISITE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        }
+      ],
+      "values": [
+        "NOT_ASSESSED",
+        "IMPLEMENTATION_START_EVALUATING",
+        "IMPLEMENTATION_START_BLOCKED",
+        "IMPLEMENTATION_START_READY",
+        "PRODUCTION_EVALUATING",
+        "PRODUCTION_BLOCKED",
+        "PRODUCTION_READY"
       ]
     },
     {
@@ -3479,7 +3582,7 @@
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
-  "lifecycle_axis_count": 30,
+  "lifecycle_axis_count": 31,
   "registry_id": "REG-STATES-001",
   "rejection_policy": {
     "causes": [
@@ -3495,13 +3598,13 @@
     "result": "REJECT_NO_MUTATION_NO_TRANSITION_FACT_NO_OUTBOX_EVENT"
   },
   "runtime_validation_status": "NOT_ASSESSED",
-  "source_catalog_digest": "sha256:e4070f7c9836def335e66379641a701e0b274633f98e4ee3fe86a40d21ff4e0e",
-  "source_digest": "sha256:c37a42a75bd7ae4f8bcd5ae234ceca2eca9bc48db392c404db5d4559bd050093",
+  "source_catalog_digest": "sha256:593a9516a2cca09511e3f4657e09416429be1ef7ff5c23abe7fa9dc55c23401d",
+  "source_digest": "sha256:a6a6e54e0289d614c5d377e7a69f385519410fb6130e5ecbdd21fdef9fa1484a",
   "source_path": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
-  "transition_count": 363,
+  "transition_count": 376,
   "transition_fact_ref": "schemas/work/transition-event-v1.schema.json",
   "transition_notation": "FROM>TO@GUARD_ID",
-  "value_count": 278,
+  "value_count": 285,
   "version": "1.0.0"
 }

@@ -53,6 +53,7 @@
               "PacketStatus",
               "FleetExperimentStatus",
               "CapabilityAssessmentStatus",
+              "READINESS-STATE-1.0",
               "ActivityStatus",
               "PermitStatus",
               "HumanDecisionRecordStatus",
@@ -80,7 +81,7 @@
             "type": "string"
           },
           "edge_id": {
-            "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+            "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
             "type": "string"
           },
           "state_catalog_digest": {
