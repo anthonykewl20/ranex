@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Architecture ID | `ARCH-RANEX-001` |
-| Version | `2.9.0` |
+| Version | `2.10.0` |
 | Status | **ACCEPTED NORMATIVE TARGET — PAPER-CONTRACTED; EXECUTABLE CONTRACT AND RUNTIME NOT YET VALIDATED** |
 | Scope | Complete target-system architecture and complete attachment map |
 | Date | 2026-07-29 |
@@ -14,7 +14,7 @@
 | Research baseline | 116 frozen artifacts: nine original top-level research files, the 89-file Kimi addendum, and 18 local foundational-reference files representing ten works; exact manifests and indexes, never a live directory-glob claim |
 | Governing development process | [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md) and [control catalog](./SDLC_CONTROL_CATALOG.md) |
 | Major engineering references | [Ranex Engineering Reference Application Map](./ENGINEERING_REFERENCE_APPLICATION_MAP.md) |
-| Owner decisions | [ADR-0001](./decisions/ADR-0001-established-sdlc-governs-ai-work.md); [ADR-0002](./decisions/ADR-0002-retire-legacy-implementation-guide.md); [ADR-0003](./decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md); [ADR-0004](./decisions/ADR-0004-establish-initial-quality-attribute-baselines.md); [ADR-0005](./decisions/ADR-0005-select-local-static-orchestration-defaults.md); [ADR-0006](./decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md); [ADR-0007](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md); [ADR-0008](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md); [ADR-0009](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md); [ADR-0010](./decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md); [ADR-0011](./decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md); [ADR-0012](./decisions/ADR-0012-separate-implementation-start-and-production-readiness.md) |
+| Owner decisions | [ADR-0001](./decisions/ADR-0001-established-sdlc-governs-ai-work.md); [ADR-0002](./decisions/ADR-0002-retire-legacy-implementation-guide.md); [ADR-0003](./decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md); [ADR-0004](./decisions/ADR-0004-establish-initial-quality-attribute-baselines.md); [ADR-0005](./decisions/ADR-0005-select-local-static-orchestration-defaults.md); [ADR-0006](./decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md); [ADR-0007](./decisions/ADR-0007-establish-modular-ddd-repository-organization.md); [ADR-0008](./decisions/ADR-0008-make-tdd-the-default-development-discipline.md); [ADR-0009](./decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md); [ADR-0010](./decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md); [ADR-0011](./decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md); [ADR-0012](./decisions/ADR-0012-separate-implementation-start-and-production-readiness.md); [ADR-0013](./decisions/ADR-0013-promote-hermes-research-obligations.md) |
 | Primary architecture collaborator | DeepSeek V4 Pro through `deepseek/deepseek-v4-pro` |
 | Independent architecture challenger | HY3 through `openrouter/tencent/hy3` |
 | Decision authority | Human owner |
@@ -3996,6 +3996,7 @@ This architecture is supported by:
 - [ADR-0010: Bind the Inherited Hermes Test Layout and Its Migration](./decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md);
 - [ADR-0011: Centralize Worker Orchestration and Use Role-Scoped Official Runtime Adapters](./decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md);
 - [ADR-0012: Separate Implementation-Start and Production Readiness](./decisions/ADR-0012-separate-implementation-start-and-production-readiness.md);
+- [ADR-0013: Promote Hermes Research Obligations into a Closed Audit Contract](./decisions/ADR-0013-promote-hermes-research-obligations.md);
 - [SDLC-FORK-000 deterministic preflight](./reviews/2026-07-28-sdlc-fork-000-preflight.md);
 - [DeepSeek V4 Pro and HY3 Reconciliation Record](./reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md);
 - [Kimi Agent-Fleet Research Reconciliation](./reviews/2026-07-27-kimi-agent-fleet-research-reconciliation.md);
@@ -4125,6 +4126,10 @@ The **map** is complete when:
   exact readiness basis, state transitions, gate sets, evidence roles,
   invalidation paths, reviewer routes, human decisions, and bounded
   pre-readiness tooling tracer;
+- the ADR-0013 Hermes-research promotion catalog maps every promoted provision
+  to an exact source line and unique fail-closed guard, registers every genuine
+  unresolved choice as `OWNER_DECISION_REQUIRED` without a default, and retains
+  an explicit research-only denominator;
 - all six saved foundational works have named lifecycle/architecture uses,
   rejected overclaims, exact local identities, and enforceable
   public-distribution controls;

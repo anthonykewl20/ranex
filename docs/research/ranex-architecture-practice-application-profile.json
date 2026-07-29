@@ -1,7 +1,7 @@
 {
   "schema_version": "architecture-practice-application-profile/v1",
   "profile_id": "ENGPROFILE-RANEX-ARCHITECTURE-DESIGN-001",
-  "version": "1.7.0",
+  "version": "1.8.0",
   "status": "DESIGN_APPLICATION_DEFINED_RUNTIME_NOT_ASSESSED",
   "subject": {
     "subject_id": "RANEX-ARCHITECTURE-DESIGN-2026-07-28",
@@ -24,7 +24,8 @@
       "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md",
       "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md",
       "docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md",
-      "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md"
+      "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
+      "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md"
     ],
     "runtime_subject_included": false
   },

@@ -26,12 +26,12 @@
     "registered_member_count": 3,
     "scored_applicable_member_count": 0
   },
-  "digest": "sha256:671a1986d5c6129869ee2833b35bf898294d2b238fcf52e4da4b682e494c94dc",
+  "digest": "sha256:6914500b7d7441bd26f7c37a020769b6ec128e0d77ceec69435d0b545ecec925",
   "members": [
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-STAGE-001",
-      "assessment_digest": "sha256:d17a714e4630069a1d60c9f9ac3bc52629d507d1b1e6c56da4f76a866d7cbb04",
+      "assessment_digest": "sha256:578193bddc14eaaa98f6c347beb262fe1f58398fc2d5e1423a274ac59c371249",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-DES-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:2923daf43ff9cd60e8137912dcb3cc143ae33f52bca48b6f20667eee54d6396b",
@@ -44,7 +44,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-STAGE-001",
-      "assessment_digest": "sha256:a8f8a668286688d2b7a5e0319c52a1f3317c6ddbc929ca5ce0480c4e38511994",
+      "assessment_digest": "sha256:1d0eebe2306737897fc1bded72757d3047596165e80b34c8e658bcfdac7e3b5a",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-PLN-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:e6fb30827a6dcb8ddca0dc4843d4c65507a40b95d2818dd9be75a1c0458c346a",
@@ -57,7 +57,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-STAGE-001",
-      "assessment_digest": "sha256:d8015814dd99287139cf15c16c742d524920412422a47bfb568fca9adc9a975d",
+      "assessment_digest": "sha256:e2f144c1912ccd205408a0efa0a5519266610fdb986187622b686a549eb26775",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-EST-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:8e846cf2884d0e7f85d0d4e5f6a58f3d8ae6850b9d76c2505e8a514c2467aa4c",
@@ -116,8 +116,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:ad8984288561261020ceb854ba431cd1afab4895e5217cfe056035d5da051941",
-  "subject_manifest_digest": "sha256:d825b06114752dc8371e12a3a8eeaed06785753183f1b0b4500e264422acee49",
+  "subject_digest": "sha256:9ffde5dbeec8452c4b0c719773728e13a995772950018a451aecc951bc756735",
+  "subject_manifest_digest": "sha256:4b98bf61c379a39872fbef13bbfde30dbab90d349b184632e01f9a6e681d9732",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": "",

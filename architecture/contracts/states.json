@@ -3,7 +3,7 @@
   "catalog_id": "STATE-AXIS-CONTRACT-1.0",
   "catalog_schema_version": "state-axis-contract/v1",
   "classifier_axis_count": 13,
-  "digest": "sha256:c6c8aec7c5ae62751878a9e212f3ee6678167e85d9a26ae713efe329c19829f6",
+  "digest": "sha256:b207088677541f84588d1861be82c82dc160e0da2a47bcedb83e789a613bd134",
   "entries": [
     {
       "axis_id": "WorkItemStatus",
@@ -3600,7 +3600,7 @@
   },
   "runtime_validation_status": "NOT_ASSESSED",
   "source_catalog_digest": "sha256:86445b89f83ebcb9e69804b5a0af5c37c28cea91bde3404b417c0d3ebdac452c",
-  "source_digest": "sha256:f64c182dc74c31684c94061bdb7dabdfffe7cf6daadfa28e966706b378f87386",
+  "source_digest": "sha256:b909a4d5d6aaeb48e98cc02815c7216dfae41f05658778a61e93cbb4865ba91a",
   "source_path": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "transition_count": 376,

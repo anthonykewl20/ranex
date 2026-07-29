@@ -89,7 +89,7 @@
     "docs/architecture/SDLC_CONTROL_CATALOG.md#sdlc-aiw-001"
   ],
   "definition_status": "DEFINED",
-  "digest": "sha256:a02550683bf3df175a5316a805bc1167f35e66999910a0caaa5a52e5d4c2da21",
+  "digest": "sha256:354af2cc14aa87f7c9f5aab18d8d1730f66d4f0a928aaf5fe0a73f647c48ce90",
   "effectiveness": {
     "baseline_refs": [],
     "comparator_refs": [],
@@ -784,8 +784,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:ad8984288561261020ceb854ba431cd1afab4895e5217cfe056035d5da051941",
-  "subject_manifest_digest": "sha256:d825b06114752dc8371e12a3a8eeaed06785753183f1b0b4500e264422acee49",
+  "subject_digest": "sha256:9ffde5dbeec8452c4b0c719773728e13a995772950018a451aecc951bc756735",
+  "subject_manifest_digest": "sha256:4b98bf61c379a39872fbef13bbfde30dbab90d349b184632e01f9a6e681d9732",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": ""

@@ -101,7 +101,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "f24995ddf5c5516fa685396e74f6c138068da1e6578764b0320e1f44c3e507a6"
+    "7e7959b6637d0ff46d4f087c72710e139be549a6176568d0e8d80ab129680f48"
 )
 ARCHITECTURE_PRACTICE_PROFILE = (
     ROOT / "docs" / "research" / "ranex-architecture-practice-application-profile.json"
@@ -129,6 +129,19 @@ READINESS_ADR = (
     / "architecture"
     / "decisions"
     / "ADR-0012-separate-implementation-start-and-production-readiness.md"
+)
+HERMES_RESEARCH_PROMOTION_ADR = (
+    ROOT
+    / "docs"
+    / "architecture"
+    / "decisions"
+    / "ADR-0013-promote-hermes-research-obligations.md"
+)
+HERMES_RESEARCH_SOURCE = (
+    ROOT
+    / "docs"
+    / "research"
+    / "hermes-core-architecture-research-2026-07-27.md"
 )
 ADR12_SOURCE_SHA256 = (
     "2707cfe0b1b4111f5b9ec1e41f9c71f0fbf75ac7f438c6df2d0829ea2ff54d02"
@@ -1119,6 +1132,1203 @@ def expected_fixed_decisions_from_source() -> list[dict[str, Any]]:
             }
         )
     return expected
+
+
+def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
+    """Independently project the accepted ADR-0013 catalog."""
+
+    text = HERMES_RESEARCH_PROMOTION_ADR.read_text(encoding="utf-8")
+    required_revision_fragments = {
+        "| Version | `1.1.0` |",
+        "### 1.1.0 — 2026-07-29",
+        "`HERMES-PROMOTION-058` through `HERMES-PROMOTION-065`",
+        "`HERMES-OWNER-DECISION-020`",
+        "narrows `HERMES-RESEARCH-ONLY-008`",
+        "adds `HERMES-RESEARCH-ONLY-013`",
+        "Phase 1 is no longer included in a",
+        "research-only sequencing disposition",
+    }
+    require(
+        all(
+            fragment in text
+            for fragment in required_revision_fragments
+        ),
+        "HERMES_RESEARCH_REVISION_HISTORY",
+        "",
+    )
+    candidates: list[dict[str, Any]] = []
+    for block in re.findall(
+        r"```yaml\s*\n(.*?)\n```",
+        text,
+        flags=re.DOTALL,
+    ):
+        parsed = yaml.load(block, Loader=DuplicateKeyLoader)
+        if (
+            isinstance(parsed, dict)
+            and parsed.get("catalog_id")
+            == "RANEX-HERMES-RESEARCH-PROMOTIONS"
+        ):
+            candidates.append(parsed)
+    require(
+        len(candidates) == 1,
+        "HERMES_RESEARCH_CATALOG_BLOCK_COUNT",
+        str(len(candidates)),
+    )
+    catalog = candidates[0]
+    require(
+        set(catalog)
+        == {
+            "schema_version",
+            "catalog_id",
+            "catalog_version",
+            "catalog_status",
+            "governing_adr",
+            "research_source",
+            "promoted_provision_count",
+            "owner_decision_count",
+            "research_only_count",
+            "promoted_provisions",
+            "owner_decisions",
+            "research_only",
+        },
+        "HERMES_RESEARCH_CATALOG_FIELDS",
+        "",
+    )
+    research_relative = str(HERMES_RESEARCH_SOURCE.relative_to(ROOT))
+    require(
+        catalog["schema_version"]
+        == "hermes-research-promotion-catalog/v1"
+        and catalog["catalog_id"]
+        == "RANEX-HERMES-RESEARCH-PROMOTIONS"
+        and catalog["catalog_version"] == "1.1.0"
+        and catalog["catalog_status"] == "DEFINITION_ONLY"
+        and catalog["governing_adr"] == "ADR-0013"
+        and catalog["research_source"] == research_relative
+        and catalog["promoted_provision_count"] == 65
+        and catalog["owner_decision_count"] == 20
+        and catalog["research_only_count"] == 13,
+        "HERMES_RESEARCH_CATALOG_METADATA",
+        "",
+    )
+
+    collection_specs = (
+        (
+            "promoted_provisions",
+            65,
+            "HERMES-PROMOTION",
+            "PROMOTED",
+        ),
+        (
+            "owner_decisions",
+            20,
+            "HERMES-OWNER-DECISION",
+            "OWNER_DECISION_REQUIRED",
+        ),
+        (
+            "research_only",
+            13,
+            "HERMES-RESEARCH-ONLY",
+            "RESEARCH_ONLY",
+        ),
+    )
+    for collection, count, prefix, expected_status in collection_specs:
+        rows = catalog[collection]
+        require(
+            isinstance(rows, list)
+            and len(rows) == count
+            and [
+                row.get("provision_id")
+                if isinstance(row, dict)
+                else None
+                for row in rows
+            ]
+            == [
+                f"{prefix}-{index:03d}"
+                for index in range(1, count + 1)
+            ]
+            and all(
+                isinstance(row, dict)
+                and row.get("status") == expected_status
+                for row in rows
+            ),
+            "HERMES_RESEARCH_CATALOG_DENOMINATOR",
+            collection,
+        )
+
+    phase_one_specs = (
+        (
+            "HERMES-PROMOTION-058",
+            "SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION_DEFINE_KERNEL_RECORDS",
+            1901,
+            1901,
+            "ARCHITECTURE_CONTRACT",
+            "IMPLEMENTATION_START",
+            (
+                "The clean kernel contains implemented shared-identity and "
+                "canonical-serialization contracts that supply shared "
+                "identities and canonical serialized representations for "
+                "kernel records."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-059",
+            "EXECUTION_AGGREGATE_TRANSITIONS_THROUGH_PURE_REDUCER",
+            1902,
+            1902,
+            "RUNTIME_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel contains an Execution aggregate whose "
+                "state evolution is computed by a pure reducer without "
+                "observable side effects."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-060",
+            "CANONICAL_RELATIONAL_EXECUTION_STATE_HAS_EXPLICIT_VERSION",
+            1903,
+            1903,
+            "ARCHITECTURE_CONTRACT",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel persists canonical execution state and "
+                "its associated version in relational storage."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-061",
+            (
+                "TRANSITION_AUDIT_JOURNAL_AND_OUTBOX_SHARE_ONE_SQLITE_"
+                "UNIT_OF_WORK"
+            ),
+            1903,
+            1904,
+            "AUTHORITY_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel contains an append-only transition and "
+                "audit journal and an outbox, and persists them with "
+                "canonical execution state and version through one SQLite "
+                "unit of work."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-062",
+            (
+                "EVENT_SOURCING_IS_EXECUTION_ONLY_AND_REPLAY_MIGRATION_"
+                "QUALIFIED"
+            ),
+            1904,
+            1906,
+            "MIGRATION_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel permits event sourcing only for the "
+                "Execution aggregate and only if its replay and migration "
+                "tests justify that choice; every other module remains "
+                "outside that event-sourcing scope."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-063",
+            (
+                "FAIL_CLOSED_APPLICATION_CONTROL_PEP_USES_PURE_DECISIONS_"
+                "AND_DETERMINISTIC_POLICY"
+            ),
+            1907,
+            1908,
+            "AUTHORITY_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel contains an application-control "
+                "policy-enforcement point that is fail-closed, uses pure "
+                "domain decisions, and invokes a simple deterministic "
+                "policy adapter."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-064",
+            "ARCHITECTURE_IMPORT_TESTS_PRECEDE_FEATURE_CODE",
+            1909,
+            1909,
+            "STATIC_FITNESS",
+            "IMPLEMENTATION_START",
+            (
+                "Architecture import tests are part of the clean-kernel "
+                "contract and must be present and passing before feature "
+                "code is admitted."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-065",
+            (
+                "CLEAN_KERNEL_EXIT_REQUIRES_REPLAY_CRASH_TESTS_WITHOUT_"
+                "HERMES_IMPORT"
+            ),
+            1911,
+            1911,
+            "RUNTIME_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean-kernel gate advances only when reducer replay "
+                "tests and crash-boundary tests pass and the tested kernel "
+                "has no Hermes import."
+            ),
+        ),
+    )
+    for row, spec in zip(
+        catalog["promoted_provisions"][57:],
+        phase_one_specs,
+        strict=True,
+    ):
+        (
+            provision_id,
+            guard_id,
+            start_line,
+            end_line,
+            check_class,
+            blocking_stage,
+            provision,
+        ) = spec
+        expected_row = {
+            "provision_id": provision_id,
+            "status": "PROMOTED",
+            "guard_id": guard_id,
+            "source_ref": f"{research_relative}:{start_line}",
+            "source_end_line": end_line,
+            "check_class": check_class,
+            "blocking_stage": blocking_stage,
+            "provision": provision,
+            "required_result": "PASS",
+            "failure_outcome": "BLOCK",
+        }
+        require(
+            row == expected_row,
+            "HERMES_RESEARCH_PHASE_ONE_PROVISION",
+            provision_id,
+        )
+
+    expected_event_sourcing_decision = {
+        "provision_id": "HERMES-OWNER-DECISION-020",
+        "status": "OWNER_DECISION_REQUIRED",
+        "guard_id": (
+            "OWNER_DECIDES_EXECUTION_EVENT_SOURCING_AFTER_QUALIFICATION"
+        ),
+        "source_ref": f"{research_relative}:1904",
+        "source_end_line": 1906,
+        "blocking_stage": "IMPLEMENTATION_START",
+        "decision_subject": (
+            "Whether to activate event sourcing for the Execution aggregate "
+            "after its replay and migration tests justify that choice; the "
+            "decision cannot authorize event sourcing for any other module."
+        ),
+        "required_decision_artifact": (
+            "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
+        ),
+        "owner_decision_ref": None,
+        "default": None,
+        "absence_outcome": "BLOCK",
+        "activation_without_decision": "DENIED",
+    }
+    require(
+        catalog["owner_decisions"][-1]
+        == expected_event_sourcing_decision,
+        "HERMES_RESEARCH_PHASE_ONE_OWNER_DECISION",
+        "",
+    )
+
+    expected_phase_dispositions = {
+        "HERMES-RESEARCH-ONLY-008": {
+            "provision_id": "HERMES-RESEARCH-ONLY-008",
+            "status": "RESEARCH_ONLY",
+            "source_ref": f"{research_relative}:1860",
+            "source_end_line": 1898,
+            "reason_code": "CONDITIONAL_MIGRATION_GUIDANCE",
+            "reason": (
+                "The Phase 0 and Phase 0A freeze, characterization, and "
+                "commercial-removal activities remain migration planning; "
+                "the owner explicitly removed Phase 1 lines 1899-1912 from "
+                "this disposition."
+            ),
+        },
+        "HERMES-RESEARCH-ONLY-013": {
+            "provision_id": "HERMES-RESEARCH-ONLY-013",
+            "status": "RESEARCH_ONLY",
+            "source_ref": f"{research_relative}:1913",
+            "source_end_line": 2004,
+            "reason_code": "CONDITIONAL_MIGRATION_GUIDANCE",
+            "reason": (
+                "Phases 2 through 6 remain implementation planning in this "
+                "revision; the owner decision promoting Phase 1 does not "
+                "silently promote their sequencing or exit schedules."
+            ),
+        },
+    }
+    research_by_id = {
+        row["provision_id"]: row
+        for row in catalog["research_only"]
+    }
+    require(
+        all(
+            research_by_id.get(provision_id) == expected
+            for provision_id, expected
+            in expected_phase_dispositions.items()
+        ),
+        "HERMES_RESEARCH_PHASE_ONE_DISPOSITION",
+        "",
+    )
+    phase_one_lines = set(range(1899, 1913))
+    require(
+        not any(
+            phase_one_lines
+            & set(
+                range(
+                    int(row["source_ref"].rsplit(":", 1)[1]),
+                    row["source_end_line"] + 1,
+                )
+            )
+            for row in catalog["research_only"]
+        ),
+        "HERMES_RESEARCH_PHASE_ONE_RESEARCH_ONLY_OVERLAP",
+        "",
+    )
+
+    promoted_fields = {
+        "provision_id",
+        "status",
+        "guard_id",
+        "source_ref",
+        "source_end_line",
+        "check_class",
+        "blocking_stage",
+        "provision",
+        "required_result",
+        "failure_outcome",
+    }
+    owner_fields = {
+        "provision_id",
+        "status",
+        "guard_id",
+        "source_ref",
+        "source_end_line",
+        "blocking_stage",
+        "decision_subject",
+        "required_decision_artifact",
+        "owner_decision_ref",
+        "default",
+        "absence_outcome",
+        "activation_without_decision",
+    }
+    research_only_fields = {
+        "provision_id",
+        "status",
+        "source_ref",
+        "source_end_line",
+        "reason_code",
+        "reason",
+    }
+    allowed_check_classes = {
+        "ARCHITECTURE_CONTRACT",
+        "STATIC_FITNESS",
+        "RUNTIME_FITNESS",
+        "RELEASE_FITNESS",
+        "MODULE_FITNESS",
+        "AUTHORITY_FITNESS",
+        "EVIDENCE_FITNESS",
+        "MIGRATION_FITNESS",
+        "LEGAL_COMPLIANCE_FITNESS",
+        "SUPPLY_CHAIN_FITNESS",
+    }
+    allowed_blocking_stages = {
+        "IMPLEMENTATION_START",
+        "PRODUCTION_READY",
+        "RELEASE",
+        "EFFECT_DISPATCH",
+        "MODULE_ACTIVATION",
+        "GATE_ADVANCE",
+        "MIGRATION",
+    }
+    allowed_research_reason_codes = {
+        "FACT_NOT_NORMATIVE",
+        "CONDITIONAL_MIGRATION_GUIDANCE",
+        "ILLUSTRATIVE_NONCANONICAL",
+        "SUPERSEDED_LAYOUT",
+        "OWNER_SCOPE_NOT_SELECTED",
+        "NONQUANTIFIED_RECOMMENDATION",
+        "MATURITY_ASSESSMENT_NOT_CONTROL",
+        "ADVISORY_MODEL_EVIDENCE",
+    }
+    source_pattern = re.compile(
+        re.escape(research_relative) + r":([1-9][0-9]*)$"
+    )
+    research_lines = HERMES_RESEARCH_SOURCE.read_text(
+        encoding="utf-8"
+    ).splitlines(keepends=True)
+    research_digest = file_digest(HERMES_RESEARCH_SOURCE)
+    adr_relative = str(
+        HERMES_RESEARCH_PROMOTION_ADR.relative_to(ROOT)
+    )
+    adr_digest = file_digest(HERMES_RESEARCH_PROMOTION_ADR)
+    projected_entries: list[dict[str, Any]] = []
+    guard_ids: list[str] = []
+
+    for collection, expected_fields in (
+        ("promoted_provisions", promoted_fields),
+        ("owner_decisions", owner_fields),
+        ("research_only", research_only_fields),
+    ):
+        for source_row in catalog[collection]:
+            row = copy.deepcopy(source_row)
+            provision_id = row["provision_id"]
+            require(
+                set(row) == expected_fields,
+                "HERMES_RESEARCH_ROW_FIELDS",
+                provision_id,
+            )
+            scalar_fields = expected_fields - {
+                "source_end_line",
+                "owner_decision_ref",
+                "default",
+            }
+            require(
+                all(
+                    isinstance(row[field], str)
+                    and bool(row[field].strip())
+                    for field in scalar_fields
+                ),
+                "HERMES_RESEARCH_ROW_BLANK_SCALAR",
+                provision_id,
+            )
+            source_match = source_pattern.fullmatch(row["source_ref"])
+            start_line = (
+                int(source_match.group(1))
+                if source_match is not None
+                else 0
+            )
+            end_line = row["source_end_line"]
+            require(
+                source_match is not None
+                and not isinstance(end_line, bool)
+                and isinstance(end_line, int)
+                and start_line <= end_line <= len(research_lines)
+                and bool(
+                    "".join(
+                        research_lines[start_line - 1 : end_line]
+                    ).strip()
+                ),
+                "HERMES_RESEARCH_SOURCE_LINE_BINDING",
+                provision_id,
+            )
+
+            if collection == "promoted_provisions":
+                guard_ids.append(row["guard_id"])
+                require(
+                    row["check_class"] in allowed_check_classes
+                    and row["blocking_stage"]
+                    in allowed_blocking_stages
+                    and row["required_result"] == "PASS"
+                    and row["failure_outcome"] == "BLOCK",
+                    "HERMES_RESEARCH_PROMOTION_FAIL_CLOSED",
+                    provision_id,
+                )
+                if provision_id in {
+                    "HERMES-PROMOTION-040",
+                    "HERMES-PROMOTION-056",
+                }:
+                    require(
+                        row["check_class"]
+                        == "LEGAL_COMPLIANCE_FITNESS"
+                        and row["blocking_stage"] == "RELEASE",
+                        "HERMES_RESEARCH_LEGAL_OBLIGATION",
+                        provision_id,
+                    )
+                runtime_status = "NOT_ASSESSED"
+            elif collection == "owner_decisions":
+                guard_ids.append(row["guard_id"])
+                require(
+                    row["blocking_stage"]
+                    in allowed_blocking_stages
+                    and row["required_decision_artifact"]
+                    == (
+                        "ACCEPTED_ADR_WITH_PREDECLARED_"
+                        "ACCEPTANCE_TEST"
+                    )
+                    and row["owner_decision_ref"] is None
+                    and row["default"] is None
+                    and row["absence_outcome"] == "BLOCK"
+                    and row["activation_without_decision"] == "DENIED",
+                    "HERMES_RESEARCH_OWNER_DECISION_FAIL_CLOSED",
+                    provision_id,
+                )
+                runtime_status = (
+                    "BLOCKED_OWNER_DECISION_REQUIRED"
+                )
+            else:
+                require(
+                    row["reason_code"]
+                    in allowed_research_reason_codes,
+                    "HERMES_RESEARCH_ONLY_REASON",
+                    provision_id,
+                )
+                runtime_status = "NOT_APPLICABLE"
+
+            excerpt = "".join(
+                research_lines[start_line - 1 : end_line]
+            ).encode("utf-8")
+            projected = {
+                **row,
+                "source_path": research_relative,
+                "source_start_line": start_line,
+                "source_excerpt_digest": (
+                    "sha256:"
+                    + hashlib.sha256(excerpt).hexdigest()
+                ),
+                "research_source_digest": research_digest,
+                "catalog_id": catalog["catalog_id"],
+                "catalog_version": catalog["catalog_version"],
+                "governing_adr": catalog["governing_adr"],
+                "governing_adr_source": adr_relative,
+                "governing_adr_digest": adr_digest,
+                "runtime_validation_status": runtime_status,
+            }
+            projected["digest"] = digest(projected)
+            projected_entries.append(projected)
+
+    require(
+        len(guard_ids) == 85
+        and len(guard_ids) == len(set(guard_ids))
+        and all(
+            re.fullmatch(r"[A-Z][A-Z0-9_]*", guard_id)
+            is not None
+            for guard_id in guard_ids
+        ),
+        "HERMES_RESEARCH_GUARD_SET",
+        "",
+    )
+    return {
+        "catalog": catalog,
+        "entries": projected_entries,
+        "source": adr_relative,
+        "source_digest": adr_digest,
+        "research_source": research_relative,
+        "research_source_digest": research_digest,
+    }
+
+
+def hermes_research_promotion_registry_errors(
+    candidate: Any,
+    expected: dict[str, Any],
+    row_schema: dict[str, Any],
+) -> set[str]:
+    """Return independent fail-closed diagnostics for ADR-0013."""
+
+    errors: set[str] = set()
+    expected_registry_keys = {
+        "registry_id",
+        "version",
+        "status",
+        "generated_by",
+        "entries",
+        "catalog_id",
+        "catalog_version",
+        "catalog_status",
+        "governing_adr",
+        "promoted_provision_count",
+        "owner_decision_count",
+        "unresolved_owner_decision_count",
+        "research_only_count",
+        "source",
+        "source_digest",
+        "research_source",
+        "research_source_digest",
+        "row_schema_path",
+        "runtime_validation_status",
+    }
+    if not isinstance(candidate, dict):
+        return {"REGISTRY_SHAPE"}
+    if set(candidate) != expected_registry_keys:
+        errors.add("REGISTRY_SHAPE")
+
+    catalog = expected["catalog"]
+    expected_metadata = {
+        "registry_id": "REG-HERMES-RESEARCH-PROMOTIONS-001",
+        "version": "1.1.0",
+        "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+        "generated_by": "scripts/architecture/generate_contracts.py",
+        "catalog_id": catalog["catalog_id"],
+        "catalog_version": catalog["catalog_version"],
+        "catalog_status": catalog["catalog_status"],
+        "governing_adr": catalog["governing_adr"],
+        "promoted_provision_count": 65,
+        "owner_decision_count": 20,
+        "unresolved_owner_decision_count": 20,
+        "research_only_count": 13,
+        "source": expected["source"],
+        "source_digest": expected["source_digest"],
+        "research_source": expected["research_source"],
+        "research_source_digest": expected[
+            "research_source_digest"
+        ],
+        "row_schema_path": (
+            "schemas/common/"
+            "hermes-research-provision-v1.schema.json"
+        ),
+        "runtime_validation_status": "NOT_ASSESSED",
+    }
+    if any(
+        candidate.get(key) != value
+        for key, value in expected_metadata.items()
+    ):
+        errors.add("METADATA")
+
+    entries = candidate.get("entries")
+    if not isinstance(entries, list):
+        errors.add("ENTRY_COLLECTION")
+        return errors
+    if len(entries) != 98:
+        errors.add("DENOMINATOR")
+
+    expected_ids = [
+        row["provision_id"] for row in expected["entries"]
+    ]
+    observed_ids: list[Any] = []
+    guard_ids: list[str] = []
+    status_counts: Counter[str] = Counter()
+    valid_line_bindings = 0
+    source_lines = HERMES_RESEARCH_SOURCE.read_text(
+        encoding="utf-8"
+    ).splitlines(keepends=True)
+    source_pattern = re.compile(
+        re.escape(expected["research_source"])
+        + r":([1-9][0-9]*)$"
+    )
+    validator = jsonschema.Draft202012Validator(row_schema)
+
+    for row in entries:
+        if not isinstance(row, dict):
+            errors.add("ROW_SHAPE")
+            continue
+        if list(validator.iter_errors(row)):
+            errors.add("SCHEMA")
+
+        provision_id = row.get("provision_id")
+        observed_ids.append(provision_id)
+        status = row.get("status")
+        if isinstance(status, str):
+            status_counts[status] += 1
+
+        guard_id = row.get("guard_id")
+        if guard_id is not None:
+            if (
+                not isinstance(guard_id, str)
+                or re.fullmatch(
+                    r"[A-Z][A-Z0-9_]*",
+                    guard_id,
+                )
+                is None
+            ):
+                errors.add("GUARD_SYNTAX")
+            else:
+                guard_ids.append(guard_id)
+
+        source_ref = row.get("source_ref")
+        source_match = (
+            source_pattern.fullmatch(source_ref)
+            if isinstance(source_ref, str)
+            else None
+        )
+        start_line = (
+            int(source_match.group(1))
+            if source_match is not None
+            else None
+        )
+        end_line = row.get("source_end_line")
+        projected_start = row.get("source_start_line")
+        line_binding_valid = (
+            start_line is not None
+            and not isinstance(end_line, bool)
+            and isinstance(end_line, int)
+            and start_line <= end_line <= len(source_lines)
+            and projected_start == start_line
+            and row.get("source_path")
+            == expected["research_source"]
+        )
+        if not line_binding_valid:
+            errors.add("SOURCE_LINE_BINDING")
+        else:
+            valid_line_bindings += 1
+            excerpt = "".join(
+                source_lines[start_line - 1 : end_line]
+            ).encode("utf-8")
+            expected_excerpt_digest = (
+                "sha256:" + hashlib.sha256(excerpt).hexdigest()
+            )
+            if (
+                row.get("source_excerpt_digest")
+                != expected_excerpt_digest
+            ):
+                errors.add("SOURCE_EXCERPT_DIGEST")
+
+        try:
+            row_digest_valid = row.get("digest") == digest(row)
+        except (TypeError, ValueError):
+            row_digest_valid = False
+        if not row_digest_valid:
+            errors.add("ROW_DIGEST")
+
+        if (
+            isinstance(provision_id, str)
+            and provision_id.startswith("HERMES-PROMOTION-")
+        ):
+            if (
+                status != "PROMOTED"
+                or row.get("required_result") != "PASS"
+                or row.get("failure_outcome") != "BLOCK"
+            ):
+                errors.add("PROMOTION_FAIL_CLOSED")
+            if row.get("runtime_validation_status") != "NOT_ASSESSED":
+                errors.add("RUNTIME_OVERCLAIM")
+            if (
+                provision_id
+                in {
+                    "HERMES-PROMOTION-040",
+                    "HERMES-PROMOTION-056",
+                }
+                and (
+                    row.get("check_class")
+                    != "LEGAL_COMPLIANCE_FITNESS"
+                    or row.get("blocking_stage") != "RELEASE"
+                )
+            ):
+                errors.add("LEGAL_OBLIGATION_DOWNGRADED")
+        elif (
+            isinstance(provision_id, str)
+            and provision_id.startswith(
+                "HERMES-OWNER-DECISION-"
+            )
+        ):
+            if (
+                status != "OWNER_DECISION_REQUIRED"
+                or row.get("owner_decision_ref") is not None
+                or row.get("default") is not None
+                or row.get("absence_outcome") != "BLOCK"
+                or row.get("activation_without_decision") != "DENIED"
+                or row.get("required_decision_artifact")
+                != (
+                    "ACCEPTED_ADR_WITH_PREDECLARED_"
+                    "ACCEPTANCE_TEST"
+                )
+            ):
+                errors.add("OWNER_FAIL_CLOSED")
+            if (
+                row.get("runtime_validation_status")
+                != "BLOCKED_OWNER_DECISION_REQUIRED"
+            ):
+                errors.add("RUNTIME_OVERCLAIM")
+        elif (
+            isinstance(provision_id, str)
+            and provision_id.startswith("HERMES-RESEARCH-ONLY-")
+        ):
+            if status != "RESEARCH_ONLY":
+                errors.add("RESEARCH_ONLY_CLASS")
+            if (
+                row.get("runtime_validation_status")
+                != "NOT_APPLICABLE"
+            ):
+                errors.add("RUNTIME_OVERCLAIM")
+        else:
+            errors.add("ID_SET")
+
+    if observed_ids != expected_ids:
+        errors.add("ID_SET")
+    string_ids = [
+        provision_id
+        for provision_id in observed_ids
+        if isinstance(provision_id, str)
+    ]
+    if len(string_ids) != len(observed_ids):
+        errors.add("ID_SET")
+    if len(string_ids) != len(set(string_ids)):
+        errors.add("DUPLICATE_ID")
+    if len(guard_ids) != len(set(guard_ids)):
+        errors.add("DUPLICATE_GUARD")
+    if len(guard_ids) != 85:
+        errors.add("GUARD_DENOMINATOR")
+    if valid_line_bindings != len(entries):
+        errors.add("SOURCE_LINE_DENOMINATOR")
+    if status_counts != Counter(
+        {
+            "PROMOTED": 65,
+            "OWNER_DECISION_REQUIRED": 20,
+            "RESEARCH_ONLY": 13,
+        }
+    ):
+        errors.add("STATUS_DENOMINATOR")
+
+    candidate_by_id = {
+        row.get("provision_id"): row
+        for row in entries
+        if (
+            isinstance(row, dict)
+            and isinstance(row.get("provision_id"), str)
+        )
+    }
+    expected_by_id = {
+        row["provision_id"]: row
+        for row in expected["entries"]
+    }
+    phase_one_ids = tuple(
+        f"HERMES-PROMOTION-{index:03d}"
+        for index in range(58, 66)
+    )
+    if any(
+        candidate_by_id.get(provision_id)
+        != expected_by_id[provision_id]
+        for provision_id in phase_one_ids
+    ):
+        errors.add("PHASE_ONE_INVENTORY")
+    if (
+        candidate_by_id.get("HERMES-OWNER-DECISION-020")
+        != expected_by_id["HERMES-OWNER-DECISION-020"]
+    ):
+        errors.add("PHASE_ONE_OWNER_DECISION")
+    if any(
+        candidate_by_id.get(provision_id)
+        != expected_by_id[provision_id]
+        for provision_id in (
+            "HERMES-RESEARCH-ONLY-008",
+            "HERMES-RESEARCH-ONLY-013",
+        )
+    ):
+        errors.add("PHASE_ONE_DISPOSITION")
+
+    for provision_id, row in candidate_by_id.items():
+        if not provision_id.startswith("HERMES-RESEARCH-ONLY-"):
+            continue
+        source_ref = row.get("source_ref")
+        source_match = (
+            source_pattern.fullmatch(source_ref)
+            if isinstance(source_ref, str)
+            else None
+        )
+        source_end_line = row.get("source_end_line")
+        if (
+            source_match is None
+            or isinstance(source_end_line, bool)
+            or not isinstance(source_end_line, int)
+        ):
+            continue
+        source_start_line = int(source_match.group(1))
+        if (
+            source_start_line <= 1912
+            and source_end_line >= 1899
+        ):
+            errors.add("PHASE_ONE_RESEARCH_ONLY_OVERLAP")
+
+    if entries != expected["entries"]:
+        errors.add("SOURCE_PROJECTION")
+    return errors
+
+
+def validate_hermes_research_promotion_registry(
+    schemas: dict[str, dict[str, Any]],
+    checks: Counter[str],
+) -> None:
+    expected = expected_hermes_research_promotions_from_source()
+    actual = load_json(
+        CONTRACTS / "hermes-research-promotions.json"
+    )
+    row_schema = schemas[
+        "schemas/common/hermes-research-provision-v1.schema.json"
+    ]
+    errors = hermes_research_promotion_registry_errors(
+        actual,
+        expected,
+        row_schema,
+    )
+    require(
+        not errors,
+        "HERMES_RESEARCH_PROMOTION_REGISTRY",
+        ",".join(sorted(errors)),
+    )
+
+    entries = actual["entries"]
+    checks["hermes_research_promoted_provisions"] = 65
+    checks["hermes_research_owner_decisions"] = 20
+    checks["hermes_research_research_only"] = 13
+    checks["hermes_research_source_line_bindings"] = len(entries)
+    checks["hermes_research_guard_bindings"] = 85
+    checks["hermes_research_legal_obligations"] = 2
+    checks["hermes_research_phase_one_provisions"] = 8
+    checks["hermes_research_phase_one_owner_decisions"] = 1
+    checks["hermes_research_phase_one_disposition_proofs"] = 2
+
+    promoted_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["status"] == "PROMOTED"
+    )
+    owner_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["status"] == "OWNER_DECISION_REQUIRED"
+    )
+    research_only_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["status"] == "RESEARCH_ONLY"
+    )
+    legal_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["provision_id"] == "HERMES-PROMOTION-040"
+    )
+    phase_one_identity_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["provision_id"] == "HERMES-PROMOTION-058"
+    )
+    phase_one_event_sourcing_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["provision_id"] == "HERMES-PROMOTION-062"
+    )
+    phase_one_exit_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["provision_id"] == "HERMES-PROMOTION-065"
+    )
+    phase_one_owner_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["provision_id"] == "HERMES-OWNER-DECISION-020"
+    )
+    phase_zero_disposition_index = next(
+        index
+        for index, row in enumerate(entries)
+        if row["provision_id"] == "HERMES-RESEARCH-ONLY-008"
+    )
+    second_guard_index = next(
+        index
+        for index, row in enumerate(entries)
+        if index != promoted_index and "guard_id" in row
+    )
+    mutations: list[tuple[str, dict[str, Any], str]] = []
+
+    missing_row = copy.deepcopy(actual)
+    missing_row["entries"].pop()
+    mutations.append(("missing-row", missing_row, "DENOMINATOR"))
+
+    hyphenated_guard = copy.deepcopy(actual)
+    hyphenated_guard["entries"][promoted_index]["guard_id"] = (
+        hyphenated_guard["entries"][promoted_index][
+            "guard_id"
+        ].replace("_", "-", 1)
+    )
+    mutations.append(
+        ("hyphenated-guard", hyphenated_guard, "GUARD_SYNTAX")
+    )
+
+    duplicate_guard = copy.deepcopy(actual)
+    duplicate_guard["entries"][second_guard_index]["guard_id"] = (
+        duplicate_guard["entries"][promoted_index]["guard_id"]
+    )
+    mutations.append(
+        ("duplicate-guard", duplicate_guard, "DUPLICATE_GUARD")
+    )
+
+    shifted_line = copy.deepcopy(actual)
+    shifted_line["entries"][promoted_index][
+        "source_start_line"
+    ] += 1
+    mutations.append(
+        ("shifted-source-line", shifted_line, "SOURCE_LINE_BINDING")
+    )
+
+    wrong_excerpt = copy.deepcopy(actual)
+    wrong_excerpt["entries"][promoted_index][
+        "source_excerpt_digest"
+    ] = "sha256:" + "0" * 64
+    mutations.append(
+        (
+            "wrong-source-excerpt-digest",
+            wrong_excerpt,
+            "SOURCE_EXCERPT_DIGEST",
+        )
+    )
+
+    owner_default = copy.deepcopy(actual)
+    owner_default["entries"][owner_index]["default"] = (
+        "SYNTHETIC_DEFAULT"
+    )
+    mutations.append(
+        ("owner-default", owner_default, "OWNER_FAIL_CLOSED")
+    )
+
+    owner_ref = copy.deepcopy(actual)
+    owner_ref["entries"][owner_index]["owner_decision_ref"] = (
+        "ADR-9999"
+    )
+    mutations.append(
+        ("synthetic-owner-ref", owner_ref, "OWNER_FAIL_CLOSED")
+    )
+
+    owner_allows_absence = copy.deepcopy(actual)
+    owner_allows_absence["entries"][owner_index][
+        "absence_outcome"
+    ] = "ALLOW"
+    mutations.append(
+        (
+            "owner-absence-allows",
+            owner_allows_absence,
+            "OWNER_FAIL_CLOSED",
+        )
+    )
+
+    permissive_promotion = copy.deepcopy(actual)
+    permissive_promotion["entries"][promoted_index][
+        "failure_outcome"
+    ] = "ALLOW"
+    mutations.append(
+        (
+            "permissive-promotion",
+            permissive_promotion,
+            "PROMOTION_FAIL_CLOSED",
+        )
+    )
+
+    downgraded_legal_obligation = copy.deepcopy(actual)
+    downgraded_legal_obligation["entries"][legal_index][
+        "check_class"
+    ] = "RELEASE_FITNESS"
+    mutations.append(
+        (
+            "downgraded-legal-obligation",
+            downgraded_legal_obligation,
+            "LEGAL_OBLIGATION_DOWNGRADED",
+        )
+    )
+
+    forged_runtime_pass = copy.deepcopy(actual)
+    forged_runtime_pass["entries"][promoted_index][
+        "runtime_validation_status"
+    ] = "PASS"
+    mutations.append(
+        (
+            "forged-runtime-pass",
+            forged_runtime_pass,
+            "RUNTIME_OVERCLAIM",
+        )
+    )
+
+    research_promoted = copy.deepcopy(actual)
+    research_promoted["entries"][research_only_index][
+        "status"
+    ] = "PROMOTED"
+    mutations.append(
+        (
+            "research-only-promoted",
+            research_promoted,
+            "RESEARCH_ONLY_CLASS",
+        )
+    )
+
+    unknown_field = copy.deepcopy(actual)
+    unknown_field["entries"][promoted_index][
+        "unregistered_field"
+    ] = True
+    mutations.append(
+        ("unknown-row-field", unknown_field, "SCHEMA")
+    )
+
+    resolved_count_forged = copy.deepcopy(actual)
+    resolved_count_forged[
+        "unresolved_owner_decision_count"
+    ] = 0
+    mutations.append(
+        (
+            "forged-owner-resolution-count",
+            resolved_count_forged,
+            "METADATA",
+        )
+    )
+
+    prohibition_only_identity = copy.deepcopy(actual)
+    prohibition_only_identity["entries"][phase_one_identity_index][
+        "provision"
+    ] = (
+        "Kernel records must not use divergent identity or serialization."
+    )
+    mutations.append(
+        (
+            "phase-one-prohibition-only-inventory",
+            prohibition_only_identity,
+            "PHASE_ONE_INVENTORY",
+        )
+    )
+
+    event_sourcing_every_module = copy.deepcopy(actual)
+    event_sourcing_every_module["entries"][
+        phase_one_event_sourcing_index
+    ]["provision"] = (
+        "Every module may use event sourcing after its tests pass."
+    )
+    mutations.append(
+        (
+            "phase-one-event-sourcing-widened",
+            event_sourcing_every_module,
+            "PHASE_ONE_INVENTORY",
+        )
+    )
+
+    deferred_kernel_exit = copy.deepcopy(actual)
+    deferred_kernel_exit["entries"][phase_one_exit_index][
+        "blocking_stage"
+    ] = "PRODUCTION_READY"
+    mutations.append(
+        (
+            "phase-one-exit-deferred",
+            deferred_kernel_exit,
+            "PHASE_ONE_INVENTORY",
+        )
+    )
+
+    defaulted_event_sourcing_choice = copy.deepcopy(actual)
+    defaulted_event_sourcing_choice["entries"][phase_one_owner_index][
+        "default"
+    ] = "EVENT_SOURCE_EXECUTION"
+    mutations.append(
+        (
+            "phase-one-owner-choice-defaulted",
+            defaulted_event_sourcing_choice,
+            "PHASE_ONE_OWNER_DECISION",
+        )
+    )
+
+    phase_one_restored_to_research = copy.deepcopy(actual)
+    phase_one_restored_to_research["entries"][
+        phase_zero_disposition_index
+    ]["source_end_line"] = 1912
+    mutations.append(
+        (
+            "phase-one-restored-to-research-only",
+            phase_one_restored_to_research,
+            "PHASE_ONE_RESEARCH_ONLY_OVERLAP",
+        )
+    )
+
+    for case_id, candidate, required_error in mutations:
+        mutation_errors = hermes_research_promotion_registry_errors(
+            candidate,
+            expected,
+            row_schema,
+        )
+        require(
+            required_error in mutation_errors,
+            "HERMES_RESEARCH_NEGATIVE_CASE_ACCEPTED",
+            case_id + ":" + ",".join(sorted(mutation_errors)),
+        )
+        checks["hermes_research_negative_cases"] += 1
 
 
 def expected_worker_runtime_catalog_from_source() -> dict[str, Any]:
@@ -23140,6 +24350,7 @@ def validate_registries(
     validate_worker_runtime_registries(schemas, checks)
     validate_accepted_adr_registry(checks)
     validate_readiness_contract(schemas, checks)
+    validate_hermes_research_promotion_registry(schemas, checks)
     tdd_source_contract = adr8_machine_tdd_contract()
     expected_tdd_rule_ids = set(tdd_source_contract["rule_ids"])
     context_registry = load_json(CONTRACTS / "contexts.json")
@@ -29861,6 +31072,15 @@ def validate_completeness_report(checks: Counter[str]) -> None:
         "runtime_adapters": len(
             load_json(CONTRACTS / "runtime-adapters.json")["entries"]
         ),
+        "hermes_research_promoted_provisions": load_json(
+            CONTRACTS / "hermes-research-promotions.json"
+        )["promoted_provision_count"],
+        "hermes_research_owner_decisions": load_json(
+            CONTRACTS / "hermes-research-promotions.json"
+        )["owner_decision_count"],
+        "hermes_research_research_only": load_json(
+            CONTRACTS / "hermes-research-promotions.json"
+        )["research_only_count"],
         "worker_runtime_negative_cases": 22,
         "negative_fixtures": len(
             list((SCHEMAS / "fixtures" / "negative").glob("*"))

@@ -83,13 +83,20 @@
       "source_path": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
       "status": "ACCEPTED",
       "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0013",
+      "source_digest": "sha256:dfd749b42f8466b00356c2b60d1080d34bb7cb1b72ee7360c5a6b2c86337db74",
+      "source_path": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "REG-ACCEPTED-ADRS-001",
-  "required_count": 12,
+  "required_count": 13,
   "source": "docs/architecture/SOURCE_OF_TRUTH.md",
-  "source_digest": "sha256:c5cd70f6e7188da3b726580348ee3220e437d5804db2adfef0339a5bc605c0e2",
+  "source_digest": "sha256:136c9f34376217b8ace5aca4c6e3410f98e95c5276fdf953dc448448ef74b33e",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"
 }

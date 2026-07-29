@@ -204,6 +204,13 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
+      "digest": "sha256:30896969385106af68c926064c27676b960a45c71eb593300f5f6d35cb0aaf61",
+      "draft": "2020-12",
+      "path": "schemas/common/hermes-research-provision-v1.schema.json",
+      "schema_id": "https://schemas.ranex.dev/common/hermes-research-provision-v1.schema.json",
+      "status": "ACTIVE_DOCUMENTATION_CONTRACT"
+    },
+    {
       "digest": "sha256:d4549fdbcd7321a0c379d1707c9dd03b52bd7dda3904d7a214dc0419221328f5",
       "draft": "2020-12",
       "path": "schemas/common/identifiers.schema.json",
@@ -1051,7 +1058,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:7f277226eb3b876b22107e76dfca4eabcca64cf0ac0b5cc74f7c453b2da845da",
+      "digest": "sha256:0405920a82c8e3aebb0a8bad96ffcde3ed6153ca8a16639109f6c1e6d744b928",
       "draft": "2020-12",
       "path": "schemas/work/transition-event-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/work/transition-event-v1.schema.json",
@@ -1067,7 +1074,7 @@
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "REG-SCHEMAS-001",
-  "schema_count": 152,
+  "schema_count": 153,
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"
 }

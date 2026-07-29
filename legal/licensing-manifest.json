@@ -293,6 +293,17 @@
       "notes": "Generator- or validator-owned Ranex documentation-contract output. Embedded source bindings and digests identify exact inputs; generation does not acquire or expand rights in cited third-party sources."
     },
     {
+      "path": "architecture/contracts/hermes-research-promotions.json",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0",
+      "provenance_kind": "DETERMINISTIC_GENERATED_PROJECTION",
+      "generated_by": "scripts/architecture/generate_contracts.py",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "redistribution": "SUBJECT_TO_RANEX_LICENSE",
+      "release_blocker": false,
+      "notes": "Generator-owned Ranex promotion contract. Exact source-line bindings identify research provenance without transferring source rights or claiming runtime enactment."
+    },
+    {
       "path": "architecture/contracts/identities.json",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0",
@@ -1418,6 +1429,19 @@
       "redistribution": "SUBJECT_TO_RANEX_LICENSE",
       "release_blocker": false,
       "notes": "Original Ranex architecture decision and application commentary. Referenced third-party ideas and source works remain outside Ranex ownership; no full-text reference work is included."
+    },
+    {
+      "path": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0",
+      "provenance_kind": "PROJECT_AUTHORED_ARCHITECTURE_DECISION",
+      "source_refs": [
+        "docs/research/hermes-core-architecture-research-2026-07-27.md"
+      ],
+      "repository_inclusion": "PUBLIC_SAFE",
+      "redistribution": "SUBJECT_TO_RANEX_LICENSE",
+      "release_blocker": false,
+      "notes": "Original Ranex promotion catalog and commentary. Cited third-party ideas, upstream facts, and source rights remain outside Ranex ownership."
     },
     {
       "path": "docs/architecture/reviews/2026-07-27-deepseek-v4-pro-hy3-full-map-review.md",
@@ -3388,6 +3412,17 @@
       "redistribution": "SUBJECT_TO_RANEX_LICENSE",
       "release_blocker": false,
       "notes": "Generator-owned Ranex contract output. Embedded source bindings and digests identify exact inputs; generation does not acquire or expand rights in cited third-party sources, and no full-text reference book is included."
+    },
+    {
+      "path": "schemas/common/hermes-research-provision-v1.schema.json",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0",
+      "provenance_kind": "DETERMINISTIC_GENERATED_PROJECTION",
+      "generated_by": "scripts/architecture/generate_contracts.py",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "redistribution": "SUBJECT_TO_RANEX_LICENSE",
+      "release_blocker": false,
+      "notes": "Generator-owned Ranex promotion-row schema. Exact source-line bindings identify research provenance without transferring source rights or claiming runtime enactment."
     },
     {
       "path": "schemas/common/identifiers.schema.json",

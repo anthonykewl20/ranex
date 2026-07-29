@@ -26,12 +26,12 @@
     "registered_member_count": 15,
     "scored_applicable_member_count": 0
   },
-  "digest": "sha256:c2313008959c90531a8465432f2843f94acaa249d179bcd26a2d952fa2b65c95",
+  "digest": "sha256:9512ee7051cd725568e29272b8fc64ec014c9a266638ef6f710fc9d5fbb79339",
   "members": [
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-BASE-001",
-      "assessment_digest": "sha256:3eeb84817f3bfb8a1fcc21ccba7cd433864ac2b5e0d34d939c8c471186a04cc0",
+      "assessment_digest": "sha256:2b5b6a5e39d100e31a0778fd2d9b605e8b12a27597bb377915908d91f3127c10",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-000.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:9f40c5fdec3f653b3ceeda1a4a63c2f8611152121db50ae806526b740fad7bec",
@@ -44,7 +44,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-BASE-001",
-      "assessment_digest": "sha256:fef2262686921f8f0304faa62fd20064e9628311997bf64c6a0041b31d727c49",
+      "assessment_digest": "sha256:ff8e66549689136446adb1f450ad183415106e20def3014ac8355153c9be7d3b",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:e853039fe516e33cbe66e83a14c14226ef7f76ff6bfe301f68d5b20d29dc0352",
@@ -57,7 +57,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-SYNC-001",
-      "assessment_digest": "sha256:1bf2155b19df08ddfef975401b553ebe634ef1de4c36d403c59b37adccc360b2",
+      "assessment_digest": "sha256:60839d1d9f566a25e4fd72671587ede6b60797870e8400ff401678893e681233",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-002.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:c6a3da421cc705c9d5c506b1dde93ef8fcb8a02371dad00ee671f3c3ddc5294c",
@@ -70,7 +70,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-UPDATE-001",
-      "assessment_digest": "sha256:e78b07f83bf57b8b638e52433622eb2ab54b0cebadb17f1134d4d9cc9b494cb0",
+      "assessment_digest": "sha256:b8b7d47e39293e7325a932aa7767b83cb31cf37cea16841e50734e265d58fed4",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-003.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:668f9b8c1d44105dfe9cb0db92eb5b672c73a1712427f95fff8f10cc76c933a2",
@@ -83,7 +83,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-BASE-001",
-      "assessment_digest": "sha256:af33056980a9da92c28533724832d8e9952cb27b0ccaff73341e7625361420d4",
+      "assessment_digest": "sha256:846109108abc16dbe2917abd7026f43700f83c00b1a9c92104ef46a7ec447a26",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-004.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:582d51568b713f55e702096cd33e89a6c82da969518a17fa8bd31473fd0f14ec",
@@ -96,7 +96,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-BASE-001",
-      "assessment_digest": "sha256:9cc78f7fd967a0ebc5c7e7772bad189f1176ccc0292e5c815ce4bae3ba59f054",
+      "assessment_digest": "sha256:cd600f687a39629b9f2cc7a90249394a6796e1f2a38820003b62ebaa1e40c09b",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-005.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:a72812ff6d5b0d69fc97a338ed9ee9849db6099cd9a910b978928a13ce8f37d8",
@@ -109,7 +109,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-CUTOVER-001",
-      "assessment_digest": "sha256:d9e667c556f856d883461083c56a49369e75014b5cf79853663528c6327fd12d",
+      "assessment_digest": "sha256:ba7a41a767e6e99da4cd5b30f03b80004fba8ec8a1fef48f5af7e2f3b0be5bd6",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-006.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:d59581db250f99f7a5a517a4881729bda718181ba643d84205aba81e3e9c4bf9",
@@ -122,7 +122,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-FORK-BASE-001",
-      "assessment_digest": "sha256:c314733935b9e92dc3f8a175ba471eb2d1b4d41f447edb3d5961499e747e0eb6",
+      "assessment_digest": "sha256:c190675a0f1019e68101368d202e08c84b7951a7c78980a547c370dc806e4f97",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-FORK-007.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:1ebe4fc489dc5ac4194769350a0608f9d1e1e549dbf0aca64a0c77ec22dac0d8",
@@ -135,7 +135,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-AIW-001",
-      "assessment_digest": "sha256:a02550683bf3df175a5316a805bc1167f35e66999910a0caaa5a52e5d4c2da21",
+      "assessment_digest": "sha256:354af2cc14aa87f7c9f5aab18d8d1730f66d4f0a928aaf5fe0a73f647c48ce90",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:ec4ec349d64d140893d6fb66699d21a87ef21f30074ec7013c35cea46c0c6709",
@@ -148,7 +148,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-AIW-001",
-      "assessment_digest": "sha256:81e7e72ea725b0098c6b73330d975ab8444c4e86e9dc91fc5438fb81714fd18d",
+      "assessment_digest": "sha256:7faad0aa0c469afab95c2f9ef90bb1f36bc5c30bb46d117e57e39121e5de97e9",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-002.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:6677f0b4b843f0b366ec0939b9332cfb9b131f688c933280605160b4cadb8317",
@@ -161,7 +161,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-AIW-001",
-      "assessment_digest": "sha256:ba2a2c2267372414afa68c1cc637dd36fda9dfe43409ff06bcfd7cea4f4c9c9c",
+      "assessment_digest": "sha256:385c1e94a0b0356de461d73a09d565364f39f2663d11124d90cbc94383edaf21",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-003.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:4dbb445623ef7ecbb8c928c84540bc6bbe3f891d8f2d41f339583870834bb683",
@@ -174,7 +174,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-AIW-001",
-      "assessment_digest": "sha256:27d19b2144bf69e4ccd2b7816a451ae025cc4010fd500b852a7571780757bbd4",
+      "assessment_digest": "sha256:20679880e6c25b3be8977a4ba1ae45de20b13d00784834103c39d9d4bf98c406",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-004.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:1421deed614015cc8a6480ec3c937c736affc4327cc54368b8250f1810f65054",
@@ -187,7 +187,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-AIW-001",
-      "assessment_digest": "sha256:5e58ce677197bad2aabee8c936a2431cd27f4005556aa8aeddf4d2d1aa04b4b5",
+      "assessment_digest": "sha256:b8462feacd21df49f3179086e94a3bf750a2a41e395e3a8c937aa65e11293790",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-005.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:85c87c8eca2fd93f90db000fb55029cedce4aef27fa265537169545451926fc1",
@@ -200,7 +200,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-AIW-001",
-      "assessment_digest": "sha256:e49e6a2866ff485a6d2336ffe87b94a1952ddb6d997d3cb1fd11d463d00d6db6",
+      "assessment_digest": "sha256:4627cb302c24f1b0310ba1a1d38a0868414019a4200d2712221d408584dab1ba",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-006.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:54421d7e1ec7ac421cf88c75b1bb70a0367a800c647ff9a9e0eab7b1d7ad94fa",
@@ -213,7 +213,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-AIW-001",
-      "assessment_digest": "sha256:41c53216688331636864b668ed93ef7efec91551ec8bf632a32dee07c6aed96c",
+      "assessment_digest": "sha256:2925c08ce2d10acca020fd0634e86cba7f903a3fd9c4cd9f77f8e7e3869893f9",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-AIW-007.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:6f761ecafdf53fdd5c47c679f96ab733399b752d73cac49d276f5ca9b2039926",
@@ -272,8 +272,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:ad8984288561261020ceb854ba431cd1afab4895e5217cfe056035d5da051941",
-  "subject_manifest_digest": "sha256:d825b06114752dc8371e12a3a8eeaed06785753183f1b0b4500e264422acee49",
+  "subject_digest": "sha256:9ffde5dbeec8452c4b0c719773728e13a995772950018a451aecc951bc756735",
+  "subject_manifest_digest": "sha256:4b98bf61c379a39872fbef13bbfde30dbab90d349b184632e01f9a6e681d9732",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": "",

@@ -118,6 +118,19 @@ READINESS_ADR = (
     / "decisions"
     / "ADR-0012-separate-implementation-start-and-production-readiness.md"
 )
+HERMES_RESEARCH_PROMOTION_ADR = (
+    ROOT
+    / "docs"
+    / "architecture"
+    / "decisions"
+    / "ADR-0013-promote-hermes-research-obligations.md"
+)
+HERMES_RESEARCH_SOURCE = (
+    ROOT
+    / "docs"
+    / "research"
+    / "hermes-core-architecture-research-2026-07-27.md"
+)
 ADR12_SOURCE_SHA256 = (
     "2707cfe0b1b4111f5b9ec1e41f9c71f0fbf75ac7f438c6df2d0829ea2ff54d02"
 )
@@ -249,7 +262,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "f24995ddf5c5516fa685396e74f6c138068da1e6578764b0320e1f44c3e507a6"
+    "7e7959b6637d0ff46d4f087c72710e139be549a6176568d0e8d80ab129680f48"
 )
 
 
@@ -5871,6 +5884,595 @@ def parse_fixed_decision_register() -> tuple[
     return decisions, fitness_definitions
 
 
+def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
+    text = read(HERMES_RESEARCH_PROMOTION_ADR)
+    required_revision_fragments = {
+        "| Version | `1.1.0` |",
+        "### 1.1.0 — 2026-07-29",
+        "`HERMES-PROMOTION-058` through `HERMES-PROMOTION-065`",
+        "`HERMES-OWNER-DECISION-020`",
+        "narrows `HERMES-RESEARCH-ONLY-008`",
+        "adds `HERMES-RESEARCH-ONLY-013`",
+        "Phase 1 is no longer included in a",
+        "research-only sequencing disposition",
+    }
+    if any(
+        fragment not in text
+        for fragment in required_revision_fragments
+    ):
+        raise ValueError(
+            "ADR-0013 1.1.0 revision history is incomplete"
+        )
+    candidates: list[dict[str, Any]] = []
+    for block in re.findall(
+        r"```yaml\s*\n(.*?)\n```",
+        text,
+        flags=re.DOTALL,
+    ):
+        parsed = load_yaml_text_strict(block)
+        if (
+            isinstance(parsed, dict)
+            and parsed.get("catalog_id")
+            == "RANEX-HERMES-RESEARCH-PROMOTIONS"
+        ):
+            candidates.append(parsed)
+    if len(candidates) != 1:
+        raise ValueError(
+            "Expected exactly one RANEX-HERMES-RESEARCH-PROMOTIONS "
+            "YAML block"
+        )
+    catalog = candidates[0]
+    expected_catalog_fields = {
+        "schema_version",
+        "catalog_id",
+        "catalog_version",
+        "catalog_status",
+        "governing_adr",
+        "research_source",
+        "promoted_provision_count",
+        "owner_decision_count",
+        "research_only_count",
+        "promoted_provisions",
+        "owner_decisions",
+        "research_only",
+    }
+    if set(catalog) != expected_catalog_fields:
+        raise ValueError(
+            "Hermes research promotion catalog fields drift"
+        )
+    if (
+        catalog["schema_version"]
+        != "hermes-research-promotion-catalog/v1"
+        or catalog["catalog_version"] != "1.1.0"
+        or catalog["catalog_status"] != "DEFINITION_ONLY"
+        or catalog["governing_adr"] != "ADR-0013"
+        or catalog["research_source"]
+        != str(HERMES_RESEARCH_SOURCE.relative_to(ROOT))
+        or catalog["promoted_provision_count"] != 65
+        or catalog["owner_decision_count"] != 20
+        or catalog["research_only_count"] != 13
+    ):
+        raise ValueError(
+            "Hermes research promotion catalog metadata drift"
+        )
+
+    collection_specs = (
+        (
+            "promoted_provisions",
+            65,
+            "HERMES-PROMOTION",
+            "PROMOTED",
+        ),
+        (
+            "owner_decisions",
+            20,
+            "HERMES-OWNER-DECISION",
+            "OWNER_DECISION_REQUIRED",
+        ),
+        (
+            "research_only",
+            13,
+            "HERMES-RESEARCH-ONLY",
+            "RESEARCH_ONLY",
+        ),
+    )
+    for collection, count, prefix, status in collection_specs:
+        rows = catalog[collection]
+        expected_ids = [
+            f"{prefix}-{index:03d}"
+            for index in range(1, count + 1)
+        ]
+        observed_ids = [
+            row.get("provision_id")
+            if isinstance(row, dict)
+            else None
+            for row in rows
+        ] if isinstance(rows, list) else []
+        if (
+            not isinstance(rows, list)
+            or len(rows) != count
+            or observed_ids != expected_ids
+            or len(observed_ids) != len(set(observed_ids))
+            or any(
+                not isinstance(row, dict)
+                or row.get("status") != status
+                for row in rows
+            )
+        ):
+            raise ValueError(
+                "Hermes research promotion denominator/order/status drift: "
+                + collection
+            )
+
+    phase_one_specs = (
+        (
+            "HERMES-PROMOTION-058",
+            "SHARED_IDENTITY_AND_CANONICAL_SERIALIZATION_DEFINE_KERNEL_RECORDS",
+            1901,
+            1901,
+            "ARCHITECTURE_CONTRACT",
+            "IMPLEMENTATION_START",
+            (
+                "The clean kernel contains implemented shared-identity and "
+                "canonical-serialization contracts that supply shared "
+                "identities and canonical serialized representations for "
+                "kernel records."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-059",
+            "EXECUTION_AGGREGATE_TRANSITIONS_THROUGH_PURE_REDUCER",
+            1902,
+            1902,
+            "RUNTIME_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel contains an Execution aggregate whose "
+                "state evolution is computed by a pure reducer without "
+                "observable side effects."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-060",
+            "CANONICAL_RELATIONAL_EXECUTION_STATE_HAS_EXPLICIT_VERSION",
+            1903,
+            1903,
+            "ARCHITECTURE_CONTRACT",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel persists canonical execution state and "
+                "its associated version in relational storage."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-061",
+            (
+                "TRANSITION_AUDIT_JOURNAL_AND_OUTBOX_SHARE_ONE_SQLITE_"
+                "UNIT_OF_WORK"
+            ),
+            1903,
+            1904,
+            "AUTHORITY_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel contains an append-only transition and "
+                "audit journal and an outbox, and persists them with "
+                "canonical execution state and version through one SQLite "
+                "unit of work."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-062",
+            (
+                "EVENT_SOURCING_IS_EXECUTION_ONLY_AND_REPLAY_MIGRATION_"
+                "QUALIFIED"
+            ),
+            1904,
+            1906,
+            "MIGRATION_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel permits event sourcing only for the "
+                "Execution aggregate and only if its replay and migration "
+                "tests justify that choice; every other module remains "
+                "outside that event-sourcing scope."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-063",
+            (
+                "FAIL_CLOSED_APPLICATION_CONTROL_PEP_USES_PURE_DECISIONS_"
+                "AND_DETERMINISTIC_POLICY"
+            ),
+            1907,
+            1908,
+            "AUTHORITY_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean kernel contains an application-control "
+                "policy-enforcement point that is fail-closed, uses pure "
+                "domain decisions, and invokes a simple deterministic "
+                "policy adapter."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-064",
+            "ARCHITECTURE_IMPORT_TESTS_PRECEDE_FEATURE_CODE",
+            1909,
+            1909,
+            "STATIC_FITNESS",
+            "IMPLEMENTATION_START",
+            (
+                "Architecture import tests are part of the clean-kernel "
+                "contract and must be present and passing before feature "
+                "code is admitted."
+            ),
+        ),
+        (
+            "HERMES-PROMOTION-065",
+            (
+                "CLEAN_KERNEL_EXIT_REQUIRES_REPLAY_CRASH_TESTS_WITHOUT_"
+                "HERMES_IMPORT"
+            ),
+            1911,
+            1911,
+            "RUNTIME_FITNESS",
+            "GATE_ADVANCE",
+            (
+                "The clean-kernel gate advances only when reducer replay "
+                "tests and crash-boundary tests pass and the tested kernel "
+                "has no Hermes import."
+            ),
+        ),
+    )
+    research_relative = str(
+        HERMES_RESEARCH_SOURCE.relative_to(ROOT)
+    )
+    for row, spec in zip(
+        catalog["promoted_provisions"][57:],
+        phase_one_specs,
+        strict=True,
+    ):
+        (
+            provision_id,
+            guard_id,
+            start_line,
+            end_line,
+            check_class,
+            blocking_stage,
+            provision,
+        ) = spec
+        expected_row = {
+            "provision_id": provision_id,
+            "status": "PROMOTED",
+            "guard_id": guard_id,
+            "source_ref": f"{research_relative}:{start_line}",
+            "source_end_line": end_line,
+            "check_class": check_class,
+            "blocking_stage": blocking_stage,
+            "provision": provision,
+            "required_result": "PASS",
+            "failure_outcome": "BLOCK",
+        }
+        if row != expected_row:
+            raise ValueError(
+                "Hermes Phase 1 clean-kernel provision drift: "
+                + provision_id
+            )
+
+    expected_event_sourcing_decision = {
+        "provision_id": "HERMES-OWNER-DECISION-020",
+        "status": "OWNER_DECISION_REQUIRED",
+        "guard_id": (
+            "OWNER_DECIDES_EXECUTION_EVENT_SOURCING_AFTER_QUALIFICATION"
+        ),
+        "source_ref": f"{research_relative}:1904",
+        "source_end_line": 1906,
+        "blocking_stage": "IMPLEMENTATION_START",
+        "decision_subject": (
+            "Whether to activate event sourcing for the Execution aggregate "
+            "after its replay and migration tests justify that choice; the "
+            "decision cannot authorize event sourcing for any other module."
+        ),
+        "required_decision_artifact": (
+            "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
+        ),
+        "owner_decision_ref": None,
+        "default": None,
+        "absence_outcome": "BLOCK",
+        "activation_without_decision": "DENIED",
+    }
+    if (
+        catalog["owner_decisions"][-1]
+        != expected_event_sourcing_decision
+    ):
+        raise ValueError(
+            "Hermes Phase 1 event-sourcing owner decision drift"
+        )
+
+    expected_phase_dispositions = {
+        "HERMES-RESEARCH-ONLY-008": {
+            "provision_id": "HERMES-RESEARCH-ONLY-008",
+            "status": "RESEARCH_ONLY",
+            "source_ref": f"{research_relative}:1860",
+            "source_end_line": 1898,
+            "reason_code": "CONDITIONAL_MIGRATION_GUIDANCE",
+            "reason": (
+                "The Phase 0 and Phase 0A freeze, characterization, and "
+                "commercial-removal activities remain migration planning; "
+                "the owner explicitly removed Phase 1 lines 1899-1912 from "
+                "this disposition."
+            ),
+        },
+        "HERMES-RESEARCH-ONLY-013": {
+            "provision_id": "HERMES-RESEARCH-ONLY-013",
+            "status": "RESEARCH_ONLY",
+            "source_ref": f"{research_relative}:1913",
+            "source_end_line": 2004,
+            "reason_code": "CONDITIONAL_MIGRATION_GUIDANCE",
+            "reason": (
+                "Phases 2 through 6 remain implementation planning in this "
+                "revision; the owner decision promoting Phase 1 does not "
+                "silently promote their sequencing or exit schedules."
+            ),
+        },
+    }
+    research_by_id = {
+        row["provision_id"]: row
+        for row in catalog["research_only"]
+    }
+    if any(
+        research_by_id.get(provision_id) != expected
+        for provision_id, expected in expected_phase_dispositions.items()
+    ):
+        raise ValueError(
+            "Hermes Phase 1 research-only disposition drift"
+        )
+    phase_one_lines = set(range(1899, 1913))
+    if any(
+        phase_one_lines
+        & set(
+            range(
+                int(row["source_ref"].rsplit(":", 1)[1]),
+                row["source_end_line"] + 1,
+            )
+        )
+        for row in catalog["research_only"]
+    ):
+        raise ValueError(
+            "Hermes Phase 1 remains covered by research-only disposition"
+        )
+
+    promoted_fields = {
+        "provision_id",
+        "status",
+        "guard_id",
+        "source_ref",
+        "source_end_line",
+        "check_class",
+        "blocking_stage",
+        "provision",
+        "required_result",
+        "failure_outcome",
+    }
+    owner_fields = {
+        "provision_id",
+        "status",
+        "guard_id",
+        "source_ref",
+        "source_end_line",
+        "blocking_stage",
+        "decision_subject",
+        "required_decision_artifact",
+        "owner_decision_ref",
+        "default",
+        "absence_outcome",
+        "activation_without_decision",
+    }
+    research_only_fields = {
+        "provision_id",
+        "status",
+        "source_ref",
+        "source_end_line",
+        "reason_code",
+        "reason",
+    }
+    allowed_check_classes = {
+        "ARCHITECTURE_CONTRACT",
+        "STATIC_FITNESS",
+        "RUNTIME_FITNESS",
+        "RELEASE_FITNESS",
+        "MODULE_FITNESS",
+        "AUTHORITY_FITNESS",
+        "EVIDENCE_FITNESS",
+        "MIGRATION_FITNESS",
+        "LEGAL_COMPLIANCE_FITNESS",
+        "SUPPLY_CHAIN_FITNESS",
+    }
+    allowed_blocking_stages = {
+        "IMPLEMENTATION_START",
+        "PRODUCTION_READY",
+        "RELEASE",
+        "EFFECT_DISPATCH",
+        "MODULE_ACTIVATION",
+        "GATE_ADVANCE",
+        "MIGRATION",
+    }
+    allowed_research_reason_codes = {
+        "FACT_NOT_NORMATIVE",
+        "CONDITIONAL_MIGRATION_GUIDANCE",
+        "ILLUSTRATIVE_NONCANONICAL",
+        "SUPERSEDED_LAYOUT",
+        "OWNER_SCOPE_NOT_SELECTED",
+        "NONQUANTIFIED_RECOMMENDATION",
+        "MATURITY_ASSESSMENT_NOT_CONTROL",
+        "ADVISORY_MODEL_EVIDENCE",
+    }
+    research_lines = HERMES_RESEARCH_SOURCE.read_text(
+        encoding="utf-8"
+    ).splitlines(keepends=True)
+    adr_relative = str(
+        HERMES_RESEARCH_PROMOTION_ADR.relative_to(ROOT)
+    )
+    adr_digest = (
+        "sha256:" + sha256_file(HERMES_RESEARCH_PROMOTION_ADR)
+    )
+    source_digest = "sha256:" + sha256_file(HERMES_RESEARCH_SOURCE)
+    projected_entries: list[dict[str, Any]] = []
+    guard_ids: list[str] = []
+    source_pattern = re.compile(
+        re.escape(research_relative) + r":([1-9][0-9]*)$"
+    )
+
+    for collection, expected_fields in (
+        ("promoted_provisions", promoted_fields),
+        ("owner_decisions", owner_fields),
+        ("research_only", research_only_fields),
+    ):
+        for row in catalog[collection]:
+            provision_id = row["provision_id"]
+            if set(row) != expected_fields:
+                raise ValueError(
+                    "Hermes research promotion row fields drift: "
+                    + provision_id
+                )
+            scalar_fields = expected_fields - {
+                "source_end_line",
+                "owner_decision_ref",
+                "default",
+            }
+            if any(
+                not isinstance(row[field], str)
+                or not row[field].strip()
+                for field in scalar_fields
+            ):
+                raise ValueError(
+                    "Hermes research promotion blank scalar: "
+                    + provision_id
+                )
+            source_match = source_pattern.fullmatch(row["source_ref"])
+            start_line = (
+                int(source_match.group(1))
+                if source_match is not None
+                else 0
+            )
+            end_line = row["source_end_line"]
+            if (
+                source_match is None
+                or isinstance(end_line, bool)
+                or not isinstance(end_line, int)
+                or start_line > end_line
+                or end_line > len(research_lines)
+                or not "".join(
+                    research_lines[start_line - 1 : end_line]
+                ).strip()
+            ):
+                raise ValueError(
+                    "Hermes research source line binding invalid: "
+                    + provision_id
+                )
+            excerpt = "".join(
+                research_lines[start_line - 1 : end_line]
+            ).encode("utf-8")
+
+            if collection == "promoted_provisions":
+                guard_ids.append(row["guard_id"])
+                if (
+                    row["check_class"] not in allowed_check_classes
+                    or row["blocking_stage"]
+                    not in allowed_blocking_stages
+                    or row["required_result"] != "PASS"
+                    or row["failure_outcome"] != "BLOCK"
+                ):
+                    raise ValueError(
+                        "Hermes promoted provision does not fail closed: "
+                        + provision_id
+                    )
+                if (
+                    provision_id
+                    in {
+                        "HERMES-PROMOTION-040",
+                        "HERMES-PROMOTION-056",
+                    }
+                    and (
+                        row["check_class"]
+                        != "LEGAL_COMPLIANCE_FITNESS"
+                        or row["blocking_stage"] != "RELEASE"
+                    )
+                ):
+                    raise ValueError(
+                        "Hermes legal obligation classification drift: "
+                        + provision_id
+                    )
+                runtime_status = "NOT_ASSESSED"
+            elif collection == "owner_decisions":
+                guard_ids.append(row["guard_id"])
+                if (
+                    row["blocking_stage"]
+                    not in allowed_blocking_stages
+                    or row["required_decision_artifact"]
+                    != "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
+                    or row["owner_decision_ref"] is not None
+                    or row["default"] is not None
+                    or row["absence_outcome"] != "BLOCK"
+                    or row["activation_without_decision"] != "DENIED"
+                ):
+                    raise ValueError(
+                        "Hermes owner decision is defaulted or nonblocking: "
+                        + provision_id
+                    )
+                runtime_status = "BLOCKED_OWNER_DECISION_REQUIRED"
+            else:
+                if (
+                    row["reason_code"]
+                    not in allowed_research_reason_codes
+                ):
+                    raise ValueError(
+                        "Hermes research-only reason code invalid: "
+                        + provision_id
+                    )
+                runtime_status = "NOT_APPLICABLE"
+
+            projected = {
+                **copy.deepcopy(row),
+                "source_path": research_relative,
+                "source_start_line": start_line,
+                "source_excerpt_digest": (
+                    "sha256:" + sha256_bytes(excerpt)
+                ),
+                "research_source_digest": source_digest,
+                "catalog_id": catalog["catalog_id"],
+                "catalog_version": catalog["catalog_version"],
+                "governing_adr": catalog["governing_adr"],
+                "governing_adr_source": adr_relative,
+                "governing_adr_digest": adr_digest,
+                "runtime_validation_status": runtime_status,
+            }
+            projected["digest"] = digest_value(projected)
+            projected_entries.append(projected)
+
+    if (
+        any(
+            re.fullmatch(r"[A-Z][A-Z0-9_]*", guard_id) is None
+            for guard_id in guard_ids
+        )
+        or len(guard_ids) != len(set(guard_ids))
+        or len(guard_ids) != 85
+    ):
+        raise ValueError(
+            "Hermes research promotion guard syntax/uniqueness drift"
+        )
+
+    return {
+        "catalog": catalog,
+        "entries": projected_entries,
+        "source": adr_relative,
+        "source_digest": adr_digest,
+        "research_source": research_relative,
+        "research_source_digest": source_digest,
+    }
+
+
 def parse_worker_runtime_catalog() -> dict[str, Any]:
     text = read(WORKER_RUNTIME_ADR)
     candidates: list[dict[str, Any]] = []
@@ -9350,6 +9952,192 @@ def common_schemas() -> dict[str, dict[str, Any]]:
             "required": ["evidence_ref", "evidence_digest"],
             "additionalProperties": False,
         },
+    }
+
+
+def hermes_research_provision_schema() -> dict[str, Any]:
+    digest_schema = {
+        "type": "string",
+        "pattern": r"^sha256:[0-9a-f]{64}$",
+    }
+    research_path = (
+        "docs/research/"
+        "hermes-core-architecture-research-2026-07-27.md"
+    )
+    adr_path = (
+        "docs/architecture/decisions/"
+        "ADR-0013-promote-hermes-research-obligations.md"
+    )
+    common_properties: dict[str, Any] = {
+        "source_ref": {
+            "type": "string",
+            "pattern": (
+                "^"
+                + re.escape(research_path)
+                + r":[1-9][0-9]*$"
+            ),
+        },
+        "source_end_line": {"type": "integer", "minimum": 1},
+        "source_path": {"const": research_path},
+        "source_start_line": {"type": "integer", "minimum": 1},
+        "source_excerpt_digest": digest_schema,
+        "research_source_digest": digest_schema,
+        "catalog_id": {
+            "const": "RANEX-HERMES-RESEARCH-PROMOTIONS"
+        },
+        "catalog_version": {"const": "1.1.0"},
+        "governing_adr": {"const": "ADR-0013"},
+        "governing_adr_source": {"const": adr_path},
+        "governing_adr_digest": digest_schema,
+        "digest": digest_schema,
+    }
+
+    def closed_variant(
+        specific_properties: dict[str, Any],
+        runtime_status: str,
+    ) -> dict[str, Any]:
+        properties = {
+            **copy.deepcopy(common_properties),
+            **specific_properties,
+            "runtime_validation_status": {
+                "const": runtime_status
+            },
+        }
+        return {
+            "type": "object",
+            "properties": properties,
+            "required": list(properties),
+            "additionalProperties": False,
+        }
+
+    promoted = closed_variant(
+        {
+            "provision_id": {
+                "type": "string",
+                "pattern": r"^HERMES-PROMOTION-[0-9]{3}$",
+            },
+            "status": {"const": "PROMOTED"},
+            "guard_id": {
+                "type": "string",
+                "pattern": r"^[A-Z][A-Z0-9_]*$",
+            },
+            "check_class": {
+                "enum": [
+                    "ARCHITECTURE_CONTRACT",
+                    "STATIC_FITNESS",
+                    "RUNTIME_FITNESS",
+                    "RELEASE_FITNESS",
+                    "MODULE_FITNESS",
+                    "AUTHORITY_FITNESS",
+                    "EVIDENCE_FITNESS",
+                    "MIGRATION_FITNESS",
+                    "LEGAL_COMPLIANCE_FITNESS",
+                    "SUPPLY_CHAIN_FITNESS",
+                ]
+            },
+            "blocking_stage": {
+                "enum": [
+                    "IMPLEMENTATION_START",
+                    "PRODUCTION_READY",
+                    "RELEASE",
+                    "EFFECT_DISPATCH",
+                    "MODULE_ACTIVATION",
+                    "GATE_ADVANCE",
+                    "MIGRATION",
+                ]
+            },
+            "provision": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": r".*\S.*",
+            },
+            "required_result": {"const": "PASS"},
+            "failure_outcome": {"const": "BLOCK"},
+        },
+        "NOT_ASSESSED",
+    )
+    owner_decision = closed_variant(
+        {
+            "provision_id": {
+                "type": "string",
+                "pattern": (
+                    r"^HERMES-OWNER-DECISION-[0-9]{3}$"
+                ),
+            },
+            "status": {"const": "OWNER_DECISION_REQUIRED"},
+            "guard_id": {
+                "type": "string",
+                "pattern": r"^[A-Z][A-Z0-9_]*$",
+            },
+            "blocking_stage": {
+                "enum": [
+                    "IMPLEMENTATION_START",
+                    "PRODUCTION_READY",
+                    "RELEASE",
+                    "EFFECT_DISPATCH",
+                    "MODULE_ACTIVATION",
+                    "GATE_ADVANCE",
+                    "MIGRATION",
+                ]
+            },
+            "decision_subject": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": r".*\S.*",
+            },
+            "required_decision_artifact": {
+                "const": (
+                    "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
+                )
+            },
+            "owner_decision_ref": {"type": "null"},
+            "default": {"type": "null"},
+            "absence_outcome": {"const": "BLOCK"},
+            "activation_without_decision": {"const": "DENIED"},
+        },
+        "BLOCKED_OWNER_DECISION_REQUIRED",
+    )
+    research_only = closed_variant(
+        {
+            "provision_id": {
+                "type": "string",
+                "pattern": r"^HERMES-RESEARCH-ONLY-[0-9]{3}$",
+            },
+            "status": {"const": "RESEARCH_ONLY"},
+            "reason_code": {
+                "enum": [
+                    "FACT_NOT_NORMATIVE",
+                    "CONDITIONAL_MIGRATION_GUIDANCE",
+                    "ILLUSTRATIVE_NONCANONICAL",
+                    "SUPERSEDED_LAYOUT",
+                    "OWNER_SCOPE_NOT_SELECTED",
+                    "NONQUANTIFIED_RECOMMENDATION",
+                    "MATURITY_ASSESSMENT_NOT_CONTROL",
+                    "ADVISORY_MODEL_EVIDENCE",
+                ]
+            },
+            "reason": {
+                "type": "string",
+                "minLength": 1,
+                "pattern": r".*\S.*",
+            },
+        },
+        "NOT_APPLICABLE",
+    )
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": (
+            "https://schemas.ranex.dev/common/"
+            "hermes-research-provision-v1.schema.json"
+        ),
+        "title": "Ranex Hermes research promotion provision",
+        "oneOf": [promoted, owner_decision, research_only],
+        "x-ranex-source-registry": (
+            "architecture/contracts/hermes-research-promotions.json"
+        ),
+        "x-ranex-runtime-semantics": (
+            "scripts/architecture/validate_contracts.py"
+        ),
     }
 
 
@@ -16699,6 +17487,9 @@ def generate_registries() -> dict[str, Any]:
     contexts, zones, decisions, file_patterns = parse_architecture()
     accepted_adrs, accepted_adr_titles = parse_accepted_adr_catalog()
     worker_runtime_catalog = parse_worker_runtime_catalog()
+    hermes_research_promotions = (
+        parse_hermes_research_promotion_catalog()
+    )
     vital_tuples, applicability_rules = parse_vital_profile()
     source_registry_path = ROOT / "docs" / "research" / "engineering-reference-practice-registry.json"
     source_registry = load_json_strict(source_registry_path)
@@ -17397,6 +18188,52 @@ def generate_registries() -> dict[str, Any]:
                 }
             ),
         ),
+        "hermes-research-promotions.json": registry(
+            "REG-HERMES-RESEARCH-PROMOTIONS-001",
+            "1.1.0",
+            hermes_research_promotions["entries"],
+            catalog_id=hermes_research_promotions["catalog"][
+                "catalog_id"
+            ],
+            catalog_version=hermes_research_promotions["catalog"][
+                "catalog_version"
+            ],
+            catalog_status=hermes_research_promotions["catalog"][
+                "catalog_status"
+            ],
+            governing_adr=hermes_research_promotions["catalog"][
+                "governing_adr"
+            ],
+            promoted_provision_count=(
+                hermes_research_promotions["catalog"][
+                    "promoted_provision_count"
+                ]
+            ),
+            owner_decision_count=hermes_research_promotions["catalog"][
+                "owner_decision_count"
+            ],
+            unresolved_owner_decision_count=(
+                hermes_research_promotions["catalog"][
+                    "owner_decision_count"
+                ]
+            ),
+            research_only_count=hermes_research_promotions["catalog"][
+                "research_only_count"
+            ],
+            source=hermes_research_promotions["source"],
+            source_digest=hermes_research_promotions["source_digest"],
+            research_source=hermes_research_promotions[
+                "research_source"
+            ],
+            research_source_digest=hermes_research_promotions[
+                "research_source_digest"
+            ],
+            row_schema_path=(
+                "schemas/common/"
+                "hermes-research-provision-v1.schema.json"
+            ),
+            runtime_validation_status="NOT_ASSESSED",
+        ),
         "applicability-rules.json": registry("APPLICABILITY-SDLC-001", "1.1.0", [{"rule_id": key, "meaning": value} for key, value in applicability_rules.items()]),
         "priority-rules.json": registry("PRIORITY-SDLC-001", "1.0.0", [{"tier": tier, "precedence": index, "trigger_codes": codes} for index, (tier, codes) in enumerate(PRIORITY_TRIGGERS.items())]),
         "vital-profile.json": registry("VITAL-SDLC-001", "1.2.0", vital_tuples, tuple_count=len(vital_tuples), domain_count=len({row["domain_id"] for row in vital_tuples})),
@@ -18005,6 +18842,9 @@ def generate_registries() -> dict[str, Any]:
 
 def generate_schemas(registries: dict[str, Any]) -> None:
     schemas = {**common_schemas(), **build_subject_schemas()}
+    schemas[
+        "common/hermes-research-provision-v1.schema.json"
+    ] = hermes_research_provision_schema()
     schemas.update(estimate_commitment_contract_schemas())
     schemas.update(readiness_contract_schemas())
     worker_role_schema = infer_schema(
@@ -20646,6 +21486,15 @@ def generate_assessments(registries: dict[str, Any]) -> None:
             "runtime_adapters": len(
                 registries["runtime-adapters.json"]["entries"]
             ),
+            "hermes_research_promoted_provisions": registries[
+                "hermes-research-promotions.json"
+            ]["promoted_provision_count"],
+            "hermes_research_owner_decisions": registries[
+                "hermes-research-promotions.json"
+            ]["owner_decision_count"],
+            "hermes_research_research_only": registries[
+                "hermes-research-promotions.json"
+            ]["research_only_count"],
             "worker_runtime_negative_cases": 22,
             "negative_fixtures": len(list((SCHEMAS / "fixtures" / "negative").glob("*"))),
             "topology_rules": len(registries["topology-rules.json"]["entries"]),
@@ -20711,6 +21560,7 @@ def generate_assessments(registries: dict[str, Any]) -> None:
             "Runtime producer ownership, hidden-fixture isolation, schema package generation, and cross-language RFC 8785 parity remain unproven.",
             "ADR-0007 topology, ADR-0008 TDD, ADR-0009 boundary/coupling/feedback, and ADR-0010 inherited-test migration rules are executable paper contracts; actual source/import/test/runtime enactment remains NOT_ASSESSED.",
             "ADR-0011 worker roles and runtime adapters are definition-only; implementation, containment, entitlement, performance, and runtime enforcement remain NOT_ASSESSED.",
+            "ADR-0013 promotes 65 line-bound Hermes research provisions, including the eight-part Phase 1 clean-kernel inventory, as fail-closed definition contracts; it registers 20 unresolved owner decisions as blocking with no defaults and keeps 13 enumerated research-only categories. Runtime satisfaction remains NOT_ASSESSED.",
             "Fork ancestry preflight SDLC-FORK-000 remains outside this Wave 1 contract scope.",
         ],
     }
@@ -20730,6 +21580,7 @@ runtime, producer-enforcement, isolation, or production-readiness claim.
 | Capability domains / projections | {len(domains)} / {summary['counts']['domain_projections']} |
 | Architecture elements inventoried | {summary['counts']['architecture_elements']} |
 | Fixed decisions / role profiles / runtime adapters | {summary['counts']['fixed_decisions']} / {summary['counts']['worker_role_profiles']} / {summary['counts']['runtime_adapters']} |
+| Hermes promoted provisions / blocking owner decisions / research-only categories | {summary['counts']['hermes_research_promoted_provisions']} / {summary['counts']['hermes_research_owner_decisions']} / {summary['counts']['hermes_research_research_only']} |
 | Worker-runtime negative semantic cases | {summary['counts']['worker_runtime_negative_cases']} |
 | ADR-0007 topology rules | {summary['counts']['topology_rules']} |
 | ADR-0008 allowed roots / TDD rules | {summary['counts']['allowed_test_roots']} / {summary['counts']['tdd_rules']} |

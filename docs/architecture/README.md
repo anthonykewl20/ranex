@@ -65,6 +65,9 @@ the normal per-work controls.
    The noncompensating separation between implementation-start and production
    readiness, including the bounded pre-readiness tooling tracer, is fixed by
    [ADR-0012](./decisions/ADR-0012-separate-implementation-start-and-production-readiness.md).
+   The exact line-bound promotion of Hermes architecture research obligations,
+   blocking owner-choice records, and research-only dispositions is fixed by
+   [ADR-0013](./decisions/ADR-0013-promote-hermes-research-obligations.md).
 
 4. [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md)<br>
    Defines authority, evidence, machine contracts, conflicts, RFC/ADR changes,

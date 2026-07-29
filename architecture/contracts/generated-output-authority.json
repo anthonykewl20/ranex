@@ -137,6 +137,13 @@
       "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
       "licensing_projection_required": true,
       "output_class": "CONTRACT_REGISTRY",
+      "path": "architecture/contracts/hermes-research-promotions.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "CONTRACT_REGISTRY",
       "path": "architecture/contracts/identities.json",
       "writer": "scripts/architecture/generate_contracts.py"
     },
@@ -880,6 +887,13 @@
       "licensing_projection_required": true,
       "output_class": "JSON_SCHEMA",
       "path": "schemas/common/feedback-fitness-policy-v1.schema.json",
+      "writer": "scripts/architecture/generate_contracts.py"
+    },
+    {
+      "licensing_policy_id": "GENERATED_RANEX_ORIGINAL",
+      "licensing_projection_required": true,
+      "output_class": "JSON_SCHEMA",
+      "path": "schemas/common/hermes-research-provision-v1.schema.json",
       "writer": "scripts/architecture/generate_contracts.py"
     },
     {
@@ -2039,7 +2053,7 @@
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
-  "generator_output_count": 290,
+  "generator_output_count": 292,
   "generator_writer": "scripts/architecture/generate_contracts.py",
   "immutable_input_count": 9,
   "immutable_inputs": [
@@ -2190,15 +2204,15 @@
   ],
   "licensing_policy_counts": {
     "GENERATED_CURATED_RESEARCH_NOASSERTION": 3,
-    "GENERATED_RANEX_ORIGINAL": 288
+    "GENERATED_RANEX_ORIGINAL": 290
   },
   "licensing_policy_ids": [
     "GENERATED_CURATED_RESEARCH_NOASSERTION",
     "GENERATED_RANEX_ORIGINAL"
   ],
-  "licensing_policy_source_digest": "sha256:7a4b703d953741cf8a87ce60d38299452fc6ad75d252171fd41e5e74385072cd",
+  "licensing_policy_source_digest": "sha256:ab9727d395ba072d5bcb9c575731b05e366070a82807dc835fcb7185e1162ce4",
   "licensing_policy_source_path": "legal/licensing-manifest.json",
-  "output_count": 291,
+  "output_count": 293,
   "registry_id": "REG-GENERATED-OUTPUT-AUTHORITY-001",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "validator_output_count": 1,

@@ -26,12 +26,12 @@
     "registered_member_count": 4,
     "scored_applicable_member_count": 0
   },
-  "digest": "sha256:745df29960ef471fcb2d618fa5012edc3cc3c0936aae22736e21417ad56aa588",
+  "digest": "sha256:5d32f5485812df741b6553781cbc9c389131ebc1670c00e5610dd128c67b7c35",
   "members": [
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-STAGE-001",
-      "assessment_digest": "sha256:6b330905624bce957bd1ddf78506984c38687b3491aaf7759147fce23c84607e",
+      "assessment_digest": "sha256:2d00184df6ccd05264629e762189ed1e9a8dba380e1f237a4b837715872e804f",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-OUT-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:77fba00ef85fce129dea50fb53016e180d8ddad3714d4519d907d914445d0d54",
@@ -44,7 +44,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-STAGE-001",
-      "assessment_digest": "sha256:58c35364071db2e5f7437310cd76327e5be10629640013f42c013d5cb92dc024",
+      "assessment_digest": "sha256:3461956b8f4994fe3f8e1155d789467b43f57baddf673738ae6c6a27e29d6d42",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-CLS-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:db5a0f0d8835fac143a26702c451664712deef11a02d77da2f04fd0c2ab33c13",
@@ -57,7 +57,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-TRIGGER-001",
-      "assessment_digest": "sha256:e1cbef76e6ea2f5711985e5dfd5946012f939da727aee6f437febfd570200866",
+      "assessment_digest": "sha256:29d1d8c6092242bcafafa1ed8778bb0df0a6fbb36c638f393dafebb7f66a863c",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-CAN-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:4f36cc328714ea9470b4f14c3031a779d59ff4937777986b5113b1f7a82925c1",
@@ -70,7 +70,7 @@
     {
       "applicability_result": "UNKNOWN",
       "applicability_rule_id": "APP-TRIGGER-001",
-      "assessment_digest": "sha256:e441eb7d6fedd140fc0ce851e0b948e69920b7388c484c9f6968251ddf113a20",
+      "assessment_digest": "sha256:9f9bdea7d0f82a9b6d8119a9fb3cbb7fb4649a83c5b23ac47a0d2a652e7c4526",
       "assessment_ref": "docs/architecture/assessments/controls/SDLC-RET-001.json",
       "assessment_revision": 1,
       "assessment_scope_digest": "sha256:ac58d69a0563f1021c6d1f3fbf7d04c6e32e6193a01e90c2dd4f8a24b7cb1229",
@@ -129,8 +129,8 @@
     ]
   },
   "status": "NOT_ASSESSED",
-  "subject_digest": "sha256:ad8984288561261020ceb854ba431cd1afab4895e5217cfe056035d5da051941",
-  "subject_manifest_digest": "sha256:d825b06114752dc8371e12a3a8eeaed06785753183f1b0b4500e264422acee49",
+  "subject_digest": "sha256:9ffde5dbeec8452c4b0c719773728e13a995772950018a451aecc951bc756735",
+  "subject_manifest_digest": "sha256:4b98bf61c379a39872fbef13bbfde30dbab90d349b184632e01f9a6e681d9732",
   "subject_ref": "art_019fa605-6800-7900-9950-db32813e6dca",
   "subject_schema": "research-subject/v1",
   "supersedes_ref": "",

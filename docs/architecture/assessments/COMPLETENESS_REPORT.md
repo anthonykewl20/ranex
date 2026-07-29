@@ -11,8 +11,9 @@ runtime, producer-enforcement, isolation, or production-readiness claim.
 | Capability zones | 36 |
 | VITAL control tuples / assessments | 41 / 41 |
 | Capability domains / projections | 10 / 10 |
-| Architecture elements inventoried | 1020 |
+| Architecture elements inventoried | 1021 |
 | Fixed decisions / role profiles / runtime adapters | 29 / 3 / 2 |
+| Hermes promoted provisions / blocking owner decisions / research-only categories | 65 / 20 / 13 |
 | Worker-runtime negative semantic cases | 22 |
 | ADR-0007 topology rules | 18 |
 | ADR-0008 allowed roots / TDD rules | 18 / 26 |
