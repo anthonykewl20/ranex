@@ -1,0 +1,102 @@
+{
+  "entries": [
+    {
+      "adr_id": "ADR-0001",
+      "source_digest": "sha256:a1eec2c60576f0c5c6b7117555b6ec9abf949e983f129a402089a61affbe49b4",
+      "source_path": "docs/architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0002",
+      "source_digest": "sha256:da71597ef601024873e0c1bf846bece30268d2d0501d5f8cd1caba6d5db9005b",
+      "source_path": "docs/architecture/decisions/ADR-0002-retire-legacy-implementation-guide.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0003",
+      "source_digest": "sha256:83b63af6cf221d07bfeb4cd4179c33ce821132bf8e1fcc057b3958b34bff1d5d",
+      "source_path": "docs/architecture/decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0004",
+      "source_digest": "sha256:3e08978d1a43eb70ee6d1d06174deab82c93429242a5c85e8d4a4a1f06c09667",
+      "source_path": "docs/architecture/decisions/ADR-0004-establish-initial-quality-attribute-baselines.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0005",
+      "source_digest": "sha256:4905cbfe547a5bf04607a227aa92283ba6d304a4bdef2d08ed7387fc68edab78",
+      "source_path": "docs/architecture/decisions/ADR-0005-select-local-static-orchestration-defaults.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0006",
+      "source_digest": "sha256:afe2757659e217c3761895e2f66874eef18408210b97c0bdbf2f8c90e377d2c4",
+      "source_path": "docs/architecture/decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0007",
+      "source_digest": "sha256:c0d66e868113d1a612d0ea6f48227b0fd9b2ca8aae9143f6d4da49caf454211f",
+      "source_path": "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0008",
+      "source_digest": "sha256:f2391238817bdda9303dbfd82b440399a162448463a850e35733c76bbe09612f",
+      "source_path": "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md",
+      "status": "ACCEPTED",
+      "version": "1.6.0"
+    },
+    {
+      "adr_id": "ADR-0009",
+      "source_digest": "sha256:16837df0d8647e7abaf0ecf630a52625aeb4d643763e15dd393ba2e53cb21b2b",
+      "source_path": "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0010",
+      "source_digest": "sha256:45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb",
+      "source_path": "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md",
+      "status": "ACCEPTED",
+      "version": "2.0.1"
+    },
+    {
+      "adr_id": "ADR-0011",
+      "source_digest": "sha256:d475f8d665295eabfcb622edfd3605e21b3fadab966886afa29990d090d7d492",
+      "source_path": "docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0012",
+      "source_digest": "sha256:2707cfe0b1b4111f5b9ec1e41f9c71f0fbf75ac7f438c6df2d0829ea2ff54d02",
+      "source_path": "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0013",
+      "source_digest": "sha256:dfd749b42f8466b00356c2b60d1080d34bb7cb1b72ee7360c5a6b2c86337db74",
+      "source_path": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-ACCEPTED-ADRS-001",
+  "required_count": 13,
+  "source": "docs/architecture/SOURCE_OF_TRUTH.md",
+  "source_digest": "sha256:136c9f34376217b8ace5aca4c6e3410f98e95c5276fdf953dc448448ef74b33e",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

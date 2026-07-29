@@ -1,4 +1,4 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: human_decision
 decision_id: "dec_<uuidv7>"
@@ -6,44 +6,18 @@ decision_id: "dec_<uuidv7>"
 principal_id: ""
 authentication_context_id: ""
 presentation_challenge_digest: ""
-status: APPROVED
-decision_kind: "ARCHITECTURE_OR_PROCESS_ACCEPTANCE"
-outcome: APPROVED
+status: PENDING
+decision_kind: null
+outcome: null
+core_sdlc_trace_ref: null # required except legitimate PROJECT/RELEASE resource roots
 
-runtime_subject:
-  subject_schema: "exact-subject/v1"
-  project_id: ""
-  work_item_id: ""
-  run_id: ""
-  activity_id: null
-  effect_id: null
-  workspace_id: ""
-  repository_id: ""
-  repository_uri_digest: ""
-  base_commit: ""
-  candidate_commit: ""
-  artifact_digest: null
-  packet_id: ""
-  packet_digest: ""
-  workflow_definition_id: ""
-  workflow_definition_digest: ""
-  workflow_interpreter_version: ""
-  policy_activation_id: ""
-  evidence_snapshot_digest: ""
-  policy_decision_digest: ""
-  module_profile_id: ""
-  module_profile_digest: ""
-  capability_grant_digest: ""
-  route_lock_id: null
-  schema_registry_version: ""
-  expected_run_aggregate_version: null
-
-normative_subject:
-  artifact_id: ""
-  artifact_type: ""
-  repository_revision: ""
-  content_digest: ""
-  supersedes: null
+# Exactly one referenced subject contract is allowed. The executable schema
+# applies variant-specific requirements from subject_schema.
+subject:
+  subject_schema: null # work/exact/architecture/research/resource subject
+  subject_ref: ""
+  subject_digest: ""
+  subject_manifest_digest: null
 
 action:
   action_type: ""

@@ -1,0 +1,9 @@
+{
+  "consumption_transition_ids": [
+    "transition_019fa605-6800-75f6-9dc2-64e0f672d2d7",
+    "transition_019fa605-6800-79c1-857c-39920c65bec9"
+  ],
+  "expected_error": "PERMIT_REUSED",
+  "permit_id": "permit_019fa605-6800-7368-817e-6e63c28681e4",
+  "permit_status": "CONSUMED"
+}

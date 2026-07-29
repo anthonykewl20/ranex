@@ -1,0 +1,150 @@
+{
+  "$id": "https://schemas.ranex.dev/execution/landing-record-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "actor_principal_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "landing_record"
+    },
+    "candidate_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "evidence_refs": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "finished_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "landed_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "landing_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "landing_strategy": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "permit_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "provider_receipt_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "started_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "status": {
+      "const": "SUCCEEDED"
+    },
+    "subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "target_branch": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "target_head_before": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "landing_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "candidate_commit",
+    "target_branch",
+    "target_head_before",
+    "landed_commit",
+    "landing_strategy",
+    "permit_id",
+    "actor_principal_id",
+    "provider_receipt_ref",
+    "started_at",
+    "finished_at",
+    "status",
+    "evidence_refs",
+    "digest"
+  ],
+  "title": "landing_record",
+  "type": "object",
+  "x-ranex-canonical-producer": "workspace",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-semantic-invariants": [
+    "landing_id equals the preallocated landing_record_ref; exactly one eligible LandingRecord resolves for it",
+    "subject schema/ref/digest equals the change subject, complete migration-group subject, or cutover subject as applicable",
+    "target_head_before equals the event before_commit_sha1",
+    "candidate_commit has exactly event after_commit_sha1 as its sole parent, changes no tests byte, and adds only the canonical finalized source record set for this subject",
+    "subject_manifest_digest equals the RFC8785 SHA-256 of complete bytewise-source-path LegacyRecordSourceManifestRowV1 rows derived from candidate_commit; migration rows cover every and only group member",
+    "landed_commit contains candidate_commit as an ancestor; provider receipt, permit, actor, strategy, target branch, and target-head compare are authenticated and mutually consistent",
+    "evidence_refs is the duplicate-free exact set of required gate, owner-decision, and independent-review artifact IDs for the subject",
+    "candidate_tree_oid_sha1 and landed_tree_oid_sha1 are derived from the Git object database and bound in the validation result; they are not source-record fields"
+  ],
+  "x-ranex-source-contract-id": "ADR10-LEGACY-TEST-RECORDS-1.0",
+  "x-ranex-status-authority": "LANDING-RECORD-STATUS-1.0",
+  "x-ranex-template": "docs/architecture/templates/LANDING_RECORD.yaml",
+  "x-ranex-type-id": "LandingRecordV1"
+}

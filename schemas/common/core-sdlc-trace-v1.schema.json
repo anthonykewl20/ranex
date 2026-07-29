@@ -1,0 +1,203 @@
+{
+  "$id": "https://schemas.ranex.dev/common/core-sdlc-trace-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_criterion_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "artifact_type": {
+      "const": "core_sdlc_trace"
+    },
+    "configuration_baseline_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "configuration_baseline_id": {
+      "type": "string"
+    },
+    "definition_of_ready_evidence_ref": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "invalidation_dependency_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "observed_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "outcome_measure_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "owner_refs": {
+      "additionalProperties": false,
+      "properties": {
+        "configuration": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "delivery": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "product": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "release": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "security_data": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "service": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "supplier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "technical": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "vv": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "product",
+        "technical",
+        "service",
+        "security_data",
+        "delivery",
+        "vv",
+        "configuration",
+        "supplier",
+        "release"
+      ],
+      "type": "object"
+    },
+    "requirement_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "requirement_to_evidence_mappings": {
+      "items": {},
+      "type": "array"
+    },
+    "risk_decision_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "risk_decision_ref": {
+      "type": "string"
+    },
+    "risk_lane": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "trace_id": {
+      "type": "string"
+    },
+    "work_class": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "work_item_id": {
+      "type": "string"
+    },
+    "work_item_status_at_observation": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "trace_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "work_item_id",
+    "work_item_status_at_observation",
+    "work_class",
+    "risk_lane",
+    "risk_decision_ref",
+    "risk_decision_digest",
+    "definition_of_ready_evidence_ref",
+    "owner_refs",
+    "outcome_measure_ids",
+    "requirement_ids",
+    "acceptance_criterion_ids",
+    "configuration_baseline_id",
+    "configuration_baseline_digest",
+    "requirement_to_evidence_mappings",
+    "invalidation_dependency_ids",
+    "observed_at",
+    "digest"
+  ],
+  "title": "core_sdlc_trace",
+  "type": "object",
+  "x-ranex-canonical-producer": "configuration_management",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/CORE_SDLC_TRACE.yaml"
+}

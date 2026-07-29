@@ -1,0 +1,94 @@
+{
+  "$id": "https://schemas.ranex.dev/events/work_management/operational-evidence-linked-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "linked_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "observation_window_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "ObservationWindow",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "ObservationWindow"
+    },
+    "operation_evidence_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "OperationEvidence",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "OperationEvidence"
+    },
+    "service_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Service",
+      "x-ranex-registered-opaque-id": true
+    },
+    "work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "work_item_id",
+    "operation_evidence_ref",
+    "service_id",
+    "observation_window_ref",
+    "linked_at"
+  ],
+  "title": "OperationalEvidenceLinked event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-OPERATIONALEVIDENCELINKED",
+  "x-ranex-event-name": "OperationalEvidenceLinked",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:OperationalEvidenceLinked:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "OperationalEvidenceLinked",
+    "referenced_axis_ids": []
+  },
+  "x-ranex-state-binding-digest": "sha256:67ee70a233098f3ead3ca1daf92f089cc589aa35bea8d248a8b607227f75c095"
+}

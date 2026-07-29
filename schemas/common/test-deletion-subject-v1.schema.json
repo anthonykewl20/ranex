@@ -1,0 +1,482 @@
+{
+  "$id": "https://schemas.ranex.dev/common/test-deletion-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "affected_scope_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "after_commit_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "after_test_row": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "git_blob_oid_sha1": {
+              "pattern": "^[0-9a-f]{40}$",
+              "type": "string"
+            },
+            "marker_count": {
+              "const": 1
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ],
+              "type": "string"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*\\\\).+$",
+              "type": "string",
+              "x-ranex-normalized-repository-relative-posix-path": true
+            },
+            "stable_test_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "path",
+            "mode",
+            "git_blob_oid_sha1",
+            "content_sha256",
+            "stable_test_id",
+            "marker_count"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "path is a canonical test .py path under one ADR-0008 test root",
+            "Git blob bytes recompute both digests and contain exactly one line '# ranex-test-id: <stable_test_id>'"
+          ],
+          "x-ranex-type-id": "TestRowV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "after_tests_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "after_tests_tree_oid_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "before_commit_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "before_test_row": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "git_blob_oid_sha1": {
+              "pattern": "^[0-9a-f]{40}$",
+              "type": "string"
+            },
+            "marker_count": {
+              "const": 1
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ],
+              "type": "string"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*\\\\).+$",
+              "type": "string",
+              "x-ranex-normalized-repository-relative-posix-path": true
+            },
+            "stable_test_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "path",
+            "mode",
+            "git_blob_oid_sha1",
+            "content_sha256",
+            "stable_test_id",
+            "marker_count"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "path is a canonical test .py path under one ADR-0008 test root",
+            "Git blob bytes recompute both digests and contain exactly one line '# ranex-test-id: <stable_test_id>'"
+          ],
+          "x-ranex-type-id": "TestRowV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "before_tests_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "before_tests_tree_oid_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "closes_change_exception_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "deletion_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "legacy_baseline_source_row": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "git_blob_oid_sha1": {
+              "pattern": "^[0-9a-f]{40}$",
+              "type": "string"
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ],
+              "type": "string"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*\\\\).+$",
+              "type": "string",
+              "x-ranex-normalized-repository-relative-posix-path": true
+            }
+          },
+          "required": [
+            "path",
+            "mode",
+            "git_blob_oid_sha1",
+            "content_sha256"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "row equals the immutable ADR-0010 baseline source row and Git blob bytes"
+          ],
+          "x-ranex-type-id": "LegacyBaselineSourceRowV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "legacy_current_source_row": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "content_sha256": {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "mode": {
+              "enum": [
+                "100644",
+                "100755"
+              ],
+              "type": "string"
+            },
+            "path": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*\\\\).+$",
+              "type": "string",
+              "x-ranex-normalized-repository-relative-posix-path": true
+            }
+          },
+          "required": [
+            "path",
+            "mode",
+            "content_sha256"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "row equals the authorized ADR-0010 event-time current source row and before-commit Git bytes"
+          ],
+          "x-ranex-type-id": "LegacyCurrentSourceRowV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "legacy_source_state_kind": {
+      "oneOf": [
+        {
+          "enum": [
+            "IMMUTABLE_BASELINE",
+            "AUTHORIZED_CHANGE_EXCEPTION"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "owner_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "policy_id": {
+      "const": "RANEX-TEST-DELETION-1.0"
+    },
+    "policy_version": {
+      "const": "1.0.0"
+    },
+    "profile_freshness_status": {
+      "enum": [
+        "CURRENT",
+        "STALE",
+        "NOT_ASSESSED"
+      ],
+      "type": "string"
+    },
+    "reason": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "source_change_exception_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "source_migration_proof_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "stable_test_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "subject_ref": {
+      "pattern": "^urn:ranex:[^\\s]+$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "test-deletion-subject/v1"
+    },
+    "target_kind": {
+      "enum": [
+        "LEGACY_SOURCE",
+        "CANONICAL_TEST"
+      ],
+      "type": "string"
+    },
+    "tdd_rule_set_id": {
+      "const": "RANEX-TDD-1.0"
+    },
+    "test_practice_profile_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "test_practice_profile_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "test_practice_profile_version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "tests_delta_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_schema",
+    "subject_ref",
+    "deletion_id",
+    "target_kind",
+    "policy_id",
+    "policy_version",
+    "tdd_rule_set_id",
+    "test_practice_profile_id",
+    "test_practice_profile_version",
+    "test_practice_profile_digest",
+    "profile_freshness_status",
+    "stable_test_id",
+    "source_migration_proof_ids",
+    "affected_scope_id",
+    "legacy_baseline_source_row",
+    "legacy_current_source_row",
+    "legacy_source_state_kind",
+    "source_change_exception_id",
+    "closes_change_exception_id",
+    "before_commit_sha1",
+    "after_commit_sha1",
+    "before_tests_tree_oid_sha1",
+    "after_tests_tree_oid_sha1",
+    "before_tests_snapshot_digest",
+    "after_tests_snapshot_digest",
+    "before_test_row",
+    "after_test_row",
+    "tests_delta_manifest_digest",
+    "reason",
+    "owner_id"
+  ],
+  "title": "TEST_DELETION_SUBJECT_V1",
+  "type": "object",
+  "x-ranex-projection": {
+    "direct_included_source_fields": [
+      "deletion_id",
+      "target_kind",
+      "policy_id",
+      "policy_version",
+      "tdd_rule_set_id",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "profile_freshness_status",
+      "stable_test_id",
+      "source_migration_proof_ids",
+      "affected_scope_id",
+      "legacy_baseline_source_row",
+      "legacy_current_source_row",
+      "legacy_source_state_kind",
+      "source_change_exception_id",
+      "closes_change_exception_id",
+      "before_commit_sha1",
+      "after_commit_sha1",
+      "before_tests_tree_oid_sha1",
+      "after_tests_tree_oid_sha1",
+      "before_tests_snapshot_digest",
+      "after_tests_snapshot_digest",
+      "before_test_row",
+      "after_test_row",
+      "tests_delta_manifest_digest",
+      "reason",
+      "owner_id"
+    ],
+    "excluded_source_fields": [
+      "schema_version",
+      "record_type",
+      "requirement_trace_dispositions",
+      "risk_trace_dispositions",
+      "fixture_cleanup_refs",
+      "snapshot_cleanup_refs",
+      "test_data_cleanup_refs",
+      "removal_checker_result_refs",
+      "retirement_evidence_snapshot_ref",
+      "retirement_gate_evaluation_ref",
+      "retirement_disposition",
+      "owner_acceptance_ref",
+      "process_assurance_owner_acceptance_ref",
+      "independent_review_ref",
+      "landing_record_ref",
+      "exact_subject_ref",
+      "exact_subject_digest",
+      "accepted_at",
+      "recorded_at",
+      "resulting_gap_status",
+      "result",
+      "status"
+    ],
+    "output_fields": [
+      "subject_schema",
+      "subject_ref",
+      "deletion_id",
+      "target_kind",
+      "policy_id",
+      "policy_version",
+      "tdd_rule_set_id",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "profile_freshness_status",
+      "stable_test_id",
+      "source_migration_proof_ids",
+      "affected_scope_id",
+      "legacy_baseline_source_row",
+      "legacy_current_source_row",
+      "legacy_source_state_kind",
+      "source_change_exception_id",
+      "closes_change_exception_id",
+      "before_commit_sha1",
+      "after_commit_sha1",
+      "before_tests_tree_oid_sha1",
+      "after_tests_tree_oid_sha1",
+      "before_tests_snapshot_digest",
+      "after_tests_snapshot_digest",
+      "before_test_row",
+      "after_test_row",
+      "tests_delta_manifest_digest",
+      "reason",
+      "owner_id"
+    ],
+    "projection_id": "TEST_DELETION_SUBJECT_V1",
+    "schema_ref": "schemas/common/test-deletion-subject-v1.schema.json",
+    "source_record_type": "TestDeletionRecordV1",
+    "subject_ref_rule": "urn:ranex:test-deletion-subject:<deletion_id>",
+    "subject_schema": "test-deletion-subject/v1",
+    "transformed_source_fields": {}
+  },
+  "x-ranex-projection-contract-id": "TDD-CANONICAL-SUBJECT-PROJECTIONS-1.1",
+  "x-ranex-source-catalog-digest": "sha256:23073f228c95690280aec81e283ca1aefe21121e50cfbfaa592ccfda3ad70bde"
+}

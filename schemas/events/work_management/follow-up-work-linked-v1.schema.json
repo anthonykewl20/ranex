@@ -1,0 +1,84 @@
+{
+  "$id": "https://schemas.ranex.dev/events/work_management/follow-up-work-linked-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "followup_work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    },
+    "linked_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "reason_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "Artifact",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "Artifact"
+    },
+    "relation": {
+      "enum": [
+        "CONTINUES",
+        "REMEDIATES",
+        "INVESTIGATES",
+        "REPLACES",
+        "ROLLS_BACK"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "ENUM-WORK-RELATION-1.0"
+    },
+    "work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "work_item_id",
+    "followup_work_item_id",
+    "relation",
+    "reason_ref",
+    "linked_at"
+  ],
+  "title": "FollowUpWorkLinked event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-FOLLOWUPWORKLINKED",
+  "x-ranex-event-name": "FollowUpWorkLinked",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:FollowUpWorkLinked:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "FollowUpWorkLinked",
+    "referenced_axis_ids": [
+      "WorkRelation"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:88ecb227e9a8b0c4869641912c0b959d225fb968506ba40521888dc2eb23c5b3"
+}

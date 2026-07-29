@@ -1,0 +1,313 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/activity-requested-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "activity_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Activity",
+      "x-ranex-registered-opaque-id": true
+    },
+    "activity_type": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "argument_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "budget_snapshot_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "ResourceReservation",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "ResourceReservation"
+    },
+    "deadline_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    },
+    "state_initial_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "aggregate_id": {
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+            "type": "string",
+            "x-ranex-id-type": "Aggregate",
+            "x-ranex-registered-opaque-id": true
+          },
+          "aggregate_type": {
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "type": "string"
+          },
+          "aggregate_version": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "axis_id": {
+            "enum": [
+              "WorkItemStatus",
+              "RunStatus",
+              "AssignmentStatus",
+              "DispatchOfferStatus",
+              "LeaseStatus",
+              "MailboxDeliveryStatus",
+              "ReservationStatus",
+              "IntakeStatus",
+              "PacketStatus",
+              "FleetExperimentStatus",
+              "CapabilityAssessmentStatus",
+              "READINESS-STATE-1.0",
+              "ActivityStatus",
+              "PermitStatus",
+              "HumanDecisionRecordStatus",
+              "AuthorityGrantStatus",
+              "EffectStatus",
+              "ReconciliationStatus",
+              "IncidentStatus",
+              "ReleaseStatus",
+              "CapabilityStatus",
+              "ModuleStatus",
+              "RouteStatus",
+              "ExtensionStatus",
+              "CompatibilityStatus",
+              "InstructionStatus",
+              "ArtifactStatus",
+              "MigrationStatus",
+              "SyncCandidateStatus",
+              "UpdateStatus",
+              "CutoverStatus"
+            ],
+            "type": "string"
+          },
+          "axis_version": {
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "type": "string"
+          },
+          "initial_value": {
+            "enum": [
+              "ABANDONED",
+              "ACCEPTED",
+              "ACKNOWLEDGED",
+              "ACTIONS_TRACKED",
+              "ACTIVATED",
+              "ACTIVE",
+              "APPLIED",
+              "APPROVED",
+              "AUTHENTICATED",
+              "AVAILABLE",
+              "BASELINE_RECORDED",
+              "BLOCKED",
+              "BOOTSTRAP",
+              "BUILT",
+              "CANARY",
+              "CANCELLED",
+              "CHECKED",
+              "CLAIMED",
+              "CLASSIFIED",
+              "CLOSED",
+              "COMPLETE",
+              "COMPLETED",
+              "CONSUMED",
+              "DEAD_LETTERED",
+              "DEFERRED",
+              "DEFINITION",
+              "DELIVERED",
+              "DENIED",
+              "DEPRECATED",
+              "DESIGN",
+              "DETECTED",
+              "DISABLED",
+              "DISCOVERED",
+              "DISCOVERY",
+              "DISPATCHED",
+              "DISPOSITIONED",
+              "DOWNLOADED",
+              "DRAFT",
+              "DUPLICATE",
+              "ENABLED",
+              "EXHAUSTED",
+              "EXPIRED",
+              "FAILED",
+              "FAILED_PERMANENT",
+              "FAILED_RETRYABLE",
+              "FETCHED",
+              "FUNNEL",
+              "HANDOFF_READY",
+              "HEALTH_VERIFIED",
+              "IMPLEMENTATION_START_BLOCKED",
+              "IMPLEMENTATION_START_EVALUATING",
+              "IMPLEMENTATION_START_READY",
+              "INGESTED",
+              "INTENDED",
+              "INVALIDATED",
+              "IN_PROGRESS",
+              "ISSUED",
+              "LEGACY_BASELINE",
+              "LEGACY_FROZEN",
+              "LEGACY_REMOVED",
+              "MIGRATED",
+              "MITIGATED",
+              "MITIGATING",
+              "NOT_ASSESSED",
+              "NOT_REQUIRED",
+              "OBSERVED",
+              "OFFERED",
+              "OPEN",
+              "OPERATING",
+              "OUTCOME_REVIEW",
+              "OUTCOME_UNKNOWN",
+              "PACKAGED",
+              "PENDING",
+              "PINNED",
+              "PLANNED",
+              "PORTING",
+              "PORT_CANDIDATE",
+              "PROBATION",
+              "PRODUCTION_BLOCKED",
+              "PRODUCTION_EVALUATING",
+              "PRODUCTION_READY",
+              "PROPOSED",
+              "PURGED",
+              "QUALIFIED",
+              "QUARANTINED",
+              "QUEUED",
+              "READY",
+              "READ_ONLY",
+              "RECOVERY_VERIFIED",
+              "REGISTERED",
+              "REJECTED",
+              "RELEASED",
+              "RELEASE_READY",
+              "RELEASING",
+              "REMOVED",
+              "REQUESTED",
+              "RESOLVED",
+              "RESTRICTED",
+              "RETIRED",
+              "RETIRE_READY",
+              "RETIRING",
+              "REVIEWED",
+              "REVOKED",
+              "ROLLED_BACK",
+              "RUNNING",
+              "SEALED",
+              "SETTLED",
+              "SMOKE_TESTED",
+              "SNAPSHOTTED",
+              "STAGED",
+              "STOPPED",
+              "SUCCEEDED",
+              "SUPERSEDED",
+              "SUPPORTED",
+              "SUSPENDED",
+              "TARGET_DEFAULT",
+              "TARGET_LIMITED",
+              "TARGET_SHADOW",
+              "TESTED",
+              "TIMED_OUT",
+              "TRANSITIONAL_DUAL_RUN",
+              "TRIAGE",
+              "UNCONFIGURED",
+              "UNRESOLVED",
+              "VERIFICATION",
+              "VERIFIED",
+              "WAITING",
+              "WITHDRAWN"
+            ],
+            "type": "string"
+          },
+          "state_catalog_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "axis_id",
+          "axis_version",
+          "state_catalog_digest",
+          "initial_value",
+          "aggregate_type",
+          "aggregate_id",
+          "aggregate_version"
+        ],
+        "type": "object",
+        "x-ranex-nested-type": "StateInitialBindingV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "workflow_node_id": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    }
+  },
+  "required": [
+    "run_id",
+    "activity_id",
+    "activity_type",
+    "workflow_node_id",
+    "argument_digest",
+    "deadline_at",
+    "budget_snapshot_ref",
+    "state_initial_bindings"
+  ],
+  "title": "ActivityRequested event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-ACTIVITYREQUESTED",
+  "x-ranex-event-name": "ActivityRequested",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:ActivityRequested:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "INITIAL_STATE_FACT",
+    "event_name": "ActivityRequested",
+    "initial_bindings": [
+      {
+        "axis_id": "ActivityStatus",
+        "axis_version": "1.0.0",
+        "initial_value": "REQUESTED"
+      }
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:c282cf341bf1f7d67ed2a22fa7d3f29621bcde924bfd338bdddf194cd9c8eff9"
+}

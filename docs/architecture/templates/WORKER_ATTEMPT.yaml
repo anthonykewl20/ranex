@@ -1,0 +1,144 @@
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
+schema_version: "1"
+artifact_type: worker_attempt
+worker_attempt_id: "wattempt_<uuidv7>"
+assignment_id: "assignment_<uuidv7>"
+previous_attempt_id: null
+lease_id: "lease_<uuidv7>"
+fencing_epoch: 0
+
+principal_id: ""
+session_id: ""
+route_lock_id: ""
+harness_id: ""
+harness_version: ""
+isolation_profile_id: ""
+workspace_id: "wsp_<uuidv7>"
+
+worker_runtime_binding:
+  worker_runtime_catalog_digest: "sha256:<hex>"
+  role_profile_id: ""
+  role_profile_digest: "sha256:<hex>"
+  runtime_adapter_id: ""
+  runtime_adapter_version: ""
+  runtime_adapter_digest: "sha256:<hex>"
+  provider_id: ""
+  full_model_id: ""
+  transport_id: ""
+  route_lock_id: ""
+  route_lock_digest: "sha256:<hex>"
+  auth_route_class: ""
+  subscription_runtime_requested: false
+  effective_auth_subject_digest: "sha256:<hex>"
+  effective_tool_ids: []
+  effective_runtime_tool_names: []
+  effective_tool_grant_digest: "sha256:<hex>"
+  tool_name_mapping_digest: "sha256:<hex>"
+  effective_capability_ids: []
+  effective_capability_grant_digest: "sha256:<hex>"
+  sandbox_profile_id: ""
+  sandbox_profile_digest: "sha256:<hex>"
+  configuration_profile_digest: "sha256:<hex>"
+  controlled_process_profile_digest: "sha256:<hex>"
+  session_affinity_digest: "sha256:<hex>"
+
+runtime_observation:
+  configured_full_model_id: ""
+  observed_full_model_id: null
+  model_observation_status: "" # OBSERVED_EXACT | VENDOR_UNOBSERVABLE
+  observed_provider_id: ""
+  observed_transport_id: ""
+  observed_route_lock_id: ""
+  observed_route_lock_digest: "sha256:<hex>"
+  runtime_adapter_id: ""
+  runtime_adapter_version: ""
+  sdk_package_digest: "sha256:<hex>"
+  runtime_executable_digest: "sha256:<hex>"
+  init_reported_runtime_tool_names: []
+  normalized_effective_tool_ids: []
+  tool_name_mapping_digest: "sha256:<hex>"
+  init_cwd: ""
+  init_permission_mode: ""
+  init_mcp_servers: []
+  init_agent_definitions: []
+  init_skills: []
+  init_plugins: []
+  init_apps: []
+  init_cli_version: ""
+  init_api_key_source: ""
+  active_auth_source_count: 1
+  observed_auth_route_class: ""
+  auth_environment_sanitized: true
+  official_subscription_runtime_observed: false
+  provider_api_key_environment_present: false
+  bare_mode_observed: false
+  consumer_login_brokering_observed: false
+  credential_file_export_observed: false
+  direct_token_http_observed: false
+  hermes_nous_model_route_observed: false
+  ambient_user_settings: []
+  ambient_project_settings: []
+  ambient_local_settings: []
+  ambient_network_destinations: []
+  ambient_secret_handles: []
+  ambient_process_executables: []
+  auto_memory_enabled: false
+  background_execution_enabled: false
+  route_count: 1
+  worker_spawn_count: 0
+  worker_delegation_count: 0
+  worker_coordination_count: 0
+  adapter_fallback_count: 0
+  provider_fallback_count: 0
+  model_fallback_count: 0
+  auxiliary_model_call_count: 0
+  nested_worker_lineage_count: 0
+  parent_tool_use_ids: []
+  model_usage_model_ids: []
+  observed_provider_model_call_count: null
+  num_turns: 0
+  task_tool_count: 0
+  retry_count: 0
+  compaction_count: 0
+  tool_attempt_count: 0
+  pre_tool_gateway_observation_count: 0
+  capability_bus_effect_count: 0
+  event_correlation_complete: false
+  event_correlation_evidence_ref: ""
+  interrupt_requested_at: null
+  terminal_event_drained_at: null
+  sdk_disconnected_at: null
+  supervisor_cleanup_verified_at: null
+  process_tree_empty_after_cleanup: null
+  post_cancel_event_count: 0
+  post_cancel_quarantined: false
+  session_affinity:
+    project_id: ""
+    assignment_id: ""
+    workspace_id: ""
+    session_id: ""
+    runtime_adapter_id: ""
+    runtime_adapter_version: ""
+    route_lock_digest: "sha256:<hex>"
+    effective_auth_subject_digest: "sha256:<hex>"
+    role_profile_digest: "sha256:<hex>"
+    effective_tool_grant_digest: "sha256:<hex>"
+    sandbox_profile_digest: "sha256:<hex>"
+    digest: "sha256:<hex>"
+
+subject_schema: "exact-subject/v1"
+subject_ref: ""
+subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
+run_id: "run_<uuidv7>"
+
+created_at: ""
+started_at: null
+finished_at: null
+termination_cause: null
+result_ref: null
+handoff_ref: null
+denial_evidence_refs: []
+usage_evidence_refs: []
+digest: ""

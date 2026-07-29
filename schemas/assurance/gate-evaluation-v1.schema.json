@@ -1,0 +1,164 @@
+{
+  "$id": "https://schemas.ranex.dev/assurance/gate-evaluation-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "applicability_proof_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "artifact_type": {
+      "const": "gate_evaluation"
+    },
+    "checker_result_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "conflicts": {
+      "items": {},
+      "type": "array"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "coverage": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "evaluator_code_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evaluator_id": {
+      "type": "string"
+    },
+    "evaluator_version": {
+      "type": "string"
+    },
+    "evidence_snapshot_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evidence_snapshot_id": {
+      "type": "string"
+    },
+    "freshness_evaluation": {
+      "items": {},
+      "type": "array"
+    },
+    "gate_definition_id": {
+      "type": "string"
+    },
+    "gate_definition_version": {
+      "type": "string"
+    },
+    "gate_evaluation_id": {
+      "type": "string"
+    },
+    "gate_namespace": {
+      "type": "string"
+    },
+    "missing_claim_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "observed_claim_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "policy_activation_id": {
+      "type": "string"
+    },
+    "policy_activation_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "qualification_id": {
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {},
+      "type": "array"
+    },
+    "required_claim_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "review_verdict_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "gate_evaluation_id",
+    "gate_namespace",
+    "gate_definition_id",
+    "gate_definition_version",
+    "evaluator_id",
+    "evaluator_version",
+    "evaluator_code_digest",
+    "qualification_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "evidence_snapshot_id",
+    "evidence_snapshot_digest",
+    "policy_activation_id",
+    "policy_activation_manifest_digest",
+    "required_claim_ids",
+    "observed_claim_ids",
+    "checker_result_refs",
+    "review_verdict_refs",
+    "applicability_proof_refs",
+    "freshness_evaluation",
+    "coverage",
+    "missing_claim_ids",
+    "conflicts",
+    "outcome",
+    "reason_codes",
+    "evaluated_at",
+    "digest"
+  ],
+  "title": "gate_evaluation",
+  "type": "object",
+  "x-ranex-canonical-producer": "assurance",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/GATE_EVALUATION.yaml"
+}

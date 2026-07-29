@@ -1,0 +1,294 @@
+{
+  "artifact_type": "sdlc_fork_preflight_evidence",
+  "schema_version": "1.0.0",
+  "gate_id": "SDLC-FORK-000",
+  "evaluation_id": "SDLC-FORK-000-2026-07-28T09:40:05Z",
+  "collection_mode": "READ_ONLY",
+  "observation_window": {
+    "started_at": "2026-07-28T09:33:54Z",
+    "status_snapshot_at": "2026-07-28T09:37:31Z",
+    "completed_at": "2026-07-28T09:40:05Z"
+  },
+  "repository": {
+    "root": "/home/soultransit/devtony/ranex",
+    "origin_fetch_url": "https://github.com/anthonykewl20/ranex.git",
+    "origin_push_url": "https://github.com/anthonykewl20/ranex.git",
+    "upstream_fetch_url": "https://github.com/NousResearch/hermes-agent.git",
+    "upstream_push_url": "DISABLED",
+    "upstream_fetch_refspec": "+refs/heads/*:refs/remotes/upstream/*"
+  },
+  "construction_subject": {
+    "branch": "bootstrap/pre-upstream",
+    "head_commit": "4baad4a67843b02d5970f442fb54aed8d6525dda",
+    "head_tree": "418fe1aaf4207209906abda88afc05e30c07d72c",
+    "root_commit": "4ee007fcbe40b1afa7c362767005cf2f4508fc3d",
+    "commit_count": 13,
+    "clean": false,
+    "status_snapshot_excludes_this_evidence_and_review": true,
+    "status_entries": 228,
+    "tracked_entries": 44,
+    "modified_codes": 43,
+    "deleted_codes": 1,
+    "added_codes": 0,
+    "untracked_entries": 184,
+    "sorted_porcelain_v1_sha256": "e741c28b75791e7555d1736658032f57bd488e06352b1827cfab60a71d83b85b",
+    "remote_safety_ref": null,
+    "remote_safety_ref_check_exit_code": 2,
+    "head_tag": null
+  },
+  "baseline_ledger": {
+    "audited_and_accepted": {
+      "repository": "https://github.com/NousResearch/hermes-agent.git",
+      "commit": "d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012",
+      "tree": "129a441930d11bc6bace9c72e81c960289008898",
+      "object_type": "commit",
+      "annotated_tag": "upstream-baseline-20260727",
+      "tag_object": "ca53ef5cb0fb7d54224192f90fe3a6b28c1c221b",
+      "tag_peels_to_commit": true
+    },
+    "incorporated_on_upstream_derived_line": {
+      "commit": "d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012",
+      "phase_1_head": "9be6bd9443e447b205ad265d44238436910dfbce",
+      "phase_1_tree": "60fca15c04a8a87532378f8149aebf9422adb394",
+      "phase_1_parent_is_accepted_commit": true,
+      "main_head": "9be6bd9443e447b205ad265d44238436910dfbce",
+      "develop_head": "0533e1eaf50ace0eb84435a5c3de05e939fd4daa",
+      "accepted_commit_is_develop_ancestor": true,
+      "develop_commits_after_accepted": 5
+    },
+    "locally_fetched_latest_seen": {
+      "ref": "refs/remotes/upstream/main",
+      "commit": "8eaaa5021c098544044cae3dd546f0a011104c1a",
+      "tree": "c9e434c7a26af0fbd8209747fa72ffe6f8d5472d",
+      "commits_after_accepted": 9,
+      "accepted_is_ancestor": true
+    },
+    "remote_latest_seen": {
+      "ref": "refs/heads/main",
+      "commit": "1dfe781edd5e96d09511cf27d800a03e63b09789",
+      "tree": "a7cb751b299debd19dcc5473c825da7da002ccea",
+      "observed_via": [
+        "git ls-remote upstream refs/heads/main",
+        "gh api repos/NousResearch/hermes-agent/commits/1dfe781edd5e96d09511cf27d800a03e63b09789"
+      ],
+      "locally_fetched": false
+    }
+  },
+  "ancestry": {
+    "construction_head_and_accepted_baseline_have_merge_base": false,
+    "accepted_baseline_is_construction_head_ancestor": false,
+    "construction_head_and_phase_1_head_have_merge_base": false,
+    "accepted_baseline_is_phase_1_head_ancestor": true,
+    "accepted_baseline_is_main_head_ancestor": true,
+    "accepted_baseline_is_develop_head_ancestor": true,
+    "upstream_main_vs_construction_head_left_right_count_at_local_refs": {
+      "upstream_only": 18265,
+      "construction_only": 13
+    }
+  },
+  "license_and_notice": {
+    "accepted_upstream_license": {
+      "path": "LICENSE",
+      "git_blob": "75410e73319c72cd3e991a501c5455eb78f38375",
+      "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+      "bytes": 1070,
+      "identity": "MIT License; Copyright (c) 2025 Nous Research"
+    },
+    "phase_1_license": {
+      "path": "LICENSE",
+      "git_blob": "75410e73319c72cd3e991a501c5455eb78f38375",
+      "sha256": "821556e6336796450ab852d375117b48a4887e71d255794fd6318d99982a5ab6",
+      "unchanged_from_accepted_upstream": true
+    },
+    "phase_1_notice": {
+      "path": "NOTICE.md",
+      "git_blob": "d33bdd07e5f2f305ece9ea2c3c410de241cae099",
+      "sha256": "34e5df2c1f3cbeb3498eddcf040accd13c5932a7e5f4d222cef6bd9b763aff74"
+    },
+    "construction_head": {
+      "license_path_present": false,
+      "notice_path": "NOTICE.md",
+      "notice_git_blob": "7e866ba85d3de798660bbcb37023e466874321cc",
+      "notice_sha256": "f63c755ccf938283044fab0d35bf8c67d5c2d27a426433d324c691b6024d8efc"
+    },
+    "construction_worktree": {
+      "license_path_present": false,
+      "ranex_license_sha256": "b06b4a45a8647ab3ed62dd3dc169c81f3b55a9942410b6d2258c9006981bb83b",
+      "notice_sha256": "f63c755ccf938283044fab0d35bf8c67d5c2d27a426433d324c691b6024d8efc"
+    },
+    "classification_coverage_observation": {
+      "licensing_manifest_entries": 202,
+      "phase_1_tree_files": 7670,
+      "phase_1_tree_paths_explicitly_listed": 51,
+      "phase_1_tree_paths_not_explicitly_listed": 7619,
+      "manifest_paths_not_in_phase_1_tree": 151,
+      "complete_per_file_coverage_proven": false,
+      "pristine_upstream_source_manifest_found": false
+    }
+  },
+  "worktree_topology": {
+    "worktree_list_sha256": "62fce3d5185507c00cbca08fc272c60b1b2f4d42b14ba188d906506cdaa3150b",
+    "entries": [
+      {
+        "path": "/home/soultransit/devtony/ranex",
+        "branch": "refs/heads/bootstrap/pre-upstream",
+        "head": "4baad4a67843b02d5970f442fb54aed8d6525dda",
+        "dirty_entries_at_check": 228
+      },
+      {
+        "path": "/home/soultransit/devtony/ranex/.claude/worktrees/gate-controller-mvp",
+        "branch": "refs/heads/feature/deterministic-gate-controller-mvp",
+        "head": "0533e1eaf50ace0eb84435a5c3de05e939fd4daa",
+        "dirty_entries_at_check": 44
+      },
+      {
+        "path": "/home/soultransit/devtony/ranex/.claude/worktrees/phase-0-preflight",
+        "branch": "refs/heads/phase/0-preflight",
+        "head": "fee61eb61d8f2df2f28adbe3a59cf8c2340ab5f4",
+        "dirty_entries_at_check": 168
+      },
+      {
+        "path": "/home/soultransit/devtony/ranex/.claude/worktrees/phase-1-adopt-upstream",
+        "branch": "refs/heads/phase/1-adopt-upstream",
+        "head": "9be6bd9443e447b205ad265d44238436910dfbce",
+        "dirty_entries_at_check": 3
+      },
+      {
+        "path": "/home/soultransit/devtony/ranex/.claude/worktrees/phase-2-runtime-bootstrap",
+        "branch": "refs/heads/develop",
+        "head": "0533e1eaf50ace0eb84435a5c3de05e939fd4daa",
+        "dirty_entries_at_check": 26
+      }
+    ],
+    "clean_final_construction_topology_proven": false
+  },
+  "hosting_observation": {
+    "observed_via": "gh api repos/anthonykewl20/ranex",
+    "full_name": "anthonykewl20/ranex",
+    "default_branch": "main",
+    "github_network_fork": false,
+    "parent": null,
+    "source": null,
+    "pushed_at": "2026-07-27T14:04:02Z",
+    "licensing_manifest_matches_observation": true,
+    "hosting_flag_is_not_ancestry_evidence": true
+  },
+  "remote_publication": {
+    "origin_main": "9be6bd9443e447b205ad265d44238436910dfbce",
+    "origin_develop": "0533e1eaf50ace0eb84435a5c3de05e939fd4daa",
+    "origin_upstream_sync": "d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012",
+    "origin_bootstrap_pre_upstream": null
+  },
+  "gate_evaluation": {
+    "status": "BLOCKED",
+    "predicate_result": "FAIL",
+    "pass_allowed": false,
+    "blocking_reasons": [
+      "The current construction head has no merge base with the accepted upstream baseline.",
+      "The current construction worktree is dirty and therefore is not an immutable exact construction subject.",
+      "The current construction head and worktree omit the unchanged upstream LICENSE.",
+      "The bootstrap history has no observed remote safety ref or tag at its current head.",
+      "No authenticated strategy-decision reference, pristine upstream source manifest, complete per-file provenance coverage, or clean final worktree topology was proven."
+    ],
+    "positive_evidence": [
+      "The accepted upstream commit, tree, annotated tag, and MIT license object are present locally.",
+      "main, phase/1-adopt-upstream, and develop descend from the accepted upstream commit.",
+      "The phase-1 adoption head preserves the upstream LICENSE byte-for-byte.",
+      "The upstream remote is fetch-only and the GitHub network-fork fact is recorded separately."
+    ],
+    "minimal_landing_action": {
+      "target_base": "refs/heads/develop@0533e1eaf50ace0eb84435a5c3de05e939fd4daa",
+      "instruction": "First preserve bootstrap/pre-upstream@4baad4a67843b02d5970f442fb54aed8d6525dda plus a content-addressed manifest of the intended dirty delta under an owner-approved protected safety ref. Then apply only that intended Ranex delta in a new clean worktree based on develop@0533e1eaf50ace0eb84435a5c3de05e939fd4daa, commit it without replacing the upstream tree, and preserve LICENSE blob 75410e73319c72cd3e991a501c5455eb78f38375. Bind the resulting clean commit as the construction head, record the replay decision/pristine-source and complete provenance manifests/final topology, and rerun this gate.",
+      "whole_tree_overlay_forbidden": true,
+      "unrelated_histories_merge_forbidden": true
+    }
+  },
+  "checks": [
+    {
+      "id": "FORK-C01",
+      "command": "git rev-parse --show-toplevel && git symbolic-ref --quiet --short HEAD && git rev-parse HEAD && git rev-parse 'HEAD^{tree}'",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C02",
+      "command": "git status --porcelain=v1 --untracked-files=all | awk '$0 !~ /docs\\/architecture\\/reviews\\/2026-07-28-sdlc-fork-000-preflight.md$/ && $0 !~ /docs\\/architecture\\/reviews\\/artifacts\\/enterprise-build-readiness\\/sdlc-fork-000-evidence.json$/' | LC_ALL=C sort | sha256sum",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C03",
+      "command": "git merge-base --all HEAD d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012",
+      "exit_code": 1,
+      "meaning": "No merge base."
+    },
+    {
+      "id": "FORK-C04",
+      "command": "git merge-base --is-ancestor d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012 HEAD",
+      "exit_code": 1,
+      "meaning": "Accepted upstream baseline is not an ancestor of the construction head."
+    },
+    {
+      "id": "FORK-C05",
+      "command": "git merge-base --is-ancestor d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012 refs/heads/phase/1-adopt-upstream && git merge-base --is-ancestor d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012 refs/heads/main && git merge-base --is-ancestor d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012 refs/heads/develop",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C06",
+      "command": "git config --local --get-regexp '^remote\\.(origin|upstream)\\.(url|pushurl|fetch)$' | LC_ALL=C sort",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C07",
+      "command": "git ls-remote --exit-code origin refs/heads/bootstrap/pre-upstream",
+      "exit_code": 2,
+      "meaning": "No matching remote safety branch was observed."
+    },
+    {
+      "id": "FORK-C08",
+      "command": "git ls-remote --exit-code origin refs/heads/develop refs/heads/main refs/heads/upstream-sync",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C09",
+      "command": "git ls-remote --exit-code upstream refs/heads/main",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C10",
+      "command": "git cat-file -t d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012 && git rev-parse 'd71033a4077a6dfdcdb42c9e9eeab4c41e4a7012^{tree}' && git rev-parse 'refs/tags/upstream-baseline-20260727^{}'",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C11",
+      "command": "git show d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012:LICENSE | sha256sum && git rev-parse d71033a4077a6dfdcdb42c9e9eeab4c41e4a7012:LICENSE && git show refs/heads/phase/1-adopt-upstream:LICENSE | sha256sum && git rev-parse refs/heads/phase/1-adopt-upstream:LICENSE",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C12",
+      "command": "git ls-tree -r --full-tree HEAD -- LICENSE NOTICE NOTICE.md COPYING && test -f LICENSE",
+      "exit_code": 1,
+      "meaning": "NOTICE.md is present in HEAD; LICENSE is absent from HEAD/worktree."
+    },
+    {
+      "id": "FORK-C13",
+      "command": "git worktree list --porcelain",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C14",
+      "command": "gh api repos/anthonykewl20/ranex --jq '{full_name: .full_name, fork: .fork, parent: (.parent.full_name // null), source: (.source.full_name // null), default_branch: .default_branch, pushed_at: .pushed_at}'",
+      "exit_code": 0
+    },
+    {
+      "id": "FORK-C15",
+      "command": "rg --files | rg -i '(^|/)(upstream[^/]*manifest|[^/]*manifest[^/]*upstream|pristine[^/]*manifest)'",
+      "exit_code": 1,
+      "meaning": "No named pristine/upstream source manifest was found."
+    }
+  ],
+  "limitations": [
+    "This is a point-in-time read-only observation; remote heads and the shared dirty worktree can change after the observation window.",
+    "No refs, branches, commits, worktrees, index entries, remotes, tags, or existing documents were changed.",
+    "The live upstream head was observed remotely but not fetched; its tree was read from the GitHub commit API and is not a locally verified object.",
+    "A local branch is not treated as immutable preservation, and a notice that says a license will be retained is not a substitute for the license file."
+  ]
+}

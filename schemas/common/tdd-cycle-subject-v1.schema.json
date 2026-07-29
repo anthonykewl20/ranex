@@ -1,0 +1,1040 @@
+{
+  "$id": "https://schemas.ranex.dev/common/tdd-cycle-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "architecture_rule_coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "applicable_rule_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true,
+          "x-ranex-bytewise-sorted": true
+        },
+        "coverage_manifest_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "not_applicable_rule_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "minItems": 0,
+          "type": "array",
+          "uniqueItems": true,
+          "x-ranex-bytewise-sorted": true
+        },
+        "rule_registry_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "rule_registry_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        "rule_registry_version": {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_registry_id",
+        "rule_registry_version",
+        "rule_registry_digest",
+        "applicable_rule_ids",
+        "not_applicable_rule_ids",
+        "coverage_manifest_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "applicable_rule_ids and not_applicable_rule_ids are disjoint, sorted, duplicate-free, and their union equals the complete bound rule registry",
+        "coverage_manifest_digest is RFC8785 SHA-256 of one ordered APPLICABLE or NOT_APPLICABLE row per registry rule",
+        "every NOT_APPLICABLE row has one current exact-subject ArchitectureRuleNotApplicableProofV1 in the containing architecture_rule_not_applicable_proofs",
+        "the architecture-check checker coverage equals applicable_rule_ids exactly and reports each rule independently",
+        "a registry digest change makes the coverage and cycle stale"
+      ],
+      "x-ranex-type-id": "ArchitectureRuleCoverageV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "base_subject": {
+      "additionalProperties": false,
+      "properties": {
+        "subject_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "subject_ref": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+          "type": "string"
+        },
+        "subject_schema": {
+          "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "subject_ref",
+        "subject_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "subject_ref resolves through the canonical subject registry",
+        "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+        "resolved bytes validate against subject_schema"
+      ],
+      "x-ranex-type-id": "SubjectBindingV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "built_artifact_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "candidate_subject": {
+      "additionalProperties": false,
+      "properties": {
+        "subject_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "subject_ref": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+          "type": "string"
+        },
+        "subject_schema": {
+          "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "subject_ref",
+        "subject_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "subject_ref resolves through the canonical subject registry",
+        "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+        "resolved bytes validate against subject_schema"
+      ],
+      "x-ranex-type-id": "SubjectBindingV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "change_profile": {
+      "enum": [
+        "BEHAVIOR_CHANGE",
+        "DEFECT_FIX",
+        "REFACTOR_ONLY",
+        "GENERATED_OUTPUT",
+        "EMERGENCY_CONTAINMENT",
+        "NON_EXECUTABLE_DOCUMENTATION"
+      ],
+      "type": "string"
+    },
+    "cycle_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "cycle_journal_binding": {
+      "additionalProperties": false,
+      "properties": {
+        "journal_end_sequence": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "journal_manifest_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "journal_ref": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+          "type": "string"
+        },
+        "journal_start_sequence": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "phase_activity_ids": {
+          "items": {
+            "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+            "type": "string"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true,
+          "x-ranex-sequence-order": true
+        },
+        "phase_activity_manifest_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "journal_ref",
+        "journal_start_sequence",
+        "journal_end_sequence",
+        "phase_activity_ids",
+        "phase_activity_manifest_digest",
+        "journal_manifest_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "journal_start_sequence is at or before journal_end_sequence and both resolve in one append-only governed run journal",
+        "phase_activity_ids are distinct and ordered by containing step sequence, overriding the default bytewise array order",
+        "there is exactly one phase activity for every containing cycle step and no activity is shared with another cycle",
+        "the journal slice contains each phase activity's request, dispatch when applicable, resolution, and checker/evidence binding in causal order; cycle gate evaluation follows the closed slice",
+        "the slice excludes the cycle-level EvidenceSnapshot, GateEvaluation, LandingRecord, and any fact whose subject digest depends on the containing cycle exact subject",
+        "phase_activity_manifest_digest binds the ordered activity/event/fact references and journal_manifest_digest binds the complete immutable slice"
+      ],
+      "x-ranex-type-id": "TddCycleJournalBindingV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "failure_denominator_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "no_refactor_needed": {
+      "enum": [
+        true,
+        false
+      ],
+      "type": "boolean"
+    },
+    "oracle_provenance": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "authority_basis_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "independence_class": {
+              "enum": [
+                "INDEPENDENT_PRIMARY",
+                "INDEPENDENT_SECONDARY",
+                "DERIVED_WITH_INDEPENDENT_REVIEW"
+              ],
+              "type": "string"
+            },
+            "oracle_source_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "oracle_source_ref": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+              "type": "string"
+            },
+            "oracle_source_schema": {
+              "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "oracle_source_schema",
+            "oracle_source_ref",
+            "oracle_source_digest",
+            "authority_basis_id",
+            "independence_class"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "the source resolves immutable bytes validating oracle_source_schema and hashing to oracle_source_digest",
+            "authority_basis_id resolves the requirement, acceptance, risk, invariant, contract, or incident authority for the expected result",
+            "the oracle is not computed solely from the production implementation under test or a snapshot blessed only by the same change",
+            "DERIVED_WITH_INDEPENDENT_REVIEW requires an eligible review artifact in the containing cycle evidence snapshot"
+          ],
+          "x-ranex-type-id": "OracleProvenanceV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "policy_id": {
+      "const": "RANEX-TDD-1.0"
+    },
+    "policy_version": {
+      "const": "1.0.0"
+    },
+    "quarantine_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "release_profile_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "release_profile_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "release_profile_version": {
+      "oneOf": [
+        {
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "reproducibility_envelope": {
+      "additionalProperties": false,
+      "properties": {
+        "dependency_lock_digest": {
+          "oneOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "execution_capability_profile_digest": {
+          "oneOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "filesystem_policy_digest": {
+          "oneOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "image_digest": {
+          "oneOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "input_manifest_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "journal_capture_policy_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "network_policy_digest": {
+          "oneOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rule_version_manifest_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "seed_manifest_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "tier": {
+          "enum": [
+            "TIER_1",
+            "TIER_2"
+          ],
+          "type": "string"
+        },
+        "toolchain_manifest_digest": {
+          "oneOf": [
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "tier",
+        "seed_manifest_digest",
+        "input_manifest_digest",
+        "rule_version_manifest_digest",
+        "journal_capture_policy_digest",
+        "image_digest",
+        "toolchain_manifest_digest",
+        "network_policy_digest",
+        "filesystem_policy_digest",
+        "dependency_lock_digest",
+        "execution_capability_profile_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "Tier 1 requires the four base manifests and all six Tier-2-only fields null",
+        "Tier 2 requires all fields nonnull",
+        "tier is selected by the applicable policy before the first phase activity and equals the journal declaration",
+        "a failed Tier 1 run may recommend a new Tier 2 cycle but cannot rewrite or upgrade the original envelope",
+        "high-risk, seam, quarantine, security, migration, recovery, and release-bearing lanes require Tier 2"
+      ],
+      "x-ranex-type-id": "ReproducibilityEnvelopeV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "step_claims": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "expected_failure_fingerprint": {
+            "oneOf": [
+              {
+                "additionalProperties": false,
+                "properties": {
+                  "criterion_id": {
+                    "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+                    "type": "string"
+                  },
+                  "expected_failure_code": {
+                    "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+                    "type": "string"
+                  },
+                  "failure_denominator_row_digest": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "failure_denominator_row_id": {
+                    "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+                    "type": "string"
+                  },
+                  "harness_failure_exclusion": {
+                    "const": true
+                  },
+                  "matcher_digest": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "matcher_ref": {
+                    "maxLength": 1024,
+                    "minLength": 1,
+                    "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+                    "type": "string"
+                  },
+                  "matcher_schema": {
+                    "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+                    "type": "string"
+                  },
+                  "stable_test_id": {
+                    "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "stable_test_id",
+                  "criterion_id",
+                  "failure_denominator_row_id",
+                  "failure_denominator_row_digest",
+                  "matcher_schema",
+                  "matcher_ref",
+                  "matcher_digest",
+                  "expected_failure_code",
+                  "harness_failure_exclusion"
+                ],
+                "type": "object",
+                "x-ranex-semantic-invariants": [
+                  "stable_test_id and criterion_id resolve in the cycle test-denominator manifest",
+                  "failure_denominator_row_id resolves exactly once in the cycle failure-denominator manifest and its RFC8785 SHA-256 equals failure_denominator_row_digest",
+                  "matcher_ref resolves immutable bytes validating matcher_schema and hashing to matcher_digest",
+                  "the matcher is a closed structural predicate over qualified checker outcome and raw artifacts, not an unbounded prose or substring assertion",
+                  "the checker failure_code equals expected_failure_code and the resolved matcher accepts the observed assertion failure",
+                  "ERROR, TIMEOUT, CANCELLATION, HARNESS_FAILURE, launch failure, missing result, or a failure from another stable_test_id or criterion_id never satisfies the fingerprint"
+                ],
+                "x-ranex-type-id": "ExpectedFailureFingerprintV1",
+                "x-ranex-type-version": "1.0.0"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "expected_outcome": {
+            "enum": [
+              "EXPECTED_FAILURE",
+              "PASS"
+            ],
+            "type": "string"
+          },
+          "finished_at": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+            "type": "string"
+          },
+          "sequence": {
+            "maximum": 4,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "started_at": {
+            "format": "date-time",
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+            "type": "string"
+          },
+          "step_kind": {
+            "enum": [
+              "RED",
+              "GREEN",
+              "BASELINE_GREEN",
+              "REFACTOR",
+              "GENERATE",
+              "VALIDATE",
+              "EMERGENCY_FIX",
+              "DOCUMENTATION_CHECK",
+              "ARCHITECTURE_CHECK"
+            ],
+            "type": "string"
+          },
+          "step_snapshot_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "step_subject": {
+            "additionalProperties": false,
+            "properties": {
+              "subject_digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "subject_ref": {
+                "maxLength": 1024,
+                "minLength": 1,
+                "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+                "type": "string"
+              },
+              "subject_schema": {
+                "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "subject_schema",
+              "subject_ref",
+              "subject_digest"
+            ],
+            "type": "object",
+            "x-ranex-semantic-invariants": [
+              "subject_ref resolves through the canonical subject registry",
+              "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+              "resolved bytes validate against subject_schema"
+            ],
+            "x-ranex-type-id": "SubjectBindingV1",
+            "x-ranex-type-version": "1.0.0"
+          }
+        },
+        "required": [
+          "step_kind",
+          "sequence",
+          "step_subject",
+          "step_snapshot_digest",
+          "expected_outcome",
+          "expected_failure_fingerprint",
+          "started_at",
+          "finished_at"
+        ],
+        "type": "object",
+        "x-ranex-type-id": "TddCycleStepClaimV1"
+      },
+      "maxItems": 4,
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "subject_ref": {
+      "pattern": "^urn:ranex:[^\\s]+$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "tdd-cycle-subject/v1"
+    },
+    "subject_transition_manifest": {
+      "additionalProperties": false,
+      "properties": {
+        "base_subject": {
+          "additionalProperties": false,
+          "properties": {
+            "subject_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "subject_ref": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+              "type": "string"
+            },
+            "subject_schema": {
+              "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "subject_schema",
+            "subject_ref",
+            "subject_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "subject_ref resolves through the canonical subject registry",
+            "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+            "resolved bytes validate against subject_schema"
+          ],
+          "x-ranex-type-id": "SubjectBindingV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        "candidate_subject": {
+          "additionalProperties": false,
+          "properties": {
+            "subject_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "subject_ref": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+              "type": "string"
+            },
+            "subject_schema": {
+              "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "subject_schema",
+            "subject_ref",
+            "subject_digest"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "subject_ref resolves through the canonical subject registry",
+            "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+            "resolved bytes validate against subject_schema"
+          ],
+          "x-ranex-type-id": "SubjectBindingV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "edges": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "edge_sequence": {
+                "maximum": 4,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "from_subject": {
+                "additionalProperties": false,
+                "properties": {
+                  "subject_digest": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "subject_ref": {
+                    "maxLength": 1024,
+                    "minLength": 1,
+                    "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+                    "type": "string"
+                  },
+                  "subject_schema": {
+                    "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "subject_schema",
+                  "subject_ref",
+                  "subject_digest"
+                ],
+                "type": "object",
+                "x-ranex-semantic-invariants": [
+                  "subject_ref resolves through the canonical subject registry",
+                  "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+                  "resolved bytes validate against subject_schema"
+                ],
+                "x-ranex-type-id": "SubjectBindingV1",
+                "x-ranex-type-version": "1.0.0"
+              },
+              "relation": {
+                "enum": [
+                  "SOURCE_CHANGE",
+                  "VALIDATION_ONLY"
+                ],
+                "type": "string"
+              },
+              "to_step_kind": {
+                "enum": [
+                  "RED",
+                  "GREEN",
+                  "BASELINE_GREEN",
+                  "REFACTOR",
+                  "GENERATE",
+                  "VALIDATE",
+                  "EMERGENCY_FIX",
+                  "DOCUMENTATION_CHECK",
+                  "ARCHITECTURE_CHECK"
+                ],
+                "type": "string"
+              },
+              "to_subject": {
+                "additionalProperties": false,
+                "properties": {
+                  "subject_digest": {
+                    "pattern": "^sha256:[0-9a-f]{64}$",
+                    "type": "string"
+                  },
+                  "subject_ref": {
+                    "maxLength": 1024,
+                    "minLength": 1,
+                    "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+                    "type": "string"
+                  },
+                  "subject_schema": {
+                    "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "subject_schema",
+                  "subject_ref",
+                  "subject_digest"
+                ],
+                "type": "object",
+                "x-ranex-semantic-invariants": [
+                  "subject_ref resolves through the canonical subject registry",
+                  "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+                  "resolved bytes validate against subject_schema"
+                ],
+                "x-ranex-type-id": "SubjectBindingV1",
+                "x-ranex-type-version": "1.0.0"
+              }
+            },
+            "required": [
+              "edge_sequence",
+              "from_subject",
+              "to_subject",
+              "to_step_kind",
+              "relation",
+              "digest"
+            ],
+            "type": "object",
+            "x-ranex-semantic-invariants": [
+              "digest is RFC8785 SHA-256 of the complete edge excluding digest",
+              "SOURCE_CHANGE requires unequal subject digests and registered causal source ancestry with no unbound intermediate write",
+              "VALIDATION_ONLY requires identical from_subject and to_subject and cannot conceal a source, fixture, rule, profile, or environment change"
+            ],
+            "x-ranex-type-id": "TddSubjectTransitionEdgeV1",
+            "x-ranex-type-version": "1.0.0"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true,
+          "x-ranex-sequence-order": true
+        },
+        "manifest_id": {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        "step_subjects": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "subject_digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "subject_ref": {
+                "maxLength": 1024,
+                "minLength": 1,
+                "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+                "type": "string"
+              },
+              "subject_schema": {
+                "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+                "type": "string"
+              }
+            },
+            "required": [
+              "subject_schema",
+              "subject_ref",
+              "subject_digest"
+            ],
+            "type": "object",
+            "x-ranex-semantic-invariants": [
+              "subject_ref resolves through the canonical subject registry",
+              "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+              "resolved bytes validate against subject_schema"
+            ],
+            "x-ranex-type-id": "SubjectBindingV1",
+            "x-ranex-type-version": "1.0.0"
+          },
+          "maxItems": 4,
+          "minItems": 1,
+          "type": "array",
+          "x-ranex-sequence-order": true
+        }
+      },
+      "required": [
+        "manifest_id",
+        "base_subject",
+        "step_subjects",
+        "candidate_subject",
+        "edges",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "step_subjects and edges are ordered by containing step sequence, overriding the default bytewise array order, and their counts equal the containing steps count",
+        "base_subject equals the containing cycle base_subject; step_subjects equal the containing step subjects in order; candidate_subject equals both the containing candidate_subject and final ARCHITECTURE_CHECK subject",
+        "edge 1 starts at base_subject, every edge target equals its step_subject, and each later edge starts at the prior edge target",
+        "edge_sequence is contiguous from 1 and to_step_kind equals the corresponding containing step_kind",
+        "digest is RFC8785 SHA-256 of the complete manifest excluding digest"
+      ],
+      "x-ranex-type-id": "TddSubjectTransitionManifestV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "task_packet_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "task_packet_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "tdd_exception_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "test_denominator_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "test_practice_profile_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "test_practice_profile_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "test_practice_profile_version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_schema",
+    "subject_ref",
+    "cycle_id",
+    "policy_id",
+    "policy_version",
+    "test_practice_profile_id",
+    "test_practice_profile_version",
+    "test_practice_profile_digest",
+    "work_item_id",
+    "task_packet_id",
+    "task_packet_digest",
+    "change_profile",
+    "no_refactor_needed",
+    "base_subject",
+    "candidate_subject",
+    "subject_transition_manifest",
+    "step_claims",
+    "cycle_journal_binding",
+    "test_denominator_manifest_digest",
+    "failure_denominator_manifest_digest",
+    "architecture_rule_coverage",
+    "oracle_provenance",
+    "reproducibility_envelope",
+    "built_artifact_digest",
+    "release_profile_id",
+    "release_profile_version",
+    "release_profile_digest",
+    "tdd_exception_ids",
+    "quarantine_ids"
+  ],
+  "title": "TDD_CYCLE_SUBJECT_V1",
+  "type": "object",
+  "x-ranex-projection": {
+    "direct_included_source_fields": [
+      "cycle_id",
+      "policy_id",
+      "policy_version",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "work_item_id",
+      "task_packet_id",
+      "task_packet_digest",
+      "change_profile",
+      "no_refactor_needed",
+      "base_subject",
+      "candidate_subject",
+      "subject_transition_manifest",
+      "cycle_journal_binding",
+      "test_denominator_manifest_digest",
+      "failure_denominator_manifest_digest",
+      "architecture_rule_coverage",
+      "oracle_provenance",
+      "reproducibility_envelope",
+      "built_artifact_digest",
+      "release_profile_id",
+      "release_profile_version",
+      "release_profile_digest",
+      "tdd_exception_ids",
+      "quarantine_ids"
+    ],
+    "excluded_source_fields": [
+      "schema_version",
+      "record_type",
+      "architecture_rule_not_applicable_proofs",
+      "built_artifact_evidence_ref",
+      "evidence_snapshot_ref",
+      "cycle_gate_evaluation_ref",
+      "exact_subject_ref",
+      "exact_subject_digest",
+      "gated_at",
+      "recorded_at",
+      "result",
+      "status"
+    ],
+    "output_fields": [
+      "subject_schema",
+      "subject_ref",
+      "cycle_id",
+      "policy_id",
+      "policy_version",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "work_item_id",
+      "task_packet_id",
+      "task_packet_digest",
+      "change_profile",
+      "no_refactor_needed",
+      "base_subject",
+      "candidate_subject",
+      "subject_transition_manifest",
+      "step_claims",
+      "cycle_journal_binding",
+      "test_denominator_manifest_digest",
+      "failure_denominator_manifest_digest",
+      "architecture_rule_coverage",
+      "oracle_provenance",
+      "reproducibility_envelope",
+      "built_artifact_digest",
+      "release_profile_id",
+      "release_profile_version",
+      "release_profile_digest",
+      "tdd_exception_ids",
+      "quarantine_ids"
+    ],
+    "projection_id": "TDD_CYCLE_SUBJECT_V1",
+    "schema_ref": "schemas/common/tdd-cycle-subject-v1.schema.json",
+    "source_record_type": "TddCycleRecordV1",
+    "subject_ref_rule": "urn:ranex:tdd-cycle-subject:<cycle_id>",
+    "subject_schema": "tdd-cycle-subject/v1",
+    "transformed_source_fields": {
+      "step_claims": {
+        "output_cardinality": "1..4",
+        "output_type": "TddCycleStepClaimV1[]",
+        "sources": [
+          "steps"
+        ],
+        "transform": "project every source step through TddCycleStepClaimV1 in contiguous sequence order"
+      }
+    }
+  },
+  "x-ranex-projection-contract-id": "TDD-CANONICAL-SUBJECT-PROJECTIONS-1.1",
+  "x-ranex-source-catalog-digest": "sha256:23073f228c95690280aec81e283ca1aefe21121e50cfbfaa592ccfda3ad70bde"
+}

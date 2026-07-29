@@ -1,0 +1,21 @@
+{
+  "cases": [
+    {
+      "expected_result": "AUTHORITY_RESOLVED",
+      "fixture_id": "ADR10-AUTH-POS-001",
+      "scenario": "active_landed_behavior_and_direct_change_authority"
+    },
+    {
+      "expected_result": "AUTHORITY_RESOLVED",
+      "fixture_id": "ADR10-AUTH-POS-002",
+      "scenario": "active_landed_behavior_and_direct_migration_authority"
+    },
+    {
+      "expected_result": "AUTHORITY_RESOLVED",
+      "fixture_id": "ADR10-AUTH-POS-003",
+      "scenario": "active_superseding_authority_invalidates_predecessor_and_authorizes_successor"
+    }
+  ],
+  "contract_id": "ADR10-LEGACY-TEST-RECORDS-2.0",
+  "fixture_suite": "ADR10_DIRECT_AUTHORITY_POSITIVE_V1"
+}

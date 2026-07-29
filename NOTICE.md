@@ -9,10 +9,10 @@ Hermes Agent was originally developed by Nous Research.
 
 Copyright (c) 2025 Nous Research.
 
-The upstream source and documentation included in this fork remain licensed
-under the MIT License retained in `LICENSE`. That license permits use,
-modification, publication, distribution, sublicensing, and sale of the
-upstream material, subject to its terms.
+When Phase 1 adopts the upstream source and documentation, that material
+remains licensed under the MIT License retained in `LICENSE`. That license
+permits use, modification, publication, distribution, sublicensing, and sale
+of the upstream material, subject to its terms.
 
 ## Original Ranex material
 

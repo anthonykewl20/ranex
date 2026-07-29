@@ -1,0 +1,68 @@
+{
+  "cases": [
+    {
+      "case_id": "POS-COMMITMENT-CURRENT-EXACT-V2",
+      "expected_authority_effects": [
+        "DELIVERY_COMMITMENT_FACT_ONLY"
+      ],
+      "expected_failure_code": null,
+      "expected_result": "CURRENT_DELIVERY_COMMITMENT",
+      "mutation": "NONE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "POS-ESTIMATE-ONLY-NONAUTHORITATIVE-COMPLETE-V2",
+      "expected_authority_effects": [],
+      "expected_failure_code": null,
+      "expected_result": "ESTIMATE_ONLY_NON_AUTHORITATIVE",
+      "mutation": "NONE",
+      "query_kind": "ESTIMATE_ONLY",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "POS-ESTIMATE-ONLY-NONAUTHORITATIVE-NO-COMMITMENT-ROWS-V2",
+      "expected_authority_effects": [],
+      "expected_failure_code": null,
+      "expected_result": "ESTIMATE_ONLY_NON_AUTHORITATIVE",
+      "mutation": "NONE",
+      "query_kind": "ESTIMATE_ONLY",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "POS-MOST-LIKELY-NULL-STRICT-RANGE-V2",
+      "expected_authority_effects": [],
+      "expected_failure_code": null,
+      "expected_result": "ESTIMATE_ONLY_NON_AUTHORITATIVE",
+      "mutation": "NONE",
+      "query_kind": "ESTIMATE_ONLY",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "POS-OFFLINE-V1-TO-V2-MIGRATION-VALIDATED",
+      "expected_authority_effects": [],
+      "expected_failure_code": null,
+      "expected_result": "ESTIMATE_ONLY_NON_AUTHORITATIVE",
+      "mutation": "NONE",
+      "query_kind": "ESTIMATE_ONLY",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "POS-RECOMMIT-CURRENT-CHANGED-BINDING-V2",
+      "expected_authority_effects": [
+        "DELIVERY_COMMITMENT_FACT_ONLY"
+      ],
+      "expected_failure_code": null,
+      "expected_result": "CURRENT_DELIVERY_COMMITMENT",
+      "mutation": "NONE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    }
+  ],
+  "contract_id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "coverage_status": "DECLARED_DEFINITION_COVERAGE_NOT_EXECUTED",
+  "fixture_suite": "SDLC_ESTIMATE_COMMITMENT_POSITIVE_V2",
+  "runtime_validation_status": "NOT_ASSESSED",
+  "schema_matrix_status": "NOT_EXECUTED",
+  "semantic_execution_count": 0
+}

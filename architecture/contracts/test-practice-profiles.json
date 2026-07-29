@@ -1,0 +1,1199 @@
+{
+  "definition_profile_count": 1,
+  "entries": [
+    {
+      "applicability": {
+        "approval_ref": "ADR-0008",
+        "evidence_refs": [
+          "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+        ],
+        "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+        "result": "APPLICABLE",
+        "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+      },
+      "architecture_checks": [
+        "ORG-PATH-001",
+        "ORG-CONTEXT-001",
+        "ORG-LAYER-001",
+        "ORG-PUBLIC-001",
+        "ORG-DEPENDENCY-001",
+        "ORG-CYCLE-001",
+        "ORG-IMPORT-001",
+        "ORG-COMPOSE-001",
+        "ORG-MESSAGE-001",
+        "ORG-PERSIST-001",
+        "ORG-TEST-MIRROR-001",
+        "ORG-GENERATED-001",
+        "ORG-MIGRATION-001",
+        "ORG-LEGACY-001",
+        "ORG-OWNERSHIP-001",
+        "ORG-DISCOVERY-001",
+        "ORG-NAV-001",
+        "ORG-EXEMPTION-001"
+      ],
+      "category_coverage": [
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "UNIT",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/unit",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "CONTRACT",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/contract",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "INTEGRATION",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/integration",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "ARCHITECTURE",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/architecture",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "ACCEPTANCE",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/acceptance",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "SYSTEM",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/system",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "E2E",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/e2e",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "SECURITY",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/security",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "PERFORMANCE",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/performance",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "RESILIENCE",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/resilience",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "MIGRATION",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/migration",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "REPLAY",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/replay",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "OPERATIONS",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/operations",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "QUALIFICATION",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/qualification",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "EFFECTIVENESS",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/effectiveness",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "EVALUATION",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/evaluation",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "FIXTURES",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/fixtures",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The category is registered and must receive a task-specific disposition; this definition baseline does not require every task to execute the lane.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "category_id": "BUILDERS",
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "root": "tests/builders",
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        }
+      ],
+      "context_layer_mirroring": {
+        "exceptions": [],
+        "lane_shapes": [
+          {
+            "category_id": "UNIT",
+            "mirrored_source_layers": [
+              "domain",
+              "application"
+            ],
+            "path_patterns": [
+              "tests/unit/<context>/domain/**",
+              "tests/unit/<context>/application/**"
+            ],
+            "semantic_owner_parameter": "CONTEXT",
+            "shape_rule": "Mirror owned domain and application behavior; reach dependencies only through owned ports."
+          },
+          {
+            "category_id": "CONTRACT",
+            "mirrored_source_layers": [
+              "api",
+              "application/ports",
+              "adapters"
+            ],
+            "path_patterns": [
+              "tests/contract/<context>/**"
+            ],
+            "semantic_owner_parameter": "CONTEXT",
+            "shape_rule": "Bind public API, port, schema, fake, real-adapter, and compatibility contracts to one context."
+          },
+          {
+            "category_id": "INTEGRATION",
+            "mirrored_source_layers": [
+              "application/ports",
+              "adapters"
+            ],
+            "path_patterns": [
+              "tests/integration/<context>/**"
+            ],
+            "semantic_owner_parameter": "CONTEXT",
+            "shape_rule": "Exercise real owned adapters and ports with production-shaped local dependencies."
+          },
+          {
+            "category_id": "ARCHITECTURE",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/architecture/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind each fitness check to exact registry, rule, path, import, or generated-projection metadata."
+          },
+          {
+            "category_id": "ACCEPTANCE",
+            "mirrored_source_layers": [
+              "api",
+              "application"
+            ],
+            "path_patterns": [
+              "tests/acceptance/<capability>/**"
+            ],
+            "semantic_owner_parameter": "CAPABILITY",
+            "shape_rule": "Organize executable acceptance and rejection examples by owned capability."
+          },
+          {
+            "category_id": "SYSTEM",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/system/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind a complete local product profile and its participating contexts explicitly."
+          },
+          {
+            "category_id": "E2E",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/e2e/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind entry-to-effect/outcome journeys to exact capabilities and delivery edges."
+          },
+          {
+            "category_id": "SECURITY",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/security/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind each denial, abuse, secret, provenance, and sandbox case to its context and risk."
+          },
+          {
+            "category_id": "PERFORMANCE",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/performance/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind versioned workloads and distributions to a capability, resource, and quality objective."
+          },
+          {
+            "category_id": "RESILIENCE",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/resilience/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind faults, crashes, cancellation, recovery, and reconciliation to exact state/effect owners."
+          },
+          {
+            "category_id": "MIGRATION",
+            "mirrored_source_layers": [
+              "adapters"
+            ],
+            "path_patterns": [
+              "tests/migration/<context>/**"
+            ],
+            "semantic_owner_parameter": "CONTEXT",
+            "shape_rule": "Organize context-local persistence migrations by owner; cross-context ordering is explicit metadata."
+          },
+          {
+            "category_id": "REPLAY",
+            "mirrored_source_layers": [
+              "domain",
+              "application",
+              "adapters"
+            ],
+            "path_patterns": [
+              "tests/replay/<context>/**"
+            ],
+            "semantic_owner_parameter": "CONTEXT",
+            "shape_rule": "Bind event/state/upcaster/digest replay fixtures to the owning context."
+          },
+          {
+            "category_id": "OPERATIONS",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/operations/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind install, backup, restore, upgrade, rollback, and recovery procedures to an operational owner."
+          },
+          {
+            "category_id": "QUALIFICATION",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/qualification/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind tool, checker, provider, route, model, and extension qualification to an exact subject."
+          },
+          {
+            "category_id": "EFFECTIVENESS",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/effectiveness/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind outcome and guardrail evaluation to a capability and qualified measure."
+          },
+          {
+            "category_id": "EVALUATION",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/evaluation/**"
+            ],
+            "semantic_owner_parameter": "EXACT_TEST_METADATA",
+            "shape_rule": "Bind benchmark, rubric, judge, and regression evaluation to exact model and dataset versions."
+          },
+          {
+            "category_id": "FIXTURES",
+            "mirrored_source_layers": [],
+            "path_patterns": [
+              "tests/fixtures/<owner>/**"
+            ],
+            "semantic_owner_parameter": "OWNER",
+            "shape_rule": "Store shared fixtures under one declared semantic owner and classification."
+          },
+          {
+            "category_id": "BUILDERS",
+            "mirrored_source_layers": [
+              "domain",
+              "application"
+            ],
+            "path_patterns": [
+              "tests/builders/<context>/**"
+            ],
+            "semantic_owner_parameter": "CONTEXT",
+            "shape_rule": "Keep test-data builders with the context whose invariants and data they construct."
+          }
+        ],
+        "policy": "LANE_SPECIFIC_SUBJECT_SHAPES"
+      },
+      "created_at": "2026-07-28T00:00:00Z",
+      "derived_result": "NOT_ASSESSED",
+      "digest": "sha256:198b967a572b6ee0ba86dbb7eaaafa1a3d55b87a9567504c4fc4b5a86bbcb948",
+      "edge_case_partitions": [
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "corpus_refs": [],
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "invariant_ids": [],
+          "partition_id": "FINITE_STATE_TRANSITIONS",
+          "property_ids": [],
+          "remaining_unknowns": [],
+          "required_methods": [
+            "EXHAUSTIVE_TRANSITION_TABLE"
+          ],
+          "seed_refs": [],
+          "shrinking_reproduction_refs": [],
+          "space_kind": "FINITE"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "corpus_refs": [],
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "invariant_ids": [],
+          "partition_id": "FINITE_BOUNDARY_CLASSES",
+          "property_ids": [],
+          "remaining_unknowns": [],
+          "required_methods": [
+            "BOUNDARY_PARTITION"
+          ],
+          "seed_refs": [],
+          "shrinking_reproduction_refs": [],
+          "space_kind": "FINITE"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "corpus_refs": [],
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "invariant_ids": [],
+          "partition_id": "OPEN_INPUT_AND_SEQUENCE_SPACE",
+          "property_ids": [],
+          "remaining_unknowns": [],
+          "required_methods": [
+            "PROPERTY",
+            "MODEL",
+            "FUZZ"
+          ],
+          "seed_refs": [],
+          "shrinking_reproduction_refs": [],
+          "space_kind": "OPEN"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "corpus_refs": [],
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "invariant_ids": [],
+          "partition_id": "OPEN_IMPLEMENTATION_FAULT_SPACE",
+          "property_ids": [],
+          "remaining_unknowns": [],
+          "required_methods": [
+            "MUTATION",
+            "FAULT_INJECTION"
+          ],
+          "seed_refs": [],
+          "shrinking_reproduction_refs": [],
+          "space_kind": "OPEN"
+        }
+      ],
+      "evidence": {
+        "adapter_fake_contract_refs": [],
+        "built_artifact_refs": [],
+        "composition_identity_refs": [],
+        "fault_injection_evidence_refs": [],
+        "mock_target_classification_refs": [],
+        "mutation_evidence_refs": [],
+        "negative_test_refs": [],
+        "persistence_migration_refs": [],
+        "replay_digest_refs": []
+      },
+      "evidence_bindings": [],
+      "evidence_scope": "NONE",
+      "failure_mode_matrix": [
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "COMMANDS_AND_STATE_TRANSITIONS",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "VALIDATION_AND_AUTH_POLICY_DENIAL",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "PROOF_INTEGRITY_AND_AVAILABILITY",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "VALUE_TIME_RESOURCE_BOUNDARIES",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "DUPLICATE_REORDER_REPLAY_RETRY_IDEMPOTENCY",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "CRASH_TIMEOUT_CANCEL_ACK_LOSS",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "CONCURRENCY_LEASE_FENCING",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "STORAGE_CORRUPTION_MIGRATION_REPLAY_VERSION",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "PROVIDER_NETWORK_TOOL_PARTIAL_EFFECT_RECONCILIATION",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "BACKUP_RESTORE_EXTERNAL_EFFECT_RECONCILIATION",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "PRIVACY_RETENTION_REDACTION_DATA_DISPOSAL",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "SUPPLIER_PACKAGE_SCHEMA_ROUTE_PROVENANCE_MISMATCH",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "failure_mode_class": "RECOVERY_BACKWARD_ROLLBACK_BLOCK_RESUME_CANCEL_TERMINAL",
+          "fault_input_refs": [],
+          "owner_id": "",
+          "precondition_refs": [],
+          "required_assertions": [
+            "EXPECTED_ERROR",
+            "EXPECTED_EVENT",
+            "EXPECTED_STATE",
+            "NO_EFFECT",
+            "RECOVERY"
+          ],
+          "test_lanes": [],
+          "transition_ids": []
+        }
+      ],
+      "fixture_ownership": {
+        "canonical_root_required": true,
+        "classification_required": true,
+        "hidden_fixture_separation_required": true,
+        "mutation_authority_required": true,
+        "owner_required": true
+      },
+      "fixture_records": [],
+      "material_unknowns": [],
+      "obsolete_test_deletion_ids": [],
+      "policy_version": "1.0.0",
+      "production_evidence_obligations": [
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "obligation_id": "BUILT_ARTIFACT_AND_COMPOSITION_IDENTITY",
+          "required_evidence_fields": [
+            "built_artifact_refs",
+            "composition_identity_refs"
+          ],
+          "task_selection_rule": "ALWAYS_WHEN_TASK_RESULT_IS_PASS"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "obligation_id": "MOCK_TARGET_CLASSIFICATION",
+          "required_evidence_fields": [
+            "mock_target_classification_refs"
+          ],
+          "task_selection_rule": "APPLICABLE_WHEN_ANY_TEST_DOUBLE_IS_USED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "obligation_id": "FAKE_REAL_ADAPTER_PARITY",
+          "required_evidence_fields": [
+            "adapter_fake_contract_refs"
+          ],
+          "task_selection_rule": "APPLICABLE_WHEN_AN_EXTERNAL_PORT_OR_FAKE_IS_USED"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "obligation_id": "REAL_SQLITE_AND_MIGRATION",
+          "required_evidence_fields": [
+            "persistence_migration_refs"
+          ],
+          "task_selection_rule": "APPLICABLE_WHEN_PERSISTENCE_OR_SCHEMA_CHANGES"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "obligation_id": "REPLAY_DIGEST_STABILITY",
+          "required_evidence_fields": [
+            "replay_digest_refs"
+          ],
+          "task_selection_rule": "APPLICABLE_WHEN_EVENTS_STATE_UPCASTERS_OR_REPLAY_CHANGE"
+        },
+        {
+          "applicability": {
+            "approval_ref": "ADR-0008",
+            "evidence_refs": [
+              "docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md"
+            ],
+            "reason": "The definition baseline applies the test contract to every production change; task-specific execution evidence remains unassessed.",
+            "result": "APPLICABLE",
+            "rule_id": "TDD-DEFAULT-ALL-PRODUCTION-CHANGES"
+          },
+          "evidence_refs": [],
+          "execution_status": "NOT_ASSESSED",
+          "obligation_id": "NEGATIVE_MUTATION_AND_FAULT_EVIDENCE",
+          "required_evidence_fields": [
+            "negative_test_refs",
+            "mutation_evidence_refs",
+            "fault_injection_evidence_refs"
+          ],
+          "task_selection_rule": "RISK_AND_EXACT_SUBJECT_SELECTED"
+        }
+      ],
+      "production_path_parity": {
+        "adapter_fake_contract_parity_required": true,
+        "alternate_policy_or_reducer_paths_forbidden": true,
+        "bypass_flags_forbidden": true,
+        "mocks_only_at_declared_external_ports": true,
+        "real_migrations_and_sqlite_required_for_persistence": true,
+        "replay_digest_stability_required": true,
+        "same_artifact_contracts_required": true,
+        "same_composition_root_required": true,
+        "same_public_apis_required": true,
+        "test_only_production_conditionals_forbidden": true
+      },
+      "profile_id": "TESTPROFILE-WAVE1-DEFINITION-001",
+      "profile_kind": "DEFINITION_BASELINE",
+      "profile_version": "1.0.0",
+      "quarantine_ids": [],
+      "quarantine_policy": {
+        "expiry_required": true,
+        "linked_work_item_required": true,
+        "metadata_required": true,
+        "owner_required": true,
+        "reason_required": true,
+        "silent_skip_forbidden": true
+      },
+      "registry_digest": "sha256:4ae71c7a9aec1fdc0e24a133b166fad6a3f0e41ff45eecd5b0e681afed46e44c",
+      "registry_id": "REG-TEST-PRACTICES-001",
+      "registry_version": "1.0.0",
+      "runtime_evidence_status": "NOT_ASSESSED",
+      "schema_version": "test-practice-profile/v1",
+      "sealing_eligible": false,
+      "subject_digest": null,
+      "subject_ref": null,
+      "tdd_cycle_ids": [],
+      "tdd_exception_ids": [],
+      "test_roots": [
+        "tests/unit",
+        "tests/contract",
+        "tests/integration",
+        "tests/architecture",
+        "tests/acceptance",
+        "tests/system",
+        "tests/e2e",
+        "tests/security",
+        "tests/performance",
+        "tests/resilience",
+        "tests/migration",
+        "tests/replay",
+        "tests/operations",
+        "tests/qualification",
+        "tests/effectiveness",
+        "tests/evaluation",
+        "tests/fixtures",
+        "tests/builders"
+      ],
+      "traceability": {
+        "practice_ids": [
+          "TDD-LOOP-001",
+          "TDD-PROFILE-001",
+          "TDD-RED-001",
+          "TDD-JOURNAL-001",
+          "TDD-ARCH-COVERAGE-001",
+          "TDD-LANDING-001",
+          "TDD-REPRO-001",
+          "TDD-ORACLE-001",
+          "TDD-PROD-001",
+          "TDD-ARTIFACT-001",
+          "TDD-SEAM-001",
+          "TDD-SQLITE-001",
+          "TDD-TAXONOMY-001",
+          "TDD-FAILURE-001",
+          "TDD-STATE-001",
+          "TDD-OPEN-001",
+          "TDD-FIXTURE-001",
+          "TDD-FLAKE-001",
+          "TDD-GENERATED-001",
+          "TDD-MIGRATION-001",
+          "TDD-DATA-001",
+          "TDD-LANES-001",
+          "TDD-MUTATION-001",
+          "TDD-OBS-001",
+          "TDD-NONCOMP-001",
+          "TDD-EXEMPTION-001"
+        ],
+        "requirement_ids": [],
+        "risk_ids": [],
+        "transition_ids": []
+      },
+      "unit_lane_policy": {
+        "ambient_randomness_forbidden": true,
+        "declared_seed_required": true,
+        "deterministic_id_source_required": true,
+        "injected_clock_required": true,
+        "network_forbidden": true,
+        "wall_clock_forbidden": true
+      }
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-TEST-PRACTICE-PROFILES-001",
+  "runtime_enactment_status": "NOT_ASSESSED",
+  "runtime_profile_count": 0,
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

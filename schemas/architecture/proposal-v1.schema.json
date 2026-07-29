@@ -1,0 +1,121 @@
+{
+  "$id": "https://schemas.ranex.dev/architecture/proposal-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_tests": {
+      "items": {},
+      "type": "array"
+    },
+    "alternatives": {
+      "items": {},
+      "type": "array"
+    },
+    "architecture_review_packet_id": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "architecture_proposal"
+    },
+    "bounded_context_changes": {
+      "items": {},
+      "type": "array"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "dependency_rule_changes": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "explicit_exclusions": {
+      "items": {},
+      "type": "array"
+    },
+    "migration_and_rollback": {
+      "items": {},
+      "type": "array"
+    },
+    "producer_attempt_id": {
+      "type": "string"
+    },
+    "proposal_id": {
+      "type": "string"
+    },
+    "public_api_changes": {
+      "items": {},
+      "type": "array"
+    },
+    "repository_tree_changes": {
+      "items": {},
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "state_and_effect_ownership_changes": {
+      "items": {},
+      "type": "array"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "trust_and_security_changes": {
+      "items": {},
+      "type": "array"
+    },
+    "unknowns": {
+      "items": {},
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "proposal_id",
+    "architecture_review_packet_id",
+    "producer_attempt_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "bounded_context_changes",
+    "public_api_changes",
+    "state_and_effect_ownership_changes",
+    "repository_tree_changes",
+    "dependency_rule_changes",
+    "trust_and_security_changes",
+    "migration_and_rollback",
+    "alternatives",
+    "acceptance_tests",
+    "explicit_exclusions",
+    "unknowns",
+    "evidence_refs",
+    "digest"
+  ],
+  "title": "architecture_proposal",
+  "type": "object",
+  "x-ranex-canonical-producer": "analytical_review",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/ARCHITECTURE_PROPOSAL.yaml"
+}

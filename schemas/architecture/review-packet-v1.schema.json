@@ -1,0 +1,479 @@
+{
+  "$id": "https://schemas.ranex.dev/architecture/review-packet-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "const": "architecture_review_packet"
+    },
+    "budgets": {
+      "additionalProperties": false,
+      "properties": {
+        "absolute_deadline": {
+          "type": "string",
+          "x-ranex-runtime-format": "date-time"
+        },
+        "cost_budget": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "output_byte_budget": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "token_budget": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "absolute_deadline",
+        "token_budget",
+        "cost_budget",
+        "output_byte_budget"
+      ],
+      "type": "object"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "current_state": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_adr_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "dependency_graph_artifact": {
+          "type": "string"
+        },
+        "path_ownership_artifact": {
+          "type": "string"
+        },
+        "repository_tree_artifact": {
+          "type": "string"
+        },
+        "state_ownership_artifact": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "repository_tree_artifact",
+        "dependency_graph_artifact",
+        "state_ownership_artifact",
+        "path_ownership_artifact",
+        "accepted_adr_refs"
+      ],
+      "type": "object"
+    },
+    "decision": {
+      "additionalProperties": false,
+      "properties": {
+        "alternatives": {
+          "items": {},
+          "type": "array"
+        },
+        "non_goals": {
+          "items": {},
+          "type": "array"
+        },
+        "owner_principal_id": {
+          "type": "string"
+        },
+        "question": {
+          "type": "string"
+        },
+        "scope": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "question",
+        "owner_principal_id",
+        "scope",
+        "non_goals",
+        "alternatives"
+      ],
+      "type": "object"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "items": {},
+          "type": "array"
+        },
+        "conflicts": {
+          "items": {},
+          "type": "array"
+        },
+        "known_facts": {
+          "items": {},
+          "type": "array"
+        },
+        "source_manifest": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "authority": {
+                "type": "string"
+              },
+              "digest": {
+                "type": "string",
+                "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "freshness": {
+                "type": "string"
+              },
+              "path_or_uri": {
+                "type": "string"
+              },
+              "revision": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "path_or_uri",
+              "revision",
+              "digest",
+              "authority",
+              "freshness"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "unknowns": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_manifest",
+        "known_facts",
+        "assumptions",
+        "unknowns",
+        "conflicts"
+      ],
+      "type": "object"
+    },
+    "full_map_impact": {
+      "additionalProperties": false,
+      "properties": {
+        "affected_contexts": {
+          "items": {},
+          "type": "array"
+        },
+        "affected_data_owners": {
+          "items": {},
+          "type": "array"
+        },
+        "affected_effect_owners": {
+          "items": {},
+          "type": "array"
+        },
+        "affected_lifecycles": {
+          "items": {},
+          "type": "array"
+        },
+        "affected_public_apis": {
+          "items": {},
+          "type": "array"
+        },
+        "affected_trust_boundaries": {
+          "items": {},
+          "type": "array"
+        },
+        "changed_exclusions": {
+          "items": {},
+          "type": "array"
+        },
+        "preserved_attachment_points": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "affected_contexts",
+        "affected_public_apis",
+        "affected_data_owners",
+        "affected_effect_owners",
+        "affected_lifecycles",
+        "affected_trust_boundaries",
+        "preserved_attachment_points",
+        "changed_exclusions"
+      ],
+      "type": "object"
+    },
+    "packet_id": {
+      "type": "string"
+    },
+    "required_output": {
+      "additionalProperties": false,
+      "properties": {
+        "acceptance_tests": {
+          "type": "boolean"
+        },
+        "bounded_context_map": {
+          "type": "boolean"
+        },
+        "dependency_rules": {
+          "type": "boolean"
+        },
+        "explicit_exclusions": {
+          "type": "boolean"
+        },
+        "migration_and_rollback": {
+          "type": "boolean"
+        },
+        "public_api_map": {
+          "type": "boolean"
+        },
+        "remaining_unknowns": {
+          "type": "boolean"
+        },
+        "repository_tree": {
+          "type": "boolean"
+        },
+        "state_and_effect_ownership": {
+          "type": "boolean"
+        },
+        "threat_and_failure_analysis": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "bounded_context_map",
+        "repository_tree",
+        "dependency_rules",
+        "public_api_map",
+        "state_and_effect_ownership",
+        "migration_and_rollback",
+        "threat_and_failure_analysis",
+        "acceptance_tests",
+        "explicit_exclusions",
+        "remaining_unknowns"
+      ],
+      "type": "object"
+    },
+    "review_roles": {
+      "additionalProperties": false,
+      "properties": {
+        "independence_requirements": {
+          "additionalProperties": false,
+          "properties": {
+            "actual_route_facts_compared": {
+              "type": "boolean"
+            },
+            "blind_to_primary_initially": {
+              "type": "boolean"
+            },
+            "exact_subject": {
+              "type": "boolean"
+            },
+            "hidden_verification_withheld": {
+              "type": "boolean"
+            },
+            "read_only": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "blind_to_primary_initially",
+            "read_only",
+            "exact_subject",
+            "actual_route_facts_compared",
+            "hidden_verification_withheld"
+          ],
+          "type": "object"
+        },
+        "independent_challenger": {
+          "additionalProperties": false,
+          "properties": {
+            "actual_route_lock_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "preferred_route": {
+              "type": "string"
+            },
+            "required_qualification_scope": {
+              "type": "string"
+            },
+            "role_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "role_id",
+            "preferred_route",
+            "required_qualification_scope",
+            "actual_route_lock_id"
+          ],
+          "type": "object"
+        },
+        "primary_specialist": {
+          "additionalProperties": false,
+          "properties": {
+            "actual_route_lock_id": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "preferred_route": {
+              "type": "string"
+            },
+            "required_qualification_scope": {
+              "type": "string"
+            },
+            "role_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "role_id",
+            "preferred_route",
+            "required_qualification_scope",
+            "actual_route_lock_id"
+          ],
+          "type": "object"
+        },
+        "unavailable_route_behavior": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "primary_specialist",
+        "independent_challenger",
+        "independence_requirements",
+        "unavailable_route_behavior"
+      ],
+      "type": "object"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "status": {
+      "type": "string"
+    },
+    "subject": {
+      "additionalProperties": false,
+      "properties": {
+        "accepted_adr_registry_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "architecture_document_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "architecture_document_path": {
+          "type": "string"
+        },
+        "architecture_subject_manifest_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "base_revision": {
+          "type": "string"
+        },
+        "candidate_revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contract_and_template_manifest_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "repository_id": {
+          "type": "string"
+        },
+        "repository_uri_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "research_manifest_digests": {
+          "items": {},
+          "type": "array"
+        },
+        "review_prompt_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "subject_schema": {
+          "type": "string"
+        },
+        "work_item_id": {
+          "type": "string"
+        },
+        "working_tree_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "subject_schema",
+        "project_id",
+        "work_item_id",
+        "repository_id",
+        "repository_uri_digest",
+        "base_revision",
+        "candidate_revision",
+        "working_tree_digest",
+        "architecture_document_path",
+        "architecture_document_digest",
+        "architecture_subject_manifest_digest",
+        "research_manifest_digests",
+        "contract_and_template_manifest_digest",
+        "accepted_adr_registry_digest",
+        "review_prompt_digest"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "packet_id",
+    "status",
+    "subject",
+    "core_sdlc_trace_ref",
+    "decision",
+    "full_map_impact",
+    "current_state",
+    "evidence",
+    "review_roles",
+    "required_output",
+    "budgets",
+    "digest"
+  ],
+  "title": "architecture_review_packet",
+  "type": "object",
+  "x-ranex-canonical-producer": "context_compilation",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/ARCHITECTURE_REVIEW_PACKET.yaml"
+}

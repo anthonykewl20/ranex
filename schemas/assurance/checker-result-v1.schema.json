@@ -1,0 +1,373 @@
+{
+  "$id": "https://schemas.ranex.dev/assurance/checker-result-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "applicability_proof_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "artifact_type": {
+      "const": "checker_result"
+    },
+    "checker": {
+      "additionalProperties": false,
+      "properties": {
+        "checker_id": {
+          "type": "string"
+        },
+        "checker_version": {
+          "type": "string"
+        },
+        "code_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "fixture_suite_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "qualification_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "checker_id",
+        "checker_version",
+        "code_digest",
+        "fixture_suite_digest",
+        "qualification_id"
+      ],
+      "type": "object"
+    },
+    "checker_result_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "coverage": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "failure_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "failure_fingerprint": {
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": {
+            "criterion_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "expected_failure_code": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "failure_denominator_row_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "failure_denominator_row_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            },
+            "harness_failure_exclusion": {
+              "const": true
+            },
+            "matcher_digest": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            },
+            "matcher_ref": {
+              "maxLength": 1024,
+              "minLength": 1,
+              "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+              "type": "string"
+            },
+            "matcher_schema": {
+              "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+              "type": "string"
+            },
+            "stable_test_id": {
+              "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+              "type": "string"
+            }
+          },
+          "required": [
+            "stable_test_id",
+            "criterion_id",
+            "failure_denominator_row_id",
+            "failure_denominator_row_digest",
+            "matcher_schema",
+            "matcher_ref",
+            "matcher_digest",
+            "expected_failure_code",
+            "harness_failure_exclusion"
+          ],
+          "type": "object",
+          "x-ranex-semantic-invariants": [
+            "stable_test_id and criterion_id resolve in the cycle test-denominator manifest",
+            "failure_denominator_row_id resolves exactly once in the cycle failure-denominator manifest and its RFC8785 SHA-256 equals failure_denominator_row_digest",
+            "matcher_ref resolves immutable bytes validating matcher_schema and hashing to matcher_digest",
+            "the matcher is a closed structural predicate over qualified checker outcome and raw artifacts, not an unbounded prose or substring assertion",
+            "the checker failure_code equals expected_failure_code and the resolved matcher accepts the observed assertion failure",
+            "ERROR, TIMEOUT, CANCELLATION, HARNESS_FAILURE, launch failure, missing result, or a failure from another stable_test_id or criterion_id never satisfies the fingerprint"
+          ],
+          "x-ranex-type-id": "ExpectedFailureFingerprintV1",
+          "x-ranex-type-version": "1.0.0"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "finished_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "limitations": {
+      "items": {},
+      "type": "array"
+    },
+    "outcome": {
+      "type": "string"
+    },
+    "raw_artifact_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "started_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "base_commit": {
+          "type": "string"
+        },
+        "candidate_commit": {
+          "type": "string"
+        },
+        "capability_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effect_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_run_aggregate_version": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "module_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "module_profile_id": {
+          "type": "string"
+        },
+        "packet_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "packet_id": {
+          "type": "string"
+        },
+        "policy_activation_id": {
+          "type": "string"
+        },
+        "policy_activation_manifest_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "policy_decision_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "release_profile_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "release_profile_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "release_profile_version": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "repository_id": {
+          "type": "string"
+        },
+        "repository_uri_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "route_lock_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "schema_registry_version": {
+          "type": "string"
+        },
+        "subject_schema": {
+          "type": "string"
+        },
+        "test_practice_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "test_practice_profile_id": {
+          "type": "string"
+        },
+        "test_practice_profile_version": {
+          "type": "string"
+        },
+        "work_item_id": {
+          "type": "string"
+        },
+        "workflow_definition_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "workflow_definition_id": {
+          "type": "string"
+        },
+        "workflow_interpreter_version": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "project_id",
+        "work_item_id",
+        "run_id",
+        "activity_id",
+        "effect_id",
+        "workspace_id",
+        "repository_id",
+        "repository_uri_digest",
+        "base_commit",
+        "candidate_commit",
+        "artifact_digest",
+        "packet_id",
+        "packet_digest",
+        "workflow_definition_id",
+        "workflow_definition_digest",
+        "workflow_interpreter_version",
+        "policy_activation_id",
+        "policy_activation_manifest_digest",
+        "policy_decision_digest",
+        "module_profile_id",
+        "module_profile_digest",
+        "capability_grant_digest",
+        "route_lock_id",
+        "schema_registry_version",
+        "expected_run_aggregate_version",
+        "test_practice_profile_id",
+        "test_practice_profile_version",
+        "test_practice_profile_digest",
+        "release_profile_id",
+        "release_profile_version",
+        "release_profile_digest"
+      ],
+      "type": "object"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "checker_result_id",
+    "core_sdlc_trace_ref",
+    "checker",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject",
+    "status",
+    "outcome",
+    "failure_code",
+    "failure_fingerprint",
+    "applicability_proof_ref",
+    "evidence_refs",
+    "raw_artifact_refs",
+    "coverage",
+    "limitations",
+    "started_at",
+    "finished_at",
+    "digest"
+  ],
+  "title": "checker_result",
+  "type": "object",
+  "x-ranex-canonical-producer": "assurance",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/CHECKER_RESULT.yaml"
+}

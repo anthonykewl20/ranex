@@ -1,0 +1,120 @@
+{
+  "$id": "https://schemas.ranex.dev/assurance/readiness-evidence-binding-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "bridge_rule_id": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "evidence_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "evidence_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+      "type": "string"
+    },
+    "evidence_schema": {
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "gate_id": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "type": "string"
+    },
+    "native_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "native_subject_manifest_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "native_subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+      "type": "string"
+    },
+    "native_subject_schema": {
+      "maxLength": 4096,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "readiness_basis_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "readiness_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "readiness_subject_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "readiness_subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "READINESS_EVIDENCE_BINDING"
+    },
+    "schema_version": {
+      "const": "1"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "gate_id",
+    "readiness_subject_ref",
+    "readiness_subject_digest",
+    "readiness_subject_manifest_digest",
+    "readiness_basis_digest",
+    "native_subject_schema",
+    "native_subject_ref",
+    "native_subject_digest",
+    "native_subject_manifest_digest",
+    "evidence_schema",
+    "evidence_ref",
+    "evidence_digest",
+    "bridge_rule_id",
+    "digest"
+  ],
+  "title": "Ranex readiness native-subject evidence binding",
+  "type": "object",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-semantic-invariants": [
+    "digest is RFC8785 SHA-256 over every field except digest",
+    "the four readiness fields equal the containing assessment's independently resolved exact subject and basis",
+    "evidence_ref/digest resolves immutable bytes whose native subject tuple exactly equals the four native_subject_* fields",
+    "bridge_rule_id is the one registered rule for gate_id; the resolver independently proves its relation and rejects caller-selected relabeling"
+  ],
+  "x-ranex-source-adr": "ADR-0012",
+  "x-ranex-source-contract-id": "RANEX-READINESS-TIER-CONTROL-1.0",
+  "x-ranex-type-id": "ReadinessEvidenceBindingV1"
+}

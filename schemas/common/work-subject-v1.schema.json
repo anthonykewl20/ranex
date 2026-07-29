@@ -1,0 +1,79 @@
+{
+  "$id": "https://schemas.ranex.dev/common/work-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "base_revision": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "design_baseline_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observed_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "project_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "repository_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "repository_uri_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "requirements_baseline_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "signal_evidence_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "work-subject/v1"
+    },
+    "work_baseline_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_schema",
+    "project_id",
+    "work_item_id",
+    "repository_id",
+    "repository_uri_digest",
+    "base_revision",
+    "work_baseline_manifest_digest",
+    "signal_evidence_digest",
+    "requirements_baseline_digest",
+    "design_baseline_digest",
+    "observed_at"
+  ],
+  "title": "work-subject-v1",
+  "type": "object"
+}

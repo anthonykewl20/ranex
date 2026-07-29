@@ -1,0 +1,345 @@
+{
+  "$id": "https://schemas.ranex.dev/common/hermes-research-provision-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "additionalProperties": false,
+      "properties": {
+        "blocking_stage": {
+          "enum": [
+            "IMPLEMENTATION_START",
+            "PRODUCTION_READY",
+            "RELEASE",
+            "EFFECT_DISPATCH",
+            "MODULE_ACTIVATION",
+            "GATE_ADVANCE",
+            "MIGRATION"
+          ]
+        },
+        "catalog_id": {
+          "const": "RANEX-HERMES-RESEARCH-PROMOTIONS"
+        },
+        "catalog_version": {
+          "const": "1.1.0"
+        },
+        "check_class": {
+          "enum": [
+            "ARCHITECTURE_CONTRACT",
+            "STATIC_FITNESS",
+            "RUNTIME_FITNESS",
+            "RELEASE_FITNESS",
+            "MODULE_FITNESS",
+            "AUTHORITY_FITNESS",
+            "EVIDENCE_FITNESS",
+            "MIGRATION_FITNESS",
+            "LEGAL_COMPLIANCE_FITNESS",
+            "SUPPLY_CHAIN_FITNESS"
+          ]
+        },
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "failure_outcome": {
+          "const": "BLOCK"
+        },
+        "governing_adr": {
+          "const": "ADR-0013"
+        },
+        "governing_adr_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "governing_adr_source": {
+          "const": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md"
+        },
+        "guard_id": {
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "type": "string"
+        },
+        "provision": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "type": "string"
+        },
+        "provision_id": {
+          "pattern": "^HERMES-PROMOTION-[0-9]{3}$",
+          "type": "string"
+        },
+        "required_result": {
+          "const": "PASS"
+        },
+        "research_source_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "runtime_validation_status": {
+          "const": "NOT_ASSESSED"
+        },
+        "source_end_line": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "source_excerpt_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_path": {
+          "const": "docs/research/hermes-core-architecture-research-2026-07-27.md"
+        },
+        "source_ref": {
+          "pattern": "^docs/research/hermes\\-core\\-architecture\\-research\\-2026\\-07\\-27\\.md:[1-9][0-9]*$",
+          "type": "string"
+        },
+        "source_start_line": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "status": {
+          "const": "PROMOTED"
+        }
+      },
+      "required": [
+        "source_ref",
+        "source_end_line",
+        "source_path",
+        "source_start_line",
+        "source_excerpt_digest",
+        "research_source_digest",
+        "catalog_id",
+        "catalog_version",
+        "governing_adr",
+        "governing_adr_source",
+        "governing_adr_digest",
+        "digest",
+        "provision_id",
+        "status",
+        "guard_id",
+        "check_class",
+        "blocking_stage",
+        "provision",
+        "required_result",
+        "failure_outcome",
+        "runtime_validation_status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "absence_outcome": {
+          "const": "BLOCK"
+        },
+        "activation_without_decision": {
+          "const": "DENIED"
+        },
+        "blocking_stage": {
+          "enum": [
+            "IMPLEMENTATION_START",
+            "PRODUCTION_READY",
+            "RELEASE",
+            "EFFECT_DISPATCH",
+            "MODULE_ACTIVATION",
+            "GATE_ADVANCE",
+            "MIGRATION"
+          ]
+        },
+        "catalog_id": {
+          "const": "RANEX-HERMES-RESEARCH-PROMOTIONS"
+        },
+        "catalog_version": {
+          "const": "1.1.0"
+        },
+        "decision_subject": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "type": "string"
+        },
+        "default": {
+          "type": "null"
+        },
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "governing_adr": {
+          "const": "ADR-0013"
+        },
+        "governing_adr_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "governing_adr_source": {
+          "const": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md"
+        },
+        "guard_id": {
+          "pattern": "^[A-Z][A-Z0-9_]*$",
+          "type": "string"
+        },
+        "owner_decision_ref": {
+          "type": "null"
+        },
+        "provision_id": {
+          "pattern": "^HERMES-OWNER-DECISION-[0-9]{3}$",
+          "type": "string"
+        },
+        "required_decision_artifact": {
+          "const": "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
+        },
+        "research_source_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "runtime_validation_status": {
+          "const": "BLOCKED_OWNER_DECISION_REQUIRED"
+        },
+        "source_end_line": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "source_excerpt_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_path": {
+          "const": "docs/research/hermes-core-architecture-research-2026-07-27.md"
+        },
+        "source_ref": {
+          "pattern": "^docs/research/hermes\\-core\\-architecture\\-research\\-2026\\-07\\-27\\.md:[1-9][0-9]*$",
+          "type": "string"
+        },
+        "source_start_line": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "status": {
+          "const": "OWNER_DECISION_REQUIRED"
+        }
+      },
+      "required": [
+        "source_ref",
+        "source_end_line",
+        "source_path",
+        "source_start_line",
+        "source_excerpt_digest",
+        "research_source_digest",
+        "catalog_id",
+        "catalog_version",
+        "governing_adr",
+        "governing_adr_source",
+        "governing_adr_digest",
+        "digest",
+        "provision_id",
+        "status",
+        "guard_id",
+        "blocking_stage",
+        "decision_subject",
+        "required_decision_artifact",
+        "owner_decision_ref",
+        "default",
+        "absence_outcome",
+        "activation_without_decision",
+        "runtime_validation_status"
+      ],
+      "type": "object"
+    },
+    {
+      "additionalProperties": false,
+      "properties": {
+        "catalog_id": {
+          "const": "RANEX-HERMES-RESEARCH-PROMOTIONS"
+        },
+        "catalog_version": {
+          "const": "1.1.0"
+        },
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "governing_adr": {
+          "const": "ADR-0013"
+        },
+        "governing_adr_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "governing_adr_source": {
+          "const": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md"
+        },
+        "provision_id": {
+          "pattern": "^HERMES-RESEARCH-ONLY-[0-9]{3}$",
+          "type": "string"
+        },
+        "reason": {
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "type": "string"
+        },
+        "reason_code": {
+          "enum": [
+            "FACT_NOT_NORMATIVE",
+            "CONDITIONAL_MIGRATION_GUIDANCE",
+            "ILLUSTRATIVE_NONCANONICAL",
+            "SUPERSEDED_LAYOUT",
+            "OWNER_SCOPE_NOT_SELECTED",
+            "NONQUANTIFIED_RECOMMENDATION",
+            "MATURITY_ASSESSMENT_NOT_CONTROL",
+            "ADVISORY_MODEL_EVIDENCE"
+          ]
+        },
+        "research_source_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "runtime_validation_status": {
+          "const": "NOT_APPLICABLE"
+        },
+        "source_end_line": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "source_excerpt_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "source_path": {
+          "const": "docs/research/hermes-core-architecture-research-2026-07-27.md"
+        },
+        "source_ref": {
+          "pattern": "^docs/research/hermes\\-core\\-architecture\\-research\\-2026\\-07\\-27\\.md:[1-9][0-9]*$",
+          "type": "string"
+        },
+        "source_start_line": {
+          "minimum": 1,
+          "type": "integer"
+        },
+        "status": {
+          "const": "RESEARCH_ONLY"
+        }
+      },
+      "required": [
+        "source_ref",
+        "source_end_line",
+        "source_path",
+        "source_start_line",
+        "source_excerpt_digest",
+        "research_source_digest",
+        "catalog_id",
+        "catalog_version",
+        "governing_adr",
+        "governing_adr_source",
+        "governing_adr_digest",
+        "digest",
+        "provision_id",
+        "status",
+        "reason_code",
+        "reason",
+        "runtime_validation_status"
+      ],
+      "type": "object"
+    }
+  ],
+  "title": "Ranex Hermes research promotion provision",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-source-registry": "architecture/contracts/hermes-research-promotions.json"
+}

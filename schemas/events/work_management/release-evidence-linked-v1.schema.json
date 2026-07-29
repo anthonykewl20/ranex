@@ -1,0 +1,84 @@
+{
+  "$id": "https://schemas.ranex.dev/events/work_management/release-evidence-linked-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "linked_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "relation": {
+      "enum": [
+        "SUPPORTS",
+        "INVALIDATES",
+        "SUPERSEDES",
+        "CONTEXTUALIZES"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "ENUM-EVIDENCE-RELATION-1.0"
+    },
+    "release_evidence_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "ReleaseEvidence",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "ReleaseEvidence"
+    },
+    "release_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Release",
+      "x-ranex-registered-opaque-id": true
+    },
+    "work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "work_item_id",
+    "release_evidence_ref",
+    "release_id",
+    "relation",
+    "linked_at"
+  ],
+  "title": "ReleaseEvidenceLinked event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-RELEASEEVIDENCELINKED",
+  "x-ranex-event-name": "ReleaseEvidenceLinked",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:ReleaseEvidenceLinked:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "ReleaseEvidenceLinked",
+    "referenced_axis_ids": [
+      "EvidenceRelation",
+      "ReleaseStatus"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:1c0e361b688c79c3b94b824e8c1fbdebe0bedbf8423ea67ef3bcd9f38722bd2d"
+}

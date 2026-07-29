@@ -1,0 +1,1927 @@
+{
+  "cases": [
+    {
+      "case_id": "NEG-ACCEPTANCE-CRITERIA-NOT-EQUAL-SCOPE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ACCEPTANCE-CRITERIA-NOT-EQUAL-SCOPE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ACCEPTANCE-CRITERIA-NOT-EQUAL-SCOPE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ACCEPTANCE-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ACCEPTANCE-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ACCEPTANCE-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ACCEPTANCE-DEFINITION-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ACCEPTANCE-DEFINITION-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ACCEPTANCE-DEFINITION-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ACCEPTANCE-MISSING-CURRENT-ROW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ACCEPTANCE-MISSING-CURRENT-ROW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ACCEPTANCE-MISSING-CURRENT-ROW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ACCEPTANCE-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ACCEPTANCE-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ACCEPTANCE-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ACCEPTANCE-VERIFICATION-POPULATION-MALFORMED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ACCEPTANCE-VERIFICATION-POPULATION-MALFORMED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ACCEPTANCE-VERIFICATION-POPULATION-MALFORMED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-AUTHORITY-ESCALATION-GATE-PASS",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-AUTHORITY-ESCALATION-GATE-PASS",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-AUTHORITY-ESCALATION-GATE-PASS",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-AUTHORITY-ESCALATION-GRANT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-AUTHORITY-ESCALATION-GRANT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-AUTHORITY-ESCALATION-GRANT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-AUTHORITY-ESCALATION-LANDING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-AUTHORITY-ESCALATION-LANDING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-AUTHORITY-ESCALATION-LANDING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-AUTHORITY-ESCALATION-PERMIT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-AUTHORITY-ESCALATION-PERMIT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-AUTHORITY-ESCALATION-PERMIT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-AUTHORITY-ESCALATION-RELEASE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-AUTHORITY-ESCALATION-RELEASE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-AUTHORITY-ESCALATION-RELEASE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-AUTHORITY-ESCALATION-STATE-TRANSITION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-AUTHORITY-ESCALATION-STATE-TRANSITION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-AUTHORITY-ESCALATION-STATE-TRANSITION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-CAPACITY-BUSINESS-PAYLOAD-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-CAPACITY-BUSINESS-PAYLOAD-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-CAPACITY-BUSINESS-PAYLOAD-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-CAPACITY-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-CAPACITY-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-CAPACITY-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-CAPACITY-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-CAPACITY-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-CAPACITY-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-CAPACITY-ESTIMATE-BINDING-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-CAPACITY-ESTIMATE-BINDING-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-CAPACITY-ESTIMATE-BINDING-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-CAPACITY-MISSING-CURRENT-ROW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-CAPACITY-MISSING-CURRENT-ROW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-CAPACITY-MISSING-CURRENT-ROW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-CAPACITY-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-CAPACITY-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-CAPACITY-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ACTION-ADAPTER-ID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ACTION-ADAPTER-ID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ACTION-ADAPTER-ID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ACTION-ADAPTER-VERSION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ACTION-ADAPTER-VERSION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ACTION-ADAPTER-VERSION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ACTION-CANONICAL-ARGUMENT-DIGEST",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ACTION-CANONICAL-ARGUMENT-DIGEST",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ACTION-CANONICAL-ARGUMENT-DIGEST",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ACTION-DESTINATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ACTION-DESTINATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ACTION-DESTINATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ACTION-TYPE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ACTION-TYPE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ACTION-TYPE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ARTIFACT-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ARTIFACT-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ARTIFACT-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ARTIFACT-MISSING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ARTIFACT-MISSING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ARTIFACT-MISSING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ARTIFACT-REGISTERED-BEFORE-ISSUE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ARTIFACT-REGISTERED-BEFORE-ISSUE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ARTIFACT-REGISTERED-BEFORE-ISSUE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-AUTHENTICATION-CONTEXT-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-AUTHENTICATION-CONTEXT-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-AUTHENTICATION-CONTEXT-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-AUTHENTICATION-EXPIRED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-AUTHENTICATION-EXPIRED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-AUTHENTICATION-EXPIRED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-AUTHENTICATOR-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-AUTHENTICATOR-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-AUTHENTICATOR-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-AUTHENTICATOR-REVOKED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-AUTHENTICATOR-REVOKED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-AUTHENTICATOR-REVOKED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-CHALLENGE-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-CHALLENGE-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-CHALLENGE-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-CHANGED-BINDING-WITHOUT-RECOMMIT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-CHANGED-BINDING-WITHOUT-RECOMMIT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-CHANGED-BINDING-WITHOUT-RECOMMIT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-CONDITIONS-DUPLICATE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-CONDITIONS-DUPLICATE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-CONDITIONS-DUPLICATE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-CONDITIONS-EXTRA",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-CONDITIONS-EXTRA",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-CONDITIONS-EXTRA",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-CONDITIONS-MISSING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-CONDITIONS-MISSING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-CONDITIONS-MISSING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-CONDITIONS-OUT-OF-ORDER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-CONDITIONS-OUT-OF-ORDER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-CONDITIONS-OUT-OF-ORDER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-DUPLICATE-CURRENT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-DUPLICATE-CURRENT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-DUPLICATE-CURRENT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ESTIMATE-USED-AS-COMMITMENT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ESTIMATE-USED-AS-COMMITMENT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ESTIMATE-USED-AS-COMMITMENT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-EXPIRED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-EXPIRED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-EXPIRED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-EXPIRES-AT-NOT-PLAN-WINDOW-END",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-EXPIRES-AT-NOT-PLAN-WINDOW-END",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-EXPIRES-AT-NOT-PLAN-WINDOW-END",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ISSUED-AFTER-TRUSTED-TIME",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ISSUED-AFTER-TRUSTED-TIME",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ISSUED-AFTER-TRUSTED-TIME",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ISSUED-BEFORE-BOUND-AUTHORITY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ISSUED-BEFORE-BOUND-AUTHORITY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ISSUED-BEFORE-BOUND-AUTHORITY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-ISSUED-BEFORE-PLAN-WINDOW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-ISSUED-BEFORE-PLAN-WINDOW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-ISSUED-BEFORE-PLAN-WINDOW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-MISSING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-MISSING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-MISSING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-NONCE-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-NONCE-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-NONCE-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-OUTCOME-NOT-APPROVED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-OUTCOME-NOT-APPROVED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-OUTCOME-NOT-APPROVED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-OVERLAPPING-CURRENT-WINDOW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-OVERLAPPING-CURRENT-WINDOW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-OVERLAPPING-CURRENT-WINDOW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-PRINCIPAL-NOT-OWNER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-PRINCIPAL-NOT-OWNER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-PRINCIPAL-NOT-OWNER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-REVOKED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-REVOKED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-REVOKED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SCOPE-DUPLICATE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SCOPE-DUPLICATE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SCOPE-DUPLICATE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SCOPE-EXTRA",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SCOPE-EXTRA",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SCOPE-EXTRA",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SCOPE-MISSING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SCOPE-MISSING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SCOPE-MISSING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SCOPE-OUT-OF-ORDER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SCOPE-OUT-OF-ORDER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SCOPE-OUT-OF-ORDER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-STATUS-NOT-APPROVED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-STATUS-NOT-APPROVED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-STATUS-NOT-APPROVED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUBJECT-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUBJECT-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUBJECT-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUBJECT-MANIFEST-DIGEST-MISSING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUBJECT-MANIFEST-DIGEST-MISSING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUBJECT-MANIFEST-DIGEST-MISSING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUBJECT-MANIFEST-DIGEST-NONNULL",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUBJECT-MANIFEST-DIGEST-NONNULL",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUBJECT-MANIFEST-DIGEST-NONNULL",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUBJECT-REF-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUBJECT-REF-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUBJECT-REF-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUPERSEDED-PRIOR-PRESENTED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUPERSEDED-PRIOR-PRESENTED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUPERSEDED-PRIOR-PRESENTED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUPERSESSION-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUPERSESSION-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUPERSESSION-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUPERSESSION-CYCLE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUPERSESSION-CYCLE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUPERSESSION-CYCLE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUPERSESSION-FORK",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUPERSESSION-FORK",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUPERSESSION-FORK",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUPERSESSION-NONCHRONOLOGICAL",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUPERSESSION-NONCHRONOLOGICAL",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUPERSESSION-NONCHRONOLOGICAL",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-SUPERSESSION-SKIPS-IMMEDIATE-PRIOR",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-SUPERSESSION-SKIPS-IMMEDIATE-PRIOR",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-SUPERSESSION-SKIPS-IMMEDIATE-PRIOR",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-TRACE-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-TRACE-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-TRACE-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DECISION-WRONG-KIND",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DECISION-WRONG-KIND",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DECISION-WRONG-KIND",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DEPENDENCY-BUSINESS-PAYLOAD-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DEPENDENCY-BUSINESS-PAYLOAD-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DEPENDENCY-BUSINESS-PAYLOAD-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DEPENDENCY-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DEPENDENCY-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DEPENDENCY-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DEPENDENCY-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DEPENDENCY-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DEPENDENCY-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DEPENDENCY-ESTIMATE-BINDING-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DEPENDENCY-ESTIMATE-BINDING-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DEPENDENCY-ESTIMATE-BINDING-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DEPENDENCY-MISSING-CURRENT-ROW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DEPENDENCY-MISSING-CURRENT-ROW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DEPENDENCY-MISSING-CURRENT-ROW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-DEPENDENCY-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-DEPENDENCY-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-DEPENDENCY-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-ADMISSION-BEFORE-RESERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-ADMISSION-BEFORE-RESERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-ADMISSION-BEFORE-RESERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-ADMITTED-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-ADMITTED-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-ADMITTED-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-DUPLICATE-RESERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-DUPLICATE-RESERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-DUPLICATE-RESERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-HISTORY-CYCLE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-HISTORY-CYCLE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-HISTORY-CYCLE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-HISTORY-DELETION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-HISTORY-DELETION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-HISTORY-DELETION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-HISTORY-FORK",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-HISTORY-FORK",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-HISTORY-FORK",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-HISTORY-ORPHAN-GENERATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-HISTORY-ORPHAN-GENERATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-HISTORY-ORPHAN-GENERATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-HISTORY-PRIOR-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-HISTORY-PRIOR-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-HISTORY-PRIOR-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-HISTORY-REWRITE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-HISTORY-REWRITE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-HISTORY-REWRITE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-MISSING-RESERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-MISSING-RESERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-MISSING-RESERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-ORPHAN-RESERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-ORPHAN-RESERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-ORPHAN-RESERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-RESERVED-AFTER-ESTIMATE-OBSERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-RESERVED-AFTER-ESTIMATE-OBSERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-RESERVED-AFTER-ESTIMATE-OBSERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-REUSE-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-REUSE-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-REUSE-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTID-REUSE-SAME-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTID-REUSE-SAME-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTID-REUSE-SAME-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-ASSUMPTIONS-DUPLICATE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-ASSUMPTIONS-DUPLICATE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-ASSUMPTIONS-DUPLICATE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-ASSUMPTIONS-EMPTY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-ASSUMPTIONS-EMPTY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-ASSUMPTIONS-EMPTY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-ASSUMPTIONS-OUT-OF-ORDER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-ASSUMPTIONS-OUT-OF-ORDER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-ASSUMPTIONS-OUT-OF-ORDER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-EVIDENCE-BINDINGS-DUPLICATE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-EVIDENCE-BINDINGS-DUPLICATE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-EVIDENCE-BINDINGS-DUPLICATE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-EVIDENCE-BINDINGS-EMPTY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-EVIDENCE-BINDINGS-EMPTY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-EVIDENCE-BINDINGS-EMPTY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-EVIDENCE-BINDINGS-OUT-OF-ORDER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-EVIDENCE-BINDINGS-OUT-OF-ORDER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-EVIDENCE-BINDINGS-OUT-OF-ORDER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-EXPIRED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-EXPIRED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-EXPIRED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-FUTURE-OBSERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-FUTURE-OBSERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-FUTURE-OBSERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-INVALID-VALIDITY-INTERVAL",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-INVALID-VALIDITY-INTERVAL",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-INVALID-VALIDITY-INTERVAL",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-LOWER-EQUAL-UPPER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-LOWER-EQUAL-UPPER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-LOWER-EQUAL-UPPER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-LOWER-GREATER-UPPER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-LOWER-GREATER-UPPER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-LOWER-GREATER-UPPER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-MOST-LIKELY-ABOVE-UPPER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-MOST-LIKELY-ABOVE-UPPER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-MOST-LIKELY-ABOVE-UPPER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-MOST-LIKELY-BELOW-LOWER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-MOST-LIKELY-BELOW-LOWER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-MOST-LIKELY-BELOW-LOWER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-MOST-LIKELY-EQUAL-LOWER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-MOST-LIKELY-EQUAL-LOWER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-MOST-LIKELY-EQUAL-LOWER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-MOST-LIKELY-EQUAL-UPPER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-MOST-LIKELY-EQUAL-UPPER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-MOST-LIKELY-EQUAL-UPPER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-MOST-LIKELY-STRING-NULL",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-MOST-LIKELY-STRING-NULL",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-MOST-LIKELY-STRING-NULL",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-STALE-SUPERSEDED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-STALE-SUPERSEDED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-STALE-SUPERSEDED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-SUBJECT-SCHEMA-NOT-WORK-ITEM-SCOPE-V1",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-SUBJECT-SCHEMA-NOT-WORK-ITEM-SCOPE-V1",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-SUBJECT-SCHEMA-NOT-WORK-ITEM-SCOPE-V1",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-SUPERSESSION-CROSS-SERIES-SIGNATURE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-SUPERSESSION-CROSS-SERIES-SIGNATURE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-SUPERSESSION-CROSS-SERIES-SIGNATURE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-SUPERSESSION-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-SUPERSESSION-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-SUPERSESSION-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-SUPERSESSION-CYCLE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-SUPERSESSION-CYCLE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-SUPERSESSION-CYCLE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-SUPERSESSION-FORK",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-SUPERSESSION-FORK",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-SUPERSESSION-FORK",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-ESTIMATE-SUPERSESSION-NONCHRONOLOGICAL",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-ESTIMATE-SUPERSESSION-NONCHRONOLOGICAL",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-ESTIMATE-SUPERSESSION-NONCHRONOLOGICAL",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-ARTIFACT-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-ARTIFACT-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-ARTIFACT-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-BINDING-DUPLICATE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-BINDING-DUPLICATE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-BINDING-DUPLICATE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-BINDING-OUT-OF-ORDER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-BINDING-OUT-OF-ORDER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-BINDING-OUT-OF-ORDER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-CROSS-LINEAGE-ID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-CROSS-LINEAGE-ID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-CROSS-LINEAGE-ID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-MISSING-AUTHORITY-ROW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-MISSING-AUTHORITY-ROW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-MISSING-AUTHORITY-ROW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-REF-VERSION-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-REF-VERSION-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-REF-VERSION-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-ROW-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-ROW-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-ROW-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-EVIDENCE-STALE-AT-ESTIMATE-OBSERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-EVIDENCE-STALE-AT-ESTIMATE-OBSERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-EVIDENCE-STALE-AT-ESTIMATE-OBSERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-CROSS-LINEAGE-ID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-CROSS-LINEAGE-ID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-CROSS-LINEAGE-ID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-DEFINITION-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-DEFINITION-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-DEFINITION-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-MISSING-AUTHORITY-ROW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-MISSING-AUTHORITY-ROW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-MISSING-AUTHORITY-ROW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-REF-VERSION-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-REF-VERSION-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-REF-VERSION-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-ROW-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-ROW-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-ROW-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-STALE-AT-ESTIMATE-OBSERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-STALE-AT-ESTIMATE-OBSERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-STALE-AT-ESTIMATE-OBSERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-METHOD-SYNTHESIZED-BY-RESOLVER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-METHOD-SYNTHESIZED-BY-RESOLVER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-METHOD-SYNTHESIZED-BY-RESOLVER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-OWNER-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-OWNER-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-OWNER-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-OWNER-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-OWNER-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-OWNER-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-OWNER-MISSING-CURRENT-ASSIGNMENT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-OWNER-MISSING-CURRENT-ASSIGNMENT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-OWNER-MISSING-CURRENT-ASSIGNMENT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-OWNER-MULTIPLE-CURRENT-ASSIGNMENTS",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-OWNER-MULTIPLE-CURRENT-ASSIGNMENTS",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-OWNER-MULTIPLE-CURRENT-ASSIGNMENTS",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-OWNER-PRINCIPAL-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-OWNER-PRINCIPAL-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-OWNER-PRINCIPAL-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-OWNER-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-OWNER-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-OWNER-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-OWNER-WRONG-ROLE-ID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-OWNER-WRONG-ROLE-ID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-OWNER-WRONG-ROLE-ID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-BOUND-SOURCE-VALIDITY-END-BEFORE-WINDOW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-BOUND-SOURCE-VALIDITY-END-BEFORE-WINDOW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-BOUND-SOURCE-VALIDITY-END-BEFORE-WINDOW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-CALLER-OVERRIDDEN-WINDOW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-CALLER-OVERRIDDEN-WINDOW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-CALLER-OVERRIDDEN-WINDOW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-DUPLICATE-ESTIMATE-ID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-DUPLICATE-ESTIMATE-ID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-DUPLICATE-ESTIMATE-ID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-ESTIMATE-ID-OUT-OF-ORDER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-ESTIMATE-ID-OUT-OF-ORDER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-ESTIMATE-ID-OUT-OF-ORDER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-EXPIRED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-EXPIRED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-EXPIRED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-EXTRA-ESTIMATE-ID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-EXTRA-ESTIMATE-ID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-EXTRA-ESTIMATE-ID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-HARDCODED-WINDOW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-HARDCODED-WINDOW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-HARDCODED-WINDOW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-MISSING-CURRENT-PLAN",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-MISSING-CURRENT-PLAN",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-MISSING-CURRENT-PLAN",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-MULTIPLE-CURRENT-PLANS",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-MULTIPLE-CURRENT-PLANS",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-MULTIPLE-CURRENT-PLANS",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-OMITTED-CURRENT-ESTIMATE-ID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-OMITTED-CURRENT-ESTIMATE-ID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-OMITTED-CURRENT-ESTIMATE-ID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-PROJECTION-WINDOW-NOT-EXACT-COPY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-PROJECTION-WINDOW-NOT-EXACT-COPY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-PROJECTION-WINDOW-NOT-EXACT-COPY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-WINDOW-END-AFTER-VALID-UNTIL",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-WINDOW-END-AFTER-VALID-UNTIL",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-WINDOW-END-AFTER-VALID-UNTIL",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-WINDOW-EQUAL-ENDPOINTS",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-WINDOW-EQUAL-ENDPOINTS",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-WINDOW-EQUAL-ENDPOINTS",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-WINDOW-REVERSED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-WINDOW-REVERSED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-WINDOW-REVERSED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-WRONG-OWNER-BINDING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-WRONG-OWNER-BINDING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-WRONG-OWNER-BINDING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PLAN-WRONG-ROLE-BINDING-DIGEST",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PLAN-WRONG-ROLE-BINDING-DIGEST",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PLAN-WRONG-ROLE-BINDING-DIGEST",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PREPARER-AUTHORITY-ESCALATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PREPARER-AUTHORITY-ESCALATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PREPARER-AUTHORITY-ESCALATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PREPARER-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PREPARER-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PREPARER-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PREPARER-MISSING-PROVENANCE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PREPARER-MISSING-PROVENANCE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PREPARER-MISSING-PROVENANCE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PREPARER-PRINCIPAL-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PREPARER-PRINCIPAL-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PREPARER-PRINCIPAL-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PREPARER-STALE-AUTHENTICATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PREPARER-STALE-AUTHENTICATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PREPARER-STALE-AUTHENTICATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-PREPARER-UNAUTHENTICATED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-PREPARER-UNAUTHENTICATED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-PREPARER-UNAUTHENTICATED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-RISK-BUSINESS-PAYLOAD-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-RISK-BUSINESS-PAYLOAD-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-RISK-BUSINESS-PAYLOAD-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-RISK-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-RISK-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-RISK-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-RISK-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-RISK-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-RISK-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-RISK-MISSING-CURRENT-ROW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-RISK-MISSING-CURRENT-ROW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-RISK-MISSING-CURRENT-ROW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-RISK-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-RISK-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-RISK-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SCOPE-BUSINESS-POPULATION-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SCOPE-BUSINESS-POPULATION-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SCOPE-BUSINESS-POPULATION-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SCOPE-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SCOPE-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SCOPE-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SCOPE-DEFINITION-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SCOPE-DEFINITION-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SCOPE-DEFINITION-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SCOPE-MISSING-CURRENT-ROW",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SCOPE-MISSING-CURRENT-ROW",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SCOPE-MISSING-CURRENT-ROW",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SCOPE-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SCOPE-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SCOPE-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-ATTESTATION-CHALLENGE-REUSE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-ATTESTATION-CHALLENGE-REUSE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-ATTESTATION-CHALLENGE-REUSE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-ATTESTATION-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-ATTESTATION-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-ATTESTATION-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-ATTESTATION-EXPIRED",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-ATTESTATION-EXPIRED",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-ATTESTATION-EXPIRED",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-ATTESTATION-KEY-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-ATTESTATION-KEY-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-ATTESTATION-KEY-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-ATTESTATION-MISSING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-ATTESTATION-MISSING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-ATTESTATION-MISSING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-ATTESTATION-SIGNATURE-INVALID",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-ATTESTATION-SIGNATURE-INVALID",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-ATTESTATION-SIGNATURE-INVALID",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-ATTESTATION-UNTRUSTED-ADAPTER",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-ATTESTATION-UNTRUSTED-ADAPTER",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-ATTESTATION-UNTRUSTED-ADAPTER",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-AUTOMATIC-V1-WRAP",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-AUTOMATIC-V1-WRAP",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-AUTOMATIC-V1-WRAP",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-CALLER-FILTERED-REGISTRY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-CALLER-FILTERED-REGISTRY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-CALLER-FILTERED-REGISTRY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-CALLER-SUPPLIED-ENVELOPE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-CALLER-SUPPLIED-ENVELOPE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-CALLER-SUPPLIED-ENVELOPE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-EXTRA-ROLE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-EXTRA-ROLE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-EXTRA-ROLE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-FUTURE-REGISTRY-PUBLICATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-FUTURE-REGISTRY-PUBLICATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-FUTURE-REGISTRY-PUBLICATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-MISSING-ROLE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-MISSING-ROLE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-MISSING-ROLE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-MIXED-V1-V2",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-MIXED-V1-V2",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-MIXED-V1-V2",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-PARTIAL-MIGRATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-PARTIAL-MIGRATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-PARTIAL-MIGRATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-PARTIAL-REGISTRY-HISTORY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-PARTIAL-REGISTRY-HISTORY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-PARTIAL-REGISTRY-HISTORY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-RAW-V1-ESTIMATE-LIST",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-RAW-V1-ESTIMATE-LIST",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-RAW-V1-ESTIMATE-LIST",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REGISTRY-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REGISTRY-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REGISTRY-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REGISTRY-GENERATION-REGRESSION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REGISTRY-GENERATION-REGRESSION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REGISTRY-GENERATION-REGRESSION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REGISTRY-HISTORY-ANCHOR-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REGISTRY-HISTORY-ANCHOR-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REGISTRY-HISTORY-ANCHOR-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REGISTRY-PRIOR-PUBLICATION-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REGISTRY-PRIOR-PUBLICATION-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REGISTRY-PRIOR-PUBLICATION-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REGISTRY-RE-ROOTED-HISTORY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REGISTRY-RE-ROOTED-HISTORY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REGISTRY-RE-ROOTED-HISTORY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REGISTRY-ROW-DELETION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REGISTRY-ROW-DELETION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REGISTRY-ROW-DELETION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REPLAY-LEDGER-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REPLAY-LEDGER-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REPLAY-LEDGER-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REPLAY-PRIOR-RESERVATION-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REPLAY-PRIOR-RESERVATION-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REPLAY-PRIOR-RESERVATION-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REPLAY-RESERVATION-MISSING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REPLAY-RESERVATION-MISSING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REPLAY-RESERVATION-MISSING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REPLAY-RESERVATION-REUSE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REPLAY-RESERVATION-REUSE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REPLAY-RESERVATION-REUSE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-REPLAY-STALE-CURRENT-REGISTRY",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-REPLAY-STALE-CURRENT-REGISTRY",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-REPLAY-STALE-CURRENT-REGISTRY",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-UNKNOWN-ROLE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-UNKNOWN-ROLE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-UNKNOWN-ROLE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-UNVERSIONED-ENVELOPE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-UNVERSIONED-ENVELOPE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-UNVERSIONED-ENVELOPE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-SOURCE-V1-ENVELOPE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-SOURCE-V1-ENVELOPE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-SOURCE-V1-ENVELOPE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-CHAIN-FORK",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-CHAIN-FORK",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-CHAIN-FORK",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-INSTANT-NONMONOTONIC",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-INSTANT-NONMONOTONIC",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-INSTANT-NONMONOTONIC",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-MISSING-CURRENT-OBSERVATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-MISSING-CURRENT-OBSERVATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-MISSING-CURRENT-OBSERVATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-MONOTONIC-COUNTER-REGRESSION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-MONOTONIC-COUNTER-REGRESSION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-MONOTONIC-COUNTER-REGRESSION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-PREVIOUS-DIGEST-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-PREVIOUS-DIGEST-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-PREVIOUS-DIGEST-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-STALE-AT-EVALUATION",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-STALE-AT-EVALUATION",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-STALE-AT-EVALUATION",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TIME-UNTRUSTED-SOURCE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TIME-UNTRUSTED-SOURCE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TIME-UNTRUSTED-SOURCE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TRACE-CROSS-WORK-ITEM",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TRACE-CROSS-WORK-ITEM",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TRACE-CROSS-WORK-ITEM",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TRACE-DIGEST-DRIFT",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TRACE-DIGEST-DRIFT",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TRACE-DIGEST-DRIFT",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TRACE-MISSING-CURRENT-BINDING",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TRACE-MISSING-CURRENT-BINDING",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TRACE-MISSING-CURRENT-BINDING",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TRACE-SCHEMA-MISMATCH",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TRACE-SCHEMA-MISMATCH",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TRACE-SCHEMA-MISMATCH",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    },
+    {
+      "case_id": "NEG-TRACE-STALE",
+      "expected_authority_effects": [],
+      "expected_failure_code": "NEG-TRACE-STALE",
+      "expected_result": "REJECTED_ZERO_AUTHORITY",
+      "mutation": "NEG-TRACE-STALE",
+      "query_kind": "COMMITMENT",
+      "source_envelope_version": "2.0.0"
+    }
+  ],
+  "contract_id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "coverage_status": "DECLARED_DEFINITION_COVERAGE_NOT_EXECUTED",
+  "fixture_suite": "SDLC_ESTIMATE_COMMITMENT_NEGATIVE_V2",
+  "runtime_validation_status": "NOT_ASSESSED",
+  "schema_matrix_status": "NOT_EXECUTED",
+  "semantic_execution_count": 0
+}

@@ -10,8 +10,8 @@ This license applies only to original Ranex code, documentation, configuration,
 artwork, and modifications owned by Anthony Garces (the "Ranex Material").
 
 It does not apply to Hermes Agent material or any other third-party material.
-Those portions remain governed by their own licenses. Hermes Agent material
-included in this fork retains its MIT License in `LICENSE`.
+Those portions remain governed by their own licenses. When Hermes Agent
+material is adopted in Phase 1, its MIT License is retained in `LICENSE`.
 
 ## 2. Personal-use permission
 

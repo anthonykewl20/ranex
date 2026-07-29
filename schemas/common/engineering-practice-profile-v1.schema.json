@@ -1,0 +1,77 @@
+{
+  "$id": "https://schemas.ranex.dev/common/engineering-practice-profile-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "profile_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "registry_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "registry_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "engineering-practice-profile/v1"
+    },
+    "sealing_eligible": {
+      "type": "boolean"
+    },
+    "source_coverage": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "applicability": {
+            "enum": [
+              "APPLICABLE",
+              "NOT_APPLICABLE",
+              "UNKNOWN"
+            ]
+          },
+          "evidence_refs": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "source_family_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_family_id",
+          "applicability",
+          "reason",
+          "evidence_refs"
+        ],
+        "type": "object"
+      },
+      "maxItems": 10,
+      "minItems": 10,
+      "type": "array",
+      "uniqueItems": true
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile_id",
+    "registry_version",
+    "registry_digest",
+    "source_coverage",
+    "sealing_eligible",
+    "digest"
+  ],
+  "type": "object"
+}

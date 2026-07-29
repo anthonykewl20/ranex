@@ -1,0 +1,76 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/estimate-id-reservation-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "admitted_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "admitted_estimate_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "estimate_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "prior_generation_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "record_type": {
+      "const": "ESTIMATE_ID_RESERVATION"
+    },
+    "reservation_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "reserved_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "reservation_id",
+    "estimate_id",
+    "work_item_id",
+    "reserved_at",
+    "admitted_at",
+    "admitted_estimate_digest",
+    "prior_generation_digest",
+    "digest"
+  ],
+  "title": "EstimateIdReservationV1",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "reserved_at <= the bound EstimateObservationV1 observed_at <= admitted_at, and admitted_estimate_digest equals that immutable estimate digest for estimate_id and work_item_id.",
+    "estimate_id, reservation_id, and their binding are globally immutable and nonreusable, including after expiry or supersession."
+  ],
+  "x-ranex-source-authority-contract-id": "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0",
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "EstimateIdReservationV1"
+}

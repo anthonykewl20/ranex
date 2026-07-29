@@ -1,0 +1,99 @@
+{
+  "$id": "https://schemas.ranex.dev/events/work_management/run-requested-for-work-item-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "requested_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "requested_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "requested_subject_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "Artifact",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "Artifact"
+    },
+    "run_request_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "RunRequest",
+      "x-ranex-registered-opaque-id": true
+    },
+    "work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    },
+    "workflow_request_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "WorkflowRequest",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "WorkflowRequest"
+    }
+  },
+  "required": [
+    "work_item_id",
+    "run_request_id",
+    "requested_subject_ref",
+    "requested_subject_digest",
+    "workflow_request_ref",
+    "requested_at"
+  ],
+  "title": "RunRequestedForWorkItem event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-RUNREQUESTEDFORWORKITEM",
+  "x-ranex-event-name": "RunRequestedForWorkItem",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:RunRequestedForWorkItem:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "RunRequestedForWorkItem",
+    "referenced_axis_ids": []
+  },
+  "x-ranex-state-binding-digest": "sha256:2d8181524fd8e644fc7928bca2f0ee0ac1850cf31747844251711c316bfc13e1"
+}

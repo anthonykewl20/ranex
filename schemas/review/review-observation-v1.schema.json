@@ -1,0 +1,160 @@
+{
+  "$id": "https://schemas.ranex.dev/review/review-observation-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis_attempt_id": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "review_observation"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "findings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "type": "string"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "epistemic_status": {
+            "type": "string"
+          },
+          "evidence_refs": {
+            "items": {},
+            "type": "array"
+          },
+          "finding_id": {
+            "type": "string"
+          },
+          "impact": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "owner_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "reconciliation_ref": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "required_action": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "finding_id",
+          "category",
+          "severity",
+          "confidence",
+          "epistemic_status",
+          "location",
+          "claim",
+          "impact",
+          "evidence_refs",
+          "required_action",
+          "owner_ref",
+          "state",
+          "reconciliation_ref"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "limitations": {
+      "items": {},
+      "type": "array"
+    },
+    "observation_id": {
+      "type": "string"
+    },
+    "proposed_actions": {
+      "items": {},
+      "type": "array"
+    },
+    "review_request_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "state": {
+      "type": "string"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "uncertainties": {
+      "items": {},
+      "type": "array"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "observation_id",
+    "review_request_id",
+    "analysis_attempt_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "state",
+    "summary",
+    "findings",
+    "uncertainties",
+    "limitations",
+    "proposed_actions",
+    "digest"
+  ],
+  "title": "review_observation",
+  "type": "object",
+  "x-ranex-canonical-producer": "analytical_review",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/REVIEW_OBSERVATION.yaml"
+}

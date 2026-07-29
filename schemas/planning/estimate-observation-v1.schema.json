@@ -1,0 +1,213 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/estimate-observation-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "capacity_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "capacity_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "confidence": {
+      "enum": [
+        "UNKNOWN",
+        "LOW",
+        "MEDIUM",
+        "HIGH"
+      ],
+      "type": "string"
+    },
+    "dependency_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "dependency_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "estimate_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "estimate_kind": {
+      "enum": [
+        "ELAPSED_TIME",
+        "EFFORT",
+        "COST",
+        "CAPACITY",
+        "OTHER"
+      ],
+      "type": "string"
+    },
+    "evidence_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "evidence_ref": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_ref",
+          "evidence_digest"
+        ],
+        "type": "object",
+        "x-ranex-semantic-invariants": [],
+        "x-ranex-type-id": "EstimateEvidenceBindingV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "lower_bound": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "method_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "most_likely": {
+      "oneOf": [
+        {
+          "minimum": 0,
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "observed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "prepared_by_principal_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "ESTIMATE_OBSERVATION"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "work-item-scope/v1"
+    },
+    "supersedes_estimate_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "unit": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "upper_bound": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "valid_until": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "estimate_id",
+    "work_item_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "estimate_kind",
+    "unit",
+    "lower_bound",
+    "most_likely",
+    "upper_bound",
+    "confidence",
+    "method_ref",
+    "assumptions",
+    "evidence_bindings",
+    "capacity_snapshot_ref",
+    "capacity_snapshot_digest",
+    "dependency_snapshot_ref",
+    "dependency_snapshot_digest",
+    "prepared_by_principal_id",
+    "observed_at",
+    "valid_until",
+    "supersedes_estimate_id",
+    "digest"
+  ],
+  "title": "Ranex immutable estimate observation",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "lower_bound < upper_bound; most_likely is JSON null or lower_bound < most_likely < upper_bound; observed_at < valid_until. Equality at either bound fails.",
+    "digest is RFC8785 SHA-256 of every field except digest; estimate_id and digest are immutable and globally nonreusable.",
+    "subject_schema is exactly work-item-scope/v1 and subject_ref/digest resolve the exact ScopeAuthorityRowV1. A successor preserves work_item_id, subject schema/ref/digest, estimate_kind, and unit.",
+    "Each root estimate defines an immutable derived series ID equal to its own estimate_id; every successor inherits that root series ID through supersedes_estimate_id. Multiple concurrent series and CURRENT heads are allowed for one work item, including alternative estimates with the same series signature, but every series has at most one CURRENT head and the plan includes all heads.",
+    "An estimate is CURRENT at a trusted instant only when observed_at <= instant < valid_until and no later admitted estimate names it in supersedes_estimate_id. A non-null supersedes_estimate_id names exactly one earlier-admitted estimate in the same derived series and work_item; observation/admission time strictly increases and each series graph is single-predecessor, single-successor, and acyclic.",
+    "assumptions and evidence_bindings are exact duplicate-free bytewise sets; their received order must already be canonical.",
+    "subject, capacity, dependency, method, preparer provenance, and every evidence binding independently resolve by exact ref and digest for the same work item and observation time.",
+    "No EstimateObservationV1 field or status has gate, decision, state-transition, grant, permit, landing, release, or effect authority."
+  ],
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "EstimateObservationV1"
+}

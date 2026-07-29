@@ -1,0 +1,26 @@
+{
+  "cases": [
+    {
+      "expected_result": "SCOPE_DESTINATION_RESOLVED",
+      "fixture_id": "ADR10-SCOPE-POS-001",
+      "scenario": "direct_top_level_change_exact_landed_classification_authority"
+    },
+    {
+      "expected_result": "SCOPE_DESTINATION_RESOLVED",
+      "fixture_id": "ADR10-SCOPE-POS-002",
+      "scenario": "direct_top_level_migration_exact_landed_classification_authority"
+    },
+    {
+      "expected_result": "SCOPE_DESTINATION_RESOLVED",
+      "fixture_id": "ADR10-SCOPE-POS-003",
+      "scenario": "fixed_root_change_null_classification"
+    },
+    {
+      "expected_result": "SCOPE_DESTINATION_RESOLVED",
+      "fixture_id": "ADR10-SCOPE-POS-004",
+      "scenario": "fixed_root_migration_null_classification"
+    }
+  ],
+  "contract_id": "ADR10-LEGACY-TEST-RECORDS-2.0",
+  "fixture_suite": "ADR10_SCOPE_DESTINATION_POSITIVE_V2"
+}

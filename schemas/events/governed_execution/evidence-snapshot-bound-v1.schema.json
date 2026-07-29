@@ -1,0 +1,85 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/evidence-snapshot-bound-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "evidence_snapshot_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "EvidenceSnapshot",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "EvidenceSnapshot"
+    },
+    "freshness_cutoff": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "gate_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Gate",
+      "x-ranex-registered-opaque-id": true
+    },
+    "required_claim_ids": {
+      "items": {
+        "maxLength": 255,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+        "type": "string",
+        "x-ranex-id-type": "Claim",
+        "x-ranex-registered-opaque-id": true
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "run_id",
+    "gate_id",
+    "evidence_snapshot_ref",
+    "required_claim_ids",
+    "freshness_cutoff"
+  ],
+  "title": "EvidenceSnapshotBound event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-EVIDENCESNAPSHOTBOUND",
+  "x-ranex-event-name": "EvidenceSnapshotBound",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:EvidenceSnapshotBound:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "EvidenceSnapshotBound",
+    "referenced_axis_ids": []
+  },
+  "x-ranex-state-binding-digest": "sha256:e8b5c6b80ad3b45ee03f129701f1705861137162036791d5e1bfeb6a32ac0c8f"
+}

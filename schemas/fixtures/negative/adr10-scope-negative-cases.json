@@ -1,0 +1,91 @@
+{
+  "cases": [
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_ROW_MISSING",
+      "fixture_id": "ADR10-SCOPE-NEG-001",
+      "scenario": "unknown_scope_id"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_ROW_MISSING",
+      "fixture_id": "ADR10-SCOPE-NEG-002",
+      "scenario": "missing_scope_row"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_ROW_DUPLICATE",
+      "fixture_id": "ADR10-SCOPE-NEG-003",
+      "scenario": "duplicate_scope_row"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_SOURCE_BINDING",
+      "fixture_id": "ADR10-SCOPE-NEG-004",
+      "scenario": "wrong_scope_for_source_path"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_SOURCE_OVERLAP",
+      "fixture_id": "ADR10-SCOPE-NEG-005",
+      "scenario": "overlapping_scope_match"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_POPULATION_DIGEST",
+      "fixture_id": "ADR10-SCOPE-NEG-006",
+      "scenario": "baseline_population_digest_mismatch"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_POLICY_BINDING",
+      "fixture_id": "ADR10-SCOPE-NEG-007",
+      "scenario": "stale_or_wrong_policy_binding"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_EXPIRED",
+      "fixture_id": "ADR10-SCOPE-NEG-008",
+      "scenario": "expired_scope"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_DESTINATION_PATH",
+      "fixture_id": "ADR10-SCOPE-NEG-009",
+      "scenario": "fixed_destination_outside_root"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_CLASSIFICATION_MISSING",
+      "fixture_id": "ADR10-SCOPE-NEG-010",
+      "scenario": "migration_missing_or_wrong_classification_root"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_CLASSIFICATION_MISSING",
+      "fixture_id": "ADR10-SCOPE-NEG-011",
+      "scenario": "change_missing_classification"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_CLASSIFICATION_BINDING",
+      "fixture_id": "ADR10-SCOPE-NEG-012",
+      "scenario": "change_wrong_classification_root"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_LIFECYCLE",
+      "fixture_id": "ADR10-SCOPE-NEG-013",
+      "scenario": "change_stale_classification"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_DECISION_SUBJECT",
+      "fixture_id": "ADR10-SCOPE-NEG-014",
+      "scenario": "change_cross_subject_classification"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_DESTINATION_PATH",
+      "fixture_id": "ADR10-SCOPE-NEG-015",
+      "scenario": "noncanonical_or_non_py_destination"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_DESTINATION_PATH",
+      "fixture_id": "ADR10-SCOPE-NEG-016",
+      "scenario": "path_traversal_or_legacy_recontamination"
+    },
+    {
+      "expected_error": "LEGACY_TEST_SCOPE_DESTINATION_CONFLICT",
+      "fixture_id": "ADR10-SCOPE-NEG-017",
+      "scenario": "duplicate_or_conflicting_destination"
+    }
+  ],
+  "contract_id": "ADR10-LEGACY-TEST-RECORDS-2.0",
+  "fixture_suite": "ADR10_SCOPE_DESTINATION_NEGATIVE_V2"
+}

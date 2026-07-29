@@ -1,0 +1,208 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/run-failed-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "failed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "failure_code": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "failure_evidence_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+            "type": "string",
+            "x-ranex-id-type": "Artifact",
+            "x-ranex-registered-opaque-id": true
+          }
+        },
+        "required": [
+          "id",
+          "digest"
+        ],
+        "type": "object",
+        "x-ranex-ref-type": "Artifact"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "from_status": {
+      "enum": [
+        "PROPOSED",
+        "READY",
+        "RUNNING",
+        "WAITING",
+        "BLOCKED",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#RunStatus@1.0.0"
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    },
+    "state_edge_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "axis_id": {
+            "enum": [
+              "WorkItemStatus",
+              "RunStatus",
+              "AssignmentStatus",
+              "DispatchOfferStatus",
+              "LeaseStatus",
+              "MailboxDeliveryStatus",
+              "ReservationStatus",
+              "IntakeStatus",
+              "PacketStatus",
+              "FleetExperimentStatus",
+              "CapabilityAssessmentStatus",
+              "READINESS-STATE-1.0",
+              "ActivityStatus",
+              "PermitStatus",
+              "HumanDecisionRecordStatus",
+              "AuthorityGrantStatus",
+              "EffectStatus",
+              "ReconciliationStatus",
+              "IncidentStatus",
+              "ReleaseStatus",
+              "CapabilityStatus",
+              "ModuleStatus",
+              "RouteStatus",
+              "ExtensionStatus",
+              "CompatibilityStatus",
+              "InstructionStatus",
+              "ArtifactStatus",
+              "MigrationStatus",
+              "SyncCandidateStatus",
+              "UpdateStatus",
+              "CutoverStatus"
+            ],
+            "type": "string"
+          },
+          "axis_version": {
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "type": "string"
+          },
+          "edge_id": {
+            "pattern": "^(?:WorkItemStatus|RunStatus|AssignmentStatus|DispatchOfferStatus|LeaseStatus|MailboxDeliveryStatus|ReservationStatus|IntakeStatus|PacketStatus|FleetExperimentStatus|CapabilityAssessmentStatus|READINESS\\-STATE\\-1\\.0|ActivityStatus|PermitStatus|HumanDecisionRecordStatus|AuthorityGrantStatus|EffectStatus|ReconciliationStatus|IncidentStatus|ReleaseStatus|CapabilityStatus|ModuleStatus|RouteStatus|ExtensionStatus|CompatibilityStatus|InstructionStatus|ArtifactStatus|MigrationStatus|SyncCandidateStatus|UpdateStatus|CutoverStatus):[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+            "type": "string"
+          },
+          "state_catalog_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "transition_fact_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 255,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+                "type": "string",
+                "x-ranex-id-type": "TransitionEvent",
+                "x-ranex-registered-opaque-id": true
+              }
+            },
+            "required": [
+              "id",
+              "digest"
+            ],
+            "type": "object",
+            "x-ranex-ref-type": "TransitionEvent"
+          }
+        },
+        "required": [
+          "axis_id",
+          "axis_version",
+          "state_catalog_digest",
+          "edge_id",
+          "transition_fact_ref"
+        ],
+        "type": "object",
+        "x-ranex-nested-type": "StateEdgeBindingRefV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "to_status": {
+      "const": "FAILED",
+      "enum": [
+        "PROPOSED",
+        "READY",
+        "RUNNING",
+        "WAITING",
+        "BLOCKED",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#RunStatus@1.0.0"
+    }
+  },
+  "required": [
+    "run_id",
+    "from_status",
+    "to_status",
+    "failure_code",
+    "failure_evidence_refs",
+    "failed_at",
+    "state_edge_bindings"
+  ],
+  "title": "RunFailed event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-RUNFAILED",
+  "x-ranex-event-name": "RunFailed",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:RunFailed:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "EDGE_EVENT",
+    "edge_bindings": [
+      {
+        "allowed_edges": [
+          "RUNNING>FAILED@TERMINAL_FAILURE_EVIDENCE",
+          "WAITING>FAILED@WAIT_FAILED",
+          "BLOCKED>FAILED@TERMINAL_FAILURE_EVIDENCE"
+        ],
+        "axis_id": "RunStatus",
+        "axis_version": "1.0.0",
+        "binding_cardinality": "EXACTLY_ONE"
+      }
+    ],
+    "event_name": "RunFailed"
+  },
+  "x-ranex-state-binding-digest": "sha256:ff4f87386e07e3e3e041e006711bbd91a48396472b5f8d566d8875f06a51e3bb"
+}

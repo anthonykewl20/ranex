@@ -1,0 +1,97 @@
+{
+  "$id": "https://schemas.ranex.dev/events/work_management/outcome-decision-linked-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "decision_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "HumanDecisionRecord",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "HumanDecisionRecord"
+    },
+    "linked_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "outcome": {
+      "enum": [
+        "KEEP",
+        "CHANGE",
+        "REMOVE"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "ENUM-PRODUCT-OUTCOME-DECISION-1.0"
+    },
+    "outcome_review_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "OutcomeReview",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "OutcomeReview"
+    },
+    "work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "work_item_id",
+    "outcome_review_ref",
+    "decision_ref",
+    "outcome",
+    "linked_at"
+  ],
+  "title": "OutcomeDecisionLinked event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-OUTCOMEDECISIONLINKED",
+  "x-ranex-event-name": "OutcomeDecisionLinked",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:OutcomeDecisionLinked:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "OutcomeDecisionLinked",
+    "referenced_axis_ids": [
+      "ProductOutcomeDecision"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:bb48425bf3645eaae6c3702762bd0508d64d115c36e35154831f46df3ff4da68"
+}

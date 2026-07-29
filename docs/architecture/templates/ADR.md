@@ -10,6 +10,13 @@
 | RFC | |
 | Supersedes | |
 | Review/expiry date | |
+| Reviewed architecture subject digest | |
+| Reviewed subject-manifest digest | |
+| Resulting architecture subject digest | |
+| Resulting subject-manifest digest | |
+| Reviewed-subject Core SDLC trace ref/digest | |
+| Resulting-subject Core SDLC trace ref/digest | |
+| Human decision ref/digest | |
 
 ## Decision
 

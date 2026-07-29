@@ -1,0 +1,3611 @@
+{
+  "axis_count": 44,
+  "catalog_id": "STATE-AXIS-CONTRACT-1.0",
+  "catalog_schema_version": "state-axis-contract/v1",
+  "classifier_axis_count": 13,
+  "digest": "sha256:b207088677541f84588d1861be82c82dc160e0da2a47bcedb83e789a613bd134",
+  "entries": [
+    {
+      "axis_id": "WorkItemStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "Only listed verification rejection, outcome falsification, rollback, and recorded BLOCKED-resume edges",
+      "cancellation_semantics": "Authenticated pre-release cancellation only through listed edges",
+      "contract_ref": "states.json#WorkItemStatus@1.0.0",
+      "digest": "sha256:56b4866e30acefc495c63ec072cd64903534f2207afe7190e01a2c6b6c1c5094",
+      "emitted_fact": "TransitionEventV1(axis_id=WorkItemStatus)",
+      "expiry_semantics": "NOT_APPLICABLE:no wall-clock expiry state",
+      "initial_values": [
+        "FUNNEL"
+      ],
+      "integration_events": [
+        "WorkItemCreated",
+        "WorkItemTransitioned",
+        "WorkItemBlocked",
+        "WorkItemUnblocked",
+        "WorkItemCancelled",
+        "WorkItemClosed"
+      ],
+      "owner_context": "work_management",
+      "recovery_semantics": "BLOCKED resumes only blocked_from_status after fresh evidence; ROLLED_BACK re-enters TRIAGE",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "ROLLED_BACK may re-enter TRIAGE; a terminal item requires a new linked WorkItemId",
+      "revocation_semantics": "NOT_APPLICABLE:authority revocation blocks a transition but is not work-item state",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:0a5ea04f3ea871ae178f9d30a63d45d915059ec492a8e6e8756486abef52b74c",
+      "terminal_values": [
+        "CLOSED",
+        "CANCELLED"
+      ],
+      "transition_authority": "work_lifecycle_service under accountable Core-SDLC transition authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "FUNNEL",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "TRIAGE"
+        },
+        {
+          "from": "TRIAGE",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "DISCOVERY"
+        },
+        {
+          "from": "DISCOVERY",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "DEFINITION",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "DESIGN"
+        },
+        {
+          "from": "DESIGN",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "READY"
+        },
+        {
+          "from": "READY",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "IN_PROGRESS"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "VERIFICATION"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "RELEASE_READY"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "RELEASING"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "OPERATING"
+        },
+        {
+          "from": "OPERATING",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "OUTCOME_REVIEW"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "NORMAL_EVIDENCE_AND_AUTHORITY",
+          "to": "CLOSED"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "VERIFICATION_REJECTION",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "VERIFICATION_REJECTION",
+          "to": "DESIGN"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "VERIFICATION_REJECTION",
+          "to": "IN_PROGRESS"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "ROLLOUT_HEALTH_BREACH",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "ROLLED_BACK",
+          "guard_id": "SAFE_STATE_VERIFIED_AND_RETRIAGE_LINKED",
+          "to": "TRIAGE"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "OUTCOME_FALSIFIED",
+          "to": "DISCOVERY"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "OUTCOME_REQUIRES_REDEFINITION",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "FUNNEL",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "TRIAGE",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "DISCOVERY",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "DEFINITION",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "DESIGN",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "READY",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "OPERATING",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "OUTCOME_REVIEW",
+          "guard_id": "TYPED_BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "FUNNEL"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "TRIAGE"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "DISCOVERY"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "DEFINITION"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "DESIGN"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "READY"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "IN_PROGRESS"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "VERIFICATION"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "RELEASE_READY"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "RELEASING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "OPERATING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "RESUME_TO_RECORDED_PRIOR_STATE_WITH_REFRESHED_EVIDENCE",
+          "to": "OUTCOME_REVIEW"
+        },
+        {
+          "from": "FUNNEL",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "TRIAGE",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "DISCOVERY",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "DEFINITION",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "DESIGN",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "READY",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "VERIFICATION",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "AUTHORIZED_PRE_RELEASE_CANCELLATION",
+          "to": "CANCELLED"
+        }
+      ],
+      "values": [
+        "FUNNEL",
+        "TRIAGE",
+        "DISCOVERY",
+        "DEFINITION",
+        "DESIGN",
+        "READY",
+        "IN_PROGRESS",
+        "VERIFICATION",
+        "RELEASE_READY",
+        "RELEASING",
+        "OPERATING",
+        "OUTCOME_REVIEW",
+        "CLOSED",
+        "BLOCKED",
+        "CANCELLED",
+        "ROLLED_BACK"
+      ]
+    },
+    {
+      "axis_id": "RunStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "WAITING may resume RUNNING; BLOCKED resumes only recorded prior READY, RUNNING, or WAITING",
+      "cancellation_semantics": "Any nonterminal state may cancel with authenticated authority and compensation disposition",
+      "contract_ref": "states.json#RunStatus@1.0.0",
+      "digest": "sha256:f321de1ab11ea97639a841c23af6a4b6f029dfc110fa1ca6b7686bcdbe59cf4e",
+      "emitted_fact": "TransitionEventV1(axis_id=RunStatus)",
+      "expiry_semantics": "Deadline expiry produces guarded FAILED or CANCELLED, never an unrecorded jump",
+      "initial_values": [
+        "PROPOSED"
+      ],
+      "integration_events": [
+        "RunCreated",
+        "RunMarkedReady",
+        "RunBlocked",
+        "RunUnblocked",
+        "RunCancelled",
+        "RunSucceeded",
+        "RunFailed"
+      ],
+      "owner_context": "governed_execution",
+      "recovery_semantics": "BLOCKED resume binds blocked_from_status and refreshed evidence; no generic resume shortcut",
+      "referencing_events": [
+        "PolicyChangeBlockedRun"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "A terminal attempt creates a new linked RunId and never reopens",
+      "revocation_semantics": "Revoked authority blocks or cancels through a listed edge",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:6c7ea1eabe53e898f1398d5be81e17df81323c490888b20946dd47be30a4e317",
+      "terminal_values": [
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "transition_authority": "run_lifecycle_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PROPOSED",
+          "guard_id": "PACKET_AND_POLICY_VALID",
+          "to": "READY"
+        },
+        {
+          "from": "PROPOSED",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "READY",
+          "guard_id": "AUTHORIZED_START",
+          "to": "RUNNING"
+        },
+        {
+          "from": "READY",
+          "guard_id": "BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "READY",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "DURABLE_WAIT_ENTERED",
+          "to": "WAITING"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "TERMINAL_SUCCESS_EVIDENCE",
+          "to": "SUCCEEDED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "TERMINAL_FAILURE_EVIDENCE",
+          "to": "FAILED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "SIGNAL_OR_TIMER_RESOLVED",
+          "to": "RUNNING"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "BLOCKER_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "WAIT_FAILED",
+          "to": "FAILED"
+        },
+        {
+          "from": "WAITING",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_READY",
+          "to": "READY"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_RUNNING",
+          "to": "RUNNING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_WAITING",
+          "to": "WAITING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "TERMINAL_FAILURE_EVIDENCE",
+          "to": "FAILED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "AUTHORIZED_CANCELLATION",
+          "to": "CANCELLED"
+        }
+      ],
+      "values": [
+        "PROPOSED",
+        "READY",
+        "RUNNING",
+        "WAITING",
+        "BLOCKED",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ]
+    },
+    {
+      "axis_id": "WorkClass",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0.0",
+      "contract_ref": "states.json#WorkClass@1.0.0",
+      "digest": "sha256:4035dc96f3e99ab57e7b4e8713dc60304199d829b713681a8ba1e3d729eba313",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "work_management",
+      "referencing_events": [
+        "WorkItemClassified"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:6a7eb31f3c2e0311f7e7ff321ed52561bd35858d2e8f2e04b927f066922a76f2",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable work classification; reclassification is a new owned decision",
+      "transitions": [],
+      "values": [
+        "PRODUCT",
+        "DEFECT",
+        "RELIABILITY",
+        "SECURITY_PRIVACY",
+        "ARCHITECTURE_PLATFORM",
+        "COMPLIANCE_PROVENANCE",
+        "UPSTREAM_SYNC",
+        "MAINTENANCE",
+        "RETIREMENT",
+        "INCIDENT_RESPONSE"
+      ]
+    },
+    {
+      "axis_id": "RiskLane",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0.0",
+      "contract_ref": "states.json#RiskLane@1.0.0",
+      "digest": "sha256:1dcc87cf99c938b6b1b7f967eff26086f1e050f572cbca56884301aa4610c123",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "policy",
+      "referencing_events": [
+        "RiskLaneBound"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:3ab785fccc1f4509e80325f99dacf32594dc12c524beb91ddb2697371cf574e2",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable risk-policy classification; reassessment creates a new snapshot",
+      "transitions": [],
+      "values": [
+        "STANDARD",
+        "ENHANCED",
+        "CRITICAL",
+        "EMERGENCY"
+      ]
+    },
+    {
+      "axis_id": "AssignmentStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "OFFERED returns PENDING only after all offers terminate and deadline remains current",
+      "cancellation_semantics": "Authenticated cancellation may terminate any nonterminal assignment",
+      "contract_ref": "states.json#AssignmentStatus@1.0.0",
+      "digest": "sha256:81880a27df016d3fd53f321acc507ef803494e28dc9d911e901263d81ecba1b5",
+      "emitted_fact": "TransitionEventV1(axis_id=AssignmentStatus)",
+      "expiry_semantics": "Only trusted coordinator time may expire PENDING, OFFERED, CLAIMED, RUNNING, or HANDOFF_READY",
+      "initial_values": [
+        "PENDING"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "agent_collaboration",
+      "recovery_semantics": "No terminal reopen; late artifacts are LATE or ORPHANED and retry uses new identities",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Retry creates new linked AssignmentId and WorkerAttemptId with a higher fencing epoch",
+      "revocation_semantics": "Lease/capability revocation forces guarded cancellation or expiry and cannot invent failure",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:932cab0ef9d7beb721257dc672c7f11e3a04ccf6c24bdefe50df449a85dd5dcf",
+      "terminal_values": [
+        "COMPLETED",
+        "FAILED",
+        "EXPIRED",
+        "CANCELLED"
+      ],
+      "transition_authority": "assignment_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PENDING",
+          "guard_id": "ELIGIBLE_OFFERS_CREATED",
+          "to": "OFFERED"
+        },
+        {
+          "from": "OFFERED",
+          "guard_id": "ALL_OFFERS_TERMINAL_AND_REOFFER_ALLOWED",
+          "to": "PENDING"
+        },
+        {
+          "from": "OFFERED",
+          "guard_id": "WINNING_OFFER_ATOMICALLY_CLAIMED",
+          "to": "CLAIMED"
+        },
+        {
+          "from": "CLAIMED",
+          "guard_id": "CURRENT_LEASE_AND_ATTEMPT_STARTED",
+          "to": "RUNNING"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "RESULT_AND_HANDOFF_SEALED",
+          "to": "HANDOFF_READY"
+        },
+        {
+          "from": "HANDOFF_READY",
+          "guard_id": "RESULT_ELIGIBILITY_ACCEPTED",
+          "to": "COMPLETED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "TERMINAL_ASSIGNMENT_FAILURE_PROVEN",
+          "to": "FAILED"
+        },
+        {
+          "from": "HANDOFF_READY",
+          "guard_id": "HANDOFF_OR_RESULT_REJECTED_TERMINALLY",
+          "to": "FAILED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "ASSIGNMENT_DEADLINE_EXPIRED_BEFORE_OFFER",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "OFFERED",
+          "guard_id": "ASSIGNMENT_DEADLINE_EXPIRED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "CLAIMED",
+          "guard_id": "CURRENT_LEASE_EXPIRED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "CURRENT_LEASE_EXPIRED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "HANDOFF_READY",
+          "guard_id": "CURRENT_LEASE_EXPIRED_BEFORE_ACCEPTANCE",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "AUTHORIZED_ASSIGNMENT_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "OFFERED",
+          "guard_id": "AUTHORIZED_ASSIGNMENT_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "CLAIMED",
+          "guard_id": "AUTHORIZED_ASSIGNMENT_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "AUTHORIZED_ASSIGNMENT_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "HANDOFF_READY",
+          "guard_id": "AUTHORIZED_ASSIGNMENT_CANCELLATION",
+          "to": "CANCELLED"
+        }
+      ],
+      "values": [
+        "PENDING",
+        "OFFERED",
+        "CLAIMED",
+        "RUNNING",
+        "HANDOFF_READY",
+        "COMPLETED",
+        "FAILED",
+        "EXPIRED",
+        "CANCELLED"
+      ]
+    },
+    {
+      "axis_id": "DispatchOfferStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:terminal offer facts are immutable",
+      "cancellation_semantics": "NOT_APPLICABLE:withdrawal is REVOKED",
+      "contract_ref": "states.json#DispatchOfferStatus@1.0.0",
+      "digest": "sha256:46e550b51b46e6d20c422b98d611fec7c911f38fdce43d76f0a2941829529908",
+      "emitted_fact": "TransitionEventV1(axis_id=DispatchOfferStatus)",
+      "expiry_semantics": "OPEN expires only by trusted coordinator time and compare-and-swap",
+      "initial_values": [
+        "OPEN"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "agent_collaboration",
+      "recovery_semantics": "NOT_APPLICABLE:replacement uses a new identity",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "A replacement offer uses a new DispatchOfferId",
+      "revocation_semantics": "Only OPEN may revoke; revocation cannot change a claimed assignment or lease",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:fe1c15fc93c9bf27ec7c043a1991bed2d154a84ac4f8c3bd9e31dad496202cc4",
+      "terminal_values": [
+        "CLAIMED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_authority": "dispatch_offer_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "OPEN",
+          "guard_id": "ATOMIC_WINNING_CLAIM",
+          "to": "CLAIMED"
+        },
+        {
+          "from": "OPEN",
+          "guard_id": "TRUSTED_DEADLINE_ELAPSED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "OPEN",
+          "guard_id": "AUTHORIZED_OFFER_REVOCATION",
+          "to": "REVOKED"
+        }
+      ],
+      "values": [
+        "OPEN",
+        "CLAIMED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "LeaseStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:a terminal lease never reactivates",
+      "cancellation_semantics": "Cancellation revokes or releases ACTIVE",
+      "contract_ref": "states.json#LeaseStatus@1.0.0",
+      "digest": "sha256:064beb2b6ee25c10bf463d4bbb9430bba4598cd0604d5e245904378d8b92e288",
+      "emitted_fact": "TransitionEventV1(axis_id=LeaseStatus)",
+      "expiry_semantics": "ACTIVE expires after trusted-clock recheck of version, deadline, grace, coordinator health, and cancellation",
+      "initial_values": [
+        "ACTIVE"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "agent_collaboration",
+      "recovery_semantics": "A new lease, never resurrection, recovers eligible work",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Reclaim creates new WorkerLeaseId and strictly higher fencing epoch",
+      "revocation_semantics": "ACTIVE may revoke under owner authority; every sink denies stale epochs",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:b058ac0892bb00a3a1ffb7ce37452a5422b20857e34f3e6d429ca5818cbe0654",
+      "terminal_values": [
+        "RELEASED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_authority": "worker_lease_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "ACTIVE",
+          "guard_id": "OWNER_ACCEPTED_RELEASE",
+          "to": "RELEASED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "TRUSTED_EXPIRY_RECHECK",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "AUTHORIZED_LEASE_REVOCATION",
+          "to": "REVOKED"
+        }
+      ],
+      "values": [
+        "ACTIVE",
+        "RELEASED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "MailboxDeliveryStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "DELIVERED may redeliver without state rewind; terminal facts never reopen",
+      "cancellation_semantics": "NOT_APPLICABLE:withdrawal is a typed expiry or dead-letter cause",
+      "contract_ref": "states.json#MailboxDeliveryStatus@1.0.0",
+      "digest": "sha256:e8800772ce93aecaa8b1c8811015a75d7d712a7370267ab2d3241626c13f6d57",
+      "emitted_fact": "TransitionEventV1(axis_id=MailboxDeliveryStatus)",
+      "expiry_semantics": "QUEUED or DELIVERED expires only by registered retention/deadline policy",
+      "initial_values": [
+        "QUEUED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "agent_collaboration",
+      "recovery_semantics": "Dead-letter replay creates a new linked envelope after owner disposition",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Redelivery retains MailboxEnvelopeId and increments attempt; replay is idempotent",
+      "revocation_semantics": "NOT_APPLICABLE:mailbox facts carry no authority",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:09213a7f218748c552fb74f755e88b0d63c75d21603a29a4ec08b0d5393caefd",
+      "terminal_values": [
+        "ACKNOWLEDGED",
+        "DEAD_LETTERED",
+        "EXPIRED"
+      ],
+      "transition_authority": "mailbox_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "QUEUED",
+          "guard_id": "DURABLE_DELIVERY_RECORDED",
+          "to": "DELIVERED"
+        },
+        {
+          "from": "DELIVERED",
+          "guard_id": "AUTHENTICATED_ACKNOWLEDGEMENT",
+          "to": "ACKNOWLEDGED"
+        },
+        {
+          "from": "QUEUED",
+          "guard_id": "DELIVERY_TERMINALLY_REJECTED",
+          "to": "DEAD_LETTERED"
+        },
+        {
+          "from": "DELIVERED",
+          "guard_id": "ACKNOWLEDGEMENT_TERMINALLY_REJECTED",
+          "to": "DEAD_LETTERED"
+        },
+        {
+          "from": "QUEUED",
+          "guard_id": "MAILBOX_DEADLINE_ELAPSED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "DELIVERED",
+          "guard_id": "MAILBOX_DEADLINE_ELAPSED",
+          "to": "EXPIRED"
+        }
+      ],
+      "values": [
+        "QUEUED",
+        "DELIVERED",
+        "ACKNOWLEDGED",
+        "DEAD_LETTERED",
+        "EXPIRED"
+      ]
+    },
+    {
+      "axis_id": "ReservationStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:no transition reopens admission",
+      "cancellation_semantics": "PENDING or ACTIVE may RELEASE under owner cancellation and must settle",
+      "contract_ref": "states.json#ReservationStatus@1.0.0",
+      "digest": "sha256:9831957726c4763b5df6ac8f1cded94cfea01310abe84c6e51a634ff1219d098",
+      "emitted_fact": "TransitionEventV1(axis_id=ReservationStatus)",
+      "expiry_semantics": "PENDING or ACTIVE may expire by trusted deadline and still must settle late receipts",
+      "initial_values": [
+        "PENDING"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "resource_governance",
+      "recovery_semantics": "EXHAUSTED, RELEASED, EXPIRED, or REVOKED must reach SETTLED after complete reconciliation",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "A rejected admission request creates no Reservation; a settled reservation is replaced by new ReservationId and limits never grow by retry",
+      "revocation_semantics": "PENDING or ACTIVE may REVOKE; descendants lose admission and receipts still settle",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:69c900472f59541f86a857e95ab6611123aa387f0a4bad8d7192e257acce9d4b",
+      "terminal_values": [
+        "SETTLED"
+      ],
+      "transition_authority": "reservation_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PENDING",
+          "guard_id": "ANCESTOR_LIMITS_AND_ADMISSION_VALID",
+          "to": "ACTIVE"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "NO_OPEN_DESCENDANTS_OR_RECEIPTS",
+          "to": "SETTLED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "EFFECTIVE_LIMIT_EXHAUSTED",
+          "to": "EXHAUSTED"
+        },
+        {
+          "from": "EXHAUSTED",
+          "guard_id": "USAGE_AND_LATE_RECEIPTS_RECONCILED",
+          "to": "SETTLED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "RESERVATION_DEADLINE_ELAPSED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "RESERVATION_DEADLINE_ELAPSED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "EXPIRED",
+          "guard_id": "USAGE_AND_LATE_RECEIPTS_RECONCILED",
+          "to": "SETTLED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "AUTHORIZED_RESERVATION_REVOCATION",
+          "to": "REVOKED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "AUTHORIZED_RESERVATION_REVOCATION",
+          "to": "REVOKED"
+        },
+        {
+          "from": "REVOKED",
+          "guard_id": "USAGE_AND_LATE_RECEIPTS_RECONCILED",
+          "to": "SETTLED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "AUTHORIZED_RESERVATION_RELEASE",
+          "to": "RELEASED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "AUTHORIZED_RESERVATION_RELEASE",
+          "to": "RELEASED"
+        },
+        {
+          "from": "RELEASED",
+          "guard_id": "USAGE_AND_LATE_RECEIPTS_RECONCILED",
+          "to": "SETTLED"
+        }
+      ],
+      "values": [
+        "PENDING",
+        "ACTIVE",
+        "EXHAUSTED",
+        "RELEASED",
+        "EXPIRED",
+        "REVOKED",
+        "SETTLED"
+      ]
+    },
+    {
+      "axis_id": "IntakeStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:terminal intake disposition is immutable",
+      "cancellation_semantics": "Authenticated proposer may WITHDRAW only while PROPOSED",
+      "contract_ref": "states.json#IntakeStatus@1.0.0",
+      "digest": "sha256:23156a7ea402490c83ab2439a61c12a7d64438d628f9fcc1432e662d21b96f5f",
+      "emitted_fact": "TransitionEventV1(axis_id=IntakeStatus)",
+      "expiry_semantics": "NOT_APPLICABLE:no implicit age-based disposition",
+      "initial_values": [
+        "PROPOSED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "work_management",
+      "recovery_semantics": "NOT_APPLICABLE:reconsideration is a new intake revision",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "A changed or reconsidered intake receives a new linked revision",
+      "revocation_semantics": "NOT_APPLICABLE:accepted work is governed by WorkItemStatus",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:529e6ef1c6ad666ec2fcb998ad2aebac08329a53137b44edb0f6464d0042e9eb",
+      "terminal_values": [
+        "ACCEPTED",
+        "REJECTED",
+        "DUPLICATE",
+        "WITHDRAWN"
+      ],
+      "transition_authority": "work_intake_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PROPOSED",
+          "guard_id": "COMPLETE_NONDUPLICATE_INTAKE_ACCEPTED",
+          "to": "ACCEPTED"
+        },
+        {
+          "from": "PROPOSED",
+          "guard_id": "ACCOUNTABLE_INTAKE_REJECTION",
+          "to": "REJECTED"
+        },
+        {
+          "from": "PROPOSED",
+          "guard_id": "EXACT_DUPLICATE_PROVEN",
+          "to": "DUPLICATE"
+        },
+        {
+          "from": "PROPOSED",
+          "guard_id": "AUTHENTICATED_PROPOSER_WITHDRAWAL",
+          "to": "WITHDRAWN"
+        }
+      ],
+      "values": [
+        "PROPOSED",
+        "ACCEPTED",
+        "REJECTED",
+        "DUPLICATE",
+        "WITHDRAWN"
+      ]
+    },
+    {
+      "axis_id": "PacketStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:a SEALED packet never returns to DRAFT",
+      "cancellation_semantics": "DRAFT may INVALIDATE; SEALED may SUPERSEDE or INVALIDATE",
+      "contract_ref": "states.json#PacketStatus@1.0.0",
+      "digest": "sha256:098d7816142ec33fd203ff92e74409f056ce69ab8d2016c70b6d110904a983dd",
+      "emitted_fact": "TransitionEventV1(axis_id=PacketStatus)",
+      "expiry_semantics": "Expiry is an INVALIDATED reason and never a silent change",
+      "initial_values": [
+        "DRAFT"
+      ],
+      "integration_events": [],
+      "owner_context": "packet_producer",
+      "recovery_semantics": "Replacement uses a new packet revision linked by supersedes",
+      "referencing_events": [
+        "PacketBound"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Correction creates a new packet revision and digest; sealed bytes never mutate",
+      "revocation_semantics": "Producer or policy revocation INVALIDATES a nonterminal packet",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:ffe1b77e5d09a385d0814886647c7b4f273c0d0a4ab91fa321713fa5d1b1acd1",
+      "terminal_values": [
+        "SUPERSEDED",
+        "INVALIDATED"
+      ],
+      "transition_authority": "authenticated producing context named by the packet under the shared packet schema",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "guard_id": "SCHEMA_TRACE_AND_OWNER_VALID",
+          "to": "SEALED"
+        },
+        {
+          "from": "DRAFT",
+          "guard_id": "DRAFT_WITHDRAWN_OR_SUBJECT_INVALID",
+          "to": "INVALIDATED"
+        },
+        {
+          "from": "SEALED",
+          "guard_id": "NEWER_SEALED_REVISION_ACCEPTED",
+          "to": "SUPERSEDED"
+        },
+        {
+          "from": "SEALED",
+          "guard_id": "SUBJECT_POLICY_OR_AUTHORITY_INVALIDATED",
+          "to": "INVALIDATED"
+        }
+      ],
+      "values": [
+        "DRAFT",
+        "SEALED",
+        "SUPERSEDED",
+        "INVALIDATED"
+      ]
+    },
+    {
+      "axis_id": "FleetExperimentStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:no state rewind or post-hoc protocol edit",
+      "cancellation_semantics": "REGISTERED or RUNNING may STOP under accountable authority",
+      "contract_ref": "states.json#FleetExperimentStatus@1.0.0",
+      "digest": "sha256:77c7f87fca41defa2c47833e1dc63f5301e6f7f85934745acd7c4d07e15b358f",
+      "emitted_fact": "TransitionEventV1(axis_id=FleetExperimentStatus)",
+      "expiry_semantics": "A timebox ends through STOPPED with partial evidence retained",
+      "initial_values": [
+        "DRAFT"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "process_assurance",
+      "recovery_semantics": "A corrected experiment is a new identity; terminal evidence remains historical",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "A rerun is a new FleetExperimentId with frozen predecessor protocol and seeds",
+      "revocation_semantics": "Invalid protocol, subject, independence, or data rights INVALIDATES a nonterminal experiment",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:ae8a35c9bfb3fc1ba23ea7e981e9f2ab9e8f0de2f5d4dd7d8998930fdf055d28",
+      "terminal_values": [
+        "COMPLETED",
+        "STOPPED",
+        "INVALIDATED"
+      ],
+      "transition_authority": "fleet_experiment_service under accountable experiment owner",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "guard_id": "PROTOCOL_SUBJECT_METRICS_AND_GUARDRAILS_FROZEN",
+          "to": "REGISTERED"
+        },
+        {
+          "from": "REGISTERED",
+          "guard_id": "RESOURCES_INDEPENDENCE_AND_AUTHORITY_CURRENT",
+          "to": "RUNNING"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "FROZEN_PROTOCOL_COMPLETE_AND_RESULTS_SEALED",
+          "to": "COMPLETED"
+        },
+        {
+          "from": "REGISTERED",
+          "guard_id": "AUTHORIZED_EXPERIMENT_STOP",
+          "to": "STOPPED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "AUTHORIZED_OR_GUARDRAIL_STOP",
+          "to": "STOPPED"
+        },
+        {
+          "from": "DRAFT",
+          "guard_id": "PROTOCOL_OR_SUBJECT_INVALID",
+          "to": "INVALIDATED"
+        },
+        {
+          "from": "REGISTERED",
+          "guard_id": "PROTOCOL_SUBJECT_OR_AUTHORITY_INVALID",
+          "to": "INVALIDATED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "MATERIAL_PROTOCOL_OR_EVIDENCE_INVALIDATION",
+          "to": "INVALIDATED"
+        }
+      ],
+      "values": [
+        "DRAFT",
+        "REGISTERED",
+        "RUNNING",
+        "COMPLETED",
+        "STOPPED",
+        "INVALIDATED"
+      ]
+    },
+    {
+      "axis_id": "CapabilityAssessmentStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:result history is append-only",
+      "cancellation_semantics": "Abandoned IN_PROGRESS becomes SUPERSEDED with closure/successor evidence",
+      "contract_ref": "states.json#CapabilityAssessmentStatus@1.0.0",
+      "digest": "sha256:59a81c6188d8bb0d8c044edf3d596607e64f13cf15f7207e7016c3f7529b8d86",
+      "emitted_fact": "TransitionEventV1(axis_id=CapabilityAssessmentStatus)",
+      "expiry_semantics": "Freshness lapse SUPERSEDES current assessment and never silently changes level",
+      "initial_values": [
+        "NOT_ASSESSED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "process_assurance",
+      "recovery_semantics": "Replacement begins NOT_ASSESSED under new subject/window and links predecessor",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Insufficient evidence remains IN_PROGRESS; a new window creates a linked assessment",
+      "revocation_semantics": "Approval/evidence revocation SUPERSEDES the affected assessment",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:2c5a9c9045791a48906494092949de21fa46f8cad4a31eb778ad7d2f1e233279",
+      "terminal_values": [
+        "SUPERSEDED"
+      ],
+      "transition_authority": "capability_assessment_service under accountable assessor and approver",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "NOT_ASSESSED",
+          "guard_id": "ASSESSMENT_SCOPE_AND_ASSIGNEES_BOUND",
+          "to": "IN_PROGRESS"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "COMPLETE_ELIGIBLE_EVIDENCE_AND_APPROVAL",
+          "to": "COMPLETE"
+        },
+        {
+          "from": "NOT_ASSESSED",
+          "guard_id": "SCOPE_REPLACED_BEFORE_ATTEMPT",
+          "to": "SUPERSEDED"
+        },
+        {
+          "from": "IN_PROGRESS",
+          "guard_id": "SCOPE_OR_EVIDENCE_INVALIDATED",
+          "to": "SUPERSEDED"
+        },
+        {
+          "from": "COMPLETE",
+          "guard_id": "NEWER_WINDOW_OR_EVIDENCE_INVALIDATION",
+          "to": "SUPERSEDED"
+        }
+      ],
+      "values": [
+        "NOT_ASSESSED",
+        "IN_PROGRESS",
+        "COMPLETE",
+        "SUPERSEDED"
+      ]
+    },
+    {
+      "axis_id": "READINESS-STATE-1.0",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "Only listed evidence or prerequisite invalidation edges move a ready or production-evaluating state backward",
+      "cancellation_semantics": "NOT_APPLICABLE:readiness is continuously revocable repository standing rather than a cancellable attempt",
+      "contract_ref": "states.json#READINESS-STATE-1.0@1.0.0",
+      "digest": "sha256:83424fd4f9b050e316cbe003712decd892b1e7ce79c8e2458757f4d76bf868ff",
+      "emitted_fact": "TransitionEventV1(axis_id=READINESS-STATE-1.0)",
+      "expiry_semantics": "Expired or invalidated bound evidence moves the affected ready state to its listed blocked state",
+      "initial_values": [
+        "NOT_ASSESSED"
+      ],
+      "integration_events": [],
+      "nonterminal": true,
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "process_assurance",
+      "recovery_semantics": "Fresh exact-subject reassessment is required; no blocked or ready fact is edited or reused",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "A blocked tier re-enters its evaluating state only through fresh exact-subject reassessment",
+      "revocation_semantics": "Tier-specific evidence revocation blocks that tier; Tier 1 prerequisite revocation blocks both tiers",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:8bffca6382523069ff14a047b7ebb1ee7411b2a37e4118af32b22556cad62bf1",
+      "terminal_values": [],
+      "transition_authority": "readiness resolver with authenticated human governor authority on READY edges",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "NOT_ASSESSED",
+          "guard_id": "READINESS_ASSESSMENT_OPENED",
+          "to": "IMPLEMENTATION_START_EVALUATING"
+        },
+        {
+          "from": "IMPLEMENTATION_START_EVALUATING",
+          "guard_id": "IMPLEMENTATION_START_NOT_PASS",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "IMPLEMENTATION_START_EVALUATING",
+          "guard_id": "IMPLEMENTATION_START_EXACT_PASS_AND_HUMAN_DECISION",
+          "to": "IMPLEMENTATION_START_READY"
+        },
+        {
+          "from": "IMPLEMENTATION_START_BLOCKED",
+          "guard_id": "FRESH_EXACT_SUBJECT_REASSESSMENT",
+          "to": "IMPLEMENTATION_START_EVALUATING"
+        },
+        {
+          "from": "IMPLEMENTATION_START_READY",
+          "guard_id": "IMPLEMENTATION_START_EVIDENCE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "IMPLEMENTATION_START_READY",
+          "guard_id": "PRODUCTION_ASSESSMENT_OPENED",
+          "to": "PRODUCTION_EVALUATING"
+        },
+        {
+          "from": "PRODUCTION_EVALUATING",
+          "guard_id": "PRODUCTION_NOT_PASS",
+          "to": "PRODUCTION_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_EVALUATING",
+          "guard_id": "IMPLEMENTATION_START_PREREQUISITE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_EVALUATING",
+          "guard_id": "PRODUCTION_EXACT_PASS_AND_HUMAN_DECISION",
+          "to": "PRODUCTION_READY"
+        },
+        {
+          "from": "PRODUCTION_BLOCKED",
+          "guard_id": "FRESH_EXACT_SUBJECT_REASSESSMENT",
+          "to": "PRODUCTION_EVALUATING"
+        },
+        {
+          "from": "PRODUCTION_BLOCKED",
+          "guard_id": "IMPLEMENTATION_START_PREREQUISITE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_READY",
+          "guard_id": "PRODUCTION_EVIDENCE_INVALIDATED",
+          "to": "PRODUCTION_BLOCKED"
+        },
+        {
+          "from": "PRODUCTION_READY",
+          "guard_id": "IMPLEMENTATION_START_PREREQUISITE_INVALIDATED",
+          "to": "IMPLEMENTATION_START_BLOCKED"
+        }
+      ],
+      "values": [
+        "NOT_ASSESSED",
+        "IMPLEMENTATION_START_EVALUATING",
+        "IMPLEMENTATION_START_BLOCKED",
+        "IMPLEMENTATION_START_READY",
+        "PRODUCTION_EVALUATING",
+        "PRODUCTION_BLOCKED",
+        "PRODUCTION_READY"
+      ]
+    },
+    {
+      "axis_id": "RuleEnforcementClass",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "STATE-RULE-ENFORCEMENT-CLASS-1.0",
+      "digest": "sha256:8d7a21e96641720eeec8c14816bec33d50e080e48b1b273c96d8d0530ae9d88f",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "policy",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:b4dde46a50dc9c302ff33cc3cf8afa11a82a543dbc59573061e1352306329e49",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:versioned immutable rule-severity classifier",
+      "transitions": [],
+      "values": [
+        "ADVISORY",
+        "REQUIRED",
+        "BLOCKING",
+        "EXPERIMENTAL"
+      ]
+    },
+    {
+      "axis_id": "RuleStage",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "STATE-RULE-STAGE-1.0",
+      "digest": "sha256:a0ab1755eca023e50c5eff571fa64b5ac8665e7ad5f2e085e92c90e1c79434cb",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "policy",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:a3cee52b1e63989f61bef4030e4f7c079508d059822d5c8bd831d35327c18acb",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:derived from owning lifecycle for policy selection and never independently writable",
+      "transitions": [],
+      "values": [
+        "GOVERNANCE",
+        "DISCOVERY",
+        "REQUIREMENTS",
+        "DESIGN",
+        "PLANNING",
+        "IMPLEMENTATION",
+        "VERIFICATION",
+        "RELEASE",
+        "OPERATIONS",
+        "OUTCOME_REVIEW",
+        "MAINTENANCE",
+        "RETIREMENT"
+      ]
+    },
+    {
+      "axis_id": "ActivityStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "Only FAILED_RETRYABLE redispatches; terminal states never reopen",
+      "cancellation_semantics": "Nonterminal cancellation requires required-effect disposition or reconciliation",
+      "contract_ref": "states.json#ActivityStatus@1.0.0",
+      "digest": "sha256:e11b30db1195767d898016f52afe3be85566c28bf23180be0be325971ca5cbe3",
+      "emitted_fact": "TransitionEventV1(axis_id=ActivityStatus)",
+      "expiry_semantics": "REQUESTED, DISPATCHED, or FAILED_RETRYABLE reaches TIMED_OUT only by trusted deadline",
+      "initial_values": [
+        "REQUESTED"
+      ],
+      "integration_events": [
+        "ActivityRequested",
+        "ActivityDispatched",
+        "ActivityResolved"
+      ],
+      "owner_context": "governed_execution",
+      "recovery_semantics": "OUTCOME_UNKNOWN reaches known state only through qualified reconciliation",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "FAILED_RETRYABLE redispatches same ActivityId with new WorkerAttemptId and incremented attempt; exhaustion proves FAILED_PERMANENT",
+      "revocation_semantics": "Pre-dispatch revocation DENIES; post-dispatch ambiguity reconciles",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:7e46870eb6bfee753e11c1647c8ee51d1f3e5e03cf1f5114e903d3c0f7c7562d",
+      "terminal_values": [
+        "SUCCEEDED",
+        "FAILED_PERMANENT",
+        "TIMED_OUT",
+        "CANCELLED",
+        "DENIED"
+      ],
+      "transition_authority": "activity_lifecycle_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "REQUESTED",
+          "guard_id": "AUTHORIZATION_ASSIGNMENT_LEASE_AND_BUDGET_CURRENT",
+          "to": "DISPATCHED"
+        },
+        {
+          "from": "REQUESTED",
+          "guard_id": "AUTHORIZATION_TERMINALLY_DENIED",
+          "to": "DENIED"
+        },
+        {
+          "from": "REQUESTED",
+          "guard_id": "AUTHORIZED_ACTIVITY_CANCELLATION",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "REQUESTED",
+          "guard_id": "ABSOLUTE_DEADLINE_ELAPSED",
+          "to": "TIMED_OUT"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "TYPED_RESULT_AND_REQUIRED_EFFECTS_SUCCEEDED",
+          "to": "SUCCEEDED"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "CLASSIFIED_RETRYABLE_FAILURE",
+          "to": "FAILED_RETRYABLE"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "CLASSIFIED_TERMINAL_FAILURE",
+          "to": "FAILED_PERMANENT"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "ABSOLUTE_DEADLINE_ELAPSED_AND_EFFECTS_RECONCILED",
+          "to": "TIMED_OUT"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "AUTHORIZED_CANCELLATION_AND_EFFECTS_RECONCILED",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "PROVIDER_OR_POLICY_TERMINAL_DENIAL_PROVEN",
+          "to": "DENIED"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "RESULT_OR_EFFECT_OUTCOME_AMBIGUOUS",
+          "to": "OUTCOME_UNKNOWN"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "RETRY_POLICY_BUDGET_AND_DEADLINE_ALLOW",
+          "to": "DISPATCHED"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "RETRY_BUDGET_EXHAUSTED",
+          "to": "FAILED_PERMANENT"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "AUTHORIZED_ACTIVITY_CANCELLATION_AND_NO_DISPATCHED_EFFECT_OR_EFFECTS_RECONCILED",
+          "to": "CANCELLED"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "ABSOLUTE_DEADLINE_ELAPSED_AND_NO_DISPATCHED_EFFECT_OR_EFFECTS_RECONCILED",
+          "to": "TIMED_OUT"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "RETRY_AUTHORIZATION_OR_POLICY_REVOKED_AND_NO_DISPATCHED_EFFECT_OR_EFFECTS_RECONCILED",
+          "to": "DENIED"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_SUCCESS",
+          "to": "SUCCEEDED"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_RETRYABLE_FAILURE",
+          "to": "FAILED_RETRYABLE"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_TERMINAL_FAILURE",
+          "to": "FAILED_PERMANENT"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_DENIAL",
+          "to": "DENIED"
+        }
+      ],
+      "values": [
+        "REQUESTED",
+        "DISPATCHED",
+        "SUCCEEDED",
+        "FAILED_RETRYABLE",
+        "FAILED_PERMANENT",
+        "TIMED_OUT",
+        "CANCELLED",
+        "DENIED",
+        "OUTCOME_UNKNOWN"
+      ]
+    },
+    {
+      "axis_id": "GateOutcome",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0.0",
+      "contract_ref": "states.json#GateOutcome@1.0.0",
+      "digest": "sha256:d1c69ab7b61ccda078516b005d35e4dcb3b289adfe39c658fdc3a3975616743a",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "assurance",
+      "referencing_events": [
+        "GateEvaluated"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:82563f343bcae47ed9876b80069fb389516d7def282705824df42f5273fd1540",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable qualified evaluation outcome; reevaluation creates a new GateEvaluation",
+      "transitions": [],
+      "values": [
+        "PASS",
+        "FAIL",
+        "UNKNOWN",
+        "CONFLICT",
+        "NOT_APPLICABLE",
+        "CHECKER_FAULT"
+      ]
+    },
+    {
+      "axis_id": "ObservationState",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0.0",
+      "contract_ref": "states.json#ObservationState@1.0.0",
+      "digest": "sha256:61548bde8cfa2f8c5f6f9cb45855cfcceebde737fd34e410decc20595183a82b",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "analytical_review",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:04beaa1cd1d9766287548e119ee502e24fd01354b51a9b552f14d43979a0ed7b",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable analysis-attempt observation classification",
+      "transitions": [],
+      "values": [
+        "OPINION_PRODUCED",
+        "NO_OPINION",
+        "OPINION_UNUSABLE",
+        "EVALUATION_INCOMPLETE"
+      ]
+    },
+    {
+      "axis_id": "PermitStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:one-shot status is monotonic",
+      "cancellation_semantics": "Cancellation REVOKES an unconsumed permit",
+      "contract_ref": "states.json#PermitStatus@1.0.0",
+      "digest": "sha256:d4f452f05bc3fb9cf378ec7f6a1d3300b916428a9abf1ad3b0057517442f98cc",
+      "emitted_fact": "TransitionEventV1(axis_id=PermitStatus)",
+      "expiry_semantics": "ISSUED expires only by trusted time before consumption",
+      "initial_values": [
+        "ISSUED"
+      ],
+      "integration_events": [
+        "PermitIssued",
+        "PermitConsumed"
+      ],
+      "owner_context": "governed_execution",
+      "recovery_semantics": "New exact-subject gate/decision evidence is required for new permit",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Terminal permit never reopens; reevaluation issues new PermitId",
+      "revocation_semantics": "Only ISSUED revokes; consumption races atomically with expiry/revocation",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:9a7a12afcac09f50d5f48ee78b81d6b0adee60031ac7c5c419af913ba8978558",
+      "terminal_values": [
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_authority": "permit_service using atomic compare-and-swap",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "ISSUED",
+          "guard_id": "ATOMIC_UNUSED_CURRENT_EXACT_ACTION_CONSUMPTION",
+          "to": "CONSUMED"
+        },
+        {
+          "from": "ISSUED",
+          "guard_id": "TRUSTED_EXPIRY_BEFORE_CONSUMPTION",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "ISSUED",
+          "guard_id": "AUTHORIZED_REVOCATION_BEFORE_CONSUMPTION",
+          "to": "REVOKED"
+        }
+      ],
+      "values": [
+        "ISSUED",
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "HumanDecisionRecordStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:no status returns to PENDING or APPROVED",
+      "cancellation_semantics": "Pending request may REVOKE by authorized withdrawal",
+      "contract_ref": "states.json#HumanDecisionRecordStatus@1.0.0",
+      "digest": "sha256:4e77c2105b8252698a710caac3ed5ecdd5c46eefbb0ad94ee44c95dce08a20ba",
+      "emitted_fact": "TransitionEventV1(axis_id=HumanDecisionRecordStatus)",
+      "expiry_semantics": "PENDING or APPROVED expires by trusted time and becomes immediately ineligible",
+      "initial_values": [
+        "PENDING"
+      ],
+      "integration_events": [],
+      "owner_context": "policy",
+      "recovery_semantics": "A new decision, never reopening, restores possible eligibility",
+      "referencing_events": [
+        "HumanDecisionSnapshotBound"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "DENIED, EXPIRED, or REVOKED requires new HumanDecisionRecordId and fresh subject",
+      "revocation_semantics": "PENDING or APPROVED may REVOKE by authenticated authorized revoker; derived grants invalidate",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:c974222ead618a6d9636a265d5b1515fc3732fe9a2b7dd128f38e729fbf5b591",
+      "terminal_values": [
+        "DENIED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_authority": "human_decision_service after IAM authentication",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PENDING",
+          "guard_id": "AUTHENTICATED_ELIGIBLE_HUMAN_APPROVAL",
+          "to": "APPROVED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "AUTHENTICATED_ELIGIBLE_HUMAN_DENIAL",
+          "to": "DENIED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "TRUSTED_DECISION_DEADLINE_ELAPSED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "AUTHORIZED_PENDING_WITHDRAWAL",
+          "to": "REVOKED"
+        },
+        {
+          "from": "APPROVED",
+          "guard_id": "TRUSTED_APPROVAL_DEADLINE_ELAPSED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "APPROVED",
+          "guard_id": "AUTHENTICATED_AUTHORIZED_REVOCATION",
+          "to": "REVOKED"
+        }
+      ],
+      "values": [
+        "PENDING",
+        "APPROVED",
+        "DENIED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "AuthorityGrantStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:consumable authority is monotonic",
+      "cancellation_semantics": "Cancellation REVOKES an unconsumed grant",
+      "contract_ref": "states.json#AuthorityGrantStatus@1.0.0",
+      "digest": "sha256:11211f3fe8c1de8d214a4bd8f62c1eaa58143594780a9a758cea2c1f3073c5ed",
+      "emitted_fact": "TransitionEventV1(axis_id=AuthorityGrantStatus)",
+      "expiry_semantics": "ISSUED expires by stricter decision/grant deadline before consumption",
+      "initial_values": [
+        "ISSUED"
+      ],
+      "integration_events": [
+        "PermitIssued"
+      ],
+      "owner_context": "governed_execution",
+      "recovery_semantics": "New exact-subject decision and grant are required",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Terminal grant never reopens; fresh eligible decision creates new grant",
+      "revocation_semantics": "Decision/policy revocation atomically REVOKES ISSUED; consumed effects reconcile",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:d8bee566a04dbcb8bd3992af0d7fe9bdbdbd50c5d891deeb02625e72d9d077fa",
+      "terminal_values": [
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "transition_authority": "authority_grant_service using atomic compare-and-swap",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "ISSUED",
+          "guard_id": "ATOMIC_EXACT_ACTION_GRANT_CONSUMPTION",
+          "to": "CONSUMED"
+        },
+        {
+          "from": "ISSUED",
+          "guard_id": "TRUSTED_EXPIRY_BEFORE_CONSUMPTION",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "ISSUED",
+          "guard_id": "SOURCE_DECISION_OR_POLICY_REVOKED",
+          "to": "REVOKED"
+        }
+      ],
+      "values": [
+        "ISSUED",
+        "CONSUMED",
+        "EXPIRED",
+        "REVOKED"
+      ]
+    },
+    {
+      "axis_id": "EffectStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "Only FAILED_RETRYABLE redispatches; terminal effects never reopen",
+      "cancellation_semantics": "Unexecuted revoked intent is DENIED; dispatched effect must resolve or reconcile",
+      "contract_ref": "states.json#EffectStatus@1.0.0",
+      "digest": "sha256:81d1883ac72940e5beb81c6a264fc088e418d7d3ec73e1ef8db9c6efe28719ad",
+      "emitted_fact": "TransitionEventV1(axis_id=EffectStatus)",
+      "expiry_semantics": "Exhaustion converts known retryable failure to FAILED_PERMANENT; ambiguity stays OUTCOME_UNKNOWN",
+      "initial_values": [
+        "INTENDED"
+      ],
+      "integration_events": [
+        "EffectIntentRecorded",
+        "EffectDispatched",
+        "EffectResolved",
+        "EffectOutcomeMarkedUnknown",
+        "EffectReconciled"
+      ],
+      "owner_context": "governed_execution",
+      "recovery_semantics": "OUTCOME_UNKNOWN changes only when qualified reconciliation proves a listed result",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "FAILED_RETRYABLE redispatches same EffectId/idempotency key with incremented attempt only when policy permits",
+      "revocation_semantics": "Pre-dispatch revocation may DENY; post-dispatch revocation cannot guess outcome",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:c085fb2e7e8edfad42bf4395c068a4fd29d92ec6e37ed4b7518fbfaf3d62c852",
+      "terminal_values": [
+        "SUCCEEDED",
+        "FAILED_PERMANENT",
+        "DENIED"
+      ],
+      "transition_authority": "effect_service and qualified reconciliation_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "INTENDED",
+          "guard_id": "COMMITTED_INTENT_CURRENT_PERMIT_AND_ADAPTER_LEASE",
+          "to": "DISPATCHED"
+        },
+        {
+          "from": "INTENDED",
+          "guard_id": "PRE_DISPATCH_POLICY_OR_DESTINATION_DENIAL",
+          "to": "DENIED"
+        },
+        {
+          "from": "INTENDED",
+          "guard_id": "INTENT_OR_ADAPTER_VALIDATION_TERMINALLY_FAILED",
+          "to": "FAILED_PERMANENT"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "PROVIDER_RECEIPT_PROVES_SUCCESS",
+          "to": "SUCCEEDED"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "PROVIDER_RECEIPT_PROVES_RETRYABLE_FAILURE",
+          "to": "FAILED_RETRYABLE"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "PROVIDER_RECEIPT_PROVES_TERMINAL_FAILURE",
+          "to": "FAILED_PERMANENT"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "PROVIDER_RECEIPT_PROVES_DENIAL",
+          "to": "DENIED"
+        },
+        {
+          "from": "DISPATCHED",
+          "guard_id": "ACKNOWLEDGEMENT_LOST_OR_AMBIGUOUS",
+          "to": "OUTCOME_UNKNOWN"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "RETRY_POLICY_BUDGET_AND_DEADLINE_ALLOW",
+          "to": "DISPATCHED"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "RETRY_BUDGET_OR_DEADLINE_EXHAUSTED",
+          "to": "FAILED_PERMANENT"
+        },
+        {
+          "from": "FAILED_RETRYABLE",
+          "guard_id": "POLICY_OR_DESTINATION_DENIES_RETRY",
+          "to": "DENIED"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_SUCCESS",
+          "to": "SUCCEEDED"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_RETRYABLE_FAILURE",
+          "to": "FAILED_RETRYABLE"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_TERMINAL_FAILURE",
+          "to": "FAILED_PERMANENT"
+        },
+        {
+          "from": "OUTCOME_UNKNOWN",
+          "guard_id": "QUALIFIED_RECONCILIATION_PROVES_DENIAL",
+          "to": "DENIED"
+        }
+      ],
+      "values": [
+        "INTENDED",
+        "DISPATCHED",
+        "SUCCEEDED",
+        "FAILED_RETRYABLE",
+        "FAILED_PERMANENT",
+        "DENIED",
+        "OUTCOME_UNKNOWN"
+      ]
+    },
+    {
+      "axis_id": "ReconciliationStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:one reconciliation attempt is monotonic",
+      "cancellation_semantics": "Cancellation cannot make unknown resolved and produces UNRESOLVED",
+      "contract_ref": "states.json#ReconciliationStatus@1.0.0",
+      "digest": "sha256:35521127e29ad99fc4fcc4bd686bae5555dde5b5c1d36cadf8c0d53e38cc2302",
+      "emitted_fact": "TransitionEventV1(axis_id=ReconciliationStatus)",
+      "expiry_semantics": "Deadline/exhausted methods produce UNRESOLVED with unknown preserved",
+      "initial_values": [
+        "NOT_REQUIRED",
+        "PENDING"
+      ],
+      "integration_events": [
+        "EffectReconciled"
+      ],
+      "owner_context": "governed_execution",
+      "recovery_semantics": "RUNNING reaches RESOLVED only with proof; otherwise UNRESOLVED and new attempt",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "UNRESOLVED retry creates new linked ReconciliationRecordId and never reopens history",
+      "revocation_semantics": "Reconciler revocation blocks completion and yields UNRESOLVED when no method remains",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:4361b937bfd308966327bf21f1986a3104a04659d27c353cefc1c8539dd79f22",
+      "terminal_values": [
+        "NOT_REQUIRED",
+        "RESOLVED",
+        "UNRESOLVED"
+      ],
+      "transition_authority": "qualified reconciliation_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PENDING",
+          "guard_id": "QUALIFIED_RECONCILER_LEASED",
+          "to": "RUNNING"
+        },
+        {
+          "from": "PENDING",
+          "guard_id": "CANCELLED_EXPIRED_OR_REVOKED_BEFORE_QUALIFIED_RECONCILER_AND_UNKNOWN_PRESERVED",
+          "to": "UNRESOLVED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "OUTCOME_PROVEN",
+          "to": "RESOLVED"
+        },
+        {
+          "from": "RUNNING",
+          "guard_id": "OUTCOME_NOT_PROVEN_AND_ATTEMPT_CLOSED",
+          "to": "UNRESOLVED"
+        }
+      ],
+      "values": [
+        "NOT_REQUIRED",
+        "PENDING",
+        "RUNNING",
+        "RESOLVED",
+        "UNRESOLVED"
+      ]
+    },
+    {
+      "axis_id": "IncidentStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "MITIGATED or RECOVERY_VERIFIED returns MITIGATING only when fresh evidence falsifies mitigation/recovery",
+      "cancellation_semantics": "NOT_APPLICABLE:incident closes only with required evidence",
+      "contract_ref": "states.json#IncidentStatus@1.0.0",
+      "digest": "sha256:df7627aac59e9e9635a069c6bae68d844062ae35607bcde002eeee7a939c875d",
+      "emitted_fact": "TransitionEventV1(axis_id=IncidentStatus)",
+      "expiry_semantics": "Response objectives escalate and time alone never manufactures state",
+      "initial_values": [
+        "DETECTED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "operations",
+      "recovery_semantics": "Mitigation and recovery require separate evidence before review, actions, and closure",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Recurrence after CLOSED creates new linked IncidentId",
+      "revocation_semantics": "Role revocation reassigns authority and does not alter incident truth",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:e2846c336e964d8fb2b035cc980e94998c798dd73150f7d54ba47dca8a8d404a",
+      "terminal_values": [
+        "CLOSED"
+      ],
+      "transition_authority": "incident_service under incident commander authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "DETECTED",
+          "guard_id": "ACCOUNTABLE_COMMANDER_ASSIGNED",
+          "to": "ACKNOWLEDGED"
+        },
+        {
+          "from": "ACKNOWLEDGED",
+          "guard_id": "MITIGATION_PLAN_AND_AUTHORITY_BOUND",
+          "to": "MITIGATING"
+        },
+        {
+          "from": "MITIGATING",
+          "guard_id": "IMMEDIATE_HARM_MITIGATED",
+          "to": "MITIGATED"
+        },
+        {
+          "from": "MITIGATED",
+          "guard_id": "MITIGATION_FALSIFIED",
+          "to": "MITIGATING"
+        },
+        {
+          "from": "MITIGATED",
+          "guard_id": "SERVICE_AND_DATA_RECOVERY_PROVEN",
+          "to": "RECOVERY_VERIFIED"
+        },
+        {
+          "from": "RECOVERY_VERIFIED",
+          "guard_id": "RECOVERY_REGRESSION_PROVEN",
+          "to": "MITIGATING"
+        },
+        {
+          "from": "RECOVERY_VERIFIED",
+          "guard_id": "INDEPENDENT_INCIDENT_REVIEW_ACCEPTED",
+          "to": "REVIEWED"
+        },
+        {
+          "from": "REVIEWED",
+          "guard_id": "OWNED_CORRECTIVE_ACTIONS_REGISTERED",
+          "to": "ACTIONS_TRACKED"
+        },
+        {
+          "from": "ACTIONS_TRACKED",
+          "guard_id": "CLOSURE_CRITERIA_AND_ACTION_TRACE_ACCEPTED",
+          "to": "CLOSED"
+        }
+      ],
+      "values": [
+        "DETECTED",
+        "ACKNOWLEDGED",
+        "MITIGATING",
+        "MITIGATED",
+        "RECOVERY_VERIFIED",
+        "REVIEWED",
+        "ACTIONS_TRACKED",
+        "CLOSED"
+      ]
+    },
+    {
+      "axis_id": "ReleaseStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "RELEASING may ROLL_BACK; rollback of OPERATING release is a new linked release operation",
+      "cancellation_semantics": "PLANNED through RELEASE_READY may WITHDRAW; RELEASING requires rollback",
+      "contract_ref": "states.json#ReleaseStatus@1.0.0",
+      "digest": "sha256:d2257f55f487d1240313f6de8165b5e9fd08ca31202874f225f4c66341ecbdce",
+      "emitted_fact": "TransitionEventV1(axis_id=ReleaseStatus)",
+      "expiry_semantics": "Expired approval/evidence blocks advancement and may WITHDRAW before RELEASING",
+      "initial_values": [
+        "PLANNED"
+      ],
+      "integration_events": [],
+      "owner_context": "release_management",
+      "recovery_semantics": "ROLLED_BACK is terminal only after product, schema, data, package, credential, and effect reconciliation",
+      "referencing_events": [
+        "ReleaseEvidenceLinked"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Failed/withdrawn candidate creates new ReleaseId and terminal history never rewrites",
+      "revocation_semantics": "Authority revocation withdraws before effects and requires rollback after effects begin",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:293ed5837d3aeb418085535076b98999ae08a2ff1004752aeac9d1071cb95596",
+      "terminal_values": [
+        "OPERATING",
+        "ROLLED_BACK",
+        "WITHDRAWN"
+      ],
+      "transition_authority": "release_service under authenticated release authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PLANNED",
+          "guard_id": "REPRODUCIBLE_BUILD_AND_MANIFEST_COMPLETE",
+          "to": "BUILT"
+        },
+        {
+          "from": "BUILT",
+          "guard_id": "REQUIRED_RELEASE_EVIDENCE_PASSES",
+          "to": "VERIFIED"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "RELEASE_DECISION_AND_SIGNING_READY",
+          "to": "RELEASE_READY"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "AUTHENTICATED_RELEASE_AUTHORITY_AND_PERMIT",
+          "to": "RELEASING"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "PROMOTION_AND_HEALTH_EVIDENCE_ACCEPTED",
+          "to": "OPERATING"
+        },
+        {
+          "from": "RELEASING",
+          "guard_id": "ROLLOUT_HEALTH_BREACH_AND_ROLLBACK_RECONCILED",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "PLANNED",
+          "guard_id": "AUTHORIZED_RELEASE_WITHDRAWAL",
+          "to": "WITHDRAWN"
+        },
+        {
+          "from": "BUILT",
+          "guard_id": "AUTHORIZED_RELEASE_WITHDRAWAL",
+          "to": "WITHDRAWN"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "AUTHORIZED_RELEASE_WITHDRAWAL",
+          "to": "WITHDRAWN"
+        },
+        {
+          "from": "RELEASE_READY",
+          "guard_id": "AUTHORIZED_RELEASE_WITHDRAWAL",
+          "to": "WITHDRAWN"
+        }
+      ],
+      "values": [
+        "PLANNED",
+        "BUILT",
+        "VERIFIED",
+        "RELEASE_READY",
+        "RELEASING",
+        "OPERATING",
+        "ROLLED_BACK",
+        "WITHDRAWN"
+      ]
+    },
+    {
+      "axis_id": "CapabilityStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "DEPRECATED may restore SUPPORTED; RETIRE_READY may return DEPRECATED; RETIRING rollback returns SUPPORTED",
+      "cancellation_semantics": "A proposal may be withdrawn into a traced RETIRED tombstone; retirement after support cancels only through listed backward edges",
+      "contract_ref": "states.json#CapabilityStatus@1.0.0",
+      "digest": "sha256:8c68d39cb9ac6c00e0bb7aa7d8b98833e676aba4b6c427a73853ea62d5c49f32",
+      "emitted_fact": "TransitionEventV1(axis_id=CapabilityStatus)",
+      "expiry_semantics": "NOT_APPLICABLE:dates trigger review and never silent state",
+      "initial_values": [
+        "PROPOSED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "product_definition",
+      "recovery_semantics": "Retirement rollback requires compatibility, operation, and owner evidence",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Materially changed proposal is new revision and RETIRED never reopens",
+      "revocation_semantics": "NOT_APPLICABLE:policy may block support but product owner transitions state",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:a90b0c5ffefbd2734249302b3bfbc6a400bb7e9b4894fa4772f1ed7a0c8d6da6",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_authority": "capability_lifecycle_service under product owner authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PROPOSED",
+          "guard_id": "PRODUCT_ACCEPTANCE_AND_OPERATING_SUPPORT_READY",
+          "to": "SUPPORTED"
+        },
+        {
+          "from": "PROPOSED",
+          "guard_id": "PROPOSAL_REJECTED_OR_WITHDRAWN_AND_TOMBSTONE_TRACE_PRESERVED",
+          "to": "RETIRED"
+        },
+        {
+          "from": "SUPPORTED",
+          "guard_id": "DEPRECATION_DECISION_AND_SUCCESSOR_PLAN",
+          "to": "DEPRECATED"
+        },
+        {
+          "from": "DEPRECATED",
+          "guard_id": "SUPPORT_REINSTATEMENT_ACCEPTED",
+          "to": "SUPPORTED"
+        },
+        {
+          "from": "DEPRECATED",
+          "guard_id": "RETIREMENT_CRITERIA_AND_MIGRATION_READY",
+          "to": "RETIRE_READY"
+        },
+        {
+          "from": "RETIRE_READY",
+          "guard_id": "RETIREMENT_CANCELLED_BEFORE_EFFECTS",
+          "to": "DEPRECATED"
+        },
+        {
+          "from": "RETIRE_READY",
+          "guard_id": "AUTHENTICATED_RETIREMENT_AUTHORITY",
+          "to": "RETIRING"
+        },
+        {
+          "from": "RETIRING",
+          "guard_id": "RETIREMENT_ROLLBACK_AND_SERVICE_RECOVERY_PROVEN",
+          "to": "SUPPORTED"
+        },
+        {
+          "from": "RETIRING",
+          "guard_id": "DEPENDENTS_MIGRATED_AND_RETIREMENT_VERIFIED",
+          "to": "RETIRED"
+        }
+      ],
+      "values": [
+        "PROPOSED",
+        "SUPPORTED",
+        "DEPRECATED",
+        "RETIRE_READY",
+        "RETIRING",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "ModuleStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "ACTIVE/RESTRICTED may DISABLE; CANARY may return QUALIFIED; RETIRED never reopens",
+      "cancellation_semantics": "Activation/canary may disable or quarantine and never silently unloads",
+      "contract_ref": "states.json#ModuleStatus@1.0.0",
+      "digest": "sha256:7dbecaa8966048852105f2650617408f911089c8965e49430d040cfb679e27ad",
+      "emitted_fact": "TransitionEventV1(axis_id=ModuleStatus)",
+      "expiry_semantics": "Expired qualification moves eligible module to QUARANTINED or DISABLED through listed guard",
+      "initial_values": [
+        "PACKAGED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "module_governance",
+      "recovery_semantics": "QUARANTINED/RESTRICTED requalifies or disables before ACTIVE",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Failed qualification remains DISABLED/QUARANTINED; requalification binds new evidence",
+      "revocation_semantics": "Grant/signature/policy revocation quarantines or retires and removes capabilities",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:7e4e972db5a6e8d437c40d7c5d254324d04db0eacea35520d19f63a48366e04d",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_authority": "module_lifecycle_service",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PACKAGED",
+          "guard_id": "PACKAGE_PROVENANCE_AND_DESCRIPTOR_REGISTERED",
+          "to": "DISABLED"
+        },
+        {
+          "from": "PACKAGED",
+          "guard_id": "PACKAGE_PROVENANCE_OR_SCHEMA_UNRESOLVED",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "DISABLED",
+          "guard_id": "QUALIFICATION_SUITE_AND_OWNER_ACCEPTANCE_PASS",
+          "to": "QUALIFIED"
+        },
+        {
+          "from": "DISABLED",
+          "guard_id": "AUTHORIZED_MODULE_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "QUALIFIED",
+          "guard_id": "CANARY_PROFILE_AND_ROLLBACK_READY",
+          "to": "CANARY"
+        },
+        {
+          "from": "QUALIFIED",
+          "guard_id": "QUALIFICATION_INVALIDATED",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "QUALIFIED",
+          "guard_id": "AUTHORIZED_MODULE_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "CANARY",
+          "guard_id": "CANARY_GUARDRAILS_AND_OUTCOMES_PASS",
+          "to": "ACTIVE"
+        },
+        {
+          "from": "CANARY",
+          "guard_id": "CANARY_REJECTED_WITHOUT_MATERIAL_INVALIDATION",
+          "to": "QUALIFIED"
+        },
+        {
+          "from": "CANARY",
+          "guard_id": "AUTHORIZED_CANARY_CANCELLATION_AND_SAFE_DEACTIVATION",
+          "to": "DISABLED"
+        },
+        {
+          "from": "CANARY",
+          "guard_id": "CANARY_REQUIRES_RESTRICTED_PROFILE",
+          "to": "RESTRICTED"
+        },
+        {
+          "from": "CANARY",
+          "guard_id": "CANARY_SECURITY_OR_CORRECTNESS_FAILURE",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "POLICY_OR_GUARDRAIL_RESTRICTION",
+          "to": "RESTRICTED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "SECURITY_CORRECTNESS_OR_PROVENANCE_INVALIDATION",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "AUTHORIZED_SAFE_DEACTIVATION",
+          "to": "DISABLED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "AUTHORIZED_RETIREMENT_AFTER_DEPENDENT_DRAIN",
+          "to": "RETIRED"
+        },
+        {
+          "from": "RESTRICTED",
+          "guard_id": "FRESH_QUALIFICATION_AND_RESTRICTION_RESOLVED",
+          "to": "ACTIVE"
+        },
+        {
+          "from": "RESTRICTED",
+          "guard_id": "RESTRICTION_BREACH_OR_INVALIDATION",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "RESTRICTED",
+          "guard_id": "AUTHORIZED_SAFE_DEACTIVATION",
+          "to": "DISABLED"
+        },
+        {
+          "from": "RESTRICTED",
+          "guard_id": "AUTHORIZED_RETIREMENT_AFTER_DEPENDENT_DRAIN",
+          "to": "RETIRED"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "QUARANTINE_DISPOSITION_SAFE_DISABLE",
+          "to": "DISABLED"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "REMEDIATION_AND_FULL_REQUALIFICATION_PASS",
+          "to": "QUALIFIED"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "AUTHORIZED_QUARANTINE_RETIREMENT",
+          "to": "RETIRED"
+        }
+      ],
+      "values": [
+        "PACKAGED",
+        "DISABLED",
+        "QUALIFIED",
+        "CANARY",
+        "ACTIVE",
+        "RESTRICTED",
+        "QUARANTINED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "RouteStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "RESTRICTED may return APPROVED; SUSPENDED re-enters AUTHENTICATED and repeats qualification",
+      "cancellation_semantics": "Qualification may suspend and never hides approval rollback",
+      "contract_ref": "states.json#RouteStatus@1.0.0",
+      "digest": "sha256:19c375913ef45ccc468764b5da20bdb56834892e7ec9f7e69cef84f01e18467e",
+      "emitted_fact": "TransitionEventV1(axis_id=RouteStatus)",
+      "expiry_semantics": "Expired credentials/qualification SUSPENDS any nonretired eligible route",
+      "initial_values": [
+        "UNCONFIGURED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "routing",
+      "recovery_semantics": "SUSPENDED returns only AUTHENTICATED with rotated credentials and repeats smoke/probation",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Failed smoke/probation retains status and new evidence; materially changed route is new version",
+      "revocation_semantics": "Credential/provider/policy revocation SUSPENDS AUTHENTICATED through APPROVED",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:d9e5211d2b6158e763c18f82d7f9ba03f4e47e4a646e0780c60c57c95ac3bb2b",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_authority": "route_lifecycle_service with qualification evidence",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "UNCONFIGURED",
+          "guard_id": "IDENTITY_CREDENTIAL_AND_ENDPOINT_VALID",
+          "to": "AUTHENTICATED"
+        },
+        {
+          "from": "AUTHENTICATED",
+          "guard_id": "QUALIFIED_SMOKE_TEST_PASS",
+          "to": "SMOKE_TESTED"
+        },
+        {
+          "from": "SMOKE_TESTED",
+          "guard_id": "PROBATION_PROFILE_AND_GUARDRAILS_BOUND",
+          "to": "PROBATION"
+        },
+        {
+          "from": "PROBATION",
+          "guard_id": "PROBATION_OUTCOMES_AND_GUARDRAILS_PASS",
+          "to": "APPROVED"
+        },
+        {
+          "from": "PROBATION",
+          "guard_id": "PROBATION_SUPPORTS_RESTRICTED_PROFILE_ONLY",
+          "to": "RESTRICTED"
+        },
+        {
+          "from": "APPROVED",
+          "guard_id": "POLICY_CAPABILITY_OR_GUARDRAIL_RESTRICTION",
+          "to": "RESTRICTED"
+        },
+        {
+          "from": "RESTRICTED",
+          "guard_id": "FRESH_QUALIFICATION_AND_RESTRICTION_RESOLVED",
+          "to": "APPROVED"
+        },
+        {
+          "from": "AUTHENTICATED",
+          "guard_id": "CREDENTIAL_OR_PROVIDER_INVALIDATED",
+          "to": "SUSPENDED"
+        },
+        {
+          "from": "SMOKE_TESTED",
+          "guard_id": "SMOKE_EVIDENCE_OR_PROVIDER_INVALIDATED",
+          "to": "SUSPENDED"
+        },
+        {
+          "from": "PROBATION",
+          "guard_id": "PROBATION_FAILURE_OR_PROVIDER_INVALIDATED",
+          "to": "SUSPENDED"
+        },
+        {
+          "from": "APPROVED",
+          "guard_id": "CREDENTIAL_PROVIDER_POLICY_OR_HEALTH_INVALIDATED",
+          "to": "SUSPENDED"
+        },
+        {
+          "from": "RESTRICTED",
+          "guard_id": "CREDENTIAL_PROVIDER_POLICY_OR_HEALTH_INVALIDATED",
+          "to": "SUSPENDED"
+        },
+        {
+          "from": "SUSPENDED",
+          "guard_id": "RECONFIGURED_IDENTITY_AND_CREDENTIAL_VALID",
+          "to": "AUTHENTICATED"
+        },
+        {
+          "from": "UNCONFIGURED",
+          "guard_id": "AUTHORIZED_ROUTE_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "AUTHENTICATED",
+          "guard_id": "AUTHORIZED_ROUTE_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "SMOKE_TESTED",
+          "guard_id": "AUTHORIZED_ROUTE_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "PROBATION",
+          "guard_id": "AUTHORIZED_ROUTE_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "APPROVED",
+          "guard_id": "AUTHORIZED_ROUTE_RETIREMENT_AFTER_DRAIN",
+          "to": "RETIRED"
+        },
+        {
+          "from": "RESTRICTED",
+          "guard_id": "AUTHORIZED_ROUTE_RETIREMENT_AFTER_DRAIN",
+          "to": "RETIRED"
+        },
+        {
+          "from": "SUSPENDED",
+          "guard_id": "AUTHORIZED_ROUTE_RETIREMENT",
+          "to": "RETIRED"
+        }
+      ],
+      "values": [
+        "UNCONFIGURED",
+        "AUTHENTICATED",
+        "SMOKE_TESTED",
+        "PROBATION",
+        "APPROVED",
+        "RESTRICTED",
+        "SUSPENDED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "ExtensionStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "SUSPENDED returns through QUALIFIED and PINNED, never directly ENABLED",
+      "cancellation_semantics": "Enablement may suspend and discovery/review may retire",
+      "contract_ref": "states.json#ExtensionStatus@1.0.0",
+      "digest": "sha256:7d1be26158a8231bce900f49ccb62b6198013850a9f888dbcd19fe3fdc1b5a0a",
+      "emitted_fact": "TransitionEventV1(axis_id=ExtensionStatus)",
+      "expiry_semantics": "Expired review/qualification/pin suspends or quarantines before execution",
+      "initial_values": [
+        "DISCOVERED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "extension_host",
+      "recovery_semantics": "QUARANTINED requires review; SUSPENDED requires requalification and repinning",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Remediation re-enters review/qualification with new evidence; changed package is new version",
+      "revocation_semantics": "Signature/grant/policy revocation quarantines/retires and removes capabilities",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:55ebf8d79b43fb9c541f74ef0f13fc7354b4176fe185ef81305ccf830c283127",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_authority": "extension_lifecycle_service with qualification evidence",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "DISCOVERED",
+          "guard_id": "ISOLATED_INTAKE_AND_PROVENANCE_CAPTURED",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "DISCOVERED",
+          "guard_id": "AUTHORIZED_DISCOVERY_REJECTION",
+          "to": "RETIRED"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "STATIC_SECURITY_PROVENANCE_AND_OWNER_REVIEW_COMPLETE",
+          "to": "REVIEWED"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "AUTHORIZED_QUARANTINE_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "REVIEWED",
+          "guard_id": "QUALIFICATION_SUITE_PASS",
+          "to": "QUALIFIED"
+        },
+        {
+          "from": "REVIEWED",
+          "guard_id": "REVIEW_INVALIDATED_OR_REMEDIATION_REQUIRED",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "REVIEWED",
+          "guard_id": "AUTHORIZED_EXTENSION_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "QUALIFIED",
+          "guard_id": "EXACT_VERSION_DIGEST_AND_GRANTS_PINNED",
+          "to": "PINNED"
+        },
+        {
+          "from": "QUALIFIED",
+          "guard_id": "QUALIFICATION_INVALIDATED",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "QUALIFIED",
+          "guard_id": "AUTHORIZED_EXTENSION_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "PINNED",
+          "guard_id": "ACTIVATION_POLICY_AND_CAPABILITY_GRANTS_CURRENT",
+          "to": "ENABLED"
+        },
+        {
+          "from": "PINNED",
+          "guard_id": "PIN_SIGNATURE_OR_POLICY_INVALIDATED",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "PINNED",
+          "guard_id": "AUTHORIZED_EXTENSION_RETIREMENT",
+          "to": "RETIRED"
+        },
+        {
+          "from": "ENABLED",
+          "guard_id": "HEALTH_POLICY_OR_GUARDRAIL_BREACH",
+          "to": "SUSPENDED"
+        },
+        {
+          "from": "ENABLED",
+          "guard_id": "SECURITY_CORRECTNESS_OR_PROVENANCE_INVALIDATION",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "ENABLED",
+          "guard_id": "AUTHORIZED_RETIREMENT_AFTER_DEPENDENT_DRAIN",
+          "to": "RETIRED"
+        },
+        {
+          "from": "SUSPENDED",
+          "guard_id": "REMEDIATION_AND_FULL_REQUALIFICATION_PASS",
+          "to": "QUALIFIED"
+        },
+        {
+          "from": "SUSPENDED",
+          "guard_id": "SUSPENSION_REVIEW_REQUIRES_ISOLATION",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "SUSPENDED",
+          "guard_id": "AUTHORIZED_EXTENSION_RETIREMENT",
+          "to": "RETIRED"
+        }
+      ],
+      "values": [
+        "DISCOVERED",
+        "QUARANTINED",
+        "REVIEWED",
+        "QUALIFIED",
+        "PINNED",
+        "ENABLED",
+        "SUSPENDED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "CompatibilityStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "DEPRECATED may restore SUPPORTED; READ_ONLY may return DEPRECATED before removal",
+      "cancellation_semantics": "Removal cancels only through backward edges before REMOVED",
+      "contract_ref": "states.json#CompatibilityStatus@1.0.0",
+      "digest": "sha256:0f386a765f9eabc50a8d50dabdc85e31640a3df6d20432a7c899c83a9ffbabc3",
+      "emitted_fact": "TransitionEventV1(axis_id=CompatibilityStatus)",
+      "expiry_semantics": "Published dates trigger guarded review/transition and never silently remove",
+      "initial_values": [
+        "SUPPORTED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "service_management",
+      "recovery_semantics": "Rollback before removal requires restored implementation, data, security, and service evidence",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "REMOVED never reopens; reintroduction requires new versioned surface identity",
+      "revocation_semantics": "NOT_APPLICABLE:security denial is independent and may accelerate guarded transition",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:a198dfd468ad4199927048f9855aa7bbe3e2d455b1a6f8017658eb47c64084ab",
+      "terminal_values": [
+        "REMOVED"
+      ],
+      "transition_authority": "compatibility_lifecycle_service under service owner authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "SUPPORTED",
+          "guard_id": "DEPRECATION_NOTICE_SUCCESSOR_AND_MIGRATION_PLAN",
+          "to": "DEPRECATED"
+        },
+        {
+          "from": "DEPRECATED",
+          "guard_id": "SUPPORT_REINSTATEMENT_ACCEPTED",
+          "to": "SUPPORTED"
+        },
+        {
+          "from": "DEPRECATED",
+          "guard_id": "WRITE_MIGRATION_AND_READ_COMPATIBILITY_PROVEN",
+          "to": "READ_ONLY"
+        },
+        {
+          "from": "READ_ONLY",
+          "guard_id": "READ_WRITE_ROLLBACK_PROVEN",
+          "to": "DEPRECATED"
+        },
+        {
+          "from": "READ_ONLY",
+          "guard_id": "DEPENDENTS_MIGRATED_RETENTION_AND_REMOVAL_VERIFIED",
+          "to": "REMOVED"
+        }
+      ],
+      "values": [
+        "SUPPORTED",
+        "DEPRECATED",
+        "READ_ONLY",
+        "REMOVED"
+      ]
+    },
+    {
+      "axis_id": "InstructionStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "NOT_APPLICABLE:ACTIVE never returns DRAFT and DEPRECATED never silently reactivates",
+      "cancellation_semantics": "DRAFT may retire; emergency ACTIVE withdrawal retires with impact evidence",
+      "contract_ref": "states.json#InstructionStatus@1.0.0",
+      "digest": "sha256:83646051b44d02da6340d8758157ab31073e6de8397d05e227e25d574298eea8",
+      "emitted_fact": "TransitionEventV1(axis_id=InstructionStatus)",
+      "expiry_semantics": "Expiry triggers DEPRECATED/RETIRED under owner policy and never automatic activation",
+      "initial_values": [
+        "DRAFT"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "instruction_registry",
+      "recovery_semantics": "Restoration uses a new reviewed version",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Revision creates new immutable version and RETIRED never reactivates",
+      "revocation_semantics": "Approval/signature revocation retires or deprecates exact version",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:ab155a668f558e3c6c04258a71d10d5701b1369620208a6d24700a8897d91b1a",
+      "terminal_values": [
+        "RETIRED"
+      ],
+      "transition_authority": "instruction_lifecycle_service under instruction owner approval",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "DRAFT",
+          "guard_id": "REVIEW_APPROVAL_SIGNATURE_AND_SCOPE_VALID",
+          "to": "ACTIVE"
+        },
+        {
+          "from": "DRAFT",
+          "guard_id": "AUTHORIZED_DRAFT_WITHDRAWAL",
+          "to": "RETIRED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "DEPRECATION_DECISION_AND_SUCCESSOR_PLAN",
+          "to": "DEPRECATED"
+        },
+        {
+          "from": "ACTIVE",
+          "guard_id": "EMERGENCY_REVOCATION_AND_IMPACT_DISPOSITION",
+          "to": "RETIRED"
+        },
+        {
+          "from": "DEPRECATED",
+          "guard_id": "DEPENDENTS_MIGRATED_AND_RETIREMENT_VERIFIED",
+          "to": "RETIRED"
+        }
+      ],
+      "values": [
+        "DRAFT",
+        "ACTIVE",
+        "DEPRECATED",
+        "RETIRED"
+      ]
+    },
+    {
+      "axis_id": "ArtifactStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "AVAILABLE may enter QUARANTINED on fresh invalidation; legal hold is an orthogonal fact and never rewinds availability",
+      "cancellation_semantics": "NOT_APPLICABLE:ingest rejection quarantines then disposes under policy",
+      "contract_ref": "states.json#ArtifactStatus@1.0.0",
+      "digest": "sha256:d101078b1cb54aa6ba9ccd3e35ad11d32be551c1e3bef5d4da1c5a2175a724eb",
+      "emitted_fact": "TransitionEventV1(axis_id=ArtifactStatus)",
+      "expiry_semantics": "AVAILABLE reaches EXPIRED only by trusted retention policy and EXPIRED is not deletion",
+      "initial_values": [
+        "INGESTED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "artifact_management",
+      "recovery_semantics": "QUARANTINED becomes AVAILABLE only with remediation; PURGED never recovers",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Re-ingestion after PURGED creates new ArtifactId; quarantine retains immutable bytes",
+      "revocation_semantics": "Eligibility/access revocation may quarantine AVAILABLE and never erases bytes",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:09e68643872786aaf7030d44fad9f0bf538607f3893df6276fe5605da2b74481",
+      "terminal_values": [
+        "PURGED"
+      ],
+      "transition_authority": "artifact_lifecycle_service under retention, security, privacy, and legal-hold policy",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "INGESTED",
+          "guard_id": "MALWARE_PROVENANCE_SCHEMA_OR_CLASSIFICATION_UNRESOLVED",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "INGESTED",
+          "guard_id": "SCHEMA_DIGEST_PROVENANCE_CLASSIFICATION_AND_POLICY_VALID",
+          "to": "AVAILABLE"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "QUARANTINE_REMEDIATION_AND_REVALIDATION_PASS",
+          "to": "AVAILABLE"
+        },
+        {
+          "from": "QUARANTINED",
+          "guard_id": "AUTHORIZED_QUARANTINE_DISPOSAL_AND_NO_ACTIVE_LEGAL_HOLD",
+          "to": "PURGED"
+        },
+        {
+          "from": "AVAILABLE",
+          "guard_id": "NEW_SECURITY_PROVENANCE_OR_INTEGRITY_INVALIDATION",
+          "to": "QUARANTINED"
+        },
+        {
+          "from": "AVAILABLE",
+          "guard_id": "RETENTION_EXPIRY_REACHED",
+          "to": "EXPIRED"
+        },
+        {
+          "from": "EXPIRED",
+          "guard_id": "RETENTION_DISPOSAL_AUTHORIZED_AND_NO_ACTIVE_LEGAL_HOLD",
+          "to": "PURGED"
+        }
+      ],
+      "values": [
+        "INGESTED",
+        "QUARANTINED",
+        "AVAILABLE",
+        "EXPIRED",
+        "PURGED"
+      ]
+    },
+    {
+      "axis_id": "MigrationStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "APPLIED/partial FAILED may ROLL_BACK; VERIFIED is immutable and reverse migration is new record",
+      "cancellation_semantics": "Before APPLIED cancellation records FAILED; after APPLIED rolls back",
+      "contract_ref": "states.json#MigrationStatus@1.0.0",
+      "digest": "sha256:56447a677c5cb2fbeae8c515346602ecc99577057819b9fa224b199bc6d69305",
+      "emitted_fact": "TransitionEventV1(axis_id=MigrationStatus)",
+      "expiry_semantics": "Expired authority/evidence before apply yields FAILED; after mutation requires rollback",
+      "initial_values": [
+        "PLANNED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "migration",
+      "recovery_semantics": "FAILED is nonterminal and must return PLANNED with proof or reach ROLLED_BACK",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Pre-apply FAILED may return PLANNED after remediation; changed plan uses new MigrationId",
+      "revocation_semantics": "Authority revocation blocks apply and forces rollback if mutation began",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:91197fd139d9c0ab6039cf887d69e9afc991c8d0675a145e4bb4f46af67dbbf9",
+      "terminal_values": [
+        "VERIFIED",
+        "ROLLED_BACK"
+      ],
+      "transition_authority": "migration_service under authenticated migration authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "PLANNED",
+          "guard_id": "FORWARD_BACKWARD_DIRTY_DATA_AND_RECOVERY_TESTS_PASS",
+          "to": "TESTED"
+        },
+        {
+          "from": "PLANNED",
+          "guard_id": "PLAN_OR_PRECONDITION_TERMINALLY_FAILED",
+          "to": "FAILED"
+        },
+        {
+          "from": "TESTED",
+          "guard_id": "AUTHENTICATED_AUTHORITY_BACKUP_AND_EXACT_SUBJECT_VALID",
+          "to": "APPLIED"
+        },
+        {
+          "from": "TESTED",
+          "guard_id": "PRE_APPLY_EVIDENCE_OR_AUTHORITY_INVALIDATED",
+          "to": "FAILED"
+        },
+        {
+          "from": "APPLIED",
+          "guard_id": "POST_APPLY_DATA_SCHEMA_BEHAVIOR_AND_RECOVERY_VERIFIED",
+          "to": "VERIFIED"
+        },
+        {
+          "from": "APPLIED",
+          "guard_id": "POST_APPLY_VERIFICATION_FAILED",
+          "to": "FAILED"
+        },
+        {
+          "from": "APPLIED",
+          "guard_id": "AUTHORIZED_ROLLBACK_AND_STATE_RECONCILIATION_PROVEN",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "FAILED",
+          "guard_id": "NO_MUTATION_OR_SAFE_STATE_PROVEN_AND_REMEDIATION_ACCEPTED",
+          "to": "PLANNED"
+        },
+        {
+          "from": "FAILED",
+          "guard_id": "PARTIAL_MUTATION_ROLLBACK_AND_RECONCILIATION_PROVEN",
+          "to": "ROLLED_BACK"
+        }
+      ],
+      "values": [
+        "PLANNED",
+        "TESTED",
+        "APPLIED",
+        "VERIFIED",
+        "ROLLED_BACK",
+        "FAILED"
+      ]
+    },
+    {
+      "axis_id": "SyncCandidateStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "BLOCKED resumes only blocked_from_status; pre-release abandonment returns CLASSIFIED for fresh disposition, while RELEASED can only resume RELEASED or reconcile to ROLLED_BACK",
+      "cancellation_semantics": "Pre-release abandonment from BLOCKED re-enters CLASSIFIED for fresh REJECT/DEFER; abandonment after RELEASED reaches only ROLLED_BACK after full reconciliation",
+      "contract_ref": "states.json#SyncCandidateStatus@1.0.0",
+      "digest": "sha256:14ca18eb7abd6974e49955e4d1a00ebb6103514a7b80ed3bd061befa116c9577",
+      "emitted_fact": "TransitionEventV1(axis_id=SyncCandidateStatus)",
+      "expiry_semantics": "Review/authority expiry BLOCKS and requires fresh evidence",
+      "initial_values": [
+        "OBSERVED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "upstream_sync",
+      "recovery_semantics": "BLOCKED records prior state; rollback reconciles product, schema, data, credentials, package, and effects",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Terminal candidate is immutable; reconsideration/post-rollback creates new linked revision",
+      "revocation_semantics": "Port/release authority revocation blocks or rolls back through listed edges",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:d62d6eea6c8b547dbe87f5bd6367e0b07fcac67ae3d73b5ad9c2495ae50be3c6",
+      "terminal_values": [
+        "BASELINE_RECORDED",
+        "REJECTED",
+        "DEFERRED",
+        "ROLLED_BACK"
+      ],
+      "transition_authority": "upstream_sync_service under human disposition and release authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "OBSERVED",
+          "guard_id": "UPSTREAM_IDENTITY_AND_OBSERVATION_CURRENT",
+          "to": "FETCHED"
+        },
+        {
+          "from": "FETCHED",
+          "guard_id": "EXACT_UPSTREAM_COMMIT_AND_SOURCE_MANIFEST_BOUND",
+          "to": "PINNED"
+        },
+        {
+          "from": "PINNED",
+          "guard_id": "EVERY_COMMIT_PATH_AND_RISK_CLASSIFIED",
+          "to": "CLASSIFIED"
+        },
+        {
+          "from": "CLASSIFIED",
+          "guard_id": "ACCOUNTABLE_DISPOSITION_COMPLETE",
+          "to": "DISPOSITIONED"
+        },
+        {
+          "from": "DISPOSITIONED",
+          "guard_id": "DISPOSITION_REJECT",
+          "to": "REJECTED"
+        },
+        {
+          "from": "DISPOSITIONED",
+          "guard_id": "DISPOSITION_DEFER",
+          "to": "DEFERRED"
+        },
+        {
+          "from": "DISPOSITIONED",
+          "guard_id": "DISPOSITION_PORT_AND_WORKTREE_READY",
+          "to": "PORTING"
+        },
+        {
+          "from": "PORTING",
+          "guard_id": "PORT_COMPLETE_AND_EXACT_CANDIDATE_BOUND",
+          "to": "PORT_CANDIDATE"
+        },
+        {
+          "from": "PORT_CANDIDATE",
+          "guard_id": "REQUIRED_PORT_VERIFICATION_PASS",
+          "to": "VERIFIED"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "RELEASED_PORT_SET",
+          "to": "RELEASED"
+        },
+        {
+          "from": "RELEASED",
+          "guard_id": "BASELINE_EVIDENCE_RECORDED",
+          "to": "BASELINE_RECORDED"
+        },
+        {
+          "from": "FETCHED",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "PINNED",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "CLASSIFIED",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "DISPOSITIONED",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "PORTING",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "PORT_CANDIDATE",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "RELEASED",
+          "guard_id": "TYPED_BLOCKER_AND_PRIOR_STATE_RECORDED",
+          "to": "BLOCKED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_FETCHED",
+          "to": "FETCHED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_PINNED",
+          "to": "PINNED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKED_FROM_CLASSIFIED_OR_LATER_PRE_RELEASE_AND_PORT_EFFECTS_ABANDONED_RECONCILED_FOR_FRESH_REDISPOSITION",
+          "to": "CLASSIFIED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_DISPOSITIONED",
+          "to": "DISPOSITIONED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_PORTING",
+          "to": "PORTING"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_PORT_CANDIDATE",
+          "to": "PORT_CANDIDATE"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_VERIFIED",
+          "to": "VERIFIED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKER_RESOLVED_TO_RECORDED_RELEASED",
+          "to": "RELEASED"
+        },
+        {
+          "from": "BLOCKED",
+          "guard_id": "BLOCKED_FROM_RELEASED_AND_AUTHORIZED_FULL_RECONCILIATION",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "RELEASED",
+          "guard_id": "AUTHORIZED_ROLLBACK_AND_FULL_RECONCILIATION",
+          "to": "ROLLED_BACK"
+        }
+      ],
+      "values": [
+        "OBSERVED",
+        "FETCHED",
+        "PINNED",
+        "CLASSIFIED",
+        "DISPOSITIONED",
+        "PORTING",
+        "PORT_CANDIDATE",
+        "VERIFIED",
+        "RELEASED",
+        "BASELINE_RECORDED",
+        "REJECTED",
+        "DEFERRED",
+        "BLOCKED",
+        "ROLLED_BACK"
+      ]
+    },
+    {
+      "axis_id": "SyncDisposition",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "STATE-SYNC-DISPOSITION-1.0",
+      "digest": "sha256:5c18a035ea2341a6adff1252c1ebc2137271b7863f5e3bcb63629caeca32bef4",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "upstream_sync",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:2b52b4b9abe8445738c6d4b2babd0a08fc875ff74737aa5513b9d9376d1163ff",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable accountable disposition recorded at DISPOSITIONED",
+      "transitions": [],
+      "values": [
+        "REJECT",
+        "DEFER",
+        "PORT"
+      ]
+    },
+    {
+      "axis_id": "UpdateStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "STAGED through HEALTH_VERIFIED may roll back; COMPLETED rollback is new linked operation",
+      "cancellation_semantics": "Before STAGED cancellation reaches ROLLED_BACK only after proving no target mutation; after STAGED it requires rollback",
+      "contract_ref": "states.json#UpdateStatus@1.0.0",
+      "digest": "sha256:9dfbc7489e90c1be5e96863e6e5d6cb478170c15e1e9d63dd92262eed33347e3",
+      "emitted_fact": "TransitionEventV1(axis_id=UpdateStatus)",
+      "expiry_semantics": "Expired package, signature, migration, authority, or evidence blocks next edge",
+      "initial_values": [
+        "CHECKED"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "release_management",
+      "recovery_semantics": "ROLLED_BACK reaches RECOVERY_VERIFIED after package/schema/data/service/effect reconciliation",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Failed pre-staging attempt retains evidence or uses new UpdateId; terminal history never reopens",
+      "revocation_semantics": "Authority/signature revocation blocks before activation and requires rollback after effects",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:ae5eac3408183836fd2fcae8692b1ede24edf5781ddd0cec3a75caf5617d7058",
+      "terminal_values": [
+        "COMPLETED",
+        "RECOVERY_VERIFIED"
+      ],
+      "transition_authority": "update_service under authenticated update authority",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "CHECKED",
+          "guard_id": "UPDATE_SELECTED_AND_DOWNLOAD_AUTHORIZED",
+          "to": "DOWNLOADED"
+        },
+        {
+          "from": "DOWNLOADED",
+          "guard_id": "DIGEST_SIGNATURE_PROVENANCE_AND_COMPATIBILITY_PASS",
+          "to": "VERIFIED"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "BACKUP_AND_RESTORE_POINT_VERIFIED",
+          "to": "SNAPSHOTTED"
+        },
+        {
+          "from": "SNAPSHOTTED",
+          "guard_id": "STAGING_AND_PREACTIVATION_CHECKS_PASS",
+          "to": "STAGED"
+        },
+        {
+          "from": "STAGED",
+          "guard_id": "FORWARD_MIGRATIONS_APPLIED_AND_CHECKED",
+          "to": "MIGRATED"
+        },
+        {
+          "from": "MIGRATED",
+          "guard_id": "ATOMIC_ACTIVATION_AUTHORIZED",
+          "to": "ACTIVATED"
+        },
+        {
+          "from": "ACTIVATED",
+          "guard_id": "POST_ACTIVATION_HEALTH_AND_BEHAVIOR_PASS",
+          "to": "HEALTH_VERIFIED"
+        },
+        {
+          "from": "HEALTH_VERIFIED",
+          "guard_id": "UPDATE_EVIDENCE_AND_RECONCILIATION_SEALED",
+          "to": "COMPLETED"
+        },
+        {
+          "from": "CHECKED",
+          "guard_id": "AUTHORIZED_PRESTAGE_ABANDONMENT_AND_NO_TARGET_MUTATION_PROVEN",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "DOWNLOADED",
+          "guard_id": "AUTHORIZED_PRESTAGE_ABANDONMENT_AND_NO_TARGET_MUTATION_PROVEN",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "VERIFIED",
+          "guard_id": "AUTHORIZED_PRESTAGE_ABANDONMENT_AND_NO_TARGET_MUTATION_PROVEN",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "SNAPSHOTTED",
+          "guard_id": "AUTHORIZED_PRESTAGE_ABANDONMENT_AND_NO_TARGET_MUTATION_PROVEN",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "STAGED",
+          "guard_id": "AUTHORIZED_ROLLBACK_TO_VERIFIED_SNAPSHOT",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "MIGRATED",
+          "guard_id": "MIGRATION_OR_ACTIVATION_PRECONDITION_FAILED",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "ACTIVATED",
+          "guard_id": "POST_ACTIVATION_HEALTH_BREACH",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "HEALTH_VERIFIED",
+          "guard_id": "LATE_GUARDRAIL_BREACH_BEFORE_COMPLETION",
+          "to": "ROLLED_BACK"
+        },
+        {
+          "from": "ROLLED_BACK",
+          "guard_id": "NO_TARGET_MUTATION_OR_PACKAGE_SCHEMA_DATA_SERVICE_AND_EFFECT_RECOVERY_PROVEN",
+          "to": "RECOVERY_VERIFIED"
+        }
+      ],
+      "values": [
+        "CHECKED",
+        "DOWNLOADED",
+        "VERIFIED",
+        "SNAPSHOTTED",
+        "STAGED",
+        "MIGRATED",
+        "ACTIVATED",
+        "HEALTH_VERIFIED",
+        "COMPLETED",
+        "ROLLED_BACK",
+        "RECOVERY_VERIFIED"
+      ]
+    },
+    {
+      "axis_id": "CutoverStatus",
+      "axis_kind": "LIFECYCLE",
+      "axis_version": "1.0.0",
+      "backward_semantics": "Every pre-removal target mode has one guarded rollback edge to preceding safe mode",
+      "cancellation_semantics": "BOOTSTRAP may abandon directly; later cancellation uses listed stepwise rollback through LEGACY_BASELINE and then records ABANDONED",
+      "contract_ref": "states.json#CutoverStatus@1.0.0",
+      "digest": "sha256:13d2261e3741227e2f0eddb0f80976e30019b49d0d49796fbcb085eaeff26af4",
+      "emitted_fact": "TransitionEventV1(axis_id=CutoverStatus)",
+      "expiry_semantics": "Expired acceptance/evidence blocks advancement and ADR-0010 expiry cannot be cured late",
+      "initial_values": [
+        "BOOTSTRAP"
+      ],
+      "integration_events": [],
+      "outward_event_policy": "BLOCKED_UNTIL_AXIS_SPECIFIC_EVENT_IS_REGISTERED_IF_A_PUBLIC_CONSUMER_EXISTS",
+      "owner_context": "migration",
+      "recovery_semantics": "Rollback verifies data, behavior, routing, credentials, package, and effects before prior mode",
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "retry_semantics": "Failed step remains last proven state and retry uses fresh exact-subject evidence; ABANDONED requires a new linked CutoverId",
+      "revocation_semantics": "Authority revocation blocks or rolls back to preceding safe mode",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:b98c3145f441ef0b5e0f80ab08b509a659a1794523ae9565b0c21d1527150a9e",
+      "terminal_values": [
+        "LEGACY_REMOVED",
+        "ABANDONED"
+      ],
+      "transition_authority": "cutover_service under authenticated migration and release authorities",
+      "transition_definition_status": "DEFINED",
+      "transitions": [
+        {
+          "from": "BOOTSTRAP",
+          "guard_id": "LEGACY_BEHAVIOR_AND_SOURCE_BASELINE_FROZEN",
+          "to": "LEGACY_BASELINE"
+        },
+        {
+          "from": "LEGACY_BASELINE",
+          "guard_id": "DUAL_RUN_ISOLATION_AND_COMPARISON_READY",
+          "to": "TRANSITIONAL_DUAL_RUN"
+        },
+        {
+          "from": "TRANSITIONAL_DUAL_RUN",
+          "guard_id": "SHADOW_SAFETY_AND_PARITY_EVIDENCE_PASS",
+          "to": "TARGET_SHADOW"
+        },
+        {
+          "from": "TARGET_SHADOW",
+          "guard_id": "LIMITED_COHORT_AUTHORITY_AND_ROLLBACK_READY",
+          "to": "TARGET_LIMITED"
+        },
+        {
+          "from": "TARGET_LIMITED",
+          "guard_id": "DEFAULT_COHORT_ACCEPTANCE_AND_OPERATION_EVIDENCE_PASS",
+          "to": "TARGET_DEFAULT"
+        },
+        {
+          "from": "TARGET_DEFAULT",
+          "guard_id": "LEGACY_WRITE_AND_CHANGE_FREEZE_VERIFIED",
+          "to": "LEGACY_FROZEN"
+        },
+        {
+          "from": "LEGACY_FROZEN",
+          "guard_id": "DEPENDENTS_DATA_RIGHTS_AND_REMOVAL_VERIFIED",
+          "to": "LEGACY_REMOVED"
+        },
+        {
+          "from": "BOOTSTRAP",
+          "guard_id": "AUTHORIZED_CUTOVER_ABANDONMENT_WITH_NO_TARGET_MUTATION",
+          "to": "ABANDONED"
+        },
+        {
+          "from": "LEGACY_BASELINE",
+          "guard_id": "AUTHORIZED_CUTOVER_ABANDONMENT_AND_BASELINE_PRESERVED",
+          "to": "ABANDONED"
+        },
+        {
+          "from": "TRANSITIONAL_DUAL_RUN",
+          "guard_id": "DUAL_RUN_ROLLBACK_AND_LEGACY_RECOVERY_PROVEN",
+          "to": "LEGACY_BASELINE"
+        },
+        {
+          "from": "TARGET_SHADOW",
+          "guard_id": "SHADOW_ROLLBACK_AND_DUAL_RUN_RECOVERY_PROVEN",
+          "to": "TRANSITIONAL_DUAL_RUN"
+        },
+        {
+          "from": "TARGET_LIMITED",
+          "guard_id": "LIMITED_COHORT_ROLLBACK_AND_SHADOW_RECOVERY_PROVEN",
+          "to": "TARGET_SHADOW"
+        },
+        {
+          "from": "TARGET_DEFAULT",
+          "guard_id": "DEFAULT_ROLLBACK_AND_LIMITED_RECOVERY_PROVEN",
+          "to": "TARGET_LIMITED"
+        },
+        {
+          "from": "LEGACY_FROZEN",
+          "guard_id": "LEGACY_UNFREEZE_AND_DEFAULT_RECOVERY_PROVEN",
+          "to": "TARGET_DEFAULT"
+        }
+      ],
+      "values": [
+        "BOOTSTRAP",
+        "LEGACY_BASELINE",
+        "TRANSITIONAL_DUAL_RUN",
+        "TARGET_SHADOW",
+        "TARGET_LIMITED",
+        "TARGET_DEFAULT",
+        "LEGACY_FROZEN",
+        "LEGACY_REMOVED",
+        "ABANDONED"
+      ]
+    },
+    {
+      "axis_id": "AuthorizationOutcome",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "ENUM-AUTHORIZATION-OUTCOME-1.0",
+      "digest": "sha256:ae3d87ecc71cd3256001ee3a2e50a42484a9e1414421fe4ad20a37b8fa8be787",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "policy",
+      "referencing_events": [
+        "AuthorizationEvaluated"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:5b892180327e1694c5fc3c75ae5ece802b670288265cd9ce19f3e87353794c9f",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable authorization outcome; reevaluation creates new snapshot",
+      "transitions": [],
+      "values": [
+        "ALLOWED",
+        "DENIED",
+        "HUMAN_DECISION_REQUIRED",
+        "UNKNOWN",
+        "CONFLICT"
+      ]
+    },
+    {
+      "axis_id": "HumanDecisionKind",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "ENUM-HUMAN-DECISION-KIND-1.0",
+      "digest": "sha256:324d355ecccf7e9bb955f609335081cfee1af76953f5e11e6eaa3aa1f22bab8b",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "policy",
+      "referencing_events": [
+        "HumanDecisionSnapshotBound"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:44a65b9f788dc5ed7b70cc79218ab567888e7d62a4a255ad6ebea211c4acefd0",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable decision-purpose classifier fixed at creation",
+      "transitions": [],
+      "values": [
+        "ARCHITECTURE_OR_PROCESS_ACCEPTANCE",
+        "RISK_ACCEPTANCE_OR_WAIVER",
+        "WORK_TRANSITION",
+        "RELEASE_OR_MIGRATION",
+        "DESTRUCTIVE_OR_EXTERNAL_EFFECT",
+        "REVOCATION"
+      ]
+    },
+    {
+      "axis_id": "SourceDivergenceClass",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "ENUM-SOURCE-DIVERGENCE-CLASS-1.0",
+      "digest": "sha256:8fa0a0d4f685c73890fdde2013fc5279ed956769812d1bd5b0bc0893cf6d95e1",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "configuration_management",
+      "referencing_events": [
+        "SourceDivergenceDetected"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:732861fd587ac2f21bb448a306089221ab6f382b3a1960fafcfe7099dbd79503",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable divergence observation classification",
+      "transitions": [],
+      "values": [
+        "BASE_COMMIT_CHANGED",
+        "CANDIDATE_COMMIT_CHANGED",
+        "WORKTREE_CHANGED",
+        "ARTIFACT_DIGEST_CHANGED",
+        "POLICY_OR_PROFILE_CHANGED",
+        "SCHEMA_OR_REGISTRY_CHANGED",
+        "SUBJECT_MISSING"
+      ]
+    },
+    {
+      "axis_id": "EvidenceRelation",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "ENUM-EVIDENCE-RELATION-1.0",
+      "digest": "sha256:3f3284595bd8cfe7e6a9d0698578c3831c8cd16a5281cd3d93ead3bfd0dae5d3",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "work_management",
+      "referencing_events": [
+        "RunEvidenceLinked",
+        "ReleaseEvidenceLinked"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:e233bb39435015c0cb74e94725486b56977a235c39eb97d2872824ffec0695bd",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable directed relation on one evidence-link event",
+      "transitions": [],
+      "values": [
+        "SUPPORTS",
+        "INVALIDATES",
+        "SUPERSEDES",
+        "CONTEXTUALIZES"
+      ]
+    },
+    {
+      "axis_id": "ProductOutcomeDecision",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "ENUM-PRODUCT-OUTCOME-DECISION-1.0",
+      "digest": "sha256:441264b03e7b173798053b0d1478f9f3167759d9dc96db0a315e684d04cf6a72",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "product_definition",
+      "referencing_events": [
+        "OutcomeDecisionLinked"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:10dcfa6e5720e0cb40656e274e1a7365e5e783554ce5ed902cf23979f872a249",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable authenticated outcome choice; later review is new decision",
+      "transitions": [],
+      "values": [
+        "KEEP",
+        "CHANGE",
+        "REMOVE"
+      ]
+    },
+    {
+      "axis_id": "WorkRelation",
+      "axis_kind": "CLASSIFIER",
+      "axis_version": "1.0",
+      "contract_ref": "ENUM-WORK-RELATION-1.0",
+      "digest": "sha256:f219f6de62e4d2d88e7d2a7a47086147558d8a7c38362baf8b1fa3322d5e8956",
+      "emitted_fact": "NOT_APPLICABLE",
+      "initial_values": [],
+      "integration_events": [],
+      "owner_context": "work_management",
+      "referencing_events": [
+        "FollowUpWorkLinked"
+      ],
+      "rejection_policy_ref": "STATE-REJECTION-FAIL-CLOSED-1.0",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#161-exact-axis-kind-and-lifecycle-transition-contract",
+      "source_catalog_row_digest": "sha256:0ed562d3e7eb1def1f7081957ce071aac9eaf6685f92133c7d544a3a00dafaaf",
+      "terminal_values": [],
+      "transition_authority": "NONE",
+      "transition_definition_status": "NOT_APPLICABLE",
+      "transition_semantics": "NOT_APPLICABLE:immutable directed relation fixed on work-link event",
+      "transitions": [],
+      "values": [
+        "CONTINUES",
+        "REMEDIATES",
+        "INVESTIGATES",
+        "REPLACES",
+        "ROLLS_BACK"
+      ]
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "lifecycle_axis_count": 31,
+  "registry_id": "REG-STATES-001",
+  "rejection_policy": {
+    "causes": [
+      "UNKNOWN_AXIS_OR_VALUE",
+      "WRONG_OWNER_OR_AUTHORITY",
+      "STALE_AGGREGATE_VERSION",
+      "ILLEGAL_EDGE",
+      "UNSATISFIED_GUARD",
+      "WRONG_RECORDED_PRIOR_STATE",
+      "MISSING_OR_STALE_EVIDENCE"
+    ],
+    "policy_id": "STATE-REJECTION-FAIL-CLOSED-1.0",
+    "result": "REJECT_NO_MUTATION_NO_TRANSITION_FACT_NO_OUTBOX_EVENT"
+  },
+  "runtime_validation_status": "NOT_ASSESSED",
+  "source_catalog_digest": "sha256:86445b89f83ebcb9e69804b5a0af5c37c28cea91bde3404b417c0d3ebdac452c",
+  "source_digest": "sha256:b909a4d5d6aaeb48e98cc02815c7216dfae41f05658778a61e93cbb4865ba91a",
+  "source_path": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "transition_count": 376,
+  "transition_fact_ref": "schemas/work/transition-event-v1.schema.json",
+  "transition_notation": "FROM>TO@GUARD_ID",
+  "value_count": 285,
+  "version": "1.0.0"
+}

@@ -1,0 +1,157 @@
+{
+  "$id": "https://schemas.ranex.dev/fleet/lease-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "aggregate_version": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "artifact_type": {
+      "const": "worker_lease"
+    },
+    "assignment_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "expires_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "fencing_epoch": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "heartbeat_grace_seconds": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "heartbeat_interval_seconds": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "issued_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "issued_by_service_id": {
+      "type": "string"
+    },
+    "last_heartbeat_accepted_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "lease_id": {
+      "type": "string"
+    },
+    "principal_id": {
+      "type": "string"
+    },
+    "released_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "revocation_reason_code": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "revoked_at": {
+      "format": "date-time",
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "route_lock_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "worker_attempt_id": {
+      "type": "string"
+    },
+    "workspace_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "lease_id",
+    "status",
+    "aggregate_version",
+    "assignment_id",
+    "worker_attempt_id",
+    "principal_id",
+    "session_id",
+    "route_lock_id",
+    "workspace_id",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "fencing_epoch",
+    "issued_at",
+    "expires_at",
+    "last_heartbeat_accepted_at",
+    "heartbeat_interval_seconds",
+    "heartbeat_grace_seconds",
+    "released_at",
+    "revoked_at",
+    "revocation_reason_code",
+    "issued_by_service_id",
+    "digest"
+  ],
+  "title": "worker_lease",
+  "type": "object",
+  "x-ranex-canonical-producer": "agent_collaboration",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/WORKER_LEASE.yaml"
+}

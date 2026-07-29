@@ -1,0 +1,226 @@
+{
+  "cases": [
+    {
+      "expected_error": "ADR10_AUTHORITY_SOURCE_MISSING",
+      "fixture_id": "ADR10-AUTH-NEG-001",
+      "scenario": "missing_authority_source"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_SOURCE_DUPLICATE",
+      "fixture_id": "ADR10-AUTH-NEG-002",
+      "scenario": "duplicate_authority_source"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_SOURCE_PATH",
+      "fixture_id": "ADR10-AUTH-NEG-003",
+      "scenario": "wrong_authority_source_path_or_filename"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_SOURCE_DIGEST",
+      "fixture_id": "ADR10-AUTH-NEG-004",
+      "scenario": "authority_source_digest_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_SOURCE_BIJECTION",
+      "fixture_id": "ADR10-AUTH-NEG-005",
+      "scenario": "authority_registry_source_bijection_failure"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BASELINE_BINDING",
+      "fixture_id": "ADR10-AUTH-NEG-006",
+      "scenario": "wrong_baseline_scope_or_source"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_ROW_MISSING",
+      "fixture_id": "ADR10-AUTH-NEG-007",
+      "scenario": "missing_behavior_row"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_VERSION",
+      "fixture_id": "ADR10-AUTH-NEG-008",
+      "scenario": "wrong_or_stale_behavior_version"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_DIGEST",
+      "fixture_id": "ADR10-AUTH-NEG-009",
+      "scenario": "behavior_source_or_row_digest_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_LIFECYCLE",
+      "fixture_id": "ADR10-AUTH-NEG-010",
+      "scenario": "behavior_expired_revoked_or_superseded"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_DECISION_MISSING",
+      "fixture_id": "ADR10-AUTH-NEG-011",
+      "scenario": "missing_behavior_decision"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_DECISION_SUBJECT",
+      "fixture_id": "ADR10-AUTH-NEG-012",
+      "scenario": "behavior_decision_wrong_subject"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_DECISION_ROLE",
+      "fixture_id": "ADR10-AUTH-NEG-013",
+      "scenario": "behavior_decision_wrong_role_action_or_outcome"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_DECISION_DIGEST",
+      "fixture_id": "ADR10-AUTH-NEG-014",
+      "scenario": "behavior_decision_digest_ref_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BINDING_MISSING",
+      "fixture_id": "ADR10-AUTH-NEG-015",
+      "scenario": "missing_binding_role"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BINDING_DUPLICATE",
+      "fixture_id": "ADR10-AUTH-NEG-016",
+      "scenario": "duplicate_binding_role"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BINDING_ORDER",
+      "fixture_id": "ADR10-AUTH-NEG-017",
+      "scenario": "authority_binding_order_wrong"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_REGISTRY_IDENTITY",
+      "fixture_id": "ADR10-AUTH-NEG-018",
+      "scenario": "wrong_registry_id_version_or_ref"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_REGISTRY_DIGEST",
+      "fixture_id": "ADR10-AUTH-NEG-019",
+      "scenario": "registry_digest_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_ROW_REF",
+      "fixture_id": "ADR10-AUTH-NEG-020",
+      "scenario": "row_ref_missing_or_wrong"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_ROW_DIGEST",
+      "fixture_id": "ADR10-AUTH-NEG-021",
+      "scenario": "row_digest_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CONTEXT_BEHAVIOR",
+      "fixture_id": "ADR10-AUTH-NEG-022",
+      "scenario": "context_behavior_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CAPABILITY_BEHAVIOR",
+      "fixture_id": "ADR10-AUTH-NEG-023",
+      "scenario": "capability_behavior_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_OWNERSHIP_CONTEXT",
+      "fixture_id": "ADR10-AUTH-NEG-024",
+      "scenario": "ownership_context_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_LANE_CATEGORY",
+      "fixture_id": "ADR10-AUTH-NEG-025",
+      "scenario": "lane_category_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_LANE_REGISTRY",
+      "fixture_id": "ADR10-AUTH-NEG-026",
+      "scenario": "test_lane_bound_to_profile_not_taxonomy_registry"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_MIRROR_PATTERN",
+      "fixture_id": "ADR10-AUTH-NEG-027",
+      "scenario": "taxonomy_mirror_pattern_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_DESTINATION_NONDETERMINISTIC",
+      "fixture_id": "ADR10-AUTH-NEG-028",
+      "scenario": "nondeterministic_destination_root"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_DECISION_MISSING",
+      "fixture_id": "ADR10-AUTH-NEG-029",
+      "scenario": "missing_classification_decision"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_DECISION_SUBJECT",
+      "fixture_id": "ADR10-AUTH-NEG-030",
+      "scenario": "decision_wrong_subject"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_DECISION_ROLE",
+      "fixture_id": "ADR10-AUTH-NEG-031",
+      "scenario": "decision_wrong_role_action_or_outcome"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_DECISION_DIGEST",
+      "fixture_id": "ADR10-AUTH-NEG-032",
+      "scenario": "classification_decision_digest_ref_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_DECISION_STATE",
+      "fixture_id": "ADR10-AUTH-NEG-033",
+      "scenario": "decision_not_approved_revoked_or_superseded"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_LIFECYCLE",
+      "fixture_id": "ADR10-AUTH-NEG-034",
+      "scenario": "decision_or_authority_expired_or_not_yet_valid"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_CONFLICT",
+      "fixture_id": "ADR10-AUTH-NEG-035",
+      "scenario": "conflicting_or_superseding_classification"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_BEHAVIOR_LANDING",
+      "fixture_id": "ADR10-AUTH-NEG-036",
+      "scenario": "behavior_authority_landing_omitted"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_LANDING",
+      "fixture_id": "ADR10-AUTH-NEG-037",
+      "scenario": "classification_authority_landing_omitted_or_failed"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CLASSIFICATION_LANDING_SUBJECT",
+      "fixture_id": "ADR10-AUTH-NEG-038",
+      "scenario": "classification_authority_landing_wrong_subject"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_SEAL_BEHAVIOR_REGISTRY",
+      "fixture_id": "ADR10-AUTH-NEG-039",
+      "scenario": "sealing_behavior_registry_digest_wrong_or_omitted"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_SEAL_CLASSIFICATION_REGISTRY",
+      "fixture_id": "ADR10-AUTH-NEG-040",
+      "scenario": "sealing_classification_registry_digest_wrong_or_omitted"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_TRANSITION_MAPPING",
+      "fixture_id": "ADR10-AUTH-NEG-041",
+      "scenario": "transition_mapping_or_authority_digest_mismatch"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_CHANGE_CALL_PATH",
+      "fixture_id": "ADR10-AUTH-NEG-042",
+      "scenario": "direct_change_resolver_omitted"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_MIGRATION_CALL_PATH",
+      "fixture_id": "ADR10-AUTH-NEG-043",
+      "scenario": "direct_migration_resolver_omitted"
+    },
+    {
+      "expected_error": "ADR10_AUTHORITY_SYNTHETIC_LIVE",
+      "fixture_id": "ADR10-AUTH-NEG-044",
+      "scenario": "synthetic_fixture_claimed_as_live_authority"
+    }
+  ],
+  "contract_id": "ADR10-LEGACY-TEST-RECORDS-2.0",
+  "fixture_suite": "ADR10_DIRECT_AUTHORITY_NEGATIVE_V1"
+}

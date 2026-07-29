@@ -1,4 +1,4 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: review_request
 request_id: "review_<uuidv7>"
@@ -7,9 +7,11 @@ review_spec_id: ""
 review_spec_version: ""
 packet_id: ""
 packet_digest: ""
-subject_ref: "exact-subject/v1"
+subject_schema: null
+subject_ref: ""
 subject_digest: ""
-subject_manifest_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
 
 maker:
   principal_id: ""

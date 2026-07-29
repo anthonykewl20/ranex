@@ -1,0 +1,123 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/capacity-snapshot-authority-row-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "available_capacity": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "calendar_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "calendar_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "capacity_snapshot_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "capacity_snapshot_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "capacity_unit": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "CAPACITY_SNAPSHOT_AUTHORITY"
+    },
+    "reserved_capacity": {
+      "minimum": 0,
+      "type": "number"
+    },
+    "resource_pool_catalog_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "resource_pool_catalog_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "resource_pool_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "supersedes_capacity_snapshot_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "valid_until": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "capacity_snapshot_id",
+    "work_item_id",
+    "capacity_snapshot_ref",
+    "capacity_unit",
+    "resource_pool_ids",
+    "resource_pool_catalog_ref",
+    "resource_pool_catalog_digest",
+    "available_capacity",
+    "reserved_capacity",
+    "calendar_ref",
+    "calendar_digest",
+    "observed_at",
+    "valid_until",
+    "supersedes_capacity_snapshot_id",
+    "digest"
+  ],
+  "title": "CapacitySnapshotAuthorityRowV1",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "reserved_capacity <= available_capacity; unit, resource-pool population and its exact catalog digest, quantities, and calendar binding are exact business payload."
+  ],
+  "x-ranex-source-authority-contract-id": "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0",
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "CapacitySnapshotAuthorityRowV1"
+}

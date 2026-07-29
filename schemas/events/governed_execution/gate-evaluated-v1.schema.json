@@ -1,0 +1,92 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/gate-evaluated-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "gate_evaluation_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "GateEvaluation",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "GateEvaluation"
+    },
+    "gate_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Gate",
+      "x-ranex-registered-opaque-id": true
+    },
+    "outcome": {
+      "enum": [
+        "PASS",
+        "FAIL",
+        "UNKNOWN",
+        "CONFLICT",
+        "NOT_APPLICABLE",
+        "CHECKER_FAULT"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#GateOutcome@1.0.0"
+    },
+    "reason_codes": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "run_id",
+    "gate_evaluation_ref",
+    "gate_id",
+    "outcome",
+    "reason_codes"
+  ],
+  "title": "GateEvaluated event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-GATEEVALUATED",
+  "x-ranex-event-name": "GateEvaluated",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:GateEvaluated:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "GateEvaluated",
+    "referenced_axis_ids": [
+      "GateOutcome"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:a2655807a6e2f9a1592f2d3b470c27f83c902007c65eb8bb33c45a7beff1ad56"
+}

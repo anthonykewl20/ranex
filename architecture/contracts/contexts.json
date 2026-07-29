@@ -1,0 +1,1109 @@
+{
+  "canonical_context_root_template": "src/ranex/<context>/",
+  "capability_zones": [
+    {
+      "canonical_output": "Run events and state",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "workflow runtime",
+      "lifecycle_owner": "governed_execution",
+      "name": "Workflow and run control",
+      "owners": [
+        "governed_execution"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-WORKFLOW-AND-RUN-CONTROL"
+    },
+    {
+      "canonical_output": "Authorization decision snapshot",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "built-in/OPA PDP",
+      "lifecycle_owner": "policy",
+      "name": "Policy and risk",
+      "owners": [
+        "policy"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-POLICY-AND-RISK"
+    },
+    {
+      "canonical_output": "Authenticated exact-subject decision",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "CLI/web/phone/GitHub challenge",
+      "lifecycle_owner": "policy",
+      "name": "Human decisions",
+      "owners": [
+        "policy",
+        "identity_access"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-HUMAN-DECISIONS"
+    },
+    {
+      "canonical_output": "Evidence/checker result",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "deterministic/model/human checker modules",
+      "lifecycle_owner": "checker module state in module_governance; qualification evidence in qualification",
+      "name": "Evidence and checks",
+      "owners": [
+        "assurance"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-EVIDENCE-AND-CHECKS"
+    },
+    {
+      "canonical_output": "Consumed permit + effect intent/result",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "capability bus/outbox",
+      "lifecycle_owner": "governed_execution",
+      "name": "Permits and effects",
+      "owners": [
+        "governed_execution"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-PERMITS-AND-EFFECTS"
+    },
+    {
+      "canonical_output": "Qualified module profile",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "composition catalog",
+      "lifecycle_owner": "module_governance",
+      "name": "Modules and capabilities",
+      "owners": [
+        "module_governance"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-MODULES-AND-CAPABILITIES"
+    },
+    {
+      "canonical_output": "One explicit no-fallback route lock and attempt",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "release-pinned official runtime or API/BYOK adapters",
+      "lifecycle_owner": "route state in routing; qualification evidence in qualification",
+      "name": "Routes/providers",
+      "owners": [
+        "routing"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-ROUTES-PROVIDERS"
+    },
+    {
+      "canonical_output": "Versioned need, requirement, measure and validation decision",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "research, decision and analytics adapters",
+      "lifecycle_owner": "product_definition",
+      "name": "Product discovery/requirements/outcomes",
+      "owners": [
+        "product_definition"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-PRODUCT-DISCOVERY-REQUIREMENTS-OUTCOMES"
+    },
+    {
+      "canonical_output": "Canonical work item, requirements/outcome links, and projections",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "transition, portfolio, GitHub and projection adapters",
+      "lifecycle_owner": "work_management",
+      "name": "Core-SDLC projects/work/traceability",
+      "owners": [
+        "work_management"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-CORE-SDLC-PROJECTS-WORK-TRACEABILITY"
+    },
+    {
+      "canonical_output": "Service objective and capability/support state",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "service catalog and operational projections",
+      "lifecycle_owner": "service_management",
+      "name": "Services/SLOs/support/lifecycle",
+      "owners": [
+        "service_management"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-SERVICES-SLOS-SUPPORT-LIFECYCLE"
+    },
+    {
+      "canonical_output": "Audited baseline and trace graph",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "repository/build/test/release scanners",
+      "lifecycle_owner": "configuration_management",
+      "name": "Configuration/baselines/traceability",
+      "owners": [
+        "configuration_management"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-CONFIGURATION-BASELINES-TRACEABILITY"
+    },
+    {
+      "canonical_output": "Adoption/monitoring/exit decision",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "package/provider/upstream monitors",
+      "lifecycle_owner": "supplier_governance",
+      "name": "Suppliers/dependencies",
+      "owners": [
+        "supplier_governance"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-SUPPLIERS-DEPENDENCIES"
+    },
+    {
+      "canonical_output": "Reservation, quota and attributed usage",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "provider/tool/host usage meters",
+      "lifecycle_owner": "resource_governance",
+      "name": "Resource budgets/usage",
+      "owners": [
+        "resource_governance"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-RESOURCE-BUDGETS-USAGE"
+    },
+    {
+      "canonical_output": "Classified thread/message record",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "channel/session/search adapters",
+      "lifecycle_owner": "interaction_history",
+      "name": "Conversation/session history",
+      "owners": [
+        "interaction_history"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-CONVERSATION-SESSION-HISTORY"
+    },
+    {
+      "canonical_output": "Tailoring, nonconformance and corrective-action record",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "conformance/audit/competence adapters",
+      "lifecycle_owner": "process_assurance",
+      "name": "Process assurance",
+      "owners": [
+        "process_assurance"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-PROCESS-ASSURANCE"
+    },
+    {
+      "canonical_output": "Validated workspace identity",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "Git/filesystem/sandbox",
+      "lifecycle_owner": "workspace",
+      "name": "Repositories/worktrees",
+      "owners": [
+        "workspace"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-REPOSITORIES-WORKTREES"
+    },
+    {
+      "canonical_output": "Content-addressed packet",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "source/retrieval adapters",
+      "lifecycle_owner": "respective owner",
+      "name": "Instructions/context",
+      "owners": [
+        "instruction_registry",
+        "context_compilation"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-INSTRUCTIONS-CONTEXT"
+    },
+    {
+      "canonical_output": "Worker result/proposal",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "role-scoped official leaf runtimes; Hermes is excluded from live dispatch",
+      "lifecycle_owner": "assignment/run handoff state in agent_collaboration; worker-module activation in module_governance",
+      "name": "Agent collaboration",
+      "owners": [
+        "agent_collaboration"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-AGENT-COLLABORATION"
+    },
+    {
+      "canonical_output": "Review observation",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "typed API or official SDK/app-server runtime",
+      "lifecycle_owner": "review request/attempt/observation state in analytical_review; transport/parser qualification evidence in qualification",
+      "name": "Analytical review",
+      "owners": [
+        "analytical_review"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-ANALYTICAL-REVIEW"
+    },
+    {
+      "canonical_output": "Typed activity result",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "exact role ceiling compiled to task-minimal terminal/file/git/browser/search/GitHub/MCP subset",
+      "lifecycle_owner": "module + role ceiling + assignment grant lifecycle",
+      "name": "Tools",
+      "owners": [
+        "module_governance"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-TOOLS"
+    },
+    {
+      "canonical_output": "Versioned derived evidence",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "parsers/indexers",
+      "lifecycle_owner": "index/snapshot lifecycle in repository_intelligence; parser qualification evidence in qualification",
+      "name": "Repository intelligence",
+      "owners": [
+        "repository_intelligence"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-REPOSITORY-INTELLIGENCE"
+    },
+    {
+      "canonical_output": "Scoped knowledge record",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "storage/retrieval",
+      "lifecycle_owner": "quarantine/approval lifecycle",
+      "name": "Skills/memory/learning",
+      "owners": [
+        "knowledge"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-SKILLS-MEMORY-LEARNING"
+    },
+    {
+      "canonical_output": "Authenticated trigger event",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "cron/webhook/timer source",
+      "lifecycle_owner": "schedule lifecycle",
+      "name": "Schedules/triggers",
+      "owners": [
+        "scheduling"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-SCHEDULES-TRIGGERS"
+    },
+    {
+      "canonical_output": "Typed command/receipt",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "inbound/outbound adapters",
+      "lifecycle_owner": "channel config lifecycle",
+      "name": "CLI/TUI/web/phone/GitHub",
+      "owners": [
+        "delivery"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-CLI-TUI-WEB-PHONE-GITHUB"
+    },
+    {
+      "canonical_output": "Principal or secret handle",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "keyring/file/vault/OAuth adapters",
+      "lifecycle_owner": "identity/session/secret lifecycle",
+      "name": "Authentication/secrets",
+      "owners": [
+        "identity_access"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-AUTHENTICATION-SECRETS"
+    },
+    {
+      "canonical_output": "Content digest/reference",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "filesystem/object store",
+      "lifecycle_owner": "retention lifecycle",
+      "name": "Artifacts",
+      "owners": [
+        "artifact_management"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-ARTIFACTS"
+    },
+    {
+      "canonical_output": "Qualification or metric vector",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "runners/graders",
+      "lifecycle_owner": "immutable trial/qualification/experiment protocol; subject owner changes activation state",
+      "name": "Evaluation/qualification",
+      "owners": [
+        "qualification",
+        "effectiveness"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-EVALUATION-QUALIFICATION"
+    },
+    {
+      "canonical_output": "Noncanonical telemetry",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "OTLP/log/metric exporters",
+      "lifecycle_owner": "incident/health lifecycle",
+      "name": "Observability/operations",
+      "owners": [
+        "operations"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-OBSERVABILITY-OPERATIONS"
+    },
+    {
+      "canonical_output": "Verified recovery point",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "encrypted local/remote stores",
+      "lifecycle_owner": "backup-set lifecycle",
+      "name": "Backup/restore",
+      "owners": [
+        "backup_restore"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-BACKUP-RESTORE"
+    },
+    {
+      "canonical_output": "Signed/pinned release manifest",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "package/installer/updater",
+      "lifecycle_owner": "release lifecycle",
+      "name": "Install/update/release",
+      "owners": [
+        "release_management"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-INSTALL-UPDATE-RELEASE"
+    },
+    {
+      "canonical_output": "Accepted/rejected port set",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "Git sync worktree",
+      "lifecycle_owner": "sync-candidate lifecycle",
+      "name": "Upstream sync",
+      "owners": [
+        "upstream_sync"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-UPSTREAM-SYNC"
+    },
+    {
+      "canonical_output": "Verified migration record",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "schema/legacy readers",
+      "lifecycle_owner": "migration lifecycle",
+      "name": "Migrations",
+      "owners": [
+        "migration"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-MIGRATIONS"
+    },
+    {
+      "canonical_output": "Typed proposal/effect request",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "isolated RPC bridge",
+      "lifecycle_owner": "extension lifecycle",
+      "name": "External extensions",
+      "owners": [
+        "extension_host"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-EXTERNAL-EXTENSIONS"
+    },
+    {
+      "canonical_output": "Versioned compatibility contract, translation/characterization result, and removal evidence",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "anti-corruption facade and constrained non-inference legacy process",
+      "lifecycle_owner": "service_management owns CompatibilityStatus",
+      "name": "Legacy Hermes compatibility",
+      "owners": [
+        "service_management",
+        "compatibility"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-LEGACY-HERMES-COMPATIBILITY"
+    },
+    {
+      "canonical_output": "Compliance decision",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "CI scanners/SBOM",
+      "lifecycle_owner": "release and sync gates",
+      "name": "Legal/de-commercialization",
+      "owners": [
+        "provenance_compliance"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-LEGAL-DE-COMMERCIALIZATION"
+    },
+    {
+      "canonical_output": "Registry digest, generated Python/TypeScript packages, drift/audit result",
+      "definition_status": "DEFINED",
+      "effect_adapter_family": "deterministic contract compiler and language generators",
+      "lifecycle_owner": "source context owns semantics; configuration_management owns baseline/reproducibility",
+      "name": "Contract/schema generation",
+      "owners": [
+        "configuration_management"
+      ],
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#10-full-capability-attachment-matrix",
+      "zone_id": "ZONE-CONTRACT-SCHEMA-GENERATION"
+    }
+  ],
+  "context_adapter_path_template": "src/ranex/<context>/adapters/<technology>/",
+  "context_count": 34,
+  "entries": [
+    {
+      "canonical_root": "src/ranex/governed_execution/",
+      "context_adapter_path": "src/ranex/governed_execution/adapters/<technology>/",
+      "context_id": "governed_execution",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "AUTHORITY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Run, pinned workflow, activities, gate bindings, consumable authority grants, permit issuance/consumption, effect intents/outcomes, reconciliation",
+      "persistence_authority": "Sole run/execution-transition authority",
+      "port_path": "src/ranex/governed_execution/application/ports/",
+      "public_api_path": "src/ranex/governed_execution/api/",
+      "public_boundary": "Commands, queries, integration events, immutable views",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/policy/",
+      "context_adapter_path": "src/ranex/policy/adapters/<technology>/",
+      "context_id": "policy",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "AUTHORITY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Roles, authorization-eligibility rules, risk-lane derivation, policy packages, activation, authorization snapshots, waivers and authenticated human-decision records",
+      "persistence_authority": "Policy definitions and append-only decision history; never issues or consumes execution grants/permits",
+      "port_path": "src/ranex/policy/application/ports/",
+      "public_api_path": "src/ranex/policy/api/",
+      "public_boundary": "Authorization request/decision, active-policy and human-decision snapshots",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/assurance/",
+      "context_adapter_path": "src/ranex/assurance/adapters/<technology>/",
+      "context_id": "assurance",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "AUTHORITY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Claims, evidence envelopes, qualified checker results, exact-subject evidence snapshots, and GateEvaluation",
+      "persistence_authority": "Sole evidence/gate-evaluation record owner; does not own review observations, qualify components, bind a run gate, or commit run state",
+      "port_path": "src/ranex/assurance/application/ports/",
+      "public_api_path": "src/ranex/assurance/api/",
+      "public_boundary": "Evidence ingestion/query, checker result, snapshot and gate-evaluation APIs",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/module_governance/",
+      "context_adapter_path": "src/ranex/module_governance/adapters/<technology>/",
+      "context_id": "module_governance",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "AUTHORITY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Module catalog, descriptors, capability vocabulary, grants, compatibility, activation lifecycle",
+      "persistence_authority": "Module and grant authority",
+      "port_path": "src/ranex/module_governance/application/ports/",
+      "public_api_path": "src/ranex/module_governance/api/",
+      "public_boundary": "Module/grant/profile snapshots",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/identity_access/",
+      "context_adapter_path": "src/ranex/identity_access/adapters/<technology>/",
+      "context_id": "identity_access",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "AUTHORITY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Human/service identities, authentication, sessions, nonces, remote decision authentication, data classification, destination facts, secret references",
+      "persistence_authority": "Identity and access authority; policy decides and the egress adapter enforces",
+      "port_path": "src/ranex/identity_access/application/ports/",
+      "public_api_path": "src/ranex/identity_access/api/",
+      "public_boundary": "Principal/session/secret-handle and destination-fact APIs",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#91-nonreplaceable-authority-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/product_definition/",
+      "context_adapter_path": "src/ranex/product_definition/adapters/<technology>/",
+      "context_id": "product_definition",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Actors, problems/needs, hypotheses, product capabilities, requirements, acceptance examples, outcome measures, validation decisions, CapabilityStatus",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/product_definition/application/ports/",
+      "public_api_path": "src/ranex/product_definition/api/",
+      "public_boundary": "Discovery/user research, product decisions, work intake, outcome review",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/work_management/",
+      "context_adapter_path": "src/ranex/work_management/adapters/<technology>/",
+      "context_id": "work_management",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Projects, canonical WorkItemStatus, work class, portfolio/queues/WIP, dependencies/risks/issues, technical-debt records, accountable work roles, external issue mapping, Kanban projections",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/work_management/application/ports/",
+      "public_api_path": "src/ranex/work_management/api/",
+      "public_boundary": "Core-SDLC transition API, GitHub intake, product/requirement links, governed-run/evidence integration",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/service_management/",
+      "context_adapter_path": "src/ranex/service_management/adapters/<technology>/",
+      "context_id": "service_management",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Service catalog, service/capability ownership, supported versions, SLIs/SLOs/error budgets, support/escalation, maintenance and retirement triggers",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/service_management/application/ports/",
+      "public_api_path": "src/ranex/service_management/api/",
+      "public_boundary": "Operations evidence, release catalog, product capability lifecycle",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/configuration_management/",
+      "context_adapter_path": "src/ranex/configuration_management/adapters/<technology>/",
+      "context_id": "configuration_management",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Configuration-item registry, content-addressed baselines, status accounting, bidirectional traceability graph, functional/physical configuration audits",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/configuration_management/application/ports/",
+      "public_api_path": "src/ranex/configuration_management/api/",
+      "public_boundary": "Product requirements, source/build/test/docs, release manifests, assurance evidence",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/supplier_governance/",
+      "context_adapter_path": "src/ranex/supplier_governance/adapters/<technology>/",
+      "context_id": "supplier_governance",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Supplier/dependency adoption and reuse decisions, shared responsibility, version/support/vulnerability monitoring, concentration/exit plans",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/supplier_governance/application/ports/",
+      "public_api_path": "src/ranex/supplier_governance/api/",
+      "public_boundary": "Packages, toolchains, providers, APIs, extensions, hosted services, Hermes upstream",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/resource_governance/",
+      "context_adapter_path": "src/ranex/resource_governance/adapters/<technology>/",
+      "context_id": "resource_governance",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Local capacity, hierarchical cost/token/tool/output/network budgets, parent/child reservations, quotas, transitive usage attribution and provider-limit facts",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/resource_governance/application/ports/",
+      "public_api_path": "src/ranex/resource_governance/api/",
+      "public_boundary": "Policy, routing, scheduling, agent runs, operations; never commercial billing",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/interaction_history/",
+      "context_adapter_path": "src/ranex/interaction_history/adapters/<technology>/",
+      "context_id": "interaction_history",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "User conversation/thread/message identity, continuity, search lifecycle, classification, retention, export and deletion",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/interaction_history/application/ports/",
+      "public_api_path": "src/ranex/interaction_history/api/",
+      "public_boundary": "Delivery channels, context compilation, legacy session import",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/process_assurance/",
+      "context_adapter_path": "src/ranex/process_assurance/adapters/<technology>/",
+      "context_id": "process_assurance",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "SDLC policy conformance, tailoring profiles, human-role competence, process audits/nonconformance/corrective action, process improvement evidence, fleet experiment and calibration records",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/process_assurance/application/ports/",
+      "public_api_path": "src/ranex/process_assurance/api/",
+      "public_boundary": "Core SDLC, work records, metrics, training/qualification and measurement-harness evidence",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/workspace/",
+      "context_adapter_path": "src/ranex/workspace/adapters/<technology>/",
+      "context_id": "workspace",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Repository identity, worktree plans, branch/head validation, landing and cleanup",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/workspace/application/ports/",
+      "public_api_path": "src/ranex/workspace/api/",
+      "public_boundary": "Git adapter, sandbox mounts",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/instruction_registry/",
+      "context_adapter_path": "src/ranex/instruction_registry/adapters/<technology>/",
+      "context_id": "instruction_registry",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Atomic versioned instructions, precedence, applicability, checker bindings",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/instruction_registry/application/ports/",
+      "public_api_path": "src/ranex/instruction_registry/api/",
+      "public_boundary": "Policy and packet compilation",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/context_compilation/",
+      "context_adapter_path": "src/ranex/context_compilation/adapters/<technology>/",
+      "context_id": "context_compilation",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Resolved source manifests, packet compilation, context budget, conflicts, provenance",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/context_compilation/application/ports/",
+      "public_api_path": "src/ranex/context_compilation/api/",
+      "public_boundary": "Deterministic and recorded stochastic retrieval",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/analytical_review/",
+      "context_adapter_path": "src/ranex/analytical_review/adapters/<technology>/",
+      "context_id": "analytical_review",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Review specifications, requests, attempts, observations, verdicts, parsing and independence evaluations",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/analytical_review/application/ports/",
+      "public_api_path": "src/ranex/analytical_review/api/",
+      "public_boundary": "Native and tool-bearing review transports; publishes immutable review references to assurance",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/routing/",
+      "context_adapter_path": "src/ranex/routing/adapters/<technology>/",
+      "context_id": "routing",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Provider/model/transport/runtime/auth identities, one-route assignment locks, health, failure and governed-redispatch facts",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/routing/application/ports/",
+      "public_api_path": "src/ranex/routing/api/",
+      "public_boundary": "Official runtime and provider adapters; no fallback chain",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/qualification/",
+      "context_adapter_path": "src/ranex/qualification/adapters/<technology>/",
+      "context_id": "qualification",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Checker, module, route, and isolation-profile qualification",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/qualification/application/ports/",
+      "public_api_path": "src/ranex/qualification/api/",
+      "public_boundary": "Frozen fixtures, canaries, holdouts",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/effectiveness/",
+      "context_adapter_path": "src/ranex/effectiveness/adapters/<technology>/",
+      "context_id": "effectiveness",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Whole-workflow paired evaluation, causal ablations, owner-facing scorecards",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/effectiveness/application/ports/",
+      "public_api_path": "src/ranex/effectiveness/api/",
+      "public_boundary": "Evaluation runners and artifacts",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/agent_collaboration/",
+      "context_adapter_path": "src/ranex/agent_collaboration/adapters/<technology>/",
+      "context_id": "agent_collaboration",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Typed worker assignments/offers, atomic claims, fenced leases, heartbeats/liveness, mailboxes, Ranex-owned dispatch graphs and fan-out/join, role separation, worker attempts, results and handoffs",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/agent_collaboration/application/ports/",
+      "public_api_path": "src/ranex/agent_collaboration/api/",
+      "public_boundary": "Official leaf runtime adapters; workers cannot delegate or coordinate and the context never owns RunStatus, work state, gate, permit, effect, merge, or release",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/repository_intelligence/",
+      "context_adapter_path": "src/ranex/repository_intelligence/adapters/<technology>/",
+      "context_id": "repository_intelligence",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Source graph/index, language coverage, freshness, unsupported-analysis states",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/repository_intelligence/application/ports/",
+      "public_api_path": "src/ranex/repository_intelligence/api/",
+      "public_boundary": "Atlas/tree-sitter or simpler index strategies",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/knowledge/",
+      "context_adapter_path": "src/ranex/knowledge/adapters/<technology>/",
+      "context_id": "knowledge",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Skills, project memory, learned records, quarantine, sanitization, transfer approvals",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/knowledge/application/ports/",
+      "public_api_path": "src/ranex/knowledge/api/",
+      "public_boundary": "Packet sources and explicitly scoped worker reads",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/scheduling/",
+      "context_adapter_path": "src/ranex/scheduling/adapters/<technology>/",
+      "context_id": "scheduling",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Schedules, authenticated triggers, catch-up rules, trigger lifecycle",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/scheduling/application/ports/",
+      "public_api_path": "src/ranex/scheduling/api/",
+      "public_boundary": "Cron, webhooks, external timers",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/delivery/",
+      "context_adapter_path": "src/ranex/delivery/adapters/<technology>/",
+      "context_id": "delivery",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Channel-neutral messages, commands, decision challenges, rendering, delivery receipts",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/delivery/application/ports/",
+      "public_api_path": "src/ranex/delivery/api/",
+      "public_boundary": "CLI, TUI, web, phone, GitHub adapters",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/artifact_management/",
+      "context_adapter_path": "src/ranex/artifact_management/adapters/<technology>/",
+      "context_id": "artifact_management",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "PRODUCT_DEVELOPMENT",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Content-addressed blobs, classification, access, retention, legal hold, expiry, purge",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/artifact_management/application/ports/",
+      "public_api_path": "src/ranex/artifact_management/api/",
+      "public_boundary": "Filesystem/object-store adapters",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#92-product-and-development-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/operations/",
+      "context_adapter_path": "src/ranex/operations/adapters/<technology>/",
+      "context_id": "operations",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Observed health, alerts, IncidentStatus, response/recovery evidence, reconciliation scheduling and operator runbooks",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/operations/application/ports/",
+      "public_api_path": "src/ranex/operations/api/",
+      "public_boundary": "Telemetry, delivery, service objectives, external-system probes",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/backup_restore/",
+      "context_adapter_path": "src/ranex/backup_restore/adapters/<technology>/",
+      "context_id": "backup_restore",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Backup sets, encryption, RPO/RTO policy, restore drills, reconciliation",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/backup_restore/application/ports/",
+      "public_api_path": "src/ranex/backup_restore/api/",
+      "public_boundary": "SQLite, artifacts, configuration, remote stores",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/release_management/",
+      "context_adapter_path": "src/ranex/release_management/adapters/<technology>/",
+      "context_id": "release_management",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Build manifest, release profile, install/update/rollback, package/SBOM verification",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/release_management/application/ports/",
+      "public_api_path": "src/ranex/release_management/api/",
+      "public_boundary": "Installer and updater adapters",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/upstream_sync/",
+      "context_adapter_path": "src/ranex/upstream_sync/adapters/<technology>/",
+      "context_id": "upstream_sync",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Upstream baseline, diff classification, anti-recontamination gates, selective porting, sync evidence",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/upstream_sync/application/ports/",
+      "public_api_path": "src/ranex/upstream_sync/api/",
+      "public_boundary": "Git worktrees and upstream remote",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/migration/",
+      "context_adapter_path": "src/ranex/migration/adapters/<technology>/",
+      "context_id": "migration",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Schema ordering, upcasters, module migrations, legacy readers, verification, rollback/tombstones",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/migration/application/ports/",
+      "public_api_path": "src/ranex/migration/api/",
+      "public_boundary": "Persistence and compatibility readers",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/extension_host/",
+      "context_adapter_path": "src/ranex/extension_host/adapters/<technology>/",
+      "context_id": "extension_host",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Lower-trust extension protocol, capability grants, lifecycle, quarantine",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/extension_host/application/ports/",
+      "public_api_path": "src/ranex/extension_host/api/",
+      "public_boundary": "Out-of-process RPC/MCP-like bridge",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/compatibility/",
+      "context_adapter_path": "src/ranex/compatibility/adapters/<technology>/",
+      "context_id": "compatibility",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "Hermes anti-corruption facade, legacy state/CLI/tool-name translation, contained non-inference characterization; no canonical lifecycle state, provider route, credential, network, or worker dispatch",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/compatibility/application/ports/",
+      "public_api_path": "src/ranex/compatibility/api/",
+      "public_boundary": "Frozen inherited Hermes subset; service_management owns the legacy-surface compatibility lifecycle",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    },
+    {
+      "canonical_root": "src/ranex/provenance_compliance/",
+      "context_adapter_path": "src/ranex/provenance_compliance/adapters/<technology>/",
+      "context_id": "provenance_compliance",
+      "declared_dependency_graph_status": "DEFINED",
+      "definition_status": "DEFINED",
+      "kind": "OPERATIONS_BOUNDARY",
+      "layer_enactment_status": "NOT_ASSESSED",
+      "owns": "File classification, licenses, notices, de-commercialization denylist, SBOM policy",
+      "persistence_authority": "CONTEXT_OWNED_TABLES_ONLY",
+      "port_path": "src/ranex/provenance_compliance/application/ports/",
+      "public_api_path": "src/ranex/provenance_compliance/api/",
+      "public_boundary": "CI, release, upstream sync",
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#93-operations-evolution-and-boundary-contexts",
+      "topology_exception_ids": [],
+      "topology_rule_set_id": "RANEX-TOPOLOGY-1.0"
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "host_edge_adapter_path_template": "src/ranex/adapters/<boundary>/<technology>/",
+  "port_path_template": "src/ranex/<context>/application/ports/",
+  "registry_id": "REG-CONTEXTS-001",
+  "runtime_enactment_status": "NOT_ASSESSED",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "topology_decision_binding": {
+    "decision_id": "ADR-0007",
+    "digest": "sha256:c0d66e868113d1a612d0ea6f48227b0fd9b2ca8aae9143f6d4da49caf454211f",
+    "path": "docs/architecture/decisions/ADR-0007-establish-modular-ddd-repository-organization.md",
+    "runtime_enactment_status": "NOT_ASSESSED",
+    "status": "ACCEPTED_PAPER_DECISION"
+  },
+  "topology_exceptions": [],
+  "topology_rule_set_id": "RANEX-TOPOLOGY-1.0",
+  "version": "1.1.0"
+}

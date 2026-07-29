@@ -3,18 +3,22 @@
 | Field | Value |
 |---|---|
 | Policy ID | `POL-SDLC-001` |
-| Version | `1.0.0` |
+| Version | `1.5.0` |
 | Status | `ACCEPTED` |
 | Effective date | 2026-07-27 |
+| Repository snapshot basis | `bootstrap/pre-upstream`; exact digest/revision is supplied by the review or release source manifest |
 | Owner and final authority | Human governor |
-| Owner decision | [ADR-0001: Established Software-Development Lifecycle Governs AI Work](./decisions/ADR-0001-established-sdlc-governs-ai-work.md) |
+| Owner decisions | [ADR-0001](./decisions/ADR-0001-established-sdlc-governs-ai-work.md); [ADR-0003](./decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md); [ADR-0004](./decisions/ADR-0004-establish-initial-quality-attribute-baselines.md); [ADR-0005](./decisions/ADR-0005-select-local-static-orchestration-defaults.md); [ADR-0006](./decisions/ADR-0006-register-fixed-decisions-and-fitness-crosswalk.md) |
 | Applies to | Every Ranex product, architecture, code, configuration, data, security, release, operation, documentation, and upstream-sync change |
 | Research basis | [Real-world SDLC operating model research](../research/real-world-sdlc-operating-model-research-2026-07-27.md) |
+| Major engineering references | [Ranex Engineering Reference Application Map](./ENGINEERING_REFERENCE_APPLICATION_MAP.md) |
 | Architecture | [Ground-Zero Full-System Architecture](./HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md) |
 | Authority | [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md) |
 | Execution subprocess | [AI-Agent Development Lifecycle](./AI_AGENT_DEVELOPMENT_LIFECYCLE.md) |
+| Worker control plane | [AI-Worker Fleet Control-Plane Specification](./AI_AGENT_FLEET_CONTROL_PLANE.md) |
 | Normative control catalog | [SDLC Control Catalog](./SDLC_CONTROL_CATALOG.md) |
 | Compatibility | New core policy; existing phase and lifecycle records remain valid and must be mapped |
+| Security/data class | Public policy metadata; work/evidence records retain their own classification |
 | Review cycle | After the first two end-to-end trials, then quarterly |
 
 ## 1. Policy decision
@@ -43,9 +47,11 @@ true; they are not departments, mandatory meetings, or fixed-duration phases.
 Feedback may return work to an earlier state with a recorded reason and
 downstream invalidation.
 
-The existing AI-agent lifecycle is the mandatory execution protocol from
-qualified work intake through landing and post-landing evidence. This policy
-adds the human product, service, and learning loop around it.
+The AI-agent lifecycle is the mandatory worker-execution protocol from
+qualified work intake through landing and post-landing evidence. Its fleet
+control plane governs assignment, leases, liveness, concurrency, budgets,
+isolation, handoff, and measurement. Neither is a parallel lifecycle. This
+policy remains the parent human product, service, and learning loop.
 
 AI agents are workers inside this process. They may perform bounded activities
 for a named role, but they do not supply a replacement software-development
@@ -76,6 +82,11 @@ security, service, and release decisions.
 11. Incidents, vulnerabilities, defects, user feedback, and upstream changes
     re-enter the same governed stream.
 12. Metrics improve the value stream and product. They must not rank people.
+13. Capability ratings diagnose process improvement only. They never authorize
+    work or average away a mandatory control, unknown evidence, or active harm.
+14. One AI worker is the default. Parallel workers require fenced leases,
+    isolated mutable state, verifier backpressure, local measurement, and the
+    same human-controlled landing authority.
 
 ## 3. Canonical work-item state machine
 
@@ -95,6 +106,7 @@ FUNNEL
   -> CLOSED
 
 Any active state -> BLOCKED
+BLOCKED -> <recorded blocked_from_status>
 Any pre-release state -> CANCELLED
 VERIFICATION -> DEFINITION | DESIGN | IN_PROGRESS
 RELEASING -> OPERATING | ROLLED_BACK
@@ -103,9 +115,14 @@ ROLLED_BACK -> TRIAGE
 OUTCOME_REVIEW -> CLOSED | DISCOVERY | DEFINITION
 ```
 
-`BLOCKED`, `CANCELLED`, and `ROLLED_BACK` require reason codes, owner, time, and
-evidence. History is append-only. Reopening creates a new attempt linked to the
-earlier one.
+Entering `BLOCKED` records `blocked_from_status`, reason code, owner, time,
+blocking dependency/evidence, invalidated inputs, and review deadline. Resume
+returns only to that recorded nonterminal state after the blocker is resolved
+and affected policy/evidence is refreshed; `BLOCKED` is not a generic jump.
+Pre-release work may instead be authorized to `CANCELLED`. Release/operating
+work uses the release, rollback, or incident lifecycle rather than cancellation
+to conceal an active effect. `CANCELLED` and `CLOSED` are terminal for the work
+attempt; reopening creates a linked new attempt. History is append-only.
 
 Incident, release/deployment, supported-capability, maintenance, and retirement
 lifecycles are separate axes with separate owners. An incident, maintenance
@@ -129,7 +146,7 @@ it does not add an undeclared state to this work-item aggregate.
 | `OPERATING` | Release is live/installed | Health, SLO/support/security/recovery evidence for the observation window | Service owner |
 | `OUTCOME_REVIEW` | Enough outcome evidence exists or deadline reached | Actual vs expected result, side effects, keep/change/remove decision | Product owner |
 | `CLOSED` | Product and operational decision made | Reconciled records, owned follow-ups, docs and decision status current | Work owner |
-| `BLOCKED` | A blocking dependency, decision, conflict, or evidence gap exists | Blocker resolved or an allowed terminal disposition is authorized | Work owner |
+| `BLOCKED` | A blocking dependency, decision, conflict, or evidence gap exists; prior state and invalidation set are recorded | Fresh proof resolves the blocker and authorizes return only to `blocked_from_status`, or an allowed terminal/recovery disposition | Work owner |
 | `CANCELLED` | Authorized pre-release cancellation | Reason, impact, retained evidence, cleanup and follow-up ownership | Product/work owner |
 | `ROLLED_BACK` | Release rollback was initiated | Prior safe state verified, impact bounded, new triage item linked | Release + service owner |
 
@@ -147,8 +164,8 @@ aggregates:
 | `CapabilityStatus` | `product_definition` with accountable product/service owner | Supported, deprecated, retirement, and retired product capability |
 | `L0`–`L12` | AI-agent lifecycle policy | Activity protocol inside applicable work-item states; never canonical work state |
 | `SDLC-*` | Core SDLC control catalog | Per-work and cross-lifecycle controls |
-| `AI-G0`–`AI-G10` | AI-agent lifecycle | Evidence gates for an agent-assisted execution |
-| `MAP-*` | Full-system architecture | Architecture-map completeness gates |
+| `AI-G0`–`AI-G10` | AI-agent lifecycle | Exact-subject execution evidence gates; `assurance` owns their `GateEvaluation` records |
+| `MAP-*` | Full-system architecture | Map assertions over one immutable `ArchitectureSubject`; no implied `AI-G2` or runtime pass |
 | `SDLC-ADOPT-*` | This policy | Gates for implementing and calibrating the process itself |
 
 A work item may own many runs. A successful run does not by itself make the
@@ -219,6 +236,40 @@ Emergency handling never changes facts to `PASS`. Any temporarily missing
 evidence becomes a time-bounded exception owned by a human and a new critical
 follow-up item.
 
+### 5.3 Operational execution paths
+
+Risk lane and execution path are separate. Risk determines assurance depth;
+the path determines how much coordination is useful. “Material” does not by
+itself require a plan, a Kanban graph, every lifecycle stage, or several model
+reviews.
+
+| Path | Eligibility | Minimum engineering flow |
+|---|---|---|
+| `FAST` | Explicit acceptance; exact local target; reversible; one component; normally at most three files; focused proof exists; no Enhanced/Critical trigger | Direct BUILD, focused deterministic VERIFY, final scope inspection, and real consumer smoke when configuration or visible behavior changes |
+| `STANDARD` | Bounded work needing a dependency/API/external-seam/cross-module/design/test-harness choice, without a Critical signal | Optional one concise plan, one implementation owner, focused and applicable regression proof, final fresh technical review only for an acceptance recommendation, and user-level acceptance when visible |
+| `CRITICAL` | Any Critical signal in section 5.1 or an Emergency item | Optional one bounded complex plan, smallest implementation slice, triggered negative/real-seam/recovery proof, then independent technical and adversarial review of the same final frozen candidate |
+| `QUALIFY` | Missing acceptance or exact target, a conflicting target edit, or a genuinely unresolved owner choice | Resolve only the missing input; do not start BUILD or a planning chain |
+
+`FAST` is a Standard-assurance shortcut, not weakened truth. It is promoted
+once when scope grows, proof fails, or a risk signal appears. A generated lock,
+checksum, index, or manifest is a derived integrity artifact; when its source
+change is authorized, the artifact is regenerated in the same change rather
+than treated as a higher decision authority. Unrelated dirty files never block
+work. Understood target edits become the current byte-level base; only a real
+overlap conflict requires qualification.
+
+For Fast work, goal mode, model planning, graph decomposition, specialist
+review, evidence-packet normalization, and release-packet assembly are
+prohibited overhead. A Standard task skips planning when acceptance, paths,
+and checks already make implementation obvious. Critical HY3 and adversarial
+reviews start only after the final candidate is frozen and may run in parallel.
+One focused correction/review cycle is the default maximum before escalation.
+
+The initial Fast service target is first useful action within 20 seconds,
+median completion within 60 seconds, provisional p95 within 120 seconds, and a
+240-second hard stop. These remain calibration targets until the declared
+sample threshold is reached; quality and safety qualify a route before speed.
+
 ## 6. Definitions
 
 ### 6.1 Definition of Ready
@@ -232,6 +283,10 @@ An item may enter `READY` only when:
 - security, data, accessibility, reliability, operations, provenance, and
   upstream impact are addressed in proportion to risk;
 - design/ADR obligations are satisfied;
+- the compiled engineering-practice profile loads only practices applicable to
+  the work class, execution path, technology, and risk; Fast work uses the
+  accepted compact default rather than repeating a nine-book review, while a
+  material applicable `UNKNOWN` still blocks the affected claim;
 - dependencies and rollout/rollback approach are understood;
 - the item is a bounded vertical slice; and
 - the required decision and evidence authorities are named.
@@ -245,6 +300,9 @@ An exact candidate is `VERIFIED` only when:
   runbooks, and generated artifacts agree;
 - independent review requirements are met;
 - security, architecture, data, compatibility, and provenance gates pass;
+- applicable engineering practices are demonstrated by the exact candidate
+  and evidence rather than citation alone, and authorized deviations are
+  recorded;
 - test selection is non-empty, relevant, and bound to the exact subject;
 - findings are resolved or explicitly human-accepted within policy;
 - rollback/recovery claims have appropriate proof; and
@@ -279,6 +337,13 @@ An item is `CLOSED` only when:
 Merge alone satisfies none of `RELEASED`, `OPERATING`, or `CLOSED`.
 
 ## 7. Requirements and design playbook
+
+The detailed method for applying SWEBOK and every frozen major book reference
+to unclear requirements, workflow, architecture, file-structure,
+construction, verification, and operations questions is the
+[Engineering Reference Application Map](./ENGINEERING_REFERENCE_APPLICATION_MAP.md).
+Those references deepen this accepted lifecycle; they do not replace or outrank
+it.
 
 ### 7.1 Product definition
 
@@ -341,6 +406,13 @@ prose cannot silently override a machine contract.
    observing demand; agents do not borrow protected capacity silently.
 9. Sprints or milestones may be planning projections. Canonical state comes
    from evidence-backed work events.
+10. Planning is optional engineering work, not a ritual. A clear Fast change
+    executes directly; a clear single-worker Standard item receives a direct
+    assignment; only rough multi-stage outcomes are decomposed.
+11. An explicit owner decision is direction for implementation within its
+    scope. It is not sent to another model for permission. Replanning occurs
+    only when requirements, subject, risk, or executed evidence materially
+    changes.
 
 ## 9. Build and integration playbook
 
@@ -379,6 +451,13 @@ Verification uses a risk-based test portfolio:
 Quality gates must be fast enough for their feedback purpose. Slow suites may be
 staged, but no required suite is relabeled optional merely because it is slow.
 Flaky tests are defects; they cannot create trusted pass evidence.
+
+Select the smallest test set that can falsify the scoped claim at its actual
+risk. A literal configuration or documentation change need not invent a new
+test harness when parsing, schema/content assertions, and the real consuming
+CLI/service provide more direct proof. Test-first development is preferred for
+behavior that can be expressed cheaply; it is not a reason to delay a simple
+literal correction.
 
 ## 11. Release and change-management playbook
 
@@ -438,10 +517,12 @@ normal work. Recurrence and action aging are reviewed.
 
 ### 12.3 Reliability policy
 
-After real baselines exist, each material service adopts SLIs, SLOs, and an
-error-budget policy. Until then:
+The initial service objectives, recovery targets, security baseline, and
+retention periods are accepted construction targets in
+[ADR-0004](./decisions/ADR-0004-establish-initial-quality-attribute-baselines.md).
+Until exact-subject runtime baselines exist:
 
-- label reliability targets `UNKNOWN` or `PROPOSAL`, never invented fact;
+- label the accepted values `TARGET_NOT_MEASURED`, never achieved fact;
 - collect user-centered availability, correctness, latency and durability
   signals;
 - freeze nonessential risky releases when evidence shows the service is
@@ -519,12 +600,163 @@ The canonical event stream derives:
 - incident recurrence and action age;
 - vulnerability age and remediation time;
 - evidence completeness, exception age, review/gate wait;
+- AI-worker false-accept/false-reject calibration, escaped rework, stale lease,
+  duplicate assignment, loop termination, mailbox failure, integration
+  conflict, and verifier-capacity/backpressure measures;
 - user outcome and adoption measures; and
 - upstream lag, candidate age and sync regression rate.
 
 Report distributions and trends by value stream and risk lane. Do not use commit
 count, lines changed, story points, token use, agent runs, review comments, or
 hours online as measures of individual productivity.
+
+Before a measure can affect a decision, its versioned specification records:
+goal and question, construct, operational definition/formula, entity and unit,
+event source, population, window, exclusions, refresh cadence, data-quality and
+uncertainty checks, paired guardrail, owner, threshold/tolerance, and the exact
+decision or action it can trigger. A measure with no decision use is removed.
+
+### 15.1 Capability assessment
+
+Ranex assesses each applicable normative control or named capability for one
+declared value stream/service, work class, risk-lane set, policy/rubric version,
+and review window. It does not publish one compensating process-maturity score.
+
+Each assessment reports four separate fields:
+
+1. **Capability rating:** `result` is `NOT_ASSESSED`, `UNKNOWN`,
+   `NOT_APPLICABLE`, or `SCORED`; only `SCORED` has a `level` from `0`–`4`.
+2. **Effectiveness:** `UNKNOWN`, `REGRESSING`, `MIXED`, or `MEETS_TARGET`.
+3. **Coverage:** included/eligible counts and percentage, stratified by work
+   class and risk lane.
+4. **Confidence:** `LOW`, `MEDIUM`, or `HIGH`, with evidence-quality rationale.
+
+When `result` is not `SCORED`, `level` is absent. `NOT_ASSESSED` and `UNKNOWN`
+have no numeric value and are never passes.
+`NOT_APPLICABLE` requires a predeclared applicability rule, reason, and
+accountable approval; it is invalid when eligible work or a qualifying trigger
+exists in the review window. Ambiguous applicability produces `UNKNOWN`, not
+`NOT_APPLICABLE`.
+Published profiles expose N/A counts/rates and independent assurance samples
+their dispositions. Capability, effectiveness, coverage, and confidence must
+not be averaged together.
+
+The `0`–`4` levels are ordinal labels. Ordering and counts by label are allowed;
+addition, arithmetic distance, weighting, means, standard deviations, ratios,
+and a process-wide “overall score” are not. Counts and ordering may describe one
+value stream/profile over time; they cannot become cross-team league tables.
+
+| Level | Label | Minimum evidence anchor |
+|---:|---|---|
+| `0` | `ABSENT` | Assessment proves that the required owner, contract, behavior, or trustworthy evidence is absent or unsafe |
+| `1` | `DEFINED` | Versioned purpose, owner, scope, entry/exit, evidence, authority, failure route, tailoring, exception, and metric definitions exist |
+| `2` | `OPERATED` | Representative real work produces durable exact-subject evidence; at least one rejection, invalidation, exception, or backward path was actually traversed and recorded rather than merely documented |
+| `3` | `CONTROLLED` | Declared lanes/windows are governed; coverage, distributions, false passes, misses, exceptions, and triggered responses are reviewed |
+| `4` | `IMPROVING` | A prospectively frozen experiment shows sustained benefit above declared uncertainty/local measurement noise across more than one review window without degrading paired guardrails; infrastructure faults are separated from subject failures |
+
+A level is awarded only when that level and every lower anchor are supported.
+Documentation alone cannot exceed `1`. Profile `VITAL-SDLC-001` is a versioned
+set of exact `(domain, control, applicability rule)` tuples owned by the human
+governor; the tuple table is normative in `SDLC-MEA-002`. A team cannot add,
+remove, remap, or reclassify a tuple inside an assessment.
+
+Every applicable control and architecture capability receives its own immutable
+assessment row; there is no compensating “overall architecture score.” Until a
+schema-valid `CapabilityAssessment` and complete domain projection bind real
+evidence, the honest result is `NOT_ASSESSED` (or `UNKNOWN` where evidence was
+attempted but remains insufficient), with no numeric level. The accepted ADRs
+and prose can support at most a future `DEFINED` (`1`) result; they do not award
+that result by themselves.
+
+A domain projection binds one immutable assessment ID, revision, and digest for
+every tuple, all at an identical scope and review window. Missing, duplicate,
+extra, rule-mismatched, stale, or cross-scope rows invalidate the projection.
+An applicable member is a tuple whose applicability resolved to `APPLICABLE`;
+a valid N/A tuple remains in the complete projection but is excluded from the
+floor. For a valid projection, unresolved applicability produces `UNKNOWN`; all
+registered controls validly N/A produces `NOT_APPLICABLE`; all applicable
+member ratings `NOT_ASSESSED` produces `NOT_ASSESSED`; after any begins, one
+applicable `UNKNOWN`/`NOT_ASSESSED` member produces `UNKNOWN`; and a domain is
+`SCORED` if and only if every applicable member is `SCORED`. Its level is the
+lowest supported applicable-member level. Report the complete projection and
+weakest capabilities, never an average that can conceal a mandatory failure.
+
+Assessors require evidence of enacted practice, durable artifact/provenance,
+and outcome/guardrail behavior in proportion to the claimed level. A favorable
+outcome without the control does not prove capability. Test coverage, document
+count, lines of code, class size, and similar proxy counts locate questions;
+they are not direct quality or release verdicts. Failed required tests and
+disabled safeguards remain non-compensating findings.
+
+All population and coverage values come from one immutable population
+snapshot. Joint work-class/risk-lane strata—including zero-count strata—must
+cover the declared scope. In every stratum and in total,
+`eligible = included + excluded`; strata sum to totals, and itemized exclusions
+sum to the excluded count. Applicability and coverage point to that same
+snapshot/query and cannot carry separate, contradictory copies.
+
+Adverse populations are typed predicates, not a mixed “class” field: failed
+control/execution outcomes, `BLOCKED`/`CANCELLED`/`ROLLED_BACK` status history,
+reopened attempt history, and the `EMERGENCY` risk lane remain distinct. Each
+records an immutable query digest and eligible/included/excluded counts. An
+assessment cannot become `SCORED` unless every applicable adverse category
+includes all eligible subjects with zero exclusions.
+
+Confidence follows a versioned adequacy rule, not free text alone. `HIGH`
+requires all predeclared sample, duration, representativeness, authenticity,
+freshness, missingness, and data-quality tests to pass plus independent
+assurance sign-off. Missing an approved adequacy rule caps confidence at
+`MEDIUM`; a material unresolved evidence or population gap makes it `LOW`.
+One complete gap register gives every known evidence, applicability,
+population, coverage and measurement gap a materiality and resolution
+disposition; `HIGH` is invalid if the inventory is incomplete or a material
+gap is unresolved. Any unresolved material gap forces capability result
+`UNKNOWN`, no level, and confidence `LOW`; it cannot coexist with `SCORED`.
+
+Capability ratings diagnose the process only. They cannot authorize a work-item
+transition, issue a permit, waive a control, lower a risk lane, change a gate
+outcome, or rank an individual/team. Exact-work evidence and named authority
+remain decisive.
+
+### 15.2 Improvement selection
+
+Improvement priority is non-compensating:
+
+| Priority | Trigger | Response |
+|---|---|---|
+| `P0 — CONTROL_NOW` | Active harm or a non-tailorable invariant/truth/authority/evidence/recovery breach | Stop or contain the effect, restore control, preserve evidence, and open corrective work |
+| `P1 — IMPROVE_NEXT` | Result `NOT_ASSESSED`/`UNKNOWN`; level `0`/`1`; overdue critical obligation; repeated escape; high-exposure downstream blockage; or `LOW`-confidence instrumentation need | Assign an accountable owner and begin bounded corrective or instrumentation work |
+| `P2 — IMPROVE_DELIBERATELY` | Absent P0/P1: level `2`; `UNKNOWN`/`REGRESSING`/`MIXED` effectiveness; material queueing/rework/instability/outcome harm; or another unproven P3 condition | Run a measured experiment in the earliest causal stage |
+| `P3 — SUSTAIN` | Absent P0–P2: level `3`/`4`, `MEETS_TARGET`, passing coverage/adverse-population reconciliation, healthy guardrails, no adverse trend, and confidence above `LOW` | Monitor, simplify, share learning, and prevent regression |
+
+Priority follows `PRIORITY-SDLC-001`: evaluate `P0 -> P1 -> P2 -> P3`, and the
+first matching tier wins. Within a tier, order by consequence, exposure,
+recurrence, downstream blocking, and then capability gap. `LOW` confidence
+selects P1 and requires an instrumentation/sampling work item; it never lowers
+priority or supports `P3`. A valid all-N/A assessment has no tier. A domain
+projection takes the highest-precedence member tier, never a numeric average.
+
+Every improvement is a linked governed work item that records the causal stage
+and control, evidence and baseline, hypothesis, bounded change, versioned metric
+specification, fixed comparator, primary measure, paired guardrails,
+prospectively frozen decision rule, owner, evidence window, minimum meaningful
+and detectable effect, declared uncertainty/local noise, harness/configuration
+version, separate infrastructure-error count where relevant, stop/revert
+criteria, and retain/change/revert decision. An action is complete only after
+effectiveness is checked. An unresolved or below-noise result cannot raise the
+capability level.
+
+The measurement system is itself assessed through `SDLC-MEA-001`,
+`SDLC-MEA-002`, and `SDLC-PA-001`. A level-`3` or level-`4` claim requires one
+immutable measurement-design digest that binds the metric specification and
+qualified harness ID, version, configuration digest, and qualification
+evidence. An experiment supporting level `4` references the same exact design
+or another equally complete immutable design; duplicated unbound fields cannot
+substitute for that reference. Local noise may never be silently assumed to be
+zero: an established zero floor needs method evidence and independent
+claim-specific approval. `NOT_APPLICABLE` uncertainty is limited to a
+deterministic measure and needs the exact approved uncertainty-N/A rule and
+approval.
 
 ## 16. Process conformance and exceptions
 
@@ -576,6 +808,12 @@ These `SDLC-ADOPT-*` gates govern adoption of this operating model. They are not
 per-work quality gates and do not share IDs with `AI-G*`, `MAP-*`, runtime gate
 outcomes, or human decision points.
 
+Adoption gates are binary evidence claims, not percentages. `SDLC-ADOPT-A` can
+support level `1` for registered controls; `SDLC-ADOPT-B/C` can support level
+`2` only for capabilities actually demonstrated; `SDLC-ADOPT-D` plus repeated
+real operation can support level `3`; `SDLC-ADOPT-E` calibrates that operation.
+Level `4` additionally requires a later verified improvement experiment.
+
 ### SDLC-ADOPT-A — Contract
 
 - Register work classes, states, transitions, risk lanes, reason codes, roles,
@@ -602,7 +840,38 @@ outcomes, or human decision points.
 
 - Establish baselines from actual work.
 - Accept initial WIP, SLO/error-budget, review, aging and exception policies.
+- Complete the first evidence-bound capability profile without converting
+  `NOT_ASSESSED` or `UNKNOWN` into zero/pass.
+- Bind every immutable per-control assessment into an exact,
+  same-scope/same-window `VITAL-SDLC-001` domain projection; prove tuple
+  completeness, N/A rules, population/stratum reconciliation, typed adverse
+  queries, and all seven confidence-adequacy tests.
+- Apply `PRIORITY-SDLC-001` and register the highest-precedence bounded
+  corrective, instrumentation, or improvement work.
+- Register its operational metric definitions, comparator, prospective decision
+  rule, immutable measurement-design digest, harness ID/version/configuration
+  qualification, uncertainty/noise method and approvals, and
+  infrastructure-error accounting.
 - Review this policy after both tracers and record changes through an ADR.
+
+### SDLC-ADOPT-FLEET-A through F — AI-worker scaling profile
+
+The fleet-control profile is subordinate to Gates A–E. It proves, in order:
+
+1. typed assignment/lease/budget/topology contracts;
+2. one-worker packet-to-cleanup behavior and measurement baseline;
+3. atomic claim, fencing, liveness, isolation, budget, mailbox, and crash
+   safety;
+4. verifier/hidden-evidence capacity and backpressure;
+5. a locally measured topology that beats the strongest relevant control
+   beyond uncertainty; and
+6. learned-control quarantine and non-self-activation if learned orchestration
+   is ever selected.
+
+The detailed evidence contracts are in the
+[AI-Worker Fleet Control-Plane Specification](./AI_AGENT_FLEET_CONTROL_PLANE.md).
+Failure returns to the last proven configuration; it does not justify weaker
+assurance or redefine the Core SDLC.
 
 ## 19. Process definition of done
 
@@ -616,5 +885,15 @@ This operating model is implemented—not merely documented—when:
 - product, AI-agent execution, release, operation and learning use one work ID;
 - incidents, vulnerabilities and upstream candidates follow governed re-entry;
 - metrics derive from durable events and include failures;
+- capability assessments expose rating result/level, effectiveness, coverage,
+  rule-derived confidence, and a complete immutable domain projection of the
+  owner-registered vital controls without a compensating overall score;
+- eligible work cannot be hidden through N/A, population exclusions, or
+  self-asserted confidence, and aggregate/stratum/adverse counts reconcile;
+- decision-bearing measures have operational definitions and named decisions;
+- prioritized improvements have a hypothesis, fixed comparator, prospectively
+  frozen decision rule, immutable qualified-harness design, uncertainty/noise
+  method and required approval, guardrail, owner, review window, separate
+  infrastructure-error accounting where relevant, and checked effectiveness;
 - exceptions expire and cannot forge pass evidence; and
 - the human governor accepts end-to-end tracer evidence.

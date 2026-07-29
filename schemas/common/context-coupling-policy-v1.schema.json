@@ -1,0 +1,164 @@
+{
+  "$id": "https://schemas.ranex.dev/common/context-coupling-policy-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "coupling_policy_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "decision_binding": {
+      "type": "object"
+    },
+    "decision_owner": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "declared_static_fan_in": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "declared_static_fan_out": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "fitness_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "measurement_owner": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "measures": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "cadence": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "definition": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "evidence_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "measure_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "owner_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "rationale": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "result": {
+            "const": "NOT_ASSESSED"
+          },
+          "review_trigger": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "measure_id",
+          "definition",
+          "cadence",
+          "review_trigger",
+          "rationale",
+          "owner_id",
+          "result",
+          "evidence_refs"
+        ],
+        "type": "object"
+      },
+      "maxItems": 6,
+      "minItems": 6,
+      "type": "array"
+    },
+    "noncompensating": {
+      "const": true
+    },
+    "reference_windows": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "responses": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "rule_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "runtime_validation_status": {
+      "const": "NOT_ASSESSED"
+    },
+    "schema_version": {
+      "const": "context-coupling-policy/v1"
+    },
+    "source": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "subject_context": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "version": {
+      "minLength": 1,
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "coupling_policy_id",
+    "version",
+    "subject_context",
+    "measurement_owner",
+    "decision_owner",
+    "reference_windows",
+    "declared_static_fan_out",
+    "declared_static_fan_in",
+    "measures",
+    "responses",
+    "rule_ids",
+    "fitness_ids",
+    "noncompensating",
+    "decision_binding",
+    "runtime_validation_status",
+    "source"
+  ],
+  "title": "Ranex governed-execution coupling policy",
+  "type": "object"
+}

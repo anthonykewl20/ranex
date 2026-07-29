@@ -1,0 +1,102 @@
+{
+  "$id": "https://schemas.ranex.dev/common/architecture-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "accepted_adr_registry_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "architecture_document_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "architecture_document_path": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "architecture_subject_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "base_revision": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "candidate_revision": {
+      "oneOf": [
+        {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "contract_and_template_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "project_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "repository_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "repository_uri_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "research_manifest_digests": {
+      "items": {
+        "pattern": "^sha256:[0-9a-f]{64}$",
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "review_prompt_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "architecture-subject/v1"
+    },
+    "work_item_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "working_tree_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "required": [
+    "subject_schema",
+    "project_id",
+    "work_item_id",
+    "repository_id",
+    "architecture_document_path",
+    "repository_uri_digest",
+    "base_revision",
+    "candidate_revision",
+    "working_tree_digest",
+    "architecture_document_digest",
+    "architecture_subject_manifest_digest",
+    "contract_and_template_manifest_digest",
+    "accepted_adr_registry_digest",
+    "review_prompt_digest",
+    "research_manifest_digests"
+  ],
+  "title": "architecture-subject-v1",
+  "type": "object"
+}

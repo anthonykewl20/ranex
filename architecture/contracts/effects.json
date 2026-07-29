@@ -1,0 +1,62 @@
+{
+  "entries": [
+    {
+      "adapter_owner": "workspace",
+      "authority_owner": "governed_execution",
+      "effect_family_id": "EFFECT-GIT",
+      "name": "GIT",
+      "reconciliation_required_for_unknown_outcome": true,
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
+    },
+    {
+      "adapter_owner": "delivery",
+      "authority_owner": "governed_execution",
+      "effect_family_id": "EFFECT-GITHUB",
+      "name": "GITHUB",
+      "reconciliation_required_for_unknown_outcome": true,
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
+    },
+    {
+      "adapter_owner": "delivery",
+      "authority_owner": "governed_execution",
+      "effect_family_id": "EFFECT-MESSAGING",
+      "name": "MESSAGING",
+      "reconciliation_required_for_unknown_outcome": true,
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
+    },
+    {
+      "adapter_owner": "routing",
+      "authority_owner": "governed_execution",
+      "effect_family_id": "EFFECT-PROVIDER",
+      "name": "PROVIDER",
+      "reconciliation_required_for_unknown_outcome": true,
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
+    },
+    {
+      "adapter_owner": "workspace",
+      "authority_owner": "governed_execution",
+      "effect_family_id": "EFFECT-FILESYSTEM",
+      "name": "FILESYSTEM",
+      "reconciliation_required_for_unknown_outcome": true,
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
+    },
+    {
+      "adapter_owner": "owning_context_repository",
+      "authority_owner": "governed_execution",
+      "effect_family_id": "EFFECT-DATABASE",
+      "name": "DATABASE",
+      "reconciliation_required_for_unknown_outcome": true,
+      "runtime_validation_status": "NOT_ASSESSED",
+      "source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#19-effects-idempotency-and-reconciliation"
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-EFFECTS-001",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

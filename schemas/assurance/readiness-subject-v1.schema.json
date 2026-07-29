@@ -1,0 +1,224 @@
+{
+  "$id": "https://schemas.ranex.dev/assurance/readiness-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "tier_id": {
+            "const": "READINESS-TIER-IMPLEMENTATION-START-001"
+          }
+        },
+        "required": [
+          "tier_id"
+        ]
+      },
+      "then": {
+        "properties": {
+          "tier_evidence_subject_digest": {
+            "type": "null"
+          },
+          "tier_evidence_subject_manifest_digest": {
+            "type": "null"
+          },
+          "tier_evidence_subject_ref": {
+            "type": "null"
+          },
+          "tier_evidence_subject_schema": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "tier_id": {
+            "const": "READINESS-TIER-PRODUCTION-001"
+          }
+        },
+        "required": [
+          "tier_id"
+        ]
+      },
+      "then": {
+        "properties": {
+          "tier_evidence_subject_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "tier_evidence_subject_ref": {
+            "maxLength": 1024,
+            "minLength": 1,
+            "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+            "type": "string"
+          },
+          "tier_evidence_subject_schema": {
+            "maxLength": 4096,
+            "minLength": 1,
+            "pattern": ".*\\S.*",
+            "type": "string"
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "architecture_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "architecture_subject_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "assessment_window_end": {
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12][0-9]|3[01])T(?:[01][0-9]|2[0-3]):[0-5][0-9]:[0-5][0-9](?:\\.[0-9]+)?Z$",
+      "type": "string"
+    },
+    "contract_validation_report_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "fork_preflight_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "generated_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "readiness_basis_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "readiness_contract_id": {
+      "const": "RANEX-READINESS-TIER-CONTROL-1.0"
+    },
+    "readiness_contract_version": {
+      "const": "1.0.0"
+    },
+    "readiness_subject_identity_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "readiness_subject_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "repository_id": {
+      "maxLength": 256,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$",
+      "type": "string"
+    },
+    "source_commit_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "source_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "source_tree_oid_sha1": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "subject_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "readiness-subject/v1"
+    },
+    "tier_evidence_subject_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tier_evidence_subject_manifest_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tier_evidence_subject_ref": {
+      "oneOf": [
+        {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9._-]*|urn:ranex:[A-Za-z0-9._:-]+)$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tier_evidence_subject_schema": {
+      "oneOf": [
+        {
+          "maxLength": 4096,
+          "minLength": 1,
+          "pattern": ".*\\S.*",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tier_id": {
+      "enum": [
+        "READINESS-TIER-IMPLEMENTATION-START-001",
+        "READINESS-TIER-PRODUCTION-001"
+      ]
+    }
+  },
+  "required": [
+    "subject_schema",
+    "subject_ref",
+    "readiness_subject_identity_digest",
+    "readiness_basis_digest",
+    "readiness_subject_manifest_digest",
+    "repository_id",
+    "readiness_contract_id",
+    "readiness_contract_version",
+    "tier_id",
+    "source_commit_sha1",
+    "source_tree_oid_sha1",
+    "source_manifest_digest",
+    "generated_manifest_digest",
+    "contract_validation_report_digest",
+    "architecture_subject_digest",
+    "architecture_subject_manifest_digest",
+    "fork_preflight_digest",
+    "tier_evidence_subject_schema",
+    "tier_evidence_subject_ref",
+    "tier_evidence_subject_digest",
+    "tier_evidence_subject_manifest_digest",
+    "assessment_window_end"
+  ],
+  "title": "Ranex exact readiness subject",
+  "type": "object",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-semantic-invariants": [],
+  "x-ranex-source-adr": "ADR-0012",
+  "x-ranex-source-contract-id": "RANEX-READINESS-TIER-CONTROL-1.0",
+  "x-ranex-type-id": "READINESS_SUBJECT_V1"
+}

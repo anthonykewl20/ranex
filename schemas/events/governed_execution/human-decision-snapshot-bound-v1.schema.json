@@ -1,0 +1,89 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/human-decision-snapshot-bound-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "decision_kind": {
+      "enum": [
+        "ARCHITECTURE_OR_PROCESS_ACCEPTANCE",
+        "RISK_ACCEPTANCE_OR_WAIVER",
+        "WORK_TRANSITION",
+        "RELEASE_OR_MIGRATION",
+        "DESTRUCTIVE_OR_EXTERNAL_EFFECT",
+        "REVOCATION"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "ENUM-HUMAN-DECISION-KIND-1.0"
+    },
+    "decision_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "HumanDecisionRecord",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "HumanDecisionRecord"
+    },
+    "decision_snapshot_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "decision_status": {
+      "const": "APPROVED",
+      "enum": [
+        "PENDING",
+        "APPROVED",
+        "DENIED",
+        "EXPIRED",
+        "REVOKED"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#HumanDecisionRecordStatus@1.0.0"
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "run_id",
+    "decision_ref",
+    "decision_kind",
+    "decision_status",
+    "decision_snapshot_digest"
+  ],
+  "title": "HumanDecisionSnapshotBound event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-HUMANDECISIONSNAPSHOTBOUND",
+  "x-ranex-event-name": "HumanDecisionSnapshotBound",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:HumanDecisionSnapshotBound:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#172-exact-initial-event-payload-catalog",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "HumanDecisionSnapshotBound",
+    "referenced_axis_ids": [
+      "HumanDecisionKind",
+      "HumanDecisionRecordStatus"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:3650bacc205d719f198d90521231f1c7872e3894bb2d789e6b87c1abad051b17"
+}

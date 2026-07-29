@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-set -eu
-
-export HERMES_HOME="${HERMES_HOME:-$HOME/.local/share/ranex}"
-export PYTHONUNBUFFERED=1
-export PATH="$HOME/.local/share/ranex/venvs/dev/bin:$HOME/.local/bin:$PATH"

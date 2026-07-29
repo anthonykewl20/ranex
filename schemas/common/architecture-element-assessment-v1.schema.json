@@ -1,0 +1,630 @@
+{
+  "$id": "https://schemas.ranex.dev/common/architecture-element-assessment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "practice_disposition": {
+            "const": "DIRECT"
+          }
+        },
+        "required": [
+          "practice_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claim_scope": {
+            "const": "ELEMENT_SPECIFIC_DESIGN_APPLICATION"
+          },
+          "direct_practice_ids": {
+            "minItems": 1
+          },
+          "inheritance_depth": {
+            "const": 0
+          },
+          "inheritance_rule_refs": {
+            "maxItems": 0
+          },
+          "inherited_profile_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_approval_ref": {
+            "type": "null"
+          },
+          "not_applicable_evidence_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_reason": {
+            "type": "null"
+          },
+          "not_applicable_rule_id": {
+            "type": "null"
+          },
+          "owner_context_refs": {
+            "maxItems": 0
+          },
+          "practice_unknown_reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "practice_disposition": {
+            "const": "INHERITED_FROM_PROFILE"
+          }
+        },
+        "required": [
+          "practice_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claim_scope": {
+            "const": "GOVERNANCE_APPLICABILITY_ONLY"
+          },
+          "direct_practice_ids": {
+            "maxItems": 0
+          },
+          "inheritance_depth": {
+            "const": 1
+          },
+          "inheritance_rule_refs": {
+            "maxItems": 0
+          },
+          "inherited_profile_refs": {
+            "minItems": 1
+          },
+          "not_applicable_approval_ref": {
+            "type": "null"
+          },
+          "not_applicable_evidence_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_reason": {
+            "type": "null"
+          },
+          "not_applicable_rule_id": {
+            "type": "null"
+          },
+          "owner_context_refs": {
+            "maxItems": 0
+          },
+          "practice_unknown_reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "practice_disposition": {
+            "const": "INHERITED_FROM_RULE"
+          }
+        },
+        "required": [
+          "practice_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claim_scope": {
+            "const": "GOVERNANCE_APPLICABILITY_ONLY"
+          },
+          "direct_practice_ids": {
+            "maxItems": 0
+          },
+          "inheritance_depth": {
+            "maximum": 2,
+            "minimum": 1
+          },
+          "inheritance_rule_refs": {
+            "minItems": 1
+          },
+          "inherited_profile_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_approval_ref": {
+            "type": "null"
+          },
+          "not_applicable_evidence_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_reason": {
+            "type": "null"
+          },
+          "not_applicable_rule_id": {
+            "type": "null"
+          },
+          "owner_context_refs": {
+            "maxItems": 0
+          },
+          "practice_unknown_reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "practice_disposition": {
+            "const": "INHERITED_FROM_OWNER"
+          }
+        },
+        "required": [
+          "practice_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claim_scope": {
+            "const": "GOVERNANCE_APPLICABILITY_ONLY"
+          },
+          "direct_practice_ids": {
+            "maxItems": 0
+          },
+          "inheritance_depth": {
+            "const": 1
+          },
+          "inheritance_rule_refs": {
+            "maxItems": 0
+          },
+          "inherited_profile_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_approval_ref": {
+            "type": "null"
+          },
+          "not_applicable_evidence_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_reason": {
+            "type": "null"
+          },
+          "not_applicable_rule_id": {
+            "type": "null"
+          },
+          "owner_context_refs": {
+            "minItems": 1
+          },
+          "practice_unknown_reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "practice_disposition": {
+            "const": "NOT_APPLICABLE"
+          }
+        },
+        "required": [
+          "practice_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claim_scope": {
+            "const": "NOT_APPLICABLE"
+          },
+          "direct_practice_ids": {
+            "maxItems": 0
+          },
+          "inheritance_depth": {
+            "const": 0
+          },
+          "inheritance_rule_refs": {
+            "maxItems": 0
+          },
+          "inherited_profile_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_approval_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "not_applicable_evidence_refs": {
+            "minItems": 1
+          },
+          "not_applicable_reason": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "not_applicable_rule_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "owner_context_refs": {
+            "maxItems": 0
+          },
+          "practice_unknown_reason": {
+            "type": "null"
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "practice_disposition": {
+            "const": "UNKNOWN"
+          }
+        },
+        "required": [
+          "practice_disposition"
+        ]
+      },
+      "then": {
+        "properties": {
+          "claim_scope": {
+            "const": "UNKNOWN_BLOCKING"
+          },
+          "direct_practice_ids": {
+            "maxItems": 0
+          },
+          "inheritance_depth": {
+            "const": 0
+          },
+          "inheritance_rule_refs": {
+            "maxItems": 0
+          },
+          "inherited_profile_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_approval_ref": {
+            "type": "null"
+          },
+          "not_applicable_evidence_refs": {
+            "maxItems": 0
+          },
+          "not_applicable_reason": {
+            "type": "null"
+          },
+          "not_applicable_rule_id": {
+            "type": "null"
+          },
+          "owner_context_refs": {
+            "maxItems": 0
+          },
+          "practice_unknown_reason": {
+            "minLength": 1,
+            "type": "string"
+          }
+        }
+      }
+    }
+  ],
+  "properties": {
+    "applicability_resolution": {
+      "enum": [
+        "EXACT_MATCH",
+        "NO_ELEMENT_SPECIFIC_CONTROL"
+      ]
+    },
+    "applicable_control_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "applicable_rule_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "assessment_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "claim_scope": {
+      "enum": [
+        "ELEMENT_SPECIFIC_DESIGN_APPLICATION",
+        "GOVERNANCE_APPLICABILITY_ONLY",
+        "NOT_APPLICABLE",
+        "UNKNOWN_BLOCKING"
+      ]
+    },
+    "definition_contract_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "definition_contract_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "definition_source_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "definition_source_path": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "definition_status": {
+      "enum": [
+        "DEFINED",
+        "DEFINED_NAME_ONLY"
+      ]
+    },
+    "design_assessment_status": {
+      "enum": [
+        "DEFINED",
+        "UNKNOWN"
+      ]
+    },
+    "design_blocking_unknown": {
+      "type": "boolean"
+    },
+    "design_evidence_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "direct_practice_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "disposition_rule_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "element_definition_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "element_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "element_kind": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "element_name": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "exact_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "exact_subject_ref": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "expires_at": {
+      "type": "null"
+    },
+    "freshness_status": {
+      "const": "NOT_ASSESSED"
+    },
+    "inheritance_depth": {
+      "maximum": 2,
+      "minimum": 0,
+      "type": "integer"
+    },
+    "inheritance_rule_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "inherited_profile_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "noncompensating": {
+      "const": true
+    },
+    "not_applicable_approval_ref": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "not_applicable_evidence_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "not_applicable_reason": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "not_applicable_rule_id": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "numeric_score": {
+      "type": "null"
+    },
+    "observed_at": {
+      "type": "null"
+    },
+    "owner_context_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "owner_contexts": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "parent_definition_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "definition_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "element_id": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "element_id",
+          "definition_digest"
+        ],
+        "type": "object"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "parent_definition_manifest_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "parent_element_refs": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "pass_authority": {
+      "const": false
+    },
+    "practice_disposition": {
+      "enum": [
+        "DIRECT",
+        "INHERITED_FROM_PROFILE",
+        "INHERITED_FROM_RULE",
+        "INHERITED_FROM_OWNER",
+        "NOT_APPLICABLE",
+        "UNKNOWN"
+      ]
+    },
+    "practice_unknown_reason": {
+      "minLength": 1,
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "resolved_element_definition_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "runtime_evidence_refs": {
+      "maxItems": 0,
+      "type": "array"
+    },
+    "runtime_result": {
+      "const": "NOT_ASSESSED"
+    },
+    "runtime_subject_digest": {
+      "type": "null"
+    },
+    "runtime_subject_ref": {
+      "type": "null"
+    },
+    "schema_version": {
+      "const": "architecture-element-assessment/v1"
+    }
+  },
+  "required": [
+    "schema_version",
+    "assessment_id",
+    "element_id",
+    "element_kind",
+    "element_name",
+    "owner_contexts",
+    "element_definition_digest",
+    "definition_contract_ref",
+    "definition_contract_digest",
+    "definition_source_path",
+    "definition_source_digest",
+    "parent_element_refs",
+    "parent_definition_bindings",
+    "parent_definition_manifest_digest",
+    "resolved_element_definition_digest",
+    "exact_subject_ref",
+    "exact_subject_digest",
+    "definition_status",
+    "design_assessment_status",
+    "design_evidence_refs",
+    "design_blocking_unknown",
+    "practice_disposition",
+    "disposition_rule_id",
+    "direct_practice_ids",
+    "inherited_profile_refs",
+    "inheritance_rule_refs",
+    "owner_context_refs",
+    "inheritance_depth",
+    "claim_scope",
+    "not_applicable_rule_id",
+    "not_applicable_reason",
+    "not_applicable_evidence_refs",
+    "not_applicable_approval_ref",
+    "practice_unknown_reason",
+    "applicable_control_refs",
+    "applicable_rule_refs",
+    "applicability_resolution",
+    "runtime_result",
+    "runtime_subject_ref",
+    "runtime_subject_digest",
+    "runtime_evidence_refs",
+    "observed_at",
+    "expires_at",
+    "freshness_status",
+    "numeric_score",
+    "noncompensating",
+    "pass_authority",
+    "digest"
+  ],
+  "title": "Ranex per-element architecture assessment",
+  "type": "object"
+}

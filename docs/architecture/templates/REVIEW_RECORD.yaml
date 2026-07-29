@@ -1,8 +1,14 @@
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 # Generated read projection only. The five referenced records are immutable
 # authority/evidence sources and must not be replaced by this bundle.
 schema_version: "1"
 artifact_type: review_record_projection
 projection_id: "review_projection_<uuidv7>"
+subject_schema: null
+subject_ref: ""
+subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
 
 review_request_id: "review_<uuidv7>"
 review_request_digest: ""

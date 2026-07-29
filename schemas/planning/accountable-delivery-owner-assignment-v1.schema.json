@@ -1,0 +1,105 @@
+{
+  "$id": "https://schemas.ranex.dev/planning/accountable-delivery-owner-assignment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "assignment_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "assignment_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "identity_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "identity_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "observed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "principal_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "record_type": {
+      "const": "ACCOUNTABLE_DELIVERY_OWNER_ASSIGNMENT"
+    },
+    "role_id": {
+      "const": "ACCOUNTABLE_DELIVERY_OWNER"
+    },
+    "role_policy_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "role_policy_ref": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "supersedes_assignment_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "valid_until": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "record_type",
+    "assignment_id",
+    "assignment_ref",
+    "work_item_id",
+    "principal_id",
+    "role_id",
+    "identity_ref",
+    "identity_digest",
+    "role_policy_ref",
+    "role_policy_digest",
+    "observed_at",
+    "valid_until",
+    "supersedes_assignment_id",
+    "digest"
+  ],
+  "title": "AccountableDeliveryOwnerAssignmentV1",
+  "type": "object",
+  "x-ranex-semantic-invariants": [
+    "Exactly one CURRENT same-work-item assignment with exact role_id ACCOUNTABLE_DELIVERY_OWNER binds the plan and decision principal. Similar role names, preparer provenance, group identity, or implicit ownership fail."
+  ],
+  "x-ranex-source-authority-contract-id": "ESTIMATE-COMMITMENT-SOURCE-AUTHORITY-2.0",
+  "x-ranex-source-contract-id": "ESTIMATE-COMMITMENT-SEPARATION-1.1",
+  "x-ranex-source-control-id": "SDLC-EST-001",
+  "x-ranex-type-id": "AccountableDeliveryOwnerAssignmentV1"
+}

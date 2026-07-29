@@ -1,0 +1,247 @@
+{
+  "$id": "https://schemas.ranex.dev/review/independence-evaluation-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "analysis_attempt_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "artifact_type": {
+      "const": "independence_evaluation"
+    },
+    "blocking_reasons": {
+      "items": {},
+      "type": "array"
+    },
+    "checks": {
+      "additionalProperties": false,
+      "properties": {
+        "blind_context_satisfied": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "hidden_verification_withheld": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "maker_reviewer_identity_separated": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "maker_reviewer_session_separated": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "reviewer_did_not_mutate_subject": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "reviewer_had_no_write_or_authority_capability": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "route_fact_diversity_satisfied": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "subject_exact": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "outcome": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "outcome",
+            "evidence_refs"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "maker_reviewer_identity_separated",
+        "maker_reviewer_session_separated",
+        "subject_exact",
+        "reviewer_did_not_mutate_subject",
+        "reviewer_had_no_write_or_authority_capability",
+        "blind_context_satisfied",
+        "route_fact_diversity_satisfied",
+        "hidden_verification_withheld"
+      ],
+      "type": "object"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "eligible": {
+      "type": "boolean"
+    },
+    "evaluated_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "evaluation_id": {
+      "type": "string"
+    },
+    "review_request_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "validator_code_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "validator_id": {
+      "type": "string"
+    },
+    "validator_version": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "evaluation_id",
+    "review_request_id",
+    "analysis_attempt_ids",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "checks",
+    "eligible",
+    "blocking_reasons",
+    "validator_id",
+    "validator_version",
+    "validator_code_digest",
+    "evaluated_at",
+    "digest"
+  ],
+  "title": "independence_evaluation",
+  "type": "object",
+  "x-ranex-canonical-producer": "analytical_review",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/INDEPENDENCE_EVALUATION.yaml"
+}

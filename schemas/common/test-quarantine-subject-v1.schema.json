@@ -1,0 +1,280 @@
+{
+  "$id": "https://schemas.ranex.dev/common/test-quarantine-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "affected_gate_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "affected_paths": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*\\\\).+$",
+        "type": "string",
+        "x-ranex-normalized-repository-relative-posix-path": true
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "affected_test_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "base_subject": {
+      "additionalProperties": false,
+      "properties": {
+        "subject_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "subject_ref": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+          "type": "string"
+        },
+        "subject_schema": {
+          "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "subject_ref",
+        "subject_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "subject_ref resolves through the canonical subject registry",
+        "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+        "resolved bytes validate against subject_schema"
+      ],
+      "x-ranex-type-id": "SubjectBindingV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "built_artifact_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "candidate_subject": {
+      "additionalProperties": false,
+      "properties": {
+        "subject_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "subject_ref": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+          "type": "string"
+        },
+        "subject_schema": {
+          "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "subject_ref",
+        "subject_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "subject_ref resolves through the canonical subject registry",
+        "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+        "resolved bytes validate against subject_schema"
+      ],
+      "x-ranex-type-id": "SubjectBindingV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "opened_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "owner_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "policy_id": {
+      "const": "RANEX-TDD-1.0"
+    },
+    "policy_version": {
+      "const": "1.0.0"
+    },
+    "quarantine_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "release_profile_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "release_profile_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "release_profile_version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "removal_criteria": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "subject_ref": {
+      "pattern": "^urn:ranex:[^\\s]+$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "test-quarantine-subject/v1"
+    },
+    "test_practice_profile_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "test_practice_profile_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "test_practice_profile_version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_schema",
+    "subject_ref",
+    "quarantine_id",
+    "policy_id",
+    "policy_version",
+    "test_practice_profile_id",
+    "test_practice_profile_version",
+    "test_practice_profile_digest",
+    "base_subject",
+    "candidate_subject",
+    "built_artifact_digest",
+    "release_profile_id",
+    "release_profile_version",
+    "release_profile_digest",
+    "affected_test_ids",
+    "affected_paths",
+    "affected_gate_ids",
+    "owner_id",
+    "work_item_id",
+    "opened_at",
+    "expires_at",
+    "removal_criteria"
+  ],
+  "title": "TEST_QUARANTINE_SUBJECT_V1",
+  "type": "object",
+  "x-ranex-projection": {
+    "direct_included_source_fields": [
+      "quarantine_id",
+      "policy_id",
+      "policy_version",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "base_subject",
+      "candidate_subject",
+      "built_artifact_digest",
+      "release_profile_id",
+      "release_profile_version",
+      "release_profile_digest",
+      "affected_test_ids",
+      "affected_paths",
+      "affected_gate_ids",
+      "owner_id",
+      "work_item_id",
+      "opened_at",
+      "expires_at",
+      "removal_criteria"
+    ],
+    "excluded_source_fields": [
+      "schema_version",
+      "record_type",
+      "observed_attempt_refs",
+      "observed_failure_distribution",
+      "risk_trace_dispositions",
+      "alternate_evidence_refs",
+      "owner_decision_ref",
+      "restoration_backfill_evidence_refs",
+      "quarantine_evidence_snapshot_ref",
+      "quarantine_checker_result_refs",
+      "landing_record_ref",
+      "exact_subject_ref",
+      "exact_subject_digest",
+      "accepted_at",
+      "recorded_at",
+      "status"
+    ],
+    "output_fields": [
+      "subject_schema",
+      "subject_ref",
+      "quarantine_id",
+      "policy_id",
+      "policy_version",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "base_subject",
+      "candidate_subject",
+      "built_artifact_digest",
+      "release_profile_id",
+      "release_profile_version",
+      "release_profile_digest",
+      "affected_test_ids",
+      "affected_paths",
+      "affected_gate_ids",
+      "owner_id",
+      "work_item_id",
+      "opened_at",
+      "expires_at",
+      "removal_criteria"
+    ],
+    "projection_id": "TEST_QUARANTINE_SUBJECT_V1",
+    "schema_ref": "schemas/common/test-quarantine-subject-v1.schema.json",
+    "source_record_type": "TestQuarantineRecordV1",
+    "subject_ref_rule": "urn:ranex:test-quarantine-subject:<quarantine_id>",
+    "subject_schema": "test-quarantine-subject/v1",
+    "transformed_source_fields": {}
+  },
+  "x-ranex-projection-contract-id": "TDD-CANONICAL-SUBJECT-PROJECTIONS-1.1",
+  "x-ranex-source-catalog-digest": "sha256:23073f228c95690280aec81e283ca1aefe21121e50cfbfaa592ccfda3ad70bde"
+}

@@ -1,0 +1,92 @@
+{
+  "$id": "https://schemas.ranex.dev/common/worker-role-profile-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "assignment_must_compile_strict_subset": {
+      "type": "boolean"
+    },
+    "catalog_id": {
+      "type": "string"
+    },
+    "catalog_status": {
+      "type": "string"
+    },
+    "catalog_version": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "lifecycle": {
+      "type": "string"
+    },
+    "maximum_capability_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "maximum_tool_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "network_policy": {
+      "type": "string"
+    },
+    "permanently_denied_capability_ids": {
+      "items": {
+        "type": "string"
+      },
+      "type": "array"
+    },
+    "role_class": {
+      "type": "string"
+    },
+    "role_profile_id": {
+      "type": "string"
+    },
+    "runtime_validation_status": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    },
+    "source_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "version": {
+      "type": "string"
+    },
+    "write_policy": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "role_profile_id",
+    "version",
+    "lifecycle",
+    "role_class",
+    "maximum_tool_ids",
+    "maximum_capability_ids",
+    "permanently_denied_capability_ids",
+    "write_policy",
+    "network_policy",
+    "assignment_must_compile_strict_subset",
+    "catalog_id",
+    "catalog_version",
+    "catalog_status",
+    "source",
+    "source_digest",
+    "runtime_validation_status",
+    "digest"
+  ],
+  "title": "Ranex worker role maximum-ceiling profile",
+  "type": "object",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-source-registry": "architecture/contracts/worker-role-profiles.json"
+}

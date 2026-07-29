@@ -1,0 +1,26 @@
+# Authoring skeleton only. Canonical authority is a schema-valid JSON source,
+# exact REG-TEST-BEHAVIORS-001 row, eligible decision, successful LandingRecord,
+# and sealing result. Empty placeholders and this YAML file grant no authority.
+schema_version: "1"
+record_type: TEST_BEHAVIOR_AUTHORITY
+behavior_id: ""
+behavior_version: "0.0.0"
+behavior_subject_schema: ""
+behavior_subject_ref: ""
+behavior_subject_digest: ""
+owner_context_id: ""
+capability_id: ""
+definition_source_ref: ""
+definition_source_digest: ""
+work_item_id: ""
+owner_decision_ref: null
+owner_decision_digest: null
+landing_record_ref: ""
+valid_from: ""
+expires_at: ""
+supersedes_behavior_ref: null
+exact_subject_ref: ""
+exact_subject_digest: ""
+accepted_at: null
+recorded_at: ""
+status: PROPOSED

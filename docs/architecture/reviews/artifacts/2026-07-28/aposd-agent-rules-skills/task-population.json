@@ -1,0 +1,255 @@
+{
+  "schema_version": "1.0.0",
+  "manifest_id": "APOSD-EVAL-PUBLIC-DEVELOPMENT-TASKS-001",
+  "version": "1.0.0",
+  "status": "DRAFT_PUBLIC_DEVELOPMENT_SET",
+  "authority_limit": "These public vignettes support protocol development and grader calibration only. They are not hidden anchors, do not authorize an effectiveness conclusion, and grant no permission to modify a repository.",
+  "subject": {
+    "repository": "anthonykewl20/ranex",
+    "base_revision": "4baad4a67843b02d5970f442fb54aed8d6525dda",
+    "candidate_kind": "READ_ONLY_ARCHITECTURE_ANALYSIS",
+    "write_authority": "NONE",
+    "network_authority": "NONE",
+    "effect_authority": "NONE"
+  },
+  "instruction_arms": {
+    "control": {
+      "arm_id": "C0_RANEX_CURRENT",
+      "instruction": "Use the frozen current Ranex authority hierarchy, Engineering Reference Application Map section 5, accepted ADRs, and exact-subject evidence. Produce findings and alternatives without additional APOSD/Matt prompts."
+    },
+    "treatment": {
+      "arm_id": "T1_RANEX_QUALITATIVE_COMPLEXITY_LENS",
+      "instruction": "Use the identical frozen Ranex inputs and additionally ask: what caller knowledge is required; which decisions leak; where a representative change amplifies; where special cases scatter; whether the interface hides meaningful mechanism complexity without hiding required semantics; whether the mechanism can be replaced without changing unaffected consumers; and whether consequential choices compare materially different interfaces with the status quo."
+    }
+  },
+  "inclusion_rules": [
+    "The vignette has a determinate expected trigger class.",
+    "Required findings and prohibited conclusions can be stated without copying third-party book or skill text.",
+    "The task can be evaluated read-only without secrets, network access, production effects, or repository mutation.",
+    "The task tests incremental design judgment rather than recall of APOSD vocabulary."
+  ],
+  "exclusion_rules": [
+    "The answer or hidden rationale appears in the treatment instruction.",
+    "The task requires a whole-book quotation, private source, or unresolved third-party fixture.",
+    "The task's correctness depends on a mutable external service.",
+    "The task cannot distinguish architecture benefit from mere verbosity or terminology use."
+  ],
+  "strata": [
+    {
+      "stratum_id": "POSITIVE_ARCHITECTURE_TRIGGER",
+      "purpose": "Candidate lens should identify material hidden complexity, leakage, or change amplification."
+    },
+    {
+      "stratum_id": "NEGATIVE_NO_TRIGGER",
+      "purpose": "Candidate lens should abstain or remain proportionate on local changes."
+    },
+    {
+      "stratum_id": "COUNTEREXAMPLE_GUARDRAIL",
+      "purpose": "Candidate lens must not turn heuristics into unsafe abstractions, authority bypass, or test weakening."
+    }
+  ],
+  "tasks": [
+    {
+      "task_id": "APOSD-DEV-P01-VENDOR-TYPE-LEAK",
+      "stratum_id": "POSITIVE_ARCHITECTURE_TRIGGER",
+      "scenario": "A domain command accepts a provider SDK request object. Five callers construct provider-specific retry, timeout, and error fields. The provider will be replaced, but the domain behavior and caller-visible outcome should remain stable.",
+      "expected_trigger": "APPLICABLE",
+      "required_findings": [
+        "Provider mechanism and types leak into callers and domain policy.",
+        "Replacement amplifies across multiple callers.",
+        "An owned translation boundary is a viable alternative, subject to exact failure and authority semantics."
+      ],
+      "prohibited_conclusions": [
+        "The provider is merely a detail, so security, timeout, retry, and operational behavior can be omitted.",
+        "A wrapper alone proves correctness."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-P02-SCATTERED-DENIAL-RULE",
+      "stratum_id": "POSITIVE_ARCHITECTURE_TRIGGER",
+      "scenario": "The same capability-denial exception is handled separately in CLI, web, scheduler, and worker code. Each branch translates it differently and two branches accidentally permit a retry that can repeat an external effect.",
+      "expected_trigger": "APPLICABLE",
+      "required_findings": [
+        "A policy and error-semantic decision is scattered across delivery mechanisms.",
+        "Change locality and consistent denial behavior are materially weak.",
+        "The correction must preserve authoritative policy, effect identity, and reconciliation."
+      ],
+      "prohibited_conclusions": [
+        "Define the error away by suppressing denial.",
+        "Move every delivery concern into one god service."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-P03-TEMPORAL-DECOMPOSITION",
+      "stratum_id": "POSITIVE_ARCHITECTURE_TRIGGER",
+      "scenario": "A package is split into parse, validate, decide, persist, and notify modules. Every caller must invoke them in the correct order, carry intermediate state, and know which failures require rollback or reconciliation.",
+      "expected_trigger": "APPLICABLE",
+      "required_findings": [
+        "The public interaction exposes execution order and intermediate mechanism knowledge.",
+        "The decomposition follows time steps rather than an owned cohesive operation.",
+        "Any deeper operation must retain explicit authority, transaction, effect, failure, and recovery semantics."
+      ],
+      "prohibited_conclusions": [
+        "Collapse all system responsibilities into one unbounded module.",
+        "Hide rollback or external-effect ambiguity from the caller without assigning an owner."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-P04-CHANGE-AMPLIFICATION",
+      "stratum_id": "POSITIVE_ARCHITECTURE_TRIGGER",
+      "scenario": "Adding one work-item status requires edits in twelve hand-maintained switch statements across API, persistence, UI, reporting, tests, and migration code. Several are derived projections, but there is no registered semantic source.",
+      "expected_trigger": "APPLICABLE",
+      "required_findings": [
+        "One semantic change amplifies across duplicated authorities.",
+        "Canonical state ownership and generated projections are candidate corrections.",
+        "Migration, compatibility, invalidation, and tests remain distinct obligations."
+      ],
+      "prohibited_conclusions": [
+        "Delete all duplicate-looking code without classifying authoritative versus intentionally denormalized representations.",
+        "Treat a generator as self-authorizing."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-P05-SHALLOW-PASS-THROUGH",
+      "stratum_id": "POSITIVE_ARCHITECTURE_TRIGGER",
+      "scenario": "A public service exposes eighteen one-line methods that mirror an internal store method-for-method. Callers still choose transaction order, retries, and record invariants, and several import store record types.",
+      "expected_trigger": "APPLICABLE",
+      "required_findings": [
+        "The interface adds little simplification and leaks storage knowledge.",
+        "Caller knowledge includes transaction and invariant decisions that need an accountable owner.",
+        "A cohesive use-case interface is an alternative, but method count alone is not the decision rule."
+      ],
+      "prohibited_conclusions": [
+        "Fewer methods automatically mean fewer tests.",
+        "Every store must be hidden behind exactly one interface."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-N01-LOCAL-TYPO",
+      "stratum_id": "NEGATIVE_NO_TRIGGER",
+      "scenario": "A user-visible validation message contains a spelling error. The fix changes one literal and its exact acceptance assertion. No contract, owner, state, effect, dependency, or failure behavior changes.",
+      "expected_trigger": "NOT_APPLICABLE",
+      "required_findings": [
+        "Use the existing fast path and focused proof.",
+        "No architecture redesign or alternative-interface exercise is warranted."
+      ],
+      "prohibited_conclusions": [
+        "Introduce a message abstraction solely because a string changed.",
+        "Require multi-agent design review."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-N02-OWNED-LOCAL-RENAME",
+      "stratum_id": "NEGATIVE_NO_TRIGGER",
+      "scenario": "A private variable is renamed for clarity inside one pure function. Public behavior, types, tests, dependencies, performance, and generated contracts are unchanged.",
+      "expected_trigger": "NOT_APPLICABLE",
+      "required_findings": [
+        "No material caller knowledge or change-amplification question is triggered.",
+        "A focused local check is proportionate."
+      ],
+      "prohibited_conclusions": [
+        "Create a module or interface around the variable.",
+        "Demand an ADR."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-N03-ESSENTIAL-AUTHORITY-VISIBILITY",
+      "stratum_id": "NEGATIVE_NO_TRIGGER",
+      "scenario": "A permit API explicitly requires exact subject, action, destination, expiry, nonce, and policy digest. A proposal argues that these parameters make the interface shallow and should be replaced by ambient context.",
+      "expected_trigger": "NOT_APPLICABLE_TO_PARAMETER_REMOVAL",
+      "required_findings": [
+        "The explicit data is essential authority complexity rather than accidental caller burden.",
+        "Ambient context would weaken subject binding, auditability, and replay safety."
+      ],
+      "prohibited_conclusions": [
+        "Hide the authority inputs in process globals or mutable session state.",
+        "Optimize interface simplicity by erasing security semantics."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-N04-EXPLICIT-BACKPRESSURE",
+      "stratum_id": "NEGATIVE_NO_TRIGGER",
+      "scenario": "A mailbox API exposes capacity, rejection, retry-after, cancellation, and dead-letter outcomes. A proposal calls those outcomes complexity leakage and recommends one boolean success result.",
+      "expected_trigger": "NOT_APPLICABLE_TO_ERROR_ERASURE",
+      "required_findings": [
+        "The outcomes express essential distributed-systems and operational semantics.",
+        "Simplification cannot erase recovery, overload, or cancellation behavior."
+      ],
+      "prohibited_conclusions": [
+        "Return only true or false.",
+        "Make retries invisible without preserving idempotency and failure ownership."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-C01-GOD-MODULE",
+      "stratum_id": "COUNTEREXAMPLE_GUARDRAIL",
+      "scenario": "To create a deep module, a proposal merges work management, identity, policy, evidence, budgets, and execution into one orchestrator with a small start-work interface.",
+      "expected_trigger": "COUNTEREXAMPLE",
+      "required_findings": [
+        "A small interface does not compensate for collapsed ownership and authority.",
+        "The proposal creates central change coupling, transaction ambiguity, and a broad blast radius.",
+        "Module depth is contextual and subordinate to bounded ownership and exact authority."
+      ],
+      "prohibited_conclusions": [
+        "Approve because the public method count is small.",
+        "Use an aggregate depth score."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-C02-FAKE-JUSTIFIES-SEAM",
+      "stratum_id": "COUNTEREXAMPLE_GUARDRAIL",
+      "scenario": "A test author wants an interface and in-memory adapter solely to make a difficult dependency easy to fake. There is one production implementation, no volatility evidence, and the fake cannot reproduce serialization, timeout, authorization, or crash behavior.",
+      "expected_trigger": "COUNTEREXAMPLE",
+      "required_findings": [
+        "Test convenience alone does not justify a production seam.",
+        "A fake does not replace representative real-adapter and failure evidence.",
+        "Alternative test support or a subject-specific seam needs explicit cost and risk analysis."
+      ],
+      "prohibited_conclusions": [
+        "One fake proves the abstraction is deep.",
+        "Mock-only evidence is sufficient."
+      ]
+    },
+    {
+      "task_id": "APOSD-DEV-C03-AUTOMATIC-TEST-DELETION",
+      "stratum_id": "COUNTEREXAMPLE_GUARDRAIL",
+      "scenario": "After adding interface tests, a proposal automatically deletes all internal unit tests as waste. Some unit tests cover state-machine partitions and failure branches not observable through the new interface suite.",
+      "expected_trigger": "COUNTEREXAMPLE",
+      "required_findings": [
+        "New interface tests do not automatically supersede distinct internal evidence.",
+        "Retirement requires exact successor, risk, trace, failure, and approval evidence.",
+        "Preserve nonredundant fault-localization and state-space coverage."
+      ],
+      "prohibited_conclusions": [
+        "Delete old tests based only on test level.",
+        "Use fewer methods as evidence that fewer tests are required."
+      ]
+    }
+  ],
+  "rubric": {
+    "result_values": [
+      "PASS",
+      "FAIL",
+      "UNKNOWN"
+    ],
+    "noncompensating_dimensions": [
+      "TRIGGER_CORRECTNESS",
+      "REQUIRED_FINDING_RECALL",
+      "PROHIBITED_CONCLUSION_AVOIDANCE",
+      "EXACT_SUBJECT_AND_SOURCE_ACCURACY",
+      "RANEX_AUTHORITY_COMPATIBILITY",
+      "ALTERNATIVE_VIABILITY",
+      "UNNECESSARY_ABSTRACTION_RESTRAINT",
+      "TEST_AND_FAILURE_EVIDENCE_PRESERVATION"
+    ],
+    "aggregate_numeric_score_prohibited": true,
+    "human_or_model_review_limit": "A rubric result is experiment evidence only and cannot authorize policy, merge, release, or effects."
+  },
+  "limitations": [
+    "The tasks are public and cannot serve as hidden holdouts.",
+    "The tasks are architecture vignettes, not yet end-to-end implementation and outcome tasks.",
+    "The set is too small to establish a decision margin before calibration.",
+    "No route, harness, grader, or human-review calibration is bound."
+  ],
+  "digest": "sha256:6ae4b31372a490f376a8cccb0192005528e50c8c9329601191c60bfdf87da3c0"
+}
