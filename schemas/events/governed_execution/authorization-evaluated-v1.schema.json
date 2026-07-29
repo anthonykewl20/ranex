@@ -1,0 +1,91 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/authorization-evaluated-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "activity_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Activity",
+      "x-ranex-registered-opaque-id": true
+    },
+    "authorization_snapshot_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "AuthorizationSnapshot",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "AuthorizationSnapshot"
+    },
+    "decision": {
+      "enum": [
+        "ALLOWED",
+        "DENIED",
+        "HUMAN_DECISION_REQUIRED",
+        "UNKNOWN",
+        "CONFLICT"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "ENUM-AUTHORIZATION-OUTCOME-1.0"
+    },
+    "reason_codes": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "run_id",
+    "activity_id",
+    "authorization_snapshot_ref",
+    "decision",
+    "reason_codes"
+  ],
+  "title": "AuthorizationEvaluated event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-AUTHORIZATIONEVALUATED",
+  "x-ranex-event-name": "AuthorizationEvaluated",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:AuthorizationEvaluated:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "AuthorizationEvaluated",
+    "referenced_axis_ids": [
+      "AuthorizationOutcome"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:40aea6ff0ebe1df735371f3a060dd53b52f5a93d49333cd85efb1b9692f4db40"
+}

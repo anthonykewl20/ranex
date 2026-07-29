@@ -1,0 +1,481 @@
+{
+  "$id": "https://schemas.ranex.dev/fleet/assignment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "absolute_deadline": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "aggregate_version": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "allowed_path_ownership_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "artifact_type": {
+      "const": "agent_assignment"
+    },
+    "assignment_id": {
+      "type": "string"
+    },
+    "capability_profile_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "capability_profile_id": {
+      "type": "string"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "created_by_service_id": {
+      "type": "string"
+    },
+    "dependency_assignment_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "expected_reservation_aggregate_version": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "maker_checker_separation_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "offer_policy_id": {
+      "type": "string"
+    },
+    "required_harness_qualification_scope": {
+      "type": "string"
+    },
+    "required_isolation_profile_id": {
+      "type": "string"
+    },
+    "required_role_id": {
+      "type": "string"
+    },
+    "required_route_qualification_scope": {
+      "type": "string"
+    },
+    "reservation_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "reservation_id": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "status": {
+      "type": "string"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "task_packet_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "task_packet_id": {
+      "type": "string"
+    },
+    "topology_class": {
+      "type": "string"
+    },
+    "worker_runtime_binding": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_fallback_limit": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "agent_definitions": {
+          "items": {},
+          "type": "array"
+        },
+        "ambient_network_destinations": {
+          "items": {},
+          "type": "array"
+        },
+        "ambient_process_executables": {
+          "items": {},
+          "type": "array"
+        },
+        "ambient_secret_handles": {
+          "items": {},
+          "type": "array"
+        },
+        "apps": {
+          "items": {},
+          "type": "array"
+        },
+        "assignment_config_home_ref": {
+          "type": "string"
+        },
+        "assignment_cwd": {
+          "type": "string"
+        },
+        "auth_route_class": {
+          "type": "string"
+        },
+        "auto_memory_enabled": {
+          "type": "boolean"
+        },
+        "auxiliary_model_call_limit": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "background_execution_enabled": {
+          "type": "boolean"
+        },
+        "bare_mode_allowed": {
+          "type": "boolean"
+        },
+        "configuration_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "consumer_login_brokering_allowed": {
+          "type": "boolean"
+        },
+        "controlled_process_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "credential_export_allowed": {
+          "type": "boolean"
+        },
+        "direct_token_http_allowed": {
+          "type": "boolean"
+        },
+        "effect_path": {
+          "type": "string"
+        },
+        "effective_auth_subject_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effective_capability_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effective_capability_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "effective_runtime_tool_names": {
+          "items": {},
+          "type": "array"
+        },
+        "effective_tool_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effective_tool_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "full_model_id": {
+          "type": "string"
+        },
+        "hermes_nous_model_route_allowed": {
+          "type": "boolean"
+        },
+        "mcp_servers": {
+          "items": {},
+          "type": "array"
+        },
+        "model_fallback_limit": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "nested_worker_lineage_limit": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "permission_mode": {
+          "type": "string"
+        },
+        "plugins": {
+          "items": {},
+          "type": "array"
+        },
+        "provider_fallback_limit": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "provider_id": {
+          "type": "string"
+        },
+        "role_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "role_profile_id": {
+          "type": "string"
+        },
+        "route_cardinality": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "route_lock_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "route_lock_id": {
+          "type": "string"
+        },
+        "runtime_adapter_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "runtime_adapter_id": {
+          "type": "string"
+        },
+        "runtime_adapter_version": {
+          "type": "string"
+        },
+        "sandbox_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "sandbox_profile_id": {
+          "type": "string"
+        },
+        "session_affinity": {
+          "additionalProperties": false,
+          "properties": {
+            "assignment_id": {
+              "type": "string"
+            },
+            "digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "effective_auth_subject_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "effective_tool_grant_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "project_id": {
+              "type": "string"
+            },
+            "role_profile_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "route_lock_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "runtime_adapter_id": {
+              "type": "string"
+            },
+            "runtime_adapter_version": {
+              "type": "string"
+            },
+            "sandbox_profile_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "session_id": {
+              "type": "string"
+            },
+            "workspace_id": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "project_id",
+            "assignment_id",
+            "workspace_id",
+            "session_id",
+            "runtime_adapter_id",
+            "runtime_adapter_version",
+            "route_lock_digest",
+            "effective_auth_subject_digest",
+            "role_profile_digest",
+            "effective_tool_grant_digest",
+            "sandbox_profile_digest",
+            "digest"
+          ],
+          "type": "object"
+        },
+        "settings_sources": {
+          "items": {},
+          "type": "array"
+        },
+        "skills": {
+          "items": {},
+          "type": "array"
+        },
+        "strict_mcp_config": {
+          "type": "boolean"
+        },
+        "strict_role_subset_required": {
+          "type": "boolean"
+        },
+        "subscription_runtime_requested": {
+          "type": "boolean"
+        },
+        "tool_attempt_gateway": {
+          "type": "string"
+        },
+        "tool_name_mapping_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "transport_id": {
+          "type": "string"
+        },
+        "worker_coordination_limit": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "worker_delegation_limit": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "worker_runtime_catalog_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "worker_spawn_limit": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "worker_runtime_catalog_digest",
+        "role_profile_id",
+        "role_profile_digest",
+        "runtime_adapter_id",
+        "runtime_adapter_version",
+        "runtime_adapter_digest",
+        "provider_id",
+        "full_model_id",
+        "transport_id",
+        "route_lock_id",
+        "route_lock_digest",
+        "auth_route_class",
+        "subscription_runtime_requested",
+        "effective_auth_subject_digest",
+        "effective_tool_ids",
+        "effective_runtime_tool_names",
+        "effective_tool_grant_digest",
+        "tool_name_mapping_digest",
+        "effective_capability_ids",
+        "effective_capability_grant_digest",
+        "sandbox_profile_id",
+        "sandbox_profile_digest",
+        "configuration_profile_digest",
+        "controlled_process_profile_digest",
+        "permission_mode",
+        "tool_attempt_gateway",
+        "strict_mcp_config",
+        "settings_sources",
+        "skills",
+        "plugins",
+        "apps",
+        "mcp_servers",
+        "agent_definitions",
+        "auto_memory_enabled",
+        "background_execution_enabled",
+        "assignment_config_home_ref",
+        "assignment_cwd",
+        "ambient_network_destinations",
+        "ambient_secret_handles",
+        "ambient_process_executables",
+        "strict_role_subset_required",
+        "route_cardinality",
+        "worker_spawn_limit",
+        "worker_delegation_limit",
+        "worker_coordination_limit",
+        "adapter_fallback_limit",
+        "provider_fallback_limit",
+        "model_fallback_limit",
+        "auxiliary_model_call_limit",
+        "nested_worker_lineage_limit",
+        "effect_path",
+        "credential_export_allowed",
+        "direct_token_http_allowed",
+        "bare_mode_allowed",
+        "consumer_login_brokering_allowed",
+        "hermes_nous_model_route_allowed",
+        "session_affinity"
+      ],
+      "type": "object"
+    },
+    "workspace_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "assignment_id",
+    "status",
+    "aggregate_version",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "task_packet_id",
+    "task_packet_digest",
+    "required_role_id",
+    "required_route_qualification_scope",
+    "required_harness_qualification_scope",
+    "required_isolation_profile_id",
+    "workspace_id",
+    "allowed_path_ownership_refs",
+    "dependency_assignment_ids",
+    "topology_class",
+    "capability_profile_id",
+    "capability_profile_digest",
+    "worker_runtime_binding",
+    "reservation_id",
+    "reservation_digest",
+    "expected_reservation_aggregate_version",
+    "absolute_deadline",
+    "offer_policy_id",
+    "maker_checker_separation_refs",
+    "created_by_service_id",
+    "created_at",
+    "digest"
+  ],
+  "title": "agent_assignment",
+  "type": "object",
+  "x-ranex-canonical-producer": "agent_collaboration",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/AGENT_ASSIGNMENT.yaml"
+}

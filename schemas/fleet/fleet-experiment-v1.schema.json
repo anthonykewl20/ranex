@@ -1,0 +1,209 @@
+{
+  "$id": "https://schemas.ranex.dev/fleet/fleet-experiment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "acceptance_margin": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "analysis_code_ref": {
+      "type": "string"
+    },
+    "artifact_type": {
+      "const": "fleet_experiment"
+    },
+    "controls": {
+      "items": {},
+      "type": "array"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "decision_ref": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "equal_budget_profile": {
+      "additionalProperties": false,
+      "properties": {},
+      "required": [],
+      "type": "object"
+    },
+    "exclusion_rules": {
+      "items": {},
+      "type": "array"
+    },
+    "experiment_id": {
+      "type": "string"
+    },
+    "failure_treatment": {
+      "type": "string"
+    },
+    "guardrail_measure_ids": {
+      "items": {},
+      "type": "array"
+    },
+    "hidden_anchor_profile_id": {
+      "type": "string"
+    },
+    "human_decision_ref": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "hypothesis": {
+      "type": "string"
+    },
+    "inclusion_rules": {
+      "items": {},
+      "type": "array"
+    },
+    "limitations": {
+      "items": {},
+      "type": "array"
+    },
+    "minimum_detectable_effect": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "owner_principal_id": {
+      "type": "string"
+    },
+    "paired_assignment_method": {
+      "type": "string"
+    },
+    "primary_measure_id": {
+      "type": "string"
+    },
+    "question": {
+      "type": "string"
+    },
+    "raw_evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "replication_count": {
+      "minimum": 0,
+      "type": [
+        "integer",
+        "null"
+      ]
+    },
+    "result_ref": {
+      "type": "string"
+    },
+    "route_and_harness_locks": {
+      "items": {},
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "seed_schedule": {
+      "items": {},
+      "type": "array"
+    },
+    "status": {
+      "type": "string"
+    },
+    "stop_rule": {
+      "type": "string"
+    },
+    "strata": {
+      "items": {},
+      "type": "array"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "task_population_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "topology_profiles": {
+      "items": {},
+      "type": "array"
+    },
+    "treatments": {
+      "items": {},
+      "type": "array"
+    },
+    "uncertainty_method": {
+      "type": "string"
+    },
+    "verifier_calibration_ref": {
+      "type": "string"
+    },
+    "verifier_profile_id": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "experiment_id",
+    "status",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "owner_principal_id",
+    "decision_ref",
+    "question",
+    "hypothesis",
+    "task_population_manifest_digest",
+    "inclusion_rules",
+    "exclusion_rules",
+    "strata",
+    "controls",
+    "treatments",
+    "paired_assignment_method",
+    "seed_schedule",
+    "replication_count",
+    "route_and_harness_locks",
+    "topology_profiles",
+    "equal_budget_profile",
+    "verifier_profile_id",
+    "verifier_calibration_ref",
+    "hidden_anchor_profile_id",
+    "primary_measure_id",
+    "guardrail_measure_ids",
+    "uncertainty_method",
+    "minimum_detectable_effect",
+    "acceptance_margin",
+    "failure_treatment",
+    "stop_rule",
+    "raw_evidence_refs",
+    "analysis_code_ref",
+    "result_ref",
+    "limitations",
+    "human_decision_ref",
+    "digest"
+  ],
+  "title": "fleet_experiment",
+  "type": "object",
+  "x-ranex-canonical-producer": "process_assurance",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/FLEET_EXPERIMENT.yaml"
+}

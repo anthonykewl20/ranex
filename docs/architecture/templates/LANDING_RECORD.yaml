@@ -1,18 +1,23 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
+# Synthetic shape example only. It is NOT_ASSESSED and is never landing evidence.
 schema_version: "1"
 artifact_type: landing_record
-landing_id: "landing_<uuidv7>"
-subject_ref: "exact-subject/v1"
-candidate_commit: ""
-target_branch: ""
-target_head_before: ""
-landed_commit: ""
-landing_strategy: ""
-permit_id: ""
-actor_principal_id: ""
-provider_receipt_ref: ""
-started_at: ""
-finished_at: ""
-status: COMPLETE
-evidence_refs: []
-digest: ""
+landing_id: "landing_example"
+subject_schema: "exact-subject/v1"
+subject_ref: "subject_example"
+subject_digest: "sha256:1111111111111111111111111111111111111111111111111111111111111111"
+subject_manifest_digest: "sha256:2222222222222222222222222222222222222222222222222222222222222222"
+core_sdlc_trace_ref: "trace_example"
+candidate_commit: "3333333333333333333333333333333333333333"
+target_branch: "main"
+target_head_before: "4444444444444444444444444444444444444444"
+landed_commit: "5555555555555555555555555555555555555555"
+landing_strategy: "FAST_FORWARD"
+permit_id: "permit_example"
+actor_principal_id: "principal_example"
+provider_receipt_ref: "receipt_example"
+started_at: "2026-07-29T00:00:00Z"
+finished_at: "2026-07-29T00:00:01Z"
+status: "SUCCEEDED"
+evidence_refs: ["evidence_example"]
+digest: "sha256:6666666666666666666666666666666666666666666666666666666666666666"

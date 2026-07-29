@@ -1,4 +1,4 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: agent_handoff
 handoff_id: "handoff_<uuidv7>"
@@ -12,16 +12,11 @@ producer:
   session_id: ""
 
 consumer_role_id: ""
-
-subject:
-  project_id: ""
-  work_item_id: ""
-  run_id: ""
-  workspace_id: ""
-  packet_id: ""
-  packet_digest: ""
-  base_commit: ""
-  candidate_commit: ""
+subject_schema: "exact-subject/v1"
+subject_ref: ""
+subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
 
 run_result_id: "result_<uuidv7>"
 run_result_digest: ""

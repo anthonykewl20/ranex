@@ -1,0 +1,91 @@
+{
+  "$id": "https://schemas.ranex.dev/common/context-boundary-fit-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "accountable_human_role": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "boundary_decision_status": {
+      "const": "NOT_ASSESSED"
+    },
+    "change_locality_hypothesis": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "consistency_hypothesis": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "context_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "definition_status": {
+      "const": "DEFINED"
+    },
+    "failure_hypothesis": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "merge_candidate": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "owner": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "ownership_hypothesis": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "required_reviewer_role": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runtime_validation_status": {
+      "const": "NOT_ASSESSED"
+    },
+    "schema_version": {
+      "const": "context-boundary-fit/v1"
+    },
+    "source": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "split_candidate": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "tracer_falsifier": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "tracer_result": {
+      "const": "NOT_ASSESSED"
+    }
+  },
+  "required": [
+    "schema_version",
+    "context_id",
+    "owner",
+    "consistency_hypothesis",
+    "failure_hypothesis",
+    "ownership_hypothesis",
+    "change_locality_hypothesis",
+    "merge_candidate",
+    "split_candidate",
+    "tracer_falsifier",
+    "accountable_human_role",
+    "required_reviewer_role",
+    "definition_status",
+    "tracer_result",
+    "boundary_decision_status",
+    "runtime_validation_status",
+    "source"
+  ],
+  "title": "Ranex context boundary-fit hypothesis",
+  "type": "object"
+}

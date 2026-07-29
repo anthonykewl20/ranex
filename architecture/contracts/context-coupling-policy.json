@@ -1,0 +1,105 @@
+{
+  "coupling_policy_id": "RANEX-GE-COUPLING-1.0",
+  "decision_binding": {
+    "decision_id": "ADR-0009",
+    "digest": "sha256:16837df0d8647e7abaf0ecf630a52625aeb4d643763e15dd393ba2e53cb21b2b",
+    "path": "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md",
+    "runtime_enactment_status": "NOT_ASSESSED",
+    "status": "ACCEPTED_PAPER_DECISION"
+  },
+  "decision_owner": "human_governor",
+  "declared_static_fan_in": 3,
+  "declared_static_fan_out": 10,
+  "fitness_ids": [
+    "FF-COUPLING-001",
+    "FF-COUPLING-002",
+    "FF-ARCH9-NONCOMP-001"
+  ],
+  "measurement_owner": "process_assurance",
+  "measures": [
+    {
+      "cadence": "each architecture change",
+      "definition": "Count distinct registered governed_execution responsibility clauses.",
+      "evidence_refs": [],
+      "measure_id": "GE-RESPONSIBILITY-COUNT",
+      "owner_id": "process_assurance",
+      "rationale": "This falsification measure triggers review; it is not a maturity score or automatic split decision.",
+      "result": "NOT_ASSESSED",
+      "review_trigger": "> 12 or +2 in one rolling 20-change window"
+    },
+    {
+      "cadence": "each edge/architecture change",
+      "definition": "Count approved outgoing source-dependency edges.",
+      "evidence_refs": [],
+      "measure_id": "GE-STATIC-FAN-OUT",
+      "owner_id": "process_assurance",
+      "rationale": "This falsification measure triggers review; it is not a maturity score or automatic split decision.",
+      "result": "NOT_ASSESSED",
+      "review_trigger": "> 10"
+    },
+    {
+      "cadence": "each edge/architecture change",
+      "definition": "Count approved incoming source-dependency edges.",
+      "evidence_refs": [],
+      "measure_id": "GE-STATIC-FAN-IN",
+      "owner_id": "process_assurance",
+      "rationale": "This falsification measure triggers review; it is not a maturity score or automatic split decision.",
+      "result": "NOT_ASSESSED",
+      "review_trigger": "> 8"
+    },
+    {
+      "cadence": "each tracer/release; rolling 30 transitions",
+      "definition": "Distribution of distinct synchronous context calls per authority transition.",
+      "evidence_refs": [],
+      "measure_id": "GE-INTERACTION-COUPLING",
+      "owner_id": "process_assurance",
+      "rationale": "This falsification measure triggers review; it is not a maturity score or automatic split decision.",
+      "result": "NOT_ASSESSED",
+      "review_trigger": "p95 > 8 or > 25% of transitions call more than 4 contexts"
+    },
+    {
+      "cadence": "rolling 20 accepted changes",
+      "definition": "Distribution of other contexts changed with governed_execution per accepted change.",
+      "evidence_refs": [],
+      "measure_id": "GE-CHANGE-COUPLING",
+      "owner_id": "process_assurance",
+      "rationale": "This falsification measure triggers review; it is not a maturity score or automatic split decision.",
+      "result": "NOT_ASSESSED",
+      "review_trigger": "> 35% of governed_execution changes require changes in 3 or more other contexts"
+    },
+    {
+      "cadence": "each release; rolling 3 releases",
+      "definition": "Share of architecture-changing work items that touch governed_execution.",
+      "evidence_refs": [],
+      "measure_id": "GE-OWNERSHIP-CONCENTRATION",
+      "owner_id": "process_assurance",
+      "rationale": "This falsification measure triggers review; it is not a maturity score or automatic split decision.",
+      "result": "NOT_ASSESSED",
+      "review_trigger": "> 40% for 3 consecutive releases"
+    }
+  ],
+  "noncompensating": true,
+  "reference_windows": [
+    "first clean source tracer",
+    "each candidate",
+    "rolling 20 accepted changes",
+    "rolling 30 authority transitions",
+    "rolling 3 releases"
+  ],
+  "responses": [
+    "Inspect responsibility and edge records; reject hidden private knowledge.",
+    "Evaluate moving orchestration-only behavior to an owner context or splitting an independently consistent ledger/process.",
+    "Evaluate merging a false boundary when paired changes and shared invariants prove one owner.",
+    "Record keep/split/merge decision and counterevidence in a superseding ADR."
+  ],
+  "rule_ids": [
+    "ARCH-COUPLING-001",
+    "ARCH-COUPLING-002",
+    "ARCH9-NONCOMP-001"
+  ],
+  "runtime_validation_status": "NOT_ASSESSED",
+  "schema_version": "context-coupling-policy/v1",
+  "source": "docs/architecture/decisions/ADR-0009-register-boundary-fit-dependencies-and-feedback-fitness.md",
+  "subject_context": "governed_execution",
+  "version": "1.0.0"
+}

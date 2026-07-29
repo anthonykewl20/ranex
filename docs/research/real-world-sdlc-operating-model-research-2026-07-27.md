@@ -12,7 +12,7 @@
 | Companion normative policy | [Ranex Core SDLC Operating Model](../architecture/CORE_SDLC_OPERATING_MODEL.md) |
 | Owner decision | [ADR-0001: Established Software-Development Lifecycle Governs AI Work](../architecture/decisions/ADR-0001-established-sdlc-governs-ai-work.md) |
 | Independent visual review | [HY3 SDLC visual review](./ranex-sdlc-visual-hy3-review-2026-07-27.md) |
-| File mutations | This research report, its companion policy/control catalog, and documentation links |
+| File mutations | This report, companion policy/catalog, assessment/projection templates, rendered visual artifacts, and documentation links |
 
 ## Executive recommendation
 
@@ -55,6 +55,11 @@ human-world product practice:
 - observing whether the shipped change produced the intended outcome; and
 - feeding evidence back into priorities, architecture, and working methods.
 
+Ranex should assess each lifecycle capability with an evidence-anchored `0`–`4`
+level plus separate effectiveness, coverage, and confidence. Non-compensating
+`P0`–`P3` priority then selects the next bounded improvement; no overall average
+may hide a vital-control failure or become a release authority.
+
 The core invariant is:
 
 > Every production behavior must trace backward to an owned need and forward to
@@ -86,10 +91,46 @@ The research reconciles these Ranex documents:
 - `docs/architecture/SOURCE_OF_TRUTH.md`;
 - `docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md`;
 - `docs/research/gemini-research.md`;
-- `docs/research/hermes-core-architecture-research-2026-07-27.md`; and
+- `docs/research/hermes-core-architecture-research-2026-07-27.md`;
 - `docs/research/hermes-core-architecture-hy3-review-2026-07-27.md`;
 - `docs/research/cookbook-alignment-research-2026-07-27.md`; and
 - `docs/research/ocask-alignment-research-2026-07-27.md`.
+
+The scoring and improvement design also uses these consultation-only local
+Markdown references. The links below are public-safe publisher or
+bibliographic records; exact local identities and extraction limits are in the
+[foundational-reference reconciliation](../architecture/reviews/2026-07-27-foundational-reference-corpus-reconciliation.md):
+
+- [`Clean Code`](https://www.informit.com/store/clean-code-a-handbook-of-agile-software-craftsmanship-9780132350884),
+  especially “Emergence,”
+  “Environment,” and the testing heuristics in “Smells and Heuristics”;
+- [`The Pragmatic Programmer`](https://www.informit.com/store/pragmatic-programmer-from-journeyman-to-master-9780201616224),
+  especially continuous improvement, tracer bullets, reversibility,
+  automation, testing, and escaped-defect learning;
+- the local Markdown reference copy of
+  [`SWEBOK Guide V4.0a`](https://www.computer.org/education/bodies-of-knowledge/software-engineering/v4),
+  especially Engineering
+  Foundations §7 on measurement scales, operational definitions, validity,
+  reliability, and Goal–Question–Metric; and
+- the targeted, local-only Kimi research chapters “Measure Before You
+  Architect” (`agent_fleet_control_sec03.md`) and “The Build Roadmap and
+  Experiment Playbook” (`agent_fleet_control_sec13.md`), dispositioned in the
+  [Kimi reconciliation](../architecture/reviews/2026-07-27-kimi-agent-fleet-research-reconciliation.md),
+  for measurement-harness hygiene, local uncertainty, pre-registration, and
+  experiment reporting.
+
+Only the Markdown files named above were opened and used for this extension.
+No PDF in `docs/research/` was opened, parsed, indexed, or used.
+
+That statement preserves the method of the original scoring extension. The
+owner subsequently elevated the complete saved-book corpus to major-reference
+status. All six PDF/Markdown pairs were then inventoried and audited for
+derivation, provenance, rights, extraction loss, applicable practices, dated
+advice, contradictions, and architecture impact. The resulting current
+application is [Ranex Engineering Reference Application Map](../architecture/ENGINEERING_REFERENCE_APPLICATION_MAP.md),
+bound by its own exact corpus manifest. This later audit does not
+retroactively claim that the PDFs or the three later-arriving books were inputs
+to the earlier prose.
 
 The local architecture already establishes exact-subject evidence, human
 authority, machine contracts, isolated implementation, independent review,
@@ -101,7 +142,7 @@ engineering value stream around them.
 
 Primary and official sources were preferred:
 
-- [ISO/IEC/IEEE 12207:2017](https://www.iso.org/standard/63712.html)
+- [ISO/IEC/IEEE 12207:2026](https://www.iso.org/standard/90219.html)
   for the complete software-life-cycle process frame and process-improvement
   attachment points;
 - [SWEBOK Guide V4.0a](https://www.computer.org/education/bodies-of-knowledge/software-engineering)
@@ -149,17 +190,21 @@ These sources support practices, not a branded framework Ranex must copy.
 
 No source is universal scientific proof. The selected synthesis is:
 
-> Ranex uses ISO/IEC/IEEE 12207 and SWEBOK as the full lifecycle and engineering
-> knowledge map; tailors ISO/IEC 29110's two-process Basic-profile structure as
+> Ranex uses ISO/IEC/IEEE 12207:2026 as the lifecycle frame and SWEBOK as a
+> broad, non-comprehensive engineering knowledge-area map; tailors ISO/IEC
+> 29110's two-process Basic-profile structure as
 > its small-team execution spine; enriches it with NASA assurance/record
 > discipline and NIST SSDF security outcomes; calibrates delivery and
 > reliability using DORA and Google evidence; and uses CMMI only to test whether
-> the process is governed, enabled, measured, and improved.
+> the process is governed, enabled, measured, and improved. Practitioner books
+> supply concrete engineering habits, while the Kimi corpus supplies
+> hypotheses for Ranex’s measurement harness that still require local
+> calibration.
 
 | Source | Authority/evidence type | Adopted use | Limitation |
 |---|---|---|---|
-| ISO/IEC/IEEE 12207:2017 | International consensus standard | Full software-life-cycle process map and process-improvement frame | Process descriptions require tailoring; no conformity claim |
-| SWEBOK V4.0a | IEEE consensus-driven body of knowledge | Coverage check for the complete software-engineering discipline | Knowledge map, not a prescriptive project lifecycle |
+| ISO/IEC/IEEE 12207:2026 | Current international consensus standard | Full software-life-cycle process map and process-improvement frame | Process descriptions require tailoring; no conformity claim; the full paid standard was not available locally |
+| SWEBOK V4.0a | IEEE consensus-driven body of knowledge | Broad knowledge-area coverage check across the software-engineering discipline | Non-comprehensive knowledge map, not a prescriptive project lifecycle or proof that every lifecycle obligation is covered |
 | ISO/IEC 29110-5-1-2:2025 | International consensus standard | Project management plus software-implementation spine | Official scope is one product/one team in a very small entity and excludes safety-critical software; no conformity claim |
 | NASA-HDBK-2203 | Active government technical handbook and high-assurance practitioner guidance | Assurance, traceability, V&V, configuration and delivery control library | Guidance, not a NASA-mandatory standard; down-tailored for ordinary Ranex work |
 | NIST SP 800-218 | Federal recommendation synthesized from secure-development practices | Security preparation, protection, secure production and vulnerability-response overlay | Not a complete lifecycle or certification |
@@ -167,6 +212,12 @@ No source is universal scientific proof. The selected synthesis is:
 | Google Engineering Practices/SRE | Mature practitioner guidance and cases | Change/review, SLO, release, incident and learning practices | Organization-derived and must be adapted |
 | CMMI | Capability/maturity model plus organizational case evidence | Process institutionalization and improvement audit lens | Not a daily SDLC; no appraisal, compliance or maturity-level claim |
 | Scrum/Agile | Consensus and practitioner principles | Iteration, inspection, adaptation and feedback | Not a complete assurance/operations model |
+| *Clean Code* | Practitioner book and code-level heuristics | Testability, small verified refactors, build/test operability, changeability, and coverage as a gap locator | Opinionated and partly dated; its heuristics are not a validated numerical scoring model |
+| *The Pragmatic Programmer* | Practitioner book | Continuous feedback, production-shaped tracer slices, reversible decisions, automation, observability, and regression learning | Practitioner guidance whose techniques and thresholds require context |
+| *Code Complete*, retained Chapter 5 excerpt | Practitioner construction/design handbook excerpt | Complexity management, information hiding, coupling/cohesion, contracts, testability, binding time, and iterative/proportionate design | Local PDF is not the full book; absent chapters are not evidence |
+| *System Design Interview*, Second Edition | Interview-preparation pattern catalogue | Scope clarification, high-level decomposition, risk deep dive, estimates, failure and monitoring prompts | Simplified 2020 web-scale examples are not Ranex's reference architecture |
+| *The Clean Coder* | Practitioner professional-conduct book | Responsibility, explicit commitments, early risk disclosure, acceptance evidence, layered testing, collaboration, estimation, mentoring, and stable teams | One author's 2011 position; fixed percentages, hours, staffing, TDD, and QA prescriptions are not universal gates |
+| Kimi agent-fleet research corpus | Model-assisted secondary research with explicit confidence caveats | Measurement-first sequencing, frozen harness variables, local noise/uncertainty, pre-registered comparisons, and separate infrastructure-error accounting | Secondary synthesis with heterogeneous underlying evidence; quantitative claims require primary-source verification and local replication |
 
 ### 2.4 Limitations
 
@@ -181,6 +232,18 @@ No source is universal scientific proof. The selected synthesis is:
 - ISO/IEC 29110 is copyrighted and most detail is paywalled. Ranex uses its
   official scope and an independently authored structure; an authorized copy is
   required before claiming detailed clause coverage.
+- ISO/IEC/IEEE 12207:2026 superseded the 2017 edition on 2026-04-29. SWEBOK
+  V4.0a predates that publication and maps to the then-current 2017 edition, so
+  its clause crosswalk is historical until explicitly verified and remapped
+  against the 2026 standard.
+- The local book and SWEBOK Markdown files remain third-party copyrighted
+  reference material. Ranex cites and paraphrases them; it does not claim
+  ownership, redistribution permission, or standards conformance from their
+  presence in the workspace.
+- The Kimi chapters are a secondary, model-assisted synthesis. Their experiment
+  patterns inform the Ranex design, but their reported effect sizes and
+  thresholds are not imported as Ranex facts without primary verification and
+  local calibration.
 - Evidence strength varies. Consensus standards, government/practitioner
   guidance, observational association, case evidence, and Ranex owner decisions
   are deliberately not described as interchangeable or “proven.”
@@ -356,11 +419,14 @@ operating model is implemented:
    does not reverse data/schema or external effects.
 6. Compatibility needs `SUPPORTED -> DEPRECATED -> READ_ONLY -> REMOVED` for
    the legacy CLI, home/config/session/tool names, plugins and providers.
-7. Plugins, providers, MCP/catalog entries and model routes need
-   `DISCOVERED -> QUARANTINED -> REVIEWED -> QUALIFIED -> PINNED -> ENABLED ->
-   SUSPENDED | RETIRED`. Mutable Git installs/updates, optional manifests,
-   last-writer-wins provider overrides, environment-presence auto-selection and
-   import-time authority registration are forbidden in target mode.
+7. Extensions/plugins, first-party modules, and provider/model routes require
+   separate owner-specific state machines: `ExtensionStatus`, `ModuleStatus`,
+   and `RouteStatus`. Qualification emits evidence but cannot change any of
+   those states. MCP tools are cataloged modules or external extensions rather
+   than a fourth generic lifecycle. Mutable Git installs/updates, optional
+   manifests, last-writer-wins provider overrides, environment-presence
+   auto-selection and import-time authority registration are forbidden in
+   target mode.
 8. Operational cutover needs
    `BOOTSTRAP -> LEGACY_BASELINE -> TRANSITIONAL_DUAL_RUN -> TARGET_SHADOW ->
    TARGET_LIMITED -> TARGET_DEFAULT -> LEGACY_FROZEN -> LEGACY_REMOVED`, with
@@ -416,6 +482,10 @@ sprint boundary.
 | Operating | Is it healthy and supported? | Telemetry, SLO/support/security evidence | Service owner |
 | Outcome review | Did it help, and what changed? | Results vs hypothesis; keep/change/remove decision | Product owner |
 | Closed | Is the evidence and follow-up complete? | Reconciled record and owned follow-ups | Work owner |
+
+The table is the thirteen-state normal path. `BLOCKED`, `CANCELLED`, and
+`ROLLED_BACK` are also canonical `WorkItemStatus` values with explicit entry,
+exit, authority, evidence, and re-entry rules.
 
 Maintenance, incident, release/update, compatibility, extension, operational
 mode, and retirement statuses belong to linked lifecycles with their own
@@ -506,12 +576,14 @@ flowchart TB
     PRE_RELEASE_RULE["ROUTING RULE — NOT A STATE<br/>Any pre-release WorkItemStatus"]
     CANCELLED["CANCELLED<br/>Reason and durable history"]
     ROLLED_BACK["ROLLED_BACK<br/>Restore and reconcile"]
-    INCIDENT["IncidentStatus: INCIDENT<br/>Command, mitigate, communicate"]
-    RECOVERY_VERIFIED["IncidentStatus: RECOVERY_VERIFIED<br/>Health and state proven"]
-    IMPROVEMENT["IMPROVEMENT_INTAKE<br/>Owned corrective work"]
+    I_DETECTED["IncidentStatus: DETECTED"] --> I_ACK["ACKNOWLEDGED"]
+    I_ACK --> I_MITIGATING["MITIGATING"] --> I_MITIGATED["MITIGATED"]
+    I_MITIGATED --> I_RECOVERY["RECOVERY_VERIFIED"] --> I_REVIEWED["REVIEWED"]
+    I_REVIEWED --> I_ACTIONS["ACTIONS_TRACKED"] --> I_CLOSED["CLOSED"]
+    IMPROVEMENT["Typed event: IMPROVEMENT_WORK_REQUESTED<br/>Creates a linked WorkItem"]
     ACTIVE_RULE -->|dependency, conflict, or evidence gap| BLOCKED --> RESUME_RULE
     PRE_RELEASE_RULE -->|authorized cancellation| CANCELLED
-    INCIDENT --> RECOVERY_VERIFIED --> IMPROVEMENT
+    I_ACTIONS -.-> IMPROVEMENT
   end
 
   TRIAGE -->|not valuable or not ours| CANCELLED
@@ -525,20 +597,19 @@ flowchart TB
   VERIFY -->|requirement fails| DEFINITION
   RELEASE_READY -->|not releasable| VERIFY
   RELEASING -->|health threshold breached| ROLLED_BACK
-  ROLLED_BACK --> RECOVERY_VERIFIED
-  ROLLED_BACK -->|user impact| INCIDENT
+  ROLLED_BACK -.->|if an incident is opened| I_DETECTED
   ROLLED_BACK -->|safe prior state verified; new attempt linked| TRIAGE
-  OPERATING -->|material impact| INCIDENT
-  RETIRING -->|retirement fails| RECOVERY_VERIFIED
-  RECOVERY_VERIFIED --> OPERATING
-  IMPROVEMENT --> TRIAGE
+  OPERATING -.->|material impact| I_DETECTED
+  RETIRING -.->|retirement impact| I_DETECTED
+  I_RECOVERY -.->|service-health evidence| OPERATING
+  IMPROVEMENT -.-> FUNNEL
   OUTCOME -->|hypothesis falsified| DISCOVERY
   OUTCOME -->|contract must change| DEFINITION
 
   %% ---------- Linked capability lifecycles ----------
   subgraph SERVICE_LIFECYCLES["Linked service lifecycles — separate status namespaces"]
     direction LR
-    MAINT_TRIGGER["CapabilityStatus: MAINTENANCE TRIGGER<br/>defect · dependency · vulnerability · debt"]
+    MAINT_TRIGGER["Typed event: MAINTENANCE_WORK_REQUESTED<br/>defect · dependency · vulnerability · debt"]
     MAINT_WORK["LINKED MAINTENANCE WORK<br/>normal WorkItemStatus lifecycle"]
     RETIRE_READY["CapabilityStatus: RETIRE_READY<br/>consumer, data, access, and rollback plan"]
     RETIRING["CapabilityStatus: RETIRING<br/>migrate, revoke, archive, tear down"]
@@ -550,7 +621,7 @@ flowchart TB
   OPERATING -.-> MAINT_TRIGGER
   MAINT_WORK -.-> TRIAGE
   OUTCOME -.->|remove decision| RETIRE_READY
-  RETIRING -->|retirement failure| RECOVERY_VERIFIED
+  RETIRING -.->|retirement failure| I_DETECTED
   RETIRED -.-> CLOSED
 
   %% ---------- Risk and decision authority ----------
@@ -585,6 +656,8 @@ flowchart TB
     SUPPLIER["Suppliers<br/>Adopt · monitor · accept · replace/exit"]
     DEBT["Debt and tailoring<br/>Owner · trigger · expiry · controls"]
     MEASURE["Measurement<br/>Outcome · flow · stability · quality"]
+    SCORE["Capability profile<br/>Result/level · effectiveness · reconciled coverage · rule-derived confidence<br/>every vital tuple bound; lowest applicable level"]
+    PRIORITY["Improvement selection<br/>P0 → P1 → P2 → P3; first match wins<br/>hypothesis · guardrail · qualified harness/noise rule"]
     ASSURE["Process assurance<br/>Competence · audit · improve"]
   end
 
@@ -599,6 +672,8 @@ flowchart TB
   SUPPLIER -.-> MAINT_WORK
   DEBT -.-> TRIAGE
   MEASURE -.-> OUTCOME
+  MEASURE --> SCORE --> PRIORITY --> ASSURE
+  PRIORITY -.-> FUNNEL
   ASSURE -.-> CLOSED
 
   %% ---------- Durable evidence chain ----------
@@ -648,11 +723,26 @@ flowchart TB
       DISPOSITION -.-> SUPPORTED
     end
 
-    subgraph EXTENSIONS["Plugins, providers, MCP, and routes"]
-      direction LR
-      X_DISC["DISCOVERED"] --> X_QUAR["QUARANTINED"] --> X_REVIEW["REVIEWED"]
-      X_REVIEW --> X_QUAL["QUALIFIED"] --> X_PIN["PINNED"] --> X_ENABLE["ENABLED"]
-      X_ENABLE --> X_SUSPEND["SUSPENDED / RETIRED"]
+    subgraph EXTENSIONS["Extensions, modules, and routes — separate owners and status namespaces"]
+      direction TB
+      subgraph EXTENSION_STATES["ExtensionStatus"]
+        direction LR
+        X_DISC["DISCOVERED"] --> X_QUAR["QUARANTINED"] --> X_REVIEW["REVIEWED"]
+        X_REVIEW --> X_QUAL["QUALIFIED"] --> X_PIN["PINNED"] --> X_ENABLE["ENABLED"]
+        X_ENABLE --> X_SUSPEND["SUSPENDED / RETIRED"]
+      end
+      subgraph MODULE_STATES["ModuleStatus"]
+        direction LR
+        M_PACK["PACKAGED"] --> M_DISABLED["DISABLED"] --> M_QUAL["QUALIFIED"]
+        M_QUAL --> M_CANARY["CANARY"] --> M_ACTIVE["ACTIVE"]
+        M_ACTIVE --> M_RESTRICT["RESTRICTED / QUARANTINED / RETIRED"]
+      end
+      subgraph ROUTE_STATES["RouteStatus"]
+        direction LR
+        R_UNCONFIG["UNCONFIGURED"] --> R_AUTH["AUTHENTICATED"] --> R_SMOKE["SMOKE_TESTED"]
+        R_SMOKE --> R_PROBATION["PROBATION"] --> R_APPROVED["APPROVED"]
+        R_APPROVED --> R_RESTRICT["RESTRICTED / SUSPENDED / RETIRED"]
+      end
     end
 
     subgraph CUTOVER["One-writer operational cutover"]
@@ -682,6 +772,8 @@ flowchart TB
   U_CAND -.-> DESIGN
   U_RELEASE -.-> RELEASE_READY
   X_ENABLE -.-> SUPPLIER
+  M_ACTIVE -.-> SUPPLIER
+  R_APPROVED -.-> SUPPLIER
   C_DEFAULT -.-> OPERATING
 
   %% ---------- Safe self-development ----------
@@ -724,10 +816,10 @@ flowchart TB
   class FUNNEL,TRIAGE,DISCOVERY,DEFINITION,DESIGN,READY,BUILD,OPERATING,OUTCOME state;
   class VERIFY,RELEASE_READY,RELEASING,CHECKERS,OWNERS,PERMIT gate;
   class RISK,BLOCKED,ROLLED_BACK risk;
-  class INCIDENT,RECOVERY_VERIFIED,IMPROVEMENT,MAINT_TRIGGER,MAINT_WORK,RETIRE_READY,RETIRING,RETIRED linked;
+  class I_DETECTED,I_ACK,I_MITIGATING,I_MITIGATED,I_RECOVERY,I_REVIEWED,I_ACTIONS,I_CLOSED,IMPROVEMENT,MAINT_TRIGGER,MAINT_WORK,RETIRE_READY,RETIRING,RETIRED linked;
   class E_SIGNAL,E_OUTCOME,E_REQ,E_DESIGN,E_SUBJECT,E_PROOF,E_RELEASE,E_OPERATION,E_LEARNING evidence;
-  class U_OBS,U_FETCH,U_PIN,U_CLASS,U_DISP,U_PORT,U_CAND,U_VERIFY,U_RELEASE,U_BASE,DISPOSITION,SUPPORTED,DEPRECATED,READ_ONLY,X_DISC,X_QUAR,X_REVIEW,X_QUAL,X_PIN,X_ENABLE,C_BOOT,C_BASE,C_DUAL,C_SHADOW,C_LIMITED,C_DEFAULT,C_FROZEN,UP_CHECK,UP_DOWNLOAD,UP_VERIFIED,UP_SNAPSHOT,UP_STAGE,UP_MIGRATE,UP_ACTIVATE,UP_HEALTH,UP_COMPLETE,UP_ROLLBACK,UP_RECOVERY fork;
-  class CLOSED,CANCELLED,U_REJECT,U_DEFER,REMOVED,X_SUSPEND,C_REMOVED terminal;
+  class U_OBS,U_FETCH,U_PIN,U_CLASS,U_DISP,U_PORT,U_CAND,U_VERIFY,U_RELEASE,U_BASE,DISPOSITION,SUPPORTED,DEPRECATED,READ_ONLY,X_DISC,X_QUAR,X_REVIEW,X_QUAL,X_PIN,X_ENABLE,M_PACK,M_DISABLED,M_QUAL,M_CANARY,M_ACTIVE,R_UNCONFIG,R_AUTH,R_SMOKE,R_PROBATION,R_APPROVED,C_BOOT,C_BASE,C_DUAL,C_SHADOW,C_LIMITED,C_DEFAULT,C_FROZEN,UP_CHECK,UP_DOWNLOAD,UP_VERIFIED,UP_SNAPSHOT,UP_STAGE,UP_MIGRATE,UP_ACTIVATE,UP_HEALTH,UP_COMPLETE,UP_ROLLBACK,UP_RECOVERY fork;
+  class CLOSED,CANCELLED,U_REJECT,U_DEFER,REMOVED,X_SUSPEND,M_RESTRICT,R_RESTRICT,C_REMOVED terminal;
 ```
 
 ### 4.5 Full-spec ASCII diagram
@@ -773,23 +865,27 @@ The same model in a terminal-safe form:
                                                             | own health|  | restore +   |
                                                             +-----------+  | reconcile   |
                                                                            +-------------+
-                                                                  |             |
-                                                                  v             v
-                                                           +----------------+  +------------------+
-                                                           | OUTCOME_REVIEW |  | RECOVERY_VERIFIED|
-                                                           | did it help?   |  +------------------+
-                                                           +----------------+          |
-                                                              |        |               |
-                                                      goal met|        |false          |
-                                                              v        v               |
-                                                         +--------+  DISCOVERY <--------+
+                                                                  |
+                                                                  v
+                                                           +----------------+
+                                                           | OUTCOME_REVIEW |
+                                                           | did it help?   |
+                                                           +----------------+
+                                                              |        |
+                                                      goal met|        |false
+                                                              v        v
+                                                         +--------+  DISCOVERY
                                                          | CLOSED |
                                                          +--------+
 
- INCIDENT LOOP
+   ROLLED_BACK --safe prior state verified; linked new attempt--> TRIAGE
+   ROLLED_BACK --if user impact--> IncidentStatus DETECTED
+
+ INCIDENT LOOP (`IncidentStatus`, not `WorkItemStatus`)
    OPERATING / ROLLED_BACK / FAILED RETIREMENT
-          -> INCIDENT -> MITIGATE -> RECOVERY_VERIFIED
-          -> IMPROVEMENT_INTAKE -> TRIAGE
+          -> DETECTED -> ACKNOWLEDGED -> MITIGATING -> MITIGATED
+          -> RECOVERY_VERIFIED -> REVIEWED -> ACTIONS_TRACKED -> CLOSED
+          -> IMPROVEMENT_WORK_REQUESTED -> new linked work item at FUNNEL
 
  CANONICAL RE-ENTRY
    ROLLED_BACK --safe prior state verified; linked new attempt--> TRIAGE
@@ -816,7 +912,10 @@ The same model in a terminal-safe form:
  CONTROLS TRAVEL WITH THE WORK
    [PM: plan/execute/control/close] [need <-> requirement <-> design <-> code <-> proof]
    [configuration baselines/audits] [verification + validation] [NIST SSDF security]
-   [supplier/dependency governance] [debt + tailoring] [metrics] [process assurance]
+   [supplier/dependency governance] [debt + tailoring] [metrics]
+   [capability profile: result/level + effectiveness + reconciled coverage + confidence]
+   [every vital tuple bound; SCORED only when all applicable score; lowest level wins]
+   [P0 -> P1 -> P2 -> P3 first-match priority] [qualified harness/noise rule] [assurance]
 
  DURABLE EVIDENCE CHAIN
    signal -> outcome -> requirement -> design/risk -> task/exact commit
@@ -833,9 +932,19 @@ The same model in a terminal-safe form:
      RETAIN | WRAP | EXTRACT | REIMPLEMENT | REMOVE | QUARANTINE | DEFER
      SUPPORTED -> DEPRECATED -> READ ONLY -> REMOVED
 
-   plugins/providers/MCP/routes:
+   external extensions/plugins (`ExtensionStatus`):
      DISCOVERED -> QUARANTINED -> REVIEWED -> QUALIFIED
        -> PINNED -> ENABLED -> SUSPENDED / RETIRED
+
+   first-party modules (`ModuleStatus`):
+     PACKAGED -> DISABLED -> QUALIFIED -> CANARY -> ACTIVE
+       -> RESTRICTED / QUARANTINED / RETIRED
+
+   provider/model routes (`RouteStatus`):
+     UNCONFIGURED -> AUTHENTICATED -> SMOKE_TESTED -> PROBATION -> APPROVED
+       -> RESTRICTED / SUSPENDED / RETIRED
+
+   MCP tools use the applicable module or extension lifecycle.
 
    one-writer cutover:
      BOOTSTRAP -> LEGACY BASELINE -> TRANSITIONAL DUAL RUN -> TARGET SHADOW
@@ -937,7 +1046,7 @@ Cadence supplies regular decisions without forcing work into artificial batches.
 The process needs decisions, not mandatory meetings. An asynchronous,
 schema-valid record may satisfy a cadence.
 
-## 8. Metrics and guardrails
+## 8. Metrics, capability scoring, and improvement selection
 
 Use a balanced dashboard:
 
@@ -962,6 +1071,288 @@ Guardrails:
 - investigate trends and distributions rather than rewarding a target number;
 - include unsuccessful work and rollbacks; and
 - review whether a metric is changing behavior in harmful ways.
+
+Every decision-bearing measure needs a versioned operational definition:
+`goal → question → measure → threshold/tolerance → decision → owner`. Record
+the construct, formula, entity and unit, source event, window, population,
+exclusions, refresh cadence, uncertainty/data quality, paired guardrail, and
+the action the result can trigger. If no decision changes, remove the metric.
+This follows SWEBOK’s warning that vague measurement operations produce
+ambiguous results and that measures should serve decisions. The exact local
+audit locators are `swebok-v4.md:14095` and `swebok-v4.md:14263`; the source
+identity and limitations are retained in the
+[foundational-reference reconciliation](../architecture/reviews/2026-07-27-foundational-reference-corpus-reconciliation.md).
+
+### 8.1 Keep gates, capability, and health separate
+
+Ranex needs scoring for diagnosis and improvement selection, but not a single
+number that pretends every control can compensate for every other control. A
+high flow score cannot offset wrong-subject evidence, maker self-approval, an
+expired exception, or a missing release permit.
+
+Three decision records therefore remain separate:
+
+| Record | Values | Decision served | It must never do |
+|---|---|---|---|
+| Work-item gate | `PASS`, `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; an exception is a separate human decision | Whether this exact subject may make this exact transition | Borrow confidence from historical process scores |
+| Capability assessment | `result`: `NOT_ASSESSED`, `UNKNOWN`, `NOT_APPLICABLE`, or `SCORED`; only `SCORED` has level `0`–`4` | Where the value stream needs stronger institutional capability | Authorize work, average away a mandatory failure, or rank people |
+| Health indicator | Its real unit, distribution, control limit, trend, and uncertainty | Whether flow, quality, stability, security, or outcome is healthy | Turn good luck into proof that a control exists |
+
+The assessment unit is one named capability or normative `SDLC-*` control for
+one value stream or service, policy/rubric version, review window, work class,
+and set of risk lanes. Pooling incomparable services or lanes can reverse the
+meaning of a result.
+The rules below define Ranex rubric `SDLC-MEA-002`, version `3.0.0`.
+
+Each assessed capability reports four fields side by side:
+
+| Field | Allowed result | Meaning |
+|---|---|---|
+| Capability rating | `result`: `NOT_ASSESSED`, `UNKNOWN`, `NOT_APPLICABLE`, or `SCORED`; if `SCORED`, ordinal level `0`–`4` | Whether a level can be awarded and how consistently the capability is defined, operated, controlled, and improved |
+| Effectiveness | `UNKNOWN`, `REGRESSING`, `MIXED`, or `MEETS_TARGET` | Whether locally defined outcomes and guardrails are moving as intended |
+| Coverage | Included/eligible count and percentage from one immutable population snapshot, jointly stratified by work class and risk lane | How much of the applicable population the evidence actually represents |
+| Confidence | `LOW`, `MEDIUM`, or `HIGH`, with rationale | Currency, authenticity, sample adequacy, representativeness, and data quality |
+
+These fields are not averaged. When result is not `SCORED`, level is absent.
+`NOT_ASSESSED` means no review has occurred; `UNKNOWN` means a review found
+insufficient, ambiguous, or conflicting evidence. Neither is zero, neither is a
+pass, and both require an instrumentation or sampling decision.
+`NOT_APPLICABLE` requires a rule from the versioned applicability registry, an
+immutable eligible-population query, reason, and accountable approval. It is
+invalid when eligible work or a qualifying trigger exists; profiles publish
+N/A counts/rates and independent assurance samples them.
+
+Totals are not free-entry dashboard fields. In every joint work-class/risk-lane
+stratum and overall, `eligible = included + excluded`; the strata must sum to
+the total, and itemized exclusions must sum to the excluded count. Zero-count
+strata remain visible. This makes population deletion detectable.
+
+Confidence is not a self-selected adjective. `HIGH` requires every
+predeclared adequacy check—sample, duration, representativeness, authenticity,
+freshness, missingness, and data quality—to pass plus independent assurance
+sign-off. Without an approved adequacy rule, confidence is at most `MEDIUM`; a
+material evidence/population gap forces `LOW`. An unresolved material gap also
+forces capability result `UNKNOWN` with no level; it cannot coexist with
+`SCORED`.
+
+### 8.2 Evidence-anchored capability levels
+
+A numeric level exists only for a `SCORED` result and is awarded only when its
+evidence anchor and every lower anchor are satisfied. Documentation alone
+cannot establish operation or effectiveness.
+The labels remain primary; the number exists to support sorting and trend
+review, not a maturity claim or external appraisal. The level is an **ordinal
+label**: Ranex may compare, sort, or count labels, but must not add, average,
+weight, multiply, or report arithmetic distance between them. SWEBOK explicitly
+identifies capability/maturity levels as ordinal and warns that numeric labels
+do not support arithmetic. The exact local audit locator is
+`swebok-v4.md:14133`; provenance and limitations are in the
+[foundational-reference reconciliation](../architecture/reviews/2026-07-27-foundational-reference-corpus-reconciliation.md).
+
+| Level | Label | Evidence anchor | Appropriate next move |
+|---:|---|---|---|
+| `0` | `ABSENT` | Assessment proves that the required owner, contract, behavior, or trustworthy evidence is absent or unsafe | Contain active risk; name an owner; define the minimum contract, event, and rejection route |
+| `1` | `DEFINED` | Versioned purpose, owner, scope, entry/exit, evidence, authority, failure route, tailoring, exception, and metric definitions exist | Run a representative normal tracer and a rejection, invalidation, or backward-transition tracer |
+| `2` | `OPERATED` | Representative real work follows the control; durable exact-subject evidence includes successes and at least one rejection, invalidation, exception, or backward path actually traversed; deviations are visible | Enforce deterministic rules, evidence freshness, invalidation, role separation, expiry, and assurance sampling |
+| `3` | `CONTROLLED` | The control operates across declared lanes/windows; a qualified measurement system exposes coverage, distributions, misses, false passes, exceptions, and triggered responses | Attack the dominant constraint with one bounded experiment instead of adding general ceremony |
+| `4` | `IMPROVING` | A prospectively frozen experiment shows sustained benefit above declared measurement uncertainty/local noise over more than one review window without degrading paired guardrails; infrastructure faults are separated from subject failures and independent review confirms the result | Standardize or scale the change, simplify redundant control, and continue drift monitoring |
+
+A correctly rejected candidate is evidence that a control operated; it is not a
+process failure. Conversely, a favorable outcome does not prove a missing
+control. Non-tailorable invariant breaches remain red findings outside the
+score and trigger immediate containment.
+
+Assessors seek three evidence classes: **enacted practice**, **durable
+artifact/provenance**, and **outcome/guardrail trend**. Policy-only evidence
+cannot exceed level `1`; a favorable outcome without enacted control cannot
+raise a level. Failed required tests and disabled safeguards remain gate
+findings, never negative points that better style can offset. Coverage locates
+untested modules, branches, boundaries, and failure paths; it is not a standalone
+quality or release verdict. These translations use *Clean Code*’s testability,
+incremental-refactoring, and coverage heuristics
+(`clean-code.md:4524` and `clean-code.md:7413` in the exact local subject) while
+retaining that book’s own caveat that a heuristic list is incomplete
+(`clean-code.md:7457`). The public-safe evidence record is the
+[foundational-reference reconciliation](../architecture/reviews/2026-07-27-foundational-reference-corpus-reconciliation.md).
+
+### 8.3 What Ranex assesses
+
+The first assessment profile uses ten capability areas. Normative profile
+`VITAL-SDLC-001` is a versioned set of exact
+`(domain, control, applicability rule)` tuples—there is no assessor-selected
+`AND`/`OR` interpretation. A domain projection must bind one immutable
+per-control assessment ID, revision, and digest for every tuple at the same
+scope and review window. A missing, extra, duplicate, remapped, stale, or
+cross-scope row invalidates the projection.
+
+An applicable member is a registered tuple whose applicability resolved to
+`APPLICABLE`; a valid N/A tuple remains visible but does not enter the floor.
+For a valid projection, unresolved applicability is `UNKNOWN`; all registered
+controls validly N/A is `NOT_APPLICABLE`; all applicable ratings
+`NOT_ASSESSED` is `NOT_ASSESSED`; and, once any applicable-member assessment
+begins, one applicable `UNKNOWN`/`NOT_ASSESSED` member makes the domain
+`UNKNOWN`. A domain
+is `SCORED` if and only if every applicable member is scored; its level is the
+lowest supported member level—never an average. The human governor owns and
+versions the registry, so an assessment author cannot omit a weak control.
+Ranex publishes the complete projection,
+weakest capabilities, effectiveness, coverage, and confidence—not an overall
+average. The exact tuples and derivation rules are in
+[`SDLC-MEA-002`](../architecture/SDLC_CONTROL_CATALOG.md).
+
+| Capability area | States/lifecycles | Gauge with paired signals | First practical improvement |
+|---|---|---|---|
+| Intake and triage | `FUNNEL`, `TRIAGE` | Intake/ownership age and source/owner/lane coverage ↔ orphan work, late escalation, priority reversal | One intake contract, duty owner, service map, decision rules, and reason codes |
+| Discovery and definition | `DISCOVERY`, `DEFINITION` | Baseline/hypothesis/testability coverage, risk-retirement and first end-to-end feedback time ↔ late invalidation, ambiguity reopens, outcome-less work | User evidence, falsifier, acceptance examples, non-goals, quality attributes, and one production-shaped tracer slice |
+| Design and readiness | `DESIGN`, `READY` | Alternatives/risk/recovery/dependency coverage and decision age ↔ late design churn, readiness escapes, decommitment | Thin design record, required specialist review, dependency owners, smaller slices, and WIP policy |
+| Build and flow | `IN_PROGRESS`, `BLOCKED` | WIP, batch size, one-command build/test reproducibility, CI feedback, blocker and visible-debt age ↔ cycle-time tail, build-origin findings, repeat blockers, change blast radius | Small vertical batches, fast reproducible CI, typed blockers, owner, escalation rule, and small test-backed cleanup in touched hotspots |
+| Verification and validation | `VERIFICATION` | Exact-subject/freshness/independence, boundary/state/regression and test-operability coverage; wait and flake ↔ escaped defects, reopens and leakage | Risk-based V&V matrix, independent authority, immutable evidence binding, fault challenge, and a permanent regression check for each confirmed escape |
+| Release and recovery | `RELEASE_READY`, `RELEASING`, `ROLLED_BACK` | Reproducibility/permit/rollback coverage ↔ change failure, deployment rework, rollback and recovery distributions | Immutable release bundle, automated preflight, progressive exposure, health stop rules, and rehearsed rollback |
+| Operation, incident, and maintenance | `OPERATING`; incident and maintenance lifecycles | Structured telemetry/SLI/runbook/restore/support coverage and fault-isolation time ↔ SLO/error-budget result, recurrence, vulnerability/dependency/action age | Service ownership, machine-readable diagnostic evidence, restore drill, incident playbooks, and explicit maintenance capacity |
+| Outcome, closure, and retirement | `OUTCOME_REVIEW`, `CLOSED`, `CANCELLED`; retirement lifecycle | Outcome/review/closure/inventory coverage ↔ task success, adoption/value, overdue follow-ups, residual data/access/traffic | Baseline and review date before release; keep/change/remove decision; automated reconciliation and retirement proof |
+| Evidence, measurement, authority, and exceptions | Cross-lifecycle controls | Trace/freshness/invalidation/role/expiry coverage, measurement-harness qualification and gate wait ↔ false pass, stale proof, overdue exception, audit finding, unstable query | Canonical events, qualified measurement specs/harness, fail-closed gates, separation of duties, expiry enforcement, and independent raw-event sampling |
+| Hermes fork and AI-worker health | Upstream sync, compatibility, update, cutover, worker-fleet controls | Pin/classify/disposition/compatibility coverage, harness repeatability and candidate age ↔ upstream lag, rejected/reworked ports, sync regression, infrastructure-error rate, and divergence | Pinned cadence, selective-port decision record, compatibility matrix, calibrated measurement harness, shadow verification, one-writer cutover, and recovery proof |
+
+Adverse work is not represented as one misleading “class” list. Versioned
+typed predicates separately query failed control/execution outcomes,
+`BLOCKED`/`CANCELLED`/`ROLLED_BACK` status history, reopened attempt history,
+and the `EMERGENCY` risk lane. Every predicate records an immutable query
+digest and eligible/included/excluded counts. A `SCORED` result is invalid
+unless each applicable adverse category includes every eligible subject with
+zero exclusions. Emergency work is assessed against the emergency profile:
+containment, authority, recovery, reconciliation deadline, retrospective,
+action completion, and recurrence. It is not mixed into normal-flow speed
+rankings.
+
+The production-shaped tracer, ongoing small improvement, repeatable automation,
+fault-challenged tests, and escaped-defect regression loop are grounded in
+*The Pragmatic Programmer*. Exact local audit locators are
+`the-pragmatic-programmer.md:321`, `:1804`, `:7121`, and `:7330`; their
+identity and use are recorded in the
+[foundational-reference reconciliation](../architecture/reviews/2026-07-27-foundational-reference-corpus-reconciliation.md).
+Those practices are diagnostic inputs and improvement moves, not source-defined
+Ranex ratings.
+
+### 8.4 Decide what to improve first
+
+The lowest numeric level is not automatically the first improvement. Ranex
+assigns a non-compensating priority tier:
+
+| Priority | Trigger | Required response |
+|---|---|---|
+| `P0 — CONTROL_NOW` | Active harm or a non-tailorable invariant/truth/authority/evidence/recovery breach—for example a forged/wrong-subject pass, unauthorized release, maker self-approval, forbidden effect, expired authority, or unverified critical recovery | Stop or contain the effect, restore a safe state and authority, preserve evidence, and open governed corrective work |
+| `P1 — IMPROVE_NEXT` | Result `NOT_ASSESSED`/`UNKNOWN`; level `0`/`1`; overdue critical obligation; repeated escape; high-exposure downstream blocking; or a `LOW`-confidence instrumentation need | Assign an accountable owner and begin bounded corrective or instrumentation work now |
+| `P2 — IMPROVE_DELIBERATELY` | Absent P0/P1: level `2`; `UNKNOWN`/`REGRESSING`/`MIXED` effectiveness; material queueing/rework/instability/outcome harm; or another unproven P3 condition | Run a measured improvement experiment in the earliest causal stage |
+| `P3 — SUSTAIN` | Absent P0–P2: level `3`/`4`, `MEETS_TARGET`, passing coverage/adverse-population reconciliation, healthy guardrails, no adverse trend, and confidence above `LOW` | Monitor, simplify, share learning, and prevent regression |
+
+Evaluate `P0 -> P1 -> P2 -> P3`; the first matching tier wins. A valid all-N/A
+assessment has no tier, and a domain displays its highest-precedence member
+tier. Within a tier, sort by consequence, exposure, recurrence, downstream
+blocking, then capability gap. Confidence never lowers risk: `LOW` creates a
+P1 instrumentation/sampling action. A convenience win cannot outrank a safety
+or authority failure.
+
+An improvement is a governed work item with:
+
+- the earliest causal stage and linked control;
+- the observed gap and evidence;
+- a causal hypothesis;
+- one small process or engineering change;
+- a versioned metric specification, fixed comparator, primary measure, and
+  quality/stability/outcome counter-metrics;
+- a prospectively frozen decision rule, owner, review window, expected effect,
+  and minimum detectable/meaningful effect;
+- the harness/configuration version, declared uncertainty or local noise floor,
+  and a separate infrastructure-error ledger where execution is stochastic;
+- stop/revert criteria; and
+- a retain, change, or revert decision after effectiveness review.
+
+Creating an action item, adding a template, or raising a score is not proof of
+improvement. A result that the measurement design cannot resolve, or that does
+not clear its declared uncertainty/noise floor, remains inconclusive and cannot
+raise the capability level. Local noise is never silently assumed to be zero:
+a zero floor needs method evidence and independent claim-specific approval; a
+deterministic measure instead needs the exact approved
+uncertainty-not-applicable rule and approval. The metric specification,
+analysis, noise treatment, and qualified harness ID/version/configuration are
+bound by one immutable measurement-design digest; an experiment cannot restate
+them differently in an unbound improvement record. This
+measurement-first rule is adopted from the
+targeted Kimi chapters as a hypothesis to calibrate locally, not as a universal
+effect-size claim. Exact local audit locators are
+`agent_fleet_control_sec03.md:93` (§3.4) and
+`agent_fleet_control_sec13.md:3`/`:57` (§13.1–13.2); the public-safe evidence
+record is the
+[Kimi reconciliation](../architecture/reviews/2026-07-27-kimi-agent-fleet-research-reconciliation.md).
+
+```mermaid
+flowchart LR
+  SCOPE["Scope capability, service, lanes, and window"]
+  COLLECT["Bind one population snapshot<br/>reconcile joint strata + typed adverse queries"]
+  RATE["Report result + ordinal level + effectiveness + coverage + confidence"]
+  FLOOR["Validate every vital tuple<br/>derive lowest applicable control level"]
+  PRIORITIZE["Evaluate P0 → P1 → P2 → P3<br/>first match wins"]
+  EXPERIMENT["Bind frozen measurement design<br/>run one change with guardrails"]
+  RECHECK["Recheck after the declared evidence window"]
+  KEEP["Retain, scale, simplify, change, or revert"]
+
+  SCOPE --> COLLECT --> RATE --> FLOOR --> PRIORITIZE --> EXPERIMENT --> RECHECK --> KEEP
+  KEEP --> COLLECT
+```
+
+```text
+SCOPE -> SNAPSHOT + RECONCILE POPULATION -> RATE FOUR FIELDS -> VALIDATE EVERY VITAL TUPLE
+   ^                                                                       |
+   |                                                                       v
+   +-- new raw evidence <- RECHECK <- PRIORITIZE (P0 -> P1 -> P2 -> P3)
+                                      |
+                                      v
+                                  BOUNDED EXPERIMENT
+                                  hypothesis + owner
+                                  immutable measurement-design digest
+                                  comparator + decision rule + harness
+                                  guardrails + noise approval + revert rule
+```
+
+### 8.5 Minimum auditable assessment record
+
+Every assessment records:
+
+- assessment ID/revision, rubric/policy version, assessor, approver,
+  independence and conflicts;
+- capability/control IDs, service/value stream, work class, risk lanes, and
+  review window;
+- exact vital-profile tuples and applicability-registry versions; an immutable
+  same-scope/same-window assessment ID/revision/digest for every domain member;
+- one immutable population snapshot; reconciled overall and joint
+  work-class/risk-lane eligible/included/excluded counts; N/A rule/query/
+  approval; typed adverse-category query digests and counts; exclusion reasons
+  and sampling method; applicability and coverage point to this same snapshot;
+- immutable event-query/evidence references and digest;
+- level criterion evidence, effectiveness measures/baseline/comparator,
+  coverage, confidence-adequacy tests and independent `HIGH` sign-off,
+  uncertainty, and trend;
+- one complete gap register giving every known evidence, applicability,
+  population, coverage, and measurement gap a materiality and resolution
+  disposition;
+- operational metric specification and decision served; prospective decision
+  rule; immutable measurement-design digest; harness ID/version/configuration
+  digest and qualification; local-noise method; zero-floor evidence plus
+  independent claim approval, or exact uncertainty-N/A rule plus approval;
+  analysis method; and infrastructure-error counts kept separate from subject
+  failures;
+- nonconformities, invariant breaches, exceptions, and decisions;
+- the exact priority-registry trigger set with no omissions/duplicates, decisive
+  trigger, derived tier, and required instrumentation reference; linked
+  improvement item, owner, due date, hypothesis, success/guardrail/failure
+  criteria, and review date; and
+- approval time, prior assessment, superseded record, and correction reason.
+
+Metric definitions, populations, exclusions and thresholds are frozen for the
+declared window. Versioned corrections remain visible. Independent assurance
+samples raw events rather than trusting dashboard summaries and looks for lane
+downgrades, hidden incidents, late timestamps, rising exclusions, artificial
+ticket splits, exception camouflage, and suspicious threshold clustering.
 
 ## 9. Alternatives rejected
 
@@ -1069,9 +1460,41 @@ The model is ready to become Ranex’s executable process only when:
 8. an upstream candidate cannot bypass provenance, architecture, compatibility,
    and release gates;
 9. a model cannot approve its own output, lower risk, issue a permit, or close
-   missing evidence; and
+   missing evidence;
 10. the dashboard can derive flow and stability measures from event evidence
-    without manual storytelling.
+    without manual storytelling;
+11. a capability assessment reports rating result/level, effectiveness,
+    coverage, and confidence separately and never converts
+    `NOT_ASSESSED`/`UNKNOWN` to pass;
+12. a domain projection rejects a missing/extra/duplicate/remapped or
+    cross-scope vital tuple, and otherwise derives the lowest applicable level;
+13. priority evaluates P0→P1→P2→P3 with first-match precedence, so an active
+    P0 cannot be hidden by a level-4 member and `LOW` confidence produces P1
+    instrumentation work;
+14. every decision-bearing metric has an operational definition and named
+    decision, and ordinal capability labels are never arithmetically aggregated;
+15. a claimed level-`4` improvement clears its prospectively declared
+    uncertainty/local-noise rule while infrastructure faults remain separate
+    from subject failures;
+16. `NOT_APPLICABLE` is rejected when eligible work or a qualifying trigger
+    exists; aggregate and joint-stratum population counts must reconcile;
+17. `HIGH` confidence is rejected without all adequacy tests and independent
+    assurance sign-off, including explicit freshness and missingness results;
+    any unresolved material gap instead forces result `UNKNOWN`, no level, and
+    confidence `LOW`;
+18. level-`3`/`4` is rejected when its metric specification or measurement
+    harness is unqualified;
+19. a `SCORED` record is rejected when a required typed adverse category omits
+    an eligible failed, blocked, cancelled, reopened, emergency, or rolled-back
+    subject;
+20. a zero noise floor is rejected without method evidence and independent
+    claim-specific approval, while uncertainty N/A is rejected without its
+    exact deterministic-measure rule and approval;
+21. a level-`4` claim is rejected when its improvement references a missing,
+    mismatched, or unqualified measurement-design/harness digest; and
+22. the selected priority becomes linked corrective, instrumentation, or
+    experiment work with a causal hypothesis, owner, evidence window,
+    guardrails, stop/revert rule, and checked effectiveness.
 
 ## 13. Final decision
 

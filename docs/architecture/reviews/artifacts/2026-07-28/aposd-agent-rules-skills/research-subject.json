@@ -1,0 +1,13 @@
+{
+  "subject_schema": "research-subject/v1",
+  "project_id": "prj_019fa935-6afc-7740-9472-9fe9572854f2",
+  "work_item_id": "work_019fa935-6afd-7b05-959f-b015944692a0",
+  "repository_id": "repo_019fa935-6afe-7e40-b5a9-f262e42809d9",
+  "repository_uri_digest": "sha256:34bbe7c66a9ab7de14fc18afa6b045922ad616b16d1c49e307f90c34137247b4",
+  "base_revision": "4baad4a67843b02d5970f442fb54aed8d6525dda",
+  "question_digest": "sha256:749c5ac27fb2e546bc4fa321b231a745fa85a123fe2783482587143cd5062ef6",
+  "scope_digest": "sha256:a70ffb9d363332245df9234381d4c716f6941d36f53889c9690ea1a5740ffde2",
+  "source_manifest_digest": "sha256:38cbd5ba8cdc6b8b843f2ec44eefade3ac1af9d75cf438d401d4872541c46bce",
+  "research_prompt_digest": "sha256:5262d26b9839632504a74b8ad44ce1216a78bc5c2aec35116d3907b2d8f93856",
+  "observed_at": "2026-07-28T14:51:21Z"
+}

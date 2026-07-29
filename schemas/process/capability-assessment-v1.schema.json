@@ -1,0 +1,1334 @@
+{
+  "$id": "https://schemas.ranex.dev/process/capability-assessment-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "applicability": {
+      "additionalProperties": false,
+      "properties": {
+        "not_applicable_approval_ref": {
+          "type": "string"
+        },
+        "not_applicable_audit_ref": {
+          "type": "string"
+        },
+        "not_applicable_reason": {
+          "type": "string"
+        },
+        "population_ref": {
+          "type": "string"
+        },
+        "qualifying_trigger_query_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "qualifying_trigger_query_ref": {
+          "type": "string"
+        },
+        "registry_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "registry_id": {
+          "type": "string"
+        },
+        "registry_version": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "registry_id",
+        "registry_version",
+        "registry_digest",
+        "rule_id",
+        "result",
+        "population_ref",
+        "qualifying_trigger_query_ref",
+        "qualifying_trigger_query_digest",
+        "not_applicable_reason",
+        "not_applicable_approval_ref",
+        "not_applicable_audit_ref"
+      ],
+      "type": "object"
+    },
+    "approved_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "artifact_type": {
+      "const": "capability_assessment"
+    },
+    "assessment_authority": {
+      "additionalProperties": false,
+      "properties": {
+        "approver_id": {
+          "type": "string"
+        },
+        "assessor_id": {
+          "type": "string"
+        },
+        "conflicts": {
+          "items": {},
+          "type": "array"
+        },
+        "independence_evidence_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "assessor_id",
+        "approver_id",
+        "independence_evidence_ref",
+        "conflicts"
+      ],
+      "type": "object"
+    },
+    "assessment_id": {
+      "type": "string"
+    },
+    "capability_rating": {
+      "additionalProperties": false,
+      "properties": {
+        "arithmetic_aggregation_prohibited": {
+          "type": "boolean"
+        },
+        "criterion_evidence": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "criterion_id": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "items": {},
+                "type": "array"
+              },
+              "result": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "criterion_id",
+              "evidence_refs",
+              "result"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "label": {
+          "type": "string"
+        },
+        "level": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "ordinal_label_only": {
+          "type": "boolean"
+        },
+        "result": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "result",
+        "level",
+        "label",
+        "criterion_evidence",
+        "ordinal_label_only",
+        "arithmetic_aggregation_prohibited"
+      ],
+      "type": "object"
+    },
+    "confidence": {
+      "additionalProperties": false,
+      "properties": {
+        "adequacy_rule": {
+          "additionalProperties": false,
+          "properties": {
+            "approval_ref": {
+              "type": "string"
+            },
+            "rule_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "rule_id": {
+              "type": "string"
+            },
+            "rule_version": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "rule_id",
+            "rule_version",
+            "rule_digest",
+            "approval_ref"
+          ],
+          "type": "object"
+        },
+        "derivation_result": {
+          "type": "string"
+        },
+        "derived_level": {
+          "type": "string"
+        },
+        "gap_register_ref": {
+          "type": "string"
+        },
+        "independent_assurance_signoff_ref": {
+          "type": "string"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "tests": {
+          "additionalProperties": false,
+          "properties": {
+            "authenticity": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_refs": {
+                  "items": {},
+                  "type": "array"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "evidence_refs"
+              ],
+              "type": "object"
+            },
+            "data_quality": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_refs": {
+                  "items": {},
+                  "type": "array"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "evidence_refs"
+              ],
+              "type": "object"
+            },
+            "duration": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_refs": {
+                  "items": {},
+                  "type": "array"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "evidence_refs"
+              ],
+              "type": "object"
+            },
+            "freshness": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_refs": {
+                  "items": {},
+                  "type": "array"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "evidence_refs"
+              ],
+              "type": "object"
+            },
+            "missingness": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_refs": {
+                  "items": {},
+                  "type": "array"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "evidence_refs"
+              ],
+              "type": "object"
+            },
+            "representativeness": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_refs": {
+                  "items": {},
+                  "type": "array"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "evidence_refs"
+              ],
+              "type": "object"
+            },
+            "sample": {
+              "additionalProperties": false,
+              "properties": {
+                "evidence_refs": {
+                  "items": {},
+                  "type": "array"
+                },
+                "result": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "result",
+                "evidence_refs"
+              ],
+              "type": "object"
+            }
+          },
+          "required": [
+            "sample",
+            "duration",
+            "representativeness",
+            "authenticity",
+            "freshness",
+            "missingness",
+            "data_quality"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "adequacy_rule",
+        "tests",
+        "gap_register_ref",
+        "independent_assurance_signoff_ref",
+        "derived_level",
+        "derivation_result",
+        "rationale"
+      ],
+      "type": "object"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "correction_reason": {
+      "type": "string"
+    },
+    "coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "by_joint_strata_ref": {
+          "type": "string"
+        },
+        "percentage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "percentage_formula": {
+          "type": "string"
+        },
+        "population_ref": {
+          "type": "string"
+        },
+        "reconciliation_result": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "population_ref",
+        "percentage",
+        "percentage_formula",
+        "by_joint_strata_ref",
+        "reconciliation_result"
+      ],
+      "type": "object"
+    },
+    "created_at": {
+      "type": "string",
+      "x-ranex-runtime-format": "date-time"
+    },
+    "decision_ref": {
+      "type": "string"
+    },
+    "definition_evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "definition_status": {
+      "type": "string"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "effectiveness": {
+      "additionalProperties": false,
+      "properties": {
+        "baseline_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "comparator_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "distribution_and_trend_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "guardrail_result_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "metric_spec_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "observed_result_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "result": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "result",
+        "metric_spec_ids",
+        "baseline_refs",
+        "comparator_refs",
+        "observed_result_refs",
+        "distribution_and_trend_refs",
+        "guardrail_result_refs"
+      ],
+      "type": "object"
+    },
+    "evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_and_provenance_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "data_quality_result_ref": {
+          "type": "string"
+        },
+        "enacted_practice_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "event_query_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "event_query_ref": {
+          "type": "string"
+        },
+        "evidence_snapshot_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "limitations": {
+          "items": {},
+          "type": "array"
+        },
+        "normal_path_event_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "outcome_and_guardrail_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "traversed_rejection_invalidation_exception_or_backward_event_refs": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "event_query_ref",
+        "event_query_digest",
+        "evidence_snapshot_refs",
+        "enacted_practice_refs",
+        "artifact_and_provenance_refs",
+        "outcome_and_guardrail_refs",
+        "normal_path_event_refs",
+        "traversed_rejection_invalidation_exception_or_backward_event_refs",
+        "data_quality_result_ref",
+        "limitations"
+      ],
+      "type": "object"
+    },
+    "findings": {
+      "additionalProperties": false,
+      "properties": {
+        "active_harm_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "exception_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "gate_outcome_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "invariant_breach_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "nonconformity_refs": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "active_harm_refs",
+        "invariant_breach_refs",
+        "nonconformity_refs",
+        "exception_refs",
+        "gate_outcome_refs"
+      ],
+      "type": "object"
+    },
+    "gap_register": {
+      "additionalProperties": false,
+      "properties": {
+        "entries": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "disposition": {
+                "type": "string"
+              },
+              "disposition_evidence_ref": {
+                "type": "string"
+              },
+              "gap_id": {
+                "type": "string"
+              },
+              "materiality": {
+                "type": "string"
+              },
+              "source_dimension": {
+                "type": "string"
+              },
+              "source_ref": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "gap_id",
+              "source_dimension",
+              "source_ref",
+              "materiality",
+              "disposition",
+              "disposition_evidence_ref"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "inventory_query_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "inventory_query_ref": {
+          "type": "string"
+        },
+        "reconciliation": {
+          "additionalProperties": false,
+          "properties": {
+            "every_gap_disposed_result": {
+              "type": "string"
+            },
+            "result": {
+              "type": "string"
+            },
+            "scored_eligibility_result": {
+              "type": "string"
+            },
+            "source_inventory_complete_result": {
+              "type": "string"
+            },
+            "unresolved_material_gap_refs": {
+              "items": {},
+              "type": "array"
+            }
+          },
+          "required": [
+            "source_inventory_complete_result",
+            "every_gap_disposed_result",
+            "unresolved_material_gap_refs",
+            "scored_eligibility_result",
+            "result"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "inventory_query_ref",
+        "inventory_query_digest",
+        "entries",
+        "reconciliation"
+      ],
+      "type": "object"
+    },
+    "improvement": {
+      "additionalProperties": false,
+      "properties": {
+        "bounded_change": {
+          "type": "string"
+        },
+        "causal_control_id": {
+          "type": "string"
+        },
+        "causal_stage": {
+          "type": "string"
+        },
+        "decision": {
+          "type": "string"
+        },
+        "effectiveness_review_ref": {
+          "type": "string"
+        },
+        "evidence_window_end": {
+          "type": "string"
+        },
+        "hypothesis": {
+          "type": "string"
+        },
+        "linked_work_item_id": {
+          "type": "string"
+        },
+        "measurement_design_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "measurement_design_ref": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string"
+        },
+        "review_date": {
+          "type": "string"
+        },
+        "stop_or_revert_criteria": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "linked_work_item_id",
+        "causal_stage",
+        "causal_control_id",
+        "hypothesis",
+        "bounded_change",
+        "measurement_design_ref",
+        "measurement_design_digest",
+        "owner_id",
+        "evidence_window_end",
+        "stop_or_revert_criteria",
+        "review_date",
+        "effectiveness_review_ref",
+        "decision"
+      ],
+      "type": "object"
+    },
+    "measurement_design": {
+      "additionalProperties": false,
+      "properties": {
+        "analysis_assumption_check_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "analysis_method_ref": {
+          "type": "string"
+        },
+        "decision_rule_evaluation_ref": {
+          "type": "string"
+        },
+        "decision_rule_frozen_at": {
+          "type": "string",
+          "x-ranex-runtime-format": "date-time"
+        },
+        "design_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "design_id": {
+          "type": "string"
+        },
+        "design_version": {
+          "type": "string"
+        },
+        "fixed_comparator_ref": {
+          "type": "string"
+        },
+        "goal_question_decision_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "harness": {
+          "additionalProperties": false,
+          "properties": {
+            "configuration_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "configuration_ref": {
+              "type": "string"
+            },
+            "data_quality_test_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "harness_digest": {
+              "type": "string",
+              "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+            },
+            "harness_id": {
+              "type": "string"
+            },
+            "harness_version": {
+              "type": "string"
+            },
+            "qualification_ref": {
+              "type": "string"
+            },
+            "qualification_result": {
+              "type": "string"
+            },
+            "repeatability_test_refs": {
+              "items": {},
+              "type": "array"
+            }
+          },
+          "required": [
+            "harness_id",
+            "harness_version",
+            "harness_digest",
+            "configuration_ref",
+            "configuration_digest",
+            "qualification_result",
+            "qualification_ref",
+            "repeatability_test_refs",
+            "data_quality_test_refs"
+          ],
+          "type": "object"
+        },
+        "metric_registry_id": {
+          "type": "string"
+        },
+        "metric_registry_version": {
+          "type": "string"
+        },
+        "metric_spec_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "minimum_detectable_effect": {
+          "type": "string"
+        },
+        "minimum_meaningful_effect": {
+          "type": "string"
+        },
+        "noise": {
+          "additionalProperties": false,
+          "properties": {
+            "floor": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "method_ref": {
+              "type": "string"
+            },
+            "status": {
+              "type": "string"
+            },
+            "uncertainty_na_approval_ref": {
+              "type": "string"
+            },
+            "uncertainty_na_rule_ref": {
+              "type": "string"
+            },
+            "zero_claim_evidence_ref": {
+              "type": "string"
+            },
+            "zero_claim_independent_approval_ref": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "status",
+            "floor",
+            "method_ref",
+            "zero_claim_evidence_ref",
+            "zero_claim_independent_approval_ref",
+            "uncertainty_na_rule_ref",
+            "uncertainty_na_approval_ref"
+          ],
+          "type": "object"
+        },
+        "outcome_accounting": {
+          "additionalProperties": false,
+          "properties": {
+            "infrastructure_error_count": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "infrastructure_error_ledger_ref": {
+              "type": "string"
+            },
+            "subject_failure_count": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "subject_failure_count",
+            "infrastructure_error_count",
+            "infrastructure_error_ledger_ref"
+          ],
+          "type": "object"
+        },
+        "prospective_decision_rule_ref": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "design_id",
+        "design_version",
+        "design_digest",
+        "goal_question_decision_refs",
+        "metric_spec_refs",
+        "metric_registry_id",
+        "metric_registry_version",
+        "fixed_comparator_ref",
+        "prospective_decision_rule_ref",
+        "decision_rule_frozen_at",
+        "minimum_meaningful_effect",
+        "minimum_detectable_effect",
+        "analysis_method_ref",
+        "analysis_assumption_check_refs",
+        "decision_rule_evaluation_ref",
+        "noise",
+        "harness",
+        "outcome_accounting"
+      ],
+      "type": "object"
+    },
+    "policy_id": {
+      "type": "string"
+    },
+    "policy_version": {
+      "type": "string"
+    },
+    "population": {
+      "additionalProperties": false,
+      "properties": {
+        "adverse_categories": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "category_id": {
+                "type": "string"
+              },
+              "derived_result": {
+                "type": "string"
+              },
+              "dimension": {
+                "type": "string"
+              },
+              "eligible": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "excluded": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "included": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "predicate_rule_ref": {
+                "type": "string"
+              },
+              "query_digest": {
+                "type": "string",
+                "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+              },
+              "query_ref": {
+                "type": "string"
+              },
+              "selector": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "category_id",
+              "dimension",
+              "selector",
+              "predicate_rule_ref",
+              "query_ref",
+              "query_digest",
+              "eligible",
+              "included",
+              "excluded",
+              "derived_result"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "adverse_reconciliation_result": {
+          "type": "string"
+        },
+        "eligibility_query_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "eligibility_query_ref": {
+          "type": "string"
+        },
+        "eligibility_rule_ref": {
+          "type": "string"
+        },
+        "exclusions": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "approval_ref": {
+                "type": "string"
+              },
+              "correction_ref": {
+                "type": "string"
+              },
+              "reason_code": {
+                "type": "string"
+              },
+              "risk_lane": {
+                "type": "string"
+              },
+              "subject_ref": {
+                "type": "string"
+              },
+              "work_class": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "subject_ref",
+              "work_class",
+              "risk_lane",
+              "reason_code",
+              "approval_ref",
+              "correction_ref"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "joint_strata": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "eligible": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "excluded": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "included": {
+                "minimum": 0,
+                "type": "integer"
+              },
+              "risk_lane": {
+                "type": "string"
+              },
+              "work_class": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "work_class",
+              "risk_lane",
+              "eligible",
+              "included",
+              "excluded"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "reconciliation": {
+          "additionalProperties": false,
+          "properties": {
+            "evidence_refs": {
+              "items": {},
+              "type": "array"
+            },
+            "exclusions_sum_to_excluded_result": {
+              "type": "string"
+            },
+            "result": {
+              "type": "string"
+            },
+            "strata_complete_result": {
+              "type": "string"
+            },
+            "strata_sum_to_totals_result": {
+              "type": "string"
+            },
+            "totals_identity_result": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "totals_identity_result",
+            "strata_complete_result",
+            "strata_sum_to_totals_result",
+            "exclusions_sum_to_excluded_result",
+            "result",
+            "evidence_refs"
+          ],
+          "type": "object"
+        },
+        "sampling_method": {
+          "type": "string"
+        },
+        "snapshot_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "snapshot_ref": {
+          "type": "string"
+        },
+        "totals": {
+          "additionalProperties": false,
+          "properties": {
+            "eligible": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "excluded": {
+              "minimum": 0,
+              "type": "integer"
+            },
+            "included": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "eligible",
+            "included",
+            "excluded"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "snapshot_ref",
+        "snapshot_digest",
+        "eligibility_rule_ref",
+        "eligibility_query_ref",
+        "eligibility_query_digest",
+        "totals",
+        "joint_strata",
+        "exclusions",
+        "sampling_method",
+        "reconciliation",
+        "adverse_categories",
+        "adverse_reconciliation_result"
+      ],
+      "type": "object"
+    },
+    "prior_assessment_ref": {
+      "type": "string"
+    },
+    "priority": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_gap": {
+          "type": "string"
+        },
+        "consequence": {
+          "type": "string"
+        },
+        "decisive_trigger_code": {
+          "type": "string"
+        },
+        "derivation_result": {
+          "type": "string"
+        },
+        "derived_tier": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "downstream_blocking": {
+          "type": "string"
+        },
+        "evaluated_trigger_results": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "evidence_refs": {
+                "items": {},
+                "type": "array"
+              },
+              "result": {
+                "type": "string"
+              },
+              "trigger_code": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "trigger_code",
+              "result",
+              "evidence_refs"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "exposure": {
+          "type": "string"
+        },
+        "instrumentation_action_ref": {
+          "type": "string"
+        },
+        "matched_trigger_codes": {
+          "items": {},
+          "type": "array"
+        },
+        "priority_rule_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "priority_rule_id": {
+          "type": "string"
+        },
+        "priority_rule_version": {
+          "type": "string"
+        },
+        "recurrence": {
+          "type": "string"
+        },
+        "result": {
+          "type": "string"
+        },
+        "trigger_set_validation": {
+          "additionalProperties": false,
+          "properties": {
+            "exact_registry_trigger_set_result": {
+              "type": "string"
+            },
+            "no_duplicate_trigger_result": {
+              "type": "string"
+            },
+            "validation_evidence_refs": {
+              "items": {},
+              "type": "array"
+            }
+          },
+          "required": [
+            "exact_registry_trigger_set_result",
+            "no_duplicate_trigger_result",
+            "validation_evidence_refs"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "priority_rule_id",
+        "priority_rule_version",
+        "priority_rule_digest",
+        "result",
+        "evaluated_trigger_results",
+        "trigger_set_validation",
+        "matched_trigger_codes",
+        "decisive_trigger_code",
+        "derived_tier",
+        "instrumentation_action_ref",
+        "derivation_result",
+        "consequence",
+        "exposure",
+        "recurrence",
+        "downstream_blocking",
+        "capability_gap"
+      ],
+      "type": "object"
+    },
+    "revision": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "rubric_id": {
+      "type": "string"
+    },
+    "rubric_version": {
+      "type": "string"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "scope": {
+      "additionalProperties": false,
+      "properties": {
+        "capability_id": {
+          "type": "string"
+        },
+        "control_id": {
+          "type": "string"
+        },
+        "risk_lanes": {
+          "items": {},
+          "type": "array"
+        },
+        "scope_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "service_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "value_stream_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "window_end": {
+          "type": "string",
+          "x-ranex-runtime-format": "date-time"
+        },
+        "window_start": {
+          "type": "string",
+          "x-ranex-runtime-format": "date-time"
+        },
+        "work_classes": {
+          "items": {},
+          "type": "array"
+        }
+      },
+      "required": [
+        "capability_id",
+        "control_id",
+        "service_ids",
+        "value_stream_ids",
+        "work_classes",
+        "risk_lanes",
+        "window_start",
+        "window_end",
+        "scope_digest"
+      ],
+      "type": "object"
+    },
+    "status": {
+      "type": "string"
+    },
+    "subject_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_manifest_digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "subject_ref": {
+      "type": "string"
+    },
+    "subject_schema": {
+      "type": "string"
+    },
+    "supersedes_ref": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "assessment_id",
+    "revision",
+    "status",
+    "definition_status",
+    "definition_evidence_refs",
+    "subject_schema",
+    "subject_ref",
+    "subject_digest",
+    "subject_manifest_digest",
+    "core_sdlc_trace_ref",
+    "policy_id",
+    "policy_version",
+    "rubric_id",
+    "rubric_version",
+    "scope",
+    "assessment_authority",
+    "applicability",
+    "population",
+    "evidence",
+    "capability_rating",
+    "effectiveness",
+    "measurement_design",
+    "coverage",
+    "gap_register",
+    "confidence",
+    "priority",
+    "findings",
+    "improvement",
+    "decision_ref",
+    "approved_at",
+    "prior_assessment_ref",
+    "supersedes_ref",
+    "correction_reason",
+    "created_at",
+    "digest"
+  ],
+  "title": "capability_assessment",
+  "type": "object",
+  "x-ranex-canonical-producer": "process_assurance",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/CAPABILITY_ASSESSMENT.yaml"
+}

@@ -1,0 +1,1308 @@
+{
+  "$id": "https://schemas.ranex.dev/common/test-practice-profile-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "applicability": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_ref": {
+          "type": "string"
+        },
+        "evidence_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "reason": {
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "APPLICABLE",
+            "NOT_APPLICABLE",
+            "UNKNOWN"
+          ]
+        },
+        "rule_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "result",
+        "rule_id",
+        "reason",
+        "evidence_refs",
+        "approval_ref"
+      ],
+      "type": "object"
+    },
+    "architecture_checks": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "category_coverage": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "applicability": {
+            "additionalProperties": false,
+            "properties": {
+              "approval_ref": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "reason": {
+                "type": "string"
+              },
+              "result": {
+                "enum": [
+                  "APPLICABLE",
+                  "NOT_APPLICABLE",
+                  "UNKNOWN"
+                ]
+              },
+              "rule_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "result",
+              "rule_id",
+              "reason",
+              "evidence_refs",
+              "approval_ref"
+            ],
+            "type": "object"
+          },
+          "category_id": {
+            "enum": [
+              "UNIT",
+              "CONTRACT",
+              "INTEGRATION",
+              "ARCHITECTURE",
+              "ACCEPTANCE",
+              "SYSTEM",
+              "E2E",
+              "SECURITY",
+              "PERFORMANCE",
+              "RESILIENCE",
+              "MIGRATION",
+              "REPLAY",
+              "OPERATIONS",
+              "QUALIFICATION",
+              "EFFECTIVENESS",
+              "EVALUATION",
+              "FIXTURES",
+              "BUILDERS"
+            ]
+          },
+          "evidence_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "execution_status": {
+            "enum": [
+              "NOT_ASSESSED",
+              "NOT_APPLICABLE",
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ]
+          },
+          "root": {
+            "enum": [
+              "tests/unit",
+              "tests/contract",
+              "tests/integration",
+              "tests/architecture",
+              "tests/acceptance",
+              "tests/system",
+              "tests/e2e",
+              "tests/security",
+              "tests/performance",
+              "tests/resilience",
+              "tests/migration",
+              "tests/replay",
+              "tests/operations",
+              "tests/qualification",
+              "tests/effectiveness",
+              "tests/evaluation",
+              "tests/fixtures",
+              "tests/builders"
+            ]
+          },
+          "task_selection_rule": {
+            "const": "RISK_AND_EXACT_SUBJECT_SELECTED"
+          }
+        },
+        "required": [
+          "category_id",
+          "root",
+          "applicability",
+          "task_selection_rule",
+          "execution_status",
+          "evidence_refs"
+        ],
+        "type": "object"
+      },
+      "maxItems": 18,
+      "minItems": 18,
+      "type": "array"
+    },
+    "context_layer_mirroring": {
+      "additionalProperties": false,
+      "properties": {
+        "exceptions": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "context_id": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "decision_ref": {
+                "minLength": 1,
+                "type": "string"
+              },
+              "expires_at": {
+                "format": "date-time",
+                "type": "string"
+              },
+              "omitted_layers": {
+                "items": {
+                  "enum": [
+                    "api",
+                    "domain",
+                    "application",
+                    "application/ports",
+                    "adapters"
+                  ]
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "reason": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "context_id",
+              "omitted_layers",
+              "reason",
+              "decision_ref",
+              "expires_at"
+            ],
+            "type": "object"
+          },
+          "type": "array"
+        },
+        "lane_shapes": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "category_id": {
+                "enum": [
+                  "UNIT",
+                  "CONTRACT",
+                  "INTEGRATION",
+                  "ARCHITECTURE",
+                  "ACCEPTANCE",
+                  "SYSTEM",
+                  "E2E",
+                  "SECURITY",
+                  "PERFORMANCE",
+                  "RESILIENCE",
+                  "MIGRATION",
+                  "REPLAY",
+                  "OPERATIONS",
+                  "QUALIFICATION",
+                  "EFFECTIVENESS",
+                  "EVALUATION",
+                  "FIXTURES",
+                  "BUILDERS"
+                ]
+              },
+              "mirrored_source_layers": {
+                "items": {
+                  "enum": [
+                    "api",
+                    "domain",
+                    "application",
+                    "application/ports",
+                    "adapters"
+                  ]
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "path_patterns": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "minItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "semantic_owner_parameter": {
+                "enum": [
+                  "CONTEXT",
+                  "CAPABILITY",
+                  "OWNER",
+                  "EXACT_TEST_METADATA"
+                ]
+              },
+              "shape_rule": {
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "category_id",
+              "semantic_owner_parameter",
+              "path_patterns",
+              "mirrored_source_layers",
+              "shape_rule"
+            ],
+            "type": "object"
+          },
+          "maxItems": 18,
+          "minItems": 18,
+          "type": "array"
+        },
+        "policy": {
+          "const": "LANE_SPECIFIC_SUBJECT_SHAPES"
+        }
+      },
+      "required": [
+        "policy",
+        "lane_shapes",
+        "exceptions"
+      ],
+      "type": "object"
+    },
+    "created_at": {
+      "format": "date-time",
+      "type": "string"
+    },
+    "derived_result": {
+      "enum": [
+        "NOT_ASSESSED",
+        "UNKNOWN",
+        "NOT_APPLICABLE",
+        "PASS",
+        "FAIL"
+      ]
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "edge_case_partitions": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "applicability": {
+            "additionalProperties": false,
+            "properties": {
+              "approval_ref": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "reason": {
+                "type": "string"
+              },
+              "result": {
+                "enum": [
+                  "APPLICABLE",
+                  "NOT_APPLICABLE",
+                  "UNKNOWN"
+                ]
+              },
+              "rule_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "result",
+              "rule_id",
+              "reason",
+              "evidence_refs",
+              "approval_ref"
+            ],
+            "type": "object"
+          },
+          "corpus_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "evidence_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "execution_status": {
+            "enum": [
+              "NOT_ASSESSED",
+              "NOT_APPLICABLE",
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ]
+          },
+          "invariant_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "partition_id": {
+            "enum": [
+              "FINITE_STATE_TRANSITIONS",
+              "FINITE_BOUNDARY_CLASSES",
+              "OPEN_INPUT_AND_SEQUENCE_SPACE",
+              "OPEN_IMPLEMENTATION_FAULT_SPACE"
+            ]
+          },
+          "property_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "remaining_unknowns": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "required_methods": {
+            "items": {
+              "enum": [
+                "EXHAUSTIVE_TRANSITION_TABLE",
+                "BOUNDARY_PARTITION",
+                "PROPERTY",
+                "MODEL",
+                "FUZZ",
+                "MUTATION",
+                "FAULT_INJECTION"
+              ]
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "seed_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "shrinking_reproduction_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "space_kind": {
+            "enum": [
+              "FINITE",
+              "OPEN"
+            ]
+          }
+        },
+        "required": [
+          "partition_id",
+          "space_kind",
+          "required_methods",
+          "applicability",
+          "seed_refs",
+          "corpus_refs",
+          "property_ids",
+          "invariant_ids",
+          "shrinking_reproduction_refs",
+          "remaining_unknowns",
+          "execution_status",
+          "evidence_refs"
+        ],
+        "type": "object"
+      },
+      "maxItems": 4,
+      "minItems": 4,
+      "type": "array"
+    },
+    "evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_fake_contract_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "built_artifact_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "composition_identity_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "fault_injection_evidence_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "mock_target_classification_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "mutation_evidence_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "negative_test_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "persistence_migration_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "replay_digest_refs": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "built_artifact_refs",
+        "composition_identity_refs",
+        "mock_target_classification_refs",
+        "negative_test_refs",
+        "mutation_evidence_refs",
+        "fault_injection_evidence_refs",
+        "adapter_fake_contract_refs",
+        "persistence_migration_refs",
+        "replay_digest_refs"
+      ],
+      "type": "object"
+    },
+    "evidence_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "freshness_status": {
+            "enum": [
+              "CURRENT",
+              "STALE",
+              "UNKNOWN"
+            ]
+          },
+          "result": {
+            "enum": [
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ]
+          },
+          "subject_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "subject_ref": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "evidence_ref",
+          "subject_ref",
+          "subject_digest",
+          "freshness_status",
+          "result"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "evidence_scope": {
+      "enum": [
+        "NONE",
+        "SYNTHETIC",
+        "RUNTIME",
+        "MIXED"
+      ]
+    },
+    "failure_mode_matrix": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "applicability": {
+            "additionalProperties": false,
+            "properties": {
+              "approval_ref": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "reason": {
+                "type": "string"
+              },
+              "result": {
+                "enum": [
+                  "APPLICABLE",
+                  "NOT_APPLICABLE",
+                  "UNKNOWN"
+                ]
+              },
+              "rule_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "result",
+              "rule_id",
+              "reason",
+              "evidence_refs",
+              "approval_ref"
+            ],
+            "type": "object"
+          },
+          "evidence_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "execution_status": {
+            "enum": [
+              "NOT_ASSESSED",
+              "NOT_APPLICABLE",
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ]
+          },
+          "failure_mode_class": {
+            "enum": [
+              "COMMANDS_AND_STATE_TRANSITIONS",
+              "VALIDATION_AND_AUTH_POLICY_DENIAL",
+              "PROOF_INTEGRITY_AND_AVAILABILITY",
+              "VALUE_TIME_RESOURCE_BOUNDARIES",
+              "DUPLICATE_REORDER_REPLAY_RETRY_IDEMPOTENCY",
+              "CRASH_TIMEOUT_CANCEL_ACK_LOSS",
+              "CONCURRENCY_LEASE_FENCING",
+              "STORAGE_CORRUPTION_MIGRATION_REPLAY_VERSION",
+              "PROVIDER_NETWORK_TOOL_PARTIAL_EFFECT_RECONCILIATION",
+              "BACKUP_RESTORE_EXTERNAL_EFFECT_RECONCILIATION",
+              "PRIVACY_RETENTION_REDACTION_DATA_DISPOSAL",
+              "SUPPLIER_PACKAGE_SCHEMA_ROUTE_PROVENANCE_MISMATCH",
+              "RECOVERY_BACKWARD_ROLLBACK_BLOCK_RESUME_CANCEL_TERMINAL"
+            ]
+          },
+          "fault_input_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "owner_id": {
+            "type": "string"
+          },
+          "precondition_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "required_assertions": {
+            "items": {
+              "enum": [
+                "EXPECTED_ERROR",
+                "EXPECTED_EVENT",
+                "EXPECTED_STATE",
+                "NO_EFFECT",
+                "RECOVERY"
+              ]
+            },
+            "maxItems": 5,
+            "minItems": 5,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "test_lanes": {
+            "items": {
+              "enum": [
+                "UNIT",
+                "CONTRACT",
+                "INTEGRATION",
+                "ARCHITECTURE",
+                "ACCEPTANCE",
+                "SYSTEM",
+                "E2E",
+                "SECURITY",
+                "PERFORMANCE",
+                "RESILIENCE",
+                "MIGRATION",
+                "REPLAY",
+                "OPERATIONS",
+                "QUALIFICATION",
+                "EFFECTIVENESS",
+                "EVALUATION",
+                "FIXTURES",
+                "BUILDERS"
+              ]
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "transition_ids": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          }
+        },
+        "required": [
+          "failure_mode_class",
+          "applicability",
+          "required_assertions",
+          "transition_ids",
+          "precondition_refs",
+          "fault_input_refs",
+          "test_lanes",
+          "owner_id",
+          "execution_status",
+          "evidence_refs"
+        ],
+        "type": "object"
+      },
+      "maxItems": 13,
+      "minItems": 13,
+      "type": "array"
+    },
+    "fixture_ownership": {
+      "additionalProperties": false,
+      "properties": {
+        "canonical_root_required": {
+          "const": true
+        },
+        "classification_required": {
+          "const": true
+        },
+        "hidden_fixture_separation_required": {
+          "const": true
+        },
+        "mutation_authority_required": {
+          "const": true
+        },
+        "owner_required": {
+          "const": true
+        }
+      },
+      "required": [
+        "owner_required",
+        "canonical_root_required",
+        "classification_required",
+        "mutation_authority_required",
+        "hidden_fixture_separation_required"
+      ],
+      "type": "object"
+    },
+    "fixture_records": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_path": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "classification": {
+            "enum": [
+              "PUBLIC",
+              "INTERNAL",
+              "CONFIDENTIAL",
+              "SECRET",
+              "INHERITS_SUBJECT"
+            ]
+          },
+          "fixture_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "hidden_from_maker": {
+            "type": "boolean"
+          },
+          "mutation_authority_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "provenance_ref": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "semantic_owner_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "ACTIVE",
+              "RETIRED"
+            ]
+          },
+          "subject_kinds": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "version": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "fixture_id",
+          "canonical_path",
+          "semantic_owner_id",
+          "provenance_ref",
+          "version",
+          "classification",
+          "mutation_authority_id",
+          "hidden_from_maker",
+          "subject_kinds",
+          "status"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "material_unknowns": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "obsolete_test_deletion_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "policy_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "production_evidence_obligations": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "applicability": {
+            "additionalProperties": false,
+            "properties": {
+              "approval_ref": {
+                "type": "string"
+              },
+              "evidence_refs": {
+                "items": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "type": "array",
+                "uniqueItems": true
+              },
+              "reason": {
+                "type": "string"
+              },
+              "result": {
+                "enum": [
+                  "APPLICABLE",
+                  "NOT_APPLICABLE",
+                  "UNKNOWN"
+                ]
+              },
+              "rule_id": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "result",
+              "rule_id",
+              "reason",
+              "evidence_refs",
+              "approval_ref"
+            ],
+            "type": "object"
+          },
+          "evidence_refs": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "type": "array",
+            "uniqueItems": true
+          },
+          "execution_status": {
+            "enum": [
+              "NOT_ASSESSED",
+              "NOT_APPLICABLE",
+              "PASS",
+              "FAIL",
+              "UNKNOWN"
+            ]
+          },
+          "obligation_id": {
+            "enum": [
+              "BUILT_ARTIFACT_AND_COMPOSITION_IDENTITY",
+              "MOCK_TARGET_CLASSIFICATION",
+              "FAKE_REAL_ADAPTER_PARITY",
+              "REAL_SQLITE_AND_MIGRATION",
+              "REPLAY_DIGEST_STABILITY",
+              "NEGATIVE_MUTATION_AND_FAULT_EVIDENCE"
+            ]
+          },
+          "required_evidence_fields": {
+            "items": {
+              "minLength": 1,
+              "type": "string"
+            },
+            "minItems": 1,
+            "type": "array",
+            "uniqueItems": true
+          },
+          "task_selection_rule": {
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "obligation_id",
+          "required_evidence_fields",
+          "task_selection_rule",
+          "applicability",
+          "execution_status",
+          "evidence_refs"
+        ],
+        "type": "object"
+      },
+      "maxItems": 6,
+      "minItems": 6,
+      "type": "array"
+    },
+    "production_path_parity": {
+      "additionalProperties": false,
+      "properties": {
+        "adapter_fake_contract_parity_required": {
+          "const": true
+        },
+        "alternate_policy_or_reducer_paths_forbidden": {
+          "const": true
+        },
+        "bypass_flags_forbidden": {
+          "const": true
+        },
+        "mocks_only_at_declared_external_ports": {
+          "const": true
+        },
+        "real_migrations_and_sqlite_required_for_persistence": {
+          "const": true
+        },
+        "replay_digest_stability_required": {
+          "const": true
+        },
+        "same_artifact_contracts_required": {
+          "const": true
+        },
+        "same_composition_root_required": {
+          "const": true
+        },
+        "same_public_apis_required": {
+          "const": true
+        },
+        "test_only_production_conditionals_forbidden": {
+          "const": true
+        }
+      },
+      "required": [
+        "same_artifact_contracts_required",
+        "same_public_apis_required",
+        "same_composition_root_required",
+        "test_only_production_conditionals_forbidden",
+        "bypass_flags_forbidden",
+        "alternate_policy_or_reducer_paths_forbidden",
+        "mocks_only_at_declared_external_ports",
+        "adapter_fake_contract_parity_required",
+        "real_migrations_and_sqlite_required_for_persistence",
+        "replay_digest_stability_required"
+      ],
+      "type": "object"
+    },
+    "profile_id": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "profile_kind": {
+      "enum": [
+        "DEFINITION_BASELINE",
+        "TASK"
+      ]
+    },
+    "profile_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "quarantine_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "quarantine_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "expiry_required": {
+          "const": true
+        },
+        "linked_work_item_required": {
+          "const": true
+        },
+        "metadata_required": {
+          "const": true
+        },
+        "owner_required": {
+          "const": true
+        },
+        "reason_required": {
+          "const": true
+        },
+        "silent_skip_forbidden": {
+          "const": true
+        }
+      },
+      "required": [
+        "metadata_required",
+        "owner_required",
+        "reason_required",
+        "expiry_required",
+        "linked_work_item_required",
+        "silent_skip_forbidden"
+      ],
+      "type": "object"
+    },
+    "registry_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "registry_id": {
+      "const": "REG-TEST-PRACTICES-001"
+    },
+    "registry_version": {
+      "minLength": 1,
+      "type": "string"
+    },
+    "runtime_evidence_status": {
+      "enum": [
+        "NOT_ASSESSED",
+        "PASS",
+        "FAIL",
+        "UNKNOWN"
+      ]
+    },
+    "schema_version": {
+      "const": "test-practice-profile/v1"
+    },
+    "sealing_eligible": {
+      "type": "boolean"
+    },
+    "subject_digest": {
+      "oneOf": [
+        {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "subject_ref": {
+      "oneOf": [
+        {
+          "minLength": 1,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "tdd_cycle_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "tdd_exception_ids": {
+      "items": {
+        "minLength": 1,
+        "type": "string"
+      },
+      "type": "array",
+      "uniqueItems": true
+    },
+    "test_roots": {
+      "items": {
+        "enum": [
+          "tests/unit",
+          "tests/contract",
+          "tests/integration",
+          "tests/architecture",
+          "tests/acceptance",
+          "tests/system",
+          "tests/e2e",
+          "tests/security",
+          "tests/performance",
+          "tests/resilience",
+          "tests/migration",
+          "tests/replay",
+          "tests/operations",
+          "tests/qualification",
+          "tests/effectiveness",
+          "tests/evaluation",
+          "tests/fixtures",
+          "tests/builders"
+        ]
+      },
+      "maxItems": 18,
+      "minItems": 18,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "traceability": {
+      "additionalProperties": false,
+      "properties": {
+        "practice_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "requirement_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "risk_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "transition_ids": {
+          "items": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        }
+      },
+      "required": [
+        "requirement_ids",
+        "risk_ids",
+        "practice_ids",
+        "transition_ids"
+      ],
+      "type": "object"
+    },
+    "unit_lane_policy": {
+      "additionalProperties": false,
+      "properties": {
+        "ambient_randomness_forbidden": {
+          "const": true
+        },
+        "declared_seed_required": {
+          "const": true
+        },
+        "deterministic_id_source_required": {
+          "const": true
+        },
+        "injected_clock_required": {
+          "const": true
+        },
+        "network_forbidden": {
+          "const": true
+        },
+        "wall_clock_forbidden": {
+          "const": true
+        }
+      },
+      "required": [
+        "network_forbidden",
+        "wall_clock_forbidden",
+        "ambient_randomness_forbidden",
+        "declared_seed_required",
+        "injected_clock_required",
+        "deterministic_id_source_required"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "profile_id",
+    "profile_kind",
+    "profile_version",
+    "policy_version",
+    "registry_id",
+    "registry_version",
+    "registry_digest",
+    "subject_ref",
+    "subject_digest",
+    "created_at",
+    "applicability",
+    "material_unknowns",
+    "test_roots",
+    "category_coverage",
+    "context_layer_mirroring",
+    "architecture_checks",
+    "fixture_ownership",
+    "fixture_records",
+    "quarantine_policy",
+    "tdd_cycle_ids",
+    "tdd_exception_ids",
+    "quarantine_ids",
+    "obsolete_test_deletion_ids",
+    "unit_lane_policy",
+    "production_path_parity",
+    "failure_mode_matrix",
+    "edge_case_partitions",
+    "production_evidence_obligations",
+    "traceability",
+    "evidence",
+    "evidence_bindings",
+    "evidence_scope",
+    "runtime_evidence_status",
+    "derived_result",
+    "sealing_eligible",
+    "digest"
+  ],
+  "title": "Ranex test-practice profile",
+  "type": "object"
+}

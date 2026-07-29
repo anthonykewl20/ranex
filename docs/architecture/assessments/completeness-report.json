@@ -1,0 +1,53 @@
+{
+  "contract_scope": "EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY",
+  "counts": {
+    "adr10_fitness_obligations": 9,
+    "adr10_rules": 10,
+    "adr9_fitness_obligations": 9,
+    "adr9_rules": 10,
+    "allowed_test_roots": 18,
+    "architecture_elements": 1003,
+    "architecture_rule_assessments": 64,
+    "artifact_schemas": 42,
+    "capability_assessments": 40,
+    "capability_zones": 36,
+    "common_schemas": 35,
+    "context_boundary_fit_rows": 34,
+    "coupling_measures": 6,
+    "declared_context_dependency_edges": 67,
+    "domain_projections": 10,
+    "feedback_objectives": 4,
+    "fixed_decisions": 29,
+    "governed_yaml_templates": 36,
+    "legacy_test_active_records": 0,
+    "legacy_test_baseline_files": 2444,
+    "legacy_test_directory_exceptions": 29,
+    "negative_fixtures": 31,
+    "runtime_adapters": 2,
+    "semantic_fixtures": 2,
+    "tdd_rules": 26,
+    "test_definition_profiles": 1,
+    "topology_rules": 18,
+    "vital_control_tuples": 40,
+    "worker_role_profiles": 3,
+    "worker_runtime_negative_cases": 22
+  },
+  "honesty_invariants": {
+    "all_control_ratings": "NOT_ASSESSED",
+    "all_definition_statuses": "DEFINED",
+    "all_domain_results": "UNKNOWN",
+    "reason": "Runtime population, enacted paths, qualified measures, and independent approval evidence do not exist.",
+    "runtime_scores_fabricated": 0
+  },
+  "report_id": "RANEX-WAVE1-CONTRACT-COMPLETENESS-001",
+  "residual_cross_wave_inputs": [
+    "The architecture-design profile applies all ten source families and 38 practices without a numeric score; task/runtime enactment and behavioral effectiveness remain NOT_ASSESSED.",
+    "Human AI-G2 acceptance remains outstanding.",
+    "Runtime producer ownership, hidden-fixture isolation, schema package generation, and cross-language RFC 8785 parity remain unproven.",
+    "ADR-0007 topology, ADR-0008 TDD, ADR-0009 boundary/coupling/feedback, and ADR-0010 inherited-test migration rules are executable paper contracts; actual source/import/test/runtime enactment remains NOT_ASSESSED.",
+    "ADR-0011 worker roles and runtime adapters are definition-only; implementation, containment, entitlement, performance, and runtime enforcement remain NOT_ASSESSED.",
+    "Fork ancestry preflight SDLC-FORK-000 remains outside this Wave 1 contract scope."
+  ],
+  "runtime_claim": "NOT_ASSESSED",
+  "status": "GENERATED_VALIDATION_REQUIRED"
+}

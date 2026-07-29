@@ -1,0 +1,270 @@
+{
+  "$id": "https://schemas.ranex.dev/common/tdd-exception-subject-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "applicable_cycle_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "backfill_criteria": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "backfill_work_item_id": {
+      "oneOf": [
+        {
+          "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "behavior_ids": {
+      "items": {
+        "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "created_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "exact_paths": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.?(?:/|$))(?!.*\\\\).+$",
+        "type": "string",
+        "x-ranex-normalized-repository-relative-posix-path": true
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "exception_class": {
+      "enum": [
+        "GENERATED_OUTPUT",
+        "EMERGENCY_CONTAINMENT",
+        "NON_EXECUTABLE_DOCUMENTATION"
+      ],
+      "type": "string"
+    },
+    "exception_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "exception_target": {
+      "additionalProperties": false,
+      "properties": {
+        "subject_digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "subject_ref": {
+          "maxLength": 1024,
+          "minLength": 1,
+          "pattern": "^(?:[A-Za-z][A-Za-z0-9._:-]{0,254}|urn:[^\\s]{1,1020})$",
+          "type": "string"
+        },
+        "subject_schema": {
+          "pattern": "^[a-z][a-z0-9-]*/v[1-9][0-9]*$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "subject_ref",
+        "subject_digest"
+      ],
+      "type": "object",
+      "x-ranex-semantic-invariants": [
+        "subject_ref resolves through the canonical subject registry",
+        "subject_digest equals RFC8785 SHA-256 of the resolved subject bytes",
+        "resolved bytes validate against subject_schema"
+      ],
+      "x-ranex-type-id": "SubjectBindingV1",
+      "x-ranex-type-version": "1.0.0"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "owner_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "policy_id": {
+      "const": "RANEX-TDD-1.0"
+    },
+    "policy_version": {
+      "const": "1.0.0"
+    },
+    "removal_criteria": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "skipped_steps": {
+      "items": {
+        "enum": [
+          "RED",
+          "GREEN",
+          "REFACTOR",
+          "ARCHITECTURE_CHECK"
+        ],
+        "type": "string"
+      },
+      "maxItems": 4,
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "subject_ref": {
+      "pattern": "^urn:ranex:[^\\s]+$",
+      "type": "string"
+    },
+    "subject_schema": {
+      "const": "tdd-exception-subject/v1"
+    },
+    "test_practice_profile_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "test_practice_profile_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    },
+    "test_practice_profile_version": {
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "type": "string"
+    },
+    "work_item_id": {
+      "pattern": "^[A-Za-z][A-Za-z0-9._:-]{0,254}$",
+      "type": "string"
+    }
+  },
+  "required": [
+    "subject_schema",
+    "subject_ref",
+    "exception_id",
+    "exception_class",
+    "policy_id",
+    "policy_version",
+    "test_practice_profile_id",
+    "test_practice_profile_version",
+    "test_practice_profile_digest",
+    "applicable_cycle_ids",
+    "exception_target",
+    "exact_paths",
+    "behavior_ids",
+    "skipped_steps",
+    "owner_id",
+    "work_item_id",
+    "backfill_work_item_id",
+    "created_at",
+    "expires_at",
+    "backfill_criteria",
+    "removal_criteria"
+  ],
+  "title": "TDD_EXCEPTION_SUBJECT_V1",
+  "type": "object",
+  "x-ranex-projection": {
+    "direct_included_source_fields": [
+      "exception_id",
+      "exception_class",
+      "policy_id",
+      "policy_version",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "applicable_cycle_ids",
+      "exact_paths",
+      "behavior_ids",
+      "skipped_steps",
+      "owner_id",
+      "work_item_id",
+      "backfill_work_item_id",
+      "created_at",
+      "expires_at",
+      "backfill_criteria",
+      "removal_criteria"
+    ],
+    "excluded_source_fields": [
+      "schema_version",
+      "record_type",
+      "risk_trace_dispositions",
+      "external_obligation_dispositions",
+      "alternate_evidence_refs",
+      "owner_decision_ref",
+      "closure_evidence_refs",
+      "landing_record_ref",
+      "exact_subject_ref",
+      "exact_subject_digest",
+      "accepted_at",
+      "recorded_at",
+      "status"
+    ],
+    "output_fields": [
+      "subject_schema",
+      "subject_ref",
+      "exception_id",
+      "exception_class",
+      "policy_id",
+      "policy_version",
+      "test_practice_profile_id",
+      "test_practice_profile_version",
+      "test_practice_profile_digest",
+      "applicable_cycle_ids",
+      "exception_target",
+      "exact_paths",
+      "behavior_ids",
+      "skipped_steps",
+      "owner_id",
+      "work_item_id",
+      "backfill_work_item_id",
+      "created_at",
+      "expires_at",
+      "backfill_criteria",
+      "removal_criteria"
+    ],
+    "projection_id": "TDD_EXCEPTION_SUBJECT_V1",
+    "schema_ref": "schemas/common/tdd-exception-subject-v1.schema.json",
+    "source_record_type": "TddExceptionRecordV1",
+    "subject_ref_rule": "urn:ranex:tdd-exception-subject:<exception_id>",
+    "subject_schema": "tdd-exception-subject/v1",
+    "transformed_source_fields": {
+      "exception_target": {
+        "output_cardinality": "1",
+        "output_type": "SubjectBindingV1",
+        "sources": [
+          "subject_schema",
+          "subject_ref",
+          "subject_digest"
+        ],
+        "transform": "construct one closed SubjectBindingV1"
+      }
+    }
+  },
+  "x-ranex-projection-contract-id": "TDD-CANONICAL-SUBJECT-PROJECTIONS-1.1",
+  "x-ranex-source-catalog-digest": "sha256:23073f228c95690280aec81e283ca1aefe21121e50cfbfaa592ccfda3ad70bde"
+}

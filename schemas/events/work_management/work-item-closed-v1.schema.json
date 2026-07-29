@@ -1,0 +1,232 @@
+{
+  "$id": "https://schemas.ranex.dev/events/work_management/work-item-closed-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "closed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "closure_decision_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "HumanDecisionRecord",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "HumanDecisionRecord"
+    },
+    "closure_snapshot_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "EvidenceSnapshot",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "EvidenceSnapshot"
+    },
+    "from_status": {
+      "enum": [
+        "FUNNEL",
+        "TRIAGE",
+        "DISCOVERY",
+        "DEFINITION",
+        "DESIGN",
+        "READY",
+        "IN_PROGRESS",
+        "VERIFICATION",
+        "RELEASE_READY",
+        "RELEASING",
+        "OPERATING",
+        "OUTCOME_REVIEW",
+        "CLOSED",
+        "BLOCKED",
+        "CANCELLED",
+        "ROLLED_BACK"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#WorkItemStatus@1.0.0"
+    },
+    "state_edge_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "axis_id": {
+            "enum": [
+              "WorkItemStatus",
+              "RunStatus",
+              "AssignmentStatus",
+              "DispatchOfferStatus",
+              "LeaseStatus",
+              "MailboxDeliveryStatus",
+              "ReservationStatus",
+              "IntakeStatus",
+              "PacketStatus",
+              "FleetExperimentStatus",
+              "CapabilityAssessmentStatus",
+              "ActivityStatus",
+              "PermitStatus",
+              "HumanDecisionRecordStatus",
+              "AuthorityGrantStatus",
+              "EffectStatus",
+              "ReconciliationStatus",
+              "IncidentStatus",
+              "ReleaseStatus",
+              "CapabilityStatus",
+              "ModuleStatus",
+              "RouteStatus",
+              "ExtensionStatus",
+              "CompatibilityStatus",
+              "InstructionStatus",
+              "ArtifactStatus",
+              "MigrationStatus",
+              "SyncCandidateStatus",
+              "UpdateStatus",
+              "CutoverStatus"
+            ],
+            "type": "string"
+          },
+          "axis_version": {
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "type": "string"
+          },
+          "edge_id": {
+            "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+            "type": "string"
+          },
+          "state_catalog_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "transition_fact_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 255,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+                "type": "string",
+                "x-ranex-id-type": "TransitionEvent",
+                "x-ranex-registered-opaque-id": true
+              }
+            },
+            "required": [
+              "id",
+              "digest"
+            ],
+            "type": "object",
+            "x-ranex-ref-type": "TransitionEvent"
+          }
+        },
+        "required": [
+          "axis_id",
+          "axis_version",
+          "state_catalog_digest",
+          "edge_id",
+          "transition_fact_ref"
+        ],
+        "type": "object",
+        "x-ranex-nested-type": "StateEdgeBindingRefV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "to_status": {
+      "const": "CLOSED",
+      "enum": [
+        "FUNNEL",
+        "TRIAGE",
+        "DISCOVERY",
+        "DEFINITION",
+        "DESIGN",
+        "READY",
+        "IN_PROGRESS",
+        "VERIFICATION",
+        "RELEASE_READY",
+        "RELEASING",
+        "OPERATING",
+        "OUTCOME_REVIEW",
+        "CLOSED",
+        "BLOCKED",
+        "CANCELLED",
+        "ROLLED_BACK"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#WorkItemStatus@1.0.0"
+    },
+    "work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "work_item_id",
+    "from_status",
+    "to_status",
+    "closure_snapshot_ref",
+    "closure_decision_ref",
+    "closed_at",
+    "state_edge_bindings"
+  ],
+  "title": "WorkItemClosed event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-WORKITEMCLOSED",
+  "x-ranex-event-name": "WorkItemClosed",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:WorkItemClosed:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-state-binding": {
+    "binding_kind": "EDGE_EVENT",
+    "edge_bindings": [
+      {
+        "allowed_edges": [
+          "OUTCOME_REVIEW>CLOSED@NORMAL_EVIDENCE_AND_AUTHORITY"
+        ],
+        "axis_id": "WorkItemStatus",
+        "axis_version": "1.0.0",
+        "binding_cardinality": "EXACTLY_ONE"
+      }
+    ],
+    "event_name": "WorkItemClosed"
+  },
+  "x-ranex-state-binding-digest": "sha256:874751df1003dded1d0be99f556e407b75297a0799c71615845691f97b53f5cc"
+}

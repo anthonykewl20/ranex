@@ -1,0 +1,586 @@
+{
+  "cases": [
+    {
+      "expected_error": "LEGACY_TEST_BASELINE_EXPANSION",
+      "fixture_id": "LEGACY-SNAPSHOT-ADD-IN-LEGACY-ROOT",
+      "operations": [
+        {
+          "operation": "ADD",
+          "path": "tests/acp/test_new_legacy.py",
+          "source": "def test_new(): pass\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_NEW_RANEX_DEPENDENCY",
+      "fixture_id": "LEGACY-SNAPSHOT-RANEX-CORE-IN-LEGACY-ROOT",
+      "operations": [
+        {
+          "operation": "ADD",
+          "path": "tests/acp/test_new_ranex.py",
+          "source": "from ranex.policy.api import AuthorizationSnapshot\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_DIRECT_ADDITION",
+      "fixture_id": "LEGACY-SNAPSHOT-DIRECT-ADDITION",
+      "operations": [
+        {
+          "operation": "ADD",
+          "path": "tests/test_new_direct.py",
+          "source": "def test_new(): pass\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_UNREGISTERED_ROOT",
+      "fixture_id": "LEGACY-SNAPSHOT-UNREGISTERED-ROOT",
+      "operations": [
+        {
+          "operation": "ADD",
+          "path": "tests/unregistered/test_new.py",
+          "source": "def test_new(): pass\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_UNAUTHORIZED_CONTENT_CHANGE",
+      "fixture_id": "LEGACY-SNAPSHOT-UNAUTHORIZED-CHANGE",
+      "operations": [
+        {
+          "operation": "CHANGE",
+          "path": "tests/acp/__init__.py",
+          "source": "# governed inherited maintenance change\n"
+        }
+      ]
+    },
+    {
+      "change_exceptions": [
+        {
+          "affected_scope_id": "LEGACY-TEST-ROOT-001",
+          "after_content_sha256": "99bbd9ead6dd57a0c4c7af45fd8f0859b81c7962d14279ad3ef6048ce4536032",
+          "approval_ref": "APPROVAL-LEGACY-CHANGE-FIXTURE-001",
+          "baseline_path": "tests/acp/__init__.py",
+          "before_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "canonical_destination": "tests/contract/agent_collaboration/acp/__init__.py",
+          "change_exception_id": "LEGACY-CHANGE-FIXTURE-STALE",
+          "compatibility_owner": "compatibility",
+          "exact_subject_digest": "sha256:36e089d8485e95423a844de954fc31937e8304ff9eecfd6b0a64f6816ec5ca91",
+          "exact_subject_ref": "legacy-test-snapshot:36e089d8485e95423a844de954fc31937e8304ff9eecfd6b0a64f6816ec5ca91",
+          "exception_type": "LEGACY_TEST_CHANGE_EXCEPTION",
+          "expires_at": "2026-07-01T00:00:00Z",
+          "independent_migration_reviewer": "INDEPENDENT_TEST_MIGRATION_REVIEWER",
+          "migration_owner": "migration",
+          "new_ranex_behavior_forbidden": true,
+          "rationale": "Exercise exact in-place maintenance authorization.",
+          "replacement_plan_ref": "PLAN-LEGACY-MIGRATION-FIXTURE-001",
+          "schema_version": "legacy-test-change-exception/v1",
+          "status": "ACTIVE",
+          "test_governance_owner": "process_assurance"
+        }
+      ],
+      "expected_error": "LEGACY_TEST_CHANGE_EXCEPTION_EXPIRED",
+      "fixture_id": "LEGACY-SNAPSHOT-STALE-CHANGE-EXCEPTION",
+      "operations": [
+        {
+          "operation": "CHANGE",
+          "path": "tests/acp/__init__.py",
+          "source": "# governed inherited maintenance change\n"
+        }
+      ]
+    },
+    {
+      "change_exceptions": [
+        {
+          "affected_scope_id": "LEGACY-TEST-ROOT-001",
+          "after_content_sha256": "99bbd9ead6dd57a0c4c7af45fd8f0859b81c7962d14279ad3ef6048ce4536032",
+          "approval_ref": "APPROVAL-LEGACY-CHANGE-FIXTURE-001",
+          "baseline_path": "tests/acp/__init__.py",
+          "before_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "canonical_destination": "tests/contract/agent_collaboration/acp/__init__.py",
+          "change_exception_id": "LEGACY-CHANGE-FIXTURE-FORGED-SUBJECT",
+          "compatibility_owner": "compatibility",
+          "exact_subject_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "exact_subject_ref": "legacy-test-snapshot:36e089d8485e95423a844de954fc31937e8304ff9eecfd6b0a64f6816ec5ca91",
+          "exception_type": "LEGACY_TEST_CHANGE_EXCEPTION",
+          "expires_at": "2026-09-30T23:59:59Z",
+          "independent_migration_reviewer": "INDEPENDENT_TEST_MIGRATION_REVIEWER",
+          "migration_owner": "migration",
+          "new_ranex_behavior_forbidden": true,
+          "rationale": "Exercise exact in-place maintenance authorization.",
+          "replacement_plan_ref": "PLAN-LEGACY-MIGRATION-FIXTURE-001",
+          "schema_version": "legacy-test-change-exception/v1",
+          "status": "ACTIVE",
+          "test_governance_owner": "process_assurance"
+        }
+      ],
+      "expected_error": "LEGACY_TEST_CHANGE_EXCEPTION_SUBJECT",
+      "fixture_id": "LEGACY-SNAPSHOT-FORGED-CHANGE-SUBJECT",
+      "operations": [
+        {
+          "operation": "CHANGE",
+          "path": "tests/acp/__init__.py",
+          "source": "# governed inherited maintenance change\n"
+        }
+      ]
+    },
+    {
+      "change_exceptions": [
+        {
+          "affected_scope_id": "LEGACY-TEST-ROOT-001",
+          "after_content_sha256": "99bbd9ead6dd57a0c4c7af45fd8f0859b81c7962d14279ad3ef6048ce4536032",
+          "approval_ref": "APPROVAL-LEGACY-CHANGE-FIXTURE-001",
+          "baseline_path": "tests/acp/__init__.py",
+          "before_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "canonical_destination": "tests/contract/agent_collaboration/acp/__init__.py",
+          "change_exception_id": "LEGACY-CHANGE-FIXTURE-001",
+          "compatibility_owner": "compatibility",
+          "exact_subject_digest": "sha256:36e089d8485e95423a844de954fc31937e8304ff9eecfd6b0a64f6816ec5ca91",
+          "exact_subject_ref": "legacy-test-snapshot:36e089d8485e95423a844de954fc31937e8304ff9eecfd6b0a64f6816ec5ca91",
+          "exception_type": "LEGACY_TEST_CHANGE_EXCEPTION",
+          "expires_at": "2026-09-30T23:59:59Z",
+          "independent_migration_reviewer": "INDEPENDENT_TEST_MIGRATION_REVIEWER",
+          "migration_owner": "migration",
+          "new_ranex_behavior_forbidden": true,
+          "rationale": "Exercise exact in-place maintenance authorization.",
+          "replacement_plan_ref": "PLAN-LEGACY-MIGRATION-FIXTURE-001",
+          "schema_version": "legacy-test-change-exception/v1",
+          "status": "ACTIVE",
+          "test_governance_owner": "process_assurance"
+        }
+      ],
+      "expected_result": "MIGRATION_EXCEPTION_ACTIVE",
+      "fixture_id": "LEGACY-SNAPSHOT-VALID-IN-PLACE-CHANGE",
+      "operations": [
+        {
+          "operation": "CHANGE",
+          "path": "tests/acp/__init__.py",
+          "source": "# governed inherited maintenance change\n"
+        }
+      ]
+    },
+    {
+      "change_exceptions": [
+        {
+          "affected_scope_id": "LEGACY-TEST-ROOT-001",
+          "after_content_sha256": "d949e12a3b28cb2e866db4a28bbbc1401909d3079579482ae7b8a7d1fcf5b09b",
+          "approval_ref": "APPROVAL-LEGACY-CHANGE-FIXTURE-001",
+          "baseline_path": "tests/acp/__init__.py",
+          "before_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "canonical_destination": "tests/contract/agent_collaboration/acp/__init__.py",
+          "change_exception_id": "LEGACY-CHANGE-FIXTURE-RANEX-CORE",
+          "compatibility_owner": "compatibility",
+          "exact_subject_digest": "sha256:596592210f02b99072d0edc25bf4a1246f227b88f215224caadf9c025700fa7d",
+          "exact_subject_ref": "legacy-test-snapshot:596592210f02b99072d0edc25bf4a1246f227b88f215224caadf9c025700fa7d",
+          "exception_type": "LEGACY_TEST_CHANGE_EXCEPTION",
+          "expires_at": "2026-09-30T23:59:59Z",
+          "independent_migration_reviewer": "INDEPENDENT_TEST_MIGRATION_REVIEWER",
+          "migration_owner": "migration",
+          "new_ranex_behavior_forbidden": true,
+          "rationale": "Exercise exact in-place maintenance authorization.",
+          "replacement_plan_ref": "PLAN-LEGACY-MIGRATION-FIXTURE-001",
+          "schema_version": "legacy-test-change-exception/v1",
+          "status": "ACTIVE",
+          "test_governance_owner": "process_assurance"
+        }
+      ],
+      "expected_error": "LEGACY_TEST_NEW_RANEX_DEPENDENCY",
+      "fixture_id": "LEGACY-SNAPSHOT-VALID-RECORD-RANEX-CORE-REJECTED",
+      "operations": [
+        {
+          "operation": "CHANGE",
+          "path": "tests/acp/__init__.py",
+          "source": "from ranex.policy.api import AuthorizationSnapshot\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_MIGRATION_PROOF_MISSING",
+      "fixture_id": "LEGACY-SNAPSHOT-MOVE-WITHOUT-PROOF",
+      "operations": [
+        {
+          "content_sha256": "1a61a3ea543e759bf0d3f4bb59c67a49ac5d9d62dc58c17bb0edbe4517fd33a3",
+          "new_path": "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "operation": "MOVE",
+          "source": "# ranex-test-id: TEST-LEGACY-MIGRATION-FIXTURE-001\ndef test_migrated_legacy_behavior():\n    pass\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_MIGRATION_DESTINATION",
+      "fixture_id": "LEGACY-SNAPSHOT-BAD-MIGRATION-DESTINATION",
+      "migration_proofs": [
+        {
+          "adr0008_check_refs": [
+            "CHECK-ADR0008-001"
+          ],
+          "affected_scope_id": "LEGACY-TEST-ROOT-002",
+          "architecture_check_refs": [
+            "CHECK-ARCHITECTURE-001"
+          ],
+          "behavior_evidence_refs": [
+            "EVIDENCE-BEHAVIOR-EQUIVALENCE-001"
+          ],
+          "built_artifact_evidence_refs": [
+            "EVIDENCE-BUILT-ARTIFACT-001"
+          ],
+          "compatibility_owner_acceptance_ref": "ACCEPT-COMPATIBILITY-001",
+          "disposition": "MIGRATED",
+          "exact_subject_digest": "sha256:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "exact_subject_ref": "legacy-test-snapshot:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "independent_migration_review_ref": "REVIEW-MIGRATION-001",
+          "migration_owner_acceptance_ref": "ACCEPT-MIGRATION-001",
+          "new_paths": [
+            "legacy/not-present.py"
+          ],
+          "new_test_ids": [
+            "TEST-LEGACY-MIGRATION-FIXTURE-001"
+          ],
+          "old_content_sha256": "acff7d576bed2a72527c6a6a6f2b68cc53da1ab332354d27cff2eaa50dc66ed4",
+          "old_git_blob_oid_sha1": "4f8ca69ed85e9c3592b4713f5b15ca33a3b169a8",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "process_assurance_owner_acceptance_ref": "ACCEPT-PROCESS-001",
+          "proof_id": "LEGACY-MIGRATION-FIXTURE-BAD-DESTINATION",
+          "proof_type": "LEGACY_TEST_MIGRATION_PROOF_V1",
+          "record_type": "LEGACY_TEST_MIGRATION_RECORD",
+          "residual_reference_scan_refs": [
+            "SCAN-RESIDUAL-REFERENCE-001"
+          ],
+          "result": "PASS",
+          "retirement_rationale": "",
+          "schema_version": "legacy-test-migration-record/v1",
+          "status": "ACCEPTED"
+        }
+      ],
+      "operations": [
+        {
+          "content_sha256": "1a61a3ea543e759bf0d3f4bb59c67a49ac5d9d62dc58c17bb0edbe4517fd33a3",
+          "new_path": "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "operation": "MOVE",
+          "source": "# ranex-test-id: TEST-LEGACY-MIGRATION-FIXTURE-001\ndef test_migrated_legacy_behavior():\n    pass\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_MIGRATION_PROOF_SUBJECT",
+      "fixture_id": "LEGACY-SNAPSHOT-FORGED-MIGRATION-SUBJECT",
+      "migration_proofs": [
+        {
+          "adr0008_check_refs": [
+            "CHECK-ADR0008-001"
+          ],
+          "affected_scope_id": "LEGACY-TEST-ROOT-002",
+          "architecture_check_refs": [
+            "CHECK-ARCHITECTURE-001"
+          ],
+          "behavior_evidence_refs": [
+            "EVIDENCE-BEHAVIOR-EQUIVALENCE-001"
+          ],
+          "built_artifact_evidence_refs": [
+            "EVIDENCE-BUILT-ARTIFACT-001"
+          ],
+          "compatibility_owner_acceptance_ref": "ACCEPT-COMPATIBILITY-001",
+          "disposition": "MIGRATED",
+          "exact_subject_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+          "exact_subject_ref": "legacy-test-snapshot:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "independent_migration_review_ref": "REVIEW-MIGRATION-001",
+          "migration_owner_acceptance_ref": "ACCEPT-MIGRATION-001",
+          "new_paths": [
+            "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py"
+          ],
+          "new_test_ids": [
+            "TEST-LEGACY-MIGRATION-FIXTURE-001"
+          ],
+          "old_content_sha256": "acff7d576bed2a72527c6a6a6f2b68cc53da1ab332354d27cff2eaa50dc66ed4",
+          "old_git_blob_oid_sha1": "4f8ca69ed85e9c3592b4713f5b15ca33a3b169a8",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "process_assurance_owner_acceptance_ref": "ACCEPT-PROCESS-001",
+          "proof_id": "LEGACY-MIGRATION-FIXTURE-FORGED-SUBJECT",
+          "proof_type": "LEGACY_TEST_MIGRATION_PROOF_V1",
+          "record_type": "LEGACY_TEST_MIGRATION_RECORD",
+          "residual_reference_scan_refs": [
+            "SCAN-RESIDUAL-REFERENCE-001"
+          ],
+          "result": "PASS",
+          "retirement_rationale": "",
+          "schema_version": "legacy-test-migration-record/v1",
+          "status": "ACCEPTED"
+        }
+      ],
+      "operations": [
+        {
+          "content_sha256": "1a61a3ea543e759bf0d3f4bb59c67a49ac5d9d62dc58c17bb0edbe4517fd33a3",
+          "new_path": "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "operation": "MOVE",
+          "source": "# ranex-test-id: TEST-LEGACY-MIGRATION-FIXTURE-001\ndef test_migrated_legacy_behavior():\n    pass\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_MIGRATION_RECORD_SCHEMA",
+      "fixture_id": "LEGACY-SNAPSHOT-WRONG-MIGRATION-KIND",
+      "migration_proofs": [
+        {
+          "adr0008_check_refs": [
+            "CHECK-ADR0008-001"
+          ],
+          "affected_scope_id": "LEGACY-TEST-ROOT-002",
+          "architecture_check_refs": [
+            "CHECK-ARCHITECTURE-001"
+          ],
+          "behavior_evidence_refs": [
+            "EVIDENCE-BEHAVIOR-EQUIVALENCE-001"
+          ],
+          "built_artifact_evidence_refs": [
+            "EVIDENCE-BUILT-ARTIFACT-001"
+          ],
+          "compatibility_owner_acceptance_ref": "ACCEPT-COMPATIBILITY-001",
+          "disposition": "MIGRATED",
+          "exact_subject_digest": "sha256:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "exact_subject_ref": "legacy-test-snapshot:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "independent_migration_review_ref": "REVIEW-MIGRATION-001",
+          "migration_owner_acceptance_ref": "ACCEPT-MIGRATION-001",
+          "new_paths": [
+            "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py"
+          ],
+          "new_test_ids": [
+            "TEST-LEGACY-MIGRATION-FIXTURE-001"
+          ],
+          "old_content_sha256": "acff7d576bed2a72527c6a6a6f2b68cc53da1ab332354d27cff2eaa50dc66ed4",
+          "old_git_blob_oid_sha1": "4f8ca69ed85e9c3592b4713f5b15ca33a3b169a8",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "process_assurance_owner_acceptance_ref": "ACCEPT-PROCESS-001",
+          "proof_id": "LEGACY-MIGRATION-FIXTURE-WRONG-KIND",
+          "proof_type": "LEGACY_TEST_MIGRATION_PROOF_V1",
+          "record_type": "LEGACY_TEST_CHANGE_EXCEPTION",
+          "residual_reference_scan_refs": [
+            "SCAN-RESIDUAL-REFERENCE-001"
+          ],
+          "result": "PASS",
+          "retirement_rationale": "",
+          "schema_version": "legacy-test-migration-record/v1",
+          "status": "ACCEPTED"
+        }
+      ],
+      "operations": [
+        {
+          "content_sha256": "1a61a3ea543e759bf0d3f4bb59c67a49ac5d9d62dc58c17bb0edbe4517fd33a3",
+          "new_path": "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "operation": "MOVE",
+          "source": "# ranex-test-id: TEST-LEGACY-MIGRATION-FIXTURE-001\ndef test_migrated_legacy_behavior():\n    pass\n"
+        }
+      ]
+    },
+    {
+      "expected_result": "MIGRATION_EXCEPTION_ACTIVE",
+      "fixture_id": "LEGACY-SNAPSHOT-VALID-MIGRATION-RECORD",
+      "migration_proofs": [
+        {
+          "adr0008_check_refs": [
+            "CHECK-ADR0008-001"
+          ],
+          "affected_scope_id": "LEGACY-TEST-ROOT-002",
+          "architecture_check_refs": [
+            "CHECK-ARCHITECTURE-001"
+          ],
+          "behavior_evidence_refs": [
+            "EVIDENCE-BEHAVIOR-EQUIVALENCE-001"
+          ],
+          "built_artifact_evidence_refs": [
+            "EVIDENCE-BUILT-ARTIFACT-001"
+          ],
+          "compatibility_owner_acceptance_ref": "ACCEPT-COMPATIBILITY-001",
+          "disposition": "MIGRATED",
+          "exact_subject_digest": "sha256:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "exact_subject_ref": "legacy-test-snapshot:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "independent_migration_review_ref": "REVIEW-MIGRATION-001",
+          "migration_owner_acceptance_ref": "ACCEPT-MIGRATION-001",
+          "new_paths": [
+            "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py"
+          ],
+          "new_test_ids": [
+            "TEST-LEGACY-MIGRATION-FIXTURE-001"
+          ],
+          "old_content_sha256": "acff7d576bed2a72527c6a6a6f2b68cc53da1ab332354d27cff2eaa50dc66ed4",
+          "old_git_blob_oid_sha1": "4f8ca69ed85e9c3592b4713f5b15ca33a3b169a8",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "process_assurance_owner_acceptance_ref": "ACCEPT-PROCESS-001",
+          "proof_id": "LEGACY-MIGRATION-FIXTURE-001",
+          "proof_type": "LEGACY_TEST_MIGRATION_PROOF_V1",
+          "record_type": "LEGACY_TEST_MIGRATION_RECORD",
+          "residual_reference_scan_refs": [
+            "SCAN-RESIDUAL-REFERENCE-001"
+          ],
+          "result": "PASS",
+          "retirement_rationale": "",
+          "schema_version": "legacy-test-migration-record/v1",
+          "status": "ACCEPTED"
+        }
+      ],
+      "operations": [
+        {
+          "content_sha256": "1a61a3ea543e759bf0d3f4bb59c67a49ac5d9d62dc58c17bb0edbe4517fd33a3",
+          "new_path": "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "operation": "MOVE",
+          "source": "# ranex-test-id: TEST-LEGACY-MIGRATION-FIXTURE-001\ndef test_migrated_legacy_behavior():\n    pass\n"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_POLICY_EXPIRED",
+      "fixture_id": "LEGACY-SNAPSHOT-EXPIRED-POLICY",
+      "now": "2026-11-01T00:00:00Z",
+      "operations": []
+    },
+    {
+      "expected_error": "LEGACY_TEST_MIGRATION_PROOF_MISSING",
+      "fixture_id": "LEGACY-SNAPSHOT-COUNT-ONLY-CUTOVER",
+      "operations": [
+        {
+          "operation": "REMOVE_ALL"
+        }
+      ]
+    },
+    {
+      "expected_error": "LEGACY_TEST_UNAUTHORIZED_CONTENT_CHANGE",
+      "fixture_id": "LEGACY-SNAPSHOT-NONCOMPENSATING",
+      "operations": [
+        {
+          "operation": "CHANGE",
+          "path": "tests/acp/__init__.py",
+          "source": "# governed inherited maintenance change\n"
+        }
+      ],
+      "other_rule_pass_count": 56
+    },
+    {
+      "change_exceptions": [
+        {
+          "affected_scope_id": "LEGACY-TEST-ROOT-001",
+          "after_content_sha256": "99bbd9ead6dd57a0c4c7af45fd8f0859b81c7962d14279ad3ef6048ce4536032",
+          "approval_ref": "APPROVAL-LEGACY-CHANGE-FIXTURE-001",
+          "baseline_path": "tests/acp/__init__.py",
+          "before_content_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "canonical_destination": "tests/contract/agent_collaboration/acp/__init__.py",
+          "change_exception_id": "LEGACY-CHANGE-FIXTURE-001",
+          "compatibility_owner": "compatibility",
+          "exact_subject_digest": "sha256:36e089d8485e95423a844de954fc31937e8304ff9eecfd6b0a64f6816ec5ca91",
+          "exact_subject_ref": "legacy-test-snapshot:36e089d8485e95423a844de954fc31937e8304ff9eecfd6b0a64f6816ec5ca91",
+          "exception_type": "LEGACY_TEST_CHANGE_EXCEPTION",
+          "expires_at": "2026-09-30T23:59:59Z",
+          "independent_migration_reviewer": "INDEPENDENT_TEST_MIGRATION_REVIEWER",
+          "migration_owner": "migration",
+          "new_ranex_behavior_forbidden": true,
+          "rationale": "Exercise exact in-place maintenance authorization.",
+          "replacement_plan_ref": "PLAN-LEGACY-MIGRATION-FIXTURE-001",
+          "schema_version": "legacy-test-change-exception/v1",
+          "status": "ACTIVE",
+          "test_governance_owner": "process_assurance"
+        }
+      ],
+      "expected_error": "LEGACY_TEST_STANDING_CHANGE_EXCEPTION",
+      "fixture_id": "LEGACY-SNAPSHOT-UNUSED-CHANGE-EXCEPTION",
+      "operations": []
+    },
+    {
+      "expected_error": "LEGACY_TEST_STANDING_MIGRATION_PROOF",
+      "fixture_id": "LEGACY-SNAPSHOT-UNUSED-MIGRATION-PROOF",
+      "migration_proofs": [
+        {
+          "adr0008_check_refs": [
+            "CHECK-ADR0008-001"
+          ],
+          "affected_scope_id": "LEGACY-TEST-ROOT-002",
+          "architecture_check_refs": [
+            "CHECK-ARCHITECTURE-001"
+          ],
+          "behavior_evidence_refs": [
+            "EVIDENCE-BEHAVIOR-EQUIVALENCE-001"
+          ],
+          "built_artifact_evidence_refs": [
+            "EVIDENCE-BUILT-ARTIFACT-001"
+          ],
+          "compatibility_owner_acceptance_ref": "ACCEPT-COMPATIBILITY-001",
+          "disposition": "MIGRATED",
+          "exact_subject_digest": "sha256:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "exact_subject_ref": "legacy-test-snapshot:edf400810b799fe80205d45c54d5954d70467ca1ee55df42b104d51a1869325b",
+          "independent_migration_review_ref": "REVIEW-MIGRATION-001",
+          "migration_owner_acceptance_ref": "ACCEPT-MIGRATION-001",
+          "new_paths": [
+            "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py"
+          ],
+          "new_test_ids": [
+            "TEST-LEGACY-MIGRATION-FIXTURE-001"
+          ],
+          "old_content_sha256": "acff7d576bed2a72527c6a6a6f2b68cc53da1ab332354d27cff2eaa50dc66ed4",
+          "old_git_blob_oid_sha1": "4f8ca69ed85e9c3592b4713f5b15ca33a3b169a8",
+          "old_path": "tests/acp_adapter/test_acp_commands.py",
+          "process_assurance_owner_acceptance_ref": "ACCEPT-PROCESS-001",
+          "proof_id": "LEGACY-MIGRATION-FIXTURE-001",
+          "proof_type": "LEGACY_TEST_MIGRATION_PROOF_V1",
+          "record_type": "LEGACY_TEST_MIGRATION_RECORD",
+          "residual_reference_scan_refs": [
+            "SCAN-RESIDUAL-REFERENCE-001"
+          ],
+          "result": "PASS",
+          "retirement_rationale": "",
+          "schema_version": "legacy-test-migration-record/v1",
+          "status": "ACCEPTED"
+        }
+      ],
+      "operations": [
+        {
+          "operation": "ADD",
+          "path": "tests/integration/agent_collaboration/acp_adapter/test_acp_commands.py",
+          "source": "# ranex-test-id: TEST-LEGACY-MIGRATION-FIXTURE-001\ndef test_migrated_legacy_behavior():\n    pass\n"
+        }
+      ]
+    },
+    {
+      "cutover_removal_records": [
+        {
+          "adr0008_gate_evidence_refs": [
+            "GATE-ADR0008-001"
+          ],
+          "architecture_gate_evidence_refs": [
+            "GATE-ARCHITECTURE-001"
+          ],
+          "baseline_disposition_count": 2444,
+          "baseline_file_manifest_sha256": "e550a598da0e226a94a7b15c9a0ace9c48a58e04df146bbe044a7cedcc41e463",
+          "baseline_id": "HERMES-TEST-BASELINE-001",
+          "compatibility_owner_acceptance_ref": "ACCEPT-COMPATIBILITY-001",
+          "cutover_removal_record_id": "LEGACY-CUTOVER-FIXTURE-STANDING",
+          "destination_test_evidence_refs": [
+            "EVIDENCE-DESTINATION-001"
+          ],
+          "exact_subject_digest": "sha256:80a0d8cf0fb8ade99753a1dcbdc0389ffff0a89ef524ea20d3c3f03bba23be9d",
+          "exact_subject_ref": "legacy-test-snapshot:80a0d8cf0fb8ade99753a1dcbdc0389ffff0a89ef524ea20d3c3f03bba23be9d",
+          "independent_migration_review_ref": "REVIEW-CUTOVER-001",
+          "migration_owner_acceptance_ref": "ACCEPT-MIGRATION-001",
+          "open_change_exception_count": 0,
+          "policy_id": "RANEX-LEGACY-TEST-LAYOUT-1.0",
+          "process_assurance_owner_acceptance_ref": "ACCEPT-PROCESS-001",
+          "record_type": "LEGACY_TEST_CUTOVER_REMOVAL_RECORD_V1",
+          "recorded_at": "2026-07-28T00:00:00Z",
+          "remaining_inherited_file_count": 0,
+          "result": "PASS",
+          "runner_import_configuration_scan_refs": [
+            "SCAN-RUNNER-001"
+          ],
+          "schema_version": "legacy-test-cutover-removal-record/v1",
+          "status": "ACCEPTED"
+        }
+      ],
+      "expected_error": "LEGACY_TEST_STANDING_CUTOVER_RECORD",
+      "fixture_id": "LEGACY-SNAPSHOT-UNUSED-CUTOVER-RECORD",
+      "operations": []
+    }
+  ],
+  "fixture_suite": "ADR0010_SNAPSHOT_AND_RECORD_SEMANTICS"
+}

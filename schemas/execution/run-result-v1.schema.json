@@ -1,0 +1,641 @@
+{
+  "$id": "https://schemas.ranex.dev/execution/run-result-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "artifact_type": {
+      "const": "run_result"
+    },
+    "artifacts": {
+      "items": {},
+      "type": "array"
+    },
+    "assumptions": {
+      "items": {},
+      "type": "array"
+    },
+    "claims": {
+      "items": {},
+      "type": "array"
+    },
+    "commands": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "argv": {
+            "items": {},
+            "type": "array"
+          },
+          "classification": {
+            "type": "string"
+          },
+          "command_id": {
+            "type": "string"
+          },
+          "cwd_repository_relative": {
+            "type": "string"
+          },
+          "environment_allowlist_digest": {
+            "type": "string",
+            "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "executable_digest": {
+            "type": "string",
+            "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+          },
+          "executable_id": {
+            "type": "string"
+          },
+          "exit_status": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "finished_at": {
+            "type": "string",
+            "x-ranex-runtime-format": "date-time"
+          },
+          "redaction_status": {
+            "type": "string"
+          },
+          "started_at": {
+            "type": "string",
+            "x-ranex-runtime-format": "date-time"
+          },
+          "stderr_artifact_ref": {
+            "type": "string"
+          },
+          "stdout_artifact_ref": {
+            "type": "string"
+          },
+          "subject_commit": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "command_id",
+          "argv",
+          "cwd_repository_relative",
+          "environment_allowlist_digest",
+          "executable_id",
+          "executable_digest",
+          "subject_commit",
+          "exit_status",
+          "started_at",
+          "finished_at",
+          "stdout_artifact_ref",
+          "stderr_artifact_ref",
+          "redaction_status",
+          "classification"
+        ],
+        "type": "object"
+      },
+      "type": "array"
+    },
+    "compatibility_impact": {
+      "items": {},
+      "type": "array"
+    },
+    "completed_scope": {
+      "items": {},
+      "type": "array"
+    },
+    "conflicts": {
+      "items": {},
+      "type": "array"
+    },
+    "core_sdlc_trace_ref": {
+      "type": "string"
+    },
+    "dependency_edges_changed": {
+      "items": {},
+      "type": "array"
+    },
+    "deviations": {
+      "items": {},
+      "type": "array"
+    },
+    "digest": {
+      "type": "string",
+      "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "evidence_refs": {
+      "items": {},
+      "type": "array"
+    },
+    "files_changed": {
+      "items": {},
+      "type": "array"
+    },
+    "generated_files_changed": {
+      "items": {},
+      "type": "array"
+    },
+    "limitations": {
+      "items": {},
+      "type": "array"
+    },
+    "migrations_changed": {
+      "items": {},
+      "type": "array"
+    },
+    "producer": {
+      "additionalProperties": false,
+      "properties": {
+        "model_id": {
+          "type": "string"
+        },
+        "principal_id": {
+          "type": "string"
+        },
+        "provider_id": {
+          "type": "string"
+        },
+        "role_id": {
+          "type": "string"
+        },
+        "route_lock_id": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "transport_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "principal_id",
+        "role_id",
+        "provider_id",
+        "model_id",
+        "transport_id",
+        "route_lock_id",
+        "session_id"
+      ],
+      "type": "object"
+    },
+    "result_id": {
+      "type": "string"
+    },
+    "rollback": {
+      "items": {},
+      "type": "array"
+    },
+    "schema_version": {
+      "const": "1"
+    },
+    "security_impact": {
+      "items": {},
+      "type": "array"
+    },
+    "status": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "subject": {
+      "additionalProperties": false,
+      "properties": {
+        "activity_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "artifact_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "base_commit": {
+          "type": "string"
+        },
+        "candidate_commit": {
+          "type": "string"
+        },
+        "capability_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effect_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected_run_aggregate_version": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "module_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "module_profile_id": {
+          "type": "string"
+        },
+        "packet_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "packet_id": {
+          "type": "string"
+        },
+        "policy_activation_id": {
+          "type": "string"
+        },
+        "policy_activation_manifest_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "policy_decision_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "project_id": {
+          "type": "string"
+        },
+        "repository_id": {
+          "type": "string"
+        },
+        "repository_uri_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "route_lock_id": {
+          "type": "string"
+        },
+        "run_id": {
+          "type": "string"
+        },
+        "schema_registry_version": {
+          "type": "string"
+        },
+        "subject_schema": {
+          "type": "string"
+        },
+        "work_item_id": {
+          "type": "string"
+        },
+        "workflow_definition_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "workflow_definition_id": {
+          "type": "string"
+        },
+        "workflow_interpreter_version": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "subject_schema",
+        "project_id",
+        "work_item_id",
+        "run_id",
+        "activity_id",
+        "effect_id",
+        "workspace_id",
+        "repository_id",
+        "repository_uri_digest",
+        "packet_id",
+        "packet_digest",
+        "base_commit",
+        "candidate_commit",
+        "artifact_digest",
+        "workflow_definition_id",
+        "workflow_definition_digest",
+        "workflow_interpreter_version",
+        "policy_activation_id",
+        "policy_activation_manifest_digest",
+        "policy_decision_digest",
+        "module_profile_id",
+        "module_profile_digest",
+        "capability_grant_digest",
+        "route_lock_id",
+        "schema_registry_version",
+        "expected_run_aggregate_version"
+      ],
+      "type": "object"
+    },
+    "tests": {
+      "items": {},
+      "type": "array"
+    },
+    "uncompleted_scope": {
+      "items": {},
+      "type": "array"
+    },
+    "unknowns": {
+      "items": {},
+      "type": "array"
+    },
+    "upstream_sync_impact": {
+      "items": {},
+      "type": "array"
+    },
+    "worker_runtime_evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "auth_route_class": {
+          "type": "string"
+        },
+        "cancellation_terminal_event_drained": {
+          "type": "boolean"
+        },
+        "capability_bus_effect_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "compaction_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "effective_auth_subject_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effective_capability_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effective_capability_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "effective_runtime_tool_names": {
+          "items": {},
+          "type": "array"
+        },
+        "effective_tool_grant_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "effective_tool_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "evidence_refs": {
+          "items": {},
+          "type": "array"
+        },
+        "full_model_id_configured": {
+          "type": "string"
+        },
+        "full_model_id_observed": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "model_observation_status": {
+          "type": "string"
+        },
+        "model_usage_model_ids": {
+          "items": {},
+          "type": "array"
+        },
+        "num_turns": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_adapter_fallback_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_auxiliary_model_call_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_model_fallback_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_nested_worker_lineage_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_provider_fallback_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_provider_model_call_count": {
+          "minimum": 0,
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "observed_route_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_worker_coordination_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_worker_delegation_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "observed_worker_spawn_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "official_subscription_runtime_observed": {
+          "type": "boolean"
+        },
+        "post_cancel_event_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "post_cancel_quarantined": {
+          "type": "boolean"
+        },
+        "pre_tool_gateway_observation_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "process_tree_empty_after_cleanup": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "retry_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "role_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "role_profile_id": {
+          "type": "string"
+        },
+        "route_lock_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "route_lock_id": {
+          "type": "string"
+        },
+        "runtime_adapter_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "runtime_adapter_id": {
+          "type": "string"
+        },
+        "runtime_adapter_version": {
+          "type": "string"
+        },
+        "sandbox_profile_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "sdk_disconnected": {
+          "type": "boolean"
+        },
+        "session_affinity_digest": {
+          "type": "string",
+          "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "supervisor_cleanup_verified": {
+          "type": "boolean"
+        },
+        "task_tool_count": {
+          "minimum": 0,
+          "type": "integer"
+        },
+        "tool_attempt_count": {
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "role_profile_id",
+        "role_profile_digest",
+        "runtime_adapter_id",
+        "runtime_adapter_version",
+        "runtime_adapter_digest",
+        "full_model_id_configured",
+        "full_model_id_observed",
+        "model_observation_status",
+        "route_lock_id",
+        "route_lock_digest",
+        "auth_route_class",
+        "official_subscription_runtime_observed",
+        "effective_auth_subject_digest",
+        "effective_tool_ids",
+        "effective_runtime_tool_names",
+        "effective_tool_grant_digest",
+        "effective_capability_ids",
+        "effective_capability_grant_digest",
+        "sandbox_profile_digest",
+        "session_affinity_digest",
+        "observed_route_count",
+        "observed_worker_spawn_count",
+        "observed_worker_delegation_count",
+        "observed_worker_coordination_count",
+        "observed_adapter_fallback_count",
+        "observed_provider_fallback_count",
+        "observed_model_fallback_count",
+        "observed_auxiliary_model_call_count",
+        "observed_nested_worker_lineage_count",
+        "observed_provider_model_call_count",
+        "model_usage_model_ids",
+        "num_turns",
+        "task_tool_count",
+        "retry_count",
+        "compaction_count",
+        "tool_attempt_count",
+        "pre_tool_gateway_observation_count",
+        "capability_bus_effect_count",
+        "cancellation_terminal_event_drained",
+        "sdk_disconnected",
+        "supervisor_cleanup_verified",
+        "process_tree_empty_after_cleanup",
+        "post_cancel_event_count",
+        "post_cancel_quarantined",
+        "evidence_refs"
+      ],
+      "type": "object"
+    },
+    "workspace_observation": {
+      "additionalProperties": false,
+      "properties": {
+        "dirty_state": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "observed_at": {
+          "type": "string",
+          "x-ranex-runtime-format": "date-time"
+        },
+        "status_artifact_ref": {
+          "type": "string"
+        },
+        "workspace_tree_digest": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "dirty_state",
+        "workspace_tree_digest",
+        "status_artifact_ref",
+        "observed_at"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "schema_version",
+    "artifact_type",
+    "result_id",
+    "producer",
+    "subject",
+    "core_sdlc_trace_ref",
+    "workspace_observation",
+    "worker_runtime_evidence",
+    "status",
+    "completed_scope",
+    "uncompleted_scope",
+    "files_changed",
+    "dependency_edges_changed",
+    "migrations_changed",
+    "generated_files_changed",
+    "commands",
+    "tests",
+    "artifacts",
+    "evidence_refs",
+    "claims",
+    "assumptions",
+    "unknowns",
+    "conflicts",
+    "deviations",
+    "security_impact",
+    "compatibility_impact",
+    "upstream_sync_impact",
+    "rollback",
+    "limitations",
+    "digest"
+  ],
+  "title": "run_result",
+  "type": "object",
+  "x-ranex-canonical-producer": "agent_collaboration",
+  "x-ranex-runtime-semantics": "scripts/architecture/validate_contracts.py",
+  "x-ranex-template": "docs/architecture/templates/RUN_RESULT.yaml"
+}

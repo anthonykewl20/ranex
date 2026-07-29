@@ -1,0 +1,143 @@
+{
+  "entries": [
+    {
+      "digest": "sha256:79bc187481b5015bdbd221912e910b373e7f6a277d09d6e33f42599457ea705e",
+      "path": "architecture/contracts/accepted-adrs.json"
+    },
+    {
+      "digest": "sha256:70aa533eb87375970768ee6effc259aa26bf425c2277886d7a88e11c03619042",
+      "path": "architecture/contracts/applicability-rules.json"
+    },
+    {
+      "digest": "sha256:3d5f4ebf1f8ec9adbbc861ab2e712e58267f7aee8b388693aaf0254425ab659d",
+      "path": "architecture/contracts/architecture-element-assessments.json"
+    },
+    {
+      "digest": "sha256:e8bd6805f9159d1772949a6b68b5e88cde78f513f409e1ddced81a758663bfd8",
+      "path": "architecture/contracts/architecture-elements.json"
+    },
+    {
+      "digest": "sha256:e0f408e57e905549324e854ba5abf68c9e8b296a7227bffd2b577c3910707091",
+      "path": "architecture/contracts/architecture-rule-assessments.json"
+    },
+    {
+      "digest": "sha256:97427f4b4142d0f279fdc04c0b6144f14fe68e7c966e882c443874a5e5d52da6",
+      "path": "architecture/contracts/artifact-types.json"
+    },
+    {
+      "digest": "sha256:a3c11cde2bd9d477159d5c947ffcea61e620d796a22d05bab8f94d2c1a69f6e0",
+      "path": "architecture/contracts/context-boundary-fitness.json"
+    },
+    {
+      "digest": "sha256:79ae2bfdfa7396f1d2f81b6d0be352b38dbbf04f5559108f2f43ea048d1f4086",
+      "path": "architecture/contracts/context-coupling-policy.json"
+    },
+    {
+      "digest": "sha256:f854299cab4b51f8f0348bf3b542fed1708cf8c95f354b42320f0a4a21576249",
+      "path": "architecture/contracts/context-dependency-edges.json"
+    },
+    {
+      "digest": "sha256:64738439284bc5c0991c13f993a38ab8ac76e4235c8f50852a064cbdd9c5596e",
+      "path": "architecture/contracts/contexts.json"
+    },
+    {
+      "digest": "sha256:8f418b8d1991cb76355c413f0c51e9935868e9261435fede0a1b12aca4942320",
+      "path": "architecture/contracts/data-ownership.json"
+    },
+    {
+      "digest": "sha256:4880e6773aab9de46fc33594d838a1e54bd24b9880b9a758f3c3e811646ed72e",
+      "path": "architecture/contracts/decisions.json"
+    },
+    {
+      "digest": "sha256:5c5733ddebbb4b750a1cb61a08f63b47dd46b24900972e0c907b725969e7a2f4",
+      "path": "architecture/contracts/effects.json"
+    },
+    {
+      "digest": "sha256:6f6b0cdcea9cecb2b4d3dbc1c9ec53cbc1eae717c84f0b4a087ceef623016cc4",
+      "path": "architecture/contracts/engineering-practice-profiles.json"
+    },
+    {
+      "digest": "sha256:da41a73f556acca35ec3a6b3bd28d1e788bb4f1edc10a5eaf4e4370d94cbb43a",
+      "path": "architecture/contracts/engineering-practices.json"
+    },
+    {
+      "digest": "sha256:76b82774fca031a295791fc0a211b9570285707f49101e3b6f6da9fcdbc147d1",
+      "path": "architecture/contracts/events.json"
+    },
+    {
+      "digest": "sha256:405551d426070bf960bcaa4758bb143fe5c4e57ff4e90316387bfda268c0869e",
+      "path": "architecture/contracts/feedback-fitness.json"
+    },
+    {
+      "digest": "sha256:8ddf236f2f5dd42526389939a348b42717c53fb2f79e4880e47061a7d01a8b64",
+      "path": "architecture/contracts/identities.json"
+    },
+    {
+      "digest": "sha256:e3aba0f4631f84c2a9baba9bbacfe7c29115b781cf1f45dc12c37e6f70fef421",
+      "path": "architecture/contracts/legacy-test-layout-policy.json"
+    },
+    {
+      "digest": "sha256:9b94991b635995759dd8c8244f2d747701bc06c44d24de1e009bc137ad66b07b",
+      "path": "architecture/contracts/legacy-test-layout-records.json"
+    },
+    {
+      "digest": "sha256:ff742137c320606d2c60998baedbfab1e8784d30d5c77f91b7aeb3aaadf01aae",
+      "path": "architecture/contracts/paths.json"
+    },
+    {
+      "digest": "sha256:7ce8ccde49b5c9e0cab085ddbe56f0e382c224a2595d08924c5c575a447c5f88",
+      "path": "architecture/contracts/priority-rules.json"
+    },
+    {
+      "digest": "sha256:cc2a2c81f1618317cf1f87dcdbd68d89cd885e48672e7fe92128b2be9f541f82",
+      "path": "architecture/contracts/runtime-adapters.json"
+    },
+    {
+      "digest": "sha256:4db1adb330f2c9b1cc0abd78b4b0285dccef5cfef41bef80281a7c45ec1ccdc3",
+      "path": "architecture/contracts/schema-registry.json"
+    },
+    {
+      "digest": "sha256:bb416d727f856429ce8a01685a55db34ea7ce77b45d5d601e2c6cd669aa84ea1",
+      "path": "architecture/contracts/states.json"
+    },
+    {
+      "digest": "sha256:c4f7dac93151c1b6518a984699505a2b6a56bb560582eb96a5103b1fc52dab21",
+      "path": "architecture/contracts/tdd-cycle-records.json"
+    },
+    {
+      "digest": "sha256:795758cfc982cd88119ab459726e5197513948d0ad04edf60c56542c7b32e38c",
+      "path": "architecture/contracts/tdd-exception-records.json"
+    },
+    {
+      "digest": "sha256:c9ca9d4f5c6ee4617af2b4d289d41d9486b6d48984a7091d3dcd0b6dd5d9e5c5",
+      "path": "architecture/contracts/test-deletion-records.json"
+    },
+    {
+      "digest": "sha256:4b25d4e2c2e09d78a373749a8a107b947d0b2836e601fd11bb61bf80f0c3c398",
+      "path": "architecture/contracts/test-practice-profiles.json"
+    },
+    {
+      "digest": "sha256:de683eb889c2e0c889c94b4b375d1611b995d375f39eb1f1ee3c92eb8675ace3",
+      "path": "architecture/contracts/test-practices.json"
+    },
+    {
+      "digest": "sha256:494d407bc4f9f789d799ee5b5919240c7f2b1a5c314b3c12ff2403275ac632aa",
+      "path": "architecture/contracts/test-quarantine-records.json"
+    },
+    {
+      "digest": "sha256:bcd45350e29e4848a7f9c62de3cdcdf148a9b783bcc4ceef6135958a33e4cddd",
+      "path": "architecture/contracts/topology-rules.json"
+    },
+    {
+      "digest": "sha256:226331d24a21bf452c78e430363a7f29c2134f5dcd699290c09883b441aaaecb",
+      "path": "architecture/contracts/vital-profile.json"
+    },
+    {
+      "digest": "sha256:07a29ac7a312a7b6f1f8ae3745a99f684a994a85ae2f3fb4adac789dbc4a296f",
+      "path": "architecture/contracts/worker-role-profiles.json"
+    }
+  ],
+  "manifest_id": "RANEX-CONTRACT-REGISTRY-MANIFEST-001",
+  "self_listing_rule": "This manifest excludes itself to avoid a circular digest.",
+  "version": "1.0.0"
+}

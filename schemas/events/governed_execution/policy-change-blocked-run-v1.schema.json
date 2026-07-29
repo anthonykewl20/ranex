@@ -1,0 +1,98 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/policy-change-blocked-run-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "invalidation_reason_codes": {
+      "items": {
+        "maxLength": 1024,
+        "minLength": 1,
+        "pattern": ".*\\S.*",
+        "type": "string"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "new_policy_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "PolicyActivation",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "PolicyActivation"
+    },
+    "old_policy_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "PolicyActivation",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "PolicyActivation"
+    },
+    "reevaluation_required": {
+      "type": "boolean"
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "run_id",
+    "old_policy_ref",
+    "new_policy_ref",
+    "invalidation_reason_codes",
+    "reevaluation_required"
+  ],
+  "title": "PolicyChangeBlockedRun event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-POLICYCHANGEBLOCKEDRUN",
+  "x-ranex-event-name": "PolicyChangeBlockedRun",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:PolicyChangeBlockedRun:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "PolicyChangeBlockedRun",
+    "referenced_axis_ids": [
+      "RunStatus"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:1f9d870bcd82ccfeb3c167603b30814ba42d6cee9ec3d276ed6448b53d5fb9b0"
+}

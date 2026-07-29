@@ -1,10 +1,14 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: evidence_snapshot
 snapshot_id: "snapshot_<uuidv7>"
-subject_ref: "exact-subject/v1"
+subject_schema: null
+subject_ref: ""
 subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
 policy_activation_id: ""
+policy_activation_manifest_digest: ""
 required_claim_ids: []
 eligible_evidence_refs: []
 ineligible_evidence:

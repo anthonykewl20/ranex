@@ -1,0 +1,98 @@
+{
+  "$id": "https://schemas.ranex.dev/events/work_management/risk-lane-bound-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "required_gate_ids": {
+      "items": {
+        "maxLength": 255,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+        "type": "string",
+        "x-ranex-id-type": "Gate",
+        "x-ranex-registered-opaque-id": true
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "required_review_roles": {
+      "items": {
+        "maxLength": 255,
+        "minLength": 1,
+        "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+        "type": "string",
+        "x-ranex-id-type": "Role",
+        "x-ranex-registered-opaque-id": true
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "risk_assessment_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "RiskAssessment",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "RiskAssessment"
+    },
+    "risk_lane": {
+      "enum": [
+        "STANDARD",
+        "ENHANCED",
+        "CRITICAL",
+        "EMERGENCY"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#RiskLane@1.0.0"
+    },
+    "work_item_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "WorkItem",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "work_item_id",
+    "risk_assessment_ref",
+    "risk_lane",
+    "required_gate_ids",
+    "required_review_roles"
+  ],
+  "title": "RiskLaneBound event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-RISKLANEBOUND",
+  "x-ranex-event-name": "RiskLaneBound",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:RiskLaneBound:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "RiskLaneBound",
+    "referenced_axis_ids": [
+      "RiskLane"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:ebc7d3417ebd49115707b4e635837684bd08c7c21218681e31da8749438c06e5"
+}

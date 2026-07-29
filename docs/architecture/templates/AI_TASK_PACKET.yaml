@@ -1,8 +1,8 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: ai_task_packet
 packet_id: "pkt_<uuidv7>"
-status: READY
+status: DRAFT # PacketStatus
 
 subject:
   subject_schema: "exact-subject/v1"
@@ -21,6 +21,7 @@ subject:
   workflow_definition_digest: ""
   workflow_interpreter_version: ""
   policy_activation_id: ""
+  policy_activation_manifest_digest: ""
   policy_decision_digest: ""
   module_profile_id: ""
   module_profile_digest: ""
@@ -29,19 +30,7 @@ subject:
   schema_registry_version: ""
   expected_run_aggregate_version: 0
 
-core_sdlc:
-  work_item_status: READY
-  work_class: ""
-  risk_lane: ""
-  risk_decision_ref: ""
-  definition_of_ready_evidence_ref: ""
-  owner_refs: []
-  outcome_measure_ids: []
-  requirement_ids: []
-  acceptance_criterion_ids: []
-  configuration_baseline_id: ""
-  configuration_baseline_digest: ""
-  invalidation_dependency_ids: []
+core_sdlc_trace_ref: ""
 
 objective: ""
 scope: []
@@ -52,9 +41,84 @@ authority:
   architecture_revision: ""
   accepted_adr_refs: []
   contract_digests: []
-  policy_activation_id: ""
   policy_digest: ""
   risk_lane: ""
+  # Deterministically compiled by instruction_registry/context_compilation.
+  # An excluded rule requires a typed applicability reason and evidence; it is
+  # never omitted merely to fit the model context.
+  rule_activation_manifest:
+    instruction_registry_version: ""
+    instruction_registry_digest: ""
+    included_rule_refs: []
+    excluded_rules:
+      - rule_ref: ""
+        applicability_result: UNKNOWN # APPLICABLE | NOT_APPLICABLE | UNKNOWN
+        reason_code: ""
+        evidence_refs: []
+    conflict_refs: []
+    context_budget:
+      rule_tokens: null
+      task_tokens: null
+
+engineering_practice_profile:
+  schema_version: "engineering-practice-profile/v1"
+  registry_version: ""
+  registry_digest: "sha256:<hex>"
+  application_map_revision: ""
+  application_map_digest: "sha256:<hex>"
+  # Every source family is evaluated. A material UNKNOWN blocks SEALED/READY.
+  source_coverage:
+    - source_family_id: ENGREF-SWEBOK-V4A
+      applicability: UNKNOWN # APPLICABLE | NOT_APPLICABLE | UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CODE-COMPLETE-CH5
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CLEAN-CODE
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-PRAGMATIC-PROGRAMMER-1E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-SYSTEM-DESIGN-INTERVIEW-2E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CLEAN-CODER
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-DDIA-1E-ER6
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-FUNDAMENTALS-SOFTWARE-ARCHITECTURE-1E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-CLEAN-ARCHITECTURE-1E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+    - source_family_id: ENGREF-APOSD-1E
+      applicability: UNKNOWN
+      reason: ""
+      evidence_refs: []
+  applicable_practices:
+    - practice_id: ""
+      required_behavior: ""
+      verification_refs: []
+  deviations:
+    - practice_id: ""
+      reason: ""
+      consequence: ""
+      decision_ref: ""
+  material_unknowns: []
+  digest: "sha256:<hex>"
 
 architecture_bounds:
   contexts_allowed_to_change: []
@@ -82,6 +146,62 @@ grants:
   network_destinations: []
   data_classifications: []
   secret_handles: []
+
+# Deterministically compiled from the immutable role ceiling, route lock,
+# qualification evidence, and task facts. The maximum role profile is never
+# itself a grant.
+worker_runtime_requirements:
+  worker_runtime_catalog_digest: "sha256:<hex>"
+  role_profile_id: ""
+  role_profile_digest: "sha256:<hex>"
+  runtime_adapter_id: ""
+  runtime_adapter_version: ""
+  runtime_adapter_digest: "sha256:<hex>"
+  provider_id: ""
+  full_model_id: ""
+  transport_id: ""
+  route_lock_id: ""
+  route_lock_digest: "sha256:<hex>"
+  auth_route_class: "" # LOCAL_INDIVIDUAL_SUBSCRIPTION | PRODUCT_API_OR_CLOUD
+  subscription_runtime_requested: false
+  effective_auth_subject_digest: "sha256:<hex>"
+  effective_tool_ids: []
+  effective_runtime_tool_names: []
+  effective_tool_grant_digest: "sha256:<hex>"
+  tool_name_mapping_digest: "sha256:<hex>"
+  effective_capability_ids: []
+  effective_capability_grant_digest: "sha256:<hex>"
+  sandbox_profile_id: ""
+  sandbox_profile_digest: "sha256:<hex>"
+  configuration_profile_digest: "sha256:<hex>"
+  controlled_process_profile_digest: "sha256:<hex>"
+  strict_role_subset_required: true
+  route_cardinality: 1
+  worker_spawn_limit: 0
+  worker_delegation_limit: 0
+  worker_coordination_limit: 0
+  adapter_fallback_limit: 0
+  provider_fallback_limit: 0
+  model_fallback_limit: 0
+  auxiliary_model_call_limit: 0
+  nested_worker_lineage_limit: 0
+  effect_path: POLICY_THEN_CAPABILITY_BUS
+  credential_export_allowed: false
+  direct_token_http_allowed: false
+  bare_mode_allowed: false
+  consumer_login_brokering_allowed: false
+  hermes_nous_model_route_allowed: false
+  ambient:
+    user_settings: false
+    project_settings: false
+    local_settings: false
+    mcp_servers: []
+    plugins: []
+    skills: []
+    apps: []
+    network_destinations: []
+    secret_handles: []
+    process_executables: []
 
 budgets:
   absolute_deadline: ""

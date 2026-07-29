@@ -1,3 +1,4 @@
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 # Produced by the review application service after independence validation.
 schema_version: "1"
 artifact_type: review_verdict
@@ -5,7 +6,11 @@ verdict_id: "verdict_<uuidv7>"
 review_request_id: "review_<uuidv7>"
 observation_ids: []
 independence_evaluation_id: "independence_<uuidv7>"
+subject_schema: null
+subject_ref: ""
 subject_digest: ""
+subject_manifest_digest: null
+core_sdlc_trace_ref: ""
 verdict: INCOMPLETE
 open_finding_refs: []
 resolved_finding_refs: []

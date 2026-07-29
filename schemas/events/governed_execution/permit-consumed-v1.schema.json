@@ -1,0 +1,160 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/permit-consumed-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "consumed_at": {
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$",
+      "type": "string"
+    },
+    "consumed_for_effect_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Effect",
+      "x-ranex-registered-opaque-id": true
+    },
+    "consumption_version": {
+      "minimum": 0,
+      "type": "integer"
+    },
+    "permit_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Permit",
+      "x-ranex-registered-opaque-id": true
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    },
+    "state_edge_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "axis_id": {
+            "enum": [
+              "WorkItemStatus",
+              "RunStatus",
+              "AssignmentStatus",
+              "DispatchOfferStatus",
+              "LeaseStatus",
+              "MailboxDeliveryStatus",
+              "ReservationStatus",
+              "IntakeStatus",
+              "PacketStatus",
+              "FleetExperimentStatus",
+              "CapabilityAssessmentStatus",
+              "ActivityStatus",
+              "PermitStatus",
+              "HumanDecisionRecordStatus",
+              "AuthorityGrantStatus",
+              "EffectStatus",
+              "ReconciliationStatus",
+              "IncidentStatus",
+              "ReleaseStatus",
+              "CapabilityStatus",
+              "ModuleStatus",
+              "RouteStatus",
+              "ExtensionStatus",
+              "CompatibilityStatus",
+              "InstructionStatus",
+              "ArtifactStatus",
+              "MigrationStatus",
+              "SyncCandidateStatus",
+              "UpdateStatus",
+              "CutoverStatus"
+            ],
+            "type": "string"
+          },
+          "axis_version": {
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "type": "string"
+          },
+          "edge_id": {
+            "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+            "type": "string"
+          },
+          "state_catalog_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "transition_fact_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 255,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+                "type": "string",
+                "x-ranex-id-type": "TransitionEvent",
+                "x-ranex-registered-opaque-id": true
+              }
+            },
+            "required": [
+              "id",
+              "digest"
+            ],
+            "type": "object",
+            "x-ranex-ref-type": "TransitionEvent"
+          }
+        },
+        "required": [
+          "axis_id",
+          "axis_version",
+          "state_catalog_digest",
+          "edge_id",
+          "transition_fact_ref"
+        ],
+        "type": "object",
+        "x-ranex-nested-type": "StateEdgeBindingRefV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    }
+  },
+  "required": [
+    "run_id",
+    "permit_id",
+    "consumed_for_effect_id",
+    "consumption_version",
+    "consumed_at",
+    "state_edge_bindings"
+  ],
+  "title": "PermitConsumed event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-PERMITCONSUMED",
+  "x-ranex-event-name": "PermitConsumed",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:PermitConsumed:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-state-binding": {
+    "binding_kind": "EDGE_EVENT",
+    "edge_bindings": [
+      {
+        "allowed_edges": [
+          "ISSUED>CONSUMED@ATOMIC_UNUSED_CURRENT_EXACT_ACTION_CONSUMPTION"
+        ],
+        "axis_id": "PermitStatus",
+        "axis_version": "1.0.0",
+        "binding_cardinality": "EXACTLY_ONE"
+      }
+    ],
+    "event_name": "PermitConsumed"
+  },
+  "x-ranex-state-binding-digest": "sha256:81cfbaa61549e12816bddbc7fd1c38939a29122061090677cf966aefad2d03d2"
+}

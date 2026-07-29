@@ -1,0 +1,78 @@
+{
+  "entries": [
+    {
+      "digest": "sha256:1e2bc96121d31f2163696182d80934d5cb57b1c4c8669e8e38fbeb2f5bf81408",
+      "profile_id": "ENGPROFILE-WAVE1-UNRESOLVED-001",
+      "registry_digest": "sha256:2547ab69468215dd5a9ba4c13835106c4aea34e71226b7ad06ba8fa2587ef4d1",
+      "registry_version": "1.0.0",
+      "schema_version": "engineering-practice-profile/v1",
+      "sealing_eligible": false,
+      "source_coverage": [
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-SWEBOK-V4A"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-CODE-COMPLETE-CH5"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-CLEAN-CODE"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-PRAGMATIC-PROGRAMMER-1E"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-SYSTEM-DESIGN-INTERVIEW-2E"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-CLEAN-CODER"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-DDIA-1E-ER6"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-FUNDAMENTALS-SOFTWARE-ARCHITECTURE-1E"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-CLEAN-ARCHITECTURE-1E"
+        },
+        {
+          "applicability": "UNKNOWN",
+          "evidence_refs": [],
+          "reason": "Stable practice IDs are imported; applicability and behavioral evidence remain unresolved.",
+          "source_family_id": "ENGREF-APOSD-1E"
+        }
+      ]
+    }
+  ],
+  "generated_by": "scripts/architecture/generate_contracts.py",
+  "registry_id": "REG-ENGINEERING-PRACTICE-PROFILES-001",
+  "status": "ACTIVE_DOCUMENTATION_CONTRACT",
+  "version": "1.0.0"
+}

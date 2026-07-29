@@ -1,0 +1,14 @@
+[project]
+name = "ranex-architecture-contracts"
+version = "0.1.0"
+description = "Deterministic generation and validation for Ranex architecture contracts"
+requires-python = ">=3.12"
+dependencies = [
+  "jsonschema==4.25.1",
+  "PyYAML==6.0.2",
+  "rfc8785==0.1.4",
+]
+
+[tool.uv]
+package = false
+

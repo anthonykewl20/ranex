@@ -1,0 +1,211 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/run-cancelled-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "cancellation_decision_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "HumanDecisionRecord",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "HumanDecisionRecord"
+    },
+    "compensation_refs": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "id": {
+            "maxLength": 255,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+            "type": "string",
+            "x-ranex-id-type": "Artifact",
+            "x-ranex-registered-opaque-id": true
+          }
+        },
+        "required": [
+          "id",
+          "digest"
+        ],
+        "type": "object",
+        "x-ranex-ref-type": "Artifact"
+      },
+      "minItems": 0,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    },
+    "from_status": {
+      "enum": [
+        "PROPOSED",
+        "READY",
+        "RUNNING",
+        "WAITING",
+        "BLOCKED",
+        "SUCCEEDED",
+        "FAILED",
+        "CANCELLED"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "states.json#RunStatus@1.0.0"
+    },
+    "reason_code": {
+      "maxLength": 1024,
+      "minLength": 1,
+      "pattern": ".*\\S.*",
+      "type": "string"
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    },
+    "state_edge_bindings": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "axis_id": {
+            "enum": [
+              "WorkItemStatus",
+              "RunStatus",
+              "AssignmentStatus",
+              "DispatchOfferStatus",
+              "LeaseStatus",
+              "MailboxDeliveryStatus",
+              "ReservationStatus",
+              "IntakeStatus",
+              "PacketStatus",
+              "FleetExperimentStatus",
+              "CapabilityAssessmentStatus",
+              "ActivityStatus",
+              "PermitStatus",
+              "HumanDecisionRecordStatus",
+              "AuthorityGrantStatus",
+              "EffectStatus",
+              "ReconciliationStatus",
+              "IncidentStatus",
+              "ReleaseStatus",
+              "CapabilityStatus",
+              "ModuleStatus",
+              "RouteStatus",
+              "ExtensionStatus",
+              "CompatibilityStatus",
+              "InstructionStatus",
+              "ArtifactStatus",
+              "MigrationStatus",
+              "SyncCandidateStatus",
+              "UpdateStatus",
+              "CutoverStatus"
+            ],
+            "type": "string"
+          },
+          "axis_version": {
+            "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+            "type": "string"
+          },
+          "edge_id": {
+            "pattern": "^[A-Z][A-Za-z0-9]*:[0-9]+\\.[0-9]+\\.[0-9]+:[A-Z][A-Z0-9_]*>[A-Z][A-Z0-9_]*@[A-Z][A-Z0-9_]*$",
+            "type": "string"
+          },
+          "state_catalog_digest": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "transition_fact_ref": {
+            "additionalProperties": false,
+            "properties": {
+              "digest": {
+                "pattern": "^sha256:[0-9a-f]{64}$",
+                "type": "string"
+              },
+              "id": {
+                "maxLength": 255,
+                "minLength": 1,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+                "type": "string",
+                "x-ranex-id-type": "TransitionEvent",
+                "x-ranex-registered-opaque-id": true
+              }
+            },
+            "required": [
+              "id",
+              "digest"
+            ],
+            "type": "object",
+            "x-ranex-ref-type": "TransitionEvent"
+          }
+        },
+        "required": [
+          "axis_id",
+          "axis_version",
+          "state_catalog_digest",
+          "edge_id",
+          "transition_fact_ref"
+        ],
+        "type": "object",
+        "x-ranex-nested-type": "StateEdgeBindingRefV1"
+      },
+      "minItems": 1,
+      "type": "array",
+      "uniqueItems": true,
+      "x-ranex-bytewise-sorted": true
+    }
+  },
+  "required": [
+    "run_id",
+    "from_status",
+    "cancellation_decision_ref",
+    "reason_code",
+    "compensation_refs",
+    "state_edge_bindings"
+  ],
+  "title": "RunCancelled event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-RUNCANCELLED",
+  "x-ranex-event-name": "RunCancelled",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:RunCancelled:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-state-binding": {
+    "binding_kind": "EDGE_EVENT",
+    "edge_bindings": [
+      {
+        "allowed_edges": [
+          "PROPOSED>CANCELLED@AUTHORIZED_CANCELLATION",
+          "READY>CANCELLED@AUTHORIZED_CANCELLATION",
+          "RUNNING>CANCELLED@AUTHORIZED_CANCELLATION",
+          "WAITING>CANCELLED@AUTHORIZED_CANCELLATION",
+          "BLOCKED>CANCELLED@AUTHORIZED_CANCELLATION"
+        ],
+        "axis_id": "RunStatus",
+        "axis_version": "1.0.0",
+        "binding_cardinality": "EXACTLY_ONE"
+      }
+    ],
+    "event_name": "RunCancelled"
+  },
+  "x-ranex-state-binding-digest": "sha256:8b71e69c5fa945f040f2afd979f48a475c2edd18a88acbd6892fe166365dc760"
+}

@@ -11,3 +11,17 @@ decisions/local-values.env
 .env.*
 !.env.example
 !*.env.example
+
+# Full-text reference books are consultation-only local artifacts. Their
+# bibliographic citations, original reconciliation, and non-reconstructive
+# digest manifest remain publishable; the source files do not.
+docs/research/books/
+
+# The raw Kimi corpus has no retained license/provider/source lineage. Keep the
+# exact digest manifest and original reconciliation public; keep the opaque
+# source/rendering bundle local until rights and privacy clearance exists.
+docs/research/kimi-research/
+
+# Local configuration for the running Hermes agent; not a Ranex research or
+# architecture input.
+RULES-THERY.md

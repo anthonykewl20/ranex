@@ -1,0 +1,47 @@
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
+schema_version: "1"
+artifact_type: fleet_experiment
+experiment_id: "fleetexp_<uuidv7>"
+status: DRAFT # FleetExperimentStatus
+
+subject_schema: "research-subject/v1"
+subject_ref: ""
+subject_digest: ""
+subject_manifest_digest: ""
+core_sdlc_trace_ref: ""
+owner_principal_id: ""
+decision_ref: ""
+
+question: ""
+hypothesis: ""
+task_population_manifest_digest: ""
+inclusion_rules: []
+exclusion_rules: []
+strata: []
+controls: []
+treatments: []
+paired_assignment_method: ""
+seed_schedule: []
+replication_count: null
+
+route_and_harness_locks: []
+topology_profiles: []
+equal_budget_profile: {}
+verifier_profile_id: ""
+verifier_calibration_ref: ""
+hidden_anchor_profile_id: ""
+
+primary_measure_id: ""
+guardrail_measure_ids: []
+uncertainty_method: ""
+minimum_detectable_effect: null
+acceptance_margin: null
+failure_treatment: ""
+stop_rule: ""
+
+raw_evidence_refs: []
+analysis_code_ref: ""
+result_ref: ""
+limitations: []
+human_decision_ref: null
+digest: ""

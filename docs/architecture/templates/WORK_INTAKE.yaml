@@ -1,16 +1,24 @@
-# Provisional example shape; executable schema is defined by AI-G2.
+# Authoring skeleton; executable schema is registered under schemas/. Empty placeholders are invalid for SEALED or runtime artifacts.
 schema_version: "1"
 artifact_type: work_intake
 intake_id: "intake_<uuidv7>"
-status: PROPOSED
+status: PROPOSED # IntakeStatus
 
 requester_principal_id: ""
 decision_owner_principal_id: ""
-project_id: ""
-work_item_id: ""
-repository_id: ""
-repository_uri_digest: ""
-base_revision: ""
+
+subject:
+  subject_schema: "work-subject/v1"
+  project_id: "prj_<uuidv7>"
+  work_item_id: "work_<uuidv7>"
+  repository_id: "repo_<uuidv7>"
+  repository_uri_digest: "sha256:<hex>"
+  base_revision: ""
+  work_baseline_manifest_digest: "sha256:<hex>"
+  signal_evidence_digest: "sha256:<hex>"
+  requirements_baseline_digest: null
+  design_baseline_digest: null
+  observed_at: ""
 
 objective: ""
 user_outcome: ""
@@ -21,21 +29,7 @@ scope: []
 non_goals: []
 acceptance_criteria: []
 
-core_sdlc:
-  work_item_status: FUNNEL
-  work_class: ""
-  derived_risk_lane: ""
-  risk_decision_ref: ""
-  owner_refs:
-    product: null
-    technical: null
-    service: null
-    security_data: null
-    delivery: null
-    vv: null
-    configuration: null
-    supplier: null
-    release: null
+core_sdlc_trace_ref: ""
 
 full_map_zones: []
 affected_capabilities: []

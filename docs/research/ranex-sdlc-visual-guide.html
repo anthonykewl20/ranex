@@ -272,52 +272,6 @@
     .mt-2 { margin-top: 2rem; }
     .figure-reset { margin: 0; }
 
-    .diagram-shell {
-      overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background:
-        linear-gradient(var(--surface-2) 1px, transparent 1px),
-        linear-gradient(90deg, var(--surface-2) 1px, transparent 1px),
-        var(--surface);
-      background-size: 24px 24px;
-      box-shadow: var(--shadow);
-    }
-
-    .diagram-toolbar {
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 0.5rem;
-      border-bottom: 1px solid var(--line);
-      padding: 0.75rem;
-      background: var(--surface);
-    }
-
-    .diagram-toolbar .spacer { flex: 1; }
-
-    .zoom-readout {
-      min-width: 4rem;
-      color: var(--muted);
-      font: 0.85rem ui-monospace, SFMono-Regular, Menlo, monospace;
-      text-align: center;
-    }
-
-    .diagram-viewport {
-      height: min(72vh, 760px);
-      overflow: auto;
-      overscroll-behavior: contain;
-      padding: 1rem;
-    }
-
-    .diagram-viewport img {
-      display: block;
-      width: 6750px;
-      max-width: none;
-      height: auto;
-      background: rgba(255, 255, 255, 0.82);
-    }
-
     .diagram-help {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
@@ -355,6 +309,189 @@
     .diagram-caption {
       color: var(--muted);
       font-size: 0.92rem;
+    }
+
+    .visual-board {
+      display: grid;
+      gap: 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 1rem;
+      background: var(--surface);
+      box-shadow: var(--shadow);
+    }
+
+    .flow-band {
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1rem;
+      background: var(--paper);
+    }
+
+    .band-heading {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .band-heading h3,
+    .band-heading p { margin: 0; }
+
+    .band-heading p {
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .stage-flow {
+      display: grid;
+      gap: 1.5rem;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .stage-flow.cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .stage-flow.cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+
+    .stage-node {
+      position: relative;
+      min-height: 116px;
+      border: 2px solid var(--blue);
+      border-radius: 14px;
+      padding: 0.8rem;
+      background: var(--blue-soft);
+      color: #10254a;
+    }
+
+    .stage-node.gate-node {
+      border-color: var(--gold);
+      background: var(--gold-soft);
+      color: #4d3500;
+    }
+
+    .stage-node.proof-node {
+      border-color: var(--green);
+      background: var(--green-soft);
+      color: #123d27;
+    }
+
+    .stage-node:not(:last-child)::after {
+      position: absolute;
+      top: 50%;
+      right: -1.2rem;
+      z-index: 3;
+      width: 0.9rem;
+      color: var(--ink);
+      background: var(--paper);
+      content: "→";
+      font-size: 1.25rem;
+      font-weight: 900;
+      text-align: center;
+      transform: translateY(-50%);
+    }
+
+    .stage-node code {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: inherit;
+      font-size: 0.875rem;
+      font-weight: 900;
+    }
+
+    .stage-node strong {
+      display: block;
+      margin-bottom: 0.35rem;
+      font-size: 0.98rem;
+    }
+
+    .stage-node span {
+      display: block;
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .handoff {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      min-height: 30px;
+      color: var(--muted);
+      font-size: 0.8rem;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .handoff::before,
+    .handoff::after {
+      width: 3rem;
+      height: 1px;
+      background: var(--line);
+      content: "";
+    }
+
+    .map-title {
+      margin: 2rem 0 0.8rem;
+      font-size: 1.25rem;
+    }
+
+    .feedback-grid,
+    .linked-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 0.8rem;
+    }
+
+    .feedback-card,
+    .linked-card {
+      border: 2px solid var(--red);
+      border-radius: 14px;
+      padding: 0.9rem;
+      color: #4f1717;
+      background: var(--red-soft);
+    }
+
+    .linked-card {
+      border-color: var(--purple);
+      border-style: dashed;
+      color: #321d56;
+      background: var(--purple-soft);
+    }
+
+    .feedback-card strong,
+    .linked-card strong {
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .feedback-card p,
+    .linked-card p {
+      margin: 0;
+      font-size: 0.88rem;
+    }
+
+    .reference-box {
+      margin-top: 1rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem 1rem;
+      background: var(--surface-2);
+    }
+
+    .reference-box summary {
+      min-height: 44px;
+      cursor: pointer;
+      font-weight: 800;
+    }
+
+    .reference-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
     }
 
     .state-actions {
@@ -551,6 +688,148 @@
       margin-bottom: 0.5rem;
     }
 
+    .score-banner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      border: 2px solid var(--gold);
+      border-radius: var(--radius);
+      padding: 1rem 1.15rem;
+      background: var(--gold-soft);
+    }
+
+    .score-banner strong,
+    .score-banner p { margin: 0; }
+
+    .score-status,
+    .assessment-slot {
+      display: inline-block;
+      border: 1px solid currentColor;
+      border-radius: 99px;
+      padding: 0.3rem 0.65rem;
+      color: var(--gold);
+      background: var(--surface);
+      font: 0.75rem ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .assessment-fields,
+    .score-scale,
+    .priority-grid,
+    .score-domain-grid,
+    .improvement-cycle {
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .assessment-fields { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .score-scale { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+    .priority-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .score-domain-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .improvement-cycle { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+
+    .assessment-field,
+    .score-level,
+    .priority-card,
+    .score-domain,
+    .improvement-step {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 0.9rem;
+      background: var(--surface);
+    }
+
+    .assessment-field strong,
+    .score-level strong,
+    .priority-card strong,
+    .improvement-step strong {
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+
+    .assessment-field p,
+    .score-level p,
+    .priority-card p,
+    .score-domain p,
+    .improvement-step p { margin: 0; }
+
+    .score-level { border-top: 5px solid var(--line); }
+    .score-level:nth-child(2) { border-top-color: var(--blue); }
+    .score-level:nth-child(3) { border-top-color: var(--purple); }
+    .score-level:nth-child(4) { border-top-color: var(--green); }
+    .score-level:nth-child(5) { border-top-color: #2f8f62; }
+
+    .score-level code {
+      display: block;
+      margin-bottom: 0.45rem;
+      color: var(--muted);
+      font-weight: 900;
+    }
+
+    .priority-card { border-top: 5px solid var(--line); }
+    .priority-card.p0 { border-color: var(--red); background: var(--red-soft); }
+    .priority-card.p1 { border-color: var(--gold); background: var(--gold-soft); }
+    .priority-card.p2 { border-color: var(--blue); background: var(--blue-soft); }
+    .priority-card.p3 { border-color: var(--green); background: var(--green-soft); }
+
+    .score-group {
+      margin-top: 0.8rem;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      background: var(--surface-2);
+    }
+
+    .score-group summary {
+      min-height: 48px;
+      padding: 0.8rem 1rem;
+      cursor: pointer;
+      font-weight: 850;
+    }
+
+    .score-domain-grid { padding: 0 0.9rem 0.9rem; }
+
+    .score-domain {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .score-domain h4 {
+      margin: 0 0 0.25rem;
+      font-size: 1rem;
+    }
+
+    .domain-states {
+      display: block;
+      margin-bottom: 0.75rem;
+      color: var(--muted);
+      font: 0.75rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .score-domain p + p { margin-top: 0.55rem; }
+    .score-domain .assessment-slot { margin-top: 0.8rem; }
+
+    .improvement-step {
+      position: relative;
+      min-height: 125px;
+    }
+
+    .improvement-step:not(:last-child)::after {
+      position: absolute;
+      top: 50%;
+      right: -0.75rem;
+      z-index: 2;
+      color: var(--green);
+      background: var(--paper);
+      content: "→";
+      font-size: 1.15rem;
+      font-weight: 900;
+      transform: translateY(-50%);
+    }
+
     .adoption-table {
       width: 100%;
       border-collapse: collapse;
@@ -625,6 +904,30 @@
       details.state summary .plain-question { grid-column: 2 / -1; }
       details.state summary::after { grid-column: 3; grid-row: 1; }
       .state-body { grid-template-columns: 1fr; padding-left: 4.55rem; }
+      .stage-flow.cols-4,
+      .stage-flow.cols-5 { grid-template-columns: 1fr; }
+      .stage-node:not(:last-child)::after {
+        top: auto;
+        right: 50%;
+        bottom: -1.35rem;
+        content: "↓";
+        transform: translateX(50%);
+      }
+      .assessment-fields,
+      .score-scale,
+      .priority-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .score-domain-grid { grid-template-columns: minmax(0, 1fr); }
+      .improvement-cycle { grid-template-columns: 1fr; }
+      .improvement-step { min-height: 0; }
+      .improvement-step:not(:last-child)::after {
+        top: auto;
+        right: 50%;
+        bottom: -0.9rem;
+        content: "↓";
+        transform: translateX(50%);
+      }
+      .feedback-grid,
+      .linked-grid { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 620px) {
@@ -633,13 +936,23 @@
       main section { padding: 3.2rem 0; }
       .phase-grid,
       .lane-grid,
-      .done-grid,
-      .diagram-help { grid-template-columns: 1fr; }
-      .diagram-toolbar .spacer { display: none; }
-      .diagram-viewport { height: 65vh; }
+      .done-grid { grid-template-columns: 1fr; }
+      .diagram-help { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .score-banner { display: block; }
+      .score-banner .score-status { margin-top: 0.8rem; }
+      .assessment-fields,
+      .score-scale,
+      .priority-grid { grid-template-columns: 1fr; }
       details.state summary { padding-inline: 0.7rem; }
       .state-body { padding-left: 1rem; }
       .hard-rules { columns: 1; }
+      .band-heading { display: block; }
+      .band-heading p { margin-top: 0.25rem; }
+      .adoption-table {
+        display: block;
+        max-width: 100%;
+        overflow-x: auto;
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -677,18 +990,34 @@
       .callout.danger { color: #ffd1d1; }
       .callout.success { color: #c8f6d9; }
       .flow-node { color: #eadfff; }
-      .diagram-viewport img { background: #fff; }
+      .stage-node { color: #dceaff; }
+      .stage-node.gate-node { color: #fff1bd; }
+      .stage-node.proof-node { color: #d7f5e2; }
+      .feedback-card { color: #ffd9d9; }
+      .linked-card { color: #eee3ff; }
+      .legend-terminal { color: #aeb8c5; }
     }
 
     @media print {
       :root {
         --paper: #fff;
         --surface: #fff;
+        --surface-2: #eef2f7;
         --ink: #111;
         --muted: #333;
+        --line: #ccd4df;
+        --blue: #2457a7;
+        --blue-soft: #e8f1ff;
+        --gold: #8a5d00;
+        --gold-soft: #fff4cf;
+        --red: #9c3030;
+        --red-soft: #ffe8e8;
+        --green: #247247;
+        --green-soft: #e8f8ef;
+        --purple: #6941a5;
+        --purple-soft: #f3eaff;
       }
       .page-nav,
-      .diagram-toolbar,
       .state-actions,
       .lane-controls,
       .skip-link { display: none !important; }
@@ -696,10 +1025,28 @@
       main section { padding: 1.5rem 0; }
       .card,
       details.state,
-      .diagram-shell { break-inside: avoid; box-shadow: none; }
+      .visual-board,
+      .flow-band,
+      .feedback-card,
+      .linked-card,
+      .assessment-field,
+      .score-level,
+      .priority-card,
+      .score-domain,
+      .improvement-step { break-inside: avoid; box-shadow: none; }
+      .status-banner strong,
+      .status-banner p,
+      .status-pill,
+      .stage-node.gate-node { color: #4d3500; }
+      .stage-node { color: #10254a; }
+      .stage-node.proof-node,
+      .callout.success { color: #123d27; }
+      .feedback-card,
+      .callout.danger { color: #4f1717; }
+      .linked-card { color: #321d56; }
+      .legend-terminal { color: #4f5965; }
       details.state > * { display: block !important; }
-      .diagram-viewport { height: auto; overflow: visible; }
-      .diagram-viewport img { width: 100%; }
+      .score-group > * { display: block !important; }
       a::after { content: " (" attr(href) ")"; font-size: 0.75em; }
     }
   </style>
@@ -725,13 +1072,14 @@
   <nav class="page-nav" aria-label="Page sections">
     <div class="shell">
       <a href="#overview">Overview</a>
-      <a href="#diagram">Full diagram</a>
-      <a href="#states">13 states</a>
+      <a href="#diagram">Lifecycle map</a>
+      <a href="#states">16 statuses</a>
       <a href="#risk">Risk lanes</a>
       <a href="#evidence">Evidence</a>
       <a href="#authority">Authority</a>
       <a href="#fork">Hermes fork</a>
       <a href="#done">Done</a>
+        <a href="#scorecard">Assess &amp; improve</a>
       <a href="#adoption">Adoption</a>
     </div>
   </nav>
@@ -740,8 +1088,8 @@
     <section id="overview">
       <div class="shell">
         <p class="kicker">At a glance</p>
-        <h2>Five simple phases, thirteen exact states</h2>
-        <p class="section-intro">The friendly phase names help humans navigate. The monospace names are the canonical <code>WorkItemStatus</code> values used by Ranex.</p>
+        <h2>Five phases, thirteen normal-flow states, three exception states</h2>
+        <p class="section-intro">The friendly phase names help humans navigate. The monospace names are canonical <code>WorkItemStatus</code> values. The five phases show the thirteen-state normal path; <code>BLOCKED</code>, <code>CANCELLED</code>, and <code>ROLLED_BACK</code> remain first-class governed exception states.</p>
 
         <div class="grid phase-grid">
           <article class="card phase-card">
@@ -804,38 +1152,94 @@
 
     <section id="diagram">
       <div class="shell">
-        <p class="kicker">Full specification</p>
-        <h2>The complete visual system</h2>
-        <p class="section-intro">This pre-rendered Mermaid diagram works without JavaScript or a network connection. Scroll to pan, use the zoom controls, or open the SVG in its own tab. The semantic state list below is the accessible text equivalent.</p>
+        <p class="kicker">Readable visual system</p>
+        <h2 id="lifecycle-map-title">Follow the work without getting lost</h2>
+        <p class="section-intro">The master flow fits into three readable bands. Failure paths and linked lifecycles are separated below so long cross-chart lines do not obscure the process.</p>
 
-        <div class="diagram-help" role="group" aria-label="Diagram legend">
-          <span class="legend-item legend-state">Work-item state</span>
-          <span class="legend-item legend-gate">Gate or permit</span>
-          <span class="legend-item legend-risk">Risk or failure</span>
-          <span class="legend-item legend-evidence">Durable evidence</span>
+        <div class="diagram-help" role="group" aria-label="Color emphasis legend">
+          <span class="legend-item legend-state">Shaping or delivery</span>
+          <span class="legend-item legend-gate">Authority emphasis</span>
+          <span class="legend-item legend-risk">Exception or rework</span>
+          <span class="legend-item legend-evidence">Proof emphasis</span>
           <span class="legend-item legend-linked">Linked lifecycle</span>
-          <span class="legend-item legend-terminal">Terminal/disposition</span>
+          <span class="legend-item legend-terminal">Neutral context</span>
         </div>
 
-        <figure class="figure-reset">
-          <div class="diagram-shell">
-            <div class="diagram-toolbar" role="toolbar" aria-label="Diagram controls">
-              <button type="button" id="zoomOut" aria-label="Zoom diagram out">− Zoom</button>
-              <span id="zoomReadout" class="zoom-readout" aria-live="polite">55%</span>
-              <button type="button" id="zoomIn" aria-label="Zoom diagram in">+ Zoom</button>
-              <button type="button" id="zoomReset">Reset</button>
-              <span class="spacer"></span>
-              <a href="ranex-sdlc-full-spec.svg" target="_blank" rel="noopener">Open full SVG</a>
-              <button type="button" id="printPage">Print</button>
+        <figure class="figure-reset" aria-labelledby="lifecycle-map-title">
+          <div class="visual-board">
+            <div class="flow-band">
+              <div class="band-heading">
+                <h3 id="phase-understand-title">1. Understand and define</h3>
+                <p>Find the right problem before committing delivery capacity.</p>
+              </div>
+              <ol class="stage-flow cols-4">
+                <li class="stage-node"><code>FUNNEL</code><strong>Capture the signal</strong><span>Source, reporter, date, and short summary.</span></li>
+                <li class="stage-node"><code>TRIAGE</code><strong>Own and assess</strong><span>Owner, urgency, work class, and derived risk lane.</span></li>
+                <li class="stage-node"><code>DISCOVERY</code><strong>Prove the problem</strong><span>Users, current behavior, evidence, hypothesis, and unknowns.</span></li>
+                <li class="stage-node"><code>DEFINITION</code><strong>Say what must be true</strong><span>Outcome, requirements, constraints, non-goals, and examples.</span></li>
+              </ol>
             </div>
-            <section class="diagram-viewport" id="diagramViewport" tabindex="0" aria-label="Scrollable full Ranex SDLC diagram">
-              <img id="fullDiagram" src="ranex-sdlc-full-spec.svg" alt="Full Ranex SDLC diagram showing the thirteen canonical work-item states, feedback and rollback paths, linked incident, maintenance and retirement lifecycles, assurance lanes, authority, evidence, Hermes upstream synchronization, release updates, cutover and safe self-development.">
-            </section>
+
+            <div class="handoff">accepted need and testable contract</div>
+
+            <div class="flow-band">
+              <div class="band-heading">
+                <h3 id="phase-delivery-title">2. Design, commit, and prove</h3>
+                <p>Make one bounded exact candidate and verify it independently.</p>
+              </div>
+              <ol class="stage-flow cols-4" start="5">
+                <li class="stage-node"><code>DESIGN</code><strong>Choose a safe approach</strong><span>Boundaries, alternatives, risk controls, V&amp;V, rollout, and rollback.</span></li>
+                <li class="stage-node"><code>READY</code><strong>Commit responsibly</strong><span>Small slice, estimate range, capacity, dependencies, and authorities.</span></li>
+                <li class="stage-node"><code>IN_PROGRESS</code><strong>Make one exact change</strong><span>Task packet, code, tests, docs, telemetry, and truthful run record.</span></li>
+                <li class="stage-node gate-node"><code>VERIFICATION</code><strong>Prove the candidate</strong><span>Independent review, engineering verification, product validation, and resolved anomalies.</span></li>
+              </ol>
+            </div>
+
+            <div class="handoff">qualified evidence and release authority</div>
+
+            <div class="flow-band">
+              <div class="band-heading">
+                <h3 id="phase-operate-title">3. Release, operate, and learn</h3>
+                <p>Ship the verified artifact, prove health, then decide whether it helped.</p>
+              </div>
+              <ol class="stage-flow cols-5" start="9">
+                <li class="stage-node gate-node"><code>RELEASE_READY</code><strong>Authorize the artifact</strong><span>Immutable build, manifest/SBOM, runbook, rollback, and health criteria.</span></li>
+                <li class="stage-node gate-node"><code>RELEASING</code><strong>Roll out and watch</strong><span>Stage, migrate, expose gradually, halt, or roll back.</span></li>
+                <li class="stage-node proof-node"><code>OPERATING</code><strong>Support it</strong><span>Health, service targets, security, recovery, and support evidence.</span></li>
+                <li class="stage-node proof-node"><code>OUTCOME_REVIEW</code><strong>Did it help?</strong><span>Expected versus actual result and keep, change, or remove decision.</span></li>
+                <li class="stage-node proof-node"><code>CLOSED</code><strong>Reconcile and close</strong><span>Evidence, decisions, temporary controls, debt, and follow-ups.</span></li>
+              </ol>
+            </div>
           </div>
-          <figcaption class="diagram-caption">
-            Solid arrows are lifecycle transitions. Dashed arrows are evidence, guards, feedback, or typed-event links. Linked incident, maintenance, retirement, update, compatibility, extension, and cutover nodes have separate status namespaces; they are not extra <code>WorkItemStatus</code> values.
-          </figcaption>
+          <figcaption class="diagram-caption">The arrows show the normal forward path. Moving a board card, merging code, completing an agent run, or finishing deployment does not authorize a transition by itself.</figcaption>
         </figure>
+
+        <h3 class="map-title">When evidence says “go back”</h3>
+        <div class="feedback-grid">
+          <article class="feedback-card"><strong>Verification fails</strong><p>Return to <code>IN_PROGRESS</code>, <code>DESIGN</code>, or <code>DEFINITION</code>—whichever assumption failed.</p></article>
+          <article class="feedback-card"><strong>Rollout becomes unsafe</strong><p><code>RELEASING → ROLLED_BACK → TRIAGE</code>. Verify the safe state and create a linked new attempt.</p></article>
+          <article class="feedback-card"><strong>The outcome disappoints</strong><p><code>OUTCOME_REVIEW → DISCOVERY</code> or <code>DEFINITION</code>. Change the hypothesis or contract.</p></article>
+          <article class="feedback-card"><strong>Work cannot continue</strong><p>Any active state may become <code>BLOCKED</code> with a reason, owner, time, and next decision.</p></article>
+          <article class="feedback-card"><strong>Pre-release work stops</strong><p>Any pre-release state may become <code>CANCELLED</code> with impact, cleanup, and retained evidence.</p></article>
+          <article class="feedback-card"><strong>Inputs change</strong><p>Mark dependent evidence stale, perform impact analysis, then re-verify the exact new subject.</p></article>
+        </div>
+
+        <h3 class="map-title">Linked lifecycles—not extra work-item states</h3>
+        <div class="linked-grid">
+          <article class="linked-card"><strong>IncidentStatus</strong><p>Detect → acknowledge → mitigate → verify recovery → review → track actions → create linked improvement work.</p></article>
+          <article class="linked-card"><strong>Maintenance</strong><p>A defect, vulnerability, dependency, debt, or service signal creates a linked work item that follows the normal lifecycle.</p></article>
+          <article class="linked-card"><strong>Retirement</strong><p>Plan consumer/data/access exit → migrate and revoke → archive and tear down → audit the retired capability.</p></article>
+        </div>
+
+        <details class="reference-box">
+          <summary>Engineering poster: full Mermaid wall chart (not optimized for browser reading)</summary>
+          <p>The wall chart preserves all cross-lifecycle relationships, but it is intentionally not the teaching view because its size makes it difficult to read in a browser.</p>
+          <div class="reference-actions">
+            <a href="ranex-sdlc-full-spec.svg" target="_blank" rel="noopener">Open the full SVG</a>
+            <a href="real-world-sdlc-operating-model-research-2026-07-27.md">Open Mermaid and ASCII source</a>
+            <button type="button" id="printPage">Print this guide</button>
+          </div>
+        </details>
 
         <div class="callout danger">
           <strong>Three things never imply automatic progress.</strong>
@@ -866,8 +1270,11 @@ REWORK
   any pre-release state -&gt; CANCELLED
 
 LINKED LIFECYCLES (separate namespaces)
-  incident -&gt; mitigate -&gt; recovery verified -&gt; review -&gt; improvement work -&gt; FUNNEL
-  maintenance trigger -&gt; linked work item -&gt; TRIAGE -&gt; normal lifecycle
+  IncidentStatus:
+    DETECTED -&gt; ACKNOWLEDGED -&gt; MITIGATING -&gt; MITIGATED
+      -&gt; RECOVERY_VERIFIED -&gt; REVIEWED -&gt; ACTIONS_TRACKED -&gt; CLOSED
+    ACTIONS_TRACKED -&gt; typed improvement request -&gt; linked work item at FUNNEL
+  maintenance typed event -&gt; linked work item -&gt; TRIAGE -&gt; normal lifecycle
   retirement ready -&gt; retiring -&gt; retired; failure -&gt; recovery
 
 AUTHORITY
@@ -893,7 +1300,7 @@ SELF-DEVELOPMENT
     <section id="states">
       <div class="shell">
         <p class="kicker">Follow one change</p>
-        <h2>What must become true at each state</h2>
+        <h2>What must become true across all sixteen statuses</h2>
         <p class="section-intro">Each card gives the human question, minimum proof, accountable owner, and stable control ID. The control catalog contains the complete contract.</p>
 
         <div class="state-actions">
@@ -953,6 +1360,18 @@ SELF-DEVELOPMENT
           <details class="state">
             <summary><span class="step">13</span><span class="state-name">CLOSED</span><span class="plain-question">Is the record genuinely complete?</span></summary>
             <div class="state-body"><div><h3>Proof</h3><p>Evidence, documentation, decisions, access, flags, worktrees, debt, and follow-ups reconciled.</p></div><div><h3>Owner</h3><p>Work owner.</p></div><div><h3>Control</h3><p><code>SDLC-CLS-001</code></p></div></div>
+          </details>
+          <details class="state">
+            <summary><span class="step">E1</span><span class="state-name">BLOCKED</span><span class="plain-question">What prevents safe progress?</span></summary>
+            <div class="state-body"><div><h3>Proof</h3><p>Typed blocker, reason, owner, affected baseline, next decision, and invalidated evidence.</p></div><div><h3>Owner</h3><p>Work owner.</p></div><div><h3>Control</h3><p><code>SDLC-BLK-001</code>; resume an allowed state or authorize disposition.</p></div></div>
+          </details>
+          <details class="state">
+            <summary><span class="step">E2</span><span class="state-name">CANCELLED</span><span class="plain-question">Why is pre-release work ending?</span></summary>
+            <div class="state-body"><div><h3>Proof</h3><p>Authorized reason, impact, retained evidence, cleanup, and follow-up ownership.</p></div><div><h3>Owner</h3><p>Product/work owner.</p></div><div><h3>Control</h3><p><code>SDLC-CAN-001</code>; cancellation preserves history and never fabricates completion.</p></div></div>
+          </details>
+          <details class="state">
+            <summary><span class="step">E3</span><span class="state-name">ROLLED_BACK</span><span class="plain-question">Is the prior safe state proven?</span></summary>
+            <div class="state-body"><div><h3>Proof</h3><p>Rollback event, restored-state verification, bounded impact, reconciliation, and linked new attempt.</p></div><div><h3>Owner</h3><p>Release + service owner.</p></div><div><h3>Control</h3><p><code>SDLC-RBK-001</code>; re-enter <code>TRIAGE</code> and open an incident when required.</p></div></div>
           </details>
         </div>
       </div>
@@ -1090,7 +1509,7 @@ SELF-DEVELOPMENT
 
         <article class="fork-panel">
           <h3>Safe cutover and extensions</h3>
-          <p>Exactly one system is the canonical writer in every mode—even during transitional dual run. Plugins, providers, MCP/catalog entries, and model routes move through quarantine, review, qualification, pinning, and explicit human activation.</p>
+          <p>Exactly one system is the canonical writer in every mode—even during transitional dual run. External extensions/plugins use <code>ExtensionStatus</code>, first-party modules use <code>ModuleStatus</code>, and provider/model transports use <code>RouteStatus</code>. Qualification supplies immutable evidence but cannot change any of those states. MCP tools use the applicable module or extension lifecycle.</p>
         </article>
 
         <article class="fork-panel">
@@ -1133,6 +1552,220 @@ SELF-DEVELOPMENT
       </div>
     </section>
 
+    <section id="scorecard">
+      <div class="shell">
+        <p class="kicker">Evidence-based improvement</p>
+        <h2>Assess each capability. Improve the weakest high-risk constraint.</h2>
+        <p class="section-intro">Ranex does not use one reassuring maturity percentage. Each capability keeps its ordinal level, effectiveness, coverage, and confidence separate so strong flow cannot hide missing authority, stale proof, or unsafe recovery.</p>
+
+        <div class="score-banner">
+          <div>
+            <strong>Honest current baseline: not assessed</strong>
+            <p>The policy and rubric now exist, but no evidence-bound capability assessment has been approved. Documentation alone could support at most <code>1 — DEFINED</code>; it does not prove operation.</p>
+          </div>
+          <span class="score-status">NOT_ASSESSED</span>
+        </div>
+
+        <h3>Report four facts—never one blended score</h3>
+        <div class="assessment-fields">
+          <article class="assessment-field">
+            <strong>Capability rating</strong>
+            <p>Result is <code>NOT_ASSESSED</code>, <code>UNKNOWN</code>, <code>NOT_APPLICABLE</code>, or <code>SCORED</code>. Only <code>SCORED</code> has level <code>0–4</code>.</p>
+          </article>
+          <article class="assessment-field">
+            <strong>Effectiveness</strong>
+            <p><code>UNKNOWN</code>, <code>REGRESSING</code>, <code>MIXED</code>, or <code>MEETS_TARGET</code>.</p>
+          </article>
+          <article class="assessment-field">
+            <strong>Coverage</strong>
+            <p>Included ÷ eligible work from one snapshot, jointly split by work class and risk lane with reconciled exclusions.</p>
+          </article>
+          <article class="assessment-field">
+            <strong>Confidence</strong>
+            <p><code>LOW</code>, <code>MEDIUM</code>, or <code>HIGH</code>. High needs every adequacy check plus independent sign-off.</p>
+          </article>
+        </div>
+
+        <div class="callout danger">
+          <strong>Averages cannot erase a control failure.</strong>
+          <p>The 0–4 values are ordered labels, not quantities to add or average. A wrong-subject pass, maker self-approval, missing permit, expired authority, or unverified critical rollback remains red regardless of every other result. Ratings never authorize a transition or rank people.</p>
+        </div>
+
+        <h3 class="mt-2">The evidence-anchored 0–4 capability scale</h3>
+        <div class="score-scale">
+          <article class="score-level">
+            <code>0 · ABSENT</code>
+            <strong>Required control is missing or unsafe</strong>
+            <p>Contain risk; name an owner; define the minimum contract, event, and rejection route.</p>
+          </article>
+          <article class="score-level">
+            <code>1 · DEFINED</code>
+            <strong>The rule exists</strong>
+            <p>Versioned purpose, owner, scope, entry and exit, evidence, authority, failure route, and metric definitions exist. Documents alone stop here.</p>
+          </article>
+          <article class="score-level">
+            <code>2 · OPERATED</code>
+            <strong>Real work demonstrates it</strong>
+            <p>Real evidence includes a normal path and at least one rejection, invalidation, exception, or backward path actually taken.</p>
+          </article>
+          <article class="score-level">
+            <code>3 · CONTROLLED</code>
+            <strong>Operation and failures are visible</strong>
+            <p>A qualified measurement system exposes distributions, misses, false passes, exceptions, and responses.</p>
+          </article>
+          <article class="score-level">
+            <code>4 · IMPROVING</code>
+            <strong>Measured benefit clears uncertainty</strong>
+            <p>Benefit persists across 2+ windows, clears local measurement noise, and does not harm guardrails.</p>
+          </article>
+        </div>
+        <p class="diagram-caption">When result is not <code>SCORED</code>, there is no level. <code>NOT_ASSESSED</code> means no review happened; <code>UNKNOWN</code> means trustworthy evidence or applicability is unresolved. Neither is zero or pass. A level needs enacted practice, durable evidence, and outcome/guardrail proof appropriate to it; documents alone stop at level 1.</p>
+
+        <h3 class="mt-2">Which capability should improve first?</h3>
+        <div class="priority-grid">
+          <article class="priority-card p0">
+            <strong>P0 · CONTROL NOW</strong>
+            <p>Active harm or a non-tailorable invariant, truth, evidence, authority, privacy/security, or recovery breach. Stop or contain and restore control.</p>
+          </article>
+          <article class="priority-card p1">
+            <strong>P1 · IMPROVE NEXT</strong>
+            <p>Result NOT_ASSESSED/UNKNOWN, level 0–1, overdue critical action, repeated escape, high-exposure blockage, or LOW-confidence instrumentation need.</p>
+          </article>
+          <article class="priority-card p2">
+            <strong>P2 · IMPROVE DELIBERATELY</strong>
+            <p>Absent P0/P1: level 2, unproven or unhealthy effectiveness, material flow/outcome harm, or another missing P3 condition.</p>
+          </article>
+          <article class="priority-card p3">
+            <strong>P3 · SUSTAIN</strong>
+            <p>Absent P0–P2: level 3–4, MEETS_TARGET, reconciled coverage, healthy guardrails, no adverse trend, and confidence above LOW.</p>
+          </article>
+        </div>
+        <p class="diagram-caption">Evaluate P0 → P1 → P2 → P3; the first match wins. Within a tier, sort by consequence, exposure, recurrence, downstream blocking, then capability gap. A valid all-N/A assessment has no tier.</p>
+
+        <h3 class="mt-2">What to gauge—and the first practical improvement</h3>
+        <p class="section-intro">Assess a named service or value stream over a declared window. A domain is <code>SCORED</code> only after every applicable vital control is scored; its level is the lowest supported level among them—never an average. Every registry tuple binds an immutable same-scope assessment, so an assessor cannot omit the weak control. Open a group to inspect its diagnostic signals.</p>
+
+        <div class="callout">
+          <strong>Three anti-gaming checks are mandatory.</strong>
+          <p><code>NOT_APPLICABLE</code> needs a predeclared rule/query and approval proving no eligible work or qualifying trigger; ambiguity is <code>UNKNOWN</code>. One snapshot must reconcile totals, joint work-class/risk-lane strata, exclusions, and typed adverse queries. A result cannot be <code>SCORED</code> with an unresolved material gap or unless every applicable adverse category includes every eligible item with zero exclusions. <code>HIGH</code> confidence requires sample, duration, representativeness, authenticity, freshness, missingness, and data-quality tests to pass plus independent sign-off.</p>
+        </div>
+
+        <details class="score-group" open>
+          <summary>1. Understand and define</summary>
+          <div class="score-domain-grid">
+            <article class="score-domain">
+              <h4>Intake and triage</h4>
+              <span class="domain-states">FUNNEL · TRIAGE</span>
+              <p><b>Gauge:</b> intake and ownership age; source, owner, class, and risk-lane coverage; orphan work; late escalation and priority reversals.</p>
+              <p><b>First move:</b> one intake contract, duty owner, service map, decision rules, aging alert, and reason codes.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+            <article class="score-domain">
+              <h4>Discovery and definition</h4>
+              <span class="domain-states">DISCOVERY · DEFINITION</span>
+              <p><b>Gauge:</b> baseline, hypothesis, falsifier, outcome, testability, risk retirement, and time to first end-to-end feedback; late invalidation and ambiguity reopens.</p>
+              <p><b>First move:</b> user evidence, acceptance examples, non-goals, quality attributes, and one production-shaped tracer slice.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+          </div>
+        </details>
+
+        <details class="score-group">
+          <summary>2. Design, build, and prove</summary>
+          <div class="score-domain-grid">
+            <article class="score-domain">
+              <h4>Design and readiness</h4>
+              <span class="domain-states">DESIGN · READY</span>
+              <p><b>Gauge:</b> alternatives, risk, recovery, dependency, and capacity coverage; decision age; late design churn, readiness escapes, and decommitment.</p>
+              <p><b>First move:</b> thin design record, required specialist review, dependency owners, smaller slices, and WIP policy.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+            <article class="score-domain">
+              <h4>Build and flow</h4>
+              <span class="domain-states">IN_PROGRESS · BLOCKED</span>
+              <p><b>Gauge:</b> WIP, batch size, one-command build/test reproducibility, CI feedback, blocker and visible-debt age, cycle-time tail, and change blast radius.</p>
+              <p><b>First move:</b> small vertical batches, fast reproducible CI, a typed blocker with owner/date, and small test-backed cleanup in touched hotspots.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+            <article class="score-domain">
+              <h4>Verification and validation</h4>
+              <span class="domain-states">VERIFICATION</span>
+              <p><b>Gauge:</b> exact-subject, freshness, independence, boundary/state/regression and test-operability coverage; wait, flake, escaped defects, and reopens.</p>
+              <p><b>First move:</b> risk-based V&amp;V, immutable evidence, fault challenge, and a permanent regression check for every confirmed escape.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+          </div>
+        </details>
+
+        <details class="score-group">
+          <summary>3. Release, operate, and learn</summary>
+          <div class="score-domain-grid">
+            <article class="score-domain">
+              <h4>Release and recovery</h4>
+              <span class="domain-states">RELEASE_READY · RELEASING · ROLLED_BACK</span>
+              <p><b>Gauge:</b> reproducibility, artifact binding, permit, health-stop, and rollback coverage; change failure, rework, rollback, and recovery distributions.</p>
+              <p><b>First move:</b> immutable release bundle, automated preflight, progressive exposure, health stop rules, and rehearsed rollback.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+            <article class="score-domain">
+              <h4>Operation, incident, and maintenance</h4>
+              <span class="domain-states">OPERATING · IncidentStatus · Maintenance</span>
+              <p><b>Gauge:</b> structured telemetry, SLI, alert, runbook, restore, support, and fault-isolation time; SLO result, recurrence, vulnerability/dependency age, and action age.</p>
+              <p><b>First move:</b> service ownership, machine-readable diagnostics, restore drill, incident playbooks, and explicit maintenance capacity.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+            <article class="score-domain">
+              <h4>Outcome, closure, and retirement</h4>
+              <span class="domain-states">OUTCOME_REVIEW · CLOSED · CANCELLED · Retirement</span>
+              <p><b>Gauge:</b> review, outcome, closure, and inventory coverage; task success/adoption/value; overdue follow-ups; residual data, access, traffic, and cleanup.</p>
+              <p><b>First move:</b> baseline and review date before release, keep/change/remove decision, automated reconciliation, and retirement proof.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+          </div>
+        </details>
+
+        <details class="score-group">
+          <summary>4. Cross-lifecycle and Hermes-fork controls</summary>
+          <div class="score-domain-grid">
+            <article class="score-domain">
+              <h4>Evidence, measurement, authority, and exceptions</h4>
+              <span class="domain-states">TRACE · GATES · INVALIDATION · BLOCKED/CANCELLED/ROLLED_BACK</span>
+              <p><b>Gauge:</b> trace, freshness, invalidation, role, expiry, metric/harness qualification, and exception coverage; gate wait; false pass; stale proof; unstable query; audit findings.</p>
+              <p><b>First move:</b> canonical events, qualified metric specs and harness, fail-closed checks, separation of duties, expiry enforcement, and independent raw-event sampling.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+            <article class="score-domain">
+              <h4>Hermes fork and AI-worker health</h4>
+              <span class="domain-states">UPSTREAM SYNC · COMPATIBILITY · UPDATE · CUTOVER</span>
+              <p><b>Gauge:</b> pin/classify/disposition/compatibility coverage, harness repeatability, candidate age, upstream lag, sync regressions, infrastructure-error rate, and divergence.</p>
+              <p><b>First move:</b> pinned cadence, selective-port record, compatibility matrix, calibrated harness, shadow verification, one-writer cutover, and recovery proof.</p>
+              <span class="assessment-slot">NOT_ASSESSED · PRIORITY —</span>
+            </article>
+          </div>
+        </details>
+
+        <h3 class="mt-2" id="improvement-cycle-title">How improvement moves</h3>
+        <div class="improvement-cycle" role="group" aria-labelledby="improvement-cycle-title">
+          <article class="improvement-step"><strong>1. Scope</strong><p>Name capability, service, lanes, rubric, and time window.</p></article>
+          <article class="improvement-step"><strong>2. Collect</strong><p>Include raw evidence from success, failure, exception, and rollback.</p></article>
+          <article class="improvement-step"><strong>3. Rate</strong><p>Report rating result/level, effectiveness, coverage, and confidence separately.</p></article>
+          <article class="improvement-step"><strong>4. Prioritize</strong><p>Apply P0–P3. Hard-control findings always win.</p></article>
+          <article class="improvement-step"><strong>5. Experiment</strong><p>Freeze comparator and decision rule; change one constraint; measure with guardrails.</p></article>
+          <article class="improvement-step"><strong>6. Recheck</strong><p>After the declared window, retain, scale, simplify, change, or revert.</p></article>
+        </div>
+
+        <div class="callout">
+          <strong>Measure before judging.</strong>
+          <p>Define the goal, question, formula, population, decision, and owner. One immutable design binds the metric and qualified harness ID/version/configuration. Never assume zero noise: a zero floor needs method evidence and independent approval; uncertainty N/A needs the exact approved deterministic-measure rule. Count infrastructure errors separately. A below-noise result is inconclusive—not improvement.</p>
+        </div>
+
+        <div class="callout success">
+          <strong>Improvement is proven effectiveness—not an action-item count.</strong>
+          <p>Every experiment names a causal stage/control, evidence, hypothesis, owner, comparator, measure, counter-metrics, decision rule, review date, and revert rule. Use the <a href="../architecture/templates/CAPABILITY_ASSESSMENT.yaml">control assessment</a> and <a href="../architecture/templates/CAPABILITY_DOMAIN_PROJECTION.yaml">domain projection</a> templates; the <a href="../architecture/CORE_SDLC_OPERATING_MODEL.md">core policy</a> and <a href="../architecture/SDLC_CONTROL_CATALOG.md">control catalog</a> are normative.</p>
+        </div>
+      </div>
+    </section>
+
     <section id="adoption">
       <div class="shell">
         <p class="kicker">Honest maturity</p>
@@ -1146,7 +1779,7 @@ SELF-DEVELOPMENT
             <tr><td><code>SDLC-ADOPT-B</code></td><td>A manual documentation tracer completes, including rejection and rework.</td><td><span class="status-pill">R_AND_D</span></td></tr>
             <tr><td><code>SDLC-ADOPT-C</code></td><td>A runtime tracer reaches operated outcome with rollback proof.</td><td><span class="status-pill">R_AND_D</span></td></tr>
             <tr><td><code>SDLC-ADOPT-D</code></td><td>Transitions and evidence fail closed when missing, stale, or wrong-subject.</td><td><span class="status-pill">R_AND_D</span></td></tr>
-            <tr><td><code>SDLC-ADOPT-E</code></td><td>Real baselines calibrate WIP, reliability, review, aging, and exception policy.</td><td><span class="status-pill">R_AND_D</span></td></tr>
+            <tr><td><code>SDLC-ADOPT-E</code></td><td>Real baselines calibrate policy; the first capability profile and bounded improvement experiment are registered.</td><td><span class="status-pill">R_AND_D</span></td></tr>
           </tbody>
         </table>
 
@@ -1165,55 +1798,19 @@ SELF-DEVELOPMENT
         <li><a href="real-world-sdlc-operating-model-research-2026-07-27.md">Research paper</a></li>
         <li><a href="../architecture/CORE_SDLC_OPERATING_MODEL.md">Normative core policy</a></li>
         <li><a href="../architecture/SDLC_CONTROL_CATALOG.md">Normative control catalog</a></li>
+        <li><a href="../architecture/templates/CAPABILITY_ASSESSMENT.yaml">Assessment template</a></li>
         <li><a href="../architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md">AI execution subprocess</a></li>
         <li><a href="ranex-sdlc-full-spec.svg">Full SVG diagram</a></li>
       </ul>
+      <p><b>Scoring research:</b> the local Markdown editions of <i>Clean Code</i>, <i>The Pragmatic Programmer</i>, SWEBOK V4.0a, and the targeted Kimi measurement chapters were used. No PDF was opened, parsed, indexed, or used.</p>
       <p>No ISO, NIST, NASA, DORA, Google, or CMMI conformity, certification, or universal-proof claim is made. Their evidence types differ; Ranex applies and tests a tailored synthesis.</p>
-      <noscript><p class="noscript">JavaScript is disabled. All content and the diagram remain available; only zoom, expand-all, filtering, and print buttons are inactive.</p></noscript>
+      <noscript><p class="noscript">JavaScript is disabled. All content and the diagram remain available; only expand-all, filtering, and print buttons are inactive.</p></noscript>
     </div>
   </footer>
 
   <script>
     (() => {
-      const diagram = document.getElementById("fullDiagram");
-      const viewport = document.getElementById("diagramViewport");
-      const readout = document.getElementById("zoomReadout");
-      const baseWidth = 12268.7109375;
-      let zoom = 0.55;
-
-      function focusMainLifecycle(behavior = "auto") {
-        viewport.scrollTo({ left: 700, top: 1650, behavior });
-      }
-
-      function applyZoom(nextZoom, keepCenter = true) {
-        const oldWidth = diagram.getBoundingClientRect().width || baseWidth * zoom;
-        const centerX = viewport.scrollLeft + viewport.clientWidth / 2;
-        const centerY = viewport.scrollTop + viewport.clientHeight / 2;
-        zoom = Math.min(1.25, Math.max(0.18, nextZoom));
-        diagram.style.width = `${Math.round(baseWidth * zoom)}px`;
-        readout.textContent = `${Math.round(zoom * 100)}%`;
-        if (keepCenter) {
-          const ratio = (baseWidth * zoom) / oldWidth;
-          requestAnimationFrame(() => {
-            viewport.scrollLeft = centerX * ratio - viewport.clientWidth / 2;
-            viewport.scrollTop = centerY * ratio - viewport.clientHeight / 2;
-          });
-        }
-      }
-
-      document.getElementById("zoomOut").addEventListener("click", () => applyZoom(zoom - 0.1));
-      document.getElementById("zoomIn").addEventListener("click", () => applyZoom(zoom + 0.1));
-      document.getElementById("zoomReset").addEventListener("click", () => {
-        applyZoom(0.55, false);
-        focusMainLifecycle("smooth");
-      });
       document.getElementById("printPage").addEventListener("click", () => window.print());
-      applyZoom(zoom, false);
-      if (diagram.complete) {
-        requestAnimationFrame(() => focusMainLifecycle());
-      } else {
-        diagram.addEventListener("load", () => focusMainLifecycle(), { once: true });
-      }
 
       const states = [...document.querySelectorAll("details.state")];
       document.getElementById("expandStates").addEventListener("click", () => states.forEach((item) => { item.open = true; }));

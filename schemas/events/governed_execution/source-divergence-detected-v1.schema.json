@@ -1,0 +1,105 @@
+{
+  "$id": "https://schemas.ranex.dev/events/governed_execution/source-divergence-detected-v1.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "divergence_class": {
+      "enum": [
+        "BASE_COMMIT_CHANGED",
+        "CANDIDATE_COMMIT_CHANGED",
+        "WORKTREE_CHANGED",
+        "ARTIFACT_DIGEST_CHANGED",
+        "POLICY_OR_PROFILE_CHANGED",
+        "SCHEMA_OR_REGISTRY_CHANGED",
+        "SUBJECT_MISSING"
+      ],
+      "type": "string",
+      "x-ranex-enum-binding": "ENUM-SOURCE-DIVERGENCE-CLASS-1.0"
+    },
+    "expected_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "expected_subject_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "Artifact",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "Artifact"
+    },
+    "observed_subject_digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "observed_subject_ref": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "type": "string"
+        },
+        "id": {
+          "maxLength": 255,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+          "type": "string",
+          "x-ranex-id-type": "Artifact",
+          "x-ranex-registered-opaque-id": true
+        }
+      },
+      "required": [
+        "id",
+        "digest"
+      ],
+      "type": "object",
+      "x-ranex-ref-type": "Artifact"
+    },
+    "run_id": {
+      "maxLength": 255,
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,254}$",
+      "type": "string",
+      "x-ranex-id-type": "Run",
+      "x-ranex-registered-opaque-id": true
+    }
+  },
+  "required": [
+    "run_id",
+    "expected_subject_ref",
+    "expected_subject_digest",
+    "observed_subject_ref",
+    "observed_subject_digest",
+    "divergence_class"
+  ],
+  "title": "SourceDivergenceDetected event payload v1",
+  "type": "object",
+  "x-ranex-event-id": "EVENT-SOURCEDIVERGENCEDETECTED",
+  "x-ranex-event-name": "SourceDivergenceDetected",
+  "x-ranex-event-version": 1,
+  "x-ranex-payload-schema-ref": "ranex:event-payload:SourceDivergenceDetected:v1",
+  "x-ranex-source": "docs/architecture/HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md#17.2",
+  "x-ranex-state-binding": {
+    "binding_kind": "REFERENCE_ONLY",
+    "event_name": "SourceDivergenceDetected",
+    "referenced_axis_ids": [
+      "SourceDivergenceClass"
+    ]
+  },
+  "x-ranex-state-binding-digest": "sha256:61ccc105f6f3b31ec8f27f8f7406ea4bca515770f1a492552e594bdf7d1dac19"
+}
