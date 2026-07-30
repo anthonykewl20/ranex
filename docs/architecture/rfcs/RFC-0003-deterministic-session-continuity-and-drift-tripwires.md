@@ -261,9 +261,41 @@ Four layers, none built here.
 3. **`pre-commit` framework** — runs the drift check before a commit exists.
    *Stops:* honest omission at the point of change. *Bypass:* `--no-verify` or
    removing the hook. Useful; not a control, and must not be described as one.
-4. **CI required check, `danger-js` for the nagging role** — the only layer an
-   agent with local write access cannot defeat, because it does not run on the
-   agent's machine (fact 7). Blocked on Unknown 1.
+4. **CI required status check, all-Python** — the only layer an agent with local
+   write access cannot defeat, because it does not run on the agent's machine.
+   Blocked on Unknown 1 (whether a CI service will exist).
+
+   **`danger-js` is rejected.** The owner fixed Python as the implementation
+   language and does not want a second toolchain. Two independent models were
+   asked to find the Python equivalent and prove it; the resulting stack, with
+   licences verified against PyPI on 2026-07-30:
+
+   1. **Enforcement:** a workflow step running `python -m cogapp --check -c --diff`
+      over the documentation set, plus the staleness script. A non-zero exit fails
+      the job; the job made a **required status check** blocks the merge. Pure
+      Python, no added dependency.
+   2. **Visible report:** write the result, including the `--diff` output on
+      failure, to `$GITHUB_STEP_SUMMARY`. Zero dependencies.
+   3. **The nag:** on failure only, post or update one comment via the `gh` CLI,
+      which is preinstalled on GitHub-hosted runners, so no package is added.
+
+   Rejected with reasons: `reviewdog` is a Go binary — a third toolchain, the
+   exact objection that removed `danger-js`. `danger-python` last released v0.1 in
+   2020 and its own README requires installing Node's `danger` first, so it does
+   not avoid Node at all. **`PyGithub` is LGPL** (classifier confirmed on PyPI for
+   2.9.1) — copyleft, and wrong for a source-available, all-rights-reserved
+   product preserving commercial optionality.
+
+   If comment logic ever outgrows the `gh` CLI, use **`ghapi` 2.0.4, Apache-2.0**
+   (verified on PyPI). One reviewer recommended `githubkit` as MIT; PyPI publishes
+   **no licence field or classifier** for it, so that claim is `UNVERIFIED` and
+   `ghapi` is preferred until it is checked.
+
+**What is lost versus `danger-js`, stated rather than glossed:** ready-made
+pull-request inspection helpers, its plugin ecosystem, and its established
+message-formatting conventions. Each becomes Python we write and maintain. The
+trade is accepted deliberately: one toolchain, verified licences, and every check
+computed by the language `LANG-PRIMARY-001` fixes.
 
 Layer 4 is the only honest "cannot be bypassed." Layers 1–3 raise cost and catch
 omission; they do not defeat intent.

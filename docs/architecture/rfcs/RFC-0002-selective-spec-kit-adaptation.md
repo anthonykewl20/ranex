@@ -141,7 +141,38 @@ Any accepted adaptation must:
    quarantine/qualification/human-activation lifecycle;
 10. predeclare experiment measures, comparison, and stopping rules; and
 11. record attribution and license obligations before incorporating exact
-    upstream source or templates.
+    upstream source or templates; and
+12. bind the `checklist`/`analyze` and `converge` steps to the **enforced**
+    finding contract, not to advisory prose.
+
+**On requirement 12 — added 2026-07-30 after independent review.** Spec Kit is
+designed for a technical developer driving an AI, who can judge for themselves
+whether a returned specification is sound. Ranex's owner is explicitly
+non-technical and, by design, should not have to make that judgement. That
+inverts where the risk sits: `analyze` and `converge` are not conveniences here,
+they are the owner's only defence against a specification that reads plausibly
+and is wrong.
+
+The mapping table routes `checklist`/`analyze` to `ReviewObservation` for
+advisory reasoning. Advisory prose alone would let "analyze passed" mean nothing
+more than "a model said it looked fine" — the exact failure this architecture
+exists to prevent. `review-observation-v1` now enforces, as of the same date:
+
+- `severity` is closed to SARIF 2.1.0 `result.level` (`none|note|warning|error`);
+- a finding at the blocking level (`error`) must carry
+  `epistemic_status: FACT`; and
+- a `FACT` finding must cite at least one non-empty `evidence_ref`.
+
+So a `converge` step may not report a blocking problem it merely inferred, and
+may not claim verification while citing nothing. Non-blocking observations remain
+freely expressible — an agent may still say "I think this is wrong" — it simply
+cannot halt the owner's work on a hunch, or present a hunch as a finding of fact.
+
+The measured basis for this requirement is on record: during the session that
+produced this amendment, three separate claims by the assistant and by reviewing
+models were plausible, well-formed, and false, each caught only by verification
+at `path:line`. See
+[`reviews/2026-07-30-kernel-tracer-adversarial-audit.md`](../reviews/2026-07-30-kernel-tracer-adversarial-audit.md).
 
 Non-goals:
 
