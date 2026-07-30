@@ -7,7 +7,9 @@
       "const": "post_landing_verification"
     },
     "checker_result_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "core_sdlc_trace_ref": {
@@ -29,22 +31,27 @@
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "orphan_authority_checks": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "outcome": {
       "type": "string"
     },
     "projection_reconciliation_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "release_state_checks": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "rollback_point_ref": {
       "type": "string"

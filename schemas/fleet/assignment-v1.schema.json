@@ -12,7 +12,9 @@
       "type": "integer"
     },
     "allowed_path_ownership_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "artifact_type": {
@@ -39,7 +41,9 @@
       "type": "string"
     },
     "dependency_assignment_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "digest": {
@@ -51,7 +55,9 @@
       "type": "integer"
     },
     "maker_checker_separation_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "offer_policy_id": {
@@ -117,23 +123,28 @@
         },
         "agent_definitions": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_network_destinations": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_process_executables": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_secret_handles": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "apps": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "assignment_config_home_ref": {
           "type": "string"
@@ -186,11 +197,15 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_capability_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_runtime_tool_names": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_tool_grant_digest": {
@@ -198,7 +213,9 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_tool_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "full_model_id": {
@@ -209,7 +226,8 @@
         },
         "mcp_servers": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "model_fallback_limit": {
           "minimum": 0,
@@ -224,7 +242,8 @@
         },
         "plugins": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "provider_fallback_limit": {
           "minimum": 0,
@@ -332,11 +351,13 @@
         },
         "settings_sources": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "skills": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "strict_mcp_config": {
           "type": "boolean"

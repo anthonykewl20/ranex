@@ -14,7 +14,9 @@
       "type": "string"
     },
     "admission_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "aggregate_version": {
@@ -136,7 +138,9 @@
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "provider_receipt_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "reservation_id": {

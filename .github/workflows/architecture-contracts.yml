@@ -94,6 +94,16 @@ jobs:
               sys.exit(1)
           PY
 
+      # Prose records have no generator, so the drift gate above cannot see
+      # them: an ADR can be accepted, registered and validated while the
+      # documents describing the corpus still claim an older state. This gate
+      # compares each written claim against the filesystem. Fully mechanical —
+      # no model is invoked.
+      - name: Fail if any governance record is stale
+        run: |
+          uv run --project scripts/architecture \
+            python scripts/architecture/check_record_freshness.py
+
       - name: Concurrency regression test
         run: |
           uv run --project scripts/architecture \

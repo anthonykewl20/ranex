@@ -28,7 +28,11 @@
       "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
       "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md",
       "docs/architecture/decisions/ADR-0015-canonical-workflow-and-event-schema-and-upcaster-policy.md",
-      "docs/architecture/decisions/ADR-0016-resolve-five-implementation-start-owner-decisions.md"
+      "docs/architecture/decisions/ADR-0016-resolve-five-implementation-start-owner-decisions.md",
+      "docs/architecture/decisions/ADR-0017-record-resolved-owner-decisions.md",
+      "docs/architecture/decisions/ADR-0018-select-the-static-type-checker.md",
+      "docs/architecture/decisions/ADR-0019-declare-uv-as-the-python-toolchain-manager.md",
+      "docs/architecture/decisions/ADR-0020-declare-the-record-freshness-self-check.md"
     ],
     "runtime_subject_included": false
   },

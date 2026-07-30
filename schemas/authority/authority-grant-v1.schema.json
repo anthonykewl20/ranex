@@ -15,7 +15,8 @@
     },
     "conditions": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "consumed_at": {
       "format": "date-time",
@@ -78,7 +79,8 @@
     },
     "scope": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "status": {
       "type": [

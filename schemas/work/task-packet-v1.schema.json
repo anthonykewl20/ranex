@@ -5,50 +5,61 @@
   "properties": {
     "acceptance_criteria": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "architecture_bounds": {
       "additionalProperties": false,
       "properties": {
         "attachment_points_to_preserve": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "contexts_allowed_to_change": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "dependency_edges_allowed": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "dependency_edges_forbidden": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "effect_owners_affected": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "exclusions_to_preserve": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "paths_allowed": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "paths_forbidden": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "public_apis_allowed_to_change": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "state_owners_affected": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -72,14 +83,19 @@
       "additionalProperties": false,
       "properties": {
         "accepted_adr_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "architecture_revision": {
           "type": "string"
         },
         "contract_digests": {
-          "items": {},
+          "items": {
+            "type": "string",
+            "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+          },
           "type": "array"
         },
         "policy_digest": {
@@ -93,7 +109,9 @@
           "additionalProperties": false,
           "properties": {
             "conflict_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "context_budget": {
@@ -126,7 +144,9 @@
                     "type": "string"
                   },
                   "evidence_refs": {
-                    "items": {},
+                    "items": {
+                      "type": "string"
+                    },
                     "type": "array"
                   },
                   "reason_code": {
@@ -147,7 +167,9 @@
               "type": "array"
             },
             "included_rule_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "instruction_registry_digest": {
@@ -229,27 +251,33 @@
       "properties": {
         "assumptions": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "conflicts": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "known_facts": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "omissions": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "source_manifest": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "unknowns": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -283,7 +311,9 @@
                 "type": "string"
               },
               "verification_refs": {
-                "items": {},
+                "items": {
+                  "type": "string"
+                },
                 "type": "array"
               }
             },
@@ -336,7 +366,8 @@
         },
         "material_unknowns": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "registry_digest": {
           "type": "string",
@@ -356,7 +387,9 @@
                 "type": "string"
               },
               "evidence_refs": {
-                "items": {},
+                "items": {
+                  "type": "string"
+                },
                 "type": "array"
               },
               "reason": {
@@ -393,30 +426,36 @@
     },
     "escalate_when": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "grants": {
       "additionalProperties": false,
       "properties": {
         "capabilities": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "data_classifications": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "network_destinations": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "secret_handles": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "tools": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -430,7 +469,8 @@
     },
     "non_goals": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "objective": {
       "type": "string"
@@ -449,7 +489,8 @@
     },
     "scope": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "status": {
       "type": "string"
@@ -585,23 +626,28 @@
       "properties": {
         "required_commands": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "required_evidence": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "required_test_families": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "requirement_to_check_mappings": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "rollback_requirements": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "withheld_verification_profile_id": {
           "type": "string"
@@ -629,37 +675,44 @@
           "properties": {
             "apps": {
               "items": {},
-              "type": "array"
+              "type": "array",
+              "x-ranex-element-type": "UNDECIDED"
             },
             "local_settings": {
               "type": "boolean"
             },
             "mcp_servers": {
               "items": {},
-              "type": "array"
+              "type": "array",
+              "x-ranex-element-type": "UNDECIDED"
             },
             "network_destinations": {
               "items": {},
-              "type": "array"
+              "type": "array",
+              "x-ranex-element-type": "UNDECIDED"
             },
             "plugins": {
               "items": {},
-              "type": "array"
+              "type": "array",
+              "x-ranex-element-type": "UNDECIDED"
             },
             "process_executables": {
               "items": {},
-              "type": "array"
+              "type": "array",
+              "x-ranex-element-type": "UNDECIDED"
             },
             "project_settings": {
               "type": "boolean"
             },
             "secret_handles": {
               "items": {},
-              "type": "array"
+              "type": "array",
+              "x-ranex-element-type": "UNDECIDED"
             },
             "skills": {
               "items": {},
-              "type": "array"
+              "type": "array",
+              "x-ranex-element-type": "UNDECIDED"
             },
             "user_settings": {
               "type": "boolean"
@@ -718,11 +771,15 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_capability_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_runtime_tool_names": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_tool_grant_digest": {
@@ -730,7 +787,9 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_tool_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "full_model_id": {

@@ -12,6 +12,7 @@ from __future__ import annotations
 import fcntl
 import hashlib
 import os
+import sys
 import tempfile
 from contextlib import contextmanager
 from pathlib import Path
@@ -19,6 +20,14 @@ from typing import Iterator, TextIO
 
 
 LOCK_PROTOCOL_VERSION = "ranex-architecture-contract-tree-lock-v1"
+
+# Emitted on stderr, once, at the moment a process discovers the lock is held
+# and begins waiting for it.  The concurrency regression observes this marker
+# directly instead of inferring contention from elapsed time.  A deterministic
+# signal is both faster and stricter than a timing heuristic: it proves the
+# process reached the lock and yielded, rather than proving only that it had
+# not finished yet.
+LOCK_WAIT_MARKER = "ranex-contract-tree-lock: waiting for exclusive lock"
 
 
 def contract_tree_lock_path(root: Path) -> Path:
@@ -42,7 +51,16 @@ def contract_tree_lock(root: Path) -> Iterator[None]:
     lock_path = contract_tree_lock_path(root)
     handle: TextIO = lock_path.open("a+", encoding="utf-8")
     try:
-        fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
+        try:
+            fcntl.flock(
+                handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB
+            )
+        except OSError:
+            # Held by another publisher.  Announce the wait before blocking so
+            # an observer learns of contention immediately rather than by
+            # timing out.  This never changes who acquires the lock.
+            print(LOCK_WAIT_MARKER, file=sys.stderr, flush=True)
+            fcntl.flock(handle.fileno(), fcntl.LOCK_EX)
         yield
     finally:
         fcntl.flock(handle.fileno(), fcntl.LOCK_UN)

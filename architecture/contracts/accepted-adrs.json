@@ -111,13 +111,41 @@
       "source_path": "docs/architecture/decisions/ADR-0016-resolve-five-implementation-start-owner-decisions.md",
       "status": "ACCEPTED",
       "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0017",
+      "source_digest": "sha256:7082b909ad25b260a41b4e78c68ec1e23943b8500f0b380357c1f1c4fb51a60d",
+      "source_path": "docs/architecture/decisions/ADR-0017-record-resolved-owner-decisions.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0018",
+      "source_digest": "sha256:f949841cf67009cad407c398a2304a00625c67fecb5d62fa99a1f3473d799fb1",
+      "source_path": "docs/architecture/decisions/ADR-0018-select-the-static-type-checker.md",
+      "status": "ACCEPTED",
+      "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0019",
+      "source_digest": "sha256:7c043e4068c7df00d070413553ca7ba907076287afcd0a496cb1b19ce0d52146",
+      "source_path": "docs/architecture/decisions/ADR-0019-declare-uv-as-the-python-toolchain-manager.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0020",
+      "source_digest": "sha256:07fe94437f71e9c5c26faf3de6dd67c929434ff1cae177782deefe88e53fbc83",
+      "source_path": "docs/architecture/decisions/ADR-0020-declare-the-record-freshness-self-check.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "REG-ACCEPTED-ADRS-001",
-  "required_count": 16,
+  "required_count": 20,
   "source": "docs/architecture/SOURCE_OF_TRUTH.md",
-  "source_digest": "sha256:661ce41844317307857de93e65e5f148a6754b1ca4a937c197d5cc5888a44e54",
+  "source_digest": "sha256:c2cd5ba32236381b2398c0836d8c8f0dcac79623daa08fabc730bfd83a31e3f1",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"
 }

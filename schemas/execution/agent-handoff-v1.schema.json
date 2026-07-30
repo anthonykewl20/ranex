@@ -4,7 +4,9 @@
   "additionalProperties": false,
   "properties": {
     "artifact_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "artifact_type": {
@@ -21,11 +23,15 @@
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "finding_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "handoff_id": {
@@ -33,7 +39,8 @@
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "producer": {
       "additionalProperties": false,

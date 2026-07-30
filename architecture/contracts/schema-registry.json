@@ -1,21 +1,21 @@
 {
   "entries": [
     {
-      "digest": "sha256:8a2ba04eb7f9ae186119742786aa778022f4c642b9947009b810d36428774679",
+      "digest": "sha256:f21592d109e751932c3ee784eaf854e51a77dcf24d8562a7ad0389bc13ea2244",
       "draft": "2020-12",
       "path": "schemas/architecture/proposal-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/architecture/proposal-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:15ff50ec1af44177342ce551ca4087b97926865762c179b4bd5e38b763470911",
+      "digest": "sha256:0571df204a25fdbbff9a7f86425d43ac3b440a616cea671df6663af97eb94498",
       "draft": "2020-12",
       "path": "schemas/architecture/reconciliation-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/architecture/reconciliation-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:76a5394ffb012a5931e482535fcd3557d4536806d7b8f8ed79a1a407bedb1246",
+      "digest": "sha256:42d82ef95ec918be345ff6ab23c382bc1005063e3b55324ffd92737b16efde22",
       "draft": "2020-12",
       "path": "schemas/architecture/review-packet-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/architecture/review-packet-v1.schema.json",
@@ -36,21 +36,21 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:d47064fe8b3720055a350888acbe024cac1a541638a2606203cc1a7859278caa",
+      "digest": "sha256:a1e86525a0aa7435e9b30613cc354aedc17f3af6c0eab23db72c730bfc4d6a1b",
       "draft": "2020-12",
       "path": "schemas/assurance/checker-result-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/assurance/checker-result-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:e22ec0a60eb7b0f780fa22b3312623be229f45eb513d404b2132c5bb5c84de9c",
+      "digest": "sha256:eddf6832096e4f00cc6ac93a8d135bcbe12e02c695ab968009fd91f4f14bbaee",
       "draft": "2020-12",
       "path": "schemas/assurance/evidence-snapshot-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/assurance/evidence-snapshot-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:0c72d0c6537f08e8caa495c1c0c4b3c5a39b034a620651fc5bba02221670e10a",
+      "digest": "sha256:97056496ed6ce60024c0d350bff75b015dfc77cc7b6f8c1f296ea993975fa2fd",
       "draft": "2020-12",
       "path": "schemas/assurance/gate-evaluation-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/assurance/gate-evaluation-v1.schema.json",
@@ -85,21 +85,21 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:4a9ed3b5565b7ef52777c6c4b982be0e649296515f19f5faa98ebb2a56554cef",
+      "digest": "sha256:cda42703dda13a89a7a6fe1a115902830d68cd8b0c7ed649ca8f5a915ed9e84b",
       "draft": "2020-12",
       "path": "schemas/authority/authority-grant-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/authority/authority-grant-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:a1eeef5612e09946a87914404bb26e994603dedb58900a66a668d5ba06651b70",
+      "digest": "sha256:3ad6d0767961f4e7ab2a4525453b0b7ba5c4fa7c15d0d3777bf962fdc0441637",
       "draft": "2020-12",
       "path": "schemas/authority/human-decision-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/authority/human-decision-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:9969fd2a4faa00281ce5849d5cc62321704d39d4700371aa85a4cbd901b7f3bd",
+      "digest": "sha256:3d51f6c7a47bbcc989c76fba7f5471ccf535b5b710cdfba1a0ee898d06446354",
       "draft": "2020-12",
       "path": "schemas/authority/permit-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/authority/permit-v1.schema.json",
@@ -162,7 +162,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:56bf094e7aed6809c919b6e24a03b99853f89a2ef72a8bc99f75321dec0eb9f2",
+      "digest": "sha256:38fad9a1d019f9af1e7d5b7b9012891b2c9a3aaa1c0097a1e8c2d625295fed60",
       "draft": "2020-12",
       "path": "schemas/common/core-sdlc-trace-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/common/core-sdlc-trace-v1.schema.json",
@@ -659,7 +659,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:ed380ac5f0686874f2d569d49dae477b5766dee38bfa4a6b5b17ef9bdc91f390",
+      "digest": "sha256:8baf3af2c4fd1be0f41b2455c5994c862a246d8028fa4424a77be5d0c3e6bf7b",
       "draft": "2020-12",
       "path": "schemas/execution/agent-handoff-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/execution/agent-handoff-v1.schema.json",
@@ -673,21 +673,21 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:4ffacc3964221db08a86b7faed93435ccc6644b86626c969b019fa762e0c96fa",
+      "digest": "sha256:bf1e9a63858074d04e025c2c6f46aa88670c189e315cac9a23bbed6f82ff86d2",
       "draft": "2020-12",
       "path": "schemas/execution/post-landing-verification-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/execution/post-landing-verification-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:e2b7f35ff29f37e2c5bd7376584f6f81ccf84cb65fc30b336d1ac9b9315f32c2",
+      "digest": "sha256:d0bd7b55882f11c523deffbc368080ceb93fff638e9fdd390e0d3e8e300868e2",
       "draft": "2020-12",
       "path": "schemas/execution/run-result-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/execution/run-result-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:68668e100290ad6b97af99672e366822a848a001c68e4450d0a249e755d44c04",
+      "digest": "sha256:27f4e48e7127f67524d99af2450429a9d9817a71d9e2e96ebd444109ed64a854",
       "draft": "2020-12",
       "path": "schemas/fleet/assignment-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/fleet/assignment-v1.schema.json",
@@ -701,7 +701,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:0e5958b8b18ed6557c7eeefcf8036ec24b12d6bf424033700a1ea5a2d06836db",
+      "digest": "sha256:d7d9d692ff2e6750976780ead8db27de6ae909850791bc1bb1137c297b01cd8a",
       "draft": "2020-12",
       "path": "schemas/fleet/fleet-experiment-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/fleet/fleet-experiment-v1.schema.json",
@@ -722,28 +722,28 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:dc518864f09db0549d04a3434212f1ea7d6ea1592f5e3e12482f33cff2132fbc",
+      "digest": "sha256:fb248bb1d0974c5b7d31db24f917caa7d7d8bd0c027cb933f108c0738ece6c13",
       "draft": "2020-12",
       "path": "schemas/fleet/worker-attempt-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/fleet/worker-attempt-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:459218762aaf3f2db9ae725ae11981eba807c166725a4e54def8650386917b8c",
+      "digest": "sha256:0e43777ab4d75e9d546e12d8134172b934516acc22e991beabaaabff2c0b8e24",
       "draft": "2020-12",
       "path": "schemas/lifecycle/operation-evidence-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/lifecycle/operation-evidence-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:ff4a4fefff74a3d766194ba1354bf73c5089f2791636ac2d9d74379ba89da5d1",
+      "digest": "sha256:159adfdc6b5b95aec0a1586a2cb7e11507eb0665f6c467921b07e7f761294860",
       "draft": "2020-12",
       "path": "schemas/lifecycle/outcome-review-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/lifecycle/outcome-review-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:97ae0813cd6480b551c8ad1f730459f3d57429ca1f177056810177c90e542d0e",
+      "digest": "sha256:27295021e8b2b52ef6dbcf3022387f4e0a086a09bae5dfe949d16a6b3620195f",
       "draft": "2020-12",
       "path": "schemas/lifecycle/release-evidence-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/lifecycle/release-evidence-v1.schema.json",
@@ -792,7 +792,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:77fbc84a54ffe6a3de1b66b52d55eeb3866fc7fc95e73a19167a4c6beae023f3",
+      "digest": "sha256:8b33b1d2dfa50ed1f04b696c96e374dda5900ff9fb62523d8e93d951fb2f386e",
       "draft": "2020-12",
       "path": "schemas/planning/commitment-decision-authority-registry-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/planning/commitment-decision-authority-registry-v1.schema.json",
@@ -806,7 +806,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:1ab016fc0cd2d16b4bc8bf39b7ac0af0e90b81bf4ce47f86de9c6efb2bd66f16",
+      "digest": "sha256:a89e579f54857bbb5afee467f03e0410e8d69d9e363298b6bcd253df186dcae6",
       "draft": "2020-12",
       "path": "schemas/planning/core-sdlc-trace-authority-registry-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/planning/core-sdlc-trace-authority-registry-v1.schema.json",
@@ -855,7 +855,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:b910d57562db33facabd074a69497ccc1d55e4e7b8d0a47d7e2e85fb53608700",
+      "digest": "sha256:584c65bb00a3a2710ddcb127bc40f272ba0795424f5066ccccc5b006ca19a706",
       "draft": "2020-12",
       "path": "schemas/planning/estimate-commitment-source-envelope-v2.schema.json",
       "schema_id": "https://schemas.ranex.dev/planning/estimate-commitment-source-envelope-v2.schema.json",
@@ -981,77 +981,77 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:46ad976d05bc6be5b9085ded87adfa18d6a7934777e1e9d7656ca7143a7635a5",
+      "digest": "sha256:a2d64ac2c490ddb0946b38718abb741f94025af4da6f658fad3799508fc6d01c",
       "draft": "2020-12",
       "path": "schemas/process/capability-assessment-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/process/capability-assessment-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:6fb97935072e2f5efe01c1301340650c97b8b236f47b86fb42a11c2cfc6fa2e4",
+      "digest": "sha256:14852967a94032dcf4d938aa6e402a9dcb32816707b7b914e1ec65f4be705ac1",
       "draft": "2020-12",
       "path": "schemas/process/capability-domain-projection-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/process/capability-domain-projection-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:2190b3cc1c0d30dca1fa4db8fbb1b0b5520a92818013bdb284a6b83e1585a797",
+      "digest": "sha256:ab40a047a6760f3d2691e0c1811b4ebae859167e59131dd3de61960130573556",
       "draft": "2020-12",
       "path": "schemas/research/research-packet-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/research/research-packet-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:e39dd374cf22efd886558f865543e0f59a1b01156332d8f2a906c0b145906936",
+      "digest": "sha256:db0832eeabc97e214f3278a743fad851913d8f0a08fb83a11714b2f5b805167d",
       "draft": "2020-12",
       "path": "schemas/resources/resource-reservation-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/resources/resource-reservation-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:07011b54cc586f1147ba5140d73e3c1c63a016d3f66773507f36638b72455da6",
+      "digest": "sha256:b59d50fea1be90d8f6240732624ab4c91b078eb36c220c0b7dd35ffb9260514c",
       "draft": "2020-12",
       "path": "schemas/review/analysis-attempt-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/review/analysis-attempt-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:c4f8aab6b08518905ba74b9db1952331b4f6b8c64d1ce75be79e7ec017064815",
+      "digest": "sha256:f1101a64cc940c0a5f2bb119be0a866f6a5872736127da12267676d12ca0bc17",
       "draft": "2020-12",
       "path": "schemas/review/independence-evaluation-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/review/independence-evaluation-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:052242ceb9e675098fff7fed07bb905e5366ed9e1887b038bc03aeaed94d22b8",
+      "digest": "sha256:b3cdc64354d41a327d58ca293a95d95c352c5e133ab4669b8fa39392f8a2e424",
       "draft": "2020-12",
       "path": "schemas/review/review-observation-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/review/review-observation-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:6480a0f7b7d51a53cb3b11b795db5b9616c17b4de973448a85798fc9a89a0ed2",
+      "digest": "sha256:fc5b27da6c6335535d89fa31686d80f8f4b040ba8d28350e8b9457659e490aee",
       "draft": "2020-12",
       "path": "schemas/review/review-record-projection-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/review/review-record-projection-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:7bdc774edd8c4b80b49e7371845b8d27efc75284eddfee5e6acee8f4d4ae4626",
+      "digest": "sha256:7521bd8692172bf99916ce7db3327844395593c9050872dfdcb877529802f290",
       "draft": "2020-12",
       "path": "schemas/review/review-request-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/review/review-request-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:3244bd4484ed15a8f7e5a5d26f7772aa17f309b5921ad3c5868c27b9b6dd3526",
+      "digest": "sha256:5b418e6f110ac92ac363b4151d805389ee0dd6dd493bee63b456158bcb6f0293",
       "draft": "2020-12",
       "path": "schemas/review/review-verdict-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/review/review-verdict-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:8a07a4392218d6a6405b9b3cea277b09646d7070222068ed7d91ecc250b207e0",
+      "digest": "sha256:e6014cd683d91040d69b39f248f7ee43e162e4e441cc365dad3a36c1007c7cca",
       "draft": "2020-12",
       "path": "schemas/work/task-packet-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/work/task-packet-v1.schema.json",
@@ -1065,7 +1065,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:0778818c9cbf21b5dfe939631ab28d2bd0ce9636efd48a5d5aa54ff3daad593f",
+      "digest": "sha256:9e353d1fdb9fb786baeaf2dd208047fb5f2e36b138c58565dfc87e63485af50e",
       "draft": "2020-12",
       "path": "schemas/work/work-intake-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/work/work-intake-v1.schema.json",

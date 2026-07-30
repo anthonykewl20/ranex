@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | DRAFT |
+| Status | ACCEPTED |
 | Owner | Human owner |
 | Authors | Assistant, from Codex research, at owner request 2026-07-30 |
 | Created | 2026-07-30 |

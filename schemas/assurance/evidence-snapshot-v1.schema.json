@@ -8,14 +8,16 @@
     },
     "conflicts": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "core_sdlc_trace_ref": {
       "type": "string"
     },
     "coverage": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "created_at": {
       "type": "string",
@@ -29,7 +31,9 @@
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "eligible_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "freshness_cutoff": {
@@ -55,7 +59,9 @@
       "type": "array"
     },
     "missing_claim_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "policy_activation_id": {
@@ -66,7 +72,9 @@
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "required_claim_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "schema_version": {

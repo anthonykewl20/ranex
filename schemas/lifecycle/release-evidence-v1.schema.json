@@ -17,7 +17,9 @@
       "type": "string"
     },
     "deployment_event_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "destination": {
@@ -32,7 +34,9 @@
       "x-ranex-runtime-format": "date-time"
     },
     "health_gate_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "migration_ref": {

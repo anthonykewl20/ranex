@@ -44,7 +44,9 @@
       "type": "string"
     },
     "definition_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "definition_status": {
@@ -78,7 +80,9 @@
           "type": "string"
         },
         "lowest_control_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "not_applicable_member_count": {
@@ -193,7 +197,9 @@
           "type": "boolean"
         },
         "decisive_control_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "derived_tier": {
@@ -251,18 +257,23 @@
         },
         "risk_lanes": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "scope_digest": {
           "type": "string",
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "service_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "value_stream_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "window_end": {
@@ -275,7 +286,8 @@
         },
         "work_classes": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -329,7 +341,9 @@
           "type": "string"
         },
         "validation_evidence_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         }
       },

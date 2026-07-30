@@ -14,7 +14,9 @@
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "independence_evaluation_id": {
@@ -22,14 +24,19 @@
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "observation_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "open_finding_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "produced_at": {
@@ -40,11 +47,15 @@
       "type": "string"
     },
     "reconciliation_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "resolved_finding_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "review_request_id": {

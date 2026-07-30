@@ -7,7 +7,9 @@
       "const": "outcome_review"
     },
     "baseline_measure_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "capability_id": {
@@ -17,7 +19,9 @@
       "type": "string"
     },
     "data_quality_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "decision": {
@@ -31,7 +35,9 @@
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "follow_up_work_item_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "hypothesis_ref": {
@@ -39,10 +45,13 @@
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "observed_measure_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "outcome_review_id": {
@@ -63,11 +72,13 @@
     },
     "segments": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "side_effects": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "subject_digest": {
       "type": "string",

@@ -4,7 +4,9 @@
   "additionalProperties": false,
   "properties": {
     "analysis_attempt_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "artifact_type": {
@@ -38,7 +40,9 @@
       "type": "string"
     },
     "review_observation_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "review_request_digest": {

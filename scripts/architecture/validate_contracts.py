@@ -101,7 +101,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "e8d34bc08b2b2987ce2cc96c26d40a3c6234df7577e2ec4fcf6a1d8205fc2d91"
+    "4eedd6e10cc0c3598730aac0f25f8720a43504fdfcc4dea82f31486aecee6710"
 )
 ARCHITECTURE_PRACTICE_PROFILE = (
     ROOT / "docs" / "research" / "ranex-architecture-practice-application-profile.json"
@@ -20307,8 +20307,39 @@ def validate_schema_documents(checks: Counter[str]) -> dict[str, dict[str, Any]]
         ids.append(schema["$id"])
         schemas[str(path.relative_to(ROOT))] = schema
         checks["schema_documents"] += 1
+        checks[
+            "undecided_array_element_types"
+        ] += count_undecided_array_elements(schema)
     require(len(ids) == len(set(ids)), "SCHEMA_ID_DUPLICATE", "duplicate $id")
     return schemas
+
+
+def count_undecided_array_elements(node: Any) -> int:
+    """Count arrays whose element type nobody has decided.
+
+    The generator derives an element schema from the field name where the name
+    determines it (`*_refs`, `*_ids`, `*_digests`, …). Where it does not, and the
+    template supplies no representative element, the element type is genuinely
+    undecided: guessing it would write a contract that rejects valid data, which
+    is worse than the permissive schema it would replace.
+
+    Those arrays are marked `x-ranex-element-type: UNDECIDED` rather than left
+    silently open, and counted here so the obligation is visible and reducible.
+    This is a recorded finding, not a failure: it does not block today, on the
+    precedent of `ADR-0014` recording `LANG-TYPECHECK-001` unsatisfied and
+    blocking at `IMPLEMENTATION_START` rather than breaking the build.
+    """
+
+    total = 0
+    if isinstance(node, dict):
+        if node.get("x-ranex-element-type") == "UNDECIDED":
+            total += 1
+        for value in node.values():
+            total += count_undecided_array_elements(value)
+    elif isinstance(node, list):
+        for value in node:
+            total += count_undecided_array_elements(value)
+    return total
 
 
 def validate_generated_output_authority(

@@ -17,7 +17,9 @@
       "x-ranex-runtime-format": "date-time"
     },
     "denial_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "digest": {
@@ -87,27 +89,33 @@
         },
         "ambient_local_settings": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_network_destinations": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_process_executables": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_project_settings": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_secret_handles": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "ambient_user_settings": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "auth_environment_sanitized": {
           "type": "boolean"
@@ -156,14 +164,16 @@
         },
         "init_agent_definitions": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "init_api_key_source": {
           "type": "string"
         },
         "init_apps": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "init_cli_version": {
           "type": "string"
@@ -173,22 +183,27 @@
         },
         "init_mcp_servers": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "init_permission_mode": {
           "type": "string"
         },
         "init_plugins": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "init_reported_runtime_tool_names": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "init_skills": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "interrupt_requested_at": {
           "format": "date-time",
@@ -205,7 +220,9 @@
           "type": "string"
         },
         "model_usage_model_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "nested_worker_lineage_count": {
@@ -213,7 +230,9 @@
           "type": "integer"
         },
         "normalized_effective_tool_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "num_turns": {
@@ -253,7 +272,9 @@
           "type": "boolean"
         },
         "parent_tool_use_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "post_cancel_event_count": {
@@ -520,7 +541,9 @@
       ]
     },
     "usage_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "worker_attempt_id": {
@@ -549,11 +572,15 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_capability_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_runtime_tool_names": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_tool_grant_digest": {
@@ -561,7 +588,9 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_tool_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "full_model_id": {

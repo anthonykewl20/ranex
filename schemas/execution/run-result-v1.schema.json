@@ -8,15 +8,18 @@
     },
     "artifacts": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "assumptions": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "claims": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "commands": {
       "items": {
@@ -24,7 +27,8 @@
         "properties": {
           "argv": {
             "items": {},
-            "type": "array"
+            "type": "array",
+            "x-ranex-element-type": "UNDECIDED"
           },
           "classification": {
             "type": "string"
@@ -95,50 +99,61 @@
     },
     "compatibility_impact": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "completed_scope": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "conflicts": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "core_sdlc_trace_ref": {
       "type": "string"
     },
     "dependency_edges_changed": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "deviations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "digest": {
       "type": "string",
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "files_changed": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "generated_files_changed": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "migrations_changed": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "producer": {
       "additionalProperties": false,
@@ -181,14 +196,16 @@
     },
     "rollback": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "schema_version": {
       "const": "1"
     },
     "security_impact": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "status": {
       "type": [
@@ -327,19 +344,23 @@
     },
     "tests": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "uncompleted_scope": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "unknowns": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "upstream_sync_impact": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "worker_runtime_evidence": {
       "additionalProperties": false,
@@ -367,11 +388,15 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_capability_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_runtime_tool_names": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "effective_tool_grant_digest": {
@@ -379,11 +404,15 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "effective_tool_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "evidence_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "full_model_id_configured": {
@@ -399,7 +428,9 @@
           "type": "string"
         },
         "model_usage_model_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "num_turns": {

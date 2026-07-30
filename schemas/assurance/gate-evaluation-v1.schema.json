@@ -4,26 +4,32 @@
   "additionalProperties": false,
   "properties": {
     "applicability_proof_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "artifact_type": {
       "const": "gate_evaluation"
     },
     "checker_result_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "conflicts": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "core_sdlc_trace_ref": {
       "type": "string"
     },
     "coverage": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "digest": {
       "type": "string",
@@ -52,7 +58,8 @@
     },
     "freshness_evaluation": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "gate_definition_id": {
       "type": "string"
@@ -67,11 +74,15 @@
       "type": "string"
     },
     "missing_claim_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "observed_claim_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "outcome": {
@@ -88,15 +99,21 @@
       "type": "string"
     },
     "reason_codes": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "required_claim_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "review_verdict_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "schema_version": {

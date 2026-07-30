@@ -66,14 +66,16 @@
     },
     "required_independence": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "required_reviewer_role_id": {
       "type": "string"
     },
     "required_route_fact_diversity": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "review_spec_id": {
       "type": "string"

@@ -75,7 +75,8 @@
         },
         "conflicts": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "independence_evidence_ref": {
           "type": "string"
@@ -106,7 +107,9 @@
                 "type": "string"
               },
               "evidence_refs": {
-                "items": {},
+                "items": {
+                  "type": "string"
+                },
                 "type": "array"
               },
               "result": {
@@ -199,7 +202,9 @@
               "additionalProperties": false,
               "properties": {
                 "evidence_refs": {
-                  "items": {},
+                  "items": {
+                    "type": "string"
+                  },
                   "type": "array"
                 },
                 "result": {
@@ -216,7 +221,9 @@
               "additionalProperties": false,
               "properties": {
                 "evidence_refs": {
-                  "items": {},
+                  "items": {
+                    "type": "string"
+                  },
                   "type": "array"
                 },
                 "result": {
@@ -233,7 +240,9 @@
               "additionalProperties": false,
               "properties": {
                 "evidence_refs": {
-                  "items": {},
+                  "items": {
+                    "type": "string"
+                  },
                   "type": "array"
                 },
                 "result": {
@@ -250,7 +259,9 @@
               "additionalProperties": false,
               "properties": {
                 "evidence_refs": {
-                  "items": {},
+                  "items": {
+                    "type": "string"
+                  },
                   "type": "array"
                 },
                 "result": {
@@ -267,7 +278,9 @@
               "additionalProperties": false,
               "properties": {
                 "evidence_refs": {
-                  "items": {},
+                  "items": {
+                    "type": "string"
+                  },
                   "type": "array"
                 },
                 "result": {
@@ -284,7 +297,9 @@
               "additionalProperties": false,
               "properties": {
                 "evidence_refs": {
-                  "items": {},
+                  "items": {
+                    "type": "string"
+                  },
                   "type": "array"
                 },
                 "result": {
@@ -301,7 +316,9 @@
               "additionalProperties": false,
               "properties": {
                 "evidence_refs": {
-                  "items": {},
+                  "items": {
+                    "type": "string"
+                  },
                   "type": "array"
                 },
                 "result": {
@@ -383,7 +400,9 @@
       "type": "string"
     },
     "definition_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "definition_status": {
@@ -397,27 +416,39 @@
       "additionalProperties": false,
       "properties": {
         "baseline_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "comparator_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "distribution_and_trend_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "guardrail_result_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "metric_spec_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "observed_result_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "result": {
@@ -439,14 +470,18 @@
       "additionalProperties": false,
       "properties": {
         "artifact_and_provenance_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "data_quality_result_ref": {
           "type": "string"
         },
         "enacted_practice_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "event_query_digest": {
@@ -457,23 +492,32 @@
           "type": "string"
         },
         "evidence_snapshot_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "limitations": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "normal_path_event_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "outcome_and_guardrail_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "traversed_rejection_invalidation_exception_or_backward_event_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         }
       },
@@ -495,23 +539,33 @@
       "additionalProperties": false,
       "properties": {
         "active_harm_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "exception_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "gate_outcome_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "invariant_breach_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "nonconformity_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         }
       },
@@ -585,7 +639,9 @@
               "type": "string"
             },
             "unresolved_material_gap_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             }
           },
@@ -649,7 +705,8 @@
         },
         "stop_or_revert_criteria": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -673,7 +730,9 @@
       "additionalProperties": false,
       "properties": {
         "analysis_assumption_check_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "analysis_method_ref": {
@@ -700,7 +759,9 @@
           "type": "string"
         },
         "goal_question_decision_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "harness": {
@@ -714,7 +775,9 @@
               "type": "string"
             },
             "data_quality_test_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "harness_digest": {
@@ -734,7 +797,9 @@
               "type": "string"
             },
             "repeatability_test_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             }
           },
@@ -758,7 +823,9 @@
           "type": "string"
         },
         "metric_spec_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "minimum_detectable_effect": {
@@ -1004,7 +1071,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "exclusions_sum_to_excluded_result": {
@@ -1115,7 +1184,9 @@
             "additionalProperties": false,
             "properties": {
               "evidence_refs": {
-                "items": {},
+                "items": {
+                  "type": "string"
+                },
                 "type": "array"
               },
               "result": {
@@ -1141,7 +1212,9 @@
           "type": "string"
         },
         "matched_trigger_codes": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "priority_rule_digest": {
@@ -1170,7 +1243,9 @@
               "type": "string"
             },
             "validation_evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             }
           },
@@ -1226,18 +1301,23 @@
         },
         "risk_lanes": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "scope_digest": {
           "type": "string",
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "service_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "value_stream_ids": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "window_end": {
@@ -1250,7 +1330,8 @@
         },
         "work_classes": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [

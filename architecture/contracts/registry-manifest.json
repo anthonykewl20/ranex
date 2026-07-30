@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "digest": "sha256:1b4dced5cce2d8c24b0929cb4ddf3fe331280eae02099382f89b3c98f3a8dbeb",
+      "digest": "sha256:5264b9e50d4c0764b5d84076b6c6f50d8f97db4e15667ddd6e99fb9adc0bcee2",
       "path": "architecture/contracts/accepted-adrs.json"
     },
     {
@@ -9,11 +9,11 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:74635d24c0085f6393ed031225fbca4ba4d614a9b1d0577b4b592ad675977db1",
+      "digest": "sha256:e711ae7a4c6572476a4cce7711568393863d4d462eb7ab7b66e203f3455f5034",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:1618e7b68edf501a0e86ff02e206fde9ee002198935bf4dde084d4028bd90b4f",
+      "digest": "sha256:3fadbfa18471a4e28817c923662e6b4281a513731dca2bf9fc61c98d7a32bb75",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {
@@ -73,7 +73,7 @@
       "path": "architecture/contracts/feedback-fitness.json"
     },
     {
-      "digest": "sha256:55493ac1b0dc70396b101b3dbdcf0b12301009b8e5898bd189ab371050a51c76",
+      "digest": "sha256:ed05095c5859f1955f4eb91189c6d69b6381a1faa07134d3097ff2e0854332aa",
       "path": "architecture/contracts/generated-output-authority.json"
     },
     {
@@ -133,7 +133,7 @@
       "path": "architecture/contracts/runtime-adapters.json"
     },
     {
-      "digest": "sha256:ae31d96daf85548cd7889561acb1ac5f9b8819c32819493490be0009cc334222",
+      "digest": "sha256:6c0a8cf5847caefe19d6a28daeeb442f09d844e05531790bec12c1df8fd50ae5",
       "path": "architecture/contracts/schema-registry.json"
     },
     {

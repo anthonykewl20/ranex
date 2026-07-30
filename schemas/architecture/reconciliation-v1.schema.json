@@ -10,7 +10,9 @@
       "const": "architecture_reconciliation"
     },
     "challenge_observation_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "digest": {
@@ -25,7 +27,9 @@
             "type": "string"
           },
           "evidence_refs": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "finding_id": {
@@ -41,7 +45,9 @@
             "type": "string"
           },
           "resulting_change_refs": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           }
         },
@@ -58,7 +64,9 @@
       "type": "array"
     },
     "proposal_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "reconciliation_id": {
@@ -137,7 +145,8 @@
     },
     "unresolved_conflicts": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     }
   },
   "required": [

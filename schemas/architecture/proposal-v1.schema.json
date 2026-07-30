@@ -5,11 +5,13 @@
   "properties": {
     "acceptance_tests": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "alternatives": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "architecture_review_packet_id": {
       "type": "string"
@@ -19,30 +21,36 @@
     },
     "bounded_context_changes": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "core_sdlc_trace_ref": {
       "type": "string"
     },
     "dependency_rule_changes": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "digest": {
       "type": "string",
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "explicit_exclusions": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "migration_and_rollback": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "producer_attempt_id": {
       "type": "string"
@@ -52,18 +60,21 @@
     },
     "public_api_changes": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "repository_tree_changes": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "schema_version": {
       "const": "1"
     },
     "state_and_effect_ownership_changes": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "subject_digest": {
       "type": "string",
@@ -81,11 +92,13 @@
     },
     "trust_and_security_changes": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "unknowns": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     }
   },
   "required": [

@@ -4,7 +4,9 @@
   "additionalProperties": false,
   "properties": {
     "analysis_attempt_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "artifact_type": {
@@ -12,7 +14,8 @@
     },
     "blocking_reasons": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "checks": {
       "additionalProperties": false,
@@ -21,7 +24,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {
@@ -38,7 +43,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {
@@ -55,7 +62,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {
@@ -72,7 +81,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {
@@ -89,7 +100,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {
@@ -106,7 +119,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {
@@ -123,7 +138,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {
@@ -140,7 +157,9 @@
           "additionalProperties": false,
           "properties": {
             "evidence_refs": {
-              "items": {},
+              "items": {
+                "type": "string"
+              },
               "type": "array"
             },
             "outcome": {

@@ -20,12 +20,15 @@
             "type": "string"
           },
           "evidence_refs": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "limitations": {
             "items": {},
-            "type": "array"
+            "type": "array",
+            "x-ranex-element-type": "UNDECIDED"
           },
           "statement": {
             "type": "string"
@@ -45,7 +48,8 @@
     },
     "contradictions": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "core_sdlc_trace_ref": {
       "type": "string"
@@ -56,26 +60,31 @@
     },
     "file_mutations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "full_map_impact": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "method": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "negative_results": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "question": {
       "type": "string"
     },
     "recommendations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "research_id": {
       "type": "string"
@@ -85,7 +94,8 @@
     },
     "scope": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "source_manifest": {
       "items": {

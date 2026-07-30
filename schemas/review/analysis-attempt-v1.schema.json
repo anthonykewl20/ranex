@@ -32,10 +32,13 @@
     },
     "granted_capabilities": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "input_artifact_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "input_manifest_digest": {
@@ -172,7 +175,9 @@
       "type": "object"
     },
     "write_attempt_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     }
   },

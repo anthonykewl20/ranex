@@ -49,7 +49,7 @@ it short. Do not ask trivial questions that do not need their input.
 | | |
 |---|---|
 | Working branch | `bootstrap/pre-upstream` |
-| Accepted ADRs | **16** (ADR-0014, 0015, 0016 accepted today) |
+| Accepted ADRs | **20** (ADR-0017 … ADR-0020 accepted 2026-07-31) |
 | Contract validation | `PASS`, scope `EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY` |
 | Runtime | `NOT_ASSESSED` — nothing runs |
 | Readiness | Neither tier declared |

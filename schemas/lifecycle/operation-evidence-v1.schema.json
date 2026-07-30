@@ -7,7 +7,9 @@
       "const": "operation_evidence"
     },
     "backup_restore_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "core_sdlc_trace_ref": {
@@ -18,12 +20,15 @@
       "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
     },
     "incident_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "observation_window": {
       "additionalProperties": false,
@@ -50,7 +55,9 @@
       "type": "string"
     },
     "reconciliation_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "release_id": {
@@ -60,7 +67,9 @@
       "const": "1"
     },
     "security_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "service_id": {
@@ -70,7 +79,9 @@
       "type": "string"
     },
     "sli_slo_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "subject_digest": {
@@ -90,7 +101,9 @@
       "type": "string"
     },
     "support_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "work_item_id": {

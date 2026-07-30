@@ -17,7 +17,8 @@
     },
     "controls": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "core_sdlc_trace_ref": {
       "type": "string"
@@ -37,7 +38,8 @@
     },
     "exclusion_rules": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "experiment_id": {
       "type": "string"
@@ -46,7 +48,9 @@
       "type": "string"
     },
     "guardrail_measure_ids": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "hidden_anchor_profile_id": {
@@ -63,11 +67,13 @@
     },
     "inclusion_rules": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "minimum_detectable_effect": {
       "type": [
@@ -88,7 +94,9 @@
       "type": "string"
     },
     "raw_evidence_refs": {
-      "items": {},
+      "items": {
+        "type": "string"
+      },
       "type": "array"
     },
     "replication_count": {
@@ -103,14 +111,16 @@
     },
     "route_and_harness_locks": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "schema_version": {
       "const": "1"
     },
     "seed_schedule": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "status": {
       "type": "string"
@@ -120,7 +130,8 @@
     },
     "strata": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "subject_digest": {
       "type": "string",
@@ -142,11 +153,13 @@
     },
     "topology_profiles": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "treatments": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "uncertainty_method": {
       "type": "string"

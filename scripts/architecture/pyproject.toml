@@ -9,6 +9,20 @@ dependencies = [
   "rfc8785==0.1.4",
 ]
 
+[dependency-groups]
+# ADR-0018 TYPECHECK-TOOL-001. Pinned to the exact version whose specification
+# conformance was measured at selection time. A separate, non-default group so
+# that adding the checker does not alter the environment the generator and
+# validator already run in. Invoke with `--group typecheck`.
+typecheck = ["pyrefly==1.1.1"]
+
 [tool.uv]
 package = false
+
+# ADR-0018 TYPECHECK-STRICT-001. Strict mode is the gate; a non-zero exit blocks.
+# No baseline is adopted and no rule is demoted: the 265 errors currently
+# reported here are a recorded finding, not a waiver.
+[tool.pyrefly]
+project-includes = ["."]
+preset = "strict"
 

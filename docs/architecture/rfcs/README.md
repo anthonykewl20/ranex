@@ -10,8 +10,19 @@ This directory is the accepted home for governance proposals in the target tree
 
 | RFC | Status | Standing |
 |---|---|---|
-| [RFC-0001: Fix the implementation language and its performance escape hatch](RFC-0001-fix-the-implementation-language-and-performance-escape-hatch.md) | `DRAFT` | Prose proposal; no authority |
-| [RFC-0002: Selectively adapt Spec Kit interaction and artifact patterns](RFC-0002-selective-spec-kit-adaptation.md) | `DRAFT` | Prose proposal backed by an advisory review; no adaptation or authority |
+| [RFC-0001: Fix the implementation language and its performance escape hatch](RFC-0001-fix-the-implementation-language-and-performance-escape-hatch.md) | `ACCEPTED` | Promoted to [ADR-0014](../decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md); retained as history |
+| [RFC-0002: Selectively adapt Spec Kit interaction and artifact patterns](RFC-0002-selective-spec-kit-adaptation.md) | `DRAFT` | Prose proposal backed by an advisory review; no adaptation or authority. Awaits owner decision |
+| [RFC-0003: Deterministic session continuity and drift tripwires](RFC-0003-deterministic-session-continuity-and-drift-tripwires.md) | `DRAFT` | Prose proposal; rewritten as adoption of `cog`, `AGENTS.md` and `pre-commit`. Awaits owner decision |
+| [RFC-0004: Canonical workflow and event schema, and upcaster policy](RFC-0004-canonical-workflow-and-event-schema-and-upcaster-policy.md) | `ACCEPTED` | Accepted by the human owner 2026-07-30 and promoted to [ADR-0015](../decisions/ADR-0015-canonical-workflow-and-event-schema-and-upcaster-policy.md); retained as history |
+| [RFC-0005: Resolve the five remaining implementation-start owner decisions](RFC-0005-resolve-five-remaining-implementation-start-owner-decisions.md) | `ACCEPTED` | Accepted by the human owner 2026-07-30 and promoted to [ADR-0016](../decisions/ADR-0016-resolve-five-implementation-start-owner-decisions.md); retained as history |
+| [RFC-0006: Record a resolved owner decision](RFC-0006-record-resolved-owner-decisions.md) | `ACCEPTED` | Prose proposal; amends `ADR-0013` so its own stated resolution procedure becomes executable. Awaits owner acceptance |
+| [RFC-0007: Validate without the local-only practice corpus](RFC-0007-validate-without-the-local-only-practice-corpus.md) | `DRAFT` | Prose proposal; corrects a validator contract that contradicted `ADR-0002`. Awaits owner acceptance |
+| [RFC-0008: Select the static type checker](RFC-0008-select-the-static-type-checker.md) | `ACCEPTED` | Prose proposal; discharges the selection `ADR-0014` `LANG-TYPECHECK-001` deferred. Recommends `pyrefly` pinned at `1.1.1`. Awaits owner acceptance |
+| [RFC-0009: Record freshness as a shipped Ranex capability](RFC-0009-record-freshness-as-a-shipped-capability.md) | `DRAFT` | Prose proposal; specifies a capability Ranex ships to governed projects, distinct from this repository's own self-check. Awaits owner acceptance |
+
+The `Status` column records the value in each file's own header. An RFC promoted
+into an accepted ADR carries `ACCEPTED`; `scripts/architecture/check_record_freshness.py`
+fails closed if a promoted RFC still reads `DRAFT`.
 
 ## What belongs here
 

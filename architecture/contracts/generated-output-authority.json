@@ -2210,7 +2210,7 @@
     "GENERATED_CURATED_RESEARCH_NOASSERTION",
     "GENERATED_RANEX_ORIGINAL"
   ],
-  "licensing_policy_source_digest": "sha256:ab9727d395ba072d5bcb9c575731b05e366070a82807dc835fcb7185e1162ce4",
+  "licensing_policy_source_digest": "sha256:013f89c72c71c4d939edaf73bd6228073f87d25105325ab1ffa1275cc5b1fc29",
   "licensing_policy_source_path": "legal/licensing-manifest.json",
   "output_count": 293,
   "registry_id": "REG-GENERATED-OUTPUT-AUTHORITY-001",

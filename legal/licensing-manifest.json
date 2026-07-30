@@ -6,6 +6,56 @@
     "visibility": "public",
     "github_network_fork": false
   },
+  "dependencies": {
+    "policy": "Every resolved third-party package that an executable verification path depends on carries an entry here. The licence recorded is the one declared by the exact pinned version, taken from that version's own package metadata, not from the project's latest release and not from a repository hosting API. Where a repository API and package metadata disagree, the package metadata governs, because it describes the artefact actually consumed.",
+    "declared_by": [
+      "ADR-0014 LANG-PRIMARY-001",
+      "ADR-0018 TYPECHECK-TOOL-001",
+      "ADR-0019 TOOLCHAIN-LICENCE-001"
+    ],
+    "entries": [
+      {
+        "name": "jsonschema",
+        "version": "4.25.1",
+        "license": "MIT",
+        "license_source": "PyPI license_expression for the pinned version",
+        "role": "RUNTIME_VERIFICATION",
+        "declared_in": "scripts/architecture/pyproject.toml"
+      },
+      {
+        "name": "PyYAML",
+        "version": "6.0.2",
+        "license": "MIT",
+        "license_source": "PyPI license_expression for the pinned version",
+        "role": "RUNTIME_VERIFICATION",
+        "declared_in": "scripts/architecture/pyproject.toml"
+      },
+      {
+        "name": "rfc8785",
+        "version": "0.1.4",
+        "license": "Apache-2.0",
+        "license_source": "PyPI trove classifier 'Apache Software License' for the pinned version; no license_expression is declared",
+        "role": "RUNTIME_VERIFICATION",
+        "declared_in": "scripts/architecture/pyproject.toml"
+      },
+      {
+        "name": "pyrefly",
+        "version": "1.1.1",
+        "license": "MIT",
+        "license_source": "PyPI trove classifier 'MIT License' for the pinned version; repository facebook/pyrefly declares MIT",
+        "role": "TYPECHECK_GATE",
+        "declared_in": "scripts/architecture/pyproject.toml dependency-group typecheck"
+      },
+      {
+        "name": "uv",
+        "version": "0.11.26",
+        "license": "MIT OR Apache-2.0",
+        "license_source": "PyPI license_expression; astral-sh/uv ships LICENSE-MIT and LICENSE-APACHE. The GitHub repository API reports only Apache-2.0, which is incomplete",
+        "role": "TOOLCHAIN_MANAGER",
+        "declared_in": "ADR-0019"
+      }
+    ]
+  },
   "licenses": {
     "upstream": {
       "id": "MIT",

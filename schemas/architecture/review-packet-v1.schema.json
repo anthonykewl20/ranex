@@ -50,7 +50,9 @@
       "additionalProperties": false,
       "properties": {
         "accepted_adr_refs": {
-          "items": {},
+          "items": {
+            "type": "string"
+          },
           "type": "array"
         },
         "dependency_graph_artifact": {
@@ -80,11 +82,13 @@
       "properties": {
         "alternatives": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "non_goals": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "owner_principal_id": {
           "type": "string"
@@ -94,7 +98,8 @@
         },
         "scope": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -115,15 +120,18 @@
       "properties": {
         "assumptions": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "conflicts": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "known_facts": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "source_manifest": {
           "items": {
@@ -159,7 +167,8 @@
         },
         "unknowns": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -176,35 +185,43 @@
       "properties": {
         "affected_contexts": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "affected_data_owners": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "affected_effect_owners": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "affected_lifecycles": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "affected_public_apis": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "affected_trust_boundaries": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "changed_exclusions": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         },
         "preserved_attachment_points": {
           "items": {},
-          "type": "array"
+          "type": "array",
+          "x-ranex-element-type": "UNDECIDED"
         }
       },
       "required": [
@@ -415,7 +432,10 @@
           "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
         },
         "research_manifest_digests": {
-          "items": {},
+          "items": {
+            "type": "string",
+            "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
+          },
           "type": "array"
         },
         "review_prompt_digest": {

@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -20,7 +21,7 @@ import time
 from pathlib import Path
 from typing import Any
 
-from contract_tree_lock import contract_tree_lock
+from contract_tree_lock import LOCK_WAIT_MARKER, contract_tree_lock
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -108,18 +109,71 @@ def assert_blocked(
     label: str,
     baseline_seconds: float,
 ) -> None:
-    # Four baseline durations (and never less than two seconds) distinguish
-    # lock contention from normal interpreter/schema startup without relying
-    # on a generator timing hook.
-    probe_seconds = max(2.0, baseline_seconds * 4.0)
+    """Prove the process reached the lock and yielded to the holder.
+
+    An earlier revision inferred contention by waiting four baseline durations
+    and observing that the process had not exited.  That was sound but paid for
+    the proof in wall-clock time, and it degraded quadratically: a slower runner
+    produced a slower baseline, which produced a proportionally longer wait.
+    Measured, the two waits were 57% of this test's runtime.
+
+    The lock now announces the wait on stderr the moment it finds the lock held
+    (``contract_tree_lock.LOCK_WAIT_MARKER``).  Observing that marker is both
+    faster and stricter: elapsed time proves only that the process had not
+    finished, whereas the marker proves it reached the lock and yielded.
+
+    ``baseline_seconds`` bounds how long to wait for the marker, so a process
+    that never reaches the lock still fails rather than hanging.
+    """
+
+    assert process.stderr is not None
+    stream = process.stderr
+    descriptor = stream.fileno()
+    timeout_seconds = max(30.0, baseline_seconds * 4.0)
+    deadline = time.monotonic() + timeout_seconds
+    # A process may announce the wait and then die. Seeing the marker is
+    # therefore necessary but not sufficient: re-check liveness after a short
+    # settle before declaring the process blocked.
+    settle_seconds = 1.0
+    seen = ""
+    # Non-blocking reads: a blocking readline() would hang past the deadline on
+    # a process that neither writes nor exits, converting a failing test into a
+    # stalled one.
+    os.set_blocking(descriptor, False)
     try:
-        stdout, stderr = process.communicate(timeout=probe_seconds)
-    except subprocess.TimeoutExpired:
-        return
-    raise AssertionError(
-        f"{label} bypassed the contract-tree lock: "
-        f"returncode={process.returncode} stdout={stdout!r} stderr={stderr!r}"
-    )
+        while time.monotonic() < deadline:
+            try:
+                chunk = stream.read()
+            except (BlockingIOError, TypeError):
+                chunk = None
+            if chunk:
+                seen += chunk
+                if LOCK_WAIT_MARKER in seen:
+                    break
+                continue
+            if process.poll() is not None:
+                raise AssertionError(
+                    f"{label} bypassed the contract-tree lock: it exited with "
+                    f"returncode={process.returncode} without waiting. "
+                    f"stderr={seen!r}"
+                )
+            time.sleep(0.05)
+        else:
+            process.kill()
+            raise AssertionError(
+                f"{label} never announced waiting for the contract-tree lock "
+                f"within {timeout_seconds:.0f}s; contention was not proven. "
+                f"stderr={seen!r}"
+            )
+    finally:
+        os.set_blocking(descriptor, True)
+    time.sleep(settle_seconds)
+    if process.poll() is not None:
+        raise AssertionError(
+            f"{label} announced waiting for the contract-tree lock and then "
+            f"exited while the lock was still held: "
+            f"returncode={process.returncode}"
+        )
 
 
 def generated_tree_digest(repository: Path) -> str:

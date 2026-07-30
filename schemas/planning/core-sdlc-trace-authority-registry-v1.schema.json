@@ -148,7 +148,9 @@
         "additionalProperties": false,
         "properties": {
           "acceptance_criterion_ids": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "artifact_type": {
@@ -169,7 +171,9 @@
             "x-ranex-runtime-pattern": "^sha256:[0-9a-f]{64}$"
           },
           "invalidation_dependency_ids": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "observed_at": {
@@ -177,7 +181,9 @@
             "x-ranex-runtime-format": "date-time"
           },
           "outcome_measure_ids": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "owner_refs": {
@@ -252,12 +258,15 @@
             "type": "object"
           },
           "requirement_ids": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "requirement_to_evidence_mappings": {
             "items": {},
-            "type": "array"
+            "type": "array",
+            "x-ranex-element-type": "UNDECIDED"
           },
           "risk_decision_digest": {
             "type": "string",

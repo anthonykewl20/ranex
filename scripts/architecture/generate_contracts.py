@@ -262,7 +262,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "e8d34bc08b2b2987ce2cc96c26d40a3c6234df7577e2ec4fcf6a1d8205fc2d91"
+    "4eedd6e10cc0c3598730aac0f25f8720a43504fdfcc4dea82f31486aecee6710"
 )
 
 
@@ -635,7 +635,7 @@ TEST_TAXONOMY = [
     },
 ]
 
-TEST_LANE_SHAPES = [
+TEST_LANE_SHAPES: list[dict[str, Any]] = [
     {
         "category_id": "UNIT",
         "semantic_owner_parameter": "CONTEXT",
@@ -10436,6 +10436,44 @@ def scalar_schema(key: str, value: Any, artifact_type: str) -> dict[str, Any]:
     return result
 
 
+# Plural key suffixes whose singular form `scalar_schema` already types. An
+# empty example list carries no element type, so the generator would otherwise
+# emit `{}` — the empty schema, which accepts anything, including `null` and
+# nested objects. Where the field name determines the element type, derive it
+# from the name instead of guessing. Longest suffix wins.
+DERIVABLE_ELEMENT_SUFFIXES = (
+    "_digests",
+    "_refs",
+    "_ids",
+    "_names",
+    "_paths",
+    "_codes",
+    "_keys",
+    "_tags",
+    "_uris",
+    "_urls",
+)
+
+
+def empty_array_item_schema(
+    key: str, artifact_type: str
+) -> dict[str, Any] | None:
+    """Return the element schema implied by a plural key, or None.
+
+    Returning None means the element type is *undecided*: the field name does
+    not determine it and no example element exists to infer it from. Those are
+    left open here and counted as a finding rather than guessed, because a wrong
+    element type rejects valid data, which is a worse defect than the permissive
+    schema it would replace.
+    """
+
+    for suffix in DERIVABLE_ELEMENT_SUFFIXES:
+        if key.endswith(suffix):
+            singular = key[: -len(suffix)] + suffix[:-1]
+            return scalar_schema(singular, "", artifact_type)
+    return None
+
+
 def infer_schema(value: Any, key: str, artifact_type: str) -> dict[str, Any]:
     if isinstance(value, dict):
         return {
@@ -10445,7 +10483,21 @@ def infer_schema(value: Any, key: str, artifact_type: str) -> dict[str, Any]:
             "additionalProperties": False,
         }
     if isinstance(value, list):
-        return {"type": "array", "items": infer_schema(value[0], key, artifact_type) if value else {}}
+        if value:
+            item_schema = infer_schema(value[0], key, artifact_type)
+        else:
+            derived = empty_array_item_schema(key, artifact_type)
+            if derived is None:
+                # Element type undecided. Marked so the validator can count it;
+                # see ADR-0014 for the precedent of recording an unsatisfied
+                # obligation rather than silently defaulting it.
+                return {
+                    "type": "array",
+                    "items": {},
+                    "x-ranex-element-type": "UNDECIDED",
+                }
+            item_schema = derived
+        return {"type": "array", "items": item_schema}
     return scalar_schema(key, value, artifact_type)
 
 

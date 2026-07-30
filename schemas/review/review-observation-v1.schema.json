@@ -86,7 +86,9 @@
             ]
           },
           "evidence_refs": {
-            "items": {},
+            "items": {
+              "type": "string"
+            },
             "type": "array"
           },
           "finding_id": {
@@ -146,14 +148,16 @@
     },
     "limitations": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "observation_id": {
       "type": "string"
     },
     "proposed_actions": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     },
     "review_request_id": {
       "type": "string"
@@ -188,7 +192,8 @@
     },
     "uncertainties": {
       "items": {},
-      "type": "array"
+      "type": "array",
+      "x-ranex-element-type": "UNDECIDED"
     }
   },
   "required": [
