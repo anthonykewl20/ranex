@@ -1,4 +1,4 @@
-# Session handoff — 2026-07-30 (evening)
+# Session handoff — 2026-07-31
 
 For the next agent. Read this, then [`docs/README.md`](README.md).
 
@@ -50,11 +50,15 @@ it short. Do not ask trivial questions that do not need their input.
 |---|---|
 | Working branch | `bootstrap/pre-upstream` |
 | Accepted ADRs | **20** (ADR-0017 … ADR-0020 accepted 2026-07-31) |
-| Contract validation | `PASS`, scope `EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY` |
+| Contract validation | `PASS`, scope `EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY`, generator idempotent |
 | Runtime | `NOT_ASSESSED` — nothing runs |
 | Readiness | Neither tier declared |
-| Owner decisions | 20 rows; **six resolved today** by ADR-0015/0016. The registry still reports 20 — see Open threads |
+| Owner decisions | 20 rows; six have accepted ADRs. The registry still reports 20 unresolved — `ADR-0017` decides the fix but is **not implemented** |
 | Kernel | R&D tracer, branch `feature/kernel-tracer`. Audited by three models; §8.3 gate, journal replay and real crash tests added. 82 tests pass |
+| Records freshness | Gate green: 20 ADRs, 9 RFCs, no stale claims (`ADR-0020`) |
+| Type checker | `pyrefly` 1.1.1 pinned and configured (`ADR-0018`); **245 strict errors outstanding**, gate cannot pass |
+| Unconstrained schema arrays | 329 → **173**, each marked `UNDECIDED` and counted by the validator |
+| CI | Green. Concurrency regression **579s → 241s** |
 
 ## Corrections to the previous handoff — read before acting
 
@@ -75,38 +79,43 @@ are FACT.
 
 ## Immediate next steps, in order
 
-All six owner decisions that blocked `IMPLEMENTATION_START` were resolved on
-2026-07-30 by `ADR-0015` and `ADR-0016`. What remains is work, not decisions.
+**1. Clear the 245 strict type errors.** `LANG-TYPECHECK-001` cannot pass until
+they are zero. `ADR-0018` `TYPECHECK-DEBT-001` forbids a baseline or any rule
+demotion.
 
-**1. Teach the contract system to record a resolved owner decision.** This is the
-sharpest remaining defect. `generate_contracts.py:6946` raises if
-`owner_decision_ref` is not `None`, the emitted row schema pins it to
-`{"type": "null"}`, and the validator pins `unresolved_owner_decision_count` to
-20. `ADR-0013` modelled these rows as permanently unresolved and encodes no path
-to resolution, so validation reports 20 unresolved decisions although six now have
-accepted ADRs. **FACT**, verified at those lines. Do not simply edit the number —
-it is a normative change to an accepted ADR and needs its own decision.
+**Do not attempt this in bulk.** It was tried and reverted. A 42-annotation batch
+reached 159 and looked safe; three further automated rounds were not
+behaviour-neutral — `implicit-any` stuck at 40 while `bad-assignment` rose 3 → 18,
+because annotating a variable later reassigned an incompatible value changes what
+type-checks, and the generated tree changed.
 
-**2. Close the review-schema defects.** The rigour audit
-(`reviews/artifacts/2026-07-30/agent-reports/rigor-hy3.md`) found four
-blocking-class defects. Two were fixed on 2026-07-30: `epistemic_status` is a
-closed enum, and `severity` now uses SARIF `result.level` with a blocking finding
-required to be `FACT` with cited evidence. Still open: `evidence_refs` items are
-untyped so `[null, 42, {}]` validates, and blindness is self-assertable in
-`independence-evaluation-v1`. Fix at the generator, never in generated output.
+The false confidence came from an **invalid proof**: neutrality was "shown" by
+regenerating with the *same* script and comparing the tree to itself, which only
+demonstrates idempotence. The valid check is to generate one tree with the OLD
+script and one with the NEW, and diff those. Work one owner at a time — 33 owners,
+largest are `build_worker_runtime_semantic_world` (28) and
+`build_test_definition_profile` (26).
 
-**3. Configure the static type checker.** `LANG-TYPECHECK-001` (`ADR-0014`) is
-recorded as unsatisfied and blocking at `IMPLEMENTATION_START`. No checker is
-configured; `ruff` is a linter and does not discharge it. Choose against evidence
-current at selection time and weight specification conformance over speed.
+**2. Implement `ADR-0017`.** The decision is accepted; the machinery is not built,
+so the registry still reports 20 unresolved. Measured cost: the `ADR-0013` source
+digest appears **102 times across four tracked files**, so one byte changes all 98
+row digests and cascades to the registry manifest, schema registry and validation
+report. Catalog version `1.4.0` is pinned at `generate_contracts.py:5921`,
+`:10519`, `:18724` and `validate_contracts.py:1141`.
+`HERMES-OWNER-DECISION-020` trips three extra exact-equality assertions
+(`generate_contracts.py:6716-6722`, `validate_contracts.py:1935-1940`, `:2492-2496`).
+Six `HumanDecisionV1` records must be created.
 
-**4. `uv` is an undeclared load-bearing tool choice.** Same defect class
-`ADR-0014` closed for the language. Needs its own decision record.
+**3. Decide the 121 undecided array element types.** 173 arrays remain
+unconstrained across 121 field names (`limitations`, `scope`, `conflicts`,
+`unknowns`, …). The owner chose: derive where the name determines it, never guess
+the rest. These need per-field decisions, in batches.
 
-**5. `RFC-0002` and `RFC-0003` await owner decision.** RFC-0002 (Spec Kit
-adaptation, amended with requirement 12 binding analyze/converge to the enforced
-finding contract) and RFC-0003 (session continuity, rewritten as adoption of
-`cog`, `AGENTS.md`, `pre-commit`, with an all-Python CI layer).
+**4. `RFC-0002`, `RFC-0003`, `RFC-0007`, `RFC-0009` await owner decision.**
+`RFC-0007` matters most: `validation-report.json` content is
+environment-dependent — this machine emits `practice_corpus_validation: PASS`
+while CI emits `NOT_ASSESSED_LOCAL_ONLY`. The committed file should carry the
+form a clean checkout can prove. Left untouched deliberately.
 
 ## Open threads
 
@@ -184,7 +193,29 @@ Verified prices, OpenRouter, 2026-07-30. **FACT.**
 - **Ask a sweep what to DELETE**, not only what to add. That instruction is what
   demolished RFC-0003's first draft.
 
-## Assistant errors this session — do not repeat
+## Assistant errors, 2026-07-31 — do not repeat
+
+1. **Proved a change safe with an invalid test.** Regenerated with the *same*
+   script and compared the tree to itself, then declared 42 annotations
+   behaviour-neutral. That shows idempotence, nothing more. Compare OLD-script
+   output against NEW-script output.
+2. **Rewrote a legal record with `sort_keys`,** churning 4,126 lines of
+   `licensing-manifest.json` to add five entries. Reverted; redone surgically as
+   50 insertions. Never reformat a file you are only adding to.
+3. **Built a gate that under-reported.** The freshness check's header parser
+   excluded backticks, so the promoted-RFC check found zero of five. Caught only
+   by comparing against an independent count. A gate that silently passes is
+   worse than no gate.
+4. **Ran a research agent with `--cd` on the live repository** rather than an
+   isolated worktree, contrary to this handoff's own instruction.
+5. **Wrote a stale figure into an accepted ADR.** `ADR-0018` cited 256 errors
+   measured against an uncommitted config; corrected in v1.1.0 to the figure the
+   committed config produces.
+
+The common thread, again: **stating a checkable claim without checking it** — and
+this time, checking it the wrong way, which is worse because it feels rigorous.
+
+## Assistant errors, earlier sessions — do not repeat
 
 Recorded because the pattern matters more than the individual mistakes. All were
 caught by the owner or by another model, never by self-review.
