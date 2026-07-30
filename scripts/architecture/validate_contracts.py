@@ -25543,16 +25543,31 @@ def validate_registries(
         "",
     )
     corpus_root = ROOT / corpus_index["corpus_root"]
-    discovered_paths = sorted(
-        path.relative_to(ROOT).as_posix()
-        for path in corpus_root.rglob("*")
-        if path.is_file()
+    # The practice corpus is full-text reference books classified LOCAL_ONLY and
+    # PROHIBITED_PENDING_RIGHTS in the licensing manifest, and excluded by
+    # .gitignore. They are therefore absent from every clean checkout by design.
+    # Requiring them unconditionally made the repository unvalidatable anywhere
+    # except a machine that already holds them -- caught by CI on its first run.
+    #
+    # When the corpus is present, every check below runs exactly as before. When
+    # it is absent, the file-presence and digest-drift checks are recorded as
+    # NOT_ASSESSED_LOCAL_ONLY rather than passing or failing. Absence is stated
+    # in the report; it is never represented as a pass, and never omitted.
+    corpus_present = corpus_root.is_dir()
+    checks["practice_corpus_local_files_validated"] = (
+        1 if corpus_present else 0
     )
-    require(
-        sorted(representation_paths) == discovered_paths,
-        "PRACTICE_CORPUS_INDEX_PATH_SET",
-        "",
-    )
+    if corpus_present:
+        discovered_paths = sorted(
+            path.relative_to(ROOT).as_posix()
+            for path in corpus_root.rglob("*")
+            if path.is_file()
+        )
+        require(
+            sorted(representation_paths) == discovered_paths,
+            "PRACTICE_CORPUS_INDEX_PATH_SET",
+            "",
+        )
     require(
         sum(row["bytes"] for row in corpus_representations)
         == corpus_index["total_bytes"],
@@ -25591,6 +25606,11 @@ def validate_registries(
         "",
     )
     for path, row in indexed_by_path.items():
+        if not corpus_present:
+            # Byte size and digest cannot be checked against a file that is
+            # deliberately not distributed. The committed index and manifest
+            # were still cross-verified above.
+            continue
         artifact_path = ROOT / path
         require(
             artifact_path.stat().st_size == row["bytes"]
@@ -31700,6 +31720,11 @@ def validate_contract_tree() -> int:
                 "canonical_test_topology_status",
             }
         },
+        "practice_corpus_validation": (
+            "PASS"
+            if checks.get("practice_corpus_local_files_validated")
+            else "NOT_ASSESSED_LOCAL_ONLY"
+        ),
         "source_topology_validation": (
             "PASS"
             if checks["production_topology_files_scanned"] > 0
