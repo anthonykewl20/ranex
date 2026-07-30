@@ -48,13 +48,13 @@ it short. Do not ask trivial questions that do not need their input.
 
 | | |
 |---|---|
-| Working branch | `bootstrap/pre-upstream`, head `fd00aa06f` |
-| Accepted ADRs | **14** (ADR-0014 accepted today) |
+| Working branch | `bootstrap/pre-upstream` |
+| Accepted ADRs | **16** (ADR-0014, 0015, 0016 accepted today) |
 | Contract validation | `PASS`, scope `EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY` |
 | Runtime | `NOT_ASSESSED` — nothing runs |
 | Readiness | Neither tier declared |
-| Unresolved owner decisions | 20 in ADR-0013, all fail closed |
-| Kernel | R&D tracer, branch `feature/kernel-tracer`, **audited today, defects open** |
+| Owner decisions | 20 rows; **six resolved today** by ADR-0015/0016. The registry still reports 20 — see Open threads |
+| Kernel | R&D tracer, branch `feature/kernel-tracer`. Audited by three models; §8.3 gate, journal replay and real crash tests added. 82 tests pass |
 
 ## Corrections to the previous handoff — read before acting
 
@@ -75,38 +75,38 @@ are FACT.
 
 ## Immediate next steps, in order
 
-**1. `HERMES-OWNER-DECISION-001` blocks two things at once.** The canonical
-workflow and event schema is unresolved, defaults to BLOCK, and blocks
-`IMPLEMENTATION_START`. It also blocks the owner's run-graph visualization, since
-the topology that would be rendered *is* that schema. **FACT**, verified at
-`ADR-0013:823-832`. This is an owner decision — do not default it.
+All six owner decisions that blocked `IMPLEMENTATION_START` were resolved on
+2026-07-30 by `ADR-0015` and `ADR-0016`. What remains is work, not decisions.
 
-**2. Adopt SARIF for review findings.** This unblocks an accepted owner decision.
-The owner decided "blocking findings must be `FACT`", but no severity vocabulary
-exists anywhere in the corpus, so the rule is unenforceable. SARIF 2.1.0 (OASIS
-standard, what GitHub code scanning speaks) supplies `result.level`
-`none|note|warning|error`. Also adopt `result.ruleId`, `result.guid`,
-`partialFingerprints`, and SARIF location objects. Fix at
-`scripts/architecture/generate_contracts.py`, never in generated output. **FACT**
-that the vocabulary is absent; **FACT** that SARIF defines it.
+**1. Teach the contract system to record a resolved owner decision.** This is the
+sharpest remaining defect. `generate_contracts.py:6946` raises if
+`owner_decision_ref` is not `None`, the emitted row schema pins it to
+`{"type": "null"}`, and the validator pins `unresolved_owner_decision_count` to
+20. `ADR-0013` modelled these rows as permanently unresolved and encodes no path
+to resolution, so validation reports 20 unresolved decisions although six now have
+accepted ADRs. **FACT**, verified at those lines. Do not simply edit the number —
+it is a normative change to an accepted ADR and needs its own decision.
 
-**3. Fix the kernel §8.3 violation.** See
-[`reviews/2026-07-30-kernel-tracer-adversarial-audit.md`](architecture/reviews/2026-07-30-kernel-tracer-adversarial-audit.md).
-`HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md` §8.3 requires that a
-current-row/journal mismatch **blocks advancement**. The kernel never checks. Four
-independent readers wrongly concluded the principle was undeclared; Grok found it.
-Production practice (four controls, of which Ranex has one) is recorded in the
-review. **FACT**, verified verbatim.
+**2. Close the review-schema defects.** The rigour audit
+(`reviews/artifacts/2026-07-30/agent-reports/rigor-hy3.md`) found four
+blocking-class defects. Two were fixed on 2026-07-30: `epistemic_status` is a
+closed enum, and `severity` now uses SARIF `result.level` with a blocking finding
+required to be `FACT` with cited evidence. Still open: `evidence_refs` items are
+untyped so `[null, 42, {}]` validates, and blindness is self-assertable in
+`independence-evaluation-v1`. Fix at the generator, never in generated output.
 
-**4. Replace both Phase 1 exit-criterion tests.** The replay test compares the
-production reducer with itself; the crash test raises a SQLite `ABORT` caught by
-the application's own rollback handler, so no process dies. SQLite's own
-methodology is in the review. **FACT**, reproduced at cited lines.
+**3. Configure the static type checker.** `LANG-TYPECHECK-001` (`ADR-0014`) is
+recorded as unsatisfied and blocking at `IMPLEMENTATION_START`. No checker is
+configured; `ruff` is a linter and does not discharge it. Choose against evidence
+current at selection time and weight specification conformance over speed.
 
-**5. RFC-0002 and RFC-0003 await owner decision.** RFC-0002 (Spec Kit adaptation)
-is the owner's own work, untracked. RFC-0003 (session continuity and drift
-tripwires) is rewritten as adoption and lists two specific questions for the
-owner.
+**4. `uv` is an undeclared load-bearing tool choice.** Same defect class
+`ADR-0014` closed for the language. Needs its own decision record.
+
+**5. `RFC-0002` and `RFC-0003` await owner decision.** RFC-0002 (Spec Kit
+adaptation, amended with requirement 12 binding analyze/converge to the enforced
+finding contract) and RFC-0003 (session continuity, rewritten as adoption of
+`cog`, `AGENTS.md`, `pre-commit`, with an all-Python CI layer).
 
 ## Open threads
 
@@ -123,8 +123,10 @@ owner.
   entry for `jsonschema`, `PyYAML`, or the `rfc8785` package. Recorded as a failing
   gap in ADR-0014 v1.1.0. **FACT**, verified by full-text scan.
 - **Copyrighted PDFs remain reachable** in the git object database via
-  `refs/codex/*`. A normal `git push` will not carry them; `--all` or `--mirror`
-  would. Unresolved by owner choice.
+  `refs/codex/*` — **15 such refs confirmed present on 2026-07-30**. The `origin`
+  remote is a **PUBLIC** GitHub repository. A normal `git push <remote> <branch>`
+  does not carry them; **`git push --all` or `--mirror` would publish them**.
+  Never use those flags on this repository. Unresolved by owner choice. **FACT**.
 - **`~/.codex/logs_2.sqlite` is ~3.6 GB, 88% dead space.** A compaction job is
   armed and fires when no Codex process runs. It has never fired. **UNVERIFIED**
   today — inherited claim, not re-checked.
@@ -139,7 +141,7 @@ Verified prices, OpenRouter, 2026-07-30. **FACT.**
 | `tencent/hy3-preview` | $0.06/M | $0.21/M | Cheaper still; untested here |
 | `xiaomi/mimo-v2.5-pro` | $0.43/M | $0.87/M | Systematic full-row passes; verifies claims structurally |
 | `x-ai/grok-4.5` | $2.00/M | $6.00/M | **Final validator and tiebreaker only** — owner decision |
-| Codex `gpt-5.6-sol` | — | — | Fast, strong on prior-art research with web verification |
+| Codex `gpt-5.6-sol` | **free** | **free** | **Default for heavy research.** Owner has an x20 Pro account. Fastest measured, ~27 KB/min |
 
 - **Grok earns the validator role on evidence:** it found §8.3 that four other
   readers missed, and it **executed** an exploit (forged the SQLite snapshot, then
@@ -159,9 +161,9 @@ Verified prices, OpenRouter, 2026-07-30. **FACT.**
   will not respond. Use OpenRouter. **Probe any model with a one-token prompt
   before dispatching real work** — a model appearing in a list does not mean it
   answers.
-- **OpenRouter balance:** $45.00 purchased, ~$22.02 remaining. Costs are queryable
-  at `/api/v1/credits`; expect settlement lag of more than 20 seconds, so do not
-  attribute per-run costs from a short window.
+- **Costs are queryable** at the provider's credits endpoint. Expect settlement lag
+  of more than 20 seconds, so do not attribute per-run costs from a short window.
+  Check the remaining balance before dispatching paid work.
 - **Codex is drivable directly:** `codex exec --cd <dir> "<prompt>" < /dev/null`.
   Config is `danger-full-access` with `approval_policy = never`. Use an isolated
   worktree for anything that writes.
