@@ -1,0 +1,1 @@
+"""Pure policy domain types."""

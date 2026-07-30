@@ -1,0 +1,1 @@
+"""Canonical JSONL assurance ledger."""

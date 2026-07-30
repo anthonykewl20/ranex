@@ -1,0 +1,32 @@
+[project]
+name = "ranex-kernel-tracer"
+version = "0.0.0"
+description = "Non-authoritative R&D tracer for the proposed Ranex kernel"
+requires-python = ">=3.11,<3.15"
+dependencies = [
+    "PyYAML>=6.0.2,<7",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.0.2,<10",
+    "ruff>=0.15.10,<0.16",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+addopts = [
+    "--strict-config",
+    "--strict-markers",
+]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "RUF"]

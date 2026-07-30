@@ -25,3 +25,10 @@ docs/research/kimi-research/
 # Local configuration for the running Hermes agent; not a Ranex research or
 # architecture input.
 RULES-THERY.md
+
+# Local Python tooling for R&D tracers.
+.venv/
+.pytest_cache/
+.ruff_cache/
+__pycache__/
+*.py[cod]

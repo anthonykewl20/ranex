@@ -1,0 +1,1 @@
+"""Filesystem-backed assurance adapters."""
