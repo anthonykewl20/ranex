@@ -1,0 +1,100 @@
+# Deterministic architecture-contract gate.
+#
+# This runs where an agent cannot edit it. Local hooks are a convenience an
+# agent can bypass with --no-verify or by deleting the hook; a required status
+# check on GitHub's runners is the only layer that a party with local write
+# access cannot defeat. Free on public repositories with standard runners.
+#
+# No model is invoked. Nothing here consumes AI tokens.
+name: architecture contracts
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: contracts-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  contracts:
+    name: generate, prove no drift, validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out the exact revision
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Pin Python to the declared floor
+        run: uv python install 3.12
+
+      # ADR-0014 LANG-PRIMARY-001 fixes Python >= 3.12. A drift between the
+      # declared floor and the runner is itself a finding.
+      - name: Report tool versions
+        run: |
+          uv --version
+          uv run --project scripts/architecture python --version
+
+      - name: Regenerate every contract from the accepted sources
+        run: |
+          uv run --project scripts/architecture \
+            python scripts/architecture/generate_contracts.py
+
+      # THE DRIFT GATE. Generated output is never hand-edited, so regenerating
+      # from the same sources must produce a byte-identical tree. Any diff means
+      # either generated output was edited by hand, or a source changed without
+      # regeneration. Both are defects; neither may reach main silently.
+      - name: Fail if regeneration changed anything
+        run: |
+          if ! git diff --quiet; then
+            echo "::error::Generated contracts are out of date with their sources."
+            echo "Run the generator locally and commit the result."
+            echo
+            git --no-pager diff --stat
+            echo
+            git --no-pager diff | head -400
+            exit 1
+          fi
+          echo "No drift: the committed contract tree matches its sources."
+
+      - name: Validate independently of the generator
+        run: |
+          uv run --project scripts/architecture \
+            python scripts/architecture/validate_contracts.py > validation-report.json
+          python - <<'PY'
+          import json, sys
+          report = json.load(open("validation-report.json"))
+          status = report.get("status")
+          checks = report.get("checks", {})
+          print(f"status={status}")
+          print(f"scope={report.get('scope')}")
+          print(f"accepted_adrs={checks.get('accepted_adrs')}")
+          print(f"runtime_validation={report.get('runtime_validation')}")
+          if status != "PASS":
+              print(f"::error::Contract validation returned {status}: {report.get('error','')}")
+              sys.exit(1)
+          PY
+
+      - name: Concurrency regression test
+        run: |
+          uv run --project scripts/architecture \
+            python scripts/architecture/test_contract_concurrency.py
+
+      - name: Upload the validation report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-report
+          path: validation-report.json
+          if-no-files-found: warn
