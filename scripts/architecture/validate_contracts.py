@@ -1139,7 +1139,9 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
 
     text = HERMES_RESEARCH_PROMOTION_ADR.read_text(encoding="utf-8")
     required_revision_fragments = {
-        "| Version | `1.3.0` |",
+        "| Version | `1.4.0` |",
+        "### 1.4.0 — 2026-07-30",
+        "**DEFECT 9**",
         "### 1.3.0 — 2026-07-30",
         "**DEFECT 6**",
         "**DEFECT 7**",
@@ -1215,7 +1217,7 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
         == "hermes-research-promotion-catalog/v1"
         and catalog["catalog_id"]
         == "RANEX-HERMES-RESEARCH-PROMOTIONS"
-        and catalog["catalog_version"] == "1.3.0"
+        and catalog["catalog_version"] == "1.4.0"
         and catalog["catalog_status"] == "DEFINITION_ONLY"
         and catalog["governing_adr"] == "ADR-0013"
         and catalog["research_source"] == research_relative
@@ -1525,8 +1527,8 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
             "facility that provides canonical serialization."
         ),
         "HERMES-PROMOTION-059": (
-            "The clean kernel contains an Execution aggregate, and every "
-            "Execution state transition is computed by its pure reducer."
+            "The clean kernel contains an Execution aggregate, and "
+            "Execution state transitions are computed by its pure reducer."
         ),
         "HERMES-PROMOTION-060": (
             "The clean kernel persists canonical execution state and its "
@@ -1779,7 +1781,7 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
             "GATE_ADVANCE",
             (
                 "The clean kernel contains an Execution aggregate, and "
-                "every Execution state transition is computed by its pure "
+                "Execution state transitions are computed by its pure "
                 "reducer."
             ),
         ),
@@ -2252,7 +2254,7 @@ def hermes_research_promotion_registry_errors(
     catalog = expected["catalog"]
     expected_metadata = {
         "registry_id": "REG-HERMES-RESEARCH-PROMOTIONS-001",
-        "version": "1.3.0",
+        "version": "1.4.0",
         "status": "ACTIVE_DOCUMENTATION_CONTRACT",
         "generated_by": "scripts/architecture/generate_contracts.py",
         "catalog_id": catalog["catalog_id"],

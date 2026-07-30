@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "digest": "sha256:1a9659b18c32711163a3b9bb2c583a500b0c27af1b338a2d9e0694b58f4bbd4c",
+      "digest": "sha256:c2480b5d1f07b5f67ffde3c3afe4f26195fc26571f0585f690ad9a39ef18c944",
       "path": "architecture/contracts/accepted-adrs.json"
     },
     {
@@ -9,11 +9,11 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:59bf4c9c2d764790cb3b9525125ee5ab6e41de6dc6ca0cace908d57ba2d0a9b3",
+      "digest": "sha256:9297ec58fd1156bc80b54a4ea54d6137d57e6325e50ebf18fec3c4bbe412ba0c",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:d07bcee5946470ad2b0d08a553e64cf45a424a5075ac5031487bfa2a4a43abec",
+      "digest": "sha256:ae5df87a0f9ee23c6250f639e62771cfa82949a8f17224508d41e86db0dbc300",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {
@@ -77,7 +77,7 @@
       "path": "architecture/contracts/generated-output-authority.json"
     },
     {
-      "digest": "sha256:8a668862e9510a441c926072d3bf098d2dc1e1410a5e2a74f354c5d968ec3cc5",
+      "digest": "sha256:82fa130f0fa7b2e9bc26596286447a9fd18f2ccdc84c991f72ac2bdd3ccb3bcc",
       "path": "architecture/contracts/hermes-research-promotions.json"
     },
     {
@@ -133,7 +133,7 @@
       "path": "architecture/contracts/runtime-adapters.json"
     },
     {
-      "digest": "sha256:15f063af7f394e34fb02e9bd22f06843cdf22417b1afae6c08547027c1bdc78f",
+      "digest": "sha256:f15416ad442929154a9eae2fb583b191e6482ab3c843d4d8516a551e4b1ab998",
       "path": "architecture/contracts/schema-registry.json"
     },
     {

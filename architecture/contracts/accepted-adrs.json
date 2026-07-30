@@ -86,10 +86,10 @@
     },
     {
       "adr_id": "ADR-0013",
-      "source_digest": "sha256:7fa5f5baa3b5c8d64b488aed52ae03f3e08651f067759ac2586db84d1076c301",
+      "source_digest": "sha256:acd188f5833ed9a051be03cb9d631948912c6ddffcd469cac41dd988171d1df3",
       "source_path": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
       "status": "ACCEPTED",
-      "version": "1.3.0"
+      "version": "1.4.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",

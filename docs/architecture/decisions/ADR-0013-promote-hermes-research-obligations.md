@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | ADR ID | `ADR-0013` |
-| Version | `1.3.0` |
+| Version | `1.4.0` |
 | Status | `ACCEPTED` |
 | Decision owner | Human owner |
 | Decision date | 2026-07-29 |
@@ -17,6 +17,19 @@
 | Security/data class | Public architecture decision; legal, credential, package, runtime, and release evidence retain their own classification |
 
 ## Revision history
+
+### 1.4.0 — 2026-07-30
+
+This revision repairs one unsupported qualifier found by a post-1.3.0
+fidelity audit after three earlier repair rounds had missed it.
+
+- **DEFECT 9** — `HERMES-PROMOTION-059` claimed that *every* Execution
+  state transition is computed by the pure reducer, while the cited
+  research line 1902 supports only "Implement an `Execution` aggregate
+  and pure reducer." The unsupported `every` qualifier is removed; the
+  provision now states that Execution state transitions are computed by
+  the aggregate's pure reducer, without a universal-coverage claim the
+  research does not make.
 
 ### 1.3.0 — 2026-07-30
 
@@ -148,7 +161,7 @@ uniqueness, and fail-closed outcomes. Runtime evidence begins
 ```yaml
 schema_version: "hermes-research-promotion-catalog/v1"
 catalog_id: "RANEX-HERMES-RESEARCH-PROMOTIONS"
-catalog_version: "1.3.0"
+catalog_version: "1.4.0"
 catalog_status: "DEFINITION_ONLY"
 governing_adr: "ADR-0013"
 research_source: "docs/research/hermes-core-architecture-research-2026-07-27.md"
@@ -743,7 +756,7 @@ promoted_provisions:
     source_end_line: 1902
     check_class: "RUNTIME_FITNESS"
     blocking_stage: "GATE_ADVANCE"
-    provision: "The clean kernel contains an Execution aggregate, and every Execution state transition is computed by its pure reducer."
+    provision: "The clean kernel contains an Execution aggregate, and Execution state transitions are computed by its pure reducer."
     required_result: "PASS"
     failure_outcome: "BLOCK"
   - provision_id: "HERMES-PROMOTION-060"

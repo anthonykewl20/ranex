@@ -5887,7 +5887,9 @@ def parse_fixed_decision_register() -> tuple[
 def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
     text = read(HERMES_RESEARCH_PROMOTION_ADR)
     required_revision_fragments = {
-        "| Version | `1.3.0` |",
+        "| Version | `1.4.0` |",
+        "### 1.4.0 — 2026-07-30",
+        "**DEFECT 9**",
         "### 1.3.0 — 2026-07-30",
         "**DEFECT 6**",
         "**DEFECT 7**",
@@ -5916,7 +5918,7 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
         for fragment in required_revision_fragments
     ):
         raise ValueError(
-            "ADR-0013 1.3.0 revision history is incomplete"
+            "ADR-0013 1.4.0 revision history is incomplete"
         )
     candidates: list[dict[str, Any]] = []
     for block in re.findall(
@@ -5958,7 +5960,7 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
     if (
         catalog["schema_version"]
         != "hermes-research-promotion-catalog/v1"
-        or catalog["catalog_version"] != "1.3.0"
+        or catalog["catalog_version"] != "1.4.0"
         or catalog["catalog_status"] != "DEFINITION_ONLY"
         or catalog["governing_adr"] != "ADR-0013"
         or catalog["research_source"]
@@ -6274,8 +6276,8 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
             "facility that provides canonical serialization."
         ),
         "HERMES-PROMOTION-059": (
-            "The clean kernel contains an Execution aggregate, and every "
-            "Execution state transition is computed by its pure reducer."
+            "The clean kernel contains an Execution aggregate, and "
+            "Execution state transitions are computed by its pure reducer."
         ),
         "HERMES-PROMOTION-060": (
             "The clean kernel persists canonical execution state and its "
@@ -6526,7 +6528,7 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
             "GATE_ADVANCE",
             (
                 "The clean kernel contains an Execution aggregate, and "
-                "every Execution state transition is computed by its pure "
+                "Execution state transitions are computed by its pure "
                 "reducer."
             ),
         ),
@@ -10483,7 +10485,7 @@ def hermes_research_provision_schema() -> dict[str, Any]:
         "catalog_id": {
             "const": "RANEX-HERMES-RESEARCH-PROMOTIONS"
         },
-        "catalog_version": {"const": "1.3.0"},
+        "catalog_version": {"const": "1.4.0"},
         "governing_adr": {"const": "ADR-0013"},
         "governing_adr_source": {"const": adr_path},
         "governing_adr_digest": digest_schema,
@@ -18688,7 +18690,7 @@ def generate_registries() -> dict[str, Any]:
         ),
         "hermes-research-promotions.json": registry(
             "REG-HERMES-RESEARCH-PROMOTIONS-001",
-            "1.3.0",
+            "1.4.0",
             hermes_research_promotions["entries"],
             catalog_id=hermes_research_promotions["catalog"][
                 "catalog_id"
