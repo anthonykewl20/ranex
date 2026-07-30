@@ -83,6 +83,58 @@ Consequences that follow from the design:
 An agent does not need to *read* a rule that is *enforced* — which also means the rulebook does
 not consume the context window it governs.
 
+### How one change moves through it
+
+The same discipline applied to a single piece of work. An agent may produce work and the evidence
+for it; it may never advance the work itself. Where information is missing, the run stops and says
+what it needs rather than proceeding on an assumption.
+
+```mermaid
+flowchart TB
+    I["<b>Intent</b><br/>what the owner wants"]
+    CL{"<b>Clarify</b><br/>are material unknowns resolved?"}
+    ASK["<b>Ask the owner</b><br/>recorded as their answer,<br/>not the model's"]
+    SP["<b>Specification</b><br/>outcome · constraints · acceptance criteria"]
+    G1{"<b>Gate</b><br/>is the evidence sufficient?"}
+    WK["<b>Governed execution</b><br/>isolated worktree · exact grant · fenced lease"]
+    EV["<b>Work + typed evidence</b><br/>bound to an exact subject digest"]
+    RV["<b>Independent review</b><br/>a different identity from the maker"]
+    G2{"<b>Gate</b><br/>are findings resolved?"}
+    HD{"<b>Human decision</b><br/>where authority requires one"}
+    LD["<b>Landed</b><br/>sealed into the append-only journal"]
+    BD["<b>Board and views update</b><br/>rebuilt from canonical state"]
+    ST(["<b>Blocked</b><br/>records what is missing<br/>and the state to return to"])
+
+    I --> CL
+    CL -->|unknowns remain| ASK --> CL
+    CL -->|clear| SP --> G1
+    G1 -->|insufficient| ST
+    G1 -->|sufficient| WK --> EV --> RV --> G2
+    G2 -->|blocking finding| ST
+    G2 -->|resolved| HD
+    HD -->|declined| ST
+    HD -->|approved| LD --> BD
+    ST -.->|fresh evidence resolves it| CL
+
+    style I fill:#e8eef4,stroke:#33608e,stroke-width:2px,color:#12212e
+    style ASK fill:#e8eef4,stroke:#33608e,stroke-width:2px,color:#12212e
+    style HD fill:#e8eef4,stroke:#33608e,stroke-width:2px,color:#12212e
+    style SP fill:#e2eee8,stroke:#2b6a52,stroke-width:2px,color:#12241c
+    style LD fill:#e2eee8,stroke:#2b6a52,stroke-width:2px,color:#12241c
+    style BD fill:#e2eee8,stroke:#2b6a52,stroke-width:2px,color:#12241c
+    style WK fill:#f0e7f3,stroke:#7a4a86,stroke-width:2px,color:#291a2d
+    style EV fill:#f0e7f3,stroke:#7a4a86,stroke-width:2px,color:#291a2d
+    style RV fill:#f0e7f3,stroke:#7a4a86,stroke-width:2px,color:#291a2d
+    style CL fill:#f6eddb,stroke:#8a6115,stroke-width:2px,color:#2b2210
+    style G1 fill:#f6eddb,stroke:#8a6115,stroke-width:2px,color:#2b2210
+    style G2 fill:#f6eddb,stroke:#8a6115,stroke-width:2px,color:#2b2210
+    style ST fill:#f4e4e4,stroke:#8c3b3b,stroke-width:2px,color:#2d1414
+```
+
+Blue is where a person decides. Purple is where agents work. Amber is a gate that resolves from
+evidence alone. Blocked is not a dead end — it records what is missing and the exact state to
+resume from once that arrives.
+
 ## What Ranex is being built to do
 
 Each of these is specified and machine-contracted. None is running yet — see
