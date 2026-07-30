@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "digest": "sha256:c2480b5d1f07b5f67ffde3c3afe4f26195fc26571f0585f690ad9a39ef18c944",
+      "digest": "sha256:56214c78a07ff4c40f7f0dcbc30b349eab5fb3e98734a0821e6579ee510cd5b3",
       "path": "architecture/contracts/accepted-adrs.json"
     },
     {
@@ -9,11 +9,11 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:9297ec58fd1156bc80b54a4ea54d6137d57e6325e50ebf18fec3c4bbe412ba0c",
+      "digest": "sha256:72f01148bf05eea10a4cd75b19b4a717dfbd937d5e0e786dbcae53a7bfc5b21c",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:ae5df87a0f9ee23c6250f639e62771cfa82949a8f17224508d41e86db0dbc300",
+      "digest": "sha256:083690f29cfd9c524d86ef0c03fa12fd7c5465282b56468f81d81cbce24c590f",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {
@@ -133,7 +133,7 @@
       "path": "architecture/contracts/runtime-adapters.json"
     },
     {
-      "digest": "sha256:f15416ad442929154a9eae2fb583b191e6482ab3c843d4d8516a551e4b1ab998",
+      "digest": "sha256:5b15f5bb38a284ee4b3defc232ffa740125c95c907df73d8a26162e2250ff0fa",
       "path": "architecture/contracts/schema-registry.json"
     },
     {

@@ -25,7 +25,8 @@
       "docs/architecture/decisions/ADR-0010-bound-inherited-hermes-test-layout-migration.md",
       "docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md",
       "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
-      "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md"
+      "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
+      "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md"
     ],
     "runtime_subject_included": false
   },

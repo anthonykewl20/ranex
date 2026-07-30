@@ -19,6 +19,31 @@
     "findings": {
       "items": {
         "additionalProperties": false,
+        "allOf": [
+          {
+            "if": {
+              "properties": {
+                "epistemic_status": {
+                  "const": "FACT"
+                }
+              },
+              "required": [
+                "epistemic_status"
+              ]
+            },
+            "then": {
+              "properties": {
+                "evidence_refs": {
+                  "items": {
+                    "minLength": 1,
+                    "type": "string"
+                  },
+                  "minItems": 1
+                }
+              }
+            }
+          }
+        ],
         "properties": {
           "category": {
             "type": "string"
@@ -30,7 +55,13 @@
             "type": "string"
           },
           "epistemic_status": {
-            "type": "string"
+            "enum": [
+              "FACT",
+              "INFERENCE",
+              "OWNER_REQUIREMENT",
+              "PROPOSAL",
+              "REPORTED_ADVISORY_RESULT"
+            ]
           },
           "evidence_refs": {
             "items": {},

@@ -262,7 +262,23 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "7e7959b6637d0ff46d4f087c72710e139be549a6176568d0e8d80ab129680f48"
+    "29068cfdea28e89f4107d1e1597402e97416137c2a09e6c20b4e7045c0df7d07"
+)
+
+
+# Closed epistemic vocabulary for review findings. These are the values
+# already in use in the only real review artifact in the corpus
+# (docs/architecture/reviews/artifacts/2026-07-28/aposd-agent-rules-skills/
+# research-packet.json), ratified by owner decision on 2026-07-30 rather
+# than invented here. RESEARCH_PACKET.yaml additionally uses UNKNOWN as a
+# template default and is deliberately not bound to this set; that
+# divergence is an open question, not a silent extension.
+EPISTEMIC_STATUS_VALUES: tuple[str, ...] = (
+    "FACT",
+    "INFERENCE",
+    "OWNER_REQUIREMENT",
+    "PROPOSAL",
+    "REPORTED_ADVISORY_RESULT",
 )
 
 
@@ -19533,6 +19549,40 @@ def generate_schemas(registries: dict[str, Any]) -> None:
                     nested_rows,
                 )
             )
+        if template_name == "REVIEW_OBSERVATION.yaml":
+            finding_properties = schema["properties"]["findings"][
+                "items"
+            ]["properties"]
+            finding_properties["epistemic_status"] = {
+                "enum": list(EPISTEMIC_STATUS_VALUES)
+            }
+            # Owner decision 2026-07-30: an agent that lacks information
+            # must stop rather than decide on an assumption. A claim
+            # asserted as FACT therefore has to cite checkable evidence;
+            # a non-FACT claim stays representable but cannot masquerade
+            # as verified. Authoring templates declare INFERENCE, so this
+            # conditional leaves template validation intact.
+            schema["properties"]["findings"]["items"]["allOf"] = [
+                {
+                    "if": {
+                        "properties": {
+                            "epistemic_status": {"const": "FACT"}
+                        },
+                        "required": ["epistemic_status"],
+                    },
+                    "then": {
+                        "properties": {
+                            "evidence_refs": {
+                                "items": {
+                                    "type": "string",
+                                    "minLength": 1,
+                                },
+                                "minItems": 1,
+                            }
+                        }
+                    },
+                }
+            ]
         if template_name == "LANDING_RECORD.yaml":
             landing_authority = parse_tdd_nested_type_catalog()[
                 "landing_record_status_authority"
