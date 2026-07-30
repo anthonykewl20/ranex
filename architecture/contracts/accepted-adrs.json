@@ -97,13 +97,27 @@
       "source_path": "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md",
       "status": "ACCEPTED",
       "version": "1.1.0"
+    },
+    {
+      "adr_id": "ADR-0015",
+      "source_digest": "sha256:eda63c8e3ddf42555d9ed1cc80bc8b6708197dcd7db5a83b3421882472894a8c",
+      "source_path": "docs/architecture/decisions/ADR-0015-canonical-workflow-and-event-schema-and-upcaster-policy.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0016",
+      "source_digest": "sha256:7ba98c354674e0d10e3a0100b2f39cac35f2f52acb1c992a5f3e98bf16646ad5",
+      "source_path": "docs/architecture/decisions/ADR-0016-resolve-five-implementation-start-owner-decisions.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "REG-ACCEPTED-ADRS-001",
-  "required_count": 14,
+  "required_count": 16,
   "source": "docs/architecture/SOURCE_OF_TRUTH.md",
-  "source_digest": "sha256:0f2de943951c3232d221cff96689a04712d24822709fb142ccf2f710ada6604f",
+  "source_digest": "sha256:661ce41844317307857de93e65e5f148a6754b1ca4a937c197d5cc5888a44e54",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"
 }

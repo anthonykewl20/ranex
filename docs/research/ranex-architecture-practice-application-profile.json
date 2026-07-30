@@ -26,7 +26,9 @@
       "docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md",
       "docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md",
       "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md",
-      "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md"
+      "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md",
+      "docs/architecture/decisions/ADR-0015-canonical-workflow-and-event-schema-and-upcaster-policy.md",
+      "docs/architecture/decisions/ADR-0016-resolve-five-implementation-start-owner-decisions.md"
     ],
     "runtime_subject_included": false
   },
