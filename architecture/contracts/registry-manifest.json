@@ -9,11 +9,11 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:9c6e1e7eb4729f1cd00757d1dfd31ea621c6146efef996e4c7c71dd7cc9a7261",
+      "digest": "sha256:42b2492daaf9797f78c34d120e69e94b7690f6fcf6a5c61d6f1a9a9d238db677",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:88199e1977e7aa7cf59a781078f24e705f535db59c8480d536ff33b35329f272",
+      "digest": "sha256:1403a2cb1382aa644471cd666e6793b72c5ba05e51ad32f0afeee6772518e6d8",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {
@@ -133,7 +133,7 @@
       "path": "architecture/contracts/runtime-adapters.json"
     },
     {
-      "digest": "sha256:5b15f5bb38a284ee4b3defc232ffa740125c95c907df73d8a26162e2250ff0fa",
+      "digest": "sha256:ae31d96daf85548cd7889561acb1ac5f9b8819c32819493490be0009cc334222",
       "path": "architecture/contracts/schema-registry.json"
     },
     {

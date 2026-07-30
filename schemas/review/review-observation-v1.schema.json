@@ -42,6 +42,28 @@
                 }
               }
             }
+          },
+          {
+            "if": {
+              "properties": {
+                "severity": {
+                  "const": "error"
+                }
+              },
+              "required": [
+                "severity"
+              ]
+            },
+            "then": {
+              "properties": {
+                "epistemic_status": {
+                  "const": "FACT"
+                }
+              },
+              "required": [
+                "epistemic_status"
+              ]
+            }
           }
         ],
         "properties": {
@@ -92,7 +114,12 @@
             "type": "string"
           },
           "severity": {
-            "type": "string"
+            "enum": [
+              "none",
+              "note",
+              "warning",
+              "error"
+            ]
           },
           "state": {
             "type": "string"

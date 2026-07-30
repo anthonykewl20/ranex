@@ -1023,7 +1023,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:3597c8d3a5f626f84a1fbada3cb9808e6836be660cbf703bd679edfe6a4e943e",
+      "digest": "sha256:052242ceb9e675098fff7fed07bb905e5366ed9e1887b038bc03aeaed94d22b8",
       "draft": "2020-12",
       "path": "schemas/review/review-observation-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/review/review-observation-v1.schema.json",

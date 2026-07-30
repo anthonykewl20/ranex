@@ -14,7 +14,7 @@ summary: ""
 findings:
   - finding_id: "finding_<uuidv7>"
     category: ""
-    severity: ""
+    severity: warning
     confidence: ""
     epistemic_status: INFERENCE
     location: ""

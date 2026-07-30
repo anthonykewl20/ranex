@@ -282,6 +282,21 @@ EPISTEMIC_STATUS_VALUES: tuple[str, ...] = (
 )
 
 
+# Finding severity uses SARIF 2.1.0 `result.level` rather than a Ranex-invented
+# vocabulary. Values and their order are taken verbatim from the authoritative
+# OASIS schema at
+# docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json
+# (verified 2026-07-30); SARIF's own default for the field is "warning", which is
+# why the authoring template carries that placeholder. No severity vocabulary
+# existed anywhere in this corpus before adoption, which is what made the owner's
+# "a blocking finding must be FACT" decision unenforceable.
+SARIF_RESULT_LEVELS: tuple[str, ...] = ("none", "note", "warning", "error")
+
+# The SARIF level that fails a run. A finding at this level may not rest on an
+# inference: owner decision 2026-07-30, "blocking findings must be FACT".
+SARIF_BLOCKING_LEVEL = "error"
+
+
 ARTIFACT_SCHEMAS: dict[str, tuple[str, str]] = {
     "AGENT_ASSIGNMENT.yaml": ("fleet/assignment-v1.schema.json", "agent_collaboration"),
     "AI_HANDOFF.yaml": ("execution/agent-handoff-v1.schema.json", "agent_collaboration"),
@@ -19556,6 +19571,13 @@ def generate_schemas(registries: dict[str, Any]) -> None:
             finding_properties["epistemic_status"] = {
                 "enum": list(EPISTEMIC_STATUS_VALUES)
             }
+            # Adopt SARIF 2.1.0 `result.level` instead of inventing a severity
+            # vocabulary. Nothing in this corpus defined one, which is why the
+            # owner's blocking-findings rule below could not previously be
+            # expressed at all.
+            finding_properties["severity"] = {
+                "enum": list(SARIF_RESULT_LEVELS)
+            }
             # Owner decision 2026-07-30: an agent that lacks information
             # must stop rather than decide on an assumption. A claim
             # asserted as FACT therefore has to cite checkable evidence;
@@ -19581,7 +19603,29 @@ def generate_schemas(registries: dict[str, Any]) -> None:
                             }
                         }
                     },
-                }
+                },
+                # Owner decision 2026-07-30: "blocking findings must be FACT."
+                # A finding at the SARIF level that fails a run may not rest on
+                # an inference, a proposal, or a third-party advisory result.
+                # Combined with the rule above, a blocking finding must also
+                # cite at least one non-empty evidence reference, so an agent
+                # cannot halt work on something it never verified. The
+                # authoring template declares `warning`, so this conditional
+                # does not fire against it and template validation is intact.
+                {
+                    "if": {
+                        "properties": {
+                            "severity": {"const": SARIF_BLOCKING_LEVEL}
+                        },
+                        "required": ["severity"],
+                    },
+                    "then": {
+                        "properties": {
+                            "epistemic_status": {"const": "FACT"}
+                        },
+                        "required": ["epistemic_status"],
+                    },
+                },
             ]
         if template_name == "LANDING_RECORD.yaml":
             landing_authority = parse_tdd_nested_type_catalog()[

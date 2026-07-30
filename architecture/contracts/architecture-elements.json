@@ -24337,7 +24337,7 @@
     {
       "definition_contract_digest": "sha256:d9f3c3c4e977a0f6c37d00e2e4c820ca0c986c00f78097953cae90c327b1006e",
       "definition_contract_ref": "architecture/contracts/artifact-types.json#entries/review_observation",
-      "definition_source_digest": "sha256:176742d1cbab1a693e18e9935099fa81dd747101e470b6054459f67478bc3963",
+      "definition_source_digest": "sha256:8534a192711a957792ae3bd0d328ab4f0a0243461ad59e8211eff278fe3d2f8c",
       "definition_source_path": "docs/architecture/templates/REVIEW_OBSERVATION.yaml",
       "definition_status": "DEFINED",
       "element_id": "ARTIFACT-REVIEW-OBSERVATION",
