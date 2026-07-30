@@ -25863,9 +25863,9 @@
       "source": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md"
     },
     {
-      "definition_contract_digest": "sha256:1ee2b8e90ee1e7762be20aed01216f9128a8b802326a20720c26389e53852fad",
+      "definition_contract_digest": "sha256:603877998f6c8f7466fb8db85fb2d8ce06671c4f47f896eb8bb61e8f8f2db1fa",
       "definition_contract_ref": "architecture/contracts/accepted-adrs.json#entries/ADR-0014",
-      "definition_source_digest": "sha256:823a12d237ea8549ba693ffa3353e2fd17013c6425e7c1021d79bd70274d5ea2",
+      "definition_source_digest": "sha256:b7b8803b7591b690fed17c86ee91486689bc4386065849fce63ec65fe022f593",
       "definition_source_path": "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md",
       "definition_status": "DEFINED",
       "element_id": "ADR-0014",

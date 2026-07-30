@@ -216,7 +216,7 @@
   "generator_digest": "sha256:707e8859c3987fb924240564e4857287a45a1cf97ec273ce0e2f0ae48a6b3a1e",
   "generator_path": "scripts/architecture/generate_contracts.py",
   "production_test_construct_validation": "NOT_ASSESSED",
-  "registry_manifest_digest": "sha256:3d3b9b78927301e7d46407c5c52a4ee02a6ee14fdf80dc52beb7cf28991594cf",
+  "registry_manifest_digest": "sha256:5f9e2cc4db210eeb2ed8dedbc80e3dbdd6e0c3d325375623f60e6c579b975efb",
   "report_id": "RANEX-WAVE1-CONTRACT-VALIDATION-001",
   "runtime_validation": "NOT_ASSESSED",
   "schema_registry_digest": "sha256:5b15f5bb38a284ee4b3defc232ffa740125c95c907df73d8a26162e2250ff0fa",

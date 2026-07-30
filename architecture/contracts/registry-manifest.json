@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "digest": "sha256:56214c78a07ff4c40f7f0dcbc30b349eab5fb3e98734a0821e6579ee510cd5b3",
+      "digest": "sha256:1fb35e128d90d586af1d9af2dd0c8755739383c5036c221b56cfc0adb6a1a2ca",
       "path": "architecture/contracts/accepted-adrs.json"
     },
     {
@@ -9,11 +9,11 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:72f01148bf05eea10a4cd75b19b4a717dfbd937d5e0e786dbcae53a7bfc5b21c",
+      "digest": "sha256:9c6e1e7eb4729f1cd00757d1dfd31ea621c6146efef996e4c7c71dd7cc9a7261",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:083690f29cfd9c524d86ef0c03fa12fd7c5465282b56468f81d81cbce24c590f",
+      "digest": "sha256:88199e1977e7aa7cf59a781078f24e705f535db59c8480d536ff33b35329f272",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {

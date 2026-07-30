@@ -10,6 +10,7 @@ digest manifests live under [`artifacts/`](artifacts/) and are immutable.
 | [Live foundational-reference corpus reconciliation](2026-07-28-live-foundational-reference-corpus-reconciliation.md) | `REVIEW-ENG-REF-002` v1.1.0 | **Current corpus baseline** (ten works / 18 files). Supersedes `REVIEW-ENG-REF-001` as live baseline |
 | [SDLC-FORK-000 preflight](2026-07-28-sdlc-fork-000-preflight.md) | `REVIEW-SDLC-FORK-000-20260728` | **`BLOCKED` — currently blocking** every runtime implementation commit (cited in the architecture header) |
 | [Claude runtime / Hermes / OpenCode reconciliation](2026-07-29-claude-runtime-hermes-opencode-reconciliation.md) | `REVIEW-RUNTIME-RECONCILIATION-2026-07-29` | Current advisory; runtime and performance `NOT_ASSESSED` |
+| [Spec Kit selective-adaptation reconciliation](2026-07-30-spec-kit-selective-adaptation-reconciliation.md) | `REVIEW-SPEC-KIT-SELECTIVE-ADAPTATION-2026-07-30` | Current advisory; recommends a measured Ranex-native experiment, adopts no feature or authority |
 | [Modular-DDD and TDD adversarial review](2026-07-28-modular-ddd-tdd-adversarial-review.md) | `RANEX-DDD-TDD-ADVERSARIAL-2026-07-28-001-FINAL` | PASS at architecture-design/contract scope only; no runtime claim |
 | [Kimi agent-fleet research reconciliation](2026-07-27-kimi-agent-fleet-research-reconciliation.md) | `REVIEW-KIMI-FLEET-001` | Current disposition record for the 89-file Kimi addendum |
 | [APOSD / agent-rules / skills reconciliation](2026-07-28-aposd-agent-rules-skills-reconciliation.md) | `REVIEW-APOSD-SKILLS-001` | Current advisory; bound experiment remains `DRAFT`, unexecuted |
@@ -36,6 +37,9 @@ digest manifests live under [`artifacts/`](artifacts/) and are immutable.
   that freeze exact bytes of architecture, research, and legal files.
 - `2026-07-28/aposd-agent-rules-skills/` — APOSD addendum subject, packet,
   `DRAFT` experiment, and manifest.
+- `2026-07-30/spec-kit-selective-adaptation/` — pinned Ranex/Spec Kit source
+  manifest, common prompt, raw independent HY3/DeepSeek reviews, provider
+  metadata, and artifact digest manifest.
 - `enterprise-build-readiness/` — SDLC-FORK-000 evidence and worktree bindings.
 - `foundational-reference-corpus/` — the current live-corpus manifest and index.
 

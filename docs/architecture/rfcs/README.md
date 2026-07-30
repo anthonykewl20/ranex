@@ -6,6 +6,13 @@ This directory is the accepted home for governance proposals in the target tree
 (`HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md:954`, accepted by
 [ADR-0003](../decisions/ADR-0003-accept-target-architecture-and-authority-kernel.md)).
 
+## Current proposals
+
+| RFC | Status | Standing |
+|---|---|---|
+| [RFC-0001: Fix the implementation language and its performance escape hatch](RFC-0001-fix-the-implementation-language-and-performance-escape-hatch.md) | `DRAFT` | Prose proposal; no authority |
+| [RFC-0002: Selectively adapt Spec Kit interaction and artifact patterns](RFC-0002-selective-spec-kit-adaptation.md) | `DRAFT` | Prose proposal backed by an advisory review; no adaptation or authority |
+
 ## What belongs here
 
 A change to architecture, machine contracts, or policy that is proposed but not yet
@@ -38,6 +45,6 @@ it is not deleted or rewritten. The resulting ADR references the RFC it came fro
 
 ## Status
 
-This directory is created; the RFC lifecycle axis, artifact type, and schema are not yet
-enacted in `architecture/contracts/`. Until they are, an RFC here is a governed prose
+The RFC lifecycle axis, artifact type, and schema are not yet enacted in
+`architecture/contracts/`. Until they are, every RFC here is a governed prose
 artifact only — it carries no machine-checked state.

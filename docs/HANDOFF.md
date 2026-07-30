@@ -1,133 +1,209 @@
-# Session handoff — 2026-07-30
+# Session handoff — 2026-07-30 (evening)
 
-For the next agent. Read this before doing anything else, then read
-[`docs/README.md`](README.md).
+For the next agent. Read this, then [`docs/README.md`](README.md).
 
-## The one rule that matters most here
+Every claim below is labelled. **FACT** means measured in this repository or
+verified against a cited external source. **INFERENCE** means concluded but not
+directly proven. **UNVERIFIED** means neither. Do not promote a label without
+doing the work.
 
-**Do not declare anything missing until you have searched every location.** The previous agent
-declared six things absent that were present in files it had not opened — a clarify tool in the
-Hermes source, an RFC home in the target tree, a success measure in ADR-0004, a bloat-and-removal
-plan in research, a modular-DDD spec in ADR-0007, and a capability-level system in the Core SDLC.
+## The two rules that matter most here
 
-Search all of these before concluding absence:
+**1. Nobody holds true answers — verify everything.** Not the owner, not you, not
+any model. Your training knowledge is stale. HY3, Codex, Grok, MiMo and DeepSeek
+are all susceptible to assumption. Every claim needs proof at `path:line` or a
+cited source. This is the owner's standing mandate, restated three times.
+
+**2. Ranex is not novel — find the working piece before designing anything.**
+Others have already built what you are about to invent, and their version is
+public and maintained. Search first, adopt, then improve. See
+[`architecture/rfcs/RFC-0003`](architecture/rfcs/RFC-0003-deterministic-session-continuity-and-drift-tripwires.md)
+for what happens when you skip this: three of its four provisions were rewritten
+as adoptions of `cog`, `AGENTS.md`, and `pre-commit` after a sweep found them.
+
+**Corollary — a negative search result is evidence about your search, not about
+the corpus.** Do not declare anything missing until you have searched every
+location, including these:
 
 ```
-docs/architecture/            docs/architecture/reviews/       docs/architecture/reviews/artifacts/
-docs/research/                architecture/contracts/          schemas/
-.claude/worktrees/phase-2-runtime-bootstrap/     ← the inherited Hermes source
+docs/architecture/            docs/architecture/reviews/   docs/architecture/reviews/artifacts/
+docs/architecture/rfcs/       docs/research/               architecture/contracts/   schemas/
+.claude/worktrees/kernel-tracer/            ← the R&D tracer, untracked src/ and tests/
+.claude/worktrees/phase-2-runtime-bootstrap/ ← inherited Hermes source
 ```
-
-The corpus exceeds ten million tokens. "I searched and found nothing" is not evidence of absence.
 
 ## What Ranex is
 
-A governance harness that makes unreliable AI agents produce reliable enterprise software.
-Deterministic contracts compiled from architecture documents into checking code — not prompts.
-A **non-technical owner** describes intent; an assistant translates it; a fleet of AI workers
-executes under enforced constraints. Derived from Hermes Agent, stripped of its general-assistant
-and commercial surface.
+A governance harness that makes unreliable AI agents produce reliable enterprise
+software. Deterministic contracts compiled from architecture documents into
+checking code — not prompts. A **non-technical owner** describes intent; an
+assistant translates it; a fleet of AI workers executes under enforced
+constraints. Derived from Hermes Agent, stripped of its general-assistant and
+commercial surface.
 
-The owner is not technical. Explain in plain language, lead with the answer, keep it short. They
-have asked for this repeatedly.
+The owner is not technical. Explain in plain language, lead with the answer, keep
+it short. Do not ask trivial questions that do not need their input.
 
-## State at handoff
+## State at handoff — all FACT
 
 | | |
 |---|---|
-| Public `main` | Clean — 11 entries, zero Hermes source, root README live |
-| Working branch | `bootstrap/pre-upstream` |
-| Accepted ADRs | 13 |
+| Working branch | `bootstrap/pre-upstream`, head `fd00aa06f` |
+| Accepted ADRs | **14** (ADR-0014 accepted today) |
 | Contract validation | `PASS`, scope `EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY` |
 | Runtime | `NOT_ASSESSED` — nothing runs |
 | Readiness | Neither tier declared |
-| Kernel | R&D tracer only, branch `feature/kernel-tracer`, **unaudited** |
+| Unresolved owner decisions | 20 in ADR-0013, all fail closed |
+| Kernel | R&D tracer, branch `feature/kernel-tracer`, **audited today, defects open** |
+
+## Corrections to the previous handoff — read before acting
+
+The handoff you are replacing contained a **false** instruction. Both corrections
+are FACT.
+
+1. **Agent stalls were NOT provider concurrency.** The previous handoff said three
+   concurrent runs on one provider produce zero output for 24–52 minutes, and told
+   you to serialize. Measured today: the causes were (a) **unclosed stdin** —
+   identical model, brief and provider gave 0 bytes in 2h47m with stdin open and
+   3,275 bytes in 90 seconds with `< /dev/null`; and (b) an **exhausted
+   opencode-go quota**. Cross-provider parallelism works fine. Always pass
+   `< /dev/null` and a hard `timeout`.
+2. **Check accumulated CPU time, not output size,** to tell working from hung. A
+   real hang shows `00:00:00` CPU over hours; a working model can legitimately go
+   quiet. The previous advice to watch file size produced a false alarm on a model
+   that was simply slow.
 
 ## Immediate next steps, in order
 
-**1. Fix `HERMES-PROMOTION-059`.** One word. The provision says *"every Execution state
-transition"*; research line 1902 says only *"Implement an Execution aggregate and pure reducer."*
-The qualifier `every` is unsupported. Found by MiMo after three repair rounds missed it. Bump
-ADR-0013 to 1.4.0.
+**1. `HERMES-OWNER-DECISION-001` blocks two things at once.** The canonical
+workflow and event schema is unresolved, defaults to BLOCK, and blocks
+`IMPLEMENTATION_START`. It also blocks the owner's run-graph visualization, since
+the topology that would be rendered *is* that schema. **FACT**, verified at
+`ADR-0013:823-832`. This is an owner decision — do not default it.
 
-**2. Re-dispatch three audits that were killed.** They produced zero bytes because three
-concurrent HY3 runs on one provider deadlocked — see *Operational notes*. Run them **one at a
-time**:
-   - Verification of ADR-0013 v1.3.0 — brief at `scratchpad/verify-13.md`
-   - Adversarial audit of the kernel tracer — brief at `scratchpad/audit-kernel.md`
-   - Review-schema rigour questions — brief at `scratchpad/finding-rigor.md`
+**2. Adopt SARIF for review findings.** This unblocks an accepted owner decision.
+The owner decided "blocking findings must be `FACT`", but no severity vocabulary
+exists anywhere in the corpus, so the rule is unenforceable. SARIF 2.1.0 (OASIS
+standard, what GitHub code scanning speaks) supplies `result.level`
+`none|note|warning|error`. Also adopt `result.ruleId`, `result.guid`,
+`partialFingerprints`, and SARIF location objects. Fix at
+`scripts/architecture/generate_contracts.py`, never in generated output. **FACT**
+that the vocabulary is absent; **FACT** that SARIF defines it.
 
-   The kernel audit is the important one. It asks whether the reducer is genuinely pure, whether
-   the policy enforcement point actually fails closed, and whether the declared inference
-   *"the relational snapshot, not journal replay, is canonical state authority"* holds. Everything
-   in the engine sits on that.
+**3. Fix the kernel §8.3 violation.** See
+[`reviews/2026-07-30-kernel-tracer-adversarial-audit.md`](architecture/reviews/2026-07-30-kernel-tracer-adversarial-audit.md).
+`HERMES_GROUND_ZERO_FULL_SYSTEM_ARCHITECTURE.md` §8.3 requires that a
+current-row/journal mismatch **blocks advancement**. The kernel never checks. Four
+independent readers wrongly concluded the principle was undeclared; Grok found it.
+Production practice (four controls, of which Ranex has one) is recorded in the
+review. **FACT**, verified verbatim.
 
-**3. `evidence_refs` has no `minItems`.** `schemas/review/review-observation-v1.schema.json`
-requires `evidence_refs` on every finding, but an empty array satisfies it — so a finding can
-cite nothing and still validate. Also `epistemic_status` is an unconstrained string where an enum
-is probably intended. Both are generated; fix at source in `generate_contracts.py`, never in the
-output. **Do not invent the enum vocabulary** — that is an owner decision.
+**4. Replace both Phase 1 exit-criterion tests.** The replay test compares the
+production reducer with itself; the crash test raises a SQLite `ABORT` caught by
+the application's own rollback handler, so no process dies. SQLite's own
+methodology is in the review. **FACT**, reproduced at cited lines.
 
-**4. Owner decisions outstanding.** Four intake parameters (question cap, session cap, materiality
-thresholds, consequence-confirmation triggers) and 20 registered `OWNER_DECISION_REQUIRED` entries
-in ADR-0013. All correctly block rather than default. Nothing consults them yet because no runtime
-exists — that is a known limitation, not a defect.
+**5. RFC-0002 and RFC-0003 await owner decision.** RFC-0002 (Spec Kit adaptation)
+is the owner's own work, untracked. RFC-0003 (session continuity and drift
+tripwires) is rewritten as adoption and lists two specific questions for the
+owner.
 
 ## Open threads
 
-- **Monetization.** The owner raised it and it was not finished. Relevant facts: `LICENSE-RANEX.md`
-  is a personal-use source-available licence, all rights reserved, no commercial use without
-  written permission — commercial optionality is preserved. ADR-0011 forecloses the Hermes model
-  (inference margin) by committing to provider-neutral, fallback-free routing. Do not restate what
-  they already decided; help them think about what the architecture still permits.
-- **Documentation indexes** were added at `docs/`, `docs/research/`, `docs/architecture/reviews/`.
-  Keep them current — they exist because finished work was invisible, which caused the six false
-  "missing" findings.
-- **Copyrighted PDFs remain reachable** in the git object database via `refs/codex/*`. A normal
-  `git push` will not carry them; `--all` or `--mirror` would, to a public repo. Unresolved by
-  owner choice.
-- **`~/.codex/logs_2.sqlite` is ~3.6 GB, 88% dead space.** A compaction job is armed and fires when
-  no Codex process is running. It has never fired because Codex has run continuously.
+- **Monetization**, still unfinished. New relevant FACT: FedRAMP requires
+  machine-readable authorization packages by **2026-09-30**, and NIST OSCAL is the
+  format. Ranex produces exactly that class of artifact. `LICENSE-RANEX.md` is
+  personal-use, all rights reserved, so commercial optionality is preserved.
+  ADR-0011 forecloses the Hermes inference-margin model.
+- **`uv` is an undeclared load-bearing tool choice** — every executable
+  verification path runs through it, `uv.lock` is tracked and licence-classified,
+  and no decision record selects it. Same defect class ADR-0014 just closed for
+  the language. **FACT**, found by HY3.
+- **Dependency licences are unregistered.** `legal/licensing-manifest.json` has no
+  entry for `jsonschema`, `PyYAML`, or the `rfc8785` package. Recorded as a failing
+  gap in ADR-0014 v1.1.0. **FACT**, verified by full-text scan.
+- **Copyrighted PDFs remain reachable** in the git object database via
+  `refs/codex/*`. A normal `git push` will not carry them; `--all` or `--mirror`
+  would. Unresolved by owner choice.
+- **`~/.codex/logs_2.sqlite` is ~3.6 GB, 88% dead space.** A compaction job is
+  armed and fires when no Codex process runs. It has never fired. **UNVERIFIED**
+  today — inherited claim, not re-checked.
 
-## Operational notes
+## Operational notes — model routing
 
-**Model routing, from measured behaviour** (see
-[`research/reviewer-model-capability-probe-2026-07-30.md`](research/reviewer-model-capability-probe-2026-07-30.md)):
+Verified prices, OpenRouter, 2026-07-30. **FACT.**
 
-- **HY3** (`openrouter/tencent/hy3`, high) — deep adversarial reading. Found the two hardest
-  defects of the session. Slow, verbose, worth it where a subtle miss is expensive.
-- **MiMo** (`openrouter/xiaomi/mimo-v2.5-pro`) — systematic full-corpus passes. Fast, concise,
-  verifies claims structurally. Found the drift three rounds had missed.
-- **DeepSeek** (`opencode-go/deepseek-v4-pro`) — third opinion for tiebreaks. Weakest on this
-  corpus: mangled a path, hung five hours, sampled where a systematic pass was required, and
-  inverted a check mechanism.
+| Model | In | Out | Role |
+|---|---|---|---|
+| `tencent/hy3` (variant high) | $0.13/M | $0.53/M | **Workhorse.** Exhaustive reads, adversarial audits, full-corpus sweeps |
+| `tencent/hy3-preview` | $0.06/M | $0.21/M | Cheaper still; untested here |
+| `xiaomi/mimo-v2.5-pro` | $0.43/M | $0.87/M | Systematic full-row passes; verifies claims structurally |
+| `x-ai/grok-4.5` | $2.00/M | $6.00/M | **Final validator and tiebreaker only** — owner decision |
+| Codex `gpt-5.6-sol` | — | — | Fast, strong on prior-art research with web verification |
 
-**Concurrency has a cliff, not a slope.** Three concurrent HY3 runs produced zero output for
-24–52 minutes while a run on another provider finished in seven. Dispatch one per provider at a
-time.
-
-**A silent hang is indistinguishable from deep reasoning.** One run produced zero bytes for five
-hours before anyone noticed. Check output size, not just liveness.
-
-**Codex can be driven directly:** `codex exec --cd <dir> "<prompt>"`. Config is
-`danger-full-access` with `approval_policy = never`. Use an isolated worktree for anything that
-writes.
+- **Grok earns the validator role on evidence:** it found §8.3 that four other
+  readers missed, and it **executed** an exploit (forged the SQLite snapshot, then
+  called `load()`) rather than reasoning about one. It did this at **default**
+  effort while HY3 ran at `high`.
+- **Cost is dominated by what a model READS, not by output length or reasoning
+  effort.** FACT: a 36 KB kernel audit cost $0.0868; four tiny single-file probes
+  across all four effort levels cost $0.0798 combined; one whole-repo-plus-web
+  sweep cost **$1.88**. Constrain the brief's reading scope to control cost.
+  Reasoning effort is close to free on narrow questions — all four variants
+  answered a targeted question correctly.
+- **GLM 5.2 — verdict CONFOUNDED, not established.** It measured ~1.4 KB/min
+  against Codex's ~27 KB/min, but it ran on opencode-go while that gateway's quota
+  was exhausted. Out of the roster by owner decision; the slowness measurement is
+  not trustworthy evidence about the model.
+- **opencode-go quota is exhausted.** `hy3` and `grok-4.5` are listed there but
+  will not respond. Use OpenRouter. **Probe any model with a one-token prompt
+  before dispatching real work** — a model appearing in a list does not mean it
+  answers.
+- **OpenRouter balance:** $45.00 purchased, ~$22.02 remaining. Costs are queryable
+  at `/api/v1/credits`; expect settlement lag of more than 20 seconds, so do not
+  attribute per-run costs from a short window.
+- **Codex is drivable directly:** `codex exec --cd <dir> "<prompt>" < /dev/null`.
+  Config is `danger-full-access` with `approval_policy = never`. Use an isolated
+  worktree for anything that writes.
 
 ## Prompt discipline that produced results
 
-- **State findings as attacks, not confirmations.** Verification prompts framed as "confirm X"
-  returned the framing back as a finding. Adversarial prompts caught real defects.
-- **Never put your own assumption in the brief.** An assertion that a tree was "unrecoverable"
-  came back cited as a finding. It was false.
-- **Require `path:line` for every claim.** Every finding that survived was checkable. Every
-  finding that dissolved was framing.
-- **Require reporting of inferences.** An unreported inference is a defect here regardless of
-  whether it was correct. ADR-0012 omitted a property, an agent inferred it correctly, said
-  nothing, and silently weakened a global invariant to express it.
+- **State findings as attacks, not confirmations.** "Confirm X" returns the
+  framing back as a finding.
+- **Never put your own assumption in the brief.** Of three hypotheses withheld
+  today, one was independently found, one was found in a more serious form, and
+  one was not surfaced — which is itself information about that hypothesis.
+- **Require `path:line` for every claim,** and verify before relaying. Today: one
+  agent claim verified true, one overstated, one file-list grep that turned out to
+  be a false positive matching `429` inside a SHA-256 hash. Relaying any unchecked
+  would have misled the owner.
+- **Require reporting of inferences.** An unreported inference is a defect
+  regardless of correctness.
+- **Ask a sweep what to DELETE**, not only what to add. That instruction is what
+  demolished RFC-0003's first draft.
+
+## Assistant errors this session — do not repeat
+
+Recorded because the pattern matters more than the individual mistakes. All were
+caught by the owner or by another model, never by self-review.
+
+1. Asserted from recall that the tooling dependencies were C-backed. **False** —
+   `jsonschema` and `rfc8785` contain no compiled extensions.
+2. Wrote "each dependency carries a licensing-manifest entry" into an **accepted
+   ADR**. **False** — zero entries exist. Fixed in v1.1.0.
+3. Diagnosed stalls as provider concurrency and serialized the whole queue on that
+   basis, after having already disproved it.
+4. Designed four mechanisms in RFC-0003 before searching; three already existed as
+   maintained tools.
+5. Queued two jobs on a model without probing it; the model never answered.
+6. Ran a grep, reported five files as containing rate-limit evidence, and nearly
+   confirmed the owner's hypothesis on a match that was `429` inside a hash.
+
+The common thread: **stating a checkable claim without checking it.**
 
 ## Standing constraint
 
-`IMPLEMENTATION_START_READY` is not declared. Product code is authorised only as an R&D tracer in
-an isolated worktree, claiming no authority — the precedent is
-`reviews/2026-07-28-gate-controller-mvp-user-level-audit.md`. Do not relax a check to make code
-pass; if code cannot satisfy a provision, that is a finding.
+`IMPLEMENTATION_START_READY` is not declared. Product code is authorised only as
+an R&D tracer in an isolated worktree, claiming no authority — the precedent is
+`reviews/2026-07-28-gate-controller-mvp-user-level-audit.md`. Do not relax a check
+to make code pass; if code cannot satisfy a provision, that is a finding.

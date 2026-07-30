@@ -1,11 +1,19 @@
 # Research inputs
 
 Research informs the architecture but never overrides it
-(`../architecture/README.md`, "Research inputs"). Every file here is frozen in a
-content-addressed manifest; **renaming or moving any file breaks digest
-evidence.** Files dated 2026-07-27 that cite the retired
+(`../architecture/README.md`, "Research inputs"). Files registered below as
+immutable evidence are frozen in content-addressed manifests; **renaming or
+moving one of those files breaks digest evidence.** A new draft remains
+non-authoritative until it is explicitly reviewed, digest-bound, and promoted
+through the architecture process. Files dated 2026-07-27 that cite the retired
 `RANEX_IMPLEMENTATION_GUIDE.md` are historical under
 [ADR-0002](../architecture/decisions/ADR-0002-retire-legacy-implementation-guide.md).
+
+## Active proposals (not yet architecture decisions)
+
+| File | ID / status | Standing |
+|---|---|---|
+| [deterministic-run-graph-visualization-research-2026-07-30.md](deterministic-run-graph-visualization-research-2026-07-30.md) | `RES-EXEC-GRAPH-001` v0.2.0 — reviewed draft research proposal | DeepSeek V4 Pro and HY3 both returned `FIT_WITH_CHANGES`; recommends a read-only deterministic run graph and requires an accepted RFC/ADR before any dependency or product implementation |
 
 ## Current inputs (accepted decisions or tooling depend on these)
 
@@ -15,7 +23,7 @@ evidence.** Files dated 2026-07-27 that cite the retired
 | [ranex-architecture-practice-application-profile.json](ranex-architecture-practice-application-profile.json) | `ENGPROFILE-RANEX-ARCHITECTURE-DESIGN-001` v1.7.0 — design application defined, runtime `NOT_ASSESSED` | SHA-256-pinned inside `scripts/architecture/validate_contracts.py`; cited by `../architecture/README.md` ("Engineering-practice rule"). Do not edit without updating the validator constant |
 | [engineering-reference-practice-registry.json](engineering-reference-practice-registry.json) | `ENGREF-PRACTICE-SOURCES-001` v1.1.0 — `SOURCE_RECONCILED_NOT_APPLIED` | Read by `scripts/architecture/generate_contracts.py`; digest-bound inside the profile above |
 | [aposd-agent-rules-codebase-design-assessment-2026-07-28.md](aposd-agent-rules-codebase-design-assessment-2026-07-28.md) | `RESEARCH-APOSD-SKILLS-001` v1.2.0 — `RESEARCH_ONLY` | Advisory only; reconciled in [the APOSD review](../architecture/reviews/2026-07-28-aposd-agent-rules-skills-reconciliation.md); registered APOSD as the tenth source family |
-| [hermes-core-architecture-research-2026-07-27.md](hermes-core-architecture-research-2026-07-27.md) | Historical study, **and now a promotion source** | [ADR-0013](../architecture/decisions/) promotes 57 provisions from it with per-row line citations and excerpt digests. Editing any promoted line breaks those bindings. The unpromoted material remains advisory — see the ADR for exactly which line ranges were deliberately left in research |
+| [hermes-core-architecture-research-2026-07-27.md](hermes-core-architecture-research-2026-07-27.md) | Historical study, **and now a promotion source** | [ADR-0013](../architecture/decisions/) promotes 65 provisions from it with per-row line citations and excerpt digests. Editing any promoted line breaks those bindings. The unpromoted material remains advisory — see the ADR for exactly which line ranges were deliberately left in research |
 
 ## Historical studies (immutable evidence; no accepted decision depends on their recommendations)
 

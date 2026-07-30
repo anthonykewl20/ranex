@@ -93,10 +93,10 @@
     },
     {
       "adr_id": "ADR-0014",
-      "source_digest": "sha256:823a12d237ea8549ba693ffa3353e2fd17013c6425e7c1021d79bd70274d5ea2",
+      "source_digest": "sha256:b7b8803b7591b690fed17c86ee91486689bc4386065849fce63ec65fe022f593",
       "source_path": "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md",
       "status": "ACCEPTED",
-      "version": "1.0.0"
+      "version": "1.1.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",

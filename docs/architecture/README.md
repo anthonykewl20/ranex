@@ -68,6 +68,9 @@ the normal per-work controls.
    The exact line-bound promotion of Hermes architecture research obligations,
    blocking owner-choice records, and research-only dispositions is fixed by
    [ADR-0013](./decisions/ADR-0013-promote-hermes-research-obligations.md).
+   The implementation language, the required static type-checking gate, and the
+   measured-budget-breach path for compiled components are fixed by
+   [ADR-0014](./decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md).
 
 4. [Source of Truth and Decision Policy](./SOURCE_OF_TRUTH.md)<br>
    Defines authority, evidence, machine contracts, conflicts, RFC/ADR changes,
@@ -383,6 +386,17 @@ manifest, lawful bibliographic links, original synthesis, and non-reconstructive
 digests are the public-safe substitute.
 
 ### Non-normative research addenda
+
+The
+[Spec Kit selective-adaptation reconciliation](./reviews/2026-07-30-spec-kit-selective-adaptation-reconciliation.md)
+compares pinned `github/spec-kit` interaction, workflow, ecosystem, and
+artifact-evolution patterns with Ranex's accepted attachment points. It
+preserves the raw independent HY3/DeepSeek reviews while correcting their
+claims against primary sources. It recommends a measured Ranex-native
+intake-to-convergence experiment, but adopts no feature, artifact, integration,
+extension, workflow, authority, runtime claim, or commercial-value claim.
+[RFC-0002](./rfcs/RFC-0002-selective-spec-kit-adaptation.md) is the corresponding
+`DRAFT` proposal and remains non-authoritative.
 
 The
 [APOSD, agent-rule, and codebase-design assessment](../research/aposd-agent-rules-codebase-design-assessment-2026-07-28.md)

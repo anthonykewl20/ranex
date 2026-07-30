@@ -18,8 +18,8 @@ the architecture is accepted **on paper** (ADR-0003), and neither
 | Path | What it is | Class |
 |---|---|---|
 | [`architecture/`](architecture/README.md) | Normative core: operating model, control catalog, full-system architecture, source-of-truth policy, AI lifecycle/fleet/artifact specs | CURRENT, normative |
-| [`architecture/decisions/`](architecture/decisions/) | ADR-0001 … ADR-0012, all `ACCEPTED`. ADR-0005 and ADR-0006 contain clauses/rows partially superseded by ADR-0011 — each says so in its own header | CURRENT, normative |
-| [`architecture/rfcs/`](architecture/rfcs/README.md) | Proposals, not decisions. No RFC exists yet | CURRENT, empty |
+| [`architecture/decisions/`](architecture/decisions/) | ADR-0001 … ADR-0014, all `ACCEPTED`. ADR-0005 and ADR-0006 contain clauses/rows partially superseded by ADR-0011 — each says so in its own header | CURRENT, normative |
+| [`architecture/rfcs/`](architecture/rfcs/README.md) | RFC-0001 and RFC-0002 are `DRAFT` prose proposals, not decisions | CURRENT proposals; no authority |
 | [`architecture/reviews/`](architecture/reviews/README.md) | Review and audit records. Mixed current/superseded/historical — see its README | Mixed; see README |
 | `architecture/reviews/artifacts/` | Frozen prompts, raw model outputs, provider metadata, and SHA-256 manifests that pin exact bytes of other documents | HISTORICAL EVIDENCE — never edit, never move |
 | `architecture/assessments/` | **Machine-generated** by `scripts/architecture/generate_contracts.py` and `validate_contracts.py` (`COMPLETENESS_REPORT.md` says `GENERATED — RUN VALIDATOR`) | GENERATED — never hand-edit; do not add files here |

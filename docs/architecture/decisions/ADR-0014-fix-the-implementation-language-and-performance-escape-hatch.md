@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | ADR ID | `ADR-0014` |
-| Version | `1.0.0` |
+| Version | `1.1.0` |
 | Status | `ACCEPTED` |
 | Decision owner | Human owner |
 | Decision date | 2026-07-30 |
@@ -20,6 +20,7 @@
 
 | Version | Date | Change and rationale |
 |---|---|---|
+| `1.1.0` | 2026-07-30 | Corrects a false evidence claim found by independent review after acceptance. Reason 5 of `LANG-PRIMARY-001` asserted that each pinned dependency carries a licensing-manifest entry. A full-text scan of `legal/licensing-manifest.json` shows no entry for `jsonschema`, `PyYAML`, or the `rfc8785` package. The reason now states the verified position — pinning is evidenced, per-package licence registration is not — and the gap is registered in Consequences. The decision itself is unchanged; only an unverified supporting claim was wrong, which under this ADR's own evidence standard is a defect regardless. |
 | `1.0.0` | 2026-07-30 | Initial accepted decision, promoted from `RFC-0001`. Records the implementation language, which the first thirteen accepted ADRs assume and none states, and answers the owner's raw-performance concern with a measured baseline and a bounded exception path rather than a language change. |
 
 ## Context
@@ -106,9 +107,17 @@ The reasons, each independently checkable:
    language those workers generate most reliably. Where the labour force is
    generative models, generation reliability is an engineering property of the
    language choice, not a stylistic preference.
-5. **The dependency surface stays small and auditable** — three pinned tooling
-   dependencies and one for the kernel, each carrying a licensing-manifest entry,
-   consistent with the supply-chain obligations promoted in `ADR-0013`.
+5. **The dependency surface stays small and version-pinned** — three exact-pinned
+   tooling dependencies and one for the kernel. Pinning is verified; per-package
+   licence registration is **not**. `legal/licensing-manifest.json` contains no
+   entry for `jsonschema`, `PyYAML`, or the `rfc8785` package (verified by
+   full-text scan on 2026-07-30; the single `rfc8785` string is the filename
+   `schemas/fixtures/canonical/rfc8785-golden.json`, not a package entry). The
+   only related record is `scripts/architecture/uv.lock`, classified
+   `GENERATED_DEPENDENCY_LOCK`, whose own note states it does not vendor
+   dependency source or replace the licences of resolved packages. A small
+   dependency surface therefore makes licence auditing *tractable*; it does not
+   evidence that the audit has been performed. See Consequences.
 
 ### `LANG-TYPECHECK-001` — Static type checking is a required gate
 
@@ -215,6 +224,15 @@ and the licensing manifest, without implying any readiness or runtime claim.
 `LANG-TYPECHECK-001` is **not satisfied** at the time of acceptance. No type
 checker is configured in any package. That is a stated gap, not a claim of
 compliance, and it blocks at `IMPLEMENTATION_START` rather than now.
+
+**Per-package dependency licence registration is not satisfied** (recorded in
+`1.1.0`). No resolved package carries a licensing-manifest entry; only the
+generated lock file is classified, and it explicitly does not stand in for the
+licences of resolved packages. Under `FF-SUPPLY-001` and the
+`LICENSE_AND_ATTRIBUTION_VERIFICATION_PASSES` obligation promoted in `ADR-0013`,
+this is a checkable gap that currently fails rather than passes. It is stated
+here so that no reader infers dependency licence provenance from the small size
+of the dependency set.
 
 No exception under `LANG-EXCEPTION-001` exists, and no quality-attribute budget
 for a performance-critical workload is registered under `ADR-0004`. The measured
