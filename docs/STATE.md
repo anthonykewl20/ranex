@@ -4,7 +4,7 @@
 
 **Updated:** 2026-08-01
 **Phase:** kernel — closing the evidence loop
-**Active slice:** `docs/slices/SLICE-001-evidence-production.md` (not started)
+**Active slice:** `docs/slices/SLICE-001-evidence-production.md` (in progress — target committed red at b495e3635, implementation delegated)
 
 ## Where we stopped
 
