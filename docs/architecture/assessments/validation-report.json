@@ -221,7 +221,7 @@
     "worker_runtime_negative_fixtures": 22,
     "worker_runtime_positive_fixtures": 1
   },
-  "concurrency_regression_digest": "sha256:29e984ef874d9eba7cc30d32e450c5ad111d5c0d0718b6bd8c9704b1e91703e5",
+  "concurrency_regression_digest": "sha256:ce8ff544a46fcd173ce43a581c89269a117c3ae9a7aedd6d7f4d576658a0ef91",
   "concurrency_regression_path": "scripts/architecture/test_contract_concurrency.py",
   "contract_tree_lock_digest": "sha256:b91c53a1d51772ec4afcab5fd4d0f6cf7da002a0225bb2ca806d484b97618f92",
   "contract_tree_lock_path": "scripts/architecture/contract_tree_lock.py",
