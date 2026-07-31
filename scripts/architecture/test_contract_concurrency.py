@@ -60,6 +60,8 @@ def copy_test_repository(destination: Path) -> None:
         Path("docs/research"),
         Path("legal"),
         Path("scripts/architecture"),
+        Path("src"),
+        Path("tests"),
     ):
         shutil.copytree(
             ROOT / relative,
