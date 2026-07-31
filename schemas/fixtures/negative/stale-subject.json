@@ -1,5 +1,0 @@
-{
-  "expected_error": "STALE_SUBJECT",
-  "expected_run_aggregate_version": 7,
-  "observed_run_aggregate_version": 8
-}

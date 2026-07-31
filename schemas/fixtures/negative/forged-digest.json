@@ -1,9 +1,0 @@
-{
-  "expected_error": "DIGEST_MISMATCH",
-  "instance": {
-    "artifact_type": "fixture",
-    "claim": "unchanged",
-    "digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
-    "schema_version": "1"
-  }
-}

@@ -1,30 +1,25 @@
+# Everything from before the 2026-07-31 clean slate. Local reference only,
+# never pushed. Full copies also live in ../ranex-FULL-BACKUP-2026-07-31 and in
+# this repo's own history at fb2ad9baa.
+legacy/
+
 .claude/worktrees/
 
-# Local helpers, runtime evidence, credentials, and machine-specific decisions.
+# Local helpers, credentials, and machine-specific values.
 .local/*
 !.local/*.example
-evidence/runtime/
 *.secret
-decisions/local-values.env
 .env
 .env.local
 .env.*
 !.env.example
 !*.env.example
 
-# Full-text reference books are consultation-only local artifacts. Their
-# bibliographic citations, original reconciliation, and non-reconstructive
-# digest manifest remain publishable; the source files do not.
-docs/research/books/
+# Runtime journal — regenerated per machine, not a shared artifact.
+governance/journal.sqlite3
 
-# The raw Kimi corpus has no retained license/provider/source lineage. Keep the
-# exact digest manifest and original reconciliation public; keep the opaque
-# source/rendering bundle local until rights and privacy clearance exists.
-docs/research/kimi-research/
-
-# Local configuration for the running Hermes agent; not a Ranex research or
-# architecture input.
-RULES-THERY.md
 __pycache__/
 *.pyc
 *.egg-info/
+.pytest_cache/
+.venv/

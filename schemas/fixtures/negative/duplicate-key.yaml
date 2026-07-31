@@ -1,4 +1,0 @@
-# expected_error: DUPLICATE_KEY
-schema_version: "1"
-artifact_type: work_intake
-artifact_type: forged_override
