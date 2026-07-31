@@ -9,14 +9,30 @@
 # whatever version of it was pushed — anyone with write access can edit these
 # steps and push the edit. GitHub protects the runner, not the workflow.
 #
-# It is also NOT currently required. Measured 2026-07-31:
-#     gh api repos/anthonykewl20/ranex/branches/main/protection    -> 404
-#     gh api repos/anthonykewl20/ranex/branches/develop/protection -> 404
-#     gh api repos/anthonykewl20/ranex/rulesets                    -> []
-# No branch protection and no ruleset exist, so every check below is advisory.
-# The `gate` job exists to be the one status check to require once the owner
-# decides to enable protection; until then it enforces nothing. An earlier
-# version of this comment claimed enforcement that does not exist.
+# WHAT IS REQUIRED, and where. Measured 2026-07-31, after the owner enabled
+# protection:
+#
+#   main                    PROTECTED. Requires the `all contract checks`
+#                           status check (the `gate` job below). Force pushes
+#                           and branch deletion are blocked. No PR or review is
+#                           required: a direct push is allowed if the gate is
+#                           green.
+#   develop                 not protected
+#   bootstrap/pre-upstream  not protected  <- current working branch
+#
+# Two limits, stated so a green result is not over-read:
+#
+#   * `enforce_admins` is FALSE, by owner decision. A repository admin can
+#     still push to `main` past a red gate. This is deliberate: it keeps an
+#     emergency path open for a solo owner. It means the gate constrains AI
+#     workers and ordinary pushes, not the owner.
+#   * The working branch is unprotected, so on `bootstrap/pre-upstream` these
+#     checks remain ADVISORY. They become binding when work reaches `main`.
+#
+# Before enabling protection this comment recorded 404s for every branch, which
+# was true when written. It is kept in the revision history, not deleted: the
+# earlier claim that a required check already existed was false, and the record
+# of that correction is worth more than a tidy file.
 #
 # No model is invoked. Nothing here consumes AI tokens.
 #
