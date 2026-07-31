@@ -25,3 +25,6 @@ docs/research/kimi-research/
 # Local configuration for the running Hermes agent; not a Ranex research or
 # architecture input.
 RULES-THERY.md
+__pycache__/
+*.pyc
+*.egg-info/

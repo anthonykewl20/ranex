@@ -1,0 +1,8 @@
+# Action gates for this repository. Authored, not generated — see SPIKE-01.
+gates:
+  - gate_id: landing
+    rule_id: TESTS_EXECUTED
+    blocking: true
+    required_claims:
+      - tests-executed
+      - contracts-validated

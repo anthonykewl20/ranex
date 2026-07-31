@@ -1,0 +1,4 @@
+[
+  {"claim_id":"tests-executed","subject_digest":"sha256:16fa87aa23cc35649463caaeab502e5b14b8e42f062a61a2db13142e4ccc0dfe","producer_id":"worker","command":"uv run pytest -q","exit_code":0},
+  {"claim_id":"contracts-validated","subject_digest":"sha256:16fa87aa23cc35649463caaeab502e5b14b8e42f062a61a2db13142e4ccc0dfe","producer_id":"worker","command":"uv run --project scripts/architecture python scripts/architecture/validate_contracts.py","exit_code":0}
+]

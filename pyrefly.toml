@@ -1,0 +1,6 @@
+# ADR-0018 TYPECHECK-STRICT-001 extended to product code.
+# The slice's acceptance criterion 5 was vacuously true before this file existed:
+# scripts/architecture/pyproject.toml scopes project-includes to its own
+# directory, so src/ranex/ was never checked. Strict is the gate here too.
+project-includes = ["src", "tests"]
+project-excludes = ["**/.venv/**", "**/node_modules/**", "**/__pycache__/**"]
