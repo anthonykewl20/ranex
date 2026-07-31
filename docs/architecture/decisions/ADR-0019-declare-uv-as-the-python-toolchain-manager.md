@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | ADR ID | `ADR-0019` |
-| Version | `1.0.0` |
+| Version | `1.1.0` |
 | Status | `ACCEPTED` |
 | Decision owner | Human owner |
 | Decision date | 2026-07-31 |
@@ -21,6 +21,7 @@
 | Version | Date | Change and rationale |
 |---|---|---|
 | `1.0.0` | 2026-07-31 | Initial accepted decision. Closes the same defect class `ADR-0014` closed for the implementation language: a load-bearing tool in use with no decision selecting it. |
+| `1.1.0` | 2026-07-31 | Corrects a false evidence claim. Consequences stated that dependency licences remain unregistered; the five entries were added in `eb9a807794`, the same commit that accepted this decision, so the claim was already false when committed. No provision changed. |
 
 ## Context
 
@@ -102,11 +103,13 @@ owner's stated requirement that Ranex can continue a tool that is abandoned.
 
 - This decision records an existing dependency. It introduces no new dependency
   and changes no existing check's strictness.
-- **Dependency licences remain unregistered.** `legal/licensing-manifest.json`
-  has no entry for `jsonschema`, `PyYAML`, or the `rfc8785` package. The single
-  textual occurrence of `rfc8785` in that file is the path
-  `schemas/fixtures/canonical/rfc8785-golden.json`, a fixture, not a package
-  entry. That gap is recorded in `ADR-0014` v1.1.0 and is **not** closed here.
+- **Dependency licences are registered** (corrected at `1.1.0`; `1.0.0` stated
+  the opposite). `legal/licensing-manifest.json` `dependencies.entries` carries
+  five entries: `jsonschema` (MIT), `PyYAML` (MIT), `rfc8785` (Apache-2.0),
+  `pyrefly` (MIT), and `uv` (MIT OR Apache-2.0) — this decision's own subject.
+  They were added in `eb9a807794`, the commit that accepted this decision, so
+  the `1.0.0` text was false at the moment it was committed. The gap `ADR-0014`
+  v1.1.0 recorded is closed; `ADR-0014` is corrected at v1.2.0.
 - `IMPLEMENTATION_START_READY` and `PRODUCTION_READY` remain `NOT_ASSESSED`. This
   decision authorizes no product code and declares no readiness tier.
 

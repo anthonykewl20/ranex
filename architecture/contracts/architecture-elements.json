@@ -25863,9 +25863,9 @@
       "source": "docs/architecture/decisions/ADR-0013-promote-hermes-research-obligations.md"
     },
     {
-      "definition_contract_digest": "sha256:603877998f6c8f7466fb8db85fb2d8ce06671c4f47f896eb8bb61e8f8f2db1fa",
+      "definition_contract_digest": "sha256:cea849233d2e77b7e42d3a6ca6b28baf9ef37b6e3387eda1cb88575c5d6f5691",
       "definition_contract_ref": "architecture/contracts/accepted-adrs.json#entries/ADR-0014",
-      "definition_source_digest": "sha256:b7b8803b7591b690fed17c86ee91486689bc4386065849fce63ec65fe022f593",
+      "definition_source_digest": "sha256:fdba6525afb31a652b1d613fe48121458d7e6b978f03320c48e09e235eee7fcc",
       "definition_source_path": "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md",
       "definition_status": "DEFINED",
       "element_id": "ADR-0014",
@@ -25943,9 +25943,9 @@
       "source": "docs/architecture/decisions/ADR-0017-record-resolved-owner-decisions.md"
     },
     {
-      "definition_contract_digest": "sha256:6570a4d2c2c99240ca95794980ed2566278838de989574b15ecad675b149ce61",
+      "definition_contract_digest": "sha256:5d48a19525e00671183c2638c5bfbb71d07014c479b8edf8a194d22ddae4f124",
       "definition_contract_ref": "architecture/contracts/accepted-adrs.json#entries/ADR-0018",
-      "definition_source_digest": "sha256:f949841cf67009cad407c398a2304a00625c67fecb5d62fa99a1f3473d799fb1",
+      "definition_source_digest": "sha256:d6a9e03cba9b0203134bb7534f8d6e6b2dc8b9620702aaa1d0fcfdb808b35177",
       "definition_source_path": "docs/architecture/decisions/ADR-0018-select-the-static-type-checker.md",
       "definition_status": "DEFINED",
       "element_id": "ADR-0018",
@@ -25963,9 +25963,9 @@
       "source": "docs/architecture/decisions/ADR-0018-select-the-static-type-checker.md"
     },
     {
-      "definition_contract_digest": "sha256:22d479a41f382924aa1053377b755b7366ced08a8944bce286d79ec4cbf2e901",
+      "definition_contract_digest": "sha256:f90f120a3ec105ad79813c6bbb4267d40ca5d984d2afb829860d65266fab8046",
       "definition_contract_ref": "architecture/contracts/accepted-adrs.json#entries/ADR-0019",
-      "definition_source_digest": "sha256:7c043e4068c7df00d070413553ca7ba907076287afcd0a496cb1b19ce0d52146",
+      "definition_source_digest": "sha256:a74e293be27216da1b7039bed3def20cb3c7486a0baa6e60bc6a5bbec59bde02",
       "definition_source_path": "docs/architecture/decisions/ADR-0019-declare-uv-as-the-python-toolchain-manager.md",
       "definition_status": "DEFINED",
       "element_id": "ADR-0019",

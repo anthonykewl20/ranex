@@ -93,10 +93,10 @@
     },
     {
       "adr_id": "ADR-0014",
-      "source_digest": "sha256:b7b8803b7591b690fed17c86ee91486689bc4386065849fce63ec65fe022f593",
+      "source_digest": "sha256:fdba6525afb31a652b1d613fe48121458d7e6b978f03320c48e09e235eee7fcc",
       "source_path": "docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md",
       "status": "ACCEPTED",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "adr_id": "ADR-0015",
@@ -121,17 +121,17 @@
     },
     {
       "adr_id": "ADR-0018",
-      "source_digest": "sha256:f949841cf67009cad407c398a2304a00625c67fecb5d62fa99a1f3473d799fb1",
+      "source_digest": "sha256:d6a9e03cba9b0203134bb7534f8d6e6b2dc8b9620702aaa1d0fcfdb808b35177",
       "source_path": "docs/architecture/decisions/ADR-0018-select-the-static-type-checker.md",
       "status": "ACCEPTED",
-      "version": "1.1.0"
+      "version": "1.2.0"
     },
     {
       "adr_id": "ADR-0019",
-      "source_digest": "sha256:7c043e4068c7df00d070413553ca7ba907076287afcd0a496cb1b19ce0d52146",
+      "source_digest": "sha256:a74e293be27216da1b7039bed3def20cb3c7486a0baa6e60bc6a5bbec59bde02",
       "source_path": "docs/architecture/decisions/ADR-0019-declare-uv-as-the-python-toolchain-manager.md",
       "status": "ACCEPTED",
-      "version": "1.0.0"
+      "version": "1.1.0"
     },
     {
       "adr_id": "ADR-0020",

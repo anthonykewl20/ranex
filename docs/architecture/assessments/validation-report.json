@@ -219,7 +219,7 @@
   "generator_path": "scripts/architecture/generate_contracts.py",
   "practice_corpus_validation": "PASS",
   "production_test_construct_validation": "NOT_ASSESSED",
-  "registry_manifest_digest": "sha256:03f5f16005d2ea7d703099feae6cfabdbc51d72b2a8faad78c271840876e59d4",
+  "registry_manifest_digest": "sha256:1b15edc16d305712acd69f345853f6f1945740984c273275b34dbef34e7f12e2",
   "report_id": "RANEX-WAVE1-CONTRACT-VALIDATION-001",
   "runtime_validation": "NOT_ASSESSED",
   "schema_registry_digest": "sha256:6c0a8cf5847caefe19d6a28daeeb442f09d844e05531790bec12c1df8fd50ae5",

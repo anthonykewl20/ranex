@@ -56,7 +56,7 @@ it short. Do not ask trivial questions that do not need their input.
 | Owner decisions | 20 rows; six have accepted ADRs. The registry still reports 20 unresolved — `ADR-0017` decides the fix but is **not implemented** |
 | Kernel | R&D tracer, branch `feature/kernel-tracer`. Audited by three models; §8.3 gate, journal replay and real crash tests added. 82 tests pass |
 | Records freshness | Gate green: 20 ADRs, 9 RFCs, no stale claims (`ADR-0020`) |
-| Type checker | `pyrefly` 1.1.1 pinned and configured (`ADR-0018`); **245 strict errors outstanding**, gate cannot pass |
+| Type checker | `pyrefly` 1.1.1 pinned and configured (`ADR-0018` v1.2.0); **245 strict errors outstanding** (138 `validate_contracts.py`, 107 `generate_contracts.py`), gate cannot pass |
 | Unconstrained schema arrays | 329 → **173**, each marked `UNDECIDED` and counted by the validator |
 | CI | Green. Concurrency regression **579s → 241s** |
 
@@ -124,21 +124,31 @@ form a clean checkout can prove. Left untouched deliberately.
   format. Ranex produces exactly that class of artifact. `LICENSE-RANEX.md` is
   personal-use, all rights reserved, so commercial optionality is preserved.
   ADR-0011 forecloses the Hermes inference-margin model.
-- **`uv` is an undeclared load-bearing tool choice** — every executable
-  verification path runs through it, `uv.lock` is tracked and licence-classified,
-  and no decision record selects it. Same defect class ADR-0014 just closed for
-  the language. **FACT**, found by HY3.
-- **Dependency licences are unregistered.** `legal/licensing-manifest.json` has no
-  entry for `jsonschema`, `PyYAML`, or the `rfc8785` package. Recorded as a failing
-  gap in ADR-0014 v1.1.0. **FACT**, verified by full-text scan.
 - **Copyrighted PDFs remain reachable** in the git object database via
-  `refs/codex/*` — **15 such refs confirmed present on 2026-07-30**. The `origin`
-  remote is a **PUBLIC** GitHub repository. A normal `git push <remote> <branch>`
-  does not carry them; **`git push --all` or `--mirror` would publish them**.
-  Never use those flags on this repository. Unresolved by owner choice. **FACT**.
-- **`~/.codex/logs_2.sqlite` is ~3.6 GB, 88% dead space.** A compaction job is
-  armed and fires when no Codex process runs. It has never fired. **UNVERIFIED**
-  today — inherited claim, not re-checked.
+  `refs/codex/`. **Re-verified 2026-07-31: 15 refs still present**, two of which
+  carry **11 PDF blobs** (`Clean.Code…pdf`, `Code.Complete…pdf` and others under
+  `docs/research/`). The `origin` remote
+  (`https://github.com/anthonykewl20/ranex.git`) is a **PUBLIC** GitHub
+  repository. A normal `git push <remote> <branch>` does not carry them;
+  **`git push --all` or `--mirror` would publish them**. Never use those flags on
+  this repository. Unresolved by owner choice. **FACT**.
+
+  Count them with `git for-each-ref 'refs/codex/**'` — **not** `refs/codex/*`,
+  which matches one path level, returns zero, and reads as an all-clear. That
+  exact mistake was made and caught on 2026-07-31.
+- **`~/.codex/logs_2.sqlite` is 3,792,609,280 bytes (3.79 GB)** as of 2026-07-31
+  — **FACT**, re-measured. The "88% dead space" figure and the claim that a
+  compaction job is armed but has never fired remain **UNVERIFIED** inherited
+  claims; only the file size was re-checked.
+
+### Closed since the last handoff — do not re-report as open
+
+- **Dependency licences are registered.** `legal/licensing-manifest.json`
+  `dependencies.entries` carries all five: `jsonschema` (MIT), `PyYAML` (MIT),
+  `rfc8785` (Apache-2.0), `pyrefly` (MIT), `uv` (MIT OR Apache-2.0). The previous
+  handoff recorded zero entries. **FACT**, verified by parsing the manifest.
+- **`uv` is declared.** `ADR-0019` selects it, `ACCEPTED`. The previous handoff
+  listed it as an undeclared load-bearing tool choice. **FACT**.
 
 ## Operational notes — model routing
 
@@ -210,7 +220,37 @@ Verified prices, OpenRouter, 2026-07-30. **FACT.**
    isolated worktree, contrary to this handoff's own instruction.
 5. **Wrote a stale figure into an accepted ADR.** `ADR-0018` cited 256 errors
    measured against an uncommitted config; corrected in v1.1.0 to the figure the
-   committed config produces.
+   committed config produces. **v1.1.0's replacement figure was also wrong** —
+   256 was measured mid-change, before the schema-array typing landed in the same
+   commit. Corrected to **245** in v1.2.0, this time proven by
+   `pyrefly check --output-format json` at a named commit. Two corrections of the
+   same number, both because it was recorded without a reproducing command beside
+   it.
+6. **Counted with a regex that matched a code snippet.** A first per-rule
+   breakdown grepped for lines ending `[rule-name]` and scored 246 — one of the
+   "rules" was the source fragment `[value]` printed inside a quoted line of
+   `generate_contracts.py`. Same class as the `429`-inside-a-SHA false positive.
+   Never derive a count from prose output when the tool emits JSON.
+7. **Declared a copyright exposure resolved on a bad glob.**
+   `git for-each-ref 'refs/codex/*'` returned 0 and was briefly read as the refs
+   being gone; `refs/codex/**` returns 15. A single-level glob against a
+   deep ref namespace silently reports absence. The handoff's own corollary —
+   a negative search result is evidence about the search — applies to glob
+   patterns, not only to grep.
+
+### Model-routing evidence from this session
+
+**Grok-4.5 cannot be trusted to count.** Asked to derive the per-rule breakdown
+from the 84 KB pyrefly log, it returned totals wrong on **6 of 11** rules
+(`implicit-any` 118 vs 122, `missing-attribute` 48 vs 45, `bad-argument-type`
+42 vs 40, `unsupported-operation` 15 vs 18, `bad-index` 8 vs 9, `bad-assignment`
+4 vs 3). Cost $0.047.
+
+Two things it did right, and they are why it stays the final gate: it reported
+that its own table summed to 243 rather than adjusting a number to reach a
+total, and it refused to accept 256 on the evidence offered. **Use it to
+adjudicate reasoning and to attack a claim — never to tally.** Anything
+countable must come from the tool's machine-readable output.
 
 The common thread, again: **stating a checkable claim without checking it** — and
 this time, checking it the wrong way, which is worse because it feels rigorous.

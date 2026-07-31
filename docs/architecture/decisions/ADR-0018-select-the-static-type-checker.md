@@ -3,11 +3,11 @@
 | Field | Value |
 |---|---|
 | ADR ID | `ADR-0018` |
-| Version | `1.1.0` |
+| Version | `1.2.0` |
 | Status | `ACCEPTED` |
 | Decision owner | Human owner |
 | Decision date | 2026-07-31 |
-| Effective revision | Working tree based on `79d568914`; definition-only, no runtime or readiness claim |
+| Effective revision | `eb9a807794`, where the pinned configuration is committed; `scripts/architecture/` is byte-identical at `HEAD`. Definition-only, no runtime or readiness claim |
 | Content binding | Exact digest is recorded externally in each immutable review/release source manifest |
 | Affected contexts | `configuration_management`, `assurance`, `process_assurance`, `module_governance` |
 | RFC | [`RFC-0008`](../rfcs/RFC-0008-select-the-static-type-checker.md), accepted by the human owner on 2026-07-31 |
@@ -22,6 +22,7 @@
 |---|---|---|
 | `1.0.0` | 2026-07-31 | Initial accepted decision, promoted from `RFC-0008`. Selects `pyrefly` pinned at `1.1.1` against evidence measured 2026-07-30. |
 | `1.1.0` | 2026-07-31 | Recorded the debt figure produced by the committed configuration (256, with per-rule breakdown) in place of the 265 measured against an uncommitted standalone config, and recorded why the two differ. No provision changed. |
+| `1.2.0` | 2026-07-31 | Corrected the debt figure to **245**, the count the committed configuration produces at the only commit that contains it. The 256 recorded at `1.1.0` was measured mid-change, before the schema-array typing landed in that same commit, and is reproducible from no committed state — the identical defect `1.1.0` diagnosed in the 265 figure. Also corrected the per-rule table, corrected "across the four files" to the two files that actually carry errors, and pinned the extraction method to `--output-format json` so the breakdown is no longer hand-counted. No provision changed. |
 
 ## Context
 
@@ -54,36 +55,62 @@ and two consecutive runs over identical input produce byte-identical output.
 ### `TYPECHECK-DEBT-001` — existing errors are a finding, not a waiver
 
 Under the committed configuration (`scripts/architecture/pyproject.toml`,
-`[tool.pyrefly] preset = "strict"`), strict mode reports **256 errors** across
-the four files in `scripts/architecture/`, reproducibly:
+`[tool.pyrefly] preset = "strict"`), strict mode reports **245 errors**,
+reproducibly. The configuration covers four files; errors occur in two of them:
+`validate_contracts.py` (138) and `generate_contracts.py` (107).
+`contract_tree_lock.py` and `test_contract_concurrency.py` carry none.
 
 | count | rule |
-|---|---|
-| 133 | `implicit-any-empty-container` |
+|---|---:|
+| 122 | `implicit-any-empty-container` |
 | 45 | `missing-attribute` |
 | 40 | `bad-argument-type` |
 | 18 | `unsupported-operation` |
 | 9 | `bad-index` |
-| 3 | `bad-assignment` |
 | 3 | `not-iterable` |
+| 3 | `bad-assignment` |
 | 2 | `no-matching-overload` |
-| 1 each | `bad-argument-count`, `bad-return` |
+| 1 | `unknown-name` |
+| 1 | `bad-return` |
+| 1 | `bad-argument-count` |
 
-The largest class, `implicit-any-empty-container`, is the same defect as the 329
+The table sums to 245. Both figures are extracted from the tool's own
+machine-readable output, not counted by hand:
+
+```
+uv run --group typecheck pyrefly check --output-format json -o <file>
+```
+
+The largest class, `implicit-any-empty-container`, is the same defect as the
 unconstrained arrays in the generated schema tree: a container whose element type
 cannot be derived from its initialiser. Two independent tools therefore identify
-one root cause.
+one root cause. That link is now measured rather than asserted — typing the
+derivable schema arrays in `eb9a807794` moved this class from 133 to 122.
 
 These are recorded as a finding. The gate is not weakened, no baseline is
 adopted, and no rule is demoted to obtain a pass.
 
-**Figure provenance.** `RFC-0008` cited 265 errors, measured 2026-07-30 against a
-standalone strict configuration. The count is now 256 because
-`contract_tree_lock.py` and `test_contract_concurrency.py` were subsequently
-corrected, removing some. The figure binding this decision is the one produced by
-the **committed** configuration, which is the artefact CI executes; a count
-measured against a configuration that is not committed is not reproducible
-evidence.
+**Figure provenance.** Three figures have been recorded; only the third is
+reproducible.
+
+| Figure | Origin | Standing |
+|---|---|---|
+| 265 | `RFC-0008`, 2026-07-30, standalone strict config never committed | Not reproducible. Superseded at `1.1.0` |
+| 256 | `1.1.0`, measured mid-change within `eb9a807794` | **Not reproducible.** Superseded here |
+| **245** | Committed configuration at `eb9a807794`, verified unchanged at `b316a42bf` | Binding |
+
+`[tool.pyrefly]` appears in exactly one commit of
+`scripts/architecture/pyproject.toml` — `eb9a807794` — and
+`git diff eb9a807794 HEAD -- scripts/architecture/` is empty, so that
+configuration and the code it checks are identical at `HEAD`. Running it there
+yields 245. No committed state yields 256: the 256 was measured after the
+configuration was written but before the schema-array typing in the same commit
+was applied, so it describes a working tree that was never recorded.
+
+This is the same defect `1.1.0` identified in the 265 figure, committed while
+correcting it. The rule it establishes is now explicit: **a figure written into
+this decision must be reproducible from a committed state by a stated command,**
+and the command belongs in the record beside the figure.
 
 ### `TYPECHECK-BOUNDARY-001` — static checking does not discharge boundary validation
 
@@ -192,8 +219,9 @@ second pin.
 
 `pyrefly` ships a **CycloneDX 1.5 SBOM** declaring 317 components with SPDX
 licence expressions. Adopting it adds machine-readable licence evidence rather
-than further unregistered dependencies. This does not close the existing
-`jsonschema` / `PyYAML` / `rfc8785` gap.
+than further unregistered dependencies. The `jsonschema` / `PyYAML` / `rfc8785`
+gap this noted at `1.0.0` has since been closed: `legal/licensing-manifest.json`
+now carries all five entries, `pyrefly` and `uv` included.
 
 ## Predeclared acceptance tests
 
@@ -205,7 +233,7 @@ than further unregistered dependencies. This does not close the existing
 5. The gate exits non-zero whenever any error is reported.
 6. Two consecutive runs over identical input produce byte-identical output.
 7. Running with network egress blocked produces identical results.
-8. The 256-error debt is visible as a finding; no configuration demotes those
+8. The 245-error debt is visible as a finding; no configuration demotes those
    rules to warnings to obtain a pass.
 9. A proposed replacement is evaluated by the retained harness, and its detection
    and false-positive results are recorded in the superseding decision.
@@ -213,7 +241,7 @@ than further unregistered dependencies. This does not close the existing
 ## Consequences and evidence standing
 
 - `LANG-TYPECHECK-001` becomes satisfiable but is **not satisfied on acceptance**:
-  256 existing errors must be resolved before the gate can pass. That is a stated
+  245 existing errors must be resolved before the gate can pass. That is a stated
   gap, not a compliance claim.
 - One development dependency is added, MIT in both repository and package
   metadata, shipping an SBOM.
