@@ -45,12 +45,35 @@ def subject_digest_for(repository_root: Path, ref: str) -> str:
     return "sha256:" + canonical_sha256({"tree": result.stdout.strip()})
 
 
+def head_commit(repository_root: Path) -> str:
+    """The commit HEAD points at, used to detect the ground moving mid-run."""
+
+    result = subprocess.run(
+        ["git", "-C", str(repository_root), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise ValueError(f"cannot resolve HEAD: {result.stderr.strip()}")
+    return result.stdout.strip()
+
+
 def load_evidence(path: Path) -> tuple[Evidence, ...]:
-    """Read evidence records. A missing file is no evidence, not an error."""
+    """Read evidence records. A missing file is no evidence, not an error.
+
+    A malformed file is an error, never silently no evidence. `{}` used to
+    iterate zero keys and return nothing at all, which is indistinguishable
+    from an honest absence and therefore the more dangerous of the two.
+    """
 
     if not path.exists():
         return ()
     raw = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(raw, list):
+        raise ValueError("evidence file must contain a JSON array")
+    if any(not isinstance(item, dict) for item in raw):
+        raise ValueError("every evidence record must be a JSON object")
     return tuple(
         Evidence(
             claim_id=item["claim_id"],
@@ -80,7 +103,18 @@ def uncommitted_paths(
     """
 
     result = subprocess.run(
-        ["git", "-C", str(repository_root), "status", "--porcelain"],
+        # --ignore-submodules=none overrides any submodule.<name>.ignore or
+        # diff.ignoreSubmodules setting. Left to the repository's own config, a
+        # changed submodule is invisible here while still being present when the
+        # command runs — a dirty tree bound to a clean digest.
+        [
+            "git",
+            "-C",
+            str(repository_root),
+            "status",
+            "--porcelain",
+            "--ignore-submodules=none",
+        ],
         capture_output=True,
         text=True,
         check=False,
@@ -99,12 +133,15 @@ def uncommitted_paths(
     for line in result.stdout.splitlines():
         if not line.strip():
             continue
-        path = line[3:]
-        if " -> " in path:  # a rename reports "old -> new"
-            path = path.split(" -> ", 1)[1]
-        path = path.strip().strip('"')
-        if path and path != exempt:
-            dirty.append(path)
+        payload = line[3:]
+        # A rename reports "old -> new" and touches BOTH paths. Taking only the
+        # destination let `git mv victim.txt <evidence>` report clean: the
+        # destination was exempt, so the source's deletion vanished with it.
+        candidates = payload.split(" -> ", 1) if " -> " in payload else [payload]
+        for candidate in candidates:
+            path = candidate.strip().strip('"')
+            if path and path != exempt:
+                dirty.append(path)
     return tuple(sorted(dirty))
 
 
@@ -179,7 +216,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             subject_digest=subject,
             approver_id=args.approver,
         )
-    except (ValueError, KeyError, OSError, json.JSONDecodeError) as exc:
+    except (ValueError, TypeError, KeyError, OSError, json.JSONDecodeError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
@@ -223,16 +260,35 @@ def cmd_run(args: argparse.Namespace) -> int:
         if dirty:
             raise ValueError(
                 "refusing to record evidence against a dirty working tree; "
-                f"{args.ref} does not describe: {', '.join(dirty)}"
+                f"HEAD does not describe: {', '.join(dirty)}"
             )
-        subject = subject_digest_for(root, args.ref)
-    except (ValueError, OSError, json.JSONDecodeError) as exc:
+        # HEAD, always, and deliberately not selectable. The command runs against
+        # the checked-out tree, so naming any other ref would record a digest for
+        # a tree that was never observed — a false claim reachable straight from
+        # the documented interface.
+        subject = subject_digest_for(root, "HEAD")
+        started_at = head_commit(root)
+    except (ValueError, TypeError, OSError, json.JSONDecodeError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
-    completed = subprocess.run(command, cwd=root, check=False)
+    try:
+        completed = subprocess.run(command, cwd=root, check=False)
+    except OSError as exc:
+        print(f"ERROR  cannot run {command[0]!r}: {exc}", file=sys.stderr)
+        return EXIT_USAGE
 
     try:
+        # Removing --ref shut one door; the command could still walk through
+        # another by checking out elsewhere, leaving the recorded digest
+        # describing a tree it never ran against. Creating files is legitimate
+        # and must still pass — moving HEAD never is.
+        if head_commit(root) != started_at:
+            raise ValueError(
+                "refusing to record evidence: the command moved HEAD from "
+                f"{started_at[:12]} during the run, so {subject[:19]}… "
+                "does not describe what was observed"
+            )
         record_evidence(
             evidence_path,
             {
@@ -243,7 +299,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 "exit_code": int(completed.returncode),
             },
         )
-    except (ValueError, OSError, json.JSONDecodeError) as exc:
+    except (ValueError, TypeError, OSError, json.JSONDecodeError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
@@ -286,7 +342,8 @@ def build_parser() -> argparse.ArgumentParser:
     rn.add_argument("--claim", required=True, help="claim this evidences")
     rn.add_argument("--producer", required=True, help="identity running the command")
     rn.add_argument("--repository", default=".", help="repository root")
-    rn.add_argument("--ref", default="HEAD", help="git ref the evidence binds to")
+    # No --ref. The subject is always HEAD, because HEAD is what the command
+    # runs against. Offering a choice offers a way to record a false claim.
     rn.add_argument(
         "--evidence",
         default="governance/evidence.json",
