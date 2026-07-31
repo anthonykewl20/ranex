@@ -1,7 +1,8 @@
 # SLICE-001 — evidence production
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-01
+**Closed:** 2026-08-01 — 65 tests green at 0762cf742
 
 ## Why
 
@@ -24,21 +25,21 @@ ranex gate evaluate HEAD --approver reviewer_alice     # -> PASS
 
 Each must be met and proven by a test.
 
-- [ ] `run` executes the command and records its exit code verbatim
-- [ ] The subject digest is computed by the **same function** `gate evaluate`
+- [x] `run` executes the command and records its exit code verbatim
+- [x] The subject digest is computed by the **same function** `gate evaluate`
       uses — one implementation, not two
-- [ ] `run` **refuses on a dirty working tree** (exit 2, nothing written).
+- [x] `run` **refuses on a dirty working tree** (exit 2, nothing written).
       A digest of `HEAD` does not describe an uncommitted tree, and recording it
       as if it did would be a false claim
-- [ ] The record is appended to `governance/evidence.json`, creating the file if
+- [x] The record is appended to `governance/evidence.json`, creating the file if
       absent and preserving unrelated records
-- [ ] A record for the same `(claim_id, producer_id)` is **replaced**, not
+- [x] A record for the same `(claim_id, producer_id)` is **replaced**, not
       duplicated
-- [ ] Emitted records round-trip through the existing `load_evidence`
-- [ ] Path arguments go through `resolve_within_repository` like every other
+- [x] Emitted records round-trip through the existing `load_evidence`
+- [x] Path arguments go through `resolve_within_repository` like every other
       path in the CLI
-- [ ] e2e: `run` then `gate evaluate` → PASS, exit 0
-- [ ] e2e: `run --producer X` then `gate evaluate --approver X` → FAIL
+- [x] e2e: `run` then `gate evaluate` → PASS, exit 0
+- [x] e2e: `run --producer X` then `gate evaluate --approver X` → FAIL
       (self-approval still refused end to end)
 
 ## Out of scope

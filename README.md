@@ -222,12 +222,13 @@ below is what is actually built.
 - **No self-approval** — whoever produced the evidence cannot approve it.
 - **Append-only hash-chained journal** — SQLite triggers plus a chain, so an
   out-of-band edit is detectable rather than merely discouraged.
+- **`ranex run`** — executes a command, records its exit code and the tree digest
+  it ran against, and refuses a dirty working tree rather than record a claim it
+  cannot honestly bind. `run` then `gate evaluate` is a closed loop.
 - `ranex gate evaluate`, and repository path confinement.
 
 **Known gaps — stated plainly**
 
-- **Nothing produces evidence.** `governance/evidence.json` is hand-written. The
-  loop is open at both ends. *(SLICE-001)*
 - **Evidence is unsigned.** A PASS can be forged with a text editor. Subject
   binding stops *stale* evidence; nothing yet stops *fabricated* evidence.
   *(SLICE-002)*
@@ -243,12 +244,13 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** `SLICE-001-evidence-production` — `ranex run` executes a
-command, observes it, and emits evidence the gate will accept.
+**Active slice:** none — the next one is not yet opened.
 
 ## Completed slices
 
-_None yet._
+- **SLICE-001-evidence-production** — `ranex run` executes a command, observes
+  it, and emits evidence the gate accepts. Target committed red before any
+  implementation existed; 65 tests green.
 
 ---
 
