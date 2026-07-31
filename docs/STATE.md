@@ -35,15 +35,16 @@ a docs cap and README↔STATE sync enforced by tests, and a public README.
 
 ## Known debts
 
-- `contracts-validated` is required by `governance/gates.yaml` but has no
-  producer — its script left with the clean slate. Write one or amend the gate;
-  do not fake the claim.
-- `tests/contract/test_gate_catalog_loader.py` is misnamed; it tests
-  `slice_gate_loader`. Rename when next touched.
-- Branch protection requires 5 status checks and there is no `.github/workflows`
-  to satisfy any of them.
-- opencode delegation is unreliable; codex works interactively but its
-  non-interactive invocation was never made to run shell commands. Evidence:
-  `git log --grep=opencode-delegation`.
-- `subject_lane` is a hardcoded default that reaches journal records.
-- `.git` is 665M — `upstream-sync` holds 18,256 commits of Hermes history.
+- **`run` false claims still open** — `assume-unchanged`/`skip-worktree` hide
+  changes from `git status` itself; ignored files can influence a command while
+  being in no tree. Four others fixed in `10eb09586`.
+- **`run` robustness** — evidence write is not atomic, no command timeout,
+  concurrent runs can lose an update.
+- `contracts-validated` is required by `gates.yaml` with no producer. Write one
+  or amend the gate; do not fake the claim.
+- `test_gate_catalog_loader.py` is misnamed; it tests `slice_gate_loader`.
+- Branch protection requires 5 checks; no `.github/workflows` exists.
+- Delegation: only a direct OpenRouter completion works (`scratchpad/review.py`
+  spike). opencode non-interactive never ran. `git log --grep=opencode-delegation`.
+- `subject_lane` is a hardcoded default reaching journal records.
+- `.git` is 665M — `upstream-sync` holds 18,256 Hermes commits.
