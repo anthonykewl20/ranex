@@ -126,3 +126,57 @@ def test_state_names_the_active_slice() -> None:
     assert (REPO_ROOT / "docs" / "slices" / referenced.group(1)).is_file(), (
         f"docs/STATE.md points at {referenced.group(1)}, which does not exist"
     )
+
+
+# --- README stays in sync with reality -------------------------------------
+#
+# The README is the public status page. Two documents both claiming "what we are
+# working on" is how drift starts, so the overlap is checked rather than trusted.
+
+_SLICE_STEM = re.compile(r"SLICE-\d{3}-[a-z0-9]+(?:-[a-z0-9]+)*")
+
+
+def _active_slice_named_in(text: str) -> str | None:
+    line = re.search(r"^\*\*Active slice:\*\*\s+(.+)$", text, re.MULTILINE)
+    if line is None:
+        return None
+    stem = _SLICE_STEM.search(line.group(1))
+    return stem.group(0) if stem else None
+
+
+def test_readme_exists() -> None:
+    assert (REPO_ROOT / "README.md").is_file(), "README.md is the public entry point"
+
+
+def test_readme_and_state_agree_on_the_active_slice() -> None:
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    state = (REPO_ROOT / "docs" / "STATE.md").read_text(encoding="utf-8")
+
+    in_readme = _active_slice_named_in(readme)
+    in_state = _active_slice_named_in(state)
+
+    assert in_readme == in_state, (
+        f"README.md says the active slice is {in_readme!r} but docs/STATE.md "
+        f"says {in_state!r}. They must name the same slice."
+    )
+
+
+def test_readme_lists_exactly_the_finished_slices() -> None:
+    """Closing a slice must update the README. Enforced, not remembered."""
+
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    section = re.search(
+        r"^## Completed slices\s*\n(.*?)(?=^## |\Z)",
+        readme,
+        re.MULTILINE | re.DOTALL,
+    )
+    assert section is not None, "README.md needs a '## Completed slices' section"
+
+    claimed = set(_SLICE_STEM.findall(section.group(1)))
+    archived = {path.stem for path in _slice_files(done=True)}
+
+    assert claimed == archived, (
+        f"README.md claims {sorted(claimed)} are complete but "
+        f"docs/slices/done/ holds {sorted(archived)}. "
+        "Move the slice file and update the README together."
+    )
