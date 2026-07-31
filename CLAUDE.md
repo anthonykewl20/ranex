@@ -6,6 +6,37 @@ Deterministic governance for AI agents that build software.
 constraints. Ranex judges work by evidence and executable checks, never by model
 confidence.
 
+## The problem, stated plainly
+
+An AI writing software is a blindfolded dart thrower with a guide shouting
+coordinates. Two things go wrong, and they are separate problems:
+
+1. **The thrower is blind.** It cannot perceive whether its own dart landed, so
+   it reports success either way.
+2. **The guide is bad.** The coordinates were wrong or vague before the throw.
+
+There is a third failure the metaphor exposes, and it is the most common: most
+tools let the thrower **paint the bullseye around the dart after it lands**. One
+actor writes the code, writes the test, and declares success.
+
+Ranex attacks exactly these, and nothing else:
+
+- The thrower's self-report is **discarded**. Checks are the eyes — read the diff
+  on disk, never the agent's summary.
+- The coordinates are fixed **before any throw** and approved by whoever owns the
+  target.
+- The target is drawn before the throw: tests are frozen, read-only to
+  implementers, and red-then-green is enforced.
+- Three misses stops the game and asks the target's owner. "Cannot hit this" is a
+  legal outcome, not a failure to route around.
+
+Tools like Replit, Lovable, and Base44 optimize **the throw** — better model,
+better prompt, faster loop. Ranex optimizes **the scoring**.
+
+**Ranex does not improve aim.** Not by one degree. It makes misses visible and
+cheap, and hits provable. Never claim more than that — not in docs, not in
+program output, not to a user.
+
 ---
 
 ## Read these first, every session
