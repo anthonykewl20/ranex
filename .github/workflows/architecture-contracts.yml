@@ -29,8 +29,19 @@
 #                           reports, and the push is refused. `main` is
 #                           reachable only by a pull request whose head carries
 #                           this workflow, or by an admin push.
-#   develop                 not protected  <- see the fetch-depth note below
-#   bootstrap/pre-upstream  not protected  <- current working branch
+#   bootstrap/pre-upstream  PROTECTED, and this is the branch that matters.
+#                           Requires all FIVE checks — the four leaf jobs by
+#                           name plus the aggregate — not the single forgeable
+#                           aggregate alone. Force pushes and deletion blocked.
+#                           This is the real work branch; `main` is inherited
+#                           history being left behind (owner, 2026-07-31), and
+#                           the two share no usable ancestry: `main` holds
+#                           18,258 commits this branch does not.
+#   develop                 PROTECTED against force-push and deletion. No
+#                           checks required — it is not a work branch. It is
+#                           protected because commit 0533e1eaf is reachable
+#                           from no other ref, and losing it breaks `drift`
+#                           and `validate` outright.
 #   feature/kernel-tracer   not protected
 #   upstream-sync           not protected
 #
@@ -40,8 +51,10 @@
 #     still push to `main` past a red gate. This is deliberate: it keeps an
 #     emergency path open for a solo owner. It means the gate constrains AI
 #     workers and ordinary pushes, not the owner.
-#   * The working branch is unprotected, so on `bootstrap/pre-upstream` these
-#     checks remain ADVISORY. They become binding when work reaches `main`.
+#   * These checks are now BINDING on `bootstrap/pre-upstream`, where the work
+#     actually happens. They were advisory there until 2026-07-31, when
+#     protection was moved onto the real branch — guarding `main` alone
+#     protected a branch nothing lands on.
 #   * A required status check is matched by NAME, and the workflow defining
 #     that name is this editable file. A branch carrying a workflow whose
 #     `all contract checks` job is `exit 0` satisfies the requirement having
