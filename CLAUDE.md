@@ -93,6 +93,30 @@ one is exactly what produced the 561 files. Instead:
 `STATE.md` is a **pointer, not a log.** It has a fixed shape and stays under 50
 lines forever. Git already holds the history; do not duplicate it here.
 
+**This file loads into every session, so it is the most expensive real estate in
+the repo.** Put here only what prevents an expensive mistake. Evidence, history,
+and how a conclusion was reached belong in commit messages — permanent,
+greppable, and free at load time. If you are about to add more than a few lines
+here, that is the signal it belongs somewhere else.
+
+## Delegating to opencode
+
+```sh
+opencode run --print-logs -m opencode/deepseek-v4-flash-free --dir "$PWD" "<prompt>"
+```
+
+`--print-logs` is required — without it nothing is emitted when stdout is piped.
+
+**The free tier is burst-throttled: roughly two calls succeed, then it stalls for
+minutes.** Use it for spaced review or audit; it cannot sustain an implementation
+loop. Six free models exist, so prefer three *different* models voting over one
+model asked three times. Score every result against frozen tests, never against
+the agent's own report.
+
+Already ruled out as causes of the stall — do not re-derive: prompt length,
+`--variant max`, `--auto` (redundant — `build` already allows `*`), and GitHub
+issue #13851. Evidence: `git log --grep=opencode-delegation`.
+
 ## Invariants
 
 Breaking one of these is a bug, not a tradeoff. If a change requires breaking
