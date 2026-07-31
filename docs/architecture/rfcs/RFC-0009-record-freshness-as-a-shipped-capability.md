@@ -2,7 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Status | DRAFT |
+| Status | DEFERRED |
+| Deferred by | Human owner, 2026-07-31 |
+| Deferral reason | No implementation slice currently requires this capability. Creating infrastructure before a real consumer exists would be speculative architecture |
+| Revisit trigger | **The first external governed repository becomes a supported runtime target.** Until then, work on this RFC does not resume |
 | Owner | Human owner |
 | Authors | Assistant, at owner direction 2026-07-31 |
 | Created | 2026-07-31 |
@@ -12,6 +15,18 @@
 | Architecture subject digest | Not pinned; the RFC lifecycle axis is not yet enacted |
 | Subject-manifest digest | Not pinned; same reason |
 | Core SDLC trace ref/digest | `docs/architecture/SOURCE_OF_TRUTH.md` canonical status vocabulary |
+
+
+> **DEFERRED by owner decision, 2026-07-31.** Do not continue work on this RFC
+> unless the revisit trigger above occurs. It is retained in full because its
+> evidence — eight measured false claims — remains valid and citable, and
+> because its open questions are the right ones to ask when the trigger fires.
+>
+> Independent finding recorded against it: `RFC-0009:57` cites
+> `ADR-0013:1175-1176` as forbidding "the exact self-assertion." Those lines
+> actually govern decision *activation*, and `grep` finds no self-approval
+> language anywhere in `ADR-0013`. The citation overstates its source and must
+> be corrected before this RFC is reopened.
 
 ## Decision question
 

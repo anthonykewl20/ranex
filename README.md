@@ -238,7 +238,7 @@ Honest status, because the project's own rules forbid claiming otherwise.
 
 | | |
 |---|---|
-| Architecture | 14 accepted ADRs · 34 bounded contexts · accepted **on paper** (ADR-0003) |
+| Architecture | 21 accepted ADRs · 34 bounded contexts · accepted **on paper** (ADR-0003) · mapped in [`MASTER_ARCHITECTURE_SPECIFICATION.md`](docs/architecture/MASTER_ARCHITECTURE_SPECIFICATION.md) |
 | Contract validation | `PASS`, scope `EXECUTABLE_DOCUMENTATION_CONTRACTS_ONLY` |
 | Runtime validation | `NOT_ASSESSED` — nothing runs yet |
 | Product code | None |

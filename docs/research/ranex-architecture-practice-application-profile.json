@@ -32,7 +32,8 @@
       "docs/architecture/decisions/ADR-0017-record-resolved-owner-decisions.md",
       "docs/architecture/decisions/ADR-0018-select-the-static-type-checker.md",
       "docs/architecture/decisions/ADR-0019-declare-uv-as-the-python-toolchain-manager.md",
-      "docs/architecture/decisions/ADR-0020-declare-the-record-freshness-self-check.md"
+      "docs/architecture/decisions/ADR-0020-declare-the-record-freshness-self-check.md",
+      "docs/architecture/decisions/ADR-0021-limit-adr-0010-to-inherited-lineage.md"
     ],
     "runtime_subject_included": false
   },

@@ -20,8 +20,19 @@ typecheck = ["pyrefly==1.1.1"]
 package = false
 
 # ADR-0018 TYPECHECK-STRICT-001. Strict mode is the gate; a non-zero exit blocks.
-# No baseline is adopted and no rule is demoted: the 265 errors currently
-# reported here are a recorded finding, not a waiver.
+# No baseline is adopted and no rule is demoted: the errors currently reported
+# here are a recorded finding, not a waiver.
+#
+# Measured 2026-07-31: 243 errors (138 validate_contracts.py, 105
+# generate_contracts.py), by
+#     cd scripts/architecture && uv run --group typecheck pyrefly check
+# The working directory is load-bearing, and this is not a footnote: the same
+# code has produced 243, 6, 7 and 5 depending only on how pyrefly was invoked
+# and what config it happened to discover. Running from the repository root with
+# `--project scripts/architecture` does NOT discover this [tool.pyrefly] section.
+# Every invocation exits non-zero, so every one of them looks like the gate
+# blocking. An earlier comment here read 265, matching none of them.
+# Quote no count from this tool without the command AND its directory.
 [tool.pyrefly]
 project-includes = ["."]
 preset = "strict"

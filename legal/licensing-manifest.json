@@ -405,6 +405,17 @@
       "notes": "Generator- or validator-owned Ranex documentation-contract output. Embedded source bindings and digests identify exact inputs; generation does not acquire or expand rights in cited third-party sources."
     },
     {
+      "path": "architecture/contracts/legacy-test-lineage-applicability-v1.json",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0",
+      "provenance_kind": "DETERMINISTIC_GENERATED_PROJECTION",
+      "generated_by": "scripts/architecture/generate_contracts.py",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "redistribution": "SUBJECT_TO_RANEX_LICENSE",
+      "release_blocker": false,
+      "notes": "Generator- or validator-owned Ranex documentation-contract output. Embedded source bindings and digests identify exact inputs; generation does not acquire or expand rights in cited third-party sources."
+    },
+    {
       "path": "architecture/contracts/legacy-test-layout-policy.json",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0",
@@ -3563,6 +3574,17 @@
     },
     {
       "path": "schemas/common/legacy-test-layout-policy-v2.schema.json",
+      "classification": "RANEX_ORIGINAL",
+      "license": "LicenseRef-Ranex-Personal-Use-1.0",
+      "provenance_kind": "DETERMINISTIC_GENERATED_PROJECTION",
+      "generated_by": "scripts/architecture/generate_contracts.py",
+      "repository_inclusion": "PUBLIC_SAFE",
+      "redistribution": "SUBJECT_TO_RANEX_LICENSE",
+      "release_blocker": false,
+      "notes": "Generator- or validator-owned Ranex documentation-contract output. Embedded source bindings and digests identify exact inputs; generation does not acquire or expand rights in cited third-party sources."
+    },
+    {
+      "path": "schemas/common/legacy-test-lineage-applicability-v1.schema.json",
       "classification": "RANEX_ORIGINAL",
       "license": "LicenseRef-Ranex-Personal-Use-1.0",
       "provenance_kind": "DETERMINISTIC_GENERATED_PROJECTION",

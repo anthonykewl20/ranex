@@ -139,13 +139,20 @@
       "source_path": "docs/architecture/decisions/ADR-0020-declare-the-record-freshness-self-check.md",
       "status": "ACCEPTED",
       "version": "1.0.0"
+    },
+    {
+      "adr_id": "ADR-0021",
+      "source_digest": "sha256:1b6ca0051d3eb406b299f12b7d24a22b8d96990111bbca3fe922e6c17a5e45ee",
+      "source_path": "docs/architecture/decisions/ADR-0021-limit-adr-0010-to-inherited-lineage.md",
+      "status": "ACCEPTED",
+      "version": "1.0.0"
     }
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "REG-ACCEPTED-ADRS-001",
-  "required_count": 20,
+  "required_count": 21,
   "source": "docs/architecture/SOURCE_OF_TRUTH.md",
-  "source_digest": "sha256:c2cd5ba32236381b2398c0836d8c8f0dcac79623daa08fabc730bfd83a31e3f1",
+  "source_digest": "sha256:b34089bfef8a41cd993b53c7aab59ab42a94535b73f6cd6abc52ec3734964faa",
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"
 }

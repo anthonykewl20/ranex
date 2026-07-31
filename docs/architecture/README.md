@@ -17,7 +17,23 @@ clean descendant without circularly revoking admission only while the governed
 design/control manifest remains byte-identical; every such commit still uses
 the normal per-work controls.
 
-## Read in this order
+## Start with the map, not with this list
+
+> **📍 [`MASTER_ARCHITECTURE_SPECIFICATION.md`](./MASTER_ARCHITECTURE_SPECIFICATION.md)**
+> is the entry point. It shows the whole system with every claim labelled
+> `CONFIRMED` / `PROVISIONAL` / `UNRESOLVED` / `OUT-OF-SCOPE`, and it is short.
+
+The ordered list below indexes the **founding** normative documents,
+`ADR-0001`…`ADR-0014`. It is **not complete**: `ADR-0015` … `ADR-0021` are
+accepted and normative and do not appear in it. The complete decision index is
+**MAS §9**.
+
+It is also **not** a reading assignment: working through 12,000 lines before
+acting is the Big-Design-Up-Front habit this project is correcting. It is kept
+for the reading order it encodes. Consult the specific document the map points
+you to.
+
+## The founding normative index (ADR-0001…ADR-0014)
 
 1. [Ranex Core SDLC Operating Model](./CORE_SDLC_OPERATING_MODEL.md)<br>
    The core product-to-production process: governance, discovery,

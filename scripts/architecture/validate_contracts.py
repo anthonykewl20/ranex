@@ -101,7 +101,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "4eedd6e10cc0c3598730aac0f25f8720a43504fdfcc4dea82f31486aecee6710"
+    "91ef34b1f8f8f3b7cee48556b1cf0117cb6bbd060bc9b2c4fe1770b1e851057f"
 )
 ARCHITECTURE_PRACTICE_PROFILE = (
     ROOT / "docs" / "research" / "ranex-architecture-practice-application-profile.json"
@@ -163,11 +163,24 @@ LEGACY_TEST_LAYOUT_ADR = (
     / "decisions"
     / "ADR-0010-bound-inherited-hermes-test-layout-migration.md"
 )
+LEGACY_TEST_LINEAGE_ADR = (
+    ROOT
+    / "docs"
+    / "architecture"
+    / "decisions"
+    / "ADR-0021-limit-adr-0010-to-inherited-lineage.md"
+)
 ADR10_SOURCE_SHA256 = (
     "45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb"
 )
 ADR10_MACHINE_BLOCK_SHA256 = (
     "de5ed30d02ffac788574b319ac9afcc4c1246212b0b015251ac055bd7ef17472"
+)
+ADR21_SOURCE_SHA256 = (
+    "1b6ca0051d3eb406b299f12b7d24a22b8d96990111bbca3fe922e6c17a5e45ee"
+)
+ADR21_MACHINE_BLOCK_SHA256 = (
+    "80e195ec795e8702bc4fccf13916ae039e04600af99956e4b46f4ca307d05567"
 )
 ADR10_BEHAVIOR_TEMPLATE_SHA256 = (
     "dde30eac076f48629f7002532704b8a14db254e7ad61680f7cc4f8b8a10216ce"
@@ -1134,6 +1147,39 @@ def expected_fixed_decisions_from_source() -> list[dict[str, Any]]:
     return expected
 
 
+def _owner_resolution_is_coherent(row: dict[str, Any]) -> bool:
+    """ADR-0017 OWNER-RESOLVE-002/-003: a row is unresolved or fully bound.
+
+    Unresolved: status is OWNER_DECISION_REQUIRED and both reference fields are
+    null. Resolved: status is ACCEPTED, `owner_decision_ref` is a complete
+    TypedArtifactRefV1 with artifact_type `human_decision`, and
+    `owner_decision_digest` equals its artifact_digest.
+
+    A half-resolved row, a bare-string reference, a mismatched digest, or an
+    ACCEPTED row with no reference all return False and therefore fail closed.
+    This generalises the previous "reference is always null" check without
+    weakening it: an unresolved row is rejected on exactly the same terms as
+    before.
+    """
+
+    status = row.get("status")
+    ref = row.get("owner_decision_ref")
+    digest = row.get("owner_decision_digest")
+    if status == "OWNER_DECISION_REQUIRED":
+        return ref is None and digest is None
+    if status != "ACCEPTED":
+        return False
+    if not isinstance(ref, dict) or not isinstance(digest, str):
+        return False
+    if set(ref) != {"artifact_type", "artifact_ref", "artifact_digest"}:
+        return False
+    if ref["artifact_type"] != "human_decision":
+        return False
+    if not isinstance(ref["artifact_ref"], str) or not ref["artifact_ref"]:
+        return False
+    return ref["artifact_digest"] == digest
+
+
 def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
     """Independently project the accepted ADR-0013 catalog."""
 
@@ -1192,6 +1238,16 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
         str(len(candidates)),
     )
     catalog = candidates[0]
+    # ADR-0017 OWNER-RESOLVE-002. Mirror the generator: `owner_decision_digest`
+    # is the generated pairing for `owner_decision_ref` and is defaulted here
+    # rather than required in the ADR-0013 source. Both sides must default
+    # identically or the projection and the source disagree.
+    if isinstance(catalog, dict) and isinstance(
+        catalog.get("owner_decisions"), list
+    ):
+        for _row in catalog["owner_decisions"]:
+            if isinstance(_row, dict):
+                _row.setdefault("owner_decision_digest", None)
     require(
         set(catalog)
         == {
@@ -1928,6 +1984,7 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
             "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
         ),
         "owner_decision_ref": None,
+        "owner_decision_digest": None,
         "default": None,
         "absence_outcome": "BLOCK",
         "activation_without_decision": "DENIED",
@@ -2017,6 +2074,7 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
         "decision_subject",
         "required_decision_artifact",
         "owner_decision_ref",
+        "owner_decision_digest",
         "default",
         "absence_outcome",
         "activation_without_decision",
@@ -2090,6 +2148,7 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
             scalar_fields = expected_fields - {
                 "source_end_line",
                 "owner_decision_ref",
+                "owner_decision_digest",
                 "default",
             }
             require(
@@ -2155,7 +2214,7 @@ def expected_hermes_research_promotions_from_source() -> dict[str, Any]:
                         "ACCEPTED_ADR_WITH_PREDECLARED_"
                         "ACCEPTANCE_TEST"
                     )
-                    and row["owner_decision_ref"] is None
+                    and _owner_resolution_is_coherent(row)
                     and row["default"] is None
                     and row["absence_outcome"] == "BLOCK"
                     and row["activation_without_decision"] == "DENIED",
@@ -2409,9 +2468,14 @@ def hermes_research_promotion_registry_errors(
                 "HERMES-OWNER-DECISION-"
             )
         ):
+            # ADR-0017 OWNER-RESOLVE-001/-002/-003/-007. The fail-closed
+            # check is generalised, never relaxed: an unresolved row is
+            # rejected on exactly the prior terms, and a resolved row must
+            # carry a complete, digest-bound, human_decision reference.
             if (
-                status != "OWNER_DECISION_REQUIRED"
-                or row.get("owner_decision_ref") is not None
+                status
+                not in {"OWNER_DECISION_REQUIRED", "ACCEPTED"}
+                or not _owner_resolution_is_coherent(row)
                 or row.get("default") is not None
                 or row.get("absence_outcome") != "BLOCK"
                 or row.get("activation_without_decision") != "DENIED"
@@ -2422,9 +2486,16 @@ def hermes_research_promotion_registry_errors(
                 )
             ):
                 errors.add("OWNER_FAIL_CLOSED")
+            # OWNER-RESOLVE-004: resolution lifts the block and records no
+            # runtime evidence. NOT_ASSESSED is never a pass.
+            expected_runtime_status = (
+                "NOT_ASSESSED"
+                if status == "ACCEPTED"
+                else "BLOCKED_OWNER_DECISION_REQUIRED"
+            )
             if (
                 row.get("runtime_validation_status")
-                != "BLOCKED_OWNER_DECISION_REQUIRED"
+                != expected_runtime_status
             ):
                 errors.add("RUNTIME_OVERCLAIM")
         elif (
@@ -13339,6 +13410,162 @@ def validate_decision_binding(binding: dict[str, Any]) -> None:
     )
 
 
+def adr21_machine_lineage_contract() -> dict[str, Any]:
+    """Independently parse and bind ADR-0021's marked projection."""
+
+    require(
+        hashlib.sha256(LEGACY_TEST_LINEAGE_ADR.read_bytes()).hexdigest()
+        == ADR21_SOURCE_SHA256,
+        "ADR21_SOURCE_DIGEST",
+        "",
+    )
+    text = LEGACY_TEST_LINEAGE_ADR.read_text(encoding="utf-8")
+    matches = re.findall(
+        (
+            r"<!-- BEGIN ADR21 LEGACY TEST LINEAGE APPLICABILITY -->"
+            r"\s*```yaml\n(.*?)\n```\s*"
+            r"<!-- END ADR21 LEGACY TEST LINEAGE APPLICABILITY -->"
+        ),
+        text,
+        flags=re.DOTALL,
+    )
+    require(
+        len(matches) == 1,
+        "ADR21_LINEAGE_CONTRACT_CARDINALITY",
+        str(len(matches)),
+    )
+    require(
+        hashlib.sha256(matches[0].encode("utf-8")).hexdigest()
+        == ADR21_MACHINE_BLOCK_SHA256,
+        "ADR21_LINEAGE_CONTRACT_DIGEST",
+        "",
+    )
+    wrapper = yaml.load(matches[0], Loader=DuplicateKeyLoader)
+    require(
+        isinstance(wrapper, dict)
+        and set(wrapper) == {"legacy_test_lineage_applicability"},
+        "ADR21_LINEAGE_CONTRACT_WRAPPER",
+        "",
+    )
+    contract = wrapper["legacy_test_lineage_applicability"]
+    require(
+        isinstance(contract, dict)
+        and set(contract)
+        == {
+            "schema_version",
+            "policy_id",
+            "version",
+            "inherited_baseline",
+            "exact_noninherited_lineage",
+            "outcomes",
+            "missing_tests_result",
+        },
+        "ADR21_LINEAGE_CONTRACT_FIELD_SET",
+        "",
+    )
+    require(
+        contract["schema_version"]
+        == "legacy-test-lineage-applicability/v1"
+        and contract["policy_id"]
+        == "RANEX-LEGACY-TEST-LINEAGE-APPLICABILITY-1.0"
+        and contract["version"] == "1.0.0"
+        and contract["missing_tests_result"] == "FAIL",
+        "ADR21_LINEAGE_CONTRACT_IDENTITY",
+        "",
+    )
+    return contract
+
+
+def validate_legacy_test_lineage_contract(
+    contract: dict[str, Any],
+    legacy_policy: dict[str, Any],
+) -> None:
+    """Close the generated projection against both accepted ADRs."""
+
+    expected = {
+        **adr21_machine_lineage_contract(),
+        "decision_binding": {
+            "decision_id": "ADR-0021",
+            "path": (
+                "docs/architecture/decisions/"
+                "ADR-0021-limit-adr-0010-to-inherited-lineage.md"
+            ),
+            "digest": "sha256:" + ADR21_SOURCE_SHA256,
+            "status": "ACCEPTED_PAPER_DECISION",
+            "runtime_enactment_status": "NOT_ASSESSED",
+        },
+    }
+    require(
+        contract == expected,
+        "ADR21_LINEAGE_PROJECTION",
+        "",
+    )
+    validate_decision_binding(contract["decision_binding"])
+    baseline = contract["inherited_baseline"]
+    require(
+        baseline["source_commit_sha1"]
+        == legacy_policy["baseline"]["source_commit_sha1"]
+        and baseline["baseline_id"]
+        == legacy_policy["baseline"]["baseline_id"]
+        and baseline["file_count"]
+        == legacy_policy["baseline"]["file_count"]
+        and baseline["file_manifest_sha256"]
+        == legacy_policy["baseline"]["file_manifest_sha256"],
+        "ADR21_ADR10_BASELINE_BINDING",
+        "",
+    )
+    lineage = contract["exact_noninherited_lineage"]
+    require(
+        set(lineage)
+        == {
+            "root_commit_sha1",
+            "boundary_commit_sha1",
+            "boundary_committed_test_path_count",
+            "boundary_ancestry_test_commit_count",
+            "boundary_baseline_path_intersection_count",
+            "bootstrap_authorization_ref",
+            "bootstrap_authorization_sha256",
+            "walking_skeleton_definition_ref",
+            "walking_skeleton_definition_sha256",
+        }
+        and lineage["root_commit_sha1"]
+        == "4ee007fcbe40b1afa7c362767005cf2f4508fc3d"
+        and lineage["boundary_commit_sha1"]
+        == "f2c04c1674282052e26648b756481da337b45458"
+        and lineage["boundary_committed_test_path_count"] == 0
+        and lineage["boundary_ancestry_test_commit_count"] == 0
+        and lineage["boundary_baseline_path_intersection_count"] == 0
+        and lineage["bootstrap_authorization_ref"]
+        == (
+            "architecture/records/bootstrap-authorizations/"
+            "BOOTSTRAP-AUTH-001.md"
+        )
+        and lineage["bootstrap_authorization_sha256"]
+        == "f517be8da802aee6fe46dfa4293da294b618cb982bd836413b3663bff3ee51d8"
+        and lineage["walking_skeleton_definition_ref"]
+        == (
+            "docs/architecture/reviews/"
+            "2026-07-31-walking-skeleton-definition.md"
+        )
+        and lineage["walking_skeleton_definition_sha256"]
+        == "368d5e415f76ebb5062f58a8692a61ea68df650016aab821c68d1e04dbdadc5a",
+        "ADR21_EXACT_LINEAGE_BINDING",
+        "",
+    )
+    require(
+        contract["outcomes"]
+        == {
+            "inherited_descendant": "ADR0010_APPLIES",
+            "exact_noninherited_descendant": (
+                "NOT_APPLICABLE_NO_INHERITED_SUBJECT"
+            ),
+            "any_other_non_descendant": "UNKNOWN_BLOCKING",
+        },
+        "ADR21_OUTCOME_BINDING",
+        "",
+    )
+
+
 def legacy_test_policy_rows(
     policy: dict[str, Any],
 ) -> list[dict[str, str]]:
@@ -20146,20 +20373,297 @@ def validate_legacy_test_snapshot(
     }
 
 
+def git_lineage_stdout(
+    repository: Path,
+    arguments: list[str],
+    failure_code: str,
+) -> bytes:
+    result = subprocess.run(
+        ["git", *arguments],
+        cwd=repository,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    require(
+        result.returncode == 0,
+        failure_code,
+        result.stderr.decode("utf-8", errors="replace").strip(),
+    )
+    return result.stdout
+
+
+def git_commit_is_ancestor(
+    repository: Path,
+    ancestor: str,
+    descendant: str,
+) -> bool:
+    result = subprocess.run(
+        ["git", "merge-base", "--is-ancestor", ancestor, descendant],
+        cwd=repository,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    require(
+        result.returncode in {0, 1},
+        "ADR21_GIT_ANCESTRY_UNRESOLVED",
+        result.stderr.decode("utf-8", errors="replace").strip(),
+    )
+    return result.returncode == 0
+
+
+def observe_legacy_test_lineage(
+    contract: dict[str, Any],
+    legacy_policy: dict[str, Any],
+    repository: Path,
+    validation_commit: str = "HEAD",
+) -> dict[str, Any]:
+    lineage = contract["exact_noninherited_lineage"]
+    baseline_paths = {
+        row["path"] for row in legacy_test_policy_rows(legacy_policy)
+    }
+    resolved_validation_commit = git_lineage_stdout(
+        repository,
+        ["rev-parse", f"{validation_commit}^{{commit}}"],
+        "ADR21_VALIDATION_COMMIT_UNRESOLVED",
+    ).decode("ascii").strip()
+    source_commit = contract["inherited_baseline"]["source_commit_sha1"]
+    boundary_commit = lineage["boundary_commit_sha1"]
+    root_commit = lineage["root_commit_sha1"]
+    boundary_test_paths = {
+        line
+        for line in git_lineage_stdout(
+            repository,
+            [
+                "ls-tree",
+                "-r",
+                "--name-only",
+                boundary_commit,
+                "--",
+                "tests",
+            ],
+            "ADR21_BOUNDARY_TREE_UNRESOLVED",
+        )
+        .decode("utf-8")
+        .splitlines()
+        if line
+    }
+    boundary_test_commits = [
+        line
+        for line in git_lineage_stdout(
+            repository,
+            ["rev-list", boundary_commit, "--", "tests"],
+            "ADR21_BOUNDARY_ANCESTRY_UNRESOLVED",
+        )
+        .decode("ascii")
+        .splitlines()
+        if line
+    ]
+    boundary_roots = [
+        line
+        for line in git_lineage_stdout(
+            repository,
+            ["rev-list", "--max-parents=0", boundary_commit],
+            "ADR21_BOUNDARY_ROOT_UNRESOLVED",
+        )
+        .decode("ascii")
+        .splitlines()
+        if line
+    ]
+
+    def source_digest_matches(path_key: str, digest_key: str) -> bool:
+        source_path = repository / lineage[path_key]
+        return (
+            source_path.is_file()
+            and not source_path.is_symlink()
+            and hashlib.sha256(source_path.read_bytes()).hexdigest()
+            == lineage[digest_key]
+        )
+
+    return {
+        "validation_commit_sha1": resolved_validation_commit,
+        "source_commit_is_ancestor": git_commit_is_ancestor(
+            repository,
+            source_commit,
+            resolved_validation_commit,
+        ),
+        "boundary_commit_is_ancestor": git_commit_is_ancestor(
+            repository,
+            boundary_commit,
+            resolved_validation_commit,
+        ),
+        "root_is_boundary_ancestor": git_commit_is_ancestor(
+            repository,
+            root_commit,
+            boundary_commit,
+        ),
+        "boundary_root_commit_sha1": (
+            boundary_roots[0] if len(boundary_roots) == 1 else ""
+        ),
+        "boundary_committed_test_path_count": len(
+            boundary_test_paths
+        ),
+        "boundary_ancestry_test_commit_count": len(
+            boundary_test_commits
+        ),
+        "boundary_baseline_path_intersection_count": len(
+            boundary_test_paths & baseline_paths
+        ),
+        "bootstrap_authorization_digest_matches": (
+            source_digest_matches(
+                "bootstrap_authorization_ref",
+                "bootstrap_authorization_sha256",
+            )
+        ),
+        "walking_skeleton_definition_digest_matches": (
+            source_digest_matches(
+                "walking_skeleton_definition_ref",
+                "walking_skeleton_definition_sha256",
+            )
+        ),
+    }
+
+
+def resolve_legacy_test_lineage_outcome(
+    contract: dict[str, Any],
+    facts: dict[str, Any],
+) -> str:
+    outcomes = contract["outcomes"]
+    if facts["source_commit_is_ancestor"]:
+        return outcomes["inherited_descendant"]
+    lineage = contract["exact_noninherited_lineage"]
+    exact_noninherited = (
+        facts["boundary_commit_is_ancestor"]
+        and facts["root_is_boundary_ancestor"]
+        and facts["boundary_root_commit_sha1"]
+        == lineage["root_commit_sha1"]
+        and not facts["source_commit_is_ancestor"]
+        and facts["boundary_committed_test_path_count"]
+        == lineage["boundary_committed_test_path_count"]
+        and facts["boundary_ancestry_test_commit_count"]
+        == lineage["boundary_ancestry_test_commit_count"]
+        and facts["boundary_baseline_path_intersection_count"]
+        == lineage["boundary_baseline_path_intersection_count"]
+        and facts["bootstrap_authorization_digest_matches"]
+        and facts["walking_skeleton_definition_digest_matches"]
+    )
+    if exact_noninherited:
+        return outcomes["exact_noninherited_descendant"]
+    return outcomes["any_other_non_descendant"]
+
+
+def require_production_test_root(present: bool) -> None:
+    require(
+        present,
+        "PRODUCTION_TEST_ROOT_MISSING",
+        "tests",
+    )
+
+
+def validate_noninherited_test_snapshot(
+    contract: dict[str, Any],
+    legacy_policy: dict[str, Any],
+    snapshot_rows: list[dict[str, str]],
+) -> dict[str, Any]:
+    require(
+        not legacy_policy["change_exceptions"]
+        and not legacy_policy["migration_proofs"]
+        and not legacy_policy["cutover_removal_records"],
+        "ADR21_INVENTED_LEGACY_PROVENANCE",
+        "",
+    )
+    current_by_path = {row["path"]: row for row in snapshot_rows}
+    require(
+        len(current_by_path) == len(snapshot_rows),
+        "LEGACY_TEST_CURRENT_PATH_DUPLICATE",
+        "",
+    )
+    baseline_paths = {
+        row["path"] for row in legacy_test_policy_rows(legacy_policy)
+    }
+    reintroduced = sorted(set(current_by_path) & baseline_paths)
+    require(
+        not reintroduced,
+        "ADR21_LEGACY_BASELINE_RECONTAMINATION",
+        ",".join(reintroduced),
+    )
+    for path, row in sorted(current_by_path.items()):
+        parts = Path(path).parts
+        require(
+            len(parts) >= 2 and parts[0] == "tests",
+            "LEGACY_TEST_PATH_OUTSIDE_SCOPE",
+            path,
+        )
+        require(
+            len(parts) > 2,
+            "LEGACY_TEST_DIRECT_ADDITION",
+            path,
+        )
+        observed_root = f"tests/{parts[1]}"
+        require(
+            observed_root in EXPECTED_TEST_ROOTS,
+            "LEGACY_TEST_UNREGISTERED_ROOT",
+            path,
+        )
+        require(
+            row["mode"] in {"100644", "100755"},
+            "LEGACY_TEST_GIT_NONREGULAR_MODE",
+            path,
+        )
+        if observed_root == "tests/fixtures":
+            require(
+                len(parts) >= 4,
+                "LEGACY_TEST_FIXTURE_OWNER_MISSING",
+                path,
+            )
+        if path.endswith(".py") and row.get("source") is not None:
+            try:
+                imported_modules(ROOT / path, row["source"])
+            except SyntaxError as exc:
+                raise ContractFailure(
+                    f"LEGACY_TEST_PYTHON_PARSE:{path}:{exc.msg}"
+                ) from exc
+    return {
+        "validation_status": "CANONICAL_TOPOLOGY_PASS",
+        "canonical_test_topology_status": (
+            "NOT_APPLICABLE_NO_INHERITED_SUBJECT"
+        ),
+        "baseline_file_count": contract["inherited_baseline"][
+            "file_count"
+        ],
+        "remaining_inherited_file_count": 0,
+        "migrated_or_retired_file_count": 0,
+        "changed_in_place_file_count": 0,
+        "new_canonical_file_count": len(snapshot_rows),
+    }
+
+
+def validate_test_snapshot_for_lineage(
+    contract: dict[str, Any],
+    legacy_policy: dict[str, Any],
+    snapshot_rows: list[dict[str, str]],
+    outcome: str,
+) -> dict[str, Any]:
+    if outcome == contract["outcomes"]["inherited_descendant"]:
+        return validate_legacy_test_snapshot(
+            legacy_policy,
+            snapshot_rows,
+        )
+    if outcome == contract["outcomes"]["exact_noninherited_descendant"]:
+        return validate_noninherited_test_snapshot(
+            contract,
+            legacy_policy,
+            snapshot_rows,
+        )
+    raise ContractFailure(
+        "ADR21_LEGACY_TEST_LINEAGE_UNKNOWN_BLOCKING:" + outcome
+    )
+
+
 def validate_production_test_layout(checks: Counter[str]) -> dict[str, Any]:
     tests_root = ROOT / "tests"
-    if not tests_root.is_dir():
-        checks["observed_test_roots"] = 0
-        checks["production_test_layout_files_scanned"] = 0
-        return {
-            "validation_status": "NOT_ASSESSED",
-            "canonical_test_topology_status": "NOT_ASSESSED",
-            "baseline_file_count": 2444,
-            "remaining_inherited_file_count": None,
-            "migrated_or_retired_file_count": None,
-            "changed_in_place_file_count": None,
-            "new_canonical_file_count": None,
-        }
+    require_production_test_root(tests_root.is_dir())
     snapshot_rows: list[dict[str, str]] = []
     observed_roots: set[str] = set()
     for path in sorted(tests_root.rglob("*")):
@@ -20191,9 +20695,28 @@ def validate_production_test_layout(checks: Counter[str]) -> dict[str, Any]:
         snapshot_rows.append(row)
     checks["observed_test_roots"] = len(observed_roots)
     checks["production_test_layout_files_scanned"] = len(snapshot_rows)
-    return validate_legacy_test_snapshot(
-        load_json(CONTRACTS / "legacy-test-layout-policy-v2.json"),
+    legacy_policy = load_json(
+        CONTRACTS / "legacy-test-layout-policy-v2.json"
+    )
+    lineage_contract = load_json(
+        CONTRACTS / "legacy-test-lineage-applicability-v1.json"
+    )
+    facts = observe_legacy_test_lineage(
+        lineage_contract,
+        legacy_policy,
+        ROOT,
+    )
+    outcome = resolve_legacy_test_lineage_outcome(
+        lineage_contract,
+        facts,
+    )
+    checks["adr21_lineage_provenance_facts"] = 7
+    checks["adr21_lineage_applicability_resolutions"] += 1
+    return validate_test_snapshot_for_lineage(
+        lineage_contract,
+        legacy_policy,
         snapshot_rows,
+        outcome,
     )
 
 
@@ -20312,6 +20835,189 @@ def validate_schema_documents(checks: Counter[str]) -> dict[str, dict[str, Any]]
         ] += count_undecided_array_elements(schema)
     require(len(ids) == len(set(ids)), "SCHEMA_ID_DUPLICATE", "duplicate $id")
     return schemas
+
+
+def historical_schema_exception_paths() -> set[str]:
+    """Derive the historical schema exception from the accepted ADR."""
+
+    historical_rows = adr10_machine_record_contract()[
+        "compatibility_impact"
+    ]["historical_artifact_authority"]["rows"]
+    return {
+        row["path"]
+        for row in historical_rows
+        if row["artifact_class"] == "HISTORICAL_SCHEMA"
+        and row["disposition"] == "READ_ONLY_SUPERSEDED"
+    }
+
+
+def validate_schema_registry_inventory(
+    schemas: dict[str, dict[str, Any]],
+    registry: dict[str, Any],
+    historical_exception_paths: set[str],
+    checks: Counter[str],
+) -> None:
+    """Reconcile active, historical, and on-disk schema inventories."""
+
+    registry_path = "architecture/contracts/schema-registry.json"
+    expected_registry_fields = {
+        "registry_id",
+        "version",
+        "status",
+        "generated_by",
+        "schema_count",
+        "entries",
+    }
+    require(
+        isinstance(registry, dict)
+        and set(registry) == expected_registry_fields
+        and registry.get("registry_id") == "REG-SCHEMAS-001"
+        and registry.get("version") == "1.0.0"
+        and registry.get("status")
+        == "ACTIVE_DOCUMENTATION_CONTRACT"
+        and registry.get("generated_by")
+        == "scripts/architecture/generate_contracts.py"
+        and isinstance(registry.get("entries"), list),
+        "SCHEMA_REGISTRY_METADATA",
+        registry_path,
+    )
+    entries = registry["entries"]
+    require(
+        registry["schema_count"] == len(entries),
+        "SCHEMA_REGISTRY_COUNT",
+        registry_path,
+    )
+
+    expected_entry_fields = {
+        "schema_id",
+        "path",
+        "digest",
+        "draft",
+        "status",
+    }
+    paths: list[str] = []
+    schema_ids: set[str] = set()
+    for index, entry in enumerate(entries):
+        location = f"{registry_path}#entries[{index}]"
+        require(
+            isinstance(entry, dict)
+            and set(entry) == expected_entry_fields,
+            "SCHEMA_REGISTRY_ROW_SHAPE",
+            location,
+        )
+        path = entry["path"]
+        require(
+            isinstance(path, str)
+            and path.startswith("schemas/")
+            and path.endswith(".schema.json")
+            and path == Path(path).as_posix()
+            and not Path(path).is_absolute()
+            and ".." not in Path(path).parts,
+            "SCHEMA_REGISTRY_PATH",
+            str(path),
+        )
+        require(
+            path not in paths,
+            "SCHEMA_REGISTRY_PATH_DUPLICATE",
+            path,
+        )
+        paths.append(path)
+        schema_id = entry["schema_id"]
+        require(
+            isinstance(schema_id, str)
+            and schema_id not in schema_ids,
+            "SCHEMA_REGISTRY_SCHEMA_ID_DUPLICATE",
+            path,
+        )
+        schema_ids.add(schema_id)
+        checks["schema_registry_entries"] += 1
+
+    expected_paths = sorted(
+        paths,
+        key=lambda value: value.encode("utf-8"),
+    )
+    if paths != expected_paths:
+        mismatch_index = next(
+            index
+            for index, (actual, expected) in enumerate(
+                zip(paths, expected_paths, strict=True)
+            )
+            if actual != expected
+        )
+        raise ContractFailure(
+            "SCHEMA_REGISTRY_PATH_ORDER:"
+            f"{paths[mismatch_index]}"
+        )
+
+    active_paths = set(paths)
+    disk_paths = set(schemas)
+    overlap = active_paths & historical_exception_paths
+    if overlap:
+        raise ContractFailure(
+            "SCHEMA_REGISTRY_ACTIVE_HISTORICAL_OVERLAP:"
+            f"{sorted(overlap)[0]}"
+        )
+    unclassified = disk_paths - (
+        active_paths | historical_exception_paths
+    )
+    if unclassified:
+        raise ContractFailure(
+            "SCHEMA_REGISTRY_UNCLASSIFIED_DISK_PATH:"
+            f"{sorted(unclassified)[0]}"
+        )
+    missing = (
+        active_paths | historical_exception_paths
+    ) - disk_paths
+    if missing:
+        path = sorted(missing)[0]
+        code = (
+            "SCHEMA_REGISTRY_ACTIVE_PATH_MISSING"
+            if path in active_paths
+            else "SCHEMA_REGISTRY_HISTORICAL_PATH_MISSING"
+        )
+        raise ContractFailure(f"{code}:{path}")
+
+    for entry in entries:
+        path = entry["path"]
+        schema = schemas[path]
+        require(
+            entry["schema_id"] == schema.get("$id"),
+            "SCHEMA_REGISTRY_SCHEMA_ID",
+            path,
+        )
+        require(
+            entry["digest"] == file_digest(ROOT / path),
+            "SCHEMA_REGISTRY_DIGEST",
+            path,
+        )
+        require(
+            entry["draft"] == "2020-12",
+            "SCHEMA_REGISTRY_DRAFT",
+            path,
+        )
+        require(
+            entry["status"]
+            == "ACTIVE_DOCUMENTATION_CONTRACT",
+            "SCHEMA_REGISTRY_STATUS",
+            path,
+        )
+
+    checks["schema_registry_historical_exceptions"] += len(
+        historical_exception_paths
+    )
+    checks["schema_inventory_paths"] += len(disk_paths)
+
+
+def validate_schema_registry(
+    schemas: dict[str, dict[str, Any]],
+    checks: Counter[str],
+) -> None:
+    validate_schema_registry_inventory(
+        schemas,
+        load_json(CONTRACTS / "schema-registry.json"),
+        historical_schema_exception_paths(),
+        checks,
+    )
 
 
 def count_undecided_array_elements(node: Any) -> int:
@@ -25035,6 +25741,20 @@ def validate_registries(
         schemas,
         checks,
     )
+    legacy_test_lineage = load_json(
+        CONTRACTS / "legacy-test-lineage-applicability-v1.json"
+    )
+    jsonschema.Draft202012Validator(
+        schemas[
+            "schemas/common/"
+            "legacy-test-lineage-applicability-v1.schema.json"
+        ]
+    ).validate(legacy_test_lineage)
+    validate_legacy_test_lineage_contract(
+        legacy_test_lineage,
+        legacy_test_policy,
+    )
+    checks["adr21_lineage_contracts"] += 1
     validate_adr10_authority_catalogs(schemas, checks)
     test_health_registries = validate_test_health_registries(
         schemas,
@@ -31558,6 +32278,338 @@ def validate_semantic_fixtures(
     validate_adr10_compatibility_fixtures(checks)
     validate_adr10_authority_fixtures(checks)
     validate_adr10_scope_fixtures(checks)
+    validate_adr21_lineage_acceptance_tests(checks)
+
+
+def validate_adr21_lineage_acceptance_tests(
+    checks: Counter[str],
+) -> None:
+    """Execute the ten tests predeclared by accepted ADR-0021."""
+
+    contract = load_json(
+        CONTRACTS / "legacy-test-lineage-applicability-v1.json"
+    )
+    legacy_policy = load_json(
+        CONTRACTS / "legacy-test-layout-policy-v2.json"
+    )
+    exact_outcome = contract["outcomes"][
+        "exact_noninherited_descendant"
+    ]
+    inherited_outcome = contract["outcomes"]["inherited_descendant"]
+    unknown_outcome = contract["outcomes"][
+        "any_other_non_descendant"
+    ]
+    exact_facts: dict[str, Any] = {
+        "validation_commit_sha1": (
+            "f2c04c1674282052e26648b756481da337b45458"
+        ),
+        "source_commit_is_ancestor": False,
+        "boundary_commit_is_ancestor": True,
+        "root_is_boundary_ancestor": True,
+        "boundary_root_commit_sha1": (
+            "4ee007fcbe40b1afa7c362767005cf2f4508fc3d"
+        ),
+        "boundary_committed_test_path_count": 0,
+        "boundary_ancestry_test_commit_count": 0,
+        "boundary_baseline_path_intersection_count": 0,
+        "bootstrap_authorization_digest_matches": True,
+        "walking_skeleton_definition_digest_matches": True,
+    }
+
+    # 1. An inherited descendant executes the unchanged ADR-0010 comparison.
+    inherited_facts = copy.deepcopy(exact_facts)
+    inherited_facts["source_commit_is_ancestor"] = True
+    require(
+        resolve_legacy_test_lineage_outcome(
+            contract,
+            inherited_facts,
+        )
+        == inherited_outcome,
+        "ADR21_TEST_01_INHERITED_SELECTION",
+        "",
+    )
+    inherited_snapshot = [
+        {
+            "path": row["path"],
+            "mode": row["mode"],
+            "content_sha256": row["content_sha256"],
+        }
+        for row in legacy_test_policy_rows(legacy_policy)
+    ]
+    inherited_result = validate_test_snapshot_for_lineage(
+        contract,
+        legacy_policy,
+        inherited_snapshot,
+        inherited_outcome,
+    )
+    require(
+        inherited_result["validation_status"]
+        == "MIGRATION_EXCEPTION_ACTIVE"
+        and inherited_result["remaining_inherited_file_count"] == 2444,
+        "ADR21_TEST_01_ADR10_COMPARISON",
+        "",
+    )
+    checks["adr21_acceptance_tests"] += 1
+
+    # 2. Every one of the seven provenance conditions is necessary.
+    require(
+        resolve_legacy_test_lineage_outcome(contract, exact_facts)
+        == exact_outcome,
+        "ADR21_TEST_02_EXACT_LINEAGE",
+        "",
+    )
+    provenance_mutations: list[tuple[str, str, Any]] = [
+        ("boundary", "boundary_commit_is_ancestor", False),
+        ("root", "root_is_boundary_ancestor", False),
+        ("source", "source_commit_is_ancestor", True),
+        ("boundary-tree", "boundary_committed_test_path_count", 1),
+        ("ancestry-tree", "boundary_ancestry_test_commit_count", 1),
+        (
+            "baseline-intersection",
+            "boundary_baseline_path_intersection_count",
+            1,
+        ),
+        (
+            "bound-sources",
+            "bootstrap_authorization_digest_matches",
+            False,
+        ),
+    ]
+    for case_id, key, value in provenance_mutations:
+        facts = copy.deepcopy(exact_facts)
+        facts[key] = value
+        require(
+            resolve_legacy_test_lineage_outcome(contract, facts)
+            != exact_outcome,
+            "ADR21_TEST_02_PROVENANCE_NOT_REQUIRED",
+            case_id,
+        )
+        checks["adr21_provenance_negative_cases"] += 1
+    checks["adr21_acceptance_tests"] += 1
+
+    # 3. Canonical ADR-0008 tests need no foreign migration proof.
+    canonical_rows = [
+        {
+            "path": "tests/unit/process_assurance/test_lineage.py",
+            "mode": "100644",
+            "content_sha256": hashlib.sha256(
+                b"def test_lineage():\\n    assert True\\n"
+            ).hexdigest(),
+            "source": "def test_lineage():\n    assert True\n",
+        }
+    ]
+    canonical_result = validate_test_snapshot_for_lineage(
+        contract,
+        legacy_policy,
+        canonical_rows,
+        exact_outcome,
+    )
+    require(
+        canonical_result["validation_status"]
+        == "CANONICAL_TOPOLOGY_PASS"
+        and canonical_result["migrated_or_retired_file_count"] == 0,
+        "ADR21_TEST_03_CANONICAL_TOPOLOGY",
+        "",
+    )
+    checks["adr21_acceptance_tests"] += 1
+
+    # 4. A missing production test root remains an exact blocking failure.
+    try:
+        require_production_test_root(False)
+    except ContractFailure as exc:
+        require(
+            str(exc).startswith("PRODUCTION_TEST_ROOT_MISSING:"),
+            "ADR21_TEST_04_WRONG_ERROR",
+            str(exc),
+        )
+    else:
+        raise ContractFailure("ADR21_TEST_04_MISSING_ROOT_ACCEPTED:")
+    checks["adr21_acceptance_tests"] += 1
+
+    # 5. Any other orphan lineage resolves UNKNOWN and the dispatcher blocks.
+    orphan_facts = copy.deepcopy(exact_facts)
+    orphan_facts["boundary_commit_is_ancestor"] = False
+    orphan_facts["boundary_root_commit_sha1"] = "0" * 40
+    orphan_outcome = resolve_legacy_test_lineage_outcome(
+        contract,
+        orphan_facts,
+    )
+    require(
+        orphan_outcome == unknown_outcome,
+        "ADR21_TEST_05_ORPHAN_NOT_UNKNOWN",
+        orphan_outcome,
+    )
+    try:
+        validate_test_snapshot_for_lineage(
+            contract,
+            legacy_policy,
+            canonical_rows,
+            orphan_outcome,
+        )
+    except ContractFailure as exc:
+        require(
+            str(exc).startswith(
+                "ADR21_LEGACY_TEST_LINEAGE_UNKNOWN_BLOCKING:"
+            ),
+            "ADR21_TEST_05_WRONG_ERROR",
+            str(exc),
+        )
+    else:
+        raise ContractFailure("ADR21_TEST_05_UNKNOWN_ACCEPTED:")
+    checks["adr21_acceptance_tests"] += 1
+
+    # 6. A later source-ancestor merge overrides the exact exception.
+    reactivated_facts = copy.deepcopy(exact_facts)
+    reactivated_facts["source_commit_is_ancestor"] = True
+    require(
+        resolve_legacy_test_lineage_outcome(
+            contract,
+            reactivated_facts,
+        )
+        == inherited_outcome,
+        "ADR21_TEST_06_NOT_REACTIVATED",
+        "",
+    )
+    checks["adr21_acceptance_tests"] += 1
+
+    # 7. Reintroducing one exact baseline path blocks.
+    baseline_row = legacy_test_policy_rows(legacy_policy)[0]
+    try:
+        validate_noninherited_test_snapshot(
+            contract,
+            legacy_policy,
+            [
+                {
+                    "path": baseline_row["path"],
+                    "mode": baseline_row["mode"],
+                    "content_sha256": baseline_row["content_sha256"],
+                }
+            ],
+        )
+    except ContractFailure as exc:
+        require(
+            str(exc).startswith(
+                "ADR21_LEGACY_BASELINE_RECONTAMINATION:"
+            ),
+            "ADR21_TEST_07_WRONG_ERROR",
+            str(exc),
+        )
+    else:
+        raise ContractFailure("ADR21_TEST_07_RECONTAMINATION_ACCEPTED:")
+    checks["adr21_acceptance_tests"] += 1
+
+    # 8. Each kind of invented legacy provenance blocks.
+    for collection in (
+        "change_exceptions",
+        "migration_proofs",
+        "cutover_removal_records",
+    ):
+        mutated_policy = copy.deepcopy(legacy_policy)
+        mutated_policy[collection] = [{"invented": True}]
+        try:
+            validate_noninherited_test_snapshot(
+                contract,
+                mutated_policy,
+                canonical_rows,
+            )
+        except ContractFailure as exc:
+            require(
+                str(exc).startswith(
+                    "ADR21_INVENTED_LEGACY_PROVENANCE:"
+                ),
+                "ADR21_TEST_08_WRONG_ERROR",
+                f"{collection}:{exc}",
+            )
+        else:
+            raise ContractFailure(
+                "ADR21_TEST_08_INVENTED_PROVENANCE_ACCEPTED:"
+                + collection
+            )
+        checks["adr21_invented_provenance_negative_cases"] += 1
+    checks["adr21_acceptance_tests"] += 1
+
+    # 9. Every predeclared identity/provenance mutation blocks.
+    contract_mutations: list[tuple[str, tuple[str, str], Any]] = [
+        (
+            "root",
+            ("exact_noninherited_lineage", "root_commit_sha1"),
+            "0" * 40,
+        ),
+        (
+            "boundary",
+            ("exact_noninherited_lineage", "boundary_commit_sha1"),
+            "0" * 40,
+        ),
+        (
+            "authorization-digest",
+            (
+                "exact_noninherited_lineage",
+                "bootstrap_authorization_sha256",
+            ),
+            "0" * 64,
+        ),
+        (
+            "definition-digest",
+            (
+                "exact_noninherited_lineage",
+                "walking_skeleton_definition_sha256",
+            ),
+            "0" * 64,
+        ),
+        (
+            "baseline-id",
+            ("inherited_baseline", "baseline_id"),
+            "OTHER-BASELINE",
+        ),
+        (
+            "baseline-count",
+            ("inherited_baseline", "file_count"),
+            2443,
+        ),
+        (
+            "baseline-manifest",
+            ("inherited_baseline", "file_manifest_sha256"),
+            "0" * 64,
+        ),
+    ]
+    for case_id, (section_name, field_name), value in contract_mutations:
+        mutated_contract = copy.deepcopy(contract)
+        mutated_contract[section_name][field_name] = value
+        try:
+            validate_legacy_test_lineage_contract(
+                mutated_contract,
+                legacy_policy,
+            )
+        except ContractFailure:
+            pass
+        else:
+            raise ContractFailure(
+                "ADR21_TEST_09_MUTATION_ACCEPTED:" + case_id
+            )
+        checks["adr21_contract_mutation_cases"] += 1
+    checks["adr21_acceptance_tests"] += 1
+
+    # 10. The complete existing ADR-0010 fixture matrices already ran.
+    require(
+        checks["adr10_record_schema_positive_cases"] == 5
+        and checks["adr10_compatibility_positive_cases"] == 5
+        and checks["adr10_compatibility_negative_cases"] == 20
+        and checks["adr10_authority_positive_cases"] == 3
+        and checks["adr10_authority_negative_cases"] == 44
+        and checks["adr10_scope_positive_cases"] == 4
+        and checks["adr10_scope_negative_cases"] == 17,
+        "ADR21_TEST_10_ADR10_FIXTURES",
+        "",
+    )
+    checks["adr21_acceptance_tests"] += 1
+    require(
+        checks["adr21_acceptance_tests"] == 10
+        and checks["adr21_provenance_negative_cases"] == 7
+        and checks["adr21_invented_provenance_negative_cases"] == 3
+        and checks["adr21_contract_mutation_cases"] == 7,
+        "ADR21_ACCEPTANCE_TEST_DENOMINATOR",
+        "",
+    )
 
 
 def validate_production_test_constructs(checks: Counter[str]) -> None:
@@ -31720,6 +32772,7 @@ def validate_contract_tree() -> int:
     }
     try:
         schemas = validate_schema_documents(checks)
+        validate_schema_registry(schemas, checks)
         validate_templates(schemas, checks)
         validate_registry_manifest(checks)
         tuples, domains = validate_registries(schemas, checks)

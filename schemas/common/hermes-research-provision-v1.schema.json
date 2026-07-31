@@ -176,8 +176,45 @@
           "pattern": "^[A-Z][A-Z0-9_]*$",
           "type": "string"
         },
+        "owner_decision_digest": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            }
+          ]
+        },
         "owner_decision_ref": {
-          "type": "null"
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "additionalProperties": false,
+              "properties": {
+                "artifact_digest": {
+                  "pattern": "^sha256:[0-9a-f]{64}$",
+                  "type": "string"
+                },
+                "artifact_ref": {
+                  "minLength": 1,
+                  "type": "string"
+                },
+                "artifact_type": {
+                  "const": "human_decision"
+                }
+              },
+              "required": [
+                "artifact_type",
+                "artifact_ref",
+                "artifact_digest"
+              ],
+              "type": "object"
+            }
+          ]
         },
         "provision_id": {
           "pattern": "^HERMES-OWNER-DECISION-[0-9]{3}$",
@@ -213,7 +250,10 @@
           "type": "integer"
         },
         "status": {
-          "const": "OWNER_DECISION_REQUIRED"
+          "enum": [
+            "OWNER_DECISION_REQUIRED",
+            "ACCEPTED"
+          ]
         }
       },
       "required": [
@@ -236,6 +276,7 @@
         "decision_subject",
         "required_decision_artifact",
         "owner_decision_ref",
+        "owner_decision_digest",
         "default",
         "absence_outcome",
         "activation_without_decision",

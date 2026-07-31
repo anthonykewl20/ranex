@@ -153,11 +153,24 @@ LEGACY_TEST_LAYOUT_ADR = (
     / "decisions"
     / "ADR-0010-bound-inherited-hermes-test-layout-migration.md"
 )
+LEGACY_TEST_LINEAGE_ADR = (
+    ROOT
+    / "docs"
+    / "architecture"
+    / "decisions"
+    / "ADR-0021-limit-adr-0010-to-inherited-lineage.md"
+)
 ADR10_SOURCE_SHA256 = (
     "45dcd9c90a3a40eb150b826030b211f42f8f53728e9acc749fde17c7df553beb"
 )
 ADR10_MACHINE_BLOCK_SHA256 = (
     "de5ed30d02ffac788574b319ac9afcc4c1246212b0b015251ac055bd7ef17472"
+)
+ADR21_SOURCE_SHA256 = (
+    "1b6ca0051d3eb406b299f12b7d24a22b8d96990111bbca3fe922e6c17a5e45ee"
+)
+ADR21_MACHINE_BLOCK_SHA256 = (
+    "80e195ec795e8702bc4fccf13916ae039e04600af99956e4b46f4ca307d05567"
 )
 ADR10_BEHAVIOR_TEMPLATE_SHA256 = (
     "dde30eac076f48629f7002532704b8a14db254e7ad61680f7cc4f8b8a10216ce"
@@ -262,7 +275,7 @@ SDLC_CONTROL_CATALOG_SHA256 = (
     "22316ad927b94b890341442d6d27940b7696e369dcbcf56d277aface504d7805"
 )
 ARCHITECTURE_PRACTICE_PROFILE_SHA256 = (
-    "4eedd6e10cc0c3598730aac0f25f8720a43504fdfcc4dea82f31486aecee6710"
+    "91ef34b1f8f8f3b7cee48556b1cf0117cb6bbd060bc9b2c4fe1770b1e851057f"
 )
 
 
@@ -857,6 +870,22 @@ PRODUCTION_EVIDENCE_OBLIGATIONS = [
 
 def read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
+
+
+def require_search(pattern: str, text: str, what: str) -> re.Match[str]:
+    """Return the match for `pattern`, or fail closed naming what was missing.
+
+    `re.search` returns `Optional[Match]`, so `re.search(...).group(1)` is a
+    latent `AttributeError` that the type checker reports as `missing-attribute`.
+    Behaviour on the matching path is unchanged; on the non-matching path this
+    raises a message naming the pattern instead of `NoneType has no attribute
+    'group'`.
+    """
+
+    match = re.search(pattern, text)
+    if match is None:
+        raise ValueError(f"{what}: no match for {pattern!r}")
+    return match
 
 
 class DuplicateKeyLoader(yaml.SafeLoader):
@@ -2809,7 +2838,7 @@ def parse_topology_decision() -> dict[str, Any]:
         )
     )
     return {
-        "rule_set_id": re.search(r'topology_rule_set: "([^"]+)"', text).group(1),
+        "rule_set_id": require_search(r'topology_rule_set: "([^"]+)"', text, "ADR-0007 topology rule set").group(1),
         "rules": parse_inline_rule_set(TOPOLOGY_ADR, "ORG"),
         "exception_classes": [
             {"exception_class": row[0], "scope": row[1]}
@@ -2849,7 +2878,7 @@ def parse_tdd_decision() -> dict[str, Any]:
             "ADR-0008 fitness IDs are empty or duplicated"
         )
     return {
-        "rule_set_id": re.search(r'tdd_rule_set: "([^"]+)"', text).group(1),
+        "rule_set_id": require_search(r'tdd_rule_set: "([^"]+)"', text, "ADR-0008 TDD rule set").group(1),
         "allowed_root_names": roots,
         "rules": parse_inline_rule_set(TDD_ADR, "TDD"),
         "exception_classes": [
@@ -4867,6 +4896,108 @@ def parse_legacy_test_layout_decision() -> dict[str, Any]:
     }
 
 
+def parse_legacy_test_lineage_applicability() -> dict[str, Any]:
+    if sha256_file(LEGACY_TEST_LINEAGE_ADR) != ADR21_SOURCE_SHA256:
+        raise ValueError("ADR-0021 source digest drift")
+    text = read(LEGACY_TEST_LINEAGE_ADR)
+    matches = re.findall(
+        (
+            r"<!-- BEGIN ADR21 LEGACY TEST LINEAGE APPLICABILITY -->"
+            r"\s*```yaml\n(.*?)\n```\s*"
+            r"<!-- END ADR21 LEGACY TEST LINEAGE APPLICABILITY -->"
+        ),
+        text,
+        flags=re.DOTALL,
+    )
+    if len(matches) != 1:
+        raise ValueError(
+            "ADR-0021 marked lineage-applicability block count drift"
+        )
+    if (
+        hashlib.sha256(matches[0].encode("utf-8")).hexdigest()
+        != ADR21_MACHINE_BLOCK_SHA256
+    ):
+        raise ValueError("ADR-0021 marked applicability digest drift")
+    wrapper = load_yaml_text_strict(matches[0])
+    if set(wrapper) != {"legacy_test_lineage_applicability"}:
+        raise ValueError(
+            "ADR-0021 marked applicability wrapper drift"
+        )
+    contract = wrapper["legacy_test_lineage_applicability"]
+    expected_keys = {
+        "schema_version",
+        "policy_id",
+        "version",
+        "inherited_baseline",
+        "exact_noninherited_lineage",
+        "outcomes",
+        "missing_tests_result",
+    }
+    expected_baseline = {
+        "source_commit_sha1": (
+            "0533e1eaf50ace0eb84435a5c3de05e939fd4daa"
+        ),
+        "baseline_id": "HERMES-TEST-BASELINE-001",
+        "file_count": 2444,
+        "file_manifest_sha256": (
+            "e550a598da0e226a94a7b15c9a0ace9c48a58e04df146bbe044a7cedcc41e463"
+        ),
+    }
+    expected_lineage = {
+        "root_commit_sha1": (
+            "4ee007fcbe40b1afa7c362767005cf2f4508fc3d"
+        ),
+        "boundary_commit_sha1": (
+            "f2c04c1674282052e26648b756481da337b45458"
+        ),
+        "boundary_committed_test_path_count": 0,
+        "boundary_ancestry_test_commit_count": 0,
+        "boundary_baseline_path_intersection_count": 0,
+        "bootstrap_authorization_ref": (
+            "architecture/records/bootstrap-authorizations/"
+            "BOOTSTRAP-AUTH-001.md"
+        ),
+        "bootstrap_authorization_sha256": (
+            "f517be8da802aee6fe46dfa4293da294b618cb982bd836413b3663bff3ee51d8"
+        ),
+        "walking_skeleton_definition_ref": (
+            "docs/architecture/reviews/"
+            "2026-07-31-walking-skeleton-definition.md"
+        ),
+        "walking_skeleton_definition_sha256": (
+            "368d5e415f76ebb5062f58a8692a61ea68df650016aab821c68d1e04dbdadc5a"
+        ),
+    }
+    expected_outcomes = {
+        "inherited_descendant": "ADR0010_APPLIES",
+        "exact_noninherited_descendant": (
+            "NOT_APPLICABLE_NO_INHERITED_SUBJECT"
+        ),
+        "any_other_non_descendant": "UNKNOWN_BLOCKING",
+    }
+    if (
+        not isinstance(contract, dict)
+        or set(contract) != expected_keys
+        or contract["schema_version"]
+        != "legacy-test-lineage-applicability/v1"
+        or contract["policy_id"]
+        != "RANEX-LEGACY-TEST-LINEAGE-APPLICABILITY-1.0"
+        or contract["version"] != "1.0.0"
+        or contract["inherited_baseline"] != expected_baseline
+        or contract["exact_noninherited_lineage"] != expected_lineage
+        or contract["outcomes"] != expected_outcomes
+        or contract["missing_tests_result"] != "FAIL"
+    ):
+        raise ValueError("ADR-0021 lineage applicability drift")
+    return {
+        **contract,
+        "decision_binding": decision_binding(
+            LEGACY_TEST_LINEAGE_ADR,
+            "ADR-0021",
+        ),
+    }
+
+
 def read_git_blob_bytes(blob_oids: list[str]) -> dict[str, bytes]:
     unique_oids = sorted(set(blob_oids))
     process = subprocess.run(
@@ -5970,6 +6101,18 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
             "YAML block"
         )
     catalog = candidates[0]
+    # ADR-0017 OWNER-RESOLVE-002. `owner_decision_digest` is the generated
+    # pairing for `owner_decision_ref`, defaulted here rather than required in
+    # the ADR-0013 source. Today every row is unresolved, so every pair is
+    # (None, None) and the source is untouched. Resolving a row means the owner
+    # writes the typed reference into ADR-0013 and accepts the digest cascade
+    # that follows; that cost belongs to the resolution, not to this machinery.
+    if isinstance(catalog, dict) and isinstance(
+        catalog.get("owner_decisions"), list
+    ):
+        for _row in catalog["owner_decisions"]:
+            if isinstance(_row, dict):
+                _row.setdefault("owner_decision_digest", None)
     expected_catalog_fields = {
         "schema_version",
         "catalog_id",
@@ -6709,6 +6852,7 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
             "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
         ),
         "owner_decision_ref": None,
+        "owner_decision_digest": None,
         "default": None,
         "absence_outcome": "BLOCK",
         "activation_without_decision": "DENIED",
@@ -6796,6 +6940,7 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
         "decision_subject",
         "required_decision_artifact",
         "owner_decision_ref",
+        "owner_decision_digest",
         "default",
         "absence_outcome",
         "activation_without_decision",
@@ -6870,6 +7015,7 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
             scalar_fields = expected_fields - {
                 "source_end_line",
                 "owner_decision_ref",
+                "owner_decision_digest",
                 "default",
             }
             if any(
@@ -6943,7 +7089,6 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
                     not in allowed_blocking_stages
                     or row["required_decision_artifact"]
                     != "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
-                    or row["owner_decision_ref"] is not None
                     or row["default"] is not None
                     or row["absence_outcome"] != "BLOCK"
                     or row["activation_without_decision"] != "DENIED"
@@ -6952,7 +7097,35 @@ def parse_hermes_research_promotion_catalog() -> dict[str, Any]:
                         "Hermes owner decision is defaulted or nonblocking: "
                         + provision_id
                     )
-                runtime_status = "BLOCKED_OWNER_DECISION_REQUIRED"
+                # ADR-0017 OWNER-RESOLVE-001/-002: a row is either unresolved
+                # with both reference fields null, or ACCEPTED with a complete
+                # paired reference whose digest equals the typed ref digest.
+                # A half-resolved row fails closed.
+                resolved = row["status"] == "ACCEPTED"
+                ref = row["owner_decision_ref"]
+                digest = row["owner_decision_digest"]
+                if resolved != (ref is not None) or (
+                    ref is not None
+                ) != (digest is not None):
+                    raise ValueError(
+                        "Hermes owner decision resolution is incoherent: "
+                        + provision_id
+                    )
+                if ref is not None and (
+                    ref.get("artifact_type") != "human_decision"
+                    or ref.get("artifact_digest") != digest
+                ):
+                    raise ValueError(
+                        "Hermes owner decision reference is unbound: "
+                        + provision_id
+                    )
+                # OWNER-RESOLVE-004: resolution lifts the block; it creates no
+                # runtime evidence and is never a pass.
+                runtime_status = (
+                    "NOT_ASSESSED"
+                    if resolved
+                    else "BLOCKED_OWNER_DECISION_REQUIRED"
+                )
             else:
                 if (
                     row["reason_code"]
@@ -10647,7 +10820,9 @@ def hermes_research_provision_schema() -> dict[str, Any]:
                     r"^HERMES-OWNER-DECISION-[0-9]{3}$"
                 ),
             },
-            "status": {"const": "OWNER_DECISION_REQUIRED"},
+            "status": {
+                "enum": ["OWNER_DECISION_REQUIRED", "ACCEPTED"]
+            },
             "guard_id": {
                 "type": "string",
                 "pattern": r"^[A-Z][A-Z0-9_]*$",
@@ -10673,7 +10848,44 @@ def hermes_research_provision_schema() -> dict[str, Any]:
                     "ACCEPTED_ADR_WITH_PREDECLARED_ACCEPTANCE_TEST"
                 )
             },
-            "owner_decision_ref": {"type": "null"},
+            "owner_decision_ref": {
+                "oneOf": [
+                    {"type": "null"},
+                    {
+                        "type": "object",
+                        "properties": {
+                            "artifact_type": {
+                                "const": "human_decision"
+                            },
+                            "artifact_ref": {
+                                "type": "string",
+                                "minLength": 1,
+                            },
+                            "artifact_digest": {
+                                "type": "string",
+                                "pattern": (
+                                    r"^sha256:[0-9a-f]{64}$"
+                                ),
+                            },
+                        },
+                        "required": [
+                            "artifact_type",
+                            "artifact_ref",
+                            "artifact_digest",
+                        ],
+                        "additionalProperties": False,
+                    },
+                ]
+            },
+            "owner_decision_digest": {
+                "oneOf": [
+                    {"type": "null"},
+                    {
+                        "type": "string",
+                        "pattern": r"^sha256:[0-9a-f]{64}$",
+                    },
+                ]
+            },
             "default": {"type": "null"},
             "absence_outcome": {"const": "BLOCK"},
             "activation_without_decision": {"const": "DENIED"},
@@ -15148,6 +15360,148 @@ def topology_exception_schema() -> dict[str, Any]:
     }
 
 
+def legacy_test_lineage_applicability_schema() -> dict[str, Any]:
+    sha1 = {"type": "string", "pattern": "^[0-9a-f]{40}$"}
+    sha256 = {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+    decision_binding_schema = {
+        "type": "object",
+        "properties": {
+            "decision_id": {"const": "ADR-0021"},
+            "path": {
+                "const": (
+                    "docs/architecture/decisions/"
+                    "ADR-0021-limit-adr-0010-to-inherited-lineage.md"
+                )
+            },
+            "digest": {
+                "const": "sha256:" + ADR21_SOURCE_SHA256,
+            },
+            "status": {"const": "ACCEPTED_PAPER_DECISION"},
+            "runtime_enactment_status": {"const": "NOT_ASSESSED"},
+        },
+        "required": [
+            "decision_id",
+            "path",
+            "digest",
+            "status",
+            "runtime_enactment_status",
+        ],
+        "additionalProperties": False,
+    }
+    return {
+        "$schema": "https://json-schema.org/draft/2020-12/schema",
+        "$id": (
+            "https://schemas.ranex.dev/common/"
+            "legacy-test-lineage-applicability-v1.schema.json"
+        ),
+        "title": "Ranex legacy-test lineage applicability contract",
+        "type": "object",
+        "properties": {
+            "schema_version": {
+                "const": "legacy-test-lineage-applicability/v1"
+            },
+            "policy_id": {
+                "const": (
+                    "RANEX-LEGACY-TEST-LINEAGE-APPLICABILITY-1.0"
+                )
+            },
+            "version": {"const": "1.0.0"},
+            "inherited_baseline": {
+                "type": "object",
+                "properties": {
+                    "source_commit_sha1": sha1,
+                    "baseline_id": {
+                        "const": "HERMES-TEST-BASELINE-001"
+                    },
+                    "file_count": {"const": 2444},
+                    "file_manifest_sha256": sha256,
+                },
+                "required": [
+                    "source_commit_sha1",
+                    "baseline_id",
+                    "file_count",
+                    "file_manifest_sha256",
+                ],
+                "additionalProperties": False,
+            },
+            "exact_noninherited_lineage": {
+                "type": "object",
+                "properties": {
+                    "root_commit_sha1": sha1,
+                    "boundary_commit_sha1": sha1,
+                    "boundary_committed_test_path_count": {"const": 0},
+                    "boundary_ancestry_test_commit_count": {"const": 0},
+                    "boundary_baseline_path_intersection_count": {
+                        "const": 0
+                    },
+                    "bootstrap_authorization_ref": {
+                        "const": (
+                            "architecture/records/"
+                            "bootstrap-authorizations/"
+                            "BOOTSTRAP-AUTH-001.md"
+                        )
+                    },
+                    "bootstrap_authorization_sha256": sha256,
+                    "walking_skeleton_definition_ref": {
+                        "const": (
+                            "docs/architecture/reviews/"
+                            "2026-07-31-walking-skeleton-definition.md"
+                        )
+                    },
+                    "walking_skeleton_definition_sha256": sha256,
+                },
+                "required": [
+                    "root_commit_sha1",
+                    "boundary_commit_sha1",
+                    "boundary_committed_test_path_count",
+                    "boundary_ancestry_test_commit_count",
+                    "boundary_baseline_path_intersection_count",
+                    "bootstrap_authorization_ref",
+                    "bootstrap_authorization_sha256",
+                    "walking_skeleton_definition_ref",
+                    "walking_skeleton_definition_sha256",
+                ],
+                "additionalProperties": False,
+            },
+            "outcomes": {
+                "type": "object",
+                "properties": {
+                    "inherited_descendant": {
+                        "const": "ADR0010_APPLIES"
+                    },
+                    "exact_noninherited_descendant": {
+                        "const": (
+                            "NOT_APPLICABLE_NO_INHERITED_SUBJECT"
+                        )
+                    },
+                    "any_other_non_descendant": {
+                        "const": "UNKNOWN_BLOCKING"
+                    },
+                },
+                "required": [
+                    "inherited_descendant",
+                    "exact_noninherited_descendant",
+                    "any_other_non_descendant",
+                ],
+                "additionalProperties": False,
+            },
+            "missing_tests_result": {"const": "FAIL"},
+            "decision_binding": decision_binding_schema,
+        },
+        "required": [
+            "schema_version",
+            "policy_id",
+            "version",
+            "inherited_baseline",
+            "exact_noninherited_lineage",
+            "outcomes",
+            "missing_tests_result",
+            "decision_binding",
+        ],
+        "additionalProperties": False,
+    }
+
+
 def legacy_test_layout_policy_schema() -> dict[str, Any]:
     nonempty = {"type": "string", "minLength": 1}
     sha1 = {"type": "string", "pattern": "^[0-9a-f]{40}$"}
@@ -18084,6 +18438,9 @@ def generate_registries() -> dict[str, Any]:
     legacy_test_policy = build_legacy_test_layout_policy(
         legacy_test_decision
     )
+    legacy_test_lineage_applicability = (
+        parse_legacy_test_lineage_applicability()
+    )
     adr10_authority_catalogs = build_adr10_authority_catalogs()
     worker_runtime_source = str(WORKER_RUNTIME_ADR.relative_to(ROOT))
     worker_runtime_source_digest = (
@@ -18674,6 +19031,9 @@ def generate_registries() -> dict[str, Any]:
         "context-coupling-policy.json": coupling_policy,
         "feedback-fitness.json": feedback_policy,
         "legacy-test-layout-policy-v2.json": legacy_test_policy,
+        "legacy-test-lineage-applicability-v1.json": (
+            legacy_test_lineage_applicability
+        ),
         "legacy-test-layout-records-v2.json": registry(
             "REG-LEGACY-TEST-LAYOUT-RECORDS-001",
             "2.0.0",
@@ -18795,10 +19155,15 @@ def generate_registries() -> dict[str, Any]:
             owner_decision_count=hermes_research_promotions["catalog"][
                 "owner_decision_count"
             ],
-            unresolved_owner_decision_count=(
-                hermes_research_promotions["catalog"][
-                    "owner_decision_count"
+            # ADR-0017 OWNER-RESOLVE-005: derived from row state, never
+            # pinned. Its pinned form was redundant with owner_decision_count
+            # only because no row could resolve.
+            unresolved_owner_decision_count=sum(
+                1
+                for _row in hermes_research_promotions["catalog"][
+                    "owner_decisions"
                 ]
+                if _row["status"] != "ACCEPTED"
             ),
             research_only_count=hermes_research_promotions["catalog"][
                 "research_only_count"
@@ -19565,6 +19930,9 @@ def generate_schemas(registries: dict[str, Any]) -> None:
     schemas["common/legacy-test-layout-policy-v2.schema.json"] = (
         legacy_policy_schema
     )
+    schemas[
+        "common/legacy-test-lineage-applicability-v1.schema.json"
+    ] = legacy_test_lineage_applicability_schema()
     schemas["common/legacy-test-change-exception-v2.schema.json"] = (
         authoritative_legacy_record_schemas["change_exceptions"]
     )

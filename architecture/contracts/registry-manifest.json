@@ -1,7 +1,7 @@
 {
   "entries": [
     {
-      "digest": "sha256:4de601c50028c27fcc3c35aeb2c208abd04e07a62e72c9d4b6e7b3fa8614ecae",
+      "digest": "sha256:11c640e398c16bd26849653cbbdb344ba16a5a135d6d211427385d16e47c8e8e",
       "path": "architecture/contracts/accepted-adrs.json"
     },
     {
@@ -9,11 +9,11 @@
       "path": "architecture/contracts/applicability-rules.json"
     },
     {
-      "digest": "sha256:91f13928cfeb499c937ebcab01cbb3077af9e02e93355992b7ae99e5378df10d",
+      "digest": "sha256:8633b562fb79e25e80e19466f148f887d21d56a45b69641eb76f1d0457de7ef3",
       "path": "architecture/contracts/architecture-element-assessments.json"
     },
     {
-      "digest": "sha256:27fc2d57d562f75037dfc85ee7b388fc1324d7ef9211b32af2d16b48a0cc8aa8",
+      "digest": "sha256:ece9be9c8a8f7487eacef04127483275de49666bc7068437a91e1a1ad263913c",
       "path": "architecture/contracts/architecture-elements.json"
     },
     {
@@ -73,11 +73,11 @@
       "path": "architecture/contracts/feedback-fitness.json"
     },
     {
-      "digest": "sha256:ed05095c5859f1955f4eb91189c6d69b6381a1faa07134d3097ff2e0854332aa",
+      "digest": "sha256:1ee8c2ae684ef8de50a9a47e07ac51628bf58d25775ca3f63462204c8f7b33dd",
       "path": "architecture/contracts/generated-output-authority.json"
     },
     {
-      "digest": "sha256:82fa130f0fa7b2e9bc26596286447a9fd18f2ccdc84c991f72ac2bdd3ccb3bcc",
+      "digest": "sha256:dc7b5de66d292621ec3df764d32d484d1183cde8bf2aa9dfadeae6889b0739ed",
       "path": "architecture/contracts/hermes-research-promotions.json"
     },
     {
@@ -113,6 +113,10 @@
       "path": "architecture/contracts/legacy-test-layout-records.json"
     },
     {
+      "digest": "sha256:0d9e34b8a332cfcc429c3ab4dc2733e46bc3d36b74a744f415cd20e056aa8466",
+      "path": "architecture/contracts/legacy-test-lineage-applicability-v1.json"
+    },
+    {
       "digest": "sha256:5a3a87c5d60c168661f5c0967f27743b26b107c3485c82f877ec4d1d1aab908e",
       "path": "architecture/contracts/paths.json"
     },
@@ -133,7 +137,7 @@
       "path": "architecture/contracts/runtime-adapters.json"
     },
     {
-      "digest": "sha256:6c0a8cf5847caefe19d6a28daeeb442f09d844e05531790bec12c1df8fd50ae5",
+      "digest": "sha256:a25e721f69744bc34ab6aa1ea71a536362f0abe22dbb934da3b754a269e2f6b7",
       "path": "architecture/contracts/schema-registry.json"
     },
     {

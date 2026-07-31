@@ -204,7 +204,7 @@
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
-      "digest": "sha256:4f6b651fd652759630661fc488b809887df1db25a3148c0a898a31de39596abd",
+      "digest": "sha256:7f4f6b5a7087a452ffa5b9bda0534cd31dbf7f2a77b6efd4deb57922c2264594",
       "draft": "2020-12",
       "path": "schemas/common/hermes-research-provision-v1.schema.json",
       "schema_id": "https://schemas.ranex.dev/common/hermes-research-provision-v1.schema.json",
@@ -236,6 +236,13 @@
       "draft": "2020-12",
       "path": "schemas/common/legacy-test-layout-policy-v2.schema.json",
       "schema_id": "https://schemas.ranex.dev/common/legacy-test-layout-policy-v2.schema.json",
+      "status": "ACTIVE_DOCUMENTATION_CONTRACT"
+    },
+    {
+      "digest": "sha256:c087dec99ea7a818eb69b282622ee6dc6647c7954d7df7261f5048d60dee2807",
+      "draft": "2020-12",
+      "path": "schemas/common/legacy-test-lineage-applicability-v1.schema.json",
+      "schema_id": "https://schemas.ranex.dev/common/legacy-test-lineage-applicability-v1.schema.json",
       "status": "ACTIVE_DOCUMENTATION_CONTRACT"
     },
     {
@@ -1074,7 +1081,7 @@
   ],
   "generated_by": "scripts/architecture/generate_contracts.py",
   "registry_id": "REG-SCHEMAS-001",
-  "schema_count": 153,
+  "schema_count": 154,
   "status": "ACTIVE_DOCUMENTATION_CONTRACT",
   "version": "1.0.0"
 }
