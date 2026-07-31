@@ -196,7 +196,7 @@ def test_absolute_path_inputs_are_refused_by_cli(
 
 
 def test_foreign_repository_evaluation_is_refused_by_real_cli(repo: Path) -> None:
-    """Regression for the exact second-repository attack from FINAL-GATE.md."""
+    """Regression for the second-repository attack from 2026-07-31-final-gate-adjudication.md."""
 
     foreign = repo.parent / "foreign"
     subprocess.run(["git", "init", "-q", str(foreign)], check=True)

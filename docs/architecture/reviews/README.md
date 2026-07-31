@@ -30,6 +30,19 @@ digest manifests live under [`artifacts/`](artifacts/) and are immutable.
 | [Gate-controller MVP user-level audit](2026-07-28-gate-controller-mvp-user-level-audit.md) | `REV-GATE-MVP-USER-001` | Audit of an uncommitted worktree prototype; `PASS_WITH_BLOCKERS` as R&D tracer, `REJECT` as live authority |
 | [Implementation worktree subject-binding audit](2026-07-28-implementation-worktree-subject-binding-audit.md) | `RANEX-WORKTREE-SUBJECT-BINDING-2026-07-28` | Point-in-time verdict against HEAD `4baad4a…`; re-audit before relying on it |
 
+## Session execution records (no formal review ID)
+
+Dated records of agent execution sessions. These are evidence of work done,
+not authority, and carry no formal `REVIEW-*` ID. Listed for discoverability.
+
+| Record | Subject |
+|---|---|
+| [ADR-0021 promotion record](2026-07-31-adr-0021-promotion-record.md) | Executed evidence for promoting ADR-0021 (limiting ADR-0010 to inherited lineage) to `ACCEPTED` |
+| [CLI boundary fixes](2026-07-31-cli-boundary-fixes.md) | Fix of the two HIGH CLI boundary defects (subject-digest omission, repository confinement) found by the final-gate audit |
+| [Final-gate adjudication](2026-07-31-final-gate-adjudication.md) | Adversarial gate of the walking-skeleton slice by execution; found the two HIGH defects the CLI-boundary record fixes |
+| [LUNA ADR-0007 conformance](2026-07-31-luna-adr7-conformance.md) | ADR-0007 topology conformance audit; 12 of 18 `ORG-*` rules fail, no product code changed |
+| [Schema-registry drift](2026-07-31-schema-registry-drift.md) | Investigation of the 153-vs-157 schema-registry inventory gap (four deliberate historical v1 exclusions) |
+
 ## `artifacts/` layout
 
 - `2026-07-27/` — full-map review rounds: prompts, raw HY3/DeepSeek outputs with
