@@ -12,13 +12,27 @@
 # WHAT IS REQUIRED, and where. Measured 2026-07-31, after the owner enabled
 # protection:
 #
-#   main                    PROTECTED. Requires the `all contract checks`
-#                           status check (the `gate` job below). Force pushes
-#                           and branch deletion are blocked. No PR or review is
-#                           required: a direct push is allowed if the gate is
-#                           green.
-#   develop                 not protected
+#   main                    PROTECTED. Requires a status check NAMED
+#                           `all contract checks`. Force pushes and branch
+#                           deletion are blocked FOR NON-ADMINS.
+#
+#                           The requirement carries app_id 15368. That is the
+#                           generic GitHub Actions app, shared by every
+#                           workflow in every repository — measured: four
+#                           unrelated workflows on commit 9be6bd944 all report
+#                           app=15368. It therefore discriminates nothing. An
+#                           earlier version of this comment claimed it stopped
+#                           a third party forging the check. It does not.
+#
+#                           `main` has no .github/ directory at all, so a push
+#                           to `main` runs no workflow, the check never
+#                           reports, and the push is refused. `main` is
+#                           reachable only by a pull request whose head carries
+#                           this workflow, or by an admin push.
+#   develop                 not protected  <- see the fetch-depth note below
 #   bootstrap/pre-upstream  not protected  <- current working branch
+#   feature/kernel-tracer   not protected
+#   upstream-sync           not protected
 #
 # Two limits, stated so a green result is not over-read:
 #
@@ -28,6 +42,26 @@
 #     workers and ordinary pushes, not the owner.
 #   * The working branch is unprotected, so on `bootstrap/pre-upstream` these
 #     checks remain ADVISORY. They become binding when work reaches `main`.
+#   * A required status check is matched by NAME, and the workflow defining
+#     that name is this editable file. A branch carrying a workflow whose
+#     `all contract checks` job is `exit 0` satisfies the requirement having
+#     proven nothing, because a pull_request run executes the HEAD's workflow.
+#     Branch protection cannot close this. GitHub's ruleset rule of type
+#     `workflows` can — it pins a workflow by repository_id + path + sha, so
+#     the enforced file is the pinned one rather than whatever arrives in the
+#     branch. Not enabled; it is a separate owner decision.
+#   * Further routes to `main` that this configuration does NOT close, found
+#     by independent review and left open by design or by pending decision:
+#       - the merge commit is a new SHA that no check ran against
+#         (`allow_merge_commit: true`, `required_linear_history: false`);
+#       - `strict: false` permits a branch green against a stale base;
+#       - no `required_pull_request_reviews` and no CODEOWNERS, so any
+#         write-access actor can self-merge;
+#       - a job present in the workflow but absent from the gate's `needs:`
+#         is invisible to the gate (see the `gate` job).
+#   * `develop` is UNPROTECTED and the build depends on it. Commit 0533e1eaf
+#     is reachable from no other ref; deleting or force-pushing `develop`
+#     makes it unfetchable and breaks both `drift` and `validate`.
 #
 # Before enabling protection this comment recorded 404s for every branch, which
 # was true when written. It is kept in the revision history, not deleted: the
@@ -47,15 +81,29 @@
 #   concurrency  prove the publication lock holds under contention
 #   gate         aggregate; the single check to require in branch protection
 #
-# MEASURED COST, not estimated. From run 30613547035 (old layout, passing):
-# checkout 23s, generate 10s, drift 0s, validate 103s, freshness 0.06s,
-# concurrency 335s, total 8m00s. New layout is bounded by the concurrency job
-# at roughly 6m15s, so the saving is about 1m45s (~21%) of wall clock. It costs
-# roughly 50% more billable runner minutes, because GitHub rounds each job up
-# and three jobs now clone the repository independently. That trade was made
-# deliberately: the wall-clock saving is modest, but each job becomes a
-# self-contained, independently re-runnable proof, and no check can be hidden
-# behind an unrelated failure.
+# MEASURED COST. Every figure below is read from the Actions API, not estimated.
+# An earlier version of this comment carried three numbers that were predicted
+# and never checked; independent review measured them and all three were wrong.
+#
+#   OLD layout, run 30613547035 (single job):
+#     checkout 23s, generate 10s, drift 0s, validate 103s, freshness 0s,
+#     concurrency 335s -> job 8m00s, run wall 8m04s
+#
+#   NEW layout, two runs:
+#     30615862698  6m17s     30616324916  6m41s
+#
+# Wall-clock saving is therefore 1m47s and 1m23s — a range of roughly 17-22%,
+# not a single figure. The spread is real: the concurrency job varied 370s to
+# 387s between runs, and it alone bounds the total.
+#
+# Billable runner minutes go from 8 to 13, about +62% (GitHub rounds each job
+# up to the minute: 7+3+1+1+1). FOUR jobs check out, not three — drift,
+# freshness, validate and concurrency — of which three use fetch-depth: 0.
+#
+# The trade was made deliberately, and it is a modest wall-clock win bought
+# with a large relative increase in runner minutes. It is worth it here for a
+# different reason than speed: each job is a self-contained, independently
+# re-runnable proof, and no check can be hidden behind an unrelated failure.
 #
 # ACTION PINS. Pinned to commit SHA, not to a tag. A tag is mutable — an
 # upstream force-push silently changes what executes here, which is the same
@@ -127,6 +175,12 @@ jobs:
       # ADR-0014 LANG-PRIMARY-001 fixes Python >= 3.12. Asserting it is the
       # point; printing it is not. A runner below the declared floor is a
       # finding, and this now fails rather than merely reporting.
+      #
+      # This step is repeated in every checking job. Before the split it was a
+      # single step in a single job and so covered all four checks; after the
+      # split it briefly covered only this one, which independent review caught.
+      # The interpreter genuinely floats — measured CPython 3.14.6, not 3.12 —
+      # so an unasserted job proves nothing about the floor.
       - name: Assert the interpreter satisfies the declared floor
         run: |
           uv --version
@@ -157,18 +211,32 @@ jobs:
       # what the GENERATOR writes. It cannot see drift in
       # docs/architecture/assessments/validation-report.json, whose declared
       # writer is validate_contracts.py:31793 (see the `validate` job).
+      # `git status --porcelain`, NOT `git diff --quiet`. The latter ignores
+      # UNTRACKED files, so a regeneration that emits a brand-new output file
+      # which was never committed reported CLEAN. Demonstrated:
+      #
+      #     $ echo '{}' > architecture/contracts/NEW.json
+      #     $ git status --porcelain   ->  ?? architecture/contracts/NEW.json
+      #     $ git diff --quiet; echo $?  ->  0        (i.e. "no drift")
+      #
+      # The generator emits 254 artifacts; a new one appearing is exactly the
+      # drift this gate exists to catch, and it was the one case it missed.
       - name: Fail if regeneration changed anything
         run: |
-          if ! git diff --quiet; then
+          changes="$(git status --porcelain)"
+          if [ -n "$changes" ]; then
             echo "::error::Generated contracts are out of date with their sources."
             echo "Run the generator locally and commit the result."
+            echo
+            echo "$changes"
             echo
             git --no-pager diff --stat
             echo
             git --no-pager diff | head -400
             exit 1
           fi
-          echo "No drift: the committed contract tree matches its sources."
+          echo "No drift: the committed contract tree matches its sources,"
+          echo "and regeneration created no untracked files."
 
   freshness:
     name: prove no written record is stale
@@ -192,6 +260,24 @@ jobs:
         uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           enable-cache: true
+
+      - name: Make a floor-satisfying interpreter available
+        run: uv python install 3.12
+
+      - name: Assert the interpreter satisfies the declared floor
+        run: |
+          uv run --project scripts/architecture python - <<'PY'
+          import sys
+          floor = (3, 12)
+          observed = sys.version_info[:2]
+          print(f"python {sys.version.split()[0]}")
+          if observed < floor:
+              print(
+                  f"::error::ADR-0014 LANG-PRIMARY-001 requires Python >= "
+                  f"{floor[0]}.{floor[1]}; runner provides {observed[0]}.{observed[1]}"
+              )
+              raise SystemExit(1)
+          PY
 
       # Prose records have no generator, so the drift gate cannot see them: an
       # ADR can be accepted, registered and validated while the documents
@@ -238,6 +324,21 @@ jobs:
 
       - name: Make a floor-satisfying interpreter available
         run: uv python install 3.12
+
+      - name: Assert the interpreter satisfies the declared floor
+        run: |
+          uv run --project scripts/architecture python - <<'PY'
+          import sys
+          floor = (3, 12)
+          observed = sys.version_info[:2]
+          print(f"python {sys.version.split()[0]}")
+          if observed < floor:
+              print(
+                  f"::error::ADR-0014 LANG-PRIMARY-001 requires Python >= "
+                  f"{floor[0]}.{floor[1]}; runner provides {observed[0]}.{observed[1]}"
+              )
+              raise SystemExit(1)
+          PY
 
       - name: Validate the committed contract tree
         run: |
@@ -291,6 +392,21 @@ jobs:
       - name: Make a floor-satisfying interpreter available
         run: uv python install 3.12
 
+      - name: Assert the interpreter satisfies the declared floor
+        run: |
+          uv run --project scripts/architecture python - <<'PY'
+          import sys
+          floor = (3, 12)
+          observed = sys.version_info[:2]
+          print(f"python {sys.version.split()[0]}")
+          if observed < floor:
+              print(
+                  f"::error::ADR-0014 LANG-PRIMARY-001 requires Python >= "
+                  f"{floor[0]}.{floor[1]}; runner provides {observed[0]}.{observed[1]}"
+              )
+              raise SystemExit(1)
+          PY
+
       # Proves three things a passing validator cannot: that a validator cannot
       # read the generator's empty-denominator window and score "0 of 0 checks
       # failed" as PASS; that a second generator cannot publish while one holds
@@ -306,12 +422,23 @@ jobs:
     timeout-minutes: 5
     needs: [drift, freshness, validate, concurrency_regression]
 
-    # `!cancelled()` rather than `always()`: GitHub's documentation explicitly
-    # recommends it — "If you want to run a job or step regardless of its
-    # success or failure, use the recommended alternative: if: ${{ !cancelled() }}".
-    # With cancel-in-progress above, a superseded run should leave this check
-    # cancelled, not failed.
-    if: ${{ !cancelled() }}
+    # `always()`, NOT `!cancelled()`. This was briefly `!cancelled()` on the
+    # strength of GitHub's general recommendation, which was the wrong reading
+    # for an aggregating gate and opened a fail-open path:
+    #
+    #   "Successful check statuses are success, skipped, and neutral."
+    #   "A job that is skipped will report its status as 'Success'. It will not
+    #    prevent a pull request from merging, even if it is a required check."
+    #
+    # `cancel-in-progress: true` above cancels superseded runs routinely. Under
+    # `!cancelled()` this job is SKIPPED on a cancelled run, the required check
+    # reports skipped, and branch protection reads that as passing — a merge
+    # allowed having proven nothing. Under `always()` the job runs, observes
+    # its dependencies as `cancelled`, and fails closed.
+    #
+    # The documented objection to `always()` is that it can hang a job that
+    # must fetch sources. This job fetches nothing and has a 5-minute timeout.
+    if: always()
 
     # One status check to require in branch protection, once protection exists.
     #
