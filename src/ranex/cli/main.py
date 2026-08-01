@@ -84,10 +84,14 @@ def load_records(path: Path) -> list[object]:
     job, and it needs the signature this function deliberately does not strip.
     """
 
-    if not path.exists():
-        return []
     try:
         raw = json.loads(path.read_text(encoding="utf-8"))
+    except FileNotFoundError:
+        # The only OSError that means absence. `Path.exists()` also answers
+        # False for EACCES, ENOTDIR and ELOOP, which reports a machine that
+        # cannot read its own records as work never done — and chmod is a great
+        # deal easier than forging a signature. Every other OSError propagates.
+        return []
     except json.JSONDecodeError as exc:
         # A truncated file is corruption, not absence. Saying "no evidence"
         # here would report an interrupted write as work never done.
@@ -105,12 +109,69 @@ def admitted_evidence(path: Path, keyring_path: Path) -> Admission:
     return admit(load_records(path), load_keyring(keyring_path))
 
 
-def private_signing_key() -> str:
+def nearest_existing_directory(path: Path) -> Path:
+    """The closest ancestor of `path`, or `path` itself, that exists.
+
+    Neither git nor `os.access` can answer a question about a path that does not
+    exist yet. The directory that would hold it is what constrains it.
+    """
+
+    candidate = path
+    while not candidate.is_dir() and candidate != candidate.parent:
+        candidate = candidate.parent
+    return candidate
+
+
+def git_common_dir(directory: Path) -> Path | None:
+    """The object store of the repository `directory` sits in, or None.
+
+    Two checkouts of one repository have different toplevels and the same common
+    dir. That is exactly what makes them one repository for the only question
+    asked here: could a file written under this path be committed?
+    """
+
+    result = subprocess.run(
+        ["git", "-C", str(directory), "rev-parse", "--git-common-dir"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    # Relative when asked from inside the checkout, absolute when asked from a
+    # linked worktree. Joining onto the directory it was asked from normalises
+    # both; an absolute answer replaces the left side.
+    return (directory / result.stdout.strip()).resolve()
+
+
+def committable_into(target: Path, governed_root: Path) -> bool:
+    """Would `target` land in the governed repository's history if committed?
+
+    Containment under the root is the obvious half. The other half is a linked
+    worktree: `git worktree add` produces a second checkout at an unrelated path
+    that shares one object store, so a private key written there is `git add`-able
+    and reachable from the main checkout while every containment check passes.
+    Only git knows which checkouts those are, so ask it from the target's own
+    directory.
+    """
+
+    if target == governed_root or governed_root in target.parents:
+        return True
+    common = git_common_dir(nearest_existing_directory(target))
+    return common is not None and common == git_common_dir(governed_root)
+
+
+def private_signing_key(governed_root: Path) -> str:
     """Read the producer's private key from the environment.
 
     Refuses a key any other account can read. `keygen` writes 0600, but a key
     copied between machines usually arrives with whatever mode the copy gave it,
     and a world-readable signing key makes the whole slice decorative.
+
+    Refuses a key inside the repository for the same reason `keygen` refuses to
+    create one there. A refusal only at the point of creation is advisory: the
+    key can be placed by hand, and a `.gitignore` entry keeps `git status` clean
+    so nothing else notices it is one `git add -f` from being published.
     """
 
     raw_path = os.environ.get(SIGNING_KEY_VARIABLE)
@@ -119,9 +180,18 @@ def private_signing_key() -> str:
             f"{SIGNING_KEY_VARIABLE} is not set, so nothing can sign this "
             "record; refusing to write unsigned evidence"
         )
-    key_path = Path(raw_path)
+    # Resolved before it is judged: the check must be about the file that will
+    # actually be read, not about the name it was reached by.
+    key_path = Path(raw_path).resolve()
     if not key_path.is_file():
         raise ValueError(f"{SIGNING_KEY_VARIABLE} points at no file: {key_path}")
+
+    if committable_into(key_path, governed_root):
+        raise ValueError(
+            f"refusing to sign with the private key at {key_path}: it is inside "
+            "the repository under governance and therefore committable. Keys "
+            "live outside the tree"
+        )
 
     mode = stat.S_IMODE(key_path.stat().st_mode)
     if mode & 0o077:
@@ -189,6 +259,25 @@ def uncommitted_paths(
             if path and path != exempt:
                 dirty.append(path)
     return tuple(sorted(dirty))
+
+
+def refuse_unwritable_evidence(path: Path) -> None:
+    """Refuse now if the record could not be written afterwards.
+
+    Probes without creating anything: an existing file must be writable, and an
+    absent one needs a directory that accepts it, since `record_evidence` creates
+    the missing parents itself.
+    """
+
+    if path.exists():
+        if not os.access(path, os.W_OK):
+            raise ValueError(f"evidence file at {path} cannot be written to")
+        return
+    directory = nearest_existing_directory(path.parent)
+    if not os.access(directory, os.W_OK | os.X_OK):
+        raise ValueError(
+            f"cannot create the evidence file at {path}: {directory} is not writable"
+        )
 
 
 def record_evidence(path: Path, record: dict[str, object]) -> None:
@@ -276,28 +365,48 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
 
     if result.verdict is Verdict.PASS:
         print(f"PASS  gate={result.gate_id}  subject={result.subject_digest}")
-        return EXIT_PASS
+    else:
+        print(f"FAIL  gate={result.gate_id}  rule={result.failing_rule}")
 
-    print(f"FAIL  gate={result.gate_id}  rule={result.failing_rule}")
-
+    # Reported whatever the verdict. A forgery the gate happened to pass without
+    # is still a forgery, and returning early on PASS made a probe that leaves no
+    # trace — which is a probe worth repeating.
     for rejection in admission.rejections:
         print(
             f"      REFUSED record {rejection.index} "
             f"[{rejection.reason}] {rejection.detail}"
         )
 
-    # A record that was refused is not the same event as work never done, and
-    # the operator must not have to guess which happened. When every missing
-    # claim is accounted for by a refusal, say so in those terms rather than
-    # falling through to the kernel's phrasing for honest absence.
+    if result.verdict is Verdict.PASS:
+        return EXIT_PASS
+
+    # Three different events arrive as `missing_claims`, and the operator must
+    # not have to guess which one happened: a record was refused (an attack), a
+    # record describes another tree (a replay), or the work was never done. The
+    # kernel names them in one sentence because it judges claims, not causes;
+    # partitioning per claim here is what keeps a forgery from being printed
+    # under the phrasing reserved for honest absence.
     explained = {rejection.claim_id for rejection in admission.rejections}
     missing = set(result.missing_claims)
-    if missing and missing <= explained:
+    replayed = {
+        item.claim_id
+        for item in admission.evidence
+        if item.claim_id in missing and item.subject_digest != result.subject_digest
+    }
+    refused = sorted(missing & explained)
+    absent = sorted(missing - explained - replayed)
+
+    if refused:
         print(
             f"      {len(admission.rejections)} record(s) were refused above; "
-            f"no verifying evidence remains for: {', '.join(sorted(missing))}"
+            f"no verifying evidence remains for: {', '.join(refused)}"
         )
-    else:
+    if absent:
+        print(f"      no evidence for required claim: {', '.join(absent)}")
+    if result.reason and (replayed or not missing):
+        # The kernel's own diagnosis, kept whenever it says something the
+        # partition cannot: stale evidence is the replay that subject binding
+        # exists to catch, and a self-approval refusal names no claim at all.
         print(f"      {result.reason}")
 
     print(f"      subject={result.subject_digest}")
@@ -332,7 +441,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         # Everything that can refuse, refuses before the command runs. A test
         # suite is expensive; discovering afterwards that the record cannot be
         # written honestly wastes all of it.
-        private_key = private_signing_key()
+        private_key = private_signing_key(governed_root)
         keyring = load_keyring(keyring_path)
         registered = keyring.get(args.producer)
         if registered is None:
@@ -346,6 +455,13 @@ def cmd_run(args: argparse.Namespace) -> int:
                 f"for producer {args.producer!r}; the record would be written "
                 "and then refused at evaluation"
             )
+
+        # Whether the record can be written is knowable now. Left to
+        # `record_evidence`, a corrupt or unwritable evidence file is discovered
+        # only once the command has run, changed the tree, and left no record of
+        # having done so.
+        load_records(evidence_path)
+        refuse_unwritable_evidence(evidence_path)
 
         # Refuse before running, not after: a claim we cannot honestly bind to a
         # subject should cost nothing to discover.
@@ -366,7 +482,18 @@ def cmd_run(args: argparse.Namespace) -> int:
         return EXIT_USAGE
 
     try:
-        completed = subprocess.run(command, cwd=root, check=False)
+        # The observed command is the agent's work, untrusted by definition.
+        # Inheriting $RANEX_SIGNING_KEY hands it the producer's private key, and
+        # a key the subject of the observation can read lets it sign whatever
+        # record it likes — signatures would then prove only that something ran
+        # on this machine. The key was read before this point; the child has no
+        # use for the variable.
+        environment = {
+            name: value
+            for name, value in os.environ.items()
+            if name != SIGNING_KEY_VARIABLE
+        }
+        completed = subprocess.run(command, cwd=root, check=False, env=environment)
     except OSError as exc:
         print(f"ERROR  cannot run {command[0]!r}: {exc}", file=sys.stderr)
         return EXIT_USAGE
@@ -434,7 +561,7 @@ def cmd_keygen(args: argparse.Namespace) -> int:
             )
         target = target.resolve()
 
-        if target == governed_root or governed_root in target.parents:
+        if committable_into(target, governed_root):
             raise ValueError(
                 f"refusing to write a private key inside the repository: {target}. "
                 "Private keys must never be committable"
