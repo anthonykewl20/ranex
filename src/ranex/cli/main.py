@@ -18,6 +18,8 @@ import shlex
 import stat
 import subprocess
 import sys
+import tempfile
+from collections.abc import Sequence
 from pathlib import Path
 
 from ranex.bootstrap.composition import build_gate_evaluator
@@ -71,6 +73,59 @@ def head_commit(repository_root: Path) -> str:
     if result.returncode != 0:
         raise ValueError(f"cannot resolve HEAD: {result.stderr.strip()}")
     return result.stdout.strip()
+
+
+def committed_bytes(repository_root: Path, ref: str, path: Path) -> bytes | None:
+    """The bytes `ref` records for `path`, or None if `ref` has no such file."""
+
+    relative = path.relative_to(repository_root).as_posix()
+    result = subprocess.run(
+        # `cat-file blob` and not `show`: it refuses anything that is not a
+        # blob, so a directory or a tag never arrives here as file content.
+        ["git", "-C", str(repository_root), "cat-file", "blob", f"{ref}:{relative}"],
+        capture_output=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        return None
+    return result.stdout
+
+
+def refuse_uncommitted_trust_root(
+    repository_root: Path,
+    ref: str,
+    path: Path,
+    description: str,
+) -> None:
+    """Refuse a trust-root file on disk that is not the file `ref` carries.
+
+    The keyring and the gate catalog are the trust root: one says which keys
+    this repository trusts, the other says what the gate demands. Both are
+    committed *so that review is the control on them*, and reading them from the
+    working tree removes that control entirely. An unstaged line in the keyring
+    registers a producer nobody reviewed; an unstaged edit to `required_claims`
+    rewrites the target after the throw and the journal then preserves it as if
+    it had been the policy all along.
+
+    A file the commit does not carry at all is read from disk unchanged: there
+    is no reviewed version to prefer, and taking one out of the history is
+    itself a commit a reviewer sees. What must never happen is a committed file
+    being quietly overridden by an edit that never reaches a commit.
+    """
+
+    committed = committed_bytes(repository_root, ref, path)
+    if committed is None:
+        return
+    try:
+        on_disk = path.read_bytes()
+    except OSError as exc:
+        raise ValueError(f"cannot read the {description} at {path}: {exc}") from exc
+    if on_disk != committed:
+        raise ValueError(
+            f"refusing to evaluate: the {description} at {path} differs from the "
+            f"version committed in {ref}, and it decides this verdict. Commit the "
+            "change so review sees it, or revert it"
+        )
 
 
 def load_records(path: Path) -> list[object]:
@@ -212,29 +267,54 @@ def uncommitted_paths(
     Untracked files count. They are absent from HEAD's tree yet present when a
     command runs, so a digest of HEAD would not describe what was observed.
 
+    Asked against a scratch index read fresh from HEAD, never the repository's
+    own. `git update-index --skip-worktree <file>` (and `--assume-unchanged`)
+    tells git to stop stat-ing a file, and `git status` — `git diff HEAD` with
+    it — then reports a clean tree while that file on disk differs from HEAD,
+    permanently, with nothing to restore afterwards. A cleanliness check the
+    observed party can switch off with one plumbing command is not a check.
+    Those bits live in the index, so an index built from HEAD does not carry
+    them and the question is answered by what is actually on disk.
+
     `ignoring` exempts Ranex's own evidence file. It is written only after the
     observed command has already exited, so it cannot have influenced the
     outcome — and without the exemption the second `run` in a repository would
     always refuse itself.
     """
 
-    result = subprocess.run(
-        # --ignore-submodules=none overrides any submodule.<name>.ignore or
-        # diff.ignoreSubmodules setting. Left to the repository's own config, a
-        # changed submodule is invisible here while still being present when the
-        # command runs — a dirty tree bound to a clean digest.
-        [
-            "git",
-            "-C",
-            str(repository_root),
-            "status",
-            "--porcelain",
-            "--ignore-submodules=none",
-        ],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    with tempfile.TemporaryDirectory() as scratch:
+        # Outside the repository on purpose: an index file inside the working
+        # tree would itself be untracked, and every call would report dirty.
+        environment = os.environ | {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
+        read_tree = subprocess.run(
+            ["git", "-C", str(repository_root), "read-tree", "HEAD"],
+            capture_output=True,
+            text=True,
+            check=False,
+            env=environment,
+        )
+        if read_tree.returncode != 0:
+            raise ValueError(
+                f"cannot read HEAD into a scratch index: {read_tree.stderr.strip()}"
+            )
+        result = subprocess.run(
+            # --ignore-submodules=none overrides any submodule.<name>.ignore or
+            # diff.ignoreSubmodules setting. Left to the repository's own config,
+            # a changed submodule is invisible here while still being present
+            # when the command runs — a dirty tree bound to a clean digest.
+            [
+                "git",
+                "-C",
+                str(repository_root),
+                "status",
+                "--porcelain",
+                "--ignore-submodules=none",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            env=environment,
+        )
     if result.returncode != 0:
         raise ValueError(f"cannot read repository status: {result.stderr.strip()}")
 
@@ -259,6 +339,56 @@ def uncommitted_paths(
             if path and path != exempt:
                 dirty.append(path)
     return tuple(sorted(dirty))
+
+
+def tracked_paths(repository_root: Path) -> tuple[str, ...]:
+    """Every path git holds in the index, NUL-separated so no name can lie."""
+
+    result = subprocess.run(
+        ["git", "-C", str(repository_root), "ls-files", "-z"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise ValueError(f"cannot list the tracked files: {result.stderr.strip()}")
+    return tuple(sorted(path for path in result.stdout.split("\0") if path))
+
+
+def stat_fingerprint(
+    repository_root: Path,
+    paths: Sequence[str],
+) -> dict[str, tuple[int, ...] | None]:
+    """Filesystem identity and timestamps for each path, as they are right now.
+
+    Content cannot answer "was this tree written while the command ran". A
+    command that edits a tracked file, runs the check against the edit and puts
+    the original bytes back leaves a tree byte-identical to HEAD: `git status`,
+    `git diff HEAD` and any digest of the files all agree before and after, and
+    the observation was still made against a tree that has existed in no commit.
+    Comparing this before and after is what sees it happen.
+
+    Inode, size and mtime all move when a file is rewritten. ctime moves too and
+    is the one the writing process cannot set back, so restoring the timestamps
+    does not restore this. `None` records a path that is not there — absent both
+    times is no change, appearing or vanishing is.
+    """
+
+    fingerprint: dict[str, tuple[int, ...] | None] = {}
+    for path in paths:
+        try:
+            info = (repository_root / path).lstat()
+        except OSError:
+            fingerprint[path] = None
+            continue
+        fingerprint[path] = (
+            info.st_dev,
+            info.st_ino,
+            info.st_size,
+            info.st_mtime_ns,
+            info.st_ctime_ns,
+        )
+    return fingerprint
 
 
 def refuse_unwritable_evidence(path: Path) -> None:
@@ -341,6 +471,11 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             resolve_within_repository(root, args.journal) if args.journal else None
         )
         subject = subject_digest_for(root, args.ref)
+        # Before either is read, and against the ref being judged rather than
+        # against whatever is checked out: these two files choose the verdict,
+        # so the copy that decides it must be the copy review saw.
+        refuse_uncommitted_trust_root(root, args.ref, keyring_path, "producer keyring")
+        refuse_uncommitted_trust_root(root, args.ref, gate_catalog, "gate catalog")
         admission = admitted_evidence(evidence_path, keyring_path)
         evaluator = build_gate_evaluator(
             gate_catalog,
@@ -386,7 +521,16 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
     # kernel names them in one sentence because it judges claims, not causes;
     # partitioning per claim here is what keeps a forgery from being printed
     # under the phrasing reserved for honest absence.
-    explained = {rejection.claim_id for rejection in admission.rejections}
+
+    # A rejection carries the claim it names, and `claim_id` is read off the
+    # record with `_text_or_none` — so changing that one field to a non-string
+    # produces a rejection naming no claim at all. None intersects no required
+    # claim, so the claim used to fall through into `absent` and print under the
+    # kernel's phrasing for honest absence: the attacker chose the wording of
+    # the report by choosing which field to tamper with. Counted separately, and
+    # the absence sentence is withheld while any of them exist.
+    unattributable = sum(1 for r in admission.rejections if r.claim_id is None)
+    explained = {r.claim_id for r in admission.rejections if r.claim_id is not None}
     missing = set(result.missing_claims)
     replayed = {
         item.claim_id
@@ -401,7 +545,13 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             f"      {len(admission.rejections)} record(s) were refused above; "
             f"no verifying evidence remains for: {', '.join(refused)}"
         )
-    if absent:
+    if absent and unattributable:
+        print(
+            f"      {unattributable} record(s) above were refused without a usable "
+            "claim_id, so these required claims cannot be called work never "
+            f"done: {', '.join(absent)}"
+        )
+    elif absent:
         print(f"      no evidence for required claim: {', '.join(absent)}")
     if result.reason and (replayed or not missing):
         # The kernel's own diagnosis, kept whenever it says something the
@@ -477,6 +627,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         # the documented interface.
         subject = subject_digest_for(root, "HEAD")
         started_at = head_commit(root)
+        # Taken last, immediately before the command: everything above may run
+        # git, and this has to describe the tree as the command finds it.
+        observed = tracked_paths(root)
+        untouched = stat_fingerprint(root, observed)
     except (ValueError, TypeError, OSError, json.JSONDecodeError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
@@ -508,6 +662,26 @@ def cmd_run(args: argparse.Namespace) -> int:
                 "refusing to record evidence: the command moved HEAD from "
                 f"{started_at[:12]} during the run, so {subject[:19]}… "
                 "does not describe what was observed"
+            )
+        # Clean before and clean after is not the same as clean throughout. A
+        # command that paints the bullseye, throws, and wipes the paint off —
+        # write the answer the check wants, run it, restore the committed bytes,
+        # exit with the check's status — leaves HEAD untouched and every content
+        # comparison satisfied. The tree it was scored against existed only
+        # while nobody was looking, so the digest names a tree whose own check
+        # still fails. Creating files remains legitimate: only paths git already
+        # tracked are watched, and only for having been written.
+        written = sorted(
+            path
+            for path, fingerprint in stat_fingerprint(root, observed).items()
+            if fingerprint != untouched[path]
+        )
+        if written:
+            raise ValueError(
+                "refusing to record evidence: the command wrote to tracked "
+                f"file(s) while it ran — {', '.join(written)} — so {subject[:19]}… "
+                "does not describe the tree that was observed, whatever the tree "
+                "on disk looks like now"
             )
         content = {
             "claim_id": args.claim,

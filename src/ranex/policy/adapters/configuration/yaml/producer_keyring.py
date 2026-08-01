@@ -43,13 +43,19 @@ class _NoDuplicateKeys(yaml.SafeLoader):
             # it meant to refuse — two characters of YAML for a trust-root DoS.
             try:
                 duplicate = key in seen
+                # `seen.add` belongs inside the guard, not after it. CPython
+                # silently retries a failed `set` lookup as a `frozenset`, so a
+                # `!!set` key answers `key in seen` with False and never raises;
+                # `set.add` has no such retry and raised TypeError one line
+                # later, outside every handler. The guard that looked complete
+                # closed only the door it had been shown.
+                seen.add(key)
             except TypeError as exc:
                 raise KeyringError(
                     f"keyring entry {key!r} is not a usable producer id: {exc}"
                 ) from exc
             if duplicate:
                 raise KeyringError(f"duplicate entry for {key!r} in the keyring")
-            seen.add(key)
         return super().construct_mapping(node, deep=deep)
 
 
