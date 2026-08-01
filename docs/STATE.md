@@ -4,16 +4,15 @@
 
 **Updated:** 2026-08-01
 **Phase:** kernel — evidence loop
-**Active slice:** none — SLICE-002 closed, next one not yet opened
+**Active slice:** docs/slices/SLICE-002-evidence-authenticity.md
 
 ## Where we stopped
 
-**SLICE-002 is done.** Evidence is signed. `run` refuses to write without a key,
-admission verifies each record against the committed keyring, and a record that
-does not verify never reaches `evaluate()` — forgery arrives as absence, and
-absence blocks. 134 tests green. The target was committed red at `0b0512c2f` and
-all five of its files are byte-identical since; `verdict.py` is unchanged, held
-by a digest test.
+**SLICE-002 reopened.** It was closed at `7f6cd3779` with 134 tests green, then
+two independent audits found 12 defects — four of them blockers, and two ticked
+criteria provably false. The worst: the command under test inherits
+`$RANEX_SIGNING_KEY`, so it can steal the key and sign its own pass. The tests
+passed because they were narrower than reality, not because the code was right.
 
 **Signing is mandatory, and that is a wall on a fresh clone.** No
 `governance/producers.yaml` exists here, so `run` and `gate evaluate` exit 2

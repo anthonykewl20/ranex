@@ -247,17 +247,14 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none — the next one is not yet opened.
+**Active slice:** SLICE-002-evidence-authenticity — reopened; signing shipped
+with four blocker defects found by independent audit.
 
 ## Completed slices
 
 - **SLICE-001-evidence-production** — `ranex run` executes a command, observes
   it, and emits evidence the gate accepts. Target committed red at `b495e3635`,
   before any implementation existed.
-- **SLICE-002-evidence-authenticity** — evidence carries an Ed25519 signature
-  bound to a producer in a committed keyring. A record that does not verify is
-  never admitted, so forgery reaches the kernel as absence. Target committed red
-  at `0b0512c2f`.
 
 ---
 

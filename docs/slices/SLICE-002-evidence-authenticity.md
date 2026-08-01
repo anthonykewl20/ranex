@@ -1,8 +1,8 @@
 # SLICE-002 — evidence authenticity
 
-**Status:** done
+**Status:** open
 **Opened:** 2026-08-01
-**Closed:** 2026-08-01 — 134 tests green; target frozen at `0b0512c2f`
+**Reopened:** 2026-08-01 — closed prematurely; see Defects below
 
 ## Why
 
@@ -96,7 +96,8 @@ Each must be met and proven by a test.
 
 - [x] A keyring that is missing, unreadable, invalid YAML, or holds a malformed
       key is a **distinct, loud failure**. Never "no evidence"
-- [x] A keyring mapping one public key to two producer ids is **refused**
+- [ ] A keyring mapping one public key to two producer ids is **refused**
+      (FALSE as shipped: 4 base64 encodings decode to the same key)
 - [x] Duplicate `producer_id` entries are refused rather than resolved by
       last-wins
 
@@ -104,8 +105,9 @@ Each must be met and proven by a test.
 
 - [x] Admission returns admitted records **and** structured rejections, each
       carrying a machine-readable reason
-- [x] Forged signature, unknown producer, and corrupt evidence file each produce
+- [ ] Forged signature, unknown producer, and corrupt evidence file each produce
       a **distinct** reason. None may read as "no evidence for required claim"
+      (FALSE as shipped on any gate requiring more than one claim)
 - [x] A truncated or unparseable `evidence.json` is reported as file corruption,
       not as absence
 - [x] `evaluate()` receives only admitted records, so forgery reaches the kernel
@@ -140,6 +142,46 @@ Each must be met and proven by a test.
 - [x] e2e: `keygen` → `run` → `gate evaluate` → PASS, exit 0
 - [x] e2e: hand-edit a signed record's `exit_code` → FAIL, reason names
       signature rejection
+
+## Defects — why this slice reopened
+
+Closed at `7f6cd3779` with 134 tests green. Two independent auditors then found
+12 defects, and two of the ticked criteria above were provably false. They passed
+only because the tests were narrower than reality: one compared the same string
+to itself, the other used a single-claim gate while this repository's real gate
+requires two.
+
+A slice is finished when every criterion is met **and a test proves it**. These
+tests proved less than they appeared to, so the slice was not finished.
+
+**Blockers**
+
+- [ ] Non-canonical base64 is accepted, so one key has 4 valid encodings and the
+      one-key-one-producer rule is one character away from defeat
+- [ ] The observed command inherits `$RANEX_SIGNING_KEY`, so the work being
+      judged can steal the key and sign its own pass
+- [ ] `keygen` writes a committable key into a linked worktree of the same
+      repository, which shares the object store
+- [ ] A gate requiring several claims reports a forged claim as honest absence
+
+**Should fix**
+
+- [ ] Rejections are invisible on the PASS path and absent from the journal
+- [ ] `producers: {}` returns an empty keyring instead of failing closed
+- [ ] An unreadable evidence file is reported as an absent one
+- [ ] `run` executes the command before discovering it cannot write the record
+- [ ] The refusal summary discards the kernel's own reason, losing the
+      actionable "bound to a different subject digest" diagnosis
+
+**Minor**
+
+- [ ] `keygen`'s containment check is check-then-open; the parent-directory
+      TOCTOU was won 22 times in 200 attempts
+- [ ] `run` accepts a signing key stored inside the repository, which `keygen`
+      refuses to create
+- [ ] Two error paths accuse the wrong thing: an unhashable YAML key escapes as
+      `TypeError`, and an unencodable string is reported as a bad signature when
+      no verification took place
 
 ## Out of scope
 
