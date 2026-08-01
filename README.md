@@ -289,7 +289,7 @@ product code.
 
 - `CLAUDE.md` — invariants, settled decisions, working rules
 - `docs/STATE.md` — where work stopped and what is next
-- `docs/slices/` — the one open slice
+- `docs/slices/` — the open slice, when one is open
 
 ## License
 

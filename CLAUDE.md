@@ -77,6 +77,7 @@ code. The docs layer is deliberately capped so that cannot happen again.
 | Path | Purpose | Lifecycle |
 |---|---|---|
 | `CLAUDE.md` | this file — orientation and rules | edited rarely |
+| `README.md` | public project overview and status | updated when public status changes |
 | `docs/STATE.md` | where we stopped, what is next | **rewritten** each session |
 | `docs/slices/SLICE-NNN-*.md` | the one open slice | at most **one** open |
 | `docs/slices/done/` | finished slices | archived, not read by default |
@@ -90,8 +91,9 @@ one is exactly what produced the 561 files. Instead:
 - Something about a change → the commit message
 - Everything else → say it in chat and let it go
 
-`STATE.md` is a **pointer, not a log.** It has a fixed shape and stays under 50
-lines forever. Git already holds the history; do not duplicate it here.
+`STATE.md` is a **pointer, not a log.** It has a fixed shape and stays at most 50
+lines forever — the cap the test enforces is `<= 50`, and the file sits at it.
+Git already holds the history; do not duplicate it here.
 
 **This file loads into every session, so it is the most expensive real estate in
 the repo.** Put here only what prevents an expensive mistake. Evidence, history,
