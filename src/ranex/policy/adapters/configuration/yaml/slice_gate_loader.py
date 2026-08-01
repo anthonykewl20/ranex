@@ -1,7 +1,7 @@
 """Load one gate definition from a YAML catalog.
 
 Deliberately loads from YAML and **not** from `architecture/contracts/`.
-`SPIKE-01` proved the generated registry holds readiness gates
+That generated registry holds readiness gates
 (`evidence_role` -> tier) while this kernel needs action gates
 (`action` -> rules): five fields would have to be invented. Inventing them and
 calling the result "derived from the contract tree" would be a false closure.

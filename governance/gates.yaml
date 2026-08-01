@@ -1,4 +1,5 @@
-# Action gates for this repository. Authored, not generated — see SPIKE-01.
+# Action gates for this repository. Authored, not generated: the contract tree
+# holds readiness gates, not action gates — see src/.../yaml/slice_gate_loader.py.
 gates:
   - gate_id: landing
     rule_id: TESTS_EXECUTED

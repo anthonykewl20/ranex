@@ -59,7 +59,7 @@ big — split it rather than carrying it.
 ## Commands
 
 ```
-uv run pytest -q                                        # currently 41 tests, ~0.4s
+uv run pytest -q                                        # full suite, about a second
 PYTHONPATH=src uv run python -m ranex.cli.main --help
 ```
 

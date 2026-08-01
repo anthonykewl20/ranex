@@ -249,8 +249,8 @@ none of the surface around it does.
 ## Completed slices
 
 - **SLICE-001-evidence-production** — `ranex run` executes a command, observes
-  it, and emits evidence the gate accepts. Target committed red before any
-  implementation existed; 65 tests green.
+  it, and emits evidence the gate accepts. Target committed red at `b495e3635`,
+  before any implementation existed.
 
 ---
 
@@ -266,13 +266,19 @@ PYTHONPATH=src uv run python -m ranex.cli.main gate evaluate HEAD \
 `pyproject.toml` sets `[tool.uv] package = false`, so the `ranex` console script
 is **not** installed. Invoke through the module path above.
 
-Two things will look broken and are not:
+One thing will look broken and is not: **`gate evaluate HEAD` returns FAIL.**
+`governance/evidence.json` is not checked in — evidence is produced locally, so a
+fresh clone has none and absence blocks. Produce it first:
 
-- **`pytest` currently reports 15 failures.** Those are the SLICE-001 tests,
-  committed red at `b495e3635` before the implementation exists — see
-  *red-then-green* above. They go green when the slice closes.
-- **Evaluating `HEAD` returns FAIL**, because the checked-in evidence is bound to
-  an older tree digest. That is subject binding working, not a bug.
+```sh
+PYTHONPATH=src uv run python -m ranex.cli.main run \
+    --claim tests-executed --producer worker -- uv run pytest -q
+```
+
+It will still FAIL: `governance/gates.yaml` also requires `contracts-validated`,
+and nothing in this repository can produce that claim yet. Once the tree moves
+past the digest the evidence was bound to, `tests-executed` stops counting too.
+Both are the design working, not bugs.
 
 ## Development
 
