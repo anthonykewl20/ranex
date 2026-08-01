@@ -1,8 +1,9 @@
 # SLICE-002 — evidence authenticity
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-01
-**Reopened:** 2026-08-01 — closed prematurely; see Defects below
+**Reopened:** 2026-08-01 — closed prematurely on tests narrower than reality
+**Closed:** 2026-08-01 — 156 tests green; 17 defects from four independent audits
 
 ## Why
 
@@ -96,8 +97,9 @@ Each must be met and proven by a test.
 
 - [x] A keyring that is missing, unreadable, invalid YAML, or holds a malformed
       key is a **distinct, loud failure**. Never "no evidence"
-- [ ] A keyring mapping one public key to two producer ids is **refused**
-      (FALSE as shipped: 4 base64 encodings decode to the same key)
+- [x] A keyring mapping one public key to two producer ids is **refused**
+      (false as first shipped — four base64 spellings of one key were four
+      identities; now canonical-only, and tested)
 - [x] Duplicate `producer_id` entries are refused rather than resolved by
       last-wins
 
@@ -105,9 +107,10 @@ Each must be met and proven by a test.
 
 - [x] Admission returns admitted records **and** structured rejections, each
       carrying a machine-readable reason
-- [ ] Forged signature, unknown producer, and corrupt evidence file each produce
+- [x] Forged signature, unknown producer, and corrupt evidence file each produce
       a **distinct** reason. None may read as "no evidence for required claim"
-      (FALSE as shipped on any gate requiring more than one claim)
+      (false as first shipped on any multi-claim gate; now partitioned per
+      claim, including refusals that name no claim at all)
 - [x] A truncated or unparseable `evidence.json` is reported as file corruption,
       not as absence
 - [x] `evaluate()` receives only admitted records, so forgery reaches the kernel
@@ -156,30 +159,45 @@ tests proved less than they appeared to, so the slice was not finished.
 
 **Blockers**
 
-- [ ] Non-canonical base64 is accepted, so one key has 4 valid encodings and the
+- [x] Non-canonical base64 is accepted, so one key has 4 valid encodings and the
       one-key-one-producer rule is one character away from defeat
-- [ ] The observed command inherits `$RANEX_SIGNING_KEY`, so the work being
-      judged can steal the key and sign its own pass
-- [ ] `keygen` writes a committable key into a linked worktree of the same
+- [~] The observed command inherits `$RANEX_SIGNING_KEY`. **Mitigated, not
+      closed** — see the honesty section. The variable is stripped, which stops
+      nothing determined: a same-uid child reads `/proc/$PPID/environ`
+- [x] `keygen` writes a committable key into a linked worktree of the same
       repository, which shares the object store
-- [ ] A gate requiring several claims reports a forged claim as honest absence
+- [x] A gate requiring several claims reports a forged claim as honest absence
 
 **Should fix**
 
-- [ ] Rejections are invisible on the PASS path and absent from the journal
-- [ ] `producers: {}` returns an empty keyring instead of failing closed
-- [ ] An unreadable evidence file is reported as an absent one
-- [ ] `run` executes the command before discovering it cannot write the record
-- [ ] The refusal summary discards the kernel's own reason, losing the
+- [x] Rejections are invisible on the PASS path and absent from the journal
+- [x] `producers: {}` returns an empty keyring instead of failing closed
+- [x] An unreadable evidence file is reported as an absent one
+- [x] `run` executes the command before discovering it cannot write the record
+- [x] The refusal summary discards the kernel's own reason, losing the
       actionable "bound to a different subject digest" diagnosis
+
+**Found auditing the fixes, then fixed**
+
+- [x] `run` re-checked only HEAD after the command, so a command could edit a
+      tracked file, run, revert and exit 0 — an unearned PASS needing no crypto
+      bug, with the journal corroborating it
+- [x] `skip-worktree` hid a modification from the dirty-tree check
+- [x] The keyring and gate catalog were read from the working tree, so an
+      uncommitted edit decided a verdict. "Review of the committed keyring is
+      the control" was unenforced, so the control did not exist
+- [x] `seen.add` sat outside the guard meant to catch unhashable YAML keys
+- [x] A rejection carrying no `claim_id` printed under the wording reserved for
+      honest absence, letting an attacker pick the phrasing
+- [x] `--evidence` exempted any named tracked file from the dirty-tree check
 
 **Minor**
 
-- [ ] `keygen`'s containment check is check-then-open; the parent-directory
+- [x] `keygen`'s containment check is check-then-open; the parent-directory
       TOCTOU was won 22 times in 200 attempts
-- [ ] `run` accepts a signing key stored inside the repository, which `keygen`
+- [x] `run` accepts a signing key stored inside the repository, which `keygen`
       refuses to create
-- [ ] Two error paths accuse the wrong thing: an unhashable YAML key escapes as
+- [x] Two error paths accuse the wrong thing: an unhashable YAML key escapes as
       `TypeError`, and an unencodable string is reported as a bad signature when
       no verification took place
 
@@ -224,6 +242,16 @@ tests proved less than they appeared to, so the slice was not finished.
 ## What this does not buy
 
 Stated plainly, because the temptation is to oversell it.
+
+**It does not keep the key from the worker.** The observed command no longer
+inherits `$RANEX_SIGNING_KEY`, and that is worth doing, but it is a speed bump
+and must not be described as more. A child running as the same user reads
+`/proc/$PPID/environ`, and can read the key file whatever the environment says.
+Verified, not assumed. While the signer runs as the same user as the work it
+observes, a determined worker can sign its own verdict. Closing that needs the
+signer out of the worker's reach — a different uid, or a separate process the
+worker cannot address — which is architecture, not a patch, and is not in this
+slice.
 
 **It does not stop a local attacker.** Whoever can edit `governance/evidence.json`
 can usually also read `$RANEX_SIGNING_KEY` and sign whatever they like. On one
