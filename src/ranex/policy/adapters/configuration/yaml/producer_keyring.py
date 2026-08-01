@@ -1,0 +1,95 @@
+"""Load the committed keyring that says which public key belongs to whom.
+
+This file is the trust root. It is committed so that review is the control on
+it, and every failure path here is loud rather than empty.
+
+An empty mapping would be the worst possible failure mode: every record would be
+rejected for an unknown producer, the gate would FAIL, and the output would look
+exactly like a project that had simply not run its tests yet. A broken trust
+root must never be mistakable for honest absence.
+"""
+
+from __future__ import annotations
+
+from pathlib import Path
+from typing import Any
+
+import yaml
+
+from ranex.foundation.signing import is_public_key
+
+
+class KeyringError(ValueError):
+    """The keyring cannot be trusted, so nothing may be admitted using it."""
+
+
+class _NoDuplicateKeys(yaml.SafeLoader):
+    """YAML silently keeps the last of a repeated key.
+
+    Left alone, appending one line to this file would quietly replace a
+    producer's key with no diff conflict and no error — a trust-root change
+    disguised as an addition.
+    """
+
+    def construct_mapping(self, node: Any, deep: bool = False) -> dict[Any, Any]:
+        seen: set[Any] = set()
+        for key_node, _ in node.value:
+            key = self.construct_object(key_node, deep=deep)
+            if key in seen:
+                raise KeyringError(f"duplicate entry for {key!r} in the keyring")
+            seen.add(key)
+        return super().construct_mapping(node, deep=deep)
+
+
+def load_keyring(path: Path | str) -> dict[str, str]:
+    """Return producer_id -> `ed25519:<base64>`. Raises KeyringError on anything
+    it cannot fully trust."""
+
+    path = Path(path)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise KeyringError(f"cannot read the keyring at {path}: {exc}") from exc
+
+    try:
+        document = yaml.load(text, Loader=_NoDuplicateKeys)
+    except KeyringError:
+        raise
+    except yaml.YAMLError as exc:
+        raise KeyringError(f"keyring at {path} is not valid YAML: {exc}") from exc
+
+    if not isinstance(document, dict):
+        raise KeyringError(f"keyring at {path} must be a mapping")
+    if "producers" not in document:
+        raise KeyringError(f"keyring at {path} has no 'producers' mapping")
+
+    producers = document["producers"]
+    if not isinstance(producers, dict):
+        raise KeyringError(f"'producers' in {path} must be a mapping")
+
+    keyring: dict[str, str] = {}
+    owner_of: dict[str, str] = {}
+    for producer_id, public_key in producers.items():
+        if not isinstance(producer_id, str) or not producer_id.strip():
+            raise KeyringError(f"producer id {producer_id!r} must be a non-empty string")
+        if not is_public_key(public_key):
+            raise KeyringError(
+                f"producer {producer_id!r} has a malformed public key; "
+                "expected ed25519:<base64> of 32 bytes"
+            )
+
+        # One key, one identity. If two producers share a key, whoever holds the
+        # private half signs as either of them: they produce evidence as one and
+        # approve as the other, and no-self-approval compares two different
+        # strings and permits it. Refused here so the attack is unrepresentable
+        # rather than merely discouraged by review.
+        if public_key in owner_of:
+            raise KeyringError(
+                f"producers {owner_of[public_key]!r} and {producer_id!r} share a "
+                "public key; one key may serve only one producer, or "
+                "no-self-approval can be defeated by signing as either identity"
+            )
+        owner_of[public_key] = producer_id
+        keyring[producer_id] = public_key
+
+    return keyring

@@ -26,6 +26,8 @@ import pytest
 from ranex.cli.main import main
 from ranex.foundation.canonical import canonical_sha256
 
+from conftest import Signing, attach, signing_for
+
 GATES = """
 gates:
   - gate_id: landing
@@ -36,7 +38,7 @@ gates:
 
 
 @pytest.fixture()
-def repo(tmp_path: Path) -> Path:
+def repo(tmp_path: Path, signing: Signing) -> Path:
     """A real git repository whose working tree is clean."""
 
     repository = tmp_path / "governed"
@@ -47,6 +49,10 @@ def repo(tmp_path: Path) -> Path:
         )
     (repository / "file.txt").write_text("content\n", encoding="utf-8")
     (repository / "gates.yaml").write_text(GATES, encoding="utf-8")
+    # The keyring is committed with the tree, as it is in production: it is the
+    # trust root, and review of this file is the control on it.
+    signing.write_keyring(repository)
+    attach(repository, signing)
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
@@ -66,12 +72,18 @@ def subject_of(repo: Path) -> str:
     return "sha256:" + canonical_sha256({"tree": tree})
 
 
-def invoke(repo: Path, argv: list[str]) -> int:
+def invoke(repo: Path, argv: list[str], producer: str | None = None) -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repo.resolve()
         )
+        if producer is None:
+            monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
+        else:
+            monkeypatch.setenv(
+                "RANEX_SIGNING_KEY", str(signing_for(repo).key_path(producer))
+            )
         return main(argv)
 
 
@@ -85,8 +97,10 @@ def run_cmd(repo: Path, *command: str, claim: str = "tests-executed",
             "--producer", producer,
             "--repository", ".",
             "--evidence", evidence,
+            "--producers", "producers.yaml",
             "--", *command,
         ],
+        producer=producer,
     )
 
 
@@ -98,6 +112,7 @@ def evaluate(repo: Path, approver: str = "reviewer") -> int:
             "--repository", ".",
             "--gate-catalog", "gates.yaml",
             "--evidence", "evidence.json",
+            "--producers", "producers.yaml",
             "--approver", approver,
         ],
     )
@@ -189,13 +204,16 @@ def test_preserves_unrelated_records(repo: Path) -> None:
     (repo / "evidence.json").write_text(
         json.dumps(
             [
-                {
-                    "claim_id": "contracts-validated",
-                    "subject_digest": subject_of(repo),
-                    "producer_id": "auditor",
-                    "command": "validate",
-                    "exit_code": 0,
-                }
+                signing_for(repo).sign(
+                    {
+                        "claim_id": "contracts-validated",
+                        "subject_digest": subject_of(repo),
+                        "producer_id": "auditor",
+                        "command": "validate",
+                        "exit_code": 0,
+                    },
+                    "auditor",
+                )
             ]
         ),
         encoding="utf-8",
@@ -223,12 +241,18 @@ def test_keeps_the_same_claim_from_a_different_producer(repo: Path) -> None:
     assert {r["producer_id"] for r in records(repo)} == {"worker-a", "worker-b"}
 
 
-def test_output_round_trips_through_load_evidence(repo: Path) -> None:
-    from ranex.cli.main import load_evidence
+def test_output_round_trips_through_admission(repo: Path) -> None:
+    """`load_evidence` became `admitted_evidence` in SLICE-002: records are read
+    raw and admission decides which are evidence. The round trip still has to
+    hold, and now it also has to verify."""
+
+    from ranex.cli.main import admitted_evidence
 
     run_cmd(repo, "sh", "-c", "exit 0")
 
-    (evidence,) = load_evidence(repo / "evidence.json")
+    admission = admitted_evidence(repo / "evidence.json", repo / "producers.yaml")
+    assert admission.rejections == ()
+    (evidence,) = admission.evidence
     assert evidence.claim_id == "tests-executed"
     assert evidence.exit_code == 0
     assert evidence.subject_digest == subject_of(repo)

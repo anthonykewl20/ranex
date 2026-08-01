@@ -19,9 +19,11 @@ import pytest
 from ranex.cli.main import main, uncommitted_paths
 from ranex.foundation.canonical import canonical_sha256
 
+from conftest import Signing, attach, signing_for
+
 
 @pytest.fixture()
-def repo(tmp_path: Path) -> Path:
+def repo(tmp_path: Path, signing: Signing) -> Path:
     repository = tmp_path / "governed"
     subprocess.run(["git", "init", "-q", str(repository)], check=True)
     for key, value in (("user.email", "t@example.com"), ("user.name", "Test")):
@@ -38,6 +40,8 @@ def repo(tmp_path: Path) -> Path:
         "    required_claims: [c]\n",
         encoding="utf-8",
     )
+    signing.write_keyring(repository)
+    attach(repository, signing)
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
@@ -62,17 +66,20 @@ def head_subject(repo: Path) -> str:
     return "sha256:" + canonical_sha256({"tree": tree})
 
 
-def invoke(repo: Path, argv: list[str]) -> int:
+def invoke(repo: Path, argv: list[str], producer: str = "w") -> int:
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.chdir(repo)
         monkeypatch.setattr(
             "ranex.cli.main.governed_repository_root", lambda: repo.resolve()
         )
+        monkeypatch.setenv(
+            "RANEX_SIGNING_KEY", str(signing_for(repo).key_path(producer))
+        )
         return main(argv)
 
 
 BASE = ["run", "--claim", "c", "--producer", "w", "--repository", ".",
-        "--evidence", "evidence.json"]
+        "--evidence", "evidence.json", "--producers", "producers.yaml"]
 
 
 # --- the subject must be the tree that was actually observed ---------------

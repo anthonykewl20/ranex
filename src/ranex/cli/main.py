@@ -13,7 +13,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shlex
+import stat
 import subprocess
 import sys
 from pathlib import Path
@@ -21,14 +23,26 @@ from pathlib import Path
 from ranex.bootstrap.composition import build_gate_evaluator
 from ranex.cli.confinement import resolve_within_repository
 from ranex.foundation.canonical import canonical_sha256
+from ranex.foundation.signing import (
+    generate_keypair,
+    public_key_for,
+    sign_evidence,
+)
 from ranex.governed_execution.api import (
     Evidence,
     Verdict,
+)
+from ranex.governed_execution.domain.admission import Admission, admit
+from ranex.policy.adapters.configuration.yaml.producer_keyring import (
+    KeyringError,
+    load_keyring,
 )
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
 EXIT_USAGE = 2
+
+SIGNING_KEY_VARIABLE = "RANEX_SIGNING_KEY"
 
 
 def subject_digest_for(repository_root: Path, ref: str) -> str:
@@ -59,31 +73,63 @@ def head_commit(repository_root: Path) -> str:
     return result.stdout.strip()
 
 
-def load_evidence(path: Path) -> tuple[Evidence, ...]:
-    """Read evidence records. A missing file is no evidence, not an error.
+def load_records(path: Path) -> list[object]:
+    """Read the raw evidence array. A missing file is no evidence, not an error.
 
     A malformed file is an error, never silently no evidence. `{}` used to
     iterate zero keys and return nothing at all, which is indistinguishable
     from an honest absence and therefore the more dangerous of the two.
+
+    Records are returned raw. Deciding which of them are evidence is admission's
+    job, and it needs the signature this function deliberately does not strip.
     """
 
     if not path.exists():
-        return ()
-    raw = json.loads(path.read_text(encoding="utf-8"))
+        return []
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        # A truncated file is corruption, not absence. Saying "no evidence"
+        # here would report an interrupted write as work never done.
+        raise ValueError(
+            f"evidence file at {path} is corrupt and cannot be parsed: {exc}"
+        ) from exc
     if not isinstance(raw, list):
         raise ValueError("evidence file must contain a JSON array")
-    if any(not isinstance(item, dict) for item in raw):
-        raise ValueError("every evidence record must be a JSON object")
-    return tuple(
-        Evidence(
-            claim_id=item["claim_id"],
-            subject_digest=item["subject_digest"],
-            producer_id=item["producer_id"],
-            command=item["command"],
-            exit_code=int(item["exit_code"]),
+    return list(raw)
+
+
+def admitted_evidence(path: Path, keyring_path: Path) -> Admission:
+    """Raw records plus the keyring, in; evidence plus rejections, out."""
+
+    return admit(load_records(path), load_keyring(keyring_path))
+
+
+def private_signing_key() -> str:
+    """Read the producer's private key from the environment.
+
+    Refuses a key any other account can read. `keygen` writes 0600, but a key
+    copied between machines usually arrives with whatever mode the copy gave it,
+    and a world-readable signing key makes the whole slice decorative.
+    """
+
+    raw_path = os.environ.get(SIGNING_KEY_VARIABLE)
+    if not raw_path:
+        raise ValueError(
+            f"{SIGNING_KEY_VARIABLE} is not set, so nothing can sign this "
+            "record; refusing to write unsigned evidence"
         )
-        for item in raw
-    )
+    key_path = Path(raw_path)
+    if not key_path.is_file():
+        raise ValueError(f"{SIGNING_KEY_VARIABLE} points at no file: {key_path}")
+
+    mode = stat.S_IMODE(key_path.stat().st_mode)
+    if mode & 0o077:
+        raise ValueError(
+            f"private key {key_path} is mode {oct(mode)}; it must not be "
+            "readable by group or other. chmod 600 it"
+        )
+    return key_path.read_text(encoding="utf-8").strip()
 
 
 def uncommitted_paths(
@@ -201,22 +247,30 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             )
         gate_catalog = resolve_within_repository(root, args.gate_catalog)
         evidence_path = resolve_within_repository(root, args.evidence)
+        keyring_path = resolve_within_repository(root, args.producers)
         journal_path = (
             resolve_within_repository(root, args.journal) if args.journal else None
         )
         subject = subject_digest_for(root, args.ref)
-        evidence = load_evidence(evidence_path)
+        admission = admitted_evidence(evidence_path, keyring_path)
         evaluator = build_gate_evaluator(
             gate_catalog,
             journal_path,
         )
         result = evaluator.evaluate(
             args.gate,
-            evidence,
+            admission.evidence,
             subject_digest=subject,
             approver_id=args.approver,
         )
-    except (ValueError, TypeError, KeyError, OSError, json.JSONDecodeError) as exc:
+    except (
+        KeyringError,
+        ValueError,
+        TypeError,
+        KeyError,
+        OSError,
+        json.JSONDecodeError,
+    ) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
@@ -225,7 +279,27 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         return EXIT_PASS
 
     print(f"FAIL  gate={result.gate_id}  rule={result.failing_rule}")
-    print(f"      {result.reason}")
+
+    for rejection in admission.rejections:
+        print(
+            f"      REFUSED record {rejection.index} "
+            f"[{rejection.reason}] {rejection.detail}"
+        )
+
+    # A record that was refused is not the same event as work never done, and
+    # the operator must not have to guess which happened. When every missing
+    # claim is accounted for by a refusal, say so in those terms rather than
+    # falling through to the kernel's phrasing for honest absence.
+    explained = {rejection.claim_id for rejection in admission.rejections}
+    missing = set(result.missing_claims)
+    if missing and missing <= explained:
+        print(
+            f"      {len(admission.rejections)} record(s) were refused above; "
+            f"no verifying evidence remains for: {', '.join(sorted(missing))}"
+        )
+    else:
+        print(f"      {result.reason}")
+
     print(f"      subject={result.subject_digest}")
     return EXIT_FAIL
 
@@ -251,8 +325,27 @@ def cmd_run(args: argparse.Namespace) -> int:
                 f"second-repository targets are refused: {args.repository!r}"
             )
         evidence_path = resolve_within_repository(root, args.evidence)
+        keyring_path = resolve_within_repository(root, args.producers)
         if not command:
             raise ValueError("a command is required after --")
+
+        # Everything that can refuse, refuses before the command runs. A test
+        # suite is expensive; discovering afterwards that the record cannot be
+        # written honestly wastes all of it.
+        private_key = private_signing_key()
+        keyring = load_keyring(keyring_path)
+        registered = keyring.get(args.producer)
+        if registered is None:
+            raise ValueError(
+                f"producer {args.producer!r} is not in {keyring_path.name}; "
+                "register its public key before recording evidence"
+            )
+        if public_key_for(private_key) != registered:
+            raise ValueError(
+                f"the key in {SIGNING_KEY_VARIABLE} is not the key registered "
+                f"for producer {args.producer!r}; the record would be written "
+                "and then refused at evaluation"
+            )
 
         # Refuse before running, not after: a claim we cannot honestly bind to a
         # subject should cost nothing to discover.
@@ -289,15 +382,16 @@ def cmd_run(args: argparse.Namespace) -> int:
                 f"{started_at[:12]} during the run, so {subject[:19]}… "
                 "does not describe what was observed"
             )
+        content = {
+            "claim_id": args.claim,
+            "subject_digest": subject,
+            "producer_id": args.producer,
+            "command": shlex.join(command),
+            "exit_code": int(completed.returncode),
+        }
         record_evidence(
             evidence_path,
-            {
-                "claim_id": args.claim,
-                "subject_digest": subject,
-                "producer_id": args.producer,
-                "command": shlex.join(command),
-                "exit_code": int(completed.returncode),
-            },
+            {**content, "signature": sign_evidence(content, private_key)},
         )
     except (ValueError, TypeError, OSError, json.JSONDecodeError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
@@ -309,6 +403,66 @@ def cmd_run(args: argparse.Namespace) -> int:
     )
     print(f"          subject={subject}")
     return int(completed.returncode)
+
+
+def cmd_keygen(args: argparse.Namespace) -> int:
+    """Generate a producer's signing key, outside the repository.
+
+    The confinement here is the inverse of `resolve_within_repository`: that
+    refuses paths outside the repository, this refuses paths inside it. The
+    slice's premise is that private keys never enter the tree, and an
+    environment variable pointing inward must be refused rather than obeyed —
+    otherwise the key ends up committed and every other guarantee is theatre.
+    """
+
+    try:
+        governed_root = governed_repository_root()
+
+        raw_path = os.environ.get(SIGNING_KEY_VARIABLE)
+        if not raw_path:
+            raise ValueError(
+                f"{SIGNING_KEY_VARIABLE} is not set; point it at the file the "
+                "private key should live in, outside this repository"
+            )
+
+        target = Path(raw_path)
+        if not target.is_absolute():
+            # A relative path resolves against whatever the current directory
+            # happens to be, which is very often the repository itself.
+            raise ValueError(
+                f"{SIGNING_KEY_VARIABLE} must be an absolute path, got {raw_path!r}"
+            )
+        target = target.resolve()
+
+        if target == governed_root or governed_root in target.parents:
+            raise ValueError(
+                f"refusing to write a private key inside the repository: {target}. "
+                "Private keys must never be committable"
+            )
+        if target.is_dir():
+            raise ValueError(f"{SIGNING_KEY_VARIABLE} is a directory: {target}")
+        if target.exists():
+            # Replacing a key silently orphans every record it ever signed.
+            raise ValueError(
+                f"refusing to overwrite the existing key at {target}; "
+                "remove it deliberately if you mean to replace it"
+            )
+
+        private_key, public_key = generate_keypair()
+        target.parent.mkdir(parents=True, exist_ok=True)
+        # Created 0600, not chmod'ed to 0600 afterwards: between creation and
+        # chmod the key would briefly be world-readable.
+        handle = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(handle, "w", encoding="utf-8") as file:
+            file.write(private_key + "\n")
+    except (ValueError, OSError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    print(f"WROTE  {target}  mode 0600")
+    print("       register the producer by adding this line to the keyring:")
+    print(f"  {args.producer}: {public_key}")
+    return EXIT_PASS
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -334,6 +488,11 @@ def build_parser() -> argparse.ArgumentParser:
         default="governance/evidence.json",
         help="evidence records path",
     )
+    ev.add_argument(
+        "--producers",
+        default="governance/producers.yaml",
+        help="committed keyring of producer public keys",
+    )
     ev.add_argument("--approver", required=True, help="identity approving")
     ev.add_argument("--journal", default="governance/journal.sqlite3", help="journal path")
     ev.set_defaults(func=cmd_gate_evaluate)
@@ -350,11 +509,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="evidence records path",
     )
     rn.add_argument(
+        "--producers",
+        default="governance/producers.yaml",
+        help="committed keyring of producer public keys",
+    )
+    rn.add_argument(
         "command",
         nargs=argparse.REMAINDER,
         help="the command to run, after --",
     )
     rn.set_defaults(func=cmd_run)
+
+    kg = sub.add_parser("keygen", help="generate a producer signing key")
+    kg.add_argument("--producer", required=True, help="identity the key belongs to")
+    kg.set_defaults(func=cmd_keygen)
     return parser
 
 

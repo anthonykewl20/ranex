@@ -16,6 +16,8 @@ import pytest
 
 from ranex.cli.main import main
 
+from conftest import Signing, attach, signing_for
+
 GATES = """
 gates:
   - gate_id: landing
@@ -26,7 +28,7 @@ gates:
 
 
 @pytest.fixture()
-def repo(tmp_path: Path) -> Path:
+def repo(tmp_path: Path, signing: Signing) -> Path:
     """A real git repository with a real commit."""
 
     repository = tmp_path / "governed"
@@ -39,6 +41,8 @@ def repo(tmp_path: Path) -> Path:
         ["git", "-C", str(repository), "config", "user.name", "Test"], check=True
     )
     (repository / "file.txt").write_text("content\n", encoding="utf-8")
+    signing.write_keyring(repository)
+    attach(repository, signing)
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
@@ -64,6 +68,8 @@ def run(repo: Path, *extra: str) -> int:
                 "gates.yaml",
                 "--evidence",
                 "evidence.json",
+                "--producers",
+                "producers.yaml",
                 "--approver",
                 "owner",
                 *extra,
@@ -91,13 +97,16 @@ def test_passes_once_real_evidence_exists(repo: Path, capsys) -> None:
     (repo / "evidence.json").write_text(
         json.dumps(
             [
-                {
-                    "claim_id": "tests-executed",
-                    "subject_digest": subject,
-                    "producer_id": "worker",
-                    "command": "pytest -q",
-                    "exit_code": 0,
-                }
+                signing_for(repo).sign(
+                    {
+                        "claim_id": "tests-executed",
+                        "subject_digest": subject,
+                        "producer_id": "worker",
+                        "command": "pytest -q",
+                        "exit_code": 0,
+                    },
+                    "worker",
+                )
             ]
         ),
         encoding="utf-8",
@@ -112,13 +121,16 @@ def test_evidence_from_a_different_commit_does_not_satisfy(repo: Path, capsys) -
     (repo / "evidence.json").write_text(
         json.dumps(
             [
-                {
-                    "claim_id": "tests-executed",
-                    "subject_digest": "sha256:" + "f" * 64,
-                    "producer_id": "worker",
-                    "command": "pytest -q",
-                    "exit_code": 0,
-                }
+                signing_for(repo).sign(
+                    {
+                        "claim_id": "tests-executed",
+                        "subject_digest": "sha256:" + "f" * 64,
+                        "producer_id": "worker",
+                        "command": "pytest -q",
+                        "exit_code": 0,
+                    },
+                    "worker",
+                )
             ]
         ),
         encoding="utf-8",
@@ -127,8 +139,20 @@ def test_evidence_from_a_different_commit_does_not_satisfy(repo: Path, capsys) -
     assert "different subject" in capsys.readouterr().out
 
 
-def test_evidence_without_subject_digest_is_a_usage_error(repo: Path, capsys) -> None:
-    """The CLI must not stamp omitted subject binding onto evidence."""
+def test_evidence_without_subject_digest_is_refused_and_named(repo: Path, capsys) -> None:
+    """The CLI must not stamp omitted subject binding onto evidence.
+
+    SLICE-002 changed HOW this is refused, not WHETHER. It used to be a usage
+    error (exit 2): a missing key raised, and the whole evaluation died. Now the
+    record is refused by admission and the evaluation continues without it, so
+    the verdict is FAIL (exit 1) with the record named.
+
+    That is the better behaviour, and deliberately so: one malformed record must
+    not stop the other records from being judged. The property the original test
+    was defending — that a shrugging parser must never turn a bad record into
+    silent absence — is stronger now than it was, because the refusal is
+    reported with a reason rather than inferred from an exit code.
+    """
 
     (repo / "evidence.json").write_text(
         json.dumps(
@@ -143,10 +167,13 @@ def test_evidence_without_subject_digest_is_a_usage_error(repo: Path, capsys) ->
         ),
         encoding="utf-8",
     )
-    assert run(repo) == 2
+    assert run(repo) == 1
     captured = capsys.readouterr()
     assert "PASS" not in captured.out
-    assert "subject_digest" in captured.err
+    assert "subject_digest" in captured.out
+    assert "REFUSED" in captured.out
+    # And it must not be reported as honest absence.
+    assert "no evidence for required claim" not in captured.out
 
 
 def test_two_runs_write_identical_journal_records(repo: Path) -> None:

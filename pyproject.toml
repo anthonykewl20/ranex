@@ -5,6 +5,10 @@ description = "Deterministic governance for AI agents that build software"
 requires-python = ">=3.11,<3.15"
 dependencies = [
     "PyYAML>=6.0.2,<7",
+    # SLICE-002. There is no asymmetric primitive in the standard library, and
+    # the verifier must not hold anything that could sign — see the slice's
+    # Decisions for why HMAC was refused.
+    "cryptography>=43,<47",
 ]
 
 [dependency-groups]

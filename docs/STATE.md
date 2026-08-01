@@ -4,23 +4,21 @@
 
 **Updated:** 2026-08-01
 **Phase:** kernel — evidence loop
-**Active slice:** docs/slices/SLICE-002-evidence-authenticity.md
+**Active slice:** none — SLICE-002 closed, next one not yet opened
 
 ## Where we stopped
 
-**SLICE-001 is done.** `ranex run` executes a command, observes it, and emits
-evidence that `gate evaluate` accepts. 78 tests green. The target was committed
-red at `b495e3635` before any implementation existed and is byte-identical since
-(file digest `5e0dc922d2dd06c5`), so red-then-green is checkable in this history.
+**SLICE-002 is done.** Evidence is signed. `run` refuses to write without a key,
+admission verifies each record against the committed keyring, and a record that
+does not verify never reaches `evaluate()` — forgery arrives as absence, and
+absence blocks. 134 tests green. The target was committed red at `0b0512c2f` and
+all five of its files are byte-identical since; `verdict.py` is unchanged, held
+by a digest test.
 
-The loop closes on this repo: `run` records `tests-executed` bound to the live
-tree digest, and the gate reads it. It never reaches PASS: nothing produces
-`contracts-validated`, and once the tree moves past the recorded digest
-`tests-executed` fails first on subject binding. Both are the design working.
-
-**`main` is now the kernel tree**, replacing a disjoint 446-file architecture
-tree that shared no ancestor with it. Six retired branches deleted, tips kept as
-`archive/*` tags; `bootstrap/pre-upstream` is already gone.
+**Signing is mandatory, and that is a wall on a fresh clone.** No
+`governance/producers.yaml` exists here, so `run` and `gate evaluate` exit 2
+until an operator runs `keygen` and commits the public key. Failing closed is
+correct, and it is the first thing a newcomer hits.
 
 ## Next
 
@@ -46,5 +44,7 @@ tree that shared no ancestor with it. Six retired branches deleted, tips kept as
   it names. Agents share owner credentials, so it is not yet a trust boundary.
 - Delegation works: direct OpenRouter, one narrow prompt per call. `tencent/hy3`
   at effort `high` stalls on ~25KB prompts; effort is a % of `max_tokens`.
+- Approver identity is still an unauthenticated string, so no-self-approval is a
+  convention and not a control. Now the weakest link. Own slice.
 - `subject_lane` is a hardcoded default reaching journal records.
 - `.git` is 665M — `upstream-sync` and `archive/*` tags hold the old objects.

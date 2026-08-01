@@ -225,13 +225,16 @@ below is what is actually built.
 - **`ranex run`** — executes a command, records its exit code and the tree digest
   it ran against, and refuses a dirty working tree rather than record a claim it
   cannot honestly bind. `run` then `gate evaluate` is a closed loop.
-- `ranex gate evaluate`, and repository path confinement.
+- **Signed evidence** — Ed25519, verified against a committed keyring before a
+  record is admitted. The verifier holds only public keys and cannot forge.
+- `ranex gate evaluate`, `ranex keygen`, and repository path confinement.
 
 **Known gaps — stated plainly**
 
-- **Evidence is unsigned.** A PASS can be forged with a text editor. Subject
-  binding stops *stale* evidence; nothing yet stops *fabricated* evidence.
-  *(SLICE-002)*
+- **Approver identity is unauthenticated.** `--approver` is a plain string, so a
+  producer can name anyone as their approver. Evidence signing proves who *ran*
+  a command; it proves nothing about who approved it. No-self-approval is a
+  convention until approvals are signed, and it is now the weakest link.
 - **The journal append races** under concurrent writers — two appenders can read
   the same previous link and fork the chain. *(SLICE-003)*
 - **No worker dispatch, no flow graph, no scenario compilation**, no budget, no
@@ -244,14 +247,17 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** SLICE-002-evidence-authenticity — signing evidence records so
-a PASS cannot be forged with a text editor.
+**Active slice:** none — the next one is not yet opened.
 
 ## Completed slices
 
 - **SLICE-001-evidence-production** — `ranex run` executes a command, observes
   it, and emits evidence the gate accepts. Target committed red at `b495e3635`,
   before any implementation existed.
+- **SLICE-002-evidence-authenticity** — evidence carries an Ed25519 signature
+  bound to a producer in a committed keyring. A record that does not verify is
+  never admitted, so forgery reaches the kernel as absence. Target committed red
+  at `0b0512c2f`.
 
 ---
 
@@ -267,19 +273,30 @@ PYTHONPATH=src uv run python -m ranex.cli.main gate evaluate HEAD \
 `pyproject.toml` sets `[tool.uv] package = false`, so the `ranex` console script
 is **not** installed. Invoke through the module path above.
 
-One thing will look broken and is not: **`gate evaluate HEAD` returns FAIL.**
-`governance/evidence.json` is not checked in — evidence is produced locally, so a
-fresh clone has none and absence blocks. Produce it first:
+**On a fresh clone both commands exit 2, and that is correct.** Evidence must be
+signed, and this repository ships no keyring, so there is nothing to verify
+against. Bootstrap a producer first — the private key must live outside the
+repository, and `keygen` refuses to write it anywhere inside:
+
+```sh
+export RANEX_SIGNING_KEY=~/.config/ranex/worker.key
+PYTHONPATH=src uv run python -m ranex.cli.main keygen --producer worker
+```
+
+Add the line it prints to `governance/producers.yaml` and commit it. That file
+is the trust root; review of it is the control on it. Then:
 
 ```sh
 PYTHONPATH=src uv run python -m ranex.cli.main run \
     --claim tests-executed --producer worker -- uv run pytest -q
 ```
 
-It will still FAIL: `governance/gates.yaml` also requires `contracts-validated`,
-and nothing in this repository can produce that claim yet. Once the tree moves
-past the digest the evidence was bound to, `tests-executed` stops counting too.
-Both are the design working, not bugs.
+`gate evaluate` will still FAIL, and that is also the design: `gates.yaml`
+requires `contracts-validated` and nothing here can produce that claim yet. Once
+the tree moves past the digest the evidence was bound to, `tests-executed` stops
+counting too. A record that fails verification is reported as *refused*, with a
+reason — never as "no evidence", because an attack and an unfinished task are
+not the same event.
 
 ## Development
 

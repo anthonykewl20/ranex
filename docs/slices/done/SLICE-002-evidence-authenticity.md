@@ -1,7 +1,8 @@
 # SLICE-002 — evidence authenticity
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-01
+**Closed:** 2026-08-01 — 134 tests green; target frozen at `0b0512c2f`
 
 ## Why
 
@@ -79,65 +80,65 @@ Each must be met and proven by a test.
 
 **Signing and verification**
 
-- [ ] `sign()` produces a detached Ed25519 signature over the pinned payload
+- [x] `sign()` produces a detached Ed25519 signature over the pinned payload
       above, including the domain prefix
-- [ ] Signing the same record twice produces **identical** bytes — Ed25519 is
+- [x] Signing the same record twice produces **identical** bytes — Ed25519 is
       deterministic per RFC 8032
-- [ ] Verification uses the key registered for **that record's exact
+- [x] Verification uses the key registered for **that record's exact
       `producer_id`**; a record signed by `alice` claiming `producer_id: worker`
       is rejected
-- [ ] Mutating any of the five signed fields invalidates the signature
-- [ ] A record with a missing, malformed, or non-verifying signature is rejected
-- [ ] A record carrying an unexpected extra field is rejected
-- [ ] A record whose `producer_id` is absent from the keyring is rejected
+- [x] Mutating any of the five signed fields invalidates the signature
+- [x] A record with a missing, malformed, or non-verifying signature is rejected
+- [x] A record carrying an unexpected extra field is rejected
+- [x] A record whose `producer_id` is absent from the keyring is rejected
 
 **Keyring — fail closed, every path**
 
-- [ ] A keyring that is missing, unreadable, invalid YAML, or holds a malformed
+- [x] A keyring that is missing, unreadable, invalid YAML, or holds a malformed
       key is a **distinct, loud failure**. Never "no evidence"
-- [ ] A keyring mapping one public key to two producer ids is **refused**
-- [ ] Duplicate `producer_id` entries are refused rather than resolved by
+- [x] A keyring mapping one public key to two producer ids is **refused**
+- [x] Duplicate `producer_id` entries are refused rather than resolved by
       last-wins
 
 **Admission and reporting**
 
-- [ ] Admission returns admitted records **and** structured rejections, each
+- [x] Admission returns admitted records **and** structured rejections, each
       carrying a machine-readable reason
-- [ ] Forged signature, unknown producer, and corrupt evidence file each produce
+- [x] Forged signature, unknown producer, and corrupt evidence file each produce
       a **distinct** reason. None may read as "no evidence for required claim"
-- [ ] A truncated or unparseable `evidence.json` is reported as file corruption,
+- [x] A truncated or unparseable `evidence.json` is reported as file corruption,
       not as absence
-- [ ] `evaluate()` receives only admitted records, so forgery reaches the kernel
+- [x] `evaluate()` receives only admitted records, so forgery reaches the kernel
       as absence and absence blocks
 
 **Producing**
 
-- [ ] `run` refuses to write when no signing key is available — nonzero exit,
+- [x] `run` refuses to write when no signing key is available — nonzero exit,
       nothing written — rather than emit an unsigned record
-- [ ] `run` derives the public key from the private key and **refuses before
+- [x] `run` derives the public key from the private key and **refuses before
       executing** if it does not match the keyring entry for `--producer`.
       Otherwise it burns a full test run to write a record guaranteed to be
       rejected at load
-- [ ] `run` refuses a private key that is group- or world-readable
+- [x] `run` refuses a private key that is group- or world-readable
 
 **keygen**
 
-- [ ] Writes to `$RANEX_SIGNING_KEY` with `0600`, prints the `producers.yaml`
+- [x] Writes to `$RANEX_SIGNING_KEY` with `0600`, prints the `producers.yaml`
       line, and refuses to overwrite an existing key
-- [ ] **Refuses to write inside the repository root or `.git`.** The whole
+- [x] **Refuses to write inside the repository root or `.git`.** The whole
       premise is that private keys never enter the tree; an env var pointing
       inward must be rejected, not obeyed
-- [ ] Unset `$RANEX_SIGNING_KEY`, a relative path, or a path that is a directory
+- [x] Unset `$RANEX_SIGNING_KEY`, a relative path, or a path that is a directory
       each produce a clear error naming the variable
 
 **Migration and end to end**
 
-- [ ] Existing unsigned records stop counting — rejected, not migrated
-- [ ] `evaluate()` is unchanged, proven by a digest assertion over
+- [x] Existing unsigned records stop counting — rejected, not migrated
+- [x] `evaluate()` is unchanged, proven by a digest assertion over
       `verdict.py`, so the criterion is checkable at test time rather than by
       reviewer memory
-- [ ] e2e: `keygen` → `run` → `gate evaluate` → PASS, exit 0
-- [ ] e2e: hand-edit a signed record's `exit_code` → FAIL, reason names
+- [x] e2e: `keygen` → `run` → `gate evaluate` → PASS, exit 0
+- [x] e2e: hand-edit a signed record's `exit_code` → FAIL, reason names
       signature rejection
 
 ## Out of scope
