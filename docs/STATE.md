@@ -41,7 +41,9 @@ tree that shared no ancestor with it. Six retired branches deleted, tips kept as
   or amend the gate; do not fake the claim.
 - `test_gate_catalog_loader.py` is misnamed; it tests `slice_gate_loader`.
 - No CI or rulesets exist. `main` blocks force-push/deletion but requires no
-  checks; agents currently share owner credentials, so it is no trust boundary.
+  checks. Five retired check names outlived their workflow and silently blocked
+  every non-admin merge; never require a check before it reports. Agents share
+  owner credentials, so branch protection is not yet a trust boundary.
 - Delegation works: direct OpenRouter, one narrow prompt per call. `tencent/hy3`
   at effort `high` stalls on ~25KB prompts; effort is a % of `max_tokens`.
 - `subject_lane` is a hardcoded default reaching journal records.

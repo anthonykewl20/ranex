@@ -73,6 +73,10 @@ Each must be met and proven by a test.
 - Signing the journal, the gate catalog, or the approval itself. Approver
   identity stays unauthenticated in this slice — only *production* is proven.
 - OS keychain or external signer custody. Decided against for now; see below.
+- **Command/claim binding.** This slice does not constrain which command may
+  substantiate which claim. A signed record for a trivially passing command
+  such as `true` remains valid evidence for `tests-executed`. Binding claims to
+  approved commands or frozen test-plan digests is later work.
 - Any change to `evaluate()`, to gate semantics, or to subject binding.
 
 ## Decisions taken
@@ -104,6 +108,9 @@ This does **not** stop an attacker with local filesystem access. Whoever can
 edit `governance/evidence.json` can usually also read `$RANEX_SIGNING_KEY` and
 sign whatever they like. Signing raises forgery from "text editor" to "steal the
 key first", and nothing more, on a single machine.
+
+It also does not prove that the recorded command substantiates the named claim.
+A valid signature over `command: "true"` still satisfies `tests-executed`.
 
 What it does buy is the case Ranex actually needs: evidence produced on one
 machine can be verified on another that holds only public keys. That is the
