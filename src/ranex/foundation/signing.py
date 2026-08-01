@@ -8,7 +8,7 @@ producer from approver.
 Nothing here reaches a network or a model. Signing is a pure function of the
 record and the key.
 
-Three details are pinned rather than left to the caller, because `run` and the
+Four details are pinned rather than left to the caller, because `run` and the
 loader must compute identical bytes on different machines:
 
 1. **The domain prefix is inside the signed bytes.** Without it, a signature
@@ -19,6 +19,8 @@ loader must compute identical bytes on different machines:
    producer and the verifier disagree about what was covered.
 3. **Encoding is base64 throughout.** A record written on one machine must
    verify on another; that is the whole point of the slice.
+4. **That base64 must be the canonical spelling.** Callers key identities by the
+   *string* — see `_decode` for why the two must be the same question.
 """
 
 from __future__ import annotations
@@ -67,6 +69,20 @@ def _decode(value: object, *, expected: int | None, field: str) -> bytes:
         raw = base64.b64decode(encoded, validate=True)
     except (binascii.Error, ValueError) as exc:
         raise ValueError(f"{field} is not valid base64: {exc}") from exc
+    # validate=True checks the alphabet and nothing else. Neither 32 nor 64 bytes
+    # divide into 3-byte base64 groups, so the final character carries bits no
+    # decoder reads: a public key has four spellings and a signature sixteen, all
+    # decoding to identical material. Every caller here keys an identity by the
+    # *string* — the keyring's one-key-one-producer rule, `run`'s "is this the key
+    # the keyring trusts for me" check — so two spellings of one key would be two
+    # identities, and the alias attack that rule exists to make unrepresentable is
+    # back for the price of one character. Re-encoding is what makes key identity
+    # and string identity the same question, and it closes every call site at once.
+    if base64.b64encode(raw).decode("ascii") != encoded:
+        raise ValueError(
+            f"{field} is not canonically encoded; the same bytes have another "
+            "base64 spelling, and only the canonical one names this key"
+        )
     if expected is not None and len(raw) != expected:
         raise ValueError(
             f"{field} is {len(raw)} bytes, expected {expected} for Ed25519"

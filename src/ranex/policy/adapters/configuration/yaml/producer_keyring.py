@@ -35,7 +35,19 @@ class _NoDuplicateKeys(yaml.SafeLoader):
         seen: set[Any] = set()
         for key_node, _ in node.value:
             key = self.construct_object(key_node, deep=deep)
-            if key in seen:
+            # A complex key (`? [a, b]`) constructs to a list, and membership in
+            # a set raises TypeError on anything unhashable. Left uncaught it
+            # escapes every `except` in `load_keyring` and breaks the contract
+            # stated there: a keyring this loader cannot fully trust fails as
+            # KeyringError. A caller written to that contract would crash where
+            # it meant to refuse — two characters of YAML for a trust-root DoS.
+            try:
+                duplicate = key in seen
+            except TypeError as exc:
+                raise KeyringError(
+                    f"keyring entry {key!r} is not a usable producer id: {exc}"
+                ) from exc
+            if duplicate:
                 raise KeyringError(f"duplicate entry for {key!r} in the keyring")
             seen.add(key)
         return super().construct_mapping(node, deep=deep)
@@ -66,6 +78,17 @@ def load_keyring(path: Path | str) -> dict[str, str]:
     producers = document["producers"]
     if not isinstance(producers, dict):
         raise KeyringError(f"'producers' in {path} must be a mapping")
+    # `producers: {}` is a mapping, so it passes the shape check, loops zero
+    # times, and returns the empty keyring this module's docstring says must
+    # never be returned: every record rejects as an unknown producer, the gate
+    # FAILs, and the output is indistinguishable from a project that has not run
+    # its tests. Deleting the contents of the trust root must be as loud as
+    # deleting the file.
+    if not producers:
+        raise KeyringError(
+            f"'producers' in {path} is empty; an empty keyring rejects every "
+            "record as an unknown producer, which reads as work never done"
+        )
 
     keyring: dict[str, str] = {}
     owner_of: dict[str, str] = {}

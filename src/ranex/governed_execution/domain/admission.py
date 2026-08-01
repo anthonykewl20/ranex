@@ -33,6 +33,7 @@ from typing import Any
 from ranex.foundation.signing import (
     SIGNED_FIELDS,
     is_signature,
+    signed_payload,
     verify_evidence,
 )
 from ranex.governed_execution.domain.verdict import Evidence
@@ -127,6 +128,25 @@ def admit(
             # bytes by construction, so verifying first would pass a record
             # carrying content nobody attested to.
             reject(RejectionReason.MALFORMED_RECORD, "; ".join(parts))
+            continue
+
+        # Whether these fields can be encoded at all is a question about the
+        # record's shape, so it is answered here rather than inferred from a
+        # verify failure. `json.loads` accepts a lone surrogate and a bare NaN;
+        # the canonical encoder accepts neither, and `verify_evidence` reports
+        # every ValueError as False. Left to that path the record is accused of
+        # BAD_SIGNATURE — "altered or signed by another key" — though no
+        # verification ever took place: a false accusation against a named
+        # producer, manufacturable by anyone who can write six characters into
+        # the evidence file. Only a real verification failure may say that.
+        try:
+            signed_payload(content)
+        except (ValueError, TypeError) as exc:
+            reject(
+                RejectionReason.MALFORMED_RECORD,
+                f"record cannot be canonically encoded, so no signature over it "
+                f"could be checked: {exc}",
+            )
             continue
 
         if _SIGNATURE not in record:
