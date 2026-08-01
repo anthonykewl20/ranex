@@ -27,6 +27,94 @@ _SKIP_DIRS = {
 _SLICE_NAME = re.compile(r"^SLICE-\d{3}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 _STATUS = re.compile(r"^\*\*Status:\*\*\s+(open|done)\s*$", re.MULTILINE)
 
+_ADR_NAME = re.compile(r"^ADR-\d{3}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
+_ADR_STATUS = re.compile(
+    r"^\*\*Status:\*\*\s+(proposed|accepted|rejected|deprecated"
+    r"|superseded by ADR-\d{3})\s*$",
+    re.MULTILINE,
+)
+_ADR_REF = re.compile(r"docs/adr/(ADR-\d{3}-[a-z0-9-]+\.md)")
+_CITATION = re.compile(r"https?://\S+")
+
+# The template is MADR 4.0.0's *minimal* form, plus `### Confirmation` promoted
+# from its full form, plus the sections this project adds. MADR's full template
+# is deliberately not used: its option headings are variable strings
+# (`### {title of option 1}`) and cannot be compiled into a check.
+#
+# Requiring every section, and closing the status set, exceeds MADR. That is our
+# choice, not the standard's. Budgets exist because the failure mode here is not
+# a missing document — it is 561 of them.
+_MADR_SECTIONS = frozenset(
+    {
+        "## Context and Problem Statement",
+        "## Decision Drivers",
+        "## Considered Options",
+        "## Decision Outcome",
+        "### Consequences",
+        "### Confirmation",
+        "## More Information",
+    }
+)
+
+_ADR_SECTIONS: tuple[str, ...] = (
+    "## Context and Problem Statement",
+    "## Decision Drivers",
+    "## Prior art",
+    "## Considered Options",
+    "## Decision Outcome",
+    "### Consequences",
+    "### Confirmation",
+    "## Improvements on the prior art",
+    "## Architecture surface",
+    "## Scope and threat delta",
+    "## Quality attributes",
+    "## Reversibility",
+    "## Sad paths",
+    "## Test strategy",
+    "## Code review checklist",
+    "## More Information",
+)
+
+# Complete is the requirement. Long is not. A section that needs more room than
+# this is describing an implementation, and implementations live in code.
+_SECTION_BUDGET: dict[str, int] = {
+    "## Context and Problem Statement": 14,
+    "## Decision Drivers": 10,
+    "## Prior art": 32,
+    "## Considered Options": 14,
+    "## Decision Outcome": 14,
+    "### Consequences": 14,
+    "### Confirmation": 12,
+    "## Improvements on the prior art": 22,
+    "## Architecture surface": 10,
+    "## Scope and threat delta": 10,
+    "## Quality attributes": 10,
+    "## Reversibility": 8,
+    "## Sad paths": 34,
+    "## Test strategy": 32,
+    "## Code review checklist": 14,
+    "## More Information": 12,
+}
+
+ADR_MAX_LINES = 300
+
+# ADR-000 defines the template, so it must quote the template. It is held to
+# every section and every other rule — only the line budgets are lifted.
+_TEMPLATE_ADR = "ADR-000-how-we-write-adrs.md"
+
+# Below this, "sad paths" is a gesture rather than an enumeration.
+MIN_SAD_PATHS = 3
+
+# One-way doors are the ones worth arguing about before walking through.
+_DOOR = re.compile(r"^\s*(?:[-*]\s*)?(?:\*\*)?Door(?:\*\*)?:\s*(one-way|two-way)\s*$", re.MULTILINE)
+
+# An unfilled MADR scaffold must not pass for a decision. Checked after inline
+# code is stripped: `{claim_id, command}` is a schema, not an unfilled blank.
+_PLACEHOLDER = re.compile(r"\{[a-z][^}\n]*\}|<!--")
+_CODE_SPAN = re.compile(r"`[^`]*`")
+
+_TEST_PATH = re.compile(r"tests/[\w/]+\.py")
+
 _ALLOWED_EXACT = frozenset({"CLAUDE.md", "README.md", "docs/STATE.md"})
 
 STATE_MAX_LINES = 50
@@ -50,7 +138,40 @@ def _is_allowed(relative: Path) -> bool:
     parent = relative.parent.as_posix()
     if parent in {"docs/slices", "docs/slices/done"}:
         return bool(_SLICE_NAME.fullmatch(relative.name))
+    if parent == "docs/adr":
+        return bool(_ADR_NAME.fullmatch(relative.name))
     return False
+
+
+def _adr_files() -> list[Path]:
+    directory = REPO_ROOT / "docs" / "adr"
+    if not directory.is_dir():
+        return []
+    return sorted(p for p in directory.glob("ADR-*.md") if p.is_file())
+
+
+def _section(text: str, heading: str) -> str | None:
+    """The body under a heading, up to the next `## ` or end of file."""
+
+    match = re.search(
+        rf"^{re.escape(heading)}\s*$\n(.*?)(?=^#{{2,3}} |\Z)",
+        text,
+        re.MULTILINE | re.DOTALL,
+    )
+    return None if match is None else match.group(1)
+
+
+def _enumerated_items(body: str) -> int:
+    """Count bullet points and table rows, ignoring table separator lines."""
+
+    count = 0
+    for line in body.splitlines():
+        stripped = line.strip()
+        if stripped.startswith(("- ", "* ")):
+            count += 1
+        elif stripped.startswith("|") and not set(stripped) <= set("|-: "):
+            count += 1
+    return count
 
 
 def _slice_files(*, done: bool) -> list[Path]:
@@ -179,4 +300,174 @@ def test_readme_lists_exactly_the_finished_slices() -> None:
         f"README.md claims {sorted(claimed)} are complete but "
         f"docs/slices/done/ holds {sorted(archived)}. "
         "Move the slice file and update the README together."
+    )
+
+
+# --- ADRs: no slice without a researched decision ---------------------------
+#
+# CLAUDE.md requires an ADR before a slice is opened, and requires it to cite
+# prior art and enumerate sad paths. A rule an agent can read is a suggestion.
+
+
+def test_every_adr_declares_a_status() -> None:
+    missing = [p.name for p in _adr_files() if _ADR_STATUS.search(p.read_text("utf-8")) is None]
+    assert not missing, (
+        "ADRs without a '**Status:**' line of proposed | accepted | rejected | "
+        f"deprecated | superseded by ADR-NNN: {missing}"
+    )
+
+
+def test_every_adr_has_the_required_sections() -> None:
+    """A thin ADR is short. It is not partial."""
+
+    problems: list[str] = []
+    for path in _adr_files():
+        text = path.read_text(encoding="utf-8")
+        absent = [s for s in _ADR_SECTIONS if _section(text, s) is None]
+        if absent:
+            problems.append(f"{path.name} is missing {absent}")
+    assert not problems, "; ".join(problems)
+
+
+def test_every_adr_cites_a_primary_source() -> None:
+    """An ADR with no citation is an opinion. Research first, invent last."""
+
+    uncited: list[str] = []
+    for path in _adr_files():
+        prior_art = _section(path.read_text(encoding="utf-8"), "## Prior art")
+        if prior_art is None or not _CITATION.search(prior_art):
+            uncited.append(path.name)
+    assert not uncited, (
+        f"ADRs whose '## Prior art' cites no source: {uncited}. "
+        "Link the spec or the source file the decision was taken from."
+    )
+
+
+def test_every_adr_enumerates_sad_paths() -> None:
+    """The happy path is the part that was never in doubt."""
+
+    thin: list[str] = []
+    for path in _adr_files():
+        body = _section(path.read_text(encoding="utf-8"), "## Sad paths")
+        if body is None or _enumerated_items(body) < MIN_SAD_PATHS:
+            thin.append(path.name)
+    assert not thin, (
+        f"ADRs enumerating fewer than {MIN_SAD_PATHS} sad paths: {thin}. "
+        "List what happens when each assumption fails, not only when it holds."
+    )
+
+
+def test_every_open_slice_links_an_existing_adr() -> None:
+    """No slice without an ADR — the link is the proof the decision was taken."""
+
+    problems: list[str] = []
+    for path in _slice_files(done=False):
+        text = path.read_text(encoding="utf-8")
+        referenced = _ADR_REF.search(text)
+        if referenced is None:
+            problems.append(f"{path.name} links no docs/adr/ADR-NNN-*.md")
+            continue
+        if not (REPO_ROOT / "docs" / "adr" / referenced.group(1)).is_file():
+            problems.append(f"{path.name} points at {referenced.group(1)}, which does not exist")
+    assert not problems, "; ".join(problems)
+
+
+def test_adr_sections_appear_in_the_canonical_order() -> None:
+    """Same shape every time. A template read in a different order drifts."""
+
+    problems: list[str] = []
+    for path in _adr_files():
+        text = path.read_text(encoding="utf-8")
+        seen = [
+            (text.index(f"\n{heading}\n"), heading)
+            for heading in _ADR_SECTIONS
+            if f"\n{heading}\n" in text
+        ]
+        ordered = [heading for _, heading in sorted(seen)]
+        expected = [h for h in _ADR_SECTIONS if h in ordered]
+        if ordered != expected:
+            problems.append(f"{path.name}: got {ordered}, expected {expected}")
+    assert not problems, "; ".join(problems)
+
+
+def test_every_adr_section_stays_within_budget() -> None:
+    """Complete is the requirement. Long is not."""
+
+    problems: list[str] = []
+    for path in _adr_files():
+        if path.name == _TEMPLATE_ADR:
+            continue
+        text = path.read_text(encoding="utf-8")
+        for heading, budget in _SECTION_BUDGET.items():
+            body = _section(text, heading)
+            if body is None:
+                continue
+            used = len([line for line in body.splitlines() if line.strip()])
+            if used > budget:
+                problems.append(f"{path.name} '{heading}' is {used} lines, budget {budget}")
+    assert not problems, (
+        "; ".join(problems)
+        + ". Say it shorter, or move the detail into code and cite the file."
+    )
+
+
+def test_no_adr_exceeds_the_total_cap() -> None:
+    oversized: list[str] = []
+    for path in _adr_files():
+        if path.name == _TEMPLATE_ADR:
+            continue
+        length = len(path.read_text(encoding="utf-8").splitlines())
+        if length > ADR_MAX_LINES:
+            oversized.append(f"{path.name} ({length} lines)")
+    assert not oversized, (
+        f"ADRs over the {ADR_MAX_LINES}-line cap: {oversized}. "
+        "The docs layer is capped on purpose — this repo once held 561 of these."
+    )
+
+
+def test_every_adr_declares_reversibility() -> None:
+    """One-way doors are the ones worth arguing about before walking through."""
+
+    missing: list[str] = []
+    for path in _adr_files():
+        body = _section(path.read_text(encoding="utf-8"), "## Reversibility")
+        if body is None or _DOOR.search(body) is None:
+            missing.append(path.name)
+    assert not missing, (
+        f"ADRs whose '## Reversibility' has no 'Door: one-way|two-way' line: {missing}"
+    )
+
+
+def test_every_adr_test_strategy_names_real_tests() -> None:
+    """A strategy that names no test is a plan to write one later."""
+
+    problems: list[str] = []
+    for path in _adr_files():
+        body = _section(path.read_text(encoding="utf-8"), "## Test strategy")
+        if body is None:
+            problems.append(f"{path.name} has no '## Test strategy'")
+            continue
+        named = _TEST_PATH.findall(body)
+        if not named:
+            problems.append(f"{path.name} names no tests/ path in its test strategy")
+            continue
+        absent = [p for p in named if not (REPO_ROOT / p).is_file()]
+        if absent:
+            problems.append(f"{path.name} names tests that do not exist: {absent}")
+    assert not problems, "; ".join(problems)
+
+
+def test_no_adr_ships_an_unfilled_placeholder() -> None:
+    """An unfilled MADR scaffold must not pass for a decision."""
+
+    problems: list[str] = []
+    for path in _adr_files():
+        if path.name == _TEMPLATE_ADR:  # it must quote the blank template
+            continue
+        for number, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if _PLACEHOLDER.search(_CODE_SPAN.sub("", line)):
+                problems.append(f"{path.name}:{number}: {line.strip()!r}")
+    assert not problems, (
+        f"unfilled template placeholders remain: {problems}. "
+        "Fill them in or delete the line — a scaffold is not a decision."
     )
