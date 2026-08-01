@@ -216,6 +216,25 @@ def committable_into(target: Path, governed_root: Path) -> bool:
     return common is not None and common == git_common_dir(governed_root)
 
 
+def directory_behind(descriptor: int) -> Path:
+    """Where an already-open directory actually leads.
+
+    Containment judged against a *name* is only true for as long as nobody
+    edits the path. An open descriptor cannot be re-pointed, so this is the one
+    form of the question whose answer survives until the write. `/proc/self/fd`
+    is how the kernel is asked; if it is not there, refuse rather than guess —
+    a key we cannot prove landed outside the tree must not be created.
+    """
+
+    try:
+        return Path(os.readlink(f"/proc/self/fd/{descriptor}")).resolve()
+    except OSError as exc:
+        raise ValueError(
+            "cannot confirm which directory this key would be written into "
+            f"(/proc/self/fd is unavailable: {exc}); refusing to create it"
+        ) from exc
+
+
 def private_signing_key(governed_root: Path) -> str:
     """Read the producer's private key from the environment.
 
@@ -257,6 +276,17 @@ def private_signing_key(governed_root: Path) -> str:
     return key_path.read_text(encoding="utf-8").strip()
 
 
+def carried_by_head(repository_root: Path, relative: str) -> bool:
+    """Does HEAD's tree contain `relative`? Cheap: `-e` reads no content."""
+
+    result = subprocess.run(
+        ["git", "-C", str(repository_root), "cat-file", "-e", f"HEAD:{relative}"],
+        capture_output=True,
+        check=False,
+    )
+    return result.returncode == 0
+
+
 def uncommitted_paths(
     repository_root: Path,
     *,
@@ -280,6 +310,12 @@ def uncommitted_paths(
     observed command has already exited, so it cannot have influenced the
     outcome — and without the exemption the second `run` in a repository would
     always refuse itself.
+
+    That exemption applies ONLY to a path HEAD does not carry. Ranex's own
+    output is gitignored and therefore never in HEAD, so the exemption keeps
+    doing its job; but applied to whatever `--evidence` named, it also excused
+    an already-tracked file. Naming a committed, modified file then suppressed
+    the refusal for it, and a tree HEAD does not describe was recorded as clean.
     """
 
     with tempfile.TemporaryDirectory() as scratch:
@@ -321,9 +357,13 @@ def uncommitted_paths(
     exempt: str | None = None
     if ignoring is not None:
         try:
-            exempt = ignoring.resolve().relative_to(repository_root).as_posix()
+            candidate = ignoring.resolve().relative_to(repository_root).as_posix()
         except ValueError:
-            exempt = None
+            candidate = None
+        # Tracked means reviewed: a difference from HEAD in such a file is the
+        # dirty tree this check exists to see, whoever pointed --evidence at it.
+        if candidate is not None and not carried_by_head(repository_root, candidate):
+            exempt = candidate
 
     dirty: list[str] = []
     for line in result.stdout.splitlines():
@@ -751,9 +791,36 @@ def cmd_keygen(args: argparse.Namespace) -> int:
 
         private_key, public_key = generate_keypair()
         target.parent.mkdir(parents=True, exist_ok=True)
-        # Created 0600, not chmod'ed to 0600 afterwards: between creation and
-        # chmod the key would briefly be world-readable.
-        handle = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+
+        # The check above judged a path; the write below traverses a directory,
+        # and O_EXCL guards only the last component. Anything that swaps a
+        # parent for a symlink into the repository in between gets the key
+        # planted in the tree while the refusal — and the path printed after —
+        # still describe the directory that no longer receives it. So: take the
+        # directory once, decide containment against THAT, and create the file
+        # inside it. O_NOFOLLOW refuses a parent that has become a symlink;
+        # O_DIRECTORY refuses one that is no longer a directory at all.
+        parent = os.open(
+            target.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW
+        )
+        try:
+            target = directory_behind(parent) / target.name
+            if committable_into(target, governed_root):
+                raise ValueError(
+                    "refusing to write a private key inside the repository: "
+                    f"{target}. Private keys must never be committable"
+                )
+            # dir_fd, not the path: re-walking the path is the whole race.
+            # Created 0600, not chmod'ed to 0600 afterwards: between creation
+            # and chmod the key would briefly be world-readable.
+            handle = os.open(
+                target.name,
+                os.O_WRONLY | os.O_CREAT | os.O_EXCL,
+                0o600,
+                dir_fd=parent,
+            )
+        finally:
+            os.close(parent)
         with os.fdopen(handle, "w", encoding="utf-8") as file:
             file.write(private_key + "\n")
     except (ValueError, OSError) as exc:

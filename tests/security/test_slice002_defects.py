@@ -702,3 +702,150 @@ def test_unencodable_record_is_malformed_not_a_bad_signature() -> None:
     assert rejection.reason is RejectionReason.MALFORMED_RECORD, (
         f"a record that cannot be encoded was called a forgery: {rejection.detail}"
     )
+
+
+# --- 13. the evidence exemption covers a tracked, modified file -------------
+
+
+def test_evidence_exemption_never_covers_a_tracked_file(
+    repo: Path,
+    keys: Keys,
+) -> None:
+    """Attack: name a committed file with --evidence and the dirty check dies.
+
+    The exemption exists so the second `run` in a repository does not refuse
+    itself over Ranex's own output — output that is gitignored and so is never
+    in HEAD. But it is applied to whatever `--evidence` names, so pointing it at
+    an already-tracked file suppresses the refusal for that path: the file is
+    modified on disk, present when the command runs, absent from HEAD's tree,
+    and the record still binds to HEAD's digest. One flag turns the
+    dirty-working-tree refusal into a false claim.
+    """
+
+    write_keyring(repo, worker=keys.public["worker"])
+    (repo / "payload.json").write_text("[]\n", encoding="utf-8")
+    commit_all(repo)
+
+    # Tracked, committed, and now different from HEAD — dirty by any reading,
+    # and exactly what `run` promises never to bind a subject digest to.
+    (repo / "payload.json").write_text('[{"tampered": true}]\n', encoding="utf-8")
+
+    marker = repo / "ran.txt"
+    code = invoke(
+        repo,
+        [
+            "run",
+            "--claim", "tests-executed",
+            "--producer", "worker",
+            "--repository", ".",
+            "--evidence", "payload.json",
+            "--producers", "producers.yaml",
+            "--", "sh", "-c", f"touch {marker.name}; exit 0",
+        ],
+        keys.path("worker"),
+    )
+
+    assert code == EXIT_USAGE, (
+        "a modified tracked file was exempted from the dirty-tree check "
+        "because --evidence named it"
+    )
+    assert not marker.exists()
+    assert json.loads((repo / "payload.json").read_text(encoding="utf-8")) == [
+        {"tampered": True}
+    ], "evidence was recorded against a tree HEAD does not describe"
+
+
+# --- 14. keygen's containment check is check-then-open ----------------------
+
+
+def test_keygen_writes_through_the_directory_it_checked(
+    repo: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Attack: swap the parent directory between the check and the write.
+
+    `cmd_keygen` resolves the target, asks `committable_into` about that path,
+    and only later mkdirs and opens it. `O_EXCL` guards the final component
+    alone; every parent is traversed again at open time. Replace a parent that
+    was a real directory with a symlink into the repository in that interval and
+    the key lands in the tree while `WROTE` prints the path that was checked —
+    the one thing this slice says can never happen, reported as success.
+
+    Deterministic rather than threaded: the window is entered exactly once, at
+    `generate_keypair`, which runs after the check and before the open. A racing
+    test would be flaky and would prove less.
+    """
+
+    from ranex.foundation.signing import generate_keypair
+
+    commit_all(repo)
+    inside = repo / "secrets"
+    inside.mkdir()
+
+    # A real directory outside the repository, so the check passes honestly.
+    holder = tmp_path / "outside" / "holder"
+    holder.mkdir(parents=True)
+    target = holder / "worker.key"
+
+    def flip_the_parent_then_generate() -> tuple[str, str]:
+        holder.rmdir()
+        holder.symlink_to(inside, target_is_directory=True)
+        return generate_keypair()
+
+    monkeypatch.setattr(
+        "ranex.cli.main.generate_keypair", flip_the_parent_then_generate
+    )
+
+    code = invoke(repo, ["keygen", "--producer", "worker"], target)
+
+    assert not (inside / "worker.key").exists(), (
+        "a private key was written inside the repository through a parent "
+        "directory swapped after the containment check"
+    )
+    assert code == EXIT_USAGE, (
+        "keygen reported success for a directory it no longer wrote through"
+    )
+
+
+def test_keygen_refuses_an_ancestor_swapped_for_a_repository_symlink(
+    repo: Path,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The same attack one level up, where refusing symlinked parents is blind.
+
+    Only the final component of a path is subject to `O_NOFOLLOW`, so swapping
+    the target's own parent is the easy half. Swap an ancestor instead and the
+    parent is still a real directory — reached, now, through a symlink into the
+    repository. Nothing about the open call can see that; only asking where the
+    opened directory actually leads can.
+    """
+
+    from ranex.foundation.signing import generate_keypair
+
+    commit_all(repo)
+    inside = repo / "secrets"
+    (inside / "holder").mkdir(parents=True)
+
+    outside = tmp_path / "outside"
+    (outside / "holder").mkdir(parents=True)
+    target = outside / "holder" / "worker.key"
+
+    def flip_the_ancestor_then_generate() -> tuple[str, str]:
+        (outside / "holder").rmdir()
+        outside.rmdir()
+        outside.symlink_to(inside, target_is_directory=True)
+        return generate_keypair()
+
+    monkeypatch.setattr(
+        "ranex.cli.main.generate_keypair", flip_the_ancestor_then_generate
+    )
+
+    code = invoke(repo, ["keygen", "--producer", "worker"], target)
+
+    assert not (inside / "holder" / "worker.key").exists(), (
+        "a private key was written inside the repository through an ancestor "
+        "swapped after the containment check"
+    )
+    assert code == EXIT_USAGE
