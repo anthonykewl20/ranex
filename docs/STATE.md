@@ -4,7 +4,7 @@
 
 **Updated:** 2026-08-01
 **Phase:** kernel — evidence loop
-**Active slice:** none — SLICE-001 closed, next one not yet opened
+**Active slice:** docs/slices/SLICE-002-evidence-authenticity.md
 
 ## Where we stopped
 
@@ -20,13 +20,11 @@ tree digest, and the gate reads it. It never reaches PASS: nothing produces
 
 **`main` is now the kernel tree**, replacing a disjoint 446-file architecture
 tree that shared no ancestor with it. Six retired branches deleted, tips kept as
-`archive/*` tags. `bootstrap/pre-upstream` duplicates `main`; retire it.
+`archive/*` tags; `bootstrap/pre-upstream` is already gone.
 
 ## Next
 
-1. **SLICE-002 — evidence authenticity.** Records are unsigned; a PASS is
-   forgeable with a text editor. Blocked on: signing scheme and key custody.
-2. **SLICE-003 — journal hardening.** `Journal.append` races: two writers read
+1. **SLICE-003 — journal hardening.** `Journal.append` races: two writers read
    the same `prev_link` and fork the chain. Needs `BEGIN IMMEDIATE` and a
    `journal verify` subcommand — `verify()` exists and is never called. Harvest
    the SIGKILL crash and persisted-replay tests from `feature/kernel-tracer`
@@ -42,8 +40,8 @@ tree that shared no ancestor with it. Six retired branches deleted, tips kept as
 - `contracts-validated` is required by `gates.yaml` with no producer. Write one
   or amend the gate; do not fake the claim.
 - `test_gate_catalog_loader.py` is misnamed; it tests `slice_gate_loader`.
-- No CI exists. `main` blocks force-push and deletion; its 5 required checks
-  named workflows that never existed and were removed. Add real ones.
+- No CI or rulesets exist. `main` blocks force-push/deletion but requires no
+  checks; agents currently share owner credentials, so it is no trust boundary.
 - Delegation works: direct OpenRouter, one narrow prompt per call. `tencent/hy3`
   at effort `high` stalls on ~25KB prompts; effort is a % of `max_tokens`.
 - `subject_lane` is a hardcoded default reaching journal records.

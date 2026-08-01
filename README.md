@@ -244,7 +244,8 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none — the next one is not yet opened.
+**Active slice:** SLICE-002-evidence-authenticity — signing evidence records so
+a PASS cannot be forged with a text editor.
 
 ## Completed slices
 
