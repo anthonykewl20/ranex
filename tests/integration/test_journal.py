@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from ranex.foundation.canonical import canonical_sha256
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.verdict import (
     Claim,
@@ -22,13 +23,21 @@ from ranex.governed_execution.domain.verdict import (
 
 SUBJECT = "sha256:" + "c" * 64
 
+# SLICE-003: claim and evidence both name the argv. This file is about the
+# journal, so the two agree and the verdict stays PASS.
+COMMAND = ["pytest", "-q"]
+COMMAND_DIGEST = "sha256:" + canonical_sha256(COMMAND)
+EXECUTABLE = "/usr/bin/pytest"
+
 
 def make_evaluation(claim: str = "tests-executed"):
     return evaluate(
         Gate(
             gate_id="landing",
             rule_id="TESTS_EXECUTED",
-            required_claims=(Claim(claim),),
+            required_claims=(
+                Claim(claim_id=claim, command_digest=COMMAND_DIGEST),
+            ),
             blocking=True,
         ),
         (
@@ -36,7 +45,9 @@ def make_evaluation(claim: str = "tests-executed"):
                 claim_id=claim,
                 subject_digest=SUBJECT,
                 producer_id="worker",
-                command="pytest -q",
+                command=" ".join(COMMAND),
+                command_digest=COMMAND_DIGEST,
+                executable_path=EXECUTABLE,
                 exit_code=0,
             ),
         ),

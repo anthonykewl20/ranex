@@ -15,12 +15,23 @@ def write(tmp_path: Path, text: str) -> Path:
     return path
 
 
+# SLICE-003 replaced the bare-string claim entry with a mapping that names the
+# command satisfying the claim. The shape's own failure modes live in
+# tests/contract/test_gate_catalog_claim_commands.py; this file keeps the
+# catalog-level ones it already covered.
 GOOD = """
 gates:
   - gate_id: landing
     rule_id: TESTS_EXECUTED
     blocking: true
-    required_claims: [tests-executed]
+    required_claims:
+      - claim_id: tests-executed
+        command: ["uv", "run", "pytest", "-q"]
+"""
+
+CLAIMS_BLOCK = """    required_claims:
+      - claim_id: tests-executed
+        command: ["uv", "run", "pytest", "-q"]
 """
 
 
@@ -53,7 +64,8 @@ def test_non_blocking_gate_is_refused(tmp_path: Path) -> None:
 
 
 def test_empty_required_claims_is_refused(tmp_path: Path) -> None:
-    text = GOOD.replace("required_claims: [tests-executed]", "required_claims: []")
+    text = GOOD.replace(CLAIMS_BLOCK, "    required_claims: []\n")
+    assert text != GOOD, "the claims block must actually have been replaced"
     with pytest.raises(ValueError, match="required_claims"):
         load_gate(write(tmp_path, text), "landing")
 

@@ -15,15 +15,24 @@ from pathlib import Path
 import pytest
 
 from ranex.cli.main import main
+from ranex.foundation.canonical import canonical_sha256, command_digest
 
 from conftest import Signing, attach, signing_for
+
+# SLICE-003: the claim declares the command that satisfies it, and the
+# hand-built records below describe that same command.
+BOUND = ["pytest", "-q"]
+# A resolved absolute path outside any repository under test.
+EXECUTABLE = "/usr/bin/pytest"
 
 GATES = """
 gates:
   - gate_id: landing
     rule_id: TESTS_EXECUTED
     blocking: true
-    required_claims: [tests-executed]
+    required_claims:
+      - claim_id: tests-executed
+        command: ["pytest", "-q"]
 """
 
 
@@ -103,6 +112,8 @@ def test_passes_once_real_evidence_exists(repo: Path, capsys) -> None:
                         "subject_digest": subject,
                         "producer_id": "worker",
                         "command": "pytest -q",
+                        "command_digest": command_digest(BOUND),
+                        "executable_path": EXECUTABLE,
                         "exit_code": 0,
                     },
                     "worker",
@@ -127,6 +138,8 @@ def test_evidence_from_a_different_commit_does_not_satisfy(repo: Path, capsys) -
                         "subject_digest": "sha256:" + "f" * 64,
                         "producer_id": "worker",
                         "command": "pytest -q",
+                        "command_digest": command_digest(BOUND),
+                        "executable_path": EXECUTABLE,
                         "exit_code": 0,
                     },
                     "worker",
@@ -161,6 +174,8 @@ def test_evidence_without_subject_digest_is_refused_and_named(repo: Path, capsys
                     "claim_id": "tests-executed",
                     "producer_id": "worker",
                     "command": "echo i-never-ran",
+                    "command_digest": command_digest(["echo", "i-never-ran"]),
+                    "executable_path": EXECUTABLE,
                     "exit_code": 0,
                 }
             ]

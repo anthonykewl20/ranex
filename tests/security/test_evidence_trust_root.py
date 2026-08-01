@@ -25,11 +25,14 @@ tests that prove nothing else regressed.
 from __future__ import annotations
 
 import json
+import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
+
+from ranex.foundation.canonical import command_digest
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
@@ -42,14 +45,32 @@ PASSING_ANSWER = "right\n"
 CHECK_SCRIPT = "grep -qx right answer.txt\n"
 
 
+# SLICE-003: a claim declares the command that satisfies it. `check.sh` is the
+# repository's own check, so `tests-executed` means running it and nothing else.
+# `trivial` is deliberately bound to a command that succeeds against any tree —
+# it is the claim the catalog-tampering attack below tries to smuggle in.
+COMMAND_FOR: dict[str, list[str]] = {
+    "tests-executed": ["sh", "check.sh"],
+    "trivial": ["sh", "-c", "exit 0"],
+}
+
+# The resolved absolute path of argv[0], as `run` records it (ADR-001). Outside
+# the repository under test, which is the containment rule these records obey.
+EXECUTABLE = str(Path(shutil.which("sh")).resolve())
+
+
 def build_gates(*claims: str) -> str:
-    listed = ", ".join(claims)
+    entries = "".join(
+        f"      - claim_id: {claim}\n"
+        f"        command: {json.dumps(COMMAND_FOR[claim])}\n"
+        for claim in claims
+    )
     return (
         "gates:\n"
         "  - gate_id: landing\n"
         "    rule_id: TESTS_EXECUTED\n"
         "    blocking: true\n"
-        f"    required_claims: [{listed}]\n"
+        "    required_claims:\n" + entries
     )
 
 
@@ -161,13 +182,18 @@ def record(
     digest: str,
     producer: str,
     exit_code: int = 0,
-    command: str = "sh check.sh",
+    argv: list[str] | None = None,
 ) -> dict[str, object]:
+    """A record body describing the command the claim names (SLICE-003)."""
+
+    command = argv if argv is not None else COMMAND_FOR[claim]
     return {
         "claim_id": claim,
         "subject_digest": digest,
         "producer_id": producer,
-        "command": command,
+        "command": " ".join(command),
+        "command_digest": command_digest(command),
+        "executable_path": EXECUTABLE,
         "exit_code": exit_code,
     }
 

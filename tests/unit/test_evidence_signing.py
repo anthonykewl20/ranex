@@ -4,10 +4,15 @@ The target for this slice. Written before the implementation and required to
 fail first: a test that passes before the code exists is not a target, it is a
 circle painted around wherever the dart landed.
 
+SLICE-003 added the claim to command binding: `command_digest` and
+`executable_path` are the sixth and seventh signed fields, and the domain moved
+to v2 so a v1 signature cannot be replayed against v2 content. The refusal of v1
+at admission is tested in tests/security/test_slice003_command_binding.py.
+
 API pinned by these tests, in `ranex.foundation.signing`:
 
-    EVIDENCE_DOMAIN: bytes                  # b"ranex-evidence-v1\\n"
-    SIGNED_FIELDS: tuple[str, ...]          # exactly the five content fields
+    EVIDENCE_DOMAIN: bytes                  # b"ranex-evidence-v2\\n"
+    SIGNED_FIELDS: tuple[str, ...]          # exactly the seven content fields
     generate_keypair() -> tuple[str, str]   # (private, public), "ed25519:<b64>"
     public_key_for(private_key) -> str
     signed_payload(content) -> bytes        # domain prefix + canonical bytes
@@ -22,7 +27,7 @@ from __future__ import annotations
 
 import pytest
 
-from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
 
 
 @pytest.fixture()
@@ -41,9 +46,13 @@ def sg():
     return signing
 
 
+ARGV = ["uv", "run", "pytest", "-q"]
+
 CONTENT = {
     "claim_id": "tests-executed",
     "command": "uv run pytest -q",
+    "command_digest": "sha256:" + canonical_sha256(ARGV),
+    "executable_path": "/usr/bin/uv",
     "exit_code": 0,
     "producer_id": "worker",
     "subject_digest": "sha256:" + "a" * 64,
@@ -58,25 +67,39 @@ def keypair(sg) -> tuple[str, str]:
 # --- the payload is pinned --------------------------------------------------
 
 
-def test_signed_fields_are_exactly_the_five_content_fields(sg) -> None:
+def test_signed_fields_are_exactly_the_seven_content_fields(sg) -> None:
     """Not "everything except signature". The two differ the moment a record
     carries an extra field, and then `run` and `load` disagree about what was
-    signed."""
+    signed.
+
+    SLICE-003 made it seven. `command_digest` is what the kernel compares, so an
+    unsigned digest would be a field the attacker chooses; `command` stays
+    signed alongside it so the legible field cannot be swapped under a matching
+    digest; and `executable_path` is signed because the containment rule is
+    re-checked from it at evaluation, which an unsigned field could not carry.
+    """
 
     assert set(sg.SIGNED_FIELDS) == {
         "claim_id",
         "command",
+        "command_digest",
+        "executable_path",
         "exit_code",
         "producer_id",
         "subject_digest",
     }
+    assert len(sg.SIGNED_FIELDS) == 7
 
 
 def test_payload_carries_the_domain_prefix(sg) -> None:
     """Without domain separation a signature over these bytes stays valid if the
-    same key is ever reused to sign a different structure."""
+    same key is ever reused to sign a different structure.
 
-    assert sg.EVIDENCE_DOMAIN == b"ranex-evidence-v1\n"
+    v1 → v2 with the field set: the prefix is what makes a v1 signature fail
+    against v2 content instead of being silently accepted as a downgrade.
+    """
+
+    assert sg.EVIDENCE_DOMAIN == b"ranex-evidence-v2\n"
     payload = sg.signed_payload(CONTENT)
     assert payload.startswith(sg.EVIDENCE_DOMAIN)
     assert payload == sg.EVIDENCE_DOMAIN + canonical_json_bytes(CONTENT)
@@ -155,7 +178,13 @@ def test_mutating_any_signed_field_invalidates_the_signature(
     keypair: tuple[str, str],
     field: str,
 ) -> None:
-    """This is the whole point. Every one of the five, not just exit_code."""
+    """This is the whole point. Every one of the seven, not just exit_code.
+
+    `command`, `command_digest` and `executable_path` are all in the
+    parametrisation, which is how criteria 6, 7 and the ADR-001 path-forgery
+    case are held at the primitive level: none of the three can be moved without
+    the signature noticing.
+    """
 
     private, public = keypair
     signature = sg.sign_evidence(CONTENT, private)

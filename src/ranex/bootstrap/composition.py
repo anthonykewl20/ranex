@@ -48,7 +48,10 @@ class GateEvaluator:
             gate_id=definition.gate_id,
             rule_id=definition.rule_id,
             required_claims=tuple(
-                Claim(claim.claim_id)
+                Claim(
+                    claim_id=claim.claim_id,
+                    command_digest=claim.command_digest,
+                )
                 for claim in definition.required_claims
             ),
             blocking=definition.blocking,

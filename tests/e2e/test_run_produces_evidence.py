@@ -24,16 +24,25 @@ from pathlib import Path
 import pytest
 
 from ranex.cli.main import main
-from ranex.foundation.canonical import canonical_sha256
+from ranex.foundation.canonical import canonical_sha256, command_digest
 
 from conftest import Signing, attach, signing_for
+
+# SLICE-003: `tests-executed` names one command. `check.sh` reads the committed
+# tree and succeeds only against it, so a claim satisfied by it is a claim about
+# this tree — unlike `sh -c 'exit 0'`, which most of this file runs and which is
+# therefore no longer satisfying evidence for anything.
+CHECK_SCRIPT = "grep -qx content file.txt\n"
+BOUND = ["sh", "check.sh"]
 
 GATES = """
 gates:
   - gate_id: landing
     rule_id: TESTS_EXECUTED
     blocking: true
-    required_claims: [tests-executed]
+    required_claims:
+      - claim_id: tests-executed
+        command: ["sh", "check.sh"]
 """
 
 
@@ -48,6 +57,7 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
             ["git", "-C", str(repository), "config", key, value], check=True
         )
     (repository / "file.txt").write_text("content\n", encoding="utf-8")
+    (repository / "check.sh").write_text(CHECK_SCRIPT, encoding="utf-8")
     (repository / "gates.yaml").write_text(GATES, encoding="utf-8")
     # The keyring is committed with the tree, as it is in production: it is the
     # trust root, and review of this file is the control on it.
@@ -125,7 +135,17 @@ def records(repo: Path, name: str = "evidence.json") -> list[dict]:
 # --- observation -----------------------------------------------------------
 
 
-def test_records_a_successful_command(repo: Path) -> None:
+def test_records_a_successful_command_that_satisfies_nothing(repo: Path) -> None:
+    """SLICE-003 inverted the second half of this test, deliberately.
+
+    Everything SLICE-001 proved is still asserted: `run` records the claim, the
+    producer, the exit code verbatim, the subject digest, and a readable command.
+    What it no longer does is bless the result. `sh -c 'exit 0'` succeeds against
+    any tree, so a record of it is honest observation and not evidence for
+    `tests-executed` — the claim names a different command, and `gate evaluate`
+    now says so.
+    """
+
     assert run_cmd(repo, "sh", "-c", "exit 0") == 0
 
     (record,) = records(repo)
@@ -134,6 +154,12 @@ def test_records_a_successful_command(repo: Path) -> None:
     assert record["exit_code"] == 0
     assert record["subject_digest"] == subject_of(repo)
     assert "exit 0" in record["command"]
+    assert record["command_digest"] == command_digest(["sh", "-c", "exit 0"])
+
+    assert evaluate(repo) == 1, (
+        "a command that exits 0 against any tree was accepted as evidence that "
+        "this tree's tests ran"
+    )
 
 
 def test_records_a_failing_command_and_exits_with_its_code(repo: Path) -> None:
@@ -210,6 +236,8 @@ def test_preserves_unrelated_records(repo: Path) -> None:
                         "subject_digest": subject_of(repo),
                         "producer_id": "auditor",
                         "command": "validate",
+                        "command_digest": command_digest(["validate"]),
+                        "executable_path": "/usr/bin/validate",
                         "exit_code": 0,
                     },
                     "auditor",
@@ -262,9 +290,13 @@ def test_output_round_trips_through_admission(repo: Path) -> None:
 
 
 def test_run_then_gate_evaluate_passes(repo: Path, capsys) -> None:
-    """The whole point of the slice: produced evidence satisfies the gate."""
+    """The whole point of the slice: produced evidence satisfies the gate.
 
-    assert run_cmd(repo, "sh", "-c", "exit 0") == 0
+    SLICE-003 changed which command that is — the one the catalog binds to the
+    claim — and nothing else about what this test proves.
+    """
+
+    assert run_cmd(repo, *BOUND) == 0
     capsys.readouterr()
 
     assert evaluate(repo) == 0
@@ -280,7 +312,9 @@ def test_failed_command_produces_evidence_that_blocks(repo: Path, capsys) -> Non
 
 
 def test_self_approval_still_refused_end_to_end(repo: Path, capsys) -> None:
-    assert run_cmd(repo, "sh", "-c", "exit 0", producer="alice") == 0
+    """The bound command, so self-approval is the only reason this can fail."""
+
+    assert run_cmd(repo, *BOUND, producer="alice") == 0
     capsys.readouterr()
 
     assert evaluate(repo, approver="alice") == 1

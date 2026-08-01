@@ -18,12 +18,26 @@ from typing import Any
 
 import yaml
 
+from ranex.foundation.canonical import command_digest
+
 
 @dataclass(frozen=True, slots=True)
 class SliceClaimDefinition:
-    """A policy-owned claim identifier."""
+    """A policy-owned claim identifier and the argv that satisfies it.
+
+    argv as a sequence, never a string: comparison then needs no shell parsing,
+    and argument order is structural rather than a parsing accident. The literal
+    stays legible in review; the digest is what the kernel compares.
+    """
 
     claim_id: str
+    command: tuple[str, ...]
+
+    @property
+    def command_digest(self) -> str:
+        """What the kernel compares. The same function `run` records with."""
+
+        return command_digest(self.command)
 
 
 @dataclass(frozen=True, slots=True)
@@ -55,6 +69,67 @@ def _no_duplicates(
 _UniqueKeyLoader.add_constructor(  # type: ignore[no-untyped-call]
     yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, _no_duplicates
 )
+
+
+_CLAIM_KEYS = {"claim_id", "command"}
+
+_SHAPE = "{claim_id: <id>, command: [<argv>, ...]}"
+
+
+def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
+    """One `required_claims` entry, or raise.
+
+    Absence blocks, at construction. A claim with no declared command is a claim
+    whose satisfaction is undefined, and an undefined claim cannot block — so
+    every shape that fails to name an argv is refused here, where the operator's
+    file is read, rather than defaulted into a gate that decorates.
+    """
+
+    if not isinstance(entry, dict):
+        # The pre-SLICE-003 shape lands here: a bare string was coerced with
+        # `str(claim)` and declared nothing about what satisfying it required.
+        raise ValueError(
+            f"gate {gate_id!r}: required_claims entry {entry!r} must be a mapping "
+            f"of the form {_SHAPE}; a claim that names no command has no defined "
+            "way to be satisfied"
+        )
+
+    unknown = set(entry) - _CLAIM_KEYS
+    if unknown:
+        # The claim entry is part of the trust root now, so `waiver: yes` must
+        # not be silently ignored here any more than it is on the gate.
+        raise ValueError(
+            f"gate {gate_id!r}: unknown keys in required_claims entry: "
+            f"{sorted(unknown)}"
+        )
+
+    claim_id = entry.get("claim_id")
+    if not isinstance(claim_id, str) or not claim_id.strip():
+        raise ValueError(
+            f"gate {gate_id!r}: required_claims entry must carry a non-empty "
+            f"string claim_id, got {claim_id!r}"
+        )
+
+    if "command" not in entry:
+        raise ValueError(
+            f"gate {gate_id!r}: claim {claim_id!r} declares no command, so what "
+            f"would satisfy it is undefined; write it as {_SHAPE}"
+        )
+
+    command = entry["command"]
+    if not isinstance(command, list) or not command:
+        raise ValueError(
+            f"gate {gate_id!r}: claim {claim_id!r} must declare command as a "
+            f"non-empty list of argv strings, got {command!r}. A string would "
+            "need shell parsing and an empty list binds nothing"
+        )
+    if not all(isinstance(part, str) and part for part in command):
+        raise ValueError(
+            f"gate {gate_id!r}: claim {claim_id!r} declares a command that is not "
+            f"an argv — every element must be a non-empty string, got {command!r}"
+        )
+
+    return SliceClaimDefinition(claim_id=claim_id, command=tuple(command))
 
 
 def load_gate(
@@ -89,11 +164,22 @@ def load_gate(
     if blocking is not True:
         raise ValueError(f"gate {gate_id!r} must be blocking")
 
+    required_claims = tuple(_claim_definition(gate_id, claim) for claim in claims)
+
+    # `Gate` refuses duplicates too, but the ambiguity is written here: two
+    # entries for one claim mean one of the two commands silently decides it,
+    # and that has no defined answer to give the layer above.
+    seen = [claim.claim_id for claim in required_claims]
+    duplicates = sorted({name for name in seen if seen.count(name) > 1})
+    if duplicates:
+        raise ValueError(
+            f"gate {gate_id!r} declares required_claims more than once: "
+            f"{', '.join(duplicates)}; one claim names one command"
+        )
+
     return SliceGateDefinition(
         gate_id=str(entry["gate_id"]),
         rule_id=str(entry["rule_id"]),
-        required_claims=tuple(
-            SliceClaimDefinition(str(claim)) for claim in claims
-        ),
+        required_claims=required_claims,
         blocking=True,
     )

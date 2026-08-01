@@ -1,9 +1,16 @@
 # Action gates for this repository. Authored, not generated: the contract tree
 # holds readiness gates, not action gates — see src/.../yaml/slice_gate_loader.py.
+#
+# SLICE-003: a claim declares the argv that satisfies it. `contracts-validated`
+# used to be required here and nothing produced it; that was invisible only
+# because `-- true` satisfied everything. There is no contracts validator to
+# name, so the claim is dropped and the debt stays recorded — naming a
+# placeholder command would be faking it, and leaving it required would make
+# `landing` permanently unsatisfiable, which is a broken gate and not a control.
 gates:
   - gate_id: landing
     rule_id: TESTS_EXECUTED
     blocking: true
     required_claims:
-      - tests-executed
-      - contracts-validated
+      - claim_id: tests-executed
+        command: ["uv", "run", "pytest", "-q"]

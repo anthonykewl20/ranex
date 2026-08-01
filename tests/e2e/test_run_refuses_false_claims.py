@@ -32,12 +32,17 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
         )
     (repository / "file.txt").write_text("original\n", encoding="utf-8")
     (repository / "victim.txt").write_text("delete me\n", encoding="utf-8")
+    # SLICE-003: claim entries are mappings naming the argv that satisfies them.
+    # `c` is a placeholder claim; this file never asserts a PASS, it asserts what
+    # `run` refuses to record.
     (repository / "gates.yaml").write_text(
         "gates:\n"
         "  - gate_id: landing\n"
         "    rule_id: TESTS_EXECUTED\n"
         "    blocking: true\n"
-        "    required_claims: [c]\n",
+        "    required_claims:\n"
+        "      - claim_id: c\n"
+        '        command: ["sh", "-c", "exit 0"]\n',
         encoding="utf-8",
     )
     signing.write_keyring(repository)

@@ -52,6 +52,10 @@ class RejectionReason(StrEnum):
     MALFORMED_SIGNATURE = "malformed-signature"
     UNKNOWN_PRODUCER = "unknown-producer"
     BAD_SIGNATURE = "bad-signature"
+    # SLICE-003. Decided outside this module, because containment is a question
+    # about a repository and the domain does not reach for one; named here so a
+    # refusal for it is reported as structured data like every other.
+    EXECUTABLE_INSIDE_SUBJECT = "executable-inside-subject"
 
 
 @dataclass(frozen=True, slots=True)
@@ -195,6 +199,8 @@ def admit(
                 subject_digest=content["subject_digest"],
                 producer_id=content["producer_id"],
                 command=content["command"],
+                command_digest=content["command_digest"],
+                executable_path=content["executable_path"],
                 exit_code=content["exit_code"],
             )
         except (ValueError, TypeError) as exc:

@@ -23,6 +23,7 @@ from __future__ import annotations
 
 import pytest
 
+from ranex.foundation.canonical import canonical_sha256
 from ranex.governed_execution.domain.verdict import (
     Claim,
     Gate,
@@ -31,6 +32,13 @@ from ranex.governed_execution.domain.verdict import (
 )
 
 SUBJECT = "sha256:" + "a" * 64
+
+# SLICE-003: the record names the argv that ran, and the claim names the argv
+# that satisfies it. This file is about admission, which does not judge
+# satisfaction, so the two agree everywhere below.
+ARGV = ["uv", "run", "pytest", "-q"]
+COMMAND_DIGEST = "sha256:" + canonical_sha256(ARGV)
+EXECUTABLE = "/usr/bin/uv"
 
 
 @pytest.fixture()
@@ -61,7 +69,9 @@ def worker(adm) -> tuple[str, str]:
 def content(**overrides: object) -> dict[str, object]:
     record = {
         "claim_id": "tests-executed",
-        "command": "uv run pytest -q",
+        "command": " ".join(ARGV),
+        "command_digest": COMMAND_DIGEST,
+        "executable_path": EXECUTABLE,
         "exit_code": 0,
         "producer_id": "worker",
         "subject_digest": SUBJECT,
@@ -94,8 +104,8 @@ def test_admitted_evidence_carries_no_signature_field(
     worker: tuple[str, str],
 ) -> None:
     """`Evidence` must not gain a signature field. The loader verifies, discards
-    the signature, and constructs Evidence from the five content fields, so
-    `evaluate()` is untouched by any of this."""
+    the signature, and constructs Evidence from the content fields, so keys
+    never reach `evaluate()`."""
 
     private, public = worker
     admitted = adm.admit([signed(adm, private)], {"worker": public}).evidence[0]
@@ -243,7 +253,9 @@ def test_forgery_reaches_the_kernel_as_absence(adm, worker: tuple[str, str]) -> 
     gate = Gate(
         gate_id="landing",
         rule_id="TESTS_EXECUTED",
-        required_claims=(Claim("tests-executed"),),
+        required_claims=(
+            Claim(claim_id="tests-executed", command_digest=COMMAND_DIGEST),
+        ),
         blocking=True,
     )
     evaluation = evaluate(

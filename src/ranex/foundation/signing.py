@@ -13,8 +13,10 @@ loader must compute identical bytes on different machines:
 
 1. **The domain prefix is inside the signed bytes.** Without it, a signature
    over these bytes stays valid if the same key is ever reused to sign some
-   other structure whose canonical form happens to collide.
-2. **The signed field set is exactly five**, not "every key except signature".
+   other structure whose canonical form happens to collide. It also carries the
+   format version: SLICE-003 moved it to `v2`, which is what makes a v1
+   signature fail against v2 content instead of being accepted as a downgrade.
+2. **The signed field set is exactly seven**, not "every key except signature".
    The two differ the moment a record carries an extra field, and then the
    producer and the verifier disagree about what was covered.
 3. **Encoding is base64 throughout.** A record written on one machine must
@@ -39,11 +41,19 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 
 from ranex.foundation.canonical import canonical_json_bytes
 
-EVIDENCE_DOMAIN = b"ranex-evidence-v1\n"
+EVIDENCE_DOMAIN = b"ranex-evidence-v2\n"
 
+# SLICE-003 added the last two, and the version above moved with them.
+# `command_digest` is what the kernel compares, so an unsigned digest would be a
+# field the attacker chooses; `command` stays signed beside it so the legible
+# field cannot be swapped under a matching digest; `executable_path` is signed
+# because the containment rule is re-checked from it at evaluation, which an
+# unsigned field could not carry.
 SIGNED_FIELDS: tuple[str, ...] = (
     "claim_id",
     "command",
+    "command_digest",
+    "executable_path",
     "exit_code",
     "producer_id",
     "subject_digest",
@@ -93,7 +103,7 @@ def _decode(value: object, *, expected: int | None, field: str) -> bytes:
 def signed_payload(content: Mapping[str, Any]) -> bytes:
     """The exact bytes a signature covers.
 
-    Refuses a record that is not exactly the five content fields. Silently
+    Refuses a record that is not exactly the seven content fields. Silently
     signing an extra field would let the producer cover something the verifier
     does not check; silently dropping it would let an attacker append a field
     the signature never protected.
@@ -147,7 +157,7 @@ def public_key_for(private_key: str) -> str:
 
 
 def sign_evidence(content: Mapping[str, Any], private_key: str) -> str:
-    """Sign the five content fields. Deterministic per RFC 8032."""
+    """Sign the seven content fields. Deterministic per RFC 8032."""
 
     raw = _decode(private_key, expected=32, field="private key")
     key = Ed25519PrivateKey.from_private_bytes(raw)

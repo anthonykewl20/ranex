@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import pytest
 
+from ranex.foundation.canonical import canonical_sha256
 from ranex.governed_execution.domain.verdict import (
     Claim,
     Evidence,
@@ -19,12 +20,21 @@ from ranex.governed_execution.domain.verdict import (
 SUBJECT = "sha256:" + "a" * 64
 OTHER_SUBJECT = "sha256:" + "b" * 64
 
+# SLICE-003: a claim names the argv that satisfies it, and evidence names the
+# argv that ran. BC-1..BC-7 are about the other conditions, so both sides use
+# the same command throughout and the binding stays out of the way.
+COMMAND = ["pytest", "-q"]
+COMMAND_DIGEST = "sha256:" + canonical_sha256(COMMAND)
+EXECUTABLE = "/usr/bin/pytest"
+
 
 def gate(*claims: str, blocking: bool = True) -> Gate:
     return Gate(
         gate_id="landing",
         rule_id="TESTS_EXECUTED",
-        required_claims=tuple(Claim(c) for c in claims),
+        required_claims=tuple(
+            Claim(claim_id=c, command_digest=COMMAND_DIGEST) for c in claims
+        ),
         blocking=blocking,
     )
 
@@ -34,7 +44,9 @@ def evidence(claim: str, subject: str = SUBJECT, producer: str = "worker") -> Ev
         claim_id=claim,
         subject_digest=subject,
         producer_id=producer,
-        command="pytest -q",
+        command=" ".join(COMMAND),
+        command_digest=COMMAND_DIGEST,
+        executable_path=EXECUTABLE,
         exit_code=0,
     )
 
@@ -180,7 +192,9 @@ def test_evidence_with_nonzero_exit_does_not_satisfy_a_claim() -> None:
         claim_id="tests-executed",
         subject_digest=SUBJECT,
         producer_id="worker",
-        command="pytest -q",
+        command=" ".join(COMMAND),
+        command_digest=COMMAND_DIGEST,
+        executable_path=EXECUTABLE,
         exit_code=1,
     )
     result = evaluate(

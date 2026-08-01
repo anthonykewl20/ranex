@@ -19,11 +19,14 @@ from __future__ import annotations
 
 import base64
 import json
+import shutil
 import subprocess
 from dataclasses import dataclass, field
 from pathlib import Path
 
 import pytest
+
+from ranex.foundation.canonical import command_digest
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
@@ -37,14 +40,36 @@ _B64_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+
 STALE_DIGEST = "sha256:" + "a" * 64
 
 
+# SLICE-003: a claim declares the command that satisfies it, so the catalog and
+# the hand-built records below have to agree about what each claim means.
+# Explicit rather than defaulted: a claim with no declared command is a claim
+# whose satisfaction is undefined, which the loader refuses outright.
+COMMAND_FOR: dict[str, list[str]] = {
+    "tests-executed": ["sh", "run-tests.sh"],
+    "lint-clean": ["sh", "lint.sh"],
+}
+
+# Succeeds against any tree. Never bound to anything; used only to show that a
+# record of it satisfies nothing.
+TRIVIAL = ["sh", "-c", "exit 0"]
+
+# The resolved absolute path of argv[0], as `run` records it (ADR-001).
+# Outside the repository under test, which is the containment rule it obeys.
+EXECUTABLE = str(Path(shutil.which("sh")).resolve())
+
+
 def build_gates(*claims: str) -> str:
-    listed = ", ".join(claims)
+    entries = "".join(
+        f"      - claim_id: {claim}\n"
+        f"        command: {json.dumps(COMMAND_FOR[claim])}\n"
+        for claim in claims
+    )
     return (
         "gates:\n"
         "  - gate_id: landing\n"
         "    rule_id: TESTS_EXECUTED\n"
         "    blocking: true\n"
-        f"    required_claims: [{listed}]\n"
+        "    required_claims:\n" + entries
     )
 
 
@@ -141,13 +166,26 @@ def record(
     digest: str,
     producer: str,
     exit_code: int = 0,
-    command: str = "sh -c 'exit 0'",
+    argv: list[str] | None = None,
 ) -> dict[str, object]:
+    """A record body for `claim`, describing the command that claim names.
+
+    SLICE-003 rewrote this helper. It used to default to `sh -c 'exit 0'`, and
+    every test below that expected a PASS was therefore asserting that a command
+    which succeeds against any tree is evidence that this tree's tests ran. The
+    default is now the command the catalog binds to the claim; a record of
+    anything else is exercised deliberately, by passing `argv`, and is expected
+    to be refused — see `test_a_trivial_command_satisfies_no_bound_claim`.
+    """
+
+    command = argv if argv is not None else COMMAND_FOR[claim]
     return {
         "claim_id": claim,
         "subject_digest": digest,
         "producer_id": producer,
-        "command": command,
+        "command": " ".join(command),
+        "command_digest": command_digest(command),
+        "executable_path": EXECUTABLE,
         "exit_code": exit_code,
     }
 
@@ -214,6 +252,50 @@ def noncanonical_variant(public_key: str) -> str:
     value = _B64_ALPHABET.index(encoded[-2])
     variant = (value & 0b111100) | ((value + 1) & 0b11)
     return f"{prefix}:{encoded[:-2]}{_B64_ALPHABET[variant]}="
+
+
+# --- 0. SLICE-003: the blessing this file used to carry ---------------------
+
+
+def test_a_trivial_command_satisfies_no_bound_claim(
+    repo: Path,
+    keys: Keys,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """The inversion of this file's old `record()` default, stated as a test.
+
+    Every record here used to describe `sh -c 'exit 0'` and count. The record
+    below is flawless by every SLICE-002 measure — correctly signed, registered
+    producer, bound to this exact tree, exit code 0 — and it must not satisfy
+    `tests-executed`, because `tests-executed` names a command and this is not
+    it. Signature and subject digest prove who recorded what against which tree.
+    Neither proves any work happened; that is what this slice adds.
+    """
+
+    write_keyring(repo, worker=keys.public["worker"])
+    commit_all(repo)
+
+    write_evidence(
+        repo,
+        [
+            signed(
+                record(
+                    claim="tests-executed",
+                    digest=subject_digest(repo),
+                    producer="worker",
+                    argv=TRIVIAL,
+                ),
+                keys.private["worker"],
+            )
+        ],
+    )
+
+    capsys.readouterr()
+    assert evaluate(repo) == EXIT_FAIL, (
+        "a command that exits 0 against any tree was accepted as evidence for a "
+        "claim bound to a different command"
+    )
+    assert "PASS" not in capsys.readouterr().out
 
 
 # --- 1. non-canonical base64 is accepted as key material --------------------
@@ -682,11 +764,15 @@ def test_unencodable_record_is_malformed_not_a_bad_signature() -> None:
     keyring = {"worker": public_key}
     digest = STALE_DIGEST
     signature = "ed25519:" + "A" * 86 + "=="
+    # Present and well formed, so the field set is complete and the record fails
+    # for the one reason under test rather than for a missing SLICE-003 field.
+    bound = command_digest(COMMAND_FOR["tests-executed"])
 
     surrogate = json.loads(
         '{"claim_id": "tests-executed", "subject_digest": "%s", '
-        '"producer_id": "worker", "command": "\\ud800", "exit_code": 0, '
-        '"signature": "%s"}' % (digest, signature)
+        '"producer_id": "worker", "command": "\\ud800", "command_digest": "%s", '
+        '"executable_path": "/usr/bin/sh", "exit_code": 0, "signature": "%s"}'
+        % (digest, bound, signature)
     )
     (rejection,) = admit([surrogate], keyring).rejections
     assert rejection.reason is RejectionReason.MALFORMED_RECORD, (
@@ -695,8 +781,9 @@ def test_unencodable_record_is_malformed_not_a_bad_signature() -> None:
 
     not_a_number = json.loads(
         '{"claim_id": "tests-executed", "subject_digest": "%s", '
-        '"producer_id": "worker", "command": "sh -c true", "exit_code": NaN, '
-        '"signature": "%s"}' % (digest, signature)
+        '"producer_id": "worker", "command": "sh -c true", "command_digest": "%s", '
+        '"executable_path": "/usr/bin/sh", "exit_code": NaN, "signature": "%s"}'
+        % (digest, bound, signature)
     )
     (rejection,) = admit([not_a_number], keyring).rejections
     assert rejection.reason is RejectionReason.MALFORMED_RECORD, (

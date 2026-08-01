@@ -247,7 +247,9 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none — the next one is not yet opened.
+**Active slice:** `docs/slices/SLICE-003-claim-command-binding.md` — a signed
+record for `true` currently satisfies `tests-executed`; this binds a claim to the
+command that may satisfy it.
 
 ## Completed slices
 

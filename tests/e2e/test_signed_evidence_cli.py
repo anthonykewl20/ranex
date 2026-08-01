@@ -21,13 +21,21 @@ from pathlib import Path
 import pytest
 
 from ranex.cli.main import main
+from ranex.foundation.canonical import canonical_sha256, command_digest
+
+# SLICE-003: a claim declares the command that satisfies it. `tests-executed`
+# means this argv and nothing else, so `sh -c 'exit 0'` below is deliberately
+# *not* the bound command — see the note on the first test.
+BOUND = ["uv", "run", "pytest", "-q"]
 
 GATES = """
 gates:
   - gate_id: landing
     rule_id: TESTS_EXECUTED
     blocking: true
-    required_claims: [tests-executed]
+    required_claims:
+      - claim_id: tests-executed
+        command: ["uv", "run", "pytest", "-q"]
 """
 
 EXIT_PASS = 0
@@ -125,7 +133,27 @@ def records(repo: Path) -> list[dict]:
 # --- the loop closes --------------------------------------------------------
 
 
-def test_keygen_run_evaluate_passes(repo: Path, tmp_path: Path) -> None:
+def test_keygen_run_evaluate_refuses_an_unbound_command(
+    repo: Path,
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    """SLICE-003 inverted this test, deliberately.
+
+    It used to assert that `sh -c 'exit 0'` satisfied `tests-executed` — a
+    correctly signed, subject-bound record that a gate accepted as proof the
+    tests ran. That was the project's founding failure asserted as intended
+    behaviour: the dart thrower painting the bullseye where the dart landed.
+
+    Everything SLICE-002 proved still holds and is still asserted here: keygen
+    writes a key, `run` signs what it observed, the record is well formed. What
+    changed is the last line. Satisfaction now also asks *what ran*, and
+    `sh -c 'exit 0'` is not the command the catalog binds to this claim.
+
+    The bound command passing is not dropped, only moved — see
+    `tests/e2e/test_claim_command_binding.py`.
+    """
+
     key_path = tmp_path / "worker.key"
     public = keygen(repo, key_path)
     write_keyring(repo, worker=public)
@@ -135,8 +163,12 @@ def test_keygen_run_evaluate_passes(repo: Path, tmp_path: Path) -> None:
 
     (record,) = records(repo)
     assert record["signature"].startswith("ed25519:")
+    assert record["command_digest"] == command_digest(["sh", "-c", "exit 0"])
+    assert record["command_digest"] != command_digest(BOUND)
 
-    assert evaluate(repo) == EXIT_PASS
+    capsys.readouterr()
+    assert evaluate(repo) == EXIT_FAIL
+    assert "PASS" not in capsys.readouterr().out
 
 
 def test_hand_edited_record_fails_and_names_the_signature(
@@ -183,12 +215,16 @@ def test_unsigned_record_stops_counting(repo: Path, tmp_path: Path) -> None:
     ).stdout.strip()
     from ranex.foundation.canonical import canonical_sha256
 
+    # Complete and correct in every field, including the SLICE-003 command
+    # binding, so the only thing wrong with it is the missing signature.
     (repo / "evidence.json").write_text(
         json.dumps([{
             "claim_id": "tests-executed",
             "subject_digest": "sha256:" + canonical_sha256({"tree": subject}),
             "producer_id": "worker",
             "command": "uv run pytest -q",
+            "command_digest": command_digest(BOUND),
+            "executable_path": "/usr/bin/uv",
             "exit_code": 0,
         }], indent=2),
         encoding="utf-8",
