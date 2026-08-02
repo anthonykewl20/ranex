@@ -23,7 +23,7 @@ from pathlib import Path
 
 import pytest
 
-from ranex.cli.main import main
+from ranex.cli.main import cmd_run, main
 from ranex.foundation.canonical import canonical_sha256, command_digest
 
 from conftest import Signing, attach, signing_for
@@ -169,6 +169,18 @@ def test_records_a_failing_command_and_exits_with_its_code(repo: Path) -> None:
 
     (record,) = records(repo)
     assert record["exit_code"] == 3
+
+
+def test_records_a_command_that_exits_two_and_returns_two(repo: Path) -> None:
+    """Exit 2 can be the observed command's status after recording succeeds."""
+
+    assert run_cmd(repo, "sh", "-c", "exit 2") == 2
+
+    (record,) = records(repo)
+    assert record["exit_code"] == 2
+    assert cmd_run.__doc__ is not None
+    assert "Exit 2 can therefore mean either" in cmd_run.__doc__
+    assert "inspect the evidence file" in " ".join(cmd_run.__doc__.split())
 
 
 def test_subject_matches_what_gate_evaluate_computes(repo: Path) -> None:

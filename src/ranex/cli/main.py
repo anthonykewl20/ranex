@@ -16,6 +16,7 @@ import json
 import os
 import shlex
 import shutil
+import sqlite3
 import stat
 import subprocess
 import sys
@@ -36,6 +37,7 @@ from ranex.governed_execution.api import (
     Evidence,
     Verdict,
 )
+from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.admission import (
     Admission,
     Rejection,
@@ -950,9 +952,14 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         gate_catalog = resolve_within_repository(root, args.gate_catalog)
         evidence_path = resolve_within_repository(root, args.evidence)
         keyring_path = resolve_within_repository(root, args.producers)
-        journal_path = (
-            resolve_within_repository(root, args.journal) if args.journal else None
-        )
+        # An empty value is what an unset shell variable supplies to
+        # ``--journal "$JOURNAL"``. Treating it as None silently disabled the
+        # append-only, hash-chained record while still printing PASS, turning a
+        # repository invariant off from the command line. Evaluation always
+        # records; callers that need another location must name one.
+        if not args.journal:
+            raise ValueError("--journal must name a journal; an empty path is refused")
+        journal_path = resolve_within_repository(root, args.journal)
         subject = subject_digest_for(root, args.ref)
         # Before either is read, and against the ref being judged rather than
         # against whatever is checked out: these two files choose the verdict,
@@ -986,6 +993,10 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         TypeError,
         KeyError,
         OSError,
+        # SQLite failures are operational refusals, not gate verdicts. Letting
+        # one escape turned a malformed journal into exit 1, whose meaning is
+        # that the gate was judged unsatisfied rather than that no judgment ran.
+        sqlite3.Error,
         json.JSONDecodeError,
     ) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
@@ -1063,13 +1074,50 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
     return EXIT_FAIL
 
 
+def cmd_journal_verify(args: argparse.Namespace) -> int:
+    """Recompute the journal chain without judging or changing an evaluation."""
+
+    try:
+        governed_root = governed_repository_root()
+        root = resolve_within_repository(governed_root, args.repository)
+        if root != governed_root:
+            raise ValueError(
+                f"second-repository targets are refused: {args.repository!r}"
+            )
+        # The chain exists to expose out-of-band edits. Leaving it callable only
+        # from tests made that evidence unavailable to operators, so this path
+        # is confined exactly as evaluation's journal path is before it is read.
+        if not args.journal:
+            raise ValueError("--journal must name a journal; an empty path is refused")
+        journal_path = resolve_within_repository(root, args.journal)
+        # A missing record is not an empty chain: reporting PASS after deletion
+        # inverted absence-blocks into a clean bill of health. Check before the
+        # verifier opens SQLite so this command refuses without creating it.
+        # This does not eliminate a replacement race after the check; the
+        # verifier's immutable read-only connection separately prevents writes.
+        if not journal_path.is_file():
+            raise ValueError(f"journal does not exist: {journal_path}")
+        verified = Journal(journal_path).verify()
+    except (ValueError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    if verified:
+        print(f"PASS  journal={journal_path}  chain=verified")
+        return EXIT_PASS
+    print(f"FAIL  journal={journal_path}  chain=invalid")
+    return EXIT_FAIL
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Run a command and record what was observed. Never judge it.
 
     Exits with the wrapped command's own exit code so `run && gate evaluate`
     composes. A failing command is honest evidence of failure, not a usage
-    error — only refusals to record are, and those exit 2 having written
-    nothing.
+    error. Exit 2 can therefore mean either a refusal to record, which writes
+    nothing, or a wrapped command that exited 2 after its record was written.
+    The exit code alone cannot distinguish those cases; inspect the evidence
+    file to learn whether a record is present.
     """
 
     command = list(args.command)
@@ -1432,6 +1480,14 @@ def build_parser() -> argparse.ArgumentParser:
     ev.add_argument("--approver", required=True, help="identity approving")
     ev.add_argument("--journal", default=DEFAULT_JOURNAL, help="journal path")
     ev.set_defaults(func=cmd_gate_evaluate)
+
+    journal = sub.add_parser("journal", help="journal operations").add_subparsers(
+        dest="action", required=True
+    )
+    verify = journal.add_parser("verify", help="verify the journal hash chain")
+    verify.add_argument("--repository", default=".", help="repository root")
+    verify.add_argument("--journal", default=DEFAULT_JOURNAL, help="journal path")
+    verify.set_defaults(func=cmd_journal_verify)
 
     rn = sub.add_parser("run", help="run a command and record evidence of it")
     rn.add_argument("--claim", required=True, help="claim this evidences")

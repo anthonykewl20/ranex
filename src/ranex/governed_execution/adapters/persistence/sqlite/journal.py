@@ -49,6 +49,29 @@ class Journal:
         conn.executescript(_SCHEMA)
         return conn
 
+    def _connect_for_verification(self) -> sqlite3.Connection:
+        """Open an existing journal without SQLite's create-or-initialise path."""
+
+        # `_connect` deliberately creates and initialises storage for `append`.
+        # Reusing it for `verify` turned a deleted journal into an empty chain
+        # and then a PASS. `mode=ro` refuses a file that is not there, creates
+        # nothing, and rejects every write — which is the whole requirement.
+        #
+        # Deliberately NOT `immutable=1`. SQLite documents that parameter as an
+        # assertion that the file "is held on read-only media and cannot be
+        # modified", on the strength of which it "skips all file locking and
+        # change detection"; and "if this query parameter asserts that a
+        # database file is immutable and that file changes anyhow, then SQLite
+        # might return incorrect query results and/or SQLITE_CORRUPT errors"
+        # (https://www.sqlite.org/uri.html). This file is one `append` writes,
+        # so the assertion is false, and the command it would be false in is the
+        # one asked whether the record was tampered with. A verifier that may
+        # return an incorrect result under a concurrent append is worse than no
+        # verifier, because it answers confidently.
+        conn = sqlite3.connect(f"{self._path.as_uri()}?mode=ro", uri=True)
+        conn.row_factory = sqlite3.Row
+        return conn
+
     def append(self, evaluation: Any) -> str:
         """Append one evaluation and return its chain link."""
 
@@ -78,7 +101,7 @@ class Journal:
     def verify(self) -> bool:
         """Recompute the chain. False means a row changed outside `append`."""
 
-        with self._connect() as conn:
+        with self._connect_for_verification() as conn:
             rows = conn.execute(
                 "SELECT record, prev_link, link FROM evaluations ORDER BY seq ASC"
             ).fetchall()
