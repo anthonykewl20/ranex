@@ -534,6 +534,7 @@ def test_a_cleanup_failure_does_not_replace_the_refusal_that_caused_it(
     keys: dict[str, str],
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
+    request: pytest.FixtureRequest,
 ) -> None:
     """The refusal an operator acts on must be the one that fired.
 
@@ -556,10 +557,19 @@ def test_a_cleanup_failure_does_not_replace_the_refusal_that_caused_it(
         repo, object_id(repo, "HEAD:run-tests.sh"), b"#!/bin/sh\nexit 0\n"
     )
 
+    # Recorded so this test can remove what it stopped Ranex from removing.
+    # Without it the suite leaves one scratch tree in /tmp on every run, which
+    # is litter a test that is *about* cleanup has no business creating.
+    abandoned: list[Path] = []
+
     def cleanup_explodes(root: Path) -> None:
+        abandoned.append(root)
         raise subject.SubjectError(f"cannot remove materialisation at {root}")
 
     monkeypatch.setattr(subject, "_remove_materialisation", cleanup_explodes)
+    request.addfinalizer(
+        lambda: [shutil.rmtree(root, ignore_errors=True) for root in abandoned]
+    )
 
     capsys.readouterr()
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_USAGE
