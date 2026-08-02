@@ -1,6 +1,6 @@
 # SLICE-004 — isolate the runner and its toolchain
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-02
 **Closed:** 2026-08-02 — 298 green, 0 xfail. All nine done-criteria met and each
 of the seven controls mutation-checked: deleted, the covering test watched go
@@ -11,6 +11,11 @@ found and fixed during review, none of them anticipated by the plan.
 this project supports, and the test that claims to cover it does not call it.
 See "Why this was reopened" below. The claim above is left standing, unedited,
 because a closure record that quietly becomes true is worth nothing.
+**Closed again:** 2026-08-03 — 322 green. Cleanup is version-independent and
+proven against a real mode-0 directory; the hand-run mutation claim is replaced
+by a tool whose output is recorded below, not summarised. Criterion 10 was
+restated because as written it could not be met in one slice, and saying so is
+the point of this reopening.
 **ADR:** `docs/adr/ADR-005-hermetic-observation.md` — the researched decision,
 including why a linked `git worktree` does not close D14 or D15, and why the
 object-verification citation is containerd's content store rather than JGit.
@@ -162,6 +167,17 @@ Stated here so that closing it cannot be read as more than it is.
   digest-bound toolchain inputs are the slice that restores it.
 - **`HOME` for Ranex's own git queries**, which is still inherited and still
   selects `~/.gitconfig`. Closed for the bound command only.
+- **A process the bound command leaves behind outlives the run.** A `setsid`
+  grandchild survives `subprocess.run` returning, so it is still executing while
+  `gate evaluate` reads the evidence file and writes the journal. Reproduced
+  during the reopening; disclosed in neither this slice's original close nor
+  ADR-005's sad paths. ADR-006 s.p. 12 now records it and SLICE-005 closes it —
+  confinement is inherited across `fork`, so the kill is tidiness, not the control.
+- **There is no time limit on the bound command at all.** A command that never
+  returns blocks Ranex for as long as it likes, and no verdict is ever reached.
+  Also undisclosed until the reopening; ADR-006 s.p. 13 records it. Worth noting
+  that in-toto has had a default `LINK_CMD_EXEC_TIMEOUT` of 10 seconds for years,
+  so this is a gap against the mature prior art and not a hard problem.
 - **A tree containing a symlink or a submodule cannot be observed at all.** The
   materialiser implements `100644` and `100755` and refuses every other entry
   type, which is ADR-005 sad path 16 working as decided — fail closed rather
@@ -210,9 +226,42 @@ Cost in practice: the bound command owns its scratch tree by design, so one
 record no evidence, and leave a scratch directory behind. It cannot manufacture
 a false PASS — this is a denial of verdict, not a forged one.
 
-**Additional done-criterion for the reopening:** every error-recovery path in
-`src/ranex/` is executed by at least one test. A control no test ever reaches is
-the general form of this defect, and it is checkable rather than remembered.
+**Additional done-criterion for the reopening, criterion 10.** First written as
+"every error-recovery path in `src/ranex/` is executed by at least one test".
+That cannot be met in one slice — there were 59 — and a criterion quietly left
+unmet is how this slice failed the first time. Restated to what is actually
+achievable and actually checked: **a control added from here cannot go unreached,
+and the existing debt is measured, reduced and recorded.** `diff-cover` enforces
+the first at every change; 15 of the 59 are now closed; 44 remain, named below.
+
+### The closing evidence, pasted rather than summarised
+
+`uv run mutmut run`, the whole package, on this commit:
+
+```
+2596 mutants — 🎉 1636 killed  🫥 73 no tests  ⏰ 7 timeout  🙁 880 survived
+7m14s, 6.13 mutations/second
+```
+
+7 minutes is why this is a slice-closing check and not a per-push one, and it
+replaces "each of the seven controls mutation-checked" — a sentence written by
+the same actor who wrote the code, which is what missed the defect.
+
+**The run is not a clean bill of health and must not be read as one.** 880
+survivors, by module: `cli/main.py` 573 (plus 65 unreached — inflated, because
+mutmut's selection excludes the e2e tests that exercise it), `slice_gate_loader`
+52, `verdict.py` 47, `signing.py` 44, `subject.py` 44, `admission.py` 41,
+`producer_keyring` 23, `toolchain.py` 17.
+
+`verdict.py`'s 47 are the ones to read first: it is the kernel and it has zero
+unreached mutants, so those survivors are real signal rather than an artefact of
+selection. Three were inspected. One is a cosmetic default string and probably
+equivalent. One replaces `gate_id=gate.gate_id` with `None` and survives. The
+third inverts `item.exit_code == 0` to `!= 0` inside the contradiction check and
+survives — **no test in this repository detects the kernel's success comparison
+being inverted.** That is a gap in the tests, not a defect in behaviour, and it
+is the next slice's opening question rather than something to hide behind a
+green suite.
 
 Measured before deciding how: **59 `raise` statements and `except` bodies in
 `src/ranex/` are executed by no test at all.** Among them the kernel's own input
