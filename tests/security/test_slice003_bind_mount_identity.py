@@ -559,26 +559,33 @@ def test_a_genuine_outside_binary_still_runs_and_still_reaches_a_pass(
     an ordinary tool, and the loop is worth nothing if it cannot use one.
 
     Run through the same subprocess machinery as the reproduction — same
-    installed CLI, same built environment, same PATH prefix — so that what it
-    controls for is the fix and not the harness. Deliberately not wrapped in a
-    namespace: this must be asserted on every machine, including the ones where
-    the reproduction above skips.
+    installed CLI, same built environment — so that what it controls for is the
+    fix and not the harness. Deliberately not wrapped in a namespace: this must
+    be asserted on every machine, including the ones where the reproduction
+    above skips.
+
+    Re-aimed for SLICE-004. It used to name the tool `pytest` and reach it
+    through a PATH prefix, which the pinned toolchain now ignores by design — so
+    the refusal it started reporting was ADR-005 working, not a regression. The
+    *property* is unchanged and still worth asserting, so the catalog binds the
+    binary's absolute path: resolution no longer depends on a PATH the observed
+    party owns, and the containment and inode checks are what decide. Left as a
+    PATH lookup it would have failed for a reason that has nothing to do with
+    bind-mount identity, which is this file's subject.
     """
 
     marker = tmp_path / "outside-tool-ran"
     outside = tmp_path / "bin"
-    script(outside / "pytest", f'touch "{marker}"\nexit 0')
+    tool = script(outside / "pytest", f'touch "{marker}"\nexit 0')
     (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["pytest", "-q"]), encoding="utf-8"
+        build_gates("tests-executed", [str(tool), "-q"]), encoding="utf-8"
     )
     commit_all(repo)
 
     completed = subprocess.run(
-        run_argv("pytest", "-q"),
+        run_argv(str(tool), "-q"),
         cwd=repo,
-        env=environment_for(
-            repo, tmp_path, key_path=keys["path"], path_prefix=outside
-        ),
+        env=environment_for(repo, tmp_path, key_path=keys["path"]),
         capture_output=True,
         text=True,
         check=False,

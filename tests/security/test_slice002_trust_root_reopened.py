@@ -532,10 +532,16 @@ def test_committed_symlink_to_an_uncarried_catalog_is_refused(
         "catalog, which is the whole point of this test"
     )
 
-    # Honest work for a trivial claim, recorded while the tree is still clean.
-    assert run_cmd(
+    # Symlinks are not a materialised entry type, so observation now refuses first.
+    capsys.readouterr()
+    run_code = run_cmd(
         repo, keys.path("worker"), "sh", "-c", "exit 0", claim="trivial"
-    ) == EXIT_PASS, "the honest observation this attack reuses must be recorded"
+    )
+    run_output = capsys.readouterr()
+    assert run_code == EXIT_USAGE
+    assert "unimplemented tree entry" in (run_output.out + run_output.err)
+    assert "gates.yaml" in (run_output.out + run_output.err)
+    assert not (repo / "evidence.json").exists(), "nothing may be recorded"
 
     (repo / SYMLINK_TARGET).write_text(build_gates("trivial"), encoding="utf-8")
     assert git_output(repo, "status", "--porcelain", "gates.yaml").strip() == "", (
@@ -548,7 +554,7 @@ def test_committed_symlink_to_an_uncarried_catalog_is_refused(
     captured = capsys.readouterr()
     output = captured.out + captured.err
 
-    assert code != EXIT_PASS, (
+    assert code == EXIT_USAGE, (
         "a committed symlink delivered an uncommitted gate catalog to the "
         f"verdict; the name was reviewed and the bytes never were: {output}"
     )

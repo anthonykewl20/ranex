@@ -15,7 +15,6 @@ import argparse
 import json
 import os
 import shlex
-import shutil
 import sqlite3
 import stat
 import subprocess
@@ -27,6 +26,16 @@ from pathlib import Path
 
 from ranex.bootstrap.composition import build_gate_evaluator
 from ranex.cli.confinement import resolve_within_repository
+from ranex.cli.subject import (
+    SubjectError,
+    materialise_subject,
+    verified_blob_at_path,
+)
+from ranex.cli.toolchain import (
+    ToolchainError,
+    pinned_path_value,
+    resolve_tool,
+)
 from ranex.foundation.canonical import canonical_sha256, command_digest
 from ranex.foundation.signing import (
     generate_keypair,
@@ -122,7 +131,13 @@ def git(
         environment.update(overrides)
 
     return subprocess.run(
-        ["git", "-C", str(repository_root), _NO_SUBSTITUTES, *arguments],
+        [
+            str(resolve_tool("git")),
+            "-C",
+            str(repository_root),
+            _NO_SUBSTITUTES,
+            *arguments,
+        ],
         capture_output=True,
         text=text,
         check=False,
@@ -171,17 +186,10 @@ def named_within_repository(repository_root: Path, candidate: str) -> Path:
 
 
 def committed_bytes(repository_root: Path, ref: str, path: Path) -> bytes | None:
-    """The bytes `ref` records for `path`, or None if `ref` has no such file."""
+    """Verified bytes `ref` records for `path`, or None when it is absent."""
 
     relative = path.relative_to(repository_root).as_posix()
-    # `cat-file blob` and not `show`: it refuses anything that is not a blob,
-    # so a directory or a tag never arrives here as file content.
-    result = git(
-        repository_root, "cat-file", "blob", f"{ref}:{relative}", text=False
-    )
-    if result.returncode != 0:
-        return None
-    return result.stdout
+    return verified_blob_at_path(repository_root, ref, relative, git)
 
 
 def committed_trust_root(
@@ -444,12 +452,11 @@ def walked_route(named: Path) -> tuple[Path, ...]:
 def resolve_executable(argv0: str, working_directory: Path) -> Resolution:
     """Where `argv[0]` actually leads: absolute, symlinks followed, once.
 
-    PATH is ambient state the observed party can edit, and the in-toto spec
-    concedes that is what defeats a declared command (§4.3.1). So PATH decides
-    only where to *look*; the answer is resolved through every link and then
-    judged, and the resolved path is what gets executed and recorded. Resolving
-    twice — once to check, once to run — would be the gap the check exists to
-    close.
+    Bare names are resolved on the pinned toolchain, never on ambient PATH.
+    Relative paths are interpreted from the materialised subject tree. The
+    answer is resolved through every link and then judged, and the resolved
+    path is what gets executed and recorded. Resolving twice — once to check,
+    once to run — would be the gap the check exists to close.
 
     Raises rather than returning None: a command that never ran must not be
     reported as a command with an exit code.
@@ -460,10 +467,12 @@ def resolve_executable(argv0: str, working_directory: Path) -> Resolution:
         # directory the operator happened to invoke Ranex from.
         named: Path | None = Path(working_directory) / argv0
     else:
-        found = shutil.which(argv0)
-        # `which` may answer with a relative name when PATH holds one; the
-        # command runs in the repository root, so that is what it is relative to.
-        named = Path(working_directory) / found if found is not None else None
+        try:
+            named = resolve_tool(argv0)
+        except ToolchainError as exc:
+            raise ValueError(
+                f"cannot resolve {argv0!r} on the pinned toolchain: {exc}"
+            ) from exc
 
     candidate: Path | None = None
     if named is not None:
@@ -492,6 +501,29 @@ def route_inside(resolution: Resolution, governed_root: Path) -> Path | None:
         if governed_root in step.parents:
             return step
     return None
+
+
+def refuse_resolution_inside(
+    resolution: Resolution,
+    argv0: str,
+    subject_root: Path,
+    description: str,
+) -> None:
+    """Refuse a destination or route the observed subject gets to choose."""
+
+    step = route_inside(resolution, subject_root)
+    if step is not None:
+        raise ValueError(
+            f"refusing to run {argv0!r}: it resolves to {resolution.executable} "
+            f"by way of {step}, inside {description}. A route the observed tree "
+            "carries chooses the binary as surely as supplying it does"
+        )
+    if committable_into(resolution.executable, subject_root):
+        raise ValueError(
+            f"refusing to run {argv0!r}: it resolves to {resolution.executable}, "
+            f"inside {description}. A binary the observed tree supplies cannot "
+            "be what proves that tree"
+        )
 
 
 def same_file_inside(identity: os.stat_result, governed_root: Path) -> Path | None:
@@ -989,6 +1021,8 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         )
     except (
         KeyringError,
+        SubjectError,
+        ToolchainError,
         ValueError,
         TypeError,
         KeyError,
@@ -1098,7 +1132,13 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         if not journal_path.is_file():
             raise ValueError(f"journal does not exist: {journal_path}")
         verified = Journal(journal_path).verify()
-    except (ValueError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
+    except (
+        ToolchainError,
+        ValueError,
+        OSError,
+        sqlite3.Error,
+        json.JSONDecodeError,
+    ) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
@@ -1134,88 +1174,42 @@ def cmd_run(args: argparse.Namespace) -> int:
             )
         evidence_path = resolve_within_repository(root, args.evidence)
         keyring_path = resolve_within_repository(root, args.producers)
-        # `run` never writes the journal, and never takes its path from the
-        # caller. It is named here for one reason: a preceding `gate evaluate`
-        # leaves it in the tree, and without knowing which path is its own
-        # bookkeeping `run` reports Ranex's output as a dirty tree and refuses
-        # every run after the first evaluation. A flag would turn that one
-        # exemption into an exemption for any file the observed party names.
-        journal_path = resolve_within_repository(root, DEFAULT_JOURNAL)
+        # `run` never writes the journal. Knowing its constant path only keeps
+        # Ranex's own preceding evaluation from making the operator-facing
+        # dirty-tree courtesy refuse every later run.
+        resolve_within_repository(root, DEFAULT_JOURNAL)
         if not command:
             raise ValueError("a command is required after --")
 
-        # Resolved once, here, and used for the containment decision, for the
-        # execution below and for the record. `argv[0]` landing inside the tree
-        # under observation is the worker choosing what the claim means by
-        # writing a file into the tree its own evidence describes — the bullseye
-        # painted around the dart, one layer down. Symlinks are followed first,
-        # so a link outside the tree pointing back into it gets the same answer.
-        resolution = resolve_executable(command[0], root)
-        executable = resolution.executable
-        # The destination is only half of "did the observed tree choose these
-        # bytes". A link committed inside the worktree points at a binary
-        # outside it, so the target clears containment while the tree still
-        # decides what runs — and re-pointing the link changes what the claim
-        # means without touching anything the target check can see.
-        step = route_inside(resolution, root)
-        if step is not None:
-            raise ValueError(
-                f"refusing to run {command[0]!r}: it resolves to {executable} "
-                f"by way of {step}, inside the repository under observation. A "
-                "route the observed tree carries chooses the binary as surely "
-                "as supplying it does"
-            )
-        if committable_into(executable, root):
-            raise ValueError(
-                f"refusing to run {command[0]!r}: it resolves to {executable}, "
-                "inside the repository under observation. A binary the observed "
-                "tree supplies cannot be what proves that tree"
+        # Bare and absolute names do not depend on the materialised cwd, so
+        # resolve them before materialisation. This keeps the governed-root
+        # route and inode controls live for absolute same-uid access, including
+        # a committed symlink whose tree entry the materialiser also refuses.
+        preliminary: Resolution | None = None
+        if "/" not in command[0] or Path(command[0]).is_absolute():
+            preliminary = resolve_executable(command[0], root)
+            refuse_resolution_inside(
+                preliminary,
+                command[0],
+                root,
+                "the governed repository under observation",
             )
 
-        # Opened once, now, and executed through this descriptor below. A name
-        # is re-walked at exec time and every directory on it traversed a second
-        # time, so swapping an ancestor between the decision and the spawn runs
-        # a file that was never checked while the record names the one that was.
-        # A descriptor cannot be re-pointed: the file that runs is this file.
-        descriptor = os.open(executable, EXECUTABLE_OPEN_FLAGS)
-        identity = os.fstat(descriptor)
-        if not stat.S_ISREG(identity.st_mode):
-            raise ValueError(
-                f"refusing to run {command[0]!r}: {executable} is not a regular "
-                "file, so what would execute is not what was resolved"
-            )
-        opened = path_behind(
-            descriptor,
-            f"cannot confirm which file {command[0]!r} opened, so it will not "
-            "be run",
-        )
-        if opened != executable:
-            raise ValueError(
-                f"refusing to run {command[0]!r}: it resolved to {executable} "
-                f"and the file actually opened is {opened}; the path changed "
-                "while it was being checked"
-            )
-        twin = same_file_inside(identity, root)
-        if twin is not None:
-            raise ValueError(
-                f"refusing to run {command[0]!r}: {executable} is the same file "
-                f"as {twin}, inside the repository under observation. A hard "
-                "link and a bind mount are both a second name for one file, not "
-                "a second file, so the bytes that would run are the ones the "
-                "observed tree carries"
-            )
-
-        # Everything that can refuse, refuses before the command runs. A test
-        # suite is expensive; discovering afterwards that the record cannot be
-        # written honestly wastes all of it.
+        # Everything knowable without constructing the sample refuses before
+        # the command runs. A test suite is expensive; discovering afterwards
+        # that its record cannot be written honestly wastes all of it.
         private_key = private_signing_key(governed_root)
+        # Captured once, and everything below is asked about this exact commit
+        # rather than about `HEAD`, which is a name the observed party can move
+        # between two questions.
+        started_at = head_commit(root)
         # The same trust root, and the same refusal, on the way in. `run` only
         # consults the keyring to avoid writing a record that evaluation would
         # refuse — but a keyring the caller supplies at an uncommitted path
         # turns that courtesy into a way to self-register, and a gitignored one
         # is invisible to the dirty-tree check below as well as to `git status`.
         keyring_source = committed_trust_root(
-            root, "HEAD", args.producers, keyring_path, "producer keyring"
+            root, started_at, args.producers, keyring_path, "producer keyring"
         )
         keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
         registered = keyring.get(args.producer)
@@ -1230,7 +1224,6 @@ def cmd_run(args: argparse.Namespace) -> int:
                 f"for producer {args.producer!r}; the record would be written "
                 "and then refused at evaluation"
             )
-
         # Whether the record can be written is knowable now. Left to
         # `record_evidence`, a corrupt or unwritable evidence file is discovered
         # only once the command has run, changed the tree, and left no record of
@@ -1238,13 +1231,16 @@ def cmd_run(args: argparse.Namespace) -> int:
         load_records(evidence_path)
         refuse_unwritable_evidence(evidence_path)
 
-        # Refuse before running, not after: a claim we cannot honestly bind to a
-        # subject should cost nothing to discover.
-        # Named, not resolved. `resolve_within_repository` above answers "what
-        # will be read and written", which is the right question for I/O and the
-        # wrong one for an exemption: it follows a symlink the observed party
-        # controls, and the exemption then lands on whatever that link chose.
-        # Same distinction, and the same helper, as the trust root.
+        # An operator courtesy since ADR-005, not the guarantee it used to be:
+        # the observation is built from committed bytes, so an uncommitted edit
+        # can no longer change what is observed. It must still be *reported*, or
+        # someone who edits a check and forgets to commit silently scores the
+        # committed version instead.
+        #
+        # Named, not resolved. `resolve_within_repository` answers "what will be
+        # read and written", which is the right question for I/O and the wrong
+        # one for an exemption: it follows a symlink the observed party controls,
+        # and the exemption then lands on whatever that link chose (D16).
         dirty = uncommitted_paths(
             root,
             ignoring=(
@@ -1257,90 +1253,123 @@ def cmd_run(args: argparse.Namespace) -> int:
                 "refusing to record evidence against a dirty working tree; "
                 f"HEAD does not describe: {', '.join(dirty)}"
             )
-        # HEAD, always, and deliberately not selectable. The command runs against
-        # the checked-out tree, so naming any other ref would record a digest for
-        # a tree that was never observed — a false claim reachable straight from
-        # the documented interface.
-        subject = subject_digest_for(root, "HEAD")
-        started_at = head_commit(root)
-        # Taken last, immediately before the command: everything above may run
-        # git, and this has to describe the tree as the command finds it.
-        observed = tracked_paths(root)
-        untouched = stat_fingerprint(root, observed)
-    except (ValueError, TypeError, OSError, json.JSONDecodeError) as exc:
-        if descriptor is not None:
-            os.close(descriptor)
-        print(f"ERROR  {exc}", file=sys.stderr)
-        return EXIT_USAGE
-
-    try:
-        # The observed command is the agent's work, untrusted by definition.
-        # Inheriting $RANEX_SIGNING_KEY hands it the producer's private key, and
-        # a key the subject of the observation can read lets it sign whatever
-        # record it likes — signatures would then prove only that something ran
-        # on this machine. The key was read before this point; the child has no
-        # use for the variable.
-        environment = {
-            name: value
-            for name, value in os.environ.items()
-            if name != SIGNING_KEY_VARIABLE
-        }
-        # The descriptor, not the name: executing either the name or the
-        # resolved path re-walks every directory on it, and an ancestor swapped
-        # since the check would deliver a different file to the exec than the
-        # one that was cleared. `argv[0]` stays the resolved path so the child
-        # still sees the name it was invoked under.
-        completed = subprocess.run(
-            [str(executable), *command[1:]],
-            executable=f"/proc/self/fd/{descriptor}",
-            pass_fds=(descriptor,),
-            cwd=root,
-            check=False,
-            env=environment,
-        )
-    except OSError as exc:
-        print(f"ERROR  cannot run {command[0]!r}: {exc}", file=sys.stderr)
-        return EXIT_USAGE
-    finally:
-        os.close(descriptor)
-
-    try:
-        # Removing --ref shut one door; the command could still walk through
-        # another by checking out elsewhere, leaving the recorded digest
-        # describing a tree it never ran against. Creating files is legitimate
-        # and must still pass — moving HEAD never is.
         if head_commit(root) != started_at:
             raise ValueError(
-                "refusing to record evidence: the command moved HEAD from "
-                f"{started_at[:12]} during the run, so {subject[:19]}… "
-                "does not describe what was observed"
+                f"refusing to run: HEAD moved from {started_at[:12]} while the "
+                "subject was being prepared"
             )
-        # Clean before and clean after is not the same as clean throughout. A
-        # command that paints the bullseye, throws, and wipes the paint off —
-        # write the answer the check wants, run it, restore the committed bytes,
-        # exit with the check's status — leaves HEAD untouched and every content
-        # comparison satisfied. The tree it was scored against existed only
-        # while nobody was looking, so the digest names a tree whose own check
-        # still fails. Creating files remains legitimate: only paths git already
-        # tracked are watched, and only for having been written.
-        written = sorted(
-            path
-            for path, fingerprint in stat_fingerprint(root, observed).items()
-            if fingerprint != untouched[path]
-        )
-        if written:
-            raise ValueError(
-                "refusing to record evidence: the command wrote to tracked "
-                f"file(s) while it ran — {', '.join(written)} — so {subject[:19]}… "
-                "does not describe the tree that was observed, whatever the tree "
-                "on disk looks like now"
+        subject = subject_digest_for(root, started_at)
+
+        # The command sees only this verified sample. HOME and TMPDIR are
+        # siblings of the sample tree, so command scratch cannot become an
+        # undeclared subject input and all three disappear in one cleanup.
+        with materialise_subject(root, started_at, git) as materialisation:
+            resolution = preliminary or resolve_executable(
+                command[0], materialisation.tree
             )
+            executable = resolution.executable
+            refuse_resolution_inside(
+                resolution,
+                command[0],
+                root,
+                "the governed repository under observation",
+            )
+            refuse_resolution_inside(
+                resolution,
+                command[0],
+                materialisation.tree,
+                "the materialised subject tree",
+            )
+
+            # Open once and spawn through the descriptor. Re-walking a cleared
+            # name at exec time would reopen the ancestor-swap race.
+            descriptor = os.open(executable, EXECUTABLE_OPEN_FLAGS)
+            identity = os.fstat(descriptor)
+            if not stat.S_ISREG(identity.st_mode):
+                raise ValueError(
+                    f"refusing to run {command[0]!r}: {executable} is not a "
+                    "regular file, so what would execute is not what was resolved"
+                )
+            opened = path_behind(
+                descriptor,
+                f"cannot confirm which file {command[0]!r} opened, so it will "
+                "not be run",
+            )
+            if opened != executable:
+                raise ValueError(
+                    f"refusing to run {command[0]!r}: it resolved to {executable} "
+                    f"and the file actually opened is {opened}; the path changed "
+                    "while it was being checked"
+                )
+            for subject_root, description in (
+                (root, "the governed repository under observation"),
+                (materialisation.tree, "the materialised subject tree"),
+            ):
+                twin = same_file_inside(identity, subject_root)
+                if twin is not None:
+                    raise ValueError(
+                        f"refusing to run {command[0]!r}: {executable} is the "
+                        f"same file as {twin}, inside {description}. A hard link "
+                        "and a bind mount are both a second name for one file, "
+                        "not a second file, so the observed tree chose the bytes"
+                    )
+
+            # Taken last and against the sample, not the governed checkout: it
+            # is these inodes whose mutation would make the subject digest stop
+            # describing what the command observed.
+            observed = materialisation.tracked_paths
+            untouched = stat_fingerprint(materialisation.tree, observed)
+            environment = {
+                "PATH": pinned_path_value(),
+                "HOME": str(materialisation.home),
+                "TMPDIR": str(materialisation.temporary),
+                "LANG": "C.UTF-8",
+            }
+            try:
+                completed = subprocess.run(
+                    [str(executable), *command[1:]],
+                    executable=f"/proc/self/fd/{descriptor}",
+                    pass_fds=(descriptor,),
+                    cwd=materialisation.tree,
+                    check=False,
+                    env=environment,
+                )
+            except OSError as exc:
+                raise ValueError(f"cannot run {command[0]!r}: {exc}") from exc
+            finally:
+                os.close(descriptor)
+                descriptor = None
+
+            # Same-uid absolute access can still move the governed repository.
+            # This is not the hermeticity boundary, but recording the old digest
+            # after seeing it happen would still be a knowingly false claim.
+            if head_commit(root) != started_at:
+                raise ValueError(
+                    "refusing to record evidence: the command moved HEAD from "
+                    f"{started_at[:12]} during the run, so {subject[:19]}… "
+                    "does not describe what was observed"
+                )
+            written = sorted(
+                path
+                for path, fingerprint in stat_fingerprint(
+                    materialisation.tree, observed
+                ).items()
+                if fingerprint != untouched[path]
+            )
+            if written:
+                raise ValueError(
+                    "refusing to record evidence: the command wrote to tracked "
+                    f"file(s) while it ran — {', '.join(written)} — so "
+                    f"{subject[:19]}… does not describe the tree that was "
+                    "observed, whatever the tree looks like now"
+                )
+
+        # Cleanup completed before evidence becomes durable. A scratch tree we
+        # cannot remove is an operational refusal, not a gate verdict.
         content = {
             "claim_id": args.claim,
             "subject_digest": subject,
             "producer_id": args.producer,
-            # Both stay: the digest is what the gate compares, the string is what
-            # review reads. Signing only one would leave the other free to lie.
             "command": shlex.join(command),
             "command_digest": command_digest(command),
             "executable_path": str(executable),
@@ -1350,7 +1379,16 @@ def cmd_run(args: argparse.Namespace) -> int:
             evidence_path,
             {**content, "signature": sign_evidence(content, private_key)},
         )
-    except (ValueError, TypeError, OSError, json.JSONDecodeError) as exc:
+    except (
+        SubjectError,
+        ToolchainError,
+        ValueError,
+        TypeError,
+        OSError,
+        json.JSONDecodeError,
+    ) as exc:
+        if descriptor is not None:
+            os.close(descriptor)
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
@@ -1439,7 +1477,7 @@ def cmd_keygen(args: argparse.Namespace) -> int:
             os.close(parent)
         with os.fdopen(handle, "w", encoding="utf-8") as file:
             file.write(private_key + "\n")
-    except (ValueError, OSError) as exc:
+    except (ToolchainError, ValueError, OSError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 

@@ -160,7 +160,19 @@ def test_refuses_when_the_command_moves_head(repo: Path) -> None:
     moving HEAD is never legitimate for an observation.
     """
 
-    assert invoke(repo, [*BASE, "--", "sh", "-c", "git checkout -q other"]) == 2
+    # Absolute -C keeps this aimed at the governed repo now that cwd is the sample.
+    assert invoke(
+        repo,
+        [
+            *BASE,
+            "--",
+            "sh",
+            "-c",
+            'git -C "$1" checkout -q other',
+            "sh",
+            str(repo),
+        ],
+    ) == 2
     assert not (repo / "evidence.json").exists(), "nothing may be recorded"
 
 

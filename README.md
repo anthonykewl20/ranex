@@ -270,13 +270,19 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none. SLICE-003 closed on 2026-08-02; the next slice cannot
-open until its researched decision is written to `docs/adr/ADR-003-*.md`.
+**Active slice:** none. SLICE-004 closed on 2026-08-02; the next slice cannot
+open until its researched decision is written to `docs/adr/ADR-006-*.md`.
 
-**Next:** isolate the runner *and its toolchain* — the six false-PASS paths in
-the first known gap above are one root cause, and separating the signer from the
-worker does not by itself move `git` or the object store out of the worker's
-reach.
+Ranex now observes a **materialisation of the subject commit**, built from bytes
+checked against the object ids the commit's tree carries, with an environment
+constructed from empty and a toolchain pinned to directories the observed party
+cannot write. The six frozen false-PASS paths were two root causes, not six: the
+tree observed was not the tree HEAD names, and the toolchain and its inputs were
+chosen by the party being measured. Both are closed.
+
+**Next:** Landlock confinement for the bound command. The materialisation is a
+hermeticity boundary, not a security boundary, because Ranex and the worker
+still share a uid — absolute paths still reach the governed repository.
 
 ## Completed slices
 
@@ -299,7 +305,18 @@ reach.
   Closed on its own promise, not on a clean bill of health: the same audits
   reproduced six ways to get a false PASS *around* the binding, all one root
   cause, all recorded and frozen as strict expected-failure tests, all assigned
-  to the next slice. They are the first known gap above.
+  to the next slice.
+- **SLICE-004-hermetic-observation** — the six frozen false-PASS paths are shut.
+  The bound command runs against a **materialisation of the subject commit**
+  whose every blob was checked against the object id the tree carries, in an
+  environment built from empty, with a toolchain pinned to directories the
+  observed party cannot write. Closed by
+  `docs/adr/ADR-005-hermetic-observation.md`. Mutation testing found one control
+  with no test binding to it at all — the pinned `git` could be removed with the
+  suite staying green, because a second control was standing in front of it —
+  and two further defects were found in review. Two capabilities were
+  **deliberately withdrawn**: a tree needing installed dependencies, and a tree
+  carrying a symlink or submodule, can no longer be observed at all.
 
 ---
 

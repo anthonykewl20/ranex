@@ -4,43 +4,47 @@
 
 **Updated:** 2026-08-02
 **Phase:** kernel — evidence loop
-**Active slice:** none. SLICE-004 waits on `docs/adr/ADR-005-*.md`.
+**Active slice:** none. The next slice cannot open until its ADR is written.
 
 ## Where we stopped
 
-273 green, 6 strict xfail, and CI now runs them. Each control below was
-mutation-checked: deleted, the covering test watched go red, restored.
-**A PASS was reachable through the environment.** `git()` inherited ambient
-`GIT_*`, so a *relative* `GIT_DIR` aimed every query Ranex makes at a repository
-the worker owns. Reproduced with no forgery: honest evidence from a shadow tree
-passed the governed repository's gate. An absolute `GIT_DIR` was blocked only by
-luck — `committable_into` asked git from `/usr/bin` and got the same answer —
-which is not a control. `git()` now builds a `GIT_*`-free environment. Also closed: `--journal ""` silently disabled the journal; a non-SQLite journal
-exited 1, the code meaning "gate not satisfied"; `journal verify` did not exist,
-then reported `chain=verified` for a journal that was not there, creating it. In
-the research rule, one URL cited twice counted as two, a branch URL with a 40-hex
-string in its query counted as pinned, and vendored files went untracked.
+SLICE-004 closed: 298 green, **0 xfail** — the six frozen false-PASS paths are
+shut. Ranex now observes a **materialisation of the subject commit**, not the
+tree the worker stands in: every blob checked against the object id the tree
+carries, the child's environment built from empty, the toolchain pinned to
+directories the observed party cannot write.
+
+Verified locally, not assumed: git recomputes an object's hash when it parses a
+**tree** and never when it streams a **blob**. `cat-file` served substituted
+bytes while `ls-tree` still reported the honest id — that disagreement is the
+defect and, compared rather than ignored, the fix.
+
+**Mutation testing found a control nothing tested.** The pinned `git` could be
+removed with the suite green: D17 uses a replace ref, which blob verification
+refuses whichever `git` answered — one control stood in front of another and hid
+it. Now covered by shimming `git status`, which no object id can check.
 
 ## Next
 
-1. **ADR-005, then SLICE-004 — isolate the runner *and its toolchain*.** Name all
-   six sad paths: separating the signer does not move `git` or the object store
-   out of the worker's reach. Landlock ABI 8 unprivileged (~75 rules, ~1.7 ms) but
-   inode-bound — assert `st_nlink == 1`. Numbering moved twice: ADR-003 is the
-   research rule, ADR-004 the environment boundary.
-2. **Open: should `gate evaluate` verify the chain before appending?** It appends
-   to a tampered journal without complaint.
+1. **Landlock confinement for the bound command.** Needs an ADR first. Same uid
+   means absolute paths still reach the governed repo, the operator's home and
+   the journal. ABI 8, unprivileged, ~75 rules at ~1.7 ms, inode-bound — so
+   assert `st_nlink == 1` or a hard link re-grants read under an allowed path.
+2. **Open: should `gate evaluate` verify the chain before appending?** It
+   appends to a tampered journal without complaint. Recommended yes, refusing
+   with exit 2 — an operational refusal, never exit 1, which means the gate was
+   judged unsatisfied. What it does not buy: the chain is tamper-*evident*, not
+   tamper-proof — anyone who can write the file can rebuild it. Its own slice.
 
 ## Known limits, stated not fixed
 
-- **Ranex still trusts a repository, an environment and a toolchain the observed
-  party owns.** `PYTHONPATH` retargets the bound binary; `.git/info/exclude` and an
-  untracked *empty directory* hide a file the command reads; `filter.<n>.clean` in
-  `.git/config` hides an edit to a **tracked** file, and no git flag ignores
-  repository-local config; a poisoned loose object substitutes a trust-root blob; a
-  `git` shim on PATH undoes the fix above. ADR-001 s.p. 30, ADR-004 s.p. 6–12.
-- **Vendoring proves bytes were obtained, not that they came from the cited URL**
-  (ADR-003 s.p. 13); **`evidence.json` is not append-only** (ADR-001 s.p. 27);
-  approver identity is unauthenticated and the keyring admits lookalikes
-  (SLICE-005); and with no committed `governance/producers.yaml` this repo cannot
-  evaluate its own gate — bootstrap, not a defect.
+- **A hermetic tree has no installed dependencies.** `.venv`/`node_modules` are
+  ignored, so Ranex gates only self-contained commands — not this repo's own
+  `uv run pytest`. Withdrawn on purpose; digest-bound inputs restore it.
+- **A tree carrying a symlink or submodule cannot be observed at all.** Only
+  `100644`/`100755` are implemented, everything else fails closed (ADR-005
+  s.p. 16). This repo carries neither, so the suite never feels it.
+- **Same uid** (Next 1); **`HOME` still inherited by Ranex's own git queries**;
+  **vendoring proves bytes were obtained, not where from** (ADR-003 s.p. 13);
+  **`evidence.json` is not append-only** (ADR-001 s.p. 27); approver identity
+  unauthenticated; this repo cannot yet gate itself.

@@ -208,11 +208,11 @@ def test_run_refuses_an_executable_inside_the_repository(
     )
     assert not marker.exists(), "refused only AFTER running the planted binary"
     assert not (repo / "evidence.json").exists(), "nothing may be recorded"
-    assert str(repo.resolve() / "sh") in output, (
+    assert "/tree/sh" in output, (
         "the refusal must name the resolved path it objected to, so an operator "
         "can tell containment apart from a dirty tree: " + output
     )
-    assert "inside the repository" in output, (
+    assert "inside the materialised subject tree" in output, (
         "the refusal must say why the path is a problem, not merely that it "
         "is one: " + output
     )

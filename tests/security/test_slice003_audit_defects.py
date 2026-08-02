@@ -1,4 +1,4 @@
-"""SLICE-003 — the seven fraudulent PASSes three audits reproduced.
+"""SLICE-003 — the audit defects and controls that remain load-bearing.
 
 Written after the implementation landed 214 green and required to fail first
 anyway: a suite that is green while the slice's core promise does not hold is
@@ -10,29 +10,16 @@ decided it from values the observed party can still choose: the PATH it is
 looked up on, a symlink it committed, a directory it swapped, a flag it passed,
 a second record it added. The binding is only as good as the weakest input to it.
 
-D1 PATH shadow          — argv[0] resolved on an attacker-editable PATH
 D2 in-repo symlink      — containment judged on the target, not on the route
 D3 check-then-spawn     — the path re-walked between the decision and the exec
 D4 --journal exemption  — an arbitrary path excused from the dirty-tree check
 D5 contradictory records — `any()` lets a pass outvote a failure
 D6 reporting regression — a refusal printed in the wording reserved for absence
 D8 hardlink bypass      — containment compares paths, and an inode has many
-D11 inherited environment — the right binary, told to do something else
-
-D1, D2 and D8 are **one defect wearing three costumes**: the observed tree gets
-to choose which bytes run, through PATH, through a committed link, or through a
-second name for one inode. They are kept as three tests because each is a
-distinct reproduction, not because a separate fix is expected for each — one
-fix, judging identity rather than location, should close all three.
-
-D11 is a fourth costume and a worse one, because it survives the fix that closes
-the other three. Identity settles *which file* runs; it says nothing about what
-that file is told to do once it starts.
-
-D12 is not about the binding at all. It is the *subject* binding: HEAD's tree
-digest is asserted to describe what the command saw, and `git status` — the one
-question asked — is silent about every ignored path. Recorded here because this
-is the audit that found it, not because SLICE-003 introduced it.
+The SLICE-004 reproductions for D1, D11, D12, D14, D15 and D17 now live beside
+their controls in `test_slice004_hermetic_observation.py`. Their strict xfails
+were removed here because each old body first required the attack to succeed,
+which would make a fixed implementation fail at setup and prove nothing.
 
 Imports of `ranex` are deferred into fixtures and test bodies: a module-level
 import of a symbol a fix has not created yet is a collection error, and a
@@ -46,7 +33,6 @@ import os
 import shutil
 import subprocess
 import sys
-import zlib
 from pathlib import Path
 
 import pytest
@@ -58,7 +44,6 @@ EXIT_FAIL = 1
 EXIT_USAGE = 2
 
 RESOLVED_SH = str(Path(shutil.which("sh")).resolve())
-RESOLVED_GIT = str(Path(shutil.which("git")).resolve())
 
 
 def build_gates(claim_id: str, argv: list[str]) -> str:
@@ -199,61 +184,6 @@ def head_subject(repo: Path) -> str:
     return "sha256:" + canonical_sha256({"tree": tree})
 
 
-# --- D1: PATH is still what decides which binary the claim names ------------
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Not closable inside SLICE-003 as ADR-001 specifies it. The catalog "
-        "binds argv, and `pytest` is a name looked up on a PATH the observed "
-        "party owns, so the recorded argv is honest and the binary is not. "
-        "Two fixes exist and both are decisions this ADR did not take: require "
-        "`command[0]` to be an absolute path in the catalog — which closes it "
-        "completely but makes the committed trust root machine-specific — or "
-        "stop inheriting the observed party's environment, which is SLSA L3 and "
-        "SLICE-004's subject (ADR-001 sad path 17). Marked strict so the day "
-        "either lands, this test fails loudly and the marker comes off."
-    ),
-)
-def test_a_shadowed_binary_on_path_must_not_satisfy_the_claim(
-    repo: Path,
-    keys: dict[str, str],
-    tmp_path: Path,
-) -> None:
-    """D1 — the forgery the whole slice was written to close, still open.
-
-    `resolve_executable` asks one question of the resolved path: is it outside
-    the repository? A fake `pytest` in any other directory answers yes. It is
-    resolved, executed, recorded with the argv the catalog demands, cleared by
-    the evaluate-time containment re-check, and the gate PASSes — while the real
-    test suite never ran.
-
-    in-toto's spec concedes exactly this ("can easily be forged… by changing the
-    PATH"). ADR-001 claims to improve on that by "not using PATH for trust", and
-    the implementation still does.
-    """
-
-    (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["pytest", "-q"]), encoding="utf-8"
-    )
-    commit_all(repo)
-
-    shadow = tmp_path / "shadow"
-    script(shadow / "pytest", 'echo "not the tests"\nexit 0')
-
-    assert run_cmd(repo, keys, "pytest", "-q", path_prefix=shadow) == EXIT_PASS
-    (record,) = records(repo)
-    assert record["command_digest"] == command_digest(["pytest", "-q"]), (
-        "the record must claim the bound argv, or this test proves nothing"
-    )
-
-    assert evaluate(repo) != EXIT_PASS, (
-        "a binary the observed party placed on PATH satisfied `tests-executed`; "
-        "the claim names a command and the machine decided which one"
-    )
-
-
 # --- D2: containment is judged on the target, never on the route ------------
 
 
@@ -283,16 +213,19 @@ def test_run_refuses_a_committed_in_repo_symlink_to_an_outside_binary(
     outside = script(tmp_path / "tools" / "pytest", f'touch "{marker}"\nexit 0')
 
     (repo / "tools2").mkdir()
-    (repo / "tools2" / "pytest").symlink_to(outside)
+    link = repo / "tools2" / "pytest"
+    link.symlink_to(outside)
+    # Absolute keeps D2 aimed at the governed-root route after cwd moved to the materialisation.
+    bound = str(link)
     (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["./tools2/pytest", "-q"]), encoding="utf-8"
+        build_gates("tests-executed", [bound, "-q"]), encoding="utf-8"
     )
     commit_all(repo)
     assert (repo / "tools2" / "pytest").is_symlink(), (
         "the link must be committed as a symlink, or this test proves nothing"
     )
 
-    code = run_cmd(repo, keys, "./tools2/pytest", "-q")
+    code = run_cmd(repo, keys, bound, "-q")
 
     assert code == EXIT_USAGE, (
         "an executable reached through a symlink committed inside the subject "
@@ -353,20 +286,22 @@ def test_run_refuses_a_hardlink_to_a_file_inside_the_worktree(
     """
 
     marker = tmp_path / "in-repo-bytes-ran"
+    outside_link = tmp_path / "bin" / "pytest"
     script(repo / "tools" / "pytest", f'touch "{marker}"\nexit 0')
     (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["pytest", "-q"]), encoding="utf-8"
+        build_gates("tests-executed", [str(outside_link), "-q"]), encoding="utf-8"
     )
     commit_all(repo)
 
     outside = tmp_path / "bin"
     outside.mkdir()
-    os.link(repo / "tools" / "pytest", outside / "pytest")
-    assert (outside / "pytest").stat().st_ino == (
+    os.link(repo / "tools" / "pytest", outside_link)
+    assert outside_link.stat().st_ino == (
         repo / "tools" / "pytest"
     ).stat().st_ino, "the link must share the inode, or this test proves nothing"
 
-    code = run_cmd(repo, keys, "pytest", "-q", path_prefix=outside)
+    # Absolute bypasses pinned PATH so D8 still reaches the inode-identity refusal.
+    code = run_cmd(repo, keys, str(outside_link), "-q")
 
     assert code == EXIT_USAGE, (
         "a second name for a file inside the worktree was accepted as an "
@@ -751,10 +686,9 @@ def test_an_honest_run_of_the_bound_command_reports_the_red_suite(
 ) -> None:
     """The control for D11, and load-bearing rather than decorative.
 
-    Without it the xfail below is satisfied by any run that fails for any
-    reason — a shim that never fires, an interpreter that is not there, a
-    fixture that never committed. Pinning the honest path here means the xfail
-    can only be xfailing because the attack worked.
+    Without it the SLICE-004 reproduction is satisfied by any run that fails
+    for any reason — an interpreter that is not there or a fixture that never
+    committed. Pinning the honest path here keeps that control load-bearing.
     """
 
     assert run_cmd(repo_with_a_red_suite, keys, *BOUND_SUITE) == EXIT_FAIL
@@ -765,76 +699,6 @@ def test_an_honest_run_of_the_bound_command_reports_the_red_suite(
     )
     assert record["command_digest"] == command_digest(BOUND_SUITE)
     assert evaluate(repo_with_a_red_suite) == EXIT_FAIL
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Not closable inside SLICE-003. `run` hands the observed command the "
-        "operator's whole environment minus $RANEX_SIGNING_KEY, and an "
-        "interpreter reads its instructions from that environment before it "
-        "reads argv: PYTHONPATH plus a sitecustomize.py outside the repository "
-        "is enough, and NODE_OPTIONS, RUBYOPT, PERL5OPT, JAVA_TOOL_OPTIONS and "
-        "LD_PRELOAD are the same defect in other languages. Stripping the names "
-        "we can think of is a denylist against an attacker who picks the name, "
-        "which this codebase already refuses to call a control (see "
-        "`same_file_inside`). The fix is to stop inheriting the environment at "
-        "all — SLSA L3, and SLICE-004's subject. Marked strict so the day that "
-        "lands, this test fails loudly and the marker comes off."
-    ),
-)
-def test_the_inherited_environment_must_not_rewrite_the_bound_command(
-    repo_with_a_red_suite: Path,
-    keys: dict[str, str],
-    tmp_path: Path,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """D11 — every check passes and the suite never runs.
-
-    Nothing here is forged. The argv recorded is the argv the catalog binds,
-    byte for byte. The executable is a genuine interpreter at an absolute path
-    outside the repository, so containment, the route check and the inode
-    identity scan all clear it honestly. The tree is committed and clean before
-    and after, so the dirty check and the mid-run write detection both pass. The
-    signature verifies. The subject digest is HEAD's.
-
-    The one thing the observed party touched is an environment variable, which
-    `run` copies to the child untouched. `sitecustomize` is imported by the
-    interpreter during startup — before `-m` is looked at — so the suite is
-    never reached, and the exit code the kernel trusts is chosen by the party
-    being judged.
-
-    This is the exact failure ADR-001 accuses in-toto's `expected_command` of:
-    the declared command is honest and what ran is not. Binding argv fixed the
-    half in the catalog and left the half in the environment.
-    """
-
-    repo = repo_with_a_red_suite
-    outside = tmp_path / "outside-the-tree"
-    outside.mkdir()
-    (outside / "sitecustomize.py").write_text(
-        "import os\nos._exit(0)\n", encoding="utf-8"
-    )
-    monkeypatch.setenv("PYTHONPATH", str(outside))
-
-    assert run_cmd(repo, keys, *BOUND_SUITE) == EXIT_PASS, (
-        "the shim must make the bound command exit 0, or this test proves "
-        "nothing about the defect it is named for"
-    )
-    (record,) = records(repo)
-    assert record["command_digest"] == command_digest(BOUND_SUITE), (
-        "the record must claim the bound argv, or this test proves nothing"
-    )
-    assert record["executable_path"] == INTERPRETER, (
-        "the executable must be the genuine interpreter outside the tree, or "
-        "this is sad path 18 and not a new defect"
-    )
-
-    assert evaluate(repo) != EXIT_PASS, (
-        "the bound command was recorded as succeeding while the committed suite "
-        "still fails; the claim named a command and the environment decided "
-        "what that command did"
-    )
 
 
 # --- D12: the dirty-tree check cannot see an ignored file -------------------
@@ -869,74 +733,13 @@ def test_the_honest_run_of_a_tree_that_fails_its_own_check_reports_failure(
     repo_failing_its_own_check: Path,
     keys: dict[str, str],
 ) -> None:
-    """The control for D12. Without it the xfail below passes on any refusal."""
+    """The control for D12. Without it the replacement passes on any refusal."""
 
     repo = repo_failing_its_own_check
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_FAIL
     (record,) = records(repo)
     assert record["exit_code"] == 1
     assert evaluate(repo) == EXIT_FAIL
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Not closable inside SLICE-003, and not introduced by it. The subject "
-        "digest describes HEAD's tracked tree; the command runs against the "
-        "working directory, which is HEAD plus everything git was told to "
-        "ignore. `git status` is the only question asked and it is silent about "
-        "ignored paths by construction. Widening the question does not rescue "
-        "it twice over: --ignored refuses every real repository, because .venv, "
-        "__pycache__ and node_modules are ignored too and are present before the "
-        "command starts; and an audit then showed an untracked EMPTY DIRECTORY "
-        "is invisible at every -u level and to --ignored as well, because git "
-        "has no representation for one — so there is no git question that sees "
-        "it at all. The honest fix is the one CLAUDE.md already "
-        "records as decided and unbuilt: run the observed command in a pristine "
-        "worktree of the subject commit, where an ignored file cannot pre-exist. "
-        "Marked strict so the day that lands, this test fails loudly."
-    ),
-)
-def test_an_ignored_file_cannot_decide_the_outcome_of_the_bound_command(
-    repo_failing_its_own_check: Path,
-    keys: dict[str, str],
-) -> None:
-    """D12 — a PASS bound to the digest of a tree that fails its own check.
-
-    No key, no PATH entry, no environment variable, no race. The committed check
-    looks for `allow.txt`; the committed `.gitignore` hides it. Creating it
-    leaves `git status --porcelain -uall` empty, so the dirty-tree refusal never
-    fires, and the record binds the *same* subject digest the failing tree
-    produces — provable by comparing it with the control above.
-
-    Sad path 24 already concedes a committed `conftest.py` can neuter the bound
-    suite. This is strictly worse: `conftest.py` is in the tree and review sees
-    it, and `allow.txt` is in no tree and no commit at all.
-    """
-
-    repo = repo_failing_its_own_check
-    (repo / "allow.txt").write_text("yes\n", encoding="utf-8")
-
-    status = subprocess.run(
-        ["git", "-C", str(repo), "status", "--porcelain", "-uall"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    assert "allow.txt" not in status, (
-        "the file must be invisible to git status, or this test is about "
-        f"something else: {status!r}"
-    )
-
-    assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_PASS, (
-        "the ignored file must make the bound command succeed, or this test "
-        "proves nothing"
-    )
-    assert evaluate(repo) != EXIT_PASS, (
-        "a PASS was bound to the digest of a tree whose own committed check "
-        "fails; the observed party added a file review cannot see and the "
-        "dirty-tree check is blind to"
-    )
 
 
 # --- D13: git can be told to lie about what a commit carries ----------------
@@ -1009,76 +812,6 @@ def test_a_replaced_blob_cannot_substitute_the_committed_gate_catalog(
     assert evaluate(repo) != EXIT_PASS, (
         "a gate catalog no commit carries decided the verdict; git was asked "
         "what HEAD holds and answered with a local ref the attacker wrote"
-    )
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Not closable inside SLICE-003, and it is what bounds the fix above. "
-        "`--no-replace-objects` removes one lookup indirection; it does not make "
-        "git authenticate the bytes it streams. `git cat-file blob` never checks "
-        "that a loose object hashes to its own name, so overwriting "
-        "`.git/objects/xx/yyy…` substitutes the blob directly. Loose objects are "
-        "created read-only, which is a speed bump and not a control: the owner "
-        "chmods them. `git fsck` detects it and nothing in the verdict path runs "
-        "fsck. Adding another flag would be the one-more-spelling treadmill this "
-        "codebase refuses to call a control — the fix is to stop trusting a "
-        "repository the observed party owns: hash the bytes against HEAD's "
-        "object ids directly, or evaluate from a pristine checkout of the "
-        "subject commit. Marked strict so the day that lands, this fails loudly."
-    ),
-)
-def test_a_poisoned_loose_object_cannot_substitute_the_gate_catalog(
-    repo: Path,
-    keys: dict[str, str],
-) -> None:
-    """D15 — the trust root substituted underneath the flag that closed D13.
-
-    The commit is untouched, so `HEAD` and `HEAD^{tree}` stay honest and the
-    subject digest is genuine — unlike the replaced-commit attack, which git
-    does catch, because git verifies commits and trees when it parses them and
-    verifies blobs never.
-
-    `test_a_replaced_blob_cannot_substitute_the_committed_gate_catalog` above is
-    the green control for this exact setup: same repository, same honest
-    evidence, same required FAIL, and it passes. So this test can only be
-    xfailing because the substitution worked.
-    """
-
-    script(repo / "run-tests.sh", "exit 1")
-    (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["sh", "run-tests.sh"]), encoding="utf-8"
-    )
-    commit_all(repo)
-
-    assert run_cmd(repo, keys, "true") == EXIT_PASS
-    assert evaluate(repo) == EXIT_FAIL, "the committed catalog must not be satisfied"
-
-    attacker = build_gates("tests-executed", ["true"]).encode("utf-8")
-    blob = object_id(repo, "HEAD:gates.yaml")
-    loose = repo / ".git" / "objects" / blob[:2] / blob[2:]
-    loose.chmod(0o644)
-    loose.write_bytes(
-        zlib.compress(b"blob %d\0" % len(attacker) + attacker)
-    )
-    (repo / "gates.yaml").write_bytes(attacker)
-
-    served = subprocess.run(
-        ["git", "-C", str(repo), "--no-replace-objects",
-         "cat-file", "blob", "HEAD:gates.yaml"],
-        capture_output=True,
-        check=True,
-    ).stdout
-    assert served == attacker, (
-        "git must serve the substituted bytes, or this test is about something "
-        "else"
-    )
-
-    assert evaluate(repo) != EXIT_PASS, (
-        "a gate catalog no commit carries decided the verdict; git streamed a "
-        "loose object without checking that it hashes to the name it was asked "
-        "for"
     )
 
 
@@ -1171,90 +904,6 @@ def test_a_replaced_commit_cannot_substitute_the_subject_tree(
     assert evaluate(repo) != EXIT_PASS, (
         "evidence bound to an abandoned tree satisfied the gate; HEAD was asked "
         "for its tree and answered with one the commit does not carry"
-    )
-
-
-# --- D17: the oracle itself is resolved on an editable PATH -----------------
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Not closable inside SLICE-003, and it is what bounds the D13 fix. "
-        "Every fact the verdict rests on — the committed catalog bytes, the "
-        "keyring, the subject digest, the dirty-tree answer — is obtained by "
-        "spawning `git` as a bare name with the environment inherited, so the "
-        "oracle is chosen by whoever set PATH. A shim that drops one argument "
-        "undoes `--no-replace-objects` entirely. The precondition is control of "
-        "the PATH Ranex itself is launched with. That is out of a child "
-        "process's reach *during a run* and not across runs: sharing a uid, the "
-        "worker writes a binary into a user bin directory or edits a shell "
-        "profile, and the operator's next invocation picks it up. So this is "
-        "the signer/runner boundary as D11 is, and not the same defect as D1. "
-        "Resolving "
-        "`git` from a fixed system PATH would move the trust to directories the "
-        "observed party cannot write, which is a real improvement and still not "
-        "a control while Ranex and the worker share a uid. SLICE-004. Marked "
-        "strict so the day that lands, this fails loudly."
-    ),
-)
-def test_the_git_ranex_asks_cannot_be_chosen_by_the_observed_party(
-    repo: Path,
-    keys: dict[str, str],
-    tmp_path: Path,
-) -> None:
-    """D17 — one shim on PATH, and this session's own fix is gone.
-
-    The shim is honest about everything except the one flag: it forwards every
-    argument to the real git, minus `--no-replace-objects`. That is enough to
-    restore the replace-ref substitution the fix closed, so the catalog no
-    commit carries decides the verdict again.
-
-    `test_a_replaced_blob_cannot_substitute_the_committed_gate_catalog` is the
-    green control: identical setup, no shim, correctly refused.
-    """
-
-    script(repo / "run-tests.sh", "exit 1")
-    (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["sh", "run-tests.sh"]), encoding="utf-8"
-    )
-    commit_all(repo)
-    assert run_cmd(repo, keys, "true") == EXIT_PASS
-    assert evaluate(repo) == EXIT_FAIL, "the committed catalog must not be satisfied"
-
-    attacker = build_gates("tests-executed", ["true"]).encode("utf-8")
-    replace_object(repo, object_id(repo, "HEAD:gates.yaml"), attacker)
-    (repo / "gates.yaml").write_bytes(attacker)
-    assert evaluate(repo) == EXIT_USAGE, "the fix must hold without the shim"
-
-    shim = tmp_path / "shim"
-    shim.mkdir()
-    (shim / "git").write_text(
-        "#!/usr/bin/env python3\n"
-        "import os, sys\n"
-        f"os.execv({RESOLVED_GIT!r}, ['git'] + "
-        "[a for a in sys.argv[1:] if a != '--no-replace-objects'])\n",
-        encoding="utf-8",
-    )
-    (shim / "git").chmod(0o755)
-
-    shimmed = invoke(
-        repo,
-        [
-            "gate", "evaluate", "HEAD",
-            "--repository", ".",
-            "--gate-catalog", "gates.yaml",
-            "--evidence", "evidence.json",
-            "--producers", "producers.yaml",
-            "--approver", "reviewer",
-        ],
-        path_prefix=shim,
-    )
-
-    assert shimmed != EXIT_PASS, (
-        "a `git` the observed party placed on PATH answered every question the "
-        "verdict rests on; the fix that closed the replace ref was removed by "
-        "deleting one argument"
     )
 
 
@@ -1381,80 +1030,3 @@ def test_editing_a_tracked_file_is_refused_as_a_dirty_tree(
 
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_USAGE
     assert not (repo / "evidence.json").exists(), "nothing may be recorded"
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "Not closable inside SLICE-003. Ranex asks git whether the working tree "
-        "matches HEAD, and a `clean` filter is git's documented hook for "
-        "transforming content before it is hashed — so the answer is whatever "
-        "the filter's owner wants. The filter command comes from configuration, "
-        "and the observed party owns `.git/config`; git has no flag that makes "
-        "it ignore repository-local configuration, so there is no question to "
-        "ask git that this cannot reach. Neutralising the environment "
-        "(GIT_CONFIG_COUNT, GIT_CONFIG_GLOBAL, GIT_CONFIG_SYSTEM) closes the "
-        "env-injected spelling and nothing else — verified — and shipping that "
-        "alone would read as 'config injection handled' while an equivalent "
-        "vector stays open, which is the decoration this codebase refuses to "
-        "call a control. The fix is to stop asking: hash the tracked bytes "
-        "directly against HEAD's object ids, or observe in a pristine worktree. "
-        "Marked strict so the day that lands, this test fails loudly."
-    ),
-)
-def test_a_configured_clean_filter_cannot_hide_a_modified_tracked_file(
-    repo_with_a_committed_check: Path,
-    keys: dict[str, str],
-) -> None:
-    """D14 — the dirty-tree refusal turned off from inside the repository.
-
-    `filter.<name>.clean` is the command git pipes a working-tree file through
-    before hashing it. Point it at `git cat-file blob HEAD:%f` and every tracked
-    file hashes to exactly what HEAD carries, however it was edited. `git status`
-    then reports a clean tree while the committed check on disk has been
-    rewritten to pass, and `run` binds `exit 0` to HEAD's digest — the digest of
-    the tree whose own check fails.
-
-    Nothing is committed and nothing is signed by anyone but the honest producer.
-    `gate evaluate` needs no injection at all: the record is already written, and
-    it is genuine in every field.
-
-    The same result is reachable from the environment alone, with no write inside
-    the repository, via `GIT_CONFIG_COUNT` / `GIT_CONFIG_KEY_n` /
-    `GIT_CONFIG_VALUE_n`. That spelling is the one an environment allowlist would
-    close; this one is why closing it would not be a fix.
-    """
-
-    repo = repo_with_a_committed_check
-    script(repo / "run-tests.sh", "exit 0")
-
-    (repo / ".git" / "info" / "attributes").write_text(
-        "* filter=hide\n", encoding="utf-8"
-    )
-    subprocess.run(
-        [
-            "git", "-C", str(repo), "config",
-            "filter.hide.clean", "git cat-file blob HEAD:%f",
-        ],
-        check=True,
-    )
-
-    status = subprocess.run(
-        ["git", "-C", str(repo), "status", "--porcelain"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout
-    assert "run-tests.sh" not in status, (
-        "the filter must hide the modification, or this test is about something "
-        f"else: {status!r}"
-    )
-
-    assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_PASS, (
-        "the edited check must run and succeed, or this test proves nothing"
-    )
-    assert evaluate(repo) != EXIT_PASS, (
-        "a PASS was bound to HEAD's digest while the committed check on disk had "
-        "been rewritten to pass; git was asked whether the tree was clean and "
-        "the observed party chose the answer"
-    )
