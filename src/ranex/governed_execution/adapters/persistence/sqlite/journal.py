@@ -44,7 +44,9 @@ class Journal:
 
     def _connect(self) -> sqlite3.Connection:
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        conn = sqlite3.connect(self._path)
+        # Ten seconds lets the small number of concurrent gate evaluations wait
+        # for their turn instead of failing immediately on SQLite's write lock.
+        conn = sqlite3.connect(self._path, isolation_level=None, timeout=10)
         conn.row_factory = sqlite3.Row
         conn.executescript(_SCHEMA)
         return conn
@@ -78,6 +80,7 @@ class Journal:
         record = evaluation.as_record()
         payload = canonical_json(record)
         with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
             row = conn.execute(
                 "SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1"
             ).fetchone()

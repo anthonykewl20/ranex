@@ -7,7 +7,9 @@ store, mid-append failure, and two concurrent evaluations.
 from __future__ import annotations
 
 import json
+import multiprocessing
 import sqlite3
+import time
 from pathlib import Path
 
 import pytest
@@ -54,6 +56,37 @@ def make_evaluation(claim: str = "tests-executed"):
         subject_digest=SUBJECT,
         approver_id="owner",
     )
+
+
+def _append_concurrently(
+    path: str,
+    process_number: int,
+    start: multiprocessing.synchronize.Event,
+    results: multiprocessing.queues.Queue,
+) -> None:
+    """Append records after every worker is ready to race for the same link."""
+
+    start.wait()
+    succeeded = 0
+    for append_number in range(25):
+        deadline = time.monotonic() + 10
+        while True:
+            try:
+                Journal(Path(path)).append(
+                    make_evaluation(f"worker-{process_number}-append-{append_number}")
+                )
+            except sqlite3.OperationalError as error:
+                if "database is locked" not in str(error).lower():
+                    results.put((succeeded, str(error)))
+                    return
+                if time.monotonic() >= deadline:
+                    results.put((succeeded, "timed out waiting for database lock"))
+                    return
+                time.sleep(0.01)
+            else:
+                succeeded += 1
+                break
+    results.put((succeeded, None))
 
 
 def test_append_then_read_back(tmp_path: Path) -> None:
@@ -122,6 +155,31 @@ def test_digest_chain_detects_a_rewritten_previous_link(tmp_path: Path) -> None:
         conn.commit()
 
     assert Journal(path).verify() is False
+
+
+def test_concurrent_appends_preserve_the_digest_chain(tmp_path: Path) -> None:
+    """Each concurrent append must chain onto the row committed before it."""
+
+    path = tmp_path / "j.sqlite3"
+    Journal(path).append(make_evaluation("initialise"))
+    context = multiprocessing.get_context("spawn")
+    start = context.Event()
+    results = context.Queue()
+    processes = [
+        context.Process(target=_append_concurrently, args=(str(path), number, start, results))
+        for number in range(6)
+    ]
+    for process in processes:
+        process.start()
+    start.set()
+    for process in processes:
+        process.join(timeout=30)
+
+    assert [process.exitcode for process in processes] == [0] * len(processes)
+    worker_results = [results.get(timeout=5) for _ in processes]
+    assert worker_results == [(25, None)] * len(processes)
+    assert len(Journal(path).entries()) == 151
+    assert Journal(path).verify() is True
 
 
 def test_verify_missing_journal_does_not_create_it(tmp_path: Path) -> None:
