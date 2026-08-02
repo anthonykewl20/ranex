@@ -4,47 +4,46 @@
 
 **Updated:** 2026-08-02
 **Phase:** kernel — evidence loop
-**Active slice:** none. SLICE-003 is closed; SLICE-004 cannot open until
-`docs/adr/ADR-003-*.md` is researched and written.
+**Active slice:** none. SLICE-004 waits on `docs/adr/ADR-004-*.md`.
 
 ## Where we stopped
 
-250 green, 6 strict xfail. SLICE-003 closed on its own promise: six independent
-audits failed to make a record satisfy a claim it does not name, and criteria
-1–9 were re-proven by mutation — each control deleted from `src/` in turn, the
-covering test observed going red, not read off a green suite.
-
-Five defects fixed on the way out, each mutation-verified: `git replace`
-substituting the catalog, keyring or subject tree (all git queries now pass
-`--no-replace-objects` through one function); the dirty-tree exemption aimed by
-a symlink at Ranex's own bookkeeping name — D4 reopened, needing no commit in
-the default layout; a malformed committed catalog exiting 1, the code meaning
-"gate not satisfied"; the trivial-command guard `/bin/true` walked past; a
-v1-downgrade test green for the wrong reason.
+272 green, 6 strict xfail, and CI now runs them. Each control below was
+mutation-checked: deleted, the covering test watched go red, restored.
+**A PASS was reachable through the environment.** `git()` inherited ambient
+`GIT_*`, so a *relative* `GIT_DIR` aimed every query Ranex makes at a repository
+the worker owns. Reproduced with no forgery: honest evidence from a shadow tree
+passed the governed repository's gate. An absolute `GIT_DIR` was blocked only by
+luck — `committable_into` asked git from `/usr/bin` and got the same answer —
+which is not a control. `git()` now builds a `GIT_*`-free environment. Also closed: `--journal ""` silently disabled the journal; a non-SQLite journal
+exited 1, the code meaning "gate not satisfied"; `journal verify` did not exist,
+then reported `chain=verified` for a journal that was not there, creating it. In
+the research rule, one URL cited twice counted as two, a branch URL with a 40-hex
+string in its query counted as pinned, and vendored files went untracked.
 
 ## Next
 
-1. **ADR-003, then SLICE-004 — isolate the runner *and its toolchain*.** Research
-   first, and name all six sad paths: separating the signer does not by itself
-   move `git` or the object store out of the worker's reach. Landlock ABI 8
-   unprivileged (~75 rules, ~1.7 ms) but inode-bound — assert `st_nlink == 1`.
-2. **No CI exists.** The six alarms below only sound when a person runs
-   `uv run pytest -q`. Verified that a strict xfail turning green does fail the
-   suite; nothing verifies that anyone ran it.
-3. **Queued — Architecture Contract.** After the trust-boundary slices.
+1. **ADR-004, then SLICE-004 — isolate the runner *and its toolchain*.** Name all
+   six sad paths: separating the signer does not move `git` or the object store
+   out of the worker's reach. Landlock ABI 8 unprivileged (~75 rules, ~1.7 ms) but
+   inode-bound — assert `st_nlink == 1`. Renumbered: ADR-003 is the research rule.
+2. **Owed: a superseding ADR for ADR-002 sad path 14.** It answers `git replace`
+   with "refuse — every git query passes `--no-replace-objects`". Overclaim: the
+   flag chooses objects, the environment chose the repository. ADR-002 is
+   append-only and pinned to its bytes, so the correction needs its own ADR.
+3. **Open: should `gate evaluate` verify the chain before appending?** It appends
+   to a tampered journal without complaint.
 
 ## Known limits, stated not fixed
 
-- **Ranex trusts a repository, an environment and a toolchain the observed party
-  owns.** Six false PASSes, one cause: `PYTHONPATH` retargets the bound binary
-  (this defeats our own `uv run pytest -q`); `.git/info/exclude`, and an
-  untracked *empty directory* no git query can see, hide a file the command
-  reads; `filter.<n>.clean` hides an edit to a **tracked** file; overwriting a
-  loose object substitutes a trust-root blob, because `cat-file` never checks a
-  blob against the name asked for; a `git` shim on PATH deletes one argument to
-  undo the fix above. ADR-001 sad path 30, ADR-002 sad paths 15–19.
-- **`evidence.json` is not append-only.** Deleting a contradicting record, or one
-  producer re-running a flaky command, erases the disagreement. ADR-001 s.p. 27.
-- Approver identity is unauthenticated; the keyring admits lookalikes. SLICE-005.
-- **No committed `governance/producers.yaml`**, so this repo cannot evaluate its
-  own gate. Bootstrap, not a defect — but the loop is unclosed here.
+- **Ranex still trusts a repository, an environment and a toolchain the observed
+  party owns.** `PYTHONPATH` retargets the bound binary; `.git/info/exclude` and an
+  untracked *empty directory* hide a file the command reads; `filter.<n>.clean` in
+  `.git/config` hides an edit to a **tracked** file, and no git flag ignores
+  repository-local config; a poisoned loose object substitutes a trust-root blob; a
+  `git` shim on PATH undoes the fix above. ADR-001 s.p. 30, ADR-002 s.p. 15–19.
+- **Vendoring proves bytes were obtained, not that they came from the cited URL**
+  (ADR-003 s.p. 13); **`evidence.json` is not append-only** (ADR-001 s.p. 27);
+  approver identity is unauthenticated and the keyring admits lookalikes
+  (SLICE-005); and with no committed `governance/producers.yaml` this repo cannot
+  evaluate its own gate — bootstrap, not a defect.
