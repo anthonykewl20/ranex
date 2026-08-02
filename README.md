@@ -270,8 +270,9 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none. SLICE-004 closed on 2026-08-02; the next slice cannot
-open until its researched decision is written to `docs/adr/ADR-006-*.md`.
+**Active slice:** `docs/slices/SLICE-004-hermetic-observation.md` — **reopened**
+on 2026-08-02. It was closed on a control that has never worked on any supported
+Python, covered by a test that monkeypatches out the function it is named for.
 
 Ranex now observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment
@@ -306,17 +307,6 @@ still share a uid — absolute paths still reach the governed repository.
   reproduced six ways to get a false PASS *around* the binding, all one root
   cause, all recorded and frozen as strict expected-failure tests, all assigned
   to the next slice.
-- **SLICE-004-hermetic-observation** — the six frozen false-PASS paths are shut.
-  The bound command runs against a **materialisation of the subject commit**
-  whose every blob was checked against the object id the tree carries, in an
-  environment built from empty, with a toolchain pinned to directories the
-  observed party cannot write. Closed by
-  `docs/adr/ADR-005-hermetic-observation.md`. Mutation testing found one control
-  with no test binding to it at all — the pinned `git` could be removed with the
-  suite staying green, because a second control was standing in front of it —
-  and two further defects were found in review. Two capabilities were
-  **deliberately withdrawn**: a tree needing installed dependencies, and a tree
-  carrying a symlink or submodule, can no longer be observed at all.
 
 ---
 

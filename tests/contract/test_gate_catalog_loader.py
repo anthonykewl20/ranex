@@ -70,6 +70,17 @@ def test_empty_required_claims_is_refused(tmp_path: Path) -> None:
         load_gate(write(tmp_path, text), "landing")
 
 
+def test_empty_claim_identifier_is_refused(tmp_path: Path) -> None:
+    text = GOOD.replace("claim_id: tests-executed", 'claim_id: ""')
+    with pytest.raises(ValueError, match="non-empty string claim_id"):
+        load_gate(write(tmp_path, text), "landing")
+
+
+def test_catalog_without_any_gates_is_refused(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="non-empty 'gates' list"):
+        load_gate(write(tmp_path, "gates: []\n"), "landing")
+
+
 def test_malformed_document_is_refused(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="mapping"):
         load_gate(write(tmp_path, "just a string"), "landing")

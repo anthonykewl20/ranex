@@ -1,12 +1,16 @@
 # SLICE-004 — isolate the runner and its toolchain
 
-**Status:** done
+**Status:** open
 **Opened:** 2026-08-02
 **Closed:** 2026-08-02 — 298 green, 0 xfail. All nine done-criteria met and each
 of the seven controls mutation-checked: deleted, the covering test watched go
 red, restored. Mutation testing found one control with **no test binding to it
 at all** — see "What mutation testing caught" below. Five further defects were
 found and fixed during review, none of them anticipated by the plan.
+**Reopened:** 2026-08-02 — the fix for defect 2 has never worked, on any Python
+this project supports, and the test that claims to cover it does not call it.
+See "Why this was reopened" below. The claim above is left standing, unedited,
+because a closure record that quietly becomes true is worth nothing.
 **ADR:** `docs/adr/ADR-005-hermetic-observation.md` — the researched decision,
 including why a linked `git worktree` does not close D14 or D15, and why the
 object-verification citation is containerd's content store rather than JGit.
@@ -167,6 +171,100 @@ Stated here so that closing it cannot be read as more than it is.
   only shows up on someone else's repository. Implementing symlinks means
   deciding what a link pointing out of the tree means to an observation, which
   is a decision and therefore an ADR, not a patch.
+
+## Why this was reopened
+
+Defect 2 above — "a cleanup failure replaced the refusal that caused it" — was
+recorded as fixed. It is not, and never was.
+
+`_remove_materialisation` hands `restore_permissions` to `shutil.rmtree` as its
+error handler, and the handler calls `function(path)`. On Linux rmtree uses its
+fd-based implementation and calls that handler with `func=os.open`, which takes a
+second `flags` argument. The result is a `TypeError` — not an `OSError`, so it is
+never converted to `SubjectError`; `materialise_subject`'s `finally` catches only
+`SubjectError`, so it escapes **from the finally** and replaces the exception
+already propagating. That is defect 2 verbatim, in the code written to close it.
+
+Reproduced against this code on Python 3.11, 3.12, 3.13 and 3.14. Every one is
+broken, so this is not a regression under a newer interpreter: the control has
+never worked, and criterion-by-criterion closure was declared over it.
+
+pytest solves the same problem in `_pytest.pathlib.on_rm_rf_error` and its
+handling names our bug exactly — it declines to retry when `func` is `os.open`,
+the single case we call blindly.
+
+**The test is the more important failure.**
+`test_a_cleanup_failure_does_not_replace_the_refusal_that_caused_it`
+monkeypatches `_remove_materialisation` out and substitutes a stub raising
+`SubjectError`. It therefore exercises the precedence logic in
+`materialise_subject` and never the function it is named for — and could not have
+caught this in any case, because the real failure raises the one exception type
+already handled correctly. It is a test that proves less than it looks, which
+this slice's own closing section named as the first thing to review.
+
+The claimed mutation check cannot have covered this control either: deleting it
+changes nothing, because no test reaches it.
+
+Cost in practice: the bound command owns its scratch tree by design, so one
+`chmod 000` on a directory inside it makes even an honest passing run exit 2,
+record no evidence, and leave a scratch directory behind. It cannot manufacture
+a false PASS — this is a denial of verdict, not a forged one.
+
+**Additional done-criterion for the reopening:** every error-recovery path in
+`src/ranex/` is executed by at least one test. A control no test ever reaches is
+the general form of this defect, and it is checkable rather than remembered.
+
+Measured before deciding how: **59 `raise` statements and `except` bodies in
+`src/ranex/` are executed by no test at all.** Among them the kernel's own input
+validation, five pinned-toolchain refusals, the materialiser's unsafe-path and
+duplicate-entry guards, and one of the two branches of the journal's chain check.
+Any of them could be as broken as `restore_permissions` was.
+
+### Tools, searched rather than written
+
+An ast-and-coverage checker for this was specified and then abandoned: it is a
+worse version of two tools that already exist. Searched with `gh search repos`
+and `gh repo view` for mutation testing and coverage ratchets.
+
+- **Adopted — `diff-cover`** (Apache-2.0, 841 stars):
+  <https://github.com/Bachmann1234/diff_cover>. Fails a change that adds lines no
+  test executes. Run here against the working tree: it reports the new cleanup at
+  100%, and the handler that reopened this slice was added by SLICE-004's own
+  commit and never executed — so this would have failed that change on the day.
+- **Adopted — `mutmut`** (BSD-3, 1371 stars): <https://github.com/boxed/mutmut>.
+  Replaces this slice's hand-run "control deleted, test watched go red", which
+  is a self-report by the same actor and is what missed the defect. Measured
+  here: 2590 mutants in 15 s. Its `no tests` category is exactly the bespoke
+  checker's output, and stronger — it proves a test *binds*, not that a line ran.
+  Two incompatibilities found by running it, not by reading it: it copies only
+  the paths it mutates, so the whole package must be named or imports break; and
+  `tests/contract/` must be excluded, because those tests read the real
+  repository, which does not exist inside mutmut's copied tree.
+- **Rejected — `cosmic-ray`** (MIT, 646 stars):
+  <https://github.com/sixty-north/cosmic-ray>. Equivalent capability, smaller
+  adoption, and no reason to prefer it once mutmut was measured working here.
+- **Rejected — `vulture`** (MIT, 4745 stars):
+  <https://github.com/jendrikseipp/vulture>. Finds dead code, which is a
+  different question: `restore_permissions` was reachable and wrong, not unused.
+- **Rejected — `ocr`** (this repo already uses it for review): it reviewed the
+  SLICE-004 diff and did not catch this. An AI reviewer is not a coverage
+  instrument, and treating it as one is how the defect got through.
+
+**What mutmut cannot tell us here, stated rather than left in a config comment.**
+Its test selection excludes `tests/e2e/`, `test_slice003_bind_mount_identity.py`
+and `test_keygen_key_confinement.py`. Those are precisely the tests that exercise
+`cli/main.py`, so for that file — which holds 37 of the 44 refusals still
+unreached — mutmut reports "no tests" for almost everything and its signal is
+noise, not evidence. It binds the kernel, the toolchain, the materialiser, the
+journal and the loaders. It does not bind the CLI. Anyone reading a green mutmut
+run as "the CLI is covered" would be making this slice's original mistake again.
+
+Two of those exclusions are mechanical: mutmut's in-process trampoline is absent
+in the subprocesses e2e spawns, and it strips the docstrings some tests assert on.
+The third is worth knowing on its own — mutating the keygen containment check can
+write a generated **private key into the real repository**, because the copied
+test resolves the governed root to the real one. Recorded as found by the
+implementer; not independently reproduced here.
 
 ## The rewrite risk, named for review
 

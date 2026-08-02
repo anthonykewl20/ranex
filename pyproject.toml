@@ -13,6 +13,11 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "coverage>=7.10,<8",
+    "diff-cover>=9.7,<10",
+    # 3.6 renamed paths_to_mutate; keep the measured, repository-proven 3.5
+    # configuration until that migration is made deliberately.
+    "mutmut>=3.5,<3.6",
     "pytest>=9.0.2,<10",
 ]
 
@@ -23,6 +28,20 @@ package = false
 addopts = ["--strict-config", "--strict-markers"]
 pythonpath = ["src"]
 testpaths = ["tests"]
+
+[tool.mutmut]
+paths_to_mutate = ["src/ranex/"]
+pytest_add_cli_args_test_selection = [
+    "tests/",
+    "--ignore=tests/contract/",
+    # e2e tests launch Python subprocesses, where mutmut's in-process
+    # trampoline is not initialised, and assert docstrings the trampoline strips.
+    "--ignore=tests/e2e/",
+    "--ignore=tests/security/test_slice003_bind_mount_identity.py",
+    # Mutating key confinement can write a generated private key into the real
+    # repository before the copied test observes the refusal has failed.
+    "--ignore=tests/security/test_keygen_key_confinement.py",
+]
 
 [project.scripts]
 ranex = "ranex.cli.main:main"

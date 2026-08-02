@@ -110,6 +110,20 @@ def test_digest_chain_detects_tampering(tmp_path: Path) -> None:
     assert Journal(path).verify() is False
 
 
+def test_digest_chain_detects_a_rewritten_previous_link(tmp_path: Path) -> None:
+    path = tmp_path / "j.sqlite3"
+    journal = Journal(path)
+    journal.append(make_evaluation("first"))
+    journal.append(make_evaluation("second"))
+
+    with sqlite3.connect(path) as conn:
+        conn.execute("DROP TRIGGER evaluations_no_update")
+        conn.execute("UPDATE evaluations SET prev_link = ? WHERE seq = 2", ("forged",))
+        conn.commit()
+
+    assert Journal(path).verify() is False
+
+
 def test_verify_missing_journal_does_not_create_it(tmp_path: Path) -> None:
     """Verification never enters append's create-and-initialise connection path."""
 

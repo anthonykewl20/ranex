@@ -529,6 +529,29 @@ def test_a_poisoned_blob_cannot_reach_the_observed_command(
     assert not (repo / "evidence.json").exists(), "nothing may be recorded"
 
 
+def test_remove_materialisation_removes_an_unsearchable_directory(tmp_path: Path) -> None:
+    """The real cleanup control removes directories the bound command closed."""
+
+    from ranex.cli import subject
+
+    root = tmp_path / "materialisation"
+    blocked = root / "sub"
+    blocked.mkdir(parents=True)
+    (blocked / "f").write_text("x", encoding="utf-8")
+    blocked.chmod(0)
+
+    try:
+        subject._remove_materialisation(root)
+    finally:
+        # Keep the test's mutation run from leaking the intentionally blocked
+        # directory when the broken implementation raises before removing it.
+        if root.exists():
+            blocked.chmod(stat.S_IRWXU)
+            shutil.rmtree(root)
+
+    assert not root.exists()
+
+
 def test_a_cleanup_failure_does_not_replace_the_refusal_that_caused_it(
     repo_failing_its_own_check: Path,
     keys: dict[str, str],
@@ -557,18 +580,21 @@ def test_a_cleanup_failure_does_not_replace_the_refusal_that_caused_it(
         repo, object_id(repo, "HEAD:run-tests.sh"), b"#!/bin/sh\nexit 0\n"
     )
 
-    # Recorded so this test can remove what it stopped Ranex from removing.
-    # Without it the suite leaves one scratch tree in /tmp on every run, which
-    # is litter a test that is *about* cleanup has no business creating.
+    # Record the roots so this test can remove what its unrecoverable cleanup
+    # failure stopped Ranex from removing.
     abandoned: list[Path] = []
+    real_rmtree = subject.shutil.rmtree
 
-    def cleanup_explodes(root: Path) -> None:
-        abandoned.append(root)
-        raise subject.SubjectError(f"cannot remove materialisation at {root}")
+    def cleanup_explodes(root: Path | str, **kwargs: object) -> None:
+        materialisation = Path(root)
+        if materialisation.name.startswith("ranex-subject-"):
+            abandoned.append(materialisation)
+            raise TypeError("rmtree is irrecoverably unavailable")
+        real_rmtree(root, **kwargs)
 
-    monkeypatch.setattr(subject, "_remove_materialisation", cleanup_explodes)
+    monkeypatch.setattr(subject.shutil, "rmtree", cleanup_explodes)
     request.addfinalizer(
-        lambda: [shutil.rmtree(root, ignore_errors=True) for root in abandoned]
+        lambda: [real_rmtree(root) for root in abandoned if root.exists()]
     )
 
     capsys.readouterr()

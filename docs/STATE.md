@@ -4,47 +4,44 @@
 
 **Updated:** 2026-08-02
 **Phase:** kernel — evidence loop
-**Active slice:** none. The next slice cannot open until its ADR is written.
+**Active slice:** `docs/slices/SLICE-004-hermetic-observation.md` — reopened.
 
 ## Where we stopped
 
-SLICE-004 closed: 298 green, **0 xfail** — the six frozen false-PASS paths are
-shut. Ranex now observes a **materialisation of the subject commit**, not the
-tree the worker stands in: every blob checked against the object id the tree
-carries, the child's environment built from empty, the toolchain pinned to
-directories the observed party cannot write.
+SLICE-004 was closed on a control that never worked. `_remove_materialisation`
+hands `shutil.rmtree` a handler that calls `function(path)`; on Linux rmtree
+calls it with `os.open`, which needs a second argument. The `TypeError` is not
+`OSError`, so it is never converted, escapes **from a `finally`**, and replaces
+the refusal already propagating — defect 2 of this slice, in the code that
+closed it. Broken on 3.11, 3.12, 3.13 and 3.14: never a regression.
 
-Verified locally, not assumed: git recomputes an object's hash when it parses a
-**tree** and never when it streams a **blob**. `cat-file` served substituted
-bytes while `ls-tree` still reported the honest id — that disagreement is the
-defect and, compared rather than ignored, the fix.
+The test named for it monkeypatches `_remove_materialisation` out, so it never
+calls the function, and could not have caught this anyway — the real failure is
+a `TypeError` and the stub raises the one type already handled.
 
-**Mutation testing found a control nothing tested.** The pinned `git` could be
-removed with the suite green: D17 uses a replace ref, which blob verification
-refuses whichever `git` answered — one control stood in front of another and hid
-it. Now covered by shimming `git status`, which no object id can check.
+**ADR-006 is written and accepted-pending**: Landlock confinement for the bound
+command, with `/proc/<ranex>/environ` -> `RANEX_SIGNING_KEY` -> forge-anything
+measured, and io_uring verified in C *not* to bypass Landlock.
 
 ## Next
 
-1. **Landlock confinement for the bound command.** Needs an ADR first. Same uid
-   means absolute paths still reach the governed repo, the operator's home and
-   the journal. ABI 8, unprivileged, ~75 rules at ~1.7 ms, inode-bound — so
-   assert `st_nlink == 1` or a hard link re-grants read under an allowed path.
-2. **Open: should `gate evaluate` verify the chain before appending?** It
-   appends to a tampered journal without complaint. Recommended yes, refusing
-   with exit 2 — an operational refusal, never exit 1, which means the gate was
-   judged unsatisfied. What it does not buy: the chain is tamper-*evident*, not
-   tamper-proof — anyone who can write the file can rebuild it. Its own slice.
+1. **Finish the reopened SLICE-004.** Version-independent cleanup, a test that
+   calls the real function against a real mode-0 directory, and the new
+   criterion: every error-recovery path in `src/ranex/` is executed by a test.
+2. Then **SLICE-005, Landlock confinement** — ADR-006 is already written.
+3. Then the journal: verify-before-append, no auto-create, and a checkpoint
+   committing to log **size**, which is what catches truncation and rollback.
 
 ## Known limits, stated not fixed
 
-- **A hermetic tree has no installed dependencies.** `.venv`/`node_modules` are
-  ignored, so Ranex gates only self-contained commands — not this repo's own
-  `uv run pytest`. Withdrawn on purpose; digest-bound inputs restore it.
-- **A tree carrying a symlink or submodule cannot be observed at all.** Only
-  `100644`/`100755` are implemented, everything else fails closed (ADR-005
-  s.p. 16). This repo carries neither, so the suite never feels it.
-- **Same uid** (Next 1); **`HOME` still inherited by Ranex's own git queries**;
-  **vendoring proves bytes were obtained, not where from** (ADR-003 s.p. 13);
-  **`evidence.json` is not append-only** (ADR-001 s.p. 27); approver identity
-  unauthenticated; this repo cannot yet gate itself.
+- **Nothing gates Ranex itself.** `governance/gates.yaml` requires
+  `uv run pytest -q`, which a hermetic tree cannot run — so every check on this
+  repo is the suite plus review, and this defect passed both. The gates govern
+  documents; nothing yet governs whether a test touches its subject.
+- **A hermetic tree has no installed dependencies**, so only self-contained
+  commands can be gated — in any language, not just Python.
+- **A tree carrying a symlink or submodule cannot be observed** (ADR-005 s.p. 16).
+- **Same uid** (ADR-006 closes it); **`HOME` inherited by Ranex's own git
+  queries**; **`evidence.json` is not append-only** (ADR-001 s.p. 27); approver
+  identity unauthenticated; no timeout on the bound command; a background
+  process outlives the run.

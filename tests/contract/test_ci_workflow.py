@@ -48,7 +48,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     assert job["permissions"] == {"contents": "read"}
 
     steps = job["steps"]
-    assert len(steps) == 3
+    assert len(steps) == 4
     action_steps = [step for step in steps if "uses" in step]
     assert len(action_steps) == 2
     for step in action_steps:
@@ -58,4 +58,26 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
 
     setup_uv = next(step for step in action_steps if step["uses"].startswith("astral-sh/setup-uv@"))
     assert setup_uv.get("with") == {"python-version": "3.14"}
-    assert steps[-1] == {"run": "uv run pytest -q -rs"}
+
+    checkout = next(step for step in action_steps if step["uses"].startswith("actions/checkout@"))
+    assert checkout.get("with") == {"fetch-depth": 0}
+
+    assert steps[-2] == {"run": "uv run pytest -q -rs"}
+    assert steps[-1] == {
+        "name": "Require coverage for changed lines",
+        "env": {
+            "DIFF_COVER_COMPARE_BRANCH": (
+                "${{ github.event_name == 'pull_request' && "
+                "github.event.pull_request.base.sha || github.event.before != "
+                "'0000000000000000000000000000000000000000' && "
+                "github.event.before || format('origin/{0}', "
+                "github.event.repository.default_branch) }}"
+            )
+        },
+        "run": (
+            "uv run python -m coverage run --source=src/ranex -m pytest -q\n"
+            "uv run python -m coverage xml -o coverage.xml\n"
+            "uv run diff-cover coverage.xml "
+            '--compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100\n'
+        ),
+    }

@@ -17,6 +17,9 @@ jobs:
       contents: read
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # diff-cover needs the comparison commit and its merge-base.
+          fetch-depth: 0
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           python-version: "3.14"
@@ -25,3 +28,12 @@ jobs:
       # security test that vanishes silently in CI is the same "nothing ran
       # them" gap this workflow exists to close, one level down.
       - run: uv run pytest -q -rs
+      - name: Require coverage for changed lines
+        env:
+          # A PR is judged from its base branch's merge-base; a push is judged
+          # from the state immediately before that push.
+          DIFF_COVER_COMPARE_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before != '0000000000000000000000000000000000000000' && github.event.before || format('origin/{0}', github.event.repository.default_branch) }}
+        run: |
+          uv run python -m coverage run --source=src/ranex -m pytest -q
+          uv run python -m coverage xml -o coverage.xml
+          uv run diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100

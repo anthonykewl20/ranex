@@ -139,13 +139,32 @@ def verified_blob_at_path(
 
 
 def _remove_materialisation(root: Path) -> None:
-    def restore_permissions(function, path: str, _error) -> None:
-        os.chmod(path, stat.S_IRWXU)
-        function(path)
-
     try:
-        shutil.rmtree(root, onerror=restore_permissions)
-    except OSError as exc:
+        # Pytest's on_rm_rf_error intentionally does not retry os.open: unlike
+        # unlink and rmdir, it needs arguments beyond the path.  We take that
+        # warning about callback contracts, but not pytest's choice to leave
+        # the tree behind: this scratch materialisation must always be removed.
+        #
+        # A directory's parent permits changing that directory's mode, so this
+        # top-down pass makes each child traversable and writable before
+        # os.walk descends into it.  Plain rmtree then has no version-specific
+        # onerror/onexc callback contract to depend on.
+        root.chmod(root.stat().st_mode | stat.S_IRWXU)
+        for parent, directories, _files in os.walk(root, topdown=True):
+            for directory in directories:
+                path = Path(parent, directory)
+                path.chmod(path.stat().st_mode | stat.S_IRWXU)
+        shutil.rmtree(root)
+    # This function runs in a finally block, where anything that escapes
+    # replaces the refusal already travelling to the operator — which is the
+    # defect this whole function was rewritten for. So the catch is deliberately
+    # wider than OSError: the bug that reopened this slice was a TypeError.
+    #
+    # `Exception`, not `BaseException`. The caller's finally discards a
+    # SubjectError when the body did not complete, so converting KeyboardInterrupt
+    # here would swallow a Ctrl-C entirely. An interrupt replacing the refusal is
+    # correct — the operator pressed the key and knows why it stopped.
+    except Exception as exc:
         raise SubjectError(f"cannot remove materialisation at {root}: {exc}") from exc
 
 

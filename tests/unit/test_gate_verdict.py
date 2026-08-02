@@ -177,6 +177,24 @@ def test_duplicate_claim_ids_are_refused() -> None:
         gate("tests-executed", "tests-executed")
 
 
+def test_empty_kernel_identifier_is_refused() -> None:
+    with pytest.raises(ValueError, match="claim_id must be a non-empty string"):
+        Claim(claim_id=" ", command_digest=COMMAND_DIGEST)
+
+
+def test_non_integer_evidence_exit_code_is_refused() -> None:
+    with pytest.raises(ValueError, match="exit_code must be an integer"):
+        Evidence(
+            claim_id="tests-executed",
+            subject_digest=SUBJECT,
+            producer_id="worker",
+            command=" ".join(COMMAND),
+            command_digest=COMMAND_DIGEST,
+            executable_path=EXECUTABLE,
+            exit_code=True,
+        )
+
+
 def test_malformed_subject_digest_is_refused() -> None:
     with pytest.raises(ValueError, match="digest"):
         evaluate(

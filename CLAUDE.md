@@ -99,6 +99,7 @@ was never in doubt.
 
 ```
 uv run pytest -q                                        # full suite, about a second
+uv run mutmut run                                       # required before a slice closes
 PYTHONPATH=src uv run python -m ranex.cli.main --help
 ```
 
