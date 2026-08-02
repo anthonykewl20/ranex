@@ -7,8 +7,14 @@ is a suggestion, so these tests are the constraint.
 
 from __future__ import annotations
 
+import functools
+import hashlib
+import os
 import re
+import subprocess
+import sys
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import pytest
 
@@ -47,12 +53,18 @@ _CODE_HOST = re.compile(
     re.IGNORECASE,
 )
 
-# Pinned to an immutable revision — a 40-hex commit or a version tag — and never
+# Pinned to an immutable revision — a 40-hex commit or a release tag — and never
 # to a branch. A link to `main` describes whatever main became, so a reviewer
 # cannot read what was actually copied. This repo already binds evidence to a
 # subject digest for exactly this reason; research is bound the same way.
+#
+# The tag form is deliberately narrow: `v?\d[\w.\-]*` also matched `2.x` and
+# `24-feature`, which are branch names, and a branch that happens to start with
+# a digit is no more fixed than one that starts with a letter. Only a
+# dotted-numeric release survives, so the ambiguity a URL cannot resolve — GitHub
+# spells tags and branches identically — is settled by refusing the doubtful case.
 _PINNED_REVISION = re.compile(
-    r"/(?:-/)?(?:blob|tree|raw|src)/(?:[0-9a-f]{40}|v?\d[\w.\-]*)/",
+    r"/(?:-/)?(?:blob|tree|raw|src)/(?:[0-9a-f]{40}|v?\d+(?:\.\d+)*)/",
     re.IGNORECASE,
 )
 
@@ -70,15 +82,38 @@ _WEAKNESS = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Weakness(?:\*\*)?:", re.MULTILINE)
 # research must be efficient — this is a floor on rigour, not a reading quota.
 MIN_CODE_CITATIONS = 2
 
+# Which ADR a prior-art directory belongs to. An ADR vouches for its own copies
+# and no one else's.
+_ADR_NUMBER = re.compile(r"^(ADR-\d{3})")
+
+# A line that means to be a `Vendored:` declaration and is not one. The strict
+# pattern anchors at the line end, so a trailing note — `blob:… (fetched today)`
+# — matches nothing, and the entry is then reported as having no vendored file at
+# all. That accuses the author of skipping the work when what they did was mistype
+# it, which is the same wrong-accusation defect this repo has fixed twice before.
+_VENDORED_INTENT = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Vendored(?:\*\*)?:", re.MULTILINE)
+
 # ADRs written before this rule landed on 2026-08-02. They are not retro-fitted:
 # rewriting an accepted decision to satisfy a rule it predates would manufacture
 # exactly the fake compliance the rule exists to prevent, and ADR-000 decides a
 # document format, for which a specification genuinely is the prior art.
-_PRE_CODE_RULE_ADRS = frozenset({
-    "ADR-000-how-we-write-adrs.md",
-    "ADR-001-claim-command-binding.md",
-    "ADR-002-committed-trust-root.md",
-})
+# Keyed on content, never on the name. A review called the filename-only version
+# a mutable waiver, and it was right: an exemption that travels with a name means
+# new text under an old name evades every research rule while the suite stays
+# green. Pinned to the bytes each file had when the rule landed, so the moment
+# one of them is edited its exemption lapses and the new rule applies to it —
+# which is also the nudge toward superseding rather than rewriting.
+_PRE_CODE_RULE_ADRS = {
+    "ADR-000-how-we-write-adrs.md": "8233d1b1ed63a53c9e14894de8029f358e28f983",
+    "ADR-001-claim-command-binding.md": "df6532def4cfd97a67ea7f255214feafda6a81f6",
+    "ADR-002-committed-trust-root.md": "8e0e08174c20b922792eb742074acaa9b22eb1bb",
+}
+
+
+def _grandfathered(path: Path) -> bool:
+    """Does this ADR predate the code-citation rule, byte for byte?"""
+
+    return _PRE_CODE_RULE_ADRS.get(path.name) == _git_blob_sha(path)
 
 # The template is MADR 4.0.0's *minimal* form, plus `### Confirmation` promoted
 # from its full form, plus the sections this project adds. MADR's full template
@@ -186,6 +221,24 @@ def _is_allowed(relative: Path) -> bool:
         return bool(_SLICE_NAME.fullmatch(relative.name))
     if parent == "docs/adr":
         return bool(_ADR_NAME.fullmatch(relative.name))
+    # Vendored prior art: third-party source copied in so that what an ADR
+    # claims to have read is on disk, plus the NOTICE that makes copying it
+    # lawful. Deliberately NOT "anything under prior-art/" — that first version
+    # let an agent park arbitrary documents in an ADR's directory and walk
+    # straight past the docs cap, which is the 561-file failure this repository
+    # already survived once. A markdown file earns its place here only by being
+    # a NOTICE, or by being vendored on the word of some ADR.
+    if parent.startswith("docs/adr/prior-art/"):
+        vendored = _vendored_paths()
+        if posix in vendored:
+            return True
+        # A NOTICE only earns its place beside something it gives notice *for*.
+        # Allowing the name anywhere under `prior-art/` left a directory holding
+        # nothing but a NOTICE.md: admitted by the cap, and skipped by the
+        # licence check, which walks directories that actually vendor something.
+        # A file no rule ever looks at is the shape the 561 began as.
+        if relative.name == "NOTICE.md":
+            return any(claim.startswith(f"{parent}/") for claim in vendored)
     return False
 
 
@@ -389,14 +442,302 @@ def test_every_adr_cites_a_primary_source() -> None:
     )
 
 
-def _code_citations(prior_art: str) -> list[str]:
-    """Links to a code host, pinned to a revision that cannot move."""
+_VENDORED = re.compile(
+    r"^\s*[-*]?\s*(?:\*\*)?Vendored(?:\*\*)?:\s*`?(?P<path>docs/adr/prior-art/\S+?)`?"
+    r"\s+blob:(?P<blob>[0-9a-f]{40})\s*$",
+    re.MULTILINE,
+)
 
+
+@functools.lru_cache(maxsize=1)
+def _vendored_paths() -> frozenset[str]:
+    """Every repo-relative path some ADR claims to have vendored.
+
+    What makes a file under `prior-art/` legitimate is that an ADR vouches for
+    it. Nothing else in that directory has a reason to exist, so nothing else
+    gets past the docs cap.
+
+    Cached: `_is_allowed` asks this once per tracked markdown file, and without
+    the cache every one of those re-read every ADR on disk. Safe because a test
+    run does not edit the tree it is judging — and if that ever stops being
+    true, the cache is the least of it.
+    """
+
+    claimed: set[str] = set()
+    for path in _adr_files():
+        prior_art = _section(path.read_text(encoding="utf-8"), "## Prior art")
+        if prior_art is None:
+            continue
+        claimed.update(relative for relative, _ in _VENDORED.findall(prior_art))
+    return frozenset(claimed)
+
+
+def _inside_repository(relative: str) -> Path | None:
+    """Where `relative` lands, or None if it leaves the repository.
+
+    Deliberately local, and the duplication is disclosed rather than hidden.
+    `src/ranex/cli/confinement.py` answers this same question for the CLI, and
+    the authoring contract would have this reuse it — the first version of this
+    file did. But ADR-000's "Architecture surface" states that this checker
+    "reads the repo tree; it imports nothing from `src/ranex/`", and contract §1
+    makes a repository-local invariant outrank a generic reuse rule. So the
+    boundary wins and the rule loses, on the record. If that boundary is ever
+    lifted by a superseding ADR, this becomes the import.
+
+    Resolved before it is judged, because the path comes out of prose: a first
+    version compared `REPO_ROOT / relative` without resolving and accepted
+    `docs/adr/prior-art/../../../../tmp/evil.go`.
+    """
+
+    if not relative or Path(relative).is_absolute():
+        return None
+    landed = (REPO_ROOT / relative).resolve()
+    # `is_relative_to` is the documented built-in for this question (3.9+, and
+    # this project is on 3.14). Hand-comparing `.parents` is the same answer
+    # spelled less clearly, and the spelling is where the off-by-one lives.
+    return landed if landed.is_relative_to(REPO_ROOT) else None
+
+
+# SPDX-ish identifiers. A NOTICE that names a file and nothing else records no
+# licence at all, which is the state this check exists to refuse.
+_SPDX = re.compile(
+    r"\b(?:MIT|ISC|Unlicense|CC0-1\.0|BSD(?:-[23]-Clause)?|Apache(?:-2\.0)?"
+    r"|[AL]?GPL-[23]\.0(?:-only|-or-later)?|[AL]?GPL|MPL-2\.0)\b"
+)
+
+# Origin: the commit the copy was taken at, or the URL it came from.
+_ORIGIN = re.compile(r"[0-9a-f]{40}|https?://\S+")
+
+
+def _git_blob_sha(path: Path) -> str:
+    """Git's own name for these bytes: sha1 of `blob <len>\\0` + content.
+
+    Git's hash rather than a plain sha256, because it is the *same value*
+    GitHub reports for that path at that commit — so a reviewer, or a future
+    networked verifier, can compare the vendored copy against upstream without
+    trusting anything this repository says. A sha256 of arbitrary content ties
+    to nothing outside this repo. Taken from leitir's `SourceRef.blob_sha`,
+    which pins code evidence the same way.
+    """
+
+    body = path.read_bytes()
+    return hashlib.sha1(b"blob %d\0" % len(body) + body).hexdigest()
+
+
+def _without_git_environment() -> dict[str, str]:
+    """The ambient environment with every GIT_* variable removed.
+
+    For the same reason `git()` in `src/ranex/cli/main.py` strips it: an ambient
+    GIT_DIR or GIT_INDEX_FILE names a different repository, and every question
+    asked here is about THIS one. A relative GIT_DIR bought a fraudulent gate
+    PASS before that fix landed. It applies to the self-tests below as well as
+    to the checker — a rule that only holds when the developer's shell happens
+    to be clean is not a rule.
+    """
+
+    return {
+        key: value
+        for key, value in os.environ.items()
+        if not key.startswith("GIT_")
+    }
+
+
+def _tracked_by_git(path: Path) -> bool:
+    """Is this repo-relative file present in git's index?"""
+
+    # "Tracked" deliberately means present in the index, not only carried by
+    # HEAD: `git add` makes a new vendor file visible to reviewers in the
+    # proposed change, while HEAD-only would reject it until a commit exists.
+    # This does NOT prove it has been reviewed or merged; staging is an input to
+    # review, not review itself. Missing git and a non-repository fail closed:
+    # skipping this check would let an author manufacture that escape hatch.
+    relative = path.relative_to(REPO_ROOT).as_posix()
+    try:
+        completed = subprocess.run(
+            [
+                "git",
+                "-C",
+                str(REPO_ROOT),
+                "ls-files",
+                "--cached",
+                "--error-unmatch",
+                "-z",
+                "--",
+                f":(literal){relative}",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+            env=_without_git_environment(),
+        )
+    except OSError:
+        return False
+    return completed.returncode == 0
+
+
+def _prior_art_entries(prior_art: str) -> list[str]:
+    """One block per cited implementation: from each citation to the next.
+
+    Counting markers across the whole section was the first defect — two cited
+    implementations and two `Vendored:` lines satisfied the count while belonging
+    to each other in no way at all. Splitting on top-level bullets was the second:
+    a review found a citation indented four spaces did not start a new block, so
+    it merged into the entry above and was covered by *its* licence.
+
+    Split on the citations themselves and neither can happen. Formatting stops
+    mattering — bullets, sub-bullets, indentation, a table — because the thing an
+    entry is *about* is the implementation it names, and the block runs to
+    wherever the next one begins. Text before the first citation is preamble and
+    cites nothing, so it is skipped rather than judged.
+    """
+
+    lines = prior_art.splitlines()
+    starts = [i for i, line in enumerate(lines) if _code_citations(line)]
+    bounds = starts + [len(lines)]
     return [
-        url
-        for url in _CODE_HOST.findall(prior_art)
-        if _PINNED_REVISION.search(url)
+        "\n".join(lines[bounds[i] : bounds[i + 1]]) for i in range(len(starts))
     ]
+
+
+def _notice_entry(body: str, name: str) -> str | None:
+    """The NOTICE line naming `name`, or None.
+
+    Whole-token, because `name in body` accepted a NOTICE mentioning `a.txt.gz`
+    as naming `a.txt`. The line is returned rather than a boolean so the caller
+    can ask what else it records — a filename alone is not a notice.
+    """
+
+    pattern = re.compile(rf"(?<![\w.\-]){re.escape(name)}(?![\w.\-])")
+    for line in body.splitlines():
+        if pattern.search(line):
+            return line
+    return None
+
+
+def _pinned_code_url(url: str) -> bool:
+    """Does the path, rather than URL decoration, name an immutable revision?"""
+
+    # Reproduced: `.../blob/main/f.py?proof=/blob/<40-hex>/x` (and the same
+    # payload in `#fragment`) passed when this expression searched the whole
+    # URL. The query and fragment do not select the bytes a reviewer reads;
+    # only the path can name the revision, so only it is eligible as evidence.
+    return bool(_PINNED_REVISION.search(urlsplit(url).path))
+
+
+def _code_citations(prior_art: str) -> list[str]:
+    """Distinct source files on a code host, pinned to immutable revisions."""
+
+    citations: list[str] = []
+    implementations: set[tuple[str, str, str]] = set()
+    for url in _CODE_HOST.findall(prior_art):
+        parts = urlsplit(url)
+        if not _pinned_code_url(url):
+            continue
+        # Reproduced: the exact pinned URL twice, and one pinned file at #L10
+        # and #L20, produced two occurrences and met the two-implementation
+        # floor. They are one source file, so deduplicate on its scheme, host,
+        # and path. Keep the first spelling: failure messages quote it, and a
+        # stable, readable diagnostic matters more than a later line anchor.
+        implementation = (
+            parts.scheme.lower(),
+            (parts.hostname or "").lower(),
+            parts.path,
+        )
+        if implementation not in implementations:
+            implementations.add(implementation)
+            citations.append(url)
+    return citations
+
+
+def test_code_citations_do_not_count_the_same_pinned_url_twice() -> None:
+    """One implementation cited twice cannot satisfy the research floor."""
+
+    url = "https://github.com/o/r/blob/0123456789abcdef0123456789abcdef01234567/f.py"
+    prior_art = f"## Prior art\n\n- {url}\n- {url}\n"
+
+    assert len(_code_citations(prior_art)) < MIN_CODE_CITATIONS
+
+
+def test_vendored_implementation_must_be_tracked_by_git(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A working-tree-only copy is not evidence a reviewer can obtain."""
+
+    environment = _without_git_environment()
+    subprocess.run(["git", "init", "-q", str(tmp_path)], check=True, env=environment)
+    relative = "docs/adr/prior-art/ADR-003/upstream.py"
+    vendored = tmp_path / relative
+    vendored.parent.mkdir(parents=True)
+    vendored.write_text("upstream bytes\n", encoding="utf-8")
+    digest = _git_blob_sha(vendored)
+    adr = tmp_path / "docs/adr/ADR-003-vendor-evidence.md"
+    adr.parent.mkdir(parents=True, exist_ok=True)
+    adr.write_text(
+        "## Prior art\n\n"
+        f"- Vendored: `{relative}` blob:{digest}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "REPO_ROOT", tmp_path)
+
+    with pytest.raises(AssertionError) as refused:
+        test_every_cited_implementation_is_vendored_and_matches_its_digest()
+    assert relative in str(refused.value)
+    assert "git add" in str(refused.value)
+
+    subprocess.run(
+        ["git", "-C", str(tmp_path), "add", relative], check=True, env=environment
+    )
+    test_every_cited_implementation_is_vendored_and_matches_its_digest()
+
+
+def test_code_citations_do_not_count_line_fragments_as_implementations() -> None:
+    """Two line links into one source file are one implementation."""
+
+    url = "https://github.com/o/r/blob/0123456789abcdef0123456789abcdef01234567/f.py"
+    prior_art = f"## Prior art\n\n- {url}#L10\n- {url}#L20\n"
+
+    assert len(_code_citations(prior_art)) < MIN_CODE_CITATIONS
+
+
+def test_code_citations_count_distinct_pinned_implementations() -> None:
+    """The floor remains satisfiable by two different pinned source files."""
+
+    revision = "0123456789abcdef0123456789abcdef01234567"
+    prior_art = (
+        "## Prior art\n\n"
+        f"- https://github.com/o/r/blob/{revision}/one.py\n"
+        f"- https://github.com/o/r/blob/{revision}/two.py\n"
+    )
+
+    assert len(_code_citations(prior_art)) >= MIN_CODE_CITATIONS
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/o/r/blob/main/f.py?proof=/blob/0123456789abcdef0123456789abcdef01234567/x",
+        "https://github.com/o/r/blob/main/f.py#proof=/blob/0123456789abcdef0123456789abcdef01234567/x",
+    ],
+)
+def test_code_citations_do_not_treat_a_query_or_fragment_as_a_revision(
+    url: str,
+) -> None:
+    """Only the path names the bytes a reviewer would read."""
+
+    assert not _code_citations(f"## Prior art\n\n- {url}\n")
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://github.com/o/r/blob/0123456789abcdef0123456789abcdef01234567/f.py",
+        "https://github.com/o/r/blob/v1.2.3/f.py",
+    ],
+)
+def test_code_citations_keep_honestly_pinned_commits_and_tags(url: str) -> None:
+    """Path-based pinning continues to accept immutable commits and tags."""
+
+    assert _code_citations(f"## Prior art\n\n- {url}\n") == [url]
 
 
 def test_every_adr_cites_working_code_not_only_prose() -> None:
@@ -412,7 +753,7 @@ def test_every_adr_cites_working_code_not_only_prose() -> None:
 
     problems: list[str] = []
     for path in _adr_files():
-        if path.name in _PRE_CODE_RULE_ADRS:
+        if _grandfathered(path):
             continue
         prior_art = _section(path.read_text(encoding="utf-8"), "## Prior art")
         if prior_art is None:
@@ -422,7 +763,7 @@ def test_every_adr_cites_working_code_not_only_prose() -> None:
         if len(pinned) < MIN_CODE_CITATIONS:
             unpinned = [
                 url for url in _CODE_HOST.findall(prior_art)
-                if not _PINNED_REVISION.search(url)
+                if not _pinned_code_url(url)
             ]
             detail = f"{len(pinned)} pinned code citation(s), need {MIN_CODE_CITATIONS}"
             if unpinned:
@@ -452,29 +793,277 @@ def test_every_code_citation_states_its_licence_and_its_weakness() -> None:
 
     problems: list[str] = []
     for path in _adr_files():
-        if path.name in _PRE_CODE_RULE_ADRS:
+        if _grandfathered(path):
             continue
         prior_art = _section(path.read_text(encoding="utf-8"), "## Prior art")
         if prior_art is None:
             continue
-        cited = len(_code_citations(prior_art))
-        if not cited:
-            continue
-        licences = len(_LICENCE.findall(prior_art))
-        weaknesses = len(_WEAKNESS.findall(prior_art))
-        if licences < cited:
-            problems.append(
-                f"{path.name}: {cited} implementation(s) cited, {licences} "
-                "'License:' line(s) — say what each one permits before copying it"
-            )
-        if weaknesses < cited:
-            problems.append(
-                f"{path.name}: {cited} implementation(s) cited, {weaknesses} "
-                "'Weakness:' line(s) — name what each one gets wrong, or you have "
-                "not read it closely enough to copy it"
-            )
+        for entry in _prior_art_entries(prior_art):
+            # Counted, not merely present: a single line can carry two links, and
+            # one licence answering for both is the same pooling defect one
+            # scale down. `_code_citations` deduplicates one source file cited
+            # twice, so that file needs one licence and one weakness, not two:
+            # one implementation, one licence, rather than a relaxed count.
+            cited = _code_citations(entry)
+            if len(_LICENCE.findall(entry)) < len(cited):
+                problems.append(
+                    f"{path.name}: the entry citing {cited[0]} states no "
+                    "'License:' — say what it permits before copying it"
+                )
+            if len(_WEAKNESS.findall(entry)) < len(cited):
+                problems.append(
+                    f"{path.name}: the entry citing {cited[0]} states no "
+                    "'Weakness:' — name what it gets wrong, or you have not read "
+                    "it closely enough to copy it"
+                )
 
     assert not problems, "; ".join(problems)
+
+
+def test_every_cited_implementation_is_vendored_and_matches_its_digest() -> None:
+    """The cited code must be on disk, and be the bytes the ADR says it is.
+
+    Pinning a permalink checks a *shape*. An agent can invent a well-formed
+    commit SHA and a confident weakness without opening a browser — reproduced
+    against this very checker before this test existed. You cannot, however,
+    produce a file you never fetched.
+
+    **State plainly what this proves and what it does not.** It proves the ADR
+    is internally consistent and that some real bytes were obtained: it catches
+    the agent that cited from memory, which is the failure that actually
+    happens. It does NOT prove those bytes came from the cited URL — an agent
+    determined to lie can vendor a file it wrote itself and record its hash. The
+    trust boundary moved from "trust the citation" to "trust the fetch", and
+    closing the rest needs a second, independent fetch of the cited URL, which
+    a hermetic suite with no network cannot do. Bazel's `http_archive` is the
+    model: it verifies the hash of *what it downloaded* before using it. Until
+    a fetching verifier exists, this is lint with teeth and not proof, and it
+    must not be described as more.
+
+    The blob hash is git's, so a human can check it against GitHub by eye.
+    """
+
+    problems: list[str] = []
+    for path in _adr_files():
+        if _grandfathered(path):
+            continue
+        text = path.read_text(encoding="utf-8")
+        prior_art = _section(text, "## Prior art")
+        if prior_art is None:
+            continue
+        # Per entry, so a `Vendored:` line answers for the citation it sits
+        # beside. Counting across the section let two vendored files satisfy two
+        # citations they had nothing to do with.
+        for entry in _prior_art_entries(prior_art):
+            cited = _code_citations(entry)
+            if len(_VENDORED.findall(entry)) < len(cited):
+                problems.append(
+                    f"{path.name}: the entry citing {cited[0]} has no "
+                    "'Vendored:' line. Fetch that file at that commit into "
+                    "docs/adr/prior-art/ and record `<path> blob:<40-hex>`"
+                )
+
+        # An ADR vendors into its own directory, and each citation gets its own
+        # file. Without those two rules the whole check was hollow: a review
+        # reproduced two citations both naming `.../ADR-003/NOTICE.md` as their
+        # source — the notice check skips NOTICE.md and skips directories holding
+        # nothing else, so every rule passed with no code fetched at all. A
+        # vendored file must therefore be a source file, distinct, and under the
+        # directory belonging to the ADR that claims it.
+        number = _ADR_NUMBER.match(path.name)
+        owner = (
+            (REPO_ROOT / "docs" / "adr" / "prior-art" / number.group(1)).resolve()
+            if number
+            else None
+        )
+        # Keyed on the *resolved* file, never on the string. A review found
+        # `ADR-003/source.py` and `ADR-003/missing/../source.py` are two strings
+        # and one file, so one fetch satisfied two citations — the hollow
+        # evidence this check exists to refuse, spelled differently. Everything
+        # below judges where the path lands, so an alias and a symlink both
+        # collapse onto the file they name.
+        claimed: set[Path] = set()
+        contents: set[str] = set()
+
+        # Named before it is counted. A malformed declaration must say so rather
+        # than vanish and leave the entry looking unvendored.
+        intended = len(_VENDORED_INTENT.findall(prior_art))
+        parsed = len(_VENDORED.findall(prior_art))
+        if intended > parsed:
+            problems.append(
+                f"{path.name}: {intended - parsed} line(s) begin 'Vendored:' and "
+                "do not parse. The form is `<path> blob:<40-hex>` and nothing "
+                "after it — a trailing note makes the whole line invisible"
+            )
+
+        for relative, recorded in _VENDORED.findall(prior_art):
+            # Confined before it is opened. The path comes out of prose, and an
+            # unresolved join accepts `../../..`: a vendored file landing outside
+            # the tree is not committed and not reviewable, which is the point.
+            local = _inside_repository(relative)
+            if local is None:
+                problems.append(
+                    f"{path.name}: vendored path {relative} does not stay inside "
+                    "the repository, so it is not committed evidence"
+                )
+                continue
+            if local.name == "NOTICE.md":
+                problems.append(
+                    f"{path.name}: {relative} is a notice, not a fetched "
+                    "implementation; vendoring it proves nothing was obtained"
+                )
+                continue
+            if owner is not None and owner not in local.parents:
+                problems.append(
+                    f"{path.name}: {relative} lands outside {owner.name}/, so "
+                    "this ADR is vouching for a file it does not own"
+                )
+                continue
+            if local in claimed:
+                problems.append(
+                    f"{path.name}: {relative} resolves to a file already vendored "
+                    "for another citation; one fetched file cannot stand in for two"
+                )
+                continue
+            claimed.add(local)
+            if not local.is_file():
+                problems.append(
+                    f"{path.name}: vendored file {relative} is not on disk, so "
+                    "nothing was actually fetched"
+                )
+                continue
+            if not _tracked_by_git(local):
+                problems.append(
+                    f"{path.name}: vendored file {relative} is not tracked by "
+                    f"git; run `git add {relative}` so reviewers can obtain it"
+                )
+                continue
+            actual = _git_blob_sha(local)
+            if actual != recorded:
+                problems.append(
+                    f"{path.name}: {relative} and the ADR disagree — the file's "
+                    f"blob is {actual}, the ADR records {recorded}"
+                )
+                continue
+            # Distinct *content*, not merely distinct paths. Refusing the name
+            # `NOTICE.md` and deduplicating resolved paths still let the notice's
+            # own bytes be copied — or hard-linked — under two source names and
+            # recorded twice: two citations, two files, one text, nothing
+            # fetched. A review reproduced it end to end, clone-stable. Two
+            # implementations that are byte-identical are one implementation.
+            if actual in contents:
+                problems.append(
+                    f"{path.name}: {relative} is byte-identical to another file "
+                    "vendored here; two citations cannot rest on one text"
+                )
+                continue
+            contents.add(actual)
+            notice = local.parent / "NOTICE.md"
+            if notice.is_file() and _git_blob_sha(notice) == actual:
+                problems.append(
+                    f"{path.name}: {relative} holds the notice's own bytes under "
+                    "a source name; the notice is not an implementation"
+                )
+
+    assert not problems, "; ".join(problems)
+
+
+def test_vendored_prior_art_carries_its_notice() -> None:
+    """Copying third-party source is a licensing act, not a filing decision.
+
+    Every permissive licence this project can accept — MIT, BSD, Apache-2.0 —
+    requires the copyright notice and licence text to travel with the copy, and
+    Apache-2.0 additionally requires any NOTICE to be preserved. A GPL file
+    vendored into an MIT repository is worse than untidy: it changes what this
+    repository may be distributed under. None of that is visible to any other
+    check here, and no test elsewhere in this project would ever catch it.
+
+    One `NOTICE.md` per ADR's prior-art directory, naming each vendored file's
+    origin, commit and licence. Enforced because an unenforced licence rule is
+    the kind that is remembered right up until the moment it matters.
+    """
+
+    root = REPO_ROOT / "docs" / "adr" / "prior-art"
+    if not root.is_dir():
+        return
+
+    problems: list[str] = []
+    for directory in sorted(p for p in root.iterdir() if p.is_dir()):
+        # Recursive, because `iterdir` saw only the top level: a claimed path
+        # like `ADR-003/src/source.py` left this list empty, the directory was
+        # skipped, and third-party code shipped with no origin and no licence
+        # recorded anywhere. One notice per ADR covers everything beneath it.
+        vendored = [
+            p for p in directory.rglob("*")
+            if p.is_file() and p.name != "NOTICE.md"
+        ]
+        if not vendored:
+            continue
+        notice = directory / "NOTICE.md"
+        if not notice.is_file():
+            problems.append(
+                f"{directory.relative_to(REPO_ROOT)} vendors "
+                f"{len(vendored)} file(s) and carries no NOTICE.md"
+            )
+            continue
+        body = notice.read_text(encoding="utf-8")
+        where = (directory / "NOTICE.md").relative_to(REPO_ROOT)
+        # Named by path within the ADR's directory, not by bare filename: two
+        # nested sources can share a name, and then one entry would answer for
+        # both. For a flat copy this is just the filename, as before.
+        for copied in sorted(
+            p.relative_to(directory).as_posix() for p in vendored
+        ):
+            # Whole-token, not substring: `a.txt in "see a.txt.gz"` was True, so
+            # a NOTICE naming a different file counted as naming this one.
+            entry = _notice_entry(body, copied)
+            if entry is None:
+                problems.append(f"{where} does not name {copied}")
+                continue
+            # Naming the file was the whole test, and a bare filename records no
+            # licence and no provenance — exactly the evidence the rule exists to
+            # keep. The line must say where the copy came from and what it
+            # permits, or it is a filing note wearing a NOTICE's name.
+            if not _ORIGIN.search(entry):
+                problems.append(
+                    f"{where}: the entry for {copied} records no origin — give "
+                    "the URL or the commit it was taken at"
+                )
+            if not _SPDX.search(entry):
+                problems.append(
+                    f"{where}: the entry for {copied} names no licence, so "
+                    "nothing here says we are allowed to have copied it"
+                )
+
+    assert not problems, "; ".join(problems)
+
+
+def test_nothing_sits_in_prior_art_that_no_adr_claims() -> None:
+    """Vendor what you cite, and cite what you vendor — both directions.
+
+    The other checks run outward from the ADR: every citation must name a file.
+    Nothing ran inward, so a file could sit under `prior-art/` that no ADR
+    vouches for — copied third-party source in the tree with no decision behind
+    it, no licence recorded, and nothing that would ever look at it again.
+    """
+
+    root = REPO_ROOT / "docs" / "adr" / "prior-art"
+    if not root.is_dir():
+        return
+
+    claimed = _vendored_paths()
+    problems = [
+        str(found.relative_to(REPO_ROOT))
+        for found in sorted(root.rglob("*"))
+        if found.is_file()
+        and found.name != "NOTICE.md"
+        and str(found.relative_to(REPO_ROOT)) not in claimed
+    ]
+    assert not problems, (
+        f"vendored files no ADR claims: {problems}. Cite them in a "
+        "`Vendored:` line, or delete them — third-party source with no decision "
+        "behind it is exactly what the docs cap exists to keep out."
+    )
 
 
 def test_every_adr_enumerates_sad_paths() -> None:

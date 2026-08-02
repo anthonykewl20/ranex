@@ -66,12 +66,27 @@ survived contact with reality, and mature open source has already solved most of
 this. So find the implementation that works, read it, copy what holds, and say
 what you deliberately did not copy.
 
-Cite it **pinned** — a commit or a tag, never a branch, so a reviewer reads the
-same bytes you did. Same reason evidence binds to a subject digest. State each
-one's **License:** (we are copying, and this repo is MIT) and its **Weakness:**
-(adopting a design without its caveats is how you ship decoration). Two
-implementations minimum — that is a floor on rigour, not a reading quota, and
-research that sprawls is research that stopped being useful.
+Cite it **pinned** — a 40-hex commit, or a dotted-numeric release tag. Never a
+branch: `2.x` and `24-feature` are branches, and a branch starting with a digit
+is no more fixed than one starting with a letter.
+
+Then **actually fetch it**: copy the file into `docs/adr/prior-art/ADR-NNN/` —
+your own ADR's directory — and record `Vendored: <path> blob:<git hash-object>`.
+A citation is a shape an agent can invent; a file with a matching hash is one it
+had to obtain. **One distinct source file per citation**, never the `NOTICE.md`:
+a review reproduced two citations both vendoring the notice itself, and every
+check passed with nothing fetched. Alongside, a `NOTICE.md` naming each copied
+file with its **origin** (URL or commit) and its **licence** — a bare filename
+records neither, and we are copying into an MIT repo where a GPL file changes
+what may be distributed. Also state each citation's **License:** and its
+**Weakness:** (adopting a design without its caveats is how you ship
+decoration). Two implementations minimum — a floor on rigour, not a reading
+quota; research that sprawls has stopped being useful.
+
+Vendoring proves bytes were obtained, **not** that they came from that URL. It
+catches citing from memory, which is the failure that happens. Verifying
+provenance needs a second fetch of the cited URL, which the offline suite cannot
+do — do not describe it as more than it is.
 
 **An ADR citing no working code is an opinion**, and this is enforced, not
 remembered. Every ADR enumerates its sad paths; the happy path is the part that

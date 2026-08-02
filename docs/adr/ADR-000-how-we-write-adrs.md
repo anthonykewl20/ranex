@@ -259,12 +259,8 @@ prose.
 {Bulleted forces that constrain the choice. 10 lines.}
 
 ## Prior art
-{The implementations that already solve this. At least TWO, each a link to code
-on a code host pinned to a commit or tag — never a branch, or the reviewer
-cannot read what you read. Under each: a `License:` line, because we are copying
-and this repo is MIT; and a `Weakness:` line, because a design adopted without
-its caveats is decoration. Specs and papers are welcome as well, and do not
-count toward the two. 32 lines.}
+{How this is already solved elsewhere. At least one URL — required. Name each
+source's known weakness, not only its design. 32 lines.}
 
 ## Considered Options
 {Numbered options, each with one line on why it was rejected or chosen. 14 lines.}
