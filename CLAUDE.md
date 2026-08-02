@@ -60,12 +60,22 @@ big — split it rather than carrying it.
 written to `docs/adr/ADR-NNN-*.md` *before* the slice file is opened. The slice
 links it. Enforced, not remembered.
 
-Research first, invent last. We are not the first to hit these problems. Find
-the proven design, cite the primary source, copy what holds — then state what
-you improved and why. **An ADR with no citation is an opinion.** Read the prior
-art closely enough to find its known weakness; adopting a design without its
-caveats is how you ship decoration. Every ADR enumerates its sad paths. The
-happy path is the part that was never in doubt.
+**Research means reading code.** We are not the first here and not the smartest.
+A specification says what someone intended; a working implementation says what
+survived contact with reality, and mature open source has already solved most of
+this. So find the implementation that works, read it, copy what holds, and say
+what you deliberately did not copy.
+
+Cite it **pinned** — a commit or a tag, never a branch, so a reviewer reads the
+same bytes you did. Same reason evidence binds to a subject digest. State each
+one's **License:** (we are copying, and this repo is MIT) and its **Weakness:**
+(adopting a design without its caveats is how you ship decoration). Two
+implementations minimum — that is a floor on rigour, not a reading quota, and
+research that sprawls is research that stopped being useful.
+
+**An ADR citing no working code is an opinion**, and this is enforced, not
+remembered. Every ADR enumerates its sad paths; the happy path is the part that
+was never in doubt.
 
 ## Commands
 

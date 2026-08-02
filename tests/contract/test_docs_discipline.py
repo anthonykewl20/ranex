@@ -36,6 +36,50 @@ _ADR_STATUS = re.compile(
 _ADR_REF = re.compile(r"docs/adr/(ADR-\d{3}-[a-z0-9-]+\.md)")
 _CITATION = re.compile(r"https?://\S+")
 
+# Research is for CODE. A spec says what someone intended; a mature
+# implementation says what survived contact with reality, and there is a great
+# deal of open source that already solved these problems. We are not the first
+# here and not the smartest: find the implementation that works, read it, copy
+# what holds, and say what we deliberately did not copy.
+_CODE_HOST = re.compile(
+    r"https?://(?:www\.)?(?:github\.com|gitlab\.com|codeberg\.org|bitbucket\.org"
+    r"|git\.sr\.ht)/\S+",
+    re.IGNORECASE,
+)
+
+# Pinned to an immutable revision — a 40-hex commit or a version tag — and never
+# to a branch. A link to `main` describes whatever main became, so a reviewer
+# cannot read what was actually copied. This repo already binds evidence to a
+# subject digest for exactly this reason; research is bound the same way.
+_PINNED_REVISION = re.compile(
+    r"/(?:-/)?(?:blob|tree|raw|src)/(?:[0-9a-f]{40}|v?\d[\w.\-]*)/",
+    re.IGNORECASE,
+)
+
+# Copying is the point, so the licence is not paperwork. This repo is MIT, and
+# pulling a copyleft implementation into it is a licensing problem that no test
+# elsewhere would catch.
+_LICENCE = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Licen[cs]e(?:\*\*)?:", re.MULTILINE)
+
+# CLAUDE.md has always demanded this and nothing has ever checked it: "read the
+# prior art closely enough to find its known weakness; adopting a design without
+# its caveats is how you ship decoration."
+_WEAKNESS = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Weakness(?:\*\*)?:", re.MULTILINE)
+
+# Two, so a single lucky find cannot stand in for looking. Not more, because
+# research must be efficient — this is a floor on rigour, not a reading quota.
+MIN_CODE_CITATIONS = 2
+
+# ADRs written before this rule landed on 2026-08-02. They are not retro-fitted:
+# rewriting an accepted decision to satisfy a rule it predates would manufacture
+# exactly the fake compliance the rule exists to prevent, and ADR-000 decides a
+# document format, for which a specification genuinely is the prior art.
+_PRE_CODE_RULE_ADRS = frozenset({
+    "ADR-000-how-we-write-adrs.md",
+    "ADR-001-claim-command-binding.md",
+    "ADR-002-committed-trust-root.md",
+})
+
 # The template is MADR 4.0.0's *minimal* form, plus `### Confirmation` promoted
 # from its full form, plus the sections this project adds. MADR's full template
 # is deliberately not used: its option headings are variable strings
@@ -102,8 +146,10 @@ ADR_MAX_LINES = 300
 # every section and every other rule — only the line budgets are lifted.
 _TEMPLATE_ADR = "ADR-000-how-we-write-adrs.md"
 
-# Below this, "sad paths" is a gesture rather than an enumeration.
-MIN_SAD_PATHS = 3
+# Below this, "sad paths" is a gesture rather than an enumeration. Raised from 3
+# on 2026-08-02: the real ADRs carry 30 and 21, so a floor of 3 was measuring
+# nothing and would have passed a document that had barely looked.
+MIN_SAD_PATHS = 8
 
 # One-way doors are the ones worth arguing about before walking through.
 _DOOR = re.compile(r"^\s*(?:[-*]\s*)?(?:\*\*)?Door(?:\*\*)?:\s*(one-way|two-way)\s*$", re.MULTILINE)
@@ -341,6 +387,94 @@ def test_every_adr_cites_a_primary_source() -> None:
         f"ADRs whose '## Prior art' cites no source: {uncited}. "
         "Link the spec or the source file the decision was taken from."
     )
+
+
+def _code_citations(prior_art: str) -> list[str]:
+    """Links to a code host, pinned to a revision that cannot move."""
+
+    return [
+        url
+        for url in _CODE_HOST.findall(prior_art)
+        if _PINNED_REVISION.search(url)
+    ]
+
+
+def test_every_adr_cites_working_code_not_only_prose() -> None:
+    """A specification says what someone intended. Code says what worked.
+
+    The old rule was one URL of any kind in `## Prior art`, which a link to a
+    blog post — or to this repository — satisfied. That made "research first,
+    invent last" a suggestion, and this project's whole thesis is that a rule an
+    agent can read is a suggestion while a rule compiled into a check is a
+    constraint. So the rule is now about code: find the mature implementation
+    that already works, pinned so a reviewer can read the same bytes we did.
+    """
+
+    problems: list[str] = []
+    for path in _adr_files():
+        if path.name in _PRE_CODE_RULE_ADRS:
+            continue
+        prior_art = _section(path.read_text(encoding="utf-8"), "## Prior art")
+        if prior_art is None:
+            problems.append(f"{path.name}: no '## Prior art' section")
+            continue
+        pinned = _code_citations(prior_art)
+        if len(pinned) < MIN_CODE_CITATIONS:
+            unpinned = [
+                url for url in _CODE_HOST.findall(prior_art)
+                if not _PINNED_REVISION.search(url)
+            ]
+            detail = f"{len(pinned)} pinned code citation(s), need {MIN_CODE_CITATIONS}"
+            if unpinned:
+                detail += (
+                    f"; {len(unpinned)} link(s) name a code host but no fixed "
+                    f"revision, so what was read cannot be re-read: {unpinned[0]}"
+                )
+            problems.append(f"{path.name}: {detail}")
+
+    assert not problems, (
+        "; ".join(problems)
+        + ". Cite the implementation that already solves this, at a commit or "
+        "tag — not a branch, and not only a spec or an article."
+    )
+
+
+def test_every_code_citation_states_its_licence_and_its_weakness() -> None:
+    """We are copying, so both of these are load-bearing.
+
+    The licence decides whether we may copy at all — this repo is MIT, and a
+    copyleft implementation pulled into it is a problem nothing else here would
+    catch. The weakness is the half of prior art that gets skipped: CLAUDE.md
+    has always said "adopting a design without its caveats is how you ship
+    decoration", and until now nothing checked it. One of each per cited
+    implementation, so neither can be answered once and waved at the rest.
+    """
+
+    problems: list[str] = []
+    for path in _adr_files():
+        if path.name in _PRE_CODE_RULE_ADRS:
+            continue
+        prior_art = _section(path.read_text(encoding="utf-8"), "## Prior art")
+        if prior_art is None:
+            continue
+        cited = len(_code_citations(prior_art))
+        if not cited:
+            continue
+        licences = len(_LICENCE.findall(prior_art))
+        weaknesses = len(_WEAKNESS.findall(prior_art))
+        if licences < cited:
+            problems.append(
+                f"{path.name}: {cited} implementation(s) cited, {licences} "
+                "'License:' line(s) — say what each one permits before copying it"
+            )
+        if weaknesses < cited:
+            problems.append(
+                f"{path.name}: {cited} implementation(s) cited, {weaknesses} "
+                "'Weakness:' line(s) — name what each one gets wrong, or you have "
+                "not read it closely enough to copy it"
+            )
+
+    assert not problems, "; ".join(problems)
 
 
 def test_every_adr_enumerates_sad_paths() -> None:
