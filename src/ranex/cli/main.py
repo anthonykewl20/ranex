@@ -92,7 +92,7 @@ def git(
     repository_root: Path,
     *arguments: str,
     text: bool = True,
-    env: Mapping[str, str] | None = None,
+    overrides: Mapping[str, str] | None = None,
 ) -> subprocess.CompletedProcess:
     """Ask git a question about this repository, refusing local substitutions.
 
@@ -105,14 +105,26 @@ def git(
     Returns the completed process rather than raising: each caller already
     distinguishes "git said no" from "git failed", and several of them treat a
     nonzero exit as a legitimate answer.
+
+    ``overrides`` are variables the CALLER deliberately sets, applied on top of
+    a GIT_*-free environment. This closes ambient GIT_* injection into Ranex's
+    OWN queries; it does not close the repository-local .git/config vector, it
+    does not sanitise the BOUND COMMAND's environment, and non-GIT_ variables
+    git honours (including HOME and therefore ~/.gitconfig) are still inherited.
     """
+
+    environment = {
+        key: value for key, value in os.environ.items() if not key.startswith("GIT_")
+    }
+    if overrides is not None:
+        environment.update(overrides)
 
     return subprocess.run(
         ["git", "-C", str(repository_root), _NO_SUBSTITUTES, *arguments],
         capture_output=True,
         text=text,
         check=False,
-        env=env,
+        env=environment,
     )
 
 
@@ -757,8 +769,8 @@ def uncommitted_paths(
     with tempfile.TemporaryDirectory() as scratch:
         # Outside the repository on purpose: an index file inside the working
         # tree would itself be untracked, and every call would report dirty.
-        environment = os.environ | {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
-        read_tree = git(repository_root, "read-tree", "HEAD", env=environment)
+        overrides = {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
+        read_tree = git(repository_root, "read-tree", "HEAD", overrides=overrides)
         if read_tree.returncode != 0:
             raise ValueError(
                 f"cannot read HEAD into a scratch index: {read_tree.stderr.strip()}"
@@ -773,7 +785,7 @@ def uncommitted_paths(
             "--porcelain",
             "-uall",
             "--ignore-submodules=none",
-            env=environment,
+            overrides=overrides,
         )
     if result.returncode != 0:
         raise ValueError(f"cannot read repository status: {result.stderr.strip()}")
