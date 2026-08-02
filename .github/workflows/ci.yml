@@ -20,4 +20,8 @@ jobs:
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           python-version: "3.14"
-      - run: uv run pytest -q
+      # `-rs` so a test that SKIPS says so in the log. The bind-mount identity
+      # tests skip on a machine without unprivileged mount namespaces, and a
+      # security test that vanishes silently in CI is the same "nothing ran
+      # them" gap this workflow exists to close, one level down.
+      - run: uv run pytest -q -rs

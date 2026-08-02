@@ -58,4 +58,4 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
 
     setup_uv = next(step for step in action_steps if step["uses"].startswith("astral-sh/setup-uv@"))
     assert setup_uv.get("with") == {"python-version": "3.14"}
-    assert steps[-1] == {"run": "uv run pytest -q"}
+    assert steps[-1] == {"run": "uv run pytest -q -rs"}
