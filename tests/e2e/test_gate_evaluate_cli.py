@@ -264,7 +264,7 @@ def test_journal_verify_reports_a_valid_chain(repo: Path, capsys) -> None:
     """Operators need a CLI path to query the journal's tamper evidence."""
 
     journal = repo / "journal.sqlite3"
-    run(repo, "--journal", journal.name)
+    assert run(repo, "--journal", journal.name) == 1
 
     def verify(path: str) -> int:
         monkeypatch.chdir(repo)

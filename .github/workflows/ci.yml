@@ -7,6 +7,11 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # The suite runs in about six seconds. Ten minutes is generous enough that a
+    # healthy run can never reach it — cold uv download included — and short
+    # enough that a hung pytest is noticed rather than billed against GitHub's
+    # six-hour default.
+    timeout-minutes: 10
     permissions:
       # The suite only needs to read the checked-out repository.
       contents: read

@@ -2,9 +2,12 @@
 
 This test checks the fixed workflow path, both review-relevant triggers, its
 single least-privilege test job, immutable action revisions, and the exact test
-command.  Those properties make deletion, renaming, a mutable action ref, an
-extra non-actionable check, or a softened ``pytest`` invocation visible locally
-before a pull request can make CI decorative.
+command.  The pytest step is deliberately an allowlist: any legitimate future
+addition to it requires changing this test.  That friction is intentional,
+because step-level settings can otherwise make a byte-identical command
+non-blocking.  This test does not cover GitHub Actions behaviour outside this
+workflow, such as repository rulesets, branch protection, runner availability,
+or a compromised pinned action.
 """
 
 from __future__ import annotations
@@ -40,6 +43,8 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     assert isinstance(jobs, dict)
     assert set(jobs) == {"test"}
     job = jobs["test"]
+    assert set(job) == {"runs-on", "timeout-minutes", "permissions", "steps"}
+    assert job["timeout-minutes"] == 10
     assert job["permissions"] == {"contents": "read"}
 
     steps = job["steps"]
@@ -53,4 +58,4 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
 
     setup_uv = next(step for step in action_steps if step["uses"].startswith("astral-sh/setup-uv@"))
     assert setup_uv.get("with") == {"python-version": "3.14"}
-    assert steps[-1].get("run") == "uv run pytest -q"
+    assert steps[-1] == {"run": "uv run pytest -q"}
