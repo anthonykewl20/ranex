@@ -1,7 +1,12 @@
 # SLICE-003 — claim↔command binding
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-01
+**Closed:** 2026-08-02 — 250 green, 6 strict xfail. Six independent audits failed
+to break the binding itself; criteria 1–9 were re-proven by mutation. Closed on
+its own promise, with six reproduced false-PASS paths recorded, frozen, and
+assigned to SLICE-004 — the same disposition sad path 18 got when this slice was
+opened on top of it. See "The closing audit" below for what that does not buy.
 **ADR:** `docs/adr/ADR-001-claim-command-binding.md` — the researched decision,
 including why in-toto's `expected_command` is prior art for the defect and not
 for the fix.

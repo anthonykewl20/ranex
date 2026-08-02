@@ -270,9 +270,13 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** `docs/slices/SLICE-003-claim-command-binding.md` — a signed
-record for `true` currently satisfies `tests-executed`; this binds a claim to the
-command that may satisfy it.
+**Active slice:** none. SLICE-003 closed on 2026-08-02; the next slice cannot
+open until its researched decision is written to `docs/adr/ADR-003-*.md`.
+
+**Next:** isolate the runner *and its toolchain* — the six false-PASS paths in
+the first known gap above are one root cause, and separating the signer from the
+worker does not by itself move `git` or the object store out of the worker's
+reach.
 
 ## Completed slices
 
@@ -287,6 +291,15 @@ command that may satisfy it.
   trust-root check was skipped entirely for a path the commit did not carry, so
   a catalog or keyring the attacker named was read unchecked. Closed by
   `docs/adr/ADR-002-committed-trust-root.md`.
+- **SLICE-003-claim-command-binding** — the committed catalog declares the argv
+  that satisfies a claim, and the kernel compares its digest, so a signed record
+  of `true` no longer satisfies `tests-executed`. Six independent audits failed
+  to break that binding, and criteria 1–9 were re-proven by mutation — each
+  safeguard deleted from `src/` in turn, the covering test watched to go red.
+  Closed on its own promise, not on a clean bill of health: the same audits
+  reproduced six ways to get a false PASS *around* the binding, all one root
+  cause, all recorded and frozen as strict expected-failure tests, all assigned
+  to the next slice. They are the first known gap above.
 
 ---
 
