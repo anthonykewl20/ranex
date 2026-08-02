@@ -212,6 +212,11 @@ tamper analysis over the signed field set.
 | 22 | two records for one claim disagreeing on exit code | FAIL and report the contradiction |
 | 23 | a flag naming an arbitrary untracked path as exempt | must not exempt it from the dirty-tree check |
 | 24 | committed `conftest.py` neutering the bound suite | **not caught** — the tree defines the check |
+| 25 | bind mount giving an in-repo inode an outside name | refuse — `st_nlink` never counts a mount, so identity cannot be gated on it |
+| 26 | a worktree directory unreadable during the identity scan | refuse — a scan that cannot answer must not answer "no" |
+| 27 | contradicting record deleted from the evidence file | **not caught** — the file is not append-only; SLICE-004 |
+| 28 | producer id a visual lookalike of the approver's | **not caught** — no-self-approval compares strings; SLICE-005 |
+| 29 | worktree directory closed to force the refusal in 26 | availability only — every run FAILs, and an unrun gate already FAILs; the message names the directory so it reads as an attack and not as a bug |
 
 ## Test strategy
 
@@ -229,6 +234,13 @@ Levels, unit-heavy as the pyramid prescribes:
   paths 8–10, 14.
 - `tests/e2e/test_claim_command_binding_cli.py` — the `-- true` attack and the
   worktree-containment refusal through the real CLI. Sad paths 11–13.
+- `tests/security/test_slice003_audit_defects.py` — the seven fraudulent PASSes
+  four audits reproduced. Sad paths 18–23; 18 is a strict xfail, not a pass.
+- `tests/security/test_slice003_bind_mount_identity.py` — identity where the
+  link count and the device both lie. Sad paths 25–26. The bind-mount
+  reproduction runs the CLI inside a real unprivileged mount namespace via
+  `bwrap`; it is skipped only where no such namespace can be had, and that skip
+  is loud because a silently-skipped security test is worse than none.
 
 E2E hermeticity: each test builds its own repo and keypair under `tmp_path`, no
 shared mutable state, no sleeps, no ambient environment reads.

@@ -4,6 +4,17 @@
 **Opened:** 2026-08-01
 **Reopened:** 2026-08-01 — closed prematurely on tests narrower than reality
 **Closed:** 2026-08-01 — 156 tests green; 17 defects from four independent audits
+**Reopened:** 2026-08-02 — the committed-trust-root criterion below was ticked
+and false. The check was skipped entirely for a path the ref did not carry, so
+the party being gated chose the file by choosing the flag.
+**Closed:** 2026-08-02 — `docs/adr/ADR-002-committed-trust-root.md`; 238 green.
+
+> **Superseded in part by SLICE-003.** The pinned format below says
+> `ranex-evidence-v1` and five signed fields. It is now `ranex-evidence-v2` and
+> seven — `command_digest` and `executable_path` were added and the domain
+> string moved with them. Read `docs/adr/ADR-001-claim-command-binding.md` for
+> the current format; the section below is kept as the record of what this slice
+> decided, not as a description of the code.
 
 ## Why
 
@@ -195,6 +206,25 @@ tests proved less than they appeared to, so the slice was not finished.
 
 - [x] `keygen`'s containment check is check-then-open; the parent-directory
       TOCTOU was won 22 times in 200 attempts
+
+**Found on 2026-08-02, auditing SLICE-003 — the second reopen**
+
+The trust-root criterion above was ticked because an *edit* to a committed file
+was caught. Nobody asked what happened to a path no commit carried.
+
+- [x] `--gate-catalog attacker-gates.yaml` — a file HEAD does not carry was read
+      unchecked and decided the verdict. Reproduced to PASS
+- [x] `--producers` under a committed `.gitignore` — same hole, and
+      `git status --porcelain` stays completely empty, so the one signal an
+      operator watches shows nothing at all
+- [x] A committed **symlink** at a reviewed name: resolution followed it before
+      git was asked, so git was asked about the target and the reviewed name was
+      never consulted. Committing the indirection once rewrites policy forever
+- [x] Trust-root TOCTOU — the bytes were compared and the loaders then reopened
+      the same name, so checked bytes and deciding bytes were two reads of a file
+      the worker can replace in between. Now the committed **bytes** are returned
+      and parsed; `strace` confirms one open per file where there were three and
+      two
 - [x] `run` accepts a signing key stored inside the repository, which `keygen`
       refuses to create
 - [x] Two error paths accuse the wrong thing: an unhashable YAML key escapes as
@@ -270,7 +300,16 @@ trustworthy. Until approvals are signed, treat no-self-approval as a convention,
 not a control. This warning belongs at the `evaluate()` interface, not only here.
 
 **It does not prove the command substantiates the claim.** A valid signature over
-`command: "true"` still satisfies `tests-executed`.
+`command: "true"` still satisfies `tests-executed`. Closed by SLICE-003.
+
+**The keyring refuses one key under two names, and not two names that look the
+same.** The one-key-one-producer rule above holds — verified. But
+`producer_id` is any non-empty string, so `alice` and `alice` followed by a
+zero-width space are two producers to the loader and one to a reviewer, and
+either can produce evidence the other appears to approve. No-self-approval is
+string equality over a pair the attacker picks. Found 2026-08-02, not fixed;
+it belongs with approver authentication in SLICE-005, and it is strictly smaller
+than the hole below, which needs no trick at all.
 
 **Key compromise invalidates history.** Removing or replacing a producer's key in
 the keyring means every record that producer ever signed stops verifying. Gates

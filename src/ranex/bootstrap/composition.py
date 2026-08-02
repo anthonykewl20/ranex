@@ -23,14 +23,21 @@ from ranex.governed_execution.api import (
     Gate,
     evaluate,
 )
-from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate
+from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
 
 @dataclass(frozen=True, slots=True)
 class GateEvaluator:
-    """One wired evaluation path: catalog -> gate -> verdict -> journal."""
+    """One wired evaluation path: catalog -> gate -> verdict -> journal.
 
-    gate_catalog_path: Path
+    The catalog arrives as **bytes**, not as a path. Which bytes are the policy
+    is a trust decision, and it belongs to the caller that can make it — the CLI
+    takes them out of the commit. Holding a path here would mean re-reading the
+    working tree at evaluation time, after the trust root was checked, which is
+    exactly the window that made the check decorative.
+    """
+
+    gate_catalog: bytes
     journal_path: Path | None
 
     def evaluate(
@@ -41,9 +48,8 @@ class GateEvaluator:
         subject_digest: str,
         approver_id: str,
     ) -> Evaluation:
-        content = self.gate_catalog_path.read_bytes()
-        catalog_digest = "sha256:" + hashlib.sha256(content).hexdigest()
-        definition = load_gate(self.gate_catalog_path, gate_id)
+        catalog_digest = "sha256:" + hashlib.sha256(self.gate_catalog).hexdigest()
+        definition = load_gate_text(self.gate_catalog.decode("utf-8"), gate_id)
         gate = Gate(
             gate_id=definition.gate_id,
             rule_id=definition.rule_id,
@@ -69,12 +75,17 @@ class GateEvaluator:
 
 
 def build_gate_evaluator(
-    gate_catalog_path: Path,
+    gate_catalog: bytes,
     journal_path: Path | None = None,
 ) -> GateEvaluator:
-    """Select and wire the concrete implementations. The only place that may."""
+    """Select and wire the concrete implementations. The only place that may.
+
+    `gate_catalog` is the catalog's bytes. The digest recorded in the journal is
+    taken over exactly these, so what the journal attests to is the policy that
+    actually ran and not whatever the path held when the journal was written.
+    """
 
     return GateEvaluator(
-        gate_catalog_path=Path(gate_catalog_path),
+        gate_catalog=bytes(gate_catalog),
         journal_path=Path(journal_path) if journal_path is not None else None,
     )

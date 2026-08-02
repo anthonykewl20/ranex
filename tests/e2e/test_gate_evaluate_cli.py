@@ -52,11 +52,15 @@ def repo(tmp_path: Path, signing: Signing) -> Path:
     (repository / "file.txt").write_text("content\n", encoding="utf-8")
     signing.write_keyring(repository)
     attach(repository, signing)
+    # Committed, like the keyring beside it. Both are the trust root, and since
+    # SLICE-002 was reopened a trust-root path HEAD does not carry is refused
+    # outright rather than read from disk — so a catalog written after the
+    # commit is no longer a catalog the CLI will evaluate against.
+    (repository / "gates.yaml").write_text(GATES, encoding="utf-8")
     subprocess.run(["git", "-C", str(repository), "add", "-A"], check=True)
     subprocess.run(
         ["git", "-C", str(repository), "commit", "-q", "-m", "initial"], check=True
     )
-    (repository / "gates.yaml").write_text(GATES, encoding="utf-8")
     return repository
 
 

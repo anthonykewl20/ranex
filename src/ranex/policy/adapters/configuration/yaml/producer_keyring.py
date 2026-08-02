@@ -60,15 +60,31 @@ class _NoDuplicateKeys(yaml.SafeLoader):
 
 
 def load_keyring(path: Path | str) -> dict[str, str]:
-    """Return producer_id -> `ed25519:<base64>`. Raises KeyringError on anything
-    it cannot fully trust."""
+    """Return producer_id -> `ed25519:<base64>`, reading the working tree.
+
+    Kept for callers that genuinely mean "the file at this path". The CLI is no
+    longer one of them: it hands `load_keyring_text` the bytes git records, so
+    that the keyring which decides a verdict is never re-read from a name the
+    observed party can repoint between the check and the load.
+    """
 
     path = Path(path)
     try:
         text = path.read_text(encoding="utf-8")
     except OSError as exc:
         raise KeyringError(f"cannot read the keyring at {path}: {exc}") from exc
+    return load_keyring_text(text, path)
 
+
+def load_keyring_text(text: str, source: object) -> dict[str, str]:
+    """Return producer_id -> `ed25519:<base64>` from keyring text already in hand.
+
+    `source` names where the text came from, for error messages only — nothing
+    here reads it. That is the point: the caller has already decided which bytes
+    are trustworthy, and this function cannot go behind that decision.
+    """
+
+    path = source
     try:
         document = yaml.load(text, Loader=_NoDuplicateKeys)
     except KeyringError:

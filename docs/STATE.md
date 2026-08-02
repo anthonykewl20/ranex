@@ -2,49 +2,49 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-01
+**Updated:** 2026-08-02
 **Phase:** kernel — evidence loop
 **Active slice:** `docs/slices/SLICE-003-claim-command-binding.md` — open, NOT done
 
 ## Where we stopped
 
-**SLICE-003 is implemented, 214 green, and the green suite is false.** Four
-independent audits (three subagents, plus `tencent/hy3` via direct OpenRouter)
-reproduced **seven fraudulent gate PASSes**. Do not trust the suite here; read
-`docs/adr/ADR-001-claim-command-binding.md` sad paths 18-24 first. Red tests for
-every defect below are being written; `src/` is NOT yet fixed.
+238 green, 1 strict xfail, and **green has meant nothing twice here** — every
+claim below was reproduced closed in a lab, not read off the suite. Red test
+first, by a different agent than the implementer.
 
-- **PATH shadowing (18, 21).** A fake `pytest` outside the tree, earlier on
-  `$PATH`, PASSes: containment asks "outside the repo?", never "is this the bound
-  binary?". ADR-001 claimed this closed; false, withdrawn in place.
-- **Hard link (19).** `ln <repo>/x /tmp/pytest` — outside by path, in-repo by
-  inode. Identity must be `(st_dev, st_ino)`. Same class as the Landlock spike.
-- **TOCTOU (20).** Swap a directory component between check and spawn; won 9/9
-  at 75-85ms. Fix: open once, spawn via `/proc/self/fd/N`.
-- **`--journal` (23).** Out of scope and exploitable: exempts any untracked path
-  from the dirty-tree check, so a record can describe a tree that is not HEAD —
-  stronger than the hole `6e6a28005` closed. The HEAD check also misses staged files.
-- **Contradictory records (22).** Honest exit-1 plus faked exit-0 for one claim
-  PASSes via `any()`.
-- **Reporting.** A digest mismatch reads as "no evidence" — the honest-absence
-  wording SLICE-002 already fixed once.
+- **SLICE-002 reopened and re-closed** — `docs/adr/ADR-002-committed-trust-root.md`.
+  The check returned early for a path the ref did not carry, so three attacks
+  reached PASS: `--gate-catalog attacker-gates.yaml`, a `--producers` keyring
+  under a committed `.gitignore` (invisible to `git status`), and a committed
+  symlink at a reviewed name. Now such a path is refused, and git is asked about
+  the name the operator typed. `run` applies it too.
+- **Trust-root TOCTOU closed.** `committed_trust_root` returns the committed
+  **bytes** and every loader parses those, so the second read has nowhere to
+  happen. `strace`: `evaluate` opened `gates.yaml` 3× and `producers.yaml` 2×
+  before, 1× each now.
+- **D9, bind mount** — `same_file_inside` short-circuited on `st_nlink <= 1`, and
+  a bind mount gives one inode a second name without touching the link count. The
+  device pre-filter was unsound likewise. Both dropped; the scan is unconditional
+  and reads inodes from the dirent — 5 ms, was 23 ms.
+- **D10, unreadable directory** — found by this session's audit, not inherited.
+  One `chmod 000` inside the worktree hid the twin, and git records no directory
+  mode so the tree still read clean. A scan that cannot look now refuses.
 
 ## Next
 
-1. **Fix the above, red-then-green, then re-audit.** SLICE-003 does not close
-   until an adversarial audit fails to get a PASS.
-2. **SLICE-002 IS REOPENED — critical.** `--gate-catalog` / `--producers`
-   pointing at an uncommitted file bypasses `refuse_uncommitted_trust_root`,
-   which returns early when HEAD lacks the path. A worker self-registers a
-   producer and PASSes. The trust root must be the committed path itself.
-3. **SLICE-004 — signer/runner separation.** The privileged side must run the
-   command and observe the exit code; a broker that signs what it is handed
-   leaves the oracle in reach. Landlock ABI 8 works unprivileged (~75 rules,
-   ~1.7ms) but is inode-bound — assert `st_nlink == 1`.
+1. **Re-audit the fixed code, then close SLICE-003.** No clean adversarial pass
+   has run since D10 landed. It closes when an audit fails to get a PASS — not
+   when the suite is green.
+2. **SLICE-004 — signer/runner separation.** Owns D1 PATH-shadowing strict xfail
+   (`tests/security/test_slice003_audit_defects.py`); Landlock ABI 8 unprivileged
+   (~75 rules, ~1.7 ms) but inode-bound — assert `st_nlink == 1`.
+3. **Queued — Architecture Contract.** After trust-boundary slices: research its ADR, then open one slice; turn global guidance into repo-specific artifact gates.
 
 ## Known limits, stated not fixed
 
-- A committed `conftest.py` neutering the suite yields a genuine run, exit 0 and
-  a PASS, no trace. If the tree defines the check, the thrower controls the eyes.
-- Approver identity is an unauthenticated string (SLICE-005). *Accelerate*
-  constrains the fix: a peer in the flow, never a change-approval board.
+- **`evidence.json` is not append-only**, so deleting a contradicting record
+  defeats the contradiction check entirely. ADR-001 sad path 27.
+- A committed `conftest.py` neutering the suite yields a genuine run, exit 0, a PASS and no trace — if the tree defines the check, the thrower owns the eyes.
+- Approver identity is unauthenticated and the keyring admits visual lookalikes
+  (`alice` beside `alice`+ZWSP), so no-self-approval is string equality over a
+  pair the attacker picks. SLICE-005.

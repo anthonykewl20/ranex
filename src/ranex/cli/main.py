@@ -20,7 +20,7 @@ import stat
 import subprocess
 import sys
 import tempfile
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -45,6 +45,7 @@ from ranex.governed_execution.domain.admission import (
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     KeyringError,
     load_keyring,
+    load_keyring_text,
 )
 
 EXIT_PASS = 0
@@ -98,6 +99,28 @@ def head_commit(repository_root: Path) -> str:
     return result.stdout.strip()
 
 
+def named_within_repository(repository_root: Path, candidate: str) -> Path:
+    """What `candidate` *names*, with `.` and `..` collapsed and nothing followed.
+
+    `resolve_within_repository` answers where a name leads. That is the right
+    question for what to read and for containment, and the wrong one to put to
+    git: a ref carries names, and following a symlink before asking replaces the
+    name the operator typed with one the working tree chose. `gates.yaml`
+    committed as a link to a file no commit carries resolves to the target, git
+    is asked about the target, and the reviewed name is never consulted at all.
+
+    Only the lexical parts are collapsed, so what comes back is the operator's
+    own spelling. That is safe here because the caller compares the bytes this
+    name carries against the bytes the resolved path holds: a component swapped
+    for a symlink makes the two disagree, and disagreement is a refusal.
+    """
+
+    named = Path(os.path.normpath(candidate))
+    if named.is_absolute() or named.parts[:1] == ("..",):
+        raise ValueError(f"path resolves outside the repository: {candidate!r}")
+    return repository_root / named
+
+
 def committed_bytes(repository_root: Path, ref: str, path: Path) -> bytes | None:
     """The bytes `ref` records for `path`, or None if `ref` has no such file."""
 
@@ -114,13 +137,27 @@ def committed_bytes(repository_root: Path, ref: str, path: Path) -> bytes | None
     return result.stdout
 
 
-def refuse_uncommitted_trust_root(
+def committed_trust_root(
     repository_root: Path,
     ref: str,
-    path: Path,
+    candidate: str,
+    resolved: Path,
     description: str,
-) -> None:
-    """Refuse a trust-root file on disk that is not the file `ref` carries.
+) -> bytes:
+    """The reviewed bytes of a trust-root file. Refuses if disk disagrees.
+
+    **Returns the bytes, and those are what the caller must parse.** Handing
+    back a path was the defect: the check compared one read of a name and the
+    loaders then opened that same name again, so the bytes that were verified
+    and the bytes that decided the verdict were two separate reads of a file
+    the observed party can replace in between. Nothing here yields a path, so
+    that second read has nowhere to happen.
+
+    The on-disk comparison stays, and its job has changed. It no longer decides
+    which bytes are used — it refuses a working tree that disagrees with the
+    commit, so an operator who edits the catalog and forgets to commit is told
+    rather than watching a verdict quietly ignore the edit. Losing that race
+    now costs nothing: the committed bytes are what comes back either way.
 
     The keyring and the gate catalog are the trust root: one says which keys
     this repository trusts, the other says what the gate demands. Both are
@@ -130,25 +167,46 @@ def refuse_uncommitted_trust_root(
     rewrites the target after the throw and the journal then preserves it as if
     it had been the policy all along.
 
-    A file the commit does not carry at all is read from disk unchanged: there
-    is no reviewed version to prefer, and taking one out of the history is
-    itself a commit a reviewer sees. What must never happen is a committed file
-    being quietly overridden by an edit that never reaches a commit.
+    A path the ref does not carry used to be read from disk unchanged, on the
+    reasoning that there was no reviewed version to prefer. That reasoning holds
+    only for a path the *operator* chose, and the party being gated chooses it
+    too: it writes `attacker-gates.yaml`, or drops a keyring under a committed
+    `.gitignore` where `git status` will never mention it, and names it with a
+    flag. Nothing was edited, so nothing was caught. The one input an attacker
+    fully controls skipped the check outright, which made this the weakest link
+    in a chain every other control hangs from. So absence blocks here as it
+    blocks everywhere else: no committed file, no verdict.
+
+    Two paths, because they answer different questions. `candidate` is what the
+    operator named and is what git is asked about — a ref carries names.
+    `resolved` is what will actually be read. Requiring them to agree byte for
+    byte is what closes the committed-name-uncommitted-bytes case: a symlink at
+    a reviewed name yields the link text from the ref and the target's contents
+    from disk, and those are never equal.
     """
 
-    committed = committed_bytes(repository_root, ref, path)
+    named = named_within_repository(repository_root, candidate)
+    relative = named.relative_to(repository_root).as_posix()
+    committed = committed_bytes(repository_root, ref, named)
     if committed is None:
-        return
-    try:
-        on_disk = path.read_bytes()
-    except OSError as exc:
-        raise ValueError(f"cannot read the {description} at {path}: {exc}") from exc
-    if on_disk != committed:
         raise ValueError(
-            f"refusing to evaluate: the {description} at {path} differs from the "
-            f"version committed in {ref}, and it decides this verdict. Commit the "
-            "change so review sees it, or revert it"
+            f"refusing to evaluate: {ref} carries no {description} at "
+            f"{relative}, and it decides this verdict. A file no commit carries "
+            "is a file review never saw — commit it, or name the one that is "
+            "committed"
         )
+    try:
+        on_disk = resolved.read_bytes()
+    except OSError as exc:
+        raise ValueError(f"cannot read the {description} at {resolved}: {exc}") from exc
+    if on_disk != committed:
+        through = "" if resolved == named else f" (reached through {resolved})"
+        raise ValueError(
+            f"refusing to evaluate: the {description} at {relative}{through} "
+            f"differs from the version committed in {ref}, and it decides this "
+            "verdict. Commit the change so review sees it, or revert it"
+        )
+    return committed
 
 
 def load_records(path: Path) -> list[object]:
@@ -193,8 +251,23 @@ def admitted_evidence(
     caller asking "did this record verify" wants.
     """
 
+    return admit_records(path, load_keyring(keyring_path), repository_root)
+
+
+def admit_records(
+    path: Path,
+    keyring: Mapping[str, str],
+    repository_root: Path | None = None,
+) -> Admission:
+    """The same, from a keyring already in hand rather than a path to one.
+
+    This is what the CLI calls. The keyring it passes came out of the commit,
+    and re-deriving it from a path here would reopen the trust root by name
+    after it was checked — the whole hole `committed_trust_root` exists to close.
+    """
+
     records = load_records(path)
-    admission = admit(records, load_keyring(keyring_path))
+    admission = admit(records, keyring)
     if repository_root is None:
         return admission
     return refuse_executables_inside(admission, len(records), repository_root)
@@ -381,26 +454,86 @@ def same_file_inside(identity: os.stat_result, governed_root: Path) -> Path | No
     directory entry for one inode. Containment compares paths, and an inode has
     many, so `ln <repo>/tools/pytest /tmp/bin/pytest` is outside by every path
     test while the bytes that run are the ones the observed tree carries.
-    Identity is `(st_dev, st_ino)`.
+    Identity is `(st_dev, st_ino)`, and nothing cheaper stands in for it.
 
-    `st_nlink` is the cheap half: one name means there is no second one to find,
-    so the walk is paid only when the answer is genuinely in doubt — and never
-    when the file sits on another filesystem, since a hard link cannot cross one.
+    Two cheaper questions were asked here and both were wrong, for one reason.
+    `st_nlink <= 1` read as "one name, so there is no second one to find" —
+    `mount --bind <repo>/tools/pytest /tmp/bin/pytest` gives one inode a second
+    name and never touches the link count, so the fast path answered "no second
+    name" about a file that had exactly one. Comparing the root's `st_dev` first
+    fails the same way: a mount inside the worktree puts an in-repo path on
+    another device, and the pre-filter then skips the search that would have
+    found it. Both assumed the observed party cannot manipulate the filesystem,
+    and unprivileged user namespaces are the standing proof that it can. An
+    optimisation that is only sound against an attacker who is not trying is not
+    an optimisation.
+
+    So the search is unconditional, and paid for by reading the inode straight
+    out of the directory entry: on Linux `scandir` returns it from `readdir`
+    with no `stat` syscall, so a full pass costs one syscall per directory
+    rather than one per file. Measured on this repository — 3227 entries, a
+    666 MB `.git` included — a miss, which is the common case and the worst
+    case, takes about 5 ms against 23 ms for the `os.walk`-and-`lstat` shape it
+    replaces. `run` wraps a test suite; this is noise beside it, and the cost
+    grows with the number of entries rather than with their size.
+
+    Only a matching inode number is worth a `stat`, and that stat is what
+    settles the device — two files on two filesystems can share an inode number
+    and are not the same file. Symlinked directories are not descended, so the
+    pass terminates without needing a hop count.
     """
 
-    if identity.st_nlink <= 1:
-        return None
-    if governed_root.stat().st_dev != identity.st_dev:
-        return None
-    for directory, _subdirectories, files in os.walk(governed_root):
-        for name in files:
-            candidate = Path(directory) / name
-            try:
-                entry = candidate.lstat()
-            except OSError:
-                continue
-            if (entry.st_dev, entry.st_ino) == (identity.st_dev, identity.st_ino):
-                return candidate
+    stack = [governed_root]
+    while stack:
+        directory = stack.pop()
+        try:
+            entries = os.scandir(directory)
+        except OSError as exc:
+            # A directory that cannot be read is not a directory with nothing
+            # in it. The observed party owns this tree and shares the uid, so
+            # one `chmod 000` closes a directory; git records the executable
+            # bit on files and nothing at all about directory modes, so the
+            # tree still reads as clean and the dirty check never fires. The
+            # pass would then walk past the one name that matches and report
+            # that it found none.
+            #
+            # So ignorance refuses, exactly as `path_behind` refuses when
+            # /proc/self/fd is missing. This function's contract is "no second
+            # name inside the worktree", and a scan that was not permitted to
+            # look has established nothing of the kind.
+            raise ValueError(
+                f"refusing to run: {directory}, inside the repository under "
+                f"observation, cannot be read ({exc}), so whether this command "
+                "is a second name for a file in the observed tree cannot be "
+                "decided. A question that could not be asked is not a question "
+                "answered no"
+            ) from exc
+        with entries:
+            for entry in entries:
+                try:
+                    directory_entry = entry.is_dir(follow_symlinks=False)
+                except OSError as exc:
+                    raise ValueError(
+                        f"refusing to run: {entry.path}, inside the repository "
+                        f"under observation, cannot be classified ({exc}), so "
+                        "the identity of the command cannot be decided"
+                    ) from exc
+                if directory_entry:
+                    stack.append(Path(entry.path))
+                    continue
+                # Free: `scandir` carries the inode number out of `readdir`.
+                if entry.inode() != identity.st_ino:
+                    continue
+                try:
+                    found = entry.stat(follow_symlinks=False)
+                except OSError:
+                    # The inode number already matches. Without the device that
+                    # match cannot be confirmed — and an unconfirmable match is
+                    # not a licence to run, so it is treated as the twin it
+                    # most likely is.
+                    return Path(entry.path)
+                if (found.st_dev, found.st_ino) == (identity.st_dev, identity.st_ino):
+                    return Path(entry.path)
     return None
 
 
@@ -807,13 +940,21 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         # Before either is read, and against the ref being judged rather than
         # against whatever is checked out: these two files choose the verdict,
         # so the copy that decides it must be the copy review saw.
-        refuse_uncommitted_trust_root(root, args.ref, keyring_path, "producer keyring")
-        refuse_uncommitted_trust_root(root, args.ref, gate_catalog, "gate catalog")
+        # The reviewed bytes themselves, never a path to fetch them from again.
+        # Everything below parses what comes back here, so between the check and
+        # the verdict there is no second read for anyone to get in front of.
+        keyring_source = committed_trust_root(
+            root, args.ref, args.producers, keyring_path, "producer keyring"
+        )
+        catalog_source = committed_trust_root(
+            root, args.ref, args.gate_catalog, gate_catalog, "gate catalog"
+        )
+        keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
         # The root is passed so the containment decision `run` made about
         # argv[0] is taken again here, from the signed path in the record.
-        admission = admitted_evidence(evidence_path, keyring_path, root)
+        admission = admit_records(evidence_path, keyring, root)
         evaluator = build_gate_evaluator(
-            gate_catalog,
+            catalog_source,
             journal_path,
         )
         result = evaluator.evaluate(
@@ -994,15 +1135,24 @@ def cmd_run(args: argparse.Namespace) -> int:
             raise ValueError(
                 f"refusing to run {command[0]!r}: {executable} is the same file "
                 f"as {twin}, inside the repository under observation. A hard "
-                "link is a second name and not a second file, so the bytes that "
-                "would run are the ones the observed tree carries"
+                "link and a bind mount are both a second name for one file, not "
+                "a second file, so the bytes that would run are the ones the "
+                "observed tree carries"
             )
 
         # Everything that can refuse, refuses before the command runs. A test
         # suite is expensive; discovering afterwards that the record cannot be
         # written honestly wastes all of it.
         private_key = private_signing_key(governed_root)
-        keyring = load_keyring(keyring_path)
+        # The same trust root, and the same refusal, on the way in. `run` only
+        # consults the keyring to avoid writing a record that evaluation would
+        # refuse — but a keyring the caller supplies at an uncommitted path
+        # turns that courtesy into a way to self-register, and a gitignored one
+        # is invisible to the dirty-tree check below as well as to `git status`.
+        keyring_source = committed_trust_root(
+            root, "HEAD", args.producers, keyring_path, "producer keyring"
+        )
+        keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
         registered = keyring.get(args.producer)
         if registered is None:
             raise ValueError(

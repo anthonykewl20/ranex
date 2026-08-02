@@ -250,7 +250,9 @@ def test_the_wired_gate_compares_the_same_digest_run_records(tmp_path: Path) -> 
         exit_code=0,
     )
 
-    result = build_gate_evaluator(write(tmp_path, GOOD), None).evaluate(
+    # Catalog bytes, not a path: the composition root no longer re-reads the
+    # working tree at evaluation time. No assertion below changes.
+    result = build_gate_evaluator(GOOD.encode("utf-8"), None).evaluate(
         "landing",
         (recorded,),
         subject_digest=subject,

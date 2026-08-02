@@ -260,7 +260,10 @@ command that may satisfy it.
   bound to a producer in a committed keyring, and the keyring and gate catalog
   are read from the commit rather than the working tree. Closed once, reopened
   when audits found the tests were narrower than reality, and closed again after
-  17 defects across four audits.
+  17 defects across four audits. **Reopened a second time on 2026-08-02**: the
+  trust-root check was skipped entirely for a path the commit did not carry, so
+  a catalog or keyring the attacker named was read unchecked. Closed by
+  `docs/adr/ADR-002-committed-trust-root.md`.
 
 ---
 

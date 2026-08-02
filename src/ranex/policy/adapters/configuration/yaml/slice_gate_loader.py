@@ -136,9 +136,23 @@ def load_gate(
     catalog_path: Path,
     gate_id: str,
 ) -> SliceGateDefinition:
-    """Return the named gate, or raise. A malformed catalog never yields a gate."""
+    """Return the named gate, reading the working tree.
 
-    text = Path(catalog_path).read_text(encoding="utf-8")
+    Kept for callers that mean "the file at this path". The CLI is no longer
+    one of them — it parses the bytes git records, so the catalog that decides
+    a verdict cannot be swapped between the trust-root check and the load.
+    """
+
+    return load_gate_text(Path(catalog_path).read_text(encoding="utf-8"), gate_id)
+
+
+def load_gate_text(text: str, gate_id: str) -> SliceGateDefinition:
+    """Return the named gate from catalog text already in hand, or raise.
+
+    A malformed catalog never yields a gate. Nothing here touches a filesystem:
+    which bytes are the catalog is the caller's decision and cannot be revisited.
+    """
+
     document = yaml.load(text, Loader=_UniqueKeyLoader)
     if not isinstance(document, dict):
         raise ValueError("gate catalog must be a mapping")
