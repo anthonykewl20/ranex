@@ -110,6 +110,16 @@ def test_digest_chain_detects_tampering(tmp_path: Path) -> None:
     assert Journal(path).verify() is False
 
 
+def test_verify_missing_journal_does_not_create_it(tmp_path: Path) -> None:
+    """Verification never enters append's create-and-initialise connection path."""
+
+    path = tmp_path / "j.sqlite3"
+    with pytest.raises(sqlite3.OperationalError):
+        Journal(path).verify()
+
+    assert not path.exists()
+
+
 def test_unreadable_store_raises_rather_than_defaulting(tmp_path: Path) -> None:
     bad = tmp_path / "not-a-db.sqlite3"
     bad.write_text("this is not a database", encoding="utf-8")
