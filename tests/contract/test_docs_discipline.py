@@ -78,9 +78,15 @@ _LICENCE = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Licen[cs]e(?:\*\*)?:", re.MULTILINE
 # its caveats is how you ship decoration."
 _WEAKNESS = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Weakness(?:\*\*)?:", re.MULTILINE)
 
+# Research starts before the convenient citations: record the code-host searches
+# that exposed the candidates, including mature projects deliberately rejected.
+_SEARCHED = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Searched(?:\*\*)?:", re.MULTILINE)
+_REJECTED = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Rejected(?:\*\*)?:", re.MULTILINE)
+
 # Two, so a single lucky find cannot stand in for looking. Not more, because
 # research must be efficient — this is a floor on rigour, not a reading quota.
 MIN_CODE_CITATIONS = 2
+MIN_REJECTED_CANDIDATES = 2
 
 # Which ADR a prior-art directory belongs to. An ADR vouches for its own copies
 # and no one else's.
@@ -114,6 +120,35 @@ def _grandfathered(path: Path) -> bool:
     """Does this ADR predate the code-citation rule, byte for byte?"""
 
     return _PRE_CODE_RULE_ADRS.get(path.name) == _git_blob_sha(path)
+
+
+# ADRs accepted before the search record was required, on 2026-08-02. Not
+# retro-fitted, for the same reason as the map above: a search recorded after the
+# decision it supposedly informed is a reconstruction, and inventing one to turn
+# the suite green is precisely the fake compliance this rule exists to prevent.
+#
+# A separate map rather than a widened one, because the two waivers must expire
+# independently — an ADR may satisfy the citation rule and not this one, and
+# merging them would let either exemption carry the other. Keyed on content, so
+# an edit lapses the exemption and the new rule applies to the new text.
+#
+# This rule exists because the omission it catches actually happened: a design
+# for confinement and audit logging was produced without searching, and `in-toto`,
+# `witness` and `landrun` had already solved most of it. The owner caught it.
+_PRE_SEARCH_RULE_ADRS = {
+    "ADR-000-how-we-write-adrs.md": "8233d1b1ed63a53c9e14894de8029f358e28f983",
+    "ADR-001-claim-command-binding.md": "df6532def4cfd97a67ea7f255214feafda6a81f6",
+    "ADR-002-committed-trust-root.md": "8e0e08174c20b922792eb742074acaa9b22eb1bb",
+    "ADR-003-research-is-fetched-evidence.md": "7cab0069b6e41f4b6ad8042022c0396813b7561e",
+    "ADR-004-environment-boundary-for-git-queries.md": "a42a9d149703060b5a095033cd40dac00931fc4f",
+    "ADR-005-hermetic-observation.md": "238ca8a0e60a881efcacdd54699d4f9c7f05c8b0",
+}
+
+
+def _search_rule_grandfathered(path: Path) -> bool:
+    """Does this ADR predate the search-record rule, byte for byte?"""
+
+    return _PRE_SEARCH_RULE_ADRS.get(path.name) == _git_blob_sha(path)
 
 # The template is MADR 4.0.0's *minimal* form, plus `### Confirmation` promoted
 # from its full form, plus the sections this project adds. MADR's full template
@@ -159,7 +194,7 @@ _ADR_SECTIONS: tuple[str, ...] = (
 _SECTION_BUDGET: dict[str, int] = {
     "## Context and Problem Statement": 14,
     "## Decision Drivers": 10,
-    "## Prior art": 32,
+    "## Prior art": 46,
     "## Considered Options": 14,
     "## Decision Outcome": 14,
     "### Consequences": 14,
@@ -738,6 +773,234 @@ def test_code_citations_keep_honestly_pinned_commits_and_tags(url: str) -> None:
     """Path-based pinning continues to accept immutable commits and tags."""
 
     assert _code_citations(f"## Prior art\n\n- {url}\n") == [url]
+
+
+def _rejected_candidate_blocks(prior_art: str) -> list[str]:
+    """One block per rejected candidate, from its marker to the next entry.
+
+    Reasoning is allowed to wrap, so the line carrying `Rejected:` cannot be the
+    whole candidate. Like `_prior_art_entries`, split on the things that give an
+    entry its meaning instead of on Markdown layout: the next `Rejected:` marker
+    or the next pinned code citation starts another entry. A citation on the
+    marker's own line belongs to that rejected candidate, even when it happens
+    to be pinned.
+    """
+
+    rejected = list(_REJECTED.finditer(prior_art))
+    citation_starts = [
+        citation.start()
+        for citation in _CODE_HOST.finditer(prior_art)
+        if _pinned_code_url(citation.group())
+    ]
+    blocks: list[str] = []
+    for index, marker in enumerate(rejected):
+        next_rejected = (
+            rejected[index + 1].start()
+            if index + 1 < len(rejected)
+            else len(prior_art)
+        )
+        marker_line_end = prior_art.find("\n", marker.end())
+        if marker_line_end == -1:
+            marker_line_end = len(prior_art)
+        next_citation = next(
+            (
+                start
+                for start in citation_starts
+                if start >= marker_line_end and start > marker.start()
+            ),
+            len(prior_art),
+        )
+        blocks.append(prior_art[marker.start() : min(next_rejected, next_citation)])
+    return blocks
+
+
+def test_every_adr_records_the_prior_art_search_and_rejected_candidates() -> None:
+    """A citation records what was adopted; this records the alternatives weighed."""
+
+    problems: list[str] = []
+    for path in _adr_files():
+        if _search_rule_grandfathered(path):
+            continue
+        prior_art = _section(path.read_text(encoding="utf-8"), "## Prior art")
+        if prior_art is None:
+            problems.append(f"{path.name}: no '## Prior art' section")
+            continue
+        # This verifies that a search was RECORDED, not that one was PERFORMED:
+        # an offline checker cannot observe the author running a code-host query,
+        # just as Vendored evidence proves bytes were obtained and not where from.
+        if not _SEARCHED.search(prior_art):
+            problems.append(
+                f"{path.name}: no 'Searched:' line. Record the code-host query "
+                "and the host or tool used before choosing citations"
+            )
+        rejected = _rejected_candidate_blocks(prior_art)
+        if len(rejected) < MIN_REJECTED_CANDIDATES:
+            problems.append(
+                f"{path.name}: {len(rejected)} 'Rejected:' candidate(s), need "
+                f"{MIN_REJECTED_CANDIDATES}. Record mature code-host candidates "
+                "you deliberately did not adopt"
+            )
+        for entry in rejected:
+            if not _CODE_HOST.search(entry):
+                problems.append(
+                    f"{path.name}: 'Rejected:' entry has no code-host URL. Link "
+                    "the candidate you weighed and say why it was not adopted"
+                )
+                continue
+            reasoning = _CODE_HOST.sub("", entry).split(":", 1)[-1].strip()
+            if len(reasoning) < 30:
+                problems.append(
+                    f"{path.name}: 'Rejected:' entry has only {len(reasoning)} "
+                    "non-URL character(s), need 30. Say why the candidate was "
+                    "not adopted, not merely that it exists"
+                )
+
+    assert not problems, "; ".join(problems)
+
+
+def _search_rule_fixture(path: Path, prior_art: str) -> Path:
+    """Build the smallest ADR body needed to exercise the search-record rule."""
+
+    path.write_text(f"## Prior art\n\n{prior_art}\n", encoding="utf-8")
+    return path
+
+
+def test_adr_without_a_searched_line_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """An author must record the code-host search, not just chosen citations."""
+
+    adr = _search_rule_fixture(
+        tmp_path / "ADR-999-search-required.md",
+        "- Rejected: https://github.com/example/one This candidate lacks the needed "
+        "offline verification boundary.\n"
+        "- Rejected: https://gitlab.com/example/two This candidate couples policy "
+        "decisions to a provider adapter.",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    with pytest.raises(AssertionError, match="Searched:"):
+        test_every_adr_records_the_prior_art_search_and_rejected_candidates()
+
+
+def test_adr_with_one_rejected_candidate_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """One rejected project cannot show that the whole problem was searched."""
+
+    adr = _search_rule_fixture(
+        tmp_path / "ADR-999-two-rejections.md",
+        "- Searched: GitHub code search for offline evidence verification\n"
+        "- Rejected: https://github.com/example/one This candidate lacks the needed "
+        "offline verification boundary.",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    with pytest.raises(AssertionError, match="need 2"):
+        test_every_adr_records_the_prior_art_search_and_rejected_candidates()
+
+
+def test_rejected_candidate_bare_url_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A candidate link without reasoning does not show it was weighed."""
+
+    adr = _search_rule_fixture(
+        tmp_path / "ADR-999-rejection-reasoning.md",
+        "- Searched: GitHub code search for offline evidence verification\n"
+        "- Rejected: https://github.com/example/one\n"
+        "- Rejected: https://gitlab.com/example/two This candidate couples policy "
+        "decisions to a provider adapter.",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    with pytest.raises(AssertionError, match="need 30"):
+        test_every_adr_records_the_prior_art_search_and_rejected_candidates()
+
+
+def test_rejected_candidate_with_wrapped_reasoning_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A rejection's explanation may continue below the marker line."""
+
+    adr = _search_rule_fixture(
+        tmp_path / "ADR-999-wrapped-rejection.md",
+        "- Searched: GitHub code search for offline evidence verification\n"
+        "- Rejected: https://github.com/example/one\n"
+        "  This candidate lacks the required offline verification boundary,\n"
+        "  so its provider cannot make the policy decision safely.\n"
+        "- Rejected: https://gitlab.com/example/two This candidate couples policy "
+        "decisions to a provider adapter.",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    test_every_adr_records_the_prior_art_search_and_rejected_candidates()
+
+
+def test_rejected_candidate_block_stops_at_the_next_code_citation(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Prose under a later citation cannot become a bare rejection's reasoning."""
+
+    revision = "0123456789abcdef0123456789abcdef01234567"
+    adr = _search_rule_fixture(
+        tmp_path / "ADR-999-rejection-boundary.md",
+        "- Searched: GitHub code search for offline evidence verification\n"
+        "- Rejected: https://github.com/example/one\n"
+        f"- https://github.com/example/adopted/blob/{revision}/source.py\n"
+        "  This unrelated prose describes the adopted implementation in detail.\n"
+        "- Rejected: https://gitlab.com/example/two This candidate couples policy "
+        "decisions to a provider adapter.",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    with pytest.raises(AssertionError, match="need 30"):
+        test_every_adr_records_the_prior_art_search_and_rejected_candidates()
+
+
+def test_rejected_candidate_with_unpinned_url_and_reasoning_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Rejected candidates need reasoning and a code-host URL, not a pinned revision."""
+
+    adr = _search_rule_fixture(
+        tmp_path / "ADR-999-unpinned-rejection.md",
+        "- Searched: GitHub code search for offline evidence verification\n"
+        "- Rejected: https://github.com/example/one This candidate lacks the needed "
+        "offline verification boundary.\n"
+        "- Rejected: https://gitlab.com/example/two This candidate couples policy "
+        "decisions to a provider adapter.",
+    )
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    test_every_adr_records_the_prior_art_search_and_rejected_candidates()
+
+
+def test_grandfathered_adr_passes_the_search_rule_unchanged(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The historical waiver applies only to the ADR bytes present when it landed."""
+
+    name = next(iter(_PRE_SEARCH_RULE_ADRS))
+    adr = REPO_ROOT / "docs" / "adr" / name
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    test_every_adr_records_the_prior_art_search_and_rejected_candidates()
+
+
+def test_changed_grandfathered_adr_is_not_exempt_from_the_search_rule(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Changing grandfathered content lapses its waiver instead of carrying it forward."""
+
+    name = next(iter(_PRE_SEARCH_RULE_ADRS))
+    source = REPO_ROOT / "docs" / "adr" / name
+    adr = tmp_path / name
+    adr.write_text(source.read_text(encoding="utf-8") + "\nChanged bytes.\n", encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "_adr_files", lambda: [adr])
+
+    with pytest.raises(AssertionError, match="Searched:"):
+        test_every_adr_records_the_prior_art_search_and_rejected_candidates()
 
 
 def test_every_adr_cites_working_code_not_only_prose() -> None:

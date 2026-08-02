@@ -63,8 +63,11 @@ links it. Enforced, not remembered.
 **Research means reading code.** We are not the first here and not the smartest.
 A specification says what someone intended; a working implementation says what
 survived contact with reality, and mature open source has already solved most of
-this. So find the implementation that works, read it, copy what holds, and say
-what you deliberately did not copy.
+this. Search code hosts *before designing* — for the whole problem, not only the
+component — and record the queries and the tool used. Record at least two mature
+candidates you deliberately did not adopt, each with a link and the reason. Then
+find the implementation that works, read it, copy what holds, and say what you
+deliberately did not copy.
 
 Cite it **pinned** — a 40-hex commit, or a dotted-numeric release tag. Never a
 branch: `2.x` and `24-feature` are branches, and a branch starting with a digit
