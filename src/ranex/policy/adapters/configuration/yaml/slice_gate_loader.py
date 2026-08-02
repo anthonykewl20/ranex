@@ -153,7 +153,17 @@ def load_gate_text(text: str, gate_id: str) -> SliceGateDefinition:
     which bytes are the catalog is the caller's decision and cannot be revisited.
     """
 
-    document = yaml.load(text, Loader=_UniqueKeyLoader)
+    try:
+        document = yaml.load(text, Loader=_UniqueKeyLoader)
+    except yaml.YAMLError as exc:
+        # Wrapped here, in the adapter that chose YAML, rather than left to
+        # escape into the CLI. An unwrapped `YAMLError` reached `main()` as a
+        # traceback, and an uncaught exception exits 1 — which is EXIT_FAIL, the
+        # code meaning "the gate was not satisfied". A catalog that could not be
+        # parsed evaluated nothing, and must never share an answer with a gate
+        # that was evaluated and refused. The keyring loader already wraps the
+        # identical input class; the other half of the trust root now matches.
+        raise ValueError(f"gate catalog is not valid YAML: {exc}") from exc
     if not isinstance(document, dict):
         raise ValueError("gate catalog must be a mapping")
 

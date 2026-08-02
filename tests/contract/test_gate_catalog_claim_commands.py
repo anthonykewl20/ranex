@@ -61,7 +61,27 @@ gates:
 
 # Trivially true against any tree. A claim bound to one of these is a claim that
 # blocks nothing, whatever its name promises.
+#
+# Matched on the *basename* of argv[0], because the set below is a denylist and a
+# denylist that also has to guess the spelling is two guesses. `("true",)` alone
+# left `/bin/true` and `/usr/bin/true` passing this check — reproduced by an
+# audit against a copy of this catalog, and the whole defect the slice exists to
+# close was green. Normalising the path is what makes one entry cover every way
+# of naming one program.
+#
+# Say plainly what this is: a tripwire, not a proof. No predicate decides whether
+# a command substantiates a claim — `sh -c 'exit $((0))'` walks past this and so
+# does a script that reads the answer out of a file. It catches the placeholder a
+# hurried session reaches for, which is the failure that actually happened here,
+# and it must never be read as establishing that the bound commands are
+# substantive. That judgement is review's, and this check does not replace it.
 TRIVIAL_COMMANDS = {("true",), (":",), ("sh", "-c", "exit 0"), ("sh", "-c", ":")}
+
+
+def normalised(argv: tuple[str, ...]) -> tuple[str, ...]:
+    """`argv` with argv[0] reduced to its basename. `/bin/true` is `true`."""
+
+    return () if not argv else (Path(argv[0]).name, *argv[1:])
 
 
 def write(tmp_path: Path, text: str) -> Path:
@@ -202,11 +222,33 @@ def test_no_required_claim_is_bound_to_a_trivially_true_command() -> None:
     bound_to_nothing = [
         claim.claim_id
         for claim in gate.required_claims
-        if tuple(claim.command) in TRIVIAL_COMMANDS
+        if normalised(tuple(claim.command)) in TRIVIAL_COMMANDS
     ]
     assert not bound_to_nothing, (
         f"{bound_to_nothing} are bound to a command that succeeds against any "
         "tree; naming a placeholder command is faking the claim"
+    )
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [["/bin/true"], ["/usr/bin/true"], ["true"], ["sh", "-c", "exit 0"]],
+)
+def test_the_trivial_command_guard_is_not_defeated_by_spelling(
+    tmp_path: Path,
+    argv: list[str],
+) -> None:
+    """The guard above is a denylist, so its own blind spots need a test.
+
+    An audit bound this repository's `landing` gate to `/bin/true` and the
+    contract file stayed entirely green: the denylist held `("true",)` and
+    compared the raw argv, so one absolute path walked past it. A check that a
+    reviewer trusts and a path prefix defeats is worse than no check, because it
+    is read as coverage.
+    """
+
+    assert normalised(tuple(argv)) in TRIVIAL_COMMANDS, (
+        f"{argv} succeeds against any tree and the guard does not recognise it"
     )
 
 

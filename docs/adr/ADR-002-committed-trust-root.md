@@ -196,6 +196,14 @@ uncarried, hidden, redirected, respelled — plus boundary analysis on the ref.
 | 11 | evidence file at an arbitrary path | **by design** — every record is signed and admitted individually |
 | 12 | a reviewed commit that weakens the gate | **not caught** — review is the control, and this is what it is for |
 | 13 | contradicting record deleted from the evidence file | **not caught** — the file is not append-only; SLICE-004 |
+| 14 | `git replace` substituting a trust-root blob, or the subject commit | refuse — every git query passes `--no-replace-objects`, injected once in the function they all go through |
+| 15 | working-tree file hidden from `git status` by `.gitignore` or `.git/info/exclude` | **not caught** — the exclude needs no commit, so review sees nothing; SLICE-004 |
+| 16 | `filter.<n>.clean` in `.git/config` hashing a modified tracked file to its committed blob | **not caught** — no git flag ignores repository-local config, so no better question exists to ask; SLICE-004 |
+| 17 | trust-root blob substituted by overwriting its loose object | **not caught** — `cat-file` never checks a blob against the name it was asked for; read-only mode is not a control against its owner; SLICE-004 |
+| 18 | `git` itself resolved on an editable PATH, a shim dropping the flag | **not caught** — this bounds row 14; the oracle is chosen by whoever launched Ranex; SLICE-004 |
+| 19 | untracked **empty directory** the bound command reads | **not caught** — git cannot represent one, so no `-u` level and not `--ignored` sees it; SLICE-004 |
+| 20 | a symlink at Ranex's own bookkeeping name, aiming the dirty-tree exemption elsewhere | refuse — the exemption is decided on the path as named, never on where the name leads |
+| 21 | committed gate catalog that is not valid YAML | refuse, exit 2 — an escaping `YAMLError` exits 1, which is the code meaning the gate was not satisfied |
 
 ## Test strategy
 
@@ -221,6 +229,13 @@ unit boundary:
 
 Sad paths 11–13 are declared uncaught rather than tested. Writing a green test
 for a hole is how a hole becomes invisible.
+
+Sad paths 14–21 were found by the audits that closed SLICE-003 and live in
+`tests/security/test_slice003_audit_defects.py`. 14, 20 and 21 are closed and
+green. 15–19 are strict xfails, each with a green control beside it, so no hole
+is invisible and the day one closes its marker comes off loudly. 17 and 18 bound
+what 14 bought: `--no-replace-objects` removes one lookup indirection, and does
+not make git authenticate the bytes it streams or the binary that streams them.
 
 Coverage: no global percentage — assertion-free suites reach 100%. Each attack
 above maps to a named test; the residual four are recorded in `docs/STATE.md`

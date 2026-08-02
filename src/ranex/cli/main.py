@@ -70,16 +70,56 @@ EXECUTABLE_OPEN_FLAGS = os.O_NOFOLLOW | getattr(os, "O_PATH", os.O_RDONLY)
 # Enough hops to resolve anything real, few enough to end a symlink cycle.
 MAX_LINK_HOPS = 40
 
+# `git replace` writes `refs/replace/<oid>`, and from that moment every command
+# in the repository resolves that object to a substitute the observed party
+# authored. `git cat-file blob HEAD:gates.yaml` returns bytes no commit carries;
+# `git rev-parse HEAD^{tree}` peels to a tree the commit does not name while
+# `git rev-parse HEAD` still reports the honest id. It needs no privilege, is an
+# ordinary documented command, appears in no commit and in no `git log`, leaves
+# `git status` empty, and is never pushed or fetched — so a reviewer reading the
+# branch on any other machine sees the honest tree, and only the machine
+# deciding the verdict sees the substitute.
+#
+# That defeats ADR-002 underneath every defence it built. The path is committed,
+# the name is asked about exactly as the operator typed it, and the on-disk bytes
+# match the "committed" bytes — because both sides of the comparison are the
+# attacker's. "Reviewed and committed are the same fact" only holds while git
+# answers honestly about what a commit carries, and git can be told not to.
+_NO_SUBSTITUTES = "--no-replace-objects"
+
+
+def git(
+    repository_root: Path,
+    *arguments: str,
+    text: bool = True,
+    env: Mapping[str, str] | None = None,
+) -> subprocess.CompletedProcess:
+    """Ask git a question about this repository, refusing local substitutions.
+
+    Every question this CLI puts to git is a question about what a commit
+    carries, and no call site here wants the replaced answer. So the refusal is
+    injected once, in the function they all go through, rather than remembered
+    at ten call sites where the eleventh forgets — which is how this defect
+    reached a PASS in the first place.
+
+    Returns the completed process rather than raising: each caller already
+    distinguishes "git said no" from "git failed", and several of them treat a
+    nonzero exit as a legitimate answer.
+    """
+
+    return subprocess.run(
+        ["git", "-C", str(repository_root), _NO_SUBSTITUTES, *arguments],
+        capture_output=True,
+        text=text,
+        check=False,
+        env=env,
+    )
+
 
 def subject_digest_for(repository_root: Path, ref: str) -> str:
     """The exact subject: the git tree of `ref`, not a mutable branch name."""
 
-    result = subprocess.run(
-        ["git", "-C", str(repository_root), "rev-parse", f"{ref}^{{tree}}"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = git(repository_root, "rev-parse", f"{ref}^{{tree}}")
     if result.returncode != 0:
         raise ValueError(f"cannot resolve ref {ref!r}: {result.stderr.strip()}")
     return "sha256:" + canonical_sha256({"tree": result.stdout.strip()})
@@ -88,12 +128,7 @@ def subject_digest_for(repository_root: Path, ref: str) -> str:
 def head_commit(repository_root: Path) -> str:
     """The commit HEAD points at, used to detect the ground moving mid-run."""
 
-    result = subprocess.run(
-        ["git", "-C", str(repository_root), "rev-parse", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = git(repository_root, "rev-parse", "HEAD")
     if result.returncode != 0:
         raise ValueError(f"cannot resolve HEAD: {result.stderr.strip()}")
     return result.stdout.strip()
@@ -125,12 +160,10 @@ def committed_bytes(repository_root: Path, ref: str, path: Path) -> bytes | None
     """The bytes `ref` records for `path`, or None if `ref` has no such file."""
 
     relative = path.relative_to(repository_root).as_posix()
-    result = subprocess.run(
-        # `cat-file blob` and not `show`: it refuses anything that is not a
-        # blob, so a directory or a tag never arrives here as file content.
-        ["git", "-C", str(repository_root), "cat-file", "blob", f"{ref}:{relative}"],
-        capture_output=True,
-        check=False,
+    # `cat-file blob` and not `show`: it refuses anything that is not a blob,
+    # so a directory or a tag never arrives here as file content.
+    result = git(
+        repository_root, "cat-file", "blob", f"{ref}:{relative}", text=False
     )
     if result.returncode != 0:
         return None
@@ -558,12 +591,7 @@ def git_common_dir(directory: Path) -> Path | None:
     asked here: could a file written under this path be committed?
     """
 
-    result = subprocess.run(
-        ["git", "-C", str(directory), "rev-parse", "--git-common-dir"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = git(directory, "rev-parse", "--git-common-dir")
     if result.returncode != 0:
         return None
     # Relative when asked from inside the checkout, absolute when asked from a
@@ -669,29 +697,19 @@ def tracked_by_git(repository_root: Path, relative: str) -> bool:
     answers the same question of the index.
     """
 
-    carried = subprocess.run(
-        ["git", "-C", str(repository_root), "cat-file", "-e", f"HEAD:{relative}"],
-        capture_output=True,
-        check=False,
-    )
+    carried = git(repository_root, "cat-file", "-e", f"HEAD:{relative}")
     if carried.returncode == 0:
         return True
-    staged = subprocess.run(
-        # `:(literal)` so a name holding glob characters is matched as itself
-        # and never as a pattern that happens to match something reviewed.
-        [
-            "git",
-            "-C",
-            str(repository_root),
-            "ls-files",
-            "--cached",
-            "--error-unmatch",
-            "-z",
-            "--",
-            f":(literal){relative}",
-        ],
-        capture_output=True,
-        check=False,
+    # `:(literal)` so a name holding glob characters is matched as itself and
+    # never as a pattern that happens to match something reviewed.
+    staged = git(
+        repository_root,
+        "ls-files",
+        "--cached",
+        "--error-unmatch",
+        "-z",
+        "--",
+        f":(literal){relative}",
     )
     return staged.returncode == 0
 
@@ -740,34 +758,21 @@ def uncommitted_paths(
         # Outside the repository on purpose: an index file inside the working
         # tree would itself be untracked, and every call would report dirty.
         environment = os.environ | {"GIT_INDEX_FILE": str(Path(scratch) / "index")}
-        read_tree = subprocess.run(
-            ["git", "-C", str(repository_root), "read-tree", "HEAD"],
-            capture_output=True,
-            text=True,
-            check=False,
-            env=environment,
-        )
+        read_tree = git(repository_root, "read-tree", "HEAD", env=environment)
         if read_tree.returncode != 0:
             raise ValueError(
                 f"cannot read HEAD into a scratch index: {read_tree.stderr.strip()}"
             )
-        result = subprocess.run(
-            # --ignore-submodules=none overrides any submodule.<name>.ignore or
-            # diff.ignoreSubmodules setting. Left to the repository's own config,
-            # a changed submodule is invisible here while still being present
-            # when the command runs — a dirty tree bound to a clean digest.
-            [
-                "git",
-                "-C",
-                str(repository_root),
-                "status",
-                "--porcelain",
-                "-uall",
-                "--ignore-submodules=none",
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
+        # --ignore-submodules=none overrides any submodule.<name>.ignore or
+        # diff.ignoreSubmodules setting. Left to the repository's own config, a
+        # changed submodule is invisible here while still being present when the
+        # command runs — a dirty tree bound to a clean digest.
+        result = git(
+            repository_root,
+            "status",
+            "--porcelain",
+            "-uall",
+            "--ignore-submodules=none",
             env=environment,
         )
     if result.returncode != 0:
@@ -780,10 +785,20 @@ def uncommitted_paths(
     else:
         exempted = tuple(ignoring)
 
+    # `ignoring` carries paths **as named**, never resolved, and this loop must
+    # not resolve them either. Removing the flags stopped the observed party
+    # naming the exempted path; it can still point it. A symlink at Ranex's own
+    # constant name — and in the default layout `governance/` holds two
+    # gitignored ones, so the link needs no commit and leaves no reviewable
+    # artifact — re-aims the exemption at any untracked file in the tree. The
+    # exemption then covers the file the bound command reads, and a tree HEAD
+    # does not describe is recorded as clean. The name is what Ranex promised to
+    # excuse; where that name leads is the observed party's choice, and a choice
+    # it makes is not a thing to grant an exemption to.
     exempt: set[str] = set()
     for path in exempted:
         try:
-            candidate = path.resolve().relative_to(repository_root).as_posix()
+            candidate = path.relative_to(repository_root).as_posix()
         except ValueError:
             continue
         # Tracked means reviewed: a difference from HEAD in such a file is the
@@ -810,12 +825,7 @@ def uncommitted_paths(
 def tracked_paths(repository_root: Path) -> tuple[str, ...]:
     """Every path git holds in the index, NUL-separated so no name can lie."""
 
-    result = subprocess.run(
-        ["git", "-C", str(repository_root), "ls-files", "-z"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = git(repository_root, "ls-files", "-z")
     if result.returncode != 0:
         raise ValueError(f"cannot list the tracked files: {result.stderr.strip()}")
     return tuple(sorted(path for path in result.stdout.split("\0") if path))
@@ -908,12 +918,7 @@ def governed_repository_root() -> Path:
     """Return the Git checkout containing this CLI, independent of caller cwd."""
 
     installation_path = Path(__file__).resolve()
-    result = subprocess.run(
-        ["git", "-C", str(installation_path.parent), "rev-parse", "--show-toplevel"],
-        capture_output=True,
-        text=True,
-        check=False,
-    )
+    result = git(installation_path.parent, "rev-parse", "--show-toplevel")
     if result.returncode != 0:
         raise ValueError(
             "cannot locate the repository containing the Ranex CLI: "
@@ -1175,7 +1180,18 @@ def cmd_run(args: argparse.Namespace) -> int:
 
         # Refuse before running, not after: a claim we cannot honestly bind to a
         # subject should cost nothing to discover.
-        dirty = uncommitted_paths(root, ignoring=(evidence_path, journal_path))
+        # Named, not resolved. `resolve_within_repository` above answers "what
+        # will be read and written", which is the right question for I/O and the
+        # wrong one for an exemption: it follows a symlink the observed party
+        # controls, and the exemption then lands on whatever that link chose.
+        # Same distinction, and the same helper, as the trust root.
+        dirty = uncommitted_paths(
+            root,
+            ignoring=(
+                named_within_repository(root, args.evidence),
+                named_within_repository(root, DEFAULT_JOURNAL),
+            ),
+        )
         if dirty:
             raise ValueError(
                 "refusing to record evidence against a dirty working tree; "

@@ -132,9 +132,18 @@ def test_a_whole_v1_record_is_not_admitted(worker: tuple[str, str]) -> None:
     fields, signed under the v1 domain. `governance/evidence.json` is gitignored
     and no signed evidence is committed, so there is nothing to migrate — and a
     silent acceptance path would be the downgrade this slice must not leave
-    open."""
+    open.
 
-    from ranex.governed_execution.domain.admission import admit
+    Which control catches it is asserted, not left open. An audit rolled
+    `EVIDENCE_DOMAIN` back to v1 and this test stayed green, because a genuine
+    five-field record never reaches the signature at all — the field-set check
+    refuses it first. That is correct behaviour and it is *not* evidence that the
+    domain bump works, so asserting only "rejected" let this stand in as proof
+    for something it does not prove. The domain prefix is load bearing, and
+    `test_a_v2_shaped_record_signed_under_v1_does_not_verify` is what proves it.
+    """
+
+    from ranex.governed_execution.domain.admission import RejectionReason, admit
 
     private, public = worker
     body = {field: content()[field] for field in V1_FIELDS}
@@ -146,7 +155,13 @@ def test_a_whole_v1_record_is_not_admitted(worker: tuple[str, str]) -> None:
         "a v1 record was admitted; every pre-slice record then satisfies a "
         "bound claim without ever naming a command"
     )
-    assert result.rejections, "a refused record must be reported, never dropped"
+    (rejection,) = result.rejections
+    assert rejection.reason is RejectionReason.MALFORMED_RECORD, (
+        "a five-field record must be refused for the fields it does not carry; "
+        f"reported instead as {rejection.reason}: {rejection.detail}"
+    )
+    assert "command_digest" in rejection.detail
+    assert "executable_path" in rejection.detail
 
 
 def test_a_v2_shaped_record_signed_under_v1_does_not_verify(

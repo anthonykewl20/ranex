@@ -121,3 +121,114 @@ Every one needs a test that fails before the change and passes after.
    `tests/security/test_slice002_defects.py:144`.
 10. Full suite green. No test asserts that a trivial command satisfies a
     substantive claim.
+
+## The closing audit — 2026-08-02
+
+Five independent audits, three with no context but the tree. Criteria 1–9 were
+re-proven by mutation: each control was removed from `src/` one at a time and the
+covering test observed going red. Criterion 10's second sentence was **false** as
+first written and is now enforced.
+
+The binding itself held. No audit made a record satisfy a claim it does not name,
+and every tamper route — digest, readable command, executable path, v1 downgrade,
+argv permutation — was refused. What the audits broke is the promise *around* the
+binding: that a PASS means the bound command ran against the tree being judged.
+
+**Closed by this session**
+
+- [x] **`git replace` substitutes the trust root.** A local `refs/replace/*` ref
+      made `git cat-file blob HEAD:gates.yaml` return bytes no commit carries and
+      `HEAD^{tree}` peel to an abandoned tree, while `git status` stayed empty,
+      `git log` showed one honest commit, and no clone carried any of it. The
+      gate catalog, the keyring and the subject digest each fell to it
+      separately. All ten git queries now pass `--no-replace-objects`, injected
+      once in the one function they go through rather than remembered at ten call
+      sites. ADR-002 sad path 14.
+- [x] **The trivial-command guard was a denylist `/bin/true` walked past.** It
+      compared raw argv against four tuples, so this repository's own `landing`
+      gate could be bound to `/bin/true` with the contract file entirely green.
+      argv[0] is now reduced to its basename, and the check says plainly that it
+      is a tripwire and not a proof.
+- [x] **The v1-downgrade test was green for the wrong reason.** A five-field
+      record is refused by the field-set check before any signature is read, so
+      the test passed with the domain rolled back to v1. It now asserts which
+      control caught it; the domain prefix is proven by its sibling.
+- [x] **The dirty-tree exemption could be aimed by a symlink — D4 reopened.**
+      Removing `--journal` stopped the observed party *naming* the exempted
+      path; it could still *point* it. The exemption was computed from a
+      resolved path, so a symlink at Ranex's own constant name re-aimed it at
+      any untracked file, and the file the bound command read went unmentioned
+      while `git status` reported it plainly. Worse in the default layout, where
+      `governance/` holds two gitignored paths, so the link needs no commit and
+      leaves no reviewable artifact. The exemption is now decided on the path as
+      **named**, through the helper the trust root already uses for exactly this
+      distinction. ADR-002 sad path 20.
+- [x] **A malformed committed catalog was reported as a failing gate.** The
+      catalog loader let `yaml.YAMLError` escape; it reached `main()` as a
+      traceback, and an uncaught exception exits 1 — `EXIT_FAIL`, the code
+      meaning the gate was not satisfied. Nothing had been evaluated. The
+      adapter now wraps it, as the keyring loader already did. ADR-002 sad
+      path 21.
+
+**Reproduced, not closed — all one root cause**
+
+The observation is made from inside the state the observed party controls. Each
+is frozen as a strict xfail with a green control beside it, so none can pass
+vacuously and each fails loudly the day it closes.
+
+- [ ] **The inherited environment retargets the bound binary.** `PYTHONPATH` and
+      a `sitecustomize.py` outside the repository make the bound command exit 0
+      without running. The argv, the digest, the absolute interpreter, the tree
+      and the signature are all honest. It survives an absolute `command[0]`, so
+      it is not sad path 18 in another costume — and it defeats this
+      repository's own binding, `uv run pytest -q`. ADR-001 sad path 30.
+- [ ] **A file git was told to exclude decides the outcome.** `.git/info/exclude`
+      needs no commit, so there is no artifact for review to see, and the
+      dirty-tree check reports clean while the bound command reads the file.
+      ADR-002 sad path 15.
+- [ ] **A `clean` filter hides a modified tracked file.** `filter.<n>.clean`
+      pointed at `git cat-file blob HEAD:%f` makes every tracked file hash to
+      what HEAD carries however it was edited, so the committed check can be
+      rewritten to pass and `git status` still reports nothing. No git flag
+      ignores repository-local config, so no better question exists to ask.
+      Hardening only the environment spelling would read as a fix while an
+      equivalent vector stayed open. ADR-002 sad path 16.
+
+- [ ] **A trust-root blob substituted by overwriting its loose object.** This is
+      what bounds the `git replace` fix above. `--no-replace-objects` removes one
+      lookup indirection; it does not make git authenticate the bytes it
+      streams, and `cat-file` never checks a blob against the name it was asked
+      for. Loose objects are created read-only, which is a speed bump against
+      their owner and not a control. `git fsck` sees it; nothing on the verdict
+      path runs fsck. ADR-002 sad path 17.
+- [ ] **`git` itself resolved on an editable PATH.** Every fact the verdict
+      rests on comes from spawning `git` as a bare name. A shim that forwards
+      everything except `--no-replace-objects` removes the fix above entirely.
+      Its precondition is control of the PATH *Ranex* is launched with, which a
+      child process cannot reach — the same signer/runner boundary as the
+      environment defect, not the same thing as PATH-shadowing the observed
+      command. ADR-002 sad path 18.
+- [ ] **An untracked empty directory.** Git has no representation for one, so no
+      `-u` level and not `--ignored` reports it. It is the case that proves the
+      dirty-tree check cannot be repaired by asking git a better question.
+      ADR-002 sad path 19.
+
+These belong to SLICE-004. They are not deferred for convenience: each fix is
+architectural — drop the inherited environment, resolve the tooling outside the
+observed party's reach, or observe in a pristine worktree of the subject commit
+— and attempting any of them here would be opening the next slice inside this one.
+
+**Found and recorded, no fraudulent PASS**
+
+- `sqlite3.DatabaseError` escapes `cmd_gate_evaluate`, so a `--journal` pointing
+  at a non-database gives a traceback. Fail-closed: the verdict is decided before
+  the journal is written.
+- `--journal ""` is falsy and silently disables journalling, so a PASS can be
+  issued with no entry — the trace-free probe the code refuses elsewhere.
+- `Journal.verify()` has no caller in `src/` and there is no `ranex journal`
+  subcommand, so the chain is tamper-evident only to the test suite.
+- `record_evidence` replaces by `(claim_id, producer_id)`, so one producer
+  re-running a flaky command erases its own red observation before the
+  contradiction check can ever see it. Same family as ADR-001 sad path 27.
+- `cmd_run`'s docstring says refusals "exit 2 having written nothing"; a bound
+  command that itself exits 2 also exits 2, having written a record.

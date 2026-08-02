@@ -217,6 +217,7 @@ tamper analysis over the signed field set.
 | 27 | contradicting record deleted from the evidence file | **not caught** — the file is not append-only; SLICE-004 |
 | 28 | producer id a visual lookalike of the approver's | **not caught** — no-self-approval compares strings; SLICE-005 |
 | 29 | worktree directory closed to force the refusal in 26 | availability only — every run FAILs, and an unrun gate already FAILs; the message names the directory so it reads as an attack and not as a bug |
+| 30 | inherited environment retargets the bound binary (`PYTHONPATH`, `LD_PRELOAD`, `NODE_OPTIONS`) | **not caught** — survives an absolute `command[0]`, and a denylist of variable names is not a control; SLICE-004 |
 
 ## Test strategy
 
@@ -235,7 +236,9 @@ Levels, unit-heavy as the pyramid prescribes:
 - `tests/e2e/test_claim_command_binding_cli.py` — the `-- true` attack and the
   worktree-containment refusal through the real CLI. Sad paths 11–13.
 - `tests/security/test_slice003_audit_defects.py` — the seven fraudulent PASSes
-  four audits reproduced. Sad paths 18–23; 18 is a strict xfail, not a pass.
+  five audits reproduced. Sad paths 18–23 and 30; 18 and 30 are strict xfails,
+  not passes. 30 has a green control test beside it and 18 asserts its
+  preconditions inline, so neither can xfail for the wrong reason.
 - `tests/security/test_slice003_bind_mount_identity.py` — identity where the
   link count and the device both lie. Sad paths 25–26. The bind-mount
   reproduction runs the CLI inside a real unprivileged mount namespace via

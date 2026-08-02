@@ -215,28 +215,51 @@ below is what is actually built.
 
 - `evaluate()` — a pure function of (gate, evidence, subject, approver). Same
   inputs, same verdict, always.
-- **Subject-bound evidence** — the same command run against a different tree
+- **Subject-bound evidence** — the same command run against a different *commit*
   proves nothing about this one. Stale evidence stops counting automatically.
+  The digest describes the committed tree, not the directory the command ran in;
+  the first known gap below is the distance between those two.
 - **Absence blocks** — a required claim with no satisfying evidence is FAIL,
   never a default and never a skip.
 - **No self-approval** — whoever produced the evidence cannot approve it.
 - **Append-only hash-chained journal** — SQLite triggers plus a chain, so an
   out-of-band edit is detectable rather than merely discouraged.
 - **`ranex run`** — executes a command, records its exit code and the tree digest
-  it ran against, and refuses a dirty working tree rather than record a claim it
-  cannot honestly bind. `run` then `gate evaluate` is a closed loop.
+  it ran against, and refuses a working tree git reports as differing from HEAD
+  rather than record a claim it cannot honestly bind. `run` then `gate evaluate`
+  is a closed loop. **"git reports" is doing real work in that sentence** — see
+  the first known gap below.
 - **Signed evidence** — Ed25519, verified against a committed keyring before a
   record is admitted. The verifier holds only public keys and cannot forge.
+- **Claim↔command binding** — the committed catalog declares the argv that
+  satisfies a claim, and the kernel compares its digest, so a record of `true`
+  no longer satisfies `tests-executed`. Six independent audits failed to break
+  this. Read the next section for what it does *not* buy.
 - `ranex gate evaluate`, `ranex keygen`, and repository path confinement.
 
 **Known gaps — stated plainly**
 
+- **The runner sits inside the blast radius, so a PASS is not yet worth what it
+  looks like.** Ranex inspects a repository, an environment and a toolchain that
+  the party being judged controls, and six audits reproduced six ways to get a
+  false PASS out of that: an environment variable makes the bound command exit 0
+  without running (this defeats *our own* `uv run pytest -q` binding); a file git
+  was told to ignore — or an untracked empty directory, which no git query can
+  see at all — decides the outcome unseen; a `clean` filter hides an edit to a
+  tracked file; overwriting one file inside `.git` substitutes the committed
+  policy; and a `git` earlier on `$PATH` removes a fix by deleting one argument.
+  Each is reproduced and frozen as a deliberately-failing test that will shout
+  the day it is fixed. **Do not point Ranex at a real agent until SLICE-004
+  closes these.** Nothing is exposed today — the package does not install and
+  worker dispatch is not built — and that is the only reason this is tolerable.
 - **Approver identity is unauthenticated.** `--approver` is a plain string, so a
   producer can name anyone as their approver. Evidence signing proves who *ran*
   a command; it proves nothing about who approved it. No-self-approval is a
   convention until approvals are signed, and it is now the weakest link.
 - **The journal append races** under concurrent writers — two appenders can read
-  the same previous link and fork the chain. *(SLICE-003)*
+  the same previous link and fork the chain. Nothing reads the chain either:
+  `Journal.verify()` has no caller and there is no `ranex journal` command, so it
+  is tamper-evident only to the test suite. *(unassigned)*
 - **No worker dispatch, no flow graph, no scenario compilation**, no budget, no
   escalation. Those are designed, not built.
 

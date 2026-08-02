@@ -4,47 +4,47 @@
 
 **Updated:** 2026-08-02
 **Phase:** kernel — evidence loop
-**Active slice:** `docs/slices/SLICE-003-claim-command-binding.md` — open, NOT done
+**Active slice:** `docs/slices/SLICE-003-claim-command-binding.md` — criteria met,
+close pending the decision below
 
 ## Where we stopped
 
-238 green, 1 strict xfail, and **green has meant nothing twice here** — every
-claim below was reproduced closed in a lab, not read off the suite. Red test
-first, by a different agent than the implementer.
+250 green, 6 strict xfail, after six closing audits. Criteria 1–9 re-proven by
+mutation — each control deleted from `src/` in turn, the covering test observed
+going red.
 
-- **SLICE-002 reopened and re-closed** — `docs/adr/ADR-002-committed-trust-root.md`.
-  The check returned early for a path the ref did not carry, so three attacks
-  reached PASS: `--gate-catalog attacker-gates.yaml`, a `--producers` keyring
-  under a committed `.gitignore` (invisible to `git status`), and a committed
-  symlink at a reviewed name. Now such a path is refused, and git is asked about
-  the name the operator typed. `run` applies it too.
-- **Trust-root TOCTOU closed.** `committed_trust_root` returns the committed
-  **bytes** and every loader parses those, so the second read has nowhere to
-  happen. `strace`: `evaluate` opened `gates.yaml` 3× and `producers.yaml` 2×
-  before, 1× each now.
-- **D9, bind mount** — `same_file_inside` short-circuited on `st_nlink <= 1`, and
-  a bind mount gives one inode a second name without touching the link count. The
-  device pre-filter was unsound likewise. Both dropped; the scan is unconditional
-  and reads inodes from the dirent — 5 ms, was 23 ms.
-- **D10, unreadable directory** — found by this session's audit, not inherited.
-  One `chmod 000` inside the worktree hid the twin, and git records no directory
-  mode so the tree still read clean. A scan that cannot look now refuses.
+- **The binding held.** No audit made a record satisfy a claim it does not name.
+- **Five fixes, each mutation-verified.** `git replace` substituting the catalog,
+  keyring or subject tree (all git queries now pass `--no-replace-objects`
+  through one function); the dirty-tree exemption aimed by a symlink at Ranex's
+  own bookkeeping name — D4 reopened, and needing no commit in the default
+  layout; a malformed committed catalog exiting 1, the code meaning "gate not
+  satisfied"; the trivial-command guard `/bin/true` walked past; a v1-downgrade
+  test green for the wrong reason.
 
 ## Next
 
-1. **Re-audit the fixed code, then close SLICE-003.** No clean adversarial pass
-   has run since D10 landed. It closes when an audit fails to get a PASS — not
-   when the suite is green.
-2. **SLICE-004 — signer/runner separation.** Owns D1 PATH-shadowing strict xfail
-   (`tests/security/test_slice003_audit_defects.py`); Landlock ABI 8 unprivileged
-   (~75 rules, ~1.7 ms) but inode-bound — assert `st_nlink == 1`.
-3. **Queued — Architecture Contract.** After trust-boundary slices: research its ADR, then open one slice; turn global guidance into repo-specific artifact gates.
+1. **Decide whether SLICE-003 closes.** Its own promise is met. Six reproduced
+   fraudulent PASSes stand, all one root cause, all SLICE-004's — the
+   disposition D1 got when SLICE-003 was opened on top of it.
+2. **ADR-003, then SLICE-004 — isolate the runner *and its toolchain*.** Research
+   first, and name all six sad paths: separating the signer does not by itself
+   move `git` or the object store out of the worker's reach. Landlock ABI 8
+   unprivileged (~75 rules, ~1.7 ms) but inode-bound — assert `st_nlink == 1`.
+3. **Queued — Architecture Contract.** After the trust-boundary slices.
 
 ## Known limits, stated not fixed
 
-- **`evidence.json` is not append-only**, so deleting a contradicting record
-  defeats the contradiction check entirely. ADR-001 sad path 27.
-- A committed `conftest.py` neutering the suite yields a genuine run, exit 0, a PASS and no trace — if the tree defines the check, the thrower owns the eyes.
-- Approver identity is unauthenticated and the keyring admits visual lookalikes
-  (`alice` beside `alice`+ZWSP), so no-self-approval is string equality over a
-  pair the attacker picks. SLICE-005.
+- **Ranex trusts a repository, an environment and a toolchain the observed party
+  owns.** Six PASSes, one cause: `PYTHONPATH` retargets the bound binary;
+  `.git/info/exclude`, and an untracked *empty directory* that no git query can
+  see at all, hide a file the command reads; `filter.<n>.clean` hides an edit to
+  a **tracked** file; overwriting a loose object substitutes a trust-root blob,
+  because `cat-file` never checks a blob against the name asked for; and a `git`
+  shim on PATH deletes one argument to undo the fix above. ADR-001 sad path 30,
+  ADR-002 sad paths 15–19. Strict xfails, each with a green control.
+- **`evidence.json` is not append-only.** Deleting a contradicting record, or one
+  producer re-running a flaky command, erases the disagreement. ADR-001 s.p. 27.
+- Approver identity is unauthenticated; the keyring admits lookalikes. SLICE-005.
+- **No committed `governance/producers.yaml`**, so this repo cannot evaluate its
+  own gate. Bootstrap, not a defect — but the loop is unclosed here.
