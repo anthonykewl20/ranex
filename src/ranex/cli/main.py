@@ -1879,6 +1879,17 @@ def cmd_run(args: argparse.Namespace) -> int:
                         "UV_NO_SYNC": "1",
                         "UV_OFFLINE": "1",
                         "UV_NO_CONFIG": "1",
+                        # The committed lock is an input to this run and was
+                        # derivation-verified before it started. `uv run`
+                        # will re-lock and rewrite it given the chance —
+                        # measured: a plain `uv run pytest -q` here dropped
+                        # the `[options]` epoch block from uv.lock, which
+                        # then failed its own byte comparison on the next
+                        # fetch. Rewriting a tracked file would also trip
+                        # the write check below and refuse the record, so
+                        # this turns a confusing late refusal into no
+                        # rewrite at all.
+                        "UV_FROZEN": "1",
                         "UV_PYTHON_DOWNLOADS": "never",
                         "UV_CACHE_DIR": str(materialisation.temporary / "uv-cache"),
                     }

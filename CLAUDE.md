@@ -102,10 +102,15 @@ was never in doubt.
 ## Commands
 
 ```
-uv run pytest -q                                        # full suite, about a second
-uv run mutmut run                                       # required before a slice closes
+uv run --frozen pytest -q                               # full suite, about a second
+uv run --frozen mutmut run                              # required before a slice closes
 PYTHONPATH=src uv run python -m ranex.cli.main --help
 ```
+
+**Always `--frozen`.** Plain `uv run` re-locks and rewrites `uv.lock` — measured:
+it silently dropped the `[options]` epoch block, after which `ranex deps fetch`
+refused the lock against its own clean derivation. The committed lock is a trust
+root here, not a cache.
 
 `pyproject.toml` sets `[tool.uv] package = false`, so the `ranex` console script
 is **not** installed. Always invoke through the module path above. `uv run ranex`
