@@ -62,7 +62,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     checkout = next(step for step in action_steps if step["uses"].startswith("actions/checkout@"))
     assert checkout.get("with") == {"fetch-depth": 0}
 
-    assert steps[-2] == {"run": "uv run pytest -q -rs"}
+    assert steps[-2] == {"run": "uv run --frozen pytest -q -rs"}
     assert steps[-1] == {
         "name": "Require coverage for changed lines",
         "env": {
@@ -75,9 +75,9 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
             )
         },
         "run": (
-            "uv run python -m coverage run --source=src/ranex -m pytest -q\n"
-            "uv run python -m coverage xml -o coverage.xml\n"
-            "uv run diff-cover coverage.xml "
+            "uv run --frozen python -m coverage run --source=src/ranex -m pytest -q\n"
+            "uv run --frozen python -m coverage xml -o coverage.xml\n"
+            "uv run --frozen diff-cover coverage.xml "
             '--compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100\n'
         ),
     }

@@ -347,11 +347,17 @@ handbooks.
 ## Running it
 
 ```sh
-uv run pytest -q
+uv run --frozen pytest -q
 
 PYTHONPATH=src uv run python -m ranex.cli.main gate evaluate HEAD \
     --approver reviewer_alice
 ```
+
+Always `--frozen`. Plain `uv run` re-locks and rewrites `uv.lock`, which is a
+trust root here: it silently dropped the resolution epoch once, after which
+`ranex deps fetch` refused the lock against its own clean derivation. The
+gated command needs no flag — its argv stays exactly as the catalog binds it,
+and `run` sets `UV_FROZEN` in the environment instead.
 
 `pyproject.toml` sets `[tool.uv] package = false`, so the `ranex` console script
 is **not** installed. Invoke through the module path above.
