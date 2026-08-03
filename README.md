@@ -270,9 +270,9 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none. SLICE-004 closed again on 2026-08-03 after being reopened;
-`docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md` is written, and
-SLICE-005 opens against it.
+**Active slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md` — provision
+and approve hashed dependencies so a committed suite can run offline, while
+stating plainly that imported dependency code remains inside the run's trust base.
 
 Ranex now observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment
@@ -281,9 +281,9 @@ cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** Landlock confinement for the bound command. The materialisation is a
-hermeticity boundary, not a security boundary, because Ranex and the worker
-still share a uid — absolute paths still reach the governed repository.
+**Next:** make Ranex gate this repository's unchanged `uv run pytest -q` command.
+Landlock remains decided in ADR-006 but deferred; the materialisation is still a
+hermeticity boundary rather than a same-uid security boundary.
 
 ## Completed slices
 
