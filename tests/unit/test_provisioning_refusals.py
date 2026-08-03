@@ -570,3 +570,110 @@ def test_store_publish_tolerates_a_vanished_temporary(
     with pytest.raises(StoreError, match="cannot publish"):
         store.publish(digest(payload), payload)
     assert not list((tmp_path / "store" / "tmp").iterdir())
+
+
+def test_assemble_root_refuses_a_failing_environment_builder(tmp_path: Path) -> None:
+    # Input: the pinned resolver fails while creating the environment. The
+    # refusal must carry the resolver's own stderr, or an operator is left
+    # guessing which of two resolver calls broke.
+    from ranex.provisioning.root import assemble_root
+
+    resolver = script(tmp_path, 'echo "venv refused" >&2\nexit 1')
+    descriptor = os.open(resolver, os.O_RDONLY)
+    try:
+        with pytest.raises(RootError, match="cannot create the dependency environment"):
+            assemble_root((), WheelStore(tmp_path / "store"), pins_for(resolver),
+                          descriptor, tmp_path / "root")
+    finally:
+        os.close(descriptor)
+
+
+def test_assemble_root_refuses_a_failing_installer(tmp_path: Path) -> None:
+    # Input: the environment is created but installing the verified wheels
+    # fails. Reached only when there is at least one wheel, so the empty-set
+    # shortcut cannot hide it.
+    from ranex.provisioning.root import assemble_root
+
+    store = WheelStore(tmp_path / "store")
+    payload = b"wheel"
+    store.publish(digest(payload), payload)
+    item = WheelArtifact("pkg", "1", "pkg-1-py3-none-any.whl",
+                         "https://files.example/pkg-1-py3-none-any.whl", digest(payload))
+    resolver = script(tmp_path, 'case "$1" in venv) exit 0 ;; esac\necho "install refused" >&2\nexit 1')
+    descriptor = os.open(resolver, os.O_RDONLY)
+    try:
+        with pytest.raises(RootError, match="cannot install the verified wheels"):
+            assemble_root((item,), store, pins_for(resolver), descriptor, tmp_path / "root")
+    finally:
+        os.close(descriptor)
+
+
+def test_assemble_root_copies_when_hard_linking_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Input: os.link fails, as it does across filesystems. The verified bytes
+    # must still reach the staging name — by copy, never by skipping the wheel.
+    from ranex.provisioning import root as root_module
+
+    store = WheelStore(tmp_path / "store")
+    payload = b"wheel"
+    store.publish(digest(payload), payload)
+    item = WheelArtifact("pkg", "1", "pkg-1-py3-none-any.whl",
+                         "https://files.example/pkg-1-py3-none-any.whl", digest(payload))
+    monkeypatch.setattr(
+        root_module.os, "link",
+        lambda *_a, **_k: (_ for _ in ()).throw(OSError("cross-device link")),
+    )
+    # Stands in for the resolver: `venv` creates the directory it is asked
+    # for — the seal walks it afterwards — and `pip install` is a no-op,
+    # because what this test asserts is the staged bytes, not the install.
+    resolver = script(
+        tmp_path,
+        'if [ "$1" = "venv" ]; then\n'
+        '  for last in "$@"; do :; done\n'
+        '  mkdir -p "$last/bin"\n'
+        "fi\n"
+        "exit 0",
+    )
+    descriptor = os.open(resolver, os.O_RDONLY)
+    try:
+        destination = tmp_path / "root"
+        root_module.assemble_root((item,), store, pins_for(resolver), descriptor, destination)
+        staged = destination / "wheels" / item.filename
+        assert staged.read_bytes() == payload
+    finally:
+        os.close(descriptor)
+
+
+def test_assemble_root_refuses_an_unspawnable_resolver(tmp_path: Path) -> None:
+    # Input: a descriptor for a file that is not executable, so the resolver
+    # spawn fails rather than the resolver.
+    from ranex.provisioning.root import assemble_root
+
+    plain = tmp_path / "not-a-program"
+    plain.write_text("data\n")
+    plain.chmod(0o600)
+    descriptor = os.open(plain, os.O_RDONLY)
+    try:
+        with pytest.raises(RootError, match="cannot create the dependency environment"):
+            assemble_root((), WheelStore(tmp_path / "store"), pins_for(plain),
+                          descriptor, tmp_path / "root")
+    finally:
+        os.close(descriptor)
+
+
+def test_deny_network_requests_a_fresh_user_and_network_namespace(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    # The flags are the whole control: CLONE_NEWNET is what leaves the child
+    # with no interfaces, and CLONE_NEWUSER is what lets an unprivileged
+    # process ask for it at all. Asserted against a fake because calling the
+    # real one would unshare THIS process — the child actually being unable
+    # to reach the network is proven separately, end to end, by
+    # tests/security/test_slice006_dependency_provisioning.py.
+    from ranex.cli import main as cli
+
+    requested: list[int] = []
+    monkeypatch.setattr(cli.os, "unshare", requested.append)
+    cli._deny_network()
+    assert requested == [os.CLONE_NEWUSER | os.CLONE_NEWNET]

@@ -643,3 +643,33 @@ class TestRunRefusals:
         assert (repo.store / "sha256" / sha256(FAKEPKG_WHEEL)).read_bytes() == (
             FAKEPKG_WHEEL
         )
+
+
+class TestSpawnFailure:
+    def test_a_child_that_cannot_be_started_is_a_refusal_not_a_verdict(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture,
+        allow_fixture_binaries: None,
+    ) -> None:
+        # A provisioned run asks the kernel for a fresh user and network
+        # namespace, and a host that refuses them fails the spawn itself.
+        # That must surface as a refusal with no evidence — never as a
+        # command that "ran" and produced an exit code nobody observed.
+        repo = make_repo(tmp_path, dependency=True, command=RUN_COMMAND)
+        load_store(repo)
+        record_derivation(repo)
+        record_approval(repo)
+
+        real = subprocess.run
+
+        def refuse(*args, **kwargs):
+            if kwargs.get("preexec_fn") is not None:
+                raise OSError("unprivileged user namespaces are disabled")
+            return real(*args, **kwargs)
+
+        monkeypatch.setattr("ranex.cli.main.subprocess.run", refuse)
+        assert run(repo, RUN_COMMAND, monkeypatch) == 2
+        assert "cannot run" in capsys.readouterr().err
+        assert repo.evidence() is None

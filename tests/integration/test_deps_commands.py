@@ -5,9 +5,9 @@ from __future__ import annotations
 import hashlib
 import io
 import json
+import os
 import shutil
 import subprocess
-import sys
 import threading
 import zipfile
 from collections.abc import Iterator
@@ -20,9 +20,35 @@ from ranex.cli.main import main
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 
 
-pytestmark = pytest.mark.skipif(shutil.which("uv") is None, reason="uv is not installed")
 
 EPOCH = "2026-08-04T00:00:00Z"
+
+# NOT sys.executable: under uv this is a managed interpreter beneath
+# ~/.local/share, which the observed uid can rewrite — and provisioning
+# refuses a writable interpreter for exactly that reason. The pin has to be
+# a real system interpreter, so a machine without one skips rather than
+# neutralising the rule the test depends on.
+PINNED_PYTHON = next(
+    (
+        candidate
+        for candidate in (
+            Path("/usr/bin/python3.12"),
+            Path("/usr/bin/python3.11"),
+            Path("/usr/bin/python3"),
+        )
+        if candidate.is_file() and not os.access(candidate, os.W_OK)
+    ),
+    None,
+)
+
+
+pytestmark = [
+    pytest.mark.skipif(shutil.which("uv") is None, reason="uv is not installed"),
+    pytest.mark.skipif(
+        PINNED_PYTHON is None,
+        reason="no system interpreter this uid cannot rewrite; the pin would be meaningless",
+    ),
+]
 
 
 def sha256(data: bytes) -> str:
@@ -130,13 +156,13 @@ def project(dependency: str | None) -> str:
 
 
 def lock_for(tmp_path: Path, resolver: Path, index: str, manifest: str) -> bytes:
-    scratch = tmp_path / "lock-scratch"
+    scratch = tmp_path / f"lock-scratch-{sha256(manifest.encode())[:12]}"
     scratch.mkdir()
     (scratch / "pyproject.toml").write_text(manifest)
-    cache = tmp_path / "lock-cache"
+    cache = tmp_path / f"lock-cache-{sha256(manifest.encode())[:12]}"
     environment = {"UV_NO_CONFIG": "1", "UV_CACHE_DIR": str(cache), "HOME": str(tmp_path / "lock-home"), "UV_PYTHON_DOWNLOADS": "never"}
     subprocess.run(
-        [str(resolver), "lock", "--exclude-newer", EPOCH, "--python", sys.executable,
+        [str(resolver), "lock", "--exclude-newer", EPOCH, "--python", str(PINNED_PYTHON),
          "--index-url", index],
         cwd=scratch, env=environment, check=True, capture_output=True, text=True,
     )
@@ -165,7 +191,7 @@ def repo(tmp_path: Path, resolver: Path, package_index: tuple[str, dict[str, byt
         "resolver:\n"
         f"  path: {resolver}\n  sha256: {sha256(resolver.read_bytes())}\n"
         "python:\n"
-        f"  path: {Path(sys.executable).resolve()}\n"
+        f"  path: {PINNED_PYTHON}\n"
         f"indexes:\n  - {index}\nexclude_newer: \"{EPOCH}\"\n"
     )
     (governance / "producers.yaml").write_text("producers: {}\n")
@@ -266,9 +292,71 @@ def test_fetch_refuses_a_manifest_without_a_project_name(repo: tuple[Path, Path,
     (root / "pyproject.toml").write_text("[tool.uv]\npackage = false\n")
     commit(root, "remove project name")
     assert fetch(root, store, monkeypatch) == 2
-    assert "manifest declares no project name" in capsys.readouterr().err
+    assert "declares no project name" in capsys.readouterr().err
 
 
 def test_approve_refuses_a_blank_approver(repo: tuple[Path, Path, dict[str, bytes]], monkeypatch: pytest.MonkeyPatch) -> None:
     root, _, _ = repo
     assert approve(root, monkeypatch, "   ") == 2
+
+
+def test_fetch_refuses_a_name_that_is_not_a_string(
+    repo: tuple[Path, Path, dict[str, bytes]],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    # Input: [project].name present but not a string. TOML allows it, and the
+    # lock's root package is looked up by that name, so a non-string manifest
+    # cannot say which package is the root.
+    root, store, _ = repo
+    (root / "pyproject.toml").write_text(
+        '[project]\nname = 5\nversion = "0.0.0"\nrequires-python = ">=3.11"\n'
+        "dependencies = []\n\n[tool.uv]\npackage = false\n"
+    )
+    commit(root, "a manifest whose name is a number")
+    assert fetch(root, store, monkeypatch) == 2
+    assert "declares no project name" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize("command", ["fetch", "approve"])
+def test_second_repository_targets_are_refused(
+    repo: tuple[Path, Path, dict[str, bytes]],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    command: str,
+) -> None:
+    # Input: --repository naming a tree that is not the governed one. Both
+    # deps commands refuse it exactly as run and gate evaluate do — a second
+    # repository is a second subject, and neither command judges two.
+    root, store, _ = repo
+    # A path INSIDE the repository, so containment accepts it and the
+    # second-repository check is the thing that refuses. An absolute path
+    # outside is rejected a step earlier and would prove a different rule.
+    inside = root / "subproject"
+    inside.mkdir()
+    (inside / "keep.txt").write_text("x\n")
+    commit(root, "add a subdirectory")
+    argv = (
+        ["deps", "fetch", "--repository", "subproject", "--store", str(store)]
+        if command == "fetch"
+        else ["deps", "approve", "--repository", "subproject", "--approver", "r"]
+    )
+    assert invoke(root, argv, monkeypatch) == 2
+    assert "second-repository targets are refused" in capsys.readouterr().err
+
+
+def test_approve_refuses_a_subject_without_pins(
+    repo: tuple[Path, Path, dict[str, bytes]],
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    # Input: the committed pins are removed, so nothing declares dependencies.
+    # Absence blocks — there is no set to approve, and silence is not an empty
+    # approval.
+    root, _store, _ = repo
+    subprocess.run(
+        ["git", "-C", str(root), "rm", "-q", "governance/deps.yaml"], check=True
+    )
+    commit(root, "drop the pins")
+    assert approve(root, monkeypatch) == 2
+    assert "nothing to approve" in capsys.readouterr().err
