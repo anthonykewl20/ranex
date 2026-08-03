@@ -465,3 +465,108 @@ def test_derive_lock_refuses_success_without_lock(tmp_path: Path) -> None:
             derive_lock(b"[project]\nname='x'\nversion='1'\n", pins_for(resolver), descriptor, tmp_path / "scratch")
     finally:
         os.close(descriptor)
+
+
+# --------------------------------------------------------------------------
+# The branches the first pass left uncovered. Each is a real path, not a
+# defensive one: a branch no input can reach is decoration, and the one such
+# guard found here was deleted from lockfile.py rather than tested around.
+# --------------------------------------------------------------------------
+
+
+def test_resolve_edge_selects_the_single_marker_match() -> None:
+    # Input: a name locked twice, an edge without a version, and exactly one
+    # entry whose resolution-markers hold for this target. The happy half of
+    # the ambiguity rule — the refusals for zero and two matches are above.
+    old = Package(
+        "dual", "1.0", {"registry": "https://example.test"}, (), {}, (), False,
+        ("python_full_version >= '3.14'",),
+    )
+    new = Package(
+        "dual", "2.0", {"registry": "https://example.test"}, (), {}, (), False,
+        ("python_full_version < '3.14'",),
+    )
+    chosen = _resolve_edge(Lock((old, new)), Dependency("dual", None), TARGET)
+    assert chosen.version == "2.0"
+
+
+def test_select_wheels_visits_a_shared_dependency_once() -> None:
+    # Input: a diamond — two packages depending on the same third. The shared
+    # package must be selected once, not twice.
+    body = (
+        package("root", extra='dependencies = [{ name = "left" }, { name = "right" }]')
+        + package("left", extra=f'dependencies = [{{ name = "shared" }}]\nwheels = [{wheel("left")}]')
+        + package("right", extra=f'dependencies = [{{ name = "shared" }}]\nwheels = [{wheel("right")}]')
+        + package("shared", extra=f"wheels = [{wheel('shared')}]")
+    )
+    selected = select_wheels(parse_lock(lock_text(packages=body)), "root", TARGET)
+    names = [item.package for item in selected]
+    assert names.count("shared") == 1
+    assert sorted(names) == ["left", "right", "shared"]
+
+
+def test_pins_refuse_an_empty_path_string() -> None:
+    # Input: resolver.path present but empty — absence wearing a value.
+    text = (
+        "resolver:\n  path: ''\n  sha256: " + "a" * 64 + "\n"
+        "python:\n  path: /usr/bin/python3\n"
+        "indexes:\n  - https://example.test/simple\n"
+        'exclude_newer: "2026-01-01"\n'
+    )
+    with pytest.raises(PinsError, match="absolute path"):
+        load_pins_text(text)
+
+
+def test_derive_lock_passes_every_extra_index(tmp_path: Path) -> None:
+    # Input: pins naming two indexes. The second must reach the resolver as
+    # --extra-index-url, or a package served only there silently disappears.
+    # The log path is relative to the resolver's cwd, which derive_lock sets
+    # to <scratch>/derive. It cannot come from the environment: derive_lock
+    # hands the resolver a built-from-empty env on purpose, and a test that
+    # smuggled a variable through it would be testing a different function.
+    resolver = script(tmp_path, 'printf "%s\\n" "$@" > ../argv.log\ntouch uv.lock\nexit 0')
+    scratch = tmp_path / "scratch"
+    pins = ResolutionPins(
+        resolver, "a" * 64, Path("/usr/bin/python3"),
+        ("https://one.test/simple", "https://two.test/simple"), "2026-01-01",
+    )
+    descriptor = os.open(resolver, os.O_RDONLY)
+    try:
+        derive_lock(b"[project]\n", pins, descriptor, scratch)
+    finally:
+        os.close(descriptor)
+    recorded = (scratch / "argv.log").read_text().split("\n")
+    assert "--index-url" in recorded and "https://one.test/simple" in recorded
+    assert "--extra-index-url" in recorded and "https://two.test/simple" in recorded
+
+
+def test_derive_lock_refuses_an_unspawnable_resolver(tmp_path: Path) -> None:
+    # Input: a descriptor for a file that is not executable, so the spawn
+    # itself fails rather than the resolution.
+    plain = tmp_path / "not-a-program"
+    plain.write_text("data\n")
+    plain.chmod(0o600)
+    descriptor = os.open(plain, os.O_RDONLY)
+    try:
+        with pytest.raises(DerivationError, match="cannot run the pinned resolver"):
+            derive_lock(b"[project]\n", pins_for(plain), descriptor, tmp_path / "scratch")
+    finally:
+        os.close(descriptor)
+
+
+def test_store_publish_tolerates_a_vanished_temporary(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Input: the rename fails AND the temporary is already gone. Cleanup must
+    # not replace the StoreError with a FileNotFoundError from its own tidy-up.
+    store = WheelStore(tmp_path / "store")
+    payload = b"wheel-bytes"
+
+    def replace(source, _destination):
+        os.unlink(source)
+        raise OSError("rename refused")
+
+    monkeypatch.setattr("ranex.provisioning.store.os.replace", replace)
+    with pytest.raises(StoreError, match="cannot publish"):
+        store.publish(digest(payload), payload)
+    assert not list((tmp_path / "store" / "tmp").iterdir())

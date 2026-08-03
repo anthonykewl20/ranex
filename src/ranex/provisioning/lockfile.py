@@ -139,13 +139,13 @@ def parse_lock(data: bytes) -> Lock:
         dev_value = record.get("dev-dependencies", {})
         if not isinstance(dev_value, dict):
             raise LockError(f"package {name} has malformed dev-dependencies")
+        # No non-string-key guard: TOML table keys are always strings, so it
+        # could never fire, and a branch no input can reach is decoration
+        # rather than a control.
         dev_dependencies = {
             group: _dependencies(dependencies, name)
             for group, dependencies in dev_value.items()
-            if isinstance(group, str)
         }
-        if len(dev_dependencies) != len(dev_value):
-            raise LockError(f"package {name} has malformed dev-dependencies")
         wheels_value = record.get("wheels", [])
         if not isinstance(wheels_value, list) or any(not isinstance(wheel, dict) for wheel in wheels_value):
             raise LockError(f"package {name} has malformed wheels")
