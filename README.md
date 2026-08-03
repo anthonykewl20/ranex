@@ -270,8 +270,17 @@ none of the surface around it does.
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
 **Active slice:** `SLICE-006-gating-a-real-test-suite` — unparked 2026-08-04 by
-owner decision. Ranex learns to provision a committed suite's dependencies and
-gate its own repository through the unchanged `uv run pytest -q` (ADR-007).
+owner decision. Ranex provisions a committed suite's dependencies and runs them
+sealed and offline (ADR-007). `deps fetch` derives the lock clean under pinned
+inputs and byte-compares it, `deps approve` records the named package delta, and
+`run` proves derivation, approval and every wheel out of a SHA-256 store before
+spawning. 362 of this suite's own tests now pass inside that environment.
+
+**The one open miss:** five tests need a git checkout, and the materialisation
+is committed blobs with no `.git`, so Ranex does not yet gate its own repository
+end to end. It is recorded as a strict `xfail`, not relaxed — the tests that
+fail closed there do so deliberately, and weakening them to score a pass is the
+exact failure this project exists to catch.
 
 Ranex now observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment

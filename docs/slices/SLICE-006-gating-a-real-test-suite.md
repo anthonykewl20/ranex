@@ -108,6 +108,64 @@ is `/home/soultransit/.local/bin/uv`, owned and writable by the observed uid.
 The test replaces its bytes or an equivalent fixture and watches provisioning
 refuse; an exact path without an ownership/digest check is still agent-selected.
 
+## What the real-world journey found
+
+Four defects, each caught by `tests/e2e/test_gating_real_suite.py` driving the
+CLI as an operator does. Recorded because the ADR's sad-path table did not
+predict any of them, and the next fork-facing slice will meet the same shapes.
+
+1. **`uv run` rewrites the committed lock.** A plain `uv run pytest -q` after
+   a clean re-lock silently dropped the `[options]` epoch block, after which
+   the lock failed its own byte comparison. Fixed twice: the gated run carries
+   `UV_FROZEN=1`, and the repository's own commands moved to `uv run --frozen`.
+2. **A lock legitimately holds one package at several versions.** Split
+   resolution puts `libcst` at 1.8.5 and 1.9.0 in one file; the parser treated
+   any repeated name as corruption and refused most real locks. Packages are
+   keyed by `(name, version)`, and edges resolve by explicit version or by the
+   entries' own `resolution-markers`, where anything but exactly one match is
+   a refusal.
+3. **`uv lock --check` re-resolves when the epoch is omitted.** The stage
+   proving uv accepts a fabricated hash was passing for the wrong reason until
+   it passed `--exclude-newer` too.
+4. **Criterion 14 is blocked by this suite's own git assumptions** — below.
+
+## The blocker, stated plainly
+
+**Criterion 14 is not met, and the miss is recorded as a strict `xfail`, not
+routed around.** The provisioned run works: 362 of this suite's tests pass
+inside the sealed, offline environment against the materialised clone. Five
+fail, all for one reason — they need a git checkout, and ADR-005's
+materialisation is committed blobs with no `.git`:
+
+- `test_docs_discipline::test_every_cited_implementation_is_vendored_and_matches_its_digest`
+- `test_gate_evaluate_cli::test_foreign_repository_evaluation_is_refused_by_real_cli`
+- three in `test_keygen_key_confinement` that reach `governed_repository_root()`
+
+Relaxing them is refused. `_tracked_by_git` already documents failing closed
+outside a repository as deliberate, because skipping would be an
+author-manufactured escape hatch — weakening it to make this slice pass is
+exactly the failure Ranex exists to catch.
+
+**This needs an owner decision:** should the materialisation be a git
+repository whose HEAD carries the subject tree? It would make
+`governed_repository_root()` answer honestly and costs the same tree digest,
+since the tree hash is unchanged by a fresh commit — but it amends ADR-005,
+hands the observed command a repository, and therefore needs its own ADR.
+Deliberately not started here.
+
+## Operator setup
+
+`governance/deps.yaml` pins the resolver at `/usr/local/bin/uv`, which is
+root-owned on purpose. Installing it is the one step this slice cannot take
+for itself:
+
+```
+sudo install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
+```
+
+Until it exists, every real-world stage skips loudly by name rather than
+passing vacuously.
+
 ## What this slice does not close
 
 - **Import-time execution is not caught.** A correctly hashed, explicitly
