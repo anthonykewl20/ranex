@@ -45,6 +45,11 @@ class WheelArtifact:
 class Dependency:
     name: str
     marker: str | None
+    # Present only when the lock holds more than one version of `name`, which
+    # is how uv disambiguates an edge under split resolution. Absent means
+    # "the one version there is", and a name with several versions and no
+    # version on the edge is resolved by resolution markers instead.
+    version: str | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -56,6 +61,14 @@ class Package:
     dev_dependencies: Mapping[str, tuple[Dependency, ...]]
     wheels: tuple[Mapping[str, Any], ...]
     has_sdist: bool
+    # The marker expressions this entry is the answer for. uv writes these
+    # only on a package it locked at several versions; one of them must hold
+    # for the target, or this entry is not the one that target installs.
+    resolution_markers: tuple[str, ...] = ()
+
+    @property
+    def key(self) -> tuple[str, str]:
+        return (self.name, self.version)
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,8 +76,11 @@ class Lock:
     packages: tuple[Package, ...]
 
     @property
-    def by_name(self) -> dict[str, Package]:
-        return {package.name: package for package in self.packages}
+    def by_key(self) -> dict[tuple[str, str], Package]:
+        return {package.key: package for package in self.packages}
+
+    def versions_of(self, name: str) -> tuple[Package, ...]:
+        return tuple(package for package in self.packages if package.name == name)
 
 
 def _dependencies(value: Any, package: str) -> tuple[Dependency, ...]:
@@ -79,7 +95,10 @@ def _dependencies(value: Any, package: str) -> tuple[Dependency, ...]:
         marker = item.get("marker")
         if marker is not None and (not isinstance(marker, str) or not marker):
             raise LockError(f"package {package} has malformed dependency marker")
-        result.append(Dependency(item["name"], marker))
+        version = item.get("version")
+        if version is not None and (not isinstance(version, str) or not version):
+            raise LockError(f"package {package} has malformed dependency version")
+        result.append(Dependency(item["name"], marker, version))
     return tuple(result)
 
 
@@ -93,16 +112,28 @@ def parse_lock(data: bytes) -> Lock:
     if not isinstance(records, list):
         raise LockError("lockfile has no package records")
     packages: list[Package] = []
-    names: set[str] = set()
+    names: set[tuple[str, str]] = set()
     for record in records:
         if not isinstance(record, dict):
             raise LockError("lockfile has malformed package record")
         name, version, source = record.get("name"), record.get("version"), record.get("source")
         if not isinstance(name, str) or not name or not isinstance(version, str) or not version:
             raise LockError("lockfile package has no name or version")
-        if name in names:
-            raise LockError(f"lockfile contains package {name!r} more than once")
-        names.add(name)
+        # Keyed by name AND version: a lock legitimately holds one package at
+        # several versions under split resolution, and refusing that refused
+        # every real lock that resolves across interpreter versions. Only an
+        # exact repeat is corruption, because then one key names two entries
+        # and which one is selected would depend on file order.
+        if (name, version) in names:
+            raise LockError(
+                f"lockfile contains package {name!r} {version} more than once"
+            )
+        names.add((name, version))
+        markers = record.get("resolution-markers", [])
+        if not isinstance(markers, list) or any(
+            not isinstance(marker, str) for marker in markers
+        ):
+            raise LockError(f"package {name} has malformed resolution-markers")
         if not isinstance(source, dict) or not source:
             raise LockError(f"package {name} has malformed source")
         dev_value = record.get("dev-dependencies", {})
@@ -127,6 +158,7 @@ def parse_lock(data: bytes) -> Lock:
                 dev_dependencies,
                 tuple(wheels_value),
                 "sdist" in record,
+                tuple(markers),
             )
         )
     return Lock(tuple(packages))
@@ -148,16 +180,61 @@ def _filename(url: str, package: str) -> str:
     return filename
 
 
+def _resolve_edge(
+    lock: Lock, edge: Dependency, target: TargetEnvironment
+) -> Package:
+    """The one package entry this edge selects for this target.
+
+    Three shapes, in the order uv writes them. A name locked once is
+    unambiguous. A name locked several times carries the version on the
+    edge, and that exact entry is taken. An edge without a version against a
+    multi-version name is decided by the entries' own resolution markers,
+    and only a single match is an answer — several matches or none is a
+    refusal, because guessing which version the target installs is choosing
+    the bytes the verdict rests on.
+    """
+
+    candidates = lock.versions_of(edge.name)
+    if not candidates:
+        raise LockError(f"package dependency {edge.name!r} is absent from lockfile")
+    if edge.version is not None:
+        exact = [package for package in candidates if package.version == edge.version]
+        if not exact:
+            raise LockError(
+                f"package dependency {edge.name!r} names version "
+                f"{edge.version}, which the lockfile does not carry"
+            )
+        return exact[0]
+    if len(candidates) == 1:
+        return candidates[0]
+    matched = [
+        package
+        for package in candidates
+        if any(
+            _edge_enabled(Dependency(package.name, marker), target, package.name)
+            for marker in package.resolution_markers
+        )
+    ]
+    if len(matched) != 1:
+        versions = ", ".join(sorted(package.version for package in candidates))
+        raise LockError(
+            f"package {edge.name!r} is locked at several versions ({versions}) "
+            f"and {len(matched)} of them match this target's resolution "
+            "markers; the lock does not say which one this target installs"
+        )
+    return matched[0]
+
+
 def select_wheels(lock: Lock, root: str, target: TargetEnvironment) -> tuple[WheelArtifact, ...]:
     """Select one best compatible wheel for every reachable non-root package."""
-    packages = lock.by_name
-    root_package = packages.get(root)
-    if root_package is None:
-        available = ", ".join(sorted(packages))
+    roots = lock.versions_of(root)
+    if not roots:
+        available = ", ".join(sorted({package.name for package in lock.packages}))
         raise LockError(
             f"root package {root!r} is absent from lockfile (packages: {available})"
         )
-    reachable: set[str] = set()
+    root_package = roots[0]
+    reachable: dict[tuple[str, str], Package] = {}
     root_edges = (
         *root_package.dependencies,
         *(edge for group in root_package.dev_dependencies.values() for edge in group),
@@ -167,12 +244,10 @@ def select_wheels(lock: Lock, root: str, target: TargetEnvironment) -> tuple[Whe
         owner, edge = work.pop()
         if not _edge_enabled(edge, target, owner):
             continue
-        package = packages.get(edge.name)
-        if package is None:
-            raise LockError(f"package dependency {edge.name!r} is absent from lockfile")
-        if package.name in reachable:
+        package = _resolve_edge(lock, edge, target)
+        if package.key in reachable:
             continue
-        reachable.add(package.name)
+        reachable[package.key] = package
         for dependency in package.dependencies:
             work.append((package.name, dependency))
     supported = tuple(
@@ -193,8 +268,8 @@ def select_wheels(lock: Lock, root: str, target: TargetEnvironment) -> tuple[Whe
     )
     order = {tag: index for index, tag in enumerate(supported)}
     selected: list[WheelArtifact] = []
-    for name in sorted(reachable):
-        package = packages[name]
+    for key in sorted(reachable):
+        package = reachable[key]
         if set(package.source) != {"registry"}:
             raise LockError(f"package {package.name} has non-registry source")
         if not package.wheels:

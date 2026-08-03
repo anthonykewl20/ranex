@@ -253,7 +253,17 @@ def test_stage_03_uv_lock_check_accepts_a_fabricated_wheel_hash(
         text[:start] + ("0" if text[start] != "0" else "1") + text[start + 1 :]
     )
     result = subprocess.run(
-        [str(pinned_resolver()), "lock", "--check"],
+        # The epoch is passed because the lock records it: omitting it makes
+        # uv re-resolve for that reason alone and report a stale lock, which
+        # would let this test claim uv catches fabricated hashes when what it
+        # caught was its own changed inputs.
+        [
+            str(pinned_resolver()),
+            "lock",
+            "--check",
+            "--exclude-newer",
+            "2026-08-04T00:00:00Z",
+        ],
         cwd=scratch,
         capture_output=True,
         text=True,
