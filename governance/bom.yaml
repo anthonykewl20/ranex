@@ -1,0 +1,106 @@
+parts:
+  - id: FT-01
+    stage: specify
+    abb: Declare the required claim in the committed gate catalog.
+    sbb: governance/gates.yaml
+    gauge: tests/contract/test_gate_catalog_claim_commands.py
+    status: built
+    depends_on: []
+  - id: FT-02
+    stage: specify
+    abb: Bind each declared claim to the exact command that can satisfy it.
+    sbb: ranex.governed_execution.domain.verdict.Claim.command_digest
+    gauge: tests/unit/test_claim_command_binding.py
+    status: built
+    depends_on: [FT-01]
+  - id: FT-03
+    stage: specify
+    abb: Express the specified behaviour as an executable, non-trivial check.
+    sbb: governance/gates.yaml
+    gauge: tests/contract/test_gate_catalog_claim_commands.py
+    status: built
+    depends_on: [FT-02]
+  - id: FT-04
+    stage: freeze
+    abb: Bind evidence to the digest of the exact subject tree.
+    sbb: ranex.cli.main.subject_digest_for
+    gauge: tests/security/test_slice004_hermetic_observation.py
+    status: built
+    depends_on: [FT-03]
+  - id: FT-05
+    stage: freeze
+    abb: Read the gate catalog and producer keyring from the subject commit.
+    sbb: ranex.cli.main.committed_bytes
+    gauge: tests/security/test_slice002_trust_root_reopened.py
+    status: built
+    depends_on: [FT-01, FT-04]
+  - id: FT-06
+    stage: freeze
+    abb: Make the frozen specification read-only to whoever executes it.
+    sbb: null
+    gauge: null
+    status: specified
+    depends_on: [FT-03, FT-04, FT-05]
+  - id: FT-07
+    stage: freeze
+    abb: Enforce that the specified check was red before execution and green after it.
+    sbb: null
+    gauge: null
+    status: specified
+    depends_on: [FT-06]
+  - id: FT-08
+    stage: execute
+    abb: Materialise the bound subject commit without worktree state.
+    sbb: ranex.cli.subject.materialise_subject
+    gauge: tests/security/test_slice004_hermetic_observation.py
+    status: built
+    depends_on: [FT-04, FT-05]
+  - id: FT-09
+    stage: execute
+    abb: Build a pinned toolchain and command environment from empty.
+    sbb: ranex.cli.main.cmd_run
+    gauge: tests/security/test_slice004_hermetic_observation.py
+    status: built
+    depends_on: [FT-08]
+  - id: FT-10
+    stage: execute
+    abb: Provision declared dependencies so a real committed suite can run.
+    sbb: null
+    gauge: null
+    status: specified
+    depends_on: [FT-09]
+  - id: FT-11
+    stage: execute
+    abb: Confine the bound command from the executor and other ambient authority.
+    sbb: null
+    gauge: null
+    status: specified
+    depends_on: [FT-10]
+  - id: FT-12
+    stage: result
+    abb: Produce a signed evidence record bound to the subject.
+    sbb: ranex.foundation.signing.sign_evidence
+    gauge: tests/e2e/test_run_produces_evidence.py
+    status: built
+    depends_on: [FT-04, FT-08]
+  - id: FT-13
+    stage: result
+    abb: Derive a blocking verdict from the frozen claim and admitted evidence.
+    sbb: ranex.governed_execution.domain.verdict.evaluate
+    gauge: tests/unit/test_gate_verdict.py
+    status: built
+    depends_on: [FT-02, FT-05, FT-12]
+  - id: FT-14
+    stage: result
+    abb: Append each verdict to a hash-chained journal.
+    sbb: ranex.governed_execution.adapters.persistence.sqlite.journal.Journal
+    gauge: tests/integration/test_journal.py
+    status: built
+    depends_on: [FT-13]
+  - id: FT-15
+    stage: result
+    abb: Let the operator verify the journal chain that records what ran.
+    sbb: ranex.cli.main.cmd_journal_verify
+    gauge: null
+    status: specified
+    depends_on: [FT-14]
