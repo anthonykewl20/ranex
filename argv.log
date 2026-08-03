@@ -1,0 +1,9 @@
+lock
+--exclude-newer
+2026-01-01
+--python
+/usr/bin/python3
+--index-url
+https://one.test/simple
+--extra-index-url
+https://two.test/simple

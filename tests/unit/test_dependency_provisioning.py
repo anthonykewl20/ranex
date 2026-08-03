@@ -148,12 +148,24 @@ class TestPins:
     def test_absent_field_refuses(self, field: str) -> None:
         # s.p. 4: an unpinned input refuses before any network access. Absence
         # blocks; nothing defaults.
-        text = "\n".join(
-            line
-            for line in PINS.format(resolver_digest="a" * 64).splitlines()
-            if not line.startswith(field)
-        )
-        with pytest.raises(PinsError):
+        #
+        # The field's indented children go with it. Dropping only the key line
+        # left them orphaned, so YAML failed to parse and two of these cases
+        # were proving that corruption refuses — not that absence does. The
+        # document handed to the parser here is valid YAML that is simply
+        # missing one pin.
+        kept: list[str] = []
+        skipping = False
+        for line in PINS.format(resolver_digest="a" * 64).splitlines():
+            if line.startswith(field):
+                skipping = True
+                continue
+            if skipping and line[:1] in (" ", "\t"):
+                continue
+            skipping = False
+            kept.append(line)
+        text = "\n".join(kept)
+        with pytest.raises(PinsError, match=r"must be"):
             load_pins_text(text)
 
     def test_resolver_without_digest_refuses(self) -> None:
@@ -164,21 +176,21 @@ class TestPins:
             load_pins_text(text)
 
     def test_malformed_digest_refuses(self) -> None:
-        with pytest.raises(PinsError):
+        with pytest.raises(PinsError, match=r"malformed|hex"):
             load_pins_text(PINS.format(resolver_digest="zz"))
 
     def test_empty_indexes_refuse(self) -> None:
         text = PINS.format(resolver_digest="a" * 64).replace(
             "indexes:\n  - https://pypi.org/simple", "indexes: []"
         )
-        with pytest.raises(PinsError):
+        with pytest.raises(PinsError, match=r"indexes"):
             load_pins_text(text)
 
     def test_relative_resolver_path_refuses(self) -> None:
         text = PINS.format(resolver_digest="a" * 64).replace(
             "/opt/pinned/uv", "bin/uv"
         )
-        with pytest.raises(PinsError):
+        with pytest.raises(PinsError, match=r"absolute"):
             load_pins_text(text)
 
     def test_verified_binary_accepts_matching_bytes(self, tmp_path: Path) -> None:
@@ -211,7 +223,7 @@ class TestPins:
             )
 
     def test_verified_binary_refuses_absence(self, tmp_path: Path) -> None:
-        with pytest.raises(PinsError):
+        with pytest.raises(PinsError, match=r"cannot open|absent|No such"):
             verified_pinned_binary(
                 tmp_path / "missing", sha256(b"x"), require_unwritable=False
             )
@@ -328,7 +340,7 @@ wheels = [
             select_wheels(parse_lock(lock_text().encode()), "absent", TARGET)
 
     def test_unparseable_lock_refuses(self) -> None:
-        with pytest.raises(LockError):
+        with pytest.raises(LockError, match=r"cannot parse lockfile"):
             parse_lock(b"version = ???")
 
 
@@ -349,9 +361,9 @@ class TestWheelStore:
         # refused, and nothing is published under that address.
         store = WheelStore(tmp_path / "store")
         digest = sha256(WHEEL_ALPHA)
-        with pytest.raises(StoreError):
+        with pytest.raises(StoreError, match=r"do not match"):
             store.publish(digest, b"other-bytes")
-        with pytest.raises(StoreError):
+        with pytest.raises(StoreError, match=r"absent"):
             store.verified_path(digest)
 
     def test_read_rehashes_and_quarantines_corruption(self, tmp_path: Path) -> None:
@@ -366,12 +378,12 @@ class TestWheelStore:
             store.verified_path(digest)
         # The corrupt bytes are out of the addressable namespace entirely: a
         # second read is a miss, not a second serving of the corruption.
-        with pytest.raises(StoreError):
+        with pytest.raises(StoreError, match=r"absent"):
             store.verified_path(digest)
 
     def test_missing_entry_is_a_refusal_not_none(self, tmp_path: Path) -> None:
         store = WheelStore(tmp_path / "store")
-        with pytest.raises(StoreError):
+        with pytest.raises(StoreError, match=r"is not 64|absent"):
             store.verified_path(sha256(b"never-published"))
 
     def test_concurrent_publishers_expose_one_complete_entry(
