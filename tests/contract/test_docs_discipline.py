@@ -231,7 +231,9 @@ _CODE_SPAN = re.compile(r"`[^`]*`")
 
 _TEST_PATH = re.compile(r"tests/[\w/]+\.py")
 
-_ALLOWED_EXACT = frozenset({"CLAUDE.md", "README.md", "docs/STATE.md"})
+_ALLOWED_EXACT = frozenset(
+    {"CLAUDE.md", "README.md", "docs/STATE.md", "docs/MAP.md"}
+)
 
 STATE_MAX_LINES = 50
 

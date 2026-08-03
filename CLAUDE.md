@@ -45,6 +45,10 @@ program output, not to a user.
 2. The active slice named there, in `docs/slices/`. That is the only thing to
    work on.
 
+`docs/MAP.md` is the map — problem, thesis, parts, risks. Read it when the
+question is *why* or *what should exist at all*. **Not** every session: it is long,
+and `STATE.md` stays the entry point.
+
 ## The working rule
 
 **One slice at a time. Finish it before starting anything else.**
@@ -118,6 +122,7 @@ code. The docs layer is deliberately capped so that cannot happen again.
 |---|---|---|
 | `CLAUDE.md` | this file — orientation and rules | edited rarely |
 | `README.md` | public project overview and status | updated when public status changes |
+| `docs/MAP.md` | the map — problem, thesis, parts, risks | revised when evidence changes a claim |
 | `docs/STATE.md` | where we stopped, what is next | **rewritten** each session |
 | `docs/adr/ADR-NNN-*.md` | one researched decision per slice | append-only — supersede, never rewrite |
 | `docs/slices/SLICE-NNN-*.md` | the one open slice | at most **one** open |
