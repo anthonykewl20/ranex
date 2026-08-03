@@ -9,6 +9,10 @@ dependencies = [
     # the verifier must not hold anything that could sign — see the slice's
     # Decisions for why HMAC was refused.
     "cryptography>=43,<47",
+    # SLICE-006. PEP 508 marker evaluation and PEP 427 wheel-tag selection for
+    # dependency provisioning. Already in the closure transitively via pytest;
+    # declared because ranex.provisioning imports it directly.
+    "packaging>=26,<27",
 ]
 
 [dependency-groups]

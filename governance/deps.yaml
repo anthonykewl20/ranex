@@ -1,0 +1,17 @@
+# Operator pins for dependency provisioning — ADR-007, SLICE-006.
+#
+# These four inputs make "clean derivation" a fixed question: the resolver
+# (by path AND digest), the interpreter the wheels must serve, the index
+# set, and the resolution epoch. Change any of them deliberately and
+# re-lock; ranex deps fetch refuses a lock these inputs cannot reproduce.
+#
+# The resolver path is root-owned on purpose: a user-writable resolver is
+# agent-selected whatever its bytes were when this file was written.
+resolver:
+  path: /usr/local/bin/uv
+  sha256: 29b90e884c384e1578ac37335521d807c192aa44d5a4a9b9f4690bb3850e179d
+python:
+  path: /usr/bin/python3.12
+indexes:
+  - https://pypi.org/simple
+exclude_newer: "2026-08-04T00:00:00Z"
