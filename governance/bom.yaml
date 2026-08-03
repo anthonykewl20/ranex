@@ -101,6 +101,6 @@ parts:
     stage: result
     abb: Let the operator verify the journal chain that records what ran.
     sbb: ranex.cli.main.cmd_journal_verify
-    gauge: null
-    status: specified
+    gauge: tests/e2e/test_gate_evaluate_cli.py::test_journal_verify_reports_a_valid_chain
+    status: built
     depends_on: [FT-14]

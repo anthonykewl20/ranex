@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `2.6.0` |
+| Version | `2.7.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`). See §0.5–§0.11 |
+| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`), **code-audit corrections** (`2.7.0`). See §0.5–§0.12 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -28,7 +28,7 @@ no label inherits its section's.
 
 | Label | Means |
 |---|---|
-| `CONFIRMED` | Supported by a stated requirement **or by executed implementation evidence** |
+| `CONFIRMED` | Supported by executed implementation evidence |
 | `PROVISIONAL` | Current direction. Written down, reasoned, **not validated by anything running** |
 | `UNRESOLVED` | A real decision is still required. Names what would settle it |
 | `OUT-OF-SCOPE` | Not needed for the current delivery horizon |
@@ -46,12 +46,9 @@ document exists to prevent.
 - Not a log. `docs/STATE.md` says where work stopped; this says where it is going.
 - **Not conformant to ISO/IEC/IEEE 42010**, the standard for architecture
   descriptions, and knowingly so. It has an entity of interest (§3.1), views
-  (§5, §6, §7) and partial rationale (§0.5, §4.2, §4.3). It has **no enumerated
-  stakeholders, no concerns traced to them, no declared viewpoints governing its
-  views, and no correspondences** — the relations between AD elements that a
-  correspondence rule could check. Those four absences are the difference between
-  a document that reads well and one that can **fail**. Recorded as `RISK-18`
-  rather than quietly carried.
+  (§5, §6, §7) and partial rationale (§0.5, §4.2, §4.3). Stakeholder, concerns,
+  viewpoints and correspondences are declared; model kinds are absent and two
+  viewpoints govern no view. Those gaps are recorded as `RISK-18`.
 - **Not finished.** The owner's assessment as of 2026-08-03 is that this map is
   "still cloudy and needs much more refinement." Treat every §1 claim as a first
   articulation rather than a settled position.
@@ -70,7 +67,7 @@ The twelve section headings follow arc42 (Starke & Hruschka), used here as a
 adaptation. arc42 is licensed CC BY-SA 4.0; whether to adopt-and-attribute
 instead is an open owner decision recorded in §11 as `RISK-16`.
 
-### 0.5 What changed in `2.0.0`, and why — `CONFIRMED` as a change of position
+### 0.5 What changed in `2.0.0`, and why — `PROVISIONAL` as a change of position
 
 Version `1.1.0` stated the product thesis as:
 
@@ -188,8 +185,10 @@ binding inherited constraints, and retained control details; it also records the
 three current contradictions and the silently lost approval, measurement and
 journal-effect requirements. The README correction replaces the prior false
 assertion with the implemented `ranex journal verify`, and adds the still-open
-rollback/truncation risk. Sources: `extract-research.md:11-102`,
-`extract-decisions.md:29-40,68-76`, `extract-architecture.md:10-66`,
+rollback/truncation risk. Sources outside the repository:
+`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:605-990`,
+`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md:20`,
+`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-398`,
 `README.md:225-227,252-259`.
 
 ### 0.11 What changed in `2.6.0` — adversarial pass
@@ -200,6 +199,15 @@ overclaims: confinement makes the producer-unalterable scorer false today,
 red-then-green proves discrimination rather than precedence, and a rich
 fail-closed outcome taxonomy is not a graded pass scale. The corrections are in
 §1.2, §1.3, §4.5 and §11.5–§11.6.
+
+### 0.12 What changed in `2.7.0` — xhigh audit and second adversarial review
+
+An xhigh code audit corrected repository contradictions and replaced 28 dead
+scratchpad citations with primary sources outside the repository. A second
+adversarial review found limits in the map's self-declared concern set,
+mutation/coverage reasoning, and operator-selected first thread. Fifteen
+`CONFIRMED` labels were demoted because policy, decisions, owner statements and
+history are not executed implementation evidence; the limits are `RISK-21`–`24`.
 
 ---
 
@@ -289,11 +297,11 @@ Confinement in ADR-006 is a decided-but-unbuilt control, so the thesis is not
 true by construction today. "True" and "someone will pay" remain distinct; see
 `RISK-01`.
 
-**What Ranex explicitly does not claim — `CONFIRMED` as policy, `CLAUDE.md`:**
+**What Ranex explicitly does not claim — `PROVISIONAL` policy, `CLAUDE.md`:**
 it does not improve the quality of generated code, by any margin. Program output,
 documentation and sales material must never suggest otherwise.
 
-### 1.3 Stakeholder and concerns — `CONFIRMED` by owner statement, 2026-08-03
+### 1.3 Stakeholder and concerns — `PROVISIONAL` owner statement, 2026-08-03
 
 ISO/IEC/IEEE 42010 requires an architecture description to identify its
 stakeholders and their concerns, and to address every concern. `2.1.0` had
@@ -333,20 +341,19 @@ for. No part is built for it; none is precluded.
 | `C-03` | **"It broke something else"** | The new work is fine but quietly damaged something that already worked, and nothing caught it because the agent tested only what it just wrote |
 | `C-04` | **"I can't tell what it did"** | The change is too large to read, the summary is unreliable, and there is no way to see what actually happened to the codebase |
 
-**Coverage, measured rather than asserted.** Every requirement in §1.4 was tested
-against these four:
+**Coverage accounting.** Every requirement in §1.4 was mapped against these four:
 
 | Concern | Requirements serving it | Built |
 |---|---|---|
-| `C-01` | `PR-02`, `PR-03`, `PR-04`, `PR-05`, `PR-06`, `PR-10` | **Yes, mostly.** All five slices to date |
+| `C-01` | `PR-02`, `PR-03`, `PR-04`, `PR-05`, `PR-06`, `PR-10` | **Yes, mostly.** Four closed slices; one withdrawn; one open |
 | `C-03` | `PR-05`, `PR-06` — partially | **Weak.** Nothing runs the full suite; SLICE-006 unlocks it |
 | `C-04` | `PR-07`, `PR-08` | **No.** `PR-07` is undesigned; `ranex journal verify` checks integrity, but no translator presents the record (`RISK-12`) |
 | `C-02` | `PR-09` — one requirement | **Nothing at all.** No budget, no timeout, no escalation, no worker to bound |
 
-**Five slices of work have gone to one of four concerns.** Recorded because it is
-the map's first executed self-test, and because the imbalance is invisible from
-inside any single slice. The owner reviewed this on 2026-08-03 and chose to
-continue hardening `C-01` — see §11.6.
+**Four closed slices of work have gone to one of four concerns; one was withdrawn
+before implementation and one is open.** This is coverage accounting, not
+validation of the concern set or the method. The owner chose to continue
+hardening `C-01` — see §11.6.
 
 **The honest limit of this configuration.** Code can prove the agent did not
 approve its own work. It cannot prove the human's gate was a *good* gate. The
@@ -364,7 +371,7 @@ below are new and come directly from the 2026-08-03 session.
 | `PR-01` | **A verdict can be re-derived by the operator — who did not write the work — from the record alone** | `C-01` `C-04` | `PROVISIONAL` — the record exists; no re-derivation has been performed. **Reframed in `2.2.0`**: `2.1.0` said "by someone who did not produce the work, offline," which was written for an acquirer who is not a stakeholder in this design |
 | `PR-02` | No model output is ever an authorization. A gate passes on evidence or does not pass | `C-01` | `CONFIRMED` for the kernel path: `evaluate()` imports no model client, and the suite passes with no model credential present |
 | `PR-03` | Absence blocks. A required claim with no satisfying evidence is `FAIL`, never a default and never a skip | `C-01` | `CONFIRMED` for the kernel |
-| `PR-04` | **The identity that produces evidence cannot approve it — the *agent* produces, the *human* approves** | `C-01` | `CONFIRMED` as a string comparison; `UNRESOLVED` as a control, because `approver_id` is unauthenticated (`RISK-07`). Pre-reset ADR-0017 had decided a typed, authenticated, unrevoked, scope-authorized human decision; retain that as a narrow future boundary, not its readiness registry (`extract-decisions.md:74`). |
+| `PR-04` | **The identity that produces evidence cannot approve it — the *agent* produces, the *human* approves** | `C-01` | `CONFIRMED` as a string comparison; `UNRESOLVED` as a control, because `approver_id` is unauthenticated (`RISK-07`). A prior typed, authenticated, unrevoked, scope-authorized human decision is only a future boundary (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0017-record-resolved-owner-decisions.md:65-76`). |
 | `PR-05` | Every verdict binds the exact subject digest it was measured against, so stale evidence stops counting automatically | `C-01` `C-03` | `CONFIRMED` — SLICE-001 and SLICE-004 |
 | `PR-06` | **Every gauge carries a calibration result. An uncalibrated gauge yields no information and must not be reported as though it did** | `C-01` `C-03` | `PROVISIONAL` — `mutmut` is a calibration procedure and runs; nothing consumes its result as a gate, and 880 mutants survive |
 | `PR-07` | **The record binds the full production configuration — model, harness version, skill and tool manifest, prompt digest — not the code alone** | `C-04` `C-02` | `UNRESOLVED` — not designed, not built. §5.5 |
@@ -380,21 +387,21 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 
 | Capability | What it does | Status |
 |---|---|---|
-| Deterministic verdict | Gate + distinct subject-bound evidence + approver → verdict, no model consulted | **`CONFIRMED`** — `evaluate()` is a pure function; future gate records retain evidence separately for later inspection (`extract-research.md:49-56`) |
+| Deterministic verdict | Gate + distinct subject-bound evidence + approver → verdict, no model consulted | **`CONFIRMED`** — `evaluate()` is a pure function; the future distinct-evidence proposal is outside the repository (`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:610-628`) |
 | Subject-bound evidence | Evidence binds the digest of the committed tree it was measured against | **`CONFIRMED`** — SLICE-001 |
 | Evidence authenticity | Ed25519 signature verified against a committed keyring before admission | **`CONFIRMED`** — SLICE-002 |
 | Claim↔command binding | The committed catalog declares the argv that satisfies a claim | **`CONFIRMED`** — SLICE-003; six independent audits failed to break it |
 | Hermetic observation | The bound command runs against a materialisation of the subject commit, in an environment built from empty, with a pinned toolchain | **`CONFIRMED`** — SLICE-004, closed twice |
 | Append-only journal | Hash-chained SQLite, serialised appends and operator chain verification | **`CONFIRMED`** for append and `ranex journal verify`; it does **not** detect a removed consistent prefix (`README.md:225-227,256-259`; `RISK-19`) |
-| Confinement of the measured party | The bound command cannot reach the key that signs its own measurement | `PROVISIONAL` — ADR-006 decided; its slice was withdrawn 2026-08-03 and re-sequenced behind SLICE-006. Nothing built. The retained isolation profile is specified separately below (`extract-research.md:71-77`) |
-| Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (`extract-research.md:71-77`) |
-| Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (`extract-research.md:78-83`) |
-| Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | `UNRESOLVED` — designed, never built; one bounded worker by default, parallel only for independent reads/disjoint isolated writes, and landing is serial (`extract-architecture.md:24-57`). **The single largest untested assumption in the system** |
-| `TaskPacket` | Content-addressed, immutable frozen-work root: exact scope/configuration, target, subject, evidence and record; material change recompiles it | `UNRESOLVED` — future worker packet, not dispatch machinery (`extract-research.md:11-18,44-48`; `extract-architecture.md:10-22`) |
-| Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (`extract-research.md:19-25,62-66`) |
-| Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:23-25`; `extract-research.md:26-33,57-61`) |
-| Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (`extract-research.md:34-40,67-70`) |
-| Budget and escalation | Bounded spend, three misses, plain-language question to the owner; cancellation first denies new capability, records unknowns and cannot widen cleanup authority | `UNRESOLVED` — designed, never built; never silently downgrade a required gate (`extract-research.md:84-88`; `extract-architecture.md:59-66`) |
+| Confinement of the measured party | The bound command cannot reach the key that signs its own measurement | `PROVISIONAL` — ADR-006 decided; its slice was withdrawn 2026-08-03 and re-sequenced behind SLICE-006. Nothing built. The retained isolation profile is outside the repository (`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
+| Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
+| Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
+| Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | `UNRESOLVED` — designed, never built; one bounded worker by default, parallel only for independent reads/disjoint isolated writes, and landing is serial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:445-496`). **The single largest untested assumption in the system** |
+| `TaskPacket` | Content-addressed, immutable frozen-work root: exact scope/configuration, target, subject, evidence and record; material change recompiles it | `UNRESOLVED` — future worker packet, not dispatch machinery (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:600-628`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-321`) |
+| Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
+| Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:23-25`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
+| Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:736-756`) |
+| Budget and escalation | Bounded spend, three misses, plain-language question to the owner; cancellation first denies new capability, records unknowns and cannot widen cleanup authority | `UNRESOLVED` — designed, never built; never silently downgrade a required gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/ocask-alignment-research-2026-07-27.md:1641-1654`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:426-438) |
 | Intake and flow graph | Plain-language intent → a graph the owner approves → scenarios → tests | `UNRESOLVED` — designed, never built |
 | Configuration comparison | Which model, harness and skill set actually finishes work, measured | `UNRESOLVED` — §11.3 argues this is the most valuable byproduct and the hardest to get right |
 
@@ -406,7 +413,7 @@ around a real agent even once.
 
 ## §2 Constraints
 
-### 2.1 Binding — `CONFIRMED`
+### 2.1 Binding — `PROVISIONAL`
 
 | Constraint | Source |
 |---|---|
@@ -418,18 +425,18 @@ around a real agent even once.
 | `diff-cover` at 100% on changed lines; `mutmut` before a slice closes | SLICE-004 |
 | Licence is MIT | `README.md` |
 | Hermes is not a base and must not be reintroduced. Removed 2026-08-01 | `CLAUDE.md` |
-| **Inherited ADR-0008:** frozen tests, red-then-green, and no maker approval | Still binding; its cycle-record/tier machinery is not (`extract-decisions.md:29`) |
-| **Inherited ADR-0014:** Python, with a measured rather than fashionable performance escape | Still binding (`extract-decisions.md:35`) |
-| **Inherited ADR-0019:** `uv` is the toolchain manager and command runner | Still binding (`extract-decisions.md:40`) |
+| **Inherited ADR-0008:** frozen tests, red-then-green, and no maker approval | Still binding; its cycle-record/tier machinery is not (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md:20`) |
+| **Inherited ADR-0014:** Python, with a measured rather than fashionable performance escape | Still binding (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md:91`) |
+| **Inherited ADR-0019:** `uv` is the toolchain manager and command runner | Still binding (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0019-declare-uv-as-the-python-toolchain-manager.md:50`) |
 
-### 2.2 Process constraints — `CONFIRMED`
+### 2.2 Process constraints — `PROVISIONAL`
 
 - **One slice open at a time.** Opening a second is the named failure mode.
 - **No slice without an ADR**, written before the slice file exists.
 - An ADR citing no working code is an opinion, and this is enforced by test.
 - Never weaken a test, checker, baseline or policy to make work pass.
 
-### 2.3 Environmental — `CONFIRMED`
+### 2.3 Environmental — `PROVISIONAL`
 
 - Local-first. No hosted service exists and none is planned this horizon.
 - Ranex becomes **Linux-only in fact** once confinement lands, and will refuse
@@ -467,7 +474,7 @@ around a real agent even once.
 The third box is new in `2.0.0` and follows from §1.1. A record only the producer
 can read is a diary. See `RISK-03`.
 
-### 3.2 Scope boundary — `CONFIRMED` as policy
+### 3.2 Scope boundary — `PROVISIONAL` policy
 
 **In scope:** fixing the target before the work; measuring the result with code;
 binding the measurement to an exact subject; recording it so an outsider can check
@@ -499,15 +506,15 @@ started asking whether the part passes a fixed standard the maker cannot alter.
 
 | Factory concept | Meaning | Ranex | Status |
 |---|---|---|---|
-| **Go/no-go gauge** | Fixed tolerance, mechanical check, precedes production | Frozen tests + gates | **built** |
+| **Go/no-go gauge** | Fixed tolerance, mechanical check, precedes production | Frozen tests + gates | **specified** |
 | **Interchangeable parts** | Any supplier's part fits | Model and harness swappable behind a port | designed |
-| **Poka-yoke** | The defect is made impossible, not caught later | Tests read-only to implementers; no self-approval | **built** |
+| **Poka-yoke** | The defect is made impossible, not caught later | Tests read-only to implementers; no self-approval | **specified** |
 | **Jidoka / andon** | The machine stops itself on a defect; anyone may halt the line, and halting is correct | Three misses → escalate a product question to the owner | designed |
 | **The traveler** | The card that rides with the part, stamped at every station. **An unstamped part does not ship** | The journal plus signed evidence | **built** |
 | **Incoming inspection** | Check what suppliers send before it enters the line | Digest the model, harness and skill manifest | **missing** — `PR-07` |
 | **Calibration lab** | The gauges are themselves measured, on a schedule, against a reference | `mutmut` as calibration; negative controls | partial |
 | **Statistical process control** | Measure the process, catch drift before it makes scrap | Cross-run comparison of configurations | **missing** |
-| **Bill of materials** | Every part, its provenance, its spec | §5.5 | **missing** |
+| **Bill of materials** | Every part, its provenance, its spec | `governance/bom.yaml` | **built** |
 
 The traveler is the most useful reframing available for the journal: it carries
 its own rule, and a non-technical buyer understands *an unstamped part does not
@@ -535,7 +542,7 @@ The argument that the failure does not transfer:
 inspection, which is the step that just became scarce.** `PROVISIONAL`, but it
 survives the obvious objection, which is more than the `1.1.0` thesis managed.
 
-### 4.3 Ranex is the quality system, not the factory — `CONFIRMED` as policy
+### 4.3 Ranex is the quality system, not the factory — `PROVISIONAL` policy
 
 This reconciles the factory framing with §3.2's refusal to be a harness.
 
@@ -558,7 +565,7 @@ Three consequences:
    also what lets Ranex outlive any particular harness. A harness is a bet on
    today's tooling; a gauge is not.
 
-### 4.4 Strategy decisions — `CONFIRMED` as decisions, `PROVISIONAL` as designs
+### 4.4 Strategy decisions — `PROVISIONAL`
 
 Deterministic over probabilistic enforcement; fail-closed, where `NOT_ASSESSED`
 is never a pass; evidence bound to exact subject digests; separation of producer
@@ -632,12 +639,12 @@ Tracked as `RISK-17`.
 | `foundation/` | Canonical JSON, SHA-256 digests | **`CONFIRMED`** |
 | `governed_execution/` | `verdict.py` — the kernel — and the SQLite hash-chained journal | **`CONFIRMED`** for evaluate, append and `ranex journal verify`; verification detects row edits, not rollback/truncation (`README.md:225-227,256-259`) |
 | `policy/` | Gate catalog loading from the committed tree | **`CONFIRMED`** |
-| `cli/` | Operator entry point, path confinement, subject materialisation, toolchain pinning | **`CONFIRMED`**; **`mutmut` says nothing about `cli/main.py`** — see `RISK-10` |
-| `bootstrap/` | Composition root, the only place concretes are wired | **`CONFIRMED`** |
+| `cli/` | Operator entry point, path confinement, subject materialisation, toolchain pinning | **`CONFIRMED`**; mutmut recorded 573 survivors and 65 unreached in `cli/main.py`, but key e2e tests are excluded, so the signal is weak (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) |
+| `bootstrap/` | Composition root; the CLI also imports and constructs SQLite/YAML concretes directly | **`PROVISIONAL`** |
 | Worker port | Dispatch a harness into an isolated worktree | **absent** |
 | Budget / escalation | Bounded spend, three-miss escalation | **absent** |
 | Intake / compile | Flow graph, covering paths, scenarios, frozen tests | **absent** |
-| **Translator** | Read-only projection of machine state and verdicts into plain language for the operator | **absent** — it may not evaluate, mutate, issue permits or treat worker prose as canonical (`extract-research.md:89-94`) |
+| **Translator** | Read-only projection of machine state and verdicts into plain language for the operator | **absent** — it may not evaluate, mutate, issue permits or treat worker prose as canonical (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:122-153`) |
 | Outward record | Something an outsider can verify | **absent** — deferred with §11.1 |
 
 `1.1.0` registered 34 bounded contexts. Five directories exist. The other 29 were
@@ -667,46 +674,15 @@ Four slices closed, one withdrawn before implementation, one open. As of
 keyring and trust root), `evidence.json` (records, **not append-only**) and
 `journal.sqlite3` (append-only, hash-chained, gitignored).
 
-### 5.5 Bill of materials — `UNRESOLVED`, and the next artefact to build
+### 5.5 Bill of materials — `PROVISIONAL`
 
-This map describes the system. It does not enumerate the parts, and the owner
-identified that absence on 2026-08-03 as the reason there is no finish line and no
-way to tell whether the current path is correct.
-
-The gap is real and this document should not try to fill it, because prose is what
-produced 561 architecture files and zero product code. The parts list must be
-**structured data, not prose** — a table has a natural size limit and an essay does
-not.
-
-Required shape, in TOGAF's vocabulary rather than invented terms (§4.5):
-
-| Column | TOGAF name | Discipline it enforces |
-|---|---|---|
-| Part | **ABB** — Architecture Building Block | The capability required, stated independently of what implements it |
-| **BUY or BUILD** | **SBB** — Solution Building Block | What actually implements the ABB. Forces the never-hand-roll question at every node, structurally. **An ABB with no SBB is an unfilled part**, which is the honest name for most of this system today |
-| **Gauge** | — | How this part is proven good. **A part with no gauge is a wish, not a part** |
-| Status | — | `missing` → `specified` → `built` → `calibrated`. Built and calibrated are separate on purpose (§8.4) |
-| Depends on | **Architecture Roadmap** | Assembly order, derived rather than authored |
-
-And the frame the rows sit in: **Baseline** is what exists today (§1.5's
-`CONFIRMED` rows), **Target** is the finish line, the **Gap** between them is the
-parts list, and **Transition Architectures** are the intermediate states that each
-have to deliver something rather than merely being closer to done. A slice is a
-work package moving one transition to the next.
-
-And the mechanism `1.1.0` lacked: **a test reads the bill of materials.** Every
-row marked `built` must name a test that exists and passes; every row marked
-`calibrated` must name a mutation or negative-control result; no row may exist
-without a gauge. The plan then cannot drift from the code, because drift breaks
-the build. A plan an agent can read is a suggestion; a plan compiled into a check
-is a constraint — which is the project's own thesis applied to its own map.
-
-**What can and cannot be complete** — recorded so the next session does not
-attempt the impossible: the finish line can be complete; the parts list can be
-complete; the routing can be complete in *order*. **Detailed steps can only ever
-be complete for the next two or three parts**, because parts built earlier change
-what the later steps should be. The slice files already are those detailed steps.
-The missing layer is the parts list they hang from, not more step detail.
+`governance/bom.yaml` enumerates the 15 parts, their ABB/SBB, gauge, status and
+dependencies; `tests/contract/test_bom_is_honest.py` reads its structure. The
+checker requires a non-null gauge, a `tests/` prefix and an existing file for a
+`built` row. It does not run the named test, resolve the SBB, or show that the
+gauge exercises it; an empty or unrelated test file would pass. This structural,
+not semantic, check is a limitation: the map and checker can drift together while
+the build stays green.
 
 ---
 
@@ -739,7 +715,8 @@ steps exist.
                  → still failing → escalate to the owner in plain language
 ```
 
-**This has never run.** Five slices have hardened the measurement path; nothing
+**This has never run.** Four closed slices hardened the measurement path; one was
+withdrawn and one is open. Nothing
 has ever been measured that an agent produced. That is the largest untested
 assumption in the system and it is named again in `RISK-14`.
 
@@ -762,7 +739,7 @@ ranex gate evaluate HEAD --approver A
 
 ## §7 Deployment View
 
-### 7.1 Today — `CONFIRMED`
+### 7.1 Today — `PROVISIONAL`
 
 There is no deployed Ranex. No service, no daemon, no installed package. The CLI
 runs from the source tree through `uv` and is not an enforcement boundary for
@@ -789,7 +766,7 @@ Those are the two forces that would eventually overturn local-first.
 | Producer ↔ approver | The identity producing evidence cannot approve it | `CONFIRMED` as a comparison; `UNRESOLVED` as a control (`RISK-07`) |
 | Model ↔ authority | A model verdict is evidence, never authority | `CONFIRMED` for the kernel |
 | Enforcement ↔ inference | No enforcement check invokes a model. Removing model access changes no verdict | `CONFIRMED` for the kernel path |
-| Ranex ↔ its own confinement | Ranex writes the journal, so it cannot be confined by the domain it applies to the worker | `CONFIRMED` as a limit; ADR-006 s.p. 20 |
+| Ranex ↔ its own confinement | Ranex writes the journal, so it cannot be confined by the domain it applies to the worker | `PROVISIONAL` limit; ADR-006 is unbuilt |
 
 ### 8.2 Determinism — `CONFIRMED` for the kernel
 
@@ -800,21 +777,20 @@ something.
 
 ### 8.3 Observability
 
-Recorded: every verdict with the rule that failed, the subject digest, the
-producer and the approver. Evidence remains distinct from its verdict and
-inspectable if a later gate overturns it (`extract-research.md:49-56`). Never
-recorded as fact: anything a model asserted about its own work.
+Recorded: every verdict with the rule that failed, the subject digest and the
+approver; `Evaluation.as_record()` has no producer ID. `evidence.json` keeps only
+the latest record for a claim+producer, so it is not durable evidence history.
+Never recorded as fact: anything a model asserted about its own work.
 
 Not recorded and required by `PR-07`: the production configuration — model,
 harness version, skill and tool manifest, prompt digest.
 
 `UNRESOLVED`: a future worker handoff is immutable references to its packet,
 candidate, commands actually run, evidence, unknowns and deviations — never a
-conversational summary (`extract-architecture.md:37-46`). A future durable record
-may add rebuildable projections, content-addressed artefacts, idempotent external
+conversational summary (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:377-398`). A future durable record may add rebuildable projections, content-addressed artefacts, idempotent external
 effects and crash/recovery tests; if an external effect is introduced, its state,
-journal and effect must be atomic. Neither end-to-end design is built
-(`extract-research.md:95-102`; `extract-decisions.md:76`).
+journal and effect must be atomic. Neither end-to-end design is built (outside
+repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:935-953`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0016-resolve-five-implementation-start-owner-decisions.md:34-45`).
 
 ### 8.4 Calibration — `PROVISIONAL`, new in `2.0.0`
 
@@ -823,7 +799,7 @@ The deepest part of the doctrine, and the part `1.1.0` had no concept of.
 Every measured figure must record its exact invocation and working directory. The
 lost rule produced a 245-vs-6 result for one pinned check, solely by changing the
 directory/invocation; the pre-reset source, rather than the reported 245-vs-0,
-is authoritative (`extract-decisions.md:75`).
+is authoritative (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/reviews/2026-07-31-delivery-model-restructure-assessment.md:187-215`).
 
 In a factory, **the gauges are themselves calibrated** against a reference, on a
 schedule, with a certificate and a due date. The rule that gives it force:
@@ -848,7 +824,8 @@ assay must be validated for specificity, accuracy, precision and robustness
 
 **Four consequences for Ranex, none of them currently satisfied:**
 
-1. **`mutmut` is not a code-quality tool. It is gauge calibration** — deliberately
+1. **`mutmut` is not a code-quality tool. It is a repeatability signal for the
+   operator's defect model** — deliberately
    introducing known defects and checking whether the instrument notices. The 880
    surviving mutants are not a backlog; they are a **calibration report** stating
    that this instrument fails to detect 880 known defects, 47 of them in
@@ -869,7 +846,7 @@ assay must be validated for specificity, accuracy, precision and robustness
 
 ## §9 Architectural Decisions
 
-Seven ADRs exist. `1.1.0` indexed twenty-one belonging to an architecture that was
+Eight ADRs exist. `1.1.0` indexed twenty-one belonging to an architecture that was
 deleted; they are not carried forward.
 
 | ADR | Decides |
@@ -893,7 +870,7 @@ The journal ADR — verify before append, never auto-create, and a checkpoint
 committing to log **size**, because size is what catches truncation and
 rollback — is deferred and unnumbered.
 
-### 9.1 Filtered historical contradictions — `CONFIRMED` as provenance, not authority
+### 9.1 Filtered historical contradictions — `PROVISIONAL` provenance, not authority
 
 - Old ADR-0005's qualified Bubblewrap worker lane is contradicted by current
   ADR-006's Landlock confinement; neither authorises worker orchestration.
@@ -902,8 +879,10 @@ rollback — is deferred and unnumbered.
 - Old ADR-0012's two readiness tiers and 21 gates are contradicted by the current
   capability-status model and one-slice delivery rule.
 
-These are recorded to prevent restoration, not to revive old authority
-(`extract-decisions.md:68-70`).
+These are recorded to prevent restoration, not to revive old authority (outside
+repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0005-select-local-static-orchestration-defaults.md:34-42`,
+`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0011-centralize-worker-orchestration-and-runtime-adapters.md:19`, and
+`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0012-separate-implementation-start-and-production-readiness.md:45`).
 
 ---
 
@@ -1012,7 +991,7 @@ is a byproduct.
 | **Goodhart.** Publishing a component's grade causes components to be optimised for the grade. Manufacturing's defence is that the gauge measures a physical property that cannot be faked without making a better part | Ranex's equivalent is the frozen, producer-unalterable target. This is what keeps the metric honest under optimisation pressure — it is not fussiness |
 | **Sample size.** Separating signal from variance needs many runs on comparable tasks. One repository will never produce that | The flywheel is a fleet-scale asset. This argues for a hosted product later, and is a real constraint on *when* data becomes valuable |
 
-### 11.5 Engineering risks — current, `CONFIRMED` unless noted
+### 11.5 Engineering risks — current, `PROVISIONAL` unless noted
 
 | ID | Risk |
 |---|---|
@@ -1020,17 +999,21 @@ is a byproduct.
 | `RISK-07` | **`approver_id` is an unauthenticated string.** No-self-approval is a comparison, so any caller can name an approver that is not themselves. The strongest remaining hole once confinement lands |
 | `RISK-08` | **Ranex does not gate its own repository.** `gates.yaml` requires a command a hermetic tree cannot run. This is why the SLICE-004 defect got through, and it is §8.4's disconnected gauge. **SLICE-006 and ADR-007 are open against it** — the first engineering work this map's calibration argument directly motivates |
 | `RISK-09` | **880 surviving mutants**, 47 in `verdict.py`, and **44 refusals no test executes**. The gauge's own calibration report, unaddressed |
-| `RISK-10` | **`mutmut` says nothing about `cli/main.py`** — its selection excludes the tests that exercise it. A green run there is not evidence, and `cmd_run` lives there |
+| `RISK-10` | Mutmut recorded **573 survivors and 65 unreached** in `cli/main.py`; the signal is weak because key e2e tests are excluded, not absent (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) |
 | `RISK-11` | **`evidence.json` is not append-only.** Signatures prevent forgery, but deletion turns a recorded failure into absence. Absence blocks, so this is denial rather than forgery — but it is unbounded |
-| `RISK-12` | **The journal has no operator-facing projection.** `ranex journal verify` recomputes chain integrity, but it does not explain run state or proof in plain language; the translator remains absent (`README.md:225-227`; `extract-research.md:89-94`) |
+| `RISK-12` | **The journal has no operator-facing projection.** `ranex journal verify` recomputes chain integrity, but it does not explain run state or proof in plain language; the translator remains absent (`README.md:225-227`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:122-153`) |
 | `RISK-13` | **`HOME` is still inherited by Ranex's own git queries**; symlink and submodule trees cannot be observed at all |
-| `RISK-14` | **The loop has never closed around a real agent.** No worker port, no dispatch. Five slices have hardened a measurement path that has never measured agent output. This is the largest untested assumption in the system, and hardening has no natural stopping point — every slice ends by naming the next strongest hole |
+| `RISK-14` | **The loop has never closed around a real agent.** No worker port, no dispatch. Four closed slices hardened a measurement path that has never measured agent output; one was withdrawn and one is open. This is the largest untested assumption in the system |
 | `RISK-15` | ~~**One implementer** is a weakness~~ — **reclassified in `2.2.0`.** One human operating a team of agents is the **premise**, not a defect (§1.3). What survives as a genuine risk is narrower: *the operator writes every gauge, and nothing checks the gauge.* Code proves the agent did not approve itself; nothing proves the human's gate was a good gate. That is `PR-06`'s burden and the reason §8.4 matters more here than in a multi-person shop |
 | `RISK-16` | arc42 is CC BY-SA 4.0; adopting the template as an adaptation in a public repository carries ShareAlike |
 | `RISK-17` | **Adopting more of TOGAF than §4.5's four parts recreates the 561-file failure.** This is not a hypothetical: the pre-reset tree was already TOGAF-shaped and produced zero product code. The ADM's overhead is amortised across an enterprise; there is one implementer here. Any proposal to add an ADM phase, a capability level, a maturity score or a compliance grade should be read as this risk materialising |
-| `RISK-18` | **This map is not yet conformant to ISO/IEC/IEEE 42010 — partially closed in `2.2.0`.** The stakeholder and concerns now exist and every requirement traces to one (§1.3), which was the defect the pre-reset tree described as *"every ADR anchored to an architecture anchored to nothing above it."* Still absent: **declared viewpoints** governing §5–§7's views, and **correspondences** — the checkable relations between description elements. Until those exist, the map can be wrong without anything noticing |
+| `RISK-18` | **This map is not yet conformant to ISO/IEC/IEEE 42010.** It has stakeholder, concerns, viewpoints and correspondences; model kinds are absent and two viewpoints govern no view (§14.3) |
 | `RISK-19` | **The journal does not detect rollback or truncation.** `ranex journal verify` recomputes an extant chain, but an internally consistent earlier prefix verifies after later rows are removed; the deferred size checkpoint is the named remedy (`README.md:256-259`; §9) |
 | `RISK-20` | **Git ancestry establishes target-before-work only while history is not rewritten.** Signed commits would expose a rewrite, but Ranex verifies neither ancestry nor commit signatures today (`src/ranex/cli/main.py:976-1057`); apparent precedence remains forgeable |
+| `RISK-21` | **Concern completeness is internal consistency, not completeness.** The sole stakeholder is also architect; a blind spot cannot break the concern↔requirement relation. The operator raised skill and tool-server poisoning earlier, but it is not among `C-01`–`C-04` |
+| `RISK-22` | **Mutation testing validates the operator's model of defects, not that model's validity.** It measures repeatability and does not replace a reviewer who challenges the defect model |
+| `RISK-23` | **The coverage table proves only the stated hole exists.** It does not validate the concern set, the mapping method, or the product reasoning |
+| `RISK-24` | **One complete thread is operator-selected and likely the easiest available.** Passing it proves the mechanism runs, not that it handles the cases behind `C-02`, `C-03` or `C-04` |
 
 ### 11.6 Sequencing decisions — owner, 2026-08-03
 
@@ -1042,12 +1025,12 @@ measuring nothing protects nothing. `RISK-06` stays open and is now scheduled
 rather than floating.
 
 **Hardening `C-01` continues.** The owner was shown §1.3's coverage table —
-`C-02`, `C-03` and `C-04` are thin or empty, and five slices have gone to `C-01` —
+`C-02`, `C-03` and `C-04` are thin or empty, and four closed slices have gone to `C-01` —
 and chose to keep hardening the foundation. Recorded as a decision with its cost
 stated: **the other three concerns stay unserved for now**, and `C-02` in
 particular has nothing at all.
 
-**The first finish line — owner, `CONFIRMED`, refined twice on 2026-08-03:**
+**The first finish line — owner, `PROVISIONAL`, refined twice on 2026-08-03:**
 
 > **One complete thread: Idea → Behaviour → Result.**
 > **The numbers come after that thread exists, not before it.**
@@ -1177,7 +1160,7 @@ the one that matters; a ledger recording only successes is a brochure.
 | `SLICE-005` confinement | **Withdrawn 2026-08-03 before any implementation**, never committed. ADR-006 stands; the slice was re-sequenced behind SLICE-006 | — |
 | `SLICE-006` gate a real test suite | Open. Nothing built. Closes `RISK-08` — reconnecting the gauge to the part, so that Ranex can gate Ranex | — |
 
-**The pattern across five slices, stated because it is the most reliable
+**The pattern across four closed slices, stated because it is the most reliable
 information in this document:** every slice that was closed on the implementer's
 own report was later reopened. Every reopening was caused by a measurement the
 implementer did not run. The project's own history is the strongest available
@@ -1209,9 +1192,8 @@ them is what turns "the sections are full" into "the concerns are answered."
 
 **The finding this produces on its first application:** `VP-05` and `VP-06` frame
 real concerns and govern nothing. **Two of the operator's four worries have no
-view in this map at all** — not a thin one, none. That is precisely the defect the
-42010 completeness criterion exists to expose, and it agrees with §1.3's
-independently-measured coverage table.
+view in this map at all** — not a thin one, none. The coverage accounting does not
+validate the concern set or its method (`RISK-21`; `RISK-23`).
 
 ### 14.2 Correspondences and correspondence rules — `PROVISIONAL`
 
@@ -1222,10 +1204,10 @@ correspondence rule is one a check can enforce. These are the map's own gauges.
 |---|---|---|---|
 | `CR-01` | requirement → concern | Every `PR-*` names at least one `C-*` | **Yes** — trivially checkable |
 | `CR-02` | concern → view | Every `C-*` is addressed by at least one view via a viewpoint | **Yes** — and it currently **fails** for `C-02` and `C-03` |
-| `CR-03` | capability → evidence | Every §1.5 row marked `CONFIRMED` names a passing test | **Yes** |
+| `CR-03` | capability → evidence | Every §1.5 row marked `CONFIRMED` names a passing test | **No** — the rows name slices or prose, not tests |
 | `CR-04` | risk reference → risk | Every `RISK-nn` mentioned in prose exists in a risk table | **Yes** |
 | `CR-05` | section reference → section | Every `§n.n` cross-reference resolves | **Yes** |
-| `CR-06` | BOM row → gauge | Every part in §5.5 names a gauge; `built` names a test; `calibrated` names a mutation or negative-control result | **Yes** — once the BOM exists |
+| `CR-06` | BOM row → gauge | Every part in `governance/bom.yaml` names a gauge; `built` names a test; `calibrated` names a mutation or negative-control result | **Partly** — structural checks only (§5.5) |
 | `CR-07` | map → repository | Slice and ADR names in §9 and §13 exist on disk | **Yes** |
 
 `CR-01`, `CR-04`, `CR-05` and `CR-07` are mechanical and small. **`CR-02`
@@ -1250,10 +1232,7 @@ not be claimed publicly on that basis** — buy the standard first.
 Update when a slice closes, an ADR is accepted, or a `PROVISIONAL` claim gains or
 loses evidence. Promote to `CONFIRMED` only on executed evidence; demote whatever
 a slice contradicts. Record the command and its working directory beside every
-number (`extract-decisions.md:75`).
+number (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/reviews/2026-07-31-delivery-model-restructure-assessment.md:187-215`).
 
-**The next artefact is the bill of materials (§5.5), not a longer version of this
-document.** `1.1.0` was a good document that failed because it was prose, and
-prose has no size limit, no mechanism forcing it to match reality, and no way to
-be wrong out loud. If the response to "we need a plan" is "write more here," that
-is the failure repeating.
+**The bill of materials is `governance/bom.yaml`; keep it aligned with executable
+evidence rather than expanding this map.**
