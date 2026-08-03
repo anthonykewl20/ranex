@@ -37,6 +37,9 @@ pytest_add_cli_args_test_selection = [
     # e2e tests launch Python subprocesses, where mutmut's in-process
     # trampoline is not initialised, and assert docstrings the trampoline strips.
     "--ignore=tests/e2e/",
+    # Same subprocess shape as e2e: it drives `python -m ranex.cli.main` and the
+    # trampolined tree dies on the absent MUTANT_UNDER_TEST env var.
+    "--ignore=tests/integration/test_kernel_materialise_reference.py",
     "--ignore=tests/security/test_slice003_bind_mount_identity.py",
     # Mutating key confinement can write a generated private key into the real
     # repository before the copied test observes the refusal has failed.

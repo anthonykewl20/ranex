@@ -43,7 +43,9 @@ from ranex.foundation.signing import (
     sign_evidence,
 )
 from ranex.governed_execution.api import (
+    Claim,
     Evidence,
+    Gate,
     Verdict,
 )
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
@@ -53,11 +55,13 @@ from ranex.governed_execution.domain.admission import (
     RejectionReason,
     admit,
 )
+from ranex.governed_execution.domain.task import TaskCandidate, TaskDispatch
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     KeyringError,
     load_keyring,
     load_keyring_text,
 )
+from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
@@ -1149,6 +1153,143 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
     return EXIT_FAIL
 
 
+def _task_committed_blob(worktree: Path, commit: str, candidate: str, description: str) -> bytes:
+    """Read a task trust root from the dispatched commit, never from its disk.
+
+    The harness owns the worktree after dispatch, so its catalog and keyring on
+    disk are assertions rather than authority.  Object verification also keeps
+    a repository-local replacement ref from answering with bytes that the HEAD
+    commit does not carry.
+    """
+
+    named = named_within_repository(worktree, candidate)
+    relative = named.relative_to(worktree).as_posix()
+    content = verified_blob_at_path(worktree, commit, relative, git)
+    if content is None:
+        raise ValueError(
+            f"commit {commit} carries no {description} at {relative}"
+        )
+    return content
+
+
+def _latest_task_dispatch(entries: list[dict[str, object]], task_id: str) -> dict[str, object] | None:
+    """Return the latest dispatch the kernel recorded for this task identifier."""
+
+    return next(
+        (
+            record
+            for record in reversed(entries)
+            if record.get("type") == "task-dispatch"
+            and record.get("task_id") == task_id
+        ),
+        None,
+    )
+
+
+def cmd_task_dispatch(args: argparse.Namespace) -> int:
+    """Create an external worktree and record the immutable dispatch facts."""
+
+    try:
+        if not args.task_id.strip():
+            raise ValueError("--task-id must be non-blank")
+        raw_worktree = Path(args.worktree)
+        if os.path.lexists(raw_worktree):
+            raise ValueError(f"--worktree already exists: {raw_worktree}")
+        target = Path(args.target).resolve()
+        worktree = raw_worktree.resolve()
+        target_check = git(target, "rev-parse", "--is-inside-work-tree")
+        if target_check.returncode != 0 or target_check.stdout.strip() != "true":
+            raise ValueError(f"--target is not a git working repository: {target}")
+        base_commit = head_commit(target)
+        if len(base_commit) != 40 or any(
+            character not in "0123456789abcdef" for character in base_commit
+        ):
+            raise ValueError(f"--target HEAD is not a 40-hex commit: {base_commit!r}")
+        created = git(target, "worktree", "add", str(worktree), "HEAD")
+        if created.returncode != 0:
+            raise ValueError(f"cannot create worktree: {created.stderr.strip()}")
+        Journal(Path(args.journal).resolve()).append(
+            TaskDispatch(args.task_id, str(worktree), base_commit)
+        )
+    except (ToolchainError, ValueError, OSError, sqlite3.Error) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    print(f"DISPATCHED  task={args.task_id}  worktree={worktree}")
+    return EXIT_PASS
+
+
+def cmd_task_judge(args: argparse.Namespace) -> int:
+    """Materialise a candidate from the dispatched worktree without approving it."""
+
+    try:
+        journal_path = Path(args.journal).resolve()
+        if not journal_path.is_file():
+            raise ValueError(f"no task dispatch recorded for {args.task_id!r}")
+        journal = Journal(journal_path)
+        if not journal.verify():
+            raise ValueError(f"journal is invalid; refusing task {args.task_id!r}")
+        dispatch = _latest_task_dispatch(journal.entries(), args.task_id)
+        if dispatch is None:
+            raise ValueError(f"no task dispatch recorded for {args.task_id!r}")
+        recorded_worktree = dispatch.get("worktree")
+        if not isinstance(recorded_worktree, str) or not recorded_worktree:
+            raise ValueError(f"invalid dispatch record for task {args.task_id!r}")
+        worktree = Path(recorded_worktree)
+        if Path(args.emitted_worktree).resolve() != worktree:
+            raise ValueError(f"emitted worktree does not match dispatch for {args.task_id!r}")
+        commit = head_commit(worktree)
+        if args.emitted_commit != commit:
+            raise ValueError(f"emitted commit does not match HEAD for {args.task_id!r}")
+
+        catalog_source = _task_committed_blob(
+            worktree, commit, args.gate_catalog, "gate catalog"
+        )
+        keyring_source = _task_committed_blob(
+            worktree, commit, args.producers, "producer keyring"
+        )
+        evidence_path = resolve_within_repository(worktree, args.evidence)
+        keyring = load_keyring_text(keyring_source.decode("utf-8"), args.producers)
+        admission = admit_records(evidence_path, keyring, worktree)
+        definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
+        gate = Gate(
+            gate_id=definition.gate_id,
+            rule_id=definition.rule_id,
+            required_claims=tuple(
+                Claim(claim_id=claim.claim_id, command_digest=claim.command_digest)
+                for claim in definition.required_claims
+            ),
+            blocking=definition.blocking,
+        )
+        subject = subject_digest_for(worktree, commit)
+        missing = tuple(
+            sorted(
+                claim.claim_id
+                for claim in gate.required_claims
+                if not any(
+                    item.satisfies(claim, subject) for item in admission.evidence
+                )
+            )
+        )
+        journal.append(TaskCandidate(args.task_id, gate.gate_id, subject, missing))
+    except (
+        KeyringError,
+        SubjectError,
+        ToolchainError,
+        ValueError,
+        TypeError,
+        KeyError,
+        OSError,
+        sqlite3.Error,
+        json.JSONDecodeError,
+    ) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_FAIL
+
+    print(f"CANDIDATE  task={args.task_id}  gate={gate.gate_id}  subject={subject}")
+    return EXIT_PASS if not missing else EXIT_FAIL
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Run a command and record what was observed. Never judge it.
 
@@ -1558,6 +1699,26 @@ def build_parser() -> argparse.ArgumentParser:
     kg = sub.add_parser("keygen", help="generate a producer signing key")
     kg.add_argument("--producer", required=True, help="identity the key belongs to")
     kg.set_defaults(func=cmd_keygen)
+
+    task = sub.add_parser("task", help="dispatch and materialise task candidates")
+    task_actions = task.add_subparsers(dest="action", required=True)
+    dispatch = task_actions.add_parser("dispatch", help="create a task worktree")
+    dispatch.add_argument("--task-id", required=True, help="task identifier")
+    dispatch.add_argument("--target", required=True, help="external git repository")
+    dispatch.add_argument("--worktree", required=True, help="new external worktree")
+    dispatch.add_argument("--journal", required=True, help="external task journal")
+    dispatch.set_defaults(func=cmd_task_dispatch)
+
+    judge = task_actions.add_parser("judge", help="materialise a task candidate")
+    judge.add_argument("--task-id", required=True, help="task identifier")
+    judge.add_argument("--emitted-worktree", required=True, help="harness worktree")
+    judge.add_argument("--emitted-commit", required=True, help="harness commit")
+    judge.add_argument("--gate", required=True, help="gate identifier")
+    judge.add_argument("--gate-catalog", required=True, help="committed gate catalog")
+    judge.add_argument("--evidence", required=True, help="worktree evidence path")
+    judge.add_argument("--producers", required=True, help="committed producer keyring")
+    judge.add_argument("--journal", required=True, help="external task journal")
+    judge.set_defaults(func=cmd_task_judge)
     return parser
 
 

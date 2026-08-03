@@ -162,7 +162,12 @@ def test_concurrent_appends_preserve_the_digest_chain(tmp_path: Path) -> None:
 
     path = tmp_path / "j.sqlite3"
     Journal(path).append(make_evaluation("initialise"))
-    context = multiprocessing.get_context("spawn")
+    # fork, not spawn: a spawn child re-executes the parent's __main__, and
+    # under mutmut that is mutmut's own module, whose unguarded
+    # set_start_method('fork') kills every child before the test begins. The
+    # property under test — chain integrity across concurrent processes — is
+    # the same under either start method.
+    context = multiprocessing.get_context("fork")
     start = context.Event()
     results = context.Queue()
     processes = [
