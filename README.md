@@ -269,9 +269,8 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** `docs/slices/SLICE-007-trimmed-fork-to-the-kernel.md` — fork
-`opencode` at `v1.18.11`, trim the keep-set, lock the plugin surface, and bridge
-run output to the kernel through commit-then-materialise.
+**Active slice:** none — SLICE-007 closed 2026-08-03; the next slice opens
+against an owner decision (unpark SLICE-006, or first delegation).
 
 Ranex now observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment
@@ -280,9 +279,9 @@ cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** complete the trimmed fork bridge first (dispatch to journal, with
-kernel-verdict `CANDIDATE`), then first delegation, then handbooks. SLICE-006 is
-parked and recoverable from git history.
+**Next:** the owner picks the next slice — unpark SLICE-006 (Ranex gates a real
+suite) or open first delegation — then handbooks. SLICE-006 stays parked and
+recoverable from git history until then.
 
 ## Completed slices
 
@@ -306,6 +305,16 @@ parked and recoverable from git history.
   reproduced six ways to get a false PASS *around* the binding, all one root
   cause, all recorded and frozen as strict expected-failure tests, all assigned
   to the next slice.
+- **SLICE-007-trimmed-fork-to-the-kernel** — Ranex owns its harness: `opencode`
+  forked at `v1.18.11` (`012c2f57`), trimmed to the keep-set, plugin surface
+  locked to compiled-in built-ins, and startup fails closed unbridged. The
+  kernel gained `task dispatch|judge`: the dispatcher records task→worktree in
+  the hash-chained journal, the harness commits and emits references, and the
+  kernel cross-checks against its own record, materialises the commit, and
+  journals `CANDIDATE` — never a PASS; the stamp stays a human's, out-of-band.
+  Proven end-to-end by the gear-mesh e2e running the loop on a deterministic
+  in-fork model with zero credentials. Closed by
+  `docs/adr/ADR-008-fork-opencode-and-bridge-to-the-kernel.md`.
 - **SLICE-004-hermetic-observation** — the six frozen false-PASS paths are shut.
   The bound command runs against a **materialisation of the subject commit**
   whose every blob was checked against the object id the tree carries, in an

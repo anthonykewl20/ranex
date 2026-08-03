@@ -1,6 +1,7 @@
 # SLICE-007 — trimmed fork to the kernel
 
-**Status:** open
+**Status:** done
+**Closed:** 2026-08-03 — all five criteria proven; fork at six commits on `ranex-trim` (sibling repo `ranex-harness`); mutmut 3006 mutants, 1685 killed, 1011 survived (task CLI subprocess-excluded like e2e, weak evidence)
 **Opened:** 2026-08-03
 **ADR:** `docs/adr/ADR-008-fork-opencode-and-bridge-to-the-kernel.md`
 **Closes:** ADR-008 runtime confirmation and `§17.5` gear-mesh. SLICE-006 is parked behind this slice.
