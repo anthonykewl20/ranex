@@ -31,8 +31,10 @@ dart went.
 
 ## What Ranex is
 
-Ranex is a **control plane**, not an agent. It never implements an agent loop and
-never asks a model what to do next.
+Ranex is building **its own harness** — a trimmed fork of opencode, molded so
+that every step is judged by a kernel that stays outside the loop (decided
+2026-08-03; the kernel described below is what exists today). The kernel never
+asks a model what to do next.
 
 > Ranex is `make` for a nondeterministic compiler. `make` invokes gcc; nobody
 > asks gcc what to build next.

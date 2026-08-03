@@ -184,14 +184,18 @@ one, stop and raise it.
 
 ## Decisions already made — do not relitigate
 
-- Ranex is a **control plane**, not an agent harness. It never implements an
-  agent loop.
-- The worker is **Claude Code** (Agent SDK / headless), because Max plan
-  entitlement is bound to that harness. Workers stay behind a port and are
-  replaceable.
-- **Ranex never trusts worker output.** It reads the diff on disk and runs
-  checks. The agent's own summary is discarded.
-- **The kernel merges; workers never do.** One git worktree per task.
+- Ranex builds **its own harness**: a trimmed fork of opencode (MIT), molded so
+  every workflow step calls the kernel. Decided 2026-08-03, overturning the
+  control-plane doctrine. The wall stands: harness and kernel are separate
+  processes — hooks collect, the kernel judges; the loop is confined from the
+  keys and the journal.
+- Delegation is foreman → department supervisors → workers, written clean-room.
+  Orchestration patterns are learned from oh-my-openagent; its code is SUL-1.0
+  and never enters this tree, converted or not. Hermes and OpenClaw are feature
+  quarry under the adoption rule, never a base.
+- **Ranex never trusts worker output — including its own loop's.** It reads the
+  diff on disk and runs checks. The agent's own summary is discarded.
+- **The kernel merges; the harness never does.** One git worktree per task.
 - Intake produces a **flow graph the non-technical user approves**. Chain is
   graph → paths → scenarios → contract tests → gates. The approved graph is the
   root of trust.
@@ -199,7 +203,9 @@ one, stop and raise it.
   is enforced.
 - "Deterministic" describes the **process and the verdict**, never the generated
   code. Never claim otherwise in docs or output.
-- Hermes is **not** a base. Removed 2026-08-01. Do not reintroduce it.
+- Hermes is **not** a base; removed 2026-08-01 after an audit measured zero
+  contribution. It and OpenClaw are feature quarry under the adoption rule,
+  never a base.
 - License is MIT. Monetization will come from private features layered on top,
   not from restricting the kernel.
 

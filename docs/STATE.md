@@ -3,48 +3,40 @@
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
 **Updated:** 2026-08-03
-**Phase:** map — the architecture description, not a slice
+**Phase:** map — v3.0.0 complete, ready to direct; awaiting owner's go
 **Active slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md`
 
 ## Where we stopped
 
-**The owner's focus is the map. SLICE-006 is open and deliberately untouched.**
-Stated plainly: *"we are not doing any slice, we are still writing the map."*
-Do not start it, and do not offer to.
+**The map carries the full thesis and is ready to direct the build.** Owner
+decided the full harness — Ranex owns the restaurant: harness = trimmed opencode
+fork (MIT, pinned commit) molded to the kernel; kernel stays a separate process
+(hooks collect, kernel stamps); delegation = foreman → supervisors → workers,
+clean-room patterns from oh-my-openagent (its code is SUL-1.0 — never copied,
+converted or not); governance/ = handbook library; Web UI parked. MAP §17 is the
+trim spec: keep/cut/assess, horsepower-vs-fuel-economy measures, customization
+policy (few knobs, deep customization blocked). CLAUDE.md and README aligned.
 
-`docs/MAP.md` went `1.1.0` → `2.7.0` and moved into the capped docs set. It now
-names one stakeholder — a solo operator running AI agents — with four concerns in
-his own words, every requirement traced to one, six viewpoints, seven
-correspondences, and the pre-reset corpus filtered rather than re-derived.
-`governance/bom.yaml` holds 15 parts for one thread, with a checker.
-
-Three adversarial passes ran: hy3 on the claims, DeepSeek on the structure, and a
-`gpt-5.6-sol` xhigh audit of the map against the code. The audit found **15 wrong
-`CONFIRMED` labels, 28 citations to files that do not exist, and 10 places the
-map contradicted the code.** All corrected; the reasoning is in the commits.
+**Awaiting the owner:** declare the map done, then pick the first step — the
+fork ADR (recorded order, MAP §0.14) or SLICE-006. **Do not start either until
+told.**
 
 ## Next
 
-1. **Finish the map.** `VP-05` and `VP-06` govern no view, so two of four
-   concerns have nothing behind them and `CR-02` fails on purpose. Model kinds
-   are absent. Only the first thread is enumerated in Baseline/Target/Gap.
-2. **Audit `CLAUDE.md` against the code.** It has never been checked, and both
-   `README.md` and `MAP.md` carried false claims when they finally were.
-3. SLICE-006, then confinement — **only once the owner says the map is done.**
+1. **The fork ADR** — researched per ADR-003: pinned opencode commit, trim list
+   confirmed against code (§17.3), kernel-bridge protocol, vendored prior art,
+   sad paths. Then: trimmed fork → first delegation → handbooks.
+2. SLICE-006, then confinement — only once the owner unblocks them. Confinement
+   is now load-bearing for the harness wall.
+3. Map gaps kept on purpose: VP-05/VP-06 govern no view until the harness and
+   SLICE-006 give them one; §17 numbers are measured at fork time.
 
 ## Known limits
 
-- **The BOM checker is structural, not semantic.** It calls `Path.is_file()`, so
-  an empty test file passes. The map and its checker can drift together, green.
-- **The concern set is self-declared** by the only stakeholder, who is also the
-  architect, so coverage is internal consistency and not completeness. The owner
-  named tool-server poisoning as a worry this session and it is **not** among the
-  four. Nothing in the map can notice that.
-- Mutation testing measures repeatability, not validity: it checks the gauge
-  against the operator's own model of defects, never whether that model is right.
-- **`mutmut` does report on `cli/main.py`** — 573 survivors, 65 unreached. The
-  older claim that it "says nothing" there was false and is corrected everywhere.
-- The journal detects an edited row but not a removed one; truncate the tail and
-  the surviving prefix verifies clean.
-- `approver_id` unauthenticated; same-uid signing-key theft reproduced and open;
-  Ranex still does not gate its own repository.
+- `docs/MAP.html` is a projection of v2.8.0 — stale against 3.0.0; regenerate or
+  delete once the map settles.
+- Fork debt recorded, not solved: the trim must stay rebaseable.
+- Clean-room is a discipline, not yet a check.
+- The journal detects an edited row but not a removed one.
+- `approver_id` unauthenticated; same-uid key theft open; Ranex does not gate
+  its own repo yet.

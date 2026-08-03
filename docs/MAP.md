@@ -10,11 +10,11 @@ this map.
 
 | | |
 |---|---|
-| Version | `2.7.0` |
+| Version | `3.0.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`), **code-audit corrections** (`2.7.0`). See §0.5–§0.12 |
+| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`), **code-audit corrections** (`2.7.0`), **maturity ledger and per-problem diagrams** (`2.8.0`), **the owner's restaurant — harness decision** (`3.0.0`). See §0.5–§0.14 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
-| Structure | [arc42](https://arc42.org/overview) §1–12, plus §13. See §0.4 for licensing |
+| Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
 
 ---
@@ -209,6 +209,81 @@ mutation/coverage reasoning, and operator-selected first thread. Fifteen
 `CONFIRMED` labels were demoted because policy, decisions, owner statements and
 history are not executed implementation evidence; the limits are `RISK-21`–`24`.
 
+### 0.13 What changed in `2.8.0` — the maturity ledger and per-problem diagrams
+
+The owner's complaint against `2.7.0`: the labels are correct but the picture is
+vague — a reader cannot say at a glance which mechanisms are proven and which
+are not, nor see how each of the four concerns is actually defended. Two
+additions, and nothing else changed:
+
+1. **§15, the maturity ledger.** Every mechanism in one of two columns —
+   MATURE/PROVEN (built and carrying executed evidence, or proven elsewhere by
+   code the world already runs and available to adopt) or IMMATURE/UNPROVEN
+   (decided, designed, or vague, with nothing running behind it). Each row names
+   its evidence or its absence.
+2. **§16, per-problem architecture.** One diagram per concern — `C-01` through
+   `C-04` — drawing the defence chain step by step, each step marked built,
+   open or absent, with the residual holes named.
+
+The owner also stated the adoption rule as a standing instruction: where mature,
+widely-used open source already solves a mechanism, Ranex grabs it rather than
+generating fresh code — and adopts it by **copying it into Ranex's own
+infrastructure to improve and maintain, never by adding a dependency** (§15.3).
+`opensrc` is installed and caching sources locally for exactly this.
+
+A re-audit of the map against the tree accompanied this revision: every line
+reference, count and cross-reference was re-checked on 2026-08-03. One stale
+number was found and corrected (§5.3, suite count); every other citation held.
+
+### 0.14 What changed in `3.0.0` — the owner's restaurant; the harness decision
+
+Owner working sessions on 2026-08-03 changed the product thesis. Recorded the
+same way as `2.0.0` — as a change of position, with what it overturns named:
+
+1. **Ranex becomes a full harness.** Overturned: *control plane, not an agent
+   harness* and *never implements an agent loop*. The owner chose the full
+   harness, agent loop included: **Ranex owns the restaurant.**
+2. **The restaurant, in the owner's words.** Ranex owns the restaurant and is the
+   owner's assistant for managing different restaurant chains. The kernel is the
+   library of handbooks, manuals, rules and recipes that every employee works
+   from. Each department has its own manager/supervisor and main worker.
+3. **The harness is a trimmed fork of opencode** (MIT). Forked at a pinned
+   commit, bloat stripped (desktop, web, console, infra), the lean agent core
+   kept and molded to the kernel. The cost is recorded: upstream moves fast, so
+   the diff must stay small enough to rebase — or the fork silently becomes a
+   second codebase to maintain. **§17 is the trim spec**: what is kept, what is
+   cut, what must be assessed against code, the named overheads and bottlenecks,
+   and the customization policy — few knobs, deep customization blocked.
+4. **The wall becomes a process boundary.** Harness (model-driven, TypeScript,
+   forked) and kernel (code-only, Python, proven) run as separate processes.
+   Hooks inside the harness collect; the kernel outside judges and stamps —
+   reads disk, holds keys, writes the journal. Confinement (ADR-006) moves from
+   scheduled hardening to load-bearing wall.
+5. **Delegation, clean-room.** The orchestration patterns — foreman → department
+   supervisors → workers, category→model routing, plan-before-execute — are
+   studied from oh-my-openagent and reimplemented as original code. Its code is
+   SUL-1.0 (internal use only; no commercial distribution; derivative works
+   included) and never enters this tree, converted or not. hermes-agent and
+   OpenClaw remain feature quarry under §15.3; hermes was audited and rejected
+   as a base on 2026-08-01 (zero measured contribution), and that verdict stands.
+6. **The kernel handbook.** `governance/` becomes the handbook library every
+   agent reads — rules, manuals, recipes. Reading guides; only the kernel
+   enforces. *A rule an agent can read is a suggestion* survives verbatim.
+7. **The Web UI is parked.** Not designed, not built, not discussed until the
+   harness works. When it comes, its features are sliced from the quarry under
+   §15.3, one ADR-governed copy at a time.
+8. **What does not change.** The kernel invariants (§5.2). *Does not improve
+   aim.* The maturity ledger (§15) and per-problem diagrams (§16) — the evidence
+   is the evidence.
+
+`PROVISIONAL` throughout: nothing is built against any of this yet.
+
+**The build order (owner, 2026-08-03):** this map → one researched ADR for the
+fork (pinned commit, trim list, kernel-bridge design) → the trimmed fork talking
+to the kernel → first delegation (one foreman, one worker, one task, judged by
+the kernel) → the handbooks. SLICE-006 stays open and untouched until the owner
+says the map is done.
+
 ---
 
 ## §1 Introduction and Goals
@@ -269,9 +344,26 @@ bet that current models are weak and is obsoleted by the next release. **Ranex i
 a bet that models get strong**, and becomes more necessary with each capability
 increase. If a single claim in this document is worth defending, it is this one.
 
-### 1.2 What Ranex is — `PROVISIONAL`; the bounded mechanism `CONFIRMED`
+### 1.2 What Ranex is — `PROVISIONAL`, restated in `3.0.0`; the bounded mechanism `CONFIRMED`
 
-Ranex is **the gauge**.
+Ranex is **the gauge — and as of `3.0.0`, the restaurant that owns it.**
+
+In the owner's words: **Ranex owns the restaurant.** It is the owner's assistant
+for managing different restaurant chains. The kernel is **the library of
+handbooks, manuals, rules and recipes** that every employee works from. Each
+department has its own manager/supervisor and main worker.
+
+Concretely: Ranex builds **its own harness** — a trimmed fork of opencode (MIT),
+molded so that every workflow step calls the existing kernel: specify, freeze,
+execute, measure, record, approve. The proven part (§15.1) is not discarded; it
+becomes the spine. Orchestration is written in-house, its patterns learned from
+oh-my-openagent — never its SUL-licensed code (§0.14). The Web UI is parked.
+
+**The wall, restated for a producer and a gauge under one roof:** the harness
+loop is model-driven; the kernel is code; they run as separate processes. Hooks
+collect; the kernel judges — reads disk, holds keys, writes the journal, is the
+only thing that stamps. If that wall falls, the restaurant grades its own dishes
+— exactly the failure below.
 
 The age has an abundance of ways to produce software — models, harnesses, skills,
 tool servers, frameworks, agents — multiplying weekly, each shipping with its own
@@ -424,7 +516,9 @@ around a real agent even once.
 | The docs layer is capped to a fixed set of allowed documents | `CLAUDE.md`, enforced by `tests/contract/test_docs_discipline.py` |
 | `diff-cover` at 100% on changed lines; `mutmut` before a slice closes | SLICE-004 |
 | Licence is MIT | `README.md` |
-| Hermes is not a base and must not be reintroduced. Removed 2026-08-01 | `CLAUDE.md` |
+| Hermes is not a base; removed 2026-08-01 after an audit measured zero contribution. It and OpenClaw are feature quarry under §15.3, never a base | `CLAUDE.md`, git `d9db059e98` |
+| The harness is a fork of opencode at a pinned commit; the fork point and trim list are recorded in its ADR; MIT attribution preserved | owner decision 2026-08-03 |
+| oh-my-openagent is patterns-only: its code is SUL-1.0 (internal use only, no commercial distribution, derivative works included) and never enters this tree, converted or not | owner decision 2026-08-03 |
 | **Inherited ADR-0008:** frozen tests, red-then-green, and no maker approval | Still binding; its cycle-record/tier machinery is not (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0008-make-tdd-the-default-development-discipline.md:20`) |
 | **Inherited ADR-0014:** Python, with a measured rather than fashionable performance escape | Still binding (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0014-fix-the-implementation-language-and-performance-escape-hatch.md:91`) |
 | **Inherited ADR-0019:** `uv` is the toolchain manager and command runner | Still binding (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0019-declare-uv-as-the-python-toolchain-manager.md:50`) |
@@ -479,13 +573,18 @@ can read is a diary. See `RISK-03`.
 **In scope:** fixing the target before the work; measuring the result with code;
 binding the measurement to an exact subject; recording it so an outsider can check
 it; calibrating the instruments that do the measuring; refusing when any of these
-cannot be done honestly.
+cannot be done honestly — **and, as of `3.0.0`, the harness itself**: a trimmed
+opencode fork with the kernel as its operational spine, delegation from foreman
+through department supervisors to workers, and the kernel handbook.
 
 **Explicitly not:**
 
-- **An agent harness.** `CLAUDE.md` — Ranex never implements an agent loop and
-  never asks a model what to do next. See §4.3 for why this is load-bearing rather
-  than stylistic.
+- **Model output as authority.** The harness uses models to work; nothing a model
+  says is a verdict, an approval, or a control decision. The kernel never asks a
+  model what to do next.
+- **A harness built on code it cannot own.** opencode is forked under MIT and
+  trimmed; hermes-agent was audited and rejected as a base; oh-my-openagent's
+  code can never be copied in (§2.1).
 - A general-purpose assistant, a prompt library, or a model-inference business.
 - A claim about the quality of generated code (§1.2).
 
@@ -542,36 +641,45 @@ The argument that the failure does not transfer:
 inspection, which is the step that just became scarce.** `PROVISIONAL`, but it
 survives the obvious objection, which is more than the `1.1.0` thesis managed.
 
-### 4.3 Ranex is the quality system, not the factory — `PROVISIONAL` policy
+### 4.3 Ranex owns the factory; the inspection room stays locked inside it — `PROVISIONAL` policy, restated in `3.0.0`
 
-This reconciles the factory framing with §3.2's refusal to be a harness.
+`2.8.0` placed Ranex outside the factory: the quality system, never the machine
+tools. `3.0.0` takes the owner's decision to own the whole restaurant — and keeps
+the only part of that old framing that was load-bearing: **the inspection room
+stays locked.**
 
-A factory contains machine tools **and** a quality system — gauges, inspection
-stations, travelers, the andon cord, incoming inspection, process control. Nobody
-builds their own machine tools; they are bought, and replaced when better ones
-ship.
+**The machine tool is now owned, not bought — with one exception.** The harness
+is Ranex's own fork of opencode: trimmed, molded, and maintained here, pinned to
+an upstream commit for as long as rebasing stays cheaper than owning the diff.
+**The models stay bought.** Providers are swappable behind the harness's routing;
+the answer to *which model should I use* is still **measure it** (§11.3).
 
-**The models and harnesses are the machine tools. Ranex is the quality system.**
+Three consequences, restated:
 
-Three consequences:
+1. A quality system that also runs the machines is still a quality system **only
+   while the two are walled**: harness and kernel are separate processes; the
+   loop is confined from the keys and the journal; the verdict is produced by the
+   kernel alone. Without the wall, this is the failure §1.1 describes, now
+   in-house.
+2. The harness produces the work; **the kernel produces the only stamp that ships
+   a part.**
+3. Forking the machine tool is a cost, recorded: upstream opencode moves fast,
+   and the trim must stay small enough to rebase — or Ranex silently acquires a
+   second codebase to maintain, which is the 561-files failure in code form.
 
-1. A quality system that also operates the machine is not a quality system. It is
-   a machine with an opinion about itself — which is the failure §1.1 describes.
-2. The proliferation of models and harnesses is **not Ranex's problem to solve.**
-   A factory does not agonise over which lathe to buy, because the gauge reads the
-   same either way. Ranex's answer to *which model should I use* is **stop asking;
-   the choice is now cheap to get wrong and measurable when it is.**
-3. Being outside the harness is what makes the verdict worth anything, and it is
-   also what lets Ranex outlive any particular harness. A harness is a bet on
-   today's tooling; a gauge is not.
-
-### 4.4 Strategy decisions — `PROVISIONAL`
+### 4.4 Strategy decisions — `PROVISIONAL`, updated `3.0.0`
 
 Deterministic over probabilistic enforcement; fail-closed, where `NOT_ASSESSED`
 is never a pass; evidence bound to exact subject digests; separation of producer
-and approver; containment over control — Ranex does not need to govern what
-happens inside the worker's loop, only what is allowed out of it; local-first
-before anything distributed.
+and approver; containment over control — now applied inward: the harness loop is
+confined from the keys and the journal, and is judged by what it leaves on disk.
+Local-first before anything distributed.
+
+**The phasing (owner, 2026-08-03):** first the harness — the trimmed fork
+talking to the kernel; then delegation — foreman, supervisors, workers, written
+clean-room; then the kernel handbooks. The Web UI is parked, and when it comes
+its features are sliced from the quarry under §15.3, one ADR-governed copy at a
+time.
 
 ### 4.5 What we take from TOGAF, and what we refuse — `PROVISIONAL`, new in `2.1.0`
 
@@ -641,7 +749,11 @@ Tracked as `RISK-17`.
 | `policy/` | Gate catalog loading from the committed tree | **`CONFIRMED`** |
 | `cli/` | Operator entry point, path confinement, subject materialisation, toolchain pinning | **`CONFIRMED`**; mutmut recorded 573 survivors and 65 unreached in `cli/main.py`, but key e2e tests are excluded, so the signal is weak (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) |
 | `bootstrap/` | Composition root; the CLI also imports and constructs SQLite/YAML concretes directly | **`PROVISIONAL`** |
-| Worker port | Dispatch a harness into an isolated worktree | **absent** |
+| **Harness core** | Trimmed opencode fork: the agent loop, molded to call the kernel at every workflow step | **decided `3.0.0`** — fork point and trim list await its ADR; nothing built |
+| **Kernel bridge** | The process boundary: hooks collect inside the harness; the kernel outside judges, signs, journals | **decided `3.0.0`**; the kernel side exists (§15.1), the bridge does not |
+| **Delegation** | Foreman → department supervisors → workers; category→model routing; plan-before-execute. Clean-room patterns learned from oh-my-openagent | **decided `3.0.0`**; not designed |
+| **Kernel handbook** | `governance/` as the library every agent reads: rules, manuals, recipes. Reading guides; only the kernel enforces | **decided `3.0.0`**; the catalog exists, the injection does not |
+| Web UI | Later surface; features sliced from the quarry (§15.3) | **parked `3.0.0`** |
 | Budget / escalation | Bounded spend, three-miss escalation | **absent** |
 | Intake / compile | Flow graph, covering paths, scenarios, frozen tests | **absent** |
 | **Translator** | Read-only projection of machine state and verdicts into plain language for the operator | **absent** — it may not evaluate, mutate, issue permits or treat worker prose as canonical (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:122-153`) |
@@ -666,7 +778,8 @@ Breaking one is a bug, not a tradeoff.
 ### 5.3 What exists with executed evidence
 
 Four slices closed, one withdrawn before implementation, one open. As of
-2026-08-03 the suite is `323` passing, `0` failing.
+2026-08-03 the suite is `324` passing, `0` failing
+(`uv run pytest -q`, repository root, 2026-08-03).
 
 ### 5.4 Data ownership — `PROVISIONAL`
 
@@ -701,16 +814,16 @@ The approved graph is the root of trust. Everything to its right is derived
 mechanically; everything to its left is a conversation. Only the rightmost two
 steps exist.
 
-### 6.2 The build loop — `UNRESOLVED`, never executed
+### 6.2 The build loop — `UNRESOLVED`, decided as own-built in `3.0.0`, never executed
 
 ```
-  take the next ready task
+  take the next ready task                          (foreman)
      → create an isolated git worktree
-     → spawn a harness with the task envelope
-     → wait for it to exit
-     → read the DIFF ON DISK  (the harness's own summary is discarded)
-     → run the checks         (code, not a model)
-     ├─ pass → THE KERNEL merges          (workers never merge)
+     → the harness loop executes the task           (Ranex's own, opencode fork)
+     → hooks emit references, never summaries
+     → read the DIFF ON DISK  (the loop's own summary is discarded)
+     → THE KERNEL runs the checks                   (separate process; code, not a model)
+     ├─ pass → THE KERNEL merges                    (the harness never merges)
      └─ fail → retry ×3 with the failure output
                  → still failing → escalate to the owner in plain language
 ```
@@ -1224,6 +1337,355 @@ correspondences. It lacks model kinds, and two viewpoints govern nothing.
 The clause text of 42010 is behind a paywall and has not been read; the conceptual
 model was taken from the working group's published material. **Conformance must
 not be claimed publicly on that basis** — buy the standard first.
+
+---
+
+## §15 Maturity ledger
+
+§0.1 labels claims; this ledger labels mechanisms, and collapses the scale to the
+two columns the owner asked for. A mechanism is MATURE/PROVEN only if it is built
+and carries executed evidence on disk, **or** it is proven elsewhere by code the
+world already runs and is available to adopt under the research rule (§15.3).
+Everything else — decided, designed, or merely named — is IMMATURE/UNPROVEN. A row
+that cannot name its evidence or its absence is not in the ledger.
+
+### 15.1 MATURE / PROVEN — `CONFIRMED`, executed evidence in this repository
+
+| Mechanism | Executed evidence | Residual hole it does not cover |
+|---|---|---|
+| Deterministic verdict kernel | `evaluate()` is pure (`src/ranex/governed_execution/domain/verdict.py:238-324`); `tests/unit/test_gate_verdict.py`; the suite passes with no model credential present | `approver_id` is an unauthenticated string (`RISK-07`) |
+| Subject-bound evidence | SLICE-001; stale evidence stops counting (`tests/unit/test_gate_verdict.py`) | — |
+| Evidence authenticity | SLICE-002; Ed25519 verified against a committed keyring (`tests/security/test_evidence_trust_root.py`, `tests/security/test_slice002_trust_root_reopened.py`) | the signing key is reachable by the measured party (`RISK-06`) |
+| Claim↔command binding | SLICE-003; `tests/security/test_slice003_command_binding.py`; six audits failed to break the binding itself | six false-PASS routes *around* it were one root cause, closed by SLICE-004 |
+| Hermetic observation | SLICE-004; `tests/security/test_slice004_hermetic_observation.py` — materialised commit, environment from empty, pinned toolchain | trees needing installed dependencies, or carrying symlinks/submodules, cannot be observed (withdrawn capabilities) |
+| Append-only hash-chained journal | `tests/integration/test_journal.py`, `tests/e2e/test_journal_verify_cli.py`; SQLite triggers forbid update and delete | rollback/truncation undetected (`RISK-19`); `evidence.json` is not append-only (`RISK-11`) |
+| Path confinement, dirty-tree refusal | `tests/security/test_repository_confinement.py`, `tests/security/test_executable_path_confinement.py` | `HOME` inherited by Ranex's own git queries (`RISK-13`) |
+| Refusal reporting | refused records are reported as refused, never as absence | 44 refusals no test executes (`RISK-09`) |
+| Docs-discipline self-gauge | `tests/contract/test_docs_discipline.py` | the BOM checker is structural, not semantic (§5.5) |
+| Red-then-green as git fact | `b495e3635` (red target) is an ancestor of `0762cf7428` (implementation) | ancestry is forgeable while history is unrewritten and unsigned (`RISK-20`) |
+| Mutation census as calibration report | `mutmut` ran on the closing SLICE-004 commit: 880 survivors recorded (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) | nothing consumes the result as a gate; no negative control (§8.4) |
+
+### 15.2 IMMATURE / UNPROVEN — nothing running behind it
+
+Three grades, worst last. The right column is the adoption question the owner's
+rule asks of every unbuilt mechanism: is there code the world already runs that
+solves this, or would building it be invention?
+
+**Decided, unbuilt** — an ADR stands; no code:
+
+| Mechanism | State | Prior art to adopt |
+|---|---|---|
+| Landlock confinement of the bound command | ADR-006 accepted; SLICE-005 withdrawn 2026-08-03, re-sequenced behind SLICE-006; `RISK-06` open | **Mature.** Landlock is a shipped Linux kernel ABI; `docs/adr/prior-art/ADR-006/py-landlock-landlock.py` is vendored on disk |
+| Dependency provisioning for gated suites | ADR-007 `proposed`; SLICE-006 open | **Mature pattern.** pip's hash-checking mode, vendored as `docs/adr/prior-art/ADR-003/pip-hashes.py`, is the model; until this lands Ranex gates nothing, including itself (`RISK-08`) |
+
+**Designed, unbuilt** — prose exists; never executed:
+
+| Mechanism | State | Prior art to adopt |
+|---|---|---|
+| Harness core + delegation (own-built) | decided in `3.0.0`: trimmed opencode fork, kernel as spine, clean-room orchestration; still the single largest untested assumption (`RISK-14`) | **Split.** opencode is mature and MIT-forkable; the orchestration patterns are proven by oh-my-openagent in production (patterns only — its code is SUL-1.0); a governed loop with an external kernel as spine has no proven implementation anywhere. That is the genuinely novel part |
+| `TaskPacket` frozen-work envelope | designed in the pre-reset corpus only | content-addressing is mature (git again); the packet schema is novel |
+| Budget, three-miss stop, escalation | designed; the only machinery serving `C-02`; nothing built | timeouts and circuit breakers are mature CI and distributed-systems patterns; the three-miss product question is a small, novel composition |
+| Intake, flow graph, scenario compilation | designed; never built | **Split.** BDD/Gherkin and model-based testing are mature disciplines covering pieces; the full chain from plain language to frozen tests is unproven |
+| Rich verdict vocabulary | designed; the kernel has `PASS`/`FAIL` only | an enum and its refusal rules — small; the taxonomy decision is recorded in §4.5 |
+| Independence record, canonical roles | designed in the pre-reset corpus only | no off-the-shelf equivalent; the composition is novel |
+| Freeze-line machinery | BOM `FT-06`, `FT-07`: `specified`, `sbb: null`, `gauge: null` | read-only frozen targets are what every CI freeze already does; the enforcement wiring is small |
+
+**Vague — not designed:**
+
+| Mechanism | State | Prior art to adopt |
+|---|---|---|
+| Production-configuration record (`PR-07`) | `UNRESOLVED`; no design | SBOM shapes (CycloneDX, SPDX) are mature standards and directly relevant; not yet consulted |
+| The translator (§5.1) | absent; `C-04` unserved (`RISK-12`) | none — a read-only projection of *this* record is novel, and by §4.3 it may never be a model that decides anything |
+| Outward-facing record | absent; deferred with §11.1 (`RISK-03`) | **Mature.** Certificate transparency is the solved form of this exact problem; see §15.3 |
+| Approver authentication | no design; `RISK-07` | mature elsewhere (signature-bound approval); not yet designed here |
+| Calibration consumption, negative controls | §8.4 names four consequences; none satisfied | negative controls are standard assay practice (§8.4); the machinery is small and unbuilt |
+| Configuration comparison / measurement flywheel | §11.3 names the confound; no experiment designed | DOE and control arms are mature disciplines (§11.3); no tool exists for AI-harness comparison — that is the opportunity claimed |
+
+**The system-level verdict.** Every row in §15.1 is a component fact. The loop
+has never closed around a real agent (`RISK-14`), so the system as a whole is
+IMMATURE/UNPROVEN whatever its components have proven. That is the state, stated
+without judgment.
+
+### 15.3 External maturity and the adoption rule — owner directive, 2026-08-03
+
+The owner's standing instruction: mature, widely-used open source is itself
+proven code, and where it solves a mechanism Ranex grabs and references it rather
+than generating fresh code. This is the research rule of `CLAUDE.md` and ADR-003
+stated as economics — invention is what needs justification, not adoption.
+
+**The local shelf.** `opensrc` (vercel-labs, installed v0.7.3 at
+`~/.local/bin/opensrc`) caches source under `~/.opensrc/repos/` so prior art is
+read locally. Cached 2026-08-02/03, and each entry is prior art for a named gap:
+
+| Cached source | What it is prior art for |
+|---|---|
+| `in-toto@3.1.0` (pinned release) | signed attestation layouts — the evidence-admission and independence-record rows |
+| `github.com/google/trillian@master` | append-only Merkle trees — the journal's rollback/truncation gap (`RISK-19`) |
+| `github.com/sigstore/rekor@main` | a transparency log in production — the outward-facing record (`RISK-03`) |
+
+**The pinning caveat, stated because this repository's own rules state it:**
+`trillian@master` and `rekor@main` are cached at *branch* refs, which ADR-003 and
+`tests/contract/test_docs_discipline.py` reject as citations. They are readable
+now; before either enters an ADR it must be re-fetched at a 40-hex commit or a
+dotted-numeric release tag and vendored with origin and licence. `in-toto@3.1.0`
+already satisfies the pin.
+
+**The adoption form — copy, improve, own; never depend.** Owner directive,
+2026-08-03: adopted code is copied into `src/ranex/`, improved, and maintained
+as Ranex's own infrastructure. It is never added to the dependency graph. Two
+reasons, both structural rather than stylistic: a growing dependency graph is a
+maintenance liability no single implementer should carry, and Ranex's own gauge
+cannot observe trees that need installed dependencies (§2.3) — accumulating
+dependencies is precisely what would keep Ranex from ever gating itself
+(`RISK-08`). The runtime graph today is two packages, each justified on its own
+record (`pyproject.toml`); adopted code must not grow it. `docs/adr/prior-art/`
+holds what was read as research evidence; adopted code lands in `src/` with its
+attribution and licence preserved. Only licences compatible with MIT may be
+copied in — a copyleft file changes what this repository can be distributed as,
+and nothing else in the tree would catch it.
+
+**The harness base and its quarry, recorded the same day.** opencode (MIT) is
+the harness base: forked at a pinned commit, trimmed, molded to the kernel, its
+attribution preserved. oh-my-openagent is the orchestration reference — studied
+as a running tool and through its documentation; its code is SUL-1.0 (internal
+use only, no commercial distribution, derivative works included) and never enters
+this tree, converted or not. hermes-agent and OpenClaw remain quarry for later
+surfaces (§2.1).
+
+**What external maturity does not buy.** Proven elsewhere is not proven *here*:
+adopted code still faces §15.1's standard — built, executed, and bound to this
+tree — before it counts as part of Ranex. External maturity removes the need to
+invent; it does not remove the need to verify.
+
+---
+
+## §16 Per-problem architecture — how each concern is defended
+
+§1.3 names four concerns in the operator's words. This section draws the defence
+of each, step by step. Every step is marked: **BUILT** carries executed evidence
+(§15.1), **OPEN** is a scheduled gap with an ADR behind it, **ABSENT** has
+nothing. These diagrams add no architecture; they project §5, §6 and §15 onto one
+concern at a time, so the four pictures together are the whole system judged
+concern by concern.
+
+### 16.1 `C-01` — "It says done, it isn't" — mostly defended; holes named
+
+```
+ the agent reports "done"
+        │
+        ╳  the report is never read — the summary is discarded
+        ▼
+ [1] BUILT  the bound command is re-executed against a materialisation of
+            the subject commit, every blob checked against the tree's
+            object id (SLICE-004)
+ [2] BUILT  exit code + subject digest signed Ed25519 (SLICE-001, SLICE-002)
+ [3] BUILT  signature verified against the committed keyring; keyring and
+            catalog read from the commit, never the worktree (SLICE-002)
+ [4] BUILT  the record's argv digest is compared with the claim's bound
+            command — a signed record of `true` cannot satisfy
+            `tests-executed` (SLICE-003)
+ [5] BUILT  absence, contradiction and self-approval each FAIL — never a
+            default, never a skip (kernel)
+ [6] BUILT  verdict + rule + subject + approver appended to the
+            hash-chained journal
+        │
+        ▼
+ PASS only if every required claim is satisfied by admitted evidence
+
+ holes that remain: the approver is an unauthenticated string (RISK-07) ·
+ the measured party can read the signing key and sign anything (RISK-06) ·
+ a consistent journal prefix survives row removal (RISK-19) · the gauge is
+ not yet connected to this repository's own suite (RISK-08)
+```
+
+### 16.2 `C-03` — "It broke something else" — weak; the binding exists, the run does not
+
+```
+ a change lands
+        ▼
+ [1] BUILT  evidence binds the post-change subject digest — a passing
+            record for the OLD tree stops counting automatically (kernel)
+ [2] OPEN   the gate's bound command IS the full suite
+            (governance/gates.yaml: `uv run pytest -q`), but a hermetic
+            tree cannot run it — SLICE-006 + ADR-007 must land first
+            (RISK-08)
+ [3] ABSENT VP-06, the regression viewpoint, governs no view (§14.1) —
+            "still works" has no definition and no measurement yet
+        │
+        ▼
+ today nothing detects collateral damage before merge; subject binding is
+ the only live control and it acts only after the fact
+
+ holes: everything downstream of SLICE-006 · no negative control (§8.4) ·
+ 880 surviving mutants are the calibration report on the checks themselves
+ (RISK-09)
+```
+
+### 16.3 `C-02` — "Money gone, nothing finished" — nothing at all
+
+```
+ a run starts
+        ▼
+ [1] ABSENT wall-clock and spend bounds
+ [2] ABSENT the three-miss stop
+ [3] ABSENT plain-language escalation to the operator
+        │
+        ▼
+ a run that cannot succeed spends until it is killed by hand
+
+ PR-09 and ASR-09 name this; there is no design, no code, and VP-05
+ governs no view (§14.1). The one concern with zero machinery — the wedge
+ of §11.2, unbuilt.
+```
+
+### 16.4 `C-04` — "I can't tell what it did" — the record exists; the reading does not
+
+```
+ what actually happened
+        ▼
+ [1] BUILT  every verdict recorded with its rule, subject digest and
+            approver; model self-assertion is never recorded as fact (§8.3)
+ [2] BUILT  `ranex journal verify` recomputes the chain for the operator
+ [3] ABSENT the translator — no plain-language projection of run state or
+            proof (RISK-12)
+ [4] ABSENT the production-configuration record — model, harness version,
+            skill and tool manifest, prompt digest (PR-07, undesigned)
+        │
+        ▼
+ the operator can verify integrity but cannot read the run — the record is
+ a diary until the translator exists
+
+ holes: RISK-12 · PR-07 · evidence.json keeps only the latest record per
+ claim+producer, so it is not durable history (§8.3, RISK-11)
+```
+
+### 16.5 The whole board
+
+| Concern | Built steps | What is missing | Defence today |
+|---|---|---|---|
+| `C-01` "done isn't" | all six of §16.1 | `RISK-06`, `RISK-07`, `RISK-08`, `RISK-19` | mostly defended, holes named |
+| `C-02` "money gone" | none | bounds, stop, escalation — all | **undefended** |
+| `C-03` "broke other" | subject binding only | the full-suite run, a regression view | weak, and scheduled (SLICE-006) |
+| `C-04` "can't tell" | record + chain verify | translator, configuration record | record exists, unreadable |
+
+One complete thread — Idea → Behaviour → Result — exists only for `C-01`, and
+not yet around a real agent (`RISK-14`, `RISK-24`). The board is §1.3's coverage
+table drawn as architecture; the two agree because both are read from the same
+tree.
+
+---
+
+## §17 Trim spec — the compact engine
+
+`PROVISIONAL` — the map-level spec the fork ADR will carry to pinned commits and
+measured numbers. The classification below was read from opencode's package
+structure on 2026-08-03, `dev` branch — a branch, not a pin. Every row is
+confirmed against code at fork time or it moves to §17.3.
+
+**The owner's analogy is the doctrine.** We are not deleting parts from a bulky
+V8. We are building a smaller, more compact engine that delivers **more
+horsepower and better fuel economy** than the bulky one — each part trimmed down
+but still as effective as it once was, and all parts interconnected like gears,
+working as one full engine. Three consequences:
+
+1. **Trim runs at two levels.** Cut what the engine does not need (§17.2), then
+   lean out every part that remains (§17.1 is a keep-list, not a done-list).
+2. **The claim is measured, not asserted.** Horsepower and fuel economy get
+   definitions (§17.4), and the trimmed engine is proven against the bulky
+   baseline on the same tasks. Smaller without more horsepower is not the goal —
+   it is just smaller.
+3. **The gears must mesh.** A pile of trimmed parts is not an engine. The fork
+   ADR's closing proof is one task turning every gear in sequence: dispatch →
+   loop → hooks → kernel judgement → journal, as one machine (§17.5).
+
+**The criterion per package.** One question: *does a governed worker — dispatched
+into a worktree, judged by an external kernel — need this to run?* The harness is
+the most valuable asset that drives the AI agents (owner's words); everything
+that does not serve that is bloat, overhead, or a surface someone will someday
+customize into a hole.
+
+### 17.1 KEEP — the lean core, each part itself to be leaned
+
+| Package | Why it stays | Its trim |
+|---|---|---|
+| `opencode`, `core`, `cli` | The agent runtime and entry point: loop, tools, headless `run` | every feature the governed loop does not use is dead weight — named and cut at fork time |
+| `llm` | Provider/model routing — the *recommended provider models* feature lives here | providers Ranex never routes to are configuration, not code |
+| `plugin`, `protocol`, `schema` | The hook surface the kernel bridge collects through, and the contracts it speaks | hooks shrink to the handful the kernel needs (§17.4) |
+| `tui` | The operator surface — the product is CLI-first (§7) | minimal; the operator reads verdicts, not dashboards |
+| `effect-drizzle-sqlite`, `effect-sqlite-node` | Session persistence, if `core` requires them | confirmed load-bearing or cut at fork time |
+
+### 17.2 CUT — bloat for a governed harness
+
+| Package | Why it goes |
+|---|---|
+| `desktop`, `web`, `console`, `session-ui`, `ui`, `storybook` | Desktop app, marketing lander, hosted console, web UI components — the Web UI is parked (§0.14), and parked means absent |
+| `enterprise`, `identity` | Hosted identity and tenancy — Ranex is local-first, one operator (§7.2) |
+| `slack` | A chat surface; quarry material for a later day, if ever (§15.3) |
+| `sdk`, `sdk-next` | SDKs invite third-party extension — deep customization is blocked (§17.6) |
+| `stats` | Usage statistics — a governance product does not phone home; verified inert or cut |
+| `function`, `http-recorder`, `httpapi-codegen`, `script` | Serverless and development tooling, not product |
+| `docs` | Upstream's documentation site; Ranex writes its own handbooks (§0.14) |
+| Top level: `artifacts/`, `infra/`, `github/`, `sdks/vscode`, `sst.config.ts` | Marketing assets, deployment infrastructure, editor SDKs — no governed worker needs any of them |
+
+### 17.3 ASSESS — read the code before deciding
+
+`app`, `codemode`, `containers`, `client`, `server`, `nix`, `patches`, `perf`.
+Each is either load-bearing for the core or irrelevant; the fork ADR decides per
+package, against code, and records the verdict — including what `containers`
+offers the confinement story, if anything.
+
+### 17.4 Horsepower, fuel economy, and the things that waste both
+
+The analogy's numbers, defined so they can be measured. **None are measured yet**;
+the fork ADR takes the baseline (bulky upstream, same tasks) and must beat it.
+
+| Measure | Meaning | Handling |
+|---|---|---|
+| **Horsepower** | Governed tasks completed: verdicts earned against frozen targets, per run | the kernel is the dynamometer — completion is what it already measures |
+| **Fuel economy** | Tokens, cost and wall-time per completed task | budget layer turns this into a gate later (`C-02`); first it is simply recorded |
+| Provider throttling | A stalled worker burns fuel standing still — `C-02` in miniature. This repo's own record: free-tier models stall after ~2 calls | a stall past bound is a recorded refusal, never a silent wait; model fallbacks per role |
+| Context bloat | Every injected byte costs attention and tokens | handbooks are scoped per role — a worker reads its chapter, not the library |
+| Hook overhead | Every lifecycle hook adds latency; the orchestration reference ships 54+ | the kernel bridge keeps a handful: exactly the ones that collect what the kernel judges |
+| Per-task startup | Spawn and session init on every task | measured at fork time; worktree reuse decided by number, not taste |
+| Session storage growth | Unbounded state on disk | bounded and rotated; the durable record is the kernel's journal, never the harness's sessions |
+| Two runtimes | TypeScript harness, Python kernel — two toolchains, bridge latency | the wall is the point (§0.14): bridge over stdio/HTTP, no shared runtime, no shared trust |
+
+### 17.5 The gears mesh — the closing proof
+
+A trimmed engine is proven running, not listed. The fork ADR closes only when one
+task turns every gear in sequence — foreman dispatches, the loop executes in an
+isolated worktree, hooks emit references, the kernel reads the diff on disk,
+judges, and journals the verdict — with no hand on any part. That run is also the
+first delegation of §0.14's build order; the two are one milestone.
+
+### 17.6 Customization policy — few knobs, deep customization blocked
+
+Owner directive, 2026-08-03: *the AI harness is the most valuable asset that
+drives the AI agent; the calibration is already made, so deep customization is
+blocked; a few customizations, very easy, so users are not overwhelmed.*
+
+The gauge argument makes this doctrine rather than taste: a gauge the user can
+recalibrate is no gauge (§8.4). Deep customization of the harness is the user
+editing the measurement process — after which a verdict states nothing. `RISK-15`
+already names the hole: the operator writes the gauge and nothing checks it.
+Users must not be able to widen it.
+
+**Allowed — a short enumerated list, each easy, each recorded:**
+
+1. Model/provider per role — the *recommended provider models* feature.
+2. Budget caps — bounded choices for wall-clock and spend.
+3. Handbook additions in a designated directory — read as guidance, never as
+   authority; only the kernel enforces.
+
+**Blocked — hard, and not by configuration:**
+
+- Anything touching kernel authority: gates, claims, keyring, journal, verdict
+  path. Not configurable, not overridable, not themed.
+- Any plugin, hook, or tool surface that can intercept, weaken, or veto a
+  verdict.
+- Any extension mechanism that grows the surface — no marketplace, no SDK.
+
+Adding a knob requires an ADR, and the default answer is no.
 
 ---
 

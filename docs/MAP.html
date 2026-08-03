@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ranex — the map, in plain sight</title>
+<style>
+  :root {
+    --ink: #1a1d21;
+    --paper: #fafaf8;
+    --muted: #5c6370;
+    --line: #d8d8d2;
+    --green: #1a7f37;
+    --green-bg: #e8f4ec;
+    --amber: #9a6700;
+    --amber-bg: #fff6e0;
+    --red: #b42318;
+    --red-bg: #fdeceb;
+    --gray: #57606a;
+    --gray-bg: #eef0f2;
+    --blue: #0b5cad;
+    --blue-bg: #e8f1fb;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font: 17px/1.6 Georgia, "Times New Roman", serif;
+  }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 2.5rem 1.25rem 5rem; }
+  header { border-bottom: 3px double var(--line); padding-bottom: 1.5rem; margin-bottom: 2.5rem; }
+  h1 { font-size: 2.3rem; margin: 0 0 .4rem; letter-spacing: -.02em; }
+  .tag { font-style: italic; color: var(--muted); margin: 0 0 .8rem; font-size: 1.05rem; }
+  .meta { font-size: .82rem; color: var(--muted); font-family: ui-monospace, "SF Mono", Menlo, monospace; margin: 0; }
+  h2 { font-size: 1.5rem; margin: 3rem 0 .3rem; letter-spacing: -.01em; }
+  h2 .count { color: var(--muted); font-weight: normal; font-size: 1rem; }
+  .lede { color: var(--muted); margin-top: 0; }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    margin: .8rem 0;
+    background: #fff;
+  }
+  .card h3 { margin: 0 0 .3rem; font-size: 1.05rem; }
+  .card p { margin: .3rem 0; }
+  .card .hole { font-size: .9rem; color: var(--muted); }
+  .badge {
+    display: inline-block;
+    font: 700 .72rem/1 ui-monospace, "SF Mono", Menlo, monospace;
+    letter-spacing: .06em;
+    padding: .3em .6em;
+    border-radius: 4px;
+    vertical-align: middle;
+    margin-right: .5em;
+    text-transform: uppercase;
+  }
+  .b-green { color: var(--green); background: var(--green-bg); }
+  .b-amber { color: var(--amber); background: var(--amber-bg); }
+  .b-red   { color: var(--red);   background: var(--red-bg); }
+  .b-gray  { color: var(--gray);  background: var(--gray-bg); }
+  .b-blue  { color: var(--blue);  background: var(--blue-bg); }
+  .proven  { border-left: 5px solid var(--green); }
+  .decided { border-left: 5px solid var(--blue); }
+  .designed{ border-left: 5px solid var(--amber); }
+  .vague   { border-left: 5px solid var(--red); }
+  .flow {
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: .86rem;
+    line-height: 1.7;
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 1.2rem 1.4rem;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; background: #fff; }
+  th, td { border: 1px solid var(--line); padding: .55rem .75rem; text-align: left; vertical-align: top; }
+  th { background: var(--gray-bg); font-size: .85rem; }
+  .note {
+    border-radius: 8px;
+    padding: .9rem 1.2rem;
+    margin: 1.2rem 0;
+    font-size: .95rem;
+  }
+  .note.warn { background: var(--red-bg); border: 1px solid #f3c1bd; }
+  .note.info { background: var(--blue-bg); border: 1px solid #c3dcf5; }
+  .note.calm { background: var(--gray-bg); border: 1px solid var(--line); }
+  footer { border-top: 3px double var(--line); margin-top: 3.5rem; padding-top: 1.2rem; font-size: .85rem; color: var(--muted); }
+  a { color: var(--blue); }
+  code { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: .88em; background: var(--gray-bg); padding: .1em .35em; border-radius: 3px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1>Ranex is the gauge.</h1>
+  <p class="tag">Rules an agent can read are suggestions. Rules compiled into code are constraints.</p>
+  <p class="meta">Plain-language projection of docs/MAP.md v2.8.0 · generated 2026-08-03 · the map is the
+  source of truth; this page is a reading aid and may lag behind it.</p>
+</header>
+
+<!-- ================================================================ -->
+<h2>The simplest summary of how it all works</h2>
+<p class="lede">One paragraph, then the loop.</p>
+
+<p>You run AI agents that write software. An agent cannot see whether its own work
+actually landed, so it reports success either way — and most tooling lets the same
+actor write the code, write the test, and declare victory. <strong>Ranex never reads
+the agent's report.</strong> It fixes the target <em>before</em> the work starts, re-runs
+the checks itself against a fresh sealed copy of the code, signs what it observed,
+and stamps the result into a tamper-evident record. A part ships only when the
+traveler is stamped. Ranex does <strong>not</strong> make the agent's code better — it makes
+misses visible and cheap, and hits provable.</p>
+
+<div class="flow"> 1. SPECIFY   what "done" looks like, written as executable checks
+ 2. FREEZE    the checks are digested and made read-only to the agent
+ 3. EXECUTE   the agent works; its summary is discarded, the diff on disk is read
+ 4. MEASURE   Ranex re-runs the bound command itself, in a sealed environment,
+              against a fresh copy of the exact commit — never the agent's word
+ 5. RECORD    exit code + code digest signed, checked against the frozen target,
+              appended to a hash-chained journal
+ 6. APPROVE   only by someone who did not produce the work — absence blocks,
+              contradiction blocks, self-approval blocks</div>
+
+<p>Factory language, because it is the same idea that solved this before: the
+<strong>go/no-go gauge</strong> (frozen tests), the <strong>traveler</strong> (the journal — an unstamped
+part does not ship), <strong>poka-yoke</strong> (the agent <em>cannot</em> edit its own test), and the
+<strong>andon cord</strong> (three misses stops the line and asks the owner a product question,
+in plain language). The models and harnesses are the machine tools — bought,
+swappable, not Ranex's problem. Ranex is the quality system around them.</p>
+
+<!-- ================================================================ -->
+<h2>Proven <span class="count">— built, tested, and carrying executed evidence</span></h2>
+<p class="lede">Each item below is proven by tests that pass on disk today — and each
+row says what it does <em>not</em> cover, because a proven gauge with unnamed holes is a
+brochure.</p>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Deterministic verdict kernel</h3>
+<p>A pure function of (gate, evidence, subject, approver). Same inputs, same verdict,
+always. No model is consulted; removing every model credential from the machine
+changes no verdict.</p>
+<p class="hole">Does not cover: the approver is an unauthenticated string (RISK-07).</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Subject-bound evidence</h3>
+<p>Every result is welded to the exact code digest it measured. Run the same command
+against a different commit and the old result stops counting automatically.</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Evidence authenticity</h3>
+<p>Every record carries an Ed25519 signature, verified against a keyring read from
+the commit itself — never from the working tree, which an attacker could name.</p>
+<p class="hole">Does not cover: the measured party can currently reach the signing key (RISK-06).</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Claim↔command binding</h3>
+<p>The catalog declares the exact command that satisfies each claim, and the kernel
+compares digests — so a signed record of <code>true</code> can never satisfy
+<code>tests-executed</code>. Six independent audits failed to break this binding.</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Hermetic observation</h3>
+<p>The command runs against a fresh materialisation of the committed tree (every blob
+checked), in an environment built from empty, with a pinned toolchain. The agent
+brings nothing: no ingredients, no scale, no kitchen of its own.</p>
+<p class="hole">Does not cover: trees needing installed dependencies, or carrying
+symlinks/submodules, cannot be observed at all (deliberately withdrawn).</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Append-only hash-chained journal</h3>
+<p>Every verdict is stamped into a SQLite journal that rejects updates and deletes at
+the database level, with a hash chain that exposes any out-of-band row edit.
+<code>ranex journal verify</code> recomputes the chain.</p>
+<p class="hole">Does not cover: chopping off the tail (rollback/truncation) is not
+detected (RISK-19); <code>evidence.json</code> is not append-only (RISK-11).</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Path confinement &amp; dirty-tree refusal</h3>
+<p>Ranex refuses to run if the worktree differs from HEAD, and every path it touches
+is confined to the repository.</p>
+<p class="hole">Does not cover: <code>HOME</code> is still inherited by Ranex's own git queries (RISK-13).</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Refusal reporting</h3>
+<p>A forged or malformed record is reported as <em>refused</em>, with a reason — never
+silently filed as "no evidence", because an attack and an unfinished task are not
+the same event.</p>
+<p class="hole">Does not cover: 44 refusal paths have no test executing them (RISK-09).</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Docs-discipline self-gauge</h3>
+<p>The repository that once held 561 architecture files and zero product code now has
+a test-enforced cap on its own documents — the rules govern the rule-maker.</p>
+<p class="hole">Does not cover: the bill-of-materials checker is structural, not semantic.</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Red-then-green as a fact in git history</h3>
+<p>The first slice's tests were committed <em>failing</em>, before any implementation
+existed — the target was drawn before the throw, verifiable in git ancestry.</p>
+<p class="hole">Does not cover: ancestry is forgeable while history is unsigned (RISK-20).</p></div>
+
+<div class="card proven"><h3><span class="badge b-green">Proven</span>Mutation census as calibration report</h3>
+<p><code>mutmut</code> deliberately broke the code 2,596 ways and recorded which breaks
+the tests missed: 880 survivors. That number is not a backlog — it is the gauge's
+own calibration report, published rather than smoothed over.</p>
+<p class="hole">Does not cover: nothing consumes this result as a gate; no negative controls exist.</p></div>
+
+<!-- ================================================================ -->
+<h2>Unproven <span class="count">— nothing running behind it yet</span></h2>
+<p class="lede">Three grades, worst last. The right-hand question on every row: is
+there mature, world-proven code to copy in (per the adoption rule: copy, improve,
+own — never add a dependency), or must it be invented?</p>
+
+<h3 style="margin-top:1.6rem"><span class="badge b-blue">Decided, unbuilt</span> An ADR stands; no code yet</h3>
+
+<div class="card decided"><h3>Landlock confinement of the bound command</h3>
+<p>So the measured party cannot reach the key that signs its own measurement.
+ADR-006 accepted; its slice was withdrawn and re-sequenced; the hole is open.</p>
+<p class="hole">Prior art: <strong>mature</strong> — Landlock is a shipped Linux kernel ABI; reference code vendored on disk.</p></div>
+
+<div class="card decided"><h3>Dependency provisioning for gated suites</h3>
+<p>So a real committed test suite can run inside the sealed environment. Until this
+lands, <strong>Ranex gates nothing — including itself</strong> (RISK-08).</p>
+<p class="hole">Prior art: <strong>mature pattern</strong> — pip's hash-checking mode, vendored on disk.</p></div>
+
+<h3 style="margin-top:1.6rem"><span class="badge b-amber">Designed, unbuilt</span> Prose exists; never executed</h3>
+
+<div class="card designed"><h3>Worker port &amp; dispatch — the single largest untested assumption</h3>
+<p>Hand an immutable task envelope to an agent in an isolated worktree, then judge
+the diff on disk. Designed in the pre-reset corpus; never run.</p>
+<p class="hole">Prior art: <strong>split</strong> — git worktrees are mature; dispatching an AI
+harness and judging its diff has no proven implementation anywhere. This is the genuinely novel part.</p></div>
+
+<div class="card designed"><h3>Budget, three-miss stop, escalation</h3>
+<p>Bounded spend; after three failures, stop and ask the owner a product question in
+plain language. The only machinery that would serve "money gone, nothing finished".</p>
+<p class="hole">Prior art: timeouts and circuit breakers are mature patterns; the three-miss composition is small and novel.</p></div>
+
+<div class="card designed"><h3>Intake, flow graph, scenario compilation</h3>
+<p>Plain-language intent → a graph the owner approves → covering paths → scenarios →
+frozen contract tests. The approved graph is the root of trust.</p>
+<p class="hole">Prior art: <strong>split</strong> — BDD/Gherkin and model-based testing cover pieces; the full chain is unproven.</p></div>
+
+<div class="card designed"><h3><code>TaskPacket</code> frozen-work envelope · rich verdict vocabulary · independence record · freeze-line machinery</h3>
+<p>Content-addressed task packet · a diagnostic outcome set beyond PASS/FAIL ·
+recording that evaluator and producer are genuinely distinct · enforcing that the
+specification is read-only to whoever executes it.</p>
+<p class="hole">Prior art: content-addressing and CI freezes are mature; the compositions are small or novel.</p></div>
+
+<h3 style="margin-top:1.6rem"><span class="badge b-red">Vague</span> Not even designed</h3>
+
+<div class="card vague"><h3>The translator</h3>
+<p>The machine state and verdicts have no plain-language projection. This is why "I
+can't tell what it did" is unserved. It may read; it may never decide.</p>
+<p class="hole">Prior art: none — a read-only projection of <em>this</em> record is novel.</p></div>
+
+<div class="card vague"><h3>Production-configuration record</h3>
+<p>The record must bind the model, harness version, skill and tool manifest, and
+prompt digest — not the code alone. No design exists.</p>
+<p class="hole">Prior art: SBOM standards (CycloneDX, SPDX) are mature and directly relevant; not yet consulted.</p></div>
+
+<div class="card vague"><h3>Outward-facing record · approver authentication · calibration consumption · configuration comparison</h3>
+<p>A record a distrustful outsider can check · proving the approver is who they claim
+· turning the mutation census into a gate with negative controls · grading models
+and harnesses by deliberate experiment rather than confounded logs.</p>
+<p class="hole">Prior art: certificate transparency solves the first in mature form
+(cached locally for reading); the rest are mature disciplines with no off-the-shelf tool for this use.</p></div>
+
+<div class="note warn"><strong>The system-level verdict.</strong> Every green card above is a
+component fact. The loop has <strong>never closed around a real agent</strong> — nothing Ranex
+has ever measured was produced by one. So the system as a whole is
+<strong>unproven</strong> whatever its components have proven. That is the state, stated
+without judgment. It is also the owner's named finish line: one complete thread —
+Idea → Behaviour → Result — before any numbers.</div>
+
+<!-- ================================================================ -->
+<h2>The four problems, and how far each defence has gotten</h2>
+<p class="lede">The stakeholder's own words, each drawn as its defence chain in the map (§16).</p>
+
+<table>
+<tr><th>Concern</th><th>Status</th><th>What is built</th><th>What is missing</th></tr>
+<tr>
+  <td><strong>C-01</strong> "It says done, it isn't"</td>
+  <td><span class="badge b-green">Mostly defended</span></td>
+  <td>All six steps: discard the summary, hermetic re-run, sign, verify, bind, absence blocks, journal</td>
+  <td>Unauthenticated approver · signing key reachable · journal truncation · gauge not yet connected to this repo</td>
+</tr>
+<tr>
+  <td><strong>C-03</strong> "It broke something else"</td>
+  <td><span class="badge b-amber">Weak</span></td>
+  <td>Stale evidence for the old tree stops counting automatically</td>
+  <td>The full suite cannot run in the sealed environment yet (SLICE-006); no regression view exists</td>
+</tr>
+<tr>
+  <td><strong>C-02</strong> "Money gone, nothing finished"</td>
+  <td><span class="badge b-red">Undefended</span></td>
+  <td>Nothing</td>
+  <td>No budget, no timeout, no three-miss stop, no escalation — the one concern with zero machinery</td>
+</tr>
+<tr>
+  <td><strong>C-04</strong> "I can't tell what it did"</td>
+  <td><span class="badge b-amber">Record exists, unreadable</span></td>
+  <td>Every verdict recorded with rule, subject and approver; chain verifiable</td>
+  <td>No translator (plain-language projection); no production-configuration record</td>
+</tr>
+</table>
+
+<!-- ================================================================ -->
+<h2>What still needs clarification before a full build</h2>
+<p class="lede">The map names these itself. Seven open decisions — and the interface
+question, answered.</p>
+
+<div class="card"><h3>1. The worker port — how does work reach an agent at all?</h3>
+<p>The largest untested assumption. CLAUDE.md settles the <em>who</em> (Claude Code,
+headless, behind a replaceable port) but not the <em>how</em>: envelope format, handoff
+protocol, what "inspect disk" checks first. Needs an ADR before a slice.</p></div>
+
+<div class="card"><h3>2. The journal ADR — deferred and unnumbered</h3>
+<p>Verify-before-append, never auto-create, and a size checkpoint — the named remedy
+for the truncation hole. It has no number yet.</p></div>
+
+<div class="card"><h3>3. The translator — undesigned</h3>
+<p>What it projects, in what words, and the hard rule that it may read but never
+decide. Until it exists, the record is a diary.</p></div>
+
+<div class="card"><h3>4–6. Three undesigned records</h3>
+<p>The production-configuration record (what model/harness/skills/prompt produced
+this work) · approver authentication (a signature-bound human decision) · budget
+and escalation machinery (the entire defence of C-02).</p></div>
+
+<div class="card"><h3>7. Two viewpoints govern no view</h3>
+<p>Cost (C-02) and regression (C-03) have declared viewpoints and nothing for them to
+govern. The map fails its own completeness check on purpose until they exist.</p></div>
+
+<div class="note info"><strong>The interface question — CLI and Web UI.</strong>
+The CLI already exists (<code>run</code>, <code>gate evaluate</code>, <code>journal verify</code>,
+<code>keygen</code>) and is the designed operator surface — local-first, single machine,
+one human running a team of agents. A <strong>Web UI for front-facing users is out of
+scope by design</strong>: the map defers every external audience ("just needs to work for
+me"), and a hosted surface would only ever be forced by two named things — an
+outward record others must verify, and fleet-scale measurement. Neither exists yet.
+The one interface gap that <em>is</em> in scope is not a UI but the
+<strong>translator</strong>: plain-language state and escalation inside the operator's own
+flow, so a non-technical owner can act without reading code. If a Web UI is wanted
+anyway, that is an owner decision that overturns local-first — and it should be
+made knowingly, not drifted into.</div>
+
+<div class="note calm"><strong>The scheduled path, for context.</strong> SLICE-006 (make Ranex
+gate this repository's own test suite) → confinement (ADR-006) → the first complete
+thread, Idea → Behaviour → Result, with the operator running the agent himself. No
+new architecture before that thread exists — that is the owner's own sequencing.</div>
+
+<footer>
+<p><strong>What Ranex never claims:</strong> it does not improve the quality of generated
+code, by any margin. "Deterministic" describes the process and the verdict — never
+the code an agent writes. Anyone claiming an LLM produces identical software twice
+is selling something.</p>
+<p>Source of truth: <code>docs/MAP.md</code> v2.8.0 · this page is a projection for
+reading, not authority · it grants nothing, gates nothing, and supersedes nothing.</p>
+</footer>
+
+</div>
+</body>
+</html>
