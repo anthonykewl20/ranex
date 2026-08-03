@@ -13,9 +13,13 @@ Provisioning works end to end. `ranex deps fetch` derives the lock clean under
 pinned inputs and byte-compares it, `deps approve` records the named delta, and
 `run` proves derivation, approval and every wheel out of the SHA-256 store
 before spawning into a sealed, offline root. The real-world journey
-(`tests/e2e/test_gating_real_suite.py`, 14 operator stages against a clone of
+(`tests/e2e/test_gating_real_suite.py`, 15 operator stages against a clone of
 this repository) is green: 13 pass, 1 strict xfail, 1 skips on the operator key.
-It found four real defects, all fixed and recorded in the slice.
+It found five real defects, all fixed and recorded in the slice.
+
+Suite 485 passed / 15 skipped; `diff-cover` 100% on the change; mutmut 4673
+mutants, 2945 killed, 1036 survived — survivors are message text and
+equivalent mutants, weak evidence per the recorded convention.
 
 **Criterion 14 is the open miss.** 362 of this suite's tests pass inside the
 sealed environment; five fail because they need a git checkout and ADR-005's

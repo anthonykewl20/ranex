@@ -127,7 +127,15 @@ predict any of them, and the next fork-facing slice will meet the same shapes.
 3. **`uv lock --check` re-resolves when the epoch is omitted.** The stage
    proving uv accepts a fabricated hash was passing for the wrong reason until
    it passed `--exclude-newer` too.
-4. **Criterion 14 is blocked by this suite's own git assumptions** — below.
+4. **CI was rewriting the lock too.** Every `uv` call in the workflow ran
+   unfrozen — the same defect in the one place a silently mutated trust root
+   would be hardest to notice.
+5. **A test that proved the wrong thing.** Tightening a bare `pytest.raises`
+   showed that "an absent pin refuses" had been deleting a key line and
+   leaving its children, so two cases proved malformed YAML refuses rather
+   than that absence does.
+
+**Criterion 14 is blocked by this suite's own git assumptions** — below.
 
 ## The blocker, stated plainly
 
@@ -152,6 +160,23 @@ repository whose HEAD carries the subject tree? It would make
 since the tree hash is unchanged by a fresh commit — but it amends ADR-005,
 hands the observed command a repository, and therefore needs its own ADR.
 Deliberately not started here.
+
+## Verification actually run
+
+- Full suite: **485 passed, 15 skipped**. The skips are the real-world stages
+  waiting on the operator's pinned resolver, and they name it.
+- Real-world journey with the resolver present: **13 passed, 1 xfailed
+  (criterion 14), 1 skipped** on the operator's signing key.
+- `diff-cover` against the slice's base commit: **100%**, all eleven touched
+  modules, 0 missing lines.
+- `mutmut`: 4673 mutants — 2945 killed, 386 timed out, 306 without coverage,
+  1036 survived. The provisioning survivors are dominated by error-message
+  text and by equivalent mutants such as `"utf-8"` → `"UTF-8"`. Ten bare
+  `pytest.raises` were tightened in response, and that tightening exposed a
+  real defect: the "absent pin refuses" test had been removing a key line but
+  leaving its children, so two cases proved that malformed YAML refuses
+  rather than that absence does. Treat the remaining survivors as weak
+  evidence, per the convention this repository already records.
 
 ## Operator setup
 
