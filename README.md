@@ -269,8 +269,9 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none — SLICE-007 closed 2026-08-03; the next slice opens
-against an owner decision (unpark SLICE-006, or first delegation).
+**Active slice:** `SLICE-006-gating-a-real-test-suite` — unparked 2026-08-04 by
+owner decision. Ranex learns to provision a committed suite's dependencies and
+gate its own repository through the unchanged `uv run pytest -q` (ADR-007).
 
 Ranex now observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment
@@ -279,9 +280,8 @@ cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** the owner picks the next slice — unpark SLICE-006 (Ranex gates a real
-suite) or open first delegation — then handbooks. SLICE-006 stays parked and
-recoverable from git history until then.
+**Next:** finish SLICE-006, then the owner picks between first delegation and
+handbooks.
 
 ## Completed slices
 

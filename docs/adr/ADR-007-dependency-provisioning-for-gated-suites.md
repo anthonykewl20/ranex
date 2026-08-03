@@ -1,7 +1,7 @@
 # ADR-007 — provision dependencies without pretending they are evidence
 
-**Status:** proposed
-**Date:** 2026-08-03
+**Status:** accepted
+**Date:** 2026-08-03 (accepted 2026-08-04)
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md`
 
