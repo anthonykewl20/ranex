@@ -147,23 +147,16 @@ and how a conclusion was reached belong in commit messages — permanent,
 greppable, and free at load time. If you are about to add more than a few lines
 here, that is the signal it belongs somewhere else.
 
-## Delegating to opencode
+## Delegating to an outside model
 
-```sh
-opencode run --print-logs -m opencode/deepseek-v4-flash-free --dir "$PWD" "<prompt>"
-```
+Use the OpenRouter MCP (`mcp__openrouter__send-message`) with a concrete model
+slug — `~`-prefixed aliases are rejected for chat. It has no file access: inline
+every fact the model needs, and set `timeout_ms` explicitly. Score every result
+against frozen tests, never against the model's own report.
 
-`--print-logs` is required — without it nothing is emitted when stdout is piped.
-
-**The free tier is burst-throttled: roughly two calls succeed, then it stalls for
-minutes.** Use it for spaced review or audit; it cannot sustain an implementation
-loop. Six free models exist, so prefer three *different* models voting over one
-model asked three times. Score every result against frozen tests, never against
-the agent's own report.
-
-Already ruled out as causes of the stall — do not re-derive: prompt length,
-`--variant max`, `--auto` (redundant — `build` already allows `*`), and GitHub
-issue #13851. Evidence: `git log --grep=opencode-delegation`.
+The opencode CLI is **not** the delegation path — its free tier stalls after
+roughly two calls. Ruled-out causes and evidence:
+`git log --grep=opencode-delegation`. Do not re-derive.
 
 ## Invariants
 
@@ -191,8 +184,7 @@ one, stop and raise it.
   keys and the journal.
 - Delegation is foreman → department supervisors → workers, written clean-room.
   Orchestration patterns are learned from oh-my-openagent; its code is SUL-1.0
-  and never enters this tree, converted or not. Hermes and OpenClaw are feature
-  quarry under the adoption rule, never a base.
+  and never enters this tree, converted or not.
 - **Ranex never trusts worker output — including its own loop's.** It reads the
   diff on disk and runs checks. The agent's own summary is discarded.
 - **The kernel merges; the harness never does.** One git worktree per task.

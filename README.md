@@ -269,9 +269,9 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md` — provision
-and approve hashed dependencies so a committed suite can run offline, while
-stating plainly that imported dependency code remains inside the run's trust base.
+**Active slice:** `docs/slices/SLICE-007-trimmed-fork-to-the-kernel.md` — fork
+`opencode` at `v1.18.11`, trim the keep-set, lock the plugin surface, and bridge
+run output to the kernel through commit-then-materialise.
 
 Ranex now observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment
@@ -280,9 +280,9 @@ cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** make Ranex gate this repository's unchanged `uv run pytest -q` command.
-Landlock remains decided in ADR-006 but deferred; the materialisation is still a
-hermeticity boundary rather than a same-uid security boundary.
+**Next:** complete the trimmed fork bridge first (dispatch to journal, with
+kernel-verdict `CANDIDATE`), then first delegation, then handbooks. SLICE-006 is
+parked and recoverable from git history.
 
 ## Completed slices
 

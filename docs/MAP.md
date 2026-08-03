@@ -10,9 +10,10 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.0.0` |
+| Version | `3.0.1` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`), **code-audit corrections** (`2.7.0`), **maturity ledger and per-problem diagrams** (`2.8.0`), **the owner's restaurant — harness decision** (`3.0.0`). See §0.5–§0.14 |
+| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`), **code-audit corrections** (`2.7.0`), **maturity ledger and per-problem diagrams** (`2.8.0`), **the owner's restaurant — harness decision** (`3.0.0`), **settled — correspondence
+re-executed, stale projection deleted** (`3.0.1`). See §0.5–§0.14 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -51,7 +52,11 @@ document exists to prevent.
   viewpoints govern no view. Those gaps are recorded as `RISK-18`.
 - **Not finished.** The owner's assessment as of 2026-08-03 is that this map is
   "still cloudy and needs much more refinement." Treat every §1 claim as a first
-  articulation rather than a settled position.
+  articulation rather than a settled position. That refinement arrived as
+  `2.5.0`–`3.0.0`, and at `3.0.1` the map is settled **as a director of the
+  build** — the owner delegated the done-call, and it was made on executed
+  checks (§0.8), not confidence. Absolutely it stays unfinished: `VP-05`/`VP-06`
+  govern no view until the harness and SLICE-006 give them one.
 
 ### 0.3 Why it is not digest-pinned
 
@@ -155,6 +160,11 @@ Four correspondence rules were executed against the document on 2026-08-03 and
 pass: no risk is referenced without being defined, no section cross-reference
 dangles, and no requirement lacks a concern. `CR-02` **fails by design** and is
 left failing, because a hole reported is worth more than a hole read over.
+Re-executed at settlement (`3.0.1`): `CR-01`, `CR-04`, `CR-05` pass; `CR-07`
+passes with one named exception — `SLICE-005` is referenced in §13 and §15.2
+but has no file on disk, having been withdrawn before any implementation was
+committed. A slice the ledger itself records as never committed is a named
+exception, not a dangling reference.
 
 ### 0.9 What changed in `2.4.0` — the translator, and the chain's freeze line
 
@@ -281,8 +291,8 @@ same way as `2.0.0` — as a change of position, with what it overturns named:
 **The build order (owner, 2026-08-03):** this map → one researched ADR for the
 fork (pinned commit, trim list, kernel-bridge design) → the trimmed fork talking
 to the kernel → first delegation (one foreman, one worker, one task, judged by
-the kernel) → the handbooks. SLICE-006 stays open and untouched until the owner
-says the map is done.
+the kernel) → the handbooks. SLICE-006 is parked behind the fork work and stays
+recoverable in git history.
 
 ---
 
@@ -1271,7 +1281,8 @@ the one that matters; a ledger recording only successes is a brochure.
 | `SLICE-003` claim↔command binding | The committed catalog declares the argv satisfying a claim; a signed record of `true` no longer satisfies `tests-executed`. Six audits failed to break the binding | The same audits reproduced **six ways to get a false PASS around it** — one root cause, all frozen as deliberately-failing tests |
 | `SLICE-004` hermetic observation | The bound command runs against a materialisation of the subject commit, every blob checked against the tree's object id, environment built from empty, toolchain pinned | **Closed, reopened, closed again.** The first close rested on a cleanup control that had never worked on any supported Python, covered by a test that monkeypatched out the function it was named for, and on a mutation check **run by hand by the actor who wrote the code**. Measuring the general form found **59 refusals no test executed**. Two capabilities were deliberately withdrawn: trees needing installed dependencies, and trees carrying symlinks or submodules, can no longer be observed |
 | `SLICE-005` confinement | **Withdrawn 2026-08-03 before any implementation**, never committed. ADR-006 stands; the slice was re-sequenced behind SLICE-006 | — |
-| `SLICE-006` gate a real test suite | Open. Nothing built. Closes `RISK-08` — reconnecting the gauge to the part, so that Ranex can gate Ranex | — |
+| `SLICE-006` gate a real test suite | Parked on 2026-08-03 behind fork work. Recoverable from git history and re-opened when unblocked by owner. Closes `RISK-08` — reconnecting the gauge to the part, so that Ranex can gate Ranex | — |
+| `SLICE-007` trimmed fork to the kernel | Open. Realizes ADR-008 and lands the commit-then-materialise bridge from the trimmed harness to the kernel in the gear-mesh run path | — |
 
 **The pattern across four closed slices, stated because it is the most reliable
 information in this document:** every slice that was closed on the implementer's
@@ -1580,7 +1591,10 @@ tree.
 `PROVISIONAL` — the map-level spec the fork ADR will carry to pinned commits and
 measured numbers. The classification below was read from opencode's package
 structure on 2026-08-03, `dev` branch — a branch, not a pin. Every row is
-confirmed against code at fork time or it moves to §17.3.
+confirmed against code at fork time or it moves to §17.3. **Done for the fork
+point:** `ADR-008` re-confirmed these rows against `v1.18.11` and records the
+corrections there (notably `server` and `sdk` are keep, `ui`/`client`/`codemode`
+cut) — this section stays the provisional sketch, the ADR carries the pin.
 
 **The owner's analogy is the doctrine.** We are not deleting parts from a bulky
 V8. We are building a smaller, more compact engine that delivers **more
@@ -1654,7 +1668,8 @@ the fork ADR takes the baseline (bulky upstream, same tasks) and must beat it.
 
 A trimmed engine is proven running, not listed. The fork ADR closes only when one
 task turns every gear in sequence — foreman dispatches, the loop executes in an
-isolated worktree, hooks emit references, the kernel reads the diff on disk,
+isolated worktree, hooks emit references, the kernel materialises the committed
+work,
 judges, and journals the verdict — with no hand on any part. That run is also the
 first delegation of §0.14's build order; the two are one milestone.
 
