@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `2.5.0` |
+| Version | `2.6.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`). See §0.5–§0.10 |
+| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`). See §0.5–§0.11 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -192,6 +192,15 @@ rollback/truncation risk. Sources: `extract-research.md:11-102`,
 `extract-decisions.md:29-40,68-76`, `extract-architecture.md:10-66`,
 `README.md:225-227,252-259`.
 
+### 0.11 What changed in `2.6.0` — adversarial pass
+
+Two adversarial rounds by `tencent/hy3` retained kernel determinism, the
+producer/approver separation, and Phase G positioning. They overturned three
+overclaims: confinement makes the producer-unalterable scorer false today,
+red-then-green proves discrimination rather than precedence, and a rich
+fail-closed outcome taxonomy is not a graded pass scale. The corrections are in
+§1.2, §1.3, §4.5 and §11.5–§11.6.
+
 ---
 
 ## §1 Introduction and Goals
@@ -270,10 +279,15 @@ precisely what a gauge exists to replace.
 > something the producer cannot alter, is worth more than any quantity of evidence
 > the producer generates about itself.
 
-`PROVISIONAL` as a product thesis. It is substantially true by construction rather
-than by experiment, which is a strength relative to `1.1.0`'s thesis — but "true"
-and "someone will pay for it" are different claims, and only the first is
-addressed here. See `RISK-01`.
+`PROVISIONAL` as a product thesis. The determinism half is constructive and
+`CONFIRMED` for the kernel: `evaluate()` is pure and imports no model client
+(`src/ranex/governed_execution/domain/verdict.py:3-18,238-324`), and the suite
+passes with no model credential present. The producer-cannot-alter-the-scorer
+half is **false today**: `RISK-06` reproduces the bound command reading
+`/proc/<ranex-pid>/environ`, taking the signing key and signing anything.
+Confinement in ADR-006 is a decided-but-unbuilt control, so the thesis is not
+true by construction today. "True" and "someone will pay" remain distinct; see
+`RISK-01`.
 
 **What Ranex explicitly does not claim — `CONFIRMED` as policy, `CLAUDE.md`:**
 it does not improve the quality of generated code, by any margin. Program output,
@@ -300,8 +314,12 @@ Which yields the sentence this entire design turns on:
 Separation of duties in an organisation comes from headcount. **Ranex substitutes
 code for headcount.** That is why the producer is the *agent* and the approver is
 the *human*, why the agent's summary is discarded, and why the gauge must be
-unreachable by the thing it measures. It also inverts `RISK-15`: "one implementer"
-is not a weakness in the plan, it is the **premise the product exists to serve**.
+unreachable by the thing it measures. `tencent/hy3` raised and withdrew the
+objection that an AI has no legal or moral agency: agency is irrelevant to this
+separation — a CNC machine has none and still does not certify its own output.
+The surviving limit is unchanged: the operator writes the gauge and nothing
+checks the gauge. It also inverts `RISK-15`: "one implementer" is the **premise
+the product exists to serve**.
 
 *Team use* is named by the owner as possible and is explicitly **not** designed
 for. No part is built for it; none is precluded.
@@ -374,7 +392,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | `UNRESOLVED` — designed, never built; one bounded worker by default, parallel only for independent reads/disjoint isolated writes, and landing is serial (`extract-architecture.md:24-57`). **The single largest untested assumption in the system** |
 | `TaskPacket` | Content-addressed, immutable frozen-work root: exact scope/configuration, target, subject, evidence and record; material change recompiles it | `UNRESOLVED` — future worker packet, not dispatch machinery (`extract-research.md:11-18,44-48`; `extract-architecture.md:10-22`) |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (`extract-research.md:19-25,62-66`) |
-| Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`extract-research.md:26-33,57-61`) |
+| Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:23-25`; `extract-research.md:26-33,57-61`) |
 | Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (`extract-research.md:34-40,67-70`) |
 | Budget and escalation | Bounded spend, three misses, plain-language question to the owner; cancellation first denies new capability, records unknowns and cannot widen cleanup authority | `UNRESOLVED` — designed, never built; never silently downgrade a required gate (`extract-research.md:84-88`; `extract-architecture.md:59-66`) |
 | Intake and flow graph | Plain-language intent → a graph the owner approves → scenarios → tests | `UNRESOLVED` — designed, never built |
@@ -550,20 +568,21 @@ before anything distributed.
 
 ### 4.5 What we take from TOGAF, and what we refuse — `PROVISIONAL`, new in `2.1.0`
 
-**The positioning claim: Ranex is ADM Phase G, executed by code instead of a
-review board.**
+**The positioning claim: Ranex automates the conformance-checking part of ADM
+Phase G, with code instead of a review board.**
 
 TOGAF's Phase G — Implementation Governance — exists to ensure conformance with
 the Target Architecture by the projects implementing it. Its instrument is the
 **Architecture Contract (signed)**; its output is a **Compliance Assessment**.
-Every enterprise runs that phase with an architecture board, review meetings and
-spreadsheets, rated by people who cannot have read everything. It is the phase
-where §1.1's problem lands hardest, and the phase most cheaply faked.
+The human still authors the target and approves; judgment about whether the
+target is right never leaves the human. Enterprises legitimately use delegated
+assurance and sampling; Ranex automates only the deterministic conformance check.
 
-TOGAF named the loop and left the checking to humans. Ranex does the checking
-with code. This is the most credible sentence available to an enterprise buyer,
-because it names an acknowledged weak point rather than inventing a category.
-`UNRESOLVED` as market positioning — never tested on a buyer (`RISK-04`).
+`tencent/hy3` withdrew its substantive objection to this positioning. TOGAF
+named the loop and left the checking to humans; Ranex does the checking with code.
+This is the most credible sentence available to an enterprise buyer, because it
+names an acknowledged weak point rather than inventing a category. `UNRESOLVED`
+as market positioning — never tested on a buyer (`RISK-04`).
 
 **Adopted — four parts, and nothing else:**
 
@@ -581,13 +600,15 @@ architecture domains, the Enterprise Continuum, TRM and III-RM, the Skills
 Framework, and the Architecture Board / Chief Architect / Domain Architect
 hierarchy.
 
-**Refused on principle: TOGAF's Compliance Levels.** The scale — Irrelevant,
-Consistent, Compliant, Conformant, Fully Conformant, Non-Conformant — is
-**incompatible with this project's invariants.** Absence blocks, and a gate that
-cannot block is refused at construction. A graded scale is exactly how "mostly
-compliant" becomes a pass, and it is the mechanism by which enterprise governance
-became the theatre §1.1 describes. Take the contract; refuse the grading that
-softens it.
+**Reject a graded pass scale; adopt a rich diagnostic outcome taxonomy.** A scale
+where partial compliance passes is incompatible with absence-blocks: it turns
+"mostly compliant" into a pass. But binary pass/fail is equally theatrical when
+the gate is trivial — the calibration argument from the other direction. The
+pre-reset corpus already proposed the correction that this map argued against:
+`PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, and
+`CHECKER_FAULT`. Everything except proven `NOT_APPLICABLE` blocks: fail-closed
+and diagnostic, not graded. The current kernel has only `PASS` and `FAIL`
+(`src/ranex/governed_execution/domain/verdict.py:23-25`).
 
 **Why the adoption is this narrow — evidence, not preference.** The pre-reset
 tree already contained a faithful TOGAF-shaped apparatus: a core SDLC operating
@@ -922,7 +943,7 @@ verdict — and deleting them would lose the reasoning.
 
 | ID | Risk | Settled by |
 |---|---|---|
-| `RISK-01` | **The thesis is now largely true by construction, which moves the risk from "is it true" to "will anyone pay."** `1.1.0` risked being wrong; `2.0.0` risks being correct and unwanted | A buyer paying for it |
+| `RISK-01` | **Only the deterministic half of the thesis is true by construction.** The producer-unalterable scorer is false until ADR-006 confinement exists (`RISK-06`), so `1.1.0`'s truth risk remains alongside the question of whether anyone will pay | Confinement landing, then a buyer paying for it |
 | `RISK-02` | **Timing.** The provability nightmare (§1.1 level four) may be three to five years early. No one has been sued at scale over AI-written code. Founders do not buy diligence insurance in advance. Right and early is operationally identical to wrong | Evidence of present-tense pain, or a wedge that pays before the nightmare arrives |
 | `RISK-03` | **Position.** A lemons market is fixed by a signal a hostile outsider can read. Ranex is a local CLI, and a certificate you issue to yourself is worth nothing. The cryptographic substrate for an outward record exists; the position does not | A decision about who the verifier is, which likely overturns local-first (§7.2) |
 | `RISK-04` | **The buyer is post-disillusionment.** Someone who still believes a prompt produces an app does not want gates — they want the magic, and competitors sell it. The buyer is the person who already burned weeks and thousands and now distrusts the loop. Real, growing, and smaller than the believer market | Contact with actual buyers |
@@ -1009,6 +1030,7 @@ is a byproduct.
 | `RISK-17` | **Adopting more of TOGAF than §4.5's four parts recreates the 561-file failure.** This is not a hypothetical: the pre-reset tree was already TOGAF-shaped and produced zero product code. The ADM's overhead is amortised across an enterprise; there is one implementer here. Any proposal to add an ADM phase, a capability level, a maturity score or a compliance grade should be read as this risk materialising |
 | `RISK-18` | **This map is not yet conformant to ISO/IEC/IEEE 42010 — partially closed in `2.2.0`.** The stakeholder and concerns now exist and every requirement traces to one (§1.3), which was the defect the pre-reset tree described as *"every ADR anchored to an architecture anchored to nothing above it."* Still absent: **declared viewpoints** governing §5–§7's views, and **correspondences** — the checkable relations between description elements. Until those exist, the map can be wrong without anything noticing |
 | `RISK-19` | **The journal does not detect rollback or truncation.** `ranex journal verify` recomputes an extant chain, but an internally consistent earlier prefix verifies after later rows are removed; the deferred size checkpoint is the named remedy (`README.md:256-259`; §9) |
+| `RISK-20` | **Git ancestry establishes target-before-work only while history is not rewritten.** Signed commits would expose a rewrite, but Ranex verifies neither ancestry nor commit signatures today (`src/ranex/cli/main.py:976-1057`); apparent precedence remains forgeable |
 
 ### 11.6 Sequencing decisions — owner, 2026-08-03
 
@@ -1068,8 +1090,12 @@ being right, because nobody planted the marker.
 
 **Already decided, and this is the same thing:** `CLAUDE.md` requires tests
 frozen before BUILD, read-only to implementers, with red-then-green enforced.
-Red-then-green is what proves *specify* happened before *execute* — a check that
-passes before the work exists proves the target was drawn around the result.
+Red-then-green proves that a check **discriminates**: it fails without the work
+and passes with it. It cannot prove temporal precedence; an author can write code
+and its test, then check out an earlier commit and observe red. For SLICE-001,
+Git ancestry supplies that evidence: `b495e3635` (the red target) is an ancestor
+of `0762cf7428` (the implementation). That proves precedence only while history
+is not rewritten; `RISK-20` records the unbuilt signature and ancestry controls.
 
 **The owner's second illustration — cooking adobo** — recorded because it names
 three things the river does not:
@@ -1126,7 +1152,7 @@ produces something for them to govern.
 | **Baseline / Target / Gap** | TOGAF: what exists, the finish line, and the difference between them, which is the parts list |
 | **Transition Architecture** | TOGAF: an intermediate state that must deliver value on its own, not merely be closer to done |
 | **Architecture Contract** | TOGAF: the signed agreement an implementer must satisfy. Ranex's frozen task envelope, and Phase G is the checking of it (§4.5) |
-| **Phase G** | TOGAF ADM Implementation Governance — conformance of built work to the agreed target. The phase Ranex automates |
+| **Phase G** | TOGAF ADM Implementation Governance — conformance of built work to the agreed target. Ranex automates its conformance-checking part |
 | **Viewpoint / view / concern / correspondence** | ISO 42010: a concern matters to a stakeholder; a viewpoint frames concerns; a view is governed by a viewpoint and addresses concerns; a correspondence is a checkable relation between description elements |
 | **DOE** | Design of Experiments — deliberately varying factors so their effects are separable |
 | **Worker envelope** | The full production configuration: model, harness version, skill and tool manifest, prompt digest |
@@ -1144,7 +1170,7 @@ the one that matters; a ledger recording only successes is a brochure.
 
 | Slice | Delivered | Disproved |
 |---|---|---|
-| `SLICE-001` evidence production | `ranex run` executes a command, records exit code and tree digest, emits evidence the gate accepts. Target committed red at `b495e3635` before any implementation existed | — |
+| `SLICE-001` evidence production | `ranex run` executes a command, records exit code and tree digest, emits evidence the gate accepts. The red target at `b495e3635` is an ancestor of implementation `0762cf7428` | — |
 | `SLICE-002` evidence authenticity | Ed25519 signatures verified against a committed keyring; keyring and catalog read from the commit, not the working tree | **Closed twice, reopened twice.** Audits found the tests narrower than reality (17 defects across four audits); then the trust-root check was skipped entirely for a path the commit did not carry, so an attacker-named catalog was read unchecked |
 | `SLICE-003` claim↔command binding | The committed catalog declares the argv satisfying a claim; a signed record of `true` no longer satisfies `tests-executed`. Six audits failed to break the binding | The same audits reproduced **six ways to get a false PASS around it** — one root cause, all frozen as deliberately-failing tests |
 | `SLICE-004` hermetic observation | The bound command runs against a materialisation of the subject commit, every blob checked against the tree's object id, environment built from empty, toolchain pinned | **Closed, reopened, closed again.** The first close rested on a cleanup control that had never worked on any supported Python, covered by a test that monkeypatched out the function it was named for, and on a mutation check **run by hand by the actor who wrote the code**. Measuring the general form found **59 refusals no test executed**. Two capabilities were deliberately withdrawn: trees needing installed dependencies, and trees carrying symlinks or submodules, can no longer be observed |
