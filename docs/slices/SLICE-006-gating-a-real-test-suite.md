@@ -48,8 +48,11 @@ declared inputs.
 
 Each criterion is met only when a test proves it. New coverage belongs in
 `tests/unit/test_dependency_provisioning.py`,
-`tests/security/test_dependency_provisioning.py`, and
-`tests/e2e/test_gating_real_suite.py`.
+`tests/security/test_slice006_dependency_provisioning.py` (renamed from the
+originally-planned basename, which collided with the unit file under pytest's
+flat module namespace), and `tests/e2e/test_gating_real_suite.py` — the
+latter written as the owner directed 2026-08-04: real-world operator stages
+against a clone of this repository, no synthetic packages.
 
 1. A subject without a supported committed manifest or committed lock refuses
    before resolution, download or execution. (ADR-007 s.p. 1, 2)

@@ -14,8 +14,10 @@ import yaml
 
 from ranex.cli.toolchain import ToolchainError, refuse_writable_executable
 
+from ranex.provisioning.errors import ProvisioningError
 
-class PinsError(Exception):
+
+class PinsError(ProvisioningError):
     """A required provisioning pin is absent, malformed, or unsafe."""
 
 
@@ -75,6 +77,21 @@ def load_pins_text(text: str) -> ResolutionPins:
         indexes=tuple(indexes),
         exclude_newer=exclude_newer,
     )
+
+
+def refuse_writable_interpreter(path: Path) -> None:
+    """The pinned interpreter obeys the same rule as the pinned resolver.
+
+    It has no digest pin — its identity is answered by the probe it runs —
+    but a user-writable interpreter lets the observed party rewrite the
+    selection and the runtime in one move, so the toolchain's writability
+    rule applies unchanged.
+    """
+
+    try:
+        refuse_writable_executable(path)
+    except ToolchainError as exc:
+        raise PinsError(f"pinned interpreter {path} is writable: {exc}") from exc
 
 
 def verified_pinned_binary(

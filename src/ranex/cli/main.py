@@ -12,14 +12,18 @@ verdict, and changes nothing `run` records.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
+import re
 import shlex
+import shutil
 import sqlite3
 import stat
 import subprocess
 import sys
 import tempfile
+import tomllib
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -55,6 +59,7 @@ from ranex.governed_execution.domain.admission import (
     RejectionReason,
     admit,
 )
+from ranex.governed_execution.domain.deps import DepsApproval, DepsDerivation
 from ranex.governed_execution.domain.task import TaskCandidate, TaskDispatch
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     KeyringError,
@@ -62,6 +67,25 @@ from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     load_keyring_text,
 )
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+from ranex.provisioning.approval import depset_digest, package_delta
+from ranex.provisioning.derivation import derive_lock, refuse_mismatch
+from ranex.provisioning.errors import ProvisioningError
+from ranex.provisioning.fetching import ensure_wheels
+from ranex.provisioning.lockfile import (
+    LockError,
+    WheelArtifact,
+    parse_lock,
+    select_wheels,
+)
+from ranex.provisioning.pins import (
+    ResolutionPins,
+    load_pins_text,
+    refuse_writable_interpreter,
+    verified_pinned_binary,
+)
+from ranex.provisioning.root import assemble_root, verified_wheel_paths
+from ranex.provisioning.store import WheelStore
+from ranex.provisioning.target import probe_target
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
@@ -74,6 +98,17 @@ SIGNING_KEY_VARIABLE = "RANEX_SIGNING_KEY"
 # naming an arbitrary file hands the observed party an exemption from the check
 # that binds its evidence to HEAD, which is the whole guarantee.
 DEFAULT_JOURNAL = "governance/journal.sqlite3"
+
+# The pins are a constant path for the same reason the journal is: a flag
+# naming an arbitrary pins file hands the observed party the choice of
+# resolver, index and epoch, which is the whole point of pinning them.
+DEFAULT_PINS = "governance/deps.yaml"
+
+
+def default_store() -> str:
+    """Operator-managed wheel storage, outside every governed repository."""
+
+    return str(Path.home() / ".local" / "state" / "ranex" / "store")
 
 # The kernel spawns through this descriptor rather than through the name, so
 # the file that runs is the file that was checked. O_PATH needs no read
@@ -1290,6 +1325,279 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
     return EXIT_PASS if not missing else EXIT_FAIL
 
 
+def _deny_network() -> None:
+    """Child-side, between fork and exec: no network, no privileges needed.
+
+    A fresh user namespace makes CLONE_NEWNET available to an unprivileged
+    process, and a fresh network namespace has no interfaces up — every
+    connect fails with ENETUNREACH. This is the run-time half of ADR-007's
+    hermeticity row; a host that refuses unprivileged user namespaces fails
+    the spawn, and that failure is a refusal: a provisioned run that cannot
+    be denied the network is not run at all.
+    """
+
+    os.unshare(os.CLONE_NEWUSER | os.CLONE_NEWNET)
+
+
+@dataclass(frozen=True, slots=True)
+class Provisioning:
+    """Everything the provisioned paths agree on, read once from the commit."""
+
+    pins: ResolutionPins
+    manifest: bytes
+    lock: bytes
+    root_package: str
+    store: WheelStore
+
+
+def _normalised_project_name(manifest: bytes) -> str:
+    """The lock's name for the project, from the manifest's own declaration."""
+
+    try:
+        parsed = tomllib.loads(manifest.decode("utf-8"))
+        name = parsed["project"]["name"]
+    except (UnicodeDecodeError, tomllib.TOMLDecodeError, KeyError, TypeError) as exc:
+        raise ValueError(
+            f"the committed pyproject.toml declares no project name: {exc}"
+        ) from exc
+    if not isinstance(name, str) or not name:
+        raise ValueError("the committed pyproject.toml declares no project name")
+    return re.sub(r"[-_.]+", "-", name).lower()
+
+
+def _store_outside(root: Path, raw: str) -> WheelStore:
+    store_path = Path(raw).expanduser().resolve()
+    if committable_into(store_path, root):
+        raise ValueError(
+            f"refusing a wheel store inside the governed repository: "
+            f"{store_path}. Store contents would become part of the subject"
+        )
+    return WheelStore(store_path)
+
+
+def _provisioning_for(
+    root: Path, ref: str, store: str
+) -> Provisioning | None:
+    """The committed provisioning inputs, or None when the subject has none.
+
+    Activation is the committed pins file. A subject that carries
+    `governance/deps.yaml` is asking for dependency-bearing commands, and
+    from that moment absence of any other input blocks; a subject without it
+    keeps the self-contained behaviour unchanged.
+    """
+
+    named = named_within_repository(root, DEFAULT_PINS)
+    if committed_bytes(root, ref, named) is None:
+        return None
+    pins_source = committed_trust_root(
+        root, ref, DEFAULT_PINS, resolve_within_repository(root, DEFAULT_PINS),
+        "dependency pins",
+    )
+    pins = load_pins_text(pins_source.decode("utf-8"))
+    manifest = committed_bytes(root, ref, named_within_repository(root, "pyproject.toml"))
+    if manifest is None:
+        raise ValueError(
+            f"refusing: {ref} carries no pyproject.toml, and the committed "
+            "dependency pins say this subject has dependencies. A manifest "
+            "that is not committed cannot be derived from"
+        )
+    lock = committed_bytes(root, ref, named_within_repository(root, "uv.lock"))
+    if lock is None:
+        raise ValueError(
+            f"refusing: {ref} carries no uv.lock. Absence cannot mean an "
+            "empty dependency set — commit the lock the manifest resolves to"
+        )
+    return Provisioning(
+        pins=pins,
+        manifest=manifest,
+        lock=lock,
+        root_package=_normalised_project_name(manifest),
+        store=_store_outside(root, store),
+    )
+
+
+def _selected_artifacts(provisioning: Provisioning) -> tuple[tuple[WheelArtifact, ...], str]:
+    """The wheel set the committed lock selects, and its depset identity."""
+
+    refuse_writable_interpreter(provisioning.pins.python)
+    target = probe_target(provisioning.pins.python)
+    artifacts = select_wheels(
+        parse_lock(provisioning.lock), provisioning.root_package, target
+    )
+    return artifacts, depset_digest(provisioning.lock, target)
+
+
+def _latest_of(entries: list[dict[str, object]], record_type: str) -> dict[str, object] | None:
+    return next(
+        (
+            record
+            for record in reversed(entries)
+            if record.get("type") == record_type
+        ),
+        None,
+    )
+
+
+def _render_delta(previous: Mapping[str, str] | None, current: Mapping[str, str]) -> list[str]:
+    delta = package_delta(previous, current)
+    lines: list[str] = []
+    if not delta.baseline_exists:
+        lines.append("no prior approval; the full set is the delta:")
+    for name, version in delta.added:
+        lines.append(f"  + {name} {version}")
+    for name, version in delta.removed:
+        lines.append(f"  - {name} {version}")
+    for name, old, new in delta.changed:
+        lines.append(f"  ~ {name} {old} -> {new}")
+    if delta.baseline_exists and not (delta.added or delta.removed or delta.changed):
+        lines.append("  unchanged since the last approval")
+    return lines
+
+
+def cmd_deps_fetch(args: argparse.Namespace) -> int:
+    """Derive, verify and provision the committed dependency set. Networked."""
+
+    descriptor: int | None = None
+    scratch: str | None = None
+    try:
+        governed_root = governed_repository_root()
+        root = resolve_within_repository(governed_root, args.repository)
+        if root != governed_root:
+            raise ValueError(
+                f"second-repository targets are refused: {args.repository!r}"
+            )
+        journal_path = resolve_within_repository(root, DEFAULT_JOURNAL)
+        started_at = head_commit(root)
+        provisioning = _provisioning_for(root, started_at, args.store)
+        if provisioning is None:
+            raise ValueError(
+                f"HEAD carries no {DEFAULT_PINS}; there is nothing to "
+                "provision. Commit the operator pins first"
+            )
+        descriptor = verified_pinned_binary(
+            provisioning.pins.resolver, provisioning.pins.resolver_sha256
+        )
+        scratch = tempfile.mkdtemp(prefix="ranex-deps-")
+        derived = derive_lock(
+            provisioning.manifest, provisioning.pins, descriptor, Path(scratch)
+        )
+        refuse_mismatch(provisioning.lock, derived)
+        artifacts, depset = _selected_artifacts(provisioning)
+        report = ensure_wheels(artifacts, provisioning.store)
+        packages = {item.package: item.version for item in artifacts}
+        journal = Journal(journal_path)
+        journal.append(
+            DepsDerivation(
+                lock_sha256=canonical_sha256_of_bytes(provisioning.lock),
+                depset_digest=depset,
+                packages=packages,
+            )
+        )
+        approval = _latest_of(journal.entries(), "deps-approval")
+        approved = approval is not None and approval.get("depset_digest") == depset
+    except (
+        ProvisioningError,
+        SubjectError,
+        ToolchainError,
+        ValueError,
+        TypeError,
+        KeyError,
+        OSError,
+        sqlite3.Error,
+        json.JSONDecodeError,
+    ) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+    finally:
+        if descriptor is not None:
+            os.close(descriptor)
+        if scratch is not None:
+            shutil.rmtree(scratch, ignore_errors=True)
+
+    print(
+        f"FETCHED  packages={len(packages)}  "
+        f"downloaded={len(report.downloaded)}  reused={len(report.reused)}"
+    )
+    print(f"         depset={depset}")
+    if not approved:
+        print("         not yet approved: run `ranex deps approve --approver <id>`")
+    return EXIT_PASS
+
+
+def cmd_deps_approve(args: argparse.Namespace) -> int:
+    """Record a human's acceptance of the exact derived package set.
+
+    Approving an underived lock is refused: the delta would describe bytes
+    nothing regenerated, and hashes that were never checked as output. What
+    approval means — and does not mean — is printed with the delta: the
+    accepted code still runs inside the measured command (ADR-007 s.p. 17).
+    """
+
+    try:
+        governed_root = governed_repository_root()
+        root = resolve_within_repository(governed_root, args.repository)
+        if root != governed_root:
+            raise ValueError(
+                f"second-repository targets are refused: {args.repository!r}"
+            )
+        if not args.approver.strip():
+            raise ValueError("--approver must be non-blank")
+        journal_path = resolve_within_repository(root, DEFAULT_JOURNAL)
+        started_at = head_commit(root)
+        provisioning = _provisioning_for(root, started_at, default_store())
+        if provisioning is None:
+            raise ValueError(
+                f"HEAD carries no {DEFAULT_PINS}; there is nothing to approve"
+            )
+        artifacts, depset = _selected_artifacts(provisioning)
+        packages = {item.package: item.version for item in artifacts}
+        journal = Journal(journal_path)
+        entries = journal.entries()
+        derivation = _latest_of(entries, "deps-derivation")
+        if derivation is None or derivation.get("depset_digest") != depset:
+            raise ValueError(
+                "no derivation is recorded for this lock and target; run "
+                "`ranex deps fetch` first — approval covers checked bytes only"
+            )
+        approval = _latest_of(entries, "deps-approval")
+        previous = approval.get("packages") if approval is not None else None
+        delta_lines = _render_delta(previous, packages)
+        journal.append(
+            DepsApproval(
+                depset_digest=depset, packages=packages, approver_id=args.approver
+            )
+        )
+    except (
+        ProvisioningError,
+        SubjectError,
+        ToolchainError,
+        ValueError,
+        TypeError,
+        KeyError,
+        OSError,
+        sqlite3.Error,
+        json.JSONDecodeError,
+    ) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    for line in delta_lines:
+        print(line)
+    print(f"APPROVED  packages={len(packages)}  approver={args.approver}")
+    print(f"          depset={depset}")
+    print(
+        "          approval reduces hidden change; the approved code still "
+        "chooses its own behaviour inside the gated command"
+    )
+    return EXIT_PASS
+
+
+def canonical_sha256_of_bytes(data: bytes) -> str:
+    """Plain content hash, hex — the journal's name for exact lock bytes."""
+
+    return hashlib.sha256(data).hexdigest()
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Run a command and record what was observed. Never judge it.
 
@@ -1322,12 +1630,40 @@ def cmd_run(args: argparse.Namespace) -> int:
         if not command:
             raise ValueError("a command is required after --")
 
+        # Captured once, and everything below is asked about this exact commit
+        # rather than about `HEAD`, which is a name the observed party can move
+        # between two questions. Taken before argv[0] resolution now, because
+        # whether this subject provisions dependencies is also a question
+        # about this exact commit.
+        started_at = head_commit(root)
+        provisioning = _provisioning_for(root, started_at, args.store)
+
         # Bare and absolute names do not depend on the materialised cwd, so
         # resolve them before materialisation. This keeps the governed-root
         # route and inode controls live for absolute same-uid access, including
         # a committed symlink whose tree entry the materialiser also refuses.
         preliminary: Resolution | None = None
-        if "/" not in command[0] or Path(command[0]).is_absolute():
+        provisioned_resolver = (
+            provisioning is not None
+            and command[0] == provisioning.pins.resolver.name
+        )
+        if provisioned_resolver:
+            # The catalog's bare resolver name means the pinned resolver —
+            # never ambient PATH, and never the pinned system directories,
+            # which deliberately do not carry it. Identity is enforced by
+            # digest at spawn; the usual route and containment rules apply
+            # to the pinned path unchanged.
+            preliminary = Resolution(
+                executable=provisioning.pins.resolver.resolve(),
+                route=walked_route(provisioning.pins.resolver),
+            )
+            refuse_resolution_inside(
+                preliminary,
+                command[0],
+                root,
+                "the governed repository under observation",
+            )
+        elif "/" not in command[0] or Path(command[0]).is_absolute():
             preliminary = resolve_executable(command[0], root)
             refuse_resolution_inside(
                 preliminary,
@@ -1340,10 +1676,6 @@ def cmd_run(args: argparse.Namespace) -> int:
         # the command runs. A test suite is expensive; discovering afterwards
         # that its record cannot be written honestly wastes all of it.
         private_key = private_signing_key(governed_root)
-        # Captured once, and everything below is asked about this exact commit
-        # rather than about `HEAD`, which is a name the observed party can move
-        # between two questions.
-        started_at = head_commit(root)
         # The same trust root, and the same refusal, on the way in. `run` only
         # consults the keyring to avoid writing a record that evaluation would
         # refuse — but a keyring the caller supplies at an uncommitted path
@@ -1401,10 +1733,67 @@ def cmd_run(args: argparse.Namespace) -> int:
             )
         subject = subject_digest_for(root, started_at)
 
+        # A provisioned subject proves its dependency chain before anything
+        # spawns: the committed lock must have been derivation-verified, the
+        # exact package set must be approved, and every wheel must re-verify
+        # out of the store. Absence of any link blocks — a run that cannot
+        # prove its dependencies were checked does not get to produce
+        # evidence that looks like one that could.
+        artifacts: tuple[WheelArtifact, ...] = ()
+        if provisioning is not None:
+            artifacts, depset = _selected_artifacts(provisioning)
+            entries = Journal(
+                resolve_within_repository(root, DEFAULT_JOURNAL)
+            ).entries()
+            derivation = _latest_of(entries, "deps-derivation")
+            if (
+                derivation is None
+                or derivation.get("lock_sha256")
+                != canonical_sha256_of_bytes(provisioning.lock)
+                or derivation.get("depset_digest") != depset
+            ):
+                raise ValueError(
+                    "refusing to run: the committed uv.lock was never "
+                    "derivation-verified for this target. Only `ranex deps "
+                    "fetch` checks the lock as output; a lock nothing "
+                    "regenerated may be entirely authored"
+                )
+            packages = {item.package: item.version for item in artifacts}
+            approval = _latest_of(entries, "deps-approval")
+            if approval is None or approval.get("depset_digest") != depset:
+                recorded = approval.get("packages") if approval is not None else None
+                delta = _render_delta(
+                    recorded if isinstance(recorded, dict) else None, packages
+                )
+                raise ValueError(
+                    "refusing to run: this dependency set is not approved. "
+                    "The delta awaiting approval:\n"
+                    + "\n".join(delta)
+                    + "\nRun `ranex deps approve --approver <id>` to accept it"
+                )
+            # Re-verified out of the store now, so a missing or corrupt entry
+            # refuses before the expensive materialisation, not after.
+            verified_wheel_paths(artifacts, provisioning.store)
+
         # The command sees only this verified sample. HOME and TMPDIR are
         # siblings of the sample tree, so command scratch cannot become an
         # undeclared subject input and all three disappear in one cleanup.
         with materialise_subject(root, started_at, git) as materialisation:
+            deps_environment: Path | None = None
+            if provisioning is not None:
+                assembly = verified_pinned_binary(
+                    provisioning.pins.resolver, provisioning.pins.resolver_sha256
+                )
+                try:
+                    deps_environment = assemble_root(
+                        artifacts,
+                        provisioning.store,
+                        provisioning.pins,
+                        assembly,
+                        materialisation.root / "deps",
+                    )
+                finally:
+                    os.close(assembly)
             resolution = preliminary or resolve_executable(
                 command[0], materialisation.tree
             )
@@ -1423,8 +1812,15 @@ def cmd_run(args: argparse.Namespace) -> int:
             )
 
             # Open once and spawn through the descriptor. Re-walking a cleared
-            # name at exec time would reopen the ancestor-swap race.
-            descriptor = os.open(executable, EXECUTABLE_OPEN_FLAGS)
+            # name at exec time would reopen the ancestor-swap race. The
+            # pinned resolver is opened by its verifier instead, so the bytes
+            # that hash to the pin are the bytes the descriptor will execute.
+            if provisioned_resolver:
+                descriptor = verified_pinned_binary(
+                    provisioning.pins.resolver, provisioning.pins.resolver_sha256
+                )
+            else:
+                descriptor = os.open(executable, EXECUTABLE_OPEN_FLAGS)
             identity = os.fstat(descriptor)
             if not stat.S_ISREG(identity.st_mode):
                 raise ValueError(
@@ -1466,6 +1862,28 @@ def cmd_run(args: argparse.Namespace) -> int:
                 "TMPDIR": str(materialisation.temporary),
                 "LANG": "C.UTF-8",
             }
+            before_exec = None
+            if provisioning is not None and deps_environment is not None:
+                # ADR-007: the run sees the sealed root and nothing else. The
+                # root's bin joins the pinned search so the command's own
+                # child processes find the provisioned entry points; the uv
+                # controls stop the runner syncing, fetching or reading
+                # ambient configuration; the namespace pair denies the
+                # network outright rather than asking uv to abstain.
+                environment["PATH"] = (
+                    f"{deps_environment / 'bin'}{os.pathsep}{environment['PATH']}"
+                )
+                environment.update(
+                    {
+                        "UV_PROJECT_ENVIRONMENT": str(deps_environment),
+                        "UV_NO_SYNC": "1",
+                        "UV_OFFLINE": "1",
+                        "UV_NO_CONFIG": "1",
+                        "UV_PYTHON_DOWNLOADS": "never",
+                        "UV_CACHE_DIR": str(materialisation.temporary / "uv-cache"),
+                    }
+                )
+                before_exec = _deny_network
             try:
                 completed = subprocess.run(
                     [str(executable), *command[1:]],
@@ -1474,8 +1892,9 @@ def cmd_run(args: argparse.Namespace) -> int:
                     cwd=materialisation.tree,
                     check=False,
                     env=environment,
+                    preexec_fn=before_exec,
                 )
-            except OSError as exc:
+            except (OSError, subprocess.SubprocessError) as exc:
                 raise ValueError(f"cannot run {command[0]!r}: {exc}") from exc
             finally:
                 os.close(descriptor)
@@ -1521,11 +1940,14 @@ def cmd_run(args: argparse.Namespace) -> int:
             {**content, "signature": sign_evidence(content, private_key)},
         )
     except (
+        ProvisioningError,
         SubjectError,
         ToolchainError,
         ValueError,
         TypeError,
+        KeyError,
         OSError,
+        sqlite3.Error,
         json.JSONDecodeError,
     ) as exc:
         if descriptor is not None:
@@ -1690,11 +2112,35 @@ def build_parser() -> argparse.ArgumentParser:
     # therefore a way to bind a passing observation to a tree that is not HEAD.
     # The one path `gate evaluate` writes is a constant; see DEFAULT_JOURNAL.
     rn.add_argument(
+        "--store",
+        default=default_store(),
+        help="operator wheel store, outside the repository",
+    )
+    rn.add_argument(
         "command",
         nargs=argparse.REMAINDER,
         help="the command to run, after --",
     )
     rn.set_defaults(func=cmd_run)
+
+    deps = sub.add_parser("deps", help="dependency provisioning").add_subparsers(
+        dest="action", required=True
+    )
+    fe = deps.add_parser(
+        "fetch", help="derive, verify and provision dependencies (networked)"
+    )
+    fe.add_argument("--repository", default=".", help="repository root")
+    fe.add_argument(
+        "--store",
+        default=default_store(),
+        help="operator wheel store, outside the repository",
+    )
+    fe.set_defaults(func=cmd_deps_fetch)
+
+    ap = deps.add_parser("approve", help="approve the derived dependency delta")
+    ap.add_argument("--repository", default=".", help="repository root")
+    ap.add_argument("--approver", required=True, help="identity approving")
+    ap.set_defaults(func=cmd_deps_approve)
 
     kg = sub.add_parser("keygen", help="generate a producer signing key")
     kg.add_argument("--producer", required=True, help="identity the key belongs to")

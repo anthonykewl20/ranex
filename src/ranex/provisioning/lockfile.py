@@ -14,8 +14,10 @@ from packaging.markers import Marker
 from packaging.tags import compatible_tags, cpython_tags
 from packaging.utils import parse_wheel_filename
 
+from ranex.provisioning.errors import ProvisioningError
 
-class LockError(Exception):
+
+class LockError(ProvisioningError):
     """A lock cannot provide a safe, compatible wheel closure."""
 
 

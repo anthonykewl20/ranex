@@ -8,8 +8,10 @@ import re
 import tempfile
 from pathlib import Path
 
+from ranex.provisioning.errors import ProvisioningError
 
-class StoreError(Exception):
+
+class StoreError(ProvisioningError):
     """A wheel-store address is invalid, absent, or has become untrustworthy."""
 
 
