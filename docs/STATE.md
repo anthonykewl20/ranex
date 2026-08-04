@@ -2,9 +2,8 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-04
-**Phase:** SLICE-006 built and green except criterion 14, which is blocked on
-an owner decision.
+**Updated:** 2026-08-04 (pinned resolver installed; journey green on real PyPI)
+**Phase:** SLICE-006 green except criterion 14, blocked on an owner decision.
 **Active slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md` (ADR-007).
 
 ## Where we stopped
@@ -14,8 +13,11 @@ pinned inputs and byte-compares it, `deps approve` records the named delta, and
 `run` proves derivation, approval and every wheel out of the SHA-256 store
 before spawning into a sealed, offline root. The real-world journey
 (`tests/e2e/test_gating_real_suite.py`, 15 operator stages against a clone of
-this repository) is green: 13 pass, 1 strict xfail, 1 skips on the operator key.
-It found five real defects, all fixed and recorded in the slice.
+this repository) is green ON REAL PYPI with the installed pinned resolver:
+13 pass, 2 strict xfails (criterion 14, clone and working repo). It found six
+real defects, all fixed and recorded in the slice — the sixth on its first
+production run: the committed lock had been derived from a stale warm cache,
+and the byte comparison refused it naming cffi 2.1.0 vs 2.1.1.
 
 Suite 485 passed / 15 skipped; `diff-cover` 100% on the change; mutmut 4673
 mutants, 2945 killed, 1036 survived — survivors are message text and

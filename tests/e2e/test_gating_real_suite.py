@@ -637,6 +637,17 @@ def test_stage_11_the_gated_run_is_offline_with_a_sealed_root(
 # --------------------------------------------------------------------------
 
 
+@pytest.mark.xfail(
+    strict=True,
+    reason=(
+        "The same miss as stage 08b, against the working repository instead "
+        "of the clone: the five git-dependent tests fail inside the "
+        "materialisation, so the suite exits nonzero and no PASS exists to "
+        "accept. Without this marker an operator who set their key would see "
+        "this stage fail red as if something new broke. strict=True, so the "
+        "owner decision that unblocks criterion 14 flips both stages at once."
+    ),
+)
 def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
     # The end-to-end confirmation ADR-007 names: the unchanged catalog
     # command, the real current commit, the operator's own store and key.

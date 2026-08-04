@@ -134,6 +134,12 @@ predict any of them, and the next fork-facing slice will meet the same shapes.
    showed that "an absent pin refuses" had been deleting a key line and
    leaving its children, so two cases proved malformed YAML refuses rather
    than that absence does.
+6. **The committed lock itself, on the first production fetch.** It had been
+   derived through the ambient warm uv cache, whose cffi metadata predated a
+   2.1.1 release uploaded three hours before the pinned epoch. The byte
+   comparison refused it naming the exact divergence. `derive_lock` already
+   used an empty cache per derivation; the operator's re-lock procedure now
+   does too, and the lock is regenerated from it.
 
 **Criterion 14 is blocked by this suite's own git assumptions** — below.
 
