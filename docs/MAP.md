@@ -748,6 +748,54 @@ Tracked as `RISK-17`.
 
 ---
 
+### 4.6 The gauge must be applied to the part — `PROVISIONAL`, owner, 2026-08-04
+
+The gauge metaphor has a hole we walked into ourselves, and it is the one that
+matters most now that generation is cheap.
+
+**A gate that binds a claim to an argv measures that the command exited zero. It
+does not measure that anything real was exercised.** Measured on 2026-08-04: a
+test asserting `False` — a guaranteed failure — was marked skipped; pytest
+reported `1 skipped` and exited `0`. A gate bound to `uv run pytest -q` accepts
+that as satisfying evidence. This repository is currently exposed to it: on a
+machine without the pinned resolver our own real-world journey skips every stage
+and the suite still exits zero.
+
+The dart metaphor names it exactly. We stopped the thrower painting the bullseye
+around the dart *after* it lands. We did not stop it painting the bullseye around
+a **drawing of the target** — a suite of mocks that never starts the product,
+or a suite that skips itself into silence. The part was never offered to the
+gauge, and the traveler got stamped anyway.
+
+**The requirement, stated as product policy:** evidence must come from executing
+the real product the way a person uses it, before a person does. Cheap
+generation makes this sharper, not softer — code arrives faster than anyone can
+read it, so the only affordable review is the one that runs it for real.
+
+What the kernel can enforce **deterministically**, without any model judging
+whether a test is "realistic":
+
+| Control | What it refuses |
+|---|---|
+| A skip is absence, not success | a green suite where the real stages never ran |
+| The product's own entry point must be observed spawning | a suite of mocks satisfying a claim about real use |
+| Distinct claims for distinct things — `tests-executed` vs `product-exercised` | one command standing in for both |
+| Assertion strength, already measured by `mutmut` | tests that run but cannot detect any change |
+
+Empirical support, recorded because it is unusually clean. SLICE-006 found six
+defects. **Every one came from running the real system; none came from unit
+tests, and none appeared in ADR-007's twenty-row sad-path table** — a list
+written specifically to anticipate failure. Unit tests confirmed what had already
+been imagined; real runs found what had not. A seventh followed immediately: the
+`README` walkthrough no longer works for a new operator, which no test starting
+from a configured fixture can see.
+
+**The boundary this must not cross.** None of it improves the model's aim, and no
+document or program output may say otherwise. Fixing the contract before the
+throw is ours to do; making the thrower better is not, and never was. What
+changes here is only *where the target is nailed up*: on the real product, not on
+a convincing picture of it.
+
 ## §5 Building Block View
 
 ### 5.1 Containers — status 2026-08-03
