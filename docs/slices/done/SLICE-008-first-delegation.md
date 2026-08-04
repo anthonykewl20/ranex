@@ -1,7 +1,13 @@
 # SLICE-008 — first delegation
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-04
+**Closed:** 2026-08-05 — suite 624 green (2 loud skips: credential-gated e2e,
+bind-mount), diff-cover 100% on the change, mutmut complete (5589 mutants,
+3460 killed; delegation/fanout survivors are the documented subprocess-test
+blindness, their proof lives in the excluded live security tests). Criterion 7
+ran against `openrouter/cohere/north-mini-code:free`; criterion 11 rebranded
+the fork's operator surface (`bin/ranex`, wordmark, help), LICENSE untouched.
 **ADR:** `docs/adr/ADR-010-first-delegation.md` — accepted 2026-08-04, including
 the fan-out decision taken before it was frozen.
 **Closes:** ADR-010's confirmation, ADR-008's open "trusted dispatcher path",

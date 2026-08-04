@@ -269,12 +269,8 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** `SLICE-008-first-delegation` — the front door. One request
-becomes governed work: the kernel dispatches an isolated worktree per task,
-runs the agent headless in it, then judges the result itself and journals a
-CANDIDATE. Delegations fan out over a bounded pool. Its hard constraint, from
-ADR-010: the phase that runs agent-written code holds no signing key, and
-refuses to start if one is present — SLSA Build L3 requires the same property.
+**Active slice:** none — SLICE-008 closed 2026-08-05; the next slice starts
+with its ADR.
 
 **Ranex gates Ranex.** With SLICE-006 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
@@ -291,11 +287,23 @@ cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** the owner picks between first delegation and handbooks; meanwhile the
-one god-module (`cli/main.py`) is being split along its action/service seam.
+**Next:** commit SLICE-008 across both trees, then the next ADR — merge (with
+the merge-time digest re-check ADR-010 names) or MAP §4.6 as a gate rule.
 
 ## Completed slices
 
+- **SLICE-008-first-delegation** — the front door. `ranex task delegate` runs
+  a real agent headless in a dispatched worktree, in an environment built from
+  empty that **refuses to start holding the signing key**; the wall-clock bound
+  kills the whole process group; the kernel cross-checks the emission against
+  its own dispatch record, measures the frozen suite sealed, and a separate
+  keyless invocation judges — a CANDIDATE naming its missing claims, never a
+  PASS. `task fanout` runs a bounded pool, one worktree each; the journal
+  chain verifies after concurrent runs. Proven end to end against a real free
+  model, and the harness fork now presents as `ranex` with opencode's MIT
+  attribution retained. Recorded, not mitigated: the model credential sits in
+  a network-open loop (use a scoped, spend-limited key), and `ranex run`'s own
+  path still reads the key before spawning (`RISK-06` stays open there).
 - **SLICE-001-evidence-production** — `ranex run` executes a command, observes
   it, and emits evidence the gate accepts. Target committed red at `b495e3635`,
   before any implementation existed.

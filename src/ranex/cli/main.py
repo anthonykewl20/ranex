@@ -99,6 +99,8 @@ from ranex.provisioning.pins import (
 from ranex.provisioning.root import assemble_root, verified_wheel_paths
 from ranex.provisioning.store import WheelStore
 from ranex.provisioning.target import probe_target
+from ranex.cli.delegation import cmd_task_delegate
+from ranex.cli.fanout import cmd_task_fanout
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
@@ -911,30 +913,52 @@ def _latest_task_dispatch(entries: list[dict[str, object]], task_id: str) -> dic
     )
 
 
+def _perform_task_dispatch(
+    task_id: str,
+    raw_target: str | Path,
+    raw_worktree: str | Path,
+    raw_journal: str | Path,
+) -> Path:
+    if not task_id.strip():
+        raise ValueError("--task-id must be non-blank")
+    raw_worktree_path = Path(raw_worktree)
+    if os.path.lexists(raw_worktree_path):
+        raise ValueError(f"--worktree already exists: {raw_worktree_path}")
+    target = Path(raw_target).resolve()
+    worktree = raw_worktree_path.resolve()
+    target_check = git(target, "rev-parse", "--is-inside-work-tree")
+    if target_check.returncode != 0 or target_check.stdout.strip() != "true":
+        raise ValueError(f"--target is not a git working repository: {target}")
+    base_commit = head_commit(target)
+    if len(base_commit) != 40 or any(
+        character not in "0123456789abcdef" for character in base_commit
+    ):
+        raise ValueError(f"--target HEAD is not a 40-hex commit: {base_commit!r}")
+    journal_path = Path(raw_journal).resolve()
+    if journal_path.is_file():
+        for entry in Journal(journal_path).entries():
+            if entry.get("type") == "task-dispatch" and entry.get("task_id") == task_id:
+                raise ValueError(
+                    f"refusing task id {task_id!r}: already dispatched; one dispatch, one judgement"
+                )
+    created = git(target, "worktree", "add", str(worktree), "HEAD")
+    if created.returncode != 0:
+        raise ValueError(f"cannot create worktree: {created.stderr.strip()}")
+    Journal(journal_path).append(
+        TaskDispatch(task_id, str(worktree), base_commit)
+    )
+    return worktree
+
+
 def cmd_task_dispatch(args: argparse.Namespace) -> int:
     """Create an external worktree and record the immutable dispatch facts."""
 
     try:
-        if not args.task_id.strip():
-            raise ValueError("--task-id must be non-blank")
-        raw_worktree = Path(args.worktree)
-        if os.path.lexists(raw_worktree):
-            raise ValueError(f"--worktree already exists: {raw_worktree}")
-        target = Path(args.target).resolve()
-        worktree = raw_worktree.resolve()
-        target_check = git(target, "rev-parse", "--is-inside-work-tree")
-        if target_check.returncode != 0 or target_check.stdout.strip() != "true":
-            raise ValueError(f"--target is not a git working repository: {target}")
-        base_commit = head_commit(target)
-        if len(base_commit) != 40 or any(
-            character not in "0123456789abcdef" for character in base_commit
-        ):
-            raise ValueError(f"--target HEAD is not a 40-hex commit: {base_commit!r}")
-        created = git(target, "worktree", "add", str(worktree), "HEAD")
-        if created.returncode != 0:
-            raise ValueError(f"cannot create worktree: {created.stderr.strip()}")
-        Journal(Path(args.journal).resolve()).append(
-            TaskDispatch(args.task_id, str(worktree), base_commit)
+        worktree = _perform_task_dispatch(
+            task_id=args.task_id,
+            raw_target=args.target,
+            raw_worktree=args.worktree,
+            raw_journal=args.journal,
         )
     except (ToolchainError, ValueError, OSError, sqlite3.Error) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
@@ -1878,6 +1902,37 @@ def build_parser() -> argparse.ArgumentParser:
     judge.add_argument("--producers", required=True, help="committed producer keyring")
     judge.add_argument("--journal", required=True, help="external task journal")
     judge.set_defaults(func=cmd_task_judge)
+
+    delegate = task_actions.add_parser("delegate", help="execute and attest a task in a worktree")
+    delegate.add_argument("--task-id", required=True, help="task identifier")
+    delegate.add_argument("--target", required=True, help="external git repository")
+    delegate.add_argument("--worktree", required=True, help="new external worktree")
+    delegate.add_argument("--journal", required=True, help="external task journal")
+    delegate.add_argument("--harness", required=True, help="harness executable")
+    delegate.add_argument("--model", required=True, help="harness model identifier")
+    delegate.add_argument("--prompt", required=True, help="delegation prompt")
+    delegate.add_argument("--timeout", required=True, type=int, help="wall-clock bound")
+    delegate.add_argument("--suite", required=True, help="suite command to run")
+    delegate.add_argument("--outcome", required=True, help="outcome file path")
+    delegate.set_defaults(func=cmd_task_delegate)
+
+    fanout = task_actions.add_parser(
+        "fanout", help="dispatch multiple tasks through a bounded delegation pool"
+    )
+    fanout.add_argument("--tasks", required=True, help="JSONL file with task_id/prompt/worktree")
+    fanout.add_argument("--target", required=True, help="external git repository")
+    fanout.add_argument("--journal", required=True, help="external task journal")
+    fanout.add_argument("--harness", required=True, help="harness executable")
+    fanout.add_argument("--model", required=True, help="harness model identifier")
+    fanout.add_argument("--timeout", required=True, type=int, help="per-task wall-clock bound")
+    fanout.add_argument("--suite", required=True, help="suite command to run")
+    fanout.add_argument(
+        "--outcome-dir",
+        required=True,
+        help="directory for per-task outcome files",
+    )
+    fanout.add_argument("--pool", required=True, type=int, help="max concurrent delegations")
+    fanout.set_defaults(func=cmd_task_fanout)
     return parser
 
 

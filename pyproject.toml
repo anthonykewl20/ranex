@@ -45,6 +45,11 @@ pytest_add_cli_args_test_selection = [
     # trampolined tree dies on the absent MUTANT_UNDER_TEST env var.
     "--ignore=tests/integration/test_kernel_materialise_reference.py",
     "--ignore=tests/security/test_slice003_bind_mount_identity.py",
+    # Same again: every delegation test here spawns the CLI, whose trampolined
+    # tree cannot initialise mutmut's runtime outside its runner. The same
+    # refusal branches stay under mutation in-process via
+    # tests/integration/test_delegation_command.py.
+    "--ignore=tests/security/test_slice008_execute_attest_separation.py",
     # Mutating key confinement can write a generated private key into the real
     # repository before the copied test observes the refusal has failed.
     "--ignore=tests/security/test_keygen_key_confinement.py",

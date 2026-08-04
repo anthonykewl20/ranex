@@ -2,6 +2,10 @@
 
 The wall argument: a harness that can start ungoverned is the hole; the gate
 refuses before any loop, model call, or command dispatch.
+
+SLICE-008 §11: the harness is Ranex. The rebrand is measured by driving the
+command a person would type — `bin/ranex` — and reading what it prints, never
+by grepping the tree for leftover strings.
 """
 
 from __future__ import annotations
@@ -132,3 +136,68 @@ def test_bridged_version_does_not_emit(
 
     assert result.returncode == 0, result.stderr
     assert not emit.exists(), "--version must not create an end-of-task emission"
+
+
+def _invoke_launcher(
+    harness: Path, bun: Path, *args: str, **binding: str
+) -> subprocess.CompletedProcess[str]:
+    """Drive the fork exactly as an operator would: through bin/ranex."""
+
+    return subprocess.run(
+        [str(harness / "bin" / "ranex"), *args],
+        cwd=harness,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        env=_environment(bun, **binding),
+    )
+
+
+def test_launcher_help_names_ranex(
+    harness: Path, bun: Path, tmp_path: Path
+) -> None:
+    """The operator command is `ranex`, and what it prints says so."""
+
+    result = _invoke_launcher(
+        harness,
+        bun,
+        "--help",
+        RANEX_TASK_ID="T-1",
+        RANEX_EMIT=str(tmp_path / "emit.jsonl"),
+    )
+
+    assert result.returncode == 0, result.stderr
+    combined = (result.stdout + result.stderr).lower()
+    assert "ranex" in combined, "usage must name ranex as the script"
+    assert "opencode" not in combined, "help output still says opencode"
+
+
+def test_launcher_version_names_no_opencode(
+    harness: Path, bun: Path, tmp_path: Path
+) -> None:
+    result = _invoke_launcher(
+        harness,
+        bun,
+        "--version",
+        RANEX_TASK_ID="T-1",
+        RANEX_EMIT=str(tmp_path / "emit.jsonl"),
+    )
+
+    assert result.returncode == 0, result.stderr
+    assert result.stdout.strip(), "bridged --version must print a version string"
+    combined = (result.stdout + result.stderr).lower()
+    assert "opencode" not in combined, "version output still says opencode"
+
+
+def test_launcher_reaches_the_bridge_gate(harness: Path, bun: Path) -> None:
+    """bin/ranex is a path to the real gate, not a way around it."""
+
+    _assert_unbridged(_invoke_launcher(harness, bun, "--help"))
+
+
+def test_mit_attribution_is_retained(harness: Path) -> None:
+    """The one place `opencode` must remain: upstream's MIT copyright line."""
+
+    text = (harness / "LICENSE").read_text()
+    assert "MIT" in text
+    assert "opencode" in text
