@@ -3,40 +3,39 @@
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
 **Updated:** 2026-08-04
-**Phase:** between slices. SLICE-006 is closed and archived.
-**Active slice:** none — the next slice needs its ADR first; that is the rule.
+**Phase:** SLICE-008 open — first delegation. Nothing built yet.
+**Active slice:** `docs/slices/SLICE-008-first-delegation.md` (ADR-010,
+accepted today, fan-out included before it was frozen).
 
 ## Where we stopped
 
-SLICE-006 closed with all fifteen criteria met. Ranex gates Ranex: stage 12
-passed with the operator's registered key — `ranex run` executed the
-unchanged catalog command against the real current commit and `gate
-evaluate` accepted the signed evidence. ADR-009's materialisation (a fresh
-single-commit repository carrying the verified tree) is what unblocked it.
+SLICE-006 closed: Ranex gates Ranex, proven with the operator's own key.
+`cli/main.py` then shed its git-query mechanics into `cli/repository.py`
+(byte-identical, ten new refusal tests, suite 529 green).
 
-Close-out verification: suite 519 green; diff-cover 100% over the whole
-slice range (747/747 lines, which found and closed one unreached refusal);
-mutmut 4771 mutants — 2980 killed, 841 timed out, 306 uncovered, 644
-survived (down from 1036), sampled survivors equivalent or message-text,
-every mutant of the new `.git`-path refusal killed. Nine defects found this
-slice by driving the real thing; none by a unit test (MAP §4.6).
-
-Operator state: `anthony` registered in `governance/producers.yaml`; the
-private key is outside the tree at `~/.config/ranex/anthony.key`
-(`RANEX_SIGNING_KEY` points at it); the default store is populated and the
-depset approved by `reviewer`.
+ADR-010 is researched, panelled and accepted. A REFUTE panel found — and the
+artifact confirmed — that `main.py:1368` reads the signing key into kernel
+memory before the bound command spawns, while `RISK-06` reproduces that
+command taking it from `/proc/<pid>/environ`. Under delegation the executed
+suite is AI-written code, so that standing risk becomes the feature's main
+attack path. Measured here: `os.environ.pop()` does not alter
+`/proc/self/environ`; a same-uid process reads another's environ; and
+unprivileged `uid_map` writes fail under
+`apparmor_restrict_unprivileged_userns=1`, so a second uid needs privilege.
+Hence: execution and attestation never share a process lifetime, enforced by
+refusal — what SLSA Build L3 requires. Eight citations vendored, hashes recorded.
 
 ## Next
 
-1. **Owner-requested: extract the git-query service from `cli/main.py`**
-   (2206 lines, 42% of the codebase — the one god-module; mutation
-   survivors concentrate there). Mechanical move, no behavior change, full
-   gates. Decide whether it needs its own ADR/slice before starting.
-2. Backlog: turn MAP §4.6 into a gate rule (start with "a skip is absence,
-   not success" — a fully skipped suite exits 0 and the gate accepts it
-   today). ADR-006/Landlock still proposed and deferred; its `SLICE-005`
-   reference is dangling by design. Handbooks and first-delegation
-   unstarted.
+1. **Build SLICE-008 in criterion order, red first.** Criteria 1–3 (the
+   execute/attest separation and its refusals) are why the slice exists;
+   everything after is plumbing. Criterion 2 must inspect the live process
+   tree through `/proc`, never a dict the test built.
+2. Criterion 7 needs a real provider credential — scoped and spend-limited,
+   since the loop can exfiltrate it (recorded, not mitigated).
+3. Backlog: MAP §4.6 as a gate rule (start with "a skip is absence, not
+   success"). ADR-006/Landlock still proposed and deferred; its `SLICE-005`
+   reference is dangling by design. Handbooks unstarted.
 
 ## Known limits
 
@@ -44,7 +43,8 @@ depset approved by `reviewer`.
   epoch, breaking derivation — measured, not theoretical.
 - Dependencies are trusted computing base: an approved wheel chooses the exit
   code (ADR-007 s.p. 17-19), demonstrated executably.
-- The sample repository is writable by the observed command (ADR-009 s.p. 6)
-  — vandalism dies with it; the fingerprint check still refuses edits.
-- `approver_id` unauthenticated (`RISK-07`); same-uid key theft (`RISK-06`).
+- The sample repository is writable by the observed command (ADR-009 s.p. 6);
+  the fingerprint check still refuses edits.
+- `approver_id` unauthenticated (`RISK-07`); `RISK-06` stays open for
+  `ranex run` even once SLICE-008 closes its delegated path.
 - The journal detects an edited row but not a removed one.

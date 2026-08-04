@@ -1,10 +1,10 @@
 # ADR-010 — first delegation: one operator request becomes governed work
 
-**Status:** proposed
-**Date:** 2026-08-04
+**Status:** accepted
+**Date:** 2026-08-04 (accepted same day, owner, with fan-out added before freezing)
 **Decision-makers:** repo owner
-**Slice:** `docs/slices/SLICE-008-first-delegation.md` — not yet opened. The
-decision is written first, as the rule requires.
+**Slice:** `docs/slices/SLICE-008-first-delegation.md` — opened against this
+decision. The decision is written first, as the rule requires.
 
 ## Context and Problem Statement
 
@@ -32,7 +32,7 @@ delegation the executed suite is code an AI wrote minutes earlier: a planted
 - Nothing that signs may share a process lifetime with what it measures.
 - A non-interactive run must terminate on its own, right or wrong.
 - Merge and promotion stay a human's, per standing doctrine.
-- Scope stays one slice: one task, one worktree, one verdict.
+- Scope stays one slice: one task, one worktree, one verdict — fanned out.
 
 ## Prior art
 
@@ -102,14 +102,9 @@ chose **a kernel-driven `ranex task delegate` in which execution and
 attestation never share a process lifetime**, accepting that merge and
 promotion stay manual and that the model credential stays exposed.
 
-`delegate` dispatches the worktree; spawns the harness headless with an environment
-built from empty — pinned `PATH`, a scratch `HOME` outside the worktree, the two
-bridge variables, exactly one model-credential variable, an auto-approve flag, a
-wall-clock timeout; cross-checks the emission against the kernel's own dispatch
-record; then the *kernel* runs the frozen suite against the emitted commit; then
-`judge` journals a CANDIDATE. The execute phase holds no signing key and **refuses
-to start if the signing-key variable is present** — absence enforced by refusal,
-never by convention. Signing is a separate, later invocation.
+`delegate` dispatches the worktree; spawns the harness headless from an environment built from empty — pinned `PATH`, scratch `HOME` outside the worktree, the two bridge variables, one model-credential variable, an auto-approve flag, a wall-clock timeout; cross-checks the emission against the kernel's dispatch record; then the *kernel* runs the frozen suite against the emitted commit and `judge` journals a CANDIDATE. The execute phase holds no signing key and **refuses to start if the signing-key variable is present** — absence enforced by refusal. Signing is a separate, later invocation.
+
+Delegations **fan out** over a bounded pool, one worktree each, because that isolation was always the point. Both shared resources are already safe: `append` opens `BEGIN IMMEDIATE` and reads the previous link inside that write transaction, so SQLite serialises writers and the chain cannot fork, and the store is content-addressed with concurrent-writer safety proven in SLICE-006. Ordering belongs to the journal, not the schedule; the pool is bounded because unbounded fan-out starves the machine doing the measuring.
 
 ### Consequences
 
@@ -137,8 +132,10 @@ inspection; a `conftest.py` planted in the delegated commit cannot produce a
 signed record; the emitted worktree and commit are cross-checked against the
 dispatch record and a mismatch blocks; a `commit == base` emission is refused
 rather than judged; and a delegated run against a *real* model ends in a
-journalled CANDIDATE naming its missing claims, with no PASS anywhere. Absent
-any one of these the ADR stays `proposed`.
+journalled CANDIDATE naming its missing claims, with no PASS anywhere; and that
+N concurrent delegations yield N independent verdicts over a journal that still
+verifies — the check that would catch a forked chain. Absent any one of these
+the ADR stays `proposed`.
 
 ## Improvements on the prior art
 
@@ -228,6 +225,10 @@ on the terminal signal.
 | 12 | worktree deleted mid-run | refuse at cross-check; HEAD cannot be read |
 | 13 | loop exfiltrates the model credential | **not caught** — no egress confinement; stated, not mitigated |
 | 14 | loop writes plausible code that passes a weak gate | **not caught** — the gate's quality is the operator's burden (`PR-06`) |
+| 15 | concurrent delegations append to the journal at once | serialised by `BEGIN IMMEDIATE`; the chain still verifies, or the run is a defect |
+| 16 | two concurrent tasks are given the same worktree path | refuse at dispatch, which already rejects an existing path |
+| 17 | fan-out exceeds the machine | bound the pool and queue the remainder; never let breadth decide a verdict by timing out honest work |
+| 18 | concurrent tasks edit the same file | permitted here — they are separate subjects with separate verdicts; the collision is merge's problem, and merge is a later slice |
 
 ## Test strategy
 

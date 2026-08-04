@@ -269,8 +269,12 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none — SLICE-006 closed 2026-08-04; the next slice gets its
-ADR first.
+**Active slice:** `SLICE-008-first-delegation` — the front door. One request
+becomes governed work: the kernel dispatches an isolated worktree per task,
+runs the agent headless in it, then judges the result itself and journals a
+CANDIDATE. Delegations fan out over a bounded pool. Its hard constraint, from
+ADR-010: the phase that runs agent-written code holds no signing key, and
+refuses to start if one is present — SLSA Build L3 requires the same property.
 
 **Ranex gates Ranex.** With SLICE-006 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
