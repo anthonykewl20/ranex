@@ -1,9 +1,11 @@
 # ADR-009 — give the observation a repository, not just its files
 
-**Status:** proposed
-**Date:** 2026-08-04
+**Status:** accepted
+**Date:** 2026-08-04 (accepted same day, owner)
 **Decision-makers:** repo owner
-**Slice:** to be opened against this ADR
+**Slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md` — this
+is SLICE-006's criterion 14, not a new slice; opening a second one is
+the failure the working rule exists to prevent.
 **Amends:** ADR-005, which materialises committed blobs and nothing else.
 **Closes:** SLICE-006 criterion 14, recorded there as a strict `xfail`.
 

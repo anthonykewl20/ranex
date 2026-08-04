@@ -2,49 +2,48 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-04 (pinned resolver installed; journey green on real PyPI)
-**Phase:** SLICE-006 green except criterion 14, blocked on an owner decision.
-**Active slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md` (ADR-007).
+**Updated:** 2026-08-04
+**Phase:** SLICE-006 — every criterion met except 14, which is next.
+**Active slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md`
+(ADR-007, and ADR-009 for criterion 14). **No second slice** — criterion 14 is
+this slice's remaining work.
 
 ## Where we stopped
 
-Provisioning works end to end. `ranex deps fetch` derives the lock clean under
-pinned inputs and byte-compares it, `deps approve` records the named delta, and
-`run` proves derivation, approval and every wheel out of the SHA-256 store
-before spawning into a sealed, offline root. The real-world journey
-(`tests/e2e/test_gating_real_suite.py`, 15 operator stages against a clone of
-this repository) is green ON REAL PYPI with the installed pinned resolver:
-13 pass, 2 strict xfails (criterion 14, clone and working repo). It found six
-real defects, all fixed and recorded in the slice — the sixth on its first
-production run: the committed lock had been derived from a stale warm cache,
-and the byte comparison refused it naming cffi 2.1.0 vs 2.1.1.
+Provisioning works end to end against real PyPI: `deps fetch` derives the lock
+clean under pinned inputs and byte-compares it, `deps approve` records the
+named delta, `run` proves derivation, approval and every wheel out of the
+SHA-256 store before spawning into a sealed, offline root. Criterion 13 is
+done — an approved, hash-correct wheel demonstrably forces a passing verdict,
+labelled **not caught**, with a control proving the suite really ran.
 
-Suite 485 passed / 15 skipped; `diff-cover` 100% on the change; mutmut 4673
-mutants, 2945 killed, 1036 survived — survivors are message text and
-equivalent mutants, weak evidence per the recorded convention.
+Three journeys now drive the real CLI: `test_gating_real_suite.py` (15 stages,
+operator path), `test_cold_start_journey.py` (9 stages, a new person from zero
+state, which also pins the README against the commands it documents), and the
+malicious-wheel demonstration. **Eight defects found this session — every one
+by running the real thing, none by unit tests.** MAP §4.6 records why.
 
-**Criterion 14 is the open miss.** 362 of this suite's tests pass inside the
-sealed environment; five fail because they need a git checkout and ADR-005's
-materialisation has no `.git`. Relaxing them is refused — `_tracked_by_git`
-documents failing closed there as deliberate.
+Suite 508 passed / 1 skipped / 2 xfailed. `diff-cover` 100% on the change;
+mutmut 4673 mutants, 2945 killed — survivors are message text and equivalent
+mutants, weak evidence per the recorded convention.
 
 ## Next
 
-1. **Owner decides:** should the materialisation be a git repository whose HEAD
-   carries the subject tree? It amends ADR-005, so it needs ADR-009. Nothing
-   else in SLICE-006 is blocked.
-2. Operator setup, one command: `sudo install -m 0755 ~/.local/bin/uv
-   /usr/local/bin/uv`. Until then every real-world stage skips loudly.
-3. Then close SLICE-006: diff-cover to 100% on the change, mutmut, README.
+1. **Criterion 14, against accepted ADR-009:** build the fresh single-commit
+   repository inside the materialisation. Measured: the tree hash is unchanged
+   (`1d8aa022…`), so the subject digest does not move. Done when all three
+   strict `xfail` markers are removed and the gate accepts.
+2. Then close SLICE-006 and rerun mutmut.
+3. Backlog: turn MAP §4.6 into a gate rule (start with "a skip is absence, not
+   success" — a fully skipped suite exits 0 and the gate accepts it today).
+   ADR-006/Landlock still proposed and deferred; its `SLICE-005` reference is
+   dangling by design. Handbooks and first-delegation unstarted.
 
 ## Known limits
 
 - Always `uv run --frozen`. Plain `uv run` rewrote `uv.lock` and dropped the
   epoch, breaking derivation — measured, not theoretical.
-- Dependencies remain trusted computing base: an approved wheel's code runs
-  inside the measured command and can choose its exit (ADR-007 s.p. 17-19).
-- `ranex-harness` is a local sibling clone; machines without it skip its fork
-  tests loudly.
-- `approver_id` unauthenticated (`RISK-07`); same-uid key theft (`RISK-06`);
-  confinement (`ADR-006`) unbuilt and deliberately deferred.
+- Dependencies are trusted computing base: an approved wheel chooses the exit
+  code (ADR-007 s.p. 17-19), demonstrated executably.
+- `approver_id` unauthenticated (`RISK-07`); same-uid key theft (`RISK-06`).
 - The journal detects an edited row but not a removed one.

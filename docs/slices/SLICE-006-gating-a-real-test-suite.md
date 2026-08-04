@@ -108,10 +108,14 @@ is `/home/soultransit/.local/bin/uv`, owned and writable by the observed uid.
 The test replaces its bytes or an equivalent fixture and watches provisioning
 refuse; an exact path without an ownership/digest check is still agent-selected.
 
-## What the real-world journey found
+## What the real-world journeys found
 
-Four defects, each caught by `tests/e2e/test_gating_real_suite.py` driving the
-CLI as an operator does. Recorded because the ADR's sad-path table did not
+Eight defects, every one caught by driving the CLI as a person does, and
+**none by a unit test**. The first six came from
+`tests/e2e/test_gating_real_suite.py`; the last two from
+`tests/e2e/test_cold_start_journey.py`, which starts from zero state and is
+the only test that sees what a new operator sees. MAP §4.6 records the
+doctrine this evidence produced. Recorded because the ADR's sad-path table did not
 predict any of them, and the next fork-facing slice will meet the same shapes.
 
 1. **`uv run` rewrites the committed lock.** A plain `uv run pytest -q` after
@@ -140,6 +144,16 @@ predict any of them, and the next fork-facing slice will meet the same shapes.
    comparison refused it naming the exact divergence. `derive_lock` already
    used an empty cache per derivation; the operator's re-lock procedure now
    does too, and the lock is regenerated from it.
+7. **`keygen` told a first-time operator to write an invalid keyring.** This
+   repository commits none, so a new person is creating the file; the bare
+   entry that was printed parses as a document with no `producers` mapping,
+   and the loader then refuses it for doing exactly what the product said.
+   It now prints the complete shape and names the file.
+8. **The README's walkthrough had silently rotted.** It omitted `deps fetch`
+   and `deps approve`, never mentioned installing the pinned resolver, and
+   explained a `gate evaluate` failure with a `contracts-validated`
+   requirement SLICE-003 had removed. The cold-start journey now asserts the
+   commands it runs appear in `README.md`, so the two cannot drift again.
 
 **Criterion 14 is blocked by this suite's own git assumptions** — below.
 
@@ -160,12 +174,19 @@ outside a repository as deliberate, because skipping would be an
 author-manufactured escape hatch — weakening it to make this slice pass is
 exactly the failure Ranex exists to catch.
 
-**This needs an owner decision:** should the materialisation be a git
-repository whose HEAD carries the subject tree? It would make
-`governed_repository_root()` answer honestly and costs the same tree digest,
-since the tree hash is unchanged by a fresh commit — but it amends ADR-005,
-hands the observed command a repository, and therefore needs its own ADR.
-Deliberately not started here.
+**Decided 2026-08-04:** yes. `docs/adr/ADR-009-git-backed-materialisation.md`
+is accepted — the materialisation gains a fresh single-commit repository
+carrying the verified tree. Measured before deciding: the tree hash is
+unchanged (`1d8aa022…`), so the subject digest does not move and prior
+evidence stays comparable. This is criterion 14's remaining work **inside
+this slice**, not a new one; three strict `xfail` markers pin it, in
+`test_gating_real_suite.py` (stages 08b and 12) and `test_cold_start_journey.py`
+(stage 9), and all three flip together when it lands.
+
+Criterion 13 is met: `tests/security/test_slice006_approved_wheel_can_lie.py`
+demonstrates an approved, hash-correct wheel forcing a passing verdict with
+every integrity control green, labelled **not caught**, with a control run
+proving the suite genuinely executed.
 
 ## Verification actually run
 
