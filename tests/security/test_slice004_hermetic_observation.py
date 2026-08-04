@@ -214,25 +214,33 @@ def test_a_self_contained_command_runs_records_and_passes(
     assert evaluate(repo) == EXIT_PASS
 
 
-def test_the_observed_tree_carries_no_git_directory(
+def test_the_observed_tree_carries_a_fresh_synthetic_git_directory(
     repo: Path, keys: dict[str, str]
 ) -> None:
-    """The materialisation is a tree, not a repository.
+    """The materialisation has a fresh repository carrying only the subject.
 
     `.git` is where `config` lives, and `config` is where `filter.<name>.clean`
-    lives. D14 is closed by there being no `.git` to configure, so that absence
-    is asserted directly rather than inferred from the attack failing.
+    lives. D14 remains closed because this config is freshly created: no filter
+    from the governed repository reaches it, and no clean filter is present.
     """
 
-    script(repo / "run-tests.sh", "test ! -e .git")
+    script(
+        repo / "run-tests.sh",
+        "test -d .git && test \"$(git rev-list --count HEAD)\" = 1 && "
+        "test -z \"$(git remote)\" && ! git config --get-regexp '^filter\\.'",
+    )
     (repo / "gates.yaml").write_text(
         build_gates("tests-executed", ["sh", "run-tests.sh"]), encoding="utf-8"
     )
     commit_all(repo)
+    subprocess.run(
+        ["git", "-C", str(repo), "config", "filter.governed.clean", "cat"],
+        check=True,
+    )
 
     assert run_cmd(repo, keys, "sh", "run-tests.sh") == EXIT_PASS, (
-        "the observed command found a .git directory beside it, so the "
-        "repository the observed party owns travelled into the observation"
+        "the observation did not construct a fresh synthetic repository with "
+        "the governed repository's configuration excluded"
     )
 
 

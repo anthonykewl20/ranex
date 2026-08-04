@@ -75,6 +75,8 @@ def _tree_entries(
         parts = Path(path).parts
         if not path or Path(path).is_absolute() or any(p in ("", ".", "..") for p in parts):
             raise SubjectError(f"refusing unsafe path {path!r} in the tree for {ref!r}")
+        if any(part == ".git" for part in parts):
+            raise SubjectError(f"refusing unsafe path {path!r} in the tree for {ref!r}")
         if len(object_id) != 40 or any(c not in "0123456789abcdef" for c in object_id):
             raise SubjectError(
                 f"unsupported object id {object_id!r} for {path!r} in {ref!r}"
@@ -187,6 +189,53 @@ def _materialisation_root(repository_root: Path) -> Path:
     )
 
 
+_CONSTRUCTION_ENVIRONMENT = {
+    "GIT_CONFIG_GLOBAL": "/dev/null",
+    "GIT_CONFIG_SYSTEM": "/dev/null",
+    "GIT_AUTHOR_NAME": "Ranex Subject",
+    "GIT_AUTHOR_EMAIL": "subject@ranex.invalid",
+    "GIT_AUTHOR_DATE": "@0 +0000",
+    "GIT_COMMITTER_NAME": "Ranex Subject",
+    "GIT_COMMITTER_EMAIL": "subject@ranex.invalid",
+    "GIT_COMMITTER_DATE": "@0 +0000",
+}
+
+
+def _construct_repository(
+    repository_root: Path,
+    ref: str,
+    tree: Path,
+    git: GitRunner,
+) -> None:
+    for operation, arguments in (
+        (
+            "init",
+            ("-c", "init.defaultBranch=ranex-subject", "-c", "core.logAllRefUpdates=false", "init", "--template="),
+        ),
+        ("add", ("-c", "core.logAllRefUpdates=false", "add", "--all", "--force")),
+        (
+            "commit",
+            ("-c", "commit.gpgsign=false", "-c", "core.logAllRefUpdates=false", "commit", "--no-verify", "-m", "ranex subject"),
+        ),
+    ):
+        result = git(tree, *arguments, overrides=_CONSTRUCTION_ENVIRONMENT)
+        if result.returncode != 0:
+            detail = result.stderr.strip()
+            raise SubjectError(f"cannot {operation} materialised repository: {detail}")
+
+    sample_tree = git(
+        tree, "rev-parse", "HEAD^{tree}", overrides=_CONSTRUCTION_ENVIRONMENT
+    )
+    governed_tree = git(
+        repository_root, "rev-parse", f"{ref}^{{tree}}", overrides=_CONSTRUCTION_ENVIRONMENT
+    )
+    if sample_tree.returncode != 0 or governed_tree.returncode != 0:
+        detail = (sample_tree.stderr if sample_tree.returncode else governed_tree.stderr).strip()
+        raise SubjectError(f"cannot compare materialised tree for {ref!r}: {detail}")
+    if sample_tree.stdout.strip() != governed_tree.stdout.strip():
+        raise SubjectError(f"refusing materialised tree that does not match {ref!r}")
+
+
 @contextmanager
 def materialise_subject(
     repository_root: Path,
@@ -215,6 +264,7 @@ def materialise_subject(
             destination.parent.mkdir(parents=True, exist_ok=True)
             destination.write_bytes(content)
             destination.chmod(0o755 if entry.mode == "100755" else 0o644)
+        _construct_repository(repository_root, ref, tree, git)
         home.mkdir(mode=0o700)
         temporary.mkdir(mode=0o700)
         yield Materialisation(

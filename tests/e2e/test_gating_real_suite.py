@@ -456,27 +456,6 @@ def test_stage_08a_the_real_suite_really_runs_under_governance(
     assert "passed" in out or "passed" in err, out + err
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "SLICE-006 criterion 14 is NOT met, and this records the miss rather "
-        "than routing around it. The provisioned run works — 362 of this "
-        "suite's tests pass inside the sealed offline environment — but five "
-        "fail for one reason: they need a git checkout, and ADR-005's "
-        "materialisation is committed blobs with no .git. Those five are "
-        "test_docs_discipline::test_every_cited_implementation_is_vendored_"
-        "and_matches_its_digest, test_gate_evaluate_cli::test_foreign_"
-        "repository_evaluation_is_refused_by_real_cli, and the three in "
-        "test_keygen_key_confinement that reach governed_repository_root(). "
-        "Relaxing them is refused: _tracked_by_git documents failing closed "
-        "outside a repository as deliberate, because skipping would be an "
-        "author-manufactured escape hatch. The fix is an owner decision on "
-        "whether the materialisation should be a git repository whose HEAD "
-        "carries the subject tree — an amendment to ADR-005, so it needs its "
-        "own ADR and is deliberately not started here. strict=True so this "
-        "fails loudly the moment criterion 14 actually starts passing."
-    ),
-)
 def test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts(
     session: Session,
 ) -> None:
@@ -637,17 +616,6 @@ def test_stage_11_the_gated_run_is_offline_with_a_sealed_root(
 # --------------------------------------------------------------------------
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "The same miss as stage 08b, against the working repository instead "
-        "of the clone: the five git-dependent tests fail inside the "
-        "materialisation, so the suite exits nonzero and no PASS exists to "
-        "accept. Without this marker an operator who set their key would see "
-        "this stage fail red as if something new broke. strict=True, so the "
-        "owner decision that unblocks criterion 14 flips both stages at once."
-    ),
-)
 def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
     # The end-to-end confirmation ADR-007 names: the unchanged catalog
     # command, the real current commit, the operator's own store and key.

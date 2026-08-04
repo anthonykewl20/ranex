@@ -104,6 +104,13 @@ def test_unsafe_tree_path_is_refused(tmp_path: Path) -> None:
         _tree_entries(tmp_path, "HEAD", git)
 
 
+def test_dot_git_tree_path_is_refused(tmp_path: Path) -> None:
+    git = lambda *_args, **_kwargs: git_result(stdout=tree_output("nested/.git/config"))
+
+    with pytest.raises(SubjectError, match=r"refusing unsafe path 'nested/.git/config'.*'HEAD'"):
+        _tree_entries(tmp_path, "HEAD", git)
+
+
 def test_duplicate_tree_path_is_refused(tmp_path: Path) -> None:
     git = lambda *_args, **_kwargs: git_result(stdout=tree_output("same", "same"))
 

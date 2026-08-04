@@ -362,15 +362,6 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
     assert "passed" in out or "passed" in err, out + err
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason=(
-        "SLICE-006 criterion 14, reached here by the operator's own path: the "
-        "five git-dependent tests fail inside the observation, so the suite "
-        "exits nonzero and no PASS exists to accept. ADR-009 proposes the fix; "
-        "strict=True so this flips loudly with the other two markers."
-    ),
-)
 def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
     operator.require("resolver", "clone", "fetch")
     code, out, _ = ranex(
