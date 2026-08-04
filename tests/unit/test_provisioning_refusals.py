@@ -394,6 +394,12 @@ def test_load_pins_refuses_non_mapping_top_level_field() -> None:
         load_pins_text("resolver: 5")
 
 
+def test_load_pins_refuses_unparseable_yaml() -> None:
+    # Input: a document the YAML parser itself rejects.
+    with pytest.raises(PinsError, match="cannot parse pins YAML"):
+        load_pins_text("resolver: [unclosed")
+
+
 def test_verified_binary_refuses_malformed_expected_digest(tmp_path: Path) -> None:
     # Input: expected resolver digest is malformed.
     with pytest.raises(PinsError, match="malformed expected sha256"):
