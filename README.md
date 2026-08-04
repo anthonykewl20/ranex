@@ -372,20 +372,57 @@ export RANEX_SIGNING_KEY=~/.config/ranex/worker.key
 PYTHONPATH=src uv run python -m ranex.cli.main keygen --producer worker
 ```
 
-Add the line it prints to `governance/producers.yaml` and commit it. That file
-is the trust root; review of it is the control on it. Then:
+This repository commits **no** keyring, so that file does not exist yet and you
+are creating it. It is a single `producers` mapping — `keygen` prints both lines
+for exactly this reason, because the bare entry on its own is not a valid
+keyring:
+
+```yaml
+producers:
+  worker: ed25519:<the key keygen printed>
+```
+
+Commit it. That file is the trust root; review of it is the control on it.
+
+Next, provision dependencies. The bound command is `uv run pytest -q`, and the
+observation is built from committed blobs only — so `.venv` is not in it and the
+suite has nothing to import until its wheels are provisioned deliberately. The
+resolver is pinned by path **and** digest in `governance/deps.yaml`, at a
+root-owned location, because a resolver this uid can rewrite is one the observed
+party chooses:
+
+```sh
+sudo install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
+
+PYTHONPATH=src uv run python -m ranex.cli.main deps fetch
+PYTHONPATH=src uv run python -m ranex.cli.main deps approve --approver reviewer_alice
+```
+
+`deps fetch` is the only networked step: it re-derives the lock from the manifest
+alone under those pinned inputs, refuses any byte of difference, and admits only
+SHA-256-addressed wheels to the store. `deps approve` prints the package delta
+and records that a human accepted exactly it. **Skipping either makes the next
+command refuse, by name** — a lock nothing regenerated may be entirely authored.
+Approval reduces hidden change; it cannot make third-party code truthful, and
+`tests/security/test_slice006_approved_wheel_can_lie.py` demonstrates an
+approved, hash-correct wheel forcing a passing verdict. Then:
 
 ```sh
 PYTHONPATH=src uv run python -m ranex.cli.main run \
     --claim tests-executed --producer worker -- uv run pytest -q
 ```
 
-`gate evaluate` will still FAIL, and that is also the design: `gates.yaml`
-requires `contracts-validated` and nothing here can produce that claim yet. Once
-the tree moves past the digest the evidence was bound to, `tests-executed` stops
-counting too. A record that fails verification is reported as *refused*, with a
-reason — never as "no evidence", because an attack and an unfinished task are
-not the same event.
+`gate evaluate` will still FAIL today, and the reason is recorded rather than
+hidden: five of this repository's own tests need a git checkout, and the
+observation carries committed blobs with no `.git`, so the suite exits nonzero
+inside it. That is SLICE-006 criterion 14, `ADR-009` proposes the fix, and two
+strict `xfail` markers in `tests/e2e/test_gating_real_suite.py` will fail loudly
+the moment it starts passing.
+
+Once the tree moves past the digest the evidence was bound to, `tests-executed`
+stops counting too. A record that fails verification is reported as *refused*,
+with a reason — never as "no evidence", because an attack and an unfinished task
+are not the same event.
 
 ## Development
 

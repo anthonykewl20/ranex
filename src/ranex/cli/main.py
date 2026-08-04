@@ -104,6 +104,11 @@ DEFAULT_JOURNAL = "governance/journal.sqlite3"
 # resolver, index and epoch, which is the whole point of pinning them.
 DEFAULT_PINS = "governance/deps.yaml"
 
+# The committed keyring's conventional path. A constant so `keygen` can tell a
+# first-time operator exactly which file to create, and say the same name the
+# other commands default to.
+DEFAULT_PRODUCERS = "governance/producers.yaml"
+
 
 def default_store() -> str:
     """Operator-managed wheel storage, outside every governed repository."""
@@ -2056,8 +2061,20 @@ def cmd_keygen(args: argparse.Namespace) -> int:
         return EXIT_USAGE
 
     print(f"WROTE  {target}  mode 0600")
-    print("       register the producer by adding this line to the keyring:")
-    print(f"  {args.producer}: {public_key}")
+    # The whole shape, not just the entry. This repository commits no keyring,
+    # so a first-time operator is CREATING the file, and the bare entry they
+    # used to be handed parses as a document with no `producers` mapping —
+    # the loader then refuses it, correctly, after telling them to write it.
+    # Printing both lines is right either way: appending to an existing
+    # keyring means taking the indented one, and that is said explicitly.
+    print(
+        f"       register the producer in the committed keyring "
+        f"({DEFAULT_PRODUCERS}). It is one `producers` mapping — create the "
+        "file with exactly this, or if it already exists add only the "
+        "indented line:"
+    )
+    print("  producers:")
+    print(f"    {args.producer}: {public_key}")
     return EXIT_PASS
 
 
@@ -2086,7 +2103,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ev.add_argument(
         "--producers",
-        default="governance/producers.yaml",
+        default=DEFAULT_PRODUCERS,
         help="committed keyring of producer public keys",
     )
     ev.add_argument("--approver", required=True, help="identity approving")
@@ -2114,7 +2131,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     rn.add_argument(
         "--producers",
-        default="governance/producers.yaml",
+        default=DEFAULT_PRODUCERS,
         help="committed keyring of producer public keys",
     )
     # No --journal. `run` never writes the journal, and the only thing naming it
