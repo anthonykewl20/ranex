@@ -110,11 +110,12 @@ refuse; an exact path without an ownership/digest check is still agent-selected.
 
 ## What the real-world journeys found
 
-Eight defects, every one caught by driving the CLI as a person does, and
+Nine defects, every one caught by driving the CLI as a person does, and
 **none by a unit test**. The first six came from
-`tests/e2e/test_gating_real_suite.py`; the last two from
+`tests/e2e/test_gating_real_suite.py`; seven and eight from
 `tests/e2e/test_cold_start_journey.py`, which starts from zero state and is
-the only test that sees what a new operator sees. MAP §4.6 records the
+the only test that sees what a new operator sees; the ninth from running the
+suite inside the ADR-009 sample. MAP §4.6 records the
 doctrine this evidence produced. Recorded because the ADR's sad-path table did not
 predict any of them, and the next fork-facing slice will meet the same shapes.
 
@@ -154,34 +155,41 @@ predict any of them, and the next fork-facing slice will meet the same shapes.
    explained a `gate evaluate` failure with a `contracts-validated`
    requirement SLICE-003 had removed. The cold-start journey now asserts the
    commands it runs appear in `README.md`, so the two cannot drift again.
+9. **The cold-start journey re-entered itself inside the ADR-009 sample.**
+   Its recursion guard travels by environment, and the sample's environment
+   is built from empty, so the guard never arrives; before the sample had a
+   repository, the recursion died accidentally at `git clone`. Stages 1 and 2
+   ran against a clone whose HEAD was the outer journey's committed keyring
+   and failed its zero-state claims. The guard now also recognises the
+   sample by what does survive — its deterministic synthetic commit identity
+   — and skips loudly.
 
-**Criterion 14 is blocked by this suite's own git assumptions** — below.
+## Criterion 14 — met
 
-## The blocker, stated plainly
+**Resolved 2026-08-04 by ADR-009, accepted the same day.** The five
+git-dependent tests that failed inside the ADR-005 sample —
+`test_docs_discipline::test_every_cited_implementation_is_vendored_and_matches_its_digest`,
+`test_gate_evaluate_cli::test_foreign_repository_evaluation_is_refused_by_real_cli`,
+and three in `test_keygen_key_confinement` reaching
+`governed_repository_root()` — were never relaxed; the materialisation now
+answers them truthfully. `materialise_subject` builds a fresh single-commit
+repository around the verified tree: empty template, fixed identity and
+epoch timestamp, no reflog, ignore rules bypassed on `add`, and a refusal
+unless the sample's `HEAD^{tree}` equals the governed ref's tree. Measured
+before deciding: the tree hash is unchanged, so the subject digest does not
+move and prior evidence stays comparable.
 
-**Criterion 14 is not met, and the miss is recorded as a strict `xfail`, not
-routed around.** The provisioned run works: 362 of this suite's tests pass
-inside the sealed, offline environment against the materialised clone. Five
-fail, all for one reason — they need a git checkout, and ADR-005's
-materialisation is committed blobs with no `.git`:
-
-- `test_docs_discipline::test_every_cited_implementation_is_vendored_and_matches_its_digest`
-- `test_gate_evaluate_cli::test_foreign_repository_evaluation_is_refused_by_real_cli`
-- three in `test_keygen_key_confinement` that reach `governed_repository_root()`
-
-Relaxing them is refused. `_tracked_by_git` already documents failing closed
-outside a repository as deliberate, because skipping would be an
-author-manufactured escape hatch — weakening it to make this slice pass is
-exactly the failure Ranex exists to catch.
-
-**Decided 2026-08-04:** yes. `docs/adr/ADR-009-git-backed-materialisation.md`
-is accepted — the materialisation gains a fresh single-commit repository
-carrying the verified tree. Measured before deciding: the tree hash is
-unchanged (`1d8aa022…`), so the subject digest does not move and prior
-evidence stays comparable. This is criterion 14's remaining work **inside
-this slice**, not a new one; three strict `xfail` markers pin it, in
-`test_gating_real_suite.py` (stages 08b and 12) and `test_cold_start_journey.py`
-(stage 9), and all three flip together when it lands.
+All three strict `xfail` markers are removed and the stages pass:
+`test_gating_real_suite.py` stage 08b and `test_cold_start_journey.py`
+stage 9 are green against real PyPI (stage 12 skips by name on the
+operator's signing key). Inside the sealed sample, 448 tests pass, the
+recorded exit is 0, and `gate evaluate` answers PASS — Ranex gates a clone
+of Ranex through the unchanged catalog command.
+`tests/security/test_git_backed_materialisation.py` proves determinism (two
+runs, one commit id), hygiene (no remote, hooks, reflog, stash, or second
+commit), object-store containment, and every added refusal; the slice004
+"no `.git`" control is amended to prove a clean filter planted in the
+governed config cannot reach the sample's fresh one.
 
 Criterion 13 is met: `tests/security/test_slice006_approved_wheel_can_lie.py`
 demonstrates an approved, hash-correct wheel forcing a passing verdict with
@@ -190,12 +198,12 @@ proving the suite genuinely executed.
 
 ## Verification actually run
 
-- Full suite: **485 passed, 15 skipped**. The skips are the real-world stages
-  waiting on the operator's pinned resolver, and they name it.
-- Real-world journey with the resolver present: **13 passed, 1 xfailed
-  (criterion 14), 1 skipped** on the operator's signing key.
-- `diff-cover` against the slice's base commit: **100%**, all eleven touched
-  modules, 0 missing lines.
+- Full suite after criterion 14: **518 passed, 1 skipped** (stage 12, on the
+  operator's signing key, which it names).
+- Both real-world journeys with the resolver present: **23 passed, 1
+  skipped**; stages 08b and cold-start 9 genuinely pass, no xfail remains.
+- `diff-cover` on the criterion-14 change: **100%**, 17/17 lines; earlier in
+  the slice, 100% across all eleven touched modules.
 - `mutmut`: 4673 mutants — 2945 killed, 386 timed out, 306 without coverage,
   1036 survived. The provisioning survivors are dominated by error-message
   text and by equivalent mutants such as `"utf-8"` → `"UTF-8"`. Ten bare
