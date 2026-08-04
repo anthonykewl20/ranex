@@ -279,6 +279,25 @@ def test_platforms_fall_back_when_glibc_is_unusable(glibc: str) -> None:
     assert _platforms("x86_64", glibc) == ("linux_x86_64",)
 
 
+def unseal(root: Path) -> None:
+    """Restore write bits under `root` so the fixture can be removed.
+
+    Anything that calls the real `assemble_root` inherits its seal. Left in
+    place, pytest cannot delete the directory and the debris breaks the NEXT
+    run's cleanup — the same failure the `_seal` test above was written to
+    avoid, met a second time from the other direction.
+    """
+
+    if not root.exists():
+        return
+    for parent, directories, files in os.walk(root, topdown=True):
+        for name in (*directories, *files):
+            path = Path(parent, name)
+            if not path.is_symlink():
+                path.chmod(stat.S_IMODE(path.lstat().st_mode) | 0o700)
+    root.chmod(stat.S_IMODE(root.lstat().st_mode) | 0o700)
+
+
 def script(tmp_path: Path, body: str) -> Path:
     path = tmp_path / "tool"
     path.write_text("#!/bin/sh\n" + body + "\n")
@@ -636,13 +655,20 @@ def test_assemble_root_copies_when_hard_linking_is_refused(
         "exit 0",
     )
     descriptor = os.open(resolver, os.O_RDONLY)
+    destination = tmp_path / "root"
     try:
-        destination = tmp_path / "root"
         root_module.assemble_root((item,), store, pins_for(resolver), descriptor, destination)
         staged = destination / "wheels" / item.filename
         assert staged.read_bytes() == payload
     finally:
         os.close(descriptor)
+        # assemble_root SEALS what it builds, and a sealed tree is one pytest
+        # cannot remove — its leftovers then break the next run's garbage
+        # collection. Production does not need this: the whole materialisation
+        # is torn down by `_remove_materialisation`, which restores write bits
+        # for exactly this reason. A test calling the real thing has to do the
+        # same job itself.
+        unseal(destination)
 
 
 def test_assemble_root_refuses_an_unspawnable_resolver(tmp_path: Path) -> None:
