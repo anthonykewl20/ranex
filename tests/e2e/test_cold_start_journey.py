@@ -226,11 +226,13 @@ def test_stage_3_keygen_writes_outside_the_tree_and_prints_a_usable_line(
     # rejecting them for it. So the snippet is parsed here exactly as the
     # loader parses it, rather than pattern-matched.
     assert "governance/producers.yaml" in out, out
-    snippet = "\n".join(
-        line[2:] if line.startswith("  ") else line
-        for line in out.splitlines()
-        if line.startswith("  ")
-    )
+    lines = out.splitlines()
+    starts = [i for i, line in enumerate(lines) if line.strip() == "producers:"]
+    assert starts, out
+    # From the mapping's own first line to the end, dedented by the two spaces
+    # the CLI indents its snippet with. Taking every line that merely begins
+    # with two spaces swept up the wrapped prose above it.
+    snippet = "\n".join(line[2:] for line in lines[starts[0] :])
     parsed = yaml.safe_load(snippet)
     assert isinstance(parsed, dict) and "producers" in parsed, snippet
     assert list(parsed["producers"]) == ["worker"], snippet
