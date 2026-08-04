@@ -43,10 +43,43 @@ PINS = REAL_REPO / "governance" / "deps.yaml"
 # observation. Without a guard the clone below would be made recursively.
 GUARD = "RANEX_COLD_START_CHILD"
 
-pytestmark = pytest.mark.skipif(
-    os.environ.get(GUARD) == "1",
-    reason="cold-start journey does not re-enter itself",
-)
+
+def _inside_materialised_sample() -> bool:
+    """Is this suite running inside an ADR-009 sample rather than a checkout?
+
+    The environment guard below cannot make this call: the observed command's
+    environment is built from empty, so no variable survives into the sample.
+    What does survive is the sample's own construction — exactly one synthetic
+    commit with the fixed identity ADR-009 specifies — and that identity is
+    deterministic on purpose, so it is checkable here. Stages 1 and 2 would
+    otherwise re-enter against a clone whose HEAD is the outer journey's work
+    (a committed keyring), a subject this journey makes claims about but did
+    not start from.
+    """
+
+    result = subprocess.run(
+        ["git", "-C", str(REAL_REPO), "log", "-1", "--format=%ae"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    return result.returncode == 0 and result.stdout.strip() == "subject@ranex.invalid"
+
+
+pytestmark = [
+    pytest.mark.skipif(
+        os.environ.get(GUARD) == "1",
+        reason="cold-start journey does not re-enter itself",
+    ),
+    pytest.mark.skipif(
+        _inside_materialised_sample(),
+        reason=(
+            "cold-start journey does not re-enter a materialised sample: its "
+            "history is one synthetic commit (ADR-009), not the zero state "
+            "this journey is about"
+        ),
+    ),
+]
 
 
 def documented(*fragments: str) -> None:
