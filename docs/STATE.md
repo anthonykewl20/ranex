@@ -3,40 +3,40 @@
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
 **Updated:** 2026-08-04
-**Phase:** SLICE-006 — every criterion met including 14; close-out is next.
-**Active slice:** `docs/slices/SLICE-006-gating-a-real-test-suite.md`
-(ADR-007, and ADR-009 for criterion 14). **No second slice.**
+**Phase:** between slices. SLICE-006 is closed and archived.
+**Active slice:** none — the next slice needs its ADR first; that is the rule.
 
 ## Where we stopped
 
-Criterion 14 is met: `materialise_subject` builds a fresh single-commit
-repository around the verified tree (ADR-009 — fixed identity, epoch
-timestamp, no reflog, refusal unless the sample's `HEAD^{tree}` equals the
-governed ref's tree). All three strict `xfail` markers are removed; stages
-08b and cold-start 9 pass against real PyPI, and inside the sealed sample
-448 tests pass, the recorded exit is 0, and `gate evaluate` answers PASS —
-Ranex gates a clone of Ranex through the unchanged catalog command.
+SLICE-006 closed with all fifteen criteria met. Ranex gates Ranex: stage 12
+passed with the operator's registered key — `ranex run` executed the
+unchanged catalog command against the real current commit and `gate
+evaluate` accepted the signed evidence. ADR-009's materialisation (a fresh
+single-commit repository carrying the verified tree) is what unblocked it.
 
-A ninth journey defect was found and fixed landing this: the cold-start
-journey re-entered itself inside the sample, because its environment guard
-cannot survive an environment built from empty. It now recognises the
-sample by its deterministic synthetic commit identity and skips loudly.
+Close-out verification: suite 519 green; diff-cover 100% over the whole
+slice range (747/747 lines, which found and closed one unreached refusal);
+mutmut 4771 mutants — 2980 killed, 841 timed out, 306 uncovered, 644
+survived (down from 1036), sampled survivors equivalent or message-text,
+every mutant of the new `.git`-path refusal killed. Nine defects found this
+slice by driving the real thing; none by a unit test (MAP §4.6).
 
-Suite 518 passed / 1 skipped (stage 12, on the operator's signing key).
-`diff-cover` 100% on the criterion-14 change. mutmut not yet rerun since
-the change — that is part of close-out, not yet done.
+Operator state: `anthony` registered in `governance/producers.yaml`; the
+private key is outside the tree at `~/.config/ranex/anthony.key`
+(`RANEX_SIGNING_KEY` points at it); the default store is populated and the
+depset approved by `reviewer`.
 
 ## Next
 
-1. **Close SLICE-006:** rerun `uv run --frozen mutmut run` against the new
-   materialisation code, confirm criterion 15 still holds on the full slice
-   diff, then archive the slice to `docs/slices/done/`.
-2. Stage 12 (self-gate with the operator's own key and populated store)
-   skips loudly by name until the operator provides both.
-3. Backlog: turn MAP §4.6 into a gate rule (start with "a skip is absence,
-   not success"). ADR-006/Landlock still proposed and deferred; its
-   `SLICE-005` reference is dangling by design. Handbooks and
-   first-delegation unstarted.
+1. **Owner-requested: extract the git-query service from `cli/main.py`**
+   (2206 lines, 42% of the codebase — the one god-module; mutation
+   survivors concentrate there). Mechanical move, no behavior change, full
+   gates. Decide whether it needs its own ADR/slice before starting.
+2. Backlog: turn MAP §4.6 into a gate rule (start with "a skip is absence,
+   not success" — a fully skipped suite exits 0 and the gate accepts it
+   today). ADR-006/Landlock still proposed and deferred; its `SLICE-005`
+   reference is dangling by design. Handbooks and first-delegation
+   unstarted.
 
 ## Known limits
 

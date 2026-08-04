@@ -202,11 +202,18 @@ def test_stage_1_a_fresh_clone_carries_no_secrets_and_no_store(
     assert not list(operator.clone.rglob("*.key"))
     assert not (operator.clone / ".venv").exists()
     assert not operator.store.exists()
-    # And no keyring at all: this repository deliberately commits none, so the
-    # operator is CREATING the trust root rather than editing it. That is the
-    # fact the bootstrap below has to cope with, and the one the product used
-    # to get wrong by printing an entry that is not a valid file on its own.
-    assert not (operator.clone / "governance" / "producers.yaml").exists()
+    # The keyring IS committed: it is the trust root (ADR-002), and it ships
+    # because the repository's own operator registered for the self-gate
+    # (SLICE-006 stage 12). Zero state is the OPERATOR's — no private key, no
+    # store — not the repository's. What must hold is that only public halves
+    # are in the tree; the private keys those entries verify live outside it.
+    keyring = yaml.safe_load(
+        (operator.clone / "governance" / "producers.yaml").read_text(encoding="utf-8")
+    )
+    assert keyring["producers"], keyring
+    assert all(
+        str(value).startswith("ed25519:") for value in keyring["producers"].values()
+    ), keyring
 
 
 # --------------------------------------------------------------------------
@@ -214,20 +221,26 @@ def test_stage_1_a_fresh_clone_carries_no_secrets_and_no_store(
 # --------------------------------------------------------------------------
 
 
-def test_stage_2_gate_evaluate_refuses_and_says_why(operator: Operator) -> None:
-    """The README promises exit 2 here. A refusal must also be actionable."""
+def test_stage_2_gate_evaluate_fails_closed_and_names_the_missing_claim(
+    operator: Operator,
+) -> None:
+    """Absence blocks: with the keyring committed, the first evaluate reaches
+    the kernel and the verdict is an honest FAIL for missing evidence — not a
+    configuration error. A failure must also be actionable."""
 
     operator.require("resolver", "clone")
     documented(
         "python -m ranex.cli.main gate evaluate HEAD --approver reviewer_alice"
     )
-    code, _, err = ranex(
+    code, out, err = ranex(
         operator.clone, ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"]
     )
-    assert code == 2, err
-    # Not merely nonzero: the message must name the missing trust root, or the
-    # operator is left guessing which of several things is absent.
-    assert "producers.yaml" in err or "keyring" in err.lower(), err
+    assert code == 1, err
+    assert out.startswith("FAIL"), out
+    # Not merely nonzero: the verdict must name the missing claim, or the
+    # operator is left guessing what evidence they are expected to produce.
+    assert "tests-executed" in out, out
+    assert "no evidence" in out, out
 
 
 # --------------------------------------------------------------------------

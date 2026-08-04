@@ -1,7 +1,10 @@
 # SLICE-006 — gate a real test suite
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-03 — parked for SLICE-007, unparked 2026-08-04 by owner decision
+**Closed:** 2026-08-04 — all fifteen criteria met, each proven by a test.
+Stage 12 passed with the operator's own key: the self-gate is real, not
+demonstrated on a clone only.
 **ADR:** `docs/adr/ADR-007-dependency-provisioning-for-gated-suites.md` — the
 researched decision, including why the lock is derived under fixed resolution
 inputs and why dependencies remain trusted code after every hash matches.
@@ -202,8 +205,19 @@ proving the suite genuinely executed.
   operator's signing key, which it names).
 - Both real-world journeys with the resolver present: **23 passed, 1
   skipped**; stages 08b and cold-start 9 genuinely pass, no xfail remains.
-- `diff-cover` on the criterion-14 change: **100%**, 17/17 lines; earlier in
-  the slice, 100% across all eleven touched modules.
+- `diff-cover` on the criterion-14 change: **100%**, 17/17 lines; at
+  close-out, **100%** over the whole slice range (747/747 changed lines) —
+  which itself found one unreached refusal (the pins loader's YAMLError
+  branch), closed with a test before closing the slice.
+- Stage 12 with the operator's registered key and populated store: **passed**
+  — `ranex run` executed `uv run pytest -q` against the real current commit
+  and `gate evaluate` accepted the signed evidence.
+- `mutmut` at close-out: 4771 mutants — 2980 killed, 841 timed out, 306
+  without coverage, 644 survived (down from 1036). Sampled survivors in the
+  new `_construct_repository` are equivalent or message-text mutants
+  (redundant defensive `-c` flags, unasserted branch/message strings); every
+  mutant of the new `.git`-path refusal was killed. Survivors remain weak
+  evidence, per the recorded convention.
 - `mutmut`: 4673 mutants — 2945 killed, 386 timed out, 306 without coverage,
   1036 survived. The provisioning survivors are dominated by error-message
   text and by equivalent mutants such as `"utf-8"` → `"UTF-8"`. Ten bare

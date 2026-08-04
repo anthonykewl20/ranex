@@ -269,28 +269,26 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** `SLICE-006-gating-a-real-test-suite` — unparked 2026-08-04 by
-owner decision. Ranex provisions a committed suite's dependencies and runs them
-sealed and offline (ADR-007). `deps fetch` derives the lock clean under pinned
-inputs and byte-compares it, `deps approve` records the named package delta, and
-`run` proves derivation, approval and every wheel out of a SHA-256 store before
-spawning. 362 of this suite's own tests now pass inside that environment.
+**Active slice:** none — SLICE-006 closed 2026-08-04; the next slice gets its
+ADR first.
 
-**The one open miss:** five tests need a git checkout, and the materialisation
-is committed blobs with no `.git`, so Ranex does not yet gate its own repository
-end to end. It is recorded as a strict `xfail`, not relaxed — the tests that
-fail closed there do so deliberately, and weakening them to score a pass is the
-exact failure this project exists to catch.
+**Ranex gates Ranex.** With SLICE-006 closed, `ranex run` executes this
+repository's own suite — provisioned, sealed and offline — against a
+materialisation of the real current commit, and `gate evaluate` accepts the
+signed evidence. The materialisation is a fresh single-commit repository
+carrying the verified tree (ADR-009), so a committed suite that asks git
+about itself is told the truth, while the sample shares nothing with the
+governed object store.
 
-Ranex now observes a **materialisation of the subject commit**, built from bytes
+Ranex observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment
 constructed from empty and a toolchain pinned to directories the observed party
 cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** finish SLICE-006, then the owner picks between first delegation and
-handbooks.
+**Next:** the owner picks between first delegation and handbooks; meanwhile the
+one god-module (`cli/main.py`) is being split along its action/service seam.
 
 ## Completed slices
 
@@ -341,6 +339,16 @@ handbooks.
   unreached line, and closed 15 of the 59. The remaining 44, and 880 surviving
   mutants including some in the kernel, are recorded in the slice rather than
   smoothed over.
+- **SLICE-006-gating-a-real-test-suite** — Ranex gates Ranex. Dependencies are
+  provisioned deliberately: `deps fetch` derives the lock clean under pinned
+  inputs and byte-compares it, only SHA-256-addressed wheels enter the store,
+  `deps approve` records the named package delta, and the run executes sealed
+  and offline. The materialisation became a fresh single-commit repository
+  carrying the verified tree (ADR-009), which let the five git-dependent
+  controls pass unweakened, and the self-gate ran for real with the operator's
+  own registered key. Nine defects found by driving the CLI as a person does;
+  none by a unit test. What is **not** caught is recorded in the slice: an
+  approved, hash-correct wheel still chooses its own exit code.
 
 ---
 
@@ -362,9 +370,10 @@ and `run` sets `UV_FROZEN` in the environment instead.
 `pyproject.toml` sets `[tool.uv] package = false`, so the `ranex` console script
 is **not** installed. Invoke through the module path above.
 
-**On a fresh clone both commands exit 2, and that is correct.** Evidence must be
-signed, and this repository ships no keyring, so there is nothing to verify
-against. Bootstrap a producer first — the private key must live outside the
+**On a fresh clone `gate evaluate` fails, and that is correct.** Absence
+blocks: no evidence exists yet for `tests-executed`, so the verdict is FAIL
+with a nonzero exit, naming the missing claim. Producing evidence needs a
+signing identity of your own — the private key must live outside the
 repository, and `keygen` refuses to write it anywhere inside:
 
 ```sh
@@ -372,17 +381,18 @@ export RANEX_SIGNING_KEY=~/.config/ranex/worker.key
 PYTHONPATH=src uv run python -m ranex.cli.main keygen --producer worker
 ```
 
-This repository commits **no** keyring, so that file does not exist yet and you
-are creating it. It is a single `producers` mapping — `keygen` prints both lines
-for exactly this reason, because the bare entry on its own is not a valid
-keyring:
+This repository commits the **public** keyring, `governance/producers.yaml` —
+it is the trust root, and review of it is the control on it. It holds public
+halves only; no private key is anywhere in the tree. It is a single
+`producers` mapping, and `keygen` prints the exact line to add (and the whole
+mapping, for a keyring being created from nothing):
 
 ```yaml
 producers:
   worker: ed25519:<the key keygen printed>
 ```
 
-Commit it. That file is the trust root; review of it is the control on it.
+Commit the change.
 
 Next, provision dependencies. The bound command is `uv run pytest -q`, and the
 observation is built from committed blobs only — so `.venv` is not in it and the
