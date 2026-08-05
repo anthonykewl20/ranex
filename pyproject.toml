@@ -35,6 +35,9 @@ testpaths = ["tests"]
 
 [tool.mutmut]
 paths_to_mutate = ["src/ranex/"]
+# The frozen binding test reads the committed trust roots from the repository
+# root, which for mutmut is its copied tree.
+also_copy = ["governance/"]
 pytest_add_cli_args_test_selection = [
     "tests/",
     "--ignore=tests/contract/",
