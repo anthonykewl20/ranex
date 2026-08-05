@@ -269,8 +269,11 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none — SLICE-008 closed 2026-08-05; the next slice starts
-with its ADR.
+**Active slice:** `SLICE-009-a-skip-is-absence` — opened 2026-08-05 on
+ADR-011's acceptance. The gate stops trusting pytest's exit code: structured
+per-test results, diffed against a freeze-time manifest of expected test
+IDs; an undeclared skip, a vanished test, or a bad artifact is absence, and
+absence blocks.
 
 **Ranex gates Ranex.** With SLICE-006 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
@@ -287,8 +290,9 @@ cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** commit SLICE-008 across both trees, then the next ADR — merge (with
-the merge-time digest re-check ADR-010 names) or MAP §4.6 as a gate rule.
+**Next:** implement SLICE-009 red-then-green, close it with diff-cover and
+mutmut, then the merge ADR (with the merge-time digest re-check ADR-010
+names) — deferred behind this gauge fix on purpose.
 
 ## Completed slices
 

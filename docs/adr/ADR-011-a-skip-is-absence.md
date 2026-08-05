@@ -1,10 +1,10 @@
 # ADR-011 — a skip is absence, not success: suite verdicts from structured results, not exit codes
 
-**Status:** proposed
-**Date:** 2026-08-05
+**Status:** accepted
+**Date:** 2026-08-05 (accepted same day, owner)
 **Decision-makers:** repo owner
-**Slice:** `docs/slices/SLICE-009-a-skip-is-absence.md` — not yet opened. The
-decision is written first, as the rule requires.
+**Slice:** `docs/slices/SLICE-009-a-skip-is-absence.md` — opened on
+acceptance. The decision was written first, as the rule requires.
 
 ## Context and Problem Statement
 
