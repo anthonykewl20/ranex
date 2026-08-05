@@ -35,6 +35,13 @@ testpaths = ["tests"]
 
 [tool.mutmut]
 paths_to_mutate = ["src/ranex/"]
+# Kernel-focused policy (owner-approved 2026-08-05, evidence in the close of
+# SLICE-009): mutate only in-process decision code. The cli/ and bootstrap/
+# layers are exercised through spawned subprocesses mutmut cannot observe —
+# their survivors are noise, and their real evidence is the live self-gate and
+# the e2e journeys. Survivors are review input, not a close blocker; preserve
+# the mutants/ cache so only changed functions re-test between runs.
+do_not_mutate = ["src/ranex/cli/*", "src/ranex/bootstrap/*"]
 # The frozen binding test reads the committed trust roots from the repository
 # root, which for mutmut is its copied tree.
 also_copy = ["governance/"]

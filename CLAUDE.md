@@ -102,8 +102,10 @@ was never in doubt.
 ## Commands
 
 ```
-uv run --frozen pytest -q                               # full suite, about a second
-uv run --frozen mutmut run                              # required before a slice closes
+uv run --frozen pytest -q                               # full suite, about five minutes
+uv run --frozen mutmut run                              # before close: kernel scope only (see
+                                                        # [tool.mutmut]); survivors are review
+                                                        # input, never a blocker; keep mutants/
 PYTHONPATH=src uv run python -m ranex.cli.main --help
 ```
 
