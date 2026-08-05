@@ -817,7 +817,8 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         "tests/e2e/test_first_delegation.py::"
         "test_first_delegation_ends_in_candidate_with_reviewable_diff"
     )
-    assert set(live_manifest["expected_skips"]) == {openrouter_id}
+    declared_skips = set(live_manifest["expected_skips"])
+    assert openrouter_id in declared_skips
 
     missing_id = "tests/contract/test_bom_is_honest.py::test_bom_is_honest"
     assert missing_id in live_manifest["suite"]
@@ -825,7 +826,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     baseline_code, _, baseline_error = ranex(
         repository, run_argv(session.store), session.key_path
     )
-    assert baseline_code in {0, 1}, baseline_error
+    assert baseline_code == 0, baseline_error
     baseline_record = json.loads(
         (repository / "governance" / "evidence.json").read_text()
     )[0]
@@ -836,26 +837,18 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         for test_id, kind in baseline_non_passed.items()
         if kind == "skipped"
     }
-    assert openrouter_id in skipped_ids
-    undeclared_skips = skipped_ids - {openrouter_id}
-    assert undeclared_skips
+    assert skipped_ids <= declared_skips
     actual_failures = {
         test_id: kind
         for test_id, kind in baseline_non_passed.items()
         if kind != "skipped"
     }
     assert actual_failures == {}
-    assert baseline_code == 0
-    assert missing_id not in baseline_results["missing"]
+    assert baseline_results["missing"] == []
 
     baseline_verdict, baseline_output, _ = ranex(repository, evaluate_argv())
-    assert baseline_verdict == 1
-    assert baseline_output.startswith("FAIL")
-    assert missing_id not in baseline_output
-    baseline_offenders = undeclared_skips | set(actual_failures)
-    assert baseline_offenders
-    for offending_id in baseline_offenders:
-        assert offending_id in baseline_output
+    assert baseline_verdict == 0
+    assert baseline_output.startswith("PASS")
 
     removed_path = repository / missing_id.partition("::")[0]
     removed_path.unlink()
@@ -866,7 +859,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         run_code, _, run_error = ranex(
             repository, run_argv(session.store), session.key_path
         )
-        assert run_code == baseline_code, run_error
+        assert run_code == 0, run_error
         changed_record = json.loads(
             (repository / "governance" / "evidence.json").read_text()
         )[0]
@@ -881,8 +874,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         assert verdict_output.startswith("FAIL")
         assert missing_id in verdict_output
         assert "missing test ID(s)" in verdict_output
-        for offending_id in baseline_offenders:
-            assert offending_id in verdict_output
+        assert "suite results artifact was absent" not in verdict_output
     finally:
         restored = git(repository, "reset", "-q", "--hard", "HEAD^")
         assert restored.returncode == 0, restored.stderr
