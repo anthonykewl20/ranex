@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import json
 import os
+import shlex
 import shutil
 import stat
 import subprocess
@@ -434,6 +435,45 @@ def test_the_observed_tree_carries_a_fresh_synthetic_git_directory(
         "the observation did not construct a fresh synthetic repository with "
         "the governed repository's configuration excluded"
     )
+
+
+def test_system_git_configuration_is_absent_from_the_observed_tree(
+    repo: Path, keys: dict[str, str], tmp_path: Path
+) -> None:
+    """A machine-level clean/smudge filter cannot enter the observation.
+
+    The child environment is built from empty, so the ambient selector is not
+    inherited. Export it in the committed check as well to make Git consult the
+    hostile file just as it consults ``/etc/gitconfig`` on a configured runner,
+    without changing the host running this test.
+    """
+
+    hostile_system_config = tmp_path / "hostile-system.gitconfig"
+    hostile_system_config.write_text(
+        "[filter \"hostile\"]\n"
+        "\tclean = cat\n"
+        "\tsmudge = cat\n",
+        encoding="utf-8",
+    )
+    script(
+        repo / "run-tests.sh",
+        f"export GIT_CONFIG_SYSTEM={shlex.quote(str(hostile_system_config))}\n"
+        "! git config --get-regexp '^filter\\.' && "
+        "test \"$GIT_CONFIG_NOSYSTEM\" = 1 && "
+        "test \"$GIT_ATTR_NOSYSTEM\" = 1",
+    )
+    (repo / "gates.yaml").write_text(
+        build_gates("tests-executed", ["sh", "run-tests.sh"]), encoding="utf-8"
+    )
+    commit_all(repo)
+
+    assert run_cmd(
+        repo,
+        keys,
+        "sh",
+        "run-tests.sh",
+        environment={"GIT_CONFIG_SYSTEM": str(hostile_system_config)},
+    ) == EXIT_PASS, "system Git configuration reached the governed observation"
 
 
 def test_the_command_does_not_run_in_the_governed_worktree(

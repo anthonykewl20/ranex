@@ -52,6 +52,9 @@ def git(
     OWN queries; it does not close the repository-local .git/config vector, it
     does not sanitise the BOUND COMMAND's environment, and non-GIT_ variables
     git honours (including HOME and therefore ~/.gitconfig) are still inherited.
+    System configuration also remains enabled by default for operator-facing
+    repository queries. Subject/materialisation callers deliberately provide
+    ``GIT_CONFIG_NOSYSTEM`` and ``GIT_ATTR_NOSYSTEM`` through ``overrides``.
     """
 
     environment = {
@@ -337,4 +340,3 @@ def governed_repository_root() -> Path:
             f"{result.stderr.strip()}"
         )
     return Path(result.stdout.strip()).resolve()
-

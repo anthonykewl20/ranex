@@ -1018,6 +1018,8 @@ def test_run_suite_respects_tail_and_command(tmp_path: Path, monkeypatch: pytest
     assert captured[0][0] == ["python", "-c", "print(1)"]
     assert captured[0][1] == tmp_path / "tree"
     assert captured[0][2]["TMPDIR"] == str(tmp_path / "tmp")
+    assert captured[0][2]["GIT_CONFIG_NOSYSTEM"] == "1"
+    assert captured[0][2]["GIT_ATTR_NOSYSTEM"] == "1"
 
 
 def test_run_suite_refuses_empty_command(tmp_path: Path) -> None:
@@ -1095,6 +1097,8 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
         "HOME": str(tmp_path / "home"),
         "TMPDIR": str(tmp_path / "tmp"),
         "LANG": "C.UTF-8",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_ATTR_NOSYSTEM": "1",
     }
     assert active is False
 

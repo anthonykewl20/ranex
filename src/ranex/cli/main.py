@@ -1546,6 +1546,8 @@ def _execute_hermetically(
                 "HOME": str(materialisation.home),
                 "TMPDIR": str(materialisation.temporary),
                 "LANG": "C.UTF-8",
+                "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_ATTR_NOSYSTEM": "1",
             }
             before_exec = None
             if provisioning is not None and deps_environment is not None:

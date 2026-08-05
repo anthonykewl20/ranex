@@ -39,6 +39,12 @@ class Materialisation:
     tracked_paths: tuple[str, ...]
 
 
+_SYSTEM_GIT_ISOLATION = {
+    "GIT_CONFIG_NOSYSTEM": "1",
+    "GIT_ATTR_NOSYSTEM": "1",
+}
+
+
 def _tree_entries(
     repository_root: Path,
     ref: str,
@@ -52,6 +58,7 @@ def _tree_entries(
         "--full-tree",
         ref,
         text=False,
+        overrides=_SYSTEM_GIT_ISOLATION,
     )
     if result.returncode != 0:
         detail = os.fsdecode(result.stderr).strip()
@@ -108,6 +115,7 @@ def _verified_blob(
         "blob",
         entry.object_id,
         text=False,
+        overrides=_SYSTEM_GIT_ISOLATION,
     )
     if result.returncode != 0:
         detail = os.fsdecode(result.stderr).strip()
@@ -190,6 +198,7 @@ def _materialisation_root(repository_root: Path) -> Path:
 
 
 _CONSTRUCTION_ENVIRONMENT = {
+    **_SYSTEM_GIT_ISOLATION,
     "GIT_CONFIG_GLOBAL": "/dev/null",
     "GIT_CONFIG_SYSTEM": "/dev/null",
     "GIT_AUTHOR_NAME": "Ranex Subject",

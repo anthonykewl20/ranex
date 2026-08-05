@@ -121,6 +121,8 @@ def _run_suite(worktree: Path, commit: str, suite: str) -> tuple[int, str]:
             "HOME": str(materialisation.home),
             "TMPDIR": str(materialisation.temporary),
             "LANG": "C.UTF-8",
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_ATTR_NOSYSTEM": "1",
         }
         completed = subprocess.run(
             command,
@@ -154,6 +156,8 @@ def _run_suite_with_results(
             "HOME": str(materialisation.home),
             "TMPDIR": str(materialisation.temporary),
             "LANG": "C.UTF-8",
+            "GIT_CONFIG_NOSYSTEM": "1",
+            "GIT_ATTR_NOSYSTEM": "1",
         }
         completed = subprocess.run(
             command,
