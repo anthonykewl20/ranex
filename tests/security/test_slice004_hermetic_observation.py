@@ -33,7 +33,9 @@ import stat
 import subprocess
 import sys
 import zlib
+from contextlib import nullcontext
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -196,6 +198,22 @@ def safe_junitxml() -> bytes:
     )
 
 
+def hermetic_materialisation(tmp_path: Path) -> SimpleNamespace:
+    root = tmp_path / "materialisation"
+    tree = root / "tree"
+    home = root / "home"
+    temporary = root / "tmp"
+    for path in (tree, home, temporary):
+        path.mkdir(parents=True, exist_ok=True)
+    return SimpleNamespace(
+        root=root,
+        tree=tree,
+        home=home,
+        temporary=temporary,
+        tracked_paths=(),
+    )
+
+
 @pytest.fixture()
 def repo_failing_its_own_check(repo: Path) -> Path:
     """A committed repository whose own committed check exits 1."""
@@ -288,6 +306,104 @@ def test_results_artifact_reads_at_most_limit_plus_one_bytes(
         suite_results.parse_results_artifact(artifact, suite_manifest())
 
     assert bytes_read == suite_results.MAX_RESULTS_BYTES + 1
+
+
+def test_hermetic_execution_refuses_a_non_regular_executable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ranex.cli import main as cli
+
+    materialisation = hermetic_materialisation(tmp_path)
+    executable = tmp_path / "executable-directory"
+    executable.mkdir()
+    resolution = SimpleNamespace(executable=executable)
+    monkeypatch.setattr(
+        cli,
+        "materialise_subject",
+        lambda *_args: nullcontext(materialisation),
+    )
+    monkeypatch.setattr(cli, "refuse_resolution_inside", lambda *_args: None)
+
+    with pytest.raises(ValueError, match="not a regular file"):
+        cli._execute_hermetically(
+            tmp_path / "repo",
+            "a" * 40,
+            [str(executable)],
+            None,
+            (),
+            resolution,
+            False,
+        )
+
+
+def test_hermetic_execution_refuses_when_opened_path_differs_from_resolution(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ranex.cli import main as cli
+
+    materialisation = hermetic_materialisation(tmp_path)
+    executable = tmp_path / "resolved-tool"
+    executable.write_text("tool\n", encoding="utf-8")
+    opened = tmp_path / "substituted-tool"
+    resolution = SimpleNamespace(executable=executable)
+    monkeypatch.setattr(
+        cli,
+        "materialise_subject",
+        lambda *_args: nullcontext(materialisation),
+    )
+    monkeypatch.setattr(cli, "refuse_resolution_inside", lambda *_args: None)
+    monkeypatch.setattr(cli, "path_behind", lambda *_args: opened)
+
+    with pytest.raises(ValueError, match="file actually opened is .*substituted-tool"):
+        cli._execute_hermetically(
+            tmp_path / "repo",
+            "a" * 40,
+            [str(executable)],
+            None,
+            (),
+            resolution,
+            False,
+        )
+
+
+def test_hermetic_execution_refuses_an_artifact_reader_without_a_path(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ranex.cli import main as cli
+
+    materialisation = hermetic_materialisation(tmp_path)
+    executable = tmp_path / "tool"
+    executable.write_text("tool\n", encoding="utf-8")
+    resolution = SimpleNamespace(executable=executable)
+    monkeypatch.setattr(
+        cli,
+        "materialise_subject",
+        lambda *_args: nullcontext(materialisation),
+    )
+    monkeypatch.setattr(cli, "refuse_resolution_inside", lambda *_args: None)
+    monkeypatch.setattr(cli, "path_behind", lambda *_args: executable)
+    monkeypatch.setattr(cli, "same_file_inside", lambda *_args: None)
+    monkeypatch.setattr(cli, "stat_fingerprint", lambda *_args: {})
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda command, **_kwargs: subprocess.CompletedProcess(command, 0),
+    )
+
+    with pytest.raises(ValueError, match="artifact reader has no confined artifact path"):
+        cli._execute_hermetically(
+            tmp_path / "repo",
+            "a" * 40,
+            [str(executable)],
+            None,
+            (),
+            resolution,
+            False,
+            artifact_reader=lambda _path: b"results",
+        )
 
 
 def test_the_observed_tree_carries_a_fresh_synthetic_git_directory(

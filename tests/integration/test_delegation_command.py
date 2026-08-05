@@ -20,6 +20,7 @@ import pytest
 from ranex.cli.delegation import (
     _read_emission,
     _run_suite,
+    _run_suite_with_results,
     _tail_output,
     _write_outcome,
     cmd_task_delegate,
@@ -29,6 +30,7 @@ from ranex.cli.delegation import (
 from ranex.cli.fanout import cmd_task_fanout
 from ranex.cli.fanout import _run_one_delegation
 from ranex.cli.main import (
+    EXIT_FAIL,
     EXIT_PASS,
     EXIT_USAGE,
     _latest_task_dispatch,
@@ -97,6 +99,54 @@ def fake_subprocess_run(*_args: object, **_kwargs: object) -> subprocess.Complet
 
 def fake_harness_run(**_kwargs: object) -> subprocess.CompletedProcess[str]:
     return subprocess.CompletedProcess(["harness"], 0, "", "")
+
+
+def configure_truthful_delegate(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    task_id: str,
+) -> tuple[argparse.Namespace, Path, str, str]:
+    dispatched_worktree = tmp_path / "dispatch-worktree"
+    journal = tmp_path / "journal.sqlite3"
+    harness = build_harness(tmp_path / "harness.sh")
+    base_commit = "a" * 40
+    emitted_commit = "b" * 40
+    seed_dispatch(journal, task_id, dispatched_worktree, base_commit)
+    args = delegation_args(
+        tmp_path,
+        task_id=task_id,
+        worktree=dispatched_worktree,
+        journal=journal,
+        harness=harness,
+    )
+
+    def fake_git(
+        _root: Path, *arguments: object, **_kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        tree = "emitted-tree" if emitted_commit in str(arguments) else "base-tree"
+        return subprocess.CompletedProcess(arguments, 0, f"{tree}\n", "")
+
+    monkeypatch.setattr(
+        "ranex.cli.main._perform_task_dispatch",
+        lambda *_args, **_kwargs: dispatched_worktree,
+    )
+    monkeypatch.setattr("ranex.cli.delegation._run_harness", fake_harness_run)
+    monkeypatch.setattr("ranex.cli.main.head_commit", lambda _path: emitted_commit)
+    monkeypatch.setattr("ranex.cli.delegation.git", fake_git)
+    monkeypatch.setattr(
+        "ranex.cli.delegation._read_emission",
+        lambda _path: {
+            "task_id": task_id,
+            "worktree": str(dispatched_worktree),
+            "commit": emitted_commit,
+        },
+    )
+    monkeypatch.setattr(
+        "ranex.cli.delegation.exec_environment_holds_signing_key", lambda: False
+    )
+    monkeypatch.setenv("OPENROUTER_API_KEY", "openrouter-key")
+    return args, dispatched_worktree.resolve(), base_commit, emitted_commit
 
 
 def test_candidate_manifest_edit_cannot_change_delegated_judgement(
@@ -250,6 +300,52 @@ def test_candidate_manifest_edit_cannot_change_delegated_judgement(
         (1, ["tests-executed"]),
         (1, ["tests-executed"]),
     ]
+
+
+def test_judge_refuses_dispatch_with_invalid_base_commit(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    task_id = "T-INVALID-BASE"
+    worktree = tmp_path / "dispatch-worktree"
+    journal_path = tmp_path / "journal.sqlite3"
+    journal_path.touch()
+    emitted_commit = "b" * 40
+
+    class InvalidDispatchJournal:
+        def __init__(self, _path: Path) -> None:
+            pass
+
+        def verify(self) -> bool:
+            return True
+
+        def entries(self) -> list[dict[str, object]]:
+            return [
+                {
+                    "type": "task-dispatch",
+                    "task_id": task_id,
+                    "worktree": str(worktree),
+                    "base_commit": "not-a-commit",
+                }
+            ]
+
+    monkeypatch.setattr("ranex.cli.main.Journal", InvalidDispatchJournal)
+    monkeypatch.setattr("ranex.cli.main.head_commit", lambda _path: emitted_commit)
+
+    result = cmd_task_judge(
+        argparse.Namespace(
+            task_id=task_id,
+            emitted_worktree=str(worktree),
+            emitted_commit=emitted_commit,
+            journal=str(journal_path),
+        )
+    )
+    captured = capsys.readouterr()
+
+    assert result == EXIT_FAIL
+    assert "invalid base commit in dispatch" in captured.err
+    assert task_id in captured.err
 
 
 def test_delegate_refuses_absent_dispatch_record(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
@@ -927,6 +1023,230 @@ def test_run_suite_respects_tail_and_command(tmp_path: Path, monkeypatch: pytest
 def test_run_suite_refuses_empty_command(tmp_path: Path) -> None:
     with pytest.raises(ValueError, match="no arguments"):
         _run_suite(tmp_path / "repo", "a" * 40, "")
+
+
+def test_run_suite_with_results_reads_artifact_before_teardown(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    active = False
+
+    class FakeMaterialisation:
+        def __init__(self) -> None:
+            self.tree = tmp_path / "tree"
+            self.home = tmp_path / "home"
+            self.temporary = tmp_path / "tmp"
+            self.tree.mkdir()
+            self.home.mkdir()
+            self.temporary.mkdir()
+
+        def __enter__(self) -> "FakeMaterialisation":
+            nonlocal active
+            active = True
+            return self
+
+        def __exit__(self, _exc_type, _exc, _tb) -> bool | None:
+            nonlocal active
+            active = False
+            return None
+
+    manifest = {"suite": ["tests/test_example.py::test_pass"]}
+    observed: dict[str, object] = {}
+
+    def fake_run(
+        command: list[str], **kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        observed["command"] = command
+        observed["cwd"] = kwargs["cwd"]
+        observed["environment"] = kwargs["env"]
+        return subprocess.CompletedProcess(command, 3, stdout="out", stderr="err")
+
+    def fake_parse(path: Path, pinned: dict[str, object]) -> dict[str, object]:
+        assert active, "results must be read before materialisation teardown"
+        observed["artifact"] = path
+        observed["manifest"] = pinned
+        return {"counts": {"passed": 1}}
+
+    monkeypatch.setattr(
+        "ranex.cli.delegation.materialise_subject",
+        lambda *_args, **_kwargs: FakeMaterialisation(),
+    )
+    monkeypatch.setattr("ranex.cli.delegation.subprocess.run", fake_run)
+    monkeypatch.setattr("ranex.cli.delegation.parse_results_artifact", fake_parse)
+
+    suite_exit, output_tail, results = _run_suite_with_results(
+        tmp_path / "repo",
+        "a" * 40,
+        "python -c 'print(1)'",
+        results_artifact="artifacts/junit.xml",
+        manifest=manifest,
+    )
+
+    assert (suite_exit, output_tail, results) == (
+        3,
+        "outerr",
+        {"counts": {"passed": 1}},
+    )
+    assert observed["command"] == ["python", "-c", "print(1)"]
+    assert observed["cwd"] == tmp_path / "tree"
+    assert observed["artifact"] == tmp_path / "tree" / "artifacts/junit.xml"
+    assert observed["manifest"] is manifest
+    assert observed["environment"] == {
+        "PATH": observed["environment"]["PATH"],
+        "HOME": str(tmp_path / "home"),
+        "TMPDIR": str(tmp_path / "tmp"),
+        "LANG": "C.UTF-8",
+    }
+    assert active is False
+
+
+def test_run_suite_with_results_refuses_empty_command(tmp_path: Path) -> None:
+    with pytest.raises(ValueError, match="refusing suite command: no arguments"):
+        _run_suite_with_results(
+            tmp_path / "repo",
+            "a" * 40,
+            "",
+            results_artifact="artifacts/junit.xml",
+            manifest={},
+        )
+
+
+def test_delegate_refuses_suite_command_that_differs_from_dispatch_claim(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-9-COMMAND-MISMATCH"
+    )
+    args.gate_catalog = "governance/gates.yaml"
+    claim = argparse.Namespace(
+        claim_id="tests-executed",
+        command=("/usr/bin/false",),
+        results_artifact="artifacts/junit.xml",
+    )
+    monkeypatch.setattr(
+        "ranex.cli.delegation.verified_blob_at_path",
+        lambda *_args, **_kwargs: b"gate catalog",
+    )
+    monkeypatch.setattr(
+        "ranex.cli.delegation.load_gate_text",
+        lambda source, gate: argparse.Namespace(required_claims=(claim,)),
+    )
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+
+    assert result == EXIT_USAGE
+    assert (
+        "refusing suite command: it does not match the dispatch-time claim "
+        "'tests-executed'"
+    ) in captured.err
+
+
+def test_delegate_refuses_dispatch_base_without_suite_manifest(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-9-MISSING-MANIFEST"
+    )
+    args.gate_catalog = "governance/gates.yaml"
+    args.suite_manifest = "governance/suite_manifest.json"
+    claim = argparse.Namespace(
+        claim_id="tests-executed",
+        command=("/usr/bin/true",),
+        results_artifact="artifacts/junit.xml",
+    )
+
+    def fake_verified_blob(
+        _worktree: Path, _commit: str, path: str, _git: object
+    ) -> bytes | None:
+        return b"gate catalog" if path == args.gate_catalog else None
+
+    monkeypatch.setattr(
+        "ranex.cli.delegation.verified_blob_at_path", fake_verified_blob
+    )
+    monkeypatch.setattr(
+        "ranex.cli.delegation.load_gate_text",
+        lambda source, gate: argparse.Namespace(required_claims=(claim,)),
+    )
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+
+    assert result == EXIT_USAGE
+    assert (
+        "refusing suite: dispatch base carries no manifest at "
+        "governance/suite_manifest.json"
+    ) in captured.err
+
+
+def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, worktree, base_commit, emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-9-RESULTS"
+    )
+    args.gate_catalog = "governance/gates.yaml"
+    args.suite_manifest = "governance/suite_manifest.json"
+    claim = argparse.Namespace(
+        claim_id="tests-executed",
+        command=("/usr/bin/true",),
+        results_artifact="artifacts/junit.xml",
+    )
+    manifest = {"suite": ["tests/test_example.py::test_pass"]}
+    suite_results = {"counts": {"passed": 1}}
+    calls: dict[str, object] = {}
+
+    def fake_verified_blob(
+        received_worktree: Path,
+        received_commit: str,
+        path: str,
+        _git: object,
+    ) -> bytes:
+        assert received_worktree == worktree
+        assert received_commit == base_commit
+        return b"gate catalog" if path == args.gate_catalog else b"manifest"
+
+    def fake_load_manifest(source: bytes) -> dict[str, object]:
+        calls["manifest_source"] = source
+        return manifest
+
+    def fake_results_suite(**kwargs: object) -> tuple[int, str, dict[str, object]]:
+        calls["suite"] = kwargs
+        return 0, "suite output", suite_results
+
+    monkeypatch.setattr(
+        "ranex.cli.delegation.verified_blob_at_path", fake_verified_blob
+    )
+    monkeypatch.setattr(
+        "ranex.cli.delegation.load_gate_text",
+        lambda source, gate: argparse.Namespace(required_claims=(claim,)),
+    )
+    monkeypatch.setattr("ranex.cli.delegation.load_manifest_bytes", fake_load_manifest)
+    monkeypatch.setattr(
+        "ranex.cli.delegation._run_suite_with_results", fake_results_suite
+    )
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+
+    assert result == EXIT_PASS
+    assert "DELEGATED" in captured.out
+    assert calls["manifest_source"] == b"manifest"
+    assert calls["suite"] == {
+        "worktree": worktree,
+        "commit": emitted_commit,
+        "suite": "/usr/bin/true",
+        "results_artifact": "artifacts/junit.xml",
+        "manifest": manifest,
+    }
+    assert json.loads(Path(args.outcome).read_text(encoding="utf-8"))[
+        "suite_results"
+    ] == suite_results
 
 
 def test_latest_task_dispatch_prefers_latest_record() -> None:

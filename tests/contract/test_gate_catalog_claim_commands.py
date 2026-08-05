@@ -301,3 +301,62 @@ def test_the_wired_gate_compares_the_same_digest_run_records(tmp_path: Path) -> 
         approver_id="reviewer",
     )
     assert result.verdict is Verdict.PASS, result.reason
+
+
+def test_the_wired_gate_refuses_a_suite_claim_without_a_manifest() -> None:
+    from ranex.bootstrap.composition import build_gate_evaluator
+
+    catalog = """
+gates:
+  - gate_id: landing
+    rule_id: TESTS_EXECUTED
+    blocking: true
+    required_claims:
+      - claim_id: tests-executed
+        command: ["uv", "run", "pytest", "-q", "--junitxml=artifacts/junit.xml"]
+        results_artifact: artifacts/junit.xml
+"""
+
+    evaluator = build_gate_evaluator(catalog.encode("utf-8"))
+    with pytest.raises(
+        ValueError,
+        match="suite-results claim requires a committed suite manifest",
+    ):
+        evaluator.evaluate(
+            "landing",
+            (),
+            subject_digest="sha256:" + "a" * 64,
+            approver_id="reviewer",
+        )
+
+
+def test_the_wired_gate_loads_a_present_suite_manifest() -> None:
+    from ranex.bootstrap.composition import build_gate_evaluator
+    from ranex.governed_execution.api import Verdict
+
+    catalog = """
+gates:
+  - gate_id: landing
+    rule_id: TESTS_EXECUTED
+    blocking: true
+    required_claims:
+      - claim_id: tests-executed
+        command: ["uv", "run", "pytest", "-q", "--junitxml=artifacts/junit.xml"]
+        results_artifact: artifacts/junit.xml
+"""
+    manifest = (
+        b'{"expected_skips":{},"suite":["tests/test_sample.py::test_one"]}'
+    )
+
+    result = build_gate_evaluator(
+        catalog.encode("utf-8"),
+        suite_manifest=manifest,
+    ).evaluate(
+        "landing",
+        (),
+        subject_digest="sha256:" + "a" * 64,
+        approver_id="reviewer",
+    )
+
+    assert result.verdict is Verdict.FAIL
+    assert result.missing_claims == ("tests-executed",)

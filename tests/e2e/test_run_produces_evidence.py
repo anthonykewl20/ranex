@@ -20,6 +20,7 @@ from __future__ import annotations
 import json
 import subprocess
 from pathlib import Path
+from types import SimpleNamespace
 
 import pytest
 
@@ -123,6 +124,7 @@ def evaluate(repo: Path, approver: str = "reviewer") -> int:
             "--gate-catalog", "gates.yaml",
             "--evidence", "evidence.json",
             "--producers", "producers.yaml",
+            "--suite-manifest", "suite_manifest.json",
             "--approver", approver,
         ],
     )
@@ -230,6 +232,124 @@ def test_suite_freeze_command_writes_canonical_outcome_blind_manifest(
     assert (repo / "suite_manifest.json").read_bytes() == canonical_json_bytes(expected)
 
 
+def test_suite_freeze_refuses_a_second_repository_target(
+    repo: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    (repo / "nested").mkdir()
+
+    result = invoke(
+        repo,
+        [
+            "suite", "freeze",
+            "--repository", "nested",
+            "--artifact", "report.xml",
+            "--", "sh", "-c", "exit 0",
+        ],
+    )
+
+    assert result == 2
+    assert "second-repository targets are refused" in capsys.readouterr().err
+
+
+def test_suite_freeze_refuses_a_missing_command(
+    repo: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    result = invoke(
+        repo,
+        ["suite", "freeze", "--artifact", "report.xml"],
+    )
+
+    assert result == 2
+    assert "a freeze command is required after --" in capsys.readouterr().err
+
+
+def test_suite_freeze_refuses_a_malformed_expected_skip(
+    repo: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    result = invoke(
+        repo,
+        [
+            "suite", "freeze",
+            "--artifact", "report.xml",
+            "--expected-skip", "tests/test_sample.py::test_skip=   ",
+            "--", "sh", "-c", "exit 0",
+        ],
+    )
+
+    assert result == 2
+    assert "TEST_ID=REASON with a non-empty reason" in capsys.readouterr().err
+
+
+def test_suite_freeze_refuses_duplicate_expected_skip_declarations(
+    repo: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    declaration = "tests/test_sample.py::test_skip=credential-gated"
+    result = invoke(
+        repo,
+        [
+            "suite", "freeze",
+            "--artifact", "report.xml",
+            "--expected-skip", declaration,
+            "--expected-skip", declaration,
+            "--", "sh", "-c", "exit 0",
+        ],
+    )
+
+    assert result == 2
+    assert "duplicate --expected-skip declaration" in capsys.readouterr().err
+
+
+def test_suite_freeze_refuses_a_dirty_working_tree(
+    repo: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    (repo / "file.txt").write_text("dirty\n", encoding="utf-8")
+
+    result = invoke(
+        repo,
+        [
+            "suite", "freeze",
+            "--artifact", "report.xml",
+            "--", "sh", "-c", "exit 0",
+        ],
+    )
+
+    assert result == 2
+    assert "refusing to freeze against a dirty working tree" in capsys.readouterr().err
+
+
+def test_suite_freeze_refuses_when_execution_returns_no_artifact(
+    repo: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    completed = subprocess.CompletedProcess(["sh", "-c", "exit 0"], 0)
+    monkeypatch.setattr(
+        "ranex.cli.main._execute_hermetically",
+        lambda *_args, **_kwargs: SimpleNamespace(
+            completed=completed,
+            executable=Path("/usr/bin/sh"),
+            artifact=None,
+        ),
+    )
+
+    result = invoke(
+        repo,
+        [
+            "suite", "freeze",
+            "--artifact", "report.xml",
+            "--", "sh", "-c", "exit 0",
+        ],
+    )
+
+    assert result == 2
+    assert "freeze run produced no readable results artifact" in capsys.readouterr().err
+
+
 def test_run_reads_suite_results_before_materialisation_teardown(repo: Path) -> None:
     test_id = "tests/test_sample.py::test_pass"
     command = ["sh", "write-results.sh", "--junitxml=artifacts/junit.xml"]
@@ -284,6 +404,54 @@ def test_run_reads_suite_results_before_materialisation_teardown(repo: Path) -> 
     assert record["suite_results"]["missing"] == []
     assert record["suite_results"]["counts"]["passed"] == 1
     assert not (repo / "artifacts" / "junit.xml").exists()
+    assert evaluate(repo) == 0
+
+
+def test_run_refuses_a_suite_results_claim_without_a_loaded_manifest(
+    repo: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    command = ["sh", "-c", "exit 0", "--junitxml=artifacts/junit.xml"]
+    (repo / "gates.yaml").write_text(
+        "gates:\n"
+        "  - gate_id: landing\n"
+        "    rule_id: TESTS_EXECUTED\n"
+        "    blocking: true\n"
+        "    required_claims:\n"
+        "      - claim_id: tests-executed\n"
+        f"        command: {json.dumps(command)}\n"
+        "        results_artifact: artifacts/junit.xml\n",
+        encoding="utf-8",
+    )
+    (repo / "suite_manifest.json").write_bytes(
+        canonical_json_bytes({"suite": [], "expected_skips": {}})
+    )
+    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "commit", "-q", "-m", "suite claim"],
+        check=True,
+    )
+    monkeypatch.setattr("ranex.cli.main.load_manifest_bytes", lambda _source: None)
+
+    result = invoke(
+        repo,
+        [
+            "run",
+            "--claim", "tests-executed",
+            "--producer", "worker",
+            "--evidence", "evidence.json",
+            "--producers", "producers.yaml",
+            "--gate-catalog", "gates.yaml",
+            "--suite-manifest", "suite_manifest.json",
+            "--", *command,
+        ],
+        producer="worker",
+    )
+
+    assert result == 2
+    assert "suite-results claim has no loaded manifest" in capsys.readouterr().err
+    assert not (repo / "evidence.json").exists()
 
 
 # --- refusing to make a false claim ----------------------------------------

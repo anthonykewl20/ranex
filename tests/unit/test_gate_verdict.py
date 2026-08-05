@@ -195,6 +195,161 @@ def test_non_integer_evidence_exit_code_is_refused() -> None:
         )
 
 
+def test_claim_refuses_non_boolean_results_required() -> None:
+    with pytest.raises(ValueError, match="results_required must be a boolean"):
+        Claim(
+            claim_id="tests-executed",
+            command_digest=COMMAND_DIGEST,
+            results_required=1,  # type: ignore[arg-type]
+        )
+
+
+def test_exit_code_only_claim_refuses_suite_manifest_fields() -> None:
+    with pytest.raises(
+        ValueError,
+        match="exit-code-only claims cannot carry suite manifest fields",
+    ):
+        Claim(
+            claim_id="tests-executed",
+            command_digest=COMMAND_DIGEST,
+            manifest_digest="sha256:" + "c" * 64,
+        )
+
+
+def test_suite_claim_refuses_unsorted_expected_ids() -> None:
+    with pytest.raises(
+        ValueError,
+        match="expected_ids must be a sorted tuple of unique test IDs",
+    ):
+        Claim(
+            claim_id="tests-executed",
+            command_digest=COMMAND_DIGEST,
+            results_required=True,
+            manifest_digest="sha256:" + "c" * 64,
+            expected_ids=("tests/test_z.py::test_z", "tests/test_a.py::test_a"),
+            expected_skips={},
+        )
+
+
+def test_suite_claim_refuses_non_mapping_expected_skips() -> None:
+    with pytest.raises(ValueError, match="expected_skips must be a mapping"):
+        Claim(
+            claim_id="tests-executed",
+            command_digest=COMMAND_DIGEST,
+            results_required=True,
+            manifest_digest="sha256:" + "c" * 64,
+            expected_ids=("tests/test_a.py::test_a",),
+            expected_skips=[],  # type: ignore[arg-type]
+        )
+
+
+def test_suite_claim_refuses_expected_skip_without_an_expected_id() -> None:
+    with pytest.raises(
+        ValueError,
+        match="expected_skips must name expected IDs with non-empty reasons",
+    ):
+        Claim(
+            claim_id="tests-executed",
+            command_digest=COMMAND_DIGEST,
+            results_required=True,
+            manifest_digest="sha256:" + "c" * 64,
+            expected_ids=("tests/test_a.py::test_a",),
+            expected_skips={"tests/test_other.py::test_other": "environment"},
+        )
+
+
+def test_suite_claim_ignores_non_passed_extra_test_ids() -> None:
+    manifest = "sha256:" + "c" * 64
+    claim = Claim(
+        claim_id="tests-executed",
+        command_digest=COMMAND_DIGEST,
+        results_required=True,
+        manifest_digest=manifest,
+        expected_ids=("tests/test_a.py::test_a",),
+        expected_skips={},
+    )
+    observed = Evidence(
+        claim_id="tests-executed",
+        subject_digest=SUBJECT,
+        producer_id="worker",
+        command=" ".join(COMMAND),
+        command_digest=COMMAND_DIGEST,
+        executable_path=EXECUTABLE,
+        exit_code=0,
+        suite_results={
+            "manifest_digest": manifest,
+            "counts": {
+                "passed": 1,
+                "skipped": 0,
+                "failed": 1,
+                "errors": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+            },
+            "non_passed": [["tests/test_extra.py::test_extra", "failed"]],
+            "missing": [],
+            "extra_count": 1,
+            "outcome_digest": "sha256:" + "d" * 64,
+        },
+    )
+
+    assert observed.satisfies(claim, SUBJECT) is True
+
+
+def test_suite_diagnosis_names_an_absent_artifact() -> None:
+    claim = Claim(
+        claim_id="tests-executed",
+        command_digest=COMMAND_DIGEST,
+        results_required=True,
+        manifest_digest="sha256:" + "c" * 64,
+        expected_ids=("tests/test_a.py::test_a",),
+        expected_skips={},
+    )
+
+    assert evidence("tests-executed").suite_diagnosis(claim) == (
+        "suite results artifact was absent",
+    )
+
+
+def test_suite_diagnosis_names_a_manifest_digest_mismatch() -> None:
+    claim = Claim(
+        claim_id="tests-executed",
+        command_digest=COMMAND_DIGEST,
+        results_required=True,
+        manifest_digest="sha256:" + "c" * 64,
+        expected_ids=("tests/test_a.py::test_a",),
+        expected_skips={},
+    )
+    observed = Evidence(
+        claim_id="tests-executed",
+        subject_digest=SUBJECT,
+        producer_id="worker",
+        command=" ".join(COMMAND),
+        command_digest=COMMAND_DIGEST,
+        executable_path=EXECUTABLE,
+        exit_code=0,
+        suite_results={
+            "manifest_digest": "sha256:" + "e" * 64,
+            "counts": {
+                "passed": 1,
+                "skipped": 0,
+                "failed": 0,
+                "errors": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+            },
+            "non_passed": [],
+            "missing": [],
+            "extra_count": 0,
+            "outcome_digest": "sha256:" + "d" * 64,
+        },
+    )
+
+    assert observed.suite_diagnosis(claim) == (
+        "suite manifest digest did not match the claim",
+    )
+
+
 def test_malformed_subject_digest_is_refused() -> None:
     with pytest.raises(ValueError, match="digest"):
         evaluate(
