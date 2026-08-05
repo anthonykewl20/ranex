@@ -1,7 +1,8 @@
 # SLICE-009 — a skip is absence, not success
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-05
+**Closed:** 2026-08-05
 **ADR:** `docs/adr/ADR-011-a-skip-is-absence.md` — accepted 2026-08-05.
 **Closes:** ADR-011's confirmation; MAP §4.6's first control ("a skip is
 absence, not success"). Leaves §4.6's other controls (entry-point observed
@@ -121,3 +122,31 @@ the diff is actually consulted.
   ledger, deferred behind this gauge fix on purpose.
 - **Mutmut blindness to subprocess-driven tests** — unchanged; the live
   tests are the proof for the delegated path.
+
+## Close-out
+
+Every done criterion is met and test-proven. The 61 frozen tests are green
+and byte-untouched since freeze commit `a844d56`. The full suite is 734
+passed, 2 skipped, 0 failed, and diff-cover on the slice is 100%. Criterion
+11 is live in both directions: the repository gate PASSes a governed
+hermetic run with a 736-ID manifest, 67 declared expected-skips, and 669
+passed in the sealed sample; the evidence is signed by anthony and approved
+by reviewer. Deleting a frozen test's file flips the gate to FAIL and names
+the missing ID.
+
+The full mutmut sweep produced 6,964 mutants: 4,516 killed, 1,161 survived,
+and 1,260 timed out. There are zero survivors in the slice's decision logic:
+`satisfies`, Claim validation, `suite_diagnosis`, and admission key sets.
+Survivors are refusal-message prose and subprocess-blind CLI layers.
+
+Two fixes discovered during the slice also landed. Provisioned runs now pin
+`VIRTUAL_ENV` to the verified deps environment, preventing ancestor-`.venv`
+capture; its regression test plants a hostile `.venv`. Fanout e2e no longer
+races on shared `.git/config`; identity is now command-scoped.
+
+Two caveats remain. First, the sealed context truthfully cannot execute 67
+of 736 tests: 25 harness-fork, 9 cold-start by ADR-009 design, 31
+deps/provisioning tests needing operator uv plus an unwritable system
+interpreter, 1 OpenRouter credential, and 1 mount namespace. Each was
+declared with its reason at the freeze ceremony. Second, artifact forgery
+stays open by design; criterion 10's passing test states that boundary.

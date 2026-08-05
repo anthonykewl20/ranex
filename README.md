@@ -269,19 +269,18 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** `SLICE-009-a-skip-is-absence` — opened 2026-08-05 on
-ADR-011's acceptance. The gate stops trusting pytest's exit code: structured
-per-test results, diffed against a freeze-time manifest of expected test
-IDs; an undeclared skip, a vanished test, or a bad artifact is absence, and
-absence blocks.
+**Active slice:** none. SLICE-009 closed 2026-08-05. Next: the owner decides
+whether to merge and push `slice009-build`; then diagnose the unrelated CI red
+on `origin/main`; then decide mutation-testing policy.
 
-**Ranex gates Ranex.** With SLICE-006 closed, `ranex run` executes this
+**Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
-materialisation of the real current commit, and `gate evaluate` accepts the
-signed evidence. The materialisation is a fresh single-commit repository
-carrying the verified tree (ADR-009), so a committed suite that asks git
-about itself is told the truth, while the sample shares nothing with the
-governed object store.
+materialisation of the real current commit, and `gate evaluate` judges signed
+structured outcomes against the manifest diff — 736 IDs, with 67
+ceremony-declared expected-skips — not the exit code alone. The materialisation
+is a fresh single-commit repository carrying the verified tree (ADR-009), so a
+committed suite that asks git about itself is told the truth, while the sample
+shares nothing with the governed object store.
 
 Ranex observes a **materialisation of the subject commit**, built from bytes
 checked against the object ids the commit's tree carries, with an environment
@@ -290,12 +289,17 @@ cannot write. The six frozen false-PASS paths were two root causes, not six: the
 tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
-**Next:** implement SLICE-009 red-then-green, close it with diff-cover and
-mutmut, then the merge ADR (with the merge-time digest re-check ADR-010
-names) — deferred behind this gauge fix on purpose.
-
 ## Completed slices
 
+- **SLICE-009-a-skip-is-absence** — exit-code satisfaction let a skipped or
+  vanished test read as success; the measured failure destroyed 27 tests while
+  the remainder stayed green. Junitxml is bound in the digest-bound argv;
+  signed structured outcomes use evidence v3; an outcome-blind manifest is
+  frozen from the suite; and its diff blocks undeclared skip, xfail, xpass,
+  error, or missing IDs. Delegated judging reads trust roots from the base tree.
+  A hostile tree can forge the artifact; criterion 10's passing test states
+  that boundary. Ranex's own gate now PASSes honestly and flips to FAIL when a
+  frozen test's file is deleted.
 - **SLICE-008-first-delegation** — the front door. `ranex task delegate` runs
   a real agent headless in a dispatched worktree, in an environment built from
   empty that **refuses to start holding the signing key**; the wall-clock bound
