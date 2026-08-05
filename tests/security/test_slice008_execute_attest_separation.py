@@ -1238,11 +1238,12 @@ if [ -z "${WORKTREE:-}" ]; then
   echo "missing --dir" >&2
   exit 1
 fi
-git -C "$WORKTREE" config user.email harness@example.invalid
-git -C "$WORKTREE" config user.name Harness
 echo "agent from fanout shell harness" > "$WORKTREE/agent.txt"
 git -C "$WORKTREE" add -A
-git -C "$WORKTREE" commit -q -m "agent work"
+git -C "$WORKTREE" \
+  -c user.email=harness@example.invalid \
+  -c user.name=Harness \
+  commit -q -m "agent work"
 commit=$(git -C "$WORKTREE" rev-parse HEAD)
 printf '{\"task_id\":\"%s\",\"worktree\":\"%s\",\"commit\":\"%s\"}' "$RANEX_TASK_ID" "$WORKTREE" "$commit" > "$RANEX_EMIT"
 """,
@@ -1260,7 +1261,7 @@ printf '{\"task_id\":\"%s\",\"worktree\":\"%s\",\"commit\":\"%s\"}' "$RANEX_TASK
         pool=5,
     )
     rows = journal_rows(tmp_path / "task-journal.sqlite3")
-    assert result.returncode == EXIT_PASS
+    assert result.returncode == EXIT_PASS, result.stderr
     assert re.search(r"^FANOUT", result.stdout, re.MULTILINE)
     assert len([record for record in rows if record.get("type") == "task-dispatch"]) == 5
     assert Journal(tmp_path / "task-journal.sqlite3").verify() is True

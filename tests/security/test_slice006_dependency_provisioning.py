@@ -596,6 +596,8 @@ class TestRunRefusals:
             "    os.environ.get('UV_NO_SYNC') == '1'\n"
             "    and os.environ.get('UV_OFFLINE') == '1'\n"
             "    and bool(os.environ.get('UV_PROJECT_ENVIRONMENT'))\n"
+            "    and os.environ.get('VIRTUAL_ENV') == "
+            "os.environ.get('UV_PROJECT_ENVIRONMENT')\n"
             ")\n"
             "denied = False\n"
             "s = socket.socket()\n"
@@ -676,6 +678,7 @@ class TestRunRefusals:
             assert environment["UV_NO_CONFIG"] == "1"
             assert environment["UV_FROZEN"] == "1"
             dependency_root = Path(environment["UV_PROJECT_ENVIRONMENT"])
+            assert Path(environment["VIRTUAL_ENV"]) == dependency_root
             assert stat.S_IMODE(dependency_root.stat().st_mode) & 0o222 == 0
             (Path(kwargs["cwd"]) / "report.xml").write_text(
                 '<testsuites><testsuite><testcase '
@@ -736,6 +739,61 @@ class TestRunRefusals:
         assert (repo.store / "sha256" / sha256(FAKEPKG_WHEEL)).read_bytes() == (
             FAKEPKG_WHEEL
         )
+
+    def test_hostile_ancestor_venv_cannot_capture_the_approved_package_set(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        allow_fixture_binaries: None,
+    ) -> None:
+        """An ancestor environment cannot displace the sealed approved root."""
+
+        hostile_parent = tmp_path / "hostile-ancestor"
+        hostile_parent.mkdir()
+        hostile_environment = hostile_parent / ".venv"
+        subprocess.run(
+            [str(REAL_UV), "venv", "--python", sys.executable, str(hostile_environment)],
+            check=True,
+            capture_output=True,
+            text=True,
+            env={
+                "PATH": "/usr/bin:/bin",
+                "HOME": str(tmp_path / "hostile-home"),
+                "UV_NO_CONFIG": "1",
+                "UV_CACHE_DIR": str(tmp_path / "hostile-cache"),
+                "UV_PYTHON_DOWNLOADS": "never",
+                "UV_PROJECT_ENVIRONMENT": str(hostile_environment),
+                "VIRTUAL_ENV": str(hostile_environment),
+            },
+        )
+        site_packages = next(hostile_environment.glob("lib/python*/site-packages"))
+        hostile_package = site_packages / "fakepkg"
+        hostile_package.mkdir()
+        (hostile_package / "__init__.py").write_text("VALUE = -1\n")
+
+        def materialisation_below_hostile_ancestor(_repository_root: Path) -> Path:
+            root = hostile_parent / "ranex-subject-hostile"
+            root.mkdir()
+            return root
+
+        monkeypatch.setattr(
+            "ranex.cli.subject._materialisation_root",
+            materialisation_below_hostile_ancestor,
+        )
+        probe = (
+            "import os, pathlib, sys, fakepkg\n"
+            "approved = pathlib.Path(os.environ['UV_PROJECT_ENVIRONMENT']).resolve()\n"
+            "active = pathlib.Path(os.environ['VIRTUAL_ENV']).resolve()\n"
+            "prefix = pathlib.Path(sys.prefix).resolve()\n"
+            "sys.exit(0 if fakepkg.VALUE == 42 and active == approved == prefix else 9)\n"
+        )
+        command = ["uv", "run", "--no-project", "python", "-c", probe]
+        repo = make_repo(tmp_path, dependency=True, command=command)
+        load_store(repo)
+        record_derivation(repo)
+        record_approval(repo)
+
+        assert run(repo, command, monkeypatch) == 0
 
 
 class TestSpawnFailure:

@@ -48,13 +48,6 @@ from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate
 
 REAL_REPO = Path(__file__).resolve().parents[2]
 PINS_PATH = REAL_REPO / "governance" / "deps.yaml"
-KNOWN_LOCAL_FAILURES = {
-    "tests/security/test_slice006_approved_wheel_can_lie.py::"
-    "test_an_approved_hash_correct_wheel_forces_success_NOT_CAUGHT": "failed",
-    "tests/security/test_slice006_dependency_provisioning/"
-    "TestRunRefusals.py::test_dependency_root_rejects_writes": "failed",
-}
-
 pytestmark = pytest.mark.skipif(
     not PINS_PATH.exists(),
     reason="governance/deps.yaml is not committed yet; run the SLICE-006 "
@@ -148,6 +141,7 @@ def nested_hermetic_self_gate() -> bool:
     assert os.environ.get("UV_OFFLINE") == "1"
     assert os.environ.get("UV_NO_CONFIG") == "1"
     assert os.environ.get("UV_FROZEN") == "1"
+    assert os.environ.get("VIRTUAL_ENV") == str(dependency_path)
     assert stat.S_IMODE(dependency_path.stat().st_mode) & 0o222 == 0
     return True
 
@@ -850,12 +844,8 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         for test_id, kind in baseline_non_passed.items()
         if kind != "skipped"
     }
-    assert set(actual_failures) <= set(KNOWN_LOCAL_FAILURES)
-    assert all(
-        kind == KNOWN_LOCAL_FAILURES[test_id]
-        for test_id, kind in actual_failures.items()
-    )
-    assert baseline_code == (1 if actual_failures else 0)
+    assert actual_failures == {}
+    assert baseline_code == 0
     assert missing_id not in baseline_results["missing"]
 
     baseline_verdict, baseline_output, _ = ranex(repository, evaluate_argv())

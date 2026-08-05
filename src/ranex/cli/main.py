@@ -1555,6 +1555,7 @@ def _execute_hermetically(
                 environment.update(
                     {
                         "UV_PROJECT_ENVIRONMENT": str(deps_environment),
+                        "VIRTUAL_ENV": str(deps_environment),
                         "UV_NO_SYNC": "1",
                         "UV_OFFLINE": "1",
                         "UV_NO_CONFIG": "1",
