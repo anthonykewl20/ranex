@@ -2,23 +2,25 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-05
-**Phase:** ADR-012 written and REFUTE-panelled; implementation has not started.
+**Updated:** 2026-08-06
+**Phase:** ADR-012 accepted; harness fully rebranded. Implementation not started.
 **Active slice:** none
 
 ## Where we stopped
 
-ADR-012 is accepted: `ranex task merge` is the only governed publication path.
-It checks fast-forward ancestry, excludes merge commits above the observed tip,
-re-checks the exact judged tree digest and immutable policy blobs, verifies a
-signed approval bound to candidate/tip/policy/CANDIDATE-row identity, then makes
-one expected-old ref update. The harness never merges and the human never pushes.
+ADR-012 is accepted: `ranex task merge` is the only governed publication path —
+fast-forward ancestry checked, merge commits excluded, judged digest and
+immutable policy blobs re-checked, approval bound to candidate/tip/policy/
+CANDIDATE-row identity, then one expected-old ref update. Prior art vendored,
+re-fetched, byte-matched; REFUTE panel and its substitutions are in the ADR.
 
-The six prior-art implementations are vendored under
-`docs/adr/prior-art/ADR-012/`; each was independently re-fetched from its pinned
-URL on 2026-08-05 and byte-matched. The REFUTE panel accepted history-smuggling,
-pre-signing, evidence-reuse and crash-recovery controls; its substitutions
-and timeouts are recorded in the ADR.
+The harness is fully rebranded (owner's decision): `ranex.json` config,
+`RANEX_*` env, ranex directories and username. `packages/opencode` and
+`@opencode-ai/*` stay — pinned by the frozen tests here, invisible to
+operators. Pushed to anthonykewl20/ranex-harness (`origin`; `upstream` =
+anomalyco/opencode). Suite baseline at `1079faa4f5`: 2896 pass / 68 fail —
+byte-identical failures at pre-rebrand `fb650d29b0`, so all pre-existing
+(bridge/trim era: subprocess, acp, tui clusters; ~20 flaky between runs).
 
 ## Next
 
