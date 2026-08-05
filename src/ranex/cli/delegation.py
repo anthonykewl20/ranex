@@ -17,8 +17,11 @@ from pathlib import Path
 
 from ranex.cli.repository import git
 from ranex.cli.subject import materialise_subject
+from ranex.cli.subject import verified_blob_at_path
 from ranex.cli.toolchain import pinned_path_value
 from ranex.cli.toolchain import ToolchainError
+from ranex.foundation.suite_results import load_manifest_bytes, parse_results_artifact
+from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
 MODEL_CREDENTIAL_VARIABLE = "OPENROUTER_API_KEY"
 BRIDGE_TASK_VARIABLE = "RANEX_TASK_ID"
@@ -130,6 +133,42 @@ def _run_suite(worktree: Path, commit: str, suite: str) -> tuple[int, str]:
 
     combined = f"{completed.stdout or ''}{completed.stderr or ''}"
     return completed.returncode, _tail_output(combined)
+
+
+def _run_suite_with_results(
+    worktree: Path,
+    commit: str,
+    suite: str,
+    *,
+    results_artifact: str,
+    manifest: dict[str, object],
+) -> tuple[int, str, dict[str, object]]:
+    """Run against the candidate, reading results before materialisation teardown."""
+
+    command = shlex.split(suite)
+    if not command:
+        raise ValueError("refusing suite command: no arguments")
+    with materialise_subject(worktree, commit, git) as materialisation:
+        environment = {
+            "PATH": pinned_path_value(),
+            "HOME": str(materialisation.home),
+            "TMPDIR": str(materialisation.temporary),
+            "LANG": "C.UTF-8",
+        }
+        completed = subprocess.run(
+            command,
+            check=False,
+            cwd=materialisation.tree,
+            env=environment,
+            capture_output=True,
+            text=True,
+        )
+        suite_results = parse_results_artifact(
+            materialisation.tree / results_artifact,
+            manifest,
+        )
+    combined = f"{completed.stdout or ''}{completed.stderr or ''}"
+    return completed.returncode, _tail_output(combined), suite_results
 
 
 def _run_harness(
@@ -245,6 +284,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                     "harness_exit": timed_out_exit if timed_out_exit is not None else -1,
                     "suite_exit": None,
                     "suite_output_tail": "",
+                    "suite_results": None,
                     "timed_out": True,
                 },
             )
@@ -305,11 +345,69 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
         if emitted_tree.stdout.strip() == base_tree.stdout.strip():
             raise ValueError("refusing emitted tree matches base tree; there is no subject to judge")
 
-        suite_exit, suite_output_tail = _run_suite(
-            worktree=recorded_worktree,
-            commit=commit,
-            suite=args.suite,
+        suite_results: dict[str, object] | None = None
+        gate_catalog = getattr(args, "gate_catalog", None)
+        catalog_source = (
+            verified_blob_at_path(
+                recorded_worktree,
+                base_commit,
+                gate_catalog,
+                git,
+            )
+            if gate_catalog is not None
+            else None
         )
+        selected_claim = None
+        if catalog_source is not None:
+            definition = load_gate_text(
+                catalog_source.decode("utf-8"),
+                getattr(args, "gate", "landing"),
+            )
+            claim_id = getattr(args, "claim", "tests-executed")
+            selected_claim = next(
+                (
+                    claim
+                    for claim in definition.required_claims
+                    if claim.claim_id == claim_id
+                ),
+                None,
+            )
+        if selected_claim is not None and selected_claim.results_artifact is not None:
+            suite_command = shlex.split(args.suite)
+            if tuple(suite_command) != selected_claim.command:
+                raise ValueError(
+                    "refusing suite command: it does not match the dispatch-time "
+                    f"claim {selected_claim.claim_id!r}"
+                )
+            suite_manifest = getattr(
+                args,
+                "suite_manifest",
+                "governance/suite_manifest.json",
+            )
+            manifest_source = verified_blob_at_path(
+                recorded_worktree,
+                base_commit,
+                suite_manifest,
+                git,
+            )
+            if manifest_source is None:
+                raise ValueError(
+                    f"refusing suite: dispatch base carries no manifest at {suite_manifest}"
+                )
+            manifest = load_manifest_bytes(manifest_source)
+            suite_exit, suite_output_tail, suite_results = _run_suite_with_results(
+                worktree=recorded_worktree,
+                commit=commit,
+                suite=args.suite,
+                results_artifact=selected_claim.results_artifact,
+                manifest=manifest,
+            )
+        else:
+            suite_exit, suite_output_tail = _run_suite(
+                worktree=recorded_worktree,
+                commit=commit,
+                suite=args.suite,
+            )
         _write_outcome(
             Path(args.outcome),
             {
@@ -318,6 +416,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 "harness_exit": completed.returncode,
                 "suite_exit": suite_exit,
                 "suite_output_tail": suite_output_tail,
+                "suite_results": suite_results,
                 "timed_out": False,
             },
         )

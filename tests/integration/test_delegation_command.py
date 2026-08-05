@@ -7,6 +7,7 @@ These tests mirror criterion-4 refusal branches directly in-process so coverage 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -32,9 +33,13 @@ from ranex.cli.main import (
     EXIT_USAGE,
     _latest_task_dispatch,
     _perform_task_dispatch,
+    cmd_task_judge,
     cmd_task_dispatch,
     main,
+    subject_digest_for,
 )
+from ranex.foundation.canonical import canonical_json_bytes, command_digest
+from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.task import TaskDispatch
 
@@ -92,6 +97,159 @@ def fake_subprocess_run(*_args: object, **_kwargs: object) -> subprocess.Complet
 
 def fake_harness_run(**_kwargs: object) -> subprocess.CompletedProcess[str]:
     return subprocess.CompletedProcess(["harness"], 0, "", "")
+
+
+def test_candidate_manifest_edit_cannot_change_delegated_judgement(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "target"
+    target.mkdir()
+    subprocess.run(["git", "init", "-q", str(target)], check=True)
+    subprocess.run(
+        ["git", "-C", str(target), "config", "user.email", "slice009@example.invalid"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(target), "config", "user.name", "Slice 009"],
+        check=True,
+    )
+    private, public = generate_keypair()
+    command = ["/usr/bin/true", "--junitxml=artifacts/junit.xml"]
+    required_id = "tests/test_required.py::test_required"
+    stable_id = "tests/test_stable.py::test_stable"
+    base_manifest = {
+        "suite": [required_id, stable_id],
+        "expected_skips": {},
+    }
+    (target / "governance").mkdir()
+    (target / "governance" / "gates.yaml").write_text(
+        """gates:
+  - gate_id: landing
+    rule_id: TESTS_EXECUTED
+    blocking: true
+    required_claims:
+      - claim_id: tests-executed
+        command: [\"/usr/bin/true\", \"--junitxml=artifacts/junit.xml\"]
+        results_artifact: artifacts/junit.xml
+""",
+        encoding="utf-8",
+    )
+    (target / "governance" / "suite_manifest.json").write_bytes(
+        canonical_json_bytes(base_manifest)
+    )
+    (target / "governance" / "producers.yaml").write_text(
+        f"producers:\n  worker: {public}\n", encoding="utf-8"
+    )
+    (target / "governance" / "evidence.json").write_text("[]\n", encoding="utf-8")
+    (target / "app.txt").write_text("base\n", encoding="utf-8")
+    subprocess.run(["git", "-C", str(target), "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(target), "commit", "-q", "-m", "base policy"],
+        check=True,
+    )
+    base_commit = subprocess.run(
+        ["git", "-C", str(target), "rev-parse", "HEAD"],
+        check=True,
+        capture_output=True,
+        text=True,
+    ).stdout.strip()
+
+    observed: list[tuple[int, list[str]]] = []
+    for suffix, edits_manifest in (("control", False), ("edited", True)):
+        task_id = f"T-9-{suffix.upper()}"
+        worktree = tmp_path / f"worktree-{suffix}"
+        subprocess.run(
+            [
+                "git",
+                "-C",
+                str(target),
+                "worktree",
+                "add",
+                "-q",
+                "-b",
+                f"candidate-{suffix}",
+                str(worktree),
+                base_commit,
+            ],
+            check=True,
+        )
+        (worktree / "app.txt").write_text(f"candidate {suffix}\n", encoding="utf-8")
+        candidate_manifest = base_manifest
+        if edits_manifest:
+            candidate_manifest = {"suite": [stable_id], "expected_skips": {}}
+            (worktree / "governance" / "suite_manifest.json").write_bytes(
+                canonical_json_bytes(candidate_manifest)
+            )
+        subprocess.run(["git", "-C", str(worktree), "add", "-A"], check=True)
+        subprocess.run(
+            ["git", "-C", str(worktree), "commit", "-q", "-m", suffix],
+            check=True,
+        )
+        commit = subprocess.run(
+            ["git", "-C", str(worktree), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        subject = subject_digest_for(worktree, commit)
+        outcomes = {stable_id: "passed"}
+        suite_results = {
+            "manifest_digest": "sha256:"
+            + hashlib.sha256(canonical_json_bytes(candidate_manifest)).hexdigest(),
+            "counts": {
+                "passed": 1,
+                "skipped": 0,
+                "failed": 0,
+                "errors": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+            },
+            "non_passed": [],
+            "missing": [] if edits_manifest else [required_id],
+            "extra_count": 0,
+            "outcome_digest": "sha256:"
+            + hashlib.sha256(canonical_json_bytes(outcomes)).hexdigest(),
+        }
+        content = {
+            "claim_id": "tests-executed",
+            "command": " ".join(command),
+            "command_digest": command_digest(command),
+            "executable_path": "/usr/bin/true",
+            "exit_code": 0,
+            "producer_id": "worker",
+            "subject_digest": subject,
+            "suite_results": suite_results,
+        }
+        (worktree / "governance" / "evidence.json").write_text(
+            json.dumps([{**content, "signature": sign_evidence(content, private)}]),
+            encoding="utf-8",
+        )
+        journal = tmp_path / f"journal-{suffix}.sqlite3"
+        seed_dispatch(journal, task_id, worktree, base_commit)
+        result = cmd_task_judge(
+            argparse.Namespace(
+                task_id=task_id,
+                emitted_worktree=str(worktree),
+                emitted_commit=commit,
+                gate="landing",
+                gate_catalog="governance/gates.yaml",
+                evidence="governance/evidence.json",
+                producers="governance/producers.yaml",
+                suite_manifest="governance/suite_manifest.json",
+                journal=str(journal),
+            )
+        )
+        candidate = next(
+            row
+            for row in Journal(journal).entries()
+            if row.get("type") == "task-candidate"
+        )
+        observed.append((result, candidate["missing_claims"]))
+
+    assert observed == [
+        (1, ["tests-executed"]),
+        (1, ["tests-executed"]),
+    ]
 
 
 def test_delegate_refuses_absent_dispatch_record(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:

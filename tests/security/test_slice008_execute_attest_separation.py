@@ -104,6 +104,7 @@ def conftest_source(*, key_snippet: str = PLANTED_KEY_SNIPPET) -> str:
             "exit_code": 1,
             "producer_id": "worker",
             "subject_digest": "sha256:" + "0" * 64,
+            "suite_results": None,
             "signature": FORGED_SIGNATURE,
         }
 

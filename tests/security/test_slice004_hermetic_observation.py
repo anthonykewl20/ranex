@@ -180,6 +180,22 @@ def object_id(repo: Path, revision: str) -> str:
     ).stdout.strip()
 
 
+def suite_manifest() -> dict[str, object]:
+    return {
+        "suite": ["tests/test_sample.py::test_one"],
+        "expected_skips": {},
+    }
+
+
+def safe_junitxml() -> bytes:
+    return (
+        b'<?xml version="1.0" encoding="utf-8"?>'
+        b'<testsuites><testsuite><testcase '
+        b'classname="tests.test_sample" name="test_one" />'
+        b'</testsuite></testsuites>'
+    )
+
+
 @pytest.fixture()
 def repo_failing_its_own_check(repo: Path) -> Path:
     """A committed repository whose own committed check exits 1."""
@@ -212,6 +228,66 @@ def test_a_self_contained_command_runs_records_and_passes(
     assert record["exit_code"] == 0
     assert record["command_digest"] == command_digest(["sh", "run-tests.sh"])
     assert evaluate(repo) == EXIT_PASS
+
+
+def test_suite_results_refuses_utf16_dtd_before_xml_parsing() -> None:
+    from ranex.foundation.suite_results import suite_results_from_junitxml
+
+    payload = (
+        '<?xml version="1.0" encoding="utf-16"?>'
+        '<!DOCTYPE testsuites [<!ENTITY expanded "unsafe">]>'
+        '<testsuites><testsuite><testcase '
+        'classname="tests.test_sample" name="test_one">'
+        '<failure>&expanded;</failure></testcase></testsuite></testsuites>'
+    ).encode("utf-16")
+
+    with pytest.raises(ValueError, match="UTF-8"):
+        suite_results_from_junitxml(payload, suite_manifest())
+
+
+def test_results_artifact_refuses_a_symlink(tmp_path: Path) -> None:
+    from ranex.foundation.suite_results import parse_results_artifact
+
+    target = tmp_path / "target.xml"
+    target.write_bytes(safe_junitxml())
+    link = tmp_path / "report.xml"
+    link.symlink_to(target)
+
+    with pytest.raises(ValueError, match="open results artifact|symlink"):
+        parse_results_artifact(link, suite_manifest())
+
+
+def test_results_artifact_refuses_a_special_file(tmp_path: Path) -> None:
+    from ranex.foundation.suite_results import parse_results_artifact
+
+    with pytest.raises(ValueError, match="regular file"):
+        parse_results_artifact(tmp_path, suite_manifest())
+
+
+def test_results_artifact_reads_at_most_limit_plus_one_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ranex.foundation import suite_results
+
+    artifact = tmp_path / "oversized.xml"
+    with artifact.open("wb") as handle:
+        handle.truncate(suite_results.MAX_RESULTS_BYTES + 100)
+
+    real_read = suite_results.os.read
+    bytes_read = 0
+
+    def measured_read(descriptor: int, count: int) -> bytes:
+        nonlocal bytes_read
+        chunk = real_read(descriptor, count)
+        bytes_read += len(chunk)
+        return chunk
+
+    monkeypatch.setattr(suite_results.os, "read", measured_read)
+    with pytest.raises(ValueError, match="50 MB"):
+        suite_results.parse_results_artifact(artifact, suite_manifest())
+
+    assert bytes_read == suite_results.MAX_RESULTS_BYTES + 1
 
 
 def test_the_observed_tree_carries_a_fresh_synthetic_git_directory(

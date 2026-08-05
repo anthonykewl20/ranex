@@ -23,6 +23,7 @@ from ranex.governed_execution.api import (
     Gate,
     evaluate,
 )
+from ranex.foundation.suite_results import load_manifest_bytes, manifest_digest
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
 
@@ -39,6 +40,7 @@ class GateEvaluator:
 
     gate_catalog: bytes
     journal_path: Path | None
+    suite_manifest: bytes | None
 
     def evaluate(
         self,
@@ -50,6 +52,14 @@ class GateEvaluator:
     ) -> Evaluation:
         catalog_digest = "sha256:" + hashlib.sha256(self.gate_catalog).hexdigest()
         definition = load_gate_text(self.gate_catalog.decode("utf-8"), gate_id)
+        requires_results = any(
+            claim.results_artifact is not None for claim in definition.required_claims
+        )
+        manifest = None
+        if requires_results:
+            if self.suite_manifest is None:
+                raise ValueError("suite-results claim requires a committed suite manifest")
+            manifest = load_manifest_bytes(self.suite_manifest)
         gate = Gate(
             gate_id=definition.gate_id,
             rule_id=definition.rule_id,
@@ -57,6 +67,22 @@ class GateEvaluator:
                 Claim(
                     claim_id=claim.claim_id,
                     command_digest=claim.command_digest,
+                    results_required=claim.results_artifact is not None,
+                    manifest_digest=(
+                        manifest_digest(manifest)
+                        if claim.results_artifact is not None and manifest is not None
+                        else None
+                    ),
+                    expected_ids=(
+                        tuple(manifest["suite"])
+                        if claim.results_artifact is not None and manifest is not None
+                        else None
+                    ),
+                    expected_skips=(
+                        dict(manifest["expected_skips"])
+                        if claim.results_artifact is not None and manifest is not None
+                        else None
+                    ),
                 )
                 for claim in definition.required_claims
             ),
@@ -77,6 +103,7 @@ class GateEvaluator:
 def build_gate_evaluator(
     gate_catalog: bytes,
     journal_path: Path | None = None,
+    suite_manifest: bytes | None = None,
 ) -> GateEvaluator:
     """Select and wire the concrete implementations. The only place that may.
 
@@ -88,4 +115,5 @@ def build_gate_evaluator(
     return GateEvaluator(
         gate_catalog=bytes(gate_catalog),
         journal_path=Path(journal_path) if journal_path is not None else None,
+        suite_manifest=(bytes(suite_manifest) if suite_manifest is not None else None),
     )

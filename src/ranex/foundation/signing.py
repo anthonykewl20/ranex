@@ -41,9 +41,9 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 
 from ranex.foundation.canonical import canonical_json_bytes
 
-EVIDENCE_DOMAIN = b"ranex-evidence-v2\n"
+EVIDENCE_DOMAIN = b"ranex-evidence-v3\n"
 
-# SLICE-003 added the last two, and the version above moved with them.
+# SLICE-009 added suite_results, and the version above moved with it.
 # `command_digest` is what the kernel compares, so an unsigned digest would be a
 # field the attacker chooses; `command` stays signed beside it so the legible
 # field cannot be swapped under a matching digest; `executable_path` is signed
@@ -57,6 +57,7 @@ SIGNED_FIELDS: tuple[str, ...] = (
     "exit_code",
     "producer_id",
     "subject_digest",
+    "suite_results",
 )
 
 _PREFIX = "ed25519:"
@@ -103,7 +104,7 @@ def _decode(value: object, *, expected: int | None, field: str) -> bytes:
 def signed_payload(content: Mapping[str, Any]) -> bytes:
     """The exact bytes a signature covers.
 
-    Refuses a record that is not exactly the seven content fields. Silently
+    Refuses a record that is not exactly the eight content fields. Silently
     signing an extra field would let the producer cover something the verifier
     does not check; silently dropping it would let an attacker append a field
     the signature never protected.
@@ -157,7 +158,7 @@ def public_key_for(private_key: str) -> str:
 
 
 def sign_evidence(content: Mapping[str, Any], private_key: str) -> str:
-    """Sign the seven content fields. Deterministic per RFC 8032."""
+    """Sign the eight content fields. Deterministic per RFC 8032."""
 
     raw = _decode(private_key, expected=32, field="private key")
     key = Ed25519PrivateKey.from_private_bytes(raw)

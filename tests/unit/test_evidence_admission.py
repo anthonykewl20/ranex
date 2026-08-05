@@ -75,6 +75,7 @@ def content(**overrides: object) -> dict[str, object]:
         "exit_code": 0,
         "producer_id": "worker",
         "subject_digest": SUBJECT,
+        "suite_results": None,
     }
     record.update(overrides)
     return record

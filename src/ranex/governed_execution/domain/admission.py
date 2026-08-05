@@ -36,6 +36,7 @@ from ranex.foundation.signing import (
     signed_payload,
     verify_evidence,
 )
+from ranex.foundation.suite_results import validate_suite_results
 from ranex.governed_execution.domain.verdict import Evidence
 
 
@@ -134,6 +135,13 @@ def admit(
             reject(RejectionReason.MALFORMED_RECORD, "; ".join(parts))
             continue
 
+        try:
+            if content["suite_results"] is not None:
+                validate_suite_results(content["suite_results"])
+        except (ValueError, TypeError) as exc:
+            reject(RejectionReason.MALFORMED_RECORD, str(exc))
+            continue
+
         # Whether these fields can be encoded at all is a question about the
         # record's shape, so it is answered here rather than inferred from a
         # verify failure. `json.loads` accepts a lone surrogate and a bare NaN;
@@ -202,6 +210,7 @@ def admit(
                 command_digest=content["command_digest"],
                 executable_path=content["executable_path"],
                 exit_code=content["exit_code"],
+                suite_results=content["suite_results"],
             )
         except (ValueError, TypeError) as exc:
             # A signature proves who wrote it, never that what they wrote is

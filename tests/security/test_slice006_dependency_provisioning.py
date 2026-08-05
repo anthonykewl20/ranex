@@ -32,6 +32,7 @@ import hashlib
 import json
 import os
 import shutil
+import stat
 import subprocess
 import sys
 import zipfile
@@ -614,6 +615,98 @@ class TestRunRefusals:
         evidence = repo.evidence()
         assert evidence is not None
         assert evidence[0]["exit_code"] == 0
+
+    def test_suite_freeze_refuses_an_unapproved_dependency_set(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture,
+        allow_fixture_binaries: None,
+    ) -> None:
+        command = ["uv", "run", "pytest", "--junitxml=report.xml"]
+        repo = make_repo(tmp_path, dependency=True, command=command)
+        load_store(repo)
+        record_derivation(repo)
+
+        assert invoke(
+            repo,
+            [
+                "suite",
+                "freeze",
+                "--artifact",
+                "report.xml",
+                "--output",
+                "suite_manifest.json",
+                "--store",
+                str(repo.store),
+                "--",
+                *command,
+            ],
+            monkeypatch,
+        ) == 2
+        assert "approv" in capsys.readouterr().err.lower()
+        assert not (repo.root / "suite_manifest.json").exists()
+
+    def test_suite_freeze_uses_the_provisioned_offline_denial_boundary(
+        self,
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        allow_fixture_binaries: None,
+    ) -> None:
+        import ranex.cli.main as cli
+
+        command = ["uv", "run", "pytest", "--junitxml=report.xml"]
+        repo = make_repo(tmp_path, dependency=True, command=command)
+        load_store(repo)
+        record_derivation(repo)
+        record_approval(repo)
+
+        real_run = subprocess.run
+        boundary_seen = False
+
+        def observe_boundary(*arguments, **kwargs):
+            nonlocal boundary_seen
+            if kwargs.get("preexec_fn") is None:
+                return real_run(*arguments, **kwargs)
+            boundary_seen = True
+            assert kwargs["preexec_fn"] is cli._deny_network
+            environment = kwargs["env"]
+            assert environment["UV_NO_SYNC"] == "1"
+            assert environment["UV_OFFLINE"] == "1"
+            assert environment["UV_NO_CONFIG"] == "1"
+            assert environment["UV_FROZEN"] == "1"
+            dependency_root = Path(environment["UV_PROJECT_ENVIRONMENT"])
+            assert stat.S_IMODE(dependency_root.stat().st_mode) & 0o222 == 0
+            (Path(kwargs["cwd"]) / "report.xml").write_text(
+                '<testsuites><testsuite><testcase '
+                'classname="tests.test_sample" name="test_one" />'
+                '</testsuite></testsuites>',
+                encoding="utf-8",
+            )
+            return subprocess.CompletedProcess(arguments[0], 0)
+
+        monkeypatch.setattr("ranex.cli.main.subprocess.run", observe_boundary)
+        assert invoke(
+            repo,
+            [
+                "suite",
+                "freeze",
+                "--artifact",
+                "report.xml",
+                "--output",
+                "suite_manifest.json",
+                "--store",
+                str(repo.store),
+                "--",
+                *command,
+            ],
+            monkeypatch,
+        ) == 0
+        assert boundary_seen
+        assert json.loads((repo.root / "suite_manifest.json").read_text()) == {
+            "suite": ["tests/test_sample.py::test_one"],
+            "expected_skips": {},
+        }
 
     def test_dependency_root_rejects_writes(
         self,

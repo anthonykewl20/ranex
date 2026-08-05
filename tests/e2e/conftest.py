@@ -76,7 +76,9 @@ class Signing:
         evidence instead of producing it."""
 
         self.register(producer)
-        return {**content, "signature": sign_evidence(content, self.private[producer])}
+        body = {**content}
+        body.setdefault("suite_results", None)
+        return {**body, "signature": sign_evidence(body, self.private[producer])}
 
 
 # Keyed by repository path so the helpers in each test module can reach the

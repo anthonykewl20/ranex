@@ -187,6 +187,7 @@ def record(
         "command_digest": command_digest(command),
         "executable_path": EXECUTABLE,
         "exit_code": exit_code,
+        "suite_results": None,
     }
 
 

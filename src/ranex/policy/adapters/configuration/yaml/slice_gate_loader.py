@@ -32,6 +32,7 @@ class SliceClaimDefinition:
 
     claim_id: str
     command: tuple[str, ...]
+    results_artifact: str | None = None
 
     @property
     def command_digest(self) -> str:
@@ -71,7 +72,7 @@ _UniqueKeyLoader.add_constructor(  # type: ignore[no-untyped-call]
 )
 
 
-_CLAIM_KEYS = {"claim_id", "command"}
+_CLAIM_KEYS = {"claim_id", "command", "results_artifact"}
 
 _SHAPE = "{claim_id: <id>, command: [<argv>, ...]}"
 
@@ -129,7 +130,32 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
             f"an argv — every element must be a non-empty string, got {command!r}"
         )
 
-    return SliceClaimDefinition(claim_id=claim_id, command=tuple(command))
+    results_artifact: str | None = None
+    if "results_artifact" in entry:
+        candidate = entry["results_artifact"]
+        if (
+            not isinstance(candidate, str)
+            or not candidate
+            or Path(candidate).is_absolute()
+            or any(part == ".." for part in Path(candidate).parts)
+        ):
+            raise ValueError(
+                f"gate {gate_id!r}: claim {claim_id!r} results_artifact must be "
+                "a non-empty relative path confined below the repository"
+            )
+        token = f"--junitxml={candidate}"
+        if token not in command:
+            raise ValueError(
+                f"gate {gate_id!r}: claim {claim_id!r} must bind results_artifact "
+                f"with the exact argv token {token!r}"
+            )
+        results_artifact = candidate
+
+    return SliceClaimDefinition(
+        claim_id=claim_id,
+        command=tuple(command),
+        results_artifact=results_artifact,
+    )
 
 
 def load_gate(

@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 from ranex.foundation.canonical import canonical_sha256
+from ranex.foundation.suite_results import validate_suite_results
 
 _DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 
@@ -46,10 +47,44 @@ class Claim:
 
     claim_id: str
     command_digest: str
+    results_required: bool = False
+    manifest_digest: str | None = None
+    expected_ids: tuple[str, ...] | None = None
+    expected_skips: dict[str, str] | None = None
 
     def __post_init__(self) -> None:
         _require_text(self.claim_id, "claim_id")
         _require_digest(self.command_digest, "command_digest")
+        if not isinstance(self.results_required, bool):
+            raise ValueError("results_required must be a boolean")
+        if not self.results_required:
+            if any(
+                value is not None
+                for value in (
+                    self.manifest_digest,
+                    self.expected_ids,
+                    self.expected_skips,
+                )
+            ):
+                raise ValueError("exit-code-only claims cannot carry suite manifest fields")
+            return
+        _require_digest(self.manifest_digest, "manifest_digest")
+        if (
+            not isinstance(self.expected_ids, tuple)
+            or any(
+                not isinstance(test_id, str) or not test_id
+                for test_id in self.expected_ids
+            )
+            or self.expected_ids != tuple(sorted(self.expected_ids))
+            or len(self.expected_ids) != len(set(self.expected_ids))
+        ):
+            raise ValueError("expected_ids must be a sorted tuple of unique test IDs")
+        if not isinstance(self.expected_skips, dict):
+            raise ValueError("expected_skips must be a mapping")
+        expected = set(self.expected_ids)
+        for test_id, reason in self.expected_skips.items():
+            if test_id not in expected or not isinstance(reason, str) or not reason.strip():
+                raise ValueError("expected_skips must name expected IDs with non-empty reasons")
 
 
 @dataclass(frozen=True, slots=True)
@@ -63,6 +98,7 @@ class Evidence:
     command_digest: str
     executable_path: str
     exit_code: int
+    suite_results: dict[str, object] | None = None
 
     def __post_init__(self) -> None:
         _require_text(self.claim_id, "claim_id")
@@ -73,6 +109,8 @@ class Evidence:
         _require_digest(self.command_digest, "command_digest")
         if isinstance(self.exit_code, bool) or not isinstance(self.exit_code, int):
             raise ValueError("exit_code must be an integer")
+        if self.suite_results is not None:
+            validate_suite_results(self.suite_results)
 
     def addresses(self, claim: Claim, subject_digest: str) -> bool:
         """A report *about* this claim: right claim, right subject, right command.
@@ -102,7 +140,54 @@ class Evidence:
         describing something else.
         """
 
-        return self.addresses(claim, subject_digest) and self.exit_code == 0
+        if not self.addresses(claim, subject_digest) or self.exit_code != 0:
+            return False
+        if not claim.results_required:
+            return True
+        if self.suite_results is None:
+            return False
+        if self.suite_results["manifest_digest"] != claim.manifest_digest:
+            return False
+
+        expected_ids = set(claim.expected_ids or ())
+        expected_skips = set(claim.expected_skips or {})
+        if expected_ids.intersection(self.suite_results["missing"]):
+            return False
+        for test_id, kind in self.suite_results["non_passed"]:
+            if test_id not in expected_ids:
+                continue
+            if kind == "skipped" and test_id in expected_skips:
+                continue
+            return False
+        return True
+
+    def suite_diagnosis(self, claim: Claim) -> tuple[str, ...]:
+        """Specific manifest-diff failures for an addressed suite claim."""
+
+        if not claim.results_required:
+            return ()
+        if self.suite_results is None:
+            return ("suite results artifact was absent",)
+        if self.suite_results["manifest_digest"] != claim.manifest_digest:
+            return ("suite manifest digest did not match the claim",)
+        expected_ids = set(claim.expected_ids or ())
+        expected_skips = set(claim.expected_skips or {})
+        missing = sorted(expected_ids.intersection(self.suite_results["missing"]))
+        clauses: list[str] = []
+        if missing:
+            clauses.append(f"missing test ID(s): {', '.join(missing)}")
+        offenders = sorted(
+            (test_id, kind)
+            for test_id, kind in self.suite_results["non_passed"]
+            if test_id in expected_ids
+            and not (kind == "skipped" and test_id in expected_skips)
+        )
+        if offenders:
+            clauses.append(
+                "blocking suite outcome(s): "
+                + ", ".join(f"{test_id} ({kind})" for test_id, kind in offenders)
+            )
+        return tuple(clauses)
 
 
 @dataclass(frozen=True, slots=True)
@@ -174,7 +259,7 @@ def _contradicted(
     """
 
     outcomes = {
-        item.exit_code == 0
+        item.satisfies(claim, subject_digest)
         for item in evidence
         if item.addresses(claim, subject_digest)
     }
@@ -202,6 +287,7 @@ def _diagnosis(
     stale: list[str] = []
     mismatched: list[str] = []
     failed: list[str] = []
+    suite_failures: list[str] = []
     for claim in gate.required_claims:
         if claim.claim_id not in missing or claim.claim_id in contradicted:
             # A contradiction is already named, and naming it twice under a
@@ -213,7 +299,20 @@ def _diagnosis(
         elif any(item.addresses(claim, subject_digest) for item in named):
             # Addressed and still unsatisfied means the bound command ran
             # against this tree and did not exit 0.
-            failed.append(claim.claim_id)
+            addressed = [
+                item for item in named if item.addresses(claim, subject_digest)
+            ]
+            details = sorted(
+                {
+                    detail
+                    for item in addressed
+                    for detail in item.suite_diagnosis(claim)
+                }
+            )
+            if details:
+                suite_failures.append(f"{claim.claim_id}: {', '.join(details)}")
+            else:
+                failed.append(claim.claim_id)
         elif any(item.subject_digest == subject_digest for item in named):
             mismatched.append(claim.claim_id)
         else:
@@ -230,9 +329,10 @@ def _diagnosis(
         (tuple(stale), "evidence bound to a different subject digest"),
         (tuple(absent), "no evidence for required claim"),
     ]
-    return "; ".join(
+    standard = [
         f"{text}: {', '.join(sorted(claims))}" for claims, text in clauses if claims
-    )
+    ]
+    return "; ".join([*suite_failures, *standard])
 
 
 def evaluate(

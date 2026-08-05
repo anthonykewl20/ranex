@@ -81,6 +81,7 @@ def content(
         "exit_code": exit_code,
         "producer_id": producer,
         "subject_digest": digest,
+        "suite_results": None,
     }
 
 
@@ -112,19 +113,20 @@ def worker() -> tuple[str, str]:
 # --- criterion 5: a v1 signature is refused at admission --------------------
 
 
-def test_the_evidence_domain_moved_to_v2() -> None:
+def test_the_evidence_domain_moved_to_v3() -> None:
     """The domain prefix is inside the signed bytes, so bumping it is what makes
     a v1 signature fail to verify against v2 content rather than merely being
     unusual."""
 
     from ranex.foundation.signing import EVIDENCE_DOMAIN, SIGNED_FIELDS
 
-    assert EVIDENCE_DOMAIN == b"ranex-evidence-v2\n"
+    assert EVIDENCE_DOMAIN == b"ranex-evidence-v3\n"
     assert set(SIGNED_FIELDS) == set(V1_FIELDS) | {
         "command_digest",
         "executable_path",
+        "suite_results",
     }
-    assert len(SIGNED_FIELDS) == 7
+    assert len(SIGNED_FIELDS) == 8
 
 
 def test_a_whole_v1_record_is_not_admitted(worker: tuple[str, str]) -> None:

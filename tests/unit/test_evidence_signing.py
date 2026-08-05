@@ -56,6 +56,7 @@ CONTENT = {
     "exit_code": 0,
     "producer_id": "worker",
     "subject_digest": "sha256:" + "a" * 64,
+    "suite_results": None,
 }
 
 
@@ -67,7 +68,7 @@ def keypair(sg) -> tuple[str, str]:
 # --- the payload is pinned --------------------------------------------------
 
 
-def test_signed_fields_are_exactly_the_seven_content_fields(sg) -> None:
+def test_signed_fields_are_exactly_the_eight_content_fields(sg) -> None:
     """Not "everything except signature". The two differ the moment a record
     carries an extra field, and then `run` and `load` disagree about what was
     signed.
@@ -87,8 +88,9 @@ def test_signed_fields_are_exactly_the_seven_content_fields(sg) -> None:
         "exit_code",
         "producer_id",
         "subject_digest",
+        "suite_results",
     }
-    assert len(sg.SIGNED_FIELDS) == 7
+    assert len(sg.SIGNED_FIELDS) == 8
 
 
 def test_payload_carries_the_domain_prefix(sg) -> None:
@@ -99,7 +101,7 @@ def test_payload_carries_the_domain_prefix(sg) -> None:
     against v2 content instead of being silently accepted as a downgrade.
     """
 
-    assert sg.EVIDENCE_DOMAIN == b"ranex-evidence-v2\n"
+    assert sg.EVIDENCE_DOMAIN == b"ranex-evidence-v3\n"
     payload = sg.signed_payload(CONTENT)
     assert payload.startswith(sg.EVIDENCE_DOMAIN)
     assert payload == sg.EVIDENCE_DOMAIN + canonical_json_bytes(CONTENT)

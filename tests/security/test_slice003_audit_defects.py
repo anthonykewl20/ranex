@@ -589,6 +589,7 @@ def signed_record(
         "exit_code": 0,
         "producer_id": "worker",
         "subject_digest": head_subject(repo),
+        "suite_results": None,
     }
     (repo / "evidence.json").write_text(
         json.dumps([{**body, "signature": sign_evidence(body, keys["private"])}]),
@@ -842,6 +843,7 @@ def test_a_replaced_blob_cannot_substitute_the_committed_keyring(
         "exit_code": 0,
         "producer_id": "mallory",
         "subject_digest": head_subject(repo),
+        "suite_results": None,
     }
     (repo / "evidence.json").write_text(
         json.dumps([{**body, "signature": sign_evidence(body, mallory_private)}]),

@@ -24,7 +24,7 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -54,6 +54,14 @@ from ranex.cli.toolchain import (
     resolve_tool,
 )
 from ranex.foundation.canonical import canonical_sha256, command_digest
+from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.suite_results import (
+    freeze_manifest,
+    load_manifest_bytes,
+    manifest_digest,
+    parse_results_artifact,
+    read_results_artifact,
+)
 from ranex.foundation.signing import (
     generate_keypair,
     public_key_for,
@@ -118,6 +126,8 @@ DEFAULT_JOURNAL = "governance/journal.sqlite3"
 # naming an arbitrary pins file hands the observed party the choice of
 # resolver, index and epoch, which is the whole point of pinning them.
 DEFAULT_PINS = "governance/deps.yaml"
+DEFAULT_GATE_CATALOG = "governance/gates.yaml"
+DEFAULT_SUITE_MANIFEST = "governance/suite_manifest.json"
 
 # The committed keyring's conventional path. A constant so `keygen` can tell a
 # first-time operator exactly which file to create, and say the same name the
@@ -736,6 +746,21 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         catalog_source = committed_trust_root(
             root, args.ref, args.gate_catalog, gate_catalog, "gate catalog"
         )
+        definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
+        suite_manifest_source: bytes | None = None
+        if any(
+            claim.results_artifact is not None
+            for claim in definition.required_claims
+        ):
+            manifest_path = resolve_within_repository(root, args.suite_manifest)
+            suite_manifest_source = committed_trust_root(
+                root,
+                args.ref,
+                args.suite_manifest,
+                manifest_path,
+                "suite manifest",
+            )
+            load_manifest_bytes(suite_manifest_source)
         keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
         # The root is passed so the containment decision `run` made about
         # argv[0] is taken again here, from the signed path in the record.
@@ -743,6 +768,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         evaluator = build_gate_evaluator(
             catalog_source,
             journal_path,
+            suite_manifest_source,
         )
         result = evaluator.evaluate(
             args.gate,
@@ -991,21 +1017,56 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
         if args.emitted_commit != commit:
             raise ValueError(f"emitted commit does not match HEAD for {args.task_id!r}")
 
+        base_commit = dispatch.get("base_commit")
+        if not isinstance(base_commit, str) or not re.fullmatch(r"[0-9a-f]{40}", base_commit):
+            raise ValueError(f"invalid base commit in dispatch for task {args.task_id!r}")
+
         catalog_source = _task_committed_blob(
-            worktree, commit, args.gate_catalog, "gate catalog"
+            worktree, base_commit, args.gate_catalog, "gate catalog"
         )
         keyring_source = _task_committed_blob(
-            worktree, commit, args.producers, "producer keyring"
+            worktree, base_commit, args.producers, "producer keyring"
         )
         evidence_path = resolve_within_repository(worktree, args.evidence)
         keyring = load_keyring_text(keyring_source.decode("utf-8"), args.producers)
         admission = admit_records(evidence_path, keyring, worktree)
         definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
+        manifest = None
+        if any(
+            claim.results_artifact is not None
+            for claim in definition.required_claims
+        ):
+            manifest_source = _task_committed_blob(
+                worktree,
+                base_commit,
+                args.suite_manifest,
+                "suite manifest",
+            )
+            manifest = load_manifest_bytes(manifest_source)
         gate = Gate(
             gate_id=definition.gate_id,
             rule_id=definition.rule_id,
             required_claims=tuple(
-                Claim(claim_id=claim.claim_id, command_digest=claim.command_digest)
+                Claim(
+                    claim_id=claim.claim_id,
+                    command_digest=claim.command_digest,
+                    results_required=claim.results_artifact is not None,
+                    manifest_digest=(
+                        manifest_digest(manifest)
+                        if claim.results_artifact is not None and manifest is not None
+                        else None
+                    ),
+                    expected_ids=(
+                        tuple(manifest["suite"])
+                        if claim.results_artifact is not None and manifest is not None
+                        else None
+                    ),
+                    expected_skips=(
+                        dict(manifest["expected_skips"])
+                        if claim.results_artifact is not None and manifest is not None
+                        else None
+                    ),
+                )
                 for claim in definition.required_claims
             ),
             blocking=definition.blocking,
@@ -1312,6 +1373,240 @@ def canonical_sha256_of_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+@dataclass(frozen=True, slots=True)
+class CommandObservation:
+    """Outputs that survive teardown of one verified materialisation."""
+
+    completed: subprocess.CompletedProcess
+    executable: Path
+    artifact: object | None
+
+
+def _command_resolution(
+    root: Path,
+    command: Sequence[str],
+    provisioning: Provisioning | None,
+) -> tuple[Resolution | None, bool]:
+    """Resolve argv[0] exactly as both observation ceremonies require."""
+
+    provisioned_resolver = (
+        provisioning is not None and command[0] == provisioning.pins.resolver.name
+    )
+    preliminary: Resolution | None = None
+    if provisioned_resolver:
+        preliminary = Resolution(
+            executable=provisioning.pins.resolver.resolve(),
+            route=walked_route(provisioning.pins.resolver),
+        )
+        refuse_resolution_inside(
+            preliminary,
+            command[0],
+            root,
+            "the governed repository under observation",
+        )
+    elif "/" not in command[0] or Path(command[0]).is_absolute():
+        preliminary = resolve_executable(command[0], root)
+        refuse_resolution_inside(
+            preliminary,
+            command[0],
+            root,
+            "the governed repository under observation",
+        )
+    return preliminary, provisioned_resolver
+
+
+def _approved_artifacts(
+    root: Path,
+    provisioning: Provisioning | None,
+) -> tuple[WheelArtifact, ...]:
+    """Refuse an unverified, unapproved, absent or corrupt dependency set."""
+
+    if provisioning is None:
+        return ()
+    artifacts, depset = _selected_artifacts(provisioning)
+    entries = Journal(resolve_within_repository(root, DEFAULT_JOURNAL)).entries()
+    derivation = _latest_of(entries, "deps-derivation")
+    if (
+        derivation is None
+        or derivation.get("lock_sha256")
+        != canonical_sha256_of_bytes(provisioning.lock)
+        or derivation.get("depset_digest") != depset
+    ):
+        raise ValueError(
+            "refusing to run: the committed uv.lock was never "
+            "derivation-verified for this target. Only `ranex deps "
+            "fetch` checks the lock as output; a lock nothing "
+            "regenerated may be entirely authored"
+        )
+    packages = {item.package: item.version for item in artifacts}
+    approval = _latest_of(entries, "deps-approval")
+    if approval is None or approval.get("depset_digest") != depset:
+        recorded = approval.get("packages") if approval is not None else None
+        delta = _render_delta(recorded if isinstance(recorded, dict) else None, packages)
+        raise ValueError(
+            "refusing to run: this dependency set is not approved. "
+            "The delta awaiting approval:\n"
+            + "\n".join(delta)
+            + "\nRun `ranex deps approve --approver <id>` to accept it"
+        )
+    verified_wheel_paths(artifacts, provisioning.store)
+    return artifacts
+
+
+def _execute_hermetically(
+    root: Path,
+    started_at: str,
+    command: Sequence[str],
+    provisioning: Provisioning | None,
+    artifacts: tuple[WheelArtifact, ...],
+    preliminary: Resolution | None,
+    provisioned_resolver: bool,
+    *,
+    artifact_relative: Path | None = None,
+    artifact_reader: Callable[[Path], object] | None = None,
+) -> CommandObservation:
+    """Run once inside the shared verified, offline, sealed execution boundary."""
+
+    with materialise_subject(root, started_at, git) as materialisation:
+        deps_environment: Path | None = None
+        if provisioning is not None:
+            assembly = verified_pinned_binary(
+                provisioning.pins.resolver, provisioning.pins.resolver_sha256
+            )
+            try:
+                deps_environment = assemble_root(
+                    artifacts,
+                    provisioning.store,
+                    provisioning.pins,
+                    assembly,
+                    materialisation.root / "deps",
+                )
+            finally:
+                os.close(assembly)
+
+        resolution = preliminary or resolve_executable(
+            command[0], materialisation.tree
+        )
+        executable = resolution.executable
+        refuse_resolution_inside(
+            resolution,
+            command[0],
+            root,
+            "the governed repository under observation",
+        )
+        refuse_resolution_inside(
+            resolution,
+            command[0],
+            materialisation.tree,
+            "the materialised subject tree",
+        )
+
+        descriptor = (
+            verified_pinned_binary(
+                provisioning.pins.resolver, provisioning.pins.resolver_sha256
+            )
+            if provisioned_resolver and provisioning is not None
+            else os.open(executable, EXECUTABLE_OPEN_FLAGS)
+        )
+        try:
+            identity = os.fstat(descriptor)
+            if not stat.S_ISREG(identity.st_mode):
+                raise ValueError(
+                    f"refusing to run {command[0]!r}: {executable} is not a "
+                    "regular file, so what would execute is not what was resolved"
+                )
+            opened = path_behind(
+                descriptor,
+                f"cannot confirm which file {command[0]!r} opened, so it will "
+                "not be run",
+            )
+            if opened != executable:
+                raise ValueError(
+                    f"refusing to run {command[0]!r}: it resolved to {executable} "
+                    f"and the file actually opened is {opened}; the path changed "
+                    "while it was being checked"
+                )
+            for subject_root, description in (
+                (root, "the governed repository under observation"),
+                (materialisation.tree, "the materialised subject tree"),
+            ):
+                twin = same_file_inside(identity, subject_root)
+                if twin is not None:
+                    raise ValueError(
+                        f"refusing to run {command[0]!r}: {executable} is the "
+                        f"same file as {twin}, inside {description}. A hard link "
+                        "and a bind mount are both a second name for one file, "
+                        "not a second file, so the observed tree chose the bytes"
+                    )
+
+            observed = materialisation.tracked_paths
+            untouched = stat_fingerprint(materialisation.tree, observed)
+            environment = {
+                "PATH": pinned_path_value(),
+                "HOME": str(materialisation.home),
+                "TMPDIR": str(materialisation.temporary),
+                "LANG": "C.UTF-8",
+            }
+            before_exec = None
+            if provisioning is not None and deps_environment is not None:
+                environment["PATH"] = (
+                    f"{deps_environment / 'bin'}{os.pathsep}{environment['PATH']}"
+                )
+                environment.update(
+                    {
+                        "UV_PROJECT_ENVIRONMENT": str(deps_environment),
+                        "UV_NO_SYNC": "1",
+                        "UV_OFFLINE": "1",
+                        "UV_NO_CONFIG": "1",
+                        "UV_FROZEN": "1",
+                        "UV_PYTHON_DOWNLOADS": "never",
+                        "UV_CACHE_DIR": str(materialisation.temporary / "uv-cache"),
+                    }
+                )
+                before_exec = _deny_network
+            try:
+                completed = subprocess.run(
+                    [str(executable), *command[1:]],
+                    executable=f"/proc/self/fd/{descriptor}",
+                    pass_fds=(descriptor,),
+                    cwd=materialisation.tree,
+                    check=False,
+                    env=environment,
+                    preexec_fn=before_exec,
+                )
+            except (OSError, subprocess.SubprocessError) as exc:
+                raise ValueError(f"cannot run {command[0]!r}: {exc}") from exc
+        finally:
+            os.close(descriptor)
+
+        artifact: object | None = None
+        if artifact_reader is not None:
+            if artifact_relative is None:
+                raise ValueError("artifact reader has no confined artifact path")
+            artifact = artifact_reader(materialisation.tree / artifact_relative)
+
+        if head_commit(root) != started_at:
+            raise ValueError(
+                "refusing to record evidence: the command moved HEAD from "
+                f"{started_at[:12]} during the run"
+            )
+        written = sorted(
+            path
+            for path, fingerprint in stat_fingerprint(
+                materialisation.tree, observed
+            ).items()
+            if fingerprint != untouched[path]
+        )
+        if written:
+            raise ValueError(
+                "refusing to record evidence: the command wrote to tracked "
+                f"file(s) while it ran — {', '.join(written)} — so the observed "
+                "commit no longer describes the tree the command saw"
+            )
+
+        return CommandObservation(completed, executable, artifact)
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Run a command and record what was observed. Never judge it.
 
@@ -1351,40 +1646,46 @@ def cmd_run(args: argparse.Namespace) -> int:
         # about this exact commit.
         started_at = head_commit(root)
         provisioning = _provisioning_for(root, started_at, args.store)
+        results_artifact: str | None = None
+        suite_manifest: dict[str, object] | None = None
+        catalog_name = named_within_repository(root, args.gate_catalog)
+        if committed_bytes(root, started_at, catalog_name) is not None:
+            catalog_path = resolve_within_repository(root, args.gate_catalog)
+            catalog_source = committed_trust_root(
+                root,
+                started_at,
+                args.gate_catalog,
+                catalog_path,
+                "gate catalog",
+            )
+            definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
+            selected_claim = next(
+                (
+                    claim
+                    for claim in definition.required_claims
+                    if claim.claim_id == args.claim
+                ),
+                None,
+            )
+            if selected_claim is not None and selected_claim.results_artifact is not None:
+                manifest_path = resolve_within_repository(root, args.suite_manifest)
+                manifest_source = committed_trust_root(
+                    root,
+                    started_at,
+                    args.suite_manifest,
+                    manifest_path,
+                    "suite manifest",
+                )
+                suite_manifest = load_manifest_bytes(manifest_source)
+                results_artifact = selected_claim.results_artifact
 
         # Bare and absolute names do not depend on the materialised cwd, so
         # resolve them before materialisation. This keeps the governed-root
         # route and inode controls live for absolute same-uid access, including
         # a committed symlink whose tree entry the materialiser also refuses.
-        preliminary: Resolution | None = None
-        provisioned_resolver = (
-            provisioning is not None
-            and command[0] == provisioning.pins.resolver.name
+        preliminary, provisioned_resolver = _command_resolution(
+            root, command, provisioning
         )
-        if provisioned_resolver:
-            # The catalog's bare resolver name means the pinned resolver —
-            # never ambient PATH, and never the pinned system directories,
-            # which deliberately do not carry it. Identity is enforced by
-            # digest at spawn; the usual route and containment rules apply
-            # to the pinned path unchanged.
-            preliminary = Resolution(
-                executable=provisioning.pins.resolver.resolve(),
-                route=walked_route(provisioning.pins.resolver),
-            )
-            refuse_resolution_inside(
-                preliminary,
-                command[0],
-                root,
-                "the governed repository under observation",
-            )
-        elif "/" not in command[0] or Path(command[0]).is_absolute():
-            preliminary = resolve_executable(command[0], root)
-            refuse_resolution_inside(
-                preliminary,
-                command[0],
-                root,
-                "the governed repository under observation",
-            )
 
         # Everything knowable without constructing the sample refuses before
         # the command runs. A test suite is expensive; discovering afterwards
@@ -1447,207 +1748,27 @@ def cmd_run(args: argparse.Namespace) -> int:
             )
         subject = subject_digest_for(root, started_at)
 
-        # A provisioned subject proves its dependency chain before anything
-        # spawns: the committed lock must have been derivation-verified, the
-        # exact package set must be approved, and every wheel must re-verify
-        # out of the store. Absence of any link blocks — a run that cannot
-        # prove its dependencies were checked does not get to produce
-        # evidence that looks like one that could.
-        artifacts: tuple[WheelArtifact, ...] = ()
-        if provisioning is not None:
-            artifacts, depset = _selected_artifacts(provisioning)
-            entries = Journal(
-                resolve_within_repository(root, DEFAULT_JOURNAL)
-            ).entries()
-            derivation = _latest_of(entries, "deps-derivation")
-            if (
-                derivation is None
-                or derivation.get("lock_sha256")
-                != canonical_sha256_of_bytes(provisioning.lock)
-                or derivation.get("depset_digest") != depset
-            ):
-                raise ValueError(
-                    "refusing to run: the committed uv.lock was never "
-                    "derivation-verified for this target. Only `ranex deps "
-                    "fetch` checks the lock as output; a lock nothing "
-                    "regenerated may be entirely authored"
-                )
-            packages = {item.package: item.version for item in artifacts}
-            approval = _latest_of(entries, "deps-approval")
-            if approval is None or approval.get("depset_digest") != depset:
-                recorded = approval.get("packages") if approval is not None else None
-                delta = _render_delta(
-                    recorded if isinstance(recorded, dict) else None, packages
-                )
-                raise ValueError(
-                    "refusing to run: this dependency set is not approved. "
-                    "The delta awaiting approval:\n"
-                    + "\n".join(delta)
-                    + "\nRun `ranex deps approve --approver <id>` to accept it"
-                )
-            # Re-verified out of the store now, so a missing or corrupt entry
-            # refuses before the expensive materialisation, not after.
-            verified_wheel_paths(artifacts, provisioning.store)
-
-        # The command sees only this verified sample. HOME and TMPDIR are
-        # siblings of the sample tree, so command scratch cannot become an
-        # undeclared subject input and all three disappear in one cleanup.
-        with materialise_subject(root, started_at, git) as materialisation:
-            deps_environment: Path | None = None
-            if provisioning is not None:
-                assembly = verified_pinned_binary(
-                    provisioning.pins.resolver, provisioning.pins.resolver_sha256
-                )
-                try:
-                    deps_environment = assemble_root(
-                        artifacts,
-                        provisioning.store,
-                        provisioning.pins,
-                        assembly,
-                        materialisation.root / "deps",
-                    )
-                finally:
-                    os.close(assembly)
-            resolution = preliminary or resolve_executable(
-                command[0], materialisation.tree
-            )
-            executable = resolution.executable
-            refuse_resolution_inside(
-                resolution,
-                command[0],
-                root,
-                "the governed repository under observation",
-            )
-            refuse_resolution_inside(
-                resolution,
-                command[0],
-                materialisation.tree,
-                "the materialised subject tree",
-            )
-
-            # Open once and spawn through the descriptor. Re-walking a cleared
-            # name at exec time would reopen the ancestor-swap race. The
-            # pinned resolver is opened by its verifier instead, so the bytes
-            # that hash to the pin are the bytes the descriptor will execute.
-            if provisioned_resolver:
-                descriptor = verified_pinned_binary(
-                    provisioning.pins.resolver, provisioning.pins.resolver_sha256
-                )
-            else:
-                descriptor = os.open(executable, EXECUTABLE_OPEN_FLAGS)
-            identity = os.fstat(descriptor)
-            if not stat.S_ISREG(identity.st_mode):
-                raise ValueError(
-                    f"refusing to run {command[0]!r}: {executable} is not a "
-                    "regular file, so what would execute is not what was resolved"
-                )
-            opened = path_behind(
-                descriptor,
-                f"cannot confirm which file {command[0]!r} opened, so it will "
-                "not be run",
-            )
-            if opened != executable:
-                raise ValueError(
-                    f"refusing to run {command[0]!r}: it resolved to {executable} "
-                    f"and the file actually opened is {opened}; the path changed "
-                    "while it was being checked"
-                )
-            for subject_root, description in (
-                (root, "the governed repository under observation"),
-                (materialisation.tree, "the materialised subject tree"),
-            ):
-                twin = same_file_inside(identity, subject_root)
-                if twin is not None:
-                    raise ValueError(
-                        f"refusing to run {command[0]!r}: {executable} is the "
-                        f"same file as {twin}, inside {description}. A hard link "
-                        "and a bind mount are both a second name for one file, "
-                        "not a second file, so the observed tree chose the bytes"
-                    )
-
-            # Taken last and against the sample, not the governed checkout: it
-            # is these inodes whose mutation would make the subject digest stop
-            # describing what the command observed.
-            observed = materialisation.tracked_paths
-            untouched = stat_fingerprint(materialisation.tree, observed)
-            environment = {
-                "PATH": pinned_path_value(),
-                "HOME": str(materialisation.home),
-                "TMPDIR": str(materialisation.temporary),
-                "LANG": "C.UTF-8",
-            }
-            before_exec = None
-            if provisioning is not None and deps_environment is not None:
-                # ADR-007: the run sees the sealed root and nothing else. The
-                # root's bin joins the pinned search so the command's own
-                # child processes find the provisioned entry points; the uv
-                # controls stop the runner syncing, fetching or reading
-                # ambient configuration; the namespace pair denies the
-                # network outright rather than asking uv to abstain.
-                environment["PATH"] = (
-                    f"{deps_environment / 'bin'}{os.pathsep}{environment['PATH']}"
-                )
-                environment.update(
-                    {
-                        "UV_PROJECT_ENVIRONMENT": str(deps_environment),
-                        "UV_NO_SYNC": "1",
-                        "UV_OFFLINE": "1",
-                        "UV_NO_CONFIG": "1",
-                        # The committed lock is an input to this run and was
-                        # derivation-verified before it started. `uv run`
-                        # will re-lock and rewrite it given the chance —
-                        # measured: a plain `uv run pytest -q` here dropped
-                        # the `[options]` epoch block from uv.lock, which
-                        # then failed its own byte comparison on the next
-                        # fetch. Rewriting a tracked file would also trip
-                        # the write check below and refuse the record, so
-                        # this turns a confusing late refusal into no
-                        # rewrite at all.
-                        "UV_FROZEN": "1",
-                        "UV_PYTHON_DOWNLOADS": "never",
-                        "UV_CACHE_DIR": str(materialisation.temporary / "uv-cache"),
-                    }
-                )
-                before_exec = _deny_network
-            try:
-                completed = subprocess.run(
-                    [str(executable), *command[1:]],
-                    executable=f"/proc/self/fd/{descriptor}",
-                    pass_fds=(descriptor,),
-                    cwd=materialisation.tree,
-                    check=False,
-                    env=environment,
-                    preexec_fn=before_exec,
-                )
-            except (OSError, subprocess.SubprocessError) as exc:
-                raise ValueError(f"cannot run {command[0]!r}: {exc}") from exc
-            finally:
-                os.close(descriptor)
-                descriptor = None
-
-            # Same-uid absolute access can still move the governed repository.
-            # This is not the hermeticity boundary, but recording the old digest
-            # after seeing it happen would still be a knowingly false claim.
-            if head_commit(root) != started_at:
-                raise ValueError(
-                    "refusing to record evidence: the command moved HEAD from "
-                    f"{started_at[:12]} during the run, so {subject[:19]}… "
-                    "does not describe what was observed"
-                )
-            written = sorted(
-                path
-                for path, fingerprint in stat_fingerprint(
-                    materialisation.tree, observed
-                ).items()
-                if fingerprint != untouched[path]
-            )
-            if written:
-                raise ValueError(
-                    "refusing to record evidence: the command wrote to tracked "
-                    f"file(s) while it ran — {', '.join(written)} — so "
-                    f"{subject[:19]}… does not describe the tree that was "
-                    "observed, whatever the tree looks like now"
-                )
+        artifacts = _approved_artifacts(root, provisioning)
+        artifact_relative = Path(results_artifact) if results_artifact is not None else None
+        artifact_reader: Callable[[Path], object] | None = None
+        if results_artifact is not None:
+            if suite_manifest is None:
+                raise ValueError("suite-results claim has no loaded manifest")
+            artifact_reader = lambda path: parse_results_artifact(path, suite_manifest)
+        observation = _execute_hermetically(
+            root,
+            started_at,
+            command,
+            provisioning,
+            artifacts,
+            preliminary,
+            provisioned_resolver,
+            artifact_relative=artifact_relative,
+            artifact_reader=artifact_reader,
+        )
+        completed = observation.completed
+        executable = observation.executable
+        observed_suite_results = observation.artifact
 
         # Cleanup completed before evidence becomes durable. A scratch tree we
         # cannot remove is an operational refusal, not a gate verdict.
@@ -1659,6 +1780,7 @@ def cmd_run(args: argparse.Namespace) -> int:
             "command_digest": command_digest(command),
             "executable_path": str(executable),
             "exit_code": int(completed.returncode),
+            "suite_results": observed_suite_results,
         }
         record_evidence(
             evidence_path,
@@ -1686,6 +1808,91 @@ def cmd_run(args: argparse.Namespace) -> int:
     )
     print(f"          subject={subject}")
     return int(completed.returncode)
+
+
+def cmd_suite_freeze(args: argparse.Namespace) -> int:
+    """Run a committed tree hermetically and freeze its junitxml ID set."""
+
+    try:
+        governed_root = governed_repository_root()
+        root = resolve_within_repository(governed_root, args.repository)
+        if root != governed_root:
+            raise ValueError(
+                f"second-repository targets are refused: {args.repository!r}"
+            )
+        artifact = resolve_within_repository(root, args.artifact)
+        artifact_relative = artifact.relative_to(root)
+        output = resolve_within_repository(root, args.output)
+        command = list(args.command)
+        if command and command[0] == "--":
+            command = command[1:]
+        if not command:
+            raise ValueError("a freeze command is required after --")
+        expected_skips: dict[str, str] = {}
+        for declaration in args.expected_skip:
+            test_id, separator, reason = declaration.partition("=")
+            if not separator or not test_id or not reason.strip():
+                raise ValueError(
+                    "--expected-skip must be TEST_ID=REASON with a non-empty reason"
+                )
+            if test_id in expected_skips:
+                raise ValueError(f"duplicate --expected-skip declaration for {test_id}")
+            expected_skips[test_id] = reason
+        started_at = head_commit(root)
+        provisioning = _provisioning_for(root, started_at, args.store)
+        preliminary, provisioned_resolver = _command_resolution(
+            root, command, provisioning
+        )
+        dirty = uncommitted_paths(
+            root,
+            ignoring=(named_within_repository(root, args.output),),
+        )
+        if dirty:
+            raise ValueError(
+                "refusing to freeze against a dirty working tree; HEAD does not "
+                f"describe: {', '.join(dirty)}"
+            )
+        artifacts = _approved_artifacts(root, provisioning)
+        observation = _execute_hermetically(
+            root,
+            started_at,
+            command,
+            provisioning,
+            artifacts,
+            preliminary,
+            provisioned_resolver,
+            artifact_relative=artifact_relative,
+            artifact_reader=read_results_artifact,
+        )
+        if not isinstance(observation.artifact, bytes):
+            raise ValueError("freeze run produced no readable results artifact")
+        manifest = freeze_manifest(
+            observation.artifact,
+            expected_skips=expected_skips,
+        )
+        completed = observation.completed
+        output.parent.mkdir(parents=True, exist_ok=True)
+        output.write_bytes(canonical_json_bytes(manifest))
+    except (
+        ProvisioningError,
+        SubjectError,
+        ToolchainError,
+        ValueError,
+        TypeError,
+        KeyError,
+        OSError,
+        sqlite3.Error,
+        json.JSONDecodeError,
+    ) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    print(
+        f"FROZEN  tests={len(manifest['suite'])}  "
+        f"expected_skips={len(manifest['expected_skips'])}  "
+        f"run_exit={completed.returncode}  output={output}"
+    )
+    return EXIT_PASS
 
 
 def cmd_keygen(args: argparse.Namespace) -> int:
@@ -1802,8 +2009,13 @@ def build_parser() -> argparse.ArgumentParser:
     ev.add_argument("--gate", default="landing", help="gate id")
     ev.add_argument(
         "--gate-catalog",
-        default="governance/gates.yaml",
+        default=DEFAULT_GATE_CATALOG,
         help="gate catalog path",
+    )
+    ev.add_argument(
+        "--suite-manifest",
+        default=DEFAULT_SUITE_MANIFEST,
+        help="committed frozen suite manifest",
     )
     ev.add_argument(
         "--evidence",
@@ -1843,6 +2055,17 @@ def build_parser() -> argparse.ArgumentParser:
         default=DEFAULT_PRODUCERS,
         help="committed keyring of producer public keys",
     )
+    rn.add_argument("--gate", default="landing", help="gate containing the claim")
+    rn.add_argument(
+        "--gate-catalog",
+        default=DEFAULT_GATE_CATALOG,
+        help="committed gate catalog when the claim carries suite results",
+    )
+    rn.add_argument(
+        "--suite-manifest",
+        default=DEFAULT_SUITE_MANIFEST,
+        help="committed frozen suite manifest",
+    )
     # No --journal. `run` never writes the journal, and the only thing naming it
     # bought was an exemption from the dirty-tree check — offered to whatever
     # path the caller chose, which is an exemption for any untracked file and
@@ -1859,6 +2082,35 @@ def build_parser() -> argparse.ArgumentParser:
         help="the command to run, after --",
     )
     rn.set_defaults(func=cmd_run)
+
+    suite = sub.add_parser("suite", help="frozen suite operations").add_subparsers(
+        dest="action", required=True
+    )
+    freeze = suite.add_parser("freeze", help="freeze junitxml test IDs")
+    freeze.add_argument("--repository", default=".", help="repository root")
+    freeze.add_argument("--artifact", required=True, help="junitxml artifact path")
+    freeze.add_argument(
+        "--output",
+        default=DEFAULT_SUITE_MANIFEST,
+        help="canonical suite manifest output",
+    )
+    freeze.add_argument(
+        "--store",
+        default=default_store(),
+        help="operator wheel store, outside the repository",
+    )
+    freeze.add_argument(
+        "--expected-skip",
+        action="append",
+        default=[],
+        help="operator declaration TEST_ID=REASON; repeat for each expected skip",
+    )
+    freeze.add_argument(
+        "command",
+        nargs=argparse.REMAINDER,
+        help="hermetic command to run, after --",
+    )
+    freeze.set_defaults(func=cmd_suite_freeze)
 
     deps = sub.add_parser("deps", help="dependency provisioning").add_subparsers(
         dest="action", required=True
@@ -1900,6 +2152,11 @@ def build_parser() -> argparse.ArgumentParser:
     judge.add_argument("--gate-catalog", required=True, help="committed gate catalog")
     judge.add_argument("--evidence", required=True, help="worktree evidence path")
     judge.add_argument("--producers", required=True, help="committed producer keyring")
+    judge.add_argument(
+        "--suite-manifest",
+        default=DEFAULT_SUITE_MANIFEST,
+        help="suite manifest from the dispatch-time base tree",
+    )
     judge.add_argument("--journal", required=True, help="external task journal")
     judge.set_defaults(func=cmd_task_judge)
 
@@ -1913,6 +2170,20 @@ def build_parser() -> argparse.ArgumentParser:
     delegate.add_argument("--prompt", required=True, help="delegation prompt")
     delegate.add_argument("--timeout", required=True, type=int, help="wall-clock bound")
     delegate.add_argument("--suite", required=True, help="suite command to run")
+    delegate.add_argument("--gate", default="landing", help="dispatch-time gate")
+    delegate.add_argument(
+        "--claim", default="tests-executed", help="dispatch-time suite claim"
+    )
+    delegate.add_argument(
+        "--gate-catalog",
+        default=DEFAULT_GATE_CATALOG,
+        help="gate catalog path in the dispatch base tree",
+    )
+    delegate.add_argument(
+        "--suite-manifest",
+        default=DEFAULT_SUITE_MANIFEST,
+        help="suite manifest path in the dispatch base tree",
+    )
     delegate.add_argument("--outcome", required=True, help="outcome file path")
     delegate.set_defaults(func=cmd_task_delegate)
 
@@ -1926,6 +2197,20 @@ def build_parser() -> argparse.ArgumentParser:
     fanout.add_argument("--model", required=True, help="harness model identifier")
     fanout.add_argument("--timeout", required=True, type=int, help="per-task wall-clock bound")
     fanout.add_argument("--suite", required=True, help="suite command to run")
+    fanout.add_argument("--gate", default="landing", help="dispatch-time gate")
+    fanout.add_argument(
+        "--claim", default="tests-executed", help="dispatch-time suite claim"
+    )
+    fanout.add_argument(
+        "--gate-catalog",
+        default=DEFAULT_GATE_CATALOG,
+        help="gate catalog path in each dispatch base tree",
+    )
+    fanout.add_argument(
+        "--suite-manifest",
+        default=DEFAULT_SUITE_MANIFEST,
+        help="suite manifest path in each dispatch base tree",
+    )
     fanout.add_argument(
         "--outcome-dir",
         required=True,

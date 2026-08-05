@@ -24,7 +24,7 @@ from pathlib import Path
 import pytest
 
 from ranex.cli.main import cmd_run, main
-from ranex.foundation.canonical import canonical_sha256, command_digest
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
 
 from conftest import Signing, attach, signing_for
 
@@ -188,6 +188,102 @@ def test_subject_matches_what_gate_evaluate_computes(repo: Path) -> None:
 
     run_cmd(repo, "sh", "-c", "exit 0")
     assert records(repo)[0]["subject_digest"] == subject_of(repo)
+
+
+def test_suite_freeze_command_writes_canonical_outcome_blind_manifest(
+    repo: Path,
+) -> None:
+    (repo / "freeze-report.sh").write_text(
+        "printf '%s' '<testsuites><testsuite><testcase "
+        "classname=\"tests.test_sample\" name=\"test_skip\"><failure />"
+        "</testcase></testsuite></testsuites>' > report.xml\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(repo), "add", "freeze-report.sh"], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "commit", "-q", "-m", "freeze command"],
+        check=True,
+    )
+
+    assert invoke(
+        repo,
+        [
+            "suite",
+            "freeze",
+            "--artifact",
+            "report.xml",
+            "--output",
+            "suite_manifest.json",
+            "--expected-skip",
+            "tests/test_sample.py::test_skip=credential-gated",
+            "--",
+            "sh",
+            "freeze-report.sh",
+        ],
+    ) == 0
+    expected = {
+        "suite": ["tests/test_sample.py::test_skip"],
+        "expected_skips": {
+            "tests/test_sample.py::test_skip": "credential-gated",
+        },
+    }
+    assert (repo / "suite_manifest.json").read_bytes() == canonical_json_bytes(expected)
+
+
+def test_run_reads_suite_results_before_materialisation_teardown(repo: Path) -> None:
+    test_id = "tests/test_sample.py::test_pass"
+    command = ["sh", "write-results.sh", "--junitxml=artifacts/junit.xml"]
+    (repo / "write-results.sh").write_text(
+        "mkdir -p artifacts\n"
+        "printf '%s' '<testsuites><testsuite><testcase "
+        "classname=\"tests.test_sample\" name=\"test_pass\" />"
+        "</testsuite></testsuites>' > artifacts/junit.xml\n",
+        encoding="utf-8",
+    )
+    (repo / "gates.yaml").write_text(
+        "gates:\n"
+        "  - gate_id: landing\n"
+        "    rule_id: TESTS_EXECUTED\n"
+        "    blocking: true\n"
+        "    required_claims:\n"
+        "      - claim_id: tests-executed\n"
+        f"        command: {json.dumps(command)}\n"
+        "        results_artifact: artifacts/junit.xml\n",
+        encoding="utf-8",
+    )
+    manifest = {"suite": [test_id], "expected_skips": {}}
+    (repo / "suite_manifest.json").write_bytes(canonical_json_bytes(manifest))
+    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "commit", "-q", "-m", "bind suite results"],
+        check=True,
+    )
+
+    assert invoke(
+        repo,
+        [
+            "run",
+            "--claim",
+            "tests-executed",
+            "--producer",
+            "worker",
+            "--evidence",
+            "evidence.json",
+            "--producers",
+            "producers.yaml",
+            "--gate-catalog",
+            "gates.yaml",
+            "--suite-manifest",
+            "suite_manifest.json",
+            "--",
+            *command,
+        ],
+        producer="worker",
+    ) == 0
+    (record,) = records(repo)
+    assert record["suite_results"]["missing"] == []
+    assert record["suite_results"]["counts"]["passed"] == 1
+    assert not (repo / "artifacts" / "junit.xml").exists()
 
 
 # --- refusing to make a false claim ----------------------------------------

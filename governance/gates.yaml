@@ -13,4 +13,5 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q"]
+        command: ["uv", "run", "pytest", "-q", "--junitxml=governance/suite_results.xml"]
+        results_artifact: governance/suite_results.xml

@@ -39,7 +39,7 @@ KERNEL = (
 # `command_digest`, `Evidence` gained `command_digest` and `executable_path`,
 # and `satisfies()` compares the two digests. Satisfaction has to ask what ran,
 # and there is nowhere but here for that comparison to live.
-KERNEL_DIGEST = "f47614b0a1f301d94157025bd9c4123d86405069b5d6d2d16c96c94fd2ac59f8"
+KERNEL_DIGEST = "aa753cae0f3a42aa854d0efee3dad7241b93880ce7d4c626c425ff2d16c97649"
 
 
 def test_verdict_module_is_byte_for_byte_unchanged() -> None:
