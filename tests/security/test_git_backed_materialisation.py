@@ -11,6 +11,8 @@ from ranex.cli import subject, toolchain
 from ranex.cli.main import git
 from ranex.cli.subject import SubjectError, materialise_subject
 
+from test_slice010_the_kernel_merges import TARGET_REF, MergeScenario, assert_refused, git as merge_git
+
 
 def git_output(repository: Path, *arguments: str) -> str:
     return subprocess.run(
@@ -40,6 +42,86 @@ def repository(tmp_path: Path) -> Path:
     commit(repository, "ignored.txt", "tracked despite ignore\n")
     commit(repository, "nested/payload.txt", "subject bytes\n")
     return repository
+
+
+def test_update_ref_with_expected_old_value_publishes_an_unrelated_orphan(repository: Path) -> None:
+    subprocess.run(
+        ["git", "-C", str(repository), "update-ref", "refs/heads/main", "HEAD"], check=True
+    )
+    target = git_output(repository, "rev-parse", "refs/heads/main")
+    tree = git_output(repository, "mktree")
+    candidate = git_output(
+        repository,
+        "-c",
+        "user.name=Test",
+        "-c",
+        "user.email=t@example.invalid",
+        "commit-tree",
+        tree,
+        "-m",
+        "unrelated orphan",
+    )
+
+    publish = subprocess.run(
+        ["git", "-C", str(repository), "update-ref", "refs/heads/main", candidate, target],
+        capture_output=True,
+        text=True,
+    )
+
+    assert publish.returncode == 0
+    assert git_output(repository, "rev-parse", "refs/heads/main") == candidate
+    ancestry = subprocess.run(
+        ["git", "-C", str(repository), "merge-base", "--is-ancestor", target, candidate],
+        capture_output=True,
+        text=True,
+    )
+    assert ancestry.returncode != 0
+
+    stale_publish = subprocess.run(
+        ["git", "-C", str(repository), "update-ref", "refs/heads/main", candidate, target],
+        capture_output=True,
+        text=True,
+    )
+    assert stale_publish.returncode != 0
+    assert git_output(repository, "rev-parse", "refs/heads/main") == candidate
+
+
+def test_sad_path_20_deleted_target_ref_is_not_recreated(tmp_path: Path) -> None:
+    scenario = MergeScenario.create(tmp_path)
+    merge_git(scenario.repo, "update-ref", "-d", TARGET_REF)
+
+    assert_refused(scenario, "policy_approval", expected_ref=None)
+
+
+def test_sad_path_21_missing_pruned_candidate_refuses(tmp_path: Path) -> None:
+    scenario = MergeScenario.create(tmp_path)
+    merge_git(scenario.repo, "reflog", "expire", "--expire=now", "--all")
+    merge_git(scenario.repo, "prune", "--expire=now")
+    assert merge_git(
+        scenario.repo, "cat-file", "-e", f"{scenario.candidate}^{{commit}}", check=False
+    ) == ""
+
+    assert_refused(scenario, "policy_approval", expected_ref=scenario.tip)
+
+
+def test_sad_path_4_candidate_equal_to_target_refuses_as_no_subject(
+    tmp_path: Path,
+) -> None:
+    scenario = MergeScenario.create(tmp_path, history="equal")
+
+    assert_refused(scenario, "policy_approval", expected_ref=scenario.tip)
+
+
+def test_sad_path_4_different_commit_with_target_tree_refuses_as_no_subject(
+    tmp_path: Path,
+) -> None:
+    scenario = MergeScenario.create(tmp_path, history="same-tree")
+    assert scenario.candidate != scenario.tip
+    assert merge_git(scenario.repo, "rev-parse", f"{scenario.candidate}^{{tree}}") == merge_git(
+        scenario.repo, "rev-parse", f"{scenario.tip}^{{tree}}"
+    )
+
+    assert_refused(scenario, "policy_approval", expected_ref=scenario.tip)
 
 
 def test_materialisation_is_deterministic_identical_and_hygienic(repository: Path) -> None:

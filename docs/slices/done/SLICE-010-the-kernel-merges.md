@@ -2,10 +2,23 @@
 
 **Status:** done
 **Opened:** 2026-08-06
-**Parked:** 2026-08-06 — archived without implementation. The owner redirected
-the active slice to the ADR-015 durability program (SLICE-011); this slice's
-uncommitted working-tree WIP predates that decision and was not disturbed. The
-ADR-012 decision remains accepted; this slice can be re-opened.
+**Parked:** 2026-08-06 — archived without implementation when the owner
+redirected to the ADR-015 durability program (SLICE-011).
+**Closed:** 2026-08-06 — re-opened and finished by the owner's direction. All
+fourteen done criteria are proven by passing tests: the unsafe `update-ref`
+control is reproduced before it is refused; the closed approval envelope is
+bound to C, D, R, T, catalog digest, and CANDIDATE row hash with a real
+domain-separated signature; ancestry, merge-range, digest/evidence, and CAS
+each refuse red-first against the measured baseline; races journal exactly one
+winner; crash recovery infers only after inspecting R; the clean fast-forward
+e2e journey is entered in `governance/suite_manifest.json` as a NON-skip.
+Verification actually run: full suite 827 passed / 2 skipped; `diff-cover`
+100% on the change; `mutmut` kernel-scope run completed (1936 killed, 82
+timeout, 559 survived — survivors are review input per policy; the new
+`approval.py` survivors are error-text and redundant-length-check mutants).
+One harness-side blocker was closed outside this tree: the sibling
+`ranex-harness` typecheck failure in `test/plugin/trigger.test.ts` was fixed
+and committed there as `f7f822ff5e`.
 **ADR:** `docs/adr/ADR-012-the-kernel-merges.md` — accepted 2026-08-05.
 **Closes:** ADR-012's confirmation, ADR-010's deferred sad paths 10 and 18,
 and the publication boundary. The kernel, not a human or harness, becomes the

@@ -27,6 +27,10 @@ from ranex.foundation.suite_results import load_manifest_bytes, manifest_digest
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
 
+def catalog_digest_for(gate_catalog: bytes) -> str:
+    return "sha256:" + hashlib.sha256(gate_catalog).hexdigest()
+
+
 @dataclass(frozen=True, slots=True)
 class GateEvaluator:
     """One wired evaluation path: catalog -> gate -> verdict -> journal.
@@ -50,7 +54,7 @@ class GateEvaluator:
         subject_digest: str,
         approver_id: str,
     ) -> Evaluation:
-        catalog_digest = "sha256:" + hashlib.sha256(self.gate_catalog).hexdigest()
+        catalog_digest = catalog_digest_for(self.gate_catalog)
         definition = load_gate_text(self.gate_catalog.decode("utf-8"), gate_id)
         requires_results = any(
             claim.results_artifact is not None for claim in definition.required_claims

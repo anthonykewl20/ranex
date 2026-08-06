@@ -28,7 +28,7 @@ from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
-from ranex.bootstrap.composition import build_gate_evaluator
+from ranex.bootstrap.composition import build_gate_evaluator, catalog_digest_for
 from ranex.cli.confinement import resolve_within_repository
 from ranex.cli.subject import (
     SubjectError,
@@ -55,6 +55,7 @@ from ranex.cli.toolchain import (
 )
 from ranex.foundation.canonical import canonical_sha256, command_digest
 from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.approval import candidate_row_hash, verify_approval
 from ranex.foundation.suite_results import (
     freeze_manifest,
     load_manifest_bytes,
@@ -81,7 +82,13 @@ from ranex.governed_execution.domain.admission import (
     admit,
 )
 from ranex.governed_execution.domain.deps import DepsApproval, DepsDerivation
-from ranex.governed_execution.domain.task import TaskCandidate, TaskDispatch
+from ranex.governed_execution.domain.task import (
+    TaskCandidate,
+    TaskDispatch,
+    TaskMergeCheck,
+    TaskMergeIntent,
+    TaskMergeOutcome,
+)
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     KeyringError,
     load_keyring,
@@ -128,6 +135,7 @@ DEFAULT_JOURNAL = "governance/journal.sqlite3"
 DEFAULT_PINS = "governance/deps.yaml"
 DEFAULT_GATE_CATALOG = "governance/gates.yaml"
 DEFAULT_SUITE_MANIFEST = "governance/suite_manifest.json"
+DEFAULT_EVIDENCE = "governance/evidence.json"
 
 # The committed keyring's conventional path. A constant so `keygen` can tell a
 # first-time operator exactly which file to create, and say the same name the
@@ -1098,6 +1106,297 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
 
     print(f"CANDIDATE  task={args.task_id}  gate={gate.gate_id}  subject={subject}")
     return EXIT_PASS if not missing else EXIT_FAIL
+
+
+def _merge_blob_oid(repository_root: Path, commit: str, path: str) -> str:
+    result = git(repository_root, "rev-parse", "--verify", f"{commit}:{path}")
+    if result.returncode != 0:
+        raise ValueError(f"commit {commit} carries no blob at {path}")
+    oid = result.stdout.strip()
+    kind = git(repository_root, "cat-file", "-t", oid)
+    if kind.returncode != 0 or kind.stdout.strip() != "blob":
+        raise ValueError(f"object at {commit}:{path} is not a blob")
+    return oid
+
+
+def _merge_blob_bytes(repository_root: Path, oid: str, path: str) -> bytes:
+    result = git(repository_root, "cat-file", "blob", oid, text=False)
+    if result.returncode != 0:
+        raise ValueError(f"cannot read committed blob at {path}")
+    return result.stdout
+
+
+def _recover_task_merges(
+    repository_root: Path,
+    journal: Journal,
+    entries: list[dict[str, object]],
+) -> None:
+    pending: list[dict[str, object]] = []
+    for record in entries:
+        if record.get("type") == "task-merge-intent":
+            pending.append(record)
+        elif record.get("type") == "task-merge-outcome":
+            match = next(
+                (
+                    intent
+                    for intent in pending
+                    if intent.get("task_id") == record.get("task_id")
+                    and intent.get("candidate") == record.get("candidate")
+                    and intent.get("target_ref") == record.get("target_ref")
+                ),
+                None,
+            )
+            if match is not None:
+                pending.remove(match)
+    for intent in pending:
+        task_id = intent.get("task_id")
+        candidate = intent.get("candidate")
+        target_ref = intent.get("target_ref")
+        if not all(isinstance(value, str) and value for value in (task_id, candidate, target_ref)):
+            raise ValueError("invalid unmatched task merge intent")
+        observed = git(repository_root, "rev-parse", "--verify", target_ref)
+        landed = observed.returncode == 0 and observed.stdout.strip() == candidate
+        journal.append(
+            TaskMergeOutcome(
+                task_id,
+                candidate,
+                target_ref,
+                "INFERRED" if landed else "ABORTED",
+                "recovery observed candidate at target ref"
+                if landed
+                else "recovery did not observe candidate at target ref",
+            )
+        )
+
+
+def _merge_refuse(
+    journal: Journal,
+    intent: TaskMergeIntent,
+    check: str,
+    reason: str,
+) -> int:
+    journal.append(TaskMergeCheck(intent.task_id, check, "refused", reason))
+    journal.append(
+        TaskMergeOutcome(
+            intent.task_id,
+            intent.candidate,
+            intent.target_ref,
+            "REFUSED",
+            reason,
+        )
+    )
+    print(f"REFUSED  task={intent.task_id}  reason={reason}", file=sys.stderr)
+    return EXIT_FAIL
+
+
+def cmd_task_merge(args: argparse.Namespace) -> int:
+    """Publish an already judged candidate through ordered, journalled checks."""
+
+    journal: Journal | None = None
+    intent: TaskMergeIntent | None = None
+    current_check = "policy_approval"
+    cas_succeeded = False
+    try:
+        repository_root = governed_repository_root()
+        journal_path = repository_root / DEFAULT_JOURNAL
+        if not journal_path.is_file():
+            raise ValueError(f"task journal does not exist at {journal_path}")
+        journal = Journal(journal_path)
+        if not journal.verify():
+            raise ValueError("journal is invalid; refusing task merge")
+        entries = journal.entries()
+        _recover_task_merges(repository_root, journal, entries)
+        entries = journal.entries()
+
+        approval_document = json.loads(Path(args.approval).read_text(encoding="utf-8"))
+        if not isinstance(approval_document, dict):
+            raise ValueError("approval file must contain a JSON object")
+        signature = approval_document.get("signature")
+        envelope = {key: value for key, value in approval_document.items() if key != "signature"}
+        subject = envelope.get("subject")
+        tip = envelope.get("tip")
+        if not isinstance(subject, str) or not isinstance(tip, str):
+            raise ValueError("approval must carry string subject and tip fields")
+        intent_candidate = envelope.get("candidate")
+        intent = TaskMergeIntent(
+            args.task_id,
+            intent_candidate if isinstance(intent_candidate, str) else args.candidate,
+            subject,
+            args.target_ref,
+            tip,
+        )
+        journal.append(intent)
+
+        target = git(repository_root, "rev-parse", "--verify", args.target_ref)
+        if target.returncode != 0:
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-20 target-ref-missing")
+        observed_tip = target.stdout.strip()
+        candidate_exists = git(repository_root, "cat-file", "-e", f"{args.candidate}^{{commit}}")
+        if candidate_exists.returncode != 0:
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-21 candidate-missing")
+        resolved = git(repository_root, "rev-parse", "--verify", f"{args.candidate}^{{commit}}")
+        candidate = resolved.stdout.strip()
+
+        catalog_c_oid = _merge_blob_oid(repository_root, candidate, DEFAULT_GATE_CATALOG)
+        catalog_t_oid = _merge_blob_oid(repository_root, observed_tip, DEFAULT_GATE_CATALOG)
+        if catalog_c_oid != catalog_t_oid:
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-15 catalog-changed")
+        keyring_c_oid = _merge_blob_oid(repository_root, candidate, DEFAULT_PRODUCERS)
+        keyring_t_oid = _merge_blob_oid(repository_root, observed_tip, DEFAULT_PRODUCERS)
+        if keyring_c_oid != keyring_t_oid:
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-16 keyring-changed")
+        catalog_source = _merge_blob_bytes(repository_root, catalog_c_oid, DEFAULT_GATE_CATALOG)
+        keyring_source = _merge_blob_bytes(repository_root, keyring_c_oid, DEFAULT_PRODUCERS)
+        keyring = load_keyring_text(keyring_source.decode("utf-8"), DEFAULT_PRODUCERS)
+
+        candidate_record = next(
+            (
+                record
+                for record in reversed(entries)
+                if record.get("type") == "task-candidate"
+                and record.get("task_id") == args.task_id
+            ),
+            None,
+        )
+        if candidate_record is None:
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-11 candidate-row-missing")
+        if envelope.get("candidate_row_hash") != candidate_row_hash(candidate_record):
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-12 candidate-row-hash-mismatch")
+        approver_id = envelope.get("approver_id")
+        approver_key = keyring.get(approver_id) if isinstance(approver_id, str) else None
+        if approver_key is None:
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-13 approver-absent")
+        if not verify_approval(envelope, signature, approver_key):
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-22 forged-approval")
+
+        expected_bindings = (
+            ("candidate", candidate, "sad-path-6 candidate-mismatch"),
+            ("subject", candidate_record.get("subject_digest"), "sad-path-7 subject-mismatch"),
+            ("target_ref", args.target_ref, "sad-path-8 target-ref-mismatch"),
+            ("tip", observed_tip, "sad-path-9 tip-mismatch"),
+            ("catalog_digest", catalog_digest_for(catalog_source), "sad-path-10 catalog-digest-mismatch"),
+        )
+        for field, expected, reason in expected_bindings:
+            if envelope.get(field) != expected:
+                return _merge_refuse(journal, intent, "policy_approval", reason)
+
+        evidence_path = resolve_within_repository(repository_root, DEFAULT_EVIDENCE)
+        admission = admit_records(evidence_path, keyring, repository_root)
+        if any(item.producer_id == approver_id for item in admission.evidence):
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-14 self-approval")
+        candidate_tree = git(repository_root, "rev-parse", f"{candidate}^{{tree}}")
+        tip_tree = git(repository_root, "rev-parse", f"{observed_tip}^{{tree}}")
+        if candidate == observed_tip or candidate_tree.stdout.strip() == tip_tree.stdout.strip():
+            return _merge_refuse(journal, intent, "policy_approval", "sad-path-4 no-subject")
+        journal.append(
+            TaskMergeCheck(
+                args.task_id,
+                "policy_approval",
+                "passed",
+                "policy and approval verified",
+            )
+        )
+
+        current_check = "ancestry"
+        ancestry = git(repository_root, "merge-base", "--is-ancestor", observed_tip, candidate)
+        if ancestry.returncode != 0:
+            return _merge_refuse(journal, intent, "ancestry", "sad-path-2 not-an-ancestor")
+        journal.append(
+            TaskMergeCheck(
+                args.task_id, "ancestry", "passed", "target tip is an ancestor"
+            )
+        )
+
+        current_check = "merge_range"
+        merges = git(repository_root, "rev-list", "--merges", f"{observed_tip}..{candidate}")
+        if merges.returncode != 0 or merges.stdout.strip():
+            return _merge_refuse(journal, intent, "merge_range", "sad-path-3 merge-commit-in-range")
+        journal.append(
+            TaskMergeCheck(
+                args.task_id, "merge_range", "passed", "candidate range is linear"
+            )
+        )
+
+        current_check = "digest_evidence"
+        actual_subject = subject_digest_for(repository_root, candidate)
+        if actual_subject != subject:
+            return _merge_refuse(journal, intent, "digest_evidence", "sad-path-5 subject-digest-mismatch")
+        if candidate_record.get("missing_claims") or not any(
+            item.subject_digest == subject for item in admission.evidence
+        ):
+            return _merge_refuse(journal, intent, "digest_evidence", "sad-path-5 satisfying-evidence-missing")
+        raw = load_records(evidence_path)
+        rejected = {rejection.index for rejection in admission.rejections}
+        admitted_ids = [
+            canonical_sha256(raw[index])
+            for index in range(len(raw))
+            if index not in rejected
+        ]
+        prior_ids = {
+            evidence_id
+            for record in entries
+            if record.get("type") == "task-merge-check"
+            and record.get("check") == "digest_evidence"
+            and record.get("status") == "passed"
+            for evidence_id in record.get("evidence_ids", [])
+            if isinstance(evidence_id, str)
+        }
+        # FRESH means first admission by the merge layer; merge never executes the suite.
+        disposition = "REUSE" if set(admitted_ids) <= prior_ids else "FRESH"
+        journal.append(
+            TaskMergeCheck(
+                args.task_id,
+                "digest_evidence",
+                "passed",
+                "digest-bound evidence admitted",
+                evidence_disposition=disposition,
+                evidence_ids=tuple(admitted_ids),
+            )
+        )
+
+        current_check = "cas"
+        updated = git(repository_root, "update-ref", args.target_ref, candidate, observed_tip)
+        if updated.returncode != 0:
+            return _merge_refuse(journal, intent, "cas", "sad-path-1 ref-moved")
+        cas_succeeded = True
+        journal.append(
+            TaskMergeCheck(
+                args.task_id, "cas", "passed", "expected-old ref update succeeded"
+            )
+        )
+        journal.append(
+            TaskMergeOutcome(
+                args.task_id,
+                candidate,
+                args.target_ref,
+                "PUBLISHED",
+                "candidate published",
+            )
+        )
+    except (
+        KeyringError,
+        SubjectError,
+        ToolchainError,
+        ValueError,
+        TypeError,
+        KeyError,
+        OSError,
+        sqlite3.Error,
+        UnicodeDecodeError,
+        json.JSONDecodeError,
+    ) as exc:
+        if journal is not None and intent is not None and not cas_succeeded:
+            return _merge_refuse(
+                journal,
+                intent,
+                current_check,
+                f"{current_check}-error {exc}",
+            )
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_FAIL
+
+    print(f"PUBLISHED  task={args.task_id}  candidate={candidate}  target={args.target_ref}")
+    return EXIT_PASS
 
 
 def _deny_network() -> None:
@@ -2162,6 +2461,13 @@ def build_parser() -> argparse.ArgumentParser:
     )
     judge.add_argument("--journal", required=True, help="external task journal")
     judge.set_defaults(func=cmd_task_judge)
+
+    merge = task_actions.add_parser("merge", help="publish a judged task candidate")
+    merge.add_argument("--task-id", required=True, help="task identifier")
+    merge.add_argument("--target-ref", required=True, help="governed target ref")
+    merge.add_argument("--candidate", required=True, help="candidate commit OID")
+    merge.add_argument("--approval", required=True, help="signed approval JSON")
+    merge.set_defaults(func=cmd_task_merge)
 
     delegate = task_actions.add_parser("delegate", help="execute and attest a task in a worktree")
     delegate.add_argument("--task-id", required=True, help="task identifier")

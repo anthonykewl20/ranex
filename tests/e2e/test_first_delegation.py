@@ -24,8 +24,13 @@ from pathlib import Path
 
 import pytest
 
-from ranex.foundation.signing import generate_keypair
+from ranex.bootstrap.composition import catalog_digest_for
+from ranex.cli.main import main, subject_digest_for
+from ranex.foundation.approval import candidate_row_hash, sign_approval
+from ranex.foundation.canonical import command_digest
+from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
+from ranex.governed_execution.domain.task import TaskCandidate
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
@@ -229,6 +234,174 @@ def run_judge(
         env=clean_env(home),
         timeout=120,
     )
+
+
+def test_kernel_merge_publishes_clean_fast_forward_end_to_end(
+    tmp_path: Path,
+) -> None:
+    target = tmp_path / "merge-target"
+    target.mkdir()
+    home = tmp_path / "merge-home"
+    home.mkdir()
+    subprocess.run(
+        ["git", "init", "-q", str(target)], check=True, env=clean_env(home)
+    )
+    git(target, "config", "user.email", "kernel-merge@example.invalid", home=home)
+    git(target, "config", "user.name", "Kernel Merge", home=home)
+
+    worker_private, worker_public = generate_keypair()
+    approver_private, approver_public = generate_keypair()
+    governance = target / "governance"
+    governance.mkdir()
+    catalog = (
+        "gates:\n"
+        "  - gate_id: landing\n"
+        "    rule_id: TESTS_EXECUTED\n"
+        "    blocking: true\n"
+        "    required_claims:\n"
+        "      - claim_id: tests-executed\n"
+        "        command: [/usr/bin/true]\n"
+    ).encode()
+    (governance / "gates.yaml").write_bytes(catalog)
+    (governance / "producers.yaml").write_text(
+        f"producers:\n  worker: {worker_public}\n  owner: {approver_public}\n",
+        encoding="utf-8",
+    )
+    (governance / "evidence.json").write_text("[]\n", encoding="utf-8")
+    (target / ".gitignore").write_text(
+        "governance/journal.sqlite3\n", encoding="utf-8"
+    )
+    (target / "base.txt").write_text("base\n", encoding="utf-8")
+    git(target, "add", "-A", home=home)
+    git(target, "commit", "-q", "-m", "governed base", home=home)
+    git(target, "branch", "-M", "main", home=home)
+    tip = git(target, "rev-parse", "HEAD", home=home).strip()
+
+    git(target, "switch", "-q", "-c", "candidate-work", home=home)
+    (target / "candidate.txt").write_text("candidate\n", encoding="utf-8")
+    git(target, "add", "candidate.txt", home=home)
+    git(target, "commit", "-q", "-m", "candidate", home=home)
+    candidate = git(target, "rev-parse", "HEAD", home=home).strip()
+    assert git(target, "rev-parse", f"{candidate}^", home=home).strip() == tip
+    assert git(target, "rev-parse", f"{candidate}^{{tree}}", home=home).strip() != git(
+        target, "rev-parse", f"{tip}^{{tree}}", home=home
+    ).strip()
+    git(target, "switch", "-q", "main", home=home)
+
+    subject = subject_digest_for(target, candidate)
+    evidence_body = {
+        "claim_id": "tests-executed",
+        "command": "/usr/bin/true",
+        "command_digest": command_digest(["/usr/bin/true"]),
+        "executable_path": "/usr/bin/true",
+        "exit_code": 0,
+        "producer_id": "worker",
+        "subject_digest": subject,
+        "suite_results": None,
+    }
+    (governance / "evidence.json").write_text(
+        json.dumps(
+            [
+                {
+                    **evidence_body,
+                    "signature": sign_evidence(evidence_body, worker_private),
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+
+    task_id = "T-KERNEL-MERGE-E2E"
+    journal = Journal(governance / "journal.sqlite3")
+    candidate_record = TaskCandidate(task_id, "landing", subject, ()).as_record()
+    journal.append(TaskCandidate(task_id, "landing", subject, ()))
+    envelope = {
+        "candidate": candidate,
+        "subject": subject,
+        "target_ref": "refs/heads/main",
+        "tip": tip,
+        "catalog_digest": catalog_digest_for(catalog),
+        "candidate_row_hash": candidate_row_hash(candidate_record),
+        "approver_id": "owner",
+    }
+    approval = tmp_path / "merge-approval.json"
+    approval.write_text(
+        json.dumps(
+            {**envelope, "signature": sign_approval(envelope, approver_private)}
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.chdir(target)
+        monkeypatch.setattr(
+            "ranex.cli.main.governed_repository_root", lambda: target.resolve()
+        )
+        exit_code = main(
+            [
+                "task",
+                "merge",
+                "--task-id",
+                task_id,
+                "--target-ref",
+                "refs/heads/main",
+                "--candidate",
+                candidate,
+                "--approval",
+                str(approval),
+            ]
+        )
+
+    assert exit_code == EXIT_PASS
+    published = git(target, "rev-parse", "refs/heads/main", home=home).strip()
+    assert published == candidate
+    assert subject_digest_for(target, published) == envelope["subject"]
+    assert envelope == {
+        "candidate": candidate,
+        "subject": subject,
+        "target_ref": "refs/heads/main",
+        "tip": tip,
+        "catalog_digest": catalog_digest_for(catalog),
+        "candidate_row_hash": candidate_row_hash(candidate_record),
+        "approver_id": "owner",
+    }
+
+    entries = journal.entries()
+    assert entries[0] == candidate_record
+    merge_entries = entries[1:]
+    assert [entry["type"] for entry in merge_entries] == [
+        "task-merge-intent",
+        "task-merge-check",
+        "task-merge-check",
+        "task-merge-check",
+        "task-merge-check",
+        "task-merge-check",
+        "task-merge-outcome",
+    ]
+    assert merge_entries[0] == {
+        "type": "task-merge-intent",
+        "task_id": task_id,
+        "candidate": candidate,
+        "subject": subject,
+        "target_ref": "refs/heads/main",
+        "tip": tip,
+    }
+    assert [
+        (entry["check"], entry["status"]) for entry in merge_entries[1:-1]
+    ] == [
+        ("policy_approval", "passed"),
+        ("ancestry", "passed"),
+        ("merge_range", "passed"),
+        ("digest_evidence", "passed"),
+        ("cas", "passed"),
+    ]
+    outcomes = [
+        entry for entry in merge_entries if entry["type"] == "task-merge-outcome"
+    ]
+    assert len(outcomes) == 1
+    assert outcomes[0]["candidate"] == candidate
+    assert outcomes[0]["outcome"] == "PUBLISHED"
+    assert journal.verify() is True
 
 
 def test_first_delegation_ends_in_candidate_with_reviewable_diff(
