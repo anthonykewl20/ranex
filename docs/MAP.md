@@ -10,10 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.1.0` |
+| Version | `3.2.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`), **code-audit corrections** (`2.7.0`), **maturity ledger and per-problem diagrams** (`2.8.0`), **the owner's restaurant — harness decision** (`3.0.0`), **settled — correspondence
-re-executed, stale projection deleted** (`3.0.1`), **the background worktree agent manager** (`3.1.0`). See §0.5–§0.15 |
+| Last revised | 2026-08-06 — **durable execution program** (`3.2.0`). See §0.16 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -313,15 +312,47 @@ every earlier revision:
    members in one process — is `RISK-06`, standing, mitigated by scoped
    spend-limited keys.
 3. **The pipeline shape.** Milestone "Background worktree agent manager" on this
-   repository; slice issues #1-#9 carry the plan; SLICE-011 through SLICE-019 open
-   only after SLICE-010 closes (one slice at a time). §9 carries ADR-014; §15.2
-   carries the manager as designed-unbuilt; §16.3 names it as the first scheduled
-   machinery for `C-02`.
+   repository; slice issues #1-#9 carry the plan; SLICE-012 through SLICE-019
+   open after SLICE-010 closes and after the durability program's SLICE-011
+   (one slice at a time; the durability program §0.16 owns SLICE-011). §9
+   carries ADR-014; §15.2 carries the manager as designed-unbuilt; §16.3 names
+   it as the first scheduled machinery for `C-02`.
 4. **What does not change.** One git worktree per task survives per member; the
    kernel merges, the harness never does; the wall stands — hooks collect, the
    kernel judges.
 
 `PROVISIONAL` throughout: ADR-014 is proposed, no slice is open, nothing is built.
+
+### 0.16 What changed in `3.2.0` — the durable execution program — `PROVISIONAL`
+
+The owner directed a full audit of the harness's durability story after a
+proposal claimed a durable-execution fix. The audit verdict (ADR-015) is that
+the proposal's diagnosis was right and its fix misaimed:
+
+1. **ADR-015** (`proposed`, this repository) decides the harness-side durability
+   contract: **at-most-once with explicit interruption** — never
+   at-least-once-plus-idempotent, because unsandboxed `bash` cannot be made
+   idempotent and spec `session.md:50` forbids silent side-effect replay.
+   First deliverable is a **provider watchdog** (inactivity + absolute timeout),
+   then a reconciler reorder, then durable retry, then durable permission and
+   question blockers, then Session-ID fencing via the harness's existing
+   `effect-flock` and EventV2 `owner_id`. Explicitly **not** adopted: a
+   `session_execution` lease/heartbeat table, a `tool_attempt` replay column,
+   and subagent completion recovery (V2 has no `task` tool yet).
+2. **The prototype gate.** SLICE-011 (open) is a disposable prototype in a
+   scratch harness worktree (ADR-013 style): five claims red-to-green with
+   negative controls and a digest-bound exit record, reviewed by both reviewers,
+   before any production slice opens. The compiled gate extends
+   `tests/contract/test_docs_discipline.py` to refuse production durability
+   slices without that record.
+3. **Tracking.** Milestone #1 "Durable execution, failover, and recovery" and
+   issues #1-#9 on `anthonykewl20/ranex-harness` carry the production plan;
+   SLICE-012+ open one at a time after SLICE-011.
+4. **What does not change.** The wall stands; the kernel is never asked to
+   judge liveness. SLICE-010 is parked (archived in `done/`, never started).
+
+`PROVISIONAL` throughout: ADR-015 is proposed, the prototype has not run,
+nothing is built.
 
 ---
 
@@ -528,7 +559,8 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
 | Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | `UNRESOLVED` — designed, never built; one bounded worker by default, parallel only for independent reads/disjoint isolated writes, and landing is serial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:445-496`). **The single largest untested assumption in the system** |
-| Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository; nothing built. SLICE-011-019 open only after SLICE-010 closes. §0.15 |
+| Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository; nothing built. SLICE-012-019 open after SLICE-010 closes and after the durability program (`§0.16`). §0.15 |
+| Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — the harness must not hang forever or strand running work | `PROVISIONAL` — `ADR-015` `proposed`; SLICE-011 (disposable prototype) open; milestone #1 on `ranex-harness`; nothing built. §0.16 |
 | `TaskPacket` | Content-addressed, immutable frozen-work root: exact scope/configuration, target, subject, evidence and record; material change recompiles it | `UNRESOLVED` — future worker packet, not dispatch machinery (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:600-628`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-321`) |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:23-25`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
@@ -1636,10 +1668,11 @@ concern by concern.
  of §11.2, unbuilt.
 
  First scheduled machinery: the background worktree agent manager (§0.15).
- Its supervisor owns wall-clock and spend bounds, cancellation, and
- escalation; none of it is built — ADR-014 covers only the bridge, the
- supervisor slice has no ADR yet, and everything here stays ABSENT until
- SLICE-010 closes and the harness slices open.
+Its supervisor owns wall-clock and spend bounds, cancellation, and
+  escalation; none of it is built — ADR-014 covers only the bridge, the
+  supervisor slice has no ADR yet, and everything here stays ABSENT until
+  SLICE-010 closes, the durability program's SLICE-011 completes, and the
+  harness slices open.
 ```
 
 ### 16.4 `C-04` — "I can't tell what it did" — the record exists; the reading does not

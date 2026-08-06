@@ -261,6 +261,12 @@ below is what is actually built.
   verifies after later rows are removed. *(unassigned)*
 - **No worker dispatch, no flow graph, no scenario compilation**, no budget, no
   escalation. Those are designed, not built.
+- **Review-consensus authenticity gaps await a prototype.** Two independent
+  adversarial reviews (2026-08-06) confirmed the gaps above and added: the suite
+  manifest freezes test IDs, not test bodies; `evidence.json` is overwritten,
+  not appended; network is denied only during provisioning. Per proposed
+  `docs/adr/ADR-013-prototype-before-production.md`, every hardening idea is
+  proven red-first in a scratch prototype before production code (milestone #1).
 
 Roughly speaking: the hardest part to get conceptually right exists, and almost
 none of the surface around it does.
@@ -269,14 +275,17 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none. SLICE-009 closed 2026-08-05. Next: the owner decides
-whether to merge and push `slice009-build`; then diagnose the unrelated CI red
-on `origin/main`; then decide mutation-testing policy.
+**Active slice:** SLICE-011-durable-execution-prototype. Opened 2026-08-06
+against the proposed `docs/adr/ADR-015-durable-execution-watchdog-first.md`: a
+disposable prototype in a scratch harness worktree validates five durability
+claims red-to-green (watchdog, reconciler reorder, durable retry, durable
+blockers, Session-ID fencing) before any production slice opens. The durable
+execution milestone and production plan live on `anthonykewl20/ranex-harness`.
 
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 736 IDs, with 67
+structured outcomes against the manifest diff — 737 IDs, with 67
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
@@ -291,6 +300,11 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-010-the-kernel-merges** — parked 2026-08-06 without implementation.
+  The ADR-012 decision (the kernel merges) remains accepted; this entry is
+  archived so the active-slice rule stays true while the ADR-015 durability
+  program (SLICE-011) owns the tree. Its uncommitted working-tree WIP was not
+  disturbed.
 - **SLICE-009-a-skip-is-absence** — exit-code satisfaction let a skipped or
   vanished test read as success; the measured failure destroyed 27 tests while
   the remainder stayed green. Junitxml is bound in the digest-bound argv;
