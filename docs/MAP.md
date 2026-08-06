@@ -10,10 +10,10 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.0.1` |
+| Version | `3.1.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
 | Last revised | 2026-08-03 — **thesis change** (`2.0.0`), **bounded TOGAF adoption** (`2.1.0`), **stakeholder and concerns** (`2.2.0`), **viewpoints and correspondences** (`2.3.0`), **filtered pre-reset dig** (`2.5.0`), **adversarial corrections** (`2.6.0`), **code-audit corrections** (`2.7.0`), **maturity ledger and per-problem diagrams** (`2.8.0`), **the owner's restaurant — harness decision** (`3.0.0`), **settled — correspondence
-re-executed, stale projection deleted** (`3.0.1`). See §0.5–§0.14 |
+re-executed, stale projection deleted** (`3.0.1`), **the background worktree agent manager** (`3.1.0`). See §0.5–§0.15 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -294,6 +294,35 @@ to the kernel → first delegation (one foreman, one worker, one task, judged by
 the kernel) → the handbooks. SLICE-006 is parked behind the fork work and stays
 recoverable in git history.
 
+### 0.15 What changed in `3.1.0` — the background worktree agent manager — `PROVISIONAL`
+
+The owner added a scheduled capability to the pipeline: a **background worktree
+agent manager** — many agents running in one harness process, each in its own
+worktree, tracked durably and supervised, with verification and kernel-governed
+merge. It is the next phase after first delegation. Recorded the same way as
+every earlier revision:
+
+1. **ADR-014** (`proposed`, this repository) decides the kernel-side change the
+   manager requires: the bridge becomes a **per-member protocol** — per-member
+   emission binding task id, member id, worktree, commit and tree; per-member
+   latch; per-member commit boundary. It is the only kernel decision; the
+   harness-side mechanics are harness decisions, not this ADR.
+2. **The manager is outside ADR-013's gate.** The owner recorded this on
+   2026-08-06: the manager is new product behaviour, not the authenticity-hardening
+   track. The credential scale-up it implies — one model credential shared by N
+   members in one process — is `RISK-06`, standing, mitigated by scoped
+   spend-limited keys.
+3. **The pipeline shape.** Milestone "Background worktree agent manager" on this
+   repository; slice issues #1-#9 carry the plan; SLICE-011 through SLICE-019 open
+   only after SLICE-010 closes (one slice at a time). §9 carries ADR-014; §15.2
+   carries the manager as designed-unbuilt; §16.3 names it as the first scheduled
+   machinery for `C-02`.
+4. **What does not change.** One git worktree per task survives per member; the
+   kernel merges, the harness never does; the wall stands — hooks collect, the
+   kernel judges.
+
+`PROVISIONAL` throughout: ADR-014 is proposed, no slice is open, nothing is built.
+
 ---
 
 ## §1 Introduction and Goals
@@ -499,6 +528,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
 | Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | `UNRESOLVED` — designed, never built; one bounded worker by default, parallel only for independent reads/disjoint isolated writes, and landing is serial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:445-496`). **The single largest untested assumption in the system** |
+| Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository; nothing built. SLICE-011-019 open only after SLICE-010 closes. §0.15 |
 | `TaskPacket` | Content-addressed, immutable frozen-work root: exact scope/configuration, target, subject, evidence and record; material change recompiles it | `UNRESOLVED` — future worker packet, not dispatch machinery (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:600-628`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-321`) |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:23-25`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
@@ -810,6 +840,7 @@ a convincing picture of it.
 | **Harness core** | Trimmed opencode fork: the agent loop, molded to call the kernel at every workflow step | **decided `3.0.0`** — fork point and trim list await its ADR; nothing built |
 | **Kernel bridge** | The process boundary: hooks collect inside the harness; the kernel outside judges, signs, journals | **decided `3.0.0`**; the kernel side exists (§15.1), the bridge does not |
 | **Delegation** | Foreman → department supervisors → workers; category→model routing; plan-before-execute. Clean-room patterns learned from oh-my-openagent | **decided `3.0.0`**; not designed |
+| **Agent-run manager** | Durable supervisor + capability-gated orchestrator over N worktrees/sessions in one harness process; per-member bridge (`ADR-014`); worktree provisioning, schema, leases, verification and UI are harness decisions (§0.15) | **scheduled `3.1.0`** — `ADR-014` `proposed`; slice issues #1-#9; nothing built |
 | **Kernel handbook** | `governance/` as the library every agent reads: rules, manuals, recipes. Reading guides; only the kernel enforces | **decided `3.0.0`**; the catalog exists, the injection does not |
 | Web UI | Later surface; features sliced from the quarry (§15.3) | **parked `3.0.0`** |
 | Budget / escalation | Bounded spend, three-miss escalation | **absent** |
@@ -1017,7 +1048,7 @@ assay must be validated for specificity, accuracy, precision and robustness
 
 ## §9 Architectural Decisions
 
-Eight ADRs exist. `1.1.0` indexed twenty-one belonging to an architecture that was
+Fourteen ADRs exist. `1.1.0` indexed twenty-one belonging to an architecture that was
 deleted; they are not carried forward.
 
 | ADR | Decides |
@@ -1029,7 +1060,14 @@ deleted; they are not carried forward.
 | `ADR-004` | Environment boundary for git queries |
 | `ADR-005` | Hermetic observation |
 | `ADR-006` | Landlock confinement of the bound command |
-| `ADR-007` | Provision dependencies without pretending they are evidence — `proposed` |
+| `ADR-007` | Provision dependencies without pretending they are evidence |
+| `ADR-008` | Fork opencode at a pinned commit; bridge to the kernel through hooks |
+| `ADR-009` | Git-backed materialisation of the observed subject |
+| `ADR-010` | First delegation: one operator request becomes governed work |
+| `ADR-011` | A skip is absence, not success |
+| `ADR-012` | The kernel merges |
+| `ADR-013` | Prototype before production |
+| `ADR-014` | The bridge becomes a per-member protocol — `proposed` |
 
 **ADR-007 is not the journal ADR.** ADR-005 removed `.venv` and `node_modules`
 from the materialisation because ignored state is not in the commit, so only
@@ -1444,6 +1482,7 @@ solves this, or would building it be invention?
 | Harness core + delegation (own-built) | decided in `3.0.0`: trimmed opencode fork, kernel as spine, clean-room orchestration; still the single largest untested assumption (`RISK-14`) | **Split.** opencode is mature and MIT-forkable; the orchestration patterns are proven by oh-my-openagent in production (patterns only — its code is SUL-1.0); a governed loop with an external kernel as spine has no proven implementation anywhere. That is the genuinely novel part |
 | `TaskPacket` frozen-work envelope | designed in the pre-reset corpus only | content-addressing is mature (git again); the packet schema is novel |
 | Budget, three-miss stop, escalation | designed; the only machinery serving `C-02`; nothing built | timeouts and circuit breakers are mature CI and distributed-systems patterns; the three-miss product question is a small, novel composition |
+| Background worktree agent manager | `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository (§0.15); nothing built. The supervisor, durable run schema, leases, verification, orchestrator and UI are designed in those issues | **Split.** Temporal and DBOS prove the lease/fencing/recovery pattern (DBOS vendored under ADR-014); Codex's Apache-2.0 multi-agent protocol is read; vibe-kanban and Crystal prove the worktree-per-task manager form; the composition — a durable supervisor over N sessions in one governed process — is genuinely novel |
 | Intake, flow graph, scenario compilation | designed; never built | **Split.** BDD/Gherkin and model-based testing are mature disciplines covering pieces; the full chain from plain language to frozen tests is unproven |
 | Rich verdict vocabulary | designed; the kernel has `PASS`/`FAIL` only | an enum and its refusal rules — small; the taxonomy decision is recorded in §4.5 |
 | Independence record, canonical roles | designed in the pre-reset corpus only | no off-the-shelf equivalent; the composition is novel |
@@ -1595,6 +1634,12 @@ concern by concern.
  PR-09 and ASR-09 name this; there is no design, no code, and VP-05
  governs no view (§14.1). The one concern with zero machinery — the wedge
  of §11.2, unbuilt.
+
+ First scheduled machinery: the background worktree agent manager (§0.15).
+ Its supervisor owns wall-clock and spend bounds, cancellation, and
+ escalation; none of it is built — ADR-014 covers only the bridge, the
+ supervisor slice has no ADR yet, and everything here stays ABSENT until
+ SLICE-010 closes and the harness slices open.
 ```
 
 ### 16.4 `C-04` — "I can't tell what it did" — the record exists; the reading does not
@@ -1623,7 +1668,7 @@ concern by concern.
 | Concern | Built steps | What is missing | Defence today |
 |---|---|---|---|
 | `C-01` "done isn't" | all six of §16.1 | `RISK-06`, `RISK-07`, `RISK-08`, `RISK-19` | mostly defended, holes named |
-| `C-02` "money gone" | none | bounds, stop, escalation — all | **undefended** |
+| `C-02` "money gone" | none | bounds, stop, escalation — all | **undefended**; first scheduled machinery is the agent manager (§0.15) |
 | `C-03` "broke other" | subject binding only | the full-suite run, a regression view | weak, and scheduled (SLICE-006) |
 | `C-04` "can't tell" | record + chain verify | translator, configuration record | record exists, unreadable |
 
