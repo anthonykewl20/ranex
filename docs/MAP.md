@@ -1370,22 +1370,24 @@ Different machinery, and it has to be designed in rather than retrofitted.
 fixed treatment, isolated replicates, and an outcome measured by something with no
 stake in it. Ranex has a mechanical outcome gauge and filesystem isolation, but not
 fixed treatment or statistical independence by construction. The `TreatmentManifest`
-is absent today; a complete experiment system does not exist.
+is absent today; a complete experiment system does not exist. The frozen
+`TargetCorpus` fixes the outcome instrument; it is not the treatment being compared.
 
 ADR-016 bounds the build path: P0 prototype, then F1 monitoring-only manifest/corpus
 observations, F2 pure paired grader, F3 paired runner and fault capture, and F4
-owner-authorized promotion/rollback. Blockers are RISK-06/07/19, provider
-correlation, generalization, exact power and the absent translator; composition
-remains UNPROVEN. The instrument is therefore a source-backed design, not a built
-feature or proof that any configuration is best.
+owner-authorized promotion/rollback. RISK-06/07/19 block F4. Provider correlation,
+generalization, exact power and the absent translator remain named limits or separate
+work, not gates this feature pretends to close. The composition remains UNPROVEN:
+this is a source-backed design, not a built feature or proof that any configuration
+is best.
 
 ### 11.4 Limits of the grading idea — `PROVISIONAL`
 
 | Limit | Consequence |
 |---|---|
 | **Not everything decomposes.** Skills, gates, rules and models are discrete and gradeable. Prompts, tasks and context are not. Some variance lives irreducibly in the whole | Do not attempt a grade for every input; the parts list must distinguish gradeable parts from unbounded ones |
-| **Goodhart.** Publishing a component's grade causes components to be optimised for the grade. Manufacturing's defence is that the gauge measures a physical property that cannot be faked without making a better part | Ranex's equivalent is the frozen, producer-unalterable target. This is what keeps the metric honest under optimisation pressure — it is not fussiness |
-| **Sample size.** Separating signal from variance needs many runs on comparable tasks. One repository will never produce that | The flywheel is a fleet-scale asset. This argues for a hosted product later, and is a real constraint on *when* data becomes valuable |
+| **Goodhart.** Publishing a component's grade causes components to be optimised for the grade. A frozen target prevents post-hoc movement, not optimisation against a visible corpus | Freeze the corpus before proposal, deny candidate mutation, record visibility, and claim only conformance to that corpus; generalisation remains unproven |
+| **Sample size.** Separating signal from variance needs many runs on comparable tasks | Fix N before the trial, make no power claim, and return `INCONCLUSIVE` when evidence is insufficient; fleet scale may be needed for useful sensitivity |
 | **First-scope bound.** One candidate and one binary primary endpoint; secondary metrics are descriptive only | Exact power remains unverified; fixed-N trials may yield `INCONCLUSIVE` |
 | **Provider correlation and visible corpus.** Paired runs can share provider effects, and a visible corpus proves only conformance to that corpus | Disclose correlation and do not claim independence or generalization |
 
