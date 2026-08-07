@@ -3,7 +3,7 @@
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
 **Updated:** 2026-08-07
-**Active slice:** none — SLICE-012 closed; SLICE-013 not yet opened.
+**Active slice:** docs/slices/SLICE-013-reconciler-reorder.md
 
 ## Where we stopped
 
@@ -27,8 +27,10 @@ The rebrand is **finished** (`a4da8a8d28`..`3dfe9ee562`): `@ranex/*` scope,
 
 ## Next
 
-1. SLICE-013 — reconciler reorder, the second ADR-015 claim. Gated by the
-   SLICE-011 prototype record, like every durability production slice.
+1. SLICE-013 is open: hoist reconciliation above the eligible-input guard
+   (`runner/llm.ts:459` returns before `:460`) and **wire** a startup sweep —
+   the prototype left it a capability nobody called, which is the half that
+   recovers the headline case. Serialize per-session reconcile first.
 2. Decide which upstream CI workflows this fork keeps (see Known limits).
 3. Resolve whether `.opencode-version` and the `opencode` store file get a
    real migration. One reviewer called keeping them lazy; unresolved.

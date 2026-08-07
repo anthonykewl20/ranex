@@ -284,8 +284,12 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none. SLICE-012 closed 2026-08-07; SLICE-013 (the reconciler
-reorder) opens next, one at a time.
+**Active slice:** SLICE-013-reconciler-reorder. Opened 2026-08-07: a crash with
+an empty inbox still leaves tools projected `running` forever, because the
+runner returns on its eligible-input guard before it reconciles. The fix hoists
+reconciliation above that guard and — the part the prototype deferred — wires a
+startup sweep that recovers stranded work across all sessions with nobody
+calling `run()`.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
 harness (`fe7a8901de`): a stalled provider stream now reaches a terminal state
