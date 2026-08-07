@@ -1,6 +1,6 @@
 # ADR-015 — durable execution, watchdog first: at-most-once recovery for the harness
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-06
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-011-durable-execution-prototype.md`
@@ -147,3 +147,9 @@ Levels: contract (ranex) and prototype (harness worktree). `tests/contract/test_
 ## More Information
 
 Parent decisions: ADR-008 (the harness fork), ADR-013 (prototype gate), ADR-014 (per-member bridge). Upstream evidence: anomalyco/opencode issues #36347 (blocker persistence), #36349 (subagent completion), #36804 (parallel dispatch loss, V1-reported). Tracked in milestone #1 "Durable execution, failover, and recovery" on anthonykewl20/ranex-harness; SLICE-011 is the prototype slice. Open: whether #36804 reproduces in V2; the `synchronous = FULL` cost; cross-model failover design.
+
+**Accepted 2026-08-07.** The Confirmation above is satisfied, not asserted: SLICE-011 closed with all nine criteria met (`e0b9886d9`), all five claims proven red-first with negative controls and two-reviewer consensus, and the compiled gate now refuses a durability production slice whose prototype record is missing, not GREEN, or not digest-bound. The record is `docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`.
+
+Two clarifications the prototype earned, recorded here because a later reader will otherwise re-litigate them. First: "no `session_execution` lease table, no `tool_attempt` replay column" rules out a **parallel execution-state store**, not a materialised read model. Claim 3's `retry_attempt` and `retry_next_attempt_at` on `SessionTable`, written by a projector from the durable `session.next.retried` event, are a projection over an event that remains the source of truth — the same shape as every other projector in the fork. Reviewed independently and ruled sound. Second: the gate proves a record was recorded and bound, never that the runs happened or that the bytes came from where the record says; the digests point into disposable harness worktrees in another repository. That is the limit ADR-003 already accepts for vendored prior art, and it is written into the gate's own failure message.
+
+What the prototype does **not** license is production confidence. Nothing durable is built. The record's `open_before_slice_012` list names seven items a production slice may not skip — including that ownership fencing has no owner-release path, so a drained session stays fenced against every later owner.

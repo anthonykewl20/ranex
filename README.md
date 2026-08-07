@@ -284,13 +284,18 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** none. SLICE-011 closed 2026-08-07; the next durability slice
-(SLICE-012+) opens one at a time, gated by the record described below.
+**Active slice:** SLICE-012-provider-watchdog. Opened 2026-08-07 against
+`docs/adr/ADR-015-durable-execution-watchdog-first.md` (accepted the same day,
+once its compiled gate existed rather than because it read well): the first
+production durability slice, and the only one of the five needing no schema
+change. A stalled provider socket currently hangs the runner forever with no
+timeout anywhere in the harness; this slice gives it an idle deadline and an
+absolute budget, each provable without the other.
 
-The durable execution milestone and production plan live on
-`anthonykewl20/ranex-harness`. **Nothing durable is built in production yet** —
-what exists is a proven design and a compiled gate that refuses to let a
-production slice open without it.
+It is gated by SLICE-011's prototype record, and the gate is compiled — a
+durability production slice is refused if that record is missing, not green, or
+not digest-bound. **Nothing durable is built in production yet.** The work
+happens in `anthonykewl20/ranex-harness`, milestone #1.
 
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a

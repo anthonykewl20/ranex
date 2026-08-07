@@ -3,21 +3,23 @@
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
 **Updated:** 2026-08-07
-**Active slice:** none — SLICE-011 closed; SLICE-012 not yet opened.
+**Active slice:** docs/slices/SLICE-012-provider-watchdog.md
 
 ## Where we stopped
 
-SLICE-011 is closed: all nine done criteria met. Five durability claims proven
-red-to-green with negative controls, one disposable harness worktree each, all
-five with two-reviewer consensus, consolidated into a digest-bound record at
+SLICE-011 closed (`e0b9886d9`): five durability claims proven red-to-green,
+two-reviewer consensus each, consolidated into a digest-bound record at
 `docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`.
-Criterion 8's compiled gate now refuses a durability production slice unless
-that prototype record is present, GREEN and digest-bound.
+ADR-015 accepted 2026-08-07 — its Confirmation is built, not asserted.
+SLICE-012 is open: the production provider watchdog, the first of the five and
+the only one needing no schema change. Work happens in the harness repo.
 
 ## Decisions
 
-- ADR-015 stands and stays `proposed`: at-most-once + explicit interruption;
-  watchdog first; no lease/heartbeat/session_execution/tool_attempt columns.
+- ADR-015 **accepted** 2026-08-07, its Confirmation built: at-most-once +
+  explicit interruption; watchdog first; no lease/heartbeat/session_execution/
+  tool_attempt columns. That bars a parallel execution-state store, not a
+  projection over a durable event.
 - Claim 3: RED stays executor-level; `retry_attempt`/`retry_next_attempt_at`
   are a projection over the durable event, not a counter table. Both
   supervisor-signed-off, the second independently ruled sound by review.
@@ -27,12 +29,12 @@ that prototype record is present, GREEN and digest-bound.
 
 ## Next
 
-1. Open SLICE-012 — the first production durability slice, one at a time,
-   gated by the record. Milestone #1 on `anthonykewl20/ranex-harness`
-   (issues #2-#6) carries the plan; watchdog (#2) is the highest-value start.
-2. Before any of it ships, work the `open_before_slice_012` list in the
-   record: unwired startup sweep, no owner-release path, no blocker
-   migration, projector tx handle, and the ADR-015 wording carry-forward.
+1. SLICE-012 red-first in the harness: stall a real provider stream inside
+   the runner, then refuse it. Idle and absolute must be demonstrated
+   independently — two reviewers missed that in the prototype.
+2. Replace the prototype's mutable module singleton with real configuration,
+   and cover a stall with a tool call in flight (uncovered by claim 1).
+3. SLICE-013+ take the remaining four claims, one at a time.
 
 ## Known limits
 
@@ -40,7 +42,7 @@ that prototype record is present, GREEN and digest-bound.
   `ranex-harness`, never merged into `ranex-trim`. Reference only —
   SLICE-012+ reimplements from the record. Delete when done:
   `git push origin --delete proto/s011-{watchdog,reconciler,retry,blockers,fencing}`.
-  The five local worktrees are now safe to prune.
+  The local worktrees were removed 2026-08-07; the branches are the copy.
 - The gate checks the record is present, well-formed, GREEN and digest-bound.
   It can NEVER re-verify the bytes — another repo, disposable. Lint with
   teeth, not proof.
