@@ -32,7 +32,9 @@ KEEP_PACKAGES = (
     "core",
     "effect-drizzle-sqlite",
     "llm",
-    "opencode",
+    # renamed from "opencode" by the 2026-08-07 rebrand; the app package
+    # keeps its role, only its directory name changed.
+    "ranex",
     "plugin",
     "protocol",
     "schema",
@@ -145,7 +147,7 @@ def test_no_kept_manifest_depends_on_a_cut_package(harness: Path) -> None:
             cut_names.add(json.loads(manifest.read_text()).get("name"))
     # After the cut the directories are gone, so derive the workspace names the
     # scheme uses for them instead of trusting what remains.
-    cut_names |= {f"@opencode-ai/{name}" for name in CUT_PACKAGES}
+    cut_names |= {f"@ranex/{name}" for name in CUT_PACKAGES}
     offenders = {}
     for name in KEEP_PACKAGES:
         manifest = harness / "packages" / name / "package.json"

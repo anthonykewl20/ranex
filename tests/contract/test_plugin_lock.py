@@ -48,14 +48,14 @@ def _external_load_calls(sources: list[Path]) -> list[str]:
 def test_config_plugin_closes_filesystem_discovery_door(harness: Path) -> None:
     """The config filesystem glob door for plugin discovery is closed."""
 
-    source = harness / "packages/opencode/src/config/plugin.ts"
+    source = harness / "packages/ranex/src/config/plugin.ts"
     assert "{plugin,plugins}" not in source.read_text()
 
 
 def test_plugin_index_closes_config_plugin_origins_door(harness: Path) -> None:
     """The config plugin-origins door into the server plugin loader is closed."""
 
-    source = harness / "packages/opencode/src/plugin/index.ts"
+    source = harness / "packages/ranex/src/plugin/index.ts"
     text = source.read_text()
     assert "plugin_origins" not in text
     assert not _external_load_calls([source])
@@ -64,7 +64,7 @@ def test_plugin_index_closes_config_plugin_origins_door(harness: Path) -> None:
 def test_tui_runtime_closes_external_loading_door(harness: Path) -> None:
     """The TUI runtime's external-plugin loading door is closed."""
 
-    source = harness / "packages/opencode/src/plugin/tui/runtime.ts"
+    source = harness / "packages/ranex/src/plugin/tui/runtime.ts"
     assert not source.exists() or not _external_load_calls([source])
 
 
@@ -83,7 +83,7 @@ def test_plugin_install_and_config_patch_door_is_closed(harness: Path) -> None:
         for source in sources
         if "installPlugin(" in source.read_text() or "patchPluginConfig(" in source.read_text()
     ]
-    assert not (harness / "packages/opencode/src/plugin/install.ts").exists()
+    assert not (harness / "packages/ranex/src/plugin/install.ts").exists()
     assert not references, f"plugin install/config patch references remain: {references}"
 
 

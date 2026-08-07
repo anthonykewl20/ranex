@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.3.3` |
+| Version | `3.3.4` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-07 — **SLICE-012: the watchdog goes to production** (`3.3.3`). See §0.20 |
+| Last revised | 2026-08-07 — **the rebrand finishes** (`3.3.4`). See §0.21 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -427,6 +427,25 @@ well-formed, green and digest-bound; it can never re-verify the bytes, which
 live in another repository built to be thrown away. That is the same limit
 ADR-003 already accepts for vendored prior art, and it is written down rather
 than left to be discovered.
+
+### 0.21 What changed in `3.3.4` — the rebrand finishes
+
+The 2026-08-06 rebrand had renamed a bin and stopped. The workspace scope,
+the package directory, the config directory and the CLI's own program name
+still said opencode, and two binaries were declared at once. That is closed
+(`a4da8a8d28`..`3dfe9ee562`), and the harness rows below are unaffected: this
+map's many references to *a trimmed fork of opencode* are provenance and MIT
+attribution, not leftovers, and they stay.
+
+Two findings are recorded because they outlive the rename. Ranex had been
+reporting itself to third-party gateways as `opencode` through OpenRouter
+attribution headers, so its traffic was credited to the upstream project; the
+tests that appeared to protect that only asserted our own emission. And the
+claim that this fork's CI workflows were inert was wrong — three are gated on
+the upstream repository, twenty-two are not, and one of those pointed at a
+directory the rename had just deleted. Four more still point at directories
+this fork never had, so CI was already broken before any of this. `RISK` rows
+are unchanged; none of it moves a position.
 
 ### 0.20 What changed in `3.3.3` — the watchdog goes to production
 

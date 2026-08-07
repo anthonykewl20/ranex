@@ -53,7 +53,7 @@ def _invoke(
     harness: Path, bun: Path, *args: str, **binding: str
 ) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
-        [str(bun), "run", "--cwd", "packages/opencode", "src/index.ts", *args],
+        [str(bun), "run", "--cwd", "packages/ranex", "src/index.ts", *args],
         cwd=harness,
         capture_output=True,
         text=True,

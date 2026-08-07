@@ -182,7 +182,7 @@ def test_gear_mesh_ends_in_candidate_without_auto_approval(
 
     worker = subprocess.run(
         [
-            str(bun), "run", "--cwd", "packages/opencode", "src/index.ts",
+            str(bun), "run", "--cwd", "packages/ranex", "src/index.ts",
             "run", "--dir", str(worktree), "--model", "ranex-noop/noop",
             "Commit the existing worktree change.",
         ],
