@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.3.0` |
+| Version | `3.3.1` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-07 — **evidence refresh** (`3.3.0`). See §0.17 |
+| Last revised | 2026-08-07 — **the prototype ran** (`3.3.1`). See §0.18 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -340,12 +340,16 @@ the proposal's diagnosis was right and its fix misaimed:
    `effect-flock` and EventV2 `owner_id`. Explicitly **not** adopted: a
    `session_execution` lease/heartbeat table, a `tool_attempt` replay column,
    and subagent completion recovery (V2 has no `task` tool yet).
-2. **The prototype gate.** SLICE-011 (open) is a disposable prototype in a
-   scratch harness worktree (ADR-013 style): five claims red-to-green with
-   negative controls and a digest-bound exit record, reviewed by both reviewers,
-   before any production slice opens. The compiled gate extends
-   `tests/contract/test_docs_discipline.py` to refuse production durability
-   slices without that record.
+2. **The prototype gate.** SLICE-011 (open) is a disposable prototype in
+   scratch harness worktrees (ADR-013 style): five claims red-to-green with
+   negative controls and a digest-bound exit record before any production slice
+   opens. **All five ran and are green (2026-08-07)** — one worktree per claim
+   at an identical harness HEAD — and the five per-claim records are
+   consolidated, embedded and hash-bound in
+   `docs/slices/SLICE-011-durable-execution-prototype.exit-record.json`. The
+   compiled gate, which extends `tests/contract/test_docs_discipline.py` to
+   refuse production durability slices without that record, is **not built**;
+   it is what keeps SLICE-011 open.
 3. **Tracking.** Milestone #1 "Durable execution, failover, and recovery" and
    issues #1-#9 on `anthonykewl20/ranex-harness` carry the production plan;
    SLICE-012+ open one at a time after SLICE-011.
@@ -353,8 +357,19 @@ the proposal's diagnosis was right and its fix misaimed:
    judge liveness. SLICE-010 was parked, then re-opened and closed 2026-08-06
    with all fourteen criteria proven (`15614e6fc`).
 
-`PROVISIONAL` throughout: ADR-015 is proposed, the prototype has not run,
-nothing is built.
+`PROVISIONAL` throughout: ADR-015 is still proposed and **nothing is built in
+production**. What changed on 2026-08-07 is narrower and worth stating exactly
+— the prototype ran, and all five claims are green with negative controls,
+supervisor-re-run gates and a consolidated digest-bound record. That raises
+confidence in the *design*; it is not a durability claim about the harness.
+The prototype ships nothing.
+
+One result is worth carrying forward because it is evidence about method, not
+about durability: claim 5 was reported stable, approved by two reviewers, and
+was not stable. Supervisor re-runs measured a ~12% failure rate whose cause was
+a fixture pragma-ordering race, invisible because the fixture captured worker
+stderr and discarded it. Reviewing a report cannot find what the report does
+not contain; re-running the gate can.
 
 ### 0.17 What changed in `3.3.0` — evidence refresh
 
@@ -363,6 +378,31 @@ ADR-015 opened the durability track (SLICE-011 open), and the agent-manager
 slice issues were renumbered SLICE-020-028 on 2026-08-07 to clear the collision
 with that track. Stale counts, tenses and risk standings are corrected
 throughout; no position changes.
+
+### 0.18 What changed in `3.3.1` — the prototype ran
+
+SLICE-011's five durability claims were prototyped in parallel on 2026-08-07,
+one disposable harness worktree per claim at an identical HEAD, and all five
+are green red-first with negative controls. The five per-claim exit records are
+consolidated, embedded and hash-bound in
+`docs/slices/SLICE-011-durable-execution-prototype.exit-record.json`
+(`5bf20ac0c`), so the evidence outlives the worktrees, which are meant to be
+deleted. §0.16 and the durability row are corrected from "the prototype has not
+run" to what actually happened. **No position changes and no durability claim
+about the harness**: the prototype ships nothing, ADR-015 stays `proposed`, and
+SLICE-011 stays open until its compiled gate exists.
+
+Two results are recorded because they are evidence about method rather than
+about durability. First: claim 5 was reported stable and approved by two
+independent reviewers, and was not stable — supervisor re-runs measured ~12%
+failures from a fixture pragma-ordering race that was invisible because the
+fixture captured worker stderr and discarded it. Reviewing a report cannot find
+what the report does not contain. Second: the record states plainly what a
+kernel-repo gate can and cannot do — it can check the record is present,
+well-formed, green and digest-bound; it can never re-verify the bytes, which
+live in another repository built to be thrown away. That is the same limit
+ADR-003 already accepts for vendored prior art, and it is written down rather
+than left to be discovered.
 
 ---
 
@@ -570,7 +610,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
 | Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | **`CONFIRMED`** for the first rung — SLICE-008 and SLICE-010 built `ranex task dispatch/judge/merge/delegate/fanout`: a real agent ran headless in a dispatched worktree, a keyless invocation judged it to CANDIDATE, and the kernel published the checked fast-forward. Landing is serial and the pool is bounded. The immutable packet and declared-capability envelope remain unbuilt (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:445-496`) |
 | Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository, renumbered SLICE-020-028 on 2026-08-07 (ADR-014 predates the renumbering and cites the old numbers); nothing built. The SLICE-010 prerequisite is satisfied; SLICE-020-028 open after the durability program (`§0.16`). §0.15 |
-| Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — the harness must not hang forever or strand running work | `PROVISIONAL` — `ADR-015` `proposed`; SLICE-011 (disposable prototype) open; milestone #1 on `ranex-harness`; nothing built. §0.16 |
+| Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — the harness must not hang forever or strand running work | `PROVISIONAL` — `ADR-015` `proposed`; SLICE-011 (disposable prototype) open, but **all five claims proven red-to-green 2026-08-07** with negative controls, supervisor-re-run gates and a consolidated digest-bound record (`docs/slices/SLICE-011-durable-execution-prototype.exit-record.json`); milestone #1 on `ranex-harness`; **nothing built in production**. §0.16 |
 | `TaskPacket` | Content-addressed, immutable frozen-work root: exact scope/configuration, target, subject, evidence and record; material change recompiles it | `UNRESOLVED` — future worker packet, not dispatch machinery (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:600-628`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-321`) |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:23-25`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
@@ -1418,7 +1458,7 @@ the one that matters; a ledger recording only successes is a brochure.
 | `SLICE-008` first delegation | Closed 2026-08-05. `task delegate` runs a real agent headless in a dispatched worktree, in an environment that refuses to start holding the signing key; a separate keyless invocation judges — CANDIDATE, never PASS; `task fanout` runs a bounded pool. Proven end to end against a real free model | The model credential sits in a network-open loop, and `ranex run`'s own path still reads the key before spawning — `RISK-06` recorded, not mitigated |
 | `SLICE-009` a skip is absence | Closed 2026-08-05. Signed structured outcomes (evidence v3), an outcome-blind frozen manifest, and a diff that blocks undeclared skip, xfail, xpass, error or missing IDs; the self-gate PASSes honestly and flips to FAIL when a frozen test's file is deleted | Exit-code satisfaction let a skipped or vanished test read as success — measured by destroying 27 tests while the suite stayed green. A hostile tree can still forge the artifact; criterion 10 states that boundary |
 | `SLICE-010` the kernel merges | Closed 2026-08-06 (parked and re-opened the same day), all fourteen criteria proven. `task merge` publishes a judged candidate only through ordered journalled checks: a domain-separated approval envelope bound to candidate, subject, target ref, observed tip, catalog digest and CANDIDATE row hash; ancestry, merge-range, digest/evidence and CAS each refuse red-first; races journal exactly one winner | The unsafe `update-ref` control is reproduced before it is refused |
-| `SLICE-011` durable execution prototype | Open. Five durability claims red-to-green in a disposable scratch-harness prototype (ADR-015): watchdog, reconciler reorder, durable retry, durable blockers, Session-ID fencing; milestone #1 on `ranex-harness` carries the production plan | — |
+| `SLICE-011` durable execution prototype | Open. All five durability claims proven red-to-green 2026-08-07 in disposable scratch-harness worktrees, one per claim at an identical HEAD (ADR-015): watchdog, reconciler reorder, durable retry, durable blockers, Session-ID fencing. Criteria 1-7 met; the five per-claim records are consolidated, embedded and hash-bound in `docs/slices/SLICE-011-durable-execution-prototype.exit-record.json` (`5bf20ac0c`). Criterion 8 — the compiled gate — is unbuilt and keeps the slice open. Milestone #1 on `ranex-harness` carries the production plan | Each claim red-first with a negative control; every gate re-run against disk by the supervisor, never read from the session's own summary — which is how claim 5's suite was caught unstable (~12%) after being reported stable and approved by two reviewers |
 
 **The pattern across nine closed slices, stated because it is the most reliable
 information in this document:** every slice that was closed on the implementer's

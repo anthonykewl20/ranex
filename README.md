@@ -286,10 +286,19 @@ none of the surface around it does.
 
 **Active slice:** SLICE-011-durable-execution-prototype. Opened 2026-08-06
 against the proposed `docs/adr/ADR-015-durable-execution-watchdog-first.md`: a
-disposable prototype in a scratch harness worktree validates five durability
+disposable prototype in scratch harness worktrees validates five durability
 claims red-to-green (watchdog, reconciler reorder, durable retry, durable
-blockers, Session-ID fencing) before any production slice opens. The durable
-execution milestone and production plan live on `anthonykewl20/ranex-harness`.
+blockers, Session-ID fencing) before any production slice opens.
+
+All five claims are proven as of 2026-08-07, each red-first with a negative
+control, and consolidated into one digest-bound record
+(`docs/slices/SLICE-011-durable-execution-prototype.exit-record.json`). Every
+gate was re-run against the worktree on disk rather than read from the session
+that produced it — which is how the fifth claim's suite was caught being
+unstable after it had been reported stable and approved by two reviewers. The
+slice stays **open**: its compiled gate, which refuses a durability production
+slice without that record, is not built yet. The durable execution milestone
+and production plan live on `anthonykewl20/ranex-harness`.
 
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a

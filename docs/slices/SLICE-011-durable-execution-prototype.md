@@ -1,7 +1,10 @@
 # SLICE-011 — durable execution prototype: watchdog-first, red-to-green
 
 **Status:** open
+**Progress:** criteria 1-7 and 9 met (2026-08-07); criterion 8 outstanding.
 **Opened:** 2026-08-06
+**Record:** `docs/slices/SLICE-011-durable-execution-prototype.exit-record.json`
+— the five per-claim records embedded and bound by sha256 (`5bf20ac0c`).
 **ADR:** `docs/adr/ADR-015-durable-execution-watchdog-first.md` — proposed 2026-08-06.
 **Linked milestone:** #1 "Durable execution, failover, and recovery" on
 `anthonykewl20/ranex-harness`; issues #1-#9 carry the production plan.
@@ -90,6 +93,37 @@ the exit record is digest-bound.
    red-then-green itself.
 9. **The docs stay aligned.** `docs/STATE.md` records the expiry decision, and
    the harness `specs/v2/session.md` follow-ups reference the accepted contract.
+
+## Where it stands — 2026-08-07
+
+Every gate below was re-run by the supervisor against the worktree on disk. A
+session's own summary is the discarded self-report; it is not evidence.
+
+| # | Criterion | Standing |
+|---|---|---|
+| 1 | Unsafe baselines measured before refused | met — each claim red first, observed |
+| 2 | Watchdog green | met — 6/0; ABS-ACTIVE cut at 1017ms/1000ms budget with 100ms deltas, so idle could not have fired |
+| 3 | Reconciler green | met — 4/0, regression 83/0; RED asserts both steer and queue empty |
+| 4 | Durable retry green | met — 4/0, 83/0, 8/0, 15/0; 1 call through 499ms, fires at the persisted 500ms |
+| 5 | Durable blocker green | met — 4/0, 14/0, 10/10 stable |
+| 6 | Ownership green | met — 5/0, 20/20 stable *after* a fixture fix; see below |
+| 7 | Exit record green and digest-bound | met — consolidated record `5bf20ac0c` |
+| 8 | Compiled gate exists | **outstanding — this keeps the slice open** |
+| 9 | Docs aligned | met — harness `17b876fcc9`; kernel `35fe6e36b` and this commit |
+
+Claim 5 is the one worth remembering. It was reported stable and approved by
+both reviewers, and was not: supervisor re-runs measured 2 failures in 16
+full-suite runs. The fixture set `PRAGMA busy_timeout` after `journal_mode`, so
+two concurrently-opening workers hit "database is locked" outside the Effect
+catch — invisible because the fixture captured worker stderr and threw it away.
+Fixed, then 20/20 confirmed. Control #5 below was satisfied; the control that
+was missing is the one nobody wrote down — *the negative control must itself be
+stable*, because a flaky control cannot tell a race from a changed mechanism.
+
+Open before SLICE-012+, recorded rather than implied: claims 2 and 3 carry
+reviewer-hy3 only; claim 5's approvals predate its own fix; claim 4 lacks a
+positive control proving its no-rerun listener can fire; claim 2's startup
+sweep is not wired at boot; claim 5 has no owner-release path.
 
 ## The controls most likely to become decoration
 
