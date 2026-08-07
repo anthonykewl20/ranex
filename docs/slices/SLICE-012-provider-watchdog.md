@@ -51,24 +51,50 @@ gates below are green on disk — not in a session's summary.
 
 1. **The unsafe baseline is reproduced before it is refused.** A fake provider
    that sends one SSE chunk then stalls hangs the run past budget with the
-   watchdog disabled. Observed, not asserted.
+   watchdog disabled. Asserted negatively — *the run does not reach a terminal
+   state within budget B* — not merely printed. A criterion with no assertion is
+   not a gate.
 2. **A stalled stream reaches a terminal state within budget**, with no manual
    interrupt, and `sessions.active()` no longer reports the session busy.
+   **The timeout must be non-retryable, and a test must prove it is not
+   retried.** `LLMError.retryable` delegates to `reason.retryable`
+   (`packages/llm/src/schema/errors.ts:181`), and the reasons disagree:
+   `ProviderInternalReason` is `true` (`:117`), `TransportReason` is `false`
+   (`:129`). An implementer who picks a retryable reason gets a watchdog that
+   fires, is retried, restarts the same stall, and hangs anyway — while every
+   other criterion here still passes. The prototype avoided this by accident,
+   not by decision.
 3. **Idle and absolute are distinct and independently demonstrated.** One test
    feeds deltas shorter than the idle threshold so only the absolute budget can
    fire; another disables idle entirely and proves absolute alone still cuts a
    stall. Neither may pass by accident of the other.
-4. **A healthy slow stream is not falsely cut.** Provider latency below the idle
-   threshold completes normally. The margin is stated, not implied.
-5. **Configuration is real.** The timeouts are configurable and bounded through
-   the harness's own configuration surface — not a mutable module singleton, not
-   a hardcoded constant. Defaults are justified in the slice or the issue.
+4. **A healthy slow stream is not falsely cut — by either timeout.** Provider
+   latency below the idle threshold completes normally, *and* a healthy long
+   turn completes within the absolute budget. Guarding only idle leaves the
+   absolute budget free to cut legitimate work. The margin is stated, not
+   implied, and the defaults are justified against a real latency distribution —
+   including time-to-first-token on a reasoning model, which a 400ms idle
+   default would cut on every call.
+5. **Configuration is real, and proven by behaviour.** The timeouts are
+   configurable and bounded through the harness's own configuration surface —
+   not a mutable module singleton, not a hardcoded constant. A **non-default
+   value must observably change when the watchdog fires**; reading a constant
+   back proves nothing. An out-of-bounds value is refused at load, not at use.
 6. **The watchdog is correct with a tool call in flight.** The prototype used
-   no-tool fixtures and explicitly did not cover this. A stall during a tool
-   round-trip must reach the same terminal state without stranding the tool.
-7. **The failure is legible.** A watchdog termination is distinguishable from a
-   provider error in the session's own record — an operator can tell "the model
-   went quiet" from "the model refused".
+   no-tool fixtures and explicitly did not cover this. Tools dispatch as fibers
+   during stream consumption (`runner/llm.ts:271`), and the cleanup at `:295`
+   fires only on `Cause.hasInterrupts` — a watchdog `Stream.fail(LLMError)` is an
+   error, not an interrupt, so dispatched tool fibers are **not** cleared and
+   `:296` then awaits them. The observable is therefore specific: the tool fiber
+   terminates and the tool is recorded interrupted, rather than "the tool is not
+   stranded" as a feeling.
+7. **The failure is legible, by reason and not by message text.** A watchdog
+   termination is distinguishable from a provider refusal in the session's own
+   record. `LLMError.reason` is a tagged union (`errors.ts:160-177`), so this
+   needs no schema change — but the slice must **name which reason carries each
+   timeout**, and state whether idle and absolute must be distinguishable
+   programmatically or only in the message. The prototype used one reason for
+   both and separated them by prose, which an operator cannot switch on.
 8. **No regression.** `packages/core` suite green, `tsgo --noEmit` exit 0, and
    the ranex contract suite still green (baseline 838 passed / 2 skipped).
 9. **The docs stay aligned.** `specs/v2/session.md:153`'s deferral is rewritten
@@ -92,8 +118,36 @@ gates below are green on disk — not in a session's summary.
    non-default value changes behaviour observably, not that a constant can be
    read back.
 5. **Fifth: declaring stability from one run.** Claim 5 was reported stable,
-   approved by two reviewers, and was flaky at ~12%. Any test touching timing
-   here is run repeatedly, and the count is reported.
+   approved by two reviewers, and was flaky at ~12%. Any test touching timing is
+   run repeatedly and the count reported — but repetition treats the symptom.
+   **Drive time with `TestClock`, which the fork already provides**
+   (`packages/core/test/lib/effect.ts` builds `testEnv` with `TestClock.layer()`,
+   and the SLICE-011 retry prototype drove its 499ms/500ms assertions through
+   `TestClock.adjust` deterministically). The watchdog prototype used a wall
+   clock and inherited the flake risk for no reason. Wall-clock timing is
+   permitted only where the thing under test is genuinely real-time, and then
+   the headroom is stated.
+
+## Amendments — 2026-08-07, from the pre-implementation review
+
+Two independent reviewers read this slice before any code existed, and their
+findings were checked against the harness on disk rather than accepted. Six
+amendments landed above: the non-retryable requirement in criterion 2, absolute
+false-cut coverage and default justification in 4, behavioural proof in 5, the
+tool-fiber observable in 6, reason-level legibility in 7, a negative assertion
+in 1, and `TestClock` in control 5.
+
+Two reviewer claims were **rejected** after checking the code, and are recorded
+so they are not raised again. `uninterruptibleMask` does not swallow the escape
+hatch: `restore` is applied to the provider stream (`runner/llm.ts:279`), so
+user interrupts propagate during streaming; the mask covers only post-stream
+settlement, deliberately. And a provider stall during a tool round-trip is
+*inside* the watched stream, not outside it — the tool-in-flight risk is the
+uncleared fiber set at `:295`, not an unguarded region.
+
+The retryability hole is the one worth remembering: every criterion in this
+slice could have passed while the watchdog fired, was retried, restarted the
+same stall, and hung anyway.
 
 ## What this slice does not close
 
