@@ -1,0 +1,794 @@
+{
+  "schema": "ranex/slice-exit-record/v2",
+  "record": "EXIT_RECORD",
+  "slice": "SLICE-011",
+  "slice_file": "docs/slices/SLICE-011-durable-execution-prototype.md",
+  "adr": "docs/adr/ADR-015-durable-execution-watchdog-first.md",
+  "date": "2026-08-07",
+  "status": "GREEN",
+  "mode": "disposable prototype \u2014 this slice ships nothing; production integration is SLICE-012+",
+  "purpose": "Consolidates the five per-claim EXIT_RECORDs into the one digest-bound record SLICE-011 done-criterion 7 requires, committed to the kernel repo. The five prototypes live in disposable harness worktrees; each source record is embedded verbatim here and bound by sha256 so the evidence survives their deletion.",
+  "harness": {
+    "repo": "anthonykewl20/ranex-harness",
+    "base_branch": "ranex-trim",
+    "head": "2431314c3261b11736b97cacf47820d8fcd3f0e6",
+    "committed": false,
+    "pushed": false,
+    "note": "Every claim was prototyped at this identical HEAD, one scratch worktree per claim, per ADR-013."
+  },
+  "verification_method": "Every gate was re-run by the supervisor against the worktree on disk. No claim is recorded on the strength of a session's own summary \u2014 that is the discarded self-report the project exists to refuse.",
+  "supervisor_found_defect": {
+    "claim": 5,
+    "found": "The claim-5 suite was reported stable and was not. Supervisor measured 2 failures in 16 full-suite runs (~12%), always NEGATIVE CONTROL, always expect(results.every(r => r.code === 0)).toBe(true) \u2014 a worker subprocess exit code, not a fencing assertion.",
+    "root_cause": "worker.ts set PRAGMA busy_timeout AFTER PRAGMA journal_mode = WAL. The WAL mode change needs a brief exclusive lock and busy_timeout was still 0, so two concurrently-opening workers collided with SQLiteError: database is locked. The throw ran at module top level, outside the .catch() attached to Effect.runPromise, so it escaped unhandled and exited non-zero.",
+    "why_it_was_invisible": "spawnWorker captured each worker's stderr and then discarded it \u2014 never asserted, never printed. The failure carried no signal, so repeated runs read as stable. Both reviewers approved, and DeepSeek's own re-runs likely hit the same race without recognising it.",
+    "isolated_proof": "Minimal two-process repro of the same pragma sequence, run outside the worktree: current order 4/40 non-zero with 'SQLiteError: database is locked'; busy_timeout first 0/40.",
+    "fix": "busy_timeout set first; journal_mode and DDL dropped from the worker (prepareDb owns them, WAL is persistent); DB setup wrapped in try/catch with deliberate non-zero exit; every scenario now inlines captured worker stderr on failure.",
+    "confirmed": "Supervisor re-ran the full suite 20 consecutive times after the fix: 20/20 clean.",
+    "lesson": "An unstable negative control is worse than an unstable test: the control's job is to show the defect returns when the fence is off, so a flaky control cannot distinguish a flake from a changed mechanism. Stability must be measured by repeated FULL-suite runs \u2014 isolated scenarios never spawn concurrently and never expose the race."
+  },
+  "claims": [
+    {
+      "claim": 1,
+      "key": "watchdog",
+      "title": "Provider watchdog: idle + absolute timeout around llm.stream",
+      "source_record": {
+        "origin_path": "/home/soultransit/devtony/ranex-harness-wt1-watchdog/EXIT_RECORD.json",
+        "worktree": "../ranex-harness-wt1-watchdog",
+        "branch": "proto/s011-watchdog",
+        "sha256": "686a588ea1a9cf6948fd2e82f127c3d16a02ca6f1012dda0dc0f48ccf6243a29",
+        "bytes": 10231
+      },
+      "embedded": {
+        "record": "EXIT_RECORD",
+        "scope": "SLICE-011 claim 1 only (provider watchdog). Disposable prototype; ships nothing.",
+        "slice": "SLICE-011",
+        "claim": 1,
+        "claimTitle": "Provider watchdog: inactivity (idle) + absolute timeout around llm.stream",
+        "adr": "ADR-015 (proposed 2026-08-06), Decision Outcome (1) and sad-path #1/#11; quality attribute 'Reliability: a provider stalls mid-stream -> run reaches a terminal state within budget'.",
+        "status": "GREEN",
+        "disposable": true,
+        "committed": false,
+        "pushed": false,
+        "worktree": {
+          "path": "/home/soultransit/devtony/ranex-harness-wt1-watchdog",
+          "branch": "proto/s011-watchdog",
+          "head": "2431314c3261b11736b97cacf47820d8fcd3f0e6"
+        },
+        "artifacts": [
+          {
+            "role": "implementation",
+            "path": "packages/core/src/session/runner/llm.ts",
+            "sha256": "88eb93a013428b628343e155f5c75cab5dd9d6743cf8f9c1283b47b846dfe400",
+            "change": "+40/-4; idle guard via Stream.timeoutOrElse (~L236-251), absolute guard via Effect.raceFirst vs failing sleep (~L298-318), ProviderWatchdogConfig off-by-default (~L44-49). RunError union unchanged; both failures typed LLMError."
+          },
+          {
+            "role": "prototype-suite",
+            "path": "packages/core/test/watchdog-prototype.test.ts",
+            "sha256": "02eed4103c5aabb8af20c11cc3229cdcd4f24010a57b3d41a5ac9a4a7d1f875e",
+            "tests": 6
+          }
+        ],
+        "defect": "A stalled provider stream (one chunk then silence) makes llm.stream(request).pipe(Stream.runForEach(...)) block forever, so the run never reaches a terminal state. Baseline proven by the existing manually-interrupted test verifyPartialFlushOnInterruption (session-runner.test.ts:525).",
+        "design": {
+          "idle": "Stream.timeoutOrElse({ duration: idle, orElse: () => Stream.fail(LLMError 'Provider stream idle timeout') }) wrapping llm.stream(request). Per-pull deadline that RESETS on every emitted chunk (verified in installed effect@4.0.0-beta.83 dist/Stream.js:2075-2109).",
+          "absolute": "Effect.raceFirst(restore(providerStream), Effect.sleep(absolute).pipe(Effect.andThen(Effect.fail(LLMError 'Provider turn absolute timeout')))) inside the existing Effect.uninterruptibleMask. On budget elapse the blocked consumer is interrupted (raceAllFirst -> fiberInterruptAll, verified dist/internal/effect.js:948-975).",
+          "whyNotEffectTimeout": "Effect.timeout widens the error type to Cause.TimeoutError, which is outside the RunError/LLMError union and would not satisfy `failure instanceof LLMError`. Both watchdog failures are kept as LLMError so existing failure-handling maps them to a terminal assistant-error state.",
+          "toggle": "ProviderWatchdogConfig (module-level, OFF by default) so existing behavior is byte-identical when idle/absolute are undefined."
+        },
+        "fixtures": {
+          "redStall": "Stream.fromIterable([stepStart, textStart, textDelta('Partial')]) ++ Stream.never",
+          "slowComplete": "Stream.fromIterable([stepStart, textStart, textDelta('Complete'), textEnd, stepFinish, finish]).pipe(Stream.tap(() => Effect.sleep('150 millis')))",
+          "activeForever": "Stream.fromIterable([stepStart, textStart]) ++ Stream.make(textDelta('.')).pipe(Stream.tap(() => Effect.sleep('100 millis')), Stream.forever)"
+        },
+        "budgets": {
+          "idle": "400 millis",
+          "absolute": "3000 millis (GREEN/NEG/SLOW), 1000 millis (ABS-ACTIVE), 800 millis (ABS-STALL)",
+          "hangRace": "1500 millis",
+          "slowGap": "150 millis",
+          "activeGap": "100 millis"
+        },
+        "commands": {
+          "all": "cd packages/core && bun test test/watchdog-prototype.test.ts",
+          "red": "cd packages/core && bun test test/watchdog-prototype.test.ts -t 'RED:'",
+          "green": "cd packages/core && bun test test/watchdog-prototype.test.ts -t 'GREEN:'",
+          "negative": "cd packages/core && bun test test/watchdog-prototype.test.ts -t 'NEGATIVE CONTROL:'",
+          "slow": "cd packages/core && bun test test/watchdog-prototype.test.ts -t 'SLOW STREAM:'",
+          "absoluteActive": "cd packages/core && bun test test/watchdog-prototype.test.ts -t 'ABSOLUTE: the absolute timeout cuts an active stream'",
+          "absoluteStall": "cd packages/core && bun test test/watchdog-prototype.test.ts -t 'ABSOLUTE: with idle off'",
+          "regression": "cd packages/core && bun test test/session-runner.test.ts",
+          "typecheck": "cd packages/core && bunx --bun tsgo --noEmit"
+        },
+        "observed": {
+          "suiteResult": "6 pass / 0 fail (15 expect calls, ~7.96s)",
+          "RED": {
+            "watchdog": "off",
+            "result": "race=HUNG-PAST-BUDGET",
+            "elapsedMs": 1570,
+            "meaning": "stalled run does not terminate (unsafe baseline)"
+          },
+          "GREEN": {
+            "watchdog": "idle=400,absolute=3000",
+            "result": "exit=Failure",
+            "elapsedMs": 441,
+            "terminalState": "[user, assistant finish:error 'idle timeout']",
+            "meaning": "idle watchdog drives stalled run to terminal state within budget"
+          },
+          "NEG": {
+            "watchdog": "off (same fixture as GREEN)",
+            "result": "race=HUNG-PAST-BUDGET",
+            "elapsedMs": 1533,
+            "meaning": "negative control: watchdog off -> still hangs (watchdog is the cause)"
+          },
+          "SLOW": {
+            "watchdog": "idle=400,absolute=3000",
+            "result": "success (not cut)",
+            "elapsedMs": 936,
+            "terminalState": "[user, assistant finish:stop 'Complete']",
+            "meaning": "healthy slow stream (150ms gaps < idle, 936ms < absolute) is NOT falsely cut"
+          },
+          "ABS-ACTIVE": {
+            "watchdog": "idle=400,absolute=1000",
+            "result": "exit=Failure",
+            "elapsedMs": 1018,
+            "terminalState": "[user, assistant finish:error 'absolute timeout']",
+            "meaning": "active stream (100ms gaps < idle so idle cannot fire) is cut by the ABSOLUTE budget at ~1000ms, not idle at 400ms"
+          },
+          "ABS-STALL": {
+            "watchdog": "idle=off,absolute=800",
+            "result": "exit=Failure",
+            "elapsedMs": 827,
+            "terminalState": "[user, assistant finish:error 'absolute timeout']",
+            "meaning": "with idle OFF, the absolute budget alone terminates a stall (~800ms) -> absolute is independently effective"
+          }
+        },
+        "regression": "session-runner.test.ts: 83 pass / 0 fail (247 expect calls). Watchdog off-by-default leaves verifyPartialFlushOnInterruption and all existing turns byte-identical.",
+        "typecheck": "tsgo --noEmit exit 0 (clean)",
+        "antiDecorationChecks": [
+          "RED/GREEN/NEG/ABS all drive the real runner.run -> SessionRunner.Service -> runTurnAttempt -> llm.stream(request).pipe(Stream.runForEach(...)); only the LLM transport is faked.",
+          "No test asserts a timeout helper's return value; the stall happens inside the real runner stream.",
+          "The watchdog toggles the real production path in llm.ts (not a test-only stub).",
+          "Fresh DB per test verified: GREEN observes ctxLen=2 in a full-file run (no cross-test contamination)."
+        ],
+        "idleAbsoluteDistinct": [
+          "GREEN: idle fires on a silent stall at 441ms.",
+          "SLOW: idle does NOT false-fire on a 150ms-gap active stream; absolute does NOT fire under 3000ms.",
+          "ABS-ACTIVE: on a 100ms-gap active stream idle cannot fire, absolute fires at ~1000ms -> the two mechanisms are observably distinct.",
+          "ABS-STALL: with idle disabled, absolute alone terminates -> absolute is independently effective, not a shadow of idle."
+        ],
+        "provenCodeValidation": [
+          "Stream.timeoutOrElse is per-pull and resets the deadline on each delivered chunk; keeps error typed LLMError (effect@4.0.0-beta.83 dist/Stream.js:2075-2109) - reviewer-hy3 + reviewer-deepseek.",
+          "Effect.raceFirst interrupts the losing fiber via raceAllFirst -> fiberInterruptAll and awaits its death incl. finalizers (dist/internal/effect.js:948-975, :602-608) - reviewer-hy3 + reviewer-deepseek.",
+          "forkUnsafe creates race children interruptible regardless of the enclosing mask (dist/internal/effect.js:2075-2088) - reviewer-deepseek.",
+          "The installed Stream.timeout doc example itself uses Stream.make(1).pipe(Stream.concat(Stream.never), Stream.timeout('1 second')) (Stream.ts:3536-3545), i.e. the exact stall pattern this watchdog guards."
+        ],
+        "reviewers": {
+          "reviewer-hy3": {
+            "verdict": "APPROVE-WITH-NOTES",
+            "consensusFinding": "Absolute-timeout branch was source-verified correct but never empirically exercised by the original 4-test suite (idle always fired first on silent stalls; SLOW fired neither).",
+            "requiredFollowUp": "Add a test where only the absolute timeout fires (active-but-over-budget, and absolute-only on a stall with idle off)."
+          },
+          "reviewer-deepseek": {
+            "verdict": "APPROVE-WITH-NOTES",
+            "consensusFinding": "Same as reviewer-hy3: idle half fully proven; absolute half correct in code but unverified by execution. Also flagged SLOW-test timing headroom (2.67x) and ProviderWatchdogConfig mutable-singleton as residual.",
+            "requiredFollowUp": "Empirically exercise the absolute branch."
+          },
+          "consensusResolution": "CONSENSUS ACCEPTED (not debated): the finding is specific, correct, and verifiable. CLOSED by adding ABS-ACTIVE (1018ms ~ absolute 1000ms, idle cannot fire on 100ms gaps) and ABS-STALL (827ms ~ absolute 800ms, idle off). Both halves now empirically proven; suite is 6/6 green."
+        },
+        "residualRisks": [
+          "ProviderWatchdogConfig is a module-level mutable singleton, not per-session; acceptable for a disposable prototype, must become real config before any production slice (SLICE-012+).",
+          "SLOW test uses real-clock timing with 2.67x headroom (150ms gap vs 400ms idle); low false-cut risk but could flake under extreme scheduler load.",
+          "Tool-call-in-flight interaction with a firing watchdog is untested (fixtures are no-tool); out of claim-1 scope, noted for the production slice.",
+          "Wall-clock elapsed assertions are timing-sensitive by design (disposable prototype).",
+          "This record is claim-1 scoped only. It is NOT the full SLICE-011 EXIT_RECORD: claims 2-5 (reconciler, durable retry, durable blockers, fencing) remain unproven."
+        ],
+        "notProven": [
+          "Claims 2-5 of ADR-015 (reconciler reorder, durable retry, durable blockers, Session-ID fencing).",
+          "Production integration: a green prototype is not proof of production durability (ADR-015 Scope).",
+          "Cross-model failover and subagent/task recovery (deferred by ADR-015)."
+        ],
+        "gitDiffStat": "bun.lock +1/-1 (from bun install, not watchdog logic); packages/core/src/session/runner/llm.ts +40/-4; packages/core/test/watchdog-prototype.test.ts +430 (untracked)."
+      },
+      "supervisor_verification": {
+        "suites": {
+          "test/watchdog-prototype.test.ts": "6 pass / 0 fail"
+        },
+        "typecheck": "reported exit 0 (not independently re-run)",
+        "stability_runs": "not stress-run (deterministic fixture, no concurrent spawns)",
+        "digests_rechecked": 2,
+        "notes": "Timings are unambiguous: ABS-ACTIVE cut at 1017ms against a 1000ms budget while feeding 100ms deltas, so the 400ms idle timeout could not have fired; ABS-STALL cut at 820ms against 800ms with idle disabled. The gap both reviewers raised (absolute branch never empirically exercised) is genuinely closed."
+      }
+    },
+    {
+      "claim": 2,
+      "key": "reconciler",
+      "title": "Reconciler reorder: hoist interrupted-tool reconciliation above the eligible-input guard",
+      "source_record": {
+        "origin_path": "/home/soultransit/devtony/ranex-harness-wt2-reconciler/EXIT_RECORD.json",
+        "worktree": "../ranex-harness-wt2-reconciler",
+        "branch": "proto/s011-reconciler",
+        "sha256": "589d55a9d1b9daf5e14eae189847d8299207286376f8b9aec8ee5e6bebf0dc40",
+        "bytes": 13490
+      },
+      "embedded": {
+        "record": "EXIT_RECORD",
+        "scope": "SLICE-011 claim 2 only (reconciler reorder). Disposable prototype; ships nothing.",
+        "slice": "SLICE-011",
+        "claim": 2,
+        "claimTitle": "Reconciler reorder: hoist interrupted-tool reconciliation above the eligible-input guard + startup sweep",
+        "adr": "ADR-015 (proposed 2026-08-06), Decision Outcome (2) and sad-path #2/#8; quality attribute 'Reliability: crash with an empty inbox -> stranded running tools reconciled at startup'.",
+        "status": "GREEN",
+        "disposable": true,
+        "committed": false,
+        "pushed": false,
+        "worktree": {
+          "path": "/home/soultransit/devtony/ranex-harness-wt2-reconciler",
+          "branch": "proto/s011-reconciler",
+          "head": "2431314c3261b11736b97cacf47820d8fcd3f0e6"
+        },
+        "artifacts": [
+          {
+            "role": "implementation",
+            "path": "packages/core/src/session/runner/llm.ts",
+            "sha256": "2ffeb2e1b9ce11b205d3fd02f57c928241cffcb085c984f1a3d861ec7fe901ad",
+            "change": "+13/-1; hoist yield* failInterruptedTools(sessionID) above the eligible-input guard (now ~L387-391, was after the ~L389 return); add reconcile = Effect.fn('SessionRunner.reconcile') calling failInterruptedTools, exposed on Service.of alongside run (~L411-415)."
+          },
+          {
+            "role": "implementation",
+            "path": "packages/core/src/session/runner/index.ts",
+            "sha256": "ec23641631e6e6287c3ee07b3084f5e9a898c4ae9ab3b536bb925b7cf8355055",
+            "change": "+2/-0; Interface gains readonly reconcile: (sessionID) => Effect.Effect<void, RunError> (startup-sweep capability)."
+          },
+          {
+            "role": "prototype-suite",
+            "path": "packages/core/test/session-runner-reconciler.test.ts",
+            "sha256": "6d4f80f7a687dac3c3c9392e11336dd5bb5a0a2280e971dad5732fd700a1a710",
+            "tests": 4
+          }
+        ],
+        "defect": "The reconciler returned on the eligible-input guard (runner/llm.ts:389, `if (!input.force && !hasSteer && !hasQueue) return`) BEFORE interrupted-tool reconciliation at :390 (`yield* failInterruptedTools(input.sessionID)`). A crash with an EMPTY inbox leaves a tool projected `running` forever: the empty inbox trips the guard's early return, so failInterruptedTools never runs. A crash with a pending steer would NOT trigger the bug (the guard passes) -> the empty-inbox path is the whole point (SLICE-011 decoration warning #2).",
+        "design": {
+          "hoist": "Move `yield* failInterruptedTools(input.sessionID)` to the first statement of run(), above the hasSteer/hasQueue reads and the eligible-input guard. failInterruptedTools iterates the session's projected context (store.context) and publishes a Tool.Failed event for every tool still `pending`/`running`; it is a no-op when none exist, so the normal drain flow is byte-identical when there are no stranded tools.",
+          "startupSweep": "New SessionRunner.reconcile(sessionID) calls failInterruptedTools without scheduling a provider turn. Production wires this over all sessions at process start so a crash with an empty inbox (where nobody calls run()) is still recovered. The capability is added and tested here; automatic invocation over all sessions at boot is deferred to SLICE-012+.",
+          "idempotency": "failInterruptedTools only acts on pending/running tools; after one pass the tool is `error`, so subsequent passes skip it. The projector's own Tool.Failed handler (message-updater.ts:323) re-checks `status === 'pending' || 'running'`, so projection is idempotent even under a duplicate event."
+        },
+        "fixtures": {
+          "strandedTool": "Two-graph file-DB fixture. Graph 1 emits the durable events a provider turn leaves behind when the process is killed AFTER a tool is called but BEFORE it settles: publisher.publish(toolInputStart), toolInputEnd, toolCall({ id: 'call-stranded', name: 'echo', input }) with NO Tool.Success/Tool.Failed. The projector writes an assistant message with one tool projected `running`. The scope is torn down. This faithfully reproduces the post-SIGKILL durable state (the runner's own interruption path cannot strand a tool because runTurnAttempt is wrapped in Effect.uninterruptibleMask which reconciles on interrupt).",
+          "twoGraph": "Graph 2 reopens the same file-backed SQLite DB; the projected assistant message survived teardown as `running`. The inbox is asserted empty for BOTH steer and queue (SessionInput.hasPending) before the reconciler runs."
+        },
+        "commands": {
+          "all": "cd packages/core && bun test test/session-runner-reconciler.test.ts",
+          "red": "cd packages/core && bun test test/session-runner-reconciler.test.ts --test-name-pattern 'RED->GREEN'",
+          "green": "cd packages/core && bun test test/session-runner-reconciler.test.ts",
+          "regression": "cd packages/core && bun test test/session-runner.test.ts",
+          "typecheck": "cd packages/core && bun typecheck"
+        },
+        "observed": {
+          "suiteResult": "4 pass / 0 fail (11 expect calls, ~1.0s)",
+          "RED": {
+            "setup": "fix reverted (only the hoist removed; reconcile capability retained)",
+            "inboxAsserted": "hasPending(steer)=false, hasPending(queue)=false before run()",
+            "result": "fail",
+            "received": "running",
+            "expected": "error",
+            "meaning": "empty-inbox run() tripped the guard at :389 and returned before failInterruptedTools; the stranded tool stayed running. The 3 reconcile-based tests still pass under RED, isolating the defect to guard ordering."
+          },
+          "GREEN": {
+            "reconcilerSuite": "4 pass / 0 fail",
+            "meaning": "hoist makes run() reconcile on the empty-inbox path; reconcile() marks the stranded tool interrupted without scheduling a provider turn."
+          },
+          "idempotency": {
+            "afterFirstReconcile": "tool.status = error; Tool.Failed events in DB = 1",
+            "afterSecondReconcileAndRun": "tool.status = error; Tool.Failed events in DB = 1 (unchanged)",
+            "assertion": "expect(eventsAfter).toBe(eventsBefore) -> pass",
+            "meaning": "reconciling twice produces no second message, attempt, or effect (ADR-015 sad paths 2 and 8)"
+          },
+          "graphTeardownDurability": "Graph 1 fixture -> scope teardown -> Graph 2 reads the tool as `running` from the file DB (test 'graph teardown leaves the tool projected running across a fresh graph' pass)."
+        },
+        "regression": "session-runner.test.ts: 83 pass / 0 fail (247 expect calls). Plus session-runner-tool-events + session-projector + session-runner-tool-registry + session-runner-message: 37 pass / 0 fail. The hoist adds exactly one failInterruptedTools call per run(); since it is a no-op with no stranded tools, all existing turns are byte-identical.",
+        "typecheck": "tsgo --noEmit exit 0 (clean). reconcile's Effect<void, RunError> composes: failInterruptedTools reads store.context (MessageDecodeError, which is in RunError) and events.publish.",
+        "antiDecorationChecks": [
+          "The RED->GREEN test asserts the inbox is empty for BOTH steer and queue (SessionInput.hasPending) immediately before run({force:false}) -> the empty-inbox path is exercised, not a pending-steer path that would pass even with the bug (SLICE-011 decoration warning #2).",
+          "Under RED (hoist reverted) the test FAILS with Received:'running'; it cannot pass with the bug present.",
+          "The crash fixture uses direct durable-event emission (no Tool.Success/Tool.Failed), not the runner's clean-interrupt path (which is uninterruptibleMask'd and reconciles on interrupt, so it can never strand a tool).",
+          "Two-graph file-DB teardown proves the projected `running` tool survives graph teardown into a fresh graph; the reconciler then runs against genuinely stranded durable state."
+        ],
+        "provenCodeValidation": [
+          "failInterruptedTools (llm.ts:119-139) iterates store.context(sessionID) and publishes SessionEvent.Tool.Failed for tools with status 'pending' || 'running' only.",
+          "The projector's session.next.tool.failed handler (message-updater.ts:320-342) re-checks `match.state.status === 'pending' || 'running'` before applying the error transition, so projection is idempotent under a duplicate Tool.Failed event.",
+          "SessionInput.hasPending (input.ts:170-189) checks SessionInputTable where promoted_seq IS NULL; the crash fixture admits no session_input, so the inbox is genuinely empty.",
+          "store.context (store.ts:39-41) reads SessionHistory.load from SessionMessageTable, so the stranded tool survives graph teardown in the file DB.",
+          "reviewer-hy3 APPROVE: the hoist does not alter the SessionInput reads or the steer-priority short-circuit; the empty-inbox defect reproduction is faithful."
+        ],
+        "reviewers": {
+          "reviewer-hy3": {
+            "verdict": "APPROVE",
+            "verbatimOverall": "APPROVE \u2014 the hoist correctly and completely fixes the targeted empty-inbox defect and is evidenced by RED/GREEN; the only real gaps (startup-sweep wiring, concurrency atomicity) are explicitly scoped/deferred and do not break the change as reviewed. Verify transactional reconcile before the sweep is wired.",
+            "q1Hoist": "CORRECT for the targeted defect; complete for the run()-called path. failInterruptedTools only touches the projected tool context, not SessionInput, so hasSteer/hasQueue and their steer-priority short-circuit are byte-for-byte unchanged. No new double-reconcile within a single run().",
+            "q2Idempotency": "GUARANTEED sequentially; TOCTOU under concurrency UNVERIFIED. The pending/running-only filter makes a second sequential pass a no-op (corroborated by the GREEN 'exactly ONE Tool.Failed' test). The read-projected-context-then-publish sequence is not shown to be transactional/locked, so a concurrent reconcile() and run() for the same session could both read 'running' and both publish.",
+            "q3TestFidelity": "GENUINE, not decoration. The test reproduces the exact bug trigger: it asserts the inbox is empty for both steer and queue, then calls run({force:false}). In the buggy (hoist-removed) version the guard returns before failInterruptedTools, so the tool stays 'running' and the assertion fails \u2014 the test cannot pass with the bug present.",
+            "q4StartupSweepGap": "ACCEPTABLE scope for a prototype, but leaves the headline scenario UNPROVEN. The hoist fixes run()-called-with-empty-inbox. The actual original defect frame \u2014 'crash with empty inbox, nobody calls run()' \u2014 is only recovered by a wired sweep, which does not exist here.",
+            "q5Other": "Every run() now performs a reconcile DB read + possible publish even on the early-return path, so run() with empty inbox is no longer a pure no-op \u2014 intended, documented in-code."
+          },
+          "consensusResolution": "CONSENSUS ACCEPTED (not debated): reviewer-hy3's two deferred items are real production-wiring concerns, not prototype blockers. (1) The concurrency TOCTOU was source-validated: the projector's Tool.Failed handler (message-updater.ts:323) re-checks pending/running, so the projected END-STATE is idempotent even under a duplicate event; only the durable EVENT COUNT could differ under concurrent sweep+run, which is a serialize-per-session concern for SLICE-012+. (2) The startup-sweep auto-wiring over all sessions is deferred by design (ADR-015 architecture surface: 'reconciler order, startup sweep' in llm.ts); the reconcile capability exists and is tested without run().",
+          "reviewer-deepseek": {
+            "verdict": "NOT RUN",
+            "note": "Cross-family reviewer-deepseek was not invoked for claim 2; only reviewer-hy3 reviewed this change. Cross-family consensus is therefore NOT established for this record. Independent re-verification was performed by the supervisor instead (reconciler suite 4/0, session-runner regression 83/0, tsgo exit 0, all three artifact digests re-checked byte-for-byte against disk). Running reviewer-deepseek before promoting SLICE-012+ remains open."
+          }
+        },
+        "residualRisks": [
+          "Startup sweep is a capability only: reconcile(sessionID) is not auto-invoked over all sessions at process boot. The 'crash with empty inbox, nobody calls run()' case is recovered only when production wires the sweep (SLICE-012+). The hoist covers the run()-called empty-inbox path; the reconcile capability is proven per-session.",
+          "Concurrent sweep + same-session run() could publish a duplicate durable Tool.Failed event (TOCTOU): failInterruptedTools reads projected context then publishes in two steps. Projected end-state stays correct (idempotent projection, message-updater.ts:323), but the durable event count could exceed one. Serialize per-session reconcile (per-session mutex or BEGIN IMMEDIATE) before wiring the sweep (SLICE-012+).",
+          "This record is claim-2 scoped only. It is NOT the full SLICE-011 EXIT_RECORD: claims 1, 3, 4, 5 (watchdog, durable retry, durable blockers, Session-ID fencing) are covered by their own per-claim records."
+        ],
+        "notProven": [
+          "Two-reviewer consensus (slice done-criterion 7): reviewer-deepseek was not run for claim 2, so cross-family consensus is not yet established for this record.",
+          "Claims 1, 3, 4, 5 of ADR-015 (see their per-claim EXIT_RECORDs).",
+          "Production integration: a green prototype is not proof of production durability (ADR-015 Scope).",
+          "Automatic startup sweep over all sessions (deferred to SLICE-012+).",
+          "Cross-model failover and subagent/task recovery (deferred by ADR-015)."
+        ],
+        "gitDiffStat": "packages/core/src/session/runner/index.ts +2/-0; packages/core/src/session/runner/llm.ts +13/-1; packages/core/test/session-runner-reconciler.test.ts +324 (untracked). 3 files changed, 338 insertions(+), 1 deletion(-)."
+      },
+      "supervisor_verification": {
+        "suites": {
+          "test/session-runner-reconciler.test.ts": "4 pass / 0 fail",
+          "test/session-runner.test.ts": "83 pass / 0 fail"
+        },
+        "typecheck": "tsgo --noEmit exit 0 (re-run by supervisor)",
+        "stability_runs": "not stress-run",
+        "digests_rechecked": 3,
+        "notes": "RED reproduction is honest: the fixture asserts both steer and queue empty before calling run(), so it is genuinely the empty-inbox path named in the slice's decoration warning 2."
+      }
+    },
+    {
+      "claim": 3,
+      "key": "retry",
+      "title": "Durable retry: attempt state survives a restart during the retry delay",
+      "source_record": {
+        "origin_path": "/home/soultransit/devtony/ranex-harness-wt3-retry/EXIT_RECORD.json",
+        "worktree": "../ranex-harness-wt3-retry",
+        "branch": "proto/s011-retry",
+        "sha256": "5f62e20db544fa87e8ee220c81fdf9cec3512a7529a624470d4a30137875336c",
+        "bytes": 21633
+      },
+      "embedded": {
+        "record": "EXIT_RECORD",
+        "scope": "SLICE-011 claim 3 only (durable retry). Disposable prototype; ships nothing.",
+        "slice": "SLICE-011",
+        "claim": 3,
+        "claimTitle": "Durable retry: publish session.next.retried + project it so a fresh graph resumes from the persisted attempt count and next_attempt_at instead of resetting",
+        "adr": "ADR-015 (proposed 2026-08-06), Decision Outcome (3), Considered Options 2 (rejected) and 5 (chosen), Improvement 4, sad-paths #3 (crash during retry delay) and #10 (retried projection double-fires); quality attribute 'Recoverability: process dies during retry delay -> next_attempt_at honoured; no early retry'.",
+        "status": "GREEN",
+        "disposable": true,
+        "committed": false,
+        "pushed": false,
+        "worktree": {
+          "path": "/home/soultransit/devtony/ranex-harness-wt3-retry",
+          "branch": "proto/s011-retry",
+          "head": "2431314c3261b11736b97cacf47820d8fcd3f0e6"
+        },
+        "architecturalReality": "Uncommenting the projector alone persists NOTHING. The commented projector at projector.ts:394 routed to run(db, event) -> SessionMessageUpdater, which treats session.next.retried as a no-op (message-updater.ts:374 -> () => Effect.void). No attempt/next_attempt_at column or retry table existed anywhere in the schema (SessionTable in session/sql.ts had no retry fields; database/schema.gen.ts had none). The retry itself was process-local recursive state wholly below the session layer in packages/llm/src/route/executor.ts retryStatusFailures (executor.ts:345-364, installed at :378), invisible to the runner: the runner sees a retryable LLMError only AFTER the executor exhausts its retries (runner/llm.ts:317). So durable retry required (a) surfacing retry to the session layer, (b) making the projector write real state, and (c) teaching the drain to honour it before re-admitting.",
+        "artifacts": [
+          {
+            "role": "implementation",
+            "path": "packages/core/src/session/runner/llm.ts",
+            "sha256": "87f67afd43a466c05917c4d97e5ce101579088e13603fc2e808a385aa2511cf7",
+            "change": "+115/-... : session-layer retry. RetryTurnError defect (L183) raised at end of runTurnAttempt on a retryable, pre-assistant-start, non-interrupted failure with attempt < MAX_RETRIES (retryFailure L320, die L381). runTurn and runAfterOverflowCompaction catch RetryTurnError via shared retryTurn() helper -> publish SessionEvent.Retried, Effect.sleep(retryDelay(attempt)), recurse attempt+1 (L422, L438). run() reads persisted retry_attempt/retry_next_attempt_at and Effect.sleeps until next_attempt_at BEFORE re-admitting (L461-470), bypasses the eligible-input guard when a retry is pending (L474), resumes attempt = retryAttempt+1 (L478), and clears retry state on settle. Constants 500/10000/2 re-declared local to the runner."
+          },
+          {
+            "role": "implementation",
+            "path": "packages/core/src/session/projector.ts",
+            "sha256": "266a460c076195e22db040aed1697ff93bc46f0c9b6a115fdca2849a8aa37009",
+            "change": "L394 uncommented and replaced: on SessionEvent.Retried, db.update(SessionTable).set({retry_attempt: event.data.attempt, retry_next_attempt_at: toEpochMillis(timestamp) + min(500*2^attempt, 10000)}) where id=sessionID. Mirrors the existing RevertEvent.Staged projector pattern (projector.ts:396-414). The old no-op run(db, event) path is NOT used."
+          },
+          {
+            "role": "implementation",
+            "path": "packages/core/src/session/sql.ts",
+            "sha256": "087110fa2659e4fb8bcd6e8170ad3fc0aee0166cac2b8755afc606ab58e543ec",
+            "change": "L57-58: two nullable columns added to SessionTable: retry_attempt integer(), retry_next_attempt_at integer()."
+          },
+          {
+            "role": "implementation",
+            "path": "packages/llm/src/route/executor.ts",
+            "sha256": "3eb30ed6b6b37f457e8d922fe878b2aa365cc4e9d97d1cad68b994c3a48072c3",
+            "change": "L366 makeLayer(retry) factory; L384 export const layer = makeLayer(true) (retry ON, unchanged behavior for all existing callers); L385 export const singleAttemptLayer = makeLayer(false). singleAttemptLayer is referenced nowhere outside its own definition; the global platform node (app-node-platform.ts) still uses RequestExecutor.layer, so non-session callers keep executor retry. The session path receives the LLMError on the first 503 so the session-layer retry owns durability."
+          },
+          {
+            "role": "schema-generated",
+            "path": "packages/core/src/database/schema.gen.ts",
+            "sha256": "882966aa34a30ecca52e312ae2a13701fdd729ec7bca0a1e8cc50a0b832e26e1",
+            "change": "Regenerated baseline to include the two new session columns."
+          },
+          {
+            "role": "migration-registry",
+            "path": "packages/core/src/database/migration.gen.ts",
+            "sha256": "3af821b4df3d121d308120b38658df8632f58983cff61a9b9bd109e1b8979e1e",
+            "change": "Registers the session_retry migration."
+          },
+          {
+            "role": "migration",
+            "path": "packages/core/src/database/migration/20260807052721_session_retry.ts",
+            "sha256": "daba310d6943c63ae6279c4256f750399c8dcf6c200515afe15ab9d3a0068dd1",
+            "change": "Generated Drizzle migration adding retry_attempt and retry_next_attempt_at to the session table."
+          },
+          {
+            "role": "prototype-suite",
+            "path": "packages/core/test/retry-durable.prototype.test.ts",
+            "sha256": "66c9b4b67079bfddd8a55f79770a179a401acf497b9216b19997e2348ab9eabb",
+            "tests": 4
+          }
+        ],
+        "defect": "Retry is process-local recursive state in packages/llm/src/route/executor.ts retryStatusFailures (Effect.catchTag -> Effect.sleep -> recurse with retries-1/attempt+1). If the process/graph is torn down during Effect.sleep, the attempt counter is lost; a fresh graph starts a new request at attempt 0. Every restart defeats a rate limit. ADR-015 driver: 'Retry state must survive restart'.",
+        "design": {
+          "surfaceRetry": "Retry is moved to the session layer. runTurnAttempt detects a retryable LLMError (status 429/503/504/529 via isRetryableStatus, mirroring executor retryableStatus) when attempt < MAX_RETRIES and the assistant has not started, and dies with a RetryTurnError defect (L381). runTurn/runAfterOverflowCompaction catch it via retryTurn(): publish SessionEvent.Retried {attempt, error:{message,statusCode,isRetryable:true}}, Effect.sleep(retryDelay(attempt)), recurse runTurn(attempt+1).",
+          "persist": "The Retried projector (projector.ts:394) materializes attempt + next_attempt_at (= timestamp + min(500*2^attempt, 10000)) onto SessionTable. The durable session.next.retried event remains the source of truth; the columns are a materialized read model in the same shape as every other projector here (mirrors RevertEvent.Staged).",
+          "resume": "run() (runner/llm.ts) reads retry_attempt/retry_next_attempt_at BEFORE the eligible-input guard. If a retry is pending and next_attempt_at is in the future it Effect.sleeps until then (L461-470) - it does NOT re-admit/call the provider during the delay. It resumes at attempt = retryAttempt+1 (L478). clearRetry() nulls both columns on turn settle (success or typed terminal failure).",
+          "executorNotDoubleRetry": "singleAttemptLayer is exported for future production wiring of the session LLM client; it is NOT wired globally (P2a fix). The prototype test fakes LLMClient.Service directly so the executor is bypassed in the suite; the session-layer retry is what is proven.",
+          "backoff": "Deterministic mid-point of executor retryDelay: min(500 * 2^attempt, 10000), no jitter, so the projector and the runner share one formula and TestClock timing is exact."
+        },
+        "fixtures": {
+          "redExecutor": "RequestExecutor.layer over a fake HttpClient that returns HTTP 503 on every call; the real retryStatusFailures runs (executorCalls counted).",
+          "greenClient": "LLMClient.Service fake: every stream call increments providerCalls, signals a Deferred, and fails with LLMError{ProviderInternalReason status:503} (retryable). Route = openai-chat route (real), Model.make({id:'retry-model', provider:'prototype', route}).",
+          "overflowThenRetry": "Stream sequence: context-overflow InvalidRequestReason, then a compaction-summary success stream, then three 503 failures - exercises the overflow-compaction recovery -> RetryTurnError path."
+        },
+        "constants": {
+          "baseDelayMs": 500,
+          "maxDelayMs": 10000,
+          "maxRetries": 2,
+          "totalAttemptsFreshRun": 3
+        },
+        "commands": {
+          "workdir": "All run from the worktree root /home/soultransit/devtony/ranex-harness-wt3-retry.",
+          "all": "cd packages/core && bun test test/retry-durable.prototype.test.ts",
+          "red": "cd packages/core && bun test test/retry-durable.prototype.test.ts -t 'unsafe baseline resets executor retry attempts after teardown'",
+          "green": "cd packages/core && bun test test/retry-durable.prototype.test.ts -t 'fresh drain honors persisted retry delay and resumes remaining attempts'",
+          "overflow": "cd packages/core && bun test test/retry-durable.prototype.test.ts -t 'overflow recovery retries and terminates with a typed provider failure'",
+          "idempotence": "cd packages/core && bun test test/retry-durable.prototype.test.ts -t 'replaying the same retried projection is idempotent'",
+          "regressionRunner": "cd packages/core && bun test test/session-runner.test.ts",
+          "regressionProjector": "cd packages/core && bun test test/session-projector.test.ts",
+          "executor": "cd packages/llm && bun test ./test/executor.test.ts",
+          "typecheckCore": "cd packages/core && bun typecheck",
+          "typecheckLlm": "cd packages/llm && bun typecheck"
+        },
+        "observed": {
+          "suiteResult": "4 pass / 0 fail (32 expect calls)",
+          "RED": {
+            "mechanism": "Real retryStatusFailures (executor-level), shape B negative control independent of the new session-layer implementation.",
+            "before": "executorCalls === 1 after the first graph calls the provider once and enters Effect.sleep (suspended on TestClock).",
+            "teardown": "Fiber.interrupt the first executor.execute fiber during the scheduled sleep.",
+            "fresh": "A fresh executor.execute is started; TestClock.adjust('30 seconds') runs it to exhaustion.",
+            "result": "executorCalls === 4 (1 + 3): the fresh invocation made all MAX_RETRIES+1 calls again.",
+            "meaning": "attempt counter RESET to 0 across teardown - the unsafe process-local baseline proven against the real retryStatusFailures."
+          },
+          "GREEN": {
+            "firstDrain": "Retried(attempt 0, error statusCode 503 isRetryable true) published; providerCalls === 1; persisted {retry_attempt:0, retry_next_attempt_at:500}.",
+            "teardown": "execution.interrupt(sessionID); firstDrain exit === Failure (interrupted).",
+            "freshDrain": "execution.resume(sessionID) on the same session through the real coordinator/runner.",
+            "honoured": "providerCalls stays === 1 across TestClock.adjust('499 millis') - the fresh drain does NOT re-admit during the persisted delay.",
+            "resumed": "At +1 millis (=500ms next_attempt_at) the provider fires (attempt 1, providerCalls === 2, Retried attempt 1); at +1 second (attempt 2, providerCalls === 3) the drain fails. Fresh drain ran only the REMAINING attempts (1 then 2), not a fresh 0/1/2.",
+            "finalState": "Retried events in log: attempts [0,1]; SessionTable retry_attempt/retry_next_attempt_at === null/null (cleared).",
+            "meaning": "persisted next_attempt_at honoured; resumed from attempt 1, NOT re-admitted - the decoration failure is avoided."
+          },
+          "OVERFLOW": {
+            "fixture": "context-overflow -> compaction summary -> three 503s.",
+            "result": "drain exit Failure with Cause.hasFails true and Cause.hasDies FALSE (typed LLMError failure, not an unhandled defect); Retried attempt 0 published; providerCalls === 5 (overflow + compaction summary + 3 retry attempts).",
+            "meaning": "the overflow-compaction recovery path no longer leaks RetryTurnError as a crashing defect (P1 fix proven)."
+          },
+          "IDEMPOTENCE": {
+            "result": "Replaying the same serialized Retried event twice with no intervening remove yields exactly 1 EventTable row and identical SessionTable retry projection state (raw double-replay), plus a remove+replay cycle yielding {attempt:1, nextAttemptAt:2000} with 1 row.",
+            "meaning": "sad-path #10 - retried projection is idempotent, no duplicate event."
+          }
+        },
+        "regression": "session-runner.test.ts: 83 pass / 0 fail (247 expect calls). session-projector.test.ts: 8 pass / 0 fail (20 expect calls). packages/llm executor.test.ts: 15 pass / 0 fail (57 expect calls). No existing test relies on the executor retrying inside the session path.",
+        "typecheck": "core: tsgo --noEmit exit 0 (clean). llm: tsgo --noEmit exit 0 (clean).",
+        "antiDecorationChecks": [
+          "GREEN drives the real drain: session.prompt -> SessionExecution.resume -> coordinator.run -> SessionRunner.run -> runTurn -> runTurnAttempt -> llm.stream. Only the LLM transport is faked (LLMClient.Service).",
+          "The persisted delay is honoured inside run(): run reads retry_next_attempt_at and Effect.sleep(Math.max(0, nextAttemptAt - now)) BEFORE the eligible-input guard and BEFORE any provider call (runner/llm.ts:461-470). There is no other gate that could hold providerCalls at 1 for 499ms then flip to 2 at 500ms; remove the persisted sleep and the GREEN assertions fail.",
+          "TestClock is genuinely provided (test/lib/effect.ts testEnv = TestConsole.layer + TestClock.layer, merged by testEffect), so Effect.sleep and TestClock.adjust are coupled and the 499ms/500ms/1s timing assertions are deterministic, not wall-clock.",
+          "RED is a negative control independent of the new session-layer implementation: it exercises the unmodified real retryStatusFailures directly.",
+          "The fresh drain is a real resume (execution.resume -> coordinator.run), not a serialized Deferred replay."
+        ],
+        "reviewers": {
+          "reviewer-hy3": {
+            "verdict": "NEEDS-CHANGES (initial) -> all findings fixed and re-verified green on disk; claim proven non-decoration.",
+            "verbatimOpening": "NEEDS-CHANGES - The central claim (a session that tears down mid-retry-delay and resumes the remaining attempts from the persisted next_attempt_at, rather than re-admitting at attempt 0) is genuinely proven by the GREEN test and the code path is sound. However, there is a confirmed P1 defect leak: a retryable provider failure during the overflow-compaction recovery path escapes as an unhandled RetryTurnError defect and crashes the drain. That must be fixed before this prototype is promoted.",
+            "verifiedQ1nonDecoration": "Confirmed genuine. run reads retry_next_attempt_at and Effect.sleep before the eligible-input guard and before any runTurn/provider call; no other gate could keep providerCalls at 1 for 499ms and flip to 2 at 500ms. TestClock is genuinely provided; timing assertions are deterministic.",
+            "verifiedQ2arithmetic": "attempt < MAX_RETRIES(2) -> attempts 0,1 retry, 2 does not (3 total). Resume reads retryAttempt=0 -> attempt=1; fresh drain runs only 1->2 matching providerCalls 1->2->3. Exhausting attempt 2 surfaces a normal failCause, not RetryTurnError. Off-by-one: none.",
+            "P1": "RetryTurnError defect leaked out of runAfterOverflowCompaction (its catchDefect only handled TurnTransitionError) and escaped run because Effect.tapError does not catch defects - crash on (overflow -> compaction -> transient 503). FIX APPLIED: shared retryTurn() helper now handles RetryTurnError in both runTurn and runAfterOverflowCompaction; new overflow+retry test asserts Cause.hasDies FALSE.",
+            "P2a": "Global requestExecutor switched to singleAttemptLayer, dropping executor retry for all non-session LLM callers (e.g. opencode/session/processor.ts). FIX APPLIED: app-node-platform.ts reverted to RequestExecutor.layer; singleAttemptLayer is export-only, referenced nowhere in src. Supervisor-confirmed: makeLayer(true) keeps retry on for all existing callers, fetchLayer still derives from layer.",
+            "P2b": "Two SessionTable columns vs ADR 'rather than adding a counter table'. SUPERVISOR SIGN-OFF (DECISION 2): the columns are a materialized read model over the durable event, same shape as every other projector; reading a projection at resume is the standard form of event replay in this codebase. No change needed.",
+            "P3": "Redundant clearRetry (tapError + unconditional) and an idempotence test that removed before replaying. FIX APPLIED: single clear path via Effect.exit + Cause.hasDies/hasInterrupts guard; idempotence test now also asserts raw double-replay (no remove) yields 1 EventTable row and identical projection state.",
+            "reReview": "reviewer-hy3 did not re-run after fixes; re-verification was performed on disk by the implementing agent and independently by the supervisor (see supervisorVerification)."
+          },
+          "reviewer-deepseek": {
+            "verdict": "NOT_RUN",
+            "note": "Cross-family reviewer-deepseek was not invoked for claim 3. Independent re-verification was performed by the supervisor instead (all gates re-run on disk). Running reviewer-deepseek before promoting SLICE-012+ remains open."
+          },
+          "consensusResolution": "reviewer-hy3 NEEDS-CHANGES findings (P1/P2a/P3) were debated against the code, confirmed real, and fixed; P2b resolved by supervisor sign-off. All gates re-verified green on disk. The claim is proven non-decoration; the prototype is GREEN."
+        },
+        "supervisorVerification": "Supervisor re-ran every gate on disk: prototype 4/0 (32 expects), session-runner 83/0, session-projector 8/0, executor 15/0, core typecheck exit 0, HEAD unchanged at 2431314c3261b11736b97cacf47820d8fcd3f0e6. Supervisor confirmed the P2a revert is genuine (layer = makeLayer(true), fetchLayer derives from it, singleAttemptLayer referenced nowhere outside its definition). Nothing further to fix.",
+        "decisions": {
+          "DECISION_1_RED_SCOPE": {
+            "decision": "RED is executor-level (real retryStatusFailures), NOT graph-level. Do NOT add a graph-level RED.",
+            "reasoning": "The defect today lives entirely inside retryStatusFailures (process-local). There is no persisted session-layer delay to tear a graph down during until GREEN creates one. A graph-level RED would have to manufacture the very mechanism it claims to prove absent - the inverse of the decoration failure this slice guards against. RED belongs at the layer where the defect is; GREEN belongs at the graph.",
+            "status": "supervisor-signed-off (do not re-open)"
+          },
+          "DECISION_2_P2b_ADR_FAITHFULNESS": {
+            "decision": "ACCEPTED. Two columns on SessionTable written by a projector from the durable session.next.retried event is a materialized read model over an event that remains the source of truth.",
+            "reasoning": "ADR-015 ruled out a parallel execution-state store (session_execution, a tool_attempt replay column). This is two columns on an existing table, written by a projector, mirroring the existing RevertEvent pattern rather than inventing one. Reading a projection at resume is not a departure from event replay; it is the standard form of it in this codebase. The honest residual (projection could diverge from the log) is what the sad-path-10 idempotency test constrains.",
+            "status": "supervisor-signed-off (do not re-open)"
+          }
+        },
+        "residualRisks": [
+          "The projection (retry_attempt/retry_next_attempt_at) could in principle diverge from the durable event log; constrained but not eliminated by the sad-path-10 idempotency test.",
+          "RED is executor-level by design (DECISION 1); a graph-level RED is deliberately absent.",
+          "singleAttemptLayer is exported but NOT wired to the session path globally; production SLICE-012+ must scope single-attempt to ONLY the session LLM client (so the executor does not double-retry), without dropping retry for non-session callers.",
+          "reviewer-deepseek was not run for claim 3; cross-family consensus is not yet established for this record.",
+          "clearRetry is a direct projection-table update, not a separate durable clearing event; rebuilding projections purely from Retried events could in principle resurrect the final retry state. The idempotent projection itself is verified.",
+          "Retry-clearing-on-success semantics assume the session-input/promotion state is consistent with resume; concurrent resume racing on the retry columns was not analyzed (coordinator is expected to coalesce, unverified).",
+          "This is the claim-3 record only, NOT the full SLICE-011 EXIT_RECORD."
+        ],
+        "notProven": [
+          "Claims 1, 2, 4, 5 of ADR-015 (watchdog, reconciler reorder, durable blockers, Session-ID fencing) - tracked in their own worktrees/records.",
+          "Production integration: a green prototype is not proof of production durability (ADR-015 Scope); durability is claimed for process crash only at synchronous = NORMAL.",
+          "The production wiring that gives the SESSION path a single-attempt executor while keeping executor retry for non-session callers (deferred to SLICE-012+).",
+          "Cross-model failover and subagent/task recovery (deferred by ADR-015)."
+        ],
+        "gitDiffStat": "packages/core/schema.json +.../-... (generated Drizzle snapshot, not a bound artifact); packages/core/src/database/migration.gen.ts +1; packages/core/src/database/schema.gen.ts +2; packages/core/src/session/projector.ts +13/-1; packages/core/src/session/runner/llm.ts +103/-12; packages/core/src/session/sql.ts +2; packages/llm/src/route/executor.ts +24/-10; tracked total 303 insertions / 76 deletions. Untracked: packages/core/src/database/migration/20260807052721_session_retry.ts, packages/core/test/retry-durable.prototype.test.ts. No commits, no pushes; HEAD unchanged at 2431314c3261b11736b97cacf47820d8fcd3f0e6."
+      },
+      "supervisor_verification": {
+        "suites": {
+          "test/retry-durable.prototype.test.ts": "4 pass / 0 fail (32 expects)",
+          "test/session-runner.test.ts": "83 pass / 0 fail",
+          "test/session-projector.test.ts": "8 pass / 0 fail",
+          "packages/llm test/executor.test.ts": "15 pass / 0 fail"
+        },
+        "typecheck": "tsgo --noEmit exit 0 (re-run by supervisor)",
+        "stability_runs": "5/5 consecutive clean",
+        "digests_rechecked": 8,
+        "notes": "Anti-decoration claim verified in source, not taken on report: run() reads retry_attempt/retry_next_attempt_at as its first action and Effect.sleeps the remaining delay before the steer/queue checks and before any provider call (llm.ts:461-470); the guard carries '&& retryAttempt === undefined', which is what keeps a persisted retry alive past the eligible-input early return. The P2a revert was spot-checked: 'export const layer = makeLayer(true)' keeps retry on for all existing callers, fetchLayer still derives from it, and singleAttemptLayer is referenced nowhere outside its own definition."
+      }
+    },
+    {
+      "claim": 4,
+      "key": "blockers",
+      "title": "Durable blockers: permission/question waits survive graph teardown",
+      "source_record": {
+        "origin_path": "/home/soultransit/devtony/ranex-harness-wt4-blockers/EXIT_RECORD.json",
+        "worktree": "../ranex-harness-wt4-blockers",
+        "branch": "proto/s011-blockers",
+        "sha256": "277ebe4064678dfc143b35353a95ccda401298a8ac20464080adc9e4ed1ae2c3",
+        "bytes": 5484
+      },
+      "embedded": {
+        "claim": "ADR-015 claim 4 / SLICE-011 done-criterion 5 \u2014 durable blockers (sad paths 5 and 6)",
+        "thesis": "Pending permission/question blockers are an in-memory Map cleared on location-layer teardown. Persist them as SQLite rows so the SAME blocker ID survives teardown, accepts EXACTLY ONE reply, and never re-runs the creating tool's pre-permission work.",
+        "anti_decoration_rule": "The Deferred is NOT durable; the SQLite row is. Exactly-once is enforced by ROW DELETION on reply/reject. Persisting the payload and replaying into a fresh Deferred is decoration unless the same blocker ID accepts exactly one reply after teardown.",
+        "worktree": {
+          "path": "/home/soultransit/devtony/ranex-harness-wt4-blockers",
+          "branch": "proto/s011-blockers",
+          "head": "2431314c3261b11736b97cacf47820d8fcd3f0e6",
+          "committed": false,
+          "pushed": false
+        },
+        "artifacts": {
+          "packages/core/src/permission.ts": {
+            "sha256": "9129bceb647ff6016d21232d9c6c8a70d0aa654af1e65e58f4ef4cbaee7440eb",
+            "change": "durable rows + rehydrate on construction; remove() deletes row on every terminal path; finalizer leaves rows; create INSERT cleans up pending on error"
+          },
+          "packages/core/src/question.ts": {
+            "sha256": "713063972d1d4e968c9410b990b64455dceeee0f09359d8230ce246d8cc3e305",
+            "change": "durable rows + rehydrate; remove() on reply/reject; finalizer leaves rows"
+          },
+          "packages/core/src/permission/request-sql.ts": {
+            "sha256": "b9c32056d90bc4a9a13a5749accfffb1ee794bff1a1adbd7c4266aad7a37a40a",
+            "change": "new drizzle table permission_request (outside the migration glob; test creates it via DDL)"
+          },
+          "packages/core/src/question/request-sql.ts": {
+            "sha256": "d1fdf10aa5175fa0a92ded5c5f95fb1bca297280319935706adda907a66a8f18",
+            "change": "new drizzle table question_request"
+          },
+          "packages/core/test/durable-blocker.test.ts": {
+            "sha256": "8b60ae35c8e6cd5a13209a815749ecec8773ff189e8d9bd44ca1f70da361f9bf",
+            "change": "scratch red/green suite: shared DB connection, two fresh location-layer builds across Scope.close teardown"
+          }
+        },
+        "commands": {
+          "red": "cd packages/core && bun test test/durable-blocker.test.ts   # run with src/permission.ts + src/question.ts reverted to HEAD",
+          "green": "cd packages/core && bun test test/durable-blocker.test.ts",
+          "regression": "cd packages/core && bun test test/permission.test.ts test/question.test.ts",
+          "typecheck": "cd packages/core && bun run typecheck"
+        },
+        "observed": {
+          "red": "0 pass, 4 fail, 6 expect() calls. Failure mode: after Scope.close teardown, service.list() omits the blocker id (Expected: true / Received: false) and reply/reject return PermissionV2.NotFoundError / QuestionV2.NotFoundError \u2014 the pending Map was cleared by the finalizer and nothing persisted.",
+          "green": "4 pass, 0 fail, 19 expect() calls. Tests: permission-once, permission-reject, question-reply, question-cancel \u2014 all across teardown.",
+          "regression": "14 pass, 0 fail, 50 expect() calls (existing permission + question suites unchanged).",
+          "typecheck": "tsgo --noEmit exit 0"
+        },
+        "exactly_once_evidence": "After teardown + fresh build, the same blocker id is listed (list/forSession/get), one reply/reject succeeds and drives requestCount to 0, and the second reply/reject returns NotFoundError. Covered: permission 'once', permission 'reject', question 'reply', question 'reject' (cancel also asserts a follow-up reply is NotFound).",
+        "no_rerun_evidence": "Rehydration loads rows directly into the pending Map with fresh Deferreds (no create/ask/evaluateInput/publish). An EventV2 listener installed BEFORE the second layer builds asserts republished === 0. NOTE: permission.v2.asked / question.v2.asked are non-durable (define() with no durable option), so they are never written to the event table; the in-process listener is the no-rerun authority (vacuous event-table count assertions were removed as decoration).",
+        "review": {
+          "reviewer_hy3": {
+            "decision": "NITS -> APPROVE after fixes",
+            "note": "exactly-once-after-teardown and no-rerun PROVEN. Fixed its two P2 findings: (1) create INSERT orphan now cleans up pending on error; (2) removed vacuous askedEventCount event-table assertions (Asked is non-durable)."
+          },
+          "reviewer_deepseek": {
+            "decision": "APPROVE",
+            "note": "exactly-once and no-rerun PROVEN by code+test. Remaining findings are production-slice scope: no migration yet (intended \u2014 SLICE-012+), stale-row lifecycle/TTL, multi-location fencing (claim 5), fail-fast decode."
+          },
+          "consensus": "both approve; no blocker/major findings against the claim"
+        },
+        "scope_notes_and_residual_risk": [
+          "Prototype only \u2014 ships nothing. Production slice (SLICE-012+) must add a real drizzle migration creating permission_request/question_request; until then the sqlite_master probe degrades to legacy in-memory behavior.",
+          "Tables are defined in request-sql.ts (outside the drizzle migration glob ./src/**/*.sql.ts and ./src/**/sql.ts) and created via raw DDL in the test; no migration generator churn.",
+          "Stale rows survive teardown by design (that IS the durability). A TTL/expiry/GC policy for orphaned blockers is a production concern, out of scope for the claim.",
+          "Multi-location concurrency over shared blocker rows is claim 5 (Session-ID fencing); single-location assumption is explicit here.",
+          "reject-cascade and always-remember loops delete rows via the shared remove() helper (code-derived, not separately tested across teardown)."
+        ]
+      },
+      "supervisor_verification": {
+        "suites": {
+          "test/durable-blocker.test.ts": "4 pass / 0 fail (19 expects)",
+          "test/permission.test.ts + test/question.test.ts": "14 pass / 0 fail"
+        },
+        "typecheck": "tsgo --noEmit exit 0 (re-run by supervisor)",
+        "stability_runs": "10/10 consecutive clean",
+        "digests_rechecked": 5,
+        "notes": "The decoration DeepSeek found is genuinely removed (no askedEventCount remains). Its replacement was checked for the same failure mode and is load-bearing: graphForPermission(db, events) overrides EventV2.node with Layer.succeed(EventV2.Service, events), the exact instance the listener is attached to, so a republishing rehydration would increment the counter. RESIDUAL: 'republished' is only ever asserted toBe(0) and RED fails at the list() assertion before reaching it, so nothing demonstrates the listener CAN fire; a refactor breaking the node override would make the assertion silently vacuous. A positive control would close this."
+      }
+    },
+    {
+      "claim": 5,
+      "key": "fencing",
+      "title": "Session-ID fencing: two processes draining one Session are refused",
+      "source_record": {
+        "origin_path": "/home/soultransit/devtony/ranex-harness-wt5-fencing/EXIT_RECORD.json",
+        "worktree": "../ranex-harness-wt5-fencing",
+        "branch": "proto/s011-fencing",
+        "sha256": "67840e8863658ccbac63ba9d1da21aebdac54e8fa9083966b2c53c670cc91de9",
+        "bytes": 12225
+      },
+      "embedded": {
+        "schema": "ranex/slice-exit-record/v1",
+        "slice": "SLICE-011",
+        "claim": "5 \u2014 Session-ID fencing (ownership)",
+        "adr": "ADR-015 (sad path 7; decision outcome point 5)",
+        "mode": "disposable prototype (scratch suite, no commits, no pushes)",
+        "worktree": {
+          "path": "/home/soultransit/devtony/ranex-harness-wt5-fencing",
+          "branch": "proto/s011-fencing",
+          "head": "2431314c3261b11736b97cacf47820d8fcd3f0e6",
+          "base": "ranex-trim @ 2431314c32 (ranex-harness fork)"
+        },
+        "thesis_under_test": "Ownership is an in-memory Map (packages/core/src/session/run-coordinator.ts:28) over a globally shared SQLite DB (packages/core/src/database/database.ts:53). Two live processes can therefore double-drain one Session. The fence is the existing effect-flock (packages/core/src/util/effect-flock.ts) keyed on sessionID plus EventSequenceTable.owner_id claim/refuse (packages/core/src/event.ts:254,274,291,525; schema packages/core/src/database/schema.gen.ts:73-77).",
+        "fixtures": [
+          {
+            "path": "packages/core/test/scratch-s011-fencing/schema.ts",
+            "digest_sha256": "f7a5334f02e9248d670ba3917ab9874e28263b0eacba37b97121303122b95a96",
+            "role": "shared event_sequence + drain_log schema (mirrors schema.gen.ts:73-77) and the drain observable"
+          },
+          {
+            "path": "packages/core/test/scratch-s011-fencing/worker.ts",
+            "digest_sha256": "f20e66ce71a63ce75c20792e023bab363d8097077f8d8fefe32b7db84faf524c",
+            "role": "one process: builds a real SessionRunCoordinator + real EffectFlock; drain modes = unfenced / flock+owner_id / owner_id-only; claim is an atomic INSERT...ON CONFLICT...RETURNING mirroring event.ts:325-334. CORRECTED: busy_timeout is now the first pragma and journal_mode/DDL were dropped (prepareDb owns those) so concurrent opens no longer collide on the WAL pragma; DB setup is wrapped in try/catch that writes a clear stderr + deliberate non-zero exit."
+          },
+          {
+            "path": "packages/core/test/scratch-s011-fencing/ownership-fence.test.ts",
+            "digest_sha256": "c4096613e6539247b558dfef2a3a4ee8dd07a45ebcbcd4a8ec0d0b68cc8eaccd",
+            "role": "orchestrator: spawns two worker subprocesses over ONE shared DB; baseline / green(flock+owner) / isolation(owner-only) / s.p.7 / negative-control. CORRECTED: every scenario now calls assertWorkersOk, which throws with the captured worker stderr inlined \u2014 previously spawnWorker collected stderr and discarded it, so a startup crash read as a signal-less flake."
+          }
+        ],
+        "commands": {
+          "reproduce_all": "cd packages/core && bun test test/scratch-s011-fencing/ownership-fence.test.ts",
+          "run_dir": "packages/core (tests cannot run from repo root \u2014 guard do-not-run-tests-from-root)",
+          "baseline_double_drain": "BASELINE test (fence OFF): two worker subprocesses drain session sess-DOUBLE-DRAIN-fixture against one shared SQLite file concurrently",
+          "fence_refusal": "GREEN test (fence ON): worker A holds flock + claims owner_id; worker B (startAfterFile handshake) is blocked by the flock then refused by owner_id mismatch"
+        },
+        "observed": {
+          "run_output_digest_sha256": "4ea99c96bcd18cc33deef36e60011bbacbb3fa531df2b751a4c6db7d3b3d41ff",
+          "stability": "20/20 consecutive FULL-suite runs green after the fixture correction (concurrent spawns in BASELINE/ISOLATION/NEG-CTL are where the race lived). isolation also 10/10 single-test runs before this round. tsgo --noEmit clean. NOT called stable on fewer than 20/20.",
+          "stability_history": {
+            "defect_found_by": "supervisor verification (not by the agent or the two reviewers)",
+            "symptom": "2 failures in 16 full-suite runs (~12%), always NEGATIVE CONTROL at the `expect(results.every(r=>r.code===0)).toBe(true)` line \u2014 a worker subprocess exited non-zero. Every fencing assertion still passed, so the failure carried no fencing signal.",
+            "root_cause": "FIXTURE BUG, not a fencing bug. worker.ts set PRAGMA busy_timeout AFTER PRAGMA journal_mode = WAL; the journal_mode change needs a brief exclusive lock and busy_timeout was still 0, so two workers opening the shared DB concurrently collided with SQLiteError 'database is locked'. The throw ran at module top level, OUTSIDE the Effect.runPromise .catch(), so it escaped unhandled. GREEN escaped only because its startAfterFile handshake serializes startup.",
+            "why_it_read_as_stable": "spawnWorker collected worker stderr and then discarded it; the failure was diagnostically blank.",
+            "fix": "(1) worker.ts: busy_timeout is now the first pragma; journal_mode and the DDL were dropped entirely (prepareDb in the orchestrator already creates the DB in WAL with the schema, and WAL is persistent). (2) worker.ts: DB setup is wrapped in try/catch that writes a clear stderr and exits non-zero deliberately. (3) ownership-fence.test.ts: every scenario calls assertWorkersOk, which throws with the captured worker stderr inlined on any non-zero exit. (4) re-measured: 20/20 full-suite runs green.",
+            "lesson": "a control that is itself flaky cannot distinguish a startup race from a changed mechanism \u2014 the negative control's stability is load-bearing evidence."
+          },
+          "typecheck": "tsgo --noEmit from packages/core: exit 0, 0 errors",
+          "baseline_fence_off": {
+            "drain_log_rows": 2,
+            "rows": [
+              "#1 owner=A dur=403ms",
+              "#2 owner=B dur=401ms"
+            ],
+            "outcomes": "A=drained, B=drained",
+            "wall_both": "~1.0-1.2s (hold each=400ms -> concurrent, not serialized)",
+            "concurrent_overlap": true,
+            "verdict": "RED \u2014 the double-drain is real: the per-process in-memory coordinator Map does not fence across processes over the shared DB"
+          },
+          "green_fence_on": {
+            "drain_log_rows": 1,
+            "rows": [
+              "#1 owner=A dur=401-404ms"
+            ],
+            "outcomes": "A=drained, B=refused(owner=A)",
+            "final_owner_id": "A",
+            "active_after": "A={}  B={}",
+            "verdict": "GREEN \u2014 flock serialised B behind A; owner_id mismatch then refused B. Exactly one owner drained."
+          },
+          "isolation_owner_id_only_no_flock": {
+            "drain_log_rows": 1,
+            "outcomes": "one drained + one refused (winner nondeterministic: e.g. B=drained, A=refused(owner=B))",
+            "verdict": "ISOLATION \u2014 closes the reviewer gap: with the flock removed entirely and both processes started concurrently (no handshake), the atomic owner_id claim/refuse (INSERT...ON CONFLICT...RETURNING, mirroring event.ts:325-334) ALONE still refuses the second concurrent owner. owner_id is load-bearing, not decoration. (Note: an earlier non-atomic claim using a read-then-write transaction flaked ~1/10 under write contention \u2014 proving the claim must be a single atomic statement, as production's onConflictDoUpdate is.)"
+          },
+          "sad_path_7_live_sample": {
+            "while_busy_owner_id_sampled": "A",
+            "verdict": "s.p.7 \u2014 while the session is busy draining, event_sequence.owner_id is a valid (non-null) owner; after, no worker leaves the session active"
+          },
+          "negative_control_fence_off": {
+            "drain_log_rows": 2,
+            "outcomes": "A=drained, B=drained",
+            "concurrent_overlap": true,
+            "verdict": "NEG-CTL \u2014 defect recurs with the fence removed (independent of the implementation under test: identical harness, fence code path disabled)"
+          }
+        },
+        "assertions": [
+          "BASELINE: rows.length==2, owners {A,B}, both drained, time ranges overlap",
+          "GREEN: rows.length==1, exactly one drained + one refused, refused.conflict==drained.owner, final owner_id==drained.owner, no worker activeAfter contains the session",
+          "ISOLATION: owner_id-only, no flock, no handshake -> rows.length==1, one drained + one refused (owner_id load-bearing under true concurrency)",
+          "s.p.7: owner_id sampled while in-drain == the active owner (busy => valid owner)",
+          "NEG-CTL: rows.length==2, owners {A,B}, overlap (defect returns when fence off)"
+        ],
+        "what_is_NOT_proven": [
+          "This is the disposable prototype only. Production integration in the harness (wiring the fence into execution/local.ts drain) is SLICE-012+.",
+          "Durability is process-crash only at synchronous=NORMAL (ADR-015 s.p. 9); host-crash is unclaimed.",
+          "Cross-process failover and subagent/task recovery remain deferred (ADR-015).",
+          "The flock's stale-recovery (STALE_MS=60s) reclaim path is exercised by the existing effect-flock.test.ts, not re-proven here.",
+          "SCOPE NOTE (candidate 2): GREEN is handshake-serialized \u2014 B starts only after A holds the flock \u2014 so flock+owner_id TOGETHER are not proven under true concurrency. This is not load-bearing for the claim: ISOLATION removes the flock and the handshake and proves owner_id alone refuses a genuinely concurrent second owner; the flock's added value is cross-process serialization/stale-recovery, not a correctness gate the claim depends on.",
+          "SCOPE NOTE (candidate 1, deferred): the prototype never clears owner_id after a drain, so a finished/crashed owner leaves owner_id set and a different future owner is refused until an explicit reclaim. Owner release / lease-reclaim is SLICE-012+.",
+          "SCOPE NOTE (candidate 3, deferred): production event.ts owner_id is replay-ownership (gates event replay at :254/:291), not session-drain ownership; this prototype validates a drain-ownership reading the harness does not have yet. Reconciling the two is SLICE-012+.",
+          "RESIDUAL RISK: the negative control's own stability is load-bearing evidence \u2014 an unstable control cannot distinguish a startup flake from a changed mechanism. The pre-fix ~12% startup race is corrected (20/20), but any future flake in a control scenario must be treated as a fixture bug first, not dismissed."
+        ],
+        "reviewer_decision": {
+          "status": "PREDATES THE STABILITY CORRECTION \u2014 NOT re-issued against the corrected fixture. Do NOT carry APPROVE/APPROVE forward as coverage of the current bytes.",
+          "reviewer_hy3": "APPROVED the pre-correction fixture (digest worker.ts=11fbf2e0..., test=ec5d2194...) on fencing semantics. Did NOT see the ~12% startup race (a fixture bug outside the fencing surface it was asked to judge).",
+          "reviewer_deepseek": "APPROVED the pre-correction fixture and re-ran it (2 full-suite + 10/10 isolation). Its re-runs hit the same startup race but, like the agent's, read as signal-less because worker stderr was discarded; it did not flag the pragma-ordering defect.",
+          "what_was_approved": "the FENCING MECHANISM: two real OS subprocesses each with a real SessionRunCoordinator (per-process in-memory Map) over one shared SQLite file reproduce the double-drain (overlap computed from durable DB timestamps); GREEN uses real EffectFlock.withLock keyed on sessionID + a faithful mirror of event_sequence.owner_id claim/refuse; B is genuinely refused (not merely delayed); isolation proves owner_id load-bearing under true concurrency; negative control independent and reproduces the defect; s.p.7 valid; scope disclaimers accurate. No fencing P0/P1 found.",
+          "what_was_NOT_approved": "fixture stability. The ~12% startup race (pragma ordering + swallowed stderr) was found by supervisor verification AFTER both approvals. The fixture has since changed (worker.ts f20e66ce..., test c4096613...) and is now 20/20 green, but neither reviewer has re-reviewed the corrected bytes.",
+          "residual_risk": "This validates the FENCING MECHANISM DESIGN (flock + atomic owner_id refuse of a second concurrent owner) under a controlled 2-process experiment with a synthetic drain. It does NOT prove the production harness double-drain is fixed: the fence is not wired into execution/local.ts (confirmed absent at local.ts:16-29), the prototype drain is not the real SessionRunner.run provider turn, owner release/lease-reclaim is deferred, and production event.ts owner semantics are replay-ownership \u2014 reconciling those is SLICE-012+. If the production claim is not a single atomic statement at the drain boundary, the TOCTOU this prototype eliminates can silently return.",
+          "consensus": "Fencing semantics: APPROVE/APPROVE (pre-correction). Fixture stability: corrected by supervisor verification, 20/20 green, NOT yet re-reviewed. Slice done criterion 7's two-reviewer requirement is met for FENCING but the corrected fixture still needs a fresh review pass before this record may gate SLICE-012+."
+        }
+      },
+      "supervisor_verification": {
+        "suites": {
+          "test/scratch-s011-fencing/ownership-fence.test.ts": "5 pass / 0 fail"
+        },
+        "typecheck": "reported tsgo clean",
+        "stability_runs": "20/20 consecutive clean AFTER the fixture fix; 14/16 (2 failures, ~12%) BEFORE it",
+        "digests_rechecked": 3,
+        "notes": "Supervisor verification found a real defect here; see supervisor_found_defect."
+      }
+    }
+  ],
+  "what_is_not_proven": [
+    "Production durability. This slice ships nothing; SLICE-012+ implement the five claims in the harness, each gated by this record.",
+    "Cross-model failover \u2014 deferred by ADR-015; the safe-boundary design is a separate decision.",
+    "Subagent completion recovery \u2014 V2 has no task tool (ADR-015 sad path 12).",
+    "Host-crash durability \u2014 claims are process-crash only at synchronous = NORMAL (ADR-015 sad path 9).",
+    "The synchronous = FULL cost is unmeasured; the pragma is unchanged.",
+    "Whether upstream issue #36804 (parallel dispatch loss) reproduces under the V2 runner."
+  ],
+  "limits_of_this_record": [
+    "The artifact digests bind to files in disposable harness worktrees in a DIFFERENT repository. A gate running in the kernel repo can verify this record is present, well-formed, green and digest-bound. It CANNOT re-verify the bytes, because that tree is meant to be deleted. Do not describe the gate as more than it is.",
+    "Embedding each source record verbatim preserves the evidence after the worktrees are gone, but proves only that these bytes were recorded \u2014 not that the runs happened. The supervisor re-runs recorded per claim are the load-bearing evidence, and they too were observations at a point in time."
+  ],
+  "open_before_slice_012": [
+    "Claims 2 and 3 carry reviewer-hy3 only. Cross-family consensus (done-criterion 7) is NOT established for them; both records disclose this.",
+    "Claim 5's approvals predate the fixture fix and were issued against superseded bytes. Neither reviewer flagged the pragma race. The corrected fixture needs a fresh review pass before it may gate a production slice.",
+    "Claim 4 would benefit from a positive control proving its no-rerun listener can fire.",
+    "Claim 2's startup sweep is a capability, not auto-wired at boot; the 'crash with empty inbox, nobody calls run()' case is recovered only when production wires it.",
+    "Claim 5 has no owner-release path: nothing clears owner_id after a drain, so a later owner is refused indefinitely. Deferred by both reviewers; must be resolved when the fence is wired into execution/local.ts."
+  ]
+}
