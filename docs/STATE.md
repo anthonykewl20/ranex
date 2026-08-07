@@ -7,13 +7,9 @@
 
 ## Where we stopped
 
-SLICE-012 closed: the provider watchdog is **in production** in the harness
-(`fe7a8901de`). A stalled provider stream now reaches a terminal state on its
-own. Idle 30s (inter-chunk silence only), absolute 1800s, both a typed
-non-retryable error. Four of ADR-015's five claims remain unbuilt.
-
-The rebrand is **finished** (`a4da8a8d28`..`3dfe9ee562`): `@ranex/*` scope,
-`packages/ranex/`, `.ranex/`, one `ranex` bin. Suites match baseline.
+SLICE-012 closed: the provider watchdog is **in production** (`fe7a8901de`) —
+idle 30s, absolute 1800s, typed non-retryable. The rebrand is finished
+(`a4da8a8d28`..`3dfe9ee562`). Four of ADR-015's five claims remain unbuilt.
 
 SLICE-013 has hoisted reconciliation above the eligible-input guard in
 `runner/llm.ts:459` — `failInterruptedTools` now runs before the guard returns,
