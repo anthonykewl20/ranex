@@ -13,9 +13,10 @@ eligible-input guard + startup sweep" on `anthonykewl20/ranex-harness`, mileston
 
 Still live in production. `packages/core/src/session/runner/llm.ts:459` returns on
 the eligible-input guard — `if (!input.force && !hasSteer && !hasQueue) return` —
-and `failInterruptedTools` sits at `:460`, after it. A crash with an **empty
-inbox** therefore leaves tools projected `running` forever: nothing reconciles
-them, because the guard returned first.
+and `failInterruptedTools` sits at `:460`, after it. **SLICE-013 now hoists `
+`failInterruptedTools above that guard**, so an empty-inbox `run()` still reconciles.
+A crash with an **empty inbox** therefore no longer leaves tools projected `running`
+forever: nothing reconciles them, because the guard returns first.
 
 No `reconcile` capability exists on `SessionRunner` today; the prototype's is
 scratch and was never shipped.

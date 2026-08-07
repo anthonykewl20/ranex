@@ -15,6 +15,11 @@ non-retryable error. Four of ADR-015's five claims remain unbuilt.
 The rebrand is **finished** (`a4da8a8d28`..`3dfe9ee562`): `@ranex/*` scope,
 `packages/ranex/`, `.ranex/`, one `ranex` bin. Suites match baseline.
 
+SLICE-013 has hoisted reconciliation above the eligible-input guard in
+`runner/llm.ts:459` — `failInterruptedTools` now runs before the guard returns,
+so an empty-inbox `run()` still reconciles. The startup sweep and per-session
+serialization are not yet wired.
+
 ## Decisions
 
 - `.opencode` stays a discovered *legacy* config directory; `.ranex` wins
@@ -27,10 +32,9 @@ The rebrand is **finished** (`a4da8a8d28`..`3dfe9ee562`): `@ranex/*` scope,
 
 ## Next
 
-1. SLICE-013 is open: hoist reconciliation above the eligible-input guard
-   (`runner/llm.ts:459` returns before `:460`) and **wire** a startup sweep —
-   the prototype left it a capability nobody called, which is the half that
-   recovers the headline case. Serialize per-session reconcile first.
+1. SLICE-013 is open: **wire** a startup sweep — the prototype left it a capability
+   nobody called, which is the half that actually recovers the headline case.
+   Serialize per-session reconcile first.
 2. Decide which upstream CI workflows this fork keeps (see Known limits).
 3. Resolve whether `.opencode-version` and the `opencode` store file get a
    real migration. One reviewer called keeping them lazy; unresolved.
