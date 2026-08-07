@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import functools
 import hashlib
+import json
 import os
 import re
 import subprocess
@@ -1459,3 +1460,428 @@ def test_no_adr_ships_an_unfilled_placeholder() -> None:
         f"unfilled template placeholders remain: {problems}. "
         "Fill them in or delete the line — a scaffold is not a decision."
     )
+
+
+# --- Durability slices: a green, digest-bound PROTOTYPE exit record ----------
+#
+# ADR-015 (durable execution) is prototyped red-first in disposable harness
+# worktrees; SLICE-011 consolidates the five per-claim records into one
+# digest-bound exit record committed to THIS repo. ADR-015's Confirmation
+# refuses a durability PRODUCTION slice (SLICE-012+) unless that PROTOTYPE record
+# is green for every claim it names. A rule an agent can read is a suggestion, so
+# the refusal is compiled here.
+#
+# The prototype record is resolved independently of which slice happens to be
+# open: the prototype slice is the ADR-015-linked slice that OWNS the exit record
+# (production slices carry none), searched in both docs/slices/ and
+# docs/slices/done/ — because SLICE-011 is archived once it closes, and the gate
+# must keep working in the post-prototype world that is the only one it will ever
+# actually run in. Deriving the record from the active slice was wrong: it gated
+# each slice by a record of its own, so a production slice (which owns none) was
+# refused forever while the green prototype record sat unconsulted beside it.
+_DURABILITY_ADR_PREFIX = "ADR-015-"
+_HEX64 = re.compile(r"^[0-9a-f]{64}$")
+
+
+def _references_durability_adr(slice_text: str) -> bool:
+    """Does this slice link the durable-execution decision (ADR-015)?"""
+
+    return any(
+        name.startswith(_DURABILITY_ADR_PREFIX) for name in _ADR_REF.findall(slice_text)
+    )
+
+
+def _durability_slices() -> list[Path]:
+    """Every slice linking ADR-015, open or archived.
+
+    The prototype (SLICE-011) is filed into docs/slices/done/ once it closes;
+    production slices open in docs/slices/. The gate must see both, or it goes
+    blind the moment the prototype is archived — which is the only state it ever
+    actually runs in.
+    """
+
+    found: list[Path] = []
+    for done in (False, True):
+        for path in _slice_files(done=done):
+            if _references_durability_adr(path.read_text(encoding="utf-8")):
+                found.append(path)
+    return found
+
+
+def _exit_record_for(slice_path: Path) -> Path | None:
+    """The exit record belonging to this slice's stem, in either slice directory.
+
+    Archival should carry the record into docs/slices/done/ alongside the slice;
+    if it ever moves only the .md, the record is still found by stemming the slice
+    and looking in both places.
+    """
+
+    record_name = slice_path.with_suffix(".exit-record.json").name
+    for directory in (
+        REPO_ROOT / "docs" / "slices",
+        REPO_ROOT / "docs" / "slices" / "done",
+    ):
+        candidate = directory / record_name
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _sha256_digests_within(obj: object) -> list[str]:
+    """Every 64-hex value sitting at a key whose name means 'sha256 digest'.
+
+    The exit record binds evidence in more than one shape: a list of artifact
+    dicts each carrying `sha256` (claims 1-3), a dict of paths each carrying
+    `sha256` (claim 4), and fixture entries carrying `digest_sha256` (claim 5).
+    What is uniform is the intent — a field whose name carries 'sha256' and whose
+    value is 64 hex digits is a digest binding. Collecting them all means the gate
+    does not depend on one record's spelling, and survives the record's author
+    renaming a key.
+    """
+
+    digests: list[str] = []
+    if isinstance(obj, dict):
+        for key, value in obj.items():
+            if (
+                isinstance(key, str)
+                and "sha256" in key.lower()
+                and isinstance(value, str)
+                and _HEX64.match(value)
+            ):
+                digests.append(value)
+            digests.extend(_sha256_digests_within(value))
+    elif isinstance(obj, list):
+        for item in obj:
+            digests.extend(_sha256_digests_within(item))
+    return digests
+
+
+def _record_where(record_path: Path) -> str:
+    return (
+        record_path.relative_to(REPO_ROOT).as_posix()
+        if record_path.is_relative_to(REPO_ROOT)
+        else record_path.name
+    )
+
+
+def _validate_durability_record(record_path: Path) -> list[str]:
+    """Refusal reasons for one exit record's content, or [] if it holds.
+
+    The record (assumed to exist) must parse, declare status GREEN, name at least
+    one claim, and bind every named claim by at least one sha256 digest.
+    """
+
+    where = _record_where(record_path)
+    try:
+        data = json.loads(record_path.read_text(encoding="utf-8"))
+    except ValueError as exc:
+        return [f"{where}: exit record is not valid JSON ({exc})"]
+    if not isinstance(data, dict):
+        return [f"{where}: exit record root is not a JSON object"]
+    problems: list[str] = []
+    if data.get("status") != "GREEN":
+        problems.append(
+            f"{where}: status is {data.get('status')!r}; a durability slice needs a "
+            "GREEN record before any production slice may open."
+        )
+    claims = data.get("claims")
+    if not isinstance(claims, list) or not claims:
+        problems.append(
+            f"{where}: declares no claims; a green record must bind every claim it names."
+        )
+        return problems
+    for claim in claims:
+        if not isinstance(claim, dict):
+            continue
+        number = claim.get("claim", "?")
+        embedded = claim.get("embedded")
+        # A claim that declares a status at all must declare GREEN. Claims that
+        # say nothing (the record shapes vary) are covered by the top-level status.
+        if isinstance(embedded, dict) and embedded.get("status") not in (None, "GREEN"):
+            problems.append(
+                f"{where}: claim {number} status is {embedded.get('status')!r}; "
+                "every named claim must be GREEN."
+            )
+        if not _sha256_digests_within(claim):
+            problems.append(
+                f"{where}: claim {number} binds no artifact by sha256; the record "
+                "must digest-bind the evidence it claims."
+            )
+    return problems
+
+
+def _durability_record_problems() -> list[str]:
+    """Refusal reasons across every durability slice, or [] if they all hold.
+
+    The prototype slice — the ADR-015-linked slice that owns the exit record —
+    must itself carry a green, digest-bound record. A durability PRODUCTION slice
+    (one that links ADR-015 but owns no record) is refused unless a green,
+    digest-bound prototype record is on disk. The prototype is the authority;
+    production slices are gated BY it, never by records of their own.
+    """
+
+    problems: list[str] = []
+    prototype_records: list[Path] = []
+    production: list[Path] = []
+    for slice_path in _durability_slices():
+        record = _exit_record_for(slice_path)
+        if record is not None:
+            prototype_records.append(record)
+        else:
+            production.append(slice_path)
+
+    green_records: list[Path] = []
+    for record in prototype_records:
+        record_problems = _validate_durability_record(record)
+        if record_problems:
+            problems.extend(record_problems)
+        else:
+            green_records.append(record)
+
+    # A production slice carries no record of its own; it is gated BY the
+    # prototype record, so it is refused unless some prototype record is green.
+    if production and not green_records:
+        names = ", ".join(sorted(p.name for p in production))
+        problems.append(
+            f"{names}: link ADR-015 (durable execution) but no green, digest-bound "
+            "PROTOTYPE record was found in docs/slices/ or docs/slices/done/. A "
+            "durability production slice is gated BY the ADR-015 prototype record "
+            "(docs/slices/<prototype-stem>.exit-record.json), not by a record of its own."
+        )
+    return problems
+
+
+def test_durability_production_slice_requires_green_digest_bound_record() -> None:
+    """A durability production slice is refused unless the PROTOTYPE record is green and digest-bound.
+
+    ADR-015's Confirmation compiles this refusal: a durability production slice
+    (SLICE-012+) cannot open unless the prototype exit record — digest-bound, and
+    green for every claim it names — is on disk. That record belongs to the
+    PROTOTYPE (the ADR-015-linked slice that owns it), resolved in docs/slices/
+    or docs/slices/done/ because the prototype is archived with SLICE-011 once it
+    closes. Production slices carry no record of their own; they are gated BY the
+    prototype record. The prototype slice itself must still own a green,
+    digest-bound record.
+
+    DO NOT OVERCLAIM WHAT THIS GATE DOES. The artifact digests bind to files in
+    disposable harness worktrees in a DIFFERENT repository that is meant to be
+    deleted. A gate running in the kernel repo can verify this record is present,
+    well-formed, green and digest-bound; it CANNOT re-verify the bytes, because
+    that tree is meant to be deleted. Proving the record carries digests shows
+    only that bytes were recorded and bound — not that the runs happened, and not
+    that the bytes came from where the record says. The supervisor re-runs
+    recorded per claim are the load-bearing evidence, and they too were
+    observations at a point in time. This is lint with teeth, not proof, and it
+    must not be described as more. (ADR-003 accepts the same limit for vendored
+    prior art.)
+    """
+
+    problems = _durability_record_problems()
+    assert not problems, (
+        "durability slices whose ADR-015 exit record is missing, not green, or not "
+        "digest-bound: " + "; ".join(problems) + ". "
+        "NOTE: this gate verifies the record is present, well-formed, GREEN and "
+        "digest-bound only. It cannot re-verify the artifact bytes: they live in "
+        "disposable harness worktrees in a different repository that is meant to "
+        "be deleted, so it proves only that bytes were recorded and bound, not "
+        "that the runs happened or that the bytes came from where the record says."
+    )
+
+
+# --- fixtures: synthetic slices + records, none touching real docs -----------
+
+_PROTOTYPE_SLICE = "SLICE-011-durable-execution-prototype.md"
+_PRODUCTION_SLICE = "SLICE-012-durable-watchdog.md"
+_GREEN_PROTOTYPE_CLAIMS = [
+    {
+        "claim": 1,
+        "embedded": {"status": "GREEN"},
+        "source_record": {"sha256": "a" * 64},
+        "artifacts": [{"path": "packages/core/src/runner.ts", "sha256": "b" * 64}],
+    }
+]
+
+
+def _write_slice(
+    tmp_path: Path, name: str, *, in_done: bool = False, references_adr: bool = True
+) -> Path:
+    directory = tmp_path / "docs" / "slices" / ("done" if in_done else "")
+    directory.mkdir(parents=True, exist_ok=True)
+    slice_path = directory / name
+    adr_line = (
+        "**ADR:** `docs/adr/ADR-015-durable-execution-watchdog-first.md`\n"
+        if references_adr
+        else ""
+    )
+    slice_path.write_text(
+        f"# {name[:-3]}\n\n**Status:** open\n\n{adr_line}\n", encoding="utf-8"
+    )
+    return slice_path
+
+
+def _write_prototype(tmp_path: Path, *, in_done: bool = False) -> Path:
+    return _write_slice(tmp_path, _PROTOTYPE_SLICE, in_done=in_done)
+
+
+def _write_production(tmp_path: Path) -> Path:
+    return _write_slice(tmp_path, _PRODUCTION_SLICE)
+
+
+def _write_exit_record(
+    slice_path: Path, *, status: str, claims: list[object]
+) -> Path:
+    record = slice_path.with_suffix(".exit-record.json")
+    record.write_text(json.dumps({"status": status, "claims": claims}), encoding="utf-8")
+    return record
+
+
+def _point_gate_at(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
+    monkeypatch.setattr(sys.modules[__name__], "REPO_ROOT", tmp_path)
+
+    def fake_slice_files(done: bool) -> list[Path]:
+        directory = tmp_path / "docs" / "slices" / ("done" if done else "")
+        if not directory.is_dir():
+            return []
+        return sorted(p for p in directory.glob("SLICE-*.md") if p.is_file())
+
+    monkeypatch.setattr(sys.modules[__name__], "_slice_files", fake_slice_files)
+
+
+# --- the prototype slice itself must own a green, digest-bound record --------
+
+
+def test_durability_slice_whose_record_is_not_green_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A prototype record that is not GREEN does not discharge the gate."""
+
+    prototype = _write_prototype(tmp_path)
+    _write_exit_record(prototype, status="AMBER", claims=_GREEN_PROTOTYPE_CLAIMS)
+    _point_gate_at(monkeypatch, tmp_path)
+
+    with pytest.raises(AssertionError, match="AMBER"):
+        test_durability_production_slice_requires_green_digest_bound_record()
+
+
+def test_durability_slice_whose_record_lacks_digests_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A green status with nothing bound by sha256 is a claim, not evidence."""
+
+    prototype = _write_prototype(tmp_path)
+    _write_exit_record(
+        prototype, status="GREEN", claims=[{"claim": 1, "embedded": {"status": "GREEN"}}]
+    )
+    _point_gate_at(monkeypatch, tmp_path)
+
+    with pytest.raises(AssertionError, match="binds no artifact by sha256"):
+        test_durability_production_slice_requires_green_digest_bound_record()
+
+
+def test_durability_slice_with_a_green_digest_bound_record_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The prototype's own record discharges the gate when it is green and digest-bound."""
+
+    prototype = _write_prototype(tmp_path)
+    _write_exit_record(prototype, status="GREEN", claims=_GREEN_PROTOTYPE_CLAIMS)
+    _point_gate_at(monkeypatch, tmp_path)
+
+    test_durability_production_slice_requires_green_digest_bound_record()
+
+
+def test_durability_slice_without_an_exit_record_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A lone durability slice owning no record, with no prototype, is refused."""
+
+    _write_production(tmp_path)
+    _point_gate_at(monkeypatch, tmp_path)
+
+    with pytest.raises(AssertionError, match="PROTOTYPE record"):
+        test_durability_production_slice_requires_green_digest_bound_record()
+
+
+def test_non_durability_slice_is_not_subject_to_the_record_gate(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A slice that does not link ADR-015 owes no durability exit record."""
+
+    _write_slice(tmp_path, "SLICE-012-other-work.md", references_adr=False)
+    _point_gate_at(monkeypatch, tmp_path)
+
+    test_durability_production_slice_requires_green_digest_bound_record()
+
+
+# --- a production slice is gated BY the prototype record ---------------------
+
+
+def test_durability_production_slice_passes_when_prototype_record_is_green(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A production slice is gated BY the prototype record, not by one of its own.
+
+    This is the case ADR-015's Confirmation actually names: SLICE-012+ opens only
+    when the SLICE-011 prototype record is green and digest-bound. A production
+    slice carries no exit record of its own.
+    """
+
+    prototype = _write_prototype(tmp_path)
+    _write_exit_record(prototype, status="GREEN", claims=_GREEN_PROTOTYPE_CLAIMS)
+    _write_production(tmp_path)
+    _point_gate_at(monkeypatch, tmp_path)
+
+    test_durability_production_slice_requires_green_digest_bound_record()
+
+
+def test_durability_production_slice_passes_when_prototype_is_archived(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The post-SLICE-011 world: the prototype is filed in docs/slices/done/.
+
+    This is the only state the gate will ever actually run in once SLICE-011
+    closes, so it must pass here. The record moved with the slice into done/.
+    """
+
+    prototype = _write_prototype(tmp_path, in_done=True)
+    _write_exit_record(prototype, status="GREEN", claims=_GREEN_PROTOTYPE_CLAIMS)
+    _write_production(tmp_path)
+    _point_gate_at(monkeypatch, tmp_path)
+
+    test_durability_production_slice_requires_green_digest_bound_record()
+
+
+@pytest.mark.parametrize(
+    ("bad_state", "match"),
+    [
+        ("missing", "PROTOTYPE record"),
+        ("amber", "AMBER"),
+        ("no_digest", "binds no artifact by sha256"),
+    ],
+)
+def test_durability_production_slice_refused_when_prototype_record_is_bad(
+    bad_state: str,
+    match: str,
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The gate keeps its teeth: a bad prototype record still refuses production.
+
+    The prototype record is the authority for every production slice, so when it
+    is missing, not GREEN, or lacks digests, a production slice linking ADR-015 is
+    refused — never waved through on the production slice's own (absent) record.
+    """
+
+    prototype = _write_prototype(tmp_path)
+    if bad_state == "amber":
+        _write_exit_record(prototype, status="AMBER", claims=_GREEN_PROTOTYPE_CLAIMS)
+    elif bad_state == "no_digest":
+        _write_exit_record(
+            prototype, status="GREEN", claims=[{"claim": 1, "embedded": {"status": "GREEN"}}]
+        )
+    # "missing": the prototype slice owns no record at all.
+    _write_production(tmp_path)
+    _point_gate_at(monkeypatch, tmp_path)
+
+    with pytest.raises(AssertionError, match=match):
+        test_durability_production_slice_requires_green_digest_bound_record()

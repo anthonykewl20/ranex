@@ -1,9 +1,9 @@
 # SLICE-011 — durable execution prototype: watchdog-first, red-to-green
 
-**Status:** open
-**Progress:** criteria 1-7 and 9 met (2026-08-07); criterion 8 outstanding.
+**Status:** done
+**Closed:** 2026-08-07 — all nine done criteria met.
 **Opened:** 2026-08-06
-**Record:** `docs/slices/SLICE-011-durable-execution-prototype.exit-record.json`
+**Record:** `docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`
 — the five per-claim records embedded and bound by sha256 (`5bf20ac0c`).
 **ADR:** `docs/adr/ADR-015-durable-execution-watchdog-first.md` — proposed 2026-08-06.
 **Linked milestone:** #1 "Durable execution, failover, and recovery" on
@@ -108,7 +108,7 @@ session's own summary is the discarded self-report; it is not evidence.
 | 5 | Durable blocker green | met — 4/0, 14/0, 10/10 stable |
 | 6 | Ownership green | met — 5/0, 20/20 stable *after* a fixture fix; see below |
 | 7 | Exit record green and digest-bound | met — consolidated record `5bf20ac0c` |
-| 8 | Compiled gate exists | **outstanding — this keeps the slice open** |
+| 8 | Compiled gate exists | met — `tests/contract/test_docs_discipline.py`, red-then-green, 11 durability cases. The gate resolves the *prototype* record in both `docs/slices/` and `docs/slices/done/`; deriving it from the open slice was a supervisor instruction error, caught by reviewer-hy3 and reproduced on disk before the fix |
 | 9 | Docs aligned | met — harness `17b876fcc9`; kernel `35fe6e36b` and this commit |
 
 Claim 5 is the one worth remembering. It was reported stable and approved by

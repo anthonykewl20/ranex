@@ -284,21 +284,13 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** SLICE-011-durable-execution-prototype. Opened 2026-08-06
-against the proposed `docs/adr/ADR-015-durable-execution-watchdog-first.md`: a
-disposable prototype in scratch harness worktrees validates five durability
-claims red-to-green (watchdog, reconciler reorder, durable retry, durable
-blockers, Session-ID fencing) before any production slice opens.
+**Active slice:** none. SLICE-011 closed 2026-08-07; the next durability slice
+(SLICE-012+) opens one at a time, gated by the record described below.
 
-All five claims are proven as of 2026-08-07, each red-first with a negative
-control, and consolidated into one digest-bound record
-(`docs/slices/SLICE-011-durable-execution-prototype.exit-record.json`). Every
-gate was re-run against the worktree on disk rather than read from the session
-that produced it — which is how the fifth claim's suite was caught being
-unstable after it had been reported stable and approved by two reviewers. The
-slice stays **open**: its compiled gate, which refuses a durability production
-slice without that record, is not built yet. The durable execution milestone
-and production plan live on `anthonykewl20/ranex-harness`.
+The durable execution milestone and production plan live on
+`anthonykewl20/ranex-harness`. **Nothing durable is built in production yet** —
+what exists is a proven design and a compiled gate that refuses to let a
+production slice open without it.
 
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
@@ -317,6 +309,22 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+- **SLICE-011-durable-execution-prototype** — closed 2026-08-07, all nine done
+  criteria met. Five durability claims (watchdog, reconciler reorder, durable
+  retry, durable blockers, Session-ID fencing) proven red-to-green with
+  negative controls, one disposable harness worktree each, consolidated into a
+  digest-bound record now archived beside the slice. It ships nothing: the
+  prototype is disposable by design and production integration is SLICE-012+.
+
+  Two results are worth reading. Every gate was re-run against the worktree on
+  disk rather than read from the session that produced it — and that is the
+  only reason the fifth claim's suite was caught being unstable (~12%) *after*
+  it had been reported stable and approved by two independent reviewers; the
+  cause was a fixture that discarded the stderr which would have said so. The
+  slice's own compiled gate was then built wrong for the case it exists to
+  cover, on a mistaken supervisor instruction, and a reviewer caught that too.
+  Neither failure was found by reading a report.
 
 - **SLICE-010-the-kernel-merges** — parked 2026-08-06 when the ADR-015
   durability program took the tree, then re-opened and finished the same day
