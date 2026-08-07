@@ -312,9 +312,10 @@ every earlier revision:
    members in one process — is `RISK-06`, standing, mitigated by scoped
    spend-limited keys.
 3. **The pipeline shape.** Milestone "Background worktree agent manager" on this
-   repository; slice issues #1-#9 carry the plan; SLICE-012 through SLICE-019
-   open after SLICE-010 closes and after the durability program's SLICE-011
-   (one slice at a time; the durability program §0.16 owns SLICE-011). §9
+   repository; slice issues #1-#9 carry the plan; SLICE-020 through SLICE-028
+   (renumbered 2026-08-07) open after SLICE-010 and after the durability
+   program, both prerequisites now satisfied — SLICE-010 closed `15614e6fc`,
+   SLICE-011 closed `e0b9886d9`. One slice at a time; §0.16 owns SLICE-011. §9
    carries ADR-014; §15.2 carries the manager as designed-unbuilt; §16.3 names
    it as the first scheduled machinery for `C-02`.
 4. **What does not change.** One git worktree per task survives per member; the
@@ -340,7 +341,7 @@ the proposal's diagnosis was right and its fix misaimed:
    `effect-flock` and EventV2 `owner_id`. Explicitly **not** adopted: a
    `session_execution` lease/heartbeat table, a `tool_attempt` replay column,
    and subagent completion recovery (V2 has no `task` tool yet).
-2. **The prototype gate.** SLICE-011 (open) is a disposable prototype in
+2. **The prototype gate.** SLICE-011 (closed 2026-08-07) is a disposable prototype in
    scratch harness worktrees (ADR-013 style): five claims red-to-green with
    negative controls and a digest-bound exit record before any production slice
    opens. **All five ran and are green (2026-08-07)** — one worktree per claim
