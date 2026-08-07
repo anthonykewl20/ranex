@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.3.4` |
+| Version | `3.4.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-07 — **the rebrand finishes** (`3.3.4`). See §0.21 |
+| Last revised | 2026-08-08 — **ADR-016 makes the measurement flywheel source-backed and prototype-gated**. See §0.22 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -428,6 +428,35 @@ live in another repository built to be thrown away. That is the same limit
 ADR-003 already accepts for vendored prior art, and it is written down rather
 than left to be discovered.
 
+### 0.22 What changed in `3.4.0` — the measurement flywheel is source-backed and prototype-gated
+
+ADR-016 is **proposed**. Six permissive pinned sources were vendored and refetched; the frozen-target/fixed-treatment conflation was corrected; and monitoring-only observations were separated from controlled paired grades. The future workflow is P0, then F1–F4, with no current slice change. Ranex composition remains **UNPROVEN**.
+
+### 0.23 What changed in `3.3.5` — the reconciler ships, and adds a hazard
+
+SLICE-013 closed: the runner no longer returns on its eligible-input guard
+before reconciling, and a startup sweep wired into the application graph
+recovers sessions nobody calls `run()` on — the half SLICE-011 left as a
+capability with no caller. Three of ADR-015's five claims are now built.
+
+Recorded because it cuts against the usual direction of these entries: this
+slice **introduced** a hazard as well as removing one. The sweep is DB-global
+over a process-wide shared database, so a second process booting marks tools a
+first live process is actively running as interrupted. SLICE-011 claim 5 had
+already reproduced that two-process case, so the precondition is demonstrated
+rather than assumed. A reviewer raised it as a blocker and it was accepted as
+scope — the harness runs one daemon (ADR-014) and closing it properly needs the
+durable owner claim the fencing slice owns. Fencing must now gate the sweep
+before this harness is ever multi-process; that is a dependency the durability
+track did not have yesterday.
+
+Two measurement notes worth more than the code. The concurrency test only
+works because `Effect.all` defaults to sequential in this Effect beta — without
+an explicit `concurrency: 2` it would have passed against the unfixed code. And
+`turbo.json` had scoped its test task to the pre-rebrand package name, so CI
+was running 1100 tests and silently skipping 2942; measured with a dry run,
+not read.
+
 ### 0.21 What changed in `3.3.4` — the rebrand finishes
 
 The 2026-08-06 rebrand had renamed a bin and stopped. The workspace scope,
@@ -633,7 +662,7 @@ for. No part is built for it; none is precluded.
 |---|---|---|
 | `C-01` | `PR-02`, `PR-03`, `PR-04`, `PR-05`, `PR-06`, `PR-10` | **Yes, mostly.** Nine closed slices; one withdrawn; one open |
 | `C-03` | `PR-05`, `PR-06` — partially | **Weak.** The self-gate runs the full suite (SLICE-006, SLICE-009); no regression view yet |
-| `C-04` | `PR-07`, `PR-08` | **No.** `PR-07` is undesigned; `ranex journal verify` checks integrity, but no translator presents the record (`RISK-12`) |
+| `C-04` | `PR-07`, `PR-08` | **No.** `PR-07` has a proposed design in ADR-016 but remains unbuilt; the translator is absent and `ranex journal verify` only checks integrity (`RISK-12`) |
 | `C-02` | `PR-09` — one requirement | **Almost nothing.** SLICE-008's `task delegate` bounds a worker's wall clock and kills the whole process group at the bound; no budget, no escalation, no three-miss stop |
 
 **Nine closed slices of work have gone to one of four concerns; one was withdrawn
@@ -660,7 +689,7 @@ below are new and come directly from the 2026-08-03 session.
 | `PR-04` | **The identity that produces evidence cannot approve it — the *agent* produces, the *human* approves** | `C-01` | `CONFIRMED` as a string comparison; `UNRESOLVED` as a control, because `approver_id` is unauthenticated (`RISK-07`). A prior typed, authenticated, unrevoked, scope-authorized human decision is only a future boundary (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/decisions/ADR-0017-record-resolved-owner-decisions.md:65-76`). |
 | `PR-05` | Every verdict binds the exact subject digest it was measured against, so stale evidence stops counting automatically | `C-01` `C-03` | `CONFIRMED` — SLICE-001 and SLICE-004 |
 | `PR-06` | **Every gauge carries a calibration result. An uncalibrated gauge yields no information and must not be reported as though it did** | `C-01` `C-03` | `PROVISIONAL` — `mutmut` is a calibration procedure and runs; nothing consumes its result as a gate, and 880 mutants survive |
-| `PR-07` | **The record binds the full production configuration — model, harness version, skill and tool manifest, prompt digest — not the code alone** | `C-04` `C-02` | `UNRESOLVED` — not designed, not built. §5.5 |
+| `PR-07` | **The record binds the full production configuration — model, harness version, skill and tool manifest, prompt digest — not the code alone** | `C-04` `C-02` | `PROVISIONAL` — proposed design in ADR-016, unbuilt; no treatment record exists. §5.5 |
 | `PR-08` | A governed project's written records cannot silently drift from observable fact | `C-04` | `PROVISIONAL` — the mechanism exists in `tests/contract/test_docs_discipline.py`; not generalised |
 | `PR-09` | **A run that cannot succeed stops within a bounded budget and asks the operator a product question, rather than continuing to spend** | `C-02` | `UNRESOLVED` — designed in `README.md`, no budget, no escalation, no worker to bound. **The only requirement serving `C-02`** |
 | `PR-10` | Removing every model credential from the machine must not change a verdict | `C-01` | `CONFIRMED` for the kernel path |
@@ -691,7 +720,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:736-756`) |
 | Budget and escalation | Bounded spend, three misses, plain-language question to the owner; cancellation first denies new capability, records unknowns and cannot widen cleanup authority | `UNRESOLVED` — designed, never built; never silently downgrade a required gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/ocask-alignment-research-2026-07-27.md:1641-1654`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:426-438) |
 | Intake and flow graph | Plain-language intent → a graph the owner approves → scenarios → tests | `UNRESOLVED` — designed, never built |
-| Configuration comparison | Which model, harness and skill set actually finishes work, measured | `UNRESOLVED` — §11.3 argues this is the most valuable byproduct and the hardest to get right |
+| Configuration comparison | Which model, harness and skill set actually finishes work, measured | `PROVISIONAL` — ADR-016 proposed; prototype not opened; composition UNPROVEN |
 
 **Honest summary:** the hardest part to get conceptually right exists and is
 tested. Almost none of the surface around it does, and the loop has never closed
@@ -1312,7 +1341,7 @@ schedule**: the measure of progress is whether Ranex governs the operator's own
 agents on his own repository. That promotes `RISK-14` from one risk among many to
 the only scoreboard.
 
-### 11.3 The measurement problem — `UNRESOLVED`, and the most valuable unbuilt thing
+### 11.3 The measurement problem — `PROVISIONAL — source-backed design in ADR-016; unbuilt`
 
 The owner's intent is that accumulated use should grade every component — skills,
 gates, rules, reviews, models — and that grading should compound into improvement.
@@ -1339,18 +1368,16 @@ Different machinery, and it has to be designed in rather than retrofitted.
 
 **Why this is an opportunity rather than an obstacle.** An honest trial needs a
 fixed treatment, isolated replicates, and an outcome measured by something with no
-stake in it. Ranex has all three by construction: the target is frozen before the
-run, worktrees are isolated, the verdict is mechanical, and repeats are cheap.
+stake in it. Ranex has a mechanical outcome gauge and filesystem isolation, but not
+fixed treatment or statistical independence by construction. The `TreatmentManifest`
+is absent today; a complete experiment system does not exist.
 
-Every existing benchmark of AI tooling either uses a fixed public test set —
-contaminated and gamed within months — or an LLM judge, which is the thing under
-test grading itself. **An external deterministic gauge is the precondition for
-honestly measuring AI tooling, and no one has one.**
-
-This reframes the question the whole market is guessing at. *Which model, harness
-or skill is best?* is unanswered not because it is hard but because **the
-instrument required to answer it does not exist.** Build the gauge and the answer
-is a byproduct.
+ADR-016 bounds the build path: P0 prototype, then F1 monitoring-only manifest/corpus
+observations, F2 pure paired grader, F3 paired runner and fault capture, and F4
+owner-authorized promotion/rollback. Blockers are RISK-06/07/19, provider
+correlation, generalization, exact power and the absent translator; composition
+remains UNPROVEN. The instrument is therefore a source-backed design, not a built
+feature or proof that any configuration is best.
 
 ### 11.4 Limits of the grading idea — `PROVISIONAL`
 
@@ -1359,6 +1386,8 @@ is a byproduct.
 | **Not everything decomposes.** Skills, gates, rules and models are discrete and gradeable. Prompts, tasks and context are not. Some variance lives irreducibly in the whole | Do not attempt a grade for every input; the parts list must distinguish gradeable parts from unbounded ones |
 | **Goodhart.** Publishing a component's grade causes components to be optimised for the grade. Manufacturing's defence is that the gauge measures a physical property that cannot be faked without making a better part | Ranex's equivalent is the frozen, producer-unalterable target. This is what keeps the metric honest under optimisation pressure — it is not fussiness |
 | **Sample size.** Separating signal from variance needs many runs on comparable tasks. One repository will never produce that | The flywheel is a fleet-scale asset. This argues for a hosted product later, and is a real constraint on *when* data becomes valuable |
+| **First-scope bound.** One candidate and one binary primary endpoint; secondary metrics are descriptive only | Exact power remains unverified; fixed-N trials may yield `INCONCLUSIVE` |
+| **Provider correlation and visible corpus.** Paired runs can share provider effects, and a visible corpus proves only conformance to that corpus | Disclose correlation and do not claim independence or generalization |
 
 ### 11.5 Engineering risks — current, `PROVISIONAL` unless noted
 
@@ -1653,16 +1682,21 @@ solves this, or would building it be invention?
 | Independence record, canonical roles | designed in the pre-reset corpus only | no off-the-shelf equivalent; the composition is novel |
 | Freeze-line machinery | BOM `FT-06`, `FT-07`: `specified`, `sbb: null`, `gauge: null` | read-only frozen targets are what every CI freeze already does; the enforcement wiring is small |
 
+**Designed, unbuilt** — continued:
+
+| Mechanism | State | Prior art to adopt |
+|---|---|---|
+| Production-configuration record (`PR-07`) | ADR-016 `proposed`; P0 not opened; no code | Six vendored source mechanisms under ADR-016; the Ranex composition is novel and UNPROVEN |
+| Configuration comparison / measurement flywheel | ADR-016 `proposed`; P0 not opened; no treatment record or code | Six vendored source mechanisms under ADR-016; the Ranex composition is novel and UNPROVEN |
+
 **Vague — not designed:**
 
 | Mechanism | State | Prior art to adopt |
 |---|---|---|
-| Production-configuration record (`PR-07`) | `UNRESOLVED`; no design | SBOM shapes (CycloneDX, SPDX) are mature standards and directly relevant; not yet consulted |
 | The translator (§5.1) | absent; `C-04` unserved (`RISK-12`) | none — a read-only projection of *this* record is novel, and by §4.3 it may never be a model that decides anything |
 | Outward-facing record | absent; deferred with §11.1 (`RISK-03`) | **Mature.** Certificate transparency is the solved form of this exact problem; see §15.3 |
 | Approver authentication | no design; `RISK-07` | mature elsewhere (signature-bound approval); not yet designed here |
 | Calibration consumption, negative controls | §8.4 names four consequences; none satisfied | negative controls are standard assay practice (§8.4); the machinery is small and unbuilt |
-| Configuration comparison / measurement flywheel | §11.3 names the confound; no experiment designed | DOE and control arms are mature disciplines (§11.3); no tool exists for AI-harness comparison — that is the opportunity claimed |
 
 **The system-level verdict.** Every row in §15.1 is a component fact. The loop
 has never closed around a real agent (`RISK-14`), so the system as a whole is
@@ -1818,7 +1852,8 @@ Its supervisor owns wall-clock and spend bounds, cancellation, and
  [3] ABSENT the translator — no plain-language projection of run state or
             proof (RISK-12)
  [4] ABSENT the production-configuration record — model, harness version,
-            skill and tool manifest, prompt digest (PR-07, undesigned)
+             skill and tool manifest, prompt digest (PR-07, ADR-016 proposed,
+             unbuilt)
         │
         ▼
  the operator can verify integrity but cannot read the run — the record is

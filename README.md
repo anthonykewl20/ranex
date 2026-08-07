@@ -284,11 +284,13 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** SLICE-013-reconciler-reorder. Opened 2026-08-07: a crash with
-an empty inbox still leaves tools projected `running` forever. The fix hoists
-reconciliation above that guard, so `failInterruptedTools` runs even with an
-empty inbox, and — the part the prototype deferred — wires a startup sweep
-that recovers stranded work across all sessions with nobody calling `run()`.
+**Active slice:** none. SLICE-013 closed 2026-08-08; SLICE-014 (durable retry)
+opens next, one at a time.
+
+Three of ADR-015's five durability claims are now in production: the provider
+watchdog, the reconciler reorder, and its startup sweep. Two remain — durable
+blockers and Session-ID fencing — each gated by the SLICE-011 prototype record
+through a compiled test.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
 harness (`fe7a8901de`): a stalled provider stream now reaches a terminal state
@@ -316,6 +318,22 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+- **SLICE-013-reconciler-reorder** — closed 2026-08-08, all seven criteria met,
+  landed in `anthonykewl20/ranex-harness` (`9eeda0bf5d`). A crash with an empty
+  inbox left tools projected `running` forever: the runner returned on its
+  eligible-input guard before it reconciled, and nothing else looked. The hoist
+  fixes the `run()` path; a startup sweep wired into the application graph
+  recovers sessions nobody calls `run()` on — the half the prototype had left as
+  a capability with no caller.
+
+  Two things make it worth reading. Its concurrency test only works because
+  `Effect.all` defaults to *sequential* in this Effect beta; without an explicit
+  `concurrency: 2` it would have passed against the unfixed code and proven
+  nothing. And the slice introduced a hazard rather than only removing one — the
+  sweep is database-global, so a second process booting marks a first process's
+  running tools as interrupted. That is accepted scope, not an oversight, and it
+  is recorded in the code and the spec as a prerequisite on the fencing slice.
 
 - **SLICE-012-provider-watchdog** — closed 2026-08-07, all nine criteria met,
   landed in `anthonykewl20/ranex-harness` (`fe7a8901de`). Two timeouts, each

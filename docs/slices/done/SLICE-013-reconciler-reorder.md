@@ -1,6 +1,7 @@
 # SLICE-013 — reconciler reorder: a crash with an empty inbox stops stranding tools
 
-**Status:** open
+**Status:** done
+**Closed:** 2026-08-08 — all seven criteria met; landed in ranex-harness 9eeda0bf5d.
 **Opened:** 2026-08-07
 **ADR:** `docs/adr/ADR-015-durable-execution-watchdog-first.md` — accepted 2026-08-07.
 **Gated by:** `docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`,
@@ -78,6 +79,34 @@ gates below are green on disk — not in a session's summary.
    harness-green is not green.
 7. **The docs stay aligned.** `specs/v2/session.md:165`'s deferral is rewritten to
    describe what now exists; `docs/STATE.md` and the MAP durability row move.
+
+## Where it stands — closed 2026-08-08
+
+| # | Criterion | Standing |
+|---|---|---|
+| 1 | Unsafe baseline reproduced | met — `Expected: "error" / Received: "running"`, inbox asserted empty for both steer and queue |
+| 2 | Hoist green | met — empty-inbox `run()` reconciles with `streamCallCount === 0` |
+| 3 | Sweep **wired**, not merely available | met — `SessionReconcile.sweepNode` in the application graph; recovery with nobody calling `run()` |
+| 4 | Idempotency | met — 1 durable `Tool.Failed` row, still 1 after a second reconcile plus a `run()` |
+| 5 | Concurrent reconcile serialized | met — race reproduced first (`Expected: 1 / Received: 2`), closed by a per-session semaphore |
+| 6 | No regression | met — core 1112/0, ranex 2944/0, tsgo 0, kernel 838 passed / 2 skipped |
+| 7 | Docs aligned | met — `specs/v2/session.md`, and this repository |
+
+The race test is only a test because `Effect.all` defaults to sequential in this
+Effect beta (`concurrency ?? 1`). Without an explicit `concurrency: 2` it would
+have passed against the unfixed code — decoration control 4, caught in flight.
+
+## The hazard this slice introduced, accepted knowingly
+
+The sweep is DB-global over a process-wide shared database, so a second process
+booting marks tools a first live process is actively running as interrupted.
+SLICE-011 claim 5 reproduced that two-process case before refusing it, so the
+precondition is demonstrated rather than assumed. A reviewer raised it as a
+blocker; it is accepted as scope because the harness runs one daemon in normal
+operation (ADR-014) and closing it properly requires the durable owner claim the
+fencing slice owns. **The fencing slice must gate this sweep on ownership before
+the harness is run as more than one process against one database.** Recorded in
+`session/reconcile.ts` and `specs/v2/session.md`, not only here.
 
 ## The controls most likely to become decoration
 
