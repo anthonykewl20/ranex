@@ -237,6 +237,13 @@ below is what is actually built.
   satisfies a claim, and the kernel compares its digest, so a record of `true`
   no longer satisfies `tests-executed`. Read the next section for what it does
   *not* buy.
+- **`ranex task dispatch|judge|merge|delegate|fanout`** — worker dispatch. The
+  kernel records task→worktree at dispatch; `delegate` runs a real agent
+  headless in that worktree and measures the frozen suite sealed; a separate
+  keyless invocation judges — a CANDIDATE naming its missing claims, never a
+  PASS; `merge` publishes a judged candidate only through ordered journalled
+  checks (the kernel merges; the harness never does); `fanout` runs a bounded
+  pool, one worktree each.
 - `ranex gate evaluate`, `ranex keygen`, and repository path confinement.
 
 **Known gaps — stated plainly**
@@ -247,10 +254,10 @@ below is what is actually built.
   directories. The tests cover an inherited environment, an ignored file, an
   untracked empty directory, a clean-filter-hidden edit, a substituted Git blob,
   and a `git` shim on `$PATH`. They are passing regression tests, not expected
-  failures. **Do not point Ranex at a real agent yet.** SLICE-006 must first make
-  dependency-backed commands runnable without trusting the observed party's
-  `.venv`, `node_modules`, or `uv`; same-UID key theft, unauthenticated approvals,
-  and journal rollback remain open after that.
+  failures. SLICE-006 has since made dependency-backed commands runnable without
+  trusting the observed party's `.venv`, `node_modules`, or `uv`, and SLICE-008
+  ran a real agent under that regime; same-UID key theft, unauthenticated
+  approvals, and journal rollback remain open.
 - **Approver identity is unauthenticated.** `--approver` is a plain string, so a
   producer can name anyone as their approver. Evidence signing proves only that
   the holder of the registered private key signed the record; it proves nothing
@@ -259,12 +266,14 @@ below is what is actually built.
   are serialised before they read the previous link, and `ranex journal verify`
   recomputes the chain. But an internally consistent earlier prefix still
   verifies after later rows are removed. *(unassigned)*
-- **No worker dispatch, no flow graph, no scenario compilation**, no budget, no
-  escalation. Those are designed, not built.
+- **No flow graph, no scenario compilation**, no budget, no escalation. Those
+  are designed, not built. Worker dispatch left this list: `ranex task
+  dispatch|judge|merge|delegate|fanout` ran a real model end to end (SLICE-008),
+  and the kernel publishes the judged candidate (SLICE-010).
 - **Review-consensus authenticity gaps await a prototype.** Two independent
   adversarial reviews (2026-08-06) confirmed the gaps above and added: the suite
   manifest freezes test IDs, not test bodies; `evidence.json` is overwritten,
-  not appended; network is denied only during provisioning. Per proposed
+  not appended; network is denied only during provisioning. Per accepted
   `docs/adr/ADR-013-prototype-before-production.md`, every hardening idea is
   proven red-first in a scratch prototype before production code (milestone #1).
 
@@ -285,7 +294,7 @@ execution milestone and production plan live on `anthonykewl20/ranex-harness`.
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 737 IDs, with 67
+structured outcomes against the manifest diff — 738 IDs, with 67
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
@@ -300,11 +309,16 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
-- **SLICE-010-the-kernel-merges** — parked 2026-08-06 without implementation.
-  The ADR-012 decision (the kernel merges) remains accepted; this entry is
-  archived so the active-slice rule stays true while the ADR-015 durability
-  program (SLICE-011) owns the tree. Its uncommitted working-tree WIP was not
-  disturbed.
+- **SLICE-010-the-kernel-merges** — parked 2026-08-06 when the ADR-015
+  durability program took the tree, then re-opened and finished the same day
+  on the owner's direction. All fourteen done criteria are proven by passing
+  tests: `ranex task merge` publishes a judged candidate only through ordered
+  journalled checks — the unsafe `update-ref` control is reproduced before it
+  is refused; the domain-separated approval envelope binds the candidate,
+  subject digest, target ref, observed tip, catalog digest and CANDIDATE row
+  hash; ancestry, merge-range, digest/evidence, and CAS each refuse red-first;
+  races journal exactly one winner. Publication is a checked fast-forward by
+  the kernel (`15614e6fc`).
 - **SLICE-009-a-skip-is-absence** — exit-code satisfaction let a skipped or
   vanished test read as success; the measured failure destroyed 27 tests while
   the remainder stayed green. Junitxml is bound in the digest-bound argv;
@@ -456,12 +470,12 @@ PYTHONPATH=src uv run python -m ranex.cli.main run \
     --claim tests-executed --producer worker -- uv run pytest -q
 ```
 
-`gate evaluate` will still FAIL today, and the reason is recorded rather than
-hidden: five of this repository's own tests need a git checkout, and the
-observation carries committed blobs with no `.git`, so the suite exits nonzero
-inside it. That is SLICE-006 criterion 14, `ADR-009` proposes the fix, and two
-strict `xfail` markers in `tests/e2e/test_gating_real_suite.py` will fail loudly
-the moment it starts passing.
+`gate evaluate` then judges that run for real. The observation is a fresh
+single-commit repository carrying the verified tree (`ADR-009`, accepted), so
+the handful of this repository's own tests that ask git about themselves are
+told the truth, and the gate compares signed structured outcomes against the
+frozen manifest diff rather than the exit code alone (SLICE-009). It PASSes
+honestly — and flips to FAIL when a frozen test's file is deleted.
 
 Once the tree moves past the digest the evidence was bound to, `tests-executed`
 stops counting too. A record that fails verification is reported as *refused*,
