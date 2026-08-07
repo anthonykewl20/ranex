@@ -11,15 +11,18 @@ eligible-input guard + startup sweep" on `anthonykewl20/ranex-harness`, mileston
 
 ## The defect
 
-Still live in production. `packages/core/src/session/runner/llm.ts:459` returns on
-the eligible-input guard — `if (!input.force && !hasSteer && !hasQueue) return` —
-and `failInterruptedTools` sits at `:460`, after it. **SLICE-013 now hoists `
-`failInterruptedTools above that guard**, so an empty-inbox `run()` still reconciles.
-A crash with an **empty inbox** therefore no longer leaves tools projected `running`
-forever: nothing reconciles them, because the guard returns first.
+As found at the start of this slice: `packages/core/src/session/runner/llm.ts:459`
+returned on the eligible-input guard — `if (!input.force && !hasSteer && !hasQueue)
+return` — and `failInterruptedTools` sat at `:460`, after it. A crash with an
+**empty inbox** therefore left tools projected `running` forever: nothing
+reconciled them, because the guard returned first.
 
-No `reconcile` capability exists on `SessionRunner` today; the prototype's is
-scratch and was never shipped.
+No `reconcile` capability existed on `SessionRunner`; the prototype's was scratch
+and was never shipped.
+
+*This section describes the defect the slice was opened against and is not
+rewritten as work lands — the done criteria below carry progress. A defect
+statement edited into the past tense destroys the record of why the slice exists.*
 
 SLICE-011 claim 2 proved the fix: RED reproduces `Expected: "error" / Received:
 "running"`, the hoist closes it, and reconciling twice produces exactly one
