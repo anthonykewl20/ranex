@@ -840,7 +840,7 @@
   "limits_of_this_record": [
     "The artifact digests bind to files in disposable harness worktrees in a DIFFERENT repository. A gate running in the kernel repo can verify this record is present, well-formed, green and digest-bound. It CANNOT re-verify the bytes, because that tree is meant to be deleted. Do not describe the gate as more than it is.",
     "Embedding each source record verbatim preserves the evidence after the worktrees are gone, but proves only that these bytes were recorded \u2014 not that the runs happened. The supervisor re-runs recorded per claim are the load-bearing evidence, and they too were observations at a point in time.",
-    "The prototype DIFFS are not preserved anywhere \u2014 only these records. Deleting the worktrees loses the implementations, and SLICE-012+ reimplements from the descriptions. That is ADR-013's disposable design working as intended, and it should be a knowing choice rather than a discovery."
+    "The prototype implementations ARE preserved, as of 2026-08-07, on five isolated branches in anthonykewl20/ranex-harness: proto/s011-watchdog (79093b3064), proto/s011-reconciler (0350a25422), proto/s011-retry (da90c53a2d), proto/s011-blockers (b9f46919d6), proto/s011-fencing (3ffc92e075). They are deliberately NEVER merged into ranex-trim, so they can be deleted in one command each when no longer wanted. They are readable reference, not a source of truth: SLICE-012+ reimplements from THIS record, because a prototype branch carries no obligation to stay correct as the harness moves."
   ],
   "open_before_slice_012": [
     "Claim 2: the startup sweep is a capability, not auto-wired at boot; the 'crash with empty inbox, nobody calls run()' case is recovered only when production wires it. Serialize per-session reconcile before wiring it \u2014 the deferred TOCTOU's only reachable surface is reconcile()-vs-run().",
@@ -850,5 +850,18 @@
     "Claim 5: no owner-release path. Nothing clears owner_id after a drain, so a later owner is refused indefinitely \u2014 the session is fenced out, not reclaimed.",
     "Claim 5: the GREEN handshake can mask the new stderr diagnostic \u2014 if A crashes before writing aReady, B's undeadlined poll hangs and the failure degrades to a 30s timeout. No false PASS, not active in the corrected fixture, classified P2 by both reviewers.",
     "Claim 5: the fence is not wired into execution/local.ts, the prototype drain is not the real SessionRunner.run provider turn, and production owner_id semantics are replay-ownership rather than drain-ownership."
-  ]
+  ],
+  "prototype_branches": {
+    "repo": "anthonykewl20/ranex-harness",
+    "status": "preserved but isolated \u2014 never merged into ranex-trim",
+    "delete_when_done": "git push origin --delete proto/s011-watchdog proto/s011-reconciler proto/s011-retry proto/s011-blockers proto/s011-fencing",
+    "branches": {
+      "proto/s011-watchdog": "79093b3064",
+      "proto/s011-reconciler": "0350a25422",
+      "proto/s011-retry": "da90c53a2d",
+      "proto/s011-blockers": "b9f46919d6",
+      "proto/s011-fencing": "3ffc92e075"
+    },
+    "note": "Each branch commits its own EXIT_RECORD.json alongside the implementation, and each branch tip is a snapshot at harness HEAD 2431314c3261b11736b97cacf47820d8fcd3f0e6. Deleting them costs the diffs and nothing else \u2014 the evidence lives here."
+  }
 }

@@ -36,9 +36,11 @@ that prototype record is present, GREEN and digest-bound.
 
 ## Known limits
 
-- The prototype **diffs** are not preserved — only the records. Deleting the
-  five worktrees loses the implementations; SLICE-012+ reimplements from the
-  record. That is ADR-013's design; confirm before pruning.
+- Prototype code is preserved on five isolated `proto/s011-*` branches in
+  `ranex-harness`, never merged into `ranex-trim`. Reference only —
+  SLICE-012+ reimplements from the record. Delete when done:
+  `git push origin --delete proto/s011-{watchdog,reconciler,retry,blockers,fencing}`.
+  The five local worktrees are now safe to prune.
 - The gate checks the record is present, well-formed, GREEN and digest-bound.
   It can NEVER re-verify the bytes — another repo, disposable. Lint with
   teeth, not proof.
