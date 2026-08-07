@@ -88,13 +88,27 @@ gates below are green on disk — not in a session's summary.
    `:296` then awaits them. The observable is therefore specific: the tool fiber
    terminates and the tool is recorded interrupted, rather than "the tool is not
    stranded" as a feeling.
-7. **The failure is legible, by reason and not by message text.** A watchdog
-   termination is distinguishable from a provider refusal in the session's own
-   record. `LLMError.reason` is a tagged union (`errors.ts:160-177`), so this
-   needs no schema change — but the slice must **name which reason carries each
-   timeout**, and state whether idle and absolute must be distinguishable
-   programmatically or only in the message. The prototype used one reason for
-   both and separated them by prose, which an operator cannot switch on.
+7. **The failure is legible, by reason and not by message text.**
+   `LLMError.reason` is a tagged union (`errors.ts:160-177`), so this needs no
+   schema change. Both watchdog timeouts carry `TransportReason` — the honest
+   non-retryable transport reason, consistent with criterion 2 — and separate on
+   the pre-existing structured `kind` field: `watchdog-idle` and
+   `watchdog-absolute`. Watchdog versus provider refusal separates on
+   `reason._tag`. The prototype used one reason for both and separated them by
+   prose, which an operator cannot switch on.
+
+   **Amended 2026-08-07 — the original wording contradicted itself.** It demanded
+   the distinction be structural *in the session's own record* while also
+   forbidding a schema change, and those cannot both hold: the persisted
+   `Assistant.error` is an `UnknownError` with no field for `reason._tag` or
+   `kind`, so all three cases project to `{ type: "unknown", message }` and
+   differ only by string. What is actually required, and what is met: the
+   **live** failure is structurally switchable by `_tag`, `kind` and
+   `retryable`; the **durable** transcript carries `reason.message` verbatim,
+   proven by exact equality and proven to survive a full projection replay.
+   Persisting structured error reasons is a change to every error type in the
+   session schema, not a watchdog concern — it is out of scope here and named in
+   "What this slice does not close". Do not over-read the guarantee.
 8. **No regression.** `packages/core` suite green, `tsgo --noEmit` exit 0, and
    the ranex contract suite still green (baseline 838 passed / 2 skipped).
 9. **The docs stay aligned.** `specs/v2/session.md:153`'s deferral is rewritten
@@ -157,5 +171,10 @@ same stall, and hung anyway.
   terminated here, not replaced.
 - **Host-crash durability.** Process-crash only at `synchronous = NORMAL`.
 - **Subagent recovery.** V2 has no `task` tool.
+- **Structured error reasons in the durable transcript.** The persisted
+  `Assistant.error` is an `UnknownError` carrying a message and no reason
+  structure, so post-restart automation cannot switch on watchdog-vs-refusal
+  the way live code can. Fixing that widens the session schema for every
+  error type, not just this one, and is a separate decision (criterion 7).
 - **The permanent regression suite.** Harness issue #7's mid-stream-hang test
   becomes writable once this ships, but is not this slice.
