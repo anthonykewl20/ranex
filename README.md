@@ -284,18 +284,17 @@ none of the surface around it does.
 
 <!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
 
-**Active slice:** SLICE-012-provider-watchdog. Opened 2026-08-07 against
-`docs/adr/ADR-015-durable-execution-watchdog-first.md` (accepted the same day,
-once its compiled gate existed rather than because it read well): the first
-production durability slice, and the only one of the five needing no schema
-change. A stalled provider socket currently hangs the runner forever with no
-timeout anywhere in the harness; this slice gives it an idle deadline and an
-absolute budget, each provable without the other.
+**Active slice:** none. SLICE-012 closed 2026-08-07; SLICE-013 (the reconciler
+reorder) opens next, one at a time.
 
-It is gated by SLICE-011's prototype record, and the gate is compiled — a
-durability production slice is refused if that record is missing, not green, or
-not digest-bound. **Nothing durable is built in production yet.** The work
-happens in `anthonykewl20/ranex-harness`, milestone #1.
+**Durability is no longer only a design.** The provider watchdog shipped to the
+harness (`fe7a8901de`): a stalled provider stream now reaches a terminal state
+on its own, where before it hung forever and reported the session busy until
+someone intervened by hand. Four of ADR-015's five claims remain unbuilt in
+production, and each is gated by the SLICE-011 prototype record — a compiled
+test refuses a durability production slice if that record is missing, not
+green, or not digest-bound. The work happens in `anthonykewl20/ranex-harness`,
+milestone #1.
 
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
@@ -314,6 +313,25 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+- **SLICE-012-provider-watchdog** — closed 2026-08-07, all nine criteria met,
+  landed in `anthonykewl20/ranex-harness` (`fe7a8901de`). Two timeouts, each
+  provable without the other: an idle deadline that resets on every chunk, and
+  an absolute whole-turn budget. Both fail as a typed **non-retryable** error —
+  load-bearing, because a retryable one would fire, be retried, restart the same
+  stall and hang anyway while every criterion still passed.
+
+  Idle deliberately does not cover time-to-first-token. Inter-chunk gaps run
+  ~10-100ms while a reasoning model can take minutes to its first token, and one
+  number cannot serve both distributions — so the first pull runs untimed. The
+  consequence is written down rather than hidden: a provider that connects and
+  then never sends is bounded only by the absolute budget.
+
+  Two defects were found by building it. A watchdog failure is an error, not an
+  interrupt, so tool fibers dispatched during streaming were never cleared and
+  the settlement await held the turn open forever. And a pre-implementation
+  review caught that nothing required the timeout to be non-retryable — the
+  prototype had avoided that by accident, not by decision.
 
 - **SLICE-011-durable-execution-prototype** — closed 2026-08-07, all nine done
   criteria met. Five durability claims (watchdog, reconciler reorder, durable

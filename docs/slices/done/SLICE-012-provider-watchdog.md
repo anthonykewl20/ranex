@@ -1,6 +1,7 @@
 # SLICE-012 — provider watchdog: a stalled stream reaches a terminal state
 
-**Status:** open
+**Status:** done
+**Closed:** 2026-08-07 — all nine criteria met; landed in ranex-harness fe7a8901de.
 **Opened:** 2026-08-07
 **ADR:** `docs/adr/ADR-015-durable-execution-watchdog-first.md` — accepted 2026-08-07.
 **Gated by:** `docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`,
@@ -176,5 +177,15 @@ same stall, and hung anyway.
   structure, so post-restart automation cannot switch on watchdog-vs-refusal
   the way live code can. Fixing that widens the session schema for every
   error type, not just this one, and is a separate decision (criterion 7).
+- **A bounded time-to-first-token.** Idle deliberately does not cover the first
+  chunk (see criterion 4), so a provider that accepts the connection and then
+  never sends anything is bounded only by the absolute budget — up to 30
+  minutes at the default. That is a real limitation, not a tuned value:
+  absolute is the loose whole-turn backstop, and tightening it would false-cut
+  a legitimately long streaming turn that idle correctly ignores. One knob
+  cannot serve both distributions, which is the same argument that split idle
+  from TTFT in the first place. The proper fix is a third first-chunk budget;
+  it is out of scope here and named so the 1800s default is not mistaken for
+  a researched number.
 - **The permanent regression suite.** Harness issue #7's mid-stream-hang test
   becomes writable once this ships, but is not this slice.

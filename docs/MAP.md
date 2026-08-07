@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.3.2` |
+| Version | `3.3.3` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-07 — **SLICE-011 closed** (`3.3.2`). See §0.19 |
+| Last revised | 2026-08-07 — **SLICE-012: the watchdog goes to production** (`3.3.3`). See §0.20 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -331,7 +331,8 @@ The owner directed a full audit of the harness's durability story after a
 proposal claimed a durable-execution fix. The audit verdict (ADR-015) is that
 the proposal's diagnosis was right and its fix misaimed:
 
-1. **ADR-015** (`proposed`, this repository) decides the harness-side durability
+1. **ADR-015** (`accepted 2026-08-07`, this repository; `proposed` when this
+   section was written) decides the harness-side durability
    contract: **at-most-once with explicit interruption** — never
    at-least-once-plus-idempotent, because unsandboxed `bash` cannot be made
    idempotent and spec `session.md:50` forbids silent side-effect replay.
@@ -361,12 +362,11 @@ the proposal's diagnosis was right and its fix misaimed:
    judge liveness. SLICE-010 was parked, then re-opened and closed 2026-08-06
    with all fourteen criteria proven (`15614e6fc`).
 
-`PROVISIONAL` throughout: ADR-015 is still proposed and **nothing is built in
-production**. What changed on 2026-08-07 is narrower and worth stating exactly
-— the prototype ran, and all five claims are green with negative controls,
-supervisor-re-run gates and a consolidated digest-bound record. That raises
-confidence in the *design*; it is not a durability claim about the harness.
-The prototype ships nothing.
+`PROVISIONAL` at `3.2.0`: ADR-015 was proposed and **nothing was built in
+production** — the prototype ran green and raised confidence in the *design*
+without being a durability claim about the harness. ADR-015 was **accepted
+2026-08-07** (`c106ec170`) and the production watchdog is now SLICE-012; see
+§0.20 for what is built. The prototype itself still ships nothing.
 
 One result is worth carrying forward because it is evidence about method, not
 about durability: claim 5 was reported stable, approved by two reviewers, and
@@ -427,6 +427,37 @@ well-formed, green and digest-bound; it can never re-verify the bytes, which
 live in another repository built to be thrown away. That is the same limit
 ADR-003 already accepts for vendored prior art, and it is written down rather
 than left to be discovered.
+
+### 0.20 What changed in `3.3.3` — the watchdog goes to production
+
+ADR-015 was **accepted 2026-08-07** (`c106ec170`), superseding the `stays
+proposed` line this map carried since `3.3.1`/`3.3.2`. SLICE-012 is open: the
+**production provider watchdog** — the first of ADR-015's five claims and the
+only one needing no schema change. The slice was amended before any code was
+written (`dc014d44a`, six holes from a pre-implementation review; see the slice's
+"Amendments" section for the mapping to criteria 1–7 and control 5); the sharpest
+is the one worth carrying forward here — both timeouts must fail as a
+**non-retryable** `LLMError` reason, or the watchdog fires, is retried,
+restarts the same stall and hangs anyway while every criterion still passes. It
+is in progress, not built: four implementation terminals work the nine
+done-criteria red-first in the harness (`anthonykewl20/ranex-harness`, issue
+#2). On the kernel `slice-012-docs` branch this map's durability row and §0.16
+move from "nothing built in production" to what the slice builds, with `[TODO]`
+where production evidence does not exist yet; the harness
+`specs/v2/session.md:153` deferral is rewritten the same way on the harness
+`slice-012-docs` branch. This change does not modify `docs/STATE.md`; the owner
+rewrites it in `main` each session, so it is finalised there, not here. The
+disposable SLICE-011 prototype remains green and digest-bound but
+reference-only — it ships nothing, and `proto/s011-watchdog` carries no
+obligation to stay correct as the harness moves. **No position changes beyond
+the ADR status**: the durability contract is still at-most-once with explicit
+interruption; the other four claims (reconciler, retry, blockers, fencing) stay
+`PROVISIONAL` and open one slice at a time; nothing here is `CONFIRMED` until
+the production gate is green on disk.
+
+This is a draft: where the production evidence does not exist yet, the map says
+so and marks it `[TODO]`. The gate (`tests/contract/test_docs_discipline.py`)
+still resolves the prototype record; it cannot re-verify harness bytes.
 
 ---
 
@@ -634,7 +665,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
 | Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | **`CONFIRMED`** for the first rung — SLICE-008 and SLICE-010 built `ranex task dispatch/judge/merge/delegate/fanout`: a real agent ran headless in a dispatched worktree, a keyless invocation judged it to CANDIDATE, and the kernel published the checked fast-forward. Landing is serial and the pool is bounded. The immutable packet and declared-capability envelope remain unbuilt (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:445-496`) |
 | Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository, renumbered SLICE-020-028 on 2026-08-07 (ADR-014 predates the renumbering and cites the old numbers); nothing built. The SLICE-010 prerequisite is satisfied; SLICE-020-028 open after the durability program (`§0.16`). §0.15 |
-| Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — the harness must not hang forever or strand running work | `PROVISIONAL` — `ADR-015` `proposed`; SLICE-011 (disposable prototype) **closed 2026-08-07**, all five claims proven red-to-green with negative controls, two-reviewer consensus on each, supervisor-re-run gates, and a consolidated digest-bound record (`docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`). A compiled gate now refuses a production durability slice without that record; milestone #1 on `ranex-harness`; **nothing built in production**. §0.16 |
+| Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — the harness must not hang forever or strand running work | `ADR-015` **accepted 2026-08-07**. The **production provider watchdog is SLICE-012, OPEN and in progress** — the first of the five claims, schema-free; two timeouts (per-pull idle, whole-turn absolute), both failing as a **non-retryable, named `LLMError` reason** so idle and absolute are distinguishable programmatically and neither is retried into the stall. Four implementation terminals work the nine done-criteria red-first in `ranex-harness` (issue #2). The disposable prototype (SLICE-011) is green and digest-bound (`docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`) but ships nothing and is reference only. Production criteria are pending on disk: `[TODO on terminal merge — terminal state within budget with sessions.active() cleared and the timeout proven not retried, idle and absolute demonstrated independently, healthy slow stream not cut at a stated margin, non-default config observed to change the watchdog and out-of-bounds refused at load, correct with a tool in flight (tool fiber terminated and recorded interrupted), legible per-reason cause, no regression; then the watchdog's status within this row moves from PROVISIONAL to CONFIRMED — the row itself stays PROVISIONAL for the other four claims]`. The other four claims stay `PROVISIONAL` and open one slice at a time. §0.16, §0.20 |
 | `TaskPacket` | Content-addressed, immutable frozen-work root: exact scope/configuration, target, subject, evidence and record; material change recompiles it | `UNRESOLVED` — future worker packet, not dispatch machinery (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:600-628`; `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_DEVELOPMENT_LIFECYCLE.md:279-321`) |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:23-25`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
@@ -1177,7 +1208,7 @@ deleted; they are not carried forward.
 | `ADR-012` | The kernel merges |
 | `ADR-013` | Prototype before production |
 | `ADR-014` | The bridge becomes a per-member protocol — `proposed` |
-| `ADR-015` | Durable execution, watchdog first — at-most-once with explicit interruption — `proposed` |
+| `ADR-015` | Durable execution, watchdog first — at-most-once with explicit interruption — `accepted 2026-08-07` |
 
 **ADR-007 is not the journal ADR.** ADR-005 removed `.venv` and `node_modules`
 from the materialisation because ignored state is not in the commit, so only
