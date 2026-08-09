@@ -3,11 +3,11 @@
 **Status:** proposed
 **Date:** 2026-08-06
 **Decision-makers:** repo owner
-**Slice:** n/a — precedes the harness slices; SLICE-010 remains open
+**Slice:** n/a — precedes the harness slices; SLICE-010 is closed
 
 ## Context and Problem Statement
 
-The harness bridge is one-task-one-process. `delegation.py` spawns one harness per task with a single `RANEX_TASK_ID` and one `RANEX_EMIT` file (`src/ranex/cli/delegation.py:26-73`); the fork's bridge plugin commits once on the first idle session then latches `emitted = true` (`packages/opencode/src/plugin/ranex.ts:8-33`). The owner-approved background worktree agent manager runs N agents in one harness process, each in its own worktree. The bridge as written cannot express that: the first idle member swallows the rest, and no member identity exists to cross-check. The kernel's emission cross-check is the trust boundary; it must hold per member.
+The harness bridge is one-task-one-process. `delegation.py` spawns one harness per task with a single `RANEX_TASK_ID` and one `RANEX_EMIT` file (`src/ranex/cli/delegation.py:26-73`); the fork's bridge plugin commits once on the first idle session then latches `emitted = true` (`packages/ranex/src/plugin/ranex.ts:8-33`). The owner-approved background worktree agent manager runs N agents in one harness process, each in its own worktree. The bridge as written cannot express that: the first idle member swallows the rest, and no member identity exists to cross-check. The kernel's emission cross-check is the trust boundary; it must hold per member.
 
 ## Decision Drivers
 
@@ -71,7 +71,7 @@ The contract suite guards this ADR's structure, licences and digests. `tests/uni
 
 ## Architecture surface
 
-Port: the delegation bridge. Files: `src/ranex/cli/delegation.py` (`execute_environment`, `_read_emission`) and the fork's `packages/opencode/src/plugin/ranex.ts` bridge plugin. Emission schema gains `member_id` and `tree`. No verdict, journal, or `evaluate()` change.
+Port: the delegation bridge. Files: `src/ranex/cli/delegation.py` (`execute_environment`, `_read_emission`) and the fork's `packages/ranex/src/plugin/ranex.ts` bridge plugin. Emission schema gains `member_id` and `tree`. No verdict, journal, or `evaluate()` change.
 
 ## Scope and threat delta
 

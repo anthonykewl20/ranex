@@ -123,6 +123,31 @@ derived mechanically; everything to its left is a conversation.
 inside the loop, only what is allowed out of it. Containment beats control, and
 costs a tenth as much.
 
+This is the intended governed loop, not a claim that mutation fanout is safe
+today. Bounded read-only research/review jobs may run concurrently now because
+they cannot mutate files/refs or external state and receive no secrets. Current
+`task fanout` is a convenience/prototype over free-prompt JSONL; it has no A/B/C
+approval, exact child path+action scope, child-grant intersection or common
+harness admission. Keep one mutation writer until SLICE-044's real concurrent
+attack exit.
+
+The planned governed CLI preserves the existing command but replaces free
+authority with approved inputs:
+
+```text
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main task fanout \
+  --spec-packet A.json --artifact-manifest B.json \
+  --approval-envelope C.json --tasks child-requests.jsonl \
+  --target <repo> --journal <external> --outcome-dir <dir> --pool N
+```
+
+B/C own harness, model, timeout and suite; child rows name approved scope and
+capability-request IDs; `--pool` can only narrow the approved maximum. Children
+use isolated worktrees and cannot receive secrets or merge. Results are ordered
+canonically for one kernel-controlled stale-base CAS integrator. SLICE-036 will
+qualify that shape only in disposable worktrees with publication blocked;
+production use remains unauthorized until SLICE-044.
+
 ---
 
 ## A complete run, end to end
@@ -242,8 +267,8 @@ below is what is actually built.
   headless in that worktree and measures the frozen suite sealed; a separate
   keyless invocation judges — a CANDIDATE naming its missing claims, never a
   PASS; `merge` publishes a judged candidate only through ordered journalled
-  checks (the kernel merges; the harness never does); `fanout` runs a bounded
-  pool, one worktree each.
+  checks (the kernel merges; the harness never does); prototype `fanout` runs a
+  bounded pool, one worktree each. It is not approved mutation authority.
 - `ranex gate evaluate`, `ranex keygen`, and repository path confinement.
 
 **Known gaps — stated plainly**
@@ -269,33 +294,41 @@ below is what is actually built.
 - **No flow graph, no scenario compilation**, no budget, no escalation. Those
   are designed, not built. Worker dispatch left this list: `ranex task
   dispatch|judge|merge|delegate|fanout` ran a real model end to end (SLICE-008),
-  and the kernel publishes the judged candidate (SLICE-010).
-- **Review-consensus authenticity gaps await a prototype.** Two independent
-  adversarial reviews (2026-08-06) confirmed the gaps above and added: the suite
-  manifest freezes test IDs, not test bodies; `evidence.json` is overwritten,
-  not appended; network is denied only during provisioning. Per accepted
-  `docs/adr/ADR-013-prototype-before-production.md`, every hardening idea is
-  proven red-first in a scratch prototype before production code (milestone #1).
+  and the kernel publishes the judged candidate (SLICE-010). The free-prompt
+  `fanout` grammar remains prototype-only until ADR-017's SLICE-044 exit.
+- **Review-consensus authenticity gaps remain unstarted in production.** Two
+  independent adversarial reviews (2026-08-06) confirmed the gaps above and
+  added: the suite manifest freezes test IDs, not test bodies; `evidence.json` is
+  overwritten, not appended; network is denied only during provisioning. No
+  accepted or recorded GREEN result exists for the ADR-013 hardening prototype,
+  so production hardening remains unstarted. Every hardening idea must be proven
+  red-first in a scratch prototype before production code (milestone #1).
 
 Roughly speaking: the hardest part to get conceptually right exists, and almost
 none of the surface around it does.
 
 ## Current work
 
-<!-- Kept in sync with docs/STATE.md by tests/contract/test_docs_discipline.py -->
+<!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none. SLICE-013 closed 2026-08-08; SLICE-014 (durable retry)
-opens next, one at a time.
+**Active slice:** `docs/slices/SLICE-017-confinement-of-the-bound-command.md`.
+It is the single open P0 prerequisite: qualify the strict-local host and
+byte-reproducible native launcher without exposing a production command path.
 
-Three of ADR-015's five durability claims are now in production: the provider
-watchdog, the reconciler reorder, and its startup sweep. Two remain — durable
-blockers and Session-ID fencing — each gated by the SLICE-011 prototype record
-through a compiled test.
+Two of ADR-015's five durability claims are now in production: the provider
+watchdog; and the reconciler reorder plus its startup sweep. Three remain —
+durable retry, durable blockers, and Session-ID fencing — each gated by the
+SLICE-011 prototype record through a compiled test. The remaining durability
+sequence is parked/subordinate to P0. ADR-006 is split into active issue #10 /
+SLICE-017 qualification, then planned issue #21 / SLICE-018 lifecycle and issue
+#22 / SLICE-019 `cmd_run` closure. SLICE-029 opens only after SLICE-019.
+ADR-017 then runs planned SLICE-029..044 sequentially; 036 is
+qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
-harness (`fe7a8901de`): a stalled provider stream now reaches a terminal state
+harness (`23d6a5b4ee`): a stalled provider stream now reaches a terminal state
 on its own, where before it hung forever and reported the session busy until
-someone intervened by hand. Four of ADR-015's five claims remain unbuilt in
+someone intervened by hand. Three of ADR-015's five claims remain unbuilt in
 production, and each is gated by the SLICE-011 prototype record — a compiled
 test refuses a durability production slice if that record is missing, not
 green, or not digest-bound. The work happens in `anthonykewl20/ranex-harness`,
@@ -320,7 +353,7 @@ chosen by the party being measured. Both are closed.
 ## Completed slices
 
 - **SLICE-013-reconciler-reorder** — closed 2026-08-08, all seven criteria met,
-  landed in `anthonykewl20/ranex-harness` (`9eeda0bf5d`). A crash with an empty
+  landed in `anthonykewl20/ranex-harness` (`a8bc7bdf35`). A crash with an empty
   inbox left tools projected `running` forever: the runner returned on its
   eligible-input guard before it reconciled, and nothing else looked. The hoist
   fixes the `run()` path; a startup sweep wired into the application graph
@@ -336,7 +369,7 @@ chosen by the party being measured. Both are closed.
   is recorded in the code and the spec as a prerequisite on the fencing slice.
 
 - **SLICE-012-provider-watchdog** — closed 2026-08-07, all nine criteria met,
-  landed in `anthonykewl20/ranex-harness` (`fe7a8901de`). Two timeouts, each
+  landed in `anthonykewl20/ranex-harness` (`23d6a5b4ee`). Two timeouts, each
   provable without the other: an idle deadline that resets on every chunk, and
   an absolute whole-turn budget. Both fail as a typed **non-retryable** error —
   load-bearing, because a retryable one would fire, be retried, restart the same
@@ -395,8 +428,9 @@ chosen by the party being measured. Both are closed.
   kills the whole process group; the kernel cross-checks the emission against
   its own dispatch record, measures the frozen suite sealed, and a separate
   keyless invocation judges — a CANDIDATE naming its missing claims, never a
-  PASS. `task fanout` runs a bounded pool, one worktree each; the journal
-  chain verifies after concurrent runs. Proven end to end against a real free
+  PASS. Prototype `task fanout` runs a bounded pool, one worktree each; the
+  journal chain verifies after concurrent runs, but no A/B/C or child-grant
+  admission makes that production-safe. Proven end to end against a real free
   model, and the harness fork now presents as `ranex` with opencode's MIT
   attribution retained. Recorded, not mitigated: the model credential sits in
   a network-open loop (use a scoped, spend-limited key), and `ranex run`'s own

@@ -3,7 +3,7 @@
 **Status:** accepted
 **Date:** 2026-08-05 (accepted same day, owner, after REFUTE panel)
 **Decision-makers:** repo owner
-**Slice:** n/a — this decision precedes `SLICE-010`; the slice is not open yet
+**Slice:** `SLICE-010` — closed 2026-08-06, all fourteen criteria proven
 
 ## Context and Problem Statement
 

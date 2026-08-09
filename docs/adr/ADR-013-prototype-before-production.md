@@ -3,7 +3,7 @@
 **Status:** accepted
 **Date:** 2026-08-06
 **Decision-makers:** repo owner
-**Slice:** n/a — this decision precedes a future prototype slice; SLICE-010 remains open
+**Slice:** n/a — this decision precedes a future prototype slice; SLICE-010 is closed
 
 ## Context and Problem Statement
 

@@ -60,6 +60,38 @@ it. Opening a second slice is the failure mode this rule exists to prevent.
 Slices are small on purpose. If one cannot be finished in a session, it is too
 big — split it rather than carrying it.
 
+Parallelism has two different rules:
+
+- **Read-only fanout is allowed now.** Bounded research and independent review
+  jobs may run concurrently when they cannot change repository files/refs or
+  external state, receive no secret, and return only evidence or advice for the
+  supervisor to verify. Their reports never authorize implementation.
+- **Mutation fanout is not authorized yet.** The existing `task fanout` is a
+  convenience/prototype over free-prompt JSONL, not a capability boundary.
+  Until SLICE-044's real concurrent attack exit passes, keep one open slice and
+  one mutation writer. SLICE-036 may qualify mutation only in disposable child
+  worktrees with every publication path blocked.
+
+After that exit, parallel jobs are children of one approved batch inside the
+open slice, not extra slices. The batch binds the approved parent/C digest and
+base digest, a dependency-ready task set, pairwise-disjoint exact path+action
+scopes, isolated worktrees, frozen per-child tests/evidence, and an approved
+maximum pool. Each child receives only parent ∩ request; it receives no secret,
+approval, integration, merge, or publication power. A retry keeps the same
+scope and tests; widening means a new approval. Results are reported in
+canonical task/attempt order regardless of finish order. One key-exclusive
+integrator consumes accepted children in that order and the kernel alone
+publishes by stale-base CAS.
+
+The planned governed shape is:
+`PYTHONPATH=src uv run --frozen python -m ranex.cli.main task fanout
+--spec-packet A.json --artifact-manifest B.json --approval-envelope C.json
+--tasks child-requests.jsonl --target <repo> --journal <external>
+--outcome-dir <dir> --pool N`. B/C, not caller flags, own harness, model,
+timeout, and suite. Child rows reference approved `scope_id` and
+`capability_request_id`, never a free-form prompt as an oracle. `--pool` may
+only narrow the signed maximum. This grammar is planned, not present today.
+
 **No slice without an ADR.** The decision behind a slice is researched and
 written to `docs/adr/ADR-NNN-*.md` *before* the slice file is opened. The slice
 links it. Enforced, not remembered.

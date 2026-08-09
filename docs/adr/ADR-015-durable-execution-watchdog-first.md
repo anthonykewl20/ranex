@@ -72,7 +72,7 @@ In the context of a harness whose stalled streams hang forever and whose ownersh
 
 ### Confirmation
 
-The compiled gate is an extension of `tests/contract/test_docs_discipline.py`: a durability production slice (SLICE-012+) is refused unless the ADR-015 prototype exit record — digest-bound, in the scratch worktree — is green for every claim it names. The prototype suite is the confirmation authority, not a summary. Harness-side claims are proven from `packages/core/test` and `packages/opencode/test` with bun; the ranex side runs the contract test. No production durability slice opens with a missing or merely described criterion.
+The compiled gate is an extension of `tests/contract/test_docs_discipline.py`: a durability production slice (SLICE-012+) is refused unless the ADR-015 prototype exit record — digest-bound, in the scratch worktree — is green for every claim it names. The prototype suite is the confirmation authority, not a summary. Harness-side claims are proven from `packages/core/test` and `packages/ranex/test` with bun; the ranex side runs the contract test. No production durability slice opens with a missing or merely described criterion.
 
 ## Improvements on the prior art
 
@@ -131,7 +131,7 @@ Derived by state-transition analysis over the five claims and boundary-value ana
 
 ## Test strategy
 
-Levels: contract (ranex) and prototype (harness worktree). `tests/contract/test_docs_discipline.py` guards this ADR's structure, citations, licences, and digests, and is extended by SLICE-011 to refuse durability production slices without a green, digest-bound prototype record. `tests/security/test_refusal_coverage.py` keeps every refusal branch reachable once production slices land. `tests/contract/test_kernel_unchanged.py` pins the kernel unchanged. Harness-side claims are proven in the scratch worktree by the harness's own bun suite (`packages/core/test/session-runner.test.ts`, `packages/opencode/test/recovery/`), which this repository cannot resolve; the ranex gate is the digest-bound exit record, not the harness tests. Red-then-green per claim; no global coverage percentage.
+Levels: contract (ranex) and prototype (harness worktree). `tests/contract/test_docs_discipline.py` guards this ADR's structure, citations, licences, and digests, and is extended by SLICE-011 to refuse durability production slices without a green, digest-bound prototype record. `tests/security/test_refusal_coverage.py` keeps every refusal branch reachable once production slices land. `tests/contract/test_kernel_unchanged.py` pins the kernel unchanged. Harness-side claims are proven in the scratch worktree by the harness's own bun suite (`packages/core/test/session-runner.test.ts`, `packages/ranex/test/recovery/`), which this repository cannot resolve; the ranex gate is the digest-bound exit record, not the harness tests. Red-then-green per claim; no global coverage percentage.
 
 ## Code review checklist
 
