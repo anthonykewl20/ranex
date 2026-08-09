@@ -109,8 +109,9 @@ controller and signer uids, key, path, FDs and environment never enter the worke
 
 ### Consequences
 
-- Good: namespace visibility closes Landlock's metadata, pathname Unix-socket and
-  UDP gaps; inner seccomp and Landlock limit damage from a launcher defect.
+- Good: isolated namespaces close Landlock's metadata and UDP gaps and backstop
+  its pathname Unix-socket scope (ABI 9); inner seccomp and Landlock limit damage
+  from a launcher defect.
 - Good: the measured tree cannot rewrite its own input; outputs are separately
   collected and digested by the controller.
 - Good: a cgroup owns every descendant even after `setsid` or a double fork.
@@ -181,10 +182,13 @@ In scope: worker access to files, FDs, environment, network, IPC, processes,
 CPU, memory, PIDs and signing authority; complete descendant cleanup; evidence
 of enforcement. A worker may fully control its declared output and scratch.
 
-Landlock ABI 8 scopes signals and abstract Unix sockets but does not cover
-pathname Unix sockets or UDP; isolated network/IPC/mount namespaces close those
-paths. Landlock metadata gaps are closed by hiding host paths. Kernel compromise,
-host-admin compromise and side channels remain out of scope.
+Landlock ABI 6 scopes signals and abstract Unix sockets; ABI 9
+(`LANDLOCK_ACCESS_FS_RESOLVE_UNIX`, present on the cited kernel) restricts
+pathname Unix sockets. Landlock network rights remain TCP-only, so UDP and other
+protocols are closed by the isolated network namespace, and Landlock metadata
+gaps are closed by hiding host paths — namespaces stay as defence-in-depth even
+where Landlock now covers a path. Kernel compromise, host-admin compromise and
+side channels remain out of scope.
 
 ## Quality attributes
 
@@ -229,6 +233,7 @@ a compatible rollback.
 | 18 | evidence omits or mismatches an enforcement readback/digest | signer refuses |
 | 19 | local profile has not passed attack qualification | result remains provisional/unadmitted |
 | 20 | gVisor profile lacks verified OCI spec/rootfs/`runsc` pin | unavailable; never use `runsc do` or local fallback |
+| 21 | qualified report predates current host state (LSM/AppArmor/SELinux policy, unprivileged-userns sysctl, or cgroup-v2 delegation changed since qualification) | refuse launch; re-qualification required before admission |
 
 ## Test strategy
 

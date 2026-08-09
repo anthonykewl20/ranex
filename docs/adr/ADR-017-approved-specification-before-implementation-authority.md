@@ -194,6 +194,8 @@ rollback that leaves an unguarded effect path is forbidden.
 - 23. Pool, retry, task order or child row widens signed batch authority: refuse.
 - 24. A direct effect leaf is absent from the inventory or bypasses admission: refuse.
 - 25. A worker labels an unlisted change nonbehavioral: require reapproval, do not exempt.
+- 26. The projection the approver read differs from the bytes hashed in B: refuse; the exact rendered view shown for approval must deterministically re-hash to the signed manifest digest at verification.
+- 27. The implementing worker authored the semantic adapter/oracle that accepts its own work: deny; adapter authorship provenance is recorded and a worker may not author the acceptance oracle for its own change.
 
 ## Test strategy
 
@@ -229,7 +231,7 @@ baseline passes and a wrong outcome fails. Existing anchors are
 `tests/integration/test_delegation_command.py`, `tests/integration/test_journal.py`,
 `tests/security/test_slice004_hermetic_observation.py`, and Confirmation's three
 paths. Both repo/provider journeys are required; live model runs are witnessed
-evidence, not deterministic replay, and skips cannot close the milestone.
+evidence, not deterministic replay, and skips cannot close the milestone. The named e2e anchors (`tests/e2e/test_first_delegation.py`, `tests/e2e/test_gating_real_suite.py`) count only when their preconditions (model credential, harness directory, runtime) are satisfied; a skipped gate is BLOCKED, not green.
 
 ## Code review checklist
 

@@ -299,9 +299,8 @@ below is what is actually built.
 - **Review-consensus authenticity gaps remain unstarted in production.** Two
   independent adversarial reviews (2026-08-06) confirmed the gaps above and
   added: the suite manifest freezes test IDs, not test bodies; `evidence.json` is
-  overwritten, not appended; network is denied only during provisioning. No
-  accepted or recorded GREEN result exists for the ADR-013 hardening prototype,
-  so production hardening remains unstarted. Every hardening idea must be proven
+  overwritten, not appended; network is denied only during provisioning.
+  No prototype has been opened for these authenticity gaps; the green, digest-bound SLICE-011 prototype record covers ADR-015's durability claims only, not these authenticity defects, so production hardening for them remains unstarted. Every hardening idea must be proven
   red-first in a scratch prototype before production code (milestone #1).
 
 Roughly speaking: the hardest part to get conceptually right exists, and almost

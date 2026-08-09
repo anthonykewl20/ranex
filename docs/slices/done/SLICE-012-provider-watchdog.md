@@ -1,7 +1,7 @@
 # SLICE-012 — provider watchdog: a stalled stream reaches a terminal state
 
 **Status:** done
-**Closed:** 2026-08-07 — all nine criteria met; landed in ranex-harness fe7a8901de.
+**Closed:** 2026-08-07 — all nine criteria met; landed in ranex-harness 23d6a5b4ee. (corrected: the previously cited `fe7a8901de` is a docs commit, not the feat landing.)
 **Opened:** 2026-08-07
 **ADR:** `docs/adr/ADR-015-durable-execution-watchdog-first.md` — accepted 2026-08-07.
 **Gated by:** `docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`,

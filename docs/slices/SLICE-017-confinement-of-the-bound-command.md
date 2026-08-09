@@ -27,7 +27,7 @@ that RISK-06 is closed. Those boundaries keep the work finishable in one session
 
 Only these six repository paths may change:
 
-- `src/ranex/cli/confinement.py`
+- `src/ranex/cli/host_confinement.py`
 - `native/ranex-worker-launcher/launcher.c`
 - `governance/confinement/native-launcher-build-v1.json`
 - `governance/confinement/strict-local-host-v1.json`
@@ -50,15 +50,15 @@ An extra/missing/mismatched build input or a network attempt refuses the build.
 The ordered compiler flags are frozen in the manifest: C17, `_GNU_SOURCE`, `-O2`,
 PIE, strong stack protector, fortify level 3, format-security errors, RELRO/NOW,
 non-executable stack, no build-id, no recorded compiler switches, and source plus
-macro prefix maps from the absolute repository root to `.`. The environment is
+macro prefix maps from the absolute repository root to `.`. A pinned tracer observes every file the driver, compiler, assembler, linker and C runtime open or execute; the tracer's own digest is bound in the manifest, and any input the tracer did not observe refuses the build (gate 2). The environment is
 built from empty and contains only `PATH=/usr/bin:/bin`, `LC_ALL=C`, `TZ=UTC` and
 `SOURCE_DATE_EPOCH=0`.
 
 From repository root, the only build and install commands are:
 
 ```text
-PYTHONPATH=src uv run --frozen python -m ranex.cli.confinement launcher-build --manifest governance/confinement/native-launcher-build-v1.json --source native/ranex-worker-launcher/launcher.c --output .local/ranex/build/strict-local-v1/ranex-worker-launcher
-PYTHONPATH=src uv run --frozen python -m ranex.cli.confinement launcher-install --manifest governance/confinement/native-launcher-build-v1.json --artifact .local/ranex/build/strict-local-v1/ranex-worker-launcher --destination .local/ranex/libexec/strict-local-v1/ranex-worker-launcher
+PYTHONPATH=src uv run --frozen python -m ranex.cli.host_confinement launcher-build --manifest governance/confinement/native-launcher-build-v1.json --source native/ranex-worker-launcher/launcher.c --output .local/ranex/build/strict-local-v1/ranex-worker-launcher
+PYTHONPATH=src uv run --frozen python -m ranex.cli.host_confinement launcher-install --manifest governance/confinement/native-launcher-build-v1.json --artifact .local/ranex/build/strict-local-v1/ranex-worker-launcher --destination .local/ranex/libexec/strict-local-v1/ranex-worker-launcher
 ```
 
 Install is no-follow, exclusive and atomic, sets mode `0555`, fsyncs file and
@@ -157,6 +157,7 @@ hashes, exact broker argv, host facts, negative-control exits and cleanup result
 5. Hashing a launcher pathname and reopening it for execution.
 6. A launcher “FD cleanup” test that never injects an inheritable secret FD.
 7. Letting qualification execute the eventual untrusted command early.
+8. A build-closure manifest that lists inputs from documentation rather than from an actual pinned tracer observing the compiler.
 
 ## Not in this slice
 

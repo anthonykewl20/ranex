@@ -6,7 +6,7 @@
   Copyright (c) 2024 OpenSpec Contributors.
 - `xstate-adjacency.ts`: XState `packages/core/src/graph/adjacency.ts` at commit `c25dba07a2b68565edbe83d83c5d679dd85e00b2`; SPDX-License-Identifier: MIT.
   Copyright (c) 2015 David Khourshid.
-- `arxic-evidence-ref.ts`: Arxic `packages/contracts/src/evidence-ref.ts` at commit `135991d9b1a07c2ffa08e38f8e261543ec5ab980`; SPDX-License-Identifier: MIT.
+- `arxic-evidence-ref.ts`: Arxic `packages/contracts/src/evidence-ref.ts` at commit `135991d9b1a07c2ffa08e38f8e261543ec5ab980`; SPDX-License-Identifier: MIT. Note: `anthonykewl20/arxic` is a first-party, private repository under the same owner as this one; its provenance is therefore not third-party verifiable by re-fetch, unlike the three public sources above.
   Copyright (c) 2026 Arxic maintainers and contributors.
 
 ## MIT License
@@ -28,3 +28,11 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
+
+## Provenance caveat
+
+The four sources above were fetched at the pinned immutable commits. Local git
+blob hashes match the vendored bytes (enforced by tests/contract/test_docs_discipline.py);
+proving the bytes came from the recorded URL needs a second fetch. The Arxic
+repository is private and first-party, so its citation is permanently unverifiable
+by any third party — a stated limit on this evidence.

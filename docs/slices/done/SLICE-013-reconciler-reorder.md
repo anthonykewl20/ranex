@@ -1,7 +1,7 @@
 # SLICE-013 — reconciler reorder: a crash with an empty inbox stops stranding tools
 
 **Status:** done
-**Closed:** 2026-08-08 — all seven criteria met; landed in ranex-harness 9eeda0bf5d.
+**Closed:** 2026-08-08 — all seven criteria met; landed in ranex-harness a8bc7bdf35. (corrected: the previously cited `9eeda0bf5d` is an unrelated merge commit, not the feat landing.)
 **Opened:** 2026-08-07
 **ADR:** `docs/adr/ADR-015-durable-execution-watchdog-first.md` — accepted 2026-08-07.
 **Gated by:** `docs/slices/done/SLICE-011-durable-execution-prototype.exit-record.json`,
