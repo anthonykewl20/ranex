@@ -93,15 +93,33 @@ profile/build/artifact digests, exact broker facts and one stable refusal code.
 Unknown architecture, unsupported ABI, mutable helper, unreadable fact or
 cleanup failure produces no qualified report.
 
+**Host-state binding (owner-approved scope addition, 2026-08-10).** ADR-006's sad
+path 21 — a qualified report outliving the host state that justified it — was the
+only row the ADR assigned to no slice, and the schema above could not express it.
+The report therefore also binds the **LSM state** (`/sys/kernel/security/lsm` plus
+the active AppArmor/SELinux policy identity), the **unprivileged-userns sysctls**
+(`kernel.unprivileged_userns_clone` where present and `user.max_user_namespaces`),
+the **boot id** and **machine id**, and the **delegation identity** the
+qualification was granted under. This slice binds those facts and nothing more:
+detecting drift and refusing admission on a stale report is SLICE-019's, which
+cannot build that trigger unless the facts are recorded here first.
+
 ## Native launcher probe
 
 The controller opens the installed launcher with no-follow flags, verifies
 owner/mode/mount/capability facts and the manifest digest, and executes that
 same FD with `execveat(AT_EMPTY_PATH)` or refuses. The launcher accepts only the
-versioned qualification protocol in this slice. It starts behind a pipe gate,
-validates its fixed protocol FDs, closes every other FD, invalidates inherited keyrings, reconstructs
-the environment from the protocol allowlist, sets NNP, and runs built-in child
-probes. It cannot accept arbitrary `argv` or execute a subject command.
+versioned qualification protocol in this slice. It validates its fixed protocol
+FDs, closes every other FD, invalidates inherited keyrings, reconstructs the
+environment from the protocol allowlist and sets NNP — **all before it blocks on
+the pipe gate** — then waits, and only then runs built-in child probes. The
+hygiene precedes the wait deliberately: a launcher that parks on the gate while
+an inherited secret FD or environment value is still open leaves exactly the
+window this slice exists to close, and the state is observable from outside the
+process only while it is parked. Because `/proc/<pid>/environ` exposes the
+original `execve` envp region, which `clearenv()` does not alter, satisfying the
+environment clause requires the launcher to re-exec itself with the allowlisted
+envp rather than merely rebuilding `environ` in place. It cannot accept arbitrary `argv` or execute a subject command.
 
 The real probe demonstrates that an inherited secret environment value, an
 unexpected FD and a session keyring are absent; the gate prevents a child byte
@@ -131,6 +149,10 @@ executed. Probe output is length-bounded canonical JSON on its dedicated FD.
    diagnosis but cannot satisfy any gate above.
 10. `src/ranex/cli/main.py`, the kernel and `cmd_run` behavior remain byte-exact;
     ADR-006 and RISK-06 remain open for SLICE-018/019.
+11. A successful report binds every fact this slice enumerates, including the
+    host-state facts above. Probing correctly and recording nothing is a failure:
+    the qualified report is asserted positively, field by field, not only through
+    the refusals that prove each probe runs.
 
 ## Verification commands
 

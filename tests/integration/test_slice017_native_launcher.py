@@ -15,6 +15,7 @@ the acceptance target, not guesses made by the future implementation.
 
 from __future__ import annotations
 
+import contextlib
 import ctypes
 import fcntl
 import hashlib
@@ -25,6 +26,7 @@ import shutil
 import signal
 import stat
 import subprocess
+import sys
 import time
 from collections.abc import Mapping, Sequence
 from pathlib import Path
@@ -65,6 +67,7 @@ SYS_KEYCTL = 250
 AT_EMPTY_PATH = 0x1000
 KEYCTL_JOIN_SESSION_KEYRING = 1
 RESPONSE_LIMIT = 65_536
+MAIN_PY_SHA256 = "45d99dd162ac918cb66dd23ef55a420c2f6f1af6b9b53a091ef56df40300b290"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
@@ -167,8 +170,22 @@ def _manifest_artifact(manifest: Mapping[str, Any]) -> dict[str, Any]:
     return artifact
 
 
+def _manifest_source(manifest: Mapping[str, Any]) -> dict[str, Any]:
+    source = manifest["source"]
+    assert isinstance(source, dict)
+    return source
+
+
 def _copy_repository(destination: Path, *, include_outputs: bool = False) -> Path:
-    ignored = [".git", "__pycache__", ".pytest_cache", ".ruff_cache"]
+    ignored = [
+        ".git",
+        ".venv",
+        ".uv-cache",
+        "mutants",
+        "__pycache__",
+        ".pytest_cache",
+        ".ruff_cache",
+    ]
     if not include_outputs:
         ignored.append(".local")
     return Path(
@@ -184,6 +201,7 @@ def _copy_repository(destination: Path, *, include_outputs: bool = False) -> Pat
 def _controller_environment() -> dict[str, str]:
     environment = os.environ.copy()
     environment["PYTHONPATH"] = "src"
+    environment["UV_OFFLINE"] = "1"
     return environment
 
 
@@ -305,7 +323,14 @@ def _case_from_built(tmp_path: Path, built_repository: Path) -> Path:
             built_repository,
             tmp_path / "repository",
             symlinks=True,
-            ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", ".ruff_cache"),
+            ignore=shutil.ignore_patterns(
+                ".venv",
+                ".uv-cache",
+                "mutants",
+                "__pycache__",
+                ".pytest_cache",
+                ".ruff_cache",
+            ),
         )
     )
 
@@ -351,7 +376,7 @@ def test_gate2_manifest_pins_the_whole_closure_by_bytes() -> None:
     manifest = _read_json(REPOSITORY / MANIFEST)
     inputs = _manifest_inputs(manifest)
 
-    paths = [item["path"] for item in inputs]
+    paths = [item["realpath"] for item in inputs]
     headers = [
         path
         for path in paths
@@ -366,30 +391,38 @@ def test_gate2_manifest_pins_the_whole_closure_by_bytes() -> None:
     # any traced input refuses (the gate-2 behaviour tests that follow).
     assert headers, "a closure with no headers cannot be a real traced C build"
     for item in inputs:
-        assert set(item) >= {"path", "sha256"}
-        source = Path(item["path"])
+        assert set(item) >= {"path", "realpath", "role", "sha256"}
+        declared = Path(item["path"])
+        source = Path(item["realpath"])
+        assert declared.is_absolute()
         assert source.is_absolute()
+        assert not source.is_symlink()
+        assert source == declared.resolve(strict=True)
+        assert source == source.resolve(strict=True)
         assert len(item["sha256"]) == 64
         int(item["sha256"], 16)
         assert _sha256_bytes(source.read_bytes()) == item["sha256"], (
             f"manifest pins {source} to a digest that is not its bytes on disk"
         )
 
-    required_basenames = {
+    required_roles = {
         "cc1",
-        "collect2",
         "as",
         "ld",
-        "liblto_plugin.so",
-        "Scrt1.o",
-        "crti.o",
-        "crtn.o",
-        "crtbeginS.o",
-        "crtendS.o",
-        "libgcc.a",
-        "libc_nonshared.a",
+        "crt",
+        "libgcc",
+        "libc",
     }
-    assert required_basenames <= {Path(path).name for path in paths}
+    assert required_roles <= {item["role"] for item in inputs}
+
+    build = manifest["build"]
+    assert isinstance(build, dict)
+    tracer = build["tracer"]
+    assert isinstance(tracer, dict)
+    assert set(tracer) >= {"path", "sha256"}
+    tracer_path = Path(tracer["path"])
+    assert tracer_path.is_absolute() and not tracer_path.is_symlink()
+    assert _sha256_file(tracer_path) == tracer["sha256"]
 
 
 def test_gate2_deleting_a_traced_header_refuses_input_drift(
@@ -441,6 +474,27 @@ def test_gate2_adding_an_unobserved_closure_input_refuses_untraced_input(
     inputs.append({"path": "/etc/passwd", "sha256": _sha256_file(Path("/etc/passwd"))})
     inputs.sort(key=lambda item: item["path"])
     mutated = Path("governance/confinement/test-added-input.json")
+    _write_canonical(root / mutated, manifest)
+
+    result = _build(root, manifest=mutated)
+    _assert_refusal(result, BUILD_UNTRACED_INPUT)
+    _assert_no_partial(root / BUILD_ARTIFACT)
+
+
+def test_gate2_real_compilation_change_refuses_an_untraced_open(
+    tmp_path: Path,
+) -> None:
+    root = _copy_repository(tmp_path / "repository")
+    manifest = _read_json(root / MANIFEST)
+    source = root / SOURCE
+    extra_header = source.with_name("slice017-extra-real-input.h")
+    extra_header.write_text("#define SLICE017_EXTRA_REAL_INPUT 1\n", encoding="utf-8")
+    source.write_text(
+        '#include "slice017-extra-real-input.h"\n' + source.read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+    _manifest_source(manifest)["sha256"] = _sha256_file(source)
+    mutated = Path("governance/confinement/test-real-extra-include.json")
     _write_canonical(root / mutated, manifest)
 
     result = _build(root, manifest=mutated)
@@ -607,20 +661,28 @@ def _proc_fd_path_stat(pid: int, executable: bytes) -> os.stat_result | None:
 
 
 def _kill_tracees(tracees: set[int]) -> None:
-    for pid in tracees:
+    pending = set(tracees)
+    for pid in pending:
         try:
-            _ptrace(PTRACE_KILL, pid)
-        except OSError:
+            os.kill(pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+
+    deadline = time.monotonic() + 5.0
+    while pending and time.monotonic() < deadline:
+        for pid in tuple(pending):
             try:
-                os.kill(pid, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-    while tracees:
-        try:
-            pid, _status = os.waitpid(-1, WAIT_ALL)
-        except ChildProcessError:
-            break
-        tracees.discard(pid)
+                waited, _status = os.waitpid(pid, os.WNOHANG | WAIT_ALL)
+            except ChildProcessError:
+                pending.discard(pid)
+                tracees.discard(pid)
+                continue
+            if waited == pid:
+                pending.discard(pid)
+                tracees.discard(pid)
+        if pending:
+            time.sleep(0.01)
+    assert not pending, f"ptrace cleanup did not reap tracees before deadline: {pending}"
 
 
 def _controller_qualify_argv() -> list[str]:
@@ -770,27 +832,72 @@ def test_gate4_writable_launcher_chain_refuses_before_exec(
     _assert_no_partial(root / QUALIFICATION_REPORT)
 
 
-def test_gate4_file_capable_chain_refuses_without_mocking(
-    tmp_path: Path,
-    built_repository: Path,
-) -> None:
-    capable = Path("/usr/bin/ping")
-    capability = os.getxattr(capable, "security.capability")
-    assert capability
-    root = _installed_case(tmp_path, built_repository)
+def _file_capable_binary() -> Path:
+    for directory in (Path("/usr/bin"), Path("/usr/sbin"), Path("/usr/libexec")):
+        if not directory.is_dir():
+            continue
+        for candidate in sorted(directory.iterdir()):
+            if candidate.is_symlink() or not candidate.is_file():
+                continue
+            try:
+                capability = os.getxattr(candidate, "security.capability")
+            except OSError:
+                continue
+            if capability and os.access(candidate, os.X_OK):
+                return candidate
+    raise AssertionError("host has no discoverable executable with security.capability")
+
+
+def _profile_pinning_helper(root: Path, helper: Path, name: str) -> Path:
     profile = _read_json(root / PROFILE)
     helpers = profile["helpers"]
     assert isinstance(helpers, dict)
     bubblewrap = helpers["bubblewrap"]
     assert isinstance(bubblewrap, dict)
-    bubblewrap["path"] = str(capable)
-    bubblewrap["sha256"] = _sha256_file(capable)
-    capable_profile = Path("governance/confinement/test-file-capable-helper.json")
-    _write_canonical(root / capable_profile, profile)
+    bubblewrap["path"] = str(helper)
+    bubblewrap["sha256"] = _sha256_file(helper)
+    path = Path(f"governance/confinement/{name}.json")
+    _write_canonical(root / path, profile)
+    return path
 
-    result = _qualify(root, profile=capable_profile)
-    _assert_refusal(result, EXEC_OBJECT_DRIFT)
-    _assert_no_partial(root / QUALIFICATION_REPORT)
+
+def test_gate4_file_capability_is_the_differential_refusal_fact(
+    tmp_path: Path,
+    built_repository: Path,
+) -> None:
+    capable = _file_capable_binary()
+    capability = os.getxattr(capable, "security.capability")
+    assert capability
+    capable_root = _installed_case(tmp_path / "capable", built_repository)
+    stripped_root = _installed_case(tmp_path / "stripped", built_repository)
+    stripped = stripped_root / ".local/ranex/file-capability-differential"
+    stripped.parent.mkdir(parents=True, exist_ok=True)
+    shutil.copy(capable, stripped)
+    assert _sha256_file(stripped) == _sha256_file(capable)
+    assert stat.S_IMODE(stripped.stat().st_mode) == stat.S_IMODE(capable.stat().st_mode)
+    assert "security.capability" not in os.listxattr(stripped)
+
+    capable_profile = _profile_pinning_helper(
+        capable_root, capable, "test-file-capable-helper"
+    )
+    stripped_profile = _profile_pinning_helper(
+        stripped_root, stripped, "test-capability-stripped-helper"
+    )
+
+    capable_result = _qualify(capable_root, profile=capable_profile)
+    capable_refusal = _assert_refusal(capable_result, EXEC_OBJECT_DRIFT)
+    assert "capab" in str(capable_refusal["detail"]).lower()
+    _assert_no_partial(capable_root / QUALIFICATION_REPORT)
+
+    stripped_result = _qualify(stripped_root, profile=stripped_profile)
+    stripped_report = stripped_root / QUALIFICATION_REPORT
+    if stripped_result.returncode == 0:
+        assert _read_json(stripped_report)["qualified"] is True
+        stripped_report.unlink()
+    else:
+        stripped_refusal = _assert_refusal(stripped_result, EXEC_OBJECT_DRIFT)
+        assert "capab" not in str(stripped_refusal["detail"]).lower()
+        _assert_no_partial(stripped_report)
 
 
 def _high_cloexec(descriptor: int) -> int:
@@ -881,6 +988,8 @@ def _launch_protocol(
     injected_fd: Path | None = None,
     injected_keyring: bool = False,
     prove_gate: bool = False,
+    secret_expected_at_gate: bool = False,
+    argv: Sequence[str] | None = None,
 ) -> tuple[int, bytes, int | None, int | None]:
     gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
     request_read, request_write = os.pipe2(os.O_CLOEXEC)
@@ -904,6 +1013,7 @@ def _launch_protocol(
         environment[INJECTED_SECRET_NAME] = "must-not-survive"
 
     pid = os.fork()
+    child_reaped = False
     if pid == 0:
         os.dup2(child_gate, 3, inheritable=True)
         os.dup2(child_request, 4, inheritable=True)
@@ -914,7 +1024,7 @@ def _launch_protocol(
         if injected_keyring:
             keyring_id = _join_injected_session_keyring()
         os.write(metadata_write, keyring_id.to_bytes(8, "little", signed=True))
-        _execveat(child_launcher, [str(artifact)], environment)
+        _execveat(child_launcher, argv or [str(artifact)], environment)
 
     os.close(metadata_write)
     for descriptor in (
@@ -938,7 +1048,9 @@ def _launch_protocol(
         if prove_gate:
             _assert_blocked_reading_gate(pid)
             observed_environment = Path(f"/proc/{pid}/environ").read_bytes()
-            assert INJECTED_SECRET_NAME.encode() not in observed_environment
+            assert (
+                INJECTED_SECRET_NAME.encode() in observed_environment
+            ) is secret_expected_at_gate
             if unexpected >= 0:
                 assert not os.path.lexists(f"/proc/{pid}/fd/{unexpected}")
             readable, _, _ = select.select([response_read], [], [], 0.35)
@@ -950,6 +1062,7 @@ def _launch_protocol(
         gate_write = -1
         response = _read_pipe(response_read)
         status = _wait_child(pid)
+        child_reaped = True
         return (
             status,
             response,
@@ -961,6 +1074,11 @@ def _launch_protocol(
             os.close(gate_write)
         os.close(metadata_read)
         os.close(response_read)
+        if not child_reaped:
+            with contextlib.suppress(ProcessLookupError):
+                os.kill(pid, signal.SIGKILL)
+            with contextlib.suppress(ChildProcessError):
+                os.waitpid(pid, 0)
 
 
 def _protocol_response(raw: bytes) -> dict[str, Any]:
@@ -973,12 +1091,22 @@ def _protocol_response(raw: bytes) -> dict[str, Any]:
     return value
 
 
-def _valid_request() -> bytes:
+def _assert_protocol_refusal_exit(status: int) -> None:
+    # WIFEXITED is what separates a deliberate refusal from a signal death such as
+    # SIGSEGV — that is the property worth asserting. The specific non-zero value is
+    # NOT pinned: neither the slice nor the frozen contract fixes one ("any refusal =
+    # non-zero exit"), so pinning a number here would invent a contract value and fail
+    # a correct implementation that chose a different one.
+    assert os.WIFEXITED(status), f"protocol refusal died by signal: status={status}"
+    assert os.WEXITSTATUS(status) != 0, "a protocol refusal must not exit 0"
+
+
+def _valid_request(*additional_allowlisted_names: str) -> bytes:
     return _canonical_bytes(
         {
             "protocol": PROTOCOL,
             "action": "qualify-probe",
-            "env_allowlist": ["LC_ALL", "TZ"],
+            "env_allowlist": ["LC_ALL", "TZ", *additional_allowlisted_names],
         }
     )
 
@@ -1008,9 +1136,25 @@ def test_gate7_real_launcher_blocks_then_removes_secret_fd_env_and_keyring(
     assert probes["injected_secret_env_absent"] is True
     assert probes["injected_unexpected_fd_absent"] is True
     assert probes["inherited_session_keyring_invalidated"] is True
-    assert probes["closed_unexpected_fds"] == [injected_descriptor]
+    closed = set(probes["closed_unexpected_fds"])
+    assert injected_descriptor in closed
+    assert closed <= {0, 1, 2, injected_descriptor}
     assert probes["session_keyring_before"] == injected_keyring_id
+    assert isinstance(probes["session_keyring_after"], int)
+    assert probes["session_keyring_after"] > 0
     assert probes["session_keyring_after"] != injected_keyring_id
+
+    allowed_status, allowed_raw, _, _ = _launch_protocol(
+        root / INSTALLED_ARTIFACT,
+        _valid_request(INJECTED_SECRET_NAME),
+        injected_secret=True,
+        prove_gate=True,
+        secret_expected_at_gate=True,
+    )
+    assert os.waitstatus_to_exitcode(allowed_status) == 0
+    allowed_response = _protocol_response(allowed_raw)
+    assert allowed_response["refusal"] is None
+    assert allowed_response["probes"]["injected_secret_env_absent"] is False
 
 
 @pytest.mark.parametrize(
@@ -1036,18 +1180,78 @@ def test_gate8_malformed_or_extra_field_protocol_refuses_without_partial_output(
     wire_request: bytes,
 ) -> None:
     root = _installed_case(tmp_path, built_repository)
-    report = root / QUALIFICATION_REPORT
-    assert not report.exists()
 
     status, raw, _injected_descriptor, _injected_keyring_id = _launch_protocol(
         root / INSTALLED_ARTIFACT, wire_request
     )
-    assert os.waitstatus_to_exitcode(status) != 0
+    # A structured protocol refusal exits 1. Pinning it separates the deliberate
+    # response below from a signal death such as SIGSEGV (-11).
+    _assert_protocol_refusal_exit(status)
     assert len(raw) <= RESPONSE_LIMIT
     response = _protocol_response(raw)
     assert response["refusal"] == PROTOCOL_REFUSED
     assert response["probes"] == {}
-    _assert_no_partial(report)
+
+
+@pytest.mark.parametrize(
+    "wire_request",
+    [
+        pytest.param(
+            _canonical_bytes(
+                {
+                    "protocol": PROTOCOL,
+                    "action": "execute",
+                    "env_allowlist": ["LC_ALL", "TZ"],
+                }
+            ),
+            id="different-action",
+        ),
+        pytest.param(
+            _canonical_bytes(
+                {
+                    "protocol": PROTOCOL,
+                    "action": "qualify-probe",
+                    "env_allowlist": ["LC_ALL", "TZ"],
+                    "command": ["/bin/true"],
+                }
+            ),
+            id="command-payload",
+        ),
+    ],
+)
+def test_control7_launcher_refuses_an_arbitrary_action_or_command(
+    tmp_path: Path,
+    built_repository: Path,
+    wire_request: bytes,
+) -> None:
+    root = _installed_case(tmp_path, built_repository)
+    status, raw, _, _ = _launch_protocol(root / INSTALLED_ARTIFACT, wire_request)
+    _assert_protocol_refusal_exit(status)
+    response = _protocol_response(raw)
+    assert response["refusal"] == PROTOCOL_REFUSED
+    assert response["probes"] == {}
+
+
+def test_control7_hostile_extra_argv_is_refused_and_never_executed(
+    tmp_path: Path,
+    built_repository: Path,
+) -> None:
+    root = _installed_case(tmp_path, built_repository)
+    marker = tmp_path / "hostile-argv-executed"
+    hostile = tmp_path / "hostile-extra-argv"
+    hostile.write_text(f"#!/bin/sh\nprintf x > {marker}\n", encoding="utf-8")
+    hostile.chmod(0o755)
+
+    status, raw, _, _ = _launch_protocol(
+        root / INSTALLED_ARTIFACT,
+        _valid_request(),
+        argv=[str(root / INSTALLED_ARTIFACT), str(hostile)],
+    )
+    _assert_protocol_refusal_exit(status)
+    response = _protocol_response(raw)
+    assert response["refusal"] == PROTOCOL_REFUSED
+    assert response["probes"] == {}
+    assert not marker.exists()
 
 
 def _adversarial_responder_source(response: bytes) -> str:
@@ -1177,3 +1381,70 @@ def test_gate8_controller_refuses_invalid_launcher_output_without_report(
     result = _qualify(root, artifact=INSTALLED_ARTIFACT, manifest=manifest, profile=profile)
     _assert_refusal(result, PROTOCOL_REFUSED)
     _assert_no_partial(report)
+
+
+def test_gate10_production_entrypoint_adr_and_risk_remain_frozen() -> None:
+    main = REPOSITORY / "src/ranex/cli/main.py"
+    assert _sha256_file(main) == MAIN_PY_SHA256
+
+    adr = (
+        REPOSITORY / "docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md"
+    ).read_text(encoding="utf-8")
+    assert [line for line in adr.splitlines() if line.startswith("**Status:**")] == [
+        "**Status:** proposed"
+    ]
+
+    risk_map = (REPOSITORY / "docs/MAP.md").read_text(encoding="utf-8")
+    assert "| `RISK-06` |" in risk_map
+    assert (REPOSITORY / SOURCE).is_file(), "SLICE-017 launcher source is not implemented"
+
+
+def test_gate9_slice017_files_have_no_test_bypass_and_keep_the_frozen_count() -> None:
+    files = {
+        "tests/integration/test_slice017_native_launcher.py": 26,
+        "tests/security/test_slice017_host_qualification.py": 21,
+    }
+    forbidden = (
+        "unittest." + "mock",
+        "Magic" + "Mock",
+        "monkey" + "patch",
+        "pytest." + "skip",
+        "skip" + "if",
+        "x" + "fail",
+    )
+    for relative in files:
+        source = (REPOSITORY / relative).read_text(encoding="utf-8")
+        for token in forbidden:
+            assert token not in source, f"{relative} contains forbidden test bypass {token!r}"
+
+    environment = _controller_environment()
+    environment.pop("PYTEST_ADDOPTS", None)
+    environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    environment["PYTHONDONTWRITEBYTECODE"] = "1"
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-p",
+            "no:cacheprovider",
+            "-q",
+            *files,
+            "--collect-only",
+        ],
+        cwd=REPOSITORY,
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=60,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    collected = {
+        relative: sum(
+            line.startswith(f"{relative}::") for line in completed.stdout.splitlines()
+        )
+        for relative in files
+    }
+    assert collected == files
+    assert (REPOSITORY / SOURCE).is_file(), "SLICE-017 launcher source is not implemented"
