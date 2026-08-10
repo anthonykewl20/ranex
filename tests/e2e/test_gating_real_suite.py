@@ -21,6 +21,9 @@ Stages are ordered and share one session. A stage that cannot meet its
 preconditions skips loudly and everything depending on it skips with the
 same reason; on a machine with no pinned resolver, no network, or no signing
 key this file reports exactly what is missing instead of passing vacuously.
+A stage that never ran at all is a different thing and is not a skip: its
+dependents FAIL and name it, because a missing artifact nobody declared
+absent is absence, and absence blocks.
 
 The recursion is self-limiting: the honest stages run this suite inside the
 materialised clone, where the scratch HOME holds no store and the run has no
@@ -167,18 +170,54 @@ def test_nested_self_gate_cannot_be_activated_by_forged_environment(
 
 
 class Session:
-    """Shared state for the ordered stages, with loud dependency skipping."""
+    """Shared state for the ordered stages, with loud dependency skipping.
+
+    A stage is in exactly one of three states, and they are not the same thing:
+
+    * **reached** — it ran and produced the artifact its dependents consume.
+    * **blocked** — a precondition this machine cannot supply was found absent
+      and named, so dependents skip with that reason.
+    * **neither** — it never ran at all.
+
+    The third state is the one that used to be silent. `require()` only
+    consulted `blocked`, so a never-run stage sailed through the guard and the
+    dependent stage then dereferenced an unset `None` attribute, dying with a
+    `TypeError` that named neither the stage nor the reason. It is now a loud
+    failure. It is deliberately NOT a skip: this project treats absence as
+    FAIL, and turning a missing artifact into a skip would convert a crash into
+    a silent pass-by-absence — exactly the failure mode Ranex exists to catch.
+    """
 
     def __init__(self) -> None:
         self.blocked: dict[str, str] = {}
+        self.reached: set[str] = set()
         self.clone: Path | None = None
         self.key_path: Path | None = None
         self.store: Path | None = None
+
+    def reach(self, stage: str) -> None:
+        """Record that `stage` produced the artifact its dependents need."""
+
+        self.reached.add(stage)
 
     def require(self, *stages: str) -> None:
         for stage in stages:
             if stage in self.blocked:
                 pytest.skip(f"depends on {stage}: {self.blocked[stage]}")
+            if stage not in self.reached:
+                pytest.fail(
+                    f"required stage {stage!r} never ran, so the artifact this "
+                    "test consumes was never produced. Nothing declared its "
+                    "preconditions absent either, so this is not a skip.\n"
+                    "These stages are ordered and share one module-scoped "
+                    f"session: {stage!r} must execute in this same process "
+                    "first. Selecting a single test ID from this file is the "
+                    "usual cause — run the whole file instead. An earlier "
+                    "stage erroring out part-way is the other.\n"
+                    f"  reached: {sorted(self.reached) or ['(none)']}\n"
+                    f"  declared absent: {sorted(self.blocked) or ['(none)']}",
+                    pytrace=False,
+                )
 
     def block(self, stage: str, reason: str) -> None:
         self.blocked[stage] = reason
@@ -193,6 +232,8 @@ def session(tmp_path_factory: pytest.TempPathFactory) -> Session:
             "the resolver named in governance/deps.yaml is absent or its "
             "bytes do not match the pinned sha256"
         )
+    else:
+        state.reach("resolver")
     state.store = tmp_path_factory.mktemp("real-world") / "store"
     return state
 
@@ -232,6 +273,21 @@ def journal_entries(repo: Path) -> list[dict[str, object]]:
     if not path.exists():
         return []
     return Journal(path).entries()
+
+
+def suite_tail(out: str, err: str, lines: int = 30) -> str:
+    """The end of a governed run's own output, for a failure message.
+
+    `run` reports the bound command's exit code verbatim, and pytest writes its
+    summary to stdout — so a message interpolating stderr alone renders as an
+    empty string and the failure reads `assert 1 == 0`, naming nothing. The
+    tail names which tests are red in the tree under governance.
+    """
+
+    combined = (out + err).strip().splitlines()
+    if not combined:
+        return "(the governed command produced no output at all)"
+    return "\n".join(combined[-lines:])
 
 
 def fetch_argv(store: Path) -> list[str]:
@@ -314,6 +370,7 @@ def test_stage_01_clone_the_real_repository(session: Session) -> None:
     assert committed.returncode == 0, committed.stderr
     session.clone = clone
     session.key_path = key_path
+    session.reach("clone")
 
 
 # --------------------------------------------------------------------------
@@ -458,6 +515,7 @@ def test_stage_05_fetch_provisions_the_real_dependency_set(
     code, out, err = ranex(session.clone, fetch_argv(session.store))
     if code != 0:
         session.block("fetch", f"fetch failed: {err}")
+    session.reach("fetch")
     derivations = [
         entry
         for entry in journal_entries(session.clone)
@@ -505,6 +563,7 @@ def test_stage_06b_approve_records_the_full_set_as_the_first_delta(
     code, out, err = ranex(session.clone, approve_argv())
     if code != 0:
         session.block("approval", f"approve failed: {err}")
+    session.reach("approval")
     assert "pytest" in out
     approvals = [
         entry
@@ -584,7 +643,13 @@ def test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts(
         return
     session.require("resolver", "clone", "fetch", "approval")
     code, out, err = ranex(session.clone, run_argv(session.store), session.key_path)
-    assert code == 0, f"the real suite did not pass under governance: {err}"
+    assert code == 0, (
+        "the real suite did not pass under governance: the bound command "
+        f"exited {code} against the cloned HEAD. This stage's claim is that "
+        "the committed tree is green, so a red suite at HEAD fails it "
+        "honestly — the tail of the suite's own output says which tests:\n"
+        f"{suite_tail(out, err)}"
+    )
     code, out, _ = ranex(session.clone, evaluate_argv())
     assert code == 0
     assert out.startswith("PASS")
@@ -828,10 +893,16 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     missing_id = "tests/contract/test_bom_is_honest.py::test_bom_is_honest"
     assert missing_id in live_manifest["suite"]
 
-    baseline_code, _, baseline_error = ranex(
+    baseline_code, baseline_output, baseline_error = ranex(
         repository, run_argv(session.store), session.key_path
     )
-    assert baseline_code == 0, baseline_error
+    assert baseline_code == 0, (
+        "this test deletes one frozen test from a GREEN clone and asserts the "
+        "gate then reports it missing; it cannot establish that baseline "
+        f"because the clean clone's own suite exited {baseline_code}. The "
+        "tail of the suite's own output says which tests are red:\n"
+        f"{suite_tail(baseline_output, baseline_error)}"
+    )
     baseline_record = json.loads(
         (repository / "governance" / "evidence.json").read_text()
     )[0]

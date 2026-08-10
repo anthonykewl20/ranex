@@ -116,18 +116,49 @@ def pinned_resolver() -> Path | None:
 
 
 class Operator:
-    """One person, one machine, one afternoon."""
+    """One person, one machine, one afternoon.
+
+    A stage is either **reached** (it ran and produced what its dependents
+    consume), **blocked** (a precondition this machine cannot supply was found
+    absent and named), or neither — it never ran. `require()` used to consult
+    only `blocked`, so the third case passed the guard and the dependent stage
+    then ran `git`/`ranex` against a clone directory that was never created,
+    dying with a bare `FileNotFoundError` on a temporary path that named
+    neither the stage nor the reason. A never-run stage now FAILS its
+    dependents loudly. Deliberately not a skip: absence blocks here, and
+    demoting a missing artifact to a skip would be a silent pass-by-absence.
+    """
 
     def __init__(self) -> None:
         self.blocked: dict[str, str] = {}
+        self.reached: set[str] = set()
         self.clone: Path | None = None
         self.key: Path | None = None
         self.store: Path | None = None
+
+    def reach(self, stage: str) -> None:
+        """Record that `stage` produced the artifact its dependents need."""
+
+        self.reached.add(stage)
 
     def require(self, *stages: str) -> None:
         for stage in stages:
             if stage in self.blocked:
                 pytest.skip(f"depends on {stage}: {self.blocked[stage]}")
+            if stage not in self.reached:
+                pytest.fail(
+                    f"required stage {stage!r} never ran, so the artifact this "
+                    "test consumes was never produced. Nothing declared its "
+                    "preconditions absent either, so this is not a skip.\n"
+                    "This journey is ordered and shares one module-scoped "
+                    f"operator: {stage!r} must execute in this same process "
+                    "first. Selecting a single test ID from this file is the "
+                    "usual cause — run the whole file instead. An earlier "
+                    "stage erroring out part-way is the other.\n"
+                    f"  reached: {sorted(self.reached) or ['(none)']}\n"
+                    f"  declared absent: {sorted(self.blocked) or ['(none)']}",
+                    pytrace=False,
+                )
 
     def block(self, stage: str, reason: str) -> None:
         self.blocked[stage] = reason
@@ -142,6 +173,8 @@ def operator(tmp_path_factory: pytest.TempPathFactory) -> Operator:
             "the resolver in governance/deps.yaml is absent or does not match "
             "its digest; a new operator installs it first"
         )
+    else:
+        state.reach("resolver")
     root = tmp_path_factory.mktemp("cold-start")
     state.key = root / "keys" / "worker.key"
     state.store = root / "store"
@@ -195,6 +228,7 @@ def test_stage_1_a_fresh_clone_carries_no_secrets_and_no_store(
     )
     if cloned.returncode != 0:
         operator.block("clone", f"cannot clone: {cloned.stderr}")
+    operator.reach("clone")
     for key, value in (("user.email", "new@example.com"), ("user.name", "New")):
         git(operator.clone, "config", key, value)
 
@@ -351,6 +385,7 @@ def test_stage_6_deps_fetch_provisions_and_points_at_approval(
     )
     if code != 0:
         operator.block("fetch", f"deps fetch failed: {err.strip()[:300]}")
+    operator.reach("fetch")
     assert "FETCHED" in out
     # The next step must be named here, not left to the reader.
     assert "deps approve" in out, out
@@ -401,6 +436,9 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
     )
     evidence = operator.clone / "governance" / "evidence.json"
     assert evidence.exists(), f"no evidence recorded: {err}"
+    # Recorded, whichever way the suite went — stage 9 judges it, this stage
+    # only proves it exists and is honest about the exit code.
+    operator.reach("evidence")
     import json
 
     records = json.loads(evidence.read_text())
@@ -414,10 +452,13 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
 
 
 def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
-    operator.require("resolver", "clone", "fetch")
-    code, out, _ = ranex(
+    operator.require("resolver", "clone", "fetch", "evidence")
+    code, out, err = ranex(
         operator.clone,
         ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
     )
-    assert code == 0
-    assert out.startswith("PASS")
+    assert code == 0, (
+        "the gate did not accept the evidence stage 8 recorded; it exited "
+        f"{code}. The verdict, verbatim:\n{(out + err).strip() or '(no output)'}"
+    )
+    assert out.startswith("PASS"), out
