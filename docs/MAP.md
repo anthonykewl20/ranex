@@ -531,6 +531,14 @@ parallel-readiness in the DAG does not
 relax the enforced one-open-slice/one-session rule; any future relaxation needs
 its own owner/governance change after capability enforcement exists.
 
+**The TUI redesign (`ADR-018`) is outside this sequence.** The owner recorded on
+2026-08-10 that it is a separate track: harness work packages BOARD-01..BOARD-22,
+not slices. It neither consumes the single open slice nor waits for the P0 exit,
+and it changes no kernel authority — the board renders verdicts and issues none.
+Its one kernel dependency, a structured per-claim cause on `Evaluation`
+(BOARD-02), is governed work and needs its own slice like anything else that
+touches the kernel. Do not confuse it with the Web UI, which stays parked (§15.2).
+
 The milestone is deliberately composition-level. Unit, mock and synthetic tests
 support work packages but cannot close it. Closure requires installed Ranex CLI,
 the actual ranex-harness, real Git repositories/worktrees, OS processes and
@@ -1261,8 +1269,9 @@ control, unverifiable evidence, or model-reported success.
 | **Harness admission** | Shared enforcement at every tool, plugin, MCP, process, Git, hosted and subagent effect leaf; exact child-intersected grant | `PROVISIONAL` — decided, not built — tool visibility and prompts are explicitly insufficient; ADR-006 remains the process-confinement dependency |
 | **Agent-run manager** | Durable supervisor + capability-gated orchestrator over N worktrees/sessions in one harness process; per-member bridge (`ADR-014`); worktree provisioning, schema, leases, verification and UI are harness decisions (§0.15) | **parked** — `ADR-014` `proposed`; slice issues #1-#9; nothing built |
 | **Kernel handbook** | `governance/` as the library every agent reads: rules, manuals, recipes. Reading guides; only the kernel enforces | **decided `3.0.0`**; the catalog exists, the injection does not |
-| Web UI | Later surface; features sliced from the quarry (§15.3) | **parked `3.0.0`** |
-| Budget / escalation | Bounded spend, three-miss escalation | **absent** |
+| **TUI redesign — the board** | The harness front door: spec → gates → evidence → verdict, replacing the inherited opencode chat landing. Added as a new route plus feature-plugin slots, never a rewrite of `routes/session` | `PROVISIONAL` — decided, not built — `ADR-018` `proposed`. **A separate track, not a slice**: work packages BOARD-01..BOARD-22 live on the harness repository under milestone "TUI redesign — the board is the front door", design record in its `specs/tui-redesign/`. They do not contend for the one-open-slice rule and do not queue behind the P0 sequence (§0.17) |
+| Web UI | Later surface; features sliced from the quarry (§15.3). **Distinct from the TUI redesign above** — that is the terminal front door and is active; this is the browser surface and is not | **parked `3.0.0`** |
+| Budget / escalation | Bounded spend, three-miss escalation. The TUI redesign surfaces it (BOARD-13) but decides no threshold | **absent** |
 | Intake / compile | Human/AI clarification, canonical rules/transitions/outcomes, pseudocode, flow, mapped frozen tests and oracle provenance | `PROVISIONAL` — decided, not built — planned SLICE-030/031 |
 | **Translator** | Read-only projection of machine state and verdicts into plain language for the operator | **absent** — it may not evaluate, mutate, issue permits or treat worker prose as canonical (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:122-153`) |
 | Outward record | Something an outsider can verify | **absent** — deferred with §11.1 |
@@ -2186,7 +2195,7 @@ customize into a hole.
 | `opencode`, `core`, `cli` | The agent runtime and entry point: loop, tools, headless `run` | every feature the governed loop does not use is dead weight — named and cut at fork time |
 | `llm` | Provider/model routing — the *recommended provider models* feature lives here | providers Ranex never routes to are configuration, not code |
 | `plugin`, `protocol`, `schema` | The hook surface the kernel bridge collects through, and the contracts it speaks | hooks shrink to the handful the kernel needs (§17.4) |
-| `tui` | The operator surface — the product is CLI-first (§7) | minimal; the operator reads verdicts, not dashboards |
+| `tui` | The operator surface — the product is CLI-first (§7). Redesigned by `ADR-018` on its own track (§15.2): the board is the front door, added additively so the fork stays mergeable | minimal; the operator reads verdicts, not dashboards |
 | `effect-drizzle-sqlite`, `effect-sqlite-node` | Session persistence, if `core` requires them | confirmed load-bearing or cut at fork time |
 
 ### 17.2 CUT — bloat for a governed harness
