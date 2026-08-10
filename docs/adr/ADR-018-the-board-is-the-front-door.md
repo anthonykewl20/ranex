@@ -1,6 +1,6 @@
 # ADR-018 — the board is the front door
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-10
 **Decision-makers:** repo owner
 **Slice:** `n/a — separate UI track; BOARD-01..BOARD-22 are harness work packages, not slices, and do not queue behind SLICE-017. BOARD-02 alone touches the kernel and needs its own slice`
