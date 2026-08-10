@@ -120,8 +120,8 @@ derived mechanically; everything to its left is a conversation.
 ```
 
 **Ranex never trusts the worker.** It does not need to control what happens
-inside the loop, only what is allowed out of it. Containment beats control, and
-costs a tenth as much.
+inside the loop, only what is allowed out of it. Containment is a smaller problem
+than control: the exits are enumerable, the interior is not.
 
 This is the intended governed loop, not a claim that mutation fanout is safe
 today. Bounded read-only research/review jobs may run concurrently now because
@@ -273,16 +273,11 @@ below is what is actually built.
 
 **Known gaps — stated plainly**
 
-- **SLICE-004 shut the six frozen false-PASS routes.** The command runs against a
-  materialisation of verified committed blobs, not the working tree; its
-  environment is built from empty; and Ranex resolves its own tools from pinned
-  directories. The tests cover an inherited environment, an ignored file, an
-  untracked empty directory, a clean-filter-hidden edit, a substituted Git blob,
-  and a `git` shim on `$PATH`. They are passing regression tests, not expected
-  failures. SLICE-006 has since made dependency-backed commands runnable without
-  trusting the observed party's `.venv`, `node_modules`, or `uv`, and SLICE-008
-  ran a real agent under that regime; same-UID key theft, unauthenticated
-  approvals, and journal rollback remain open.
+- **Same-UID key theft is open.** The model credential sits in a network-open
+  loop, and `ranex run`'s own path still reads the signing key before spawning,
+  so anything running as the same user can take it. Use a scoped, spend-limited
+  key. `RISK-06` stays open and ADR-006 stays `proposed` until SLICE-019 binds a
+  qualified confinement profile to `cmd_run`.
 - **Approver identity is unauthenticated.** `--approver` is a plain string, so a
   producer can name anyone as their approver. Evidence signing proves only that
   the holder of the registered private key signed the record; it proves nothing
@@ -320,9 +315,9 @@ durable retry, durable blockers, and Session-ID fencing — each gated by the
 SLICE-011 prototype record through a compiled test. The remaining durability
 sequence is parked/subordinate to P0. ADR-006 is split into active issue #10 /
 SLICE-017 qualification, then planned issue #21 / SLICE-018 lifecycle and issue
-#22 / SLICE-019 `cmd_run` closure. SLICE-029 opens only after SLICE-019.
-ADR-017 then runs planned SLICE-029..044 sequentially; 036 is
-qualification-only and 044 alone authorizes production mutation fanout.
+#22 / SLICE-019 `cmd_run` closure. ADR-017 is `proposed`; its planned
+SLICE-029..044 run sequentially and SLICE-029 opens only after SLICE-019.
+036 is qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
 harness (`23d6a5b4ee`): a stalled provider stream now reaches a terminal state
