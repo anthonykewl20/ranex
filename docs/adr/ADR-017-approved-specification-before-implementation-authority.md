@@ -258,3 +258,7 @@ Temporal, Aider, SWE-agent and StrictDoc are not adopted evidence in this ADR.
 Actual OpenRouter `tencent/hy3` review was unavailable, so composition consensus
 is **UNVERIFIED**. ADR-017 remains separate from ADR-006; SLICE-017..019 make
 confinement the serial prerequisite, then SLICE-029..044 implement this decision.
+Three mechanism details are explicitly deferred to the SLICE-029 opening rather
+than left implicit: a trusted time source for the anti-replay time window, key
+revocation for a compromised approver/publisher/evaluator key, and cross-batch
+scope intersection (at most one live approved batch per base/subject).
