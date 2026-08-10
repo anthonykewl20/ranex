@@ -1,7 +1,9 @@
 # Third-party notices for ADR-017
 
 - `spec-kit-workflow.yml`: GitHub Spec Kit `workflows/speckit/workflow.yml` at commit `684b3d8e05263a7c1948d3d0699ab1cb4f77c3d5`; SPDX-License-Identifier: MIT.
-  Copyright GitHub, Inc.
+  Copyright GitHub, Inc. The vendored file itself carries no SPDX header or
+  copyright line (only `author: GitHub`); the MIT licence is the repository's,
+  confirmed by fetch rather than read from the file.
 - `openspec-artifact-state.ts`: OpenSpec `src/core/artifact-graph/state.ts` at commit `e50bd0983dc8dc48250e3181f36e28450542f2ab`; SPDX-License-Identifier: MIT.
   Copyright (c) 2024 OpenSpec Contributors.
 - `xstate-adjacency.ts`: XState `packages/core/src/graph/adjacency.ts` at commit `c25dba07a2b68565edbe83d83c5d679dd85e00b2`; SPDX-License-Identifier: MIT.

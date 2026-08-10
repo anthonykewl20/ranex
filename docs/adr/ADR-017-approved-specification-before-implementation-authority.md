@@ -231,7 +231,7 @@ baseline passes and a wrong outcome fails. Existing anchors are
 `tests/integration/test_delegation_command.py`, `tests/integration/test_journal.py`,
 `tests/security/test_slice004_hermetic_observation.py`, and Confirmation's three
 paths. Both repo/provider journeys are required; live model runs are witnessed
-evidence, not deterministic replay, and skips cannot close the milestone. The named e2e anchors (`tests/e2e/test_first_delegation.py`, `tests/e2e/test_gating_real_suite.py`) count only when their preconditions (model credential, harness directory, runtime) are satisfied; a skipped gate is BLOCKED, not green.
+evidence, not deterministic replay, and skips cannot close the milestone. The named e2e anchors (`tests/e2e/test_first_delegation.py`, `tests/e2e/test_gating_real_suite.py`) count only when their preconditions (model credential, harness directory, runtime) are satisfied; a skipped gate is BLOCKED, not green. The Arxic repository is first-party and private, so its journey is a real provider/repo run for this operator but not independently reproducible by a third party — a stated limit on the exit evidence.
 
 ## Code review checklist
 

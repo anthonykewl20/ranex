@@ -49,7 +49,7 @@ An extra/missing/mismatched build input or a network attempt refuses the build.
 
 The ordered compiler flags are frozen in the manifest: C17, `_GNU_SOURCE`, `-O2`,
 PIE, strong stack protector, fortify level 3, format-security errors, RELRO/NOW,
-non-executable stack, no build-id, no recorded compiler switches, and source plus
+non-executable stack, no build-id (`-Wl,--build-id=none`), no recorded compiler switches (`-fno-record-gcc-switches`), a stable `-frandom-seed`, and source plus
 macro prefix maps from the absolute repository root to `.`. A pinned tracer observes every file the driver, compiler, assembler, linker and C runtime open or execute; the tracer's own digest is bound in the manifest, and any input the tracer did not observe refuses the build (gate 2). The environment is
 built from empty and contains only `PATH=/usr/bin:/bin`, `LC_ALL=C`, `TZ=UTC` and
 `SOURCE_DATE_EPOCH=0`.
@@ -81,8 +81,9 @@ requires a non-symlink directory and socket both owned by that uid, records thei
 modes without assuming one portable mode, and admits only the derived `XDG_RUNTIME_DIR` and
 `DBUS_SESSION_BUS_ADDRESS` to the otherwise-empty broker environment; caller
 values never select a bus. It closes non-protocol FDs, records exact
-argv/executable digests and never launches worker code. Broker, D-Bus or read-back failure is
-`E-C17-CGROUP-DELEGATION`, never a skipped or weaker success.
+argv/executable digests and never launches worker code. The broker path needs an active logind user session; a missing session, or any
+broker, D-Bus or read-back failure, is `E-C17-CGROUP-DELEGATION`, never a green
+skip, and the host report records when the broker path was untestable rather than run.
 
 The report schema is closed and canonical. It binds kernel release/architecture,
 Landlock ABI, seccomp-filter/NNP, user/mount/PID/IPC/network namespace probes,
@@ -158,6 +159,7 @@ hashes, exact broker argv, host facts, negative-control exits and cleanup result
 6. A launcher “FD cleanup” test that never injects an inheritable secret FD.
 7. Letting qualification execute the eventual untrusted command early.
 8. A build-closure manifest that lists inputs from documentation rather than from an actual pinned tracer observing the compiler.
+9. A gate-6 pass obtained by deleting a report fact-key rather than by actually masking the kernel feature on the host — the probe must be defeated, not the field.
 
 ## Not in this slice
 
