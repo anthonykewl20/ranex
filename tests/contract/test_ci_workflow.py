@@ -67,7 +67,10 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     assert steps[2] == {"name": "Lint (ruff)", "run": "uvx ruff@0.16.2 check src tests"}
     assert steps[3] == {
         "name": "Type check (pyrefly)",
-        "run": "uvx pyrefly@1.2.0 check src/ranex --project-excludes '**/verdict.py'",
+        "run": (
+            "uv run --frozen --with \"pyrefly==1.2.0\" pyrefly check src/ranex "
+            "--project-excludes '**/verdict.py'"
+        ),
     }
     assert steps[-2] == {"run": "uv run --frozen pytest -q -rs"}
     assert steps[-1] == {

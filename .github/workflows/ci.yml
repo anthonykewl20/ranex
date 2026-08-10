@@ -29,10 +29,12 @@ jobs:
       - name: Lint (ruff)
         run: uvx ruff@0.16.2 check src tests
       - name: Type check (pyrefly)
-        # verdict.py is byte-pinned by tests/contract/test_kernel_unchanged.py,
-        # whose docstring forbids the type-only edits pyrefly would request; it
-        # is excluded. Everything else under src/ranex must type-check.
-        run: uvx pyrefly@1.2.0 check src/ranex --project-excludes '**/verdict.py'
+        # Run inside the project env (`uv run --with`) so pyrefly can resolve the
+        # project's own deps (cryptography, yaml, packaging); an isolated uvx
+        # env cannot see them. verdict.py is byte-pinned by
+        # tests/contract/test_kernel_unchanged.py, whose docstring forbids the
+        # type-only edits pyrefly would request; it is excluded.
+        run: uv run --frozen --with "pyrefly==1.2.0" pyrefly check src/ranex --project-excludes '**/verdict.py'
       # `-rs` so a test that SKIPS says so in the log. The bind-mount identity
       # tests skip on a machine without unprivileged mount namespaces, and a
       # security test that vanishes silently in CI is the same "nothing ran
