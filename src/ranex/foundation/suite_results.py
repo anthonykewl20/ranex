@@ -10,7 +10,7 @@ import stat
 import xml.etree.ElementTree as ET
 from collections.abc import Mapping
 from pathlib import Path
-from typing import Any
+from typing import Any, TypedDict, cast
 
 from ranex.foundation.canonical import canonical_json_bytes
 
@@ -38,11 +38,16 @@ _OUTCOME_KINDS = {"passed", "skipped", "failed", "error", "xfailed", "xpassed"}
 _NON_PASSING_KINDS = _OUTCOME_KINDS - {"passed"}
 
 
+class SuiteManifest(TypedDict):
+    suite: list[str]
+    expected_skips: dict[str, str]
+
+
 def _is_non_negative_integer(value: object) -> bool:
     return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
 
-def _validate_manifest(value: object) -> dict[str, object]:
+def _validate_manifest(value: object) -> SuiteManifest:
     if not isinstance(value, dict) or set(value) != _MANIFEST_KEYS:
         raise ValueError("suite manifest must contain exactly suite and expected_skips")
 
@@ -63,7 +68,7 @@ def _validate_manifest(value: object) -> dict[str, object]:
             raise ValueError("expected-skip IDs must name tests in suite")
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("expected-skip reasons must be non-empty strings")
-    return value
+    return cast(SuiteManifest, value)
 
 
 def validate_suite_results(value: object) -> dict[str, object]:
@@ -195,7 +200,7 @@ def freeze_manifest(
         "suite": sorted(outcomes),
         "expected_skips": {} if expected_skips is None else dict(expected_skips),
     }
-    return _validate_manifest(manifest)
+    return cast(dict[str, object], _validate_manifest(manifest))
 
 
 def load_manifest_bytes(raw: bytes) -> dict[str, object]:
@@ -208,7 +213,7 @@ def load_manifest_bytes(raw: bytes) -> dict[str, object]:
     manifest = _validate_manifest(value)
     if raw != canonical_json_bytes(manifest):
         raise ValueError("suite manifest must contain exact canonical JSON bytes")
-    return manifest
+    return cast(dict[str, object], manifest)
 
 
 def load_manifest(path: str | Path) -> dict[str, object]:

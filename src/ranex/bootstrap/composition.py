@@ -14,6 +14,7 @@ from __future__ import annotations
 import hashlib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from ranex.foundation.suite_results import load_manifest_bytes, manifest_digest
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
@@ -78,12 +79,12 @@ class GateEvaluator:
                         else None
                     ),
                     expected_ids=(
-                        tuple(manifest["suite"])
+                        tuple(cast(list[str], manifest["suite"]))
                         if claim.results_artifact is not None and manifest is not None
                         else None
                     ),
                     expected_skips=(
-                        dict(manifest["expected_skips"])
+                        dict(cast(dict[str, str], manifest["expected_skips"]))
                         if claim.results_artifact is not None and manifest is not None
                         else None
                     ),

@@ -27,6 +27,7 @@ import tomllib
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import cast
 
 from ranex.bootstrap.composition import build_gate_evaluator, catalog_digest_for
 from ranex.cli.confinement import resolve_within_repository
@@ -1059,12 +1060,12 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
                         else None
                     ),
                     expected_ids=(
-                        tuple(manifest["suite"])
+                        tuple(cast(list[str], manifest["suite"]))
                         if claim.results_artifact is not None and manifest is not None
                         else None
                     ),
                     expected_skips=(
-                        dict(manifest["expected_skips"])
+                        dict(cast(dict[str, str], manifest["expected_skips"]))
                         if claim.results_artifact is not None and manifest is not None
                         else None
                     ),
@@ -1148,6 +1149,9 @@ def _recover_task_merges(
         target_ref = intent.get("target_ref")
         if not all(isinstance(value, str) and value for value in (task_id, candidate, target_ref)):
             raise ValueError("invalid unmatched task merge intent")
+        task_id = cast(str, task_id)
+        candidate = cast(str, candidate)
+        target_ref = cast(str, target_ref)
         observed = git(repository_root, "rev-parse", "--verify", target_ref)
         landed = observed.returncode == 0 and observed.stdout.strip() == candidate
         journal.append(
@@ -1628,7 +1632,10 @@ def cmd_deps_approve(args: argparse.Namespace) -> int:
                 "`ranex deps fetch` first — approval covers checked bytes only"
             )
         approval = _latest_of(entries, "deps-approval")
-        previous = approval.get("packages") if approval is not None else None
+        previous = cast(
+            Mapping[str, str] | None,
+            approval.get("packages") if approval is not None else None,
+        )
         delta_lines = _render_delta(previous, packages)
         journal.append(
             DepsApproval(
@@ -2184,8 +2191,8 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
         return EXIT_USAGE
 
     print(
-        f"FROZEN  tests={len(manifest['suite'])}  "
-        f"expected_skips={len(manifest['expected_skips'])}  "
+        f"FROZEN  tests={len(cast(list[str], manifest['suite']))}  "
+        f"expected_skips={len(cast(dict[str, str], manifest['expected_skips']))}  "
         f"run_exit={completed.returncode}  output={output}"
     )
     return EXIT_PASS

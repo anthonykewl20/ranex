@@ -14,6 +14,7 @@ import sys
 import tempfile
 from collections.abc import Mapping
 from pathlib import Path
+from typing import cast
 
 from ranex.cli.repository import git
 from ranex.cli.subject import materialise_subject, verified_blob_at_path
@@ -322,7 +323,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
         if emission["commit"] != commit:
             raise ValueError("refusing commit does not match dispatch worktree HEAD")
 
-        base_commit = dispatch["base_commit"]
+        base_commit = cast(str, dispatch["base_commit"])
         if emission["commit"] == base_commit:
             raise ValueError("refusing emitted commit matches base commit; there is no subject to judge")
 
