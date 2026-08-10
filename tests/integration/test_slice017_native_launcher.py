@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import contextlib
 import ctypes
+import errno
 import fcntl
 import hashlib
 import json
@@ -714,6 +715,7 @@ def _trace_controller_swap(root: Path, original: Path, impostor: Path) -> None:
         os.dup2(stderr_fd, 2)
         os.close(stdout_fd)
         os.close(stderr_fd)
+        os.chdir(root)
         if _ptrace(PTRACE_TRACEME, 0) != 0:
             os._exit(125)
         os.kill(os.getpid(), signal.SIGSTOP)
@@ -1024,6 +1026,20 @@ def _launch_protocol(
         if injected_keyring:
             keyring_id = _join_injected_session_keyring()
         os.write(metadata_write, keyring_id.to_bytes(8, "little", signed=True))
+        controlled_descriptors = {3, 4, 5, unexpected}
+        inherited_descriptors = [
+            int(entry.name) for entry in os.scandir("/proc/self/fd")
+        ]
+        for descriptor in inherited_descriptors:
+            if descriptor in controlled_descriptors:
+                continue
+            try:
+                os.set_inheritable(descriptor, False)
+            except OSError as error:
+                # The directory descriptor used by scandir is closed before this
+                # loop and may still be present in the enumeration snapshot.
+                if error.errno != errno.EBADF:
+                    raise
         _execveat(child_launcher, argv or [str(artifact)], environment)
 
     os.close(metadata_write)
