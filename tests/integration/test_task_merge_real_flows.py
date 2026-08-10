@@ -8,6 +8,7 @@ import subprocess
 import sys
 import threading
 import time
+import warnings
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -57,15 +58,18 @@ def git(repo: Path, *args: str) -> str:
 
 
 def add_and_commit(worktree: Path, name: str, message: str) -> None:
-    """Stage `name` and commit it, with a safety-net retry for a lost blob.
+    """Stage `name` and commit it, with a loud safety-net retry.
 
-    RealRepository.create disables git's auto-gc/maintenance so the object store
-    stays quiescent — that is the real fix for the "invalid object ... Error
-    building trees" race. This helper is the safety net: if a commit still fails
-    (any residual object-store race), touch every tracked file so git's stat
-    cache no longer matches, then `git add -A` re-hashes and re-writes every
-    blob (recreating any dropped one), and retry. A commit that fails for an
-    unrelated reason still surfaces: git() re-raises with stderr attached.
+    Used by the single-commit dispatch path (one blob). The CI-only
+    "invalid object ... Error building trees" race — a just-written blob absent
+    at commit time — is undiagnosed (not reproducible locally; not gc, which
+    never fires at these object counts) and is eliminated for the multi-commit
+    path by dispatch_judge's --allow-empty. This is the safety net for the
+    single-commit case: on failure, `git add --renormalize -A` re-hashes and
+    re-writes every tracked file regardless of git's stat cache (recreating any
+    absent blob, including nested), a warning is emitted so a recovering run is
+    visible, then retry. A commit that fails for an unrelated reason still
+    surfaces via git()'s stderr note.
     """
 
     last: subprocess.CalledProcessError | None = None
@@ -76,14 +80,13 @@ def add_and_commit(worktree: Path, name: str, message: str) -> None:
             return
         except subprocess.CalledProcessError as exc:
             last = exc
-            # The failing commit usually references a PREVIOUS file's blob that
-            # the FS dropped. Invalidate git's stat cache for every tracked file
-            # so the re-add re-hashes and re-writes each blob.
-            for entry in worktree.iterdir():
-                if entry.is_file() and entry.name != ".git":
-                    os.utime(entry, None)
+            warnings.warn(
+                f"add_and_commit retrying in {worktree} after git failure; "
+                f"re-hashing all tracked files: {exc}",
+                stacklevel=2,
+            )
             try:
-                git(worktree, "add", "-A")
+                git(worktree, "add", "--renormalize", "-A")
             except subprocess.CalledProcessError:
                 pass
             time.sleep(0.05)
@@ -131,14 +134,13 @@ class RealRepository:
         git(root, "init", "-q", str(repo))
         git(repo, "config", "user.email", "test@example.com")
         git(repo, "config", "user.name", "Test")
-        # The huge-linear test builds 200 commits back-to-back. GitHub-hosted
-        # runners use SSD-backed ext4 for /tmp (not tmpfs), so the intermittent
-        # "invalid object ... Error building trees" is not lost bytes — it is
-        # git's auto-gc / background maintenance repacking loose objects while
-        # the loop keeps committing, racing the next tree build. Disable both so
-        # the object store stays quiescent for the test's lifetime. Worktrees
-        # share this repo's object store and config. add_and_commit keeps a
-        # recreate-on-failure retry as a safety net.
+        # Quiesce git during tests: fewer process forks, harmless hardening.
+        # This is NOT the fix for the CI-only "invalid object ... Error building
+        # trees" race — git's auto-gc/maintenance provably never fires at these
+        # object counts (verified on git 2.43: ~600 loose objects vs the ~7000
+        # gc.auto threshold). That race's real mitigation is in dispatch_judge:
+        # the multi-commit huge-linear history is built with --allow-empty, so
+        # no loose objects are churned at all. Worktrees share this config.
         git(repo, "config", "gc.auto", "0")
         git(repo, "config", "maintenance.auto", "false")
         producer_private, producer_public = generate_keypair()
@@ -229,12 +231,26 @@ def dispatch_judge(
         candidate_builder(worktree)
     elif same_tree:
         git(worktree, "commit", "-q", "--allow-empty", "-m", task_id)
+    elif commit_count > 1:
+        # One real file gives the candidate a tree distinct from base — ranex
+        # refuses a no-subject candidate (sad-path-4), so all-empty commits do
+        # not work. The rest are empty: 200 commits total, but only ONE loose
+        # blob is ever written. The CI-only "invalid object ... Error building
+        # trees" race strikes a FRESHLY written blob — the one from the previous
+        # iteration, gone inside a <10ms window (undiagnosed, not gc which
+        # never fires at this volume, not reproducible locally in 25k+ commits).
+        # Writing the only blob up front removes the per-iteration fresh-blob
+        # surface; that blob is old and stable by the time later commits
+        # reference it. add_and_commit's retry backstops that single commit.
+        path = worktree / f"{task_id}-0.txt"
+        path.write_text(f"candidate {task_id} 0\n", encoding="utf-8")
+        add_and_commit(worktree, path.name, f"{task_id}-0")
+        for number in range(1, commit_count):
+            git(worktree, "commit", "-q", "--allow-empty", "-m", f"{task_id}-{number}")
     else:
-        for number in range(commit_count):
-            suffix = "" if commit_count == 1 else f"-{number}"
-            path = worktree / f"{task_id}{suffix}.txt"
-            path.write_text(f"candidate {task_id} {number}\n", encoding="utf-8")
-            add_and_commit(worktree, path.name, f"{task_id}-{number}")
+        path = worktree / f"{task_id}.txt"
+        path.write_text(f"candidate {task_id} 0\n", encoding="utf-8")
+        add_and_commit(worktree, path.name, f"{task_id}-0")
     candidate = git(worktree, "rev-parse", "HEAD")
     subject = subject_digest_for(scenario.repo, candidate)
     if evidence_factory is not None:
@@ -1127,23 +1143,25 @@ def test_three_way_concurrent_cas_race_one_winner(tmp_path: Path) -> None:
             entry for entry in outcomes if entry.get("outcome") == "PUBLISHED"
         ]
         assert len(published) <= 1
-        # A contended race has exactly one winner; every other merge must be
-        # refused because the ref moved under it. The refusal surfaces as the
-        # CAS check (sad-path-1 ref-moved) or the tip check (sad-path-9
-        # tip-mismatch) depending on scheduling; both are valid race losers, so
-        # count any refused merge-check. The load-bearing invariants (one
-        # winner, two losers, ref == winner) are asserted after the loop.
+        # Only the two race-specific refusals count as genuine losers — the CAS
+        # check (sad-path-1 ref-moved) and the tip check (sad-path-9
+        # tip-mismatch) both prove the ref moved under the loser. Other refused
+        # checks (policy, error) must not count, or a non-race failure could
+        # satisfy the break. Require them from two distinct task_ids: each merge
+        # emits at most one refused check, so two distinct ids = two real losers.
         race_losers = [
             entry
             for entry in entries
             if entry.get("type") == "task-merge-check"
             and entry.get("status") == "refused"
+            and entry.get("detail")
+            in ("sad-path-1 ref-moved", "sad-path-9 tip-mismatch")
         ]
-        if len(race_losers) >= 2:
+        if len({entry.get("task_id") for entry in race_losers}) >= 2:
             break
     else:
         pytest.fail(
-            "fewer than two real refused losers in 10 three-way races: "
+            "fewer than two real race losers in 10 three-way races: "
             f"{[(result.returncode, result.stderr) for result in results]}"
         )
 
