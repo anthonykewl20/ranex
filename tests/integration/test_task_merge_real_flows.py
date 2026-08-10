@@ -57,23 +57,35 @@ def git(repo: Path, *args: str) -> str:
 
 
 def add_and_commit(worktree: Path, name: str, message: str) -> None:
-    """Stage `name` and commit it, retrying transient git failures.
+    """Stage `name` and commit it, recovering from a lost prior blob.
 
-    The 200-commit history built for the huge-linear test is pure setup: the test
-    measures ranex's merge, not git's resilience under CI load. A loaded runner
-    can fail one `git add`/`git commit` transiently, so retry the pair a few
-    times before giving up. git() re-raises with stderr attached, so a real
-    failure stays diagnosable.
+    On the CI runner a just-written loose blob can vanish before the next commit
+    references it ("invalid object ... Error building trees"), which is why
+    RealRepository.create sets the object-fsync keys. As belt two: if a commit
+    fails, touch every tracked file so git's stat cache no longer matches, then
+    `git add -A` re-hashes and re-writes every blob (recreating the dropped
+    one), and retry the commit. A `git commit` that fails for an unrelated
+    reason still surfaces: git() re-raises with stderr attached.
     """
 
     last: subprocess.CalledProcessError | None = None
-    for _ in range(4):
+    for _ in range(5):
         try:
             git(worktree, "add", name)
             git(worktree, "commit", "-q", "-m", message)
             return
         except subprocess.CalledProcessError as exc:
             last = exc
+            # The failing commit usually references a PREVIOUS file's blob that
+            # the FS dropped. Invalidate git's stat cache for every tracked file
+            # so the re-add re-hashes and re-writes each blob.
+            for entry in worktree.iterdir():
+                if entry.is_file() and entry.name != ".git":
+                    os.utime(entry, None)
+            try:
+                git(worktree, "add", "-A")
+            except subprocess.CalledProcessError:
+                pass
             time.sleep(0.05)
     assert last is not None
     raise last
@@ -119,11 +131,15 @@ class RealRepository:
         git(root, "init", "-q", str(repo))
         git(repo, "config", "user.email", "test@example.com")
         git(repo, "config", "user.name", "Test")
-        # CI runners' overlayfs /tmp can drop a just-written blob object during
-        # the rapid 200-commit loop, surfacing on a later commit as "invalid
-        # object ... Error building trees". fsync object files so a blob is
-        # durable before a subsequent tree references it. Worktrees share this
-        # repo's object store and config.
+        # CI runners can drop a just-written loose blob during the rapid
+        # 200-commit loop, surfacing on a later commit as "invalid object ...
+        # Error building trees". Set every object-fsync key git knows (the
+        # classic core.fsyncObjectFiles plus the newer fsync.objectFiles and
+        # core.fsyncMethod) so a blob is durable before a later tree references
+        # it. Worktrees share this repo's object store and config. Belt two is
+        # the recreate-on-failure retry in add_and_commit.
+        git(repo, "config", "core.fsyncMethod", "fsync")
+        git(repo, "config", "core.fsyncObjectFiles", "true")
         git(repo, "config", "fsync.objectFiles", "true")
         producer_private, producer_public = generate_keypair()
         approver_private, approver_public = generate_keypair()
