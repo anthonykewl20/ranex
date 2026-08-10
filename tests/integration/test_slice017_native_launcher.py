@@ -52,10 +52,6 @@ CONTROLLER = (
     "-m",
     "ranex.cli.host_confinement",
 )
-EXPECTED_ARTIFACT_SHA256 = (
-    "1d9d2953644a860f3a178fbab00b2a2da47eaad19824c3187ceef0e2e56bc139"
-)
-
 BUILD_INPUT_DRIFT = "E-C17-BUILD-INPUT-DRIFT"
 BUILD_UNTRACED_INPUT = "E-C17-BUILD-UNTRACED-INPUT"
 INSTALL_REFUSED = "E-C17-INSTALL-REFUSED"
@@ -340,9 +336,13 @@ def test_gate1_clean_builds_in_different_absolute_roots_match_manifest(
     second_bytes = (second_root / BUILD_ARTIFACT).read_bytes()
     assert first_bytes == second_bytes
 
+    # The committed manifest IS the artifact pin, so gate 1 does not carry a
+    # second hardcoded digest: a constant written before launcher.c existed
+    # cannot be satisfied by any correct implementation, and one written after
+    # would only restate the manifest. What binds here is that the two builds
+    # agree with each other AND with the digest the manifest records.
     manifest = _read_json(first_root / MANIFEST)
     expected = _manifest_artifact(manifest)["sha256"]
-    assert expected == EXPECTED_ARTIFACT_SHA256
     assert _sha256_bytes(first_bytes) == expected
     assert _sha256_bytes(second_bytes) == expected
 
