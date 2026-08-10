@@ -2,49 +2,49 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-10
-**Active slice:** `docs/slices/SLICE-017-confinement-of-the-bound-command.md` — qualify strict-local host/build/launcher; single open slice.
+**Updated:** 2026-08-11
+**Active slice:** `docs/slices/SLICE-017-confinement-of-the-bound-command.md` — 47/47 gates pass; still open, see Next.
 
 ## Where we stopped
 
-ADR-006 confinement is the active chain: SLICE-017 qualifies host/launcher, then
-SLICE-018 owns lifecycle and SLICE-019 alone wires `cmd_run`. Two of ADR-015's
-five durability claims are in production (harness tip `9eeda0bf5d21`): provider
-watchdog, and reconciler hoist with startup sweep. Durable retry, blockers and
-Session-ID fencing remain, parked behind P0.
-
-**The UI redesign is a separate track.** ADR-018 (`proposed`) decides the harness
-front door; BOARD-01..BOARD-22 live on the harness repo under milestone "TUI
-redesign — the board is the front door", design record in `specs/tui-redesign/`.
-They are **not slices**: they neither consume the open slice nor queue behind P0.
+SLICE-017 is implemented and all 47 frozen gates pass (`718b4aaa4`). Full suite
+887 passed / 3 failed / 2 skipped, from an 838 baseline. The 3 failures are the
+e2e repository-gate tests: the gate clones HEAD and runs the suite hermetically,
+and SLICE-017's tests ERROR at fixture setup there — they build a real binary,
+spawn systemd units, cgroups and namespaces, and run `uv run` inside a copied
+repo, which the isolated materialisation cannot complete. UNVERIFIED cause;
+confirm by running the governed clone before designing a fix.
 
 ## Decisions
 
-- The board replaces opencode's chat landing, added as a new route plus
-  feature-plugin slots, never a rewrite of `routes/session`. `packages/tui` is
-  ~163 insertions from fork base `012c2f57`; a rewrite would end mergeability.
-- Verdict content must not vary with TTY; only styling may. Enforced by
-  `tests/contract/test_verdict_presentation.py`. Python 3.14 argparse colours
-  `--help` on a terminal — accepted, because help is not evidence.
-- Seven causes of an unsatisfied claim exist and are **unordered**. `Evaluation`
-  exposes them only as prose in `reason`; renderers must never parse it — that
-  defect reopened SLICE-002. BOARD-02 adds a structured field and is the one
-  board package touching the kernel, so it needs its own slice.
-- The reconcile sweep ships DB-global and is **unsafe under concurrent
-  processes**. Accepted because one daemon runs (ADR-014); fencing must gate it
-  on a durable owner claim. Recorded in `reconcile.ts`.
-- Read-only research/review fanout is allowed; `task fanout` is prototype-only.
-  SLICE-044 alone authorizes production mutation. Until then, one writer.
+- **The host needs `kernel.apparmor_restrict_unprivileged_userns=0`.** Ubuntu
+  defaults it to 1, blocking unprivileged user namespaces; setting it took the
+  gates 21 → 30. It **resets on reboot**. Ranex refusing on such a host is
+  correct (ADR-006 sad path 2), not a bug.
+- Host-state binding added on owner approval: LSM state, unprivileged-userns
+  sysctls, boot id, machine id, delegation identity. ADR-006 sad path 21 was the
+  only row assigned to no slice; SLICE-019 cannot build a re-qualification
+  trigger without these recorded.
+- Launcher hygiene completes **before** the gate wait, and a clean environment
+  requires re-exec: `/proc/<pid>/environ` exposes the original execve envp
+  region, which `clearenv()` does not alter.
+- ADR-006 stays `proposed`, RISK-06 stays open. 017 qualifies only.
 
 ## Next
 
-1. Close SLICE-017 / issue #10; it qualifies only and cannot accept ADR-006.
-2. Then SLICE-018 (issue #21), then SLICE-019 (issue #22); only 019 binds
-   `cmd_run`, accepts ADR-006 and closes RISK-06.
-3. On the UI track, alongside: accept or reject ADR-018, then BOARD-03 (degraded
-   rendering) or BOARD-01 (data contract) — the only two with no prerequisites.
+1. Decide the governed-clone collision: exclude SLICE-017's heavyweight tests
+   from the hermetic run (bumps "a skip is absence"), give the clone what they
+   need, or accept a red gate until SLICE-019. Owner's call; do not pick alone.
+2. Then close 017 and open SLICE-018 (issue #21), then SLICE-019 (#22); only 019
+   binds `cmd_run` and closes RISK-06.
+3. Parked durability stays subordinate to P0; harness fencing is uncommitted there.
 
 ## Known limits
 
-- A provider that connects and never sends a first chunk is bounded only by the
-  absolute budget — up to 30 minutes. The fix is a third first-chunk budget.
+- Measurements from this machine were frozen as acceptance values **seven times**
+  in these tests. Assert relations and roles, never measurements.
+- Codex's sandbox denies ptrace, user D-Bus and namespaces, so it cannot run
+  these tests; its counts are noise. Re-run locally, always.
+- 37/47 was once green against a launcher that parked with secrets readable and
+  proved its environment by grepping for the test's own magic string. Adversarial
+  review caught it; no test did. A passing count is not evidence.
