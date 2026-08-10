@@ -190,6 +190,7 @@ def test_gear_mesh_ends_in_candidate_without_auto_approval(
         text=True,
         timeout=180,
         env=bridged_environment(bun, task_id, emit),
+        check=False,
     )
     assert worker.returncode == 0, worker.stderr
 

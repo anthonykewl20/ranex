@@ -109,14 +109,14 @@ def admit(
         producer_id = _text_or_none(record, "producer_id")
         claim_id = _text_or_none(record, "claim_id")
 
-        def reject(reason: RejectionReason, detail: str) -> None:
+        def reject(reason: RejectionReason, detail: str, *, _index=index, _producer_id=producer_id, _claim_id=claim_id) -> None:
             rejections.append(
                 Rejection(
-                    index=index,
+                    index=_index,
                     reason=reason,
                     detail=detail,
-                    producer_id=producer_id,
-                    claim_id=claim_id,
+                    producer_id=_producer_id,
+                    claim_id=_claim_id,
                 )
             )
 

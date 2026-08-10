@@ -770,10 +770,9 @@ def test_unencodable_record_is_malformed_not_a_bad_signature() -> None:
     bound = command_digest(COMMAND_FOR["tests-executed"])
 
     surrogate = json.loads(
-        '{"claim_id": "tests-executed", "subject_digest": "%s", '
-        '"producer_id": "worker", "command": "\\ud800", "command_digest": "%s", '
-        '"executable_path": "/usr/bin/sh", "exit_code": 0, "signature": "%s"}'
-        % (digest, bound, signature)
+        f'{{"claim_id": "tests-executed", "subject_digest": "{digest}", '
+        f'"producer_id": "worker", "command": "\\ud800", "command_digest": "{bound}", '
+        f'"executable_path": "/usr/bin/sh", "exit_code": 0, "signature": "{signature}"}}'
     )
     (rejection,) = admit([surrogate], keyring).rejections
     assert rejection.reason is RejectionReason.MALFORMED_RECORD, (
@@ -781,10 +780,9 @@ def test_unencodable_record_is_malformed_not_a_bad_signature() -> None:
     )
 
     not_a_number = json.loads(
-        '{"claim_id": "tests-executed", "subject_digest": "%s", '
-        '"producer_id": "worker", "command": "sh -c true", "command_digest": "%s", '
-        '"executable_path": "/usr/bin/sh", "exit_code": NaN, "signature": "%s"}'
-        % (digest, bound, signature)
+        f'{{"claim_id": "tests-executed", "subject_digest": "{digest}", '
+        f'"producer_id": "worker", "command": "sh -c true", "command_digest": "{bound}", '
+        f'"executable_path": "/usr/bin/sh", "exit_code": NaN, "signature": "{signature}"}}'
     )
     (rejection,) = admit([not_a_number], keyring).rejections
     assert rejection.reason is RejectionReason.MALFORMED_RECORD, (

@@ -59,6 +59,7 @@ def _invoke(
         text=True,
         timeout=120,
         env=_environment(bun, **binding),
+        check=False,
     )
 
 
@@ -150,6 +151,7 @@ def _invoke_launcher(
         text=True,
         timeout=120,
         env=_environment(bun, **binding),
+        check=False,
     )
 
 

@@ -415,7 +415,7 @@ def test_journal_flag_cannot_exempt_an_arbitrary_path_from_the_dirty_check(
     commit_all(repo)
 
     assert subprocess.run(
-        ["sh", "run-tests.sh"], cwd=repo, capture_output=True
+        ["sh", "run-tests.sh"], cwd=repo, capture_output=True, check=False
     ).returncode == 1, "the committed tree must fail its own check"
 
     (repo / "allow.txt").write_text("yes\n", encoding="utf-8")
@@ -725,7 +725,7 @@ def repo_failing_its_own_check(repo: Path) -> Path:
     exclude.parent.mkdir(parents=True, exist_ok=True)
     exclude.write_text("allow.txt\n", encoding="utf-8")
     assert subprocess.run(
-        ["sh", "run-tests.sh"], cwd=repo, capture_output=True
+        ["sh", "run-tests.sh"], cwd=repo, capture_output=True, check=False
     ).returncode == 1, "the committed tree must fail its own check"
     return repo
 

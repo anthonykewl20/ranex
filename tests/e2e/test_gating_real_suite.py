@@ -222,6 +222,7 @@ def ranex(
         capture_output=True,
         text=True,
         env=env,
+        check=False,
     )
     return completed.returncode, completed.stdout, completed.stderr
 
@@ -292,6 +293,7 @@ def test_stage_01_clone_the_real_repository(session: Session) -> None:
         ["git", "clone", "-q", str(REAL_REPO), str(clone)],
         capture_output=True,
         text=True,
+        check=False,
     )
     if result.returncode != 0:
         session.block("clone", f"cannot clone the repository: {result.stderr}")
@@ -370,6 +372,7 @@ def test_stage_03_uv_lock_check_accepts_a_fabricated_wheel_hash(
         capture_output=True,
         text=True,
         env={**os.environ, "UV_NO_CONFIG": "1"},
+        check=False,
     )
     # The point on record: uv's own check binds the graph, not the artifact
     # bytes. If a uv upgrade makes this refuse, the derivation control has
@@ -645,6 +648,7 @@ def test_stage_10_a_dependency_change_blocks_until_reapproved(
         capture_output=True,
         text=True,
         env={**os.environ, "UV_NO_CONFIG": "1"},
+        check=False,
     )
     assert relock.returncode == 0, relock.stderr
     git(session.clone, "add", "pyproject.toml", "uv.lock")
@@ -760,6 +764,7 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
         ["git", "-C", str(REAL_REPO), "status", "--porcelain"],
         capture_output=True,
         text=True,
+        check=False,
     ).stdout.strip()
     if dirty:
         pytest.skip("the working tree is dirty; the self-gate needs HEAD honest")

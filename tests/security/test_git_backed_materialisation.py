@@ -66,6 +66,7 @@ def test_update_ref_with_expected_old_value_publishes_an_unrelated_orphan(reposi
         ["git", "-C", str(repository), "update-ref", "refs/heads/main", candidate, target],
         capture_output=True,
         text=True,
+        check=False,
     )
 
     assert publish.returncode == 0
@@ -74,6 +75,7 @@ def test_update_ref_with_expected_old_value_publishes_an_unrelated_orphan(reposi
         ["git", "-C", str(repository), "merge-base", "--is-ancestor", target, candidate],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert ancestry.returncode != 0
 
@@ -81,6 +83,7 @@ def test_update_ref_with_expected_old_value_publishes_an_unrelated_orphan(reposi
         ["git", "-C", str(repository), "update-ref", "refs/heads/main", candidate, target],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert stale_publish.returncode != 0
     assert git_output(repository, "rev-parse", "refs/heads/main") == candidate

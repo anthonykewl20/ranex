@@ -96,7 +96,6 @@ def package_index() -> Iterator[tuple[str, dict[str, bytes]]]:
             if self.path == "/simple/tinypkg/":
                 files = []
                 for filename, contents in wheels.items():
-                    version = filename.split("-")[1]
                     files.append(
                         {
                             "filename": filename,

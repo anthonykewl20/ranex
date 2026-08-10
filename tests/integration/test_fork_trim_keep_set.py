@@ -97,6 +97,7 @@ def test_fork_history_contains_the_pin(harness: Path) -> None:
         ["git", "-C", str(harness), "merge-base", "--is-ancestor", PIN, "HEAD"],
         capture_output=True,
         text=True,
+        check=False,
     )
     assert proof.returncode == 0, f"pin {PIN} is not an ancestor of HEAD"
 
@@ -183,6 +184,7 @@ def test_keep_set_builds_at_the_pin(harness: Path) -> None:
         text=True,
         timeout=600,
         env=env,
+        check=False,
     )
     assert build.returncode == 0, (
         f"trimmed workspace does not typecheck:\n{build.stdout[-4000:]}"

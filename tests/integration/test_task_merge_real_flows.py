@@ -909,7 +909,7 @@ def test_evidence_suite_results_present_vs_absent_irrelevant_to_merge(
         root.mkdir()
         scenario = RealRepository.create(root)
 
-        def evidence(subject: str) -> list[dict[str, object]]:
+        def evidence(subject: str, *, _results=results, _scenario=scenario) -> list[dict[str, object]]:
             body: dict[str, object] = {
                 "claim_id": "tests-executed",
                 "command": "pytest -q",
@@ -918,9 +918,9 @@ def test_evidence_suite_results_present_vs_absent_irrelevant_to_merge(
                 "exit_code": 0,
                 "producer_id": "worker",
                 "subject_digest": subject,
-                "suite_results": results,
+                "suite_results": _results,
             }
-            return [{**body, "signature": sign_evidence(body, scenario.producer_private)}]
+            return [{**body, "signature": sign_evidence(body, _scenario.producer_private)}]
 
         attempt = dispatch_judge(
             scenario, f"suite-results-{name}", evidence_factory=evidence
@@ -1093,7 +1093,7 @@ def test_three_way_concurrent_cas_race_one_winner(tmp_path: Path) -> None:
         json.dumps([attempt.evidence_document for attempt in attempts]), encoding="utf-8"
     )
 
-    for race_number in range(10):
+    for _ in range(10):
         git(scenario.repo, "update-ref", TARGET_MAIN, attempts[0].tip)
         before = len(Journal(scenario.journal).entries())
         results = run_concurrent_merges(scenario.repo, attempts)

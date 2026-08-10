@@ -164,6 +164,7 @@ def ranex(
         capture_output=True,
         text=True,
         env=environment,
+        check=False,
     )
     return completed.returncode, completed.stdout, completed.stderr
 
@@ -190,6 +191,7 @@ def test_stage_1_a_fresh_clone_carries_no_secrets_and_no_store(
         ["git", "clone", "-q", str(REAL_REPO), str(operator.clone)],
         capture_output=True,
         text=True,
+        check=False,
     )
     if cloned.returncode != 0:
         operator.block("clone", f"cannot clone: {cloned.stderr}")

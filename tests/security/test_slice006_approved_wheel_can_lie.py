@@ -124,6 +124,7 @@ def wheelhouse(tmp_path_factory: pytest.TempPathFactory) -> dict[str, bytes]:
         ],
         capture_output=True,
         text=True,
+        check=False,
     )
     if fetched.returncode != 0:
         pytest.skip(f"cannot obtain pytest wheels: {fetched.stderr.strip()[:200]}")
@@ -141,6 +142,7 @@ def wheelhouse(tmp_path_factory: pytest.TempPathFactory) -> dict[str, bytes]:
         ],
         capture_output=True,
         text=True,
+        check=False,
     )
     if extra.returncode != 0:
         pytest.skip(f"cannot obtain colorama: {extra.stderr.strip()[:200]}")

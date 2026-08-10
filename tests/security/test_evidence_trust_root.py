@@ -166,7 +166,7 @@ def check_passes(repo: Path) -> bool:
     """Does the tree on disk right now satisfy its own check?"""
 
     return subprocess.run(
-        ["sh", "check.sh"], cwd=repo, capture_output=True
+        ["sh", "check.sh"], cwd=repo, capture_output=True, check=False
     ).returncode == 0
 
 

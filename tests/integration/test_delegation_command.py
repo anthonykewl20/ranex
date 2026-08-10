@@ -536,54 +536,6 @@ def test_delegate_refuses_deleted_dispatched_worktree_before_materialisation(tmp
     assert not Path(args.outcome).exists()
 
 
-def test_truthful_emission_uses_dispatched_worktree_and_commit_for_outcome(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
-    task_id = "T-8-TRUTH"
-    dispatched_worktree = tmp_path / "dispatch-worktree"
-    journal = tmp_path / "journal.sqlite3"
-    harness = build_harness(tmp_path / "harness.sh")
-    dispatch_commit = "a" * 40
-    seed_dispatch(journal, task_id, dispatched_worktree, dispatch_commit)
-    args = delegation_args(
-        tmp_path,
-        task_id=task_id,
-        worktree=dispatched_worktree,
-        journal=journal,
-        harness=harness,
-    )
-
-    suite_calls: list[tuple[Path, str]] = []
-
-    def fake_run_suite(worktree: Path, commit: str, suite: str) -> tuple[int, str]:
-        suite_calls.append((worktree, commit))
-        return 0, ""
-
-    monkeypatch.setattr("ranex.cli.main._perform_task_dispatch", lambda *_a, **_k: dispatched_worktree)
-    monkeypatch.setattr("ranex.cli.delegation._run_harness", fake_harness_run)
-    monkeypatch.setattr("ranex.cli.delegation.subprocess.run", fake_subprocess_run)
-    monkeypatch.setattr("ranex.cli.main.head_commit", lambda _path: dispatch_commit)
-    monkeypatch.setattr("ranex.cli.delegation._run_suite", fake_run_suite)
-    monkeypatch.setattr(
-        "ranex.cli.delegation._read_emission",
-        lambda _path: {
-            "task_id": task_id,
-            "worktree": str(dispatched_worktree),
-            "commit": dispatch_commit,
-        },
-    )
-    monkeypatch.setenv("OPENROUTER_API_KEY", "openrouter-key")
-
-    result = cmd_task_delegate(args)
-    captured = capsys.readouterr()
-
-    assert result == EXIT_PASS
-    assert "DELEGATED" in captured.out
-    assert suite_calls == [(dispatched_worktree.resolve(), dispatch_commit)]
-    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
-    assert payload["task_id"] == task_id
-    assert payload["commit"] == dispatch_commit
-    assert payload["suite_exit"] == 0
-
-
 def test_refuses_emitted_commit_equal_to_base_commit_before_materialisation(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,

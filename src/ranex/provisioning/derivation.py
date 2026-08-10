@@ -97,7 +97,8 @@ def refuse_mismatch(committed: bytes, derived: bytes) -> None:
     derived_lines = derived.decode("utf-8", "replace").splitlines()
     detail = "the files differ in length"
     for number, (ours, theirs) in enumerate(
-        zip(committed_lines, derived_lines), start=1
+        zip(committed_lines, derived_lines, strict=False),  # truncate to common prefix; length mismatch handled above
+        start=1,
     ):
         if ours != theirs:
             detail = (
