@@ -737,7 +737,7 @@ def test_a_poisoned_loose_object_cannot_substitute_the_keyring(
     _, mallory_public = generate_keypair()
     attacker = (
         f"producers:\n  worker: {keys['public']}\n  mallory: {mallory_public}\n"
-    ).encode("utf-8")
+    ).encode()
     poison_loose_object(repo, object_id(repo, "HEAD:producers.yaml"), attacker)
     (repo / "producers.yaml").write_bytes(attacker)
 

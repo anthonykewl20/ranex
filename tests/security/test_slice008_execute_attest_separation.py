@@ -2,21 +2,21 @@
 
 from __future__ import annotations
 
-import base64
 import argparse
+import base64
 import json
 import os
-from concurrent.futures import ThreadPoolExecutor
 import re
 import shutil
 import subprocess
 import sys
+import textwrap
 import threading
 import time
-import textwrap
-from pathlib import Path
-from contextlib import redirect_stdout, redirect_stderr
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import redirect_stderr, redirect_stdout
 from io import StringIO
+from pathlib import Path
 
 from ranex.foundation.signing import SIGNED_FIELDS, generate_keypair, verify_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
@@ -1082,7 +1082,7 @@ def test_absent_dispatch_record_blocks_as_absence(
         "ranex.cli.main._perform_task_dispatch",
         _dispatch_without_record,
     )
-    import ranex.cli.delegation as delegation
+    from ranex.cli import delegation
 
     args = argparse.Namespace(
         task_id=task_id,

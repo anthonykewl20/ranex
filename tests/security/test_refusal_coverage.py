@@ -21,7 +21,7 @@ def git_result(
 
 def tree_output(*paths: str) -> bytes:
     return b"".join(
-        f"100644 blob {OID}\t{path}\0".encode("utf-8") for path in paths
+        f"100644 blob {OID}\t{path}\0".encode() for path in paths
     )
 
 

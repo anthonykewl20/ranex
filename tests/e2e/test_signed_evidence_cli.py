@@ -77,8 +77,8 @@ def invoke(repo: Path, argv: list[str], key_path: Path | None = None) -> int:
 def keygen(repo: Path, key_path: Path, producer: str = "worker") -> str:
     """Generate a key and return the `producers.yaml` line it prints."""
 
-    import io
     import contextlib
+    import io
 
     buffer = io.StringIO()
     with contextlib.redirect_stdout(buffer):
@@ -213,7 +213,6 @@ def test_unsigned_record_stops_counting(repo: Path, tmp_path: Path) -> None:
         ["git", "-C", str(repo), "rev-parse", "HEAD^{tree}"],
         capture_output=True, text=True, check=True,
     ).stdout.strip()
-    from ranex.foundation.canonical import canonical_sha256
 
     # Complete and correct in every field, including the SLICE-003 command
     # binding, so the only thing wrong with it is the missing signature.

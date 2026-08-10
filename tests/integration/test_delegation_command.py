@@ -27,16 +27,15 @@ from ranex.cli.delegation import (
     exec_environment_holds_signing_key,
     execute_environment,
 )
-from ranex.cli.fanout import cmd_task_fanout
-from ranex.cli.fanout import _run_one_delegation
+from ranex.cli.fanout import _run_one_delegation, cmd_task_fanout
 from ranex.cli.main import (
     EXIT_FAIL,
     EXIT_PASS,
     EXIT_USAGE,
     _latest_task_dispatch,
     _perform_task_dispatch,
-    cmd_task_judge,
     cmd_task_dispatch,
+    cmd_task_judge,
     main,
     subject_digest_for,
 )
@@ -996,7 +995,7 @@ def test_run_suite_respects_tail_and_command(tmp_path: Path, monkeypatch: pytest
             self.home.mkdir()
             self.temporary.mkdir()
 
-        def __enter__(self) -> "FakeMaterialisation":
+        def __enter__(self) -> FakeMaterialisation:
             return self
 
         def __exit__(self, _exc_type, _exc, _tb) -> bool | None:
@@ -1041,7 +1040,7 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
             self.home.mkdir()
             self.temporary.mkdir()
 
-        def __enter__(self) -> "FakeMaterialisation":
+        def __enter__(self) -> FakeMaterialisation:
             nonlocal active
             active = True
             return self

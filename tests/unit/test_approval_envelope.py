@@ -5,7 +5,6 @@ import pytest
 from ranex.foundation import approval, signing
 from ranex.governed_execution.domain.task import TaskCandidate
 
-
 ENVELOPE = {
     "candidate": "a" * 40,
     "subject": "sha256:" + "b" * 64,

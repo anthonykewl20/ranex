@@ -15,11 +15,10 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from conftest import Signing, attach, signing_for
 
 from ranex.cli.main import main, uncommitted_paths
 from ranex.foundation.canonical import canonical_sha256
-
-from conftest import Signing, attach, signing_for
 
 
 @pytest.fixture()

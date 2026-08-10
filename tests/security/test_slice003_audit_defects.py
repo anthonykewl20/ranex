@@ -854,7 +854,7 @@ def test_a_replaced_blob_cannot_substitute_the_committed_keyring(
 
     attacker = (
         f"producers:\n  worker: {keys['public']}\n  mallory: {mallory_public}\n"
-    ).encode("utf-8")
+    ).encode()
     replace_object(repo, object_id(repo, "HEAD:producers.yaml"), attacker)
     (repo / "producers.yaml").write_bytes(attacker)
 

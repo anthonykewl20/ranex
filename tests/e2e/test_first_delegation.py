@@ -254,14 +254,14 @@ def test_kernel_merge_publishes_clean_fast_forward_end_to_end(
     governance = target / "governance"
     governance.mkdir()
     catalog = (
-        "gates:\n"
-        "  - gate_id: landing\n"
-        "    rule_id: TESTS_EXECUTED\n"
-        "    blocking: true\n"
-        "    required_claims:\n"
-        "      - claim_id: tests-executed\n"
-        "        command: [/usr/bin/true]\n"
-    ).encode()
+        b"gates:\n"
+        b"  - gate_id: landing\n"
+        b"    rule_id: TESTS_EXECUTED\n"
+        b"    blocking: true\n"
+        b"    required_claims:\n"
+        b"      - claim_id: tests-executed\n"
+        b"        command: [/usr/bin/true]\n"
+    )
     (governance / "gates.yaml").write_bytes(catalog)
     (governance / "producers.yaml").write_text(
         f"producers:\n  worker: {worker_public}\n  owner: {approver_public}\n",

@@ -26,7 +26,6 @@ import pytest
 from ranex.foundation.canonical import canonical_sha256, command_digest
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 
-
 BOUND_COMMAND = ["uv", "run", "pytest", "-q"]
 GATES = """\
 gates:

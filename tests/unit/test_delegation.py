@@ -4,10 +4,10 @@ from __future__ import annotations
 
 import importlib
 import os
+import signal
 import subprocess
 import sys
 import textwrap
-import signal
 from pathlib import Path
 
 import pytest
@@ -23,7 +23,7 @@ def delegation():
 def probe_environment() -> dict[str, str]:
     return {
         "PATH": "/usr/bin:/bin",
-        "PYTHONPATH": str((Path(__file__).resolve().parents[2] / "src")),
+        "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src"),
     }
 
 
@@ -79,7 +79,7 @@ def test_run_harness_timeout_reaps_process_group(tmp_path: Path, monkeypatch: py
     class FakeProcess:
         pid = 77
 
-        def __enter__(self) -> "FakeProcess":
+        def __enter__(self) -> FakeProcess:
             return self
 
         def __exit__(self, *_exc: object) -> None:
@@ -137,7 +137,7 @@ def test_run_harness_timeout_wait_fallback_on_unresponsive_child(
         wait_calls = 0
         killed = False
 
-        def __enter__(self) -> "FakeProcess":
+        def __enter__(self) -> FakeProcess:
             return self
 
         def __exit__(self, *_exc: object) -> None:
@@ -190,7 +190,7 @@ def test_run_harness_timeout_no_process_group_still_reaps(tmp_path: Path, monkey
         pid = 99
         wait_calls = 0
 
-        def __enter__(self) -> "FakeProcess":
+        def __enter__(self) -> FakeProcess:
             return self
 
         def __exit__(self, *_exc: object) -> None:

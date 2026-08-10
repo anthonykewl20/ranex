@@ -11,12 +11,9 @@ Committed red before any implementation exists, per the working rule.
 from __future__ import annotations
 
 import hashlib
-import io
-import json
 import os
 import stat
 import threading
-import zipfile
 from pathlib import Path
 
 import pytest
@@ -30,7 +27,6 @@ from ranex.provisioning.lockfile import (
 )
 from ranex.provisioning.pins import PinsError, load_pins_text, verified_pinned_binary
 from ranex.provisioning.store import StoreError, WheelStore
-
 
 # --------------------------------------------------------------------------
 # Fixtures: a small, honest uv.lock and a target environment to select for.

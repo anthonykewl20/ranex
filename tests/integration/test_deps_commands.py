@@ -19,8 +19,6 @@ import pytest
 from ranex.cli.main import main
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 
-
-
 EPOCH = "2026-08-04T00:00:00Z"
 
 # NOT sys.executable: under uv this is a managed interpreter beneath
@@ -119,10 +117,10 @@ def package_index() -> Iterator[tuple[str, dict[str, bytes]]]:
                     return
             self._send(404, "text/plain", b"not found")
 
-        def do_GET(self) -> None:  # noqa: N802
+        def do_GET(self) -> None:
             self._respond()
 
-        def do_HEAD(self) -> None:  # noqa: N802
+        def do_HEAD(self) -> None:
             self._respond()
 
     server = HTTPServer(("127.0.0.1", 0), Handler)

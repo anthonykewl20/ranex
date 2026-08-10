@@ -10,7 +10,6 @@ from pathlib import Path
 
 from ranex.cli.toolchain import resolve_tool
 
-
 # `git replace` writes `refs/replace/<oid>`, and from that moment every command
 # in the repository resolves that object to a substitute the observed party
 # authored. `git cat-file blob HEAD:gates.yaml` returns bytes no commit carries;

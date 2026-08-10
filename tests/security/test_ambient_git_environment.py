@@ -20,7 +20,6 @@ from pathlib import Path
 
 import pytest
 
-
 EXIT_PASS = 0
 EXIT_FAIL = 1
 

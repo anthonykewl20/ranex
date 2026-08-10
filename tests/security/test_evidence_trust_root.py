@@ -468,7 +468,7 @@ def test_set_valued_keyring_key_raises_keyring_error(tmp_path: Path) -> None:
         load_keyring(path)
     except KeyringError:
         return
-    except Exception as exc:  # noqa: BLE001 — the exception TYPE is the defect
+    except Exception as exc:
         pytest.fail(
             f"load_keyring raised {type(exc).__name__}({exc}) instead of "
             "KeyringError; the guard against unhashable producer ids does not "

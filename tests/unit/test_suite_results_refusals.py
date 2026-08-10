@@ -8,7 +8,6 @@ import pytest
 
 from ranex.foundation import suite_results
 
-
 DIGEST = "sha256:" + "a" * 64
 
 

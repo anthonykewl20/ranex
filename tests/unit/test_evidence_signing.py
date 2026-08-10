@@ -213,10 +213,11 @@ def test_signature_over_a_different_domain_does_not_verify(
     """Proves the domain prefix is actually inside the signed bytes rather than
     decoration: a signature made over the bare canonical JSON must fail."""
 
+    import base64
+
     from cryptography.hazmat.primitives.asymmetric.ed25519 import (
         Ed25519PrivateKey,
     )
-    import base64
 
     private, public = keypair
     raw = base64.b64decode(private.removeprefix("ed25519:"))

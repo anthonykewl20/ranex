@@ -25,7 +25,6 @@ import pytest
 from ranex.foundation.canonical import canonical_sha256, command_digest
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 
-
 EXIT_FAIL = 1
 EXIT_PASS = 0
 EXIT_USAGE = 2

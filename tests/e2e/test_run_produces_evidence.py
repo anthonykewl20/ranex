@@ -23,11 +23,10 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from conftest import Signing, attach, signing_for
 
 from ranex.cli.main import cmd_run, main
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
-
-from conftest import Signing, attach, signing_for
 
 # SLICE-003: `tests-executed` names one command. `check.sh` reads the committed
 # tree and succeeds only against it, so a claim satisfied by it is a claim about

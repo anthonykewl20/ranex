@@ -14,11 +14,10 @@ import sys
 from pathlib import Path
 
 import pytest
+from conftest import Signing, attach, signing_for
 
 from ranex.cli.main import main
 from ranex.foundation.canonical import canonical_sha256, command_digest
-
-from conftest import Signing, attach, signing_for
 
 # SLICE-003: the claim declares the command that satisfies it, and the
 # hand-built records below describe that same command.

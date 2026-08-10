@@ -33,6 +33,23 @@ addopts = ["--strict-config", "--strict-markers"]
 pythonpath = ["src"]
 testpaths = ["tests"]
 
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+# Starter adoption. Pyflakes (F, real dead code), isort (I), pyupgrade (UP),
+# bugbear (B, real bugs like loop-variable capture) and the subprocess-check
+# rule (PLW1510, surfaces silent subprocess failure). Complexity/length and
+# style-opinion families (PLR too-many-*, PYI, TRY, SIM, E7/E9 micro-style) are
+# intentionally not selected on a codebase that has never been linted; they are
+# a deliberate later expansion, not a drive-by.
+select = ["F", "I", "UP", "B", "PLW1510"]
+ignore = [
+    "E501",   # line length is a formatter concern; some lines are intentionally long.
+    "UP022",  # contextual stdout=PIPE/stderr=PIPE style; many call sites are intentional.
+]
+
 [tool.mutmut]
 paths_to_mutate = ["src/ranex/"]
 # Kernel-focused policy (owner-approved 2026-08-05, evidence in the close of

@@ -304,9 +304,7 @@ def _enumerated_items(body: str) -> int:
     count = 0
     for line in body.splitlines():
         stripped = line.strip()
-        if stripped.startswith(("- ", "* ")):
-            count += 1
-        elif stripped.startswith("|") and not set(stripped) <= set("|-: "):
+        if stripped.startswith(("- ", "* ")) or (stripped.startswith("|") and not set(stripped) <= set("|-: ")):
             count += 1
     return count
 

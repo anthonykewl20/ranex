@@ -6,20 +6,18 @@ import argparse
 import json
 import os
 import shlex
-import sqlite3
-import signal
 import shutil
+import signal
+import sqlite3
 import subprocess
-import tempfile
 import sys
+import tempfile
 from collections.abc import Mapping
 from pathlib import Path
 
 from ranex.cli.repository import git
-from ranex.cli.subject import materialise_subject
-from ranex.cli.subject import verified_blob_at_path
-from ranex.cli.toolchain import pinned_path_value
-from ranex.cli.toolchain import ToolchainError
+from ranex.cli.subject import materialise_subject, verified_blob_at_path
+from ranex.cli.toolchain import ToolchainError, pinned_path_value
 from ranex.foundation.suite_results import load_manifest_bytes, parse_results_artifact
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
@@ -228,7 +226,7 @@ def _run_harness(
 def cmd_task_delegate(args: argparse.Namespace) -> int:
     """Run a task in a delegated worktree and evaluate the suite against the emission."""
 
-    from ranex.cli.main import EXIT_USAGE, EXIT_PASS  # avoid circular import at module import time
+    from ranex.cli.main import EXIT_PASS, EXIT_USAGE  # avoid circular import at module import time
 
     try:
         if exec_environment_holds_signing_key():
@@ -246,8 +244,8 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
 
         from ranex.cli.main import (
             Journal,
-            _perform_task_dispatch,
             _latest_task_dispatch,
+            _perform_task_dispatch,
             head_commit,
         )
 

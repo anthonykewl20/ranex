@@ -28,8 +28,6 @@ from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.task import (
     TaskCandidate,
-    TaskMergeCheck,
-    TaskMergeOutcome,
 )
 from ranex.governed_execution.domain.verdict import (
     Claim,
@@ -47,14 +45,14 @@ COMMAND_DIGEST = "sha256:" + canonical_sha256(COMMAND)
 EXECUTABLE = "/usr/bin/pytest"
 TARGET_REF = "refs/heads/main"
 CATALOG = (
-    "gates:\n"
-    "  - gate_id: landing\n"
-    "    rule_id: TESTS_EXECUTED\n"
-    "    blocking: true\n"
-    "    required_claims:\n"
-    "      - claim_id: tests-executed\n"
-    "        command: [pytest, -q]\n"
-).encode()
+    b"gates:\n"
+    b"  - gate_id: landing\n"
+    b"    rule_id: TESTS_EXECUTED\n"
+    b"    blocking: true\n"
+    b"    required_claims:\n"
+    b"      - claim_id: tests-executed\n"
+    b"        command: [pytest, -q]\n"
+)
 
 
 def git(repo: Path, *args: str) -> str:

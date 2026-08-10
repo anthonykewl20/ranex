@@ -7,7 +7,6 @@ import os
 import shutil
 import stat
 import subprocess
-import sys
 import tempfile
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager

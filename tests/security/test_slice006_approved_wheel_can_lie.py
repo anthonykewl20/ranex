@@ -206,10 +206,10 @@ def index(wheelhouse: dict[str, bytes]) -> Iterator[str]:
                     return
             self._send(404, "text/plain", b"not found")
 
-        def do_GET(self) -> None:  # noqa: N802
+        def do_GET(self) -> None:
             self._respond()
 
-        def do_HEAD(self) -> None:  # noqa: N802
+        def do_HEAD(self) -> None:
             self._respond()
 
     server = HTTPServer(("127.0.0.1", 0), Handler)

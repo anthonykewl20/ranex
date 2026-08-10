@@ -30,32 +30,34 @@ from pathlib import Path
 
 from ranex.bootstrap.composition import build_gate_evaluator, catalog_digest_for
 from ranex.cli.confinement import resolve_within_repository
+from ranex.cli.delegation import cmd_task_delegate
+from ranex.cli.fanout import cmd_task_fanout
+from ranex.cli.repository import (
+    committable_into,
+    git,
+    governed_repository_root,
+    named_within_repository,
+    nearest_existing_directory,
+    stat_fingerprint,
+    uncommitted_paths,
+)
 from ranex.cli.subject import (
     SubjectError,
     materialise_subject,
     verified_blob_at_path,
-)
-from ranex.cli.repository import (
-    _NO_SUBSTITUTES,
-    committable_into,
-    governed_repository_root,
-    git,
-    git_common_dir,
-    named_within_repository,
-    nearest_existing_directory,
-    stat_fingerprint,
-    tracked_by_git,
-    tracked_paths,
-    uncommitted_paths,
 )
 from ranex.cli.toolchain import (
     ToolchainError,
     pinned_path_value,
     resolve_tool,
 )
-from ranex.foundation.canonical import canonical_sha256, command_digest
-from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.approval import candidate_row_hash, verify_approval
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
+from ranex.foundation.signing import (
+    generate_keypair,
+    public_key_for,
+    sign_evidence,
+)
 from ranex.foundation.suite_results import (
     freeze_manifest,
     load_manifest_bytes,
@@ -63,18 +65,13 @@ from ranex.foundation.suite_results import (
     parse_results_artifact,
     read_results_artifact,
 )
-from ranex.foundation.signing import (
-    generate_keypair,
-    public_key_for,
-    sign_evidence,
-)
+from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.api import (
     Claim,
     Evidence,
     Gate,
     Verdict,
 )
-from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.admission import (
     Admission,
     Rejection,
@@ -100,7 +97,6 @@ from ranex.provisioning.derivation import derive_lock, refuse_mismatch
 from ranex.provisioning.errors import ProvisioningError
 from ranex.provisioning.fetching import ensure_wheels
 from ranex.provisioning.lockfile import (
-    LockError,
     WheelArtifact,
     parse_lock,
     select_wheels,
@@ -114,8 +110,6 @@ from ranex.provisioning.pins import (
 from ranex.provisioning.root import assemble_root, verified_wheel_paths
 from ranex.provisioning.store import WheelStore
 from ranex.provisioning.target import probe_target
-from ranex.cli.delegation import cmd_task_delegate
-from ranex.cli.fanout import cmd_task_fanout
 
 EXIT_PASS = 0
 EXIT_FAIL = 1

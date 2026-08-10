@@ -6,12 +6,12 @@ import subprocess
 from pathlib import Path
 
 import pytest
+from test_slice010_the_kernel_merges import TARGET_REF, MergeScenario, assert_refused
+from test_slice010_the_kernel_merges import git as merge_git
 
 from ranex.cli import subject, toolchain
 from ranex.cli.main import git
 from ranex.cli.subject import SubjectError, materialise_subject
-
-from test_slice010_the_kernel_merges import TARGET_REF, MergeScenario, assert_refused, git as merge_git
 
 
 def git_output(repository: Path, *arguments: str) -> str:

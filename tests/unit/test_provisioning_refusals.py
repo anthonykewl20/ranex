@@ -6,7 +6,6 @@ import hashlib
 import os
 import stat
 from pathlib import Path
-from types import SimpleNamespace
 from urllib.error import URLError
 
 import pytest
@@ -14,17 +13,28 @@ import pytest
 from ranex.provisioning.derivation import DerivationError, derive_lock, refuse_mismatch
 from ranex.provisioning.fetching import FetchError, ensure_wheels
 from ranex.provisioning.lockfile import (
-    Dependency, Lock, LockError, Package, TargetEnvironment, WheelArtifact,
-    _edge_enabled, _filename, _resolve_edge, parse_lock, select_wheels,
+    Dependency,
+    Lock,
+    LockError,
+    Package,
+    TargetEnvironment,
+    WheelArtifact,
+    _edge_enabled,
+    _filename,
+    _resolve_edge,
+    parse_lock,
+    select_wheels,
 )
 from ranex.provisioning.pins import (
-    PinsError, ResolutionPins, load_pins_text, refuse_writable_interpreter,
+    PinsError,
+    ResolutionPins,
+    load_pins_text,
+    refuse_writable_interpreter,
     verified_pinned_binary,
 )
 from ranex.provisioning.root import RootError, _seal, verified_wheel_paths
 from ranex.provisioning.store import StoreError, WheelStore
 from ranex.provisioning.target import TargetError, _platforms, probe_target
-
 
 TARGET = TargetEnvironment(
     implementation="cp", python_version=(3, 12),
