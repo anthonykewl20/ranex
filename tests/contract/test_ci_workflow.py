@@ -48,7 +48,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     assert job["permissions"] == {"contents": "read"}
 
     steps = job["steps"]
-    assert len(steps) == 4
+    assert len(steps) == 6
     action_steps = [step for step in steps if "uses" in step]
     assert len(action_steps) == 2
     for step in action_steps:
@@ -62,6 +62,13 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     checkout = next(step for step in action_steps if step["uses"].startswith("actions/checkout@"))
     assert checkout.get("with") == {"fetch-depth": 0}
 
+    # Lint and type gates run before the suite so a style/type regression fails
+    # fast. Both run via uvx with pinned versions; they do not touch uv.lock.
+    assert steps[2] == {"name": "Lint (ruff)", "run": "uvx ruff@0.16.2 check src tests"}
+    assert steps[3] == {
+        "name": "Type check (pyrefly)",
+        "run": "uvx pyrefly@1.2.0 check src/ranex --project-excludes '**/verdict.py'",
+    }
     assert steps[-2] == {"run": "uv run --frozen pytest -q -rs"}
     assert steps[-1] == {
         "name": "Require coverage for changed lines",

@@ -23,6 +23,16 @@ jobs:
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           python-version: "3.14"
+      # Lint and type gates run first so a style or type regression fails fast
+      # before the slower suite. Both run via uvx with pinned versions so they
+      # do not touch uv.lock (a trust root) and stay reproducible.
+      - name: Lint (ruff)
+        run: uvx ruff@0.16.2 check src tests
+      - name: Type check (pyrefly)
+        # verdict.py is byte-pinned by tests/contract/test_kernel_unchanged.py,
+        # whose docstring forbids the type-only edits pyrefly would request; it
+        # is excluded. Everything else under src/ranex must type-check.
+        run: uvx pyrefly@1.2.0 check src/ranex --project-excludes '**/verdict.py'
       # `-rs` so a test that SKIPS says so in the log. The bind-mount identity
       # tests skip on a machine without unprivileged mount namespaces, and a
       # security test that vanishes silently in CI is the same "nothing ran
