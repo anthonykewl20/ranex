@@ -57,15 +57,15 @@ def git(repo: Path, *args: str) -> str:
 
 
 def add_and_commit(worktree: Path, name: str, message: str) -> None:
-    """Stage `name` and commit it, recovering from a lost prior blob.
+    """Stage `name` and commit it, with a safety-net retry for a lost blob.
 
-    On the CI runner a just-written loose blob can vanish before the next commit
-    references it ("invalid object ... Error building trees"), which is why
-    RealRepository.create sets the object-fsync keys. As belt two: if a commit
-    fails, touch every tracked file so git's stat cache no longer matches, then
-    `git add -A` re-hashes and re-writes every blob (recreating the dropped
-    one), and retry the commit. A `git commit` that fails for an unrelated
-    reason still surfaces: git() re-raises with stderr attached.
+    RealRepository.create disables git's auto-gc/maintenance so the object store
+    stays quiescent — that is the real fix for the "invalid object ... Error
+    building trees" race. This helper is the safety net: if a commit still fails
+    (any residual object-store race), touch every tracked file so git's stat
+    cache no longer matches, then `git add -A` re-hashes and re-writes every
+    blob (recreating any dropped one), and retry. A commit that fails for an
+    unrelated reason still surfaces: git() re-raises with stderr attached.
     """
 
     last: subprocess.CalledProcessError | None = None
@@ -131,16 +131,16 @@ class RealRepository:
         git(root, "init", "-q", str(repo))
         git(repo, "config", "user.email", "test@example.com")
         git(repo, "config", "user.name", "Test")
-        # CI runners can drop a just-written loose blob during the rapid
-        # 200-commit loop, surfacing on a later commit as "invalid object ...
-        # Error building trees". Set every object-fsync key git knows (the
-        # classic core.fsyncObjectFiles plus the newer fsync.objectFiles and
-        # core.fsyncMethod) so a blob is durable before a later tree references
-        # it. Worktrees share this repo's object store and config. Belt two is
-        # the recreate-on-failure retry in add_and_commit.
-        git(repo, "config", "core.fsyncMethod", "fsync")
-        git(repo, "config", "core.fsyncObjectFiles", "true")
-        git(repo, "config", "fsync.objectFiles", "true")
+        # The huge-linear test builds 200 commits back-to-back. GitHub-hosted
+        # runners use SSD-backed ext4 for /tmp (not tmpfs), so the intermittent
+        # "invalid object ... Error building trees" is not lost bytes — it is
+        # git's auto-gc / background maintenance repacking loose objects while
+        # the loop keeps committing, racing the next tree build. Disable both so
+        # the object store stays quiescent for the test's lifetime. Worktrees
+        # share this repo's object store and config. add_and_commit keeps a
+        # recreate-on-failure retry as a safety net.
+        git(repo, "config", "gc.auto", "0")
+        git(repo, "config", "maintenance.auto", "false")
         producer_private, producer_public = generate_keypair()
         approver_private, approver_public = generate_keypair()
         governance = repo / "governance"
