@@ -1,0 +1,23 @@
+{
+  "artifact_sha256": "91f5020e11eaea03f635b69527dbadb90eddcaa989190a38af9e17cfc9e29d26",
+  "build_manifest_sha256": "0004909e3e1fed4c68246013663979f50960eec3d93f74b2ab57fd3ba302797a",
+  "helpers": {
+    "bubblewrap": {
+      "path": "/usr/bin/bwrap",
+      "sha256": "52231e1caf55bcbc667b269f49c63599a6f7db4767ae6a039580d0ff853db712"
+    },
+    "systemd_run": {
+      "path": "/usr/bin/systemd-run",
+      "sha256": "49f0bf95eb8a781b93853bf9fc981b4929dd0009f55a3e6db95534c0a2d11716"
+    }
+  },
+  "landlock_abi_minimum": 6,
+  "profile": "strict-local-host-v1",
+  "required_controllers": [
+    "cpu",
+    "memory",
+    "pids"
+  ],
+  "schema": "ranex-strict-local-host-v1",
+  "target_architecture": "x86_64"
+}
