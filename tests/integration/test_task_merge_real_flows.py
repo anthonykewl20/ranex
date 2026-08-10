@@ -119,6 +119,12 @@ class RealRepository:
         git(root, "init", "-q", str(repo))
         git(repo, "config", "user.email", "test@example.com")
         git(repo, "config", "user.name", "Test")
+        # CI runners' overlayfs /tmp can drop a just-written blob object during
+        # the rapid 200-commit loop, surfacing on a later commit as "invalid
+        # object ... Error building trees". fsync object files so a blob is
+        # durable before a subsequent tree references it. Worktrees share this
+        # repo's object store and config.
+        git(repo, "config", "fsync.objectFiles", "true")
         producer_private, producer_public = generate_keypair()
         approver_private, approver_public = generate_keypair()
         governance = repo / "governance"
