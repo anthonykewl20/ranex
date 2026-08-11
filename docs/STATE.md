@@ -35,11 +35,10 @@ docs gate; none paneled. OpenRouter MCP works (~$4); the opencode CLI stalls.
 ## Next
 
 1. **Owner call: how does 017 close?** Four routes are closed by evidence — skip
-   (its gate 9), `--ignore` (weakens the landing gate), close-red (QA GATE), a
-   scope addition (its owned paths + gate 10). The one route left inside its
-   owned paths: its two test files assert the correct *refusal* where
-   qualification cannot run, keeping gate 9's frozen counts. That edits frozen
-   tests, so it is yours to approve.
+   (its gate 9), `--ignore` (weakens the gate), close-red (QA GATE), scope
+   addition (owned paths + gate 10). The one left inside its owned paths: its
+   two test files assert the correct *refusal* where qualification cannot run,
+   keeping gate 9's frozen counts. That edits frozen tests — yours to approve.
 2. ADR-021's integration belongs to SLICE-019, not to 017 and not to a slice of
    its own. Then the ADR-019 + ADR-020 kernel slice (BOARD-01, BOARD-05..14).
 3. Panel ADR-019/020/021 through the OpenRouter MCP before any is accepted.
