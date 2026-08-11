@@ -20,6 +20,7 @@ import socket
 import stat
 import struct
 import subprocess
+import sys
 import threading
 import time
 import uuid
@@ -38,21 +39,24 @@ BUILD_ARTIFACT = Path(".local/ranex/build/strict-local-v1/ranex-worker-launcher"
 INSTALLED_ARTIFACT = Path(".local/ranex/libexec/strict-local-v1/ranex-worker-launcher")
 REPORT = Path(".local/ranex/qualification/strict-local-v1.json")
 
+# Reach the controller through the interpreter already running this suite, not
+# through `uv`. The governed run executes this file inside an ADR-009
+# materialised sample whose PATH is the pinned toolchain plus the provisioned
+# environment's bin, and whose HOME is the sample's own; `uv` lives in neither.
+# Spawning it there raised FileNotFoundError in the session fixture and erased
+# this file's evidence from the one run that gates the repository, while a
+# developer checkout stayed green. `sys.executable` is the project environment
+# in a checkout and in a sample alike, and `ROOT/.venv` exists only in the
+# former.
 CONTROLLER = [
-    "uv",
-    "run",
-    "--frozen",
-    "python",
+    sys.executable,
     "-m",
     "ranex.cli.host_confinement",
 ]
-# mask-file must exec the controller in the helper's process. `uv run` forks a
-# child, making /proc/self/status resolve to a fresh, unmasked PID.
-DIRECT_CONTROLLER = [
-    str(ROOT / ".venv/bin/python"),
-    "-m",
-    "ranex.cli.host_confinement",
-]
+# mask-file must exec the controller in the helper's process: a forking launcher
+# makes /proc/self/status resolve to a fresh, unmasked PID. The direct form now
+# satisfies that by construction.
+DIRECT_CONTROLLER = list(CONTROLLER)
 BROKER_PREFIX = [
     "/usr/bin/systemd-run",
     "--user",

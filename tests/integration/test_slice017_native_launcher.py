@@ -47,11 +47,11 @@ INSTALLED_ARTIFACT = Path(
 )
 QUALIFICATION_REPORT = Path(".local/ranex/qualification/strict-local-v1.json")
 
+# See the note in tests/security/test_slice017_host_qualification.py: the
+# governed run has no `uv` on its pinned PATH, so reaching the controller
+# through it erased this file's evidence inside the gating run.
 CONTROLLER = (
-    "uv",
-    "run",
-    "--frozen",
-    "python",
+    sys.executable,
     "-m",
     "ranex.cli.host_confinement",
 )
@@ -719,7 +719,7 @@ def _trace_controller_swap(root: Path, original: Path, impostor: Path) -> None:
         if _ptrace(PTRACE_TRACEME, 0) != 0:
             os._exit(125)
         os.kill(os.getpid(), signal.SIGSTOP)
-        os.execvpe("uv", _controller_qualify_argv(), _controller_environment())
+        os.execve(CONTROLLER[0], _controller_qualify_argv(), _controller_environment())
         os._exit(126)
 
     os.close(stdout_fd)
