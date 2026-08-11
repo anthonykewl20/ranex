@@ -170,26 +170,28 @@ monotonic sequence closes that, and no other candidate addresses it at all.
 
 ## Architecture surface
 
-Added: a publication step in the kernel writing one signed envelope per subject
-digest under a gitignored directory, and a reader in the harness that verifies it
-with a public key alone. Added: a third domain constant beside `EVIDENCE_DOMAIN`
-and `APPROVAL_DOMAIN`, with its own exact `SIGNED_FIELDS` tuple.
+Added: a kernel publication step writing one signed envelope per subject digest
+under a gitignored directory; a third domain constant beside `EVIDENCE_DOMAIN`
+and `APPROVAL_DOMAIN` with its own exact `SIGNED_FIELDS`; a harness reader
+verifying with a public key alone; and a durable per-subject high-water mark of
+the highest journal sequence accepted, read before rendering. That mark shares
+the reader's uid, so it stops an honest restart replaying an old signed verdict
+and stops nothing else. Publication binds the journal append.
 
-Changed: `Evaluation` gains the structured per-claim cause ADR-018 committed to;
-its shape is not decided here. Publication binds the journal append.
-
-Unchanged: `evaluate()`, the journal schema, the emit channel, and every upstream
-harness file. The board issues no verdict, holds no key, and writes nothing.
+Changed: `Evaluation` gains ADR-018's structured cause, shape decided elsewhere.
+Unchanged: `evaluate()`, the journal schema, the emit channel, every upstream
+harness file. The board issues no verdict, holds no key, writes no journal entry.
 
 ## Scope and threat delta
 
-STRIDE. Spoofing: a process writing the directory cannot mint a verdict without
-the private key, and the reader refuses an unknown producer. Tampering: an edited
-envelope fails Ed25519; a replaced one fails the sequence check. Repudiation: the
-published file is a projection, never the journal, and the journal still leads.
-Information disclosure: no secret reaches the harness; the keyring is already
-committed and world-readable. Denial of service: the reader refuses rather than
-crashes, matching `verify_evidence`'s contract.
+STRIDE. **Every claim here is conditional on the harness not being compromised at
+this uid**; against that adversary none of them hold, which is sad path 12 and
+why RISK-06 matters. Spoofing: minting a verdict needs the private key, and an
+unknown producer is refused. Tampering: an edited envelope fails Ed25519, and a
+replayed older one fails the durable sequence check across an honest restart.
+Repudiation: the file is a projection; the journal leads. Information disclosure:
+no secret reaches the harness. Denial of service: the reader refuses, never
+crashes.
 
 Non-goals: approval, merge, publication, and any action from the board. Out of
 scope: confining the harness, which is RISK-06 and ADR-006's unbuilt sad path.
