@@ -28,7 +28,9 @@ redesigned without ending the fork's ability to merge upstream.
 - The front door should be the surface used continuously, not periodically.
 - A rationale that expires when a dependency lands cannot justify a permanent
   architectural change.
-- Divergence from upstream is the fork's real recurring cost (ADR-018).
+- **UI is owned, not merged.** Upstream UI changes are not carried forward, so
+  ADR-018's merge argument does not apply here — nor its additive-plugin rule,
+  which that argument was the sole justification for.
 - `routes/session` owns live behaviour — permissions, questions, subagents,
   retries — not merely a view. Duplicating an owner duplicates its bugs.
 - The board must remain reachable and unchanged, not deleted.
@@ -94,8 +96,8 @@ the exact failure recorded against glamour above.
    "Unreached" would require changing every producer *and* reimplementing
    permissions, questions, subagents, timeline and retries — duplicating a live
    owner, not a view.
-3. **Named render slots in `routes/session`, rendering supplied by a plugin.**
-   Chosen.
+3. **Edit `routes/session` directly.** Chosen — UI is owned, so its rendering
+   is written where it is used.
 4. **Rewrite `routes/session` in place.** Rejected: 2710 lines of permanent merge
    surface, and it deletes the two-way door.
 
@@ -103,11 +105,10 @@ the exact failure recorded against glamour above.
 
 In the context of an operator opening the harness, facing a front door that is
 the periodic surface and a transcript that is another vendor's product, we chose
-**the transcript as the main view, with its rendering supplied by a
-`feature-plugins/transcript/` plugin bound to named slots added to
+**the transcript as the main view, with its rendering edited directly in
 `routes/session`**, to obtain a Ranex-native surface while keeping one owner of
-session lifecycle, accepting that this edits an upstream-owned file and that
-ADR-018's checklist rule must be amended rather than satisfied.
+session lifecycle, accepting that ADR-018's rules on touching upstream files and
+adding surface as plugins are both superseded for UI.
 
 The board is unchanged and reached deliberately through the command palette
 (`/board`), as `feature-plugins/board/index.tsx:74` already records. ADR-018 is
@@ -126,10 +127,10 @@ Door: two-way
   second implementation to keep at parity and no deletion trigger to schedule.
 - Good: the merge surface is the slot plumbing — tens of lines against the
   +30/−13 measured above — not 2710.
-- Good: slots are upstream's own extension idiom — twelve exist and all are
-  rendered; `routes/session` already carries `session_prompt`.
-- Bad: it edits an upstream-owned file. ADR-018 forbade that outright, and this
-  amends the rule rather than pretending to meet it. Every slot is merge surface.
+- Good: a component is read where it is used. No slot declaration, no props
+  contract, no registration between a renderer and its only caller.
+- Bad: it edits files upstream still owns on paper. ADR-018 forbade that, and
+  this supersedes the rule for UI, which the fork does not merge.
 - Bad: the transcript now hosts the permission interaction, so its threat
   posture is not the board's read-only one.
 - Neutral: this does not close BOARD-01 or ADR-019. The board stays empty until
@@ -172,10 +173,9 @@ citations. On the harness side, frozen before build:
 
 ## Architecture surface
 
-Added: **exactly two** slots in `routes/session`, and no more without a successor
-ADR — `session_transcript { session_id }` for the message body and
-`session_blocker { session_id }` for permission and question rendering. The
-composer needs none: `session_prompt` already exists at `index.tsx:1300`.
+Changed: `routes/session` renders Ranex components directly. **No slot and no
+plugin is added for UI.** A plugin per piece of UI bought only distance between
+a component and its one caller; slots exist for third parties, not for us.
 `feature-plugins/transcript/` supplies all three, plus the route default.
 
 Changed: permission and question **rendering** — `index.tsx:1283` shows only
@@ -201,7 +201,7 @@ record is the kernel's to defend.
 
 | characteristic | scenario | measure |
 |---|---|---|
-| Maintainability | upstream releases a session-route change | conflicts confined to slot plumbing, measured in changed lines |
+| Maintainability | upstream releases a session-route UI change | not carried; the rendering surface is owned outright |
 | Usability | operator reads a tool result without expanding it | outcome present on the collapsed line |
 | Functional correctness | styled and unstyled renders compared | text content byte-identical |
 | Accessibility | colour or glyph removed | every state still spelled |
@@ -282,8 +282,8 @@ means is not a testable property of the screen.
 
 ## More Information
 
-Supersedes ADR-018 in its front-door clause and amends its checklist rule on
-touching `routes/session`; ADR-018 stays accepted for everything else and must be
+Supersedes ADR-018 in its front-door clause, its checklist rule on touching
+`routes/session`, and its additive-plugin rule as applied to UI; ADR-018 stays accepted for everything else and must be
 amended in place at that clause only — the status set has no partial form. Parent decisions: ADR-008 (the
 fork and the bridge), ADR-018. Related: ADR-019 (the verdict read channel,
 unbuilt) and ADR-020 (cause is structure), neither of which this changes.
