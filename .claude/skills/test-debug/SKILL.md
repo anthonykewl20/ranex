@@ -27,10 +27,12 @@ a repeated pass proves nothing new.
    diagnose. Never push past a failing test, never mark it skip, never wrap it
    in a default. **Absence blocks** — converting a failure into a warning plus
    a fallback is masking, and it is the exact inverse of this repo's thesis.
-2. **Prove it.** For every bug: write (or locate) the reproducing test, watch
-   it fail, quote the red output in the commit message. Fix. Watch it pass.
-   Run the full suite. Red output lives in the terminal and the commit
-   message — never in a new file (the docs cap refuses it).
+2. **Prove it.** For every bug: the reproducing test lands red in its own
+   commit BEFORE the fix commit — red-then-green provable from history — and
+   is frozen from that commit; the fix may not edit it. When feasible the
+   reproduction is authored blind to the intended fix (a fresh agent), so
+   the test cannot be shaped around the patch. Quote the red output in the
+   test commit's message — never in a new file (the docs cap refuses it).
 3. **Root cause, not symptom.** Localize by layer; `git bisect run` for
    regressions; reduce to the minimal failing case. A dedupe in the caller is
    not a fix for a duplicating query.

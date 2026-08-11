@@ -49,7 +49,12 @@ commit), or an ADR already covers the decision.
 5. **Open the slice** in `docs/slices/SLICE-NNN-*.md`: `**Status:** open`, a
    link to the ADR, and done-criteria each provable by a named test. At most
    one open slice per repo — if one is open, finish it first.
-6. **Choose the lane.** Kernel work → this repo. Harness work →
+6. **Freeze the target.** The slice's done-criteria tests are written now —
+   before any implementation — and committed red in their own commit, so
+   red-then-green is provable from git history, not memory. From that commit
+   they are read-only to the implementer. Where a second author is available
+   (a delegated agent, another session), the implementer does not write them.
+7. **Choose the lane.** Kernel work → this repo. Harness work →
    `../ranex-harness`. A cross-lane contract change starts kernel-side, always.
 
 ## Red flags
@@ -61,8 +66,9 @@ commit), or an ADR already covers the decision.
 
 ## Gate
 
-`uv run --frozen pytest -q tests/contract/test_docs_discipline.py` green, and
-the panel's divergences reconciled. Then — and only then — `code-impl`.
+`uv run --frozen pytest -q tests/contract/test_docs_discipline.py` green, the
+panel's divergences reconciled, and the slice's tests committed red. Then —
+and only then — `code-impl`.
 
 ---
 Adapted from `spec-driven-development` and `documentation-and-adrs` in

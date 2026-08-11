@@ -80,7 +80,7 @@ deliberate contract-test edit.
 | Stage | What ends it |
 |---|---|
 | IDEA REFINE | the owner's explicit yes to a stated intent with an out-of-scope line |
-| SPEC PRD | ADR + slice written; docs-discipline suite green |
+| SPEC PRD | ADR + slice written, the slice's tests committed red and frozen; docs suite green |
 | CODE IMPL | the diff on disk does what the slice says, inside its scope |
 | TEST DEBUG | red-then-green proven; three misses stops and asks the owner |
 | QA GATE | full frozen suite green on the exact commit; non-author review of the whole publish range |
