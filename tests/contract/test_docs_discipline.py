@@ -238,6 +238,36 @@ _ALLOWED_EXACT = frozenset(
 
 STATE_MAX_LINES = 50
 
+# --- pipeline skills: a closed, capped shelf ---------------------------------
+#
+# The pipeline (CLAUDE.md) carries one skill per stage in .claude/skills/. The
+# set is closed and named HERE, so adding or renaming a skill is a deliberate
+# edit to this contract test — never a place to park documents. A count cap
+# alone ("at most N skills") would admit `architecture-notes` and
+# `release-history` as skills numbers 7 and 8, which is the 561-file failure
+# restarting in a new costume; a named set admits nothing it does not name.
+_PIPELINE_SKILLS = (
+    "idea-refine",
+    "spec-prd",
+    "code-impl",
+    "test-debug",
+    "qa-gate",
+    "go-live",
+)
+
+# Two caps, because each closes a hole the other leaves. Lines, because a skill
+# is instructions and not a handbook; bytes, because a line cap alone admits
+# one enormous line.
+SKILL_MAX_LINES = 150
+SKILL_MAX_BYTES = 10_000
+
+# Anchored at the first byte. A frontmatter block matched anywhere in the file
+# would accept a decoy inside a code fence halfway down an arbitrary document.
+_SKILL_FRONTMATTER = re.compile(
+    r"\A---\nname: (?P<name>[a-z0-9]+(?:-[a-z0-9]+)*)\n"
+    r"description: (?P<description>[^\n]+)\n---\n"
+)
+
 
 def _tracked_markdown() -> list[Path]:
     """Every markdown file we are responsible for, relative to the repo root."""
@@ -277,6 +307,18 @@ def _is_allowed(relative: Path) -> bool:
         # A file no rule ever looks at is the shape the 561 began as.
         if relative.name == "NOTICE.md":
             return any(claim.startswith(f"{parent}/") for claim in vendored)
+    # Pipeline skills: exactly `.claude/skills/<named-skill>/SKILL.md`, where
+    # the name comes from the closed set above. Nothing else under .claude/
+    # is a document this repository admits.
+    parts = relative.parts
+    if (
+        len(parts) == 4
+        and parts[0] == ".claude"
+        and parts[1] == "skills"
+        and parts[2] in _PIPELINE_SKILLS
+        and parts[3] == "SKILL.md"
+    ):
+        return True
     return False
 
 
@@ -1883,3 +1925,205 @@ def test_durability_production_slice_refused_when_prototype_record_is_bad(
 
     with pytest.raises(AssertionError, match=match):
         test_durability_production_slice_requires_green_digest_bound_record()
+
+
+# --- pipeline skills: the shelf governs itself -------------------------------
+#
+# CLAUDE.md's pipeline names one skill per stage. These checks keep the shelf
+# what it claims to be: exactly the named files, each a lean, tracked, regular
+# file that opens with its own identity. Two review findings shaped them: the
+# markdown walk above skips directories like `legacy`, which under the shelf
+# would be an invisible parking lot, so the shelf is walked raw; and a
+# symlinked SKILL.md would let the suite judge bytes git does not carry, so a
+# link is refused before content is read.
+
+
+def _skills_root() -> Path:
+    return REPO_ROOT / ".claude" / "skills"
+
+
+def _skill_shelf_contents() -> list[Path]:
+    """Every non-directory entry under .claude/skills — no skip filter.
+
+    Symlinks are included even when they point at directories: a link is an
+    entry in its own right here, never something to traverse.
+    """
+
+    root = _skills_root()
+    if not root.is_dir():
+        return []
+    return sorted(
+        p for p in root.rglob("*") if p.is_symlink() or not p.is_dir()
+    )
+
+
+def test_the_skill_shelf_holds_exactly_the_pipeline_skills() -> None:
+    """A closed set: nothing parked beside the skills, no stage missing."""
+
+    expected = {_skills_root() / name / "SKILL.md" for name in _PIPELINE_SKILLS}
+    actual = set(_skill_shelf_contents())
+
+    stray = sorted(
+        p.relative_to(REPO_ROOT).as_posix() for p in actual - expected
+    )
+    assert not stray, (
+        f"files on the skill shelf that are not pipeline skills: {stray}. "
+        "The set is closed — a new skill is a deliberate edit to "
+        "_PIPELINE_SKILLS in this test, and documents belong in docs/STATE.md, "
+        "the slice, or the commit message."
+    )
+
+    missing = sorted(
+        p.relative_to(REPO_ROOT).as_posix() for p in expected - actual
+    )
+    assert not missing, (
+        f"pipeline skills missing from the shelf: {missing}. "
+        "Every stage carries its skill; restore the file or supersede the "
+        "pipeline decision in CLAUDE.md first."
+    )
+
+
+def test_every_skill_is_a_lean_tracked_regular_file() -> None:
+    """Capped in two units, on disk as git sees it, never through a link."""
+
+    problems: list[str] = []
+    for name in _PIPELINE_SKILLS:
+        path = _skills_root() / name / "SKILL.md"
+        where = path.relative_to(REPO_ROOT).as_posix()
+        if path.is_symlink():
+            problems.append(
+                f"{where} is a symlink; the suite would judge bytes git does "
+                "not carry — vendor the content as a regular file"
+            )
+            continue
+        if not path.is_file():
+            continue  # the shelf test owns the missing-file failure
+        if not _tracked_by_git(path):
+            problems.append(
+                f"{where} is not tracked by git; run `git add {where}` so "
+                "reviewers can obtain what sessions will follow"
+            )
+        body = path.read_bytes()
+        if len(body) > SKILL_MAX_BYTES:
+            problems.append(
+                f"{where} is {len(body)} bytes, cap {SKILL_MAX_BYTES}. "
+                "A skill is instructions, not a handbook"
+            )
+        lines = len(body.decode("utf-8").splitlines())
+        if lines > SKILL_MAX_LINES:
+            problems.append(
+                f"{where} is {lines} lines, cap {SKILL_MAX_LINES}. "
+                "Say it shorter, or the detail belongs in the enforcing test"
+            )
+    assert not problems, "; ".join(problems)
+
+
+def test_every_skill_declares_its_identity() -> None:
+    """Frontmatter opens the file, names its directory, says when to use it."""
+
+    problems: list[str] = []
+    for name in _PIPELINE_SKILLS:
+        path = _skills_root() / name / "SKILL.md"
+        if path.is_symlink() or not path.is_file():
+            continue  # owned by the shelf and regular-file tests
+        where = path.relative_to(REPO_ROOT).as_posix()
+        match = _SKILL_FRONTMATTER.match(path.read_text(encoding="utf-8"))
+        if match is None:
+            problems.append(
+                f"{where}: frontmatter must open the file as "
+                "'---\\nname: <dir>\\ndescription: ...\\n---' — matched at the "
+                "first byte, so a decoy block further down counts for nothing"
+            )
+            continue
+        if match.group("name") != name:
+            problems.append(
+                f"{where}: frontmatter names {match.group('name')!r} but the "
+                f"directory is {name!r}; they must agree"
+            )
+        if "Use when" not in match.group("description"):
+            problems.append(
+                f"{where}: description carries no 'Use when' trigger, so "
+                "nothing tells a session when the skill applies"
+            )
+    assert not problems, "; ".join(problems)
+
+
+# --- fixtures: synthetic shelves, none touching the real one -----------------
+
+_SKILL_BODY = (
+    "---\nname: {name}\ndescription: Does one stage. Use when that stage "
+    "begins.\n---\n\n# {name}\n"
+)
+
+
+def _write_shelf(tmp_path: Path) -> Path:
+    """A complete, minimal, valid shelf under tmp_path."""
+
+    for name in _PIPELINE_SKILLS:
+        skill = tmp_path / ".claude" / "skills" / name / "SKILL.md"
+        skill.parent.mkdir(parents=True, exist_ok=True)
+        skill.write_text(_SKILL_BODY.format(name=name), encoding="utf-8")
+    return tmp_path / ".claude" / "skills"
+
+
+def test_a_document_parked_on_the_skill_shelf_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The shelf admits the named skills and nothing beside them."""
+
+    shelf = _write_shelf(tmp_path)
+    (shelf / "go-live" / "handbook.md").write_text("parked\n", encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "REPO_ROOT", tmp_path)
+
+    with pytest.raises(AssertionError, match="handbook.md"):
+        test_the_skill_shelf_holds_exactly_the_pipeline_skills()
+
+
+def test_a_skill_hidden_in_a_skipped_directory_is_still_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`legacy` and friends do not hide files here: the shelf is walked raw."""
+
+    shelf = _write_shelf(tmp_path)
+    hidden = shelf / "qa-gate" / "legacy"
+    hidden.mkdir()
+    (hidden / "notes.md").write_text("invisible?\n", encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "REPO_ROOT", tmp_path)
+
+    with pytest.raises(AssertionError, match="notes.md"):
+        test_the_skill_shelf_holds_exactly_the_pipeline_skills()
+
+
+def test_a_symlinked_skill_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Content reachable only through a link is not committed evidence."""
+
+    _write_shelf(tmp_path)
+    outside = tmp_path / "outside.md"
+    outside.write_text("mutable after review\n", encoding="utf-8")
+    target = tmp_path / ".claude" / "skills" / "go-live" / "SKILL.md"
+    target.unlink()
+    target.symlink_to(outside)
+    monkeypatch.setattr(sys.modules[__name__], "REPO_ROOT", tmp_path)
+
+    with pytest.raises(AssertionError, match="symlink"):
+        test_every_skill_is_a_lean_tracked_regular_file()
+
+
+def test_a_decoy_frontmatter_block_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Identity is read at byte zero, not wherever a block happens to sit."""
+
+    shelf = _write_shelf(tmp_path)
+    decoy = (
+        "# Actually an architecture report\n\n```\n---\nname: qa-gate\n"
+        "description: Looks legitimate. Use when fooling a substring check.\n"
+        "---\n```\n"
+    )
+    (shelf / "qa-gate" / "SKILL.md").write_text(decoy, encoding="utf-8")
+    monkeypatch.setattr(sys.modules[__name__], "REPO_ROOT", tmp_path)
+
+    with pytest.raises(AssertionError, match="first byte"):
+        test_every_skill_declares_its_identity()
