@@ -96,16 +96,19 @@ refused conftest on — so it is not vendored, though its own SPDX headers say A
 
 In the context of a short-lived judging kernel and a long-lived untrusted reader,
 facing a channel that runs only one way, we chose **option 1 — one signed file
-per subject digest, published by atomic rename into a directory the harness may
-read and not write** — so that an unfinished write is unnameable and absence is
-`ENOENT`, accepting a third signing domain and a second place a verdict appears.
+per subject digest, published by atomic rename** — so that an unfinished write is
+unnameable and absence is `ENOENT`, accepting a third signing domain and a second
+place a verdict appears.
 
-Option 2 keeps the torn record: `_read_emission` already refuses a truncated
-final line rather than falling back, and that refusal is correct for a channel
-the kernel controls but wrong for one the board must read at any moment. Option 3
-cannot serve a reader that attaches after the writer exited. Option 4 hands the
-untrusted process the choice of when judging happens and with which arguments.
-Option 5 is option 1 with a database in the way.
+The directory is a **transport, not a boundary**: under one uid the harness can
+unlink, truncate or race the rename, and no local transport changes that. An
+earlier draft claimed otherwise. See sad path 12.
+
+Option 2 keeps the torn record, and `_read_emission`'s refusal of a truncated
+line is right for a channel the kernel controls, wrong for one the board reads at
+any moment. Option 3 cannot serve a reader attaching after the writer exited.
+Option 4 hands the untrusted process the choice of when judging happens. Option 5
+is option 1 with a database in the way.
 
 Door: two-way
 
@@ -130,10 +133,13 @@ The publication path is asserted to reuse the atomic writer already in the tree
 rather than a second one, the reader's state set is asserted total over its
 closed cases, and a torn or truncated file is asserted unreadable by name rather
 than caught by a parser. Independent review, then a mutation gate over the
-touched kernel files. This ADR carries **no outside-model panel**: the OpenRouter
-credential had expired when it was written and re-authorisation is the owner's,
-so the design has had no adversarial reading beyond the author's own and the
-prior art. That is a real gap in confirmation, recorded rather than papered over.
+touched kernel files.
+
+Three outside models agreed unanimously: the directory is no boundary under one
+uid, freshness fails across a reader restart, and no local transport is better —
+so the shape holds and the limit is documented, not engineered away. Two named
+the same missed attack, same-uid key or kernel compromise, now sad path 12. Their
+agreement is recorded, not deferred to; each claim was checked against the code.
 
 ## Improvements on the prior art
 
@@ -220,11 +226,12 @@ and may be superseded but not reused.
 | 5 | Signature valid, `payload_type` is not the verdict type | refuse — the flaw securesystemslib leaves open |
 | 6 | Envelope carries zero signatures | refuse as unsigned, not as below-threshold; these are different events |
 | 7 | Genuine verdict, older journal sequence than one already read | refuse as superseded; a replayed PASS is not the current PASS |
+| 7b | The reader restarts, losing its highest-accepted sequence | the high-water mark is durable per subject and read before rendering; a reader that cannot read it renders unverified rather than treating zero as the maximum. An in-memory mark makes every restart a replay window, and this was missed until the panel named it — it fixes honest restarts only, never a hostile same-uid reader |
 | 8 | Verdict is genuine but names another subject digest | show both digests; never merge two reads into one row |
 | 9 | Reader lacks a public key entirely | refuse; absence of trust material is not absence of a verdict |
 | 10 | Keyring is empty | already refused by `load_keyring`; the reader must refuse too, not read zero keys as zero constraints |
 | 11 | Two files exist for one subject digest | impossible by name; if the directory is manipulated, the digest mismatch in case 8 catches it |
-| 12 | The harness is compromised | it can draw anything on screen, signature or not. The channel does not defend this and must not claim to; the operator's recourse is the CLI |
+| 12 | The harness is compromised | it runs as the kernel's own uid, so it can do far more than draw a false screen: unlink or race the published file, ptrace or inject the kernel, read the private key from its memory, or alter the inputs so the kernel genuinely signs a false PASS. That defeats authenticity itself, not merely the display, and no local transport changes it. The channel does not defend this and must never claim to. The recourse is a real boundary — a separate uid, a sandbox, or non-exportable keys — which is RISK-06, not this ADR |
 | 13 | The published file is deleted between list and read | case 1, not an error dialog; the state is recomputed, never cached as a pass |
 | 14 | Payload carries a float, a big integer, or a non-BMP key | refuse at publication: those are the three measured places Python and TypeScript canonicalisation diverge |
 | 15 | Directory is writable by the harness | a deployment defect, not a runtime one; the qualification check refuses to publish there |
