@@ -44,12 +44,11 @@ decisions — enumerating consumers as well as producers. Tags were dereferenced
 implementation, never as a schema document.
 
 - [Kyverno rule status](https://github.com/kyverno/kyverno/blob/945ac9ce8546ea6cd51370f24b615148c577da5e/pkg/engine/api/rulestatus.go)
-  keeps `fail` (rule violated), `error` (rule could not be evaluated) and `skip`
-  (never applicable) as peers, and derives the two-valued outcome by set
-  membership — `!IsOneOf(Fail, Error)` — so no comparison is ever required.
+  declares only a five-value closed set as typed string constants: `Pass`, `Fail`,
+  `Warn`, `Error`, and `Skip`; it contains no accessor or outcome derivation.
   License: Apache-2.0.
-  Weakness: a convenience accessor, `GetFailedRules`, merges `Fail` and `Error`,
-  so the distinction the type preserves dies in the helper everybody calls.
+  Weakness: the string-kinded type cannot make downstream switches exhaustive;
+  the separate vendored CLI consumer demonstrates the resulting default branch.
   Vendored: docs/adr/prior-art/ADR-020/kyverno-rulestatus.go blob:42bac5a9f4ce62cf12480d6349a2d9e533d8ef67
 - [Kyverno CLI result counter](https://github.com/kyverno/kyverno/blob/945ac9ce8546ea6cd51370f24b615148c577da5e/cmd/cli/kubectl-kyverno/processor/result.go)
   switches over that same five-value set four times in 175 lines: two switches
@@ -99,21 +98,22 @@ forged signature and an unresolved reference draw the same icon.
 
 ## Decision Outcome
 
-In the context of seven unordered causes that survive only as one English
-sentence, facing a renderer that must show them apart, we chose **option 2 — one
+For seven unordered causes surviving only as English, we chose **option 2 — one
 partition, computed once by `_diagnosis()`, returned as data, with the sentence
-rendered from it** — so the structure and the prose cannot drift, accepting that
-this moves the digest-frozen kernel and changes `record_digest`.
+rendered from it** — so structure and prose cannot drift, accepting a change to
+the digest-frozen kernel and `record_digest`.
 
 Option 1 is forbidden: reworded prose would mislabel a forgery as absence.
 Option 3 is the defect Kyverno demonstrates — the same closed set derived twice
-diverges, and here the two derivations already exist and already disagree in
-scope. Option 4 is Knative's regret: ranking erases six of seven causes.
+diverges; the two derivations already disagree here. Option 4 is Knative's regret:
+ranking erases six of seven causes.
 
 Admission's `refused` and `unattributable` do **not** enter `Evaluation`.
-`evaluate()` is a pure function of (gate, evidence, subject, approver) and cannot
-see rejections; they are composed alongside the evaluation by the projection, and
-computed there once rather than in any renderer.
+Pure `evaluate()` cannot see rejections; the projection composes them once.
+
+Self-approval is an evaluation-level refusal, not a claim cause: `Evaluation`
+carries `self_approval` despite empty `missing_claims`; renderers consume the
+marker and never parse `reason` to recover it.
 
 Door: one-way
 
@@ -145,8 +145,8 @@ the one place this repository treats as the record for a deliberate kernel move.
 
 ## Improvements on the prior art
 
-Kyverno models the distinction correctly and then loses it twice — once in
-`GetFailedRules`, once in four unchecked switches. Kubernetes guards its fallback
+Kyverno names the distinction correctly and then loses exhaustiveness in its
+unchecked CLI switches. Kubernetes guards its fallback
 properly and then misses the guard at one call site out of thirteen, permanently.
 Both failures are the same failure: **the closed set was enforced at every use
 instead of once at the boundary.** So the validation happens at deserialisation,
@@ -169,8 +169,9 @@ cause, which is what Kyverno's `default: rc.Fail++` and Tekton's icon ladder do.
 ## Architecture surface
 
 Changed: `_diagnosis()` returns the partition as data; the sentence becomes a
-renderer over it. `Evaluation` gains a per-claim cause tuple and `as_record()`
-carries it. `KERNEL_DIGEST` in `tests/contract/test_kernel_unchanged.py` moves.
+renderer over it. `Evaluation` gains a per-claim cause tuple plus an
+evaluation-level `self_approval` refusal marker, and `as_record()` carries both.
+`KERNEL_DIGEST` in `tests/contract/test_kernel_unchanged.py` moves.
 
 Added: nothing outside the kernel. The two admission-derived causes are composed
 at ADR-019's projection, from `admission.rejections`, which already carries
@@ -215,19 +216,16 @@ after it. That is why this is argued before the slice rather than during it.
 
 | # | Failure | Required behaviour |
 |---|---|---|
-| 1 | The structure and `reason` disagree | impossible by construction: one partition, sentence rendered from it, asserted over every branch |
 | 2 | A claim is both contradicted and missing | named once, under contradiction, as `_diagnosis()` already does; never counted twice |
 | 3 | A claim has suite detail | carried as detail on the `failed` cause, not as a sixth kind, and never concatenated into the claim id |
 | 4 | An admission rejection carries `claim_id: null` | the null survives to the screen; coercing it to a claim files a forgery as absence |
 | 5 | A rejection names a claim the kernel called absent | the claim is `refused`, not `absent`; the absence wording is spent only on claims nothing named |
 | 6 | The kernel gains an eighth cause | the wire accepts it, the reader renders `unclassified`, and it blocks; no renderer guesses |
-| 7 | A renderer regex-matches `reason` | forbidden; the wording is not an interface and this is a review-blocking defect |
-| 8 | Someone adds a `getFailures()`-style accessor merging kinds | refused at review — this is exactly how Kyverno lost the distinction it modelled correctly |
-| 9 | Someone adds a severity or sort over causes | refused; the outcome is two-valued by set membership and needs no comparison |
-| 10 | Self-approval refusal, which bypasses `_diagnosis()` | carries no per-claim causes and an empty `missing_claims`, as today; must not be rendered as absence |
+| 10 | Self-approval refusal bypasses `_diagnosis()` | evaluation-level `self_approval` marker renders the refusal despite empty `missing_claims`; `reason` is not parsed |
 | 11 | `record_digest` changes and something compares old to new | the boundary is declared; no code may compare digests across it |
-| 12 | The kernel digest test goes red silently | it must go red, and the new digest lands in the same commit with the reason in the message |
 | 13 | A cause tag arrives empty | fails to decode; an optional tag is the hole Kubernetes left and this closes it |
+| 14 | A cause is duplicated for one claim | render it once under that claim; never count the claim twice |
+| 15 | A cause names a non-required `claim_id` | refuse the unknown claim id rather than filing it under a required claim or counting it |
 
 ## Test strategy
 
@@ -256,6 +254,8 @@ imposed, by asserting the rendered grouping is stable under input permutation.
 ## Code review checklist
 
 - Is the sentence rendered from the partition, or computed beside it?
+- Can structure and `reason` disagree, or does construction make that impossible?
+- Does any renderer parse or regex-match `reason`? The wording is not an interface.
 - Does any accessor merge two cause kinds for convenience?
 - Is there a comparison, sort, or severity anywhere over the cause set?
 - Is the tag required and non-empty at the decode boundary?

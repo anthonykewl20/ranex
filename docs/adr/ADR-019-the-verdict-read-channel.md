@@ -18,11 +18,11 @@ So `feature-plugins/board/index.tsx` ships a `createMemo` hard-coded to
 `undefined` and a screen that says so. ADR-018 waved at "reading durable state
 through the existing SDK", which named no source for that state.
 
-The reader is hostile-capable: it is the same process that runs the coding agent,
-and `host_confinement.py` is imported nowhere in `src/`, so the harness is a
-plain `Popen` with a five-variable environment and ordinary uid-level filesystem
-access. So the design must not hand it the journal or a key, nor render an
-unverified record as a verdict. Those constrain what is built, not the adversary.
+The reader is the same process that runs the coding agent, and
+`host_confinement.py` is imported nowhere in `src/`, so the harness is a plain
+`Popen` with ordinary same-uid access. A signature therefore does not authenticate
+the display against that process; it only lets an honest reader detect accidental
+transport corruption. Those facts constrain what is built, not the adversary.
 
 ## Decision Drivers
 
@@ -55,8 +55,8 @@ to 40-hex commits and every raw URL fetched and hashed. Specifications excluded.
   writes one file per key through a `.`-prefixed temp and `Rename`, skips that
   prefix when listing, and returns `ErrKeyNotFound` for absence, not an empty value.
   License: Apache-2.0.
-  Weakness: integrity is a 32-bit FNV over a reflected Go object, not the file
-  bytes — accident-detecting, authorship-proving never — and orphans are unswept.
+  Weakness: `TempFile` → `Write` → `Sync` → `Close` → `Rename` has no
+  parent-directory fsync and no integrity field; error cleanup is the only orphan sweep.
   Vendored: docs/adr/prior-art/ADR-019/kubelet-filestore.go blob:17c313602ad99ed23089496fedb86e391a3a625a
 - [cosign exit-code lookup](https://github.com/sigstore/cosign/blob/11926fa5bbbbde47e88fc006b625a17769b743b2/cmd/cosign/errors/exit_code_lookup.go)
   maps typed errors to distinct exit codes — 10 no signature, 12 no matching
@@ -119,14 +119,14 @@ Door: two-way
 
 - Good: the three failures stay apart — no file, a file that will not verify, and
   a genuine verdict about a different tree are distinct states, not one blank.
-- Good: verification needs a public key the keyring already publishes, and
-  `verify_evidence` already returns `False` rather than raising.
+- Good: an honest reader can detect accidental byte corruption with a public key
+  the keyring already publishes; this is not protection from a same-uid harness.
 - Good: signing the transmitted bytes removes the canonical-JSON problem whole;
   the reader never re-serialises, so Python and TypeScript cannot disagree.
 - Bad: a third signing domain joins `ranex-evidence-v3` and `ranex-approval-v1`,
   and three domains is the point at which someone will reach for a generic one.
-- Bad: a verdict now exists in two places — the journal and the published file —
-  and they can disagree if publication is not bound to the append.
+- Bad: a verdict now exists in two places. A crash after journal append but before
+  publication can leave the previous valid PASS readable; freshness is unproven.
 - Neutral: the board still cannot act. This channel is read-only by construction.
 
 ### Confirmation
@@ -166,20 +166,20 @@ fsync, so the record is atomic and not durable. `_write_report_atomic` in
 fsyncs it, replaces through a directory descriptor, then fsyncs the parent with
 rollback — the stronger writer is already here, and reusing it is the improvement.
 
-python-tuf is the only candidate that treats freshness as separate from validity.
-Binding to a subject digest proves a verdict is *about* this tree; it does not
-prove it is the *current* one, so a superseded PASS still verifies. The journal's
-monotonic sequence closes that, and no other candidate addresses it at all.
+python-tuf alone treats freshness separately. A subject digest proves a verdict
+is *about* this tree, not *current*, so a superseded PASS still verifies. The
+journal stores `seq` and `link`, but `entries()` strips both and
+`Evaluation.as_record()` carries neither. Envelope-binding both is an out-of-scope
+required follow-up; until then publication-crash freshness is not established.
 
 ## Architecture surface
 
 Added: a kernel publication step writing one signed envelope per subject digest
 under a gitignored directory; a third domain constant beside `EVIDENCE_DOMAIN`
 and `APPROVAL_DOMAIN` with its own exact `SIGNED_FIELDS`; a harness reader
-verifying with a public key alone; and a durable per-subject high-water mark of
-the highest journal sequence accepted, read before rendering. That mark shares
-the reader's uid, so it stops an honest restart replaying an old signed verdict
-and stops nothing else. Publication binds the journal append.
+checking transport integrity with a public key alone. Publication also carries
+`admission.rejections` (`claim_id`, `reason`, `detail`, `producer_id`) alongside
+the evaluation, so refusals remain durable even when the verdict is PASS.
 
 Changed: `Evaluation` gains ADR-018's structured cause, shape decided elsewhere.
 Unchanged: `evaluate()`, the journal schema, the emit channel, every upstream
@@ -187,11 +187,10 @@ harness file. The board issues no verdict, holds no key, writes no journal entry
 
 ## Scope and threat delta
 
-STRIDE. **Every claim here is conditional on the harness not being compromised at
-this uid**; against that adversary none of them hold, which is sad path 12 and
-why RISK-06 matters. Spoofing: minting a verdict needs the private key, and an
-unknown producer is refused. Tampering: an edited envelope fails Ed25519, and a
-replayed older one fails the durable sequence check across an honest restart.
+STRIDE. **Every Spoofing and Tampering claim is conditional on the harness not
+being compromised at this uid**; against that adversary none holds (sad path 12).
+For an honest reader, accidental substitution by an unknown producer or edited
+bytes is refused. Replay and freshness across publication crash remain open.
 Repudiation: the file is a projection; the journal leads. Information disclosure:
 no secret reaches the harness. Denial of service: the reader refuses, never
 crashes.
@@ -225,22 +224,23 @@ and may be superseded but not reused.
 | # | Failure | Required behaviour |
 |---|---|---|
 | 1 | No file for this subject digest | "no verdict read" as its own state; never an empty table, never a pass |
-| 2 | Kernel crashes mid-write | the temp name is never the read name; the reader sees case 1, not a torn file |
+| 2 | Kernel crashes while publishing a new verdict | the temp name is never the read name, but a previous valid PASS may remain; freshness is not established until journal `seq` and `link` are envelope-bound |
 | 3 | Envelope parses but the signature fails | render unverified and say so; never fall back to the nearest familiar state |
 | 4 | Signature valid, producer not in the keyring | refuse: an unknown signer is not a verdict, and is distinct from a bad signature |
 | 5 | Signature valid, `payload_type` is not the verdict type | refuse — the flaw securesystemslib leaves open |
 | 6 | Envelope carries zero signatures | refuse as unsigned, not as below-threshold; these are different events |
-| 7 | Genuine verdict, older journal sequence than one already read | refuse as superseded; a replayed PASS is not the current PASS |
-| 7b | The reader restarts, losing its highest-accepted sequence | the high-water mark is durable per subject and read before rendering; a reader that cannot read it renders unverified rather than treating zero as the maximum. An in-memory mark makes every restart a replay window, and this was missed until the panel named it — it fixes honest restarts only, never a hostile same-uid reader |
+| 7 | Genuine but superseded verdict for this subject | signature and subject binding do not detect it; report freshness unestablished and track envelope-bound journal `seq`/`link` as follow-up |
+| 7b | Reader restarts after a publication crash | the previous valid PASS may still be served; do not claim the channel proves currentness |
 | 8 | Verdict is genuine but names another subject digest | show both digests; never merge two reads into one row |
 | 9 | Reader lacks a public key entirely | refuse; absence of trust material is not absence of a verdict |
 | 10 | Keyring is empty | already refused by `load_keyring`; the reader must refuse too, not read zero keys as zero constraints |
-| 11 | Two files exist for one subject digest | impossible by name; if the directory is manipulated, the digest mismatch in case 8 catches it |
+| 11 | Two files exist for one subject digest | impossible by name; retained to document why row 8 is the catch |
 | 12 | The harness is compromised | it runs as the kernel's own uid, so it can do far more than draw a false screen: unlink or race the published file, ptrace or inject the kernel, read the private key from its memory, or alter the inputs so the kernel genuinely signs a false PASS. That defeats authenticity itself, not merely the display, and no local transport changes it. The channel does not defend this and must never claim to. The recourse is a real boundary — a separate uid, a sandbox, or non-exportable keys — which is RISK-06, not this ADR |
 | 13 | The published file is deleted between list and read | case 1, not an error dialog; the state is recomputed, never cached as a pass |
 | 14 | Payload carries a float, a big integer, or a non-BMP key | refuse at publication: those are the three measured places Python and TypeScript canonicalisation diverge |
-| 15 | Directory is writable by the harness | a deployment defect, not a runtime one; the qualification check refuses to publish there |
+| 15 | Directory is writable by the harness | a deployment defect; a qualification check may refuse it only after SLICE-019 adds that claim, not today |
 | 16 | A cause arrives that the reader does not know | render as unclassified and block; never the nearest known cause |
+| 17 | Signature and subject match, but `gate_id`, `catalog_digest`, or `approver_id` differs from the read context | refuse; same tree is not the same judgment |
 
 ## Test strategy
 
@@ -260,10 +260,9 @@ the existing behaviour is pinned.
 - `tests/unit/test_delegation.py` — the reader's directory is not writable by the
   child environment, and no new variable leaks a key into it.
 
-Additionally, and belonging to the slice: a publication test that kills the writer
-between temp-write and rename and asserts the reader reports case 1; a table test
-asserting the reader's state mapping is total, with no default arm; and a test
-that a payload containing a float is refused at publication rather than at read.
+Additionally, and belonging to the slice: publication-crash tests with no prior
+file (case 1) and with a prior PASS (the freshness limit); a total reader-state
+mapping test with no default arm; and a test refusing a float at publication.
 
 ## Code review checklist
 
@@ -288,5 +287,5 @@ mirrors. ADR-011 governs the disclosure above that no outside panel ran.
 
 The harness-side contract already landed as `packages/schema/src/verdict.ts` in
 the fork, and fixes the payload shape this envelope carries. RISK-06 stays open:
-the harness is unconfined, which is why the channel is signed rather than trusted
-to filesystem permissions alone.
+the harness is unconfined, so signing is only honest-reader transport integrity
+and not a screen-authenticity defence.

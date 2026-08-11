@@ -8,25 +8,24 @@ evidence field binding, signer refusal". It cannot land in SLICE-017: the claim
 needs `governance/gates.yaml` and the refusal rule needs the verdict kernel,
 neither of which is among that slice's six owned paths, the kernel is named out
 of scope there, and its frozen gate 10 requires the kernel byte-exact. It is
-also not a slice of its own, which could be sequenced neither before SLICE-017
-(one open slice) nor after it (QA GATE needs a green suite). ADR-006 keeps
+not a slice of its own: SLICE-017 currently holds the one-open-slice budget, and
+the integration belongs to SLICE-019 after that budget clears. ADR-006 keeps
 SLICE-018. **This decision does not close SLICE-017** — see Consequences.
 
 ## Context and Problem Statement
 
 SLICE-017's 47 qualification gates pass on the host and are absent from the run
-that gates the repository. The landing gate runs the suite through `cmd_run`,
-which materialises an ADR-009 sample and applies `_deny_network`
-(`src/ranex/cli/main.py:1411`): `unshare(CLONE_NEWUSER | CLONE_NEWNET)` with no
-uid map. The suite therefore runs at an unmapped euid, and `create_user_ns()`
-returns `-EPERM` for a creator with no mapping in the parent namespace, so every
-nested `unshare(CLONE_NEWUSER)` fails.
+that gates the repository. Under `_deny_network`, qualification first calls
+`_validate_profile_and_objects()` (`host_confinement.py:2466`) before any cgroup
+or broker work. It opens the launcher through `_open_verified` with
+`exact_mode=0o555` and `required_owner=os.geteuid()` (`:2323-2329`).
 
-The conflict is not a defect on either side. These gates qualify the *physical
-host* — `systemd-run --user`, cgroup-v2 delegation, the Landlock ABI, a pinned
-compiler — and a hermetic sample exists to abstract the host away. Running a
-host qualifier inside a host-abstracting sandbox is a category error, and every
-attempt to paper over it has been refused, twice by the repository itself.
+The exact-mode branch skips `_require_trusted_owner_and_mode`; the measured first
+refusal is instead `E-C17-EXEC-OBJECT-DRIFT` at `:331-332`: the unmapped
+namespace reports euid 65534 while the launcher retains its host uid.
+`_current_cgroup_root()` and broker/delegation logic are never reached. The gate
+therefore needs host qualification as separately consumed evidence rather than
+pretending this suite run qualified the host.
 
 ## Decision Drivers
 
@@ -85,28 +84,25 @@ Option 3. Qualification becomes a producer of evidence, not a test the gated
 suite executes. The report already exists as an artifact
 (`.local/ranex/qualification/strict-local-v1.json`) and already binds the host
 facts SLICE-017 records, including LSM state, userns sysctls, boot id and
-machine id. What is missing is a claim that requires it, and a kernel rule that
-refuses when it is absent, unbound, stale or self-approved.
+machine id. **Absence does not block today**: `gates.yaml` requires only
+`tests-executed`, so an unqualified host can pass. This decision adds the
+qualification claim and kernel rule in SLICE-019; only then will absence refuse.
 
 Options 1 and 2 are refused on evidence, not preference. Option 1 hands the
-untrusted bound command nested-userns creation, which is the kernel attack
-surface `kernel.apparmor_restrict_unprivileged_userns` exists to block; two
-independent reviewers were asked to refute that and both upheld it, and both
-confirmed `PR_SET_NO_NEW_PRIVS` does not prevent `unshare(CLONE_NEWUSER)`.
-Option 2 was implemented and reverted: `TESTS_EXECUTED` also fails by the bound
-command's exit code, which is the only path that made a host run catch a
-qualification regression, so excluding the files weakened the landing gate.
+same `_open_verified` launcher-owner mismatch before `_current_cgroup_root` or
+the broker. Option 2 was implemented and reverted: `TESTS_EXECUTED` also fails
+by the bound command's exit code, so excluding the files weakened that gate.
 
 ### Consequences
 
-- Good: the qualifier runs where its facts are true, and the gate still refuses
-  without it, because a required claim with no satisfying evidence is FAIL.
+- Good: once SLICE-019 adds the required claim, the qualifier runs where its
+  facts are true and its absence blocks. That protection does not exist today.
 - Good: the report becomes reviewable and re-verifiable independently of the
   suite that produced it, and a stale one is detectable rather than assumed.
 - Bad: a second claim is a second thing an operator must run, and a second thing
   that can be forgotten; the gate must therefore refuse loudly on its absence.
-- Bad: qualification and its consumer can drift in schema. The report's digest
-  is bound into the claim so drift is a refusal, not a silent mismatch.
+- Bad: qualification and its consumer can drift in schema. Signed digest binding
+  is a required SLICE-019 envelope dependency, not a control present today.
 - Neutral: SLICE-017's 47 gates keep their present shape and keep running on the
   host; this changes who consumes their result, not what they assert.
 - Bad: this does not close SLICE-017. Four repairs are closed by evidence — a
@@ -116,12 +112,12 @@ qualification regression, so excluding the files weakened the landing gate.
 
 ### Confirmation
 
-A gate whose qualification claim is unsatisfied refuses. A report bound to a
-different subject digest, a different boot id, or a different LSM/userns host
-state refuses. A report approved by whoever produced it refuses. A host whose
-anchors change between gate PASS and launch refuses at the launcher, proven by
-changing one anchor in that window rather than by deleting a field. Each is a test
-in `tests/security/` or `tests/e2e/`, run with every model credential removed.
+Confirmation is future-tense: SLICE-019 adds the qualification claim and kernel
+rule, then proves an absent claim fails and changed boot/LSM/userns anchors
+refuse. Today no qualification claim exists and absence can pass. Borrowed,
+forged, digest-mismatched and self-approved reports require a signed producer/approver
+envelope bound to the subject digest; that envelope is not specified here and is
+a SLICE-019 dependency, not a present claim. Tests run without model credentials.
 No outside panel has read this ADR; the OpenRouter MCP is reachable and the
 review is pending, and this line stands rather than implying consensus.
 
@@ -133,9 +129,8 @@ review is pending, and this line stands rather than implying consensus.
    Ranex binds host state into the report and re-reads the cheap, decisive parts
    — boot id, machine id, LSM state, userns sysctls — at admission, so a report
    that outlived its host is refused rather than believed.
-3. Neither separates the producer from the approver. Ranex already refuses
-   self-approval, and qualification inherits that: the party that ran the probes
-   cannot be the party that admits their result.
+3. Neither separates the producer from the approver. Qualification needs that
+   property, but its signed subject-bound envelope is deferred to SLICE-019.
 4. Both publish for a scheduler or a release pipeline that is free to ignore
    them. Here the consumer is a blocking gate, and a gate that cannot block is
    refused at construction.
@@ -148,31 +143,32 @@ review is pending, and this line stands rather than implying consensus.
 
 ## Architecture surface
 
-A qualification claim in `governance/gates.yaml` naming the report as its
-artifact; a reader validating it against its closed schema and the subject
-digest; a kernel rule refusing on absence, mismatch, stale state or
-self-approval. No new process, no network, no model. The report's facts split
-in two and only one half can anchor freshness: durable properties — kernel
+A qualification claim names the report; a reader validates its closed schema; the kernel refuses
+on absence or stale host state. Signed producer/approver and subject binding is a
+SLICE-019 dependency whose envelope is not specified by this ADR. No network or
+model. The report's facts split in two; only durable properties anchor freshness:
+kernel
 release, Landlock ABI, LSM state, userns sysctls, machine and boot id,
 parent-namespace uid/gid — are re-readable later, while capability
 demonstrations prove delegation *could* be obtained, never which cgroup. The
-launcher therefore re-acquires, holds that delegation by descriptor for the
-worker's whole lifetime, and enrols the worker in the subtree it demonstrated.
+launcher re-acquires and holds delegation by descriptor for the worker's whole
+lifetime, enrolling it in the subtree demonstrated.
 
 ## Scope and threat delta
 
-In scope: a stale, forged, borrowed or self-approved qualification report, and a
-report describing a host other than the one about to run work. Out of scope:
-the confinement the report describes, which is ADR-006's; kernel compromise and
-host-admin compromise, which remain out of scope everywhere.
+In scope: absent qualification and a stale report describing host state other
+than the host about to run work. Forged, borrowed, digest-mismatched and
+self-approved reports are deferred to SLICE-019's required signed
+producer/approver envelope bound to the subject digest, not specified here. Also
+out of scope: ADR-006 confinement, kernel compromise and host-admin compromise.
 
 ## Quality attributes
 
 | characteristic | scenario | measure |
 |---|---|---|
-| Integrity | report edited after signing | digest mismatch refuses |
+| Integrity | host fact differs at consumption | stale-state mismatch refuses after SLICE-019 |
 | Freshness | host rebooted or LSM policy changed | bound host state mismatch refuses |
-| Auditability | who qualified this host, and when | report names producer, approver, host |
+| Auditability | which host facts were qualified, and when | report records the facts and time |
 | Determinism | credentials removed from the machine | identical verdict |
 
 ## Reversibility
@@ -188,7 +184,6 @@ reversible is weakening `_deny_network` to make the old arrangement work.
 | # | Input | Required behaviour |
 |---|---|---|
 | 1 | qualification report absent | claim unsatisfied; gate FAIL, never a skip |
-| 2 | report present but names a different subject digest | refuse; evidence is not about this tree |
 | 3 | report's boot id differs from the running host | refuse; re-qualification required |
 | 4 | machine id differs from the recorded one | refuse; this is a different host |
 | 5 | LSM state or AppArmor/SELinux policy identity changed | refuse; ADR-006 sad path 21 |
@@ -198,25 +193,21 @@ reversible is weakening `_deny_network` to make the old arrangement work.
 | 7c | delegation cannot be re-acquired at launch though the report says it was obtained | refuse the launch; the report attests a past capability, not a present one |
 | 7d | the demonstrated delegation is not the subtree the worker is enrolled into | refuse; a demonstration bound to no worker proves nothing about that worker |
 | 7e | the held delegation descriptor stops being valid during the worker's lifetime | kill the whole cgroup and refuse the result; never re-resolve the path to recover |
-| 8 | report approved by the identity that produced it | refuse; no self-approval |
 | 9 | report is well-formed but schema version is unknown | refuse; never partially interpret |
-| 10 | report bytes do not match their recorded digest | refuse; no repair, no re-canonicalisation |
 | 11 | two reports present, one stale | refuse ambiguity; do not prefer the newer |
-| 12 | qualifier exits non-zero yet leaves a report | refuse; a partial report is not a report |
 | 13 | report readable but a required host fact is absent | refuse; absence blocks |
-| 14 | operator forgets to run qualification entirely | identical to row 1; the gate says which claim |
 | 15 | host state changes between gate PASS and the confined launch | launcher re-reads the anchors and refuses; admission alone never authorises a launch |
 | 16 | launcher cannot read an anchor at launch time | refuse the launch; an unreadable anchor is not an unchanged one |
 
 ## Test strategy
 
-Every row above is a test, and none may be satisfied by a mock. Rows 3–7 need a
-real change of host state between qualification and admission, not a deleted
-field: deleting a fact-key proves the reader reads a key, while masking the
-state proves the check defends the host. Rows 8 and 11 are pure kernel tests and
-belong beside `tests/contract/test_kernel_unchanged.py`. Row 1 is the honest
-first failure and is asserted before any qualified report exists, so the FAIL is
-observed rather than assumed.
+Rows 3–7 require a disposable-VM harness with privileged host-state mutation:
+reboot/boot-id, machine-id, LSM policy, sysctl and namespace-principal changes.
+Existing namespace/mount masking is a simulated view, not those transitions;
+without that VM these rows are manual evidence, not automated PASS claims. Rows
+1 and 11 are kernel tests beside `tests/contract/test_kernel_unchanged.py`; row 1
+is the single absent-report observable (the duplicate operator-forgot row was
+removed). Rows 9 and 13 exercise malformed or incomplete local reports.
 
 `tests/e2e/test_gating_real_suite.py` gains the journey: qualify, approve,
 gate PASS; then change one bound host fact and observe FAIL naming the claim.
@@ -228,10 +219,10 @@ refuse before the reader exists.
 ## Code review checklist
 
 - Does an absent report FAIL, rather than skip or default?
-- Is the report bound to the subject digest, and is that binding asserted?
+- Are subject binding and producer/approver separation explicit SLICE-019
+  envelope dependencies rather than controls claimed by this ADR?
 - Is stale host state a refusal, proven by masking state rather than deleting a
   key from the report?
-- Can the producer of a report approve it?
 - Does any read error, unknown schema or partial file select a weaker path?
 - Does the process that confines re-read the freshness anchors immediately
   before launch, rather than trusting the gate's earlier PASS?
@@ -242,6 +233,5 @@ refuse before the reader exists.
 ADR-006 owns the confinement these facts describe and keeps SLICE-018 and
 SLICE-019. ADR-009 owns the materialised sample whose hermeticity created the
 conflict. ADR-011 owns "a skip is absence", which is why exclusion was refused
-rather than adopted. The measured cause, the two refused routes and the reviewer
-verdicts are in `docs/STATE.md` and in commits `ee3470de8`, `94d3a8039` and
-`0cf81f0de`.
+rather than adopted. Historical attempts are in commits `ee3470de8`, `94d3a8039`
+and `0cf81f0de`; `docs/STATE.md` still needs its stale refusal account corrected.
