@@ -66,5 +66,7 @@ is reported with its output. Both are correct outcomes.
 
 ---
 Adapted from `shipping-and-launch` and `git-workflow-and-versioning` in
-addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5 (MIT); the
+addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5; the
 human ship decision replaced by a digest-bound automatic gate per owner policy.
+Copyright (c) 2025 Addy Osmani; MIT licensed — full text:
+https://github.com/addyosmani/agent-skills/blob/7676817c12a1317454ae3898a0c5c1eacf5dd3d5/LICENSE

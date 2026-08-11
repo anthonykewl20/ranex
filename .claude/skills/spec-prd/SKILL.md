@@ -72,5 +72,7 @@ and only then — `code-impl`.
 
 ---
 Adapted from `spec-driven-development` and `documentation-and-adrs` in
-addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5 (MIT);
+addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5;
 self-ticked checklists replaced by this repo's compiled docs gates.
+Copyright (c) 2025 Addy Osmani; MIT licensed — full text:
+https://github.com/addyosmani/agent-skills/blob/7676817c12a1317454ae3898a0c5c1eacf5dd3d5/LICENSE

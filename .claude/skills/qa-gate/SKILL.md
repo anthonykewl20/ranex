@@ -64,5 +64,7 @@ commit.
 
 ---
 Adapted from `code-review-and-quality` and `doubt-driven-development` in
-addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5 (MIT); its
+addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5; its
 self-review allowance and narrated-verification step deliberately not copied.
+Copyright (c) 2025 Addy Osmani; MIT licensed — full text:
+https://github.com/addyosmani/agent-skills/blob/7676817c12a1317454ae3898a0c5c1eacf5dd3d5/LICENSE

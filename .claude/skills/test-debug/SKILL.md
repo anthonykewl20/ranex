@@ -64,5 +64,7 @@ test that failed first — provable from git history, not from memory.
 
 ---
 Adapted from `test-driven-development` and `debugging-and-error-recovery` in
-addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5 (MIT); its
+addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5; its
 "safe fallback" patterns deliberately not copied — absence blocks here.
+Copyright (c) 2025 Addy Osmani; MIT licensed — full text:
+https://github.com/addyosmani/agent-skills/blob/7676817c12a1317454ae3898a0c5c1eacf5dd3d5/LICENSE
