@@ -26,9 +26,12 @@ mechanical edits.
 1. **Re-run, never re-tell.** `uv run --frozen pytest -q` fresh, on the exact
    tree being judged. A remembered green or a narrated "tests pass" is not
    evidence. Record which commit the run judged.
-2. **Read the diff on disk** — tests first, then implementation. Findings get
-   severities: BLOCKER (wrong, must fix), MAJOR (fix before go-live), MINOR
-   (note it). Lead with the one structural problem, not ten nits.
+2. **Read the diff on disk** — the full range go-live would publish
+   (`git log origin/main..HEAD`), tests first, then implementation. The
+   verdict names that range; a commit in it no reviewer saw makes the range
+   unreviewed. Findings get severities: BLOCKER (wrong, must fix), MAJOR
+   (fix before go-live), MINOR (note it). Lead with the one structural
+   problem, not ten nits.
 3. **No self-approval.** The review verdict comes from someone other than the
    diff's author — a fresh-context agent or an outside model. The author may
    run checks; the author's approval counts for nothing.
@@ -54,9 +57,10 @@ mechanical edits.
 
 ## Gate
 
-Full suite green on the exact commit, review verdict from a non-author with no
-open BLOCKER/MAJOR, mutation run done for kernel-scope slice closes. Only then
-is `go-live` allowed to see the commit.
+Full suite green on the exact commit, a non-author review verdict naming the
+whole `origin/main..HEAD` range with no open BLOCKER/MAJOR, mutation run done
+for kernel-scope slice closes. Only then is `go-live` allowed to see the
+commit.
 
 ---
 Adapted from `code-review-and-quality` and `doubt-driven-development` in

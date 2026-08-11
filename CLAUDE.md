@@ -83,13 +83,15 @@ deliberate contract-test edit.
 | SPEC PRD | ADR + slice written; docs-discipline suite green |
 | CODE IMPL | the diff on disk does what the slice says, inside its scope |
 | TEST DEBUG | red-then-green proven; three misses stops and asks the owner |
-| QA GATE | full frozen suite green on the exact commit; review by a non-author |
+| QA GATE | full frozen suite green on the exact commit; non-author review of the whole publish range |
 | GO LIVE | the tested commit is on `main`, remote tip verified |
 
 **GO LIVE is automatic** (owner decision 2026-08-11): a green QA gate — not a
 human trigger — pushes to main. Red blocks; there is no override. The push is
-bound to the exact commit the gates ran on, fast-forward only, never forced; a
-diverged main stops the push and is reported as the rule breach it is. This is
+bound to the exact commit the gates ran on and publishes everything in
+`origin/main..HEAD`, so the QA review must cover that entire range — a commit
+in it no reviewer saw stops the push, as does a diverged main; both are
+reported as the rule breach they are. Fast-forward only, never forced. This is
 session automation under a standing owner authorization scoped to exactly those
 conditions. It is **not** governed publication: it produces no kernel verdict,
 no signed evidence, no approval record. `ranex task merge` remains the only

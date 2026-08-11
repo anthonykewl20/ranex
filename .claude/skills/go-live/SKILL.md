@@ -34,12 +34,17 @@ commit; the repo is mid-rebase or mid-merge.
    origin/main $SUBJECT` must hold. If main moved: **stop and report** — a
    diverged main means a second writer, which is a rule breach to surface.
    Never merge it in, never rebase onto it, never force.
-4. **The gate, on the subject.** `uv run --frozen pytest -q` — fresh, full,
+4. **The range is reviewed.** The push publishes every commit in
+   `origin/main..$SUBJECT`, so the qa-gate verdict must name exactly that
+   range. A commit in it the reviewer never saw — another writer's, or one
+   landed after the review — stops the push; re-run qa-gate on the full
+   range first.
+5. **The gate, on the subject.** `uv run --frozen pytest -q` — fresh, full,
    green. Then confirm `git rev-parse HEAD` still equals `$SUBJECT` and the
    tree is still clean; a moved HEAD or a dirtied tree voids the run.
-5. **Push the digest, fast-forward only.**
+6. **Push the digest, fast-forward only.**
    `git push origin $SUBJECT:refs/heads/main` — never `--force`.
-6. **Verify the remote.** `git ls-remote origin refs/heads/main` equals
+7. **Verify the remote.** `git ls-remote origin refs/heads/main` equals
    `$SUBJECT`. On a network error or timeout the outcome is *ambiguous*:
    re-check the remote tip before concluding anything, and never retry the
    push until the tip has been read. Report the verified tip either way.
@@ -47,6 +52,7 @@ commit; the repo is mid-rebase or mid-merge.
 ## Red flags
 
 - Any commit created between the gate run and the push.
+- A publish range containing commits the QA verdict never named.
 - A push retried after a timeout without reading the remote tip first.
 - "It was green earlier" — the gate binds to `$SUBJECT`, not to memory.
 - Reporting the push as governed, approved, or kernel-judged. It is none of
