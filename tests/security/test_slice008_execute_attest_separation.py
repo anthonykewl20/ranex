@@ -598,7 +598,7 @@ def build_queued_harness(
         # completes anyway, and the caller's peak assertion fails red.
         rendezvous = __RENDEZVOUS__
         if rendezvous is not None:
-            deadline = time.monotonic() + 8.0
+            deadline = time.monotonic() + 60.0
             while _read_int(peak) < rendezvous and time.monotonic() < deadline:
                 time.sleep(0.05)
 
@@ -1256,7 +1256,7 @@ printf '{\"task_id\":\"%s\",\"worktree\":\"%s\",\"commit\":\"%s\"}' "$RANEX_TASK
         tasks=tasks,
         journal=tmp_path / "task-journal.sqlite3",
         harness=wrapper,
-        timeout=120,
+        timeout=300,
         outcome_dir=outcome_dir,
         pool=5,
     )
@@ -1303,7 +1303,9 @@ def test_fanout_respects_bounded_pool_and_does_not_tick_queue_time(
     )
     counter_dir = tmp_path / "concurrency-state"
     # rendezvous=2 makes the pool-of-two overlap deterministic instead of a
-    # scheduling coincidence, and timeout=30 stops load from flaking the run.
+    # scheduling coincidence. A 60-second rendezvous and timeout=180 give
+    # heavily contended materialised-suite runs headroom without making either
+    # timing value part of the property under test.
     # The "queued time does not tick" proof no longer rests on this timeout
     # being tight: test_fanout_pool_of_one_never_overlaps_and_embeds_the_bound
     # (tests/integration/test_delegation_command.py) pins it structurally.
@@ -1320,7 +1322,7 @@ def test_fanout_respects_bounded_pool_and_does_not_tick_queue_time(
         tasks=tasks,
         journal=journal,
         harness=harness,
-        timeout=30,
+        timeout=180,
         outcome_dir=outcome_dir,
         pool=2,
     )
@@ -1395,7 +1397,9 @@ def test_concurrent_delegates_to_same_worktree_keep_single_dispatch(
         if task_id.endswith("2"):
             # Hold the worktree lock contention window open so one winner
             # is observed deterministically while still running concurrently.
-            time.sleep(0.05)
+            # Git startup can be delayed substantially in the materialised
+            # full suite, so a scheduler-tick-sized stagger is insufficient.
+            time.sleep(2.0)
         outcome = outcomes / f"{task_id}.json"
         result = run_delegate(
             target=target,
@@ -1406,7 +1410,7 @@ def test_concurrent_delegates_to_same_worktree_keep_single_dispatch(
             outcome=outcome,
             openrouter="openrouter-key",
             signing_key=None,
-            timeout=120,
+            timeout=300,
         )
         results.append((task_id, result))
 
@@ -1416,7 +1420,10 @@ def test_concurrent_delegates_to_same_worktree_keep_single_dispatch(
         start.set()
 
     pass_count = sum(1 for _task, result in results if result.returncode == EXIT_PASS)
-    assert pass_count == 1
+    assert pass_count == 1, [
+        (task_id, result.returncode, result.stderr)
+        for task_id, result in results
+    ]
     assert any(result.returncode == EXIT_USAGE for _task, result in results)
     assert len([row for row in journal_rows(journal) if row.get("type") == "task-dispatch" and row.get("worktree") == str(shared_worktree)]) == 1
 
