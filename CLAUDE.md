@@ -157,6 +157,7 @@ code. The docs layer is capped so that cannot happen again.
 | `docs/slices/SLICE-NNN-*.md` | the one open slice | at most **one** open |
 | `docs/slices/done/` | finished slices | archived, not read by default |
 | `.claude/skills/<name>/SKILL.md` | the six pipeline skills | set fixed by the contract test; ≤150 lines each |
+| `.claude/skills/LICENSE-agent-skills.txt` | upstream MIT notice for the adapted skills | bytes pinned by the contract test |
 
 **Do not create any other document.** No session reports, summaries, analyses,
 handoffs, plans, notes, retrospectives, or `*-REPORT.md`. Instead:

@@ -1963,6 +1963,27 @@ def _skill_shelf_contents() -> list[Path]:
 # closed set would otherwise refuse the very file that makes it lawful.
 _SKILL_SHELF_LICENSE = "LICENSE-agent-skills.txt"
 
+# Git's own name for the upstream LICENSE bytes, so a reviewer can compare the
+# copy against addyosmani/agent-skills at the commit the skills cite without
+# trusting this repository — the same binding vendored prior art uses. A name
+# alone would admit any bytes wearing it.
+_SKILL_SHELF_LICENSE_BLOB = "d67778ada6b9cda6227e9130da182c13e73c8b2e"
+
+
+def test_the_skill_shelf_license_is_the_upstream_notice() -> None:
+    """The admitted license file must hold the pinned upstream bytes."""
+
+    path = _skills_root() / _SKILL_SHELF_LICENSE
+    where = f".claude/skills/{_SKILL_SHELF_LICENSE}"
+    assert not path.is_symlink(), f"{where} is a symlink, not committed evidence"
+    assert path.is_file(), f"{where} is missing; the shelf test requires it"
+    assert _tracked_by_git(path), f"{where} is untracked; run `git add {where}`"
+    actual = _git_blob_sha(path)
+    assert actual == _SKILL_SHELF_LICENSE_BLOB, (
+        f"{where} holds blob {actual}, pinned {_SKILL_SHELF_LICENSE_BLOB}. "
+        "These must be the upstream notice's bytes, not a file wearing its name."
+    )
+
 
 def test_the_skill_shelf_holds_exactly_the_pipeline_skills() -> None:
     """A closed set: nothing parked beside the skills, no stage missing."""
