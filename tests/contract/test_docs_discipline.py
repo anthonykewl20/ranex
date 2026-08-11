@@ -1957,10 +1957,18 @@ def _skill_shelf_contents() -> list[Path]:
     )
 
 
+# The one non-skill file the shelf carries: the upstream MIT copyright and
+# permission notice for the adapted skills, fetched from the cited commit.
+# MIT conditions copying on both notices travelling with the copies, and the
+# closed set would otherwise refuse the very file that makes it lawful.
+_SKILL_SHELF_LICENSE = "LICENSE-agent-skills.txt"
+
+
 def test_the_skill_shelf_holds_exactly_the_pipeline_skills() -> None:
     """A closed set: nothing parked beside the skills, no stage missing."""
 
     expected = {_skills_root() / name / "SKILL.md" for name in _PIPELINE_SKILLS}
+    expected.add(_skills_root() / _SKILL_SHELF_LICENSE)
     actual = set(_skill_shelf_contents())
 
     stray = sorted(
@@ -2063,6 +2071,9 @@ def _write_shelf(tmp_path: Path) -> Path:
         skill = tmp_path / ".claude" / "skills" / name / "SKILL.md"
         skill.parent.mkdir(parents=True, exist_ok=True)
         skill.write_text(_SKILL_BODY.format(name=name), encoding="utf-8")
+    (tmp_path / ".claude" / "skills" / _SKILL_SHELF_LICENSE).write_text(
+        "MIT License\n", encoding="utf-8"
+    )
     return tmp_path / ".claude" / "skills"
 
 

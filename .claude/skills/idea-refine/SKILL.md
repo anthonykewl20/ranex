@@ -58,5 +58,5 @@ starts from.
 ---
 Adapted from `interview-me` and `idea-refine` in addyosmani/agent-skills
 @7676817c12a1317454ae3898a0c5c1eacf5dd3d5, rebuilt for Ranex gating.
-Copyright (c) 2025 Addy Osmani; MIT licensed — full text:
-https://github.com/addyosmani/agent-skills/blob/7676817c12a1317454ae3898a0c5c1eacf5dd3d5/LICENSE
+Copyright (c) 2025 Addy Osmani; MIT licensed — the copyright and
+permission notice travels with the shelf: .claude/skills/LICENSE-agent-skills.txt

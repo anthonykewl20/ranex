@@ -61,5 +61,5 @@ The evidence is the diff and the test run — on disk, not in a report.
 Adapted from `incremental-implementation` and `planning-and-task-breakdown` in
 addyosmani/agent-skills @7676817c12a1317454ae3898a0c5c1eacf5dd3d5;
 self-verification replaced by frozen-test gates and lane rules.
-Copyright (c) 2025 Addy Osmani; MIT licensed — full text:
-https://github.com/addyosmani/agent-skills/blob/7676817c12a1317454ae3898a0c5c1eacf5dd3d5/LICENSE
+Copyright (c) 2025 Addy Osmani; MIT licensed — the copyright and
+permission notice travels with the shelf: .claude/skills/LICENSE-agent-skills.txt
