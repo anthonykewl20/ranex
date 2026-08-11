@@ -21,7 +21,8 @@ through the existing SDK", which named no source for that state.
 The reader is hostile-capable: it is the same process that runs the coding agent,
 and `host_confinement.py` is imported nowhere in `src/`, so the harness is a
 plain `Popen` with a five-variable environment and ordinary uid-level filesystem
-access. It must not read the journal, hold a key, or forge a verdict on screen.
+access. So the design must not hand it the journal or a key, nor render an
+unverified record as a verdict. Those constrain what is built, not the adversary.
 
 ## Decision Drivers
 
@@ -31,7 +32,9 @@ access. It must not read the journal, hold a key, or forge a verdict on screen.
   long after the verdict was written.
 - The kernel judges, the harness collects. No verdict logic crosses the wall.
 - Verdict content must not vary with the destination (ADR-018, rule 1).
-- Whatever is built must survive the harness being compromised without lying.
+- It must fail closed on every state it can detect, and claim no protection it
+  does not have. Surviving a compromised harness is not achievable here and is
+  therefore not a driver — see sad path 12.
 - The fork stays mergeable: no upstream file is rewritten to carry this.
 
 ## Prior art
