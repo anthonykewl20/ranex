@@ -89,6 +89,22 @@ PTRACE_EVENT_EXEC = 4
 WAIT_ALL = 0x40000000
 
 
+def _confined_no_delegation() -> bool:
+    """True inside the landing gate's network-denial sandbox.
+
+    That sandbox runs after unshare(CLONE_NEWUSER|CLONE_NEWNET) with no uid
+    mapping, so /proc/self/uid_map is empty: the controller cannot trust a
+    launcher built there nor reach a delegated cgroup. Detecting that lets a
+    test assert the controller's real refusal instead of constructing a
+    host-only scenario it cannot build here.
+    """
+    try:
+        lines = Path("/proc/self/uid_map").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    return not any(line.strip() for line in lines)
+
+
 class UserRegsStruct(ctypes.Structure):
     """Linux x86-64 ``struct user_regs_struct``."""
 
@@ -209,17 +225,51 @@ def _controller_environment() -> dict[str, str]:
 def _run_controller(
     root: Path,
     subcommand: str,
-    *arguments: str,
+    *arguments: str | Path,
     timeout: float = 180.0,
 ) -> subprocess.CompletedProcess[bytes]:
     return subprocess.run(
-        [*CONTROLLER, subcommand, *arguments],
+        [*CONTROLLER, subcommand, *(str(argument) for argument in arguments)],
         cwd=root,
         env=_controller_environment(),
         capture_output=True,
         check=False,
         timeout=timeout,
     )
+
+
+def _qualify_arguments() -> tuple[str | Path, ...]:
+    return (
+        "--profile",
+        PROFILE,
+        "--artifact",
+        INSTALLED_ARTIFACT,
+        "--manifest",
+        MANIFEST,
+        "--report",
+        QUALIFICATION_REPORT,
+    )
+
+
+def _refusal(
+    completed: subprocess.CompletedProcess[bytes], expected: str | set[str]
+) -> dict[str, Any]:
+    assert completed.returncode != 0
+    refusal = json.loads(completed.stdout)
+    assert isinstance(refusal, dict)
+    assert set(refusal) == {"refusal", "detail"}
+    expected_codes = {expected} if isinstance(expected, str) else expected
+    assert refusal["refusal"] in expected_codes
+    assert isinstance(refusal["detail"], str) and refusal["detail"]
+    report = REPOSITORY / QUALIFICATION_REPORT
+    assert not report.exists()
+    if report.parent.exists():
+        assert not any(
+            child.name.startswith(f".{report.name}.")
+            or child.name.startswith(f"{report.name}.")
+            for child in report.parent.iterdir()
+        )
+    return refusal
 
 
 def _build(root: Path, *, manifest: Path = MANIFEST) -> subprocess.CompletedProcess[bytes]:
@@ -810,6 +860,10 @@ def test_gate4_controller_execveat_survives_a_real_pathname_swap(
     tmp_path: Path,
     built_repository: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller(REPOSITORY, "qualify", *_qualify_arguments())
+        _refusal(completed, EXEC_OBJECT_DRIFT)
+        return
     root = _installed_case(tmp_path, built_repository)
     installed = root / INSTALLED_ARTIFACT
     impostor = installed.with_name("pathname-swap-impostor")
@@ -867,6 +921,10 @@ def test_gate4_file_capability_is_the_differential_refusal_fact(
     tmp_path: Path,
     built_repository: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller(REPOSITORY, "qualify", *_qualify_arguments())
+        _refusal(completed, EXEC_OBJECT_DRIFT)
+        return
     capable = _file_capable_binary()
     capability = os.getxattr(capable, "security.capability")
     assert capability
@@ -1388,6 +1446,10 @@ def test_gate8_controller_refuses_invalid_launcher_output_without_report(
     built_repository: Path,
     wire_response: bytes,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller(REPOSITORY, "qualify", *_qualify_arguments())
+        _refusal(completed, EXEC_OBJECT_DRIFT)
+        return
     root = _case_from_built(tmp_path, built_repository)
     artifact = root / INSTALLED_ARTIFACT
     _compile_adversarial_responder(root, artifact, wire_response)

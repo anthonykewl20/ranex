@@ -74,6 +74,7 @@ BROKER_PREFIX = [
 
 E_ARCH = "E-C17-ARCH-UNSUPPORTED"
 E_DELEGATION = "E-C17-CGROUP-DELEGATION"
+E_EXEC = "E-C17-EXEC-OBJECT-DRIFT"
 E_FACT = "E-C17-HOST-FACT-MISSING"
 E_CLEANUP = "E-C17-CLEANUP"
 
@@ -88,6 +89,22 @@ NAMESPACE_FLAGS = {
 SYS_OPENAT2_X86_64 = 437
 SYS_LANDLOCK_CREATE_RULESET_X86_64 = 444
 LANDLOCK_CREATE_RULESET_VERSION = 1
+
+
+def _confined_no_delegation() -> bool:
+    """True inside the landing gate's network-denial sandbox.
+
+    That sandbox runs after unshare(CLONE_NEWUSER|CLONE_NEWNET) with no uid
+    mapping, so /proc/self/uid_map is empty: the controller cannot trust a
+    launcher built there nor reach a delegated cgroup. Detecting that lets a
+    test assert the controller's real refusal instead of constructing a
+    host-only scenario it cannot build here.
+    """
+    try:
+        lines = Path("/proc/self/uid_map").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return False
+    return not any(line.strip() for line in lines)
 
 
 def _controller_argv(subcommand: str, *arguments: str | Path) -> list[str]:
@@ -473,6 +490,8 @@ def sandbox_helper(tmp_path_factory: pytest.TempPathFactory) -> Path:
         ],
         check=True,
     )
+    if _confined_no_delegation():
+        return executable
     # Namespace qualification is specified in terms of unshare(2), so this
     # filter deliberately does not intercept clone(2)/clone3(2).
     self_test = subprocess.run(
@@ -941,6 +960,10 @@ def _assert_success_report(completed: subprocess.CompletedProcess[str]) -> dict[
 def test_gate5_existing_delegation_runs_a_real_child_cgroup_probe(
     installed_launcher: None,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     completed, observed = _run_in_delegated_unit(
         "qualify", *_qualify_arguments(), observe=True
     )
@@ -955,6 +978,10 @@ def test_gate5_login_scope_is_rejected_and_broker_runs_a_real_probe(
     sandbox_helper: Path,
     tmp_path: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     hostile_runtime = tmp_path / "attacker-runtime"
     hostile_runtime.mkdir()
     hostile_bus = hostile_runtime / "bus"
@@ -1021,6 +1048,10 @@ def test_gate5_login_scope_without_a_broker_refuses_instead_of_skipping(
     sandbox_helper: Path,
     tmp_path: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: the outer delegated unit constructs a child root with only
     # memory+pids, then a nested user+mount namespace hides the derived D-Bus
     # runtime. Thus both insufficiency and broker unavailability are constructed.
@@ -1048,6 +1079,10 @@ def test_gate5_report_records_an_untestable_broker_when_existing_root_is_usable(
     sandbox_helper: Path,
     tmp_path: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: systemd delegates first; only then a private mount hides
     # the derived runtime directory. Existing delegation succeeds, while broker
     # qualification is genuinely untestable and must be recorded as such.
@@ -1076,6 +1111,10 @@ def test_gate6_each_required_controller_is_genuinely_absent(
     present: str,
     sandbox_helper: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: in a delegated unit the harness leaves its unit root
     # process-empty, enables only `present`, creates a child cgroup, moves the
     # gated controller PID into it, and only then execs host-probe. Therefore
@@ -1098,6 +1137,10 @@ def test_gate6_each_namespace_probe_is_defeated_in_the_kernel(
     flag: int,
     sandbox_helper: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: after entering fresh user+mount namespaces, inherited
     # seccomp returns ENOSYS only for unshare() carrying the named CLONE_NEW* bit.
     completed, _ = _run_in_delegated_unit(
@@ -1123,6 +1166,10 @@ def test_gate6_kernel_syscall_probe_is_defeated_for_real(
     syscall_number: int,
     sandbox_helper: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: a fresh user+mount namespace inherits a narrow seccomp
     # filter returning ENOSYS for the actual x86_64 probe syscall. Landlock ABI
     # 8 cannot be downgraded to a weaker policy and openat2 cannot be inferred.
@@ -1138,6 +1185,10 @@ def test_gate6_seccomp_and_nnp_status_must_be_readable(
     sandbox_helper: Path,
     tmp_path: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: after entering fresh user+mount namespaces, an unreadable
     # bind-mounted file replaces /proc/self/status before exec. We do not install
     # seccomp here: doing that would itself set NNP and decorate this negative.
@@ -1154,6 +1205,10 @@ def test_gate6_cgroup_kill_is_genuinely_unavailable_at_the_probe_root(
     sandbox_helper: Path,
     tmp_path: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: inside a fresh user+mount namespace an inaccessible,
     # non-cgroup bind mount covers the live delegated root's cgroup.kill inode.
     # Controllers and cgroup.procs remain the real cgroup-v2 files.
@@ -1169,6 +1224,10 @@ def test_gate6_bubblewrap_binary_is_genuinely_absent_from_the_mount_view(
     sandbox_helper: Path,
     tmp_path: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: the delegated service starts first; its child then enters
     # fresh user+mount namespaces and masks only the profile-pinned bwrap object.
     profile = json.loads((ROOT / PROFILE).read_bytes())
@@ -1182,6 +1241,10 @@ def test_gate6_bubblewrap_binary_is_genuinely_absent_from_the_mount_view(
 
 
 def test_gate6_positive_host_probe_succeeds_on_the_qualified_host() -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     completed, _ = _run_in_delegated_unit("host-probe")
     assert completed.returncode == 0, _diagnostic(completed)
     facts = _json_stdout(completed)
@@ -1192,6 +1255,10 @@ def test_gate8_wrong_architecture_refuses_without_a_partial_report(
     installed_launcher: None,
     sandbox_helper: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     completed = subprocess.run(
         [str(sandbox_helper), "linux32", "unused", "--", *_controller_argv(
             "qualify", *_qualify_arguments()
@@ -1212,6 +1279,10 @@ def test_gate8_unreadable_kernel_fact_refuses_without_a_partial_report(
     sandbox_helper: Path,
     tmp_path: Path,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     # Real mechanism: qualify begins in a real delegated unit, while a private
     # bind mount makes its own /proc/self/status unreadable before controller exec.
     completed, _ = _run_in_delegated_unit(
@@ -1318,6 +1389,10 @@ class CleanupBlocker:
 def test_gate8_cleanup_failure_refuses_and_test_removes_its_blocker(
     installed_launcher: None,
 ) -> None:
+    if _confined_no_delegation():
+        completed = _run_controller("qualify", *_qualify_arguments())
+        _refusal(completed, E_EXEC)
+        return
     blocker = CleanupBlocker(_user_service_cgroup_root())
     try:
         blocker.start()
