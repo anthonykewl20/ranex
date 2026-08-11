@@ -11,9 +11,8 @@ SLICE-017's 47 gates pass in a checkout (`ee3470de8`). Two host drifts were fixe
 a `systemd` upgrade broke the `systemd-run` pin (`9d4e4a9b9`), and a reboot reset
 the userns sysctl (now `/etc/sysctl.d/60-ranex-userns.conf`).
 
-**ADR-019 and ADR-020 are written and `proposed`**, both passing the docs gate.
-They are the whole design for the kernel slice the UI track waits on; neither has
-been paneled. The OpenRouter MCP works (~$4 left); the opencode CLI stalls.
+**ADR-019, ADR-020 and ADR-021 are written and `proposed`**, all passing the
+docs gate; none paneled. OpenRouter MCP works (~$4); the opencode CLI stalls.
 
 ## Decisions
 
@@ -21,30 +20,32 @@ been paneled. The OpenRouter MCP works (~$4 left); the opencode CLI stalls.
   published by atomic rename. A socket cannot serve a board that opens after a
   short-lived kernel exits; an append-only spool keeps the torn record.
 - **Cause is structure, computed once** (ADR-020). `_diagnosis()` returns the
-  partition; the sentence renders from it. Moving `verdict.py` turns
-  `test_kernel_unchanged.py` red by design — new digest in the same commit.
-- Signing does not defend the screen. `host_confinement.py` is imported nowhere
-  in `src/`, so the harness is unsandboxed and can draw anything. Recorded as
-  ADR-019 sad path 12; RISK-06 is why the channel is signed at all.
+  partition; the sentence renders from it. Moving `verdict.py` reddens
+  `test_kernel_unchanged.py` by design — new digest in the same commit.
+- Signing does not defend the screen: the harness is unsandboxed and can draw
+  anything (ADR-019 sad path 12; RISK-06 is why the channel is signed).
 - **The red gate is structural.** `_deny_network` (`main.py:1411`) runs the bound
-  command in a userns with no uid map, so `create_user_ns()` returns EPERM.
-  Mapping it hands untrusted code nested userns — two reviewers agree, not the fix.
+  command in an unmapped userns, so `create_user_ns()` returns EPERM. Mapping it
+  hands untrusted code nested userns — two reviewers agree, not the fix.
+- **ADR-021: qualification is evidence the gate consumes, not a test it runs.**
+  Its integration is SLICE-019's — the claim needs `gates.yaml`, the rule needs
+  the kernel, and neither is 017's to touch.
 - The board is a plugin route, never a rewrite of `routes/session`.
 
 ## Next
 
-1. Two routes are closed — do not retry. A skip in the SLICE-017 files trips
-   their own frozen gate 9 (no skip/mock tokens, and conftest would evade it).
-   `--ignore` in gates.yaml weakens the landing gate: TESTS_EXECUTED also fails
-   by the bound command's exit code, which is what covers those 47 on the host.
-   Left: qualification as evidence the gate consumes (needs an ADR), or red.
-2. Close 017. Only then may the ADR-019 + ADR-020 kernel slice open — it is one
-   slice, not two, and it unblocks BOARD-01 and BOARD-05..BOARD-14.
-3. Panel both ADRs through the OpenRouter MCP before either is accepted.
+1. **Owner call: how does 017 close?** Four routes are closed by evidence — skip
+   (its gate 9), `--ignore` (weakens the landing gate), close-red (QA GATE), a
+   scope addition (its owned paths + gate 10). The one route left inside its
+   owned paths: its two test files assert the correct *refusal* where
+   qualification cannot run, keeping gate 9's frozen counts. That edits frozen
+   tests, so it is yours to approve.
+2. ADR-021's integration belongs to SLICE-019, not to 017 and not to a slice of
+   its own. Then the ADR-019 + ADR-020 kernel slice (BOARD-01, BOARD-05..14).
+3. Panel ADR-019/020/021 through the OpenRouter MCP before any is accepted.
 
 ## Known limits
 
 - **A passing count is not evidence.** 37/47 was once green against a launcher
-  that parked with secrets readable; 47/47 was green while the governed run ran
-  none of these tests at all (`ee3470de8` fixes half: 38 errors → 18).
+  parking with secrets readable; 47/47 was green while the gate ran none of them.
 - **Running the harness commits your working tree** (`plugin/ranex.ts`, on idle).

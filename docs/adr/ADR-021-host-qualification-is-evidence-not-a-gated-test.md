@@ -3,8 +3,14 @@
 **Status:** proposed
 **Date:** 2026-08-11
 **Decision-makers:** repo owner
-**Slice:** planned, opens after SLICE-017 closes. ADR-006 keeps SLICE-018 and
-SLICE-019; this decision governs how their host facts reach a verdict.
+**Slice:** SLICE-019, which ADR-006 already gives "`cmd_run` integration,
+evidence field binding, signer refusal". It cannot land in SLICE-017: the claim
+needs `governance/gates.yaml` and the refusal rule needs the verdict kernel,
+neither of which is among that slice's six owned paths, the kernel is named out
+of scope there, and its frozen gate 10 requires the kernel byte-exact. It is
+also not a slice of its own, which could be sequenced neither before SLICE-017
+(one open slice) nor after it (QA GATE needs a green suite). ADR-006 keeps
+SLICE-018. **This decision does not close SLICE-017** — see Consequences.
 
 ## Context and Problem Statement
 
@@ -103,6 +109,10 @@ qualification regression, so excluding the files weakened the landing gate.
   is bound into the claim so drift is a refusal, not a silent mismatch.
 - Neutral: SLICE-017's 47 gates keep their present shape and keep running on the
   host; this changes who consumes their result, not what they assert.
+- Bad: this does not close SLICE-017. Four repairs are closed by evidence — a
+  skip trips its gate 9, `--ignore` weakens the landing gate, closing red fails
+  QA GATE, a scope addition breaches its owned paths and gate 10 — so how 017
+  closes is a separate open question in `docs/STATE.md`, not answered here.
 
 ### Confirmation
 
