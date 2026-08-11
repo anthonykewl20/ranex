@@ -13,31 +13,32 @@ e2e repository-gate tests: SLICE-017's tests ERROR at fixture setup inside the
 hermetic clone, which cannot build a binary, spawn systemd units and cgroups,
 and run `uv run` in a copy. UNVERIFIED cause; run the clone before fixing.
 
-**The UI redesign is a separate track**, not a slice: ADR-018 `accepted`,
-BOARD-01..BOARD-22 on the harness repo. Landed there: BOARD-03 (degraded
-rendering), BOARD-04 (board route), BOARD-01's contract. Blocked: the bridge is
-emit-only, so no verdict can reach the harness.
+**ADR-019 and ADR-020 are written and `proposed`**, both passing the docs gate.
+They are the whole design for the kernel slice the UI track waits on. Neither
+has been read by an outside panel: the OpenRouter credential is expired, and
+both ADRs disclose that in their Confirmation sections rather than imply consensus.
 
 ## Decisions
 
-- **The host needs `kernel.apparmor_restrict_unprivileged_userns=0`.** It took
-  the gates 21 → 30 and **resets on reboot**; refusing there is ADR-006 sad path 2.
-- Host-state bound on owner approval: LSM state, userns sysctls, boot id, machine
-  id, delegation identity. SLICE-019 needs these to re-qualify.
-- Launcher hygiene completes **before** the gate wait, and a clean environment
-  needs re-exec: `/proc/<pid>/environ` keeps the original envp past `clearenv()`.
-- ADR-006 stays `proposed`, RISK-06 stays open. 017 qualifies only.
-- The board is a plugin route, never a rewrite of `routes/session`: `packages/tui`
-  is ~163 insertions from fork base `012c2f57`, and a rewrite ends mergeability.
+- **The verdict read channel is one signed file per subject digest** (ADR-019),
+  published by atomic rename. A socket cannot serve a board that opens after a
+  short-lived kernel exits; an append-only spool keeps the torn record.
+- **Cause is structure, computed once** (ADR-020). `_diagnosis()` returns the
+  partition; the sentence renders from it. Moving `verdict.py` turns
+  `test_kernel_unchanged.py` red by design — new digest in the same commit.
+- Signing does not defend the screen. `host_confinement.py` is imported nowhere
+  in `src/`, so the harness is unsandboxed and can draw anything. Recorded as
+  ADR-019 sad path 12; RISK-06 is why the channel is signed at all.
+- Host needs `kernel.apparmor_restrict_unprivileged_userns=0`; **resets on reboot**.
+- The board is a plugin route, never a rewrite of `routes/session`.
 
 ## Next
 
 1. Decide the governed-clone collision: exclude SLICE-017's heavyweight tests
    (bumps "a skip is absence"), equip the clone, or accept red until SLICE-019.
-2. Then close 017 and open SLICE-018 (issue #21), then SLICE-019 (#22); only 019
-   binds `cmd_run` and closes RISK-06.
-3. UI track, alongside: one kernel slice for the verdict read channel plus
-   BOARD-02's structured cause. It unblocks nine board issues.
+2. Close 017. Only then may the ADR-019 + ADR-020 kernel slice open — it is one
+   slice, not two, and it unblocks BOARD-01 and BOARD-05..BOARD-14.
+3. Re-auth OpenRouter (`/mcp`) and panel both ADRs before either is accepted.
 
 ## Known limits
 
