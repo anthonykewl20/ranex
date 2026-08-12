@@ -53,6 +53,8 @@ Only these paths may change in code-impl:
 - `tests/contract/test_qualification_admission.py`
 - `tests/e2e/test_run_produces_evidence.py`
 - `tests/e2e/test_gating_real_suite.py`
+- `tests/integration/test_slice017_native_launcher.py` (refresh only the frozen
+  `main.py` digest after this slice's approved operator-path change)
 - `docs/slices/SLICE-019-host-qualification-as-gate-evidence.md`
 - `docs/adr/ADR-021-host-qualification-is-evidence-not-a-gated-test.md`
 - `docs/STATE.md`
