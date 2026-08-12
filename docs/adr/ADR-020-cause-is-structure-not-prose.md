@@ -1,9 +1,9 @@
 # ADR-020 — cause is structure, not prose
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-11
 **Decision-makers:** repo owner
-**Slice:** `not yet opened — shares the kernel slice with ADR-019 and waits on SLICE-017. BOARD-02 is this decision; BOARD-05's exhaustive cause renderer queues behind it`
+**Slice:** `SLICE-020-judgment-identity-and-verdict-read-channel`
 
 ## Context and Problem Statement
 
@@ -99,9 +99,9 @@ forged signature and an unresolved reference draw the same icon.
 ## Decision Outcome
 
 For seven unordered causes surviving only as English, we chose **option 2 — one
-partition, computed once by `_diagnosis()`, returned as data, with the sentence
-rendered from it** — so structure and prose cannot drift, accepting a change to
-the digest-frozen kernel and `record_digest`.
+`_diagnosis()` partition returned as `ClaimCause(claim_id, cause, detail)` data,
+with prose rendered from it** — preventing drift while moving kernel/record digest.
+Kernel construction requires non-empty `cause`; harness `Schema.String` does not.
 
 Option 1 is forbidden: reworded prose would mislabel a forgery as absence.
 Option 3 is the defect Kyverno demonstrates — the same closed set derived twice
@@ -169,13 +169,13 @@ cause, which is what Kyverno's `default: rc.Fail++` and Tekton's icon ladder do.
 
 ## Architecture surface
 
-Changed: `_diagnosis()` returns the partition as data; the sentence becomes a
+Changed: `_diagnosis()` returns the five-kind partition as data; the sentence becomes a
 renderer over it. `Evaluation` gains a per-claim cause tuple plus an
 evaluation-level `self_approval` refusal marker, and `as_record()` carries both.
 `KERNEL_DIGEST` in `tests/contract/test_kernel_unchanged.py` moves.
 
-Added: nothing outside the kernel. The two admission-derived causes are composed
-at ADR-019's projection, from `admission.rejections`, which already carries
+Added: ADR-019's projection composes the two admission-derived causes from
+`admission.rejections`, which already carries
 `index`, `reason`, `detail`, `producer_id` and a nullable `claim_id`.
 
 Unchanged: `evaluate()`'s signature and purity, `reason`'s bytes, the journal
@@ -242,7 +242,7 @@ behaviour being changed is currently pinned.
 - `tests/contract/test_kernel_unchanged.py` — expected red, and the digest is
   updated in the same commit that moves `verdict.py`. Nothing else in that file
   may be relaxed to accommodate the change.
-- `tests/unit/test_evidence_admission.py` — the six rejection kinds stay a closed
+- `tests/unit/test_evidence_admission.py` — all seven rejection reasons stay a closed
   set, and a rejection with a null `claim_id` keeps the null.
 - `tests/contract/test_verdict_presentation.py` — the CLI's stdout is unchanged
   by this refactor, byte for byte, under both a pipe and a pty.
