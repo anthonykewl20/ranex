@@ -305,10 +305,10 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-020-judgment-identity-and-verdict-read-channel.md.
-SLICE-019 closed host-qualification admission. SLICE-020 now couples structured
-judgment identity to the kernel-first signed verdict read channel; the harness
-schema consumes the extended contract only after this kernel slice lands.
+**Active slice:** docs/slices/SLICE-019-host-qualification-as-gate-evidence.md.
+SLICE-017 closed the P0 qualification prerequisite without exposing a
+production command path; SLICE-019 now integrates its report through the
+existing `ranex-evidence-v3` envelope, with freshness checked by admission.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -346,11 +346,6 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
-
-- **SLICE-019-host-qualification-as-gate-evidence** — closed 2026-08-12. The
-  landing gate now requires a deeply validated, subject-bound qualification
-  report through `ranex-evidence-v3`; absent, malformed, ambiguous, or stale
-  host state blocks both judgment paths.
 
 - **SLICE-017-confinement-of-the-bound-command** — closed 2026-08-12. Its 47
   qualification gates qualified the strict-local host and byte-reproducible GNU

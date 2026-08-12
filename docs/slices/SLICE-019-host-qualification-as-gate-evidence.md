@@ -1,6 +1,6 @@
 # SLICE-019 — host qualification as gate evidence
 
-**Status:** done
+**Status:** open
 **Opened:** 2026-08-12
 **Priority:** P0 — closes ADR-021's absence gap: the landing gate requires only
 `tests-executed` today, so an unqualified host can pass (`governance/gates.yaml:10-17`).

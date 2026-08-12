@@ -1,9 +1,9 @@
 # ADR-019 — the verdict read channel
 
-**Status:** accepted
+**Status:** proposed
 **Date:** 2026-08-11
 **Decision-makers:** repo owner
-**Slice:** `SLICE-020-judgment-identity-and-verdict-read-channel`
+**Slice:** `not yet opened — SLICE-017 holds the one-slice budget. This ADR and the structured cause it depends on must both land before that slice opens; BOARD-01 and BOARD-05..BOARD-14 queue behind it`
 
 ## Context and Problem Statement
 
@@ -108,29 +108,27 @@ The directory is a **transport, not a boundary**: under one uid the harness can
 unlink, truncate or race the rename, and no local transport changes that. An
 earlier draft claimed otherwise. See sad path 12.
 
-Option 2 keeps torn records; `_read_emission`'s truncated-line refusal is wrong
-for a channel the board reads at any moment. Option 3 cannot outlive the writer.
+Option 2 keeps the torn record, and `_read_emission`'s refusal of a truncated
+line is right for a channel the kernel controls, wrong for one the board reads at
+any moment. Option 3 cannot serve a reader attaching after the writer exited.
 Option 4 hands the untrusted process the choice of when judging happens. Option 5
 is option 1 with a database in the way.
 
-Door: one-way
+Door: two-way
 
 ### Consequences
 
-- Good: no file, unverifiable file, and wrong-tree verdict are distinct states.
-- Good: an honest reader detects corruption; this is no same-uid protection.
-- Good: the reader verifies transmitted bytes and never re-serialises them.
+- Good: the three failures stay apart — no file, a file that will not verify, and
+  a genuine verdict about a different tree are distinct states, not one blank.
+- Good: an honest reader can detect accidental byte corruption with a public key
+  the keyring already publishes; this is not protection from a same-uid harness.
+- Good: signing the transmitted bytes removes the canonical-JSON problem whole;
+  the reader never re-serialises, so Python and TypeScript cannot disagree.
 - Bad: a third signing domain joins `ranex-evidence-v3` and `ranex-approval-v1`,
   and three domains is the point at which someone will reach for a generic one.
 - Bad: a verdict now exists in two places. A crash after journal append but before
   publication can leave the previous valid PASS readable; freshness is unproven.
 - Neutral: the board still cannot act. This channel is read-only by construction.
-
-Dedicated `kernel-verdict-signer` lives in separate keyring entry
-`verdict_signer`, forbidden from `producers`. New `foundation/verdict_signing.py`
-mirrors approval signing under `b"ranex-verdict-v1\n"`, covering asserted type
-`application/vnd.ranex.verdict.v1+json` and exact Record fields except
-`record_digest`, which hashes those fields and is checked on write/read.
 
 ### Confirmation
 
@@ -177,16 +175,16 @@ required follow-up; until then publication-crash freshness is not established.
 
 ## Architecture surface
 
-Added: projection/publication writes one signed envelope per subject digest;
-a dedicated signer role and third domain own exact `SIGNED_FIELDS`; a kernel
-reader's total states define the later harness contract. Publication carries
+Added: a kernel publication step writing one signed envelope per subject digest
+under a gitignored directory; a third domain constant beside `EVIDENCE_DOMAIN`
+and `APPROVAL_DOMAIN` with its own exact `SIGNED_FIELDS`; a harness reader
+checking transport integrity with a public key alone. Publication also carries
 `admission.rejections` (`claim_id`, `reason`, `detail`, `producer_id`) alongside
 the evaluation, so refusals remain durable even when the verdict is PASS.
 
-Changed: `Evaluation` gains ADR-020's `causes` and `self_approval`; projected
-Rejections add `producer_id`. Harness `verdict.ts` lacks those last two wire
-fields, so extending it is a kernel-first follow-up, not this slice.
-Unchanged: the journal schema, emit channel, and every harness file.
+Changed: `Evaluation` gains ADR-018's structured cause, shape decided elsewhere.
+Unchanged: `evaluate()`, the journal schema, the emit channel, every upstream
+harness file. The board issues no verdict, holds no key, writes no journal entry.
 
 ## Scope and threat delta
 
@@ -212,14 +210,13 @@ scope: confining the harness, which is RISK-06 and ADR-006's unbuilt sad path.
 
 ## Reversibility
 
-Door: one-way
+Door: two-way
 
 Deleting the publication step and the reader returns the harness to the screen it
 shows today, and the kernel to a CLI that prints. Nothing depends on the channel:
 the journal remains the record, and `gate evaluate` remains the authority.
 
-The one-way parts are the deliberate kernel digest move and third signing domain.
-Once a verdict has been signed
+The one-way part is the third signing domain. Once a verdict has been signed
 under `ranex-verdict-v1` and read by anything, the domain string is load-bearing
 and may be superseded but not reused.
 
@@ -256,8 +253,7 @@ the existing behaviour is pinned.
   envelope signed under `ranex-verdict-v1` must not verify under the evidence
   domain, and the exact-field-set refusal must hold for the new tuple.
 - `tests/contract/test_producer_keyring.py` — the public key a reader needs is
-  reachable only through the dedicated signer role; role aliasing and missing
-  signer material refuse.
+  reachable from the committed keyring, and an empty keyring still refuses.
 - `tests/unit/test_gate_verdict.py` — `Evaluation` gains its field without
   changing `reason` byte-for-byte; `record_digest` moves at the same boundary as
   ADR-020, and the digest change is argued in that commit.
@@ -266,12 +262,9 @@ the existing behaviour is pinned.
 - `tests/unit/test_delegation.py` — the reader's directory is not writable by the
   child environment, and no new variable leaks a key into it.
 
-Additionally, SLICE-020 freezes projection shape (`self_approval` and rejection
-`producer_id`), publication-crash tests with and without a prior PASS, and a
-total reader-state matrix: bad signature, unknown signer, wrong payload type,
-zero signatures, missing key, subject/context mismatch, and unknown cause.
-Publication validation refuses every float, bigint outside TypeScript's safe
-integer range, and non-BMP scalar before canonical encoding.
+Additionally, and belonging to the slice: publication-crash tests with no prior
+file (case 1) and with a prior PASS (the freshness limit); a total reader-state
+mapping test with no default arm; and a test refusing a float at publication.
 
 ## Code review checklist
 
@@ -287,13 +280,14 @@ integer range, and non-BMP scalar before canonical encoding.
 
 ## More Information
 
-Depends on ADR-018 and ADR-020's structured-cause shape; supersedes nothing.
+Supersedes nothing. Depends on ADR-018, which decided the board exists and that
+`Evaluation` would gain a structured cause without deciding its shape; that shape
+needs its own decision and is not made here.
 
 ADR-008 set the wall this channel crosses, and ADR-014 set the emit record it
 mirrors. ADR-011 governs the disclosure above that no outside panel ran.
 
 The harness-side contract already landed as `packages/schema/src/verdict.ts` in
-the fork but currently lacks Record `self_approval` and Rejection `producer_id`;
-its follow-up must copy the kernel-frozen shape. RISK-06 stays open:
+the fork, and fixes the payload shape this envelope carries. RISK-06 stays open:
 the harness is unconfined, so signing is only honest-reader transport integrity
 and not a screen-authenticity defence.
