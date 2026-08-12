@@ -543,7 +543,7 @@ def test_run_captures_a_qualification_report_as_signed_suite_results(repo: Path)
 
 
 def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
-    repo: Path, capsys: pytest.CaptureFixture[str]
+    repo: Path, capfd: pytest.CaptureFixture[str]
 ) -> None:
     host_limitation = _qualification_host_limitation()
     project = Path(__file__).resolve().parents[2]
@@ -610,11 +610,31 @@ def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
         ],
         producer="worker",
     )
-    command_output = capsys.readouterr()
+    command_output = capfd.readouterr()
     if result != 0:
         diagnostic = command_output.out + command_output.err
-        assert "No module named 'ranex'" not in diagnostic, diagnostic
-        if host_limitation is not None:
+        import_or_exec_regression = any(
+            signature in diagnostic
+            for signature in (
+                "ModuleNotFoundError",
+                "ImportError",
+                "No module named",
+                "Traceback (most recent call last):",
+            )
+        )
+        if import_or_exec_regression:
+            pytest.fail(
+                "real host qualification did not import/execute successfully"
+                f" (returned {result})\nstdout/stderr:\n{diagnostic}"
+            )
+        host_feature_refusal = (
+            "E-C17-CGROUP-DELEGATION" in diagnostic
+            or (
+                "E-C17-HOST-FACT-MISSING" in diagnostic
+                and "launcher did not prove every mandatory isolation fact" in diagnostic
+            )
+        )
+        if host_feature_refusal and host_limitation is not None:
             pytest.skip(f"SLICE-017 host qualification unavailable: {host_limitation}")
         pytest.fail(
             f"real host qualification returned {result}\nstdout/stderr:\n{diagnostic}"
@@ -633,14 +653,14 @@ def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
     assert admitted.rejections == ()
     assert len(admitted.evidence) == 1
     assert evaluate(repo) == 0
-    capsys.readouterr()
+    capfd.readouterr()
 
     moved = dict(report["host_state"])
     moved["boot_id"] = "live-host-moved"
     with pytest.MonkeyPatch.context() as monkeypatch:
         monkeypatch.setattr(admission, "_read_live_durable_host_state", lambda: moved)
         assert evaluate(repo) == 1
-    assert "host-qualification" in capsys.readouterr().out
+    assert "host-qualification" in capfd.readouterr().out
 
 
 def test_run_refuses_a_suite_results_claim_without_a_loaded_manifest(
