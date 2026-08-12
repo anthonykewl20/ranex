@@ -307,7 +307,8 @@ none of the surface around it does.
 
 **Active slice:** docs/slices/SLICE-019-host-qualification-as-gate-evidence.md.
 SLICE-017 closed the P0 qualification prerequisite without exposing a
-production command path; SLICE-019 now integrates its report as gate evidence.
+production command path; SLICE-019 now integrates its report through the
+existing `ranex-evidence-v3` envelope, with freshness checked by admission.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —

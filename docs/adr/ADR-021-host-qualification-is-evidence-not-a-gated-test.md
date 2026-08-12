@@ -105,10 +105,8 @@ by the bound command's exit code, so excluding the files weakened that gate.
   is a required SLICE-019 envelope dependency, not a control present today.
 - Neutral: SLICE-017's 47 gates keep their present shape and keep running on the
   host; this changes who consumes their result, not what they assert.
-- Bad: this does not close SLICE-017. Four repairs are closed by evidence — a
-  skip trips its gate 9, `--ignore` weakens the landing gate, closing red fails
-  QA GATE, a scope addition breaches its owned paths and gate 10 — so how 017
-  closes is a separate open question in `docs/STATE.md`, not answered here.
+- Resolved 2026-08-12: SLICE-017 closed on its green QA gate and was archived;
+  the open question this bullet posed is answered.
 
 ### Confirmation
 
