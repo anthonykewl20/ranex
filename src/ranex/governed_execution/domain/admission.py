@@ -322,17 +322,33 @@ def _validate_qualification_report(value: Any) -> Mapping[str, Any]:
         {"kernel.unprivileged_userns_clone", "user.max_user_namespaces"},
     ):
         raise ValueError("host_state.unprivileged_userns_sysctls does not match its closed schema")
-    _mapping_with_keys(
+    delegation_identity = _mapping_with_keys(
         host_state["delegation_identity"],
         {"uid", "gid", "cgroup_root", "cgroup_relative_path", "source", "userns_state_source"},
         "host_state.delegation_identity",
     )
+    for name in ("uid", "gid"):
+        _required_integer(
+            delegation_identity[name], f"host_state.delegation_identity.{name}"
+        )
     return report
+
+
+def _normalized_anchor(value: Any) -> Any:
+    """Canonicalize only the schema-accepted SHA-256 representation."""
+
+    if isinstance(value, str) and _SHA256.fullmatch(value) is not None:
+        return value.removeprefix("sha256:")
+    if isinstance(value, Mapping):
+        return {key: _normalized_anchor(item) for key, item in value.items()}
+    if isinstance(value, list):
+        return [_normalized_anchor(item) for item in value]
+    return value
 
 
 def _stale_anchor(report_state: Mapping[str, Any], live_state: Mapping[str, Any]) -> str | None:
     for field in ("boot_id", "machine_id", "lsm", "unprivileged_userns_sysctls"):
-        if report_state[field] != live_state[field]:
+        if _normalized_anchor(report_state[field]) != _normalized_anchor(live_state[field]):
             return field
     report_identity = report_state["delegation_identity"]
     live_identity = live_state["delegation_identity"]

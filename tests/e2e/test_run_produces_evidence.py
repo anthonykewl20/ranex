@@ -50,6 +50,30 @@ gates:
 """
 
 
+def _qualification_host_limitation() -> str | None:
+    """Name the SLICE-017 host-only prerequisite unavailable in this process."""
+
+    try:
+        uid_map = Path("/proc/self/uid_map").read_text(encoding="utf-8").splitlines()
+    except OSError:
+        return None
+    if not any(line.strip() for line in uid_map):
+        return "the current user namespace has no uid mapping, so no cgroup delegation is reachable"
+    try:
+        cgroup_lines = Path("/proc/self/cgroup").read_text(encoding="utf-8").splitlines()
+        unified = [line.split("::", 1)[1] for line in cgroup_lines if "::" in line]
+        if len(unified) != 1 or not unified[0].startswith("/"):
+            return None
+        root = Path("/sys/fs/cgroup") / unified[0].lstrip("/")
+        controllers = set((root / "cgroup.controllers").read_text(encoding="utf-8").split())
+    except OSError:
+        return None
+    missing = sorted({"cpu", "memory", "pids"} - controllers)
+    if missing:
+        return "the delegated cgroup is missing required controllers: " + ", ".join(missing)
+    return None
+
+
 @pytest.fixture()
 def repo(tmp_path: Path, signing: Signing) -> Path:
     """A real git repository whose working tree is clean."""
@@ -521,6 +545,7 @@ def test_run_captures_a_qualification_report_as_signed_suite_results(repo: Path)
 def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
     repo: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
+    host_limitation = _qualification_host_limitation()
     project = Path(__file__).resolve().parents[2]
     profile = "governance/confinement/strict-local-host-v1.json"
     manifest = "governance/confinement/native-launcher-build-v1.json"
@@ -588,8 +613,12 @@ def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
     command_output = capsys.readouterr()
     if result != 0:
         diagnostic = command_output.out + command_output.err
-        assert "No module named 'ranex'" not in diagnostic
-        pytest.skip("live host cannot complete SLICE-017 qualification: " + diagnostic)
+        assert "No module named 'ranex'" not in diagnostic, diagnostic
+        if host_limitation is not None:
+            pytest.skip(f"SLICE-017 host qualification unavailable: {host_limitation}")
+        pytest.fail(
+            f"real host qualification returned {result}\nstdout/stderr:\n{diagnostic}"
+        )
 
     (record,) = records(repo)
     report = record["suite_results"]

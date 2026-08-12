@@ -345,6 +345,30 @@ def test_genuine_report_refuses_when_a_live_durable_anchor_differs(
     assert field in result.rejections[0].detail
 
 
+@pytest.mark.parametrize("report_prefix", (False, True), ids=("report-bare", "report-prefixed"))
+def test_policy_digest_representation_alone_does_not_stale_qualification(
+    monkeypatch, identity, report_prefix: bool
+) -> None:
+    private, public = identity
+    report = copy.deepcopy(REPORT)
+    live = copy.deepcopy(HOST_STATE)
+    for policy, digit in (("apparmor_policy_identity", "6"), ("selinux_policy_identity", "7")):
+        bare = digit * 64
+        report["host_state"]["lsm"][policy] = {
+            "status": "active",
+            "policy_sha256": ("sha256:" if report_prefix else "") + bare,
+        }
+        live["lsm"][policy] = {
+            "status": "active",
+            "policy_sha256": ("" if report_prefix else "sha256:") + bare,
+        }
+
+    result = admit_with_live(monkeypatch, [raw_record(private, report)], public, live)
+
+    assert result.rejections == ()
+    assert len(result.evidence) == 1
+
+
 def test_transient_host_state_differences_do_not_stale_evidence(monkeypatch, identity) -> None:
     private, public = identity
     live = copy.deepcopy(HOST_STATE)
@@ -355,6 +379,21 @@ def test_transient_host_state_differences_do_not_stale_evidence(monkeypatch, ide
     result = admit_with_live(monkeypatch, [raw_record(private)], public, live)
     assert result.rejections == ()
     assert result.evidence[0].suite_results is None
+
+
+@pytest.mark.parametrize("field", ("uid", "gid"))
+def test_delegation_identity_uid_and_gid_refuse_booleans(
+    monkeypatch, identity, field: str
+) -> None:
+    private, public = identity
+    report = copy.deepcopy(REPORT)
+    report["host_state"]["delegation_identity"][field] = True
+
+    result = admit_with_live(monkeypatch, [raw_record(private, report)], public)
+
+    assert result.evidence == ()
+    assert result.rejections[0].reason is admission.RejectionReason.MALFORMED_RECORD
+    assert f"host_state.delegation_identity.{field} is not an integer" in result.rejections[0].detail
 
 
 def test_producer_cannot_approve_its_own_qualification(monkeypatch, identity) -> None:
