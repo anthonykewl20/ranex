@@ -62,8 +62,9 @@ to 40-hex commits and every raw URL fetched and hashed. Specifications excluded.
   maps typed errors to distinct exit codes — 10 no signature, 12 no matching
   signature — so a consumer reading no Go types still parts absence from invalid.
   License: Apache-2.0.
-  Weakness: on the blob path a missing signature file is reinterpreted as the
-  signature string, bypassing `ErrNoSignaturesFound` — absence reported as invalid.
+  Weakness: classification lives at the process boundary as exit codes, and only
+  for cosign's four typed errors; an unrecognised error falls through to generic
+  exit `1` (`exit_code_lookup.go:41-43`), unnamed rather than distinguished.
   Vendored: docs/adr/prior-art/ADR-019/cosign-exit-code-lookup.go blob:7b038d5a9fa02575f2bbcd7173a847d22c310236
 - [python-tuf trusted metadata set](https://github.com/theupdateframework/python-tuf/blob/353bdb767db56fd4667c9bcf56b710d50fdc2ac0/tuf/ngclient/_internal/trusted_metadata_set.py)
   refuses a genuine, correctly-signed document whose version is not greater than
@@ -148,11 +149,11 @@ agreement is recorded, not deferred to; each claim was checked against the code.
 
 Every signed-statement system read here collapses absence into invalidity
 somewhere. securesystemslib raises one `VerificationError` for zero signatures
-and for forged ones. python-tuf files "nobody signed" and "someone forged" in the
-same `unsigned` dict, with the difference surviving only in an INFO log. in-toto
-separates them at the file layer and re-merges them at the threshold. That is the
-defect that reopened SLICE-002, found five more times in mature code, so the
-distinction is carried in the reader's state instead of a counter.
+and for forged ones. python-tuf skips delegate verification entirely without a
+delegator and returns the same object shape as a verified load (`:460-507`) —
+default-open. in-toto separates absence and invalidity at the file layer and
+re-merges them at the threshold. That defect reopened SLICE-002 and recurred in
+mature code, so the distinction is carried in the reader's state instead of a counter.
 
 cosign is the exception worth copying, and the improvement is where the table
 lives. Its exit codes classify at the *process* boundary and one call site
@@ -254,7 +255,8 @@ the existing behaviour is pinned.
 - `tests/contract/test_producer_keyring.py` — the public key a reader needs is
   reachable from the committed keyring, and an empty keyring still refuses.
 - `tests/unit/test_gate_verdict.py` — `Evaluation` gains its field without
-  changing `reason` byte-for-byte, and `record_digest` stays stable.
+  changing `reason` byte-for-byte; `record_digest` moves at the same boundary as
+  ADR-020, and the digest change is argued in that commit.
 - `tests/contract/test_verdict_presentation.py` — the published bytes and the
   bytes printed to stdout describe the same verdict, and neither varies with TTY.
 - `tests/unit/test_delegation.py` — the reader's directory is not writable by the

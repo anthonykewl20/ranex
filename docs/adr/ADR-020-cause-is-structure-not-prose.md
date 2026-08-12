@@ -51,11 +51,11 @@ implementation, never as a schema document.
   the separate vendored CLI consumer demonstrates the resulting default branch.
   Vendored: docs/adr/prior-art/ADR-020/kyverno-rulestatus.go blob:42bac5a9f4ce62cf12480d6349a2d9e533d8ef67
 - [Kyverno CLI result counter](https://github.com/kyverno/kyverno/blob/945ac9ce8546ea6cd51370f24b615148c577da5e/cmd/cli/kubectl-kyverno/processor/result.go)
-  switches over that same five-value set four times in 175 lines: two switches
-  drop an unrecognised status silently, one maps it to `Fail`, none reports it.
+  switches over that same five-value set five times in 197 lines: four switches
+  drop an unrecognised status silently, one maps it to `Fail`; none reports it.
   License: Apache-2.0.
   Weakness: Go does not exhaustiveness-check a switch over a string-kinded type,
-  so a closed set enforced by convention is handled three ways in one file.
+  so a closed set enforced by convention is handled two ways in one file.
   Vendored: docs/adr/prior-art/ADR-020/kyverno-cli-result.go blob:be8849cb6534f2a4286f5c0ed683e31f6a43756a
 - [Kubernetes apimachinery errors](https://github.com/kubernetes/kubernetes/blob/0f29094e5b73085e3802ecc1298ecae13866bfe6/staging/src/k8s.io/apimachinery/pkg/api/errors/errors.go)
   guards its nearest-value fallback with a `knownReasons` registry, so an
@@ -147,7 +147,8 @@ the one place this repository treats as the record for a deliberate kernel move.
 
 Kyverno names the distinction correctly and then loses exhaustiveness in its
 unchecked CLI switches. Kubernetes guards its fallback
-properly and then misses the guard at one call site out of thirteen, permanently.
+properly at thirteen call sites and then misses the guard at two
+(`IsTooManyRequests`, `IsRequestEntityTooLargeError`), permanently.
 Both failures are the same failure: **the closed set was enforced at every use
 instead of once at the boundary.** So the validation happens at deserialisation,
 and no renderer receives a value it could mishandle. There is no accessor that

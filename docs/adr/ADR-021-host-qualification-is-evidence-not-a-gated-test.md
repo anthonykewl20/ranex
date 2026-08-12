@@ -48,7 +48,7 @@ rather than re-deriving the facts.
   Vendored: docs/adr/prior-art/ADR-021/LICENSE-NFD-APACHE-2.0.txt blob:d9a10c0d8e868ebf8da0b3dc95bb0be634c34bfe
 - **slsa-verifier binds provenance to the artifact hash it describes.** <https://github.com/slsa-framework/slsa-verifier/blob/30d0be3bbab553fc51557377baba2f7572dfc212/verifiers/verifier.go>
   License: Apache-2.0.
-  Weakness: it verifies what a trusted builder asserted and never re-derives the facts, so it cannot detect a report that outlived the state that justified it — ADR-006 sad path 21 exactly.
+  Weakness: `VerifyImage`/`VerifyArtifact` select a verifier by builder ID and delegate entirely (`verifier.go:16-37, 44-63`); provenance is consumed as the builder asserted it, and nothing in this dispatch re-derives the build facts or checks they still describe a live host — ADR-006 sad path 21 exactly.
   Vendored: docs/adr/prior-art/ADR-021/slsa-verifier-verifier.go blob:79be0b52f622bd389981efe6cdc3c26aba0b96b5
   Vendored: docs/adr/prior-art/ADR-021/LICENSE-SLSA-VERIFIER-APACHE-2.0.txt blob:261eeb9e9f8b2b4b0d119366dda99c6fd7d35c64
 - Rejected: <https://github.com/systemd/systemd> `systemd-analyze` reports host
@@ -168,7 +168,7 @@ out of scope: ADR-006 confinement, kernel compromise and host-admin compromise.
 |---|---|---|
 | Integrity | host fact differs at consumption | stale-state mismatch refuses after SLICE-019 |
 | Freshness | host rebooted or LSM policy changed | bound host state mismatch refuses |
-| Auditability | which host facts were qualified, and when | report records the facts and time |
+| Auditability | which host facts were qualified | report records the facts |
 | Determinism | credentials removed from the machine | identical verdict |
 
 ## Reversibility
