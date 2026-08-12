@@ -125,3 +125,34 @@ def test_empty_producer_id_is_an_error(kr, tmp_path: Path) -> None:
     path = write(tmp_path / "producers.yaml", f"producers:\n  '': {public}\n")
     with pytest.raises(kr.KeyringError):
         kr.load_keyring(path)
+
+
+def test_loads_dedicated_verdict_signer_separately(kr, tmp_path: Path) -> None:
+    from ranex.policy.adapters.configuration.yaml.producer_keyring import load_trust_keyring
+
+    _, worker = kr.generate_keypair()
+    _, signer = kr.generate_keypair()
+    path = write(tmp_path / "producers.yaml", (
+        f"producers:\n  worker: {worker}\n"
+        "verdict_signer:\n  id: kernel-verdict-signer\n"
+        f"  public_key: {signer}\n"
+    ))
+    loaded = load_trust_keyring(path)
+    assert loaded.producers == {"worker": worker}
+    assert loaded.verdict_signer_id == "kernel-verdict-signer"
+    assert loaded.verdict_signer_public_key == signer
+
+
+def test_verdict_signer_must_exist_and_may_not_alias_a_producer(kr, tmp_path: Path) -> None:
+    from ranex.policy.adapters.configuration.yaml.producer_keyring import load_trust_keyring
+
+    _, shared = kr.generate_keypair()
+    missing = write(tmp_path / "missing.yaml", f"producers:\n  worker: {shared}\n")
+    with pytest.raises(kr.KeyringError, match="verdict_signer"):
+        load_trust_keyring(missing)
+    aliased = write(tmp_path / "aliased.yaml", (
+        f"producers:\n  worker: {shared}\nverdict_signer:\n"
+        f"  id: kernel-verdict-signer\n  public_key: {shared}\n"
+    ))
+    with pytest.raises(kr.KeyringError, match="(?i)key|alias"):
+        load_trust_keyring(aliased)

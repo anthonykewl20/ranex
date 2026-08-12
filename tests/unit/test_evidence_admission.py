@@ -227,6 +227,14 @@ def test_every_rejection_reason_is_distinct(adm) -> None:
     assert "no evidence for required claim" not in values
 
 
+def test_rejection_reason_set_has_all_seven_closed_values(adm) -> None:
+    assert {str(reason) for reason in adm.RejectionReason} == {
+        "malformed-record", "missing-signature", "malformed-signature",
+        "unknown-producer", "bad-signature", "stale-host-state",
+        "executable-inside-subject",
+    }
+
+
 def test_admission_preserves_good_records_alongside_bad(
     adm,
     worker: tuple[str, str],

@@ -226,3 +226,21 @@ def test_signature_over_a_different_domain_does_not_verify(
         key.sign(canonical_json_bytes(CONTENT))
     ).decode()
     assert sg.verify_evidence(CONTENT, undomained, public) is False
+
+
+def test_verdict_signature_cannot_verify_as_evidence(sg, keypair) -> None:
+    from ranex.foundation import verdict_signing
+
+    private, public = keypair
+    record = {
+        field: None for field in verdict_signing.SIGNED_FIELDS
+    }
+    record.update(
+        verdict="FAIL", gate_id="landing", subject_digest=SUBJECT,
+        subject_lane="PRE_READINESS_PRODUCT_SLICE", catalog_digest=None,
+        approver_id="owner", failing_rule="TESTS_EXECUTED", missing_claims=[],
+        considered=[], causes=[], rejections=[], self_approval=False,
+        reason="no evidence",
+    )
+    signature = verdict_signing.sign_verdict(record, private)
+    assert sg.verify_evidence(CONTENT, signature, public) is False
