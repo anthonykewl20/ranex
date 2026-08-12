@@ -32,6 +32,7 @@ network, so the inner copies of these stages skip loudly.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import json
 import os
@@ -958,10 +959,10 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
 
 def test_slice019_qualification_then_approval_passes_until_host_state_moves(
 ) -> None:
-    """A signed, approved qualification is load-bearing in the real gate."""
+    """Ordinary signed qualification evidence is load-bearing in the real gate."""
 
     from ranex.bootstrap.composition import build_gate_evaluator
-    from ranex.foundation import qualification
+    from ranex.foundation import signing
     from ranex.foundation.canonical import canonical_sha256, command_digest
     from ranex.governed_execution.domain import admission
     from ranex.governed_execution.domain.verdict import Evidence
@@ -999,32 +1000,35 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
             "userns_state_source": "qualification-host-probe",
         },
     }
-    content = {
+    report = {
         "schema": "ranex-strict-local-qualification-v1",
         "qualified": True,
+        "refusal": None,
+        "kernel": {"release": "6.12.0", "architecture": "x86_64"},
+        "primitives": {"landlock": {"available": True, "abi": 6}, "seccomp_filter": True,
+                       "no_new_privs": True, "namespaces": {}, "openat2": True},
+        "cgroup": {},
+        "open_objects": {"bubblewrap": {}, "launcher": {}},
+        "digests": {"profile": "sha256:" + "1" * 64,
+                    "build_manifest": "sha256:" + "2" * 64,
+                    "artifact": "sha256:" + "3" * 64},
+        "delegation": {"broker": None, "existing_root": None, "source": "direct"},
         "host_state": host_state,
-        "profile_digest": "sha256:" + "1" * 64,
-        "build_manifest_digest": "sha256:" + "2" * 64,
-        "artifact_digest": "sha256:" + "3" * 64,
-        "subject_digest": subject,
-        "producer_id": "qualifier",
-        "approver_id": "reviewer",
     }
     producer_private, producer_public = generate_keypair()
-    approver_private, approver_public = generate_keypair()
-    report = {
-        **content,
-        "producer_signature": qualification.sign_qualification(content, producer_private),
-        "approver_signature": qualification.sign_qualification(content, approver_private),
+    raw_content = {
+        "claim_id": "host-qualification", "command": " ".join(argv),
+        "command_digest": command_digest(argv), "executable_path": "/usr/bin/python",
+        "exit_code": 0, "producer_id": "qualifier", "subject_digest": subject,
+        "suite_results": report,
     }
-    admitted = admission.admit_qualification_reports(
-        [report],
-        {"qualifier": producer_public, "reviewer": approver_public},
-        subject_digest=subject,
-        live_host_state=host_state,
-        claim_id="host-qualification",
-        command=argv,
-    )
+    raw_record = {**raw_content, "signature": signing.sign_evidence(raw_content, producer_private)}
+    original_reader = admission._read_live_durable_host_state
+    admission._read_live_durable_host_state = lambda: host_state
+    try:
+        admitted = admission.admit([raw_record], {"qualifier": producer_public})
+    finally:
+        admission._read_live_durable_host_state = original_reader
     assert admitted.rejections == ()
 
     tests_argv = ("uv", "run", "pytest", "-q", "--junitxml=governance/suite_results.xml")
@@ -1070,16 +1074,13 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
     )
     assert passed.verdict.value == "PASS"
 
-    moved = dict(host_state)
+    moved = copy.deepcopy(host_state)
     moved["boot_id"] = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
-    stale = admission.admit_qualification_reports(
-        [report],
-        {"qualifier": producer_public, "reviewer": approver_public},
-        subject_digest=subject,
-        live_host_state=moved,
-        claim_id="host-qualification",
-        command=argv,
-    )
+    admission._read_live_durable_host_state = lambda: moved
+    try:
+        stale = admission.admit([raw_record], {"qualifier": producer_public})
+    finally:
+        admission._read_live_durable_host_state = original_reader
     failed = evaluator.evaluate(
         "landing",
         (tests_evidence, *stale.evidence),
