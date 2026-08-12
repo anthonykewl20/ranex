@@ -18,7 +18,10 @@ Contract under test:
 from __future__ import annotations
 
 import json
+import os
+import shutil
 import subprocess
+import sys
 from pathlib import Path
 from types import SimpleNamespace
 
@@ -513,6 +516,102 @@ def test_run_captures_a_qualification_report_as_signed_suite_results(repo: Path)
     assert admitted.rejections == ()
     assert len(admitted.evidence) == 1
     assert admitted.evidence[0].suite_results is None
+
+
+def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
+    repo: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    project = Path(__file__).resolve().parents[2]
+    profile = "governance/confinement/strict-local-host-v1.json"
+    manifest = "governance/confinement/native-launcher-build-v1.json"
+    source = "native/ranex-worker-launcher/launcher.c"
+    build = ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
+    artifact = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
+    report_path = ".local/ranex/qualification/strict-local-v1.json"
+    command = [
+        "python", "-m", "ranex.cli.host_confinement", "qualify",
+        "--profile", profile, "--artifact", artifact, "--manifest", manifest,
+        f"--report={report_path}",
+    ]
+
+    for relative in (profile, manifest, source):
+        destination = repo / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(project / relative, destination)
+    shutil.copytree(project / "src" / "ranex", repo / "src" / "ranex")
+    (repo / ".gitignore").write_text(".local/\nevidence.json\n", encoding="utf-8")
+    (repo / "suite_manifest.json").write_bytes(
+        canonical_json_bytes({"suite": [], "expected_skips": {}})
+    )
+    (repo / "gates.yaml").write_text(
+        "gates:\n"
+        "  - gate_id: landing\n"
+        "    rule_id: HOST_QUALIFIED\n"
+        "    blocking: true\n"
+        "    required_claims:\n"
+        "      - claim_id: host-qualification\n"
+        f"        command: {json.dumps(command)}\n"
+        f"        qualification_report: {report_path}\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "commit", "-q", "-m", "bind real qualification"],
+        check=True,
+    )
+
+    environment = dict(os.environ)
+    environment["PYTHONPATH"] = str(project / "src")
+    controller = [sys.executable, "-m", "ranex.cli.host_confinement"]
+    for arguments in (
+        ["launcher-build", "--manifest", manifest, "--source", source, "--output", build],
+        [
+            "launcher-install", "--manifest", manifest, "--artifact", build,
+            "--destination", artifact,
+        ],
+    ):
+        completed = subprocess.run(
+            [*controller, *arguments], cwd=repo, env=environment,
+            capture_output=True, text=True, check=False, timeout=180,
+        )
+        assert completed.returncode == 0, completed.stdout + completed.stderr
+
+    result = invoke(
+        repo,
+        [
+            "run", "--claim", "host-qualification", "--producer", "worker",
+            "--evidence", "evidence.json", "--producers", "producers.yaml",
+            "--gate-catalog", "gates.yaml", "--", *command,
+        ],
+        producer="worker",
+    )
+    command_output = capsys.readouterr()
+    if result != 0:
+        diagnostic = command_output.out + command_output.err
+        assert "No module named 'ranex'" not in diagnostic
+        pytest.skip("live host cannot complete SLICE-017 qualification: " + diagnostic)
+
+    (record,) = records(repo)
+    report = record["suite_results"]
+    assert record["command_digest"] == command_digest(command)
+    assert record["subject_digest"] == subject_of(repo)
+    assert report["qualified"] is True
+    assert all("sha256:" not in value for value in report["digests"].values())
+    assert not (repo / report_path).exists()
+    admitted = admission.admit(
+        [record], {"worker": signing_for(repo).public["worker"]}
+    )
+    assert admitted.rejections == ()
+    assert len(admitted.evidence) == 1
+    assert evaluate(repo) == 0
+    capsys.readouterr()
+
+    moved = dict(report["host_state"])
+    moved["boot_id"] = "live-host-moved"
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(admission, "_read_live_durable_host_state", lambda: moved)
+        assert evaluate(repo) == 1
+    assert "host-qualification" in capsys.readouterr().out
 
 
 def test_run_refuses_a_suite_results_claim_without_a_loaded_manifest(

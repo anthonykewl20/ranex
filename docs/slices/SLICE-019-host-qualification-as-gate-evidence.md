@@ -95,7 +95,12 @@ python -m ranex.cli.host_confinement qualify --profile governance/confinement/st
 ```
 
 Its option names and ordering are the existing parser's
-(`src/ranex/cli/host_confinement.py:2635-2660`). `qualification_report` mirrors
+(`src/ranex/cli/host_confinement.py:2635-2660`). Qualification is a HOST
+operation: `cmd_run` executes it from the governed repository with the host
+environment and this repository's `src/` on `PYTHONPATH`, without constructing
+or observing a subject materialisation. The resulting Evidence remains bound to
+the subject digest computed from the captured HEAD that `gate evaluate` judges.
+`qualification_report` mirrors
 `results_artifact`'s loader confinement rule
 (`src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:133-151`): it
 is optional, a non-empty relative path with no `..`, and must occur in the claim
@@ -103,8 +108,8 @@ argv as the exact token `--report=<path>`. The two carrier fields are mutually
 exclusive. Composition surfaces this adapter metadata to `cmd_run` without
 adding it to the kernel `Claim` (`src/ranex/bootstrap/composition.py:68-95`).
 No suite-manifest/JUnit validation may run for this claim: `cmd_run` reads the
-named report before materialisation teardown, parses it as JSON, normalizes it
-to canonical JSON value bytes/structure, and places that value directly in the
+named report from the host operation, parses it as JSON, normalizes it to
+canonical JSON value bytes/structure, and places that value directly in the
 raw record's `suite_results`; shared admission intercepts, extracts and
 validates that signed value before the existing generic JUnit validator
 (`src/ranex/governed_execution/domain/admission.py:123-143`) or `Evidence`
@@ -125,7 +130,9 @@ and existing nested key sets, it enforces this value grammar and required
 content:
 
 - `digests.profile`, `digests.build_manifest`, and `digests.artifact` are each
-  exactly `sha256:<64 lowercase hexadecimal characters>`;
+  either the writer's bare 64 lowercase hexadecimal characters or
+  `sha256:<64 lowercase hexadecimal characters>`; the same grammar applies to
+  open-object `sha256` values;
 - `primitives.landlock.available` is a boolean and `abi` is a non-boolean
   integer; `seccomp_filter`, `no_new_privs`, `openat2`, and every required
   namespace value are booleans;
@@ -192,8 +199,9 @@ into a verdict.
    <id> -- <qualify argv>` captures the `--report` JSON in signed
    `suite_results`, shared admission accepts it, and `gate evaluate` PASSes;
    after one durable host-state fact moves, evaluation FAILs naming
-   `host-qualification`. The capture test may use a stand-in writer command but
-   must traverse `cmd_run`'s real capture path.
+   `host-qualification`. The capture test runs the actual catalog
+   `python -m ranex.cli.host_confinement qualify ...` argv as a host operation,
+   not a shell stand-in or subject-materialised observation.
    `tests/e2e/test_run_produces_evidence.py` and
    `tests/e2e/test_gating_real_suite.py`.
 8. E2E qualify→approve→gate PASS, then change one bound durable fact → FAIL

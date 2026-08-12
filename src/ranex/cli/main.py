@@ -1914,6 +1914,89 @@ def _execute_hermetically(
         return CommandObservation(completed, executable, artifact)
 
 
+def _execute_host_qualification(
+    root: Path,
+    started_at: str,
+    command: Sequence[str],
+    preliminary: Resolution | None,
+    *,
+    artifact_relative: Path,
+    artifact_reader: Callable[[Path], object],
+) -> CommandObservation:
+    """Run qualification against the live host, never a subject materialisation."""
+
+    resolution = preliminary or resolve_executable(command[0], root)
+    executable = resolution.executable
+    refuse_resolution_inside(
+        resolution, command[0], root, "the governed repository being qualified"
+    )
+    descriptor = os.open(executable, EXECUTABLE_OPEN_FLAGS)
+    try:
+        identity = os.fstat(descriptor)
+        if not stat.S_ISREG(identity.st_mode):
+            raise ValueError(
+                f"refusing to run {command[0]!r}: {executable} is not a regular file"
+            )
+        opened = path_behind(
+            descriptor,
+            f"cannot confirm which file {command[0]!r} opened, so it will not be run",
+        )
+        if opened != executable:
+            raise ValueError(
+                f"refusing to run {command[0]!r}: it resolved to {executable} and "
+                f"the file actually opened is {opened}; the path changed while it was checked"
+            )
+        twin = same_file_inside(identity, root)
+        if twin is not None:
+            raise ValueError(
+                f"refusing to run {command[0]!r}: {executable} is the same file as "
+                f"{twin}, inside the governed repository being qualified"
+            )
+
+        environment = dict(os.environ)
+        source_root = str(Path(__file__).resolve().parents[2])
+        existing_pythonpath = environment.get("PYTHONPATH")
+        environment["PYTHONPATH"] = (
+            source_root
+            if not existing_pythonpath
+            else f"{source_root}{os.pathsep}{existing_pythonpath}"
+        )
+        try:
+            completed = subprocess.run(
+                [str(executable), *command[1:]],
+                executable=f"/proc/self/fd/{descriptor}",
+                pass_fds=(descriptor,),
+                cwd=root,
+                check=False,
+                env=environment,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            raise ValueError(f"cannot run host qualification {command[0]!r}: {exc}") from exc
+    finally:
+        os.close(descriptor)
+
+    artifact: object | None = None
+    if completed.returncode == 0:
+        artifact_path = root / artifact_relative
+        artifact = artifact_reader(artifact_path)
+        artifact_path.unlink()
+    if head_commit(root) != started_at:
+        raise ValueError(
+            "refusing to record evidence: host qualification moved HEAD from "
+            f"{started_at[:12]} during the run"
+        )
+    return CommandObservation(completed, executable, artifact)
+
+
+def _host_qualification_resolution(root: Path, command: Sequence[str]) -> Resolution:
+    """Resolve the catalog's Python name to this running host interpreter."""
+
+    if command[0] != "python":
+        return resolve_executable(command[0], root)
+    executable = Path(sys.executable).resolve()
+    return Resolution(executable=executable, route=walked_route(executable))
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Run a command and record what was observed. Never judge it.
 
@@ -1985,9 +2068,13 @@ def cmd_run(args: argparse.Namespace) -> int:
         # resolve them before materialisation. This keeps the governed-root
         # route and inode controls live for absolute same-uid access, including
         # a committed symlink whose tree entry the materialiser also refuses.
-        preliminary, provisioned_resolver = _command_resolution(
-            root, command, provisioning
-        )
+        if qualification_report is not None:
+            preliminary = _host_qualification_resolution(root, command)
+            provisioned_resolver = False
+        else:
+            preliminary, provisioned_resolver = _command_resolution(
+                root, command, provisioning
+            )
 
         # Everything knowable without constructing the sample refuses before
         # the command runs. A test suite is expensive; discovering afterwards
@@ -2050,7 +2137,11 @@ def cmd_run(args: argparse.Namespace) -> int:
             )
         subject = subject_digest_for(root, started_at)
 
-        artifacts = _approved_artifacts(root, provisioning)
+        artifacts = (
+            ()
+            if qualification_report is not None
+            else _approved_artifacts(root, provisioning)
+        )
         carrier_path = results_artifact or qualification_report
         artifact_relative = Path(carrier_path) if carrier_path is not None else None
         artifact_reader: Callable[[Path], object] | None = None
@@ -2060,17 +2151,29 @@ def cmd_run(args: argparse.Namespace) -> int:
             artifact_reader = lambda path: parse_results_artifact(path, suite_manifest)
         elif qualification_report is not None:
             artifact_reader = lambda path: json.loads(path.read_bytes())
-        observation = _execute_hermetically(
-            root,
-            started_at,
-            command,
-            provisioning,
-            artifacts,
-            preliminary,
-            provisioned_resolver,
-            artifact_relative=artifact_relative,
-            artifact_reader=artifact_reader,
-        )
+        if qualification_report is not None:
+            if artifact_relative is None or artifact_reader is None:
+                raise ValueError("qualification claim has no report carrier")
+            observation = _execute_host_qualification(
+                root,
+                started_at,
+                command,
+                preliminary,
+                artifact_relative=artifact_relative,
+                artifact_reader=artifact_reader,
+            )
+        else:
+            observation = _execute_hermetically(
+                root,
+                started_at,
+                command,
+                provisioning,
+                artifacts,
+                preliminary,
+                provisioned_resolver,
+                artifact_relative=artifact_relative,
+                artifact_reader=artifact_reader,
+            )
         completed = observation.completed
         executable = observation.executable
         observed_suite_results = observation.artifact

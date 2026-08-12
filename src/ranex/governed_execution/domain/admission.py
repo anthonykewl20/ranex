@@ -84,7 +84,7 @@ class Admission:
 _SIGNATURE = "signature"
 _QUALIFICATION_CLAIM = "host-qualification"
 _QUALIFICATION_SCHEMA = "ranex-strict-local-qualification-v1"
-_SHA256 = re.compile(r"sha256:[0-9a-f]{64}\Z")
+_SHA256 = re.compile(r"(?:sha256:)?[0-9a-f]{64}\Z")
 
 
 def _required_host_text(path: Path, field: str, *, limit: int = 65_536) -> str:

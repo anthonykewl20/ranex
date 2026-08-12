@@ -276,6 +276,20 @@ def test_forged_or_empty_confinement_content_refuses(
     assert result.rejections[0].reason is admission.RejectionReason.MALFORMED_RECORD
 
 
+def test_writer_shaped_bare_sha256_digests_admit(monkeypatch, identity) -> None:
+    private, public = identity
+    report = copy.deepcopy(REPORT)
+    for name, digest in report["digests"].items():
+        report["digests"][name] = digest.removeprefix("sha256:")
+    for opened in report["open_objects"].values():
+        opened["sha256"] = opened["sha256"].removeprefix("sha256:")
+
+    result = admit_with_live(monkeypatch, [raw_record(private, report)], public)
+
+    assert result.rejections == ()
+    assert len(result.evidence) == 1
+
+
 @pytest.mark.parametrize(
     ("field", "value"),
     (("qualified", False), ("schema", "ranex-strict-local-qualification-v2")),
