@@ -29,7 +29,11 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
 
-from ranex.bootstrap.composition import build_gate_evaluator, catalog_digest_for
+from ranex.bootstrap.composition import (
+    build_gate_evaluator,
+    catalog_digest_for,
+    claim_definition_for,
+)
 from ranex.cli.confinement import resolve_within_repository
 from ranex.cli.delegation import cmd_task_delegate
 from ranex.cli.fanout import cmd_task_fanout
@@ -1950,6 +1954,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         started_at = head_commit(root)
         provisioning = _provisioning_for(root, started_at, args.store)
         results_artifact: str | None = None
+        qualification_report: str | None = None
         suite_manifest: dict[str, object] | None = None
         catalog_name = named_within_repository(root, args.gate_catalog)
         if committed_bytes(root, started_at, catalog_name) is not None:
@@ -1961,15 +1966,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 catalog_path,
                 "gate catalog",
             )
-            definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
-            selected_claim = next(
-                (
-                    claim
-                    for claim in definition.required_claims
-                    if claim.claim_id == args.claim
-                ),
-                None,
-            )
+            selected_claim = claim_definition_for(catalog_source, args.gate, args.claim)
             if selected_claim is not None and selected_claim.results_artifact is not None:
                 manifest_path = resolve_within_repository(root, args.suite_manifest)
                 manifest_source = committed_trust_root(
@@ -1981,6 +1978,8 @@ def cmd_run(args: argparse.Namespace) -> int:
                 )
                 suite_manifest = load_manifest_bytes(manifest_source)
                 results_artifact = selected_claim.results_artifact
+            if selected_claim is not None:
+                qualification_report = selected_claim.qualification_report
 
         # Bare and absolute names do not depend on the materialised cwd, so
         # resolve them before materialisation. This keeps the governed-root
@@ -2052,12 +2051,15 @@ def cmd_run(args: argparse.Namespace) -> int:
         subject = subject_digest_for(root, started_at)
 
         artifacts = _approved_artifacts(root, provisioning)
-        artifact_relative = Path(results_artifact) if results_artifact is not None else None
+        carrier_path = results_artifact or qualification_report
+        artifact_relative = Path(carrier_path) if carrier_path is not None else None
         artifact_reader: Callable[[Path], object] | None = None
         if results_artifact is not None:
             if suite_manifest is None:
                 raise ValueError("suite-results claim has no loaded manifest")
             artifact_reader = lambda path: parse_results_artifact(path, suite_manifest)
+        elif qualification_report is not None:
+            artifact_reader = lambda path: json.loads(path.read_bytes())
         observation = _execute_hermetically(
             root,
             started_at,
