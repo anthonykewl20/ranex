@@ -217,6 +217,66 @@ def git(repo: Path, *arguments: str) -> subprocess.CompletedProcess:
     )
 
 
+def qualification_report(host_state: dict[str, object]) -> dict[str, object]:
+    open_objects = {
+        name: {
+            "path": path,
+            "realpath": path,
+            "sha256": "sha256:" + digit * 64,
+            "device": 1,
+            "inode": inode,
+            "uid": 0,
+            "gid": 0,
+            "mode": 0o755,
+            "mount_id": 1,
+            "security_capability": False,
+            "filesystem": {
+                "device": "0:1",
+                "filesystem": "ext4",
+                "mount_id": 1,
+                "mount_point": "/",
+                "options": ["rw"],
+                "source": "/dev/root",
+            },
+        }
+        for name, path, digit, inode in (
+            ("bubblewrap", "/usr/bin/bwrap", "4", 2),
+            ("launcher", "/opt/ranex/ranex-worker-launcher", "3", 3),
+        )
+    }
+    return {
+        "schema": "ranex-strict-local-qualification-v1",
+        "qualified": True,
+        "refusal": None,
+        "kernel": {"release": "6.12.0", "architecture": "x86_64"},
+        "primitives": {
+            "landlock": {"available": True, "abi": 6},
+            "seccomp_filter": True,
+            "no_new_privs": True,
+            "namespaces": {
+                "user": True, "mount": True, "pid": True, "ipc": True, "network": True,
+            },
+            "openat2": True,
+        },
+        "cgroup": {
+            "cgroup_kill": True,
+            "mount": {"path": "/sys/fs/cgroup", "filesystem": "cgroup2"},
+            "root": "/sys/fs/cgroup",
+            "relative_path": "/session.scope",
+            "controllers": ["cpu", "memory", "pids"],
+            "probe_transcript": {"created": True},
+        },
+        "open_objects": open_objects,
+        "digests": {
+            "profile": "sha256:" + "1" * 64,
+            "build_manifest": "sha256:" + "2" * 64,
+            "artifact": "sha256:" + "3" * 64,
+        },
+        "delegation": {"broker": None, "existing_root": None, "source": "direct"},
+        "host_state": host_state,
+    }
+
+
 def record_live_host_qualification(repo: Path, key_path: Path) -> None:
     argv = (
         "python",
@@ -240,28 +300,7 @@ def record_live_host_qualification(repo: Path, key_path: Path) -> None:
             "userns_state_source": "qualification-host-probe",
         }
     )
-    report = {
-        "schema": "ranex-strict-local-qualification-v1",
-        "qualified": True,
-        "refusal": None,
-        "kernel": {"release": "6.12.0", "architecture": "x86_64"},
-        "primitives": {
-            "landlock": {"available": True, "abi": 6},
-            "seccomp_filter": True,
-            "no_new_privs": True,
-            "namespaces": {},
-            "openat2": True,
-        },
-        "cgroup": {},
-        "open_objects": {"bubblewrap": {}, "launcher": {}},
-        "digests": {
-            "profile": "sha256:" + "1" * 64,
-            "build_manifest": "sha256:" + "2" * 64,
-            "artifact": "sha256:" + "3" * 64,
-        },
-        "delegation": {"broker": None, "existing_root": None, "source": "direct"},
-        "host_state": host_state,
-    }
+    report = qualification_report(host_state)
     content = {
         "claim_id": "host-qualification",
         "command": " ".join(argv),
