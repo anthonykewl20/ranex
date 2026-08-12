@@ -45,8 +45,11 @@ from pathlib import Path
 
 import pytest
 
-from ranex.foundation.signing import generate_keypair
+from ranex.foundation.canonical import command_digest
+from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.foundation.suite_results import load_manifest
+from ranex.cli.main import record_evidence, subject_digest_for
+from ranex.governed_execution.domain import admission
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate
 
@@ -334,6 +337,69 @@ def evaluate_argv() -> list[str]:
         "--approver",
         "reviewer",
     ]
+
+
+def record_live_host_qualification(repo: Path, key_path: Path) -> None:
+    argv = (
+        "python",
+        "-m",
+        "ranex.cli.host_confinement",
+        "qualify",
+        "--profile",
+        "governance/confinement/strict-local-host-v1.json",
+        "--artifact",
+        ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
+        "--manifest",
+        "governance/confinement/native-launcher-build-v1.json",
+        "--report",
+        ".local/ranex/qualification/strict-local-v1.json",
+    )
+    host_state = copy.deepcopy(admission._read_live_durable_host_state())
+    host_state["delegation_identity"].update(
+        {
+            "cgroup_root": "/sys/fs/cgroup",
+            "cgroup_relative_path": "/session.scope",
+            "source": "direct",
+            "userns_state_source": "qualification-host-probe",
+        }
+    )
+    report = {
+        "schema": "ranex-strict-local-qualification-v1",
+        "qualified": True,
+        "refusal": None,
+        "kernel": {"release": "6.12.0", "architecture": "x86_64"},
+        "primitives": {
+            "landlock": {"available": True, "abi": 6},
+            "seccomp_filter": True,
+            "no_new_privs": True,
+            "namespaces": {},
+            "openat2": True,
+        },
+        "cgroup": {},
+        "open_objects": {"bubblewrap": {}, "launcher": {}},
+        "digests": {
+            "profile": "sha256:" + "1" * 64,
+            "build_manifest": "sha256:" + "2" * 64,
+            "artifact": "sha256:" + "3" * 64,
+        },
+        "delegation": {"broker": None, "existing_root": None, "source": "direct"},
+        "host_state": host_state,
+    }
+    content = {
+        "claim_id": "host-qualification",
+        "command": " ".join(argv),
+        "command_digest": command_digest(argv),
+        "executable_path": sys.executable,
+        "exit_code": 0,
+        "producer_id": "worker",
+        "subject_digest": subject_digest_for(repo, "HEAD"),
+        "suite_results": report,
+    }
+    private_key = key_path.read_text(encoding="utf-8").strip()
+    record_evidence(
+        repo / "governance" / "evidence.json",
+        {**content, "signature": sign_evidence(content, private_key)},
+    )
 
 
 # --------------------------------------------------------------------------
@@ -651,6 +717,7 @@ def test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts(
         "honestly — the tail of the suite's own output says which tests:\n"
         f"{suite_tail(out, err)}"
     )
+    record_live_host_qualification(session.clone, session.key_path)
     code, out, _ = ranex(session.clone, evaluate_argv())
     assert code == 0
     assert out.startswith("PASS")
@@ -906,9 +973,13 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         "tail of the suite's own output says which tests are red:\n"
         f"{suite_tail(baseline_output, baseline_error)}"
     )
-    baseline_record = json.loads(
-        (repository / "governance" / "evidence.json").read_text()
-    )[0]
+    baseline_record = next(
+        record
+        for record in json.loads(
+            (repository / "governance" / "evidence.json").read_text()
+        )
+        if record["claim_id"] == "tests-executed"
+    )
     baseline_results = baseline_record["suite_results"]
     baseline_non_passed = dict(baseline_results["non_passed"])
     skipped_ids = {
@@ -925,6 +996,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     assert actual_failures == {}
     assert baseline_results["missing"] == []
 
+    record_live_host_qualification(repository, session.key_path)
     baseline_verdict, baseline_output, _ = ranex(repository, evaluate_argv())
     assert baseline_verdict == 0
     assert baseline_output.startswith("PASS")
@@ -939,15 +1011,20 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
             repository, run_argv(session.store), session.key_path
         )
         assert run_code == 0, run_error
-        changed_record = json.loads(
-            (repository / "governance" / "evidence.json").read_text()
-        )[0]
+        changed_record = next(
+            record
+            for record in json.loads(
+                (repository / "governance" / "evidence.json").read_text()
+            )
+            if record["claim_id"] == "tests-executed"
+        )
         changed_results = changed_record["suite_results"]
         assert changed_results["non_passed"] == baseline_results["non_passed"]
         assert changed_results["missing"] == sorted(
             {*baseline_results["missing"], missing_id}
         )
 
+        record_live_host_qualification(repository, session.key_path)
         verdict_code, verdict_output, _ = ranex(repository, evaluate_argv())
         assert verdict_code == 1
         assert verdict_output.startswith("FAIL")
