@@ -22,12 +22,16 @@ canonical JSON rides in the record's `suite_results`. The existing
 `EVIDENCE_DOMAIN = b"ranex-evidence-v3\n"` and exact fields sign the complete
 report together with `claim_id`, command, producer and subject
 (`src/ranex/foundation/signing.py:44,52-61`). There is no new signing domain,
-sidecar, foundation module, claim-loader field or kernel field.
+sidecar, foundation module or kernel field. The claim loader gains an optional
+`qualification_report` carrier field. The earlier “no loader field” framing was
+wrong: qa-gate proved that it left the real operator path unable to capture the
+report, so `cmd_run` signed `suite_results=None` and admission could never admit
+the resulting record. This slice supersedes that framing.
 
-Freshness and ambiguity are the only new admission decisions. Before constructing kernel evidence,
-shared admission recognizes `host-qualification`, validates the report instead
-of interpreting it as JUnit, re-reads every durable host anchor, and refuses
-malformed, stale, mismatched or ambiguous records. A rejected or absent record
+Before constructing kernel evidence, shared admission recognizes
+`host-qualification`, validates the report deeply instead of interpreting it as
+JUnit, re-reads every durable host anchor, and refuses malformed, shallow/empty,
+stale, mismatched or ambiguous records. A rejected or absent record
 reaches the kernel as absence (`src/ranex/governed_execution/domain/admission.py:1-24`),
 and existing `missing_claims` blocks (`src/ranex/governed_execution/domain/verdict.py:390-397`).
 The kernel remains byte-exact and pure (`verdict.py:1-10,338-347`).
@@ -36,31 +40,30 @@ The kernel remains byte-exact and pure (`verdict.py:1-10,338-347`).
 
 Only these paths may change in code-impl:
 
-- `governance/gates.yaml` (add the `host-qualification` claim: `claim_id`,
-  `command` = the qualify argv, NO `results_artifact`)
-- `src/ranex/governed_execution/domain/admission.py` (new `RejectionReason` +
-  the live-anchor freshness check + row-11 ambiguity refusal + report extraction
-  from `suite_results`)
-- `src/ranex/cli/main.py` (the shared admission wiring consumed by both
-  `cmd_gate_evaluate` and `cmd_task_judge`; fix the early-error path so a
-  missing/malformed report reaches evaluation as absence/rejection, never
-  `EXIT_USAGE`)
-- `governance/suite_manifest.json` (freeze the new test IDs so they are
-  gate-blocking)
-- `tests/contract/test_qualification_admission.py` (new — rows 1, 9, 11, 13 +
-  freshness + self-approval + domain-separation)
-- `tests/e2e/test_gating_real_suite.py` (UPDATE existing one-claim preconditions
-  AND add the qualify→approve→gate PASS → change-one-fact → FAIL journey)
+- `governance/gates.yaml`
+- `src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py` (optional
+  `qualification_report`, confined-path and exact-`--report=` binding rules)
+- `src/ranex/bootstrap/composition.py` (surface `qualification_report` to
+  `cmd_run` without changing the kernel `Claim`)
+- `src/ranex/cli/main.py` (`cmd_run` canonical-JSON report capture into
+  `suite_results`, plus shared admission wiring)
+- `src/ranex/governed_execution/domain/admission.py` (deep closed-schema/value
+  validation plus existing freshness and ambiguity handling)
+- `governance/suite_manifest.json`
+- `tests/contract/test_qualification_admission.py`
+- `tests/e2e/test_run_produces_evidence.py`
+- `tests/e2e/test_gating_real_suite.py`
 - `docs/slices/SLICE-019-host-qualification-as-gate-evidence.md`
 - `docs/adr/ADR-021-host-qualification-is-evidence-not-a-gated-test.md`
 - `docs/STATE.md`
 - `README.md`
 
+This replaces the prior owned-path list in full; paths omitted here are not
+implicitly retained.
+
 Explicitly **NOT** owned (one-way doors / other slices):
 
 - `src/ranex/foundation/qualification.py` (not created — no new domain)
-- `src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py`
-- `src/ranex/bootstrap/composition.py`
 - `src/ranex/governed_execution/domain/verdict.py` (kernel byte-exact —
   `KERNEL_DIGEST` unchanged; absence falls out of existing `missing_claims`)
 - `src/ranex/cli/host_confinement.py` (SLICE-017-owned; the report writer and
@@ -81,24 +84,28 @@ and verifies only under `EVIDENCE_DOMAIN` using the exact `SIGNED_FIELDS`
 (`src/ranex/foundation/signing.py:44,52-61`). The full canonical qualification
 report is the `suite_results` value, so the existing signature binds the whole
 report, producer and subject. There is NO new signing domain, NO sidecar, NO
-`src/ranex/foundation/qualification.py`, NO loader extension and NO composition
-change.
+`src/ranex/foundation/qualification.py`, and NO kernel `Claim` change.
 
-The catalog claim binds this existing qualify argv and deliberately omits
-`results_artifact`:
+The catalog claim binds this existing qualify argv and declares
+`qualification_report: .local/ranex/qualification/strict-local-v1.json` while
+omitting `results_artifact`:
 
 ```text
-python -m ranex.cli.host_confinement qualify --profile governance/confinement/strict-local-host-v1.json --artifact .local/ranex/libexec/strict-local-v1/ranex-worker-launcher --manifest governance/confinement/native-launcher-build-v1.json --report .local/ranex/qualification/strict-local-v1.json
+python -m ranex.cli.host_confinement qualify --profile governance/confinement/strict-local-host-v1.json --artifact .local/ranex/libexec/strict-local-v1/ranex-worker-launcher --manifest governance/confinement/native-launcher-build-v1.json --report=.local/ranex/qualification/strict-local-v1.json
 ```
 
 Its option names and ordering are the existing parser's
-(`src/ranex/cli/host_confinement.py:2635-2660`). `results_artifact` is optional
-and only enables the JUnit token rule when present
-(`src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:75,133-151`);
-omitting it makes `results_required=False` in current composition
-(`src/ranex/bootstrap/composition.py:68-95`). Therefore no suite-manifest/JUnit
-validation may run for this claim: `cmd_run` captures the named report as the
-raw record's `suite_results`, and shared admission intercepts, extracts and
+(`src/ranex/cli/host_confinement.py:2635-2660`). `qualification_report` mirrors
+`results_artifact`'s loader confinement rule
+(`src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:133-151`): it
+is optional, a non-empty relative path with no `..`, and must occur in the claim
+argv as the exact token `--report=<path>`. The two carrier fields are mutually
+exclusive. Composition surfaces this adapter metadata to `cmd_run` without
+adding it to the kernel `Claim` (`src/ranex/bootstrap/composition.py:68-95`).
+No suite-manifest/JUnit validation may run for this claim: `cmd_run` reads the
+named report before materialisation teardown, parses it as JSON, normalizes it
+to canonical JSON value bytes/structure, and places that value directly in the
+raw record's `suite_results`; shared admission intercepts, extracts and
 validates that signed value before the existing generic JUnit validator
 (`src/ranex/governed_execution/domain/admission.py:123-143`) or `Evidence`
 constructor (`src/ranex/governed_execution/domain/verdict.py:103-113`) sees it.
@@ -112,7 +119,31 @@ writer (`src/ranex/cli/host_confinement.py:2568-2617`).
 ### Refusal rule
 
 Shared admission extracts `suite_results` from every `host-qualification`
-record, validates the known report schema, and re-reads live `boot_id`,
+record and deeply validates the closed writer schema at
+`src/ranex/cli/host_confinement.py:2568-2617`. In addition to exact top-level
+and existing nested key sets, it enforces this value grammar and required
+content:
+
+- `digests.profile`, `digests.build_manifest`, and `digests.artifact` are each
+  exactly `sha256:<64 lowercase hexadecimal characters>`;
+- `primitives.landlock.available` is a boolean and `abi` is a non-boolean
+  integer; `seccomp_filter`, `no_new_privs`, `openat2`, and every required
+  namespace value are booleans;
+- `primitives.namespaces` is non-empty and carries the writer's required
+  `user`, `mount`, `pid`, `ipc`, and `network` keys;
+- `cgroup` is non-empty and carries `cgroup_kill`, `mount`, `root`,
+  `relative_path`, `controllers`, and `probe_transcript`, with the writer-level
+  container/scalar types and non-empty content;
+- each of `open_objects.bubblewrap` and `open_objects.launcher` is non-empty and
+  carries the writer's `path`, `realpath`, `sha256`, `device`, `inode`, `uid`,
+  `gid`, `mode`, `mount_id`, `security_capability`, and `filesystem` sub-keys,
+  with their writer-level value types and SHA-256 grammar.
+
+This is deliberately grammar plus presence-of-required-content, not full
+SLICE-017 probe-value coupling: admission does not reproduce exact probe
+transcripts or independently prove every value. A real writer report passes;
+a producer-shaped forged report with the right outer shape but empty
+confinement content MUST refuse. It then re-reads live `boot_id`,
 `machine_id`, LSM state, unprivileged-userns sysctls, and only the durable
 parent-namespace `delegation_identity.uid`/`gid`; unreadable, missing, stale or
 mismatched durable anchors reject under `MALFORMED_RECORD` or the new structured
@@ -144,7 +175,9 @@ into a verdict.
 
 1. Absent report → `host-qualification` unsatisfied → gate FAIL, never skip
    (ADR-021 row 1). `tests/contract/test_qualification_admission.py`.
-2. Unknown schema / missing host fact → admission refusal (ADR-021 rows 9, 13).
+2. Unknown schema, `qualified: false`, missing host fact, malformed digest, or
+   empty/missing required confinement content → admission refusal (ADR-021 rows
+   9, 13 plus the qa-gate deep-schema correction).
    `tests/contract/test_qualification_admission.py`.
 3. Two admitted records disagreeing on `host_state` → refuse ambiguity, never
    prefer newer (ADR-021 row 11). `tests/contract/test_qualification_admission.py`.
@@ -155,13 +188,21 @@ into a verdict.
    mechanism. `tests/contract/test_qualification_admission.py`.
 6. `verdict.py` byte-exact: `reason` bytes and `KERNEL_DIGEST` unchanged;
    `tests/contract/test_kernel_unchanged.py` green without touching the kernel.
-7. E2E qualify→approve→gate PASS, then change one bound durable fact → FAIL
+7. Real `cmd_run` capture: `ranex run --claim host-qualification --producer
+   <id> -- <qualify argv>` captures the `--report` JSON in signed
+   `suite_results`, shared admission accepts it, and `gate evaluate` PASSes;
+   after one durable host-state fact moves, evaluation FAILs naming
+   `host-qualification`. The capture test may use a stand-in writer command but
+   must traverse `cmd_run`'s real capture path.
+   `tests/e2e/test_run_produces_evidence.py` and
+   `tests/e2e/test_gating_real_suite.py`.
+8. E2E qualify→approve→gate PASS, then change one bound durable fact → FAIL
    naming `host-qualification`. `tests/e2e/test_gating_real_suite.py`.
-8. A `host-qualification` Evidence verifies only under `ranex-evidence-v3` (not
+9. A `host-qualification` Evidence verifies only under `ranex-evidence-v3` (not
    under `ranex-approval-v1`); exact-`SIGNED_FIELDS` refusal holds and
     `subject_digest`/`producer_id` binding is proven.
     `tests/contract/test_qualification_admission.py`.
-9. `cmd_task_judge` (the merge-candidate landing-gate path at
+10. `cmd_task_judge` (the merge-candidate landing-gate path at
    `src/ranex/cli/main.py:1027-1087`) honors `host-qualification` via the SAME
    shared admission as `cmd_gate_evaluate`: an absent or `STALE_HOST_STATE`
    qualification leaves `host-qualification` missing / rejected, never silently
@@ -191,9 +232,9 @@ uv run --frozen pytest -q
 
 1. Satisfying `host-qualification` because its bound command exited zero while
    skipping the live durable-anchor re-read.
-2. Sending qualification JSON through generic JUnit parsing, or setting
-   `results_artifact`, instead of admitting it as the claim-specific signed
-   carrier.
+2. Sending qualification JSON through generic JUnit parsing, or using
+   `results_artifact`, instead of capturing the loader-bound
+   `qualification_report` as the claim-specific signed carrier.
 3. Comparing transient cgroup path/source fields as freshness anchors despite
    ADR-021:190 saying they are never anchors.
 4. Letting `cmd_gate_evaluate` return `EXIT_USAGE` for a missing or malformed
@@ -204,6 +245,8 @@ uv run --frozen pytest -q
    the landing suite does not make them gate-blocking.
 7. Claiming full report binding without proving the existing exact signed fields,
    subject/producer binding and evidence-vs-approval domain separation.
+8. Checking only closed key sets while accepting empty namespace, cgroup, or
+   open-object mappings and malformed digest values.
 
 ## Not in this slice
 

@@ -16,4 +16,5 @@ gates:
         command: ["uv", "run", "pytest", "-q", "--junitxml=governance/suite_results.xml"]
         results_artifact: governance/suite_results.xml
       - claim_id: host-qualification
-        command: ["python", "-m", "ranex.cli.host_confinement", "qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report", ".local/ranex/qualification/strict-local-v1.json"]
+        command: ["python", "-m", "ranex.cli.host_confinement", "qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report=.local/ranex/qualification/strict-local-v1.json"]
+        qualification_report: .local/ranex/qualification/strict-local-v1.json

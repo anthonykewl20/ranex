@@ -229,8 +229,7 @@ def record_live_host_qualification(repo: Path, key_path: Path) -> None:
         ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
         "--manifest",
         "governance/confinement/native-launcher-build-v1.json",
-        "--report",
-        ".local/ranex/qualification/strict-local-v1.json",
+        "--report=.local/ranex/qualification/strict-local-v1.json",
     )
     host_state = copy.deepcopy(admission._read_live_durable_host_state())
     host_state["delegation_identity"].update(

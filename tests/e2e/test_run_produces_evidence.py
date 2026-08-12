@@ -27,6 +27,7 @@ from conftest import Signing, attach, signing_for
 
 from ranex.cli.main import cmd_run, main
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
+from ranex.governed_execution.domain import admission
 
 # SLICE-003: `tests-executed` names one command. `check.sh` reads the committed
 # tree and succeeds only against it, so a claim satisfied by it is a claim about
@@ -404,6 +405,114 @@ def test_run_reads_suite_results_before_materialisation_teardown(repo: Path) -> 
     assert record["suite_results"]["counts"]["passed"] == 1
     assert not (repo / "artifacts" / "junit.xml").exists()
     assert evaluate(repo) == 0
+
+
+def test_run_captures_a_qualification_report_as_signed_suite_results(repo: Path) -> None:
+    report_path = "artifacts/qualification.json"
+    report = {
+        "schema": "ranex-strict-local-qualification-v1",
+        "qualified": True,
+        "refusal": None,
+        "kernel": {"release": "6.12.0", "architecture": "x86_64"},
+        "primitives": {
+            "landlock": {"available": True, "abi": 6},
+            "seccomp_filter": True,
+            "no_new_privs": True,
+            "namespaces": {
+                "user": True, "mount": True, "pid": True, "ipc": True, "network": True,
+            },
+            "openat2": True,
+        },
+        "cgroup": {
+            "cgroup_kill": True,
+            "mount": {"path": "/sys/fs/cgroup", "filesystem": "cgroup2"},
+            "root": "/sys/fs/cgroup",
+            "relative_path": "/session.scope",
+            "controllers": ["cpu", "memory", "pids"],
+            "probe_transcript": {"created": True},
+        },
+        "open_objects": {
+            name: {
+                "path": f"/usr/bin/{name}", "realpath": f"/usr/bin/{name}",
+                "sha256": "sha256:" + digit * 64, "device": 1, "inode": inode,
+                "uid": 0, "gid": 0, "mode": 0o755, "mount_id": 1,
+                "security_capability": False,
+                "filesystem": {
+                    "device": "0:1", "filesystem": "ext4", "mount_id": 1,
+                    "mount_point": "/", "options": ["rw"], "source": "/dev/root",
+                },
+            }
+            for name, digit, inode in (("bubblewrap", "4", 2), ("launcher", "3", 3))
+        },
+        "digests": {
+            "profile": "sha256:" + "1" * 64,
+            "build_manifest": "sha256:" + "2" * 64,
+            "artifact": "sha256:" + "3" * 64,
+        },
+        "delegation": {"broker": None, "existing_root": None, "source": "direct"},
+        "host_state": {
+            "lsm": {
+                "securityfs_lsm": "landlock,apparmor",
+                "apparmor_policy_identity": {"status": "inactive"},
+                "selinux_policy_identity": {"status": "inactive"},
+            },
+            "unprivileged_userns_sysctls": {"user.max_user_namespaces": "15000"},
+            "boot_id": "11111111-2222-3333-4444-555555555555",
+            "machine_id": "0123456789abcdef0123456789abcdef",
+            "delegation_identity": {
+                "uid": 1000, "gid": 1000, "cgroup_root": "/sys/fs/cgroup",
+                "cgroup_relative_path": "/session.scope", "source": "direct",
+                "userns_state_source": "qualification-host-probe",
+            },
+        },
+    }
+    command = [
+        "sh", "-c",
+        "mkdir -p artifacts && printf '%s' \"$1\" > \"$2\"",
+        "write-report", json.dumps(report, separators=(",", ":")), report_path,
+        f"--report={report_path}",
+    ]
+    (repo / "gates.yaml").write_text(
+        "gates:\n"
+        "  - gate_id: landing\n"
+        "    rule_id: HOST_QUALIFIED\n"
+        "    blocking: true\n"
+        "    required_claims:\n"
+        "      - claim_id: host-qualification\n"
+        f"        command: {json.dumps(command)}\n"
+        f"        qualification_report: {report_path}\n",
+        encoding="utf-8",
+    )
+    subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
+    subprocess.run(
+        ["git", "-C", str(repo), "commit", "-q", "-m", "bind qualification report"],
+        check=True,
+    )
+
+    assert invoke(
+        repo,
+        [
+            "run", "--claim", "host-qualification", "--producer", "worker",
+            "--evidence", "evidence.json", "--producers", "producers.yaml",
+            "--gate-catalog", "gates.yaml", "--", *command,
+        ],
+        producer="worker",
+    ) == 0
+    (record,) = records(repo)
+    assert record["suite_results"] == report
+    assert not (repo / report_path).exists()
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr(
+            admission,
+            "_read_live_durable_host_state",
+            lambda: report["host_state"],
+        )
+        admitted = admission.admit(
+            [record], {"worker": signing_for(repo).public["worker"]}
+        )
+    assert admitted.rejections == ()
+    assert len(admitted.evidence) == 1
+    assert admitted.evidence[0].suite_results is None
 
 
 def test_run_refuses_a_suite_results_claim_without_a_loaded_manifest(

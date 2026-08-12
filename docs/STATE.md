@@ -9,16 +9,17 @@
 
 SLICE-017 is closed. ADR-021 is accepted after consensus-luna and
 consensus-terra returned APPROVE on the prior-art-corrected `69fd9db12f`.
-SLICE-019 is open for ADR-021 integration only. Consensus rejected its first
-envelope: the revised contract reuses `ranex-evidence-v3`, carries the complete
-report in signed `suite_results`, and puts live-anchor freshness in shared
-admission. The verdict kernel stays byte-exact. The previously frozen red tests
-encode the rejected design and the revised tests have not yet been frozen red.
+SLICE-019 is open for ADR-021 integration only. QA-gate found the real `cmd_run`
+operator path could not capture the qualification report and that admission's
+closed schema checked keys but not confinement value content. Owner chose the
+full fix: the revised frozen-red contract adds loader-bound
+`qualification_report` capture, deep grammar/non-emptiness validation, reuses
+`ranex-evidence-v3`, and keeps the verdict kernel byte-exact.
 
 ## Next
 
-1. Replace SLICE-019's rejected-envelope tests, freeze the revised contracts red
-   in a separate commit, then implement and close without changing `verdict.py`.
+1. Implement the frozen-red SLICE-019 contract and close without changing
+   `verdict.py` or `host_confinement.py`.
 2. Open the ADR-019/020 kernel slice for judgment identity and the
    `self_approval` wire.
 3. Then open SLICE-018/029; SLICE-029..044 open strictly one at a time.

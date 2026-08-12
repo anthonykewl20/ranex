@@ -18,6 +18,7 @@ from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain import admission
 from ranex.governed_execution.domain.task import TaskDispatch
 from ranex.governed_execution.domain.verdict import Claim, Gate, Verdict, evaluate
+from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
 SUBJECT = "sha256:" + "a" * 64
 QUALIFY_ARGV = (
@@ -25,7 +26,7 @@ QUALIFY_ARGV = (
     "--profile", "governance/confinement/strict-local-host-v1.json",
     "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
     "--manifest", "governance/confinement/native-launcher-build-v1.json",
-    "--report", ".local/ranex/qualification/strict-local-v1.json",
+    "--report=.local/ranex/qualification/strict-local-v1.json",
 )
 HOST_STATE = {
     "lsm": {
@@ -57,11 +58,64 @@ REPORT = {
         "landlock": {"available": True, "abi": 6},
         "seccomp_filter": True,
         "no_new_privs": True,
-        "namespaces": {"user": True},
+        "namespaces": {
+            "user": True,
+            "mount": True,
+            "pid": True,
+            "ipc": True,
+            "network": True,
+        },
         "openat2": True,
     },
-    "cgroup": {"version": 2},
-    "open_objects": {"bubblewrap": {}, "launcher": {}},
+    "cgroup": {
+        "cgroup_kill": True,
+        "mount": {"path": "/sys/fs/cgroup", "filesystem": "cgroup2"},
+        "root": "/sys/fs/cgroup",
+        "relative_path": "/session.scope",
+        "controllers": ["cpu", "memory", "pids"],
+        "probe_transcript": {
+            "created": True,
+            "controllers_enabled": ["cpu", "memory", "pids"],
+            "child_pid": 1234,
+            "read_back_pids": [1234],
+            "cgroup_path": "/sys/fs/cgroup/ranex-probe",
+            "removed": True,
+        },
+    },
+    "open_objects": {
+        "bubblewrap": {
+            "path": "/usr/bin/bwrap",
+            "realpath": "/usr/bin/bwrap",
+            "sha256": "sha256:" + "4" * 64,
+            "device": 1,
+            "inode": 2,
+            "uid": 0,
+            "gid": 0,
+            "mode": 0o755,
+            "mount_id": 1,
+            "security_capability": False,
+            "filesystem": {
+                "device": "0:1", "filesystem": "ext4", "mount_id": 1,
+                "mount_point": "/", "options": ["rw"], "source": "/dev/root",
+            },
+        },
+        "launcher": {
+            "path": "/opt/ranex/ranex-worker-launcher",
+            "realpath": "/opt/ranex/ranex-worker-launcher",
+            "sha256": "sha256:" + "3" * 64,
+            "device": 1,
+            "inode": 3,
+            "uid": 0,
+            "gid": 0,
+            "mode": 0o755,
+            "mount_id": 1,
+            "security_capability": False,
+            "filesystem": {
+                "device": "0:1", "filesystem": "ext4", "mount_id": 1,
+                "mount_point": "/", "options": ["rw"], "source": "/dev/root",
+            },
+        },
+    },
     "digests": {
         "profile": "sha256:" + "1" * 64,
         "build_manifest": "sha256:" + "2" * 64,
@@ -102,6 +156,52 @@ def admit_with_live(monkeypatch: pytest.MonkeyPatch, records, public: str, live=
     return admission.admit(records, {"qualifier": public})
 
 
+def qualification_catalog(*, report: str, extra: str = "") -> str:
+    return f"""gates:
+  - gate_id: landing
+    rule_id: HOST_QUALIFIED
+    blocking: true
+    required_claims:
+      - claim_id: host-qualification
+        command: ["sh", "qualify.sh", "--report={report}"]
+        qualification_report: {report}
+{extra}"""
+
+
+def test_qualification_report_loader_field_is_bound_to_exact_report_token() -> None:
+    gate = load_gate_text(
+        qualification_catalog(report="artifacts/qualification.json"), "landing"
+    )
+    (claim,) = gate.required_claims
+    assert claim.qualification_report == "artifacts/qualification.json"
+
+    mismatched = qualification_catalog(report="artifacts/qualification.json").replace(
+        "--report=artifacts/qualification.json", "--report=artifacts/other.json"
+    )
+    with pytest.raises(ValueError, match="exact argv token"):
+        load_gate_text(mismatched, "landing")
+
+
+@pytest.mark.parametrize(
+    "report", ("/tmp/qualification.json", "../qualification.json")
+)
+def test_qualification_report_loader_field_refuses_unconfined_paths(report: str) -> None:
+    with pytest.raises(ValueError, match="relative path confined"):
+        load_gate_text(qualification_catalog(report=report), "landing")
+
+
+def test_qualification_report_is_mutually_exclusive_with_results_artifact() -> None:
+    catalog = qualification_catalog(
+        report="artifacts/qualification.json",
+        extra="        results_artifact: artifacts/qualification.json\n",
+    ).replace(
+        '"]\n        qualification_report:',
+        '", "--junitxml=artifacts/qualification.json"]\n        qualification_report:',
+    )
+    with pytest.raises(ValueError, match="mutually exclusive"):
+        load_gate_text(catalog, "landing")
+
+
 def test_absent_report_leaves_host_qualification_missing_and_blocks() -> None:
     # Red independently of the autouse freeze: the real catalog does not carry
     # host-qualification until the implementer adds it.
@@ -136,6 +236,60 @@ def test_unknown_schema_or_missing_host_fact_refuses(
     assert result.rejections[0].reason is admission.RejectionReason.MALFORMED_RECORD
     # Red now: generic JUnit parsing refuses these bytes for the wrong reason.
     assert specific_detail in result.rejections[0].detail
+
+
+@pytest.mark.parametrize(
+    ("case", "mutate"),
+    (
+        ("empty-cgroup", lambda report: report.__setitem__("cgroup", {})),
+        (
+            "empty-namespaces",
+            lambda report: report["primitives"].__setitem__("namespaces", {}),
+        ),
+        (
+            "malformed-digests",
+            lambda report: report.__setitem__(
+                "digests",
+                {"profile": "forged", "build_manifest": "", "artifact": "sha256:1234"},
+            ),
+        ),
+        (
+            "bubblewrap-missing-required-subkey",
+            lambda report: report["open_objects"]["bubblewrap"].pop("sha256"),
+        ),
+        (
+            "launcher-missing-required-subkey",
+            lambda report: report["open_objects"]["launcher"].pop("mount_id"),
+        ),
+    ),
+    ids=lambda value: value if isinstance(value, str) else None,
+)
+def test_forged_or_empty_confinement_content_refuses(
+    monkeypatch, identity, case: str, mutate
+) -> None:
+    private, public = identity
+    report = copy.deepcopy(REPORT)
+    mutate(report)
+    result = admit_with_live(monkeypatch, [raw_record(private, report)], public)
+    assert result.evidence == (), f"{case} was admitted"
+    assert len(result.rejections) == 1
+    assert result.rejections[0].reason is admission.RejectionReason.MALFORMED_RECORD
+
+
+@pytest.mark.parametrize(
+    ("field", "value"),
+    (("qualified", False), ("schema", "ranex-strict-local-qualification-v2")),
+    ids=("qualified-false", "unknown-schema"),
+)
+def test_unsuccessful_or_unknown_qualification_report_refuses(
+    monkeypatch, identity, field: str, value: object
+) -> None:
+    private, public = identity
+    report = {**REPORT, field: value}
+    result = admit_with_live(monkeypatch, [raw_record(private, report)], public)
+    assert result.evidence == ()
+    assert len(result.rejections) == 1
+    assert result.rejections[0].reason is admission.RejectionReason.MALFORMED_RECORD
 
 
 def test_disagreeing_reports_refuse_as_ambiguity_not_newest_wins(monkeypatch, identity) -> None:
@@ -277,7 +431,8 @@ def test_cmd_task_judge_uses_shared_qualification_admission(
     blocking: true
     required_claims:
       - claim_id: host-qualification
-        command: ["python", "-m", "ranex.cli.host_confinement", "qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report", ".local/ranex/qualification/strict-local-v1.json"]
+        command: ["python", "-m", "ranex.cli.host_confinement", "qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report=.local/ranex/qualification/strict-local-v1.json"]
+        qualification_report: .local/ranex/qualification/strict-local-v1.json
 """,
         encoding="utf-8",
     )
