@@ -25,11 +25,26 @@ from ranex.governed_execution.api import (
     Gate,
     evaluate,
 )
-from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
+    SliceClaimDefinition,
+    load_gate_text,
+)
 
 
 def catalog_digest_for(gate_catalog: bytes) -> str:
     return "sha256:" + hashlib.sha256(gate_catalog).hexdigest()
+
+
+def claim_definition_for(
+    gate_catalog: bytes, gate_id: str, claim_id: str
+) -> SliceClaimDefinition | None:
+    """Expose adapter-only claim carriers without extending the kernel Claim."""
+
+    definition = load_gate_text(gate_catalog.decode("utf-8"), gate_id)
+    return next(
+        (claim for claim in definition.required_claims if claim.claim_id == claim_id),
+        None,
+    )
 
 
 @dataclass(frozen=True, slots=True)

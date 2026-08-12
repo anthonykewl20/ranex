@@ -33,6 +33,7 @@ class SliceClaimDefinition:
     claim_id: str
     command: tuple[str, ...]
     results_artifact: str | None = None
+    qualification_report: str | None = None
 
     @property
     def command_digest(self) -> str:
@@ -72,7 +73,7 @@ _UniqueKeyLoader.add_constructor(  # type: ignore[no-untyped-call]
 )
 
 
-_CLAIM_KEYS = {"claim_id", "command", "results_artifact"}
+_CLAIM_KEYS = {"claim_id", "command", "results_artifact", "qualification_report"}
 
 _SHAPE = "{claim_id: <id>, command: [<argv>, ...]}"
 
@@ -151,10 +152,37 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
             )
         results_artifact = candidate
 
+    qualification_report: str | None = None
+    if "qualification_report" in entry:
+        if results_artifact is not None:
+            raise ValueError(
+                f"gate {gate_id!r}: claim {claim_id!r} results_artifact and "
+                "qualification_report are mutually exclusive"
+            )
+        candidate = entry["qualification_report"]
+        if (
+            not isinstance(candidate, str)
+            or not candidate
+            or Path(candidate).is_absolute()
+            or any(part == ".." for part in Path(candidate).parts)
+        ):
+            raise ValueError(
+                f"gate {gate_id!r}: claim {claim_id!r} qualification_report must be "
+                "a non-empty relative path confined below the repository"
+            )
+        token = f"--report={candidate}"
+        if token not in command:
+            raise ValueError(
+                f"gate {gate_id!r}: claim {claim_id!r} must bind "
+                f"qualification_report with the exact argv token {token!r}"
+            )
+        qualification_report = candidate
+
     return SliceClaimDefinition(
         claim_id=claim_id,
         command=tuple(command),
         results_artifact=results_artifact,
+        qualification_report=qualification_report,
     )
 
 
