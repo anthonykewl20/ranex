@@ -115,8 +115,8 @@ Shared admission extracts `suite_results` from every `host-qualification`
 record, validates the known report schema, and re-reads live `boot_id`,
 `machine_id`, LSM state, unprivileged-userns sysctls, and only the durable
 parent-namespace `delegation_identity.uid`/`gid`; unreadable, missing, stale or
-mismatched durable anchors reject under `MALFORMED_RECORD` or a new structured
-host-state reason, never default. It does not compare transient
+mismatched durable anchors reject under `MALFORMED_RECORD` or the new structured
+host-state reason `STALE_HOST_STATE`, never default. It does not compare transient
 `cgroup_root`, `cgroup_relative_path`, `source`, or `userns_state_source`
 (`docs/adr/ADR-021-host-qualification-is-evidence-not-a-gated-test.md:147-152,189-190`;
 the source report contains both halves at `src/ranex/cli/host_confinement.py:1502-1521`).
@@ -159,8 +159,14 @@ into a verdict.
    naming `host-qualification`. `tests/e2e/test_gating_real_suite.py`.
 8. A `host-qualification` Evidence verifies only under `ranex-evidence-v3` (not
    under `ranex-approval-v1`); exact-`SIGNED_FIELDS` refusal holds and
-   `subject_digest`/`producer_id` binding is proven.
-   `tests/contract/test_qualification_admission.py`.
+    `subject_digest`/`producer_id` binding is proven.
+    `tests/contract/test_qualification_admission.py`.
+9. `cmd_task_judge` (the merge-candidate landing-gate path at
+   `src/ranex/cli/main.py:1027-1087`) honors `host-qualification` via the SAME
+   shared admission as `cmd_gate_evaluate`: an absent or `STALE_HOST_STATE`
+   qualification leaves `host-qualification` missing / rejected, never silently
+   admitted or turned into a usage error.
+   `tests/contract/test_qualification_admission.py::test_cmd_task_judge_uses_shared_qualification_admission`.
 
 ADR-021 sad-path rows 3–7 — real boot/machine-ID/LSM/sysctl/PRINCIPAL
 transitions — require a disposable-VM harness. Per ADR-021's test strategy

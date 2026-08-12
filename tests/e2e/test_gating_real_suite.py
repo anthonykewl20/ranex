@@ -967,6 +967,10 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
     from ranex.governed_execution.domain import admission
     from ranex.governed_execution.domain.verdict import Evidence
 
+    # Red now on the qualification-specific shared admission contract, before
+    # the journey attempts to turn ordinary signed evidence into a gate PASS.
+    assert admission.RejectionReason.STALE_HOST_STATE == "stale-host-state"
+
     subject = "sha256:" + "a" * 64
     argv = (
         "python",
