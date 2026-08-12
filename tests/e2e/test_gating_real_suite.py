@@ -339,7 +339,9 @@ def evaluate_argv() -> list[str]:
     ]
 
 
-def record_live_host_qualification(repo: Path, key_path: Path) -> None:
+def record_live_host_qualification(
+    repo: Path, key_path: Path, *, producer_id: str = "worker"
+) -> None:
     argv = (
         "python",
         "-m",
@@ -391,7 +393,7 @@ def record_live_host_qualification(repo: Path, key_path: Path) -> None:
         "command_digest": command_digest(argv),
         "executable_path": sys.executable,
         "exit_code": 0,
-        "producer_id": "worker",
+        "producer_id": producer_id,
         "subject_digest": subject_digest_for(repo, "HEAD"),
         "suite_results": report,
     }
@@ -927,6 +929,7 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
         Path(key),
     )
     assert code == 0, f"the suite did not pass under governance: {err}"
+    record_live_host_qualification(REAL_REPO, Path(key), producer_id="anthony")
     code, out, _ = ranex(REAL_REPO, evaluate_argv())
     assert code == 0
     assert out.startswith("PASS")

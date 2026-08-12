@@ -25,6 +25,7 @@ of the product, and this is the only test that measures it.
 
 from __future__ import annotations
 
+import copy
 import hashlib
 import os
 import subprocess
@@ -33,6 +34,11 @@ from pathlib import Path
 
 import pytest
 import yaml
+
+from ranex.cli.main import record_evidence, subject_digest_for
+from ranex.foundation.canonical import command_digest
+from ranex.foundation.signing import sign_evidence
+from ranex.governed_execution.domain import admission
 
 REAL_REPO = Path(__file__).resolve().parents[2]
 README = REAL_REPO / "README.md"
@@ -208,6 +214,69 @@ def git(repo: Path, *arguments: str) -> subprocess.CompletedProcess:
         capture_output=True,
         text=True,
         check=False,
+    )
+
+
+def record_live_host_qualification(repo: Path, key_path: Path) -> None:
+    argv = (
+        "python",
+        "-m",
+        "ranex.cli.host_confinement",
+        "qualify",
+        "--profile",
+        "governance/confinement/strict-local-host-v1.json",
+        "--artifact",
+        ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
+        "--manifest",
+        "governance/confinement/native-launcher-build-v1.json",
+        "--report",
+        ".local/ranex/qualification/strict-local-v1.json",
+    )
+    host_state = copy.deepcopy(admission._read_live_durable_host_state())
+    host_state["delegation_identity"].update(
+        {
+            "cgroup_root": "/sys/fs/cgroup",
+            "cgroup_relative_path": "/session.scope",
+            "source": "direct",
+            "userns_state_source": "qualification-host-probe",
+        }
+    )
+    report = {
+        "schema": "ranex-strict-local-qualification-v1",
+        "qualified": True,
+        "refusal": None,
+        "kernel": {"release": "6.12.0", "architecture": "x86_64"},
+        "primitives": {
+            "landlock": {"available": True, "abi": 6},
+            "seccomp_filter": True,
+            "no_new_privs": True,
+            "namespaces": {},
+            "openat2": True,
+        },
+        "cgroup": {},
+        "open_objects": {"bubblewrap": {}, "launcher": {}},
+        "digests": {
+            "profile": "sha256:" + "1" * 64,
+            "build_manifest": "sha256:" + "2" * 64,
+            "artifact": "sha256:" + "3" * 64,
+        },
+        "delegation": {"broker": None, "existing_root": None, "source": "direct"},
+        "host_state": host_state,
+    }
+    content = {
+        "claim_id": "host-qualification",
+        "command": " ".join(argv),
+        "command_digest": command_digest(argv),
+        "executable_path": sys.executable,
+        "exit_code": 0,
+        "producer_id": "worker",
+        "subject_digest": subject_digest_for(repo, "HEAD"),
+        "suite_results": report,
+    }
+    private_key = key_path.read_text(encoding="utf-8").strip()
+    record_evidence(
+        repo / "governance" / "evidence.json",
+        {**content, "signature": sign_evidence(content, private_key)},
     )
 
 
@@ -453,6 +522,7 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
 
 def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
     operator.require("resolver", "clone", "fetch", "evidence")
+    record_live_host_qualification(operator.clone, operator.key)
     code, out, err = ranex(
         operator.clone,
         ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
