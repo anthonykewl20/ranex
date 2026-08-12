@@ -31,6 +31,7 @@ from enum import StrEnum
 import hashlib
 import os
 from pathlib import Path
+import re
 from typing import Any
 
 from ranex.foundation.signing import (
@@ -83,6 +84,7 @@ class Admission:
 _SIGNATURE = "signature"
 _QUALIFICATION_CLAIM = "host-qualification"
 _QUALIFICATION_SCHEMA = "ranex-strict-local-qualification-v1"
+_SHA256 = re.compile(r"sha256:[0-9a-f]{64}\Z")
 
 
 def _required_host_text(path: Path, field: str, *, limit: int = 65_536) -> str:
@@ -184,6 +186,66 @@ def _mapping_with_keys(value: Any, keys: set[str], field: str) -> Mapping[str, A
     return value
 
 
+def _required_text(value: Any, field: str) -> str:
+    if not isinstance(value, str) or not value:
+        raise ValueError(f"{field} is not a non-empty string")
+    return value
+
+
+def _required_integer(value: Any, field: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError(f"{field} is not an integer")
+    return value
+
+
+def _required_boolean(value: Any, field: str) -> bool:
+    if not isinstance(value, bool):
+        raise ValueError(f"{field} is not a boolean")
+    return value
+
+
+def _required_sha256(value: Any, field: str) -> str:
+    if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+        raise ValueError(f"{field} is not a sha256 digest")
+    return value
+
+
+def _required_text_list(value: Any, field: str) -> Sequence[str]:
+    if (
+        not isinstance(value, list)
+        or not value
+        or any(not isinstance(item, str) or not item for item in value)
+    ):
+        raise ValueError(f"{field} is not a non-empty list of non-empty strings")
+    return value
+
+
+def _validate_open_object(value: Any, field: str) -> None:
+    opened = _mapping_with_keys(
+        value,
+        {
+            "path", "realpath", "sha256", "device", "inode", "uid", "gid",
+            "mode", "mount_id", "security_capability", "filesystem",
+        },
+        field,
+    )
+    for name in ("path", "realpath"):
+        _required_text(opened[name], f"{field}.{name}")
+    _required_sha256(opened["sha256"], f"{field}.sha256")
+    for name in ("device", "inode", "uid", "gid", "mode", "mount_id"):
+        _required_integer(opened[name], f"{field}.{name}")
+    _required_boolean(opened["security_capability"], f"{field}.security_capability")
+    filesystem = _mapping_with_keys(
+        opened["filesystem"],
+        {"device", "filesystem", "mount_id", "mount_point", "options", "source"},
+        f"{field}.filesystem",
+    )
+    for name in ("device", "filesystem", "mount_point", "source"):
+        _required_text(filesystem[name], f"{field}.filesystem.{name}")
+    _required_integer(filesystem["mount_id"], f"{field}.filesystem.mount_id")
+    _required_text_list(filesystem["options"], f"{field}.filesystem.options")
+
+
 def _validate_qualification_report(value: Any) -> Mapping[str, Any]:
     report = _mapping_with_keys(
         value,
@@ -197,23 +259,52 @@ def _validate_qualification_report(value: Any) -> Mapping[str, Any]:
         raise ValueError(f"unknown host-qualification schema: {report['schema']!r}")
     if report["qualified"] is not True or report["refusal"] is not None:
         raise ValueError("host-qualification report is not a successful qualification")
-    _mapping_with_keys(report["kernel"], {"release", "architecture"}, "kernel")
+    kernel = _mapping_with_keys(report["kernel"], {"release", "architecture"}, "kernel")
+    _required_text(kernel["release"], "kernel.release")
+    _required_text(kernel["architecture"], "kernel.architecture")
     primitives = _mapping_with_keys(
         report["primitives"],
         {"landlock", "seccomp_filter", "no_new_privs", "namespaces", "openat2"},
         "primitives",
     )
-    _mapping_with_keys(primitives["landlock"], {"available", "abi"}, "primitives.landlock")
-    if not isinstance(primitives["namespaces"], Mapping):
-        raise ValueError("primitives.namespaces is not an object")
-    if not isinstance(report["cgroup"], Mapping):
-        raise ValueError("cgroup is not an object")
+    landlock = _mapping_with_keys(
+        primitives["landlock"], {"available", "abi"}, "primitives.landlock"
+    )
+    _required_boolean(landlock["available"], "primitives.landlock.available")
+    _required_integer(landlock["abi"], "primitives.landlock.abi")
+    for name in ("seccomp_filter", "no_new_privs", "openat2"):
+        _required_boolean(primitives[name], f"primitives.{name}")
+    namespaces = _mapping_with_keys(
+        primitives["namespaces"],
+        {"user", "mount", "pid", "ipc", "network"},
+        "primitives.namespaces",
+    )
+    for name, namespace_available in namespaces.items():
+        _required_boolean(namespace_available, f"primitives.namespaces.{name}")
+    cgroup = _mapping_with_keys(
+        report["cgroup"],
+        {"cgroup_kill", "mount", "root", "relative_path", "controllers", "probe_transcript"},
+        "cgroup",
+    )
+    _required_boolean(cgroup["cgroup_kill"], "cgroup.cgroup_kill")
+    mount = _mapping_with_keys(cgroup["mount"], {"path", "filesystem"}, "cgroup.mount")
+    _required_text(mount["path"], "cgroup.mount.path")
+    _required_text(mount["filesystem"], "cgroup.mount.filesystem")
+    _required_text(cgroup["root"], "cgroup.root")
+    _required_text(cgroup["relative_path"], "cgroup.relative_path")
+    _required_text_list(cgroup["controllers"], "cgroup.controllers")
+    if not isinstance(cgroup["probe_transcript"], Mapping) or not cgroup["probe_transcript"]:
+        raise ValueError("cgroup.probe_transcript is not a non-empty object")
     open_objects = _mapping_with_keys(
         report["open_objects"], {"bubblewrap", "launcher"}, "open_objects"
     )
-    if not all(isinstance(value, Mapping) for value in open_objects.values()):
-        raise ValueError("open_objects entries are not objects")
-    _mapping_with_keys(report["digests"], {"profile", "build_manifest", "artifact"}, "digests")
+    for name, opened in open_objects.items():
+        _validate_open_object(opened, f"open_objects.{name}")
+    digests = _mapping_with_keys(
+        report["digests"], {"profile", "build_manifest", "artifact"}, "digests"
+    )
+    for name, digest in digests.items():
+        _required_sha256(digest, f"digests.{name}")
     _mapping_with_keys(report["delegation"], {"broker", "existing_root", "source"}, "delegation")
     host_state = _mapping_with_keys(
         report["host_state"],
