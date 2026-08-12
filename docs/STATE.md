@@ -3,21 +3,23 @@
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
 **Updated:** 2026-08-12
-**Active slice:** none.
+**Active slice:** docs/slices/SLICE-019-host-qualification-as-gate-evidence.md.
 
 ## Where we stopped
 
-SLICE-017 is formally closed this session after its QA gate passed green ×3 on
-`dc7f9fe8d`. The next step is to open SLICE-019 once ADR-021 clears the
-ADR-019/020/021 consensus panel.
+SLICE-017 is closed. ADR-021 is accepted after consensus-luna and
+consensus-terra returned APPROVE on the prior-art-corrected `69fd9db12f`.
+SLICE-019 is open for ADR-021 integration only: the qualification claim,
+subject-bound producer/approver envelope and admission refusal rule. The verdict
+kernel stays byte-exact. Its tests have not yet been frozen red.
 
 ## Next
 
-1. Complete the ADR-019/020/021 consensus panel now in flight.
-2. Open SLICE-019 for ADR-021 integration: the qualification claim in
-   `gates.yaml` and the kernel refusal rule.
-3. Then open the ADR-019/020 kernel slice.
-4. After SLICE-019 closes, SLICE-029..044 open strictly one at a time.
+1. Freeze SLICE-019's named contracts red in a separate commit, then implement
+   and close the slice without changing `verdict.py`.
+2. Open the ADR-019/020 kernel slice for judgment identity and the
+   `self_approval` wire.
+3. Then open SLICE-018/029; SLICE-029..044 open strictly one at a time.
    SLICE-036 only qualifies an approved batch in disposable child worktrees
    with publication blocked. SLICE-037..042 close the harness effect families;
    SLICE-043 serially integrates every leaf and CAS seam. SLICE-044 alone

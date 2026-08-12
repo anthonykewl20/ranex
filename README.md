@@ -305,9 +305,9 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none.
+**Active slice:** docs/slices/SLICE-019-host-qualification-as-gate-evidence.md.
 SLICE-017 closed the P0 qualification prerequisite without exposing a
-production command path; SLICE-019 is not yet open.
+production command path; SLICE-019 now integrates its report as gate evidence.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —

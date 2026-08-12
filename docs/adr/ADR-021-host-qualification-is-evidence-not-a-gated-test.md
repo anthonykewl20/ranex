@@ -1,6 +1,6 @@
 # ADR-021 — host qualification is evidence, not a test the gate runs
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-11
 **Decision-makers:** repo owner
 **Slice:** SLICE-019, which ADR-006 already gives "`cmd_run` integration,
@@ -112,14 +112,12 @@ by the bound command's exit code, so excluding the files weakened that gate.
 
 ### Confirmation
 
-Confirmation is future-tense: SLICE-019 adds the qualification claim and kernel
-rule, then proves an absent claim fails and changed boot/LSM/userns anchors
-refuse. Today no qualification claim exists and absence can pass. Borrowed,
-forged, digest-mismatched and self-approved reports require a signed producer/approver
-envelope bound to the subject digest; that envelope is not specified here and is
-a SLICE-019 dependency, not a present claim. Tests run without model credentials.
-No outside panel has read this ADR; the OpenRouter MCP is reachable and the
-review is pending, and this line stands rather than implying consensus.
+The independent consensus panel (`consensus-luna` + `consensus-terra`) returned
+APPROVE on 2026-08-12 after the prior-art corrections in `69fd9db12f`.
+The signed producer/approver envelope bound to the subject digest remained a
+required, explicitly deferred SLICE-019 dependency, to be specified by that
+slice rather than claimed as a present control. Tests run without model
+credentials.
 
 ## Improvements on the prior art
 
