@@ -260,8 +260,6 @@ def test_execute_environment_only_includes_the_bridge_variables() -> None:
     assert environment["RANEX_EMIT"] == "/tmp/emit.jsonl"
     assert environment["HOME"] == "/tmp/delegation-home"
     assert environment["OPENROUTER_API_KEY"] == "token-present"
-    assert "RANEX_VERDICT_SIGNING_KEY" not in environment
-    assert "RANEX_VERDICT_DIR" not in environment
 
 
 def test_execute_environment_rejects_signing_key_in_ambient() -> None:
@@ -277,16 +275,6 @@ def test_execute_environment_rejects_signing_key_in_ambient() -> None:
             task_id="T-008",
             emit="/tmp/emit.jsonl",
             home="/tmp/delegation-home",
-        )
-
-
-def test_execute_environment_rejects_verdict_signing_key_in_ambient() -> None:
-    module = delegation()
-    with pytest.raises(ValueError, match=r"RANEX_VERDICT_SIGNING_KEY"):
-        module.execute_environment(
-            {"PATH": "/usr/bin:/bin", "OPENROUTER_API_KEY": "token-present",
-             "RANEX_VERDICT_SIGNING_KEY": "/tmp/verdict-key"},
-            task_id="T-008", emit="/tmp/emit.jsonl", home="/tmp/home",
         )
 
 

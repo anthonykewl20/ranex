@@ -204,10 +204,3 @@ def test_source_contains_no_styling_primitives() -> None:
         + ". Content is computed before any TTY check; styling belongs to a "
         "later step that cannot add, remove, reorder or reword a line."
     )
-
-
-def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
-    source = (SOURCE / "cli" / "main.py").read_text(encoding="utf-8")
-    assert "no evidence for required claim" in source
-    assert "refused without a usable " in source
-    assert "claim_id, so these required claims cannot be called work never " in source

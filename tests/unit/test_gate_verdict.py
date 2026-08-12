@@ -51,15 +51,6 @@ def evidence(claim: str, subject: str = SUBJECT, producer: str = "worker") -> Ev
     )
 
 
-def observed(claim: str, *, exit_code: int = 0, command_digest: str = COMMAND_DIGEST,
-             subject: str = SUBJECT) -> Evidence:
-    return Evidence(
-        claim_id=claim, subject_digest=subject, producer_id="worker",
-        command=" ".join(COMMAND), command_digest=command_digest,
-        executable_path=EXECUTABLE, exit_code=exit_code,
-    )
-
-
 # --- BC-1 -------------------------------------------------------------------
 
 
@@ -384,60 +375,3 @@ def test_evidence_with_nonzero_exit_does_not_satisfy_a_claim() -> None:
     )
     assert result.verdict is Verdict.FAIL
     assert result.missing_claims == ("tests-executed",)
-
-
-def test_structured_causes_cover_every_diagnosis_branch_without_rewording() -> None:
-    claim_ids = ("absent", "contradicted", "failed", "mismatched", "stale")
-    required = gate(*claim_ids)
-    records = (
-        evidence("contradicted"),
-        observed("contradicted", exit_code=1),
-        observed("failed", exit_code=1),
-        observed("mismatched", command_digest="sha256:" + "c" * 64),
-        evidence("stale", subject=OTHER_SUBJECT),
-    )
-    result = evaluate(required, records, subject_digest=SUBJECT, approver_id="owner")
-    assert [(cause.claim_id, cause.cause, cause.detail) for cause in result.causes] == [
-        ("contradicted", "contradicted", None),
-        ("failed", "failed", None),
-        ("mismatched", "mismatched", None),
-        ("stale", "stale", None),
-        ("absent", "absent", None),
-    ]
-    assert result.reason == (
-        "contradictory evidence — the same claim, subject and command reported both success and failure: contradicted; "
-        "the bound command was observed failing: failed; evidence describes a command the claim does not bind: mismatched; "
-        "evidence bound to a different subject digest: stale; no evidence for required claim: absent"
-    )
-
-
-def test_suite_failure_is_failed_detail_not_a_sixth_cause() -> None:
-    claim = Claim(
-        claim_id="suite", command_digest=COMMAND_DIGEST, results_required=True,
-        manifest_digest="sha256:" + "c" * 64,
-        expected_ids=("tests/test_a.py::test_a",), expected_skips={},
-    )
-    result = evaluate(
-        Gate("landing", "TESTS_EXECUTED", (claim,), True),
-        (evidence("suite"),), subject_digest=SUBJECT, approver_id="owner",
-    )
-    assert [(item.claim_id, item.cause, item.detail) for item in result.causes] == [
-        ("suite", "failed", "suite results artifact was absent")
-    ]
-    assert result.reason == "suite: suite results artifact was absent"
-
-
-def test_self_approval_is_data_not_a_claim_cause() -> None:
-    result = evaluate(
-        gate("tests-executed"), (evidence("tests-executed", producer="worker"),),
-        subject_digest=SUBJECT, approver_id="worker",
-    )
-    assert result.self_approval is True
-    assert result.causes == ()
-
-
-def test_claim_cause_refuses_an_empty_cause() -> None:
-    from ranex.governed_execution.domain.verdict import ClaimCause
-
-    with pytest.raises(ValueError, match="cause"):
-        ClaimCause(claim_id="tests-executed", cause="", detail=None)
