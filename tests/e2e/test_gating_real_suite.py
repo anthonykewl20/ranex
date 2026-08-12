@@ -954,3 +954,137 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     finally:
         restored = git(repository, "reset", "-q", "--hard", "HEAD^")
         assert restored.returncode == 0, restored.stderr
+
+
+def test_slice019_qualification_then_approval_passes_until_host_state_moves(
+) -> None:
+    """A signed, approved qualification is load-bearing in the real gate."""
+
+    from ranex.bootstrap.composition import build_gate_evaluator
+    from ranex.foundation import qualification
+    from ranex.foundation.canonical import canonical_sha256, command_digest
+    from ranex.governed_execution.domain import admission
+    from ranex.governed_execution.domain.verdict import Evidence
+
+    subject = "sha256:" + "a" * 64
+    argv = (
+        "python",
+        "-m",
+        "ranex.cli.host_confinement",
+        "qualify",
+        "--profile",
+        "governance/confinement/strict-local-host-v1.json",
+        "--artifact",
+        ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
+        "--manifest",
+        "governance/confinement/native-launcher-build-v1.json",
+        "--report",
+        ".local/ranex/qualification/strict-local-v1.json",
+    )
+    host_state = {
+        "lsm": {
+            "securityfs_lsm": "apparmor",
+            "apparmor_policy_identity": "p",
+            "selinux_policy_identity": None,
+        },
+        "unprivileged_userns_sysctls": {"user.max_user_namespaces": 15000},
+        "boot_id": "11111111-2222-3333-4444-555555555555",
+        "machine_id": "0123456789abcdef0123456789abcdef",
+        "delegation_identity": {
+            "uid": 1000,
+            "gid": 1000,
+            "cgroup_root": "/sys/fs/cgroup",
+            "cgroup_relative_path": "/session.scope",
+            "source": "direct",
+            "userns_state_source": "qualification-host-probe",
+        },
+    }
+    content = {
+        "schema": "ranex-strict-local-qualification-v1",
+        "qualified": True,
+        "host_state": host_state,
+        "profile_digest": "sha256:" + "1" * 64,
+        "build_manifest_digest": "sha256:" + "2" * 64,
+        "artifact_digest": "sha256:" + "3" * 64,
+        "subject_digest": subject,
+        "producer_id": "qualifier",
+        "approver_id": "reviewer",
+    }
+    producer_private, producer_public = generate_keypair()
+    approver_private, approver_public = generate_keypair()
+    report = {
+        **content,
+        "producer_signature": qualification.sign_qualification(content, producer_private),
+        "approver_signature": qualification.sign_qualification(content, approver_private),
+    }
+    admitted = admission.admit_qualification_reports(
+        [report],
+        {"qualifier": producer_public, "reviewer": approver_public},
+        subject_digest=subject,
+        live_host_state=host_state,
+        claim_id="host-qualification",
+        command=argv,
+    )
+    assert admitted.rejections == ()
+
+    tests_argv = ("uv", "run", "pytest", "-q", "--junitxml=governance/suite_results.xml")
+    manifest_value = {
+        "expected_skips": {},
+        "suite": ["tests/test_real.py::test_real"],
+    }
+    manifest_digest = "sha256:" + canonical_sha256(manifest_value)
+    tests_evidence = Evidence(
+        claim_id="tests-executed",
+        subject_digest=subject,
+        producer_id="worker",
+        command=" ".join(tests_argv),
+        command_digest=command_digest(tests_argv),
+        executable_path="/usr/bin/uv",
+        exit_code=0,
+        suite_results={
+            "manifest_digest": manifest_digest,
+            "counts": {
+                "passed": 1,
+                "skipped": 0,
+                "failed": 0,
+                "errors": 0,
+                "xfailed": 0,
+                "xpassed": 0,
+            },
+            "non_passed": [],
+            "missing": [],
+            "extra_count": 0,
+            "outcome_digest": "sha256:" + "4" * 64,
+        },
+    )
+    manifest = json.dumps(manifest_value).encode()
+    evaluator = build_gate_evaluator(
+        (REAL_REPO / "governance/gates.yaml").read_bytes(),
+        suite_manifest=manifest,
+    )
+    passed = evaluator.evaluate(
+        "landing",
+        (tests_evidence, *admitted.evidence),
+        subject_digest=subject,
+        approver_id="reviewer",
+    )
+    assert passed.verdict.value == "PASS"
+
+    moved = dict(host_state)
+    moved["boot_id"] = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
+    stale = admission.admit_qualification_reports(
+        [report],
+        {"qualifier": producer_public, "reviewer": approver_public},
+        subject_digest=subject,
+        live_host_state=moved,
+        claim_id="host-qualification",
+        command=argv,
+    )
+    failed = evaluator.evaluate(
+        "landing",
+        (tests_evidence, *stale.evidence),
+        subject_digest=subject,
+        approver_id="reviewer",
+    )
+    assert failed.verdict.value == "FAIL"
+    assert "host-qualification" in failed.missing_claims
