@@ -889,7 +889,9 @@ def test_this_repository_binds_its_catalog_to_the_canonical_suite_manifest(
 ) -> None:
     frozen = suite_api.load_manifest(REPO_ROOT / "governance" / "suite_manifest.json")
     gate = domain.loader.load_gate(REPO_ROOT / "governance" / "gates.yaml", "landing")
-    (loaded,) = gate.required_claims
+    loaded = next(
+        claim for claim in gate.required_claims if claim.claim_id == "tests-executed"
+    )
 
     assert loaded.results_artifact
     assert f"--junitxml={loaded.results_artifact}" in loaded.command

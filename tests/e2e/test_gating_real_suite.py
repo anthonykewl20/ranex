@@ -880,7 +880,9 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
 
     live_gate = load_gate(repository / "governance" / "gates.yaml", "landing")
     live_manifest = load_manifest(repository / "governance" / "suite_manifest.json")
-    (live_claim,) = live_gate.required_claims
+    live_claim = next(
+        claim for claim in live_gate.required_claims if claim.claim_id == "tests-executed"
+    )
     assert live_claim.results_artifact is not None
     assert f"--junitxml={live_claim.results_artifact}" in live_claim.command
     assert len(live_manifest["suite"]) >= 687
@@ -963,7 +965,11 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
 
     from ranex.bootstrap.composition import build_gate_evaluator
     from ranex.foundation import signing
-    from ranex.foundation.canonical import canonical_sha256, command_digest
+    from ranex.foundation.canonical import (
+        canonical_json_bytes,
+        canonical_sha256,
+        command_digest,
+    )
     from ranex.governed_execution.domain import admission
     from ranex.governed_execution.domain.verdict import Evidence
 
@@ -1065,7 +1071,7 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
             "outcome_digest": "sha256:" + "4" * 64,
         },
     )
-    manifest = json.dumps(manifest_value).encode()
+    manifest = canonical_json_bytes(manifest_value)
     evaluator = build_gate_evaluator(
         (REAL_REPO / "governance/gates.yaml").read_bytes(),
         suite_manifest=manifest,
