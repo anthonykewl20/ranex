@@ -1,6 +1,6 @@
 # SLICE-017 — qualify the strict-local host and native launcher
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-09
 **Priority:** P0 prerequisite — first active work in the approved-specification milestone.
 **ADR:** `docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md` —

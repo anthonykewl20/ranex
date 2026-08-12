@@ -305,15 +305,15 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** `docs/slices/SLICE-017-confinement-of-the-bound-command.md`.
-It is the single open P0 prerequisite: qualify the strict-local host and
-byte-reproducible native launcher without exposing a production command path.
+**Active slice:** none.
+SLICE-017 closed the P0 qualification prerequisite without exposing a
+production command path; SLICE-019 is not yet open.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
 durable retry, durable blockers, and Session-ID fencing — each gated by the
 SLICE-011 prototype record through a compiled test. The remaining durability
-sequence is parked/subordinate to P0. ADR-006 is split into active issue #10 /
+sequence is parked/subordinate to P0. ADR-006 is split into closed issue #10 /
 SLICE-017 qualification, then planned issue #21 / SLICE-018 lifecycle and issue
 #22 / SLICE-019 `cmd_run` closure. ADR-017 is `proposed`; its planned
 SLICE-029..044 run sequentially and SLICE-029 opens only after SLICE-019.
@@ -345,6 +345,12 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+- **SLICE-017-confinement-of-the-bound-command** — closed 2026-08-12. Its 47
+  qualification gates qualified the strict-local host and byte-reproducible GNU
+  C17 native launcher, binding LSM state, user-namespace sysctls, boot ID,
+  machine ID and delegation identity. ADR-006 and RISK-06 remain open for
+  SLICE-018/019; `cmd_run` integration is explicitly deferred to SLICE-019.
 
 - **SLICE-013-reconciler-reorder** — closed 2026-08-08, all seven criteria met,
   landed in `anthonykewl20/ranex-harness` (`a8bc7bdf35`). A crash with an empty
