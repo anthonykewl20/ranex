@@ -29,10 +29,10 @@ def validate_projection(record: Mapping[str, Any], *, required_claims: Sequence[
             raise ValueError("cause claim must be a string or null")
         if claim_id is not None and claim_id not in required:
             raise ValueError("cause names a non-required claim")
-        identity = claim_id if claim_id is not None else None
-        if identity in seen:
+        if claim_id is not None and claim_id in seen:
             raise ValueError("duplicate cause for claim")
-        seen.add(identity)
+        if claim_id is not None:
+            seen.add(claim_id)
 
 
 def project_verdict(evaluation: Evaluation, admission: Admission, *, required_claims: Sequence[str]) -> dict[str, Any]:

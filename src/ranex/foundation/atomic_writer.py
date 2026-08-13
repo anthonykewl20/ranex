@@ -12,7 +12,9 @@ def write_atomic(target: Path, data: bytes) -> None:
     target.parent.mkdir(parents=True, exist_ok=True)
     parent = os.open(target.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
     temporary = f".{target.name}.{uuid.uuid4().hex}"
+    backup = f".{target.name}.{uuid.uuid4().hex}.backup"
     descriptor = -1
+    had_previous = False
     try:
         descriptor = os.open(temporary, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC,
                              0o444, dir_fd=parent)
@@ -23,13 +25,33 @@ def write_atomic(target: Path, data: bytes) -> None:
                 raise OSError("atomic write made no progress")
             view = view[written:]
         os.fsync(descriptor)
+        try:
+            os.link(target.name, backup, src_dir_fd=parent, dst_dir_fd=parent,
+                    follow_symlinks=False)
+            had_previous = True
+        except FileNotFoundError:
+            pass
         os.replace(temporary, target.name, src_dir_fd=parent, dst_dir_fd=parent)
-        os.fsync(parent)
+        try:
+            os.fsync(parent)
+        except OSError:
+            if had_previous:
+                os.replace(backup, target.name, src_dir_fd=parent, dst_dir_fd=parent)
+            else:
+                os.unlink(target.name, dir_fd=parent)
+            os.fsync(parent)
+            raise
+        if had_previous:
+            os.unlink(backup, dir_fd=parent)
     finally:
         if descriptor >= 0:
             os.close(descriptor)
         try:
             os.unlink(temporary, dir_fd=parent)
+        except FileNotFoundError:
+            pass
+        try:
+            os.unlink(backup, dir_fd=parent)
         except FileNotFoundError:
             pass
         finally:

@@ -30,6 +30,8 @@ def validate_publication_value(value: Any) -> None:
 
 
 def publish_verdict(path: Path, record: Mapping[str, Any], *, signer_id: str, private_key: str) -> None:
+    if set(record) != {*SIGNED_FIELDS, "record_digest"}:
+        raise ValueError("verdict publication must contain the exact Record fields")
     content = {field: record[field] for field in SIGNED_FIELDS}
     validate_publication_value(content)
     expected = "sha256:" + canonical_sha256(content)
