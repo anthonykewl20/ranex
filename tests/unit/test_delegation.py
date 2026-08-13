@@ -73,6 +73,53 @@ def test_exec_environment_holds_signing_key_uses_proc_environ(tmp_path: Path) ->
     assert completed.stdout.strip() == "True"
 
 
+def test_exec_environment_holds_verdict_signing_key_uses_proc_environ(tmp_path: Path) -> None:
+    if "MUTANT_UNDER_TEST" in os.environ:
+        # The probe subprocess imports the copied tree, whose trampoline cannot
+        # initialise mutmut's runtime outside its runner. The same property is
+        # asserted in-process above, so mutation pressure is not lost.
+        pytest.skip("probe subprocess cannot run the mutmut-trampolined tree")
+    if b"RANEX_VERDICT_SIGNING_KEY" in Path("/proc/self/environ").read_bytes():
+        pytest.skip(
+            "in-process check is invalid when parent process already owns "
+            "RANEX_VERDICT_SIGNING_KEY"
+        )
+
+    os.environ["RANEX_VERDICT_SIGNING_KEY"] = str(tmp_path / "proc-verdict-key.txt")
+    try:
+        module = delegation()
+        assert module.exec_environment_holds_signing_key() is False
+    finally:
+        os.environ.pop("RANEX_VERDICT_SIGNING_KEY", None)
+
+    probe = tmp_path / "check_proc_verdict_environment.py"
+    probe.write_text(
+        textwrap.dedent(
+            """\
+            import os
+            os.environ.pop("RANEX_VERDICT_SIGNING_KEY", None)
+            from ranex.cli.delegation import exec_environment_holds_signing_key
+
+            print(exec_environment_holds_signing_key())
+            """
+        ),
+        encoding="utf-8",
+    )
+
+    completed = subprocess.run(
+        [sys.executable, str(probe)],
+        check=False,
+        capture_output=True,
+        text=True,
+        env={
+            **probe_environment(),
+            "RANEX_VERDICT_SIGNING_KEY": "/tmp/ranex-verdict-signing-key-for-proc-test",
+        },
+    )
+    assert completed.returncode == 0, completed.stderr
+    assert completed.stdout.strip() == "True"
+
+
 def test_run_harness_timeout_reaps_process_group(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
     module = delegation()
 

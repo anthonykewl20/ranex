@@ -32,14 +32,18 @@ _OUTPUT_TAIL_LIMIT = 4000
 
 
 def exec_environment_holds_signing_key() -> bool:
-    """Inspect the process environment in `/proc` and ignore `os.environ`."""
+    """Inspect `/proc` for either signing credential, ignoring `os.environ`."""
 
     data = Path("/proc/self/environ").read_bytes()
+    signing_key_variables = {
+        SIGNING_KEY_VARIABLE.encode(),
+        VERDICT_SIGNING_KEY_VARIABLE.encode(),
+    }
     for field in data.split(b"\0"):
         if not field:
             continue
         name = field.split(b"=", 1)[0]
-        if name == SIGNING_KEY_VARIABLE.encode():
+        if name in signing_key_variables:
             return True
     return False
 
@@ -238,7 +242,8 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
     try:
         if exec_environment_holds_signing_key():
             raise ValueError(
-                "refusing to delegate execution while RANEX_SIGNING_KEY is present"
+                "refusing to delegate execution while a signing credential "
+                "(RANEX_SIGNING_KEY or RANEX_VERDICT_SIGNING_KEY) is present"
             )
         if not os.environ.get(MODEL_CREDENTIAL_VARIABLE):
             raise ValueError(
