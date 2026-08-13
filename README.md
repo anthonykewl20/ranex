@@ -305,10 +305,8 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-019-host-qualification-as-gate-evidence.md.
-SLICE-017 closed the P0 qualification prerequisite without exposing a
-production command path; SLICE-019 now integrates its report through the
-existing `ranex-evidence-v3` envelope, with freshness checked by admission.
+**Active slice:** none.
+SLICE-019 closed the host-qualification evidence integration; SLICE-020 is next.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -346,6 +344,16 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+- **SLICE-019-host-qualification-as-gate-evidence** — closed 2026-08-13. The
+  landing gate now consumes host qualification as signed, subject-bound evidence
+  under the existing `EVIDENCE_DOMAIN`; admission deeply validates the closed
+  report and re-reads durable boot, machine, LSM, userns-sysctl and parent-
+  namespace uid/gid anchors, refusing absent, stale, mismatched, ambiguous or
+  self-approved evidence. Qualification runs as a host operation through
+  `cmd_run`, while the kernel remains byte-exact. The real-operator e2e is
+  honestly guarded and skips without delegated cgroup controllers; `cmd_run`
+  confinement and RISK-06 remain open.
 
 - **SLICE-017-confinement-of-the-bound-command** — closed 2026-08-12. Its 47
   qualification gates qualified the strict-local host and byte-reproducible GNU
