@@ -1,0 +1,30 @@
+{
+  "cgroup": {
+    "controllers": ["cpu", "memory", "pids"],
+    "start_gate_fd": 3
+  },
+  "landlock_abi_minimum": 6,
+  "mandatory_layers": {
+    "cgroup": true,
+    "ipc": true,
+    "landlock": true,
+    "mount": true,
+    "network": true,
+    "no_new_privs": true,
+    "pid": true,
+    "seccomp": true,
+    "user": true
+  },
+  "mounts": {
+    "dev": "minimal",
+    "output": "writable-bounded",
+    "proc": "fresh",
+    "scratch": "writable-bounded",
+    "subject": "read-only",
+    "toolchain": "read-only"
+  },
+  "output_resolution": ["RESOLVE_BENEATH", "RESOLVE_NO_MAGICLINKS", "RESOLVE_NO_SYMLINKS"],
+  "profile": "strict-local-v1",
+  "schema": "ranex-strict-local-runtime-v1",
+  "seccomp": {"architecture": "x86_64", "policy": "default-deny-v1"}
+}
