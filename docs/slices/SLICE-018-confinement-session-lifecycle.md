@@ -147,6 +147,8 @@ partial temporary.
 | Failure | Required result | Gate |
 |---|---|---|
 | Controller remains in domain root or worker cgroup is threaded | refuse before subtree enable/gate release | 4 |
+| ADR-006 #21 host state drifts after qualification (LSM, userns sysctl or cgroup delegation) | refuse before launch; command marker and result absent | 4 |
+| ADR-006 #4 output/scratch aliases subject, toolchain, each other or authority paths | refuse descriptor before launch | 4 |
 | Required cgroup controller or delegation disappears | kill if needed; refuse, never re-resolve/fallback | 4 |
 | Limit write, enrollment, or readback is missing/forged | gate stays closed; kill and refuse | 4 |
 | Worker races the start gate | command marker absent; whole cgroup killed | 4 |
