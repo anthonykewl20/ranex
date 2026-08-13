@@ -35,11 +35,10 @@ KERNEL = (
     / "src/ranex/governed_execution/domain/verdict.py"
 )
 
-# Digest as of SLICE-003, which moved the kernel on purpose: `Claim` gained
-# `command_digest`, `Evidence` gained `command_digest` and `executable_path`,
-# and `satisfies()` compares the two digests. Satisfaction has to ask what ran,
-# and there is nowhere but here for that comparison to live.
-KERNEL_DIGEST = "6bde85740ce9f7c4303f74b939b6b8ffe96b2924d672a093ff30ad0f822301fd"
+# Digest as of SLICE-020, which moved the kernel deliberately under ADR-020:
+# Evaluation now carries the structured five-kind diagnosis and self-approval
+# marker from the same partition that renders the byte-identical reason.
+KERNEL_DIGEST = "67e4fa90ab8fcf139c6a0f8e294795485cfd56d847b791d79129dd6f8f44a4d0"
 
 
 def test_verdict_module_is_byte_for_byte_unchanged() -> None:
