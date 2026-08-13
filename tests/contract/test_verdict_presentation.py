@@ -236,8 +236,8 @@ def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
     subject = "sha256:" + canonical_sha256({"tree": tree})
     expected = (
         b"FAIL  gate=landing  rule=TESTS_EXECUTED\n"
-        b"      REFUSED record 0 [malformed-record] record does not have exactly the signed fields plus signature\n"
-        b"      REFUSED record 1 [malformed-record] record does not have exactly the signed fields plus signature\n"
+        b"      REFUSED record 0 [malformed-record] missing field(s): command, command_digest, executable_path, exit_code, producer_id, subject_digest, suite_results\n"
+        b"      REFUSED record 1 [malformed-record] missing field(s): command, command_digest, executable_path, exit_code, producer_id, subject_digest, suite_results\n"
         b"      2 record(s) were refused above; no verifying evidence remains for: tests-executed\n"
         b"      1 record(s) above were refused without a usable claim_id, so these required claims cannot be called work never done: host-qualification\n"
     ) + f"      subject={subject}\n".encode()
