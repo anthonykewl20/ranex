@@ -25,6 +25,7 @@ next.
 from __future__ import annotations
 
 import os
+import json
 import pty
 import re
 import subprocess
@@ -204,3 +205,42 @@ def test_source_contains_no_styling_primitives() -> None:
         + ". Content is computed before any TTY check; styling belongs to a "
         "later step that cannot add, remove, reorder or reword a line."
     )
+
+
+def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
+    from ranex.foundation.canonical import canonical_sha256
+
+    evidence = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.json"
+    evidence.write_text(json.dumps([
+        {"claim_id": "tests-executed"},
+        {"claim_id": 7},
+    ]), encoding="utf-8")
+    journal_pipe = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
+    journal_pty = REPO_ROOT / "governance" / f"presentation-{uuid.uuid4().hex}.sqlite3"
+    common = [
+        "gate", "evaluate", "HEAD", "--approver", "owner",
+        "--evidence", f"governance/{evidence.name}",
+    ]
+    try:
+        piped = _through_pipe(_cli(*common, "--journal", f"governance/{journal_pipe.name}"))
+        attended = _through_pty(_cli(*common, "--journal", f"governance/{journal_pty.name}"))
+    finally:
+        evidence.unlink(missing_ok=True)
+        journal_pipe.unlink(missing_ok=True)
+        journal_pty.unlink(missing_ok=True)
+
+    tree = subprocess.run(
+        ["git", "rev-parse", "HEAD^{tree}"], cwd=REPO_ROOT, check=True,
+        capture_output=True, text=True,
+    ).stdout.strip()
+    subject = "sha256:" + canonical_sha256({"tree": tree})
+    expected = (
+        b"FAIL  gate=landing  rule=TESTS_EXECUTED\n"
+        b"      REFUSED record 0 [malformed-record] record does not have exactly the signed fields plus signature\n"
+        b"      REFUSED record 1 [malformed-record] record does not have exactly the signed fields plus signature\n"
+        b"      2 record(s) were refused above; no verifying evidence remains for: tests-executed\n"
+        b"      1 record(s) above were refused without a usable claim_id, so these required claims cannot be called work never done: host-qualification\n"
+        f"      subject={subject}\n".encode()
+    )
+    assert piped == expected
+    assert attended == piped
