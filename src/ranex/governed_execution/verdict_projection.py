@@ -43,7 +43,7 @@ def project_verdict(evaluation: Evaluation, admission: Admission, *, required_cl
     }
     causes = [
         {"claim_id": item.claim_id, "cause": item.cause, **({"detail": item.detail} if item.detail is not None else {})}
-        for item in evaluation.causes if not (item.cause == "absent" and item.claim_id in refused)
+        for item in evaluation.causes if item.claim_id not in refused
     ]
     causes.extend({"claim_id": claim_id, "cause": "refused"} for claim_id in sorted(refused))
     causes.extend(
