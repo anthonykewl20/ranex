@@ -240,7 +240,6 @@ def test_refused_and_unattributable_stdout_stays_byte_exact() -> None:
         b"      REFUSED record 1 [malformed-record] record does not have exactly the signed fields plus signature\n"
         b"      2 record(s) were refused above; no verifying evidence remains for: tests-executed\n"
         b"      1 record(s) above were refused without a usable claim_id, so these required claims cannot be called work never done: host-qualification\n"
-        f"      subject={subject}\n".encode()
-    )
+    ) + f"      subject={subject}\n".encode()
     assert piped == expected
     assert attended == piped
