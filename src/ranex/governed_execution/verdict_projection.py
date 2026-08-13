@@ -6,6 +6,7 @@ from collections.abc import Mapping, Sequence
 from typing import Any
 
 from ranex.foundation.canonical import canonical_sha256
+from ranex.foundation.publication_validation import validate_publication_value
 from ranex.governed_execution.domain.admission import Admission
 from ranex.governed_execution.domain.verdict import Evaluation
 
@@ -64,6 +65,7 @@ def project_verdict(evaluation: Evaluation, admission: Admission, *, required_cl
         "self_approval": evaluation.self_approval, "reason": evaluation.reason,
     }
     validate_projection(body, required_claims=required_claims)
+    validate_publication_value(body)
     return {**body, "record_digest": "sha256:" + canonical_sha256(body)}
 
 

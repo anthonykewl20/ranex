@@ -639,7 +639,9 @@ def directory_behind(descriptor: int) -> Path:
     )
 
 
-def private_signing_key(governed_root: Path) -> str:
+def private_signing_key(
+    governed_root: Path, *, variable: str = SIGNING_KEY_VARIABLE
+) -> str:
     """Read the producer's private key from the environment.
 
     Refuses a key any other account can read. `keygen` writes 0600, but a key
@@ -652,17 +654,17 @@ def private_signing_key(governed_root: Path) -> str:
     so nothing else notices it is one `git add -f` from being published.
     """
 
-    raw_path = os.environ.get(SIGNING_KEY_VARIABLE)
+    raw_path = os.environ.get(variable)
     if not raw_path:
         raise ValueError(
-            f"{SIGNING_KEY_VARIABLE} is not set, so nothing can sign this "
+            f"{variable} is not set, so nothing can sign this "
             "record; refusing to write unsigned evidence"
         )
     # Resolved before it is judged: the check must be about the file that will
     # actually be read, not about the name it was reached by.
     key_path = Path(raw_path).resolve()
     if not key_path.is_file():
-        raise ValueError(f"{SIGNING_KEY_VARIABLE} points at no file: {key_path}")
+        raise ValueError(f"{variable} points at no file: {key_path}")
 
     if committable_into(key_path, governed_root):
         raise ValueError(
@@ -803,13 +805,16 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             trust_keyring = load_trust_keyring_text(
                 keyring_source.decode("utf-8"), keyring_path
             )
-            private_key = Path(verdict_key_path).read_text(encoding="utf-8").strip()
+            private_key = private_signing_key(
+                governed_root, variable=VERDICT_SIGNING_KEY_VARIABLE
+            )
             if public_key_for(private_key) != trust_keyring.verdict_signer_public_key:
                 raise ValueError("verdict signing key does not match the committed verdict signer")
             verdict_dir = resolve_within_repository(root, verdict_dir_value)
             publish_verdict(
                 verdict_dir / f"{result.subject_digest.removeprefix('sha256:')}.json",
                 projected,
+                root=governed_root,
                 signer_id=trust_keyring.verdict_signer_id,
                 private_key=private_key,
             )

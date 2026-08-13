@@ -243,11 +243,20 @@ class Evaluation:
         return {
             "approver_id": self.approver_id,
             "catalog_digest": self.catalog_digest,
+            "causes": [
+                {
+                    "claim_id": item.claim_id,
+                    "cause": item.cause,
+                    **({"detail": item.detail} if item.detail is not None else {}),
+                }
+                for item in self.causes
+            ],
             "considered": list(self.considered),
             "failing_rule": self.failing_rule,
             "gate_id": self.gate_id,
             "missing_claims": list(self.missing_claims),
             "reason": self.reason,
+            "self_approval": self.self_approval,
             "subject_digest": self.subject_digest,
             "subject_lane": self.subject_lane,
             "verdict": str(self.verdict),

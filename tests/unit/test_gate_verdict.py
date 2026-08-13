@@ -6,6 +6,8 @@ enforces so a failure points at the contract, not just at a line number.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from ranex.foundation.canonical import canonical_sha256
@@ -125,6 +127,26 @@ def test_bc4_identical_inputs_produce_identical_records() -> None:
     b = evaluate(*args, subject_digest=SUBJECT, approver_id="owner")
     assert a.record_digest == b.record_digest
     assert a.as_record() == b.as_record()
+
+
+def test_journal_persists_structured_causes_and_self_approval(tmp_path: Path) -> None:
+    from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
+
+    journal = Journal(tmp_path / "journal.sqlite3")
+    failed = evaluate(gate("tests-executed"), (), subject_digest=SUBJECT, approver_id="owner")
+    self_approved = evaluate(
+        gate("tests-executed"), (evidence("tests-executed"),),
+        subject_digest=SUBJECT, approver_id="worker",
+    )
+
+    journal.append(failed)
+    journal.append(self_approved)
+
+    failed_row, self_approval_row = journal.entries()
+    assert failed_row["causes"] == [{"cause": "absent", "claim_id": "tests-executed"}]
+    assert failed_row["self_approval"] is False
+    assert self_approval_row["causes"] == []
+    assert self_approval_row["self_approval"] is True
 
 
 # --- BC-5 : no model in the enforcement path --------------------------------

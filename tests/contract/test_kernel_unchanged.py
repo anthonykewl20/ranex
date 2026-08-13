@@ -36,9 +36,10 @@ KERNEL = (
 )
 
 # Digest as of SLICE-020, which moved the kernel deliberately under ADR-020:
-# Evaluation now carries the structured five-kind diagnosis and self-approval
-# marker from the same partition that renders the byte-identical reason.
-KERNEL_DIGEST = "67e4fa90ab8fcf139c6a0f8e294795485cfd56d847b791d79129dd6f8f44a4d0"
+# Evaluation now carries and serializes the structured five-kind diagnosis and
+# self-approval marker from the same partition that renders the byte-identical
+# reason, so journal records preserve both rather than only the prose.
+KERNEL_DIGEST = "2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6"
 
 
 def test_verdict_module_is_byte_for_byte_unchanged() -> None:

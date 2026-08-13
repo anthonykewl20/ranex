@@ -2365,7 +2365,7 @@ def _validate_profile_and_objects(
 def _write_report_atomic(root: Path, report: Path, value: Mapping[str, Any]) -> None:
     try:
         report.relative_to(root)
-        atomic_writer.write_atomic(report, canonical_json_bytes(value))
+        atomic_writer.write_atomic(report, canonical_json_bytes(value), root=root)
     except ValueError as exc:
         raise HostConfinementError(E_CLEANUP, f"qualification report publication failed: {exc}") from exc
     except OSError as exc:

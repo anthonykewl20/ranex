@@ -113,3 +113,13 @@ def test_reader_refuses_every_context_mismatch(tmp_path: Path, field: str) -> No
     path = write(tmp_path / "verdict.json", envelope(private))
     context = {field: "sha256:" + "c" * 64 if "digest" in field else "other"}
     assert str(read(path, {SIGNER: public}, **context).state) == "context-mismatch"
+
+
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), "\ud800"])
+def test_reader_returns_malformed_for_noncanonical_json_values(tmp_path: Path, bad: object) -> None:
+    private, public = generate_keypair()
+    value = envelope(private)
+    value["record"]["reason"] = bad
+    path = write(tmp_path / "verdict.json", value)
+
+    assert str(read(path, {SIGNER: public}).state) == "malformed"

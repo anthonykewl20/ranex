@@ -58,3 +58,32 @@ def test_projection_refuses_duplicate_or_non_required_causes(kind: str) -> None:
         causes = [{"claim_id": "other", "cause": "absent"}]
     with pytest.raises(ValueError, match="cause|claim"):
         validate_projection({"causes": causes}, required_claims=("tests",))
+
+
+@pytest.mark.parametrize("bad", [1.5, 2**53, "\U0001f600"])
+def test_projection_refuses_cross_language_values_before_digest(
+    bad: object, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from ranex.governed_execution import verdict_projection
+
+    digest_called = False
+
+    def unexpected_digest(_value: object) -> str:
+        nonlocal digest_called
+        digest_called = True
+        raise AssertionError("record_digest was computed before publication validation")
+
+    monkeypatch.setattr(verdict_projection, "canonical_sha256", unexpected_digest)
+
+    rejection = Rejection(
+        bad if isinstance(bad, int) else 0,  # type: ignore[arg-type]
+        RejectionReason.BAD_SIGNATURE,
+        bad if not isinstance(bad, int) else "bad",  # type: ignore[arg-type]
+        "worker",
+        "tests",
+    )
+    with pytest.raises(ValueError):
+        verdict_projection.project_verdict(
+            evaluation(), Admission((), (rejection,)), required_claims=("tests",)
+        )
+    assert digest_called is False

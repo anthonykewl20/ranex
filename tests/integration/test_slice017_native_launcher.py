@@ -68,7 +68,9 @@ SYS_KEYCTL = 250
 AT_EMPTY_PATH = 0x1000
 KEYCTL_JOIN_SESSION_KEYRING = 1
 RESPONSE_LIMIT = 65_536
-MAIN_PY_SHA256 = "eff4086f22e6cd474a88e28fa9a1fc419b441889a595531b79d52d7115970654"
+# SLICE-020 deliberately changes the production entrypoint to protect and root
+# verdict-key loading/publication while retaining the frozen launcher boundary.
+MAIN_PY_SHA256 = "4f29feb1c486fcd2600253db912d87069d946151b1924da89301ace0d7be3e14"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
