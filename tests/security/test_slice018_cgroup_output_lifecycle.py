@@ -169,6 +169,16 @@ def _make_output_attack(root: Path, kind: str) -> Callable[[], None]:
 def test_gate6_constructed_output_attacks_are_refused(
     tmp_path: Path, kind: str, limits: dict[str, int]
 ) -> None:
+    if kind == "device":
+        probe = tmp_path / "cap-mknod-probe"
+        try:
+            os.mknod(probe, stat.S_IFCHR | 0o600, os.makedev(1, 3))
+        except PermissionError:
+            pytest.skip(
+                "CAP_MKNOD unavailable — device-node output-tamper refusal is host-unverified"
+            )
+        finally:
+            probe.unlink(missing_ok=True)
     output = tmp_path / "output"
     output.mkdir()
     cleanup = _make_output_attack(output, kind)
