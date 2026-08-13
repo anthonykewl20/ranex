@@ -1,6 +1,7 @@
 # SLICE-020 — judgment identity and verdict read channel
 
-**Status:** open
+**Status:** done
+**Closed:** 2026-08-13
 **Opened:** 2026-08-12
 **Priority:** P0 — the harness cannot read a verdict, and prose is the only cause
 interface today.

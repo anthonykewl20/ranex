@@ -1,6 +1,6 @@
 # ADR-020 — cause is structure, not prose
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-11
 **Decision-makers:** repo owner
 **Slice:** `not yet opened — shares the kernel slice with ADR-019 and waits on SLICE-017. BOARD-02 is this decision; BOARD-05's exhaustive cause renderer queues behind it`

@@ -1,6 +1,6 @@
 # ADR-019 — the verdict read channel
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-11
 **Decision-makers:** repo owner
 **Slice:** `not yet opened — SLICE-017 holds the one-slice budget. This ADR and the structured cause it depends on must both land before that slice opens; BOARD-01 and BOARD-05..BOARD-14 queue behind it`

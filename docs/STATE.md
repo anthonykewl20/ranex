@@ -7,25 +7,25 @@
 
 ## Where we stopped
 
-SLICE-017 is closed. ADR-021 was accepted after consensus. SLICE-019 implemented
-host qualification as signed, subject-bound landing-gate evidence, passed its
-qa-gate after five consensus rounds (consensus QA-PASS ×2), and is now closed.
+SLICE-020 is closed and shipped. It delivered judgment identity: structured
+five-kind causes on `Evaluation.as_record`; verdict projection composing refused
+and unattributable causes; a dedicated `kernel-verdict-signer` under
+`ranex-verdict-v1`; a publication validator; one shared rooted atomic writer;
+and a total closed-state reader.
 
-## Preserved for SLICE-020 (ready when SLICE-019 closes)
-
-SLICE-020 (judgment identity and verdict-read channel under ADR-019/020) is
-preserved on branch `agent/slice020-impl`. It is the next slice.
+The verdict channel is UI/board-track work under ADR-018/022, not the P0 critical
+path. That path remains SLICE-018 followed by SLICE-029..044.
 
 ## Next
 
-1. Resume SLICE-020 from `agent/slice020-impl`.
-2. Then SLICE-018/029; SLICE-029..044 strictly one at a time (ADR-017; MAP §0.26).
+Open SLICE-018 for the cgroup/namespace/bounded-output lifecycle. ADR-006 is
+already written with prior art vendored. The slice has no dependency on the
+verdict channel and is ready to open.
 
 ## Known limits
 
-- The materialised suite is not fully deterministic — a SLICE-017 cgroup-inotify
-  test flaked once under load and remains unfixed.
-- The cgroup-observer test has a known unresolved flake.
-- Running the harness commits its tree on idle (`plugin/ranex.ts`).
-- The real qualification e2e honestly skips on hosts without delegated cgroup
-  `cpu`; `cmd_run` confinement and RISK-06 remain open.
+- The cgroup-observer test still flakes with `OSError(19)` under load; unfixed.
+- Real qualification e2e skips on hosts without delegated cgroup `cpu`, as
+  declared in the manifest.
+- `mutmut` did not complete for this slice because the SLICE-017 copy-repo test
+  environment crashed. This is advisory/non-blocking and remains unverified.

@@ -306,7 +306,8 @@ none of the surface around it does.
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
 **Active slice:** none.
-SLICE-019 closed the host-qualification evidence integration; SLICE-020 is next.
+SLICE-020 closed judgment identity and the verdict read channel; SLICE-018 is
+next for the cgroup/namespace/bounded-output lifecycle.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -315,7 +316,7 @@ SLICE-011 prototype record through a compiled test. The remaining durability
 sequence is parked/subordinate to P0. ADR-006 is split into closed issue #10 /
 SLICE-017 qualification, then planned issue #21 / SLICE-018 lifecycle and issue
 #22 / SLICE-019 `cmd_run` closure. ADR-017 is `proposed`; its planned
-SLICE-029..044 run sequentially and SLICE-029 opens only after SLICE-019.
+SLICE-029..044 run sequentially after SLICE-018.
 036 is qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
@@ -344,6 +345,12 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+- **SLICE-020-judgment-identity-and-verdict-read-channel** — closed 2026-08-13.
+  Evaluation records now carry structured five-kind causes and self-approval;
+  projection composes refused and unattributable rejections. Dedicated verdict
+  signing, validated atomic publication, and a total closed-state reader provide
+  the kernel-owned channel consumed by later UI/board work.
 
 - **SLICE-019-host-qualification-as-gate-evidence** — closed 2026-08-13. The
   landing gate now consumes host qualification as signed, subject-bound evidence
