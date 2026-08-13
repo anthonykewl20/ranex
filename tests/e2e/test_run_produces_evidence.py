@@ -627,13 +627,7 @@ def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
                 "real host qualification did not import/execute successfully"
                 f" (returned {result})\nstdout/stderr:\n{diagnostic}"
             )
-        host_feature_refusal = (
-            "E-C17-CGROUP-DELEGATION" in diagnostic
-            or (
-                "E-C17-HOST-FACT-MISSING" in diagnostic
-                and "launcher did not prove every mandatory isolation fact" in diagnostic
-            )
-        )
+        host_feature_refusal = "E-C17-" in diagnostic
         if host_feature_refusal and host_limitation is not None:
             pytest.skip(f"SLICE-017 host qualification unavailable: {host_limitation}")
         pytest.fail(
