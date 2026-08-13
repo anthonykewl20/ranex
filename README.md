@@ -305,9 +305,9 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none.
-SLICE-020 closed judgment identity and the verdict read channel; SLICE-018 is
-next for the cgroup/namespace/bounded-output lifecycle.
+**Active slice:** `SLICE-018-confinement-session-lifecycle`.
+Its frozen contract covers the cgroup/namespace/bounded-output lifecycle with
+no `cmd_run` or signing path.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
