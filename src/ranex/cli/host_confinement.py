@@ -24,6 +24,7 @@ from typing import Any, NoReturn
 
 from ranex.cli.confinement import resolve_within_repository
 from ranex.foundation.canonical import canonical_json, canonical_json_bytes, command_digest
+from ranex.foundation import atomic_writer
 
 E_ARCH = "E-C17-ARCH-UNSUPPORTED"
 E_BUILD_INPUT = "E-C17-BUILD-INPUT-DRIFT"
@@ -2362,40 +2363,15 @@ def _validate_profile_and_objects(
 
 
 def _write_report_atomic(root: Path, report: Path, value: Mapping[str, Any]) -> None:
-    parent = _open_created_directory(root, report.parent)
-    temporary = f".{report.name}.{uuid.uuid4().hex}"
-    descriptor = -1
     try:
-        descriptor = os.open(
-            temporary,
-            os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_CLOEXEC,
-            0o444,
-            dir_fd=parent,
-        )
-        data = canonical_json_bytes(value)
-        view = memoryview(data)
-        while view:
-            written = os.write(descriptor, view)
-            view = view[written:]
-        os.fsync(descriptor)
-        os.replace(temporary, report.name, src_dir_fd=parent, dst_dir_fd=parent)
-        _fsync_publication_or_rollback(
-            parent,
-            report.name,
-            failure_code=E_CLEANUP,
-            context="qualification report",
-        )
+        report.relative_to(root)
+        atomic_writer.write_atomic(report, canonical_json_bytes(value))
+    except ValueError as exc:
+        raise HostConfinementError(E_CLEANUP, f"qualification report publication failed: {exc}") from exc
     except OSError as exc:
         raise HostConfinementError(
             E_CLEANUP, f"qualification report publication failed: {exc}"
         ) from exc
-    finally:
-        if descriptor >= 0:
-            os.close(descriptor)
-        try:
-            _cleanup_temporary(parent, temporary, "qualification report")
-        finally:
-            os.close(parent)
 
 
 def _qualification_open_object(

@@ -212,6 +212,17 @@ class Gate:
 
 
 @dataclass(frozen=True, slots=True)
+class ClaimCause:
+    claim_id: str
+    cause: str
+    detail: str | None = None
+
+    def __post_init__(self) -> None:
+        _require_text(self.claim_id, "claim_id")
+        _require_text(self.cause, "cause")
+
+
+@dataclass(frozen=True, slots=True)
 class Evaluation:
     verdict: Verdict
     gate_id: str
@@ -223,6 +234,8 @@ class Evaluation:
     catalog_digest: str | None
     approver_id: str
     considered: tuple[str, ...]
+    causes: tuple[ClaimCause, ...]
+    self_approval: bool
 
     def as_record(self) -> dict[str, object]:
         """The appended record. Ordered and typed so two runs are identical."""
@@ -272,7 +285,7 @@ def _diagnosis(
     subject_digest: str,
     contradicted: tuple[str, ...],
     missing: tuple[str, ...],
-) -> str:
+) -> tuple[tuple[ClaimCause, ...], str]:
     """Why the gate failed, per claim and in its own words.
 
     Four different events reach a caller as "this claim is not satisfied", and
@@ -287,7 +300,7 @@ def _diagnosis(
     stale: list[str] = []
     mismatched: list[str] = []
     failed: list[str] = []
-    suite_failures: list[str] = []
+    suite_failures: list[tuple[str, str]] = []
     for claim in gate.required_claims:
         if claim.claim_id not in missing or claim.claim_id in contradicted:
             # A contradiction is already named, and naming it twice under a
@@ -310,7 +323,7 @@ def _diagnosis(
                 }
             )
             if details:
-                suite_failures.append(f"{claim.claim_id}: {', '.join(details)}")
+                suite_failures.append((claim.claim_id, ", ".join(details)))
             else:
                 failed.append(claim.claim_id)
         elif any(item.subject_digest == subject_digest for item in named):
@@ -332,7 +345,22 @@ def _diagnosis(
     standard = [
         f"{text}: {', '.join(sorted(claims))}" for claims, text in clauses if claims
     ]
-    return "; ".join([*suite_failures, *standard])
+    causes = tuple(
+        ClaimCause(claim_id, kind, detail)
+        for entries, kind in (
+            (((claim_id, None) for claim_id in contradicted), "contradicted"),
+            (((claim_id, None) for claim_id in failed), "failed"),
+            (suite_failures, "failed"),
+            (((claim_id, None) for claim_id in mismatched), "mismatched"),
+            (((claim_id, None) for claim_id in stale), "stale"),
+            (((claim_id, None) for claim_id in absent), "absent"),
+        )
+        for claim_id, detail in sorted(entries)
+    )
+    reason = "; ".join(
+        [*(f"{claim_id}: {detail}" for claim_id, detail in suite_failures), *standard]
+    )
+    return causes, reason
 
 
 def evaluate(
@@ -373,6 +401,8 @@ def evaluate(
             catalog_digest=catalog_digest,
             approver_id=approver_id,
             considered=considered,
+            causes=(),
+            self_approval=True,
         )
 
     # A claim whose records disagree is not satisfied however many of them say
@@ -396,7 +426,7 @@ def evaluate(
         )
     )
     if missing:
-        reason = _diagnosis(gate, evidence, subject_digest, contradicted, missing)
+        causes, reason = _diagnosis(gate, evidence, subject_digest, contradicted, missing)
         return Evaluation(
             verdict=Verdict.FAIL,
             gate_id=gate.gate_id,
@@ -408,6 +438,8 @@ def evaluate(
             catalog_digest=catalog_digest,
             approver_id=approver_id,
             considered=considered,
+            causes=causes,
+            self_approval=False,
         )
 
     return Evaluation(
@@ -421,4 +453,6 @@ def evaluate(
         catalog_digest=catalog_digest,
         approver_id=approver_id,
         considered=considered,
+        causes=(),
+        self_approval=False,
     )

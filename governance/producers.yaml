@@ -1,2 +1,5 @@
 producers:
   anthony: ed25519:cT08b8ut4tLoZqjJN6fCnHUb0kMv7R++1+nDqGnfyQQ=
+verdict_signer:
+  id: kernel-verdict-signer
+  public_key: ed25519:/YsKLlvH+yQJmfmOUWy7y8ZH0e4kbp8eLRwepNioMIs=

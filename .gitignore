@@ -30,3 +30,6 @@ mutants/
 # Produced evidence is bound to an exact tree digest. Committing it changes
 # the tree and therefore invalidates it. Produce it per run, never store it.
 governance/evidence.json
+
+# Signed verdict read channel; runtime state, never part of its own subject.
+governance/verdicts/

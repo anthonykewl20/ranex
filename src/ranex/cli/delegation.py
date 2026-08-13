@@ -26,6 +26,7 @@ MODEL_CREDENTIAL_VARIABLE = "OPENROUTER_API_KEY"
 BRIDGE_TASK_VARIABLE = "RANEX_TASK_ID"
 BRIDGE_EMIT_VARIABLE = "RANEX_EMIT"
 SIGNING_KEY_VARIABLE = "RANEX_SIGNING_KEY"
+VERDICT_SIGNING_KEY_VARIABLE = "RANEX_VERDICT_SIGNING_KEY"
 
 _OUTPUT_TAIL_LIMIT = 4000
 
@@ -56,6 +57,11 @@ def execute_environment(
         raise ValueError(
             f"refusing to execute with signing credential in ambient: "
             f"{SIGNING_KEY_VARIABLE} was present in the environment"
+        )
+    if VERDICT_SIGNING_KEY_VARIABLE in ambient:
+        raise ValueError(
+            f"refusing to execute with signing credential in ambient: "
+            f"{VERDICT_SIGNING_KEY_VARIABLE} was present in the environment"
         )
     if MODEL_CREDENTIAL_VARIABLE not in ambient:
         raise ValueError(

@@ -47,6 +47,7 @@ def sg():
 
 
 ARGV = ["uv", "run", "pytest", "-q"]
+SUBJECT = "sha256:" + "a" * 64
 
 CONTENT = {
     "claim_id": "tests-executed",

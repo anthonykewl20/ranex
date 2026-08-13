@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Any
+from dataclasses import dataclass
 
 import yaml
 
@@ -138,3 +139,37 @@ def load_keyring_text(text: str, source: object) -> dict[str, str]:
         keyring[producer_id] = public_key
 
     return keyring
+
+
+@dataclass(frozen=True, slots=True)
+class TrustKeyring:
+    producers: dict[str, str]
+    verdict_signer_id: str
+    verdict_signer_public_key: str
+
+
+def load_trust_keyring(path: Path | str) -> TrustKeyring:
+    path = Path(path)
+    try:
+        text = path.read_text(encoding="utf-8")
+    except (OSError, yaml.YAMLError) as exc:
+        raise KeyringError(f"cannot load keyring at {path}: {exc}") from exc
+    return load_trust_keyring_text(text, path)
+
+
+def load_trust_keyring_text(text: str, source: object) -> TrustKeyring:
+    try:
+        document = yaml.load(text, Loader=_NoDuplicateKeys)
+    except (KeyringError, yaml.YAMLError) as exc:
+        raise KeyringError(f"cannot load keyring at {source}: {exc}") from exc
+    if not isinstance(document, dict) or set(document) != {"producers", "verdict_signer"}:
+        raise KeyringError("keyring must contain producers and verdict_signer")
+    producers = load_keyring_text(yaml.safe_dump({"producers": document["producers"]}), source)
+    signer = document["verdict_signer"]
+    if not isinstance(signer, dict) or set(signer) != {"id", "public_key"}:
+        raise KeyringError("verdict_signer must contain exactly id and public_key")
+    if signer["id"] != "kernel-verdict-signer" or not is_public_key(signer["public_key"]):
+        raise KeyringError("verdict_signer is malformed")
+    if signer["id"] in producers or signer["public_key"] in producers.values():
+        raise KeyringError("verdict_signer may not alias a producer")
+    return TrustKeyring(producers, signer["id"], signer["public_key"])
