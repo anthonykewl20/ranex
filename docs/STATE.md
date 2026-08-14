@@ -19,6 +19,14 @@ foundations. SLICE-029 pre-stage pack (A/B/C field inventory, error
 vocabulary, vector design, deferred-mechanism recommendations) lives in
 this session's report.
 
+Risk-closure session on top: CI lint/type debt cleared — the 9 findings
+that pre-dated Aug 14 plus SLICE-046's four new main.py findings
+(I001 imports, F841 dead binding, B009 constant-getattr, B904 cause
+chain, pyrefly bad-return/bad-assignment), MAIN_PY_SHA256 refreshed per
+the gate10 precedent; upload-sarif pinned to v4.37.7 (the v3 line
+retires Dec 2026). Security tab: 0 open / 109 fixed; the weekly scan's
+60-day inactivity disablement is documented in ci.yml.
+
 ## Next
 
 Open SLICE-029 (#12): governance/schemas/specification/*.schema.json +
