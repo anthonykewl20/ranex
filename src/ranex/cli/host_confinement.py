@@ -371,20 +371,21 @@ def _open_verified(
 
 def _open_unpinned_executable(path: Path, code: str) -> tuple[OpenedObject, dict[str, Any]]:
     try:
-        descriptor = os.open(path, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        resolved = path.resolve(strict=True)
+        descriptor = os.open(resolved, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
     except OSError as exc:
         raise HostConfinementError(code, f"cannot open executable {path}: {exc}") from exc
     try:
         facts = os.fstat(descriptor)
         mode = stat.S_IMODE(facts.st_mode)
         if not stat.S_ISREG(facts.st_mode) or mode & 0o111 == 0:
-            _refuse(code, f"{path} is not a regular executable")
-        _require_trusted_owner_and_mode(path, facts, mode, code)
+            _refuse(code, f"{resolved} is not a regular executable")
+        _require_trusted_owner_and_mode(resolved, facts, mode, code)
         if _capability_xattr(descriptor):
-            _refuse(code, f"{path} carries security.capability")
+            _refuse(code, f"{resolved} carries security.capability")
         digest = _sha256_descriptor(descriptor)
-        filesystem = _mount_provenance(path, descriptor, code)
-        return OpenedObject(descriptor, path, digest, facts.st_uid, mode), filesystem
+        filesystem = _mount_provenance(resolved, descriptor, code)
+        return OpenedObject(descriptor, resolved, digest, facts.st_uid, mode), filesystem
     except (OSError, HostConfinementError):
         os.close(descriptor)
         raise
@@ -920,7 +921,13 @@ class ConfinementSession:
         if exceeded:
             self.kill_tree()
             self.result_published = False
-            _refuse(E_C18_LIMIT, "a cumulative confinement limit was exceeded")
+            observed_detail = ", ".join(
+                f"{name}={value}" for name, value in sorted(observed.items())
+            )
+            _refuse(
+                E_C18_LIMIT,
+                f"a cumulative confinement limit was exceeded ({observed_detail})",
+            )
 
     def kill_drain_remove(self, timeout: float = 5.0) -> None:
         self.kill_tree()
@@ -3030,12 +3037,12 @@ def _session_cgroup_parent() -> Path:
     return parent
 
 
-def _read_cgroup_text(path: Path, label: str) -> str:
+def _read_cgroup_text(path: Path, label: str, *, allow_empty: bool = False) -> str:
     try:
         value = path.read_text(encoding="ascii")
     except OSError as exc:
         raise HostConfinementError(E_C18_READBACK, f"cannot read {label}: {exc}") from exc
-    if not value or "\x00" in value:
+    if (not value and not allow_empty) or "\x00" in value:
         _refuse(E_C18_READBACK, f"{label} readback is empty or malformed")
     return value
 
@@ -3052,7 +3059,11 @@ def _create_worker_cgroup(parent: Path, limits: Mapping[str, int]) -> tuple[Path
         controller_pids = {int(item) for item in _read_cgroup_text(controller / "cgroup.procs", "controller cgroup.procs").split()}
         if os.getpid() not in controller_pids:
             _refuse(E_C18_READBACK, "controller PID is absent from controller cgroup readback")
-        enabled = set(_read_cgroup_text(parent / "cgroup.subtree_control", "cgroup.subtree_control").split())
+        enabled = set(
+            _read_cgroup_text(
+                parent / "cgroup.subtree_control", "cgroup.subtree_control", allow_empty=True
+            ).split()
+        )
         missing = REQUIRED_CONTROLLERS - {name.lstrip("+") for name in enabled}
         if missing:
             _write_control(parent / "cgroup.subtree_control", " ".join(f"+{name}" for name in sorted(missing)) + "\n")
@@ -3245,7 +3256,8 @@ def confinement_session(
     landlock = _mapping(primitives.get("landlock"), "qualification Landlock", E_C18_GATE)
     if (
         landlock.get("available") is not True
-        or landlock.get("abi") != runtime["landlock_abi_minimum"]
+        or not isinstance(landlock.get("abi"), int)
+        or landlock["abi"] < runtime["landlock_abi_minimum"]
         or primitives.get("seccomp_filter") is not True
         or primitives.get("no_new_privs") is not True
         or primitives.get("openat2") is not True
@@ -3258,6 +3270,7 @@ def confinement_session(
     output_fd = -1
     gate_read = gate_write = -1
     readiness_read = readiness_write = -1
+    readiness_ack_read = readiness_ack_write = -1
     child = -1
     controller: Path | None = None
     worker: Path | None = None
@@ -3280,13 +3293,16 @@ def confinement_session(
         controller, worker, limit_readbacks = _create_worker_cgroup(parent, descriptor["limits"])
         gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
         readiness_read, readiness_write = os.pipe2(os.O_CLOEXEC)
+        readiness_ack_read, readiness_ack_write = os.pipe2(os.O_CLOEXEC)
         os.set_inheritable(launcher.descriptor, True)
         os.set_inheritable(command.descriptor, True)
         os.set_inheritable(readiness_write, True)
+        os.set_inheritable(readiness_ack_read, True)
         child = os.fork()
         if child == 0:
             _close_descriptor(gate_write)
             _close_descriptor(readiness_read)
+            _close_descriptor(readiness_ack_write)
             if os.read(gate_read, 1) != b"1":
                 os._exit(125)
             _close_descriptor(gate_read)
@@ -3295,6 +3311,7 @@ def confinement_session(
                 f"/proc/self/fd/{launcher.descriptor}",
                 [
                     str(launcher.path), "--ranex-worker-exec", f"--ranex-status-fd={readiness_write}",
+                    f"--ranex-ready-ack-fd={readiness_ack_read}",
                     str(descriptor["_resolved"]["subject"]),
                     str(descriptor["_resolved"]["toolchain"]),
                     str(descriptor["_resolved"]["output"]),
@@ -3308,6 +3325,8 @@ def confinement_session(
         gate_read = -1
         _close_descriptor(readiness_write)
         readiness_write = -1
+        _close_descriptor(readiness_ack_read)
+        readiness_ack_read = -1
         session = ConfinementSession(worker, gate_write, dict(descriptor["limits"]))
         session.enroll_and_read_back(child)
         session.release_start_gate()
@@ -3332,6 +3351,10 @@ def confinement_session(
         _read_worker_cgroup_membership(worker, readiness_pid)
         namespace_readbacks = _worker_namespace_readbacks(readiness_pid)
         enforcement_readbacks = _worker_enforcement_readbacks(readiness_pid)
+        if os.write(readiness_ack_write, b"1") != 1:
+            _refuse(E_C18_READBACK, "cannot release launcher after readiness readback")
+        _close_descriptor(readiness_ack_write)
+        readiness_ack_write = -1
         deadline = time.monotonic() + (descriptor["limits"]["wall_time_ms"] / 1000)
         status: int | None = None
         while status is None:
@@ -3391,6 +3414,8 @@ def confinement_session(
         _close_descriptor(gate_write)
         _close_descriptor(readiness_read)
         _close_descriptor(readiness_write)
+        _close_descriptor(readiness_ack_read)
+        _close_descriptor(readiness_ack_write)
         if session is not None and worker is not None and worker.exists():
             try:
                 session.kill_drain_remove()
@@ -3413,13 +3438,12 @@ def confinement_session(
                 os.waitpid(child, 0)
             except ChildProcessError:
                 pass
-        if controller is not None:
-            try:
-                _write_control(parent / "cgroup.procs", f"{os.getpid()}\n")
-                controller.rmdir()
-            except OSError:
-                if primary_error is None:
-                    _refuse(E_C18_DRAIN, "cannot restore and remove controller cgroup")
+        # A cgroup-v2 domain with enabled controllers cannot contain a process
+        # while it has child domains.  The controller therefore cannot move
+        # itself back to ``parent`` or remove its own leaf before this process
+        # exits.  The delegated transient unit owns that empty-after-exit
+        # controller subtree; the worker leaf above is the session resource
+        # whose kill→drain→remove lifecycle is reported and must complete here.
         _close_descriptor(output_fd)
         if command is not None:
             _close_descriptor(command.descriptor)

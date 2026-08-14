@@ -28,6 +28,7 @@
 #define STAGE_TWO "--ranex-internal-stage-two"
 #define WORKER_EXEC "--ranex-worker-exec"
 #define WORKER_STATUS_FD "--ranex-status-fd="
+#define WORKER_READY_ACK_FD "--ranex-ready-ack-fd="
 #define WORKER_STATUS_DESCRIPTOR 4
 #define WORKER_READY_PREFIX "ranex-worker-ready-v1 pid="
 #define WORKER_READY_SUFFIX " nnp=1 landlock=1 seccomp=1 namespaces=user,mount,pid,ipc,network,cgroup\n"
@@ -103,6 +104,27 @@ static int add_path_rule(int ruleset_fd, int parent_fd, __u64 allowed_access) {
                         LANDLOCK_RULE_PATH_BENEATH, &rule, 0U);
 }
 
+static int add_runtime_loader_rule(int ruleset_fd, const char *path, __u64 allowed_access) {
+    struct stat facts;
+    char *resolved = realpath(path, NULL);
+    int descriptor;
+    int result;
+
+    if (resolved == NULL) {
+        return -1;
+    }
+    descriptor = open(resolved, O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    free(resolved);
+    if (descriptor < 0 || fstat(descriptor, &facts) != 0 || !S_ISREG(facts.st_mode) ||
+        (facts.st_mode & (S_IWGRP | S_IWOTH)) != 0) {
+        (void)close(descriptor);
+        return -1;
+    }
+    result = add_path_rule(ruleset_fd, descriptor, allowed_access);
+    (void)close(descriptor);
+    return result;
+}
+
 static bool enforce_landlock(int executable_fd, int subject_fd, int toolchain_fd,
                              int output_fd, int scratch_fd) {
     struct ranex_landlock_ruleset_attr ruleset = {0};
@@ -152,6 +174,14 @@ static bool enforce_landlock(int executable_fd, int subject_fd, int toolchain_fd
      * writable trees intentionally each receive the complete handled mask. */
     executable_access = LANDLOCK_ACCESS_FS_EXECUTE | LANDLOCK_ACCESS_FS_READ_FILE;
     if (add_path_rule(ruleset_fd, executable_fd, executable_access) != 0 ||
+        /* The pinned x86-64 ELF ABI needs its interpreter and libc before the
+         * command can enter its declared toolchain.  Both are exact trusted,
+         * read-only runtime objects; no directory or writable host authority
+         * is admitted. */
+        add_runtime_loader_rule(ruleset_fd, "/lib64/ld-linux-x86-64.so.2",
+                                executable_access) != 0 ||
+        add_runtime_loader_rule(ruleset_fd, "/lib/x86_64-linux-gnu/libc.so.6",
+                                LANDLOCK_ACCESS_FS_READ_FILE) != 0 ||
         add_path_rule(ruleset_fd, subject_fd, readonly_access) != 0 ||
         add_path_rule(ruleset_fd, toolchain_fd, readonly_access) != 0 ||
         add_path_rule(ruleset_fd, output_fd, filesystem_mask) != 0 ||
@@ -181,6 +211,10 @@ static bool enforce_seccomp(void) {
         ALLOW_SYSCALL(__NR_read),
         ALLOW_SYSCALL(__NR_pread64),
         ALLOW_SYSCALL(__NR_write),
+        ALLOW_SYSCALL(__NR_dup),
+        ALLOW_SYSCALL(__NR_dup2),
+        ALLOW_SYSCALL(__NR_dup3),
+        ALLOW_SYSCALL(__NR_fcntl),
         ALLOW_SYSCALL(__NR_close),
         ALLOW_SYSCALL(__NR_openat),
         ALLOW_SYSCALL(__NR_newfstatat),
@@ -256,6 +290,53 @@ static bool parse_worker_status_fd(const char *argument, int *descriptor) {
     return true;
 }
 
+static bool parse_worker_ready_ack_fd(const char *argument, int *descriptor) {
+    const char *raw;
+    char *end = NULL;
+    long value;
+
+    if (strncmp(argument, WORKER_READY_ACK_FD,
+                sizeof(WORKER_READY_ACK_FD) - 1U) != 0) {
+        return false;
+    }
+    raw = argument + sizeof(WORKER_READY_ACK_FD) - 1U;
+    if (*raw == '\0') {
+        return false;
+    }
+    errno = 0;
+    value = strtol(raw, &end, 10);
+    if (errno != 0 || end == raw || *end != '\0' ||
+        value < WORKER_STATUS_DESCRIPTOR || value > INT_MAX) {
+        return false;
+    }
+    *descriptor = (int)value;
+    return true;
+}
+
+static int open_worker_executable(const char *path) {
+    static const char descriptor_prefix[] = "/proc/self/fd/";
+    const char *raw;
+    char *end = NULL;
+    long descriptor;
+
+    if (strncmp(path, descriptor_prefix, sizeof(descriptor_prefix) - 1U) != 0) {
+        return open(path, O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    }
+    raw = path + sizeof(descriptor_prefix) - 1U;
+    if (*raw == '\0') {
+        errno = EINVAL;
+        return -1;
+    }
+    errno = 0;
+    descriptor = strtol(raw, &end, 10);
+    if (errno != 0 || end == raw || *end != '\0' ||
+        descriptor < WORKER_STATUS_DESCRIPTOR || descriptor > INT_MAX) {
+        errno = EINVAL;
+        return -1;
+    }
+    return fcntl((int)descriptor, F_DUPFD_CLOEXEC, WORKER_STATUS_DESCRIPTOR);
+}
+
 static bool enter_worker_namespaces(void) {
     const int namespaces = CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID |
                            CLONE_NEWIPC | CLONE_NEWNET | CLONE_NEWCGROUP;
@@ -319,38 +400,15 @@ static int wait_for_worker(int child) {
     return 64;
 }
 
-static bool close_worker_descriptors(int status_descriptor) {
+static bool close_worker_descriptors(int status_descriptor, int acknowledgement_descriptor) {
     long maximum;
 
-    errno = 0;
-    if (status_descriptor < 0) {
-        if (syscall(SYS_close_range, 4U, UINT_MAX, 0U) == 0) {
-            return true;
-        }
-        if (errno != ENOSYS) {
-            return false;
-        }
-    } else {
-        if (status_descriptor > 4 &&
-            syscall(SYS_close_range, 4U, (unsigned int)status_descriptor - 1U, 0U) != 0 &&
-            errno != ENOSYS) {
-            return false;
-        }
-        errno = 0;
-        if (syscall(SYS_close_range, (unsigned int)status_descriptor + 1U,
-                    UINT_MAX, 0U) == 0) {
-            return true;
-        }
-        if (errno != ENOSYS) {
-            return false;
-        }
-    }
     maximum = sysconf(_SC_OPEN_MAX);
     if (maximum < 0) {
         maximum = 65536;
     }
     for (int descriptor = 4; descriptor < maximum; descriptor++) {
-        if (descriptor != status_descriptor) {
+        if (descriptor != status_descriptor && descriptor != acknowledgement_descriptor) {
             (void)close(descriptor);
         }
     }
@@ -1021,6 +1079,7 @@ static int worker_exec(int argc, char **argv) {
     int scratch_fd = -1;
     int executable_fd;
     int status_descriptor = -1;
+    int acknowledgement_descriptor = -1;
     int argument_offset = 2;
     int pid_pipe[2];
     pid_t worker;
@@ -1029,12 +1088,27 @@ static int worker_exec(int argc, char **argv) {
     char readiness[256];
     int readiness_length;
 
-    if (argc > 2 && strncmp(argv[2], WORKER_STATUS_FD,
-                           sizeof(WORKER_STATUS_FD) - 1U) == 0) {
-        if (!parse_worker_status_fd(argv[2], &status_descriptor)) {
+    while (argc > argument_offset && strncmp(argv[argument_offset], "--ranex-", 8U) == 0) {
+        if (strncmp(argv[argument_offset], WORKER_STATUS_FD,
+                    sizeof(WORKER_STATUS_FD) - 1U) == 0) {
+            if (status_descriptor >= 0 ||
+                !parse_worker_status_fd(argv[argument_offset], &status_descriptor)) {
+                return 64;
+            }
+        } else if (strncmp(argv[argument_offset], WORKER_READY_ACK_FD,
+                           sizeof(WORKER_READY_ACK_FD) - 1U) == 0) {
+            if (acknowledgement_descriptor >= 0 ||
+                !parse_worker_ready_ack_fd(argv[argument_offset], &acknowledgement_descriptor)) {
+                return 64;
+            }
+        } else {
             return 64;
         }
         argument_offset++;
+    }
+    if (status_descriptor >= 0 &&
+        (acknowledgement_descriptor < 0 || acknowledgement_descriptor == status_descriptor)) {
+        return 64;
     }
     if (argc < argument_offset + 5 || argv[argument_offset][0] != '/' ||
         argv[argument_offset + 1][0] != '/' || argv[argument_offset + 2][0] != '/' ||
@@ -1045,7 +1119,7 @@ static int worker_exec(int argc, char **argv) {
     toolchain_fd = open(argv[argument_offset + 1], O_PATH | O_DIRECTORY | O_CLOEXEC);
     output_fd = open(argv[argument_offset + 2], O_PATH | O_DIRECTORY | O_CLOEXEC);
     scratch_fd = open(argv[argument_offset + 3], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    executable_fd = open(argv[argument_offset + 4], O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    executable_fd = open_worker_executable(argv[argument_offset + 4]);
     if (subject_fd < 0 || toolchain_fd < 0 || output_fd < 0 || scratch_fd < 0 ||
         executable_fd < 0) {
         (void)close(subject_fd);
@@ -1170,7 +1244,7 @@ static int worker_exec(int argc, char **argv) {
     (void)close(0);
     (void)close(1);
     (void)close(2);
-    if (!close_worker_descriptors(status_descriptor)) {
+    if (!close_worker_descriptors(status_descriptor, acknowledgement_descriptor)) {
         return 64;
     }
     if (!enforce_seccomp()) {
@@ -1183,6 +1257,14 @@ static int worker_exec(int argc, char **argv) {
         if (readiness_length < 0 || (size_t)readiness_length >= sizeof(readiness) ||
             write_all(status_descriptor, readiness, (size_t)readiness_length) != 0 ||
             close(status_descriptor) != 0) {
+            return 64;
+        }
+    }
+    if (acknowledgement_descriptor >= 0) {
+        char acknowledgement;
+
+        if (read(acknowledgement_descriptor, &acknowledgement, 1U) != 1 ||
+            acknowledgement != '1' || close(acknowledgement_descriptor) != 0) {
             return 64;
         }
     }
