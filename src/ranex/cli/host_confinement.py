@@ -1157,6 +1157,81 @@ def collect_drained_output(
     return {"files": files, "bytes": total_bytes, "inodes": inode_count}
 
 
+def _measure_writable_tree(root: Path, limits: Mapping[str, int], label: str) -> dict[str, int]:
+    """Boundedly sample live writable storage without following worker names."""
+
+    maximum_bytes = _exact_integer(
+        limits.get("output_bytes"), "output_bytes", E_C18_OUTPUT_UNSAFE, minimum=1
+    )
+    maximum_inodes = _exact_integer(
+        limits.get("output_inodes"), "output_inodes", E_C18_OUTPUT_UNSAFE, minimum=1
+    )
+    maximum_depth = _exact_integer(
+        limits.get("output_depth"), "output_depth", E_C18_OUTPUT_UNSAFE, minimum=1
+    )
+    total_bytes = 0
+    inode_count = 0
+    greatest_depth = 0
+
+    def walk(directory: Path, depth: int) -> None:
+        nonlocal total_bytes, inode_count, greatest_depth
+        if depth > maximum_depth:
+            greatest_depth = depth
+            return
+        try:
+            entries = os.scandir(directory)
+        except OSError as exc:
+            raise HostConfinementError(
+                E_C18_OUTPUT_UNSAFE, f"cannot measure {label}: {exc}"
+            ) from exc
+        try:
+            for entry in entries:
+                inode_count += 1
+                if inode_count > maximum_inodes:
+                    return
+                try:
+                    facts = entry.stat(follow_symlinks=False)
+                except OSError as exc:
+                    raise HostConfinementError(
+                        E_C18_OUTPUT_UNSAFE, f"cannot stat {label} entry {entry.name!r}: {exc}"
+                    ) from exc
+                if stat.S_ISDIR(facts.st_mode):
+                    walk(Path(entry.path), depth + 1)
+                elif stat.S_ISREG(facts.st_mode) and facts.st_nlink == 1:
+                    total_bytes += facts.st_size
+                else:
+                    _refuse(E_C18_OUTPUT_UNSAFE, f"{label} contains an unsafe live entry")
+                if total_bytes > maximum_bytes:
+                    return
+        finally:
+            entries.close()
+
+    walk(root, 0)
+    return {"bytes": total_bytes, "depth": greatest_depth, "inodes": inode_count}
+
+
+def _check_live_writable_limits(descriptor: Mapping[str, Any], session: ConfinementSession) -> None:
+    """Continuously enforce the output and scratch storage ceilings."""
+
+    limits = _mapping(descriptor["limits"], "limits", E_C18_OUTPUT_UNSAFE)
+    output = _measure_writable_tree(descriptor["_resolved"]["output"], limits, "output")
+    scratch = _measure_writable_tree(descriptor["_resolved"]["scratch"], limits, "scratch")
+    exceeded: list[str] = []
+    maximum_bytes = limits["output_bytes"]
+    maximum_inodes = limits["output_inodes"]
+    maximum_depth = limits["output_depth"]
+    for name, observed in (("output", output), ("scratch", scratch)):
+        if observed["bytes"] > maximum_bytes:
+            exceeded.append(f"{name}.bytes={observed['bytes']} exceeded limit={maximum_bytes}")
+        if observed["inodes"] > maximum_inodes:
+            exceeded.append(f"{name}.inodes={observed['inodes']} exceeded limit={maximum_inodes}")
+        if observed["depth"] > maximum_depth:
+            exceeded.append(f"{name}.depth={observed['depth']} exceeded limit={maximum_depth}")
+    if exceeded:
+        session.kill_tree()
+        _refuse(E_C18_LIMIT, "; ".join(exceeded))
+
+
 def confinement_result_bytes(value: Mapping[str, Any]) -> bytes:
     expected = {
         "schema", "profile_digests", "namespace_readbacks", "cgroup_readbacks",
@@ -2728,6 +2803,20 @@ def _write_report_atomic(root: Path, report: Path, value: Mapping[str, Any]) -> 
         ) from exc
 
 
+def _write_confinement_result_atomic(root: Path, result: Path, payload: bytes) -> None:
+    """Publish already-validated canonical result bytes without reserializing it."""
+
+    try:
+        result.relative_to(root)
+        atomic_writer.write_atomic(result, payload, root=root)
+    except ValueError as exc:
+        raise HostConfinementError(E_C18_RESULT, f"confinement result publication failed: {exc}") from exc
+    except OSError as exc:
+        raise HostConfinementError(
+            E_C18_RESULT, f"confinement result publication failed: {exc}"
+        ) from exc
+
+
 def _qualification_open_object(
     opened: OpenedObject,
     filesystem: Mapping[str, Any],
@@ -2967,10 +3056,13 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
         _refuse(E_C18_GATE, "confinement descriptor is not canonical JSON")
     argv = value.get("argv")
     environment = value.get("environment")
-    if not isinstance(argv, list) or not argv or any(not isinstance(item, str) or not item for item in argv):
+    if not isinstance(argv, list) or not argv or any(
+        not isinstance(item, str) or not item or "\x00" in item for item in argv
+    ):
         _refuse(E_C18_GATE, "argv must contain non-empty strings")
     if not isinstance(environment, dict) or any(
-        not isinstance(name, str) or not name or not isinstance(item, str)
+        not isinstance(name, str) or not name or "=" in name or "\x00" in name
+        or not isinstance(item, str) or "\x00" in item
         for name, item in environment.items()
     ):
         _refuse(E_C18_GATE, "environment must be a string mapping")
@@ -3029,7 +3121,7 @@ def _current_session_host_state() -> dict[str, Any]:
 
 def _validate_runtime_profile(
     runtime: Mapping[str, Any], *, profile_path: Path, host_profile_path: Path,
-    manifest_path: Path, launcher: OpenedObject,
+    manifest_path: Path, launcher: OpenedObject, host_profile_digest: str,
 ) -> None:
     expected = {
         "build_manifest_sha256", "cgroup", "host_profile_sha256", "landlock_abi_minimum",
@@ -3053,7 +3145,7 @@ def _validate_runtime_profile(
         _refuse(E_C18_GATE, "runtime profile output resolution is invalid")
     if runtime.get("landlock_abi_minimum") != 6 or runtime.get("seccomp") != {"architecture": "x86_64", "policy": "default-deny-v1"}:
         _refuse(E_C18_GATE, "runtime profile policy identity is invalid")
-    if _digest(runtime.get("host_profile_sha256"), "host_profile_sha256", E_C18_GATE) != _sha256_path(host_profile_path):
+    if _digest(runtime.get("host_profile_sha256"), "host_profile_sha256", E_C18_GATE) != host_profile_digest:
         _refuse(E_C18_GATE, "runtime profile host profile pin drifted")
     if _digest(runtime.get("build_manifest_sha256"), "build_manifest_sha256", E_C18_GATE) != _sha256_path(manifest_path):
         _refuse(E_C18_GATE, "runtime profile build manifest pin drifted")
@@ -3215,8 +3307,14 @@ def confinement_session(
     profile, _manifest, launcher, bubblewrap = _validate_profile_and_objects(host_profile_path, manifest_path, artifact_path)
     del profile
     try:
+        profile_digests = {
+            "runtime": _sha256_path(profile_path),
+            "host": _sha256_path(host_profile_path),
+            "launcher": launcher.sha256,
+        }
         _validate_runtime_profile(runtime, profile_path=profile_path, host_profile_path=host_profile_path,
-                                  manifest_path=manifest_path, launcher=launcher)
+                                  manifest_path=manifest_path, launcher=launcher,
+                                  host_profile_digest=profile_digests["host"])
         # The descriptor identifies the live delegated root once.  All later
         # operations use this object; there is no re-resolution fallback.
         held_root = os.open(cgroup_root, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
@@ -3274,7 +3372,7 @@ def confinement_session(
                         if response_write != 1:
                             os.close(response_write)
                         # bwrap is a pinned, held object checked immediately before fork.
-                        _execveat(bubblewrap.descriptor, [str(bubblewrap.path), "--die-with-parent", "--unshare-user", "--unshare-pid", "--unshare-ipc", "--unshare-net", "--unshare-cgroup", "--proc", "/proc", "--dev", "/dev", "--ro-bind", str(launcher.path), "/ranex-worker-launcher", "--ro-bind", str(descriptor["_resolved"]["subject"]), str(descriptor["_resolved"]["subject"]), "--ro-bind", str(descriptor["_resolved"]["toolchain"]), str(descriptor["_resolved"]["toolchain"]), "--bind", str(descriptor["_resolved"]["output"]), str(descriptor["_resolved"]["output"]), "--bind", str(descriptor["_resolved"]["scratch"]), str(descriptor["_resolved"]["scratch"]), "--ro-bind", "/usr", "/usr", "--ro-bind", "/bin", "/bin", "--ro-bind", "/lib", "/lib", "--ro-bind", "/lib64", "/lib64", "--", "/ranex-worker-launcher", "--ranex-worker-exec-gated", str(descriptor["_resolved"]["scratch"]), str(worker_executable), *descriptor["argv"][1:]], descriptor["environment"])
+                        _execveat(bubblewrap.descriptor, [str(bubblewrap.path), "--die-with-parent", "--unshare-user", "--unshare-pid", "--unshare-ipc", "--unshare-net", "--unshare-cgroup", "--proc", "/proc", "--dev", "/dev", "--ro-bind", str(launcher.path), "/ranex-worker-launcher", "--ro-bind", str(descriptor["_resolved"]["subject"]), str(descriptor["_resolved"]["subject"]), "--ro-bind", str(descriptor["_resolved"]["toolchain"]), str(descriptor["_resolved"]["toolchain"]), "--bind", str(descriptor["_resolved"]["output"]), str(descriptor["_resolved"]["output"]), "--bind", str(descriptor["_resolved"]["scratch"]), str(descriptor["_resolved"]["scratch"]), "--ro-bind", "/usr", "/usr", "--ro-bind", "/bin", "/bin", "--ro-bind", "/lib", "/lib", "--ro-bind", "/lib64", "/lib64", "--", "/ranex-worker-launcher", "--ranex-worker-exec-gated", str(descriptor["_resolved"]["scratch"]), str(descriptor["_resolved"]["subject"]), str(descriptor["_resolved"]["toolchain"]), str(descriptor["_resolved"]["output"]), str(worker_executable), *descriptor["argv"][1:]], descriptor["environment"])
                     except BaseException:
                         os._exit(127)
                 os.close(gate_read); gate_read = -1
@@ -3289,17 +3387,25 @@ def confinement_session(
                         pass
                     raise
                 session.enroll_and_read_back(launcher_pid)
+                deadline = time.monotonic() + limits["wall_time_ms"] / 1000
                 session.release_start_gate()
                 os.close(gate_write); gate_write = -1
-                deadline = time.monotonic() + limits["wall_time_ms"] / 1000
+                next_storage_measurement = time.monotonic()
                 while True:
-                    waited, status = os.waitpid(child, os.WNOHANG)
-                    if waited == child:
-                        child = -1
-                        break
-                    if time.monotonic() >= deadline:
+                    now = time.monotonic()
+                    if now >= deadline:
                         session.kill_tree()
                         _refuse(E_C18_LIMIT, "wall-time limit exceeded")
+                    if now >= next_storage_measurement:
+                        _check_live_writable_limits(descriptor, session)
+                        next_storage_measurement = now + 0.25
+                    waited, status = os.waitpid(child, os.WNOHANG)
+                    if waited == child:
+                        if time.monotonic() >= deadline:
+                            session.kill_tree()
+                            _refuse(E_C18_LIMIT, "wall-time limit exceeded")
+                        child = -1
+                        break
                     time.sleep(0.005)
                 cpu_stats = _parse_cgroup_events(
                     _read_cgroup_file(worker / "cpu.stat", E_C18_LIMIT)
@@ -3347,7 +3453,7 @@ def confinement_session(
                 )
                 result = {
                     "schema": "ranex-confinement-result-v1",
-                    "profile_digests": {"runtime": _sha256_path(profile_path), "host": _sha256_path(host_profile_path), "launcher": launcher.sha256},
+                    "profile_digests": profile_digests,
                     "namespace_readbacks": {name: namespace_response[name] for name in ("user", "mount", "pid", "ipc", "network", "cgroup")},
                     "cgroup_readbacks": {
                         "limits": wanted,
@@ -3359,7 +3465,7 @@ def confinement_session(
                         },
                         "usage": {"cpu_usage_usec": observed["cpu_usage_usec"]},
                     },
-                    "command": {"argv_digest": command_digest(descriptor["argv"]), "exit_code": 0, "no_new_privs": namespace_response["no_new_privs"], "landlock": namespace_response["landlock"], "seccomp": namespace_response["seccomp"]},
+                    "command": {"argv_digest": command_digest(descriptor["argv"]).removeprefix("sha256:"), "exit_code": 0, "no_new_privs": namespace_response["no_new_privs"], "landlock": namespace_response["landlock"], "seccomp": namespace_response["seccomp"]},
                     "teardown": {"cgroup_kill": True, "populated": 0, "cgroup_removed": True},
                     "outputs": {"files": [], "bytes": 0, "inodes": 0},
                 }
@@ -3384,25 +3490,17 @@ def confinement_session(
                             pass
                     _capture_cleanup_failure(cleanup_failures, "kill and reap bubblewrap", kill_and_reap)
                 worker_teardown_succeeded = True
-                if session is not None and worker.exists():
+                if worker.exists():
                     failure_count = len(cleanup_failures)
+                    cleanup_session = session or ConfinementSession(worker, -1)
                     _capture_cleanup_failure(
-                        cleanup_failures, "kill, drain, and remove worker cgroup", session.kill_drain_remove
+                        cleanup_failures,
+                        "kill, drain, and remove worker cgroup",
+                        cleanup_session.kill_drain_remove,
                     )
                     worker_teardown_succeeded = len(cleanup_failures) == failure_count
-                if result is not None and worker_teardown_succeeded:
-                    def collect_and_publish() -> None:
-                        result["outputs"] = collect_drained_output(
-                            output_fd, descriptor["limits"], {"populated": 0}
-                        )
-                        _write_report_atomic(root, resolve_within_repository(root, result_arg), result)
-                        if session is not None:
-                            session.result_published = True
-                    _capture_cleanup_failure(cleanup_failures, "collect and publish confinement result", collect_and_publish)
                 if response_read >= 0:
                     _capture_cleanup_failure(cleanup_failures, "close launcher response reader", lambda: os.close(response_read))
-                if output_fd >= 0:
-                    _capture_cleanup_failure(cleanup_failures, "close held output directory", lambda: os.close(output_fd))
                 if delta:
                     def restore_controller_delta() -> None:
                         current_enabled = set(
@@ -3417,6 +3515,9 @@ def confinement_session(
                     _capture_cleanup_failure(
                         cleanup_failures, "restore cgroup controller delta", restore_controller_delta
                     )
+                # A domain cgroup cannot receive processes while its subtree
+                # controllers are enabled.  Restore only our delta first, then
+                # move the controller process back and remove its empty leaf.
                 if controller.exists():
                     _capture_cleanup_failure(
                         cleanup_failures, "return controller cgroup processes",
@@ -3424,6 +3525,25 @@ def confinement_session(
                     )
                 if controller.exists():
                     _capture_cleanup_failure(cleanup_failures, "remove controller cgroup", controller.rmdir)
+                if primary is None and result is not None and worker_teardown_succeeded and not cleanup_failures:
+                    def collect_result() -> None:
+                        result["outputs"] = collect_drained_output(
+                            output_fd, descriptor["limits"], {"populated": 0}
+                        )
+                    _capture_cleanup_failure(cleanup_failures, "collect confinement result", collect_result)
+                if output_fd >= 0:
+                    _capture_cleanup_failure(cleanup_failures, "close held output directory", lambda: os.close(output_fd))
+                if primary is None and result is not None and not cleanup_failures:
+                    def validate_and_publish() -> None:
+                        payload = confinement_result_bytes(result)
+                        _write_confinement_result_atomic(
+                            root, resolve_within_repository(root, result_arg), payload
+                        )
+                        if session is not None:
+                            session.result_published = True
+                    _capture_cleanup_failure(
+                        cleanup_failures, "validate and publish confinement result", validate_and_publish
+                    )
                 _finish_cleanup(primary, cleanup_failures)
         finally:
             primary = sys.exception()

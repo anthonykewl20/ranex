@@ -160,10 +160,15 @@ static bool enforce_landlock(int executable_fd, int working_directory_fd) {
     return true;
 }
 
-static bool enforce_gated_landlock(int executable_fd, int working_directory_fd) {
+static bool enforce_gated_landlock(int executable_fd, int scratch_fd,
+                                   int subject_fd, int toolchain_fd,
+                                   int output_fd) {
     struct ranex_landlock_ruleset_attr ruleset = {0};
     struct stat executable_facts;
-    struct stat working_directory_facts;
+    struct stat scratch_facts;
+    struct stat subject_facts;
+    struct stat toolchain_facts;
+    struct stat output_facts;
     long abi;
     int ruleset_fd;
     int null_fd;
@@ -174,9 +179,13 @@ static bool enforce_gated_landlock(int executable_fd, int working_directory_fd) 
                   LANDLOCK_CREATE_RULESET_VERSION);
     if (abi < REQUIRED_LANDLOCK_ABI ||
         fstat(executable_fd, &executable_facts) != 0 ||
-        fstat(working_directory_fd, &working_directory_facts) != 0 ||
+        fstat(scratch_fd, &scratch_facts) != 0 ||
+        fstat(subject_fd, &subject_facts) != 0 ||
+        fstat(toolchain_fd, &toolchain_facts) != 0 ||
+        fstat(output_fd, &output_facts) != 0 ||
         !S_ISREG(executable_facts.st_mode) ||
-        !S_ISDIR(working_directory_facts.st_mode)) {
+        !S_ISDIR(scratch_facts.st_mode) || !S_ISDIR(subject_facts.st_mode) ||
+        !S_ISDIR(toolchain_facts.st_mode) || !S_ISDIR(output_facts.st_mode)) {
         return false;
     }
 
@@ -203,10 +212,18 @@ static bool enforce_gated_landlock(int executable_fd, int working_directory_fd) 
         return false;
     }
 
-    /* The executable is immutable to the worker; only its scratch CWD is writable. */
+    /* The descriptor-resolved authority trees are read-only; scratch and output
+     * are the only writable session mounts. */
     executable_access = LANDLOCK_ACCESS_FS_EXECUTE | LANDLOCK_ACCESS_FS_READ_FILE;
     if (add_path_rule(ruleset_fd, executable_fd, executable_access) != 0 ||
-        add_path_rule(ruleset_fd, working_directory_fd, filesystem_mask) != 0 ||
+        add_path_rule(ruleset_fd, scratch_fd, filesystem_mask) != 0 ||
+        add_path_rule(ruleset_fd, output_fd, filesystem_mask) != 0 ||
+        add_path_rule(ruleset_fd, subject_fd,
+                      LANDLOCK_ACCESS_FS_EXECUTE | LANDLOCK_ACCESS_FS_READ_FILE |
+                      LANDLOCK_ACCESS_FS_READ_DIR) != 0 ||
+        add_path_rule(ruleset_fd, toolchain_fd,
+                      LANDLOCK_ACCESS_FS_EXECUTE | LANDLOCK_ACCESS_FS_READ_FILE |
+                      LANDLOCK_ACCESS_FS_READ_DIR) != 0 ||
         add_path_rule(ruleset_fd, null_fd,
                       LANDLOCK_ACCESS_FS_READ_FILE | LANDLOCK_ACCESS_FS_WRITE_FILE) != 0 ||
         !add_readonly_directory_rule(ruleset_fd, "/usr") ||
@@ -290,6 +307,8 @@ static bool enforce_gated_seccomp(void) {
         ALLOW_SYSCALL(__NR_write),
         ALLOW_SYSCALL(__NR_close),
         ALLOW_SYSCALL(__NR_dup2),
+        ALLOW_SYSCALL(__NR_fcntl),
+        ALLOW_SYSCALL(__NR_access),
         ALLOW_SYSCALL(__NR_openat),
         ALLOW_SYSCALL(__NR_readlink),
         ALLOW_SYSCALL(__NR_readlinkat),
@@ -313,6 +332,11 @@ static bool enforce_gated_seccomp(void) {
         ALLOW_SYSCALL(__NR_clock_gettime),
         ALLOW_SYSCALL(__NR_getpid),
         ALLOW_SYSCALL(__NR_gettid),
+        ALLOW_SYSCALL(__NR_getppid),
+        ALLOW_SYSCALL(__NR_getuid),
+        ALLOW_SYSCALL(__NR_geteuid),
+        ALLOW_SYSCALL(__NR_getgid),
+        ALLOW_SYSCALL(__NR_getegid),
         ALLOW_SYSCALL(__NR_getrandom),
         ALLOW_SYSCALL(__NR_futex),
         ALLOW_SYSCALL(__NR_sched_yield),
@@ -1082,7 +1106,10 @@ static int worker_exec(int argc, char **argv) {
 /* The session entry point uses stdin/stdout because bwrap preserves standard
  * descriptors on every admitted version, unlike arbitrary inherited FDs. */
 static int gated_worker_exec(int argc, char **argv) {
-    int working_directory_fd;
+    int scratch_fd;
+    int subject_fd;
+    int toolchain_fd;
+    int output_fd;
     int executable_fd;
     int null_fd;
     char gate;
@@ -1103,7 +1130,8 @@ static int gated_worker_exec(int argc, char **argv) {
         }
         break;
     }
-    if (argc < 4 || argv[2][0] != '/' || argv[3][0] != '/') {
+    if (argc < 7 || argv[2][0] != '/' || argv[3][0] != '/' ||
+        argv[4][0] != '/' || argv[5][0] != '/' || argv[6][0] != '/') {
         return 64;
     }
     errno = 0;
@@ -1119,18 +1147,42 @@ static int gated_worker_exec(int argc, char **argv) {
     if (syscall(SYS_keyctl, KEYCTL_JOIN_SESSION_KEYRING, 0) < 0) {
         return 64;
     }
-    working_directory_fd = open(argv[2], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    executable_fd = open(argv[3], O_PATH | O_NOFOLLOW | O_CLOEXEC);
-    if (working_directory_fd < 0 || executable_fd < 0) {
-        (void)close(working_directory_fd);
+    scratch_fd = open(argv[2], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    subject_fd = open(argv[3], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    toolchain_fd = open(argv[4], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    output_fd = open(argv[5], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    executable_fd = open(argv[6], O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    if (scratch_fd < 0 || subject_fd < 0 || toolchain_fd < 0 || output_fd < 0 ||
+        executable_fd < 0) {
+        (void)close(scratch_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
         (void)close(executable_fd);
         return 64;
     }
-    if (fchdir(working_directory_fd) != 0 ||
+    if (fchdir(scratch_fd) != 0 ||
         prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
-        !enforce_gated_landlock(executable_fd, working_directory_fd) ||
+        !enforce_gated_landlock(executable_fd, scratch_fd, subject_fd, toolchain_fd,
+                                output_fd) ||
         !enforce_gated_seccomp()) {
-        (void)close(working_directory_fd);
+        (void)close(scratch_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    /* Keep a descriptor above the standard streams while closing the response.
+     * dup2 from it clears FD_CLOEXEC; opening after close(1) would reuse fd 1
+     * and leave stdout closed across exec. */
+    null_fd = open("/dev/null", O_RDWR | O_CLOEXEC);
+    if (null_fd <= 2) {
+        (void)close(null_fd);
+        (void)close(scratch_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
         (void)close(executable_fd);
         return 64;
     }
@@ -1155,23 +1207,31 @@ static int gated_worker_exec(int argc, char **argv) {
         if (length < 0 || (size_t)length >= sizeof(response) ||
             write_all(1, response, (size_t)length) != 0 || close(1) != 0) return 64;
     }
-    null_fd = open("/dev/null", O_RDWR | O_CLOEXEC);
-    if (null_fd < 0 || dup2(null_fd, 0) != 0 || dup2(null_fd, 1) != 1 ||
+    if (dup2(null_fd, 0) != 0 || dup2(null_fd, 1) != 1 ||
         dup2(null_fd, 2) != 2) {
         (void)close(null_fd);
-        (void)close(working_directory_fd);
+        (void)close(scratch_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
         (void)close(executable_fd);
         return 64;
     }
     if (null_fd > 2 && close(null_fd) != 0) {
-        (void)close(working_directory_fd);
+        (void)close(scratch_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
         (void)close(executable_fd);
         return 64;
     }
     /* AT_EMPTY_PATH binds exec to the same object Landlock admitted. */
-    (void)syscall(SYS_execveat, executable_fd, "", argv + 3, environ,
+    (void)syscall(SYS_execveat, executable_fd, "", argv + 6, environ,
                   AT_EMPTY_PATH);
-    (void)close(working_directory_fd);
+    (void)close(scratch_fd);
+    (void)close(subject_fd);
+    (void)close(toolchain_fd);
+    (void)close(output_fd);
     (void)close(executable_fd);
     return 64;
 }
