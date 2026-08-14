@@ -269,3 +269,93 @@ def test_gate1_real_process_session_observes_namespaces_landlock_and_seccomp(
     assert value["command"]["landlock"] is True
     assert value["command"]["seccomp"] is True
     assert value["teardown"] == {"cgroup_kill": True, "populated": 0, "cgroup_removed": True}
+
+
+def test_gate7_launcher_enforces_landlock_and_seccomp_for_a_worker(tmp_path: Path) -> None:
+    """NNP makes both kernel layers testable without a privileged host setup."""
+    build = REPOSITORY / ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
+    compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
+    worker_source = tmp_path / "worker.c"
+    worker = tmp_path / "worker"
+    scratch = tmp_path / "scratch"
+    denied = tmp_path / "outside-ruleset"
+    scratch.mkdir()
+    worker_source.write_text(
+        """
+#include <errno.h>
+#include <fcntl.h>
+#include <linux/keyctl.h>
+#include <string.h>
+#include <sys/syscall.h>
+#include <unistd.h>
+
+int main(int argc, char **argv) {
+    int fd;
+    if (argc != 2) return 99;
+    if (strcmp(argv[1], "keyctl") == 0) {
+        errno = 0;
+        return syscall(SYS_keyctl, KEYCTL_GET_KEYRING_ID, -3, 0) == -1 ? errno : 98;
+    }
+    fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (fd < 0) return errno;
+    if (write(fd, "ok", 2) != 2 || close(fd) != 0) return 97;
+    return 0;
+}
+""",
+        encoding="utf-8",
+    )
+    assert compiler.exists(), "C toolchain required for mandatory launcher enforcement test"
+    try:
+        built = subprocess.run(
+            [
+                *CONTROLLER,
+                "launcher-build",
+                "--manifest",
+                "governance/confinement/native-launcher-build-v1.json",
+                "--source",
+                "native/ranex-worker-launcher/launcher.c",
+                "--output",
+                ".local/ranex/build/strict-local-v1/ranex-worker-launcher",
+            ],
+            cwd=REPOSITORY,
+            env={**os.environ, "PYTHONPATH": "src"},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert built.returncode == 0, built.stdout + built.stderr
+        compiled = subprocess.run(
+            [str(compiler), "-static", "-O2", "-o", str(worker), str(worker_source)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert compiled.returncode == 0, compiled.stdout + compiled.stderr
+
+        permitted = subprocess.run(
+            [str(build), "--ranex-worker-exec", str(scratch), str(worker), str(scratch / "allowed")],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert permitted.returncode == 0, permitted.stdout + permitted.stderr
+        assert (scratch / "allowed").read_text(encoding="utf-8") == "ok"
+
+        landlock_denied = subprocess.run(
+            [str(build), "--ranex-worker-exec", str(scratch), str(worker), str(denied)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert landlock_denied.returncode in {13, 1}
+        assert not denied.exists()
+
+        seccomp_denied = subprocess.run(
+            [str(build), "--ranex-worker-exec", str(scratch), str(worker), "keyctl"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert seccomp_denied.returncode == 1
+    finally:
+        build.unlink(missing_ok=True)
