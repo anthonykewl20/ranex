@@ -24,6 +24,8 @@ EVIDENCE = {
     "producer_id": "worker",
     "subject_digest": ENVELOPE["subject"],
     "suite_results": None,
+    "confinement_result_digest": "sha256:" + "c" * 64,
+    "confinement_profile_digest": "sha256:" + "d" * 64,
 }
 
 

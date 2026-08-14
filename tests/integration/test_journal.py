@@ -146,6 +146,8 @@ class MergeJournalScenario:
             "producer_id": "worker",
             "subject_digest": subject,
             "suite_results": None,
+            "confinement_result_digest": "sha256:" + "c" * 64,
+            "confinement_profile_digest": "sha256:" + "d" * 64,
         }
         (self.repo / "governance" / "evidence.json").write_text(
             json.dumps(
@@ -230,6 +232,8 @@ class MergeJournalScenario:
             "producer_id": "worker",
             "subject_digest": subject,
             "suite_results": None,
+            "confinement_result_digest": "sha256:" + "c" * 64,
+            "confinement_profile_digest": "sha256:" + "d" * 64,
         }
         evidence_document = {
             **evidence,

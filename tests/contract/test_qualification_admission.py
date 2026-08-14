@@ -147,6 +147,8 @@ def raw_record(
         "producer_id": producer,
         "subject_digest": subject,
         "suite_results": report,
+        "confinement_result_digest": "sha256:" + "c" * 64,
+        "confinement_profile_digest": "sha256:" + "d" * 64,
     }
     return {**content, "signature": signing.sign_evidence(content, private)}
 

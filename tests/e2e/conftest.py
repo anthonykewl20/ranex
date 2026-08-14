@@ -78,6 +78,8 @@ class Signing:
         self.register(producer)
         body = {**content}
         body.setdefault("suite_results", None)
+        body.setdefault("confinement_result_digest", "sha256:" + "c" * 64)
+        body.setdefault("confinement_profile_digest", "sha256:" + "d" * 64)
         return {**body, "signature": sign_evidence(body, self.private[producer])}
 
 

@@ -310,6 +310,8 @@ def record_live_host_qualification(repo: Path, key_path: Path) -> None:
         "producer_id": "worker",
         "subject_digest": subject_digest_for(repo, "HEAD"),
         "suite_results": report,
+        "confinement_result_digest": "sha256:" + "c" * 64,
+        "confinement_profile_digest": "sha256:" + "d" * 64,
     }
     private_key = key_path.read_text(encoding="utf-8").strip()
     record_evidence(

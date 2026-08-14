@@ -266,6 +266,8 @@ def dispatch_judge(
             "producer_id": "worker",
             "subject_digest": subject,
             "suite_results": None,
+            "confinement_result_digest": "sha256:" + "c" * 64,
+            "confinement_profile_digest": "sha256:" + "d" * 64,
         }
         evidence_document = {
             **evidence_body,
@@ -388,6 +390,8 @@ def signed_evidence_record(
         "producer_id": "worker",
         "subject_digest": subject,
         "suite_results": None,
+        "confinement_result_digest": "sha256:" + "c" * 64,
+        "confinement_profile_digest": "sha256:" + "d" * 64,
     }
     return {**body, "signature": sign_evidence(body, scenario.producer_private)}
 
@@ -957,6 +961,8 @@ def test_evidence_suite_results_present_vs_absent_irrelevant_to_merge(
                 "producer_id": "worker",
                 "subject_digest": subject,
                 "suite_results": _results,
+                "confinement_result_digest": "sha256:" + "c" * 64,
+                "confinement_profile_digest": "sha256:" + "d" * 64,
             }
             return [{**body, "signature": sign_evidence(body, _scenario.producer_private)}]
 

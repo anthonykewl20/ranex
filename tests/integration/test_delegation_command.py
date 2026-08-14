@@ -268,6 +268,8 @@ def test_candidate_manifest_edit_cannot_change_delegated_judgement(
             "producer_id": "worker",
             "subject_digest": subject,
             "suite_results": suite_results,
+            "confinement_result_digest": "sha256:" + "c" * 64,
+            "confinement_profile_digest": "sha256:" + "d" * 64,
         }
         (worktree / "governance" / "evidence.json").write_text(
             json.dumps([{**content, "signature": sign_evidence(content, private)}]),

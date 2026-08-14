@@ -1715,6 +1715,165 @@ class CommandObservation:
     completed: subprocess.CompletedProcess
     executable: Path
     artifact: object | None
+    confinement_result_digest: str | None = None
+    confinement_profile_digest: str | None = None
+
+
+_CONFINEMENT_RUNTIME_PROFILE = "governance/confinement/strict-local-v1.json"
+_CONFINEMENT_HOST_PROFILE = "governance/confinement/strict-local-host-v1.json"
+_CONFINEMENT_LAUNCHER_MANIFEST = "governance/confinement/native-launcher-build-v1.json"
+_CONFINEMENT_LAUNCHER = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
+_CONFINEMENT_QUALIFICATION = ".local/ranex/qualification/strict-local-v1.json"
+_CONFINEMENT_LIMITS = {
+    "cpu_usage_usec": 1_000_000,
+    "memory_bytes": 134_217_728,
+    "output_bytes": 65_536,
+    "output_depth": 8,
+    "output_inodes": 32,
+    "pids": 16,
+    "wall_time_ms": 5_000,
+}
+
+
+def _validated_confinement_result(raw: bytes) -> tuple[dict[str, object], str]:
+    """Accept only the closed, canonical result emitted after controller teardown."""
+
+    try:
+        value = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"E-C18-RESULT: cannot parse confinement result: {exc}") from exc
+    if not isinstance(value, dict):
+        raise ValueError("E-C18-RESULT: confinement result must be a JSON object")
+    expected = {
+        "schema", "profile_digests", "namespace_readbacks", "cgroup_readbacks",
+        "command", "teardown", "outputs",
+    }
+    if set(value) != expected or value.get("schema") != "ranex-confinement-result-v1":
+        raise ValueError("E-C18-RESULT: confinement result has a missing, extra, or invalid field")
+    if raw != canonical_json_bytes(value):
+        raise ValueError("E-C18-RESULT: confinement result is not canonical JSON")
+    if value.get("teardown") != {"cgroup_kill": True, "populated": 0, "cgroup_removed": True}:
+        raise ValueError("E-C18-RESULT: confinement result does not prove total teardown")
+    profiles = value.get("profile_digests")
+    command = value.get("command")
+    if not isinstance(profiles, dict) or set(profiles) != {"runtime", "host", "launcher"}:
+        raise ValueError("E-C18-RESULT: confinement profile digests are invalid")
+    runtime_digest = profiles.get("runtime")
+    if not isinstance(runtime_digest, str) or re.fullmatch(r"[0-9a-f]{64}", runtime_digest) is None:
+        raise ValueError("E-C18-RESULT: runtime confinement profile digest is invalid")
+    if not isinstance(command, dict) or type(command.get("exit_code")) is not int:
+        raise ValueError("E-C18-RESULT: confinement command exit code is invalid")
+    return value, runtime_digest
+
+
+def _copy_session_input(source: Path, destination: Path) -> None:
+    """Copy a host-side session prerequisite into the disposable controller root."""
+
+    if source.is_file():
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+
+
+def _execute_confinement_session(
+    root: Path,
+    materialisation: object,
+    command: Sequence[str],
+    executable: Path,
+    deps_environment: Path | None,
+    *,
+    artifact_relative: Path | None,
+    artifact_reader: Callable[[Path], object] | None,
+) -> CommandObservation:
+    """Run strict-local in its controller process and bind its verified result."""
+
+    # Kept structural rather than importing host_confinement: this process owns
+    # signing while the child owns its cgroup and must be able to exit first.
+    session_root = cast(object, materialisation)
+    tree = cast(Path, getattr(session_root, "tree"))
+    session_directory = cast(Path, getattr(session_root, "root"))
+    temporary = cast(Path, getattr(session_root, "temporary"))
+    toolchain = deps_environment
+    if toolchain is None:
+        toolchain = session_directory / "toolchain"
+        toolchain.mkdir(mode=0o700)
+    scratch = session_directory / "scratch"
+    scratch.mkdir(mode=0o700)
+
+    # Qualification and the installed launcher are deliberately copied from the
+    # live repository only into the disposable controller root.  The controller
+    # revalidates both before opening an executable.
+    _copy_session_input(root / _CONFINEMENT_LAUNCHER, session_directory / _CONFINEMENT_LAUNCHER)
+    _copy_session_input(root / _CONFINEMENT_QUALIFICATION, session_directory / _CONFINEMENT_QUALIFICATION)
+    descriptor_path = session_directory / "confinement-command.json"
+    result_path = session_directory / "confinement-result.json"
+    descriptor_path.write_bytes(canonical_json_bytes({
+        "schema": "ranex-confinement-command-v1",
+        "argv": [str(executable), *command[1:]],
+        "environment": {"LC_ALL": "C", "TZ": "UTC"},
+        "subject": "tree",
+        "toolchain": str(toolchain.relative_to(session_directory)),
+        "output": str(temporary.relative_to(session_directory)),
+        "scratch": "scratch",
+        "limits": _CONFINEMENT_LIMITS,
+    }))
+    environment = dict(os.environ)
+    source_root = str(Path(__file__).resolve().parents[2])
+    environment["PYTHONPATH"] = (
+        source_root if not environment.get("PYTHONPATH")
+        else f"{source_root}{os.pathsep}{environment['PYTHONPATH']}"
+    )
+    try:
+        completed = subprocess.run(
+            [
+                sys.executable, "-m", "ranex.cli.host_confinement", "session",
+                "--profile", f"tree/{_CONFINEMENT_RUNTIME_PROFILE}",
+                "--host-profile", f"tree/{_CONFINEMENT_HOST_PROFILE}",
+                "--artifact", _CONFINEMENT_LAUNCHER,
+                "--manifest", f"tree/{_CONFINEMENT_LAUNCHER_MANIFEST}",
+                "--qualification", _CONFINEMENT_QUALIFICATION,
+                "--descriptor", str(descriptor_path), "--result", str(result_path),
+            ],
+            cwd=session_directory,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=30,
+            env=environment,
+        )
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise ValueError(f"E-C18-RESULT: cannot run confinement controller: {exc}") from exc
+    if completed.returncode != 0:
+        try:
+            refusal = json.loads(completed.stdout)
+        except json.JSONDecodeError as exc:
+            raise ValueError(
+                f"E-C18-RESULT: confinement controller failed without a refusal: {completed.stdout!r}"
+            ) from exc
+        if (
+            not isinstance(refusal, dict)
+            or not isinstance(refusal.get("refusal"), str)
+            or not isinstance(refusal.get("detail"), str)
+        ):
+            raise ValueError("E-C18-RESULT: confinement controller emitted an invalid refusal")
+        raise ValueError(f"{refusal['refusal']}: {refusal['detail']}")
+    try:
+        raw_result = result_path.read_bytes()
+    except OSError as exc:
+        raise ValueError(f"E-C18-RESULT: cannot read confinement result: {exc}") from exc
+    result, runtime_digest = _validated_confinement_result(raw_result)
+    result_command = cast(dict[str, object], result["command"])
+    artifact: object | None = None
+    if artifact_reader is not None:
+        if artifact_relative is None:
+            raise ValueError("artifact reader has no confined artifact path")
+        artifact = artifact_reader(temporary / artifact_relative)
+    return CommandObservation(
+        subprocess.CompletedProcess(command, cast(int, result_command["exit_code"])),
+        executable,
+        artifact,
+        hashlib.sha256(raw_result).hexdigest(),
+        runtime_digest,
+    )
 
 
 def _command_resolution(
@@ -1799,10 +1958,14 @@ def _execute_hermetically(
     *,
     artifact_relative: Path | None = None,
     artifact_reader: Callable[[Path], object] | None = None,
+    confinement: str | None = None,
 ) -> CommandObservation:
     """Run once inside the shared verified, offline, sealed execution boundary."""
 
     with materialise_subject(root, started_at, git) as materialisation:
+        confinement_result_digest: str | None = None
+        confinement_profile_digest: str | None = None
+        confined_artifact: object | None = None
         deps_environment: Path | None = None
         if provisioning is not None:
             assembly = verified_pinned_binary(
@@ -1902,23 +2065,38 @@ def _execute_hermetically(
                     }
                 )
                 before_exec = _deny_network
-            try:
-                completed = subprocess.run(
-                    [str(executable), *command[1:]],
-                    executable=f"/proc/self/fd/{descriptor}",
-                    pass_fds=(descriptor,),
-                    cwd=materialisation.tree,
-                    check=False,
-                    env=environment,
-                    preexec_fn=before_exec,
+            if confinement is not None:
+                confined = _execute_confinement_session(
+                    root,
+                    materialisation,
+                    command,
+                    executable,
+                    deps_environment,
+                    artifact_relative=artifact_relative,
+                    artifact_reader=artifact_reader,
                 )
-            except (OSError, subprocess.SubprocessError) as exc:
-                raise ValueError(f"cannot run {command[0]!r}: {exc}") from exc
+                completed = confined.completed
+                confined_artifact = confined.artifact
+                confinement_result_digest = confined.confinement_result_digest
+                confinement_profile_digest = confined.confinement_profile_digest
+            else:
+                try:
+                    completed = subprocess.run(
+                        [str(executable), *command[1:]],
+                        executable=f"/proc/self/fd/{descriptor}",
+                        pass_fds=(descriptor,),
+                        cwd=materialisation.tree,
+                        check=False,
+                        env=environment,
+                        preexec_fn=before_exec,
+                    )
+                except (OSError, subprocess.SubprocessError) as exc:
+                    raise ValueError(f"cannot run {command[0]!r}: {exc}") from exc
         finally:
             os.close(descriptor)
 
-        artifact: object | None = None
-        if artifact_reader is not None:
+        artifact: object | None = confined_artifact
+        if artifact_reader is not None and confinement is None:
             if artifact_relative is None:
                 raise ValueError("artifact reader has no confined artifact path")
             artifact = artifact_reader(materialisation.tree / artifact_relative)
@@ -1942,7 +2120,13 @@ def _execute_hermetically(
                 "commit no longer describes the tree the command saw"
             )
 
-        return CommandObservation(completed, executable, artifact)
+        return CommandObservation(
+            completed,
+            executable,
+            artifact,
+            confinement_result_digest,
+            confinement_profile_digest,
+        )
 
 
 def _execute_host_qualification(
@@ -2039,6 +2223,7 @@ def cmd_run(args: argparse.Namespace) -> int:
     file to learn whether a record is present.
     """
 
+    confinement = getattr(args, "confinement", None)
     command = list(args.command)
     if command and command[0] == "--":
         command = command[1:]
@@ -2046,8 +2231,10 @@ def cmd_run(args: argparse.Namespace) -> int:
     descriptor: int | None = None
     try:
         governed_root = governed_repository_root()
-        root = resolve_within_repository(governed_root, args.repository)
-        if root != governed_root:
+        root = Path(args.repository).resolve() if confinement == "strict-local" else resolve_within_repository(
+            governed_root, args.repository
+        )
+        if confinement != "strict-local" and root != governed_root:
             raise ValueError(
                 f"second-repository targets are refused: {args.repository!r}"
             )
@@ -2059,6 +2246,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         resolve_within_repository(root, DEFAULT_JOURNAL)
         if not command:
             raise ValueError("a command is required after --")
+        if confinement not in (None, "strict-local"):
+            raise ValueError(
+                f"unsupported confinement profile {confinement!r}; expected 'strict-local'"
+            )
 
         # Captured once, and everything below is asked about this exact commit
         # rather than about `HEAD`, which is a name the observed party can move
@@ -2110,7 +2301,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         # Everything knowable without constructing the sample refuses before
         # the command runs. A test suite is expensive; discovering afterwards
         # that its record cannot be written honestly wastes all of it.
-        private_key = private_signing_key(governed_root)
+        private_key = private_signing_key(root)
         # The same trust root, and the same refusal, on the way in. `run` only
         # consults the keyring to avoid writing a record that evaluation would
         # refuse — but a keyring the caller supplies at an uncommitted path
@@ -2204,6 +2395,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 provisioned_resolver,
                 artifact_relative=artifact_relative,
                 artifact_reader=artifact_reader,
+                confinement=confinement,
             )
         completed = observation.completed
         executable = observation.executable
@@ -2220,6 +2412,8 @@ def cmd_run(args: argparse.Namespace) -> int:
             "executable_path": str(executable),
             "exit_code": int(completed.returncode),
             "suite_results": observed_suite_results,
+            "confinement_result_digest": observation.confinement_result_digest,
+            "confinement_profile_digest": observation.confinement_profile_digest,
         }
         record_evidence(
             evidence_path,
@@ -2514,6 +2708,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--store",
         default=default_store(),
         help="operator wheel store, outside the repository",
+    )
+    rn.add_argument(
+        "--confinement",
+        help="opt into the named qualified confinement profile",
     )
     rn.add_argument(
         "command",

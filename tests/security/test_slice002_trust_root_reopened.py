@@ -231,6 +231,8 @@ def record(
         "executable_path": EXECUTABLE,
         "exit_code": exit_code,
         "suite_results": None,
+        "confinement_result_digest": "sha256:" + "c" * 64,
+        "confinement_profile_digest": "sha256:" + "d" * 64,
     }
 
 

@@ -160,6 +160,8 @@ def content(*, suite_results_value: dict[str, object] | None) -> dict[str, objec
         "producer_id": "worker",
         "subject_digest": SUBJECT,
         "suite_results": suite_results_value,
+        "confinement_result_digest": "sha256:" + "c" * 64,
+        "confinement_profile_digest": "sha256:" + "d" * 64,
     }
 
 
@@ -194,10 +196,10 @@ def signed_for_domain(
     ).decode("ascii")
 
 
-def raw_signed_v3(private_key: str, body: dict[str, object]) -> dict[str, object]:
+def raw_signed_v4(private_key: str, body: dict[str, object]) -> dict[str, object]:
     return {
         **body,
-        "signature": signed_for_domain(private_key, b"ranex-evidence-v3\n", body),
+        "signature": signed_for_domain(private_key, b"ranex-evidence-v4\n", body),
     }
 
 
@@ -270,7 +272,7 @@ def run_real_pytest_tree(
     return result, report.read_bytes()
 
 
-def test_signing_moves_to_v3_and_adds_suite_results(domain) -> None:
+def test_signing_moves_to_v4_and_adds_suite_results(domain) -> None:
     assert domain.signing.EVIDENCE_DOMAIN == b"ranex-evidence-v4\n"
     assert domain.signing.SIGNED_FIELDS == (
         "claim_id",
@@ -286,7 +288,7 @@ def test_signing_moves_to_v3_and_adds_suite_results(domain) -> None:
     )
 
 
-def test_a_v3_record_with_null_suite_results_is_admitted(domain, keypair) -> None:
+def test_a_v4_record_with_null_suite_results_is_admitted(domain, keypair) -> None:
     private, public = keypair
     admitted = domain.admission.admit(
         [signed(domain, private, suite_results_value=None)],
@@ -306,7 +308,11 @@ def test_an_old_v2_seven_field_record_is_refused_loudly_as_malformed(
     old_body = {
         key: value
         for key, value in content(suite_results_value=None).items()
-        if key != "suite_results"
+        if key not in {
+            "suite_results",
+            "confinement_result_digest",
+            "confinement_profile_digest",
+        }
     }
     record = {**old_body, "signature": signed_v2(private, old_body)}
 
@@ -333,7 +339,7 @@ def test_admission_refuses_any_content_key_set_other_than_the_eight(
         body["timestamp"] = "2026-08-05T00:00:00Z"
 
     result = domain.admission.admit(
-        [raw_signed_v3(private, body)],
+        [raw_signed_v4(private, body)],
         {"worker": public},
     )
 
@@ -385,7 +391,7 @@ def test_admission_refuses_suite_results_with_missing_or_extra_inner_keys(
     private, public = keypair
     result = domain.admission.admit(
         [
-            raw_signed_v3(
+            raw_signed_v4(
                 private,
                 content(suite_results_value=suite_results_value),
             )
@@ -417,7 +423,7 @@ def test_admission_refuses_counts_with_missing_or_extra_keys(
     result_value["counts"] = counts
 
     result = domain.admission.admit(
-        [raw_signed_v3(private, content(suite_results_value=result_value))],
+        [raw_signed_v4(private, content(suite_results_value=result_value))],
         {"worker": public},
     )
 
@@ -474,7 +480,7 @@ def test_admission_refuses_non_canonical_suite_results_content(
         )
 
     result = domain.admission.admit(
-        [raw_signed_v3(private, content(suite_results_value=result_value))],
+        [raw_signed_v4(private, content(suite_results_value=result_value))],
         {"worker": public},
     )
 

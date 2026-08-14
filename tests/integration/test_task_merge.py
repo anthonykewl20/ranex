@@ -81,6 +81,8 @@ def prepare(repo: Path, *, orphan: bool = False) -> tuple[str, str, Path, dict[s
         "producer_id": "worker",
         "subject_digest": subject,
         "suite_results": None,
+        "confinement_result_digest": "sha256:" + "c" * 64,
+        "confinement_profile_digest": "sha256:" + "d" * 64,
     }
     (governance / "evidence.json").write_text(
         json.dumps([{**evidence_body, "signature": sign_evidence(evidence_body, worker_private)}]),
@@ -156,6 +158,7 @@ def test_task_merge_refuses_unrelated_history_at_ancestry(tmp_path: Path) -> Non
         ("ancestry", "refused"),
     ]
     assert entries[-1]["outcome"] == "REFUSED"
+
 
 
 def test_task_merge_refuses_when_journal_is_missing(
@@ -293,4 +296,3 @@ def test_task_merge_journals_refusal_when_committed_catalog_blob_is_corrupt(
         "policy_approval-error cannot read committed blob at governance/gates.yaml"
     )
     assert entries[-1]["outcome"] == "REFUSED"
-

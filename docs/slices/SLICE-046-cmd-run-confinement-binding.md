@@ -46,6 +46,7 @@ Product implementation may change only:
    deliberate contract edits only, retaining their test IDs while changing their
    pinned eight-field expectations to the ten-field set and their evidence-domain
    expectation to v4
+- `tests/integration/test_slice017_native_launcher.py`: gate10 main.py production-entrypoint hash pin updated for the authorized binding change
 - this slice; ADR-006's status line and MAP §11.5 RISK-06 row only at closure
 
 Explicitly not owned: harness files, `host_confinement` lifecycle semantics,

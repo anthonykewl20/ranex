@@ -41,7 +41,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 
 from ranex.foundation.canonical import canonical_json_bytes
 
-EVIDENCE_DOMAIN = b"ranex-evidence-v3\n"
+EVIDENCE_DOMAIN = b"ranex-evidence-v4\n"
 
 # SLICE-009 added suite_results, and the version above moved with it.
 # `command_digest` is what the kernel compares, so an unsigned digest would be a
@@ -58,6 +58,8 @@ SIGNED_FIELDS: tuple[str, ...] = (
     "producer_id",
     "subject_digest",
     "suite_results",
+    "confinement_result_digest",
+    "confinement_profile_digest",
 )
 
 _PREFIX = "ed25519:"

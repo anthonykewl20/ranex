@@ -90,6 +90,8 @@ def evidence_record(signing: Signing, digest: str) -> dict[str, object]:
         "executable_path": "/usr/bin/uv",
         "exit_code": 0,
         "suite_results": None,
+        "confinement_result_digest": "sha256:" + "c" * 64,
+        "confinement_profile_digest": "sha256:" + "d" * 64,
     }
     private_key = signing.path.read_text(encoding="utf-8").strip()
     return {**body, "signature": sign_evidence(body, private_key)}
