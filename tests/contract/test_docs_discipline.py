@@ -110,10 +110,9 @@ _VENDORED_INTENT = re.compile(r"^\s*[-*]?\s*(?:\*\*)?Vendored(?:\*\*)?:", re.MUL
 # green. Pinned to the bytes each file had when the rule landed, so the moment
 # one of them is edited its exemption lapses and the new rule applies to it —
 # which is also the nudge toward superseding rather than rewriting.
+# ADR-001/002 were retrofitted with fetched prior art on 2026-08-10 (56aa110e6), which lapsed and retired their waivers.
 _PRE_CODE_RULE_ADRS = {
     "ADR-000-how-we-write-adrs.md": "8233d1b1ed63a53c9e14894de8029f358e28f983",
-    "ADR-001-claim-command-binding.md": "df6532def4cfd97a67ea7f255214feafda6a81f6",
-    "ADR-002-committed-trust-root.md": "8e0e08174c20b922792eb742074acaa9b22eb1bb",
 }
 
 
@@ -136,10 +135,9 @@ def _grandfathered(path: Path) -> bool:
 # This rule exists because the omission it catches actually happened: a design
 # for confinement and audit logging was produced without searching, and `in-toto`,
 # `witness` and `landrun` had already solved most of it. The owner caught it.
+# ADR-001/002 were retrofitted with fetched prior art on 2026-08-10 (56aa110e6), which lapsed and retired their waivers.
 _PRE_SEARCH_RULE_ADRS = {
     "ADR-000-how-we-write-adrs.md": "8233d1b1ed63a53c9e14894de8029f358e28f983",
-    "ADR-001-claim-command-binding.md": "df6532def4cfd97a67ea7f255214feafda6a81f6",
-    "ADR-002-committed-trust-root.md": "8e0e08174c20b922792eb742074acaa9b22eb1bb",
     "ADR-003-research-is-fetched-evidence.md": "7cab0069b6e41f4b6ad8042022c0396813b7561e",
     "ADR-004-environment-boundary-for-git-queries.md": "a42a9d149703060b5a095033cd40dac00931fc4f",
     "ADR-005-hermetic-observation.md": "238ca8a0e60a881efcacdd54699d4f9c7f05c8b0",
