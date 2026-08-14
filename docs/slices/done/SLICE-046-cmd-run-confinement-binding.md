@@ -121,8 +121,9 @@ edits, change a non-owned path, accept ADR-006, or close RISK-06 early.
 ## Closure
 
 Done criteria met: frozen tests 6 pass + 1 declared host-gated skip; full frozen
-suite 1023 passed / 8 skipped at f63713f43. Independent reviews (blind x2 across
-spec and implementation) completed with all findings fixed; OCR gates PASS per
-commit. ADR-006 accepted and RISK-06 closed this commit; ADR-017 accepted.
-Follow-ups recorded: shared result-validator dedup, controller env narrowing,
+ suite 1023 passed / 8 skipped at f63713f43. Independent reviews (blind x2 across
+ spec and implementation) completed with all findings fixed; OCR gates PASS per
+ commit. ADR-006 accepted and RISK-06 closed this commit; ADR-017 accepted.
+Gate9's ADR-006/RISK-06 pins were updated in the same deliberate-edit class.
+ Follow-ups recorded: shared result-validator dedup, controller env narrowing,
 and claim-type enforcement of confinement digests (follow-up slice).

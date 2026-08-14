@@ -286,7 +286,7 @@ def test_gate9_surface_has_no_cmd_run_evidence_or_signing_path() -> None:
         "--descriptor",
         "--result",
     }
-    assert "**Status:** proposed" in ADR.read_text(encoding="utf-8")
+    assert "**Status:** accepted" in ADR.read_text(encoding="utf-8")
 
 
 def test_gate10_host_directory_walker_preserves_foundation_behavior(tmp_path: Path) -> None:
