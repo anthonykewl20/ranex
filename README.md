@@ -258,6 +258,12 @@ below is what is actually built.
   `run` then `gate evaluate` is a closed loop for self-contained commands.
 - **Signed evidence** — Ed25519, verified against a committed keyring before a
   record is admitted. The verifier holds only public keys and cannot forge.
+- **Confinement-session lifecycle** — controller/worker cgroup-v2 leaves with
+  exact limit readbacks, pinned bwrap namespaces, and a stdio-gated native
+  launcher enforce NNP→Landlock→seccomp before exec; cumulative
+  cpu/memory/pids/wall/output enforcement, kill→drain-to-populated-0 teardown,
+  bounded `openat2` collection, and an unsigned closed-schema
+  `ranex-confinement-result-v1` follow (issue #21 / SLICE-018).
 - **Claim↔command binding** — the committed catalog declares the argv that
   satisfies a claim, and the kernel compares its digest, so a record of `true`
   no longer satisfies `tests-executed`. Read the next section for what it does
@@ -305,7 +311,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** `SLICE-018-confinement-session-lifecycle`.
+**Active slice:** none.
 Its frozen contract covers the cgroup/namespace/bounded-output lifecycle with
 no `cmd_run` or signing path.
 
@@ -359,8 +365,14 @@ chosen by the party being measured. Both are closed.
   namespace uid/gid anchors, refusing absent, stale, mismatched, ambiguous or
   self-approved evidence. Qualification runs as a host operation through
   `cmd_run`, while the kernel remains byte-exact. The real-operator e2e is
-  honestly guarded and skips without delegated cgroup controllers; `cmd_run`
-  confinement and RISK-06 remain open.
+   honestly guarded and skips without delegated cgroup controllers; `cmd_run`
+   confinement and RISK-06 remain open.
+
+- **SLICE-018-confinement-session-lifecycle** — closed 2026-08-14. Controller
+  and worker cgroup-v2 leaves enforce exact readback limits; pinned bwrap
+  namespaces and the stdio-gated launcher apply NNP→Landlock→seccomp before
+  exec. Cumulative limits, kill→drain teardown, bounded `openat2` output
+  collection, and the unsigned `ranex-confinement-result-v1` are delivered.
 
 - **SLICE-017-confinement-of-the-bound-command** — closed 2026-08-12. Its 47
   qualification gates qualified the strict-local host and byte-reproducible GNU

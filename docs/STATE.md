@@ -2,26 +2,31 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-13
-**Active slice:** `docs/slices/SLICE-018-confinement-session-lifecycle.md`.
+**Updated:** 2026-08-14
+**Active slice:** none.
 
 ## Where we stopped
 
-SLICE-018 is open for the cgroup/namespace/bounded-output lifecycle under
-ADR-006. Its contract is frozen in two new security/integration files and must
-remain red until implementation. It depends on the shipped SLICE-017 qualified
-artifact and exposes no `cmd_run` or signing path.
+SLICE-018 closed and shipped — the confinement-session lifecycle: cgroup-v2
+controller/worker leaves with exact readbacks, bwrap plus a stdio-gated launcher
+namespaces, NNP→Landlock→seccomp, cumulative enforcement with exhaustion-first
+refusals, kill/drain/populated-0 teardown, bounded `openat2` collection, and a
+validated unsigned result. Delegated-unit runs on this host verified an honest
+session, output-writing session, path-alias refusal, and real OOM kill refusing
+E-C18-LIMIT; the full suite passed 1012 with 7 declared host-gated skips.
 
 ## Next
 
-Implement only SLICE-018's exact owned paths against the frozen tests. Do not
-change the frozen tests, bind `cmd_run`, sign a result, accept ADR-006, or close
-RISK-06.
+Kernel P0 sequence: SLICE-029..044 per `docs/MAP.md` and the open issues.
+Opening the next slice is an owner/governance selection.
 
 ## Known limits
 
-- The cgroup-observer test still flakes with `OSError(19)` under load; unfixed.
-- Real qualification e2e skips on hosts without delegated cgroup `cpu`, as
-  declared in the manifest.
-- `mutmut` did not complete for this slice because the SLICE-017 copy-repo test
-  environment crashed. This is advisory/non-blocking and remains unverified.
+- Frozen gate-1/3 real-session tests remain host-gated expected-skips without a
+  directly writable cgroup root; delegated-unit evidence attached to issue #21
+  proves real sessions, and gate-3 passes for real inside a delegated unit.
+- The runtime profile's mounts grammar under-claims the host read-only binds
+  (`/usr`, `/bin`, `/lib`, `/lib64`) the implementation needs; fold it into the
+  grammar when tests next unfreeze.
+- The cgroup-observer `OSError(19)` flake under load remains open.
+- Mutmut advisory status for this slice: not yet run.
