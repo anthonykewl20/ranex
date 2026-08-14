@@ -80,10 +80,10 @@ jobs:
           exit 0
       - name: Upload SARIF
         if: "!cancelled() && (steps.scan.outputs.exit == '0' || steps.scan.outputs.exit == '1') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)"
-        # v3.37.7, resolved with `gh api repos/github/codeql-action/commits/v3.37.7`.
+        # v4.37.7, resolved with `gh api repos/github/codeql-action/commits/v4.37.7`.
         # Match the existing Security-tab category so a clean scan supersedes stale alerts.
         # Publish only result-bearing scans (0/1) — exit 128 is an empty scan that must not masquerade as clean — and only when this run can write to the Security tab (fork PRs get a read-only token and would 403).
-        uses: github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324
+        uses: github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd
         with:
           sarif_file: osv.sarif
           category: .github/workflows/ci.yml:osv-scan

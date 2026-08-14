@@ -24,7 +24,7 @@ _SHA = re.compile(r"^[0-9a-f]{40}$")
 _ACTIONS = {
     "actions/checkout": "3d3c42e5aac5ba805825da76410c181273ba90b1",
     "astral-sh/setup-uv": "c771a70e6277c0a99b617c7a806ffedaca235ff9",
-    "github/codeql-action/upload-sarif": "f3712979fa5f215279b101dd0a2e3bdfb4353324",
+    "github/codeql-action/upload-sarif": "ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd",
 }
 
 
@@ -149,7 +149,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
             "'pull_request' || github.event.pull_request.head.repo.full_name == "
             "github.repository)"
         ),
-        "uses": "github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324",
+        "uses": "github/codeql-action/upload-sarif@ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd",
         "with": {
             "sarif_file": "osv.sarif",
             "category": ".github/workflows/ci.yml:osv-scan",
@@ -160,7 +160,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
         "must not masquerade as clean — and only when this run can write to the Security tab "
         "(fork PRs get a read-only token and would 403).\n"
         "        uses: github/codeql-action/upload-sarif@"
-        "f3712979fa5f215279b101dd0a2e3bdfb4353324\n"
+        "ff2f1c621b7f889edc0d3c761ac2e6a3f8cdb0dd\n"
     ) in workflow_text
 
     assert osv_steps[-1] == {
