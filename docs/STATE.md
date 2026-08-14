@@ -2,39 +2,38 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-14 (late session)
+**Updated:** 2026-08-14 (end of session)
 **Active slice:** none.
 
 ## Where we stopped
 
-SLICE-045 (#31) closed on the repository side and pushed (ef473d1be): the
-2026-08-10 retrofit (56aa110e6) had already backfilled ADR-001/002 with
-pinned citations, License/Weakness, vendored bytes and NOTICE; that commit
-retires the two lapsed grandfather rows so the discipline tables reflect
-compliant text. All #31 done criteria verified: 5/5 Vendored blob hashes
-match git ls-files, no branch citations, NOTICE complete, >=2 Rejected per
-ADR, full frozen suite 1015 passed / 7 skipped with the change present.
-GitHub closure of #31 with this proof is still pending (no gh access from
-the agent session).
+SLICE-045 (#31) closed with proof on GitHub (closing comment + close at
+ef473d1be, pushed and tip-verified): the 2026-08-10 retrofit (56aa110e6)
+had already backfilled ADR-001/002; the closing commit retired the two
+lapsed grandfather rows. All done criteria verified — 5/5 Vendored blob
+hashes match git ls-files, no branch citations, NOTICE complete, >=2
+Rejected per ADR, full frozen suite 1015 passed / 7 skipped with the
+change present; two blind reviews approved (no P0-P2); OCR gate PASS.
 
-A concurrent writer is active in this tree: an in-flight CI-hardening
+#32 (external verdict-topology question) answered as anthonykewl20.
+SLICE-029 (#12) blocker recorded on #12 and #11 with evidence: ADR-006
+still `proposed`, RISK-06 still open (MAP 11.5), ADR-017 still
+`proposed`; the acceptance path the tracker assigned to #21 was excluded
+by #21's own frozen scope and closed unconsumed — owner decision (accept
+on landed evidence, or reassign) is required before #12 opens.
+
+A concurrent writer remains active in this tree: uncommitted CI-hardening
 change (weekly osv-scan job, contract-test enforcement, cryptography <51
 re-lock; .github/workflows/ci.yml, pyproject.toml,
-tests/contract/test_ci_workflow.py, uv.lock) — uncommitted, untouched by
-this session, unreviewed here.
-
-SLICE-029 (#12) remains blocked on its stated prerequisites: ADR-006 is
-still `proposed`, RISK-06 still open (MAP 11.5), ADR-017 still
-`proposed`; #10/#21/#22 are closed but nothing accepted ADR-006 — the
-cmd_run confinement binding moved to SLICE-018, whose frozen scope
-excluded acceptance. The owner must decide the acceptance path (or amend
-the prerequisites) before SLICE-029 opens.
+tests/contract/test_ci_workflow.py, uv.lock) — untouched by this session,
+review belongs to its own session.
 
 ## Next
 
-Owner: post #31 closure proof (SHA ef473d1be, suite 1015/7) and the drafted
-#32 reply from this session's report; decide the SLICE-029 prerequisite
-path; the concurrent CI-hardening writer finishes or is reviewed on its own.
+Owner: decide the SLICE-029/#12 prerequisite path (accept ADR-006/close
+RISK-06 on landed evidence, or reassign explicitly); the concurrent
+CI-hardening writer finishes or is reviewed separately; harness lane
+progresses in its own repo.
 
 ## Known limits
 
