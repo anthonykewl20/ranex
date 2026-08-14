@@ -1,6 +1,7 @@
 # SLICE-018 — confinement session lifecycle
 
-**Status:** open
+**Status:** done
+**Closed:** 2026-08-14
 **Opened:** 2026-08-13
 **Priority:** P0 — the qualified launcher has no service that owns a real
 worker's cgroup, namespace, syscall, teardown, or bounded-output lifecycle.

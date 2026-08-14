@@ -305,18 +305,21 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** `SLICE-018-confinement-session-lifecycle`.
-Its frozen contract covers the cgroup/namespace/bounded-output lifecycle with
-no `cmd_run` or signing path.
+**Active slice:** none.
+SLICE-018 is closed and shipped: its confinement-session lifecycle ENFORCES
+NNP → strict full-mask Landlock → default-deny seccomp → `execveat` behind a
+closed worker-exec path, with real cgroup-v2 session teardown and bounded output
+collection. Next is SLICE-029: A/B/C contract schemas under ADR-017, whose
+prior art is vendored.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
 durable retry, durable blockers, and Session-ID fencing — each gated by the
 SLICE-011 prototype record through a compiled test. The remaining durability
 sequence is parked/subordinate to P0. ADR-006 is split into closed issue #10 /
-SLICE-017 qualification, then planned issue #21 / SLICE-018 lifecycle and issue
-#22 / SLICE-019 `cmd_run` closure. ADR-017 is `proposed`; its planned
-SLICE-029..044 run sequentially after SLICE-018.
+SLICE-017 qualification, then issue #21 / SLICE-018 lifecycle and issue #22 /
+SLICE-019 `cmd_run` closure. ADR-017 is `proposed`; its planned SLICE-029..044
+run sequentially after SLICE-018.
 036 is qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
@@ -345,6 +348,14 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+- **SLICE-018-confinement-session-lifecycle** — closed 2026-08-14. The native
+  launcher ENFORCES NNP, strict full-mask Landlock, default-deny seccomp, and
+  `execveat` behind a closed worker-exec path. Its capability-gated session
+  performs cgroup-v2 enrollment/readback before release, readiness witnessing,
+  kill/drain/remove teardown, and bounded `openat2` collection into an unsigned
+  confinement result. ADR-006 remains proposed and RISK-06 remains open; only
+  SLICE-019 may close them.
 
 - **SLICE-020-judgment-identity-and-verdict-read-channel** — closed 2026-08-13.
   Evaluation records now carry structured five-kind causes and self-approval;
