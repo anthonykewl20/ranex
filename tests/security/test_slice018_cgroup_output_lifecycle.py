@@ -6,7 +6,6 @@ import argparse
 import os
 import socket
 import stat
-import threading
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
@@ -189,31 +188,32 @@ def test_gate6_constructed_output_attacks_are_refused(
     assert code in {"E-C18-OUTPUT-UNSAFE", "E-C18-OUTPUT-BOUND"}
 
 
-def test_gate6_replacement_during_collection_is_refused(tmp_path: Path) -> None:
+def test_gate6_replacement_during_collection_is_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     output = tmp_path / "output"
     output.mkdir()
     victim = output / "victim"
-    alternate = output / "alternate"
     victim.write_bytes(b"a" * (4 * 1024 * 1024))
-    alternate.write_bytes(b"b" * (4 * 1024 * 1024))
-    stop = threading.Event()
-    started = threading.Event()
+    replacement = tmp_path / "replacement"
+    replacement.write_bytes(b"b" * (4 * 1024 * 1024))
+    replaced = False
+    original_read = os.read
 
-    def replace_forever() -> None:
-        started.set()
-        while not stop.is_set():
-            os.replace(victim, output / "holding")
-            os.replace(alternate, victim)
-            os.replace(output / "holding", alternate)
+    def replace_inside_read_window(descriptor: int, count: int) -> bytes:
+        nonlocal replaced
+        if not replaced:
+            # collect_drained_output reaches os.read only after it has opened
+            # victim and verified its dev/ino (host_confinement.py:1129-1132).
+            # Replacing the name here therefore deterministically exercises the
+            # post-read name-identity check, rather than racing a scheduler.
+            os.replace(replacement, victim)
+            replaced = True
+        return original_read(descriptor, count)
 
-    attacker = threading.Thread(target=replace_forever, daemon=True)
-    attacker.start()
-    started.wait(timeout=1)
-    try:
-        code = _refusal_code(lambda: _collect(output))
-    finally:
-        stop.set()
-        attacker.join(timeout=2)
+    monkeypatch.setattr(host_confinement.os, "read", replace_inside_read_window)
+    code = _refusal_code(lambda: _collect(output))
+    assert replaced, "collector never opened a file read window"
     assert code == "E-C18-OUTPUT-RACE"
 
 
