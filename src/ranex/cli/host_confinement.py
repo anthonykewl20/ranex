@@ -15,6 +15,7 @@ import signal
 import stat
 import struct
 import subprocess
+import sys
 import time
 import uuid
 from collections.abc import Mapping, Sequence
@@ -859,18 +860,19 @@ class ConfinementSession:
     def enroll_and_read_back(self, worker_pid: int, readback: str | None = None) -> None:
         if worker_pid <= 1 or self.enrolled_worker_pid is not None:
             _refuse(E_C18_READBACK, "worker enrollment state is invalid")
-        if readback is None:
-            try:
-                _write_control(self.worker_cgroup / "cgroup.procs", f"{worker_pid}\n")
-                readback = (self.worker_cgroup / "cgroup.procs").read_text(encoding="ascii")
-            except OSError as exc:
-                raise HostConfinementError(E_C18_READBACK, f"worker enrollment failed: {exc}") from exc
         try:
-            pids = {int(value) for value in readback.split()}
+            _write_control(self.worker_cgroup / "cgroup.procs", f"{worker_pid}\n")
+            kernel_readback = (self.worker_cgroup / "cgroup.procs").read_text(encoding="ascii")
+        except OSError as exc:
+            raise HostConfinementError(E_C18_READBACK, f"worker enrollment failed: {exc}") from exc
+        try:
+            pids = {int(value) for value in kernel_readback.split()}
         except ValueError as exc:
             raise HostConfinementError(E_C18_READBACK, "cgroup.procs readback is malformed") from exc
         if worker_pid not in pids:
             _refuse(E_C18_READBACK, "worker PID is absent from cgroup.procs readback")
+        if readback is not None and readback != kernel_readback:
+            _refuse(E_C18_READBACK, "claimed worker enrollment differs from kernel readback")
         self.enrolled_worker_pid = worker_pid
 
     def release_start_gate(self) -> None:
@@ -883,28 +885,51 @@ class ConfinementSession:
             raise HostConfinementError(E_C18_GATE, f"start-gate release failed: {exc}") from exc
 
     def kill_tree(self) -> None:
-        self.cgroup_kill_written = True
         target = self.worker_cgroup / "cgroup.kill"
-        if target.exists():
-            try:
-                _write_control(target, "1\n")
-            except OSError as exc:
-                raise HostConfinementError(E_C18_DRAIN, f"cgroup.kill failed: {exc}") from exc
+        # A never-created leaf owns no process.  This special case is required
+        # for the in-memory limit-state contract; every created leaf must have
+        # a usable kill control and a successful write is recorded exactly.
+        if not self.worker_cgroup.exists():
+            self.cgroup_kill_written = True
+            return
+        try:
+            _write_control(target, "1\n")
+        except OSError as exc:
+            raise HostConfinementError(E_C18_DRAIN, f"cgroup.kill failed: {exc}") from exc
+        self.cgroup_kill_written = True
 
     def observe_limits(self, observed: Mapping[str, int]) -> None:
         limits = self.limits or {}
         exceeded = False
+        details: list[str] = []
         for name, maximum in limits.items():
             if name == "memory_bytes":
-                exceeded |= observed.get("memory.events.max", 0) > 0
+                events = {
+                    event: observed.get(event, 0)
+                    for event in ("memory.events.max", "memory.events.oom", "memory.events.oom_kill")
+                }
+                if any(value > 0 for value in events.values()):
+                    exceeded = True
+                    details.append(
+                        "memory limit events: " + " ".join(
+                            f"{event.removeprefix('memory.events.')}={value}"
+                            for event, value in events.items()
+                        )
+                    )
             elif name == "pids":
-                exceeded |= observed.get("pids.events.max", 0) > 0
+                value = observed.get("pids.events.max", 0)
+                if value > 0:
+                    exceeded = True
+                    details.append(f"pids limit events: max={value}")
             else:
-                exceeded |= observed.get(name, 0) > maximum
+                value = observed.get(name, 0)
+                if value > maximum:
+                    exceeded = True
+                    details.append(f"{name}={value} exceeded limit={maximum}")
         if exceeded:
             self.kill_tree()
             self.result_published = False
-            _refuse(E_C18_LIMIT, "a cumulative confinement limit was exceeded")
+            _refuse(E_C18_LIMIT, "; ".join(details))
 
     def kill_drain_remove(self, timeout: float = 5.0) -> None:
         self.kill_tree()
@@ -1025,8 +1050,17 @@ def _open_output_entry(parent: int, name: str, directory: bool) -> int:
     flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK
     if directory:
         flags |= os.O_DIRECTORY
+    how = _OpenHow(flags=flags, mode=0, resolve=0x08 | 0x04 | 0x02)
     try:
-        return os.open(name, flags, dir_fd=parent)
+        libc = ctypes.CDLL(None, use_errno=True)
+        descriptor = libc.syscall(
+            ctypes.c_long(SYS_OPENAT2), ctypes.c_int(parent), ctypes.c_char_p(os.fsencode(name)),
+            ctypes.byref(how), ctypes.c_size_t(ctypes.sizeof(how)),
+        )
+        if descriptor < 0:
+            error = ctypes.get_errno()
+            raise OSError(error, os.strerror(error), name)
+        return int(descriptor)
     except OSError as exc:
         code = E_C18_OUTPUT_RACE if exc.errno in {errno.ENOENT, errno.ESTALE} else E_C18_OUTPUT_UNSAFE
         raise HostConfinementError(code, f"unsafe output entry {name!r}: {exc}") from exc
@@ -1051,68 +1085,75 @@ def collect_drained_output(
         if depth > maximum_depth:
             _refuse(E_C18_OUTPUT_BOUND, "output depth exceeded")
         try:
-            names = sorted(os.listdir(parent))
+            entries = os.scandir(parent)
         except OSError as exc:
             raise HostConfinementError(E_C18_OUTPUT_UNSAFE, f"cannot enumerate output: {exc}") from exc
-        for name in names:
-            if not name or name in {".", ".."} or "/" in name:
-                _refuse(E_C18_OUTPUT_UNSAFE, "output contains an invalid name")
-            try:
-                before = os.stat(name, dir_fd=parent, follow_symlinks=False)
-            except FileNotFoundError as exc:
-                raise HostConfinementError(E_C18_OUTPUT_RACE, "output name disappeared") from exc
-            inode_count += 1
-            if inode_count > maximum_inodes:
-                _refuse(E_C18_OUTPUT_BOUND, "output inode bound exceeded")
-            relative = f"{prefix}/{name}" if prefix else name
-            if stat.S_ISDIR(before.st_mode):
-                descriptor = _open_output_entry(parent, name, True)
+        try:
+            for entry in entries:
+                name = entry.name
+                # Count while the directory stream is consumed: an adversary
+                # cannot force an unbounded materialized name list.
+                inode_count += 1
+                if inode_count > maximum_inodes:
+                    _refuse(E_C18_OUTPUT_BOUND, "output inode bound exceeded")
+                if not name or name in {".", ".."} or "/" in name:
+                    _refuse(E_C18_OUTPUT_UNSAFE, "output contains an invalid name")
+                try:
+                    before = os.stat(name, dir_fd=parent, follow_symlinks=False)
+                except FileNotFoundError as exc:
+                    raise HostConfinementError(E_C18_OUTPUT_RACE, "output name disappeared") from exc
+                relative = f"{prefix}/{name}" if prefix else name
+                if stat.S_ISDIR(before.st_mode):
+                    descriptor = _open_output_entry(parent, name, True)
+                    try:
+                        held = os.fstat(descriptor)
+                        if (held.st_dev, held.st_ino) != (before.st_dev, before.st_ino):
+                            _refuse(E_C18_OUTPUT_RACE, "output directory was replaced")
+                        walk(descriptor, relative, depth + 1)
+                        after = os.stat(name, dir_fd=parent, follow_symlinks=False)
+                        if (after.st_dev, after.st_ino) != (held.st_dev, held.st_ino):
+                            _refuse(E_C18_OUTPUT_RACE, "output directory changed during collection")
+                    except FileNotFoundError as exc:
+                        raise HostConfinementError(E_C18_OUTPUT_RACE, "output directory disappeared") from exc
+                    finally:
+                        os.close(descriptor)
+                    continue
+                if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
+                    _refuse(E_C18_OUTPUT_UNSAFE, "output accepts only single-linked regular files")
+                descriptor = _open_output_entry(parent, name, False)
+                digest = hashlib.sha256()
+                size = 0
                 try:
                     held = os.fstat(descriptor)
                     if (held.st_dev, held.st_ino) != (before.st_dev, before.st_ino):
-                        _refuse(E_C18_OUTPUT_RACE, "output directory was replaced")
-                    walk(descriptor, relative, depth + 1)
-                    after = os.stat(name, dir_fd=parent, follow_symlinks=False)
-                    if (after.st_dev, after.st_ino) != (held.st_dev, held.st_ino):
-                        _refuse(E_C18_OUTPUT_RACE, "output directory changed during collection")
+                        _refuse(E_C18_OUTPUT_RACE, "output file was replaced before read")
+                    while block := os.read(descriptor, 1024 * 1024):
+                        size += len(block)
+                        total_bytes += len(block)
+                        if total_bytes > maximum_bytes:
+                            _refuse(E_C18_OUTPUT_BOUND, "output byte bound exceeded")
+                        digest.update(block)
+                    after_held = os.fstat(descriptor)
+                    after_name = os.stat(name, dir_fd=parent, follow_symlinks=False)
+                    identity = (held.st_dev, held.st_ino, held.st_size, held.st_mtime_ns, held.st_ctime_ns)
+                    if identity != (
+                        after_held.st_dev,
+                        after_held.st_ino,
+                        after_held.st_size,
+                        after_held.st_mtime_ns,
+                        after_held.st_ctime_ns,
+                    ) or (after_name.st_dev, after_name.st_ino) != (held.st_dev, held.st_ino):
+                        _refuse(E_C18_OUTPUT_RACE, "output file changed during collection")
                 except FileNotFoundError as exc:
-                    raise HostConfinementError(E_C18_OUTPUT_RACE, "output directory disappeared") from exc
+                    raise HostConfinementError(E_C18_OUTPUT_RACE, "output file disappeared") from exc
                 finally:
                     os.close(descriptor)
-                continue
-            if not stat.S_ISREG(before.st_mode) or before.st_nlink != 1:
-                _refuse(E_C18_OUTPUT_UNSAFE, "output accepts only single-linked regular files")
-            descriptor = _open_output_entry(parent, name, False)
-            digest = hashlib.sha256()
-            size = 0
-            try:
-                held = os.fstat(descriptor)
-                if (held.st_dev, held.st_ino) != (before.st_dev, before.st_ino):
-                    _refuse(E_C18_OUTPUT_RACE, "output file was replaced before read")
-                while block := os.read(descriptor, 1024 * 1024):
-                    size += len(block)
-                    total_bytes += len(block)
-                    if total_bytes > maximum_bytes:
-                        _refuse(E_C18_OUTPUT_BOUND, "output byte bound exceeded")
-                    digest.update(block)
-                after_held = os.fstat(descriptor)
-                after_name = os.stat(name, dir_fd=parent, follow_symlinks=False)
-                identity = (held.st_dev, held.st_ino, held.st_size, held.st_mtime_ns, held.st_ctime_ns)
-                if identity != (
-                    after_held.st_dev,
-                    after_held.st_ino,
-                    after_held.st_size,
-                    after_held.st_mtime_ns,
-                    after_held.st_ctime_ns,
-                ) or (after_name.st_dev, after_name.st_ino) != (held.st_dev, held.st_ino):
-                    _refuse(E_C18_OUTPUT_RACE, "output file changed during collection")
-            except FileNotFoundError as exc:
-                raise HostConfinementError(E_C18_OUTPUT_RACE, "output file disappeared") from exc
-            finally:
-                os.close(descriptor)
-            files.append({"path": relative, "bytes": size, "sha256": digest.hexdigest()})
+                files.append({"path": relative, "bytes": size, "sha256": digest.hexdigest()})
+        finally:
+            entries.close()
 
     walk(output_fd, "", 0)
+    files.sort(key=lambda item: item["path"])
     return {"files": files, "bytes": total_bytes, "inodes": inode_count}
 
 
@@ -1126,6 +1167,42 @@ def confinement_result_bytes(value: Mapping[str, Any]) -> bytes:
     teardown = _mapping(value.get("teardown"), "teardown", E_C18_RESULT)
     if teardown != {"cgroup_kill": True, "populated": 0, "cgroup_removed": True}:
         _refuse(E_C18_RESULT, "confinement result cannot be emitted before total teardown")
+    profiles = _mapping(value.get("profile_digests"), "profile_digests", E_C18_RESULT)
+    if set(profiles) != {"runtime", "host", "launcher"} or any(
+        _SHA256_PATTERN.fullmatch(item) is None for item in profiles.values()
+    ):
+        _refuse(E_C18_RESULT, "profile digest readbacks are incomplete")
+    namespaces = _mapping(value.get("namespace_readbacks"), "namespace_readbacks", E_C18_RESULT)
+    if set(namespaces) != {"user", "mount", "pid", "ipc", "network", "cgroup"} or any(
+        not isinstance(item, str) or not item for item in namespaces.values()
+    ):
+        _refuse(E_C18_RESULT, "namespace readbacks are incomplete")
+    cgroup = _mapping(value.get("cgroup_readbacks"), "cgroup_readbacks", E_C18_RESULT)
+    if set(cgroup) != {"limits", "events", "usage"}:
+        _refuse(E_C18_RESULT, "cgroup readbacks are not closed")
+    limits = _mapping(cgroup.get("limits"), "cgroup limits", E_C18_RESULT)
+    events = _mapping(cgroup.get("events"), "cgroup events", E_C18_RESULT)
+    usage = _mapping(cgroup.get("usage"), "cgroup usage", E_C18_RESULT)
+    if (not limits or not events or not usage or set(limits) - {"pids.max", "memory.max", "cpu.max"}
+        or set(events) - {"populated", "max", "oom", "oom_kill"}
+        or set(usage) - {"cpu_usage_usec"} or "pids.max" not in limits
+        or events.get("populated") != 0 or "cpu_usage_usec" not in usage):
+        _refuse(E_C18_RESULT, "cgroup readbacks are incomplete")
+    command = _mapping(value.get("command"), "command", E_C18_RESULT)
+    if set(command) != {"argv_digest", "exit_code", "no_new_privs", "landlock", "seccomp"} or (
+        _SHA256_PATTERN.fullmatch(command.get("argv_digest", "")) is None
+        or type(command.get("exit_code")) is not int
+        or any(command.get(name) is not True for name in ("no_new_privs", "landlock", "seccomp"))
+    ):
+        _refuse(E_C18_RESULT, "command readbacks are incomplete")
+    outputs = _mapping(value.get("outputs"), "outputs", E_C18_RESULT)
+    if set(outputs) != {"files", "bytes", "inodes"} or type(outputs["files"]) is not list or any(
+        type(outputs[name]) is not int or outputs[name] < 0 for name in ("bytes", "inodes")
+    ) or any(not isinstance(item, dict) or set(item) != {"path", "bytes", "sha256"}
+             or not isinstance(item["path"], str) or not item["path"]
+             or type(item["bytes"]) is not int or item["bytes"] < 0
+             or _SHA256_PATTERN.fullmatch(item["sha256"]) is None for item in outputs["files"]):
+        _refuse(E_C18_RESULT, "output readbacks are invalid")
     return canonical_json_bytes(value)
 
 
@@ -2383,6 +2460,8 @@ def _read_launcher_response(descriptor: int, child: int) -> bytes:
             break
         response.extend(block)
         if len(response) > RESPONSE_LIMIT:
+            if child <= 1:
+                _refuse(E_PROTOCOL, "launcher response exceeded 65536 bytes without a safe kill target")
             try:
                 os.kill(child, signal.SIGKILL)
             except ProcessLookupError:
@@ -2923,6 +3002,18 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
     return value
 
 
+def _resolve_worker_executable(argv0: str) -> Path:
+    executable = Path(argv0)
+    if not executable.is_absolute():
+        _refuse(E_C18_GATE, f"worker executable cannot be resolved: {argv0}")
+    try:
+        return executable.resolve(strict=True)
+    except (OSError, RuntimeError) as exc:
+        raise HostConfinementError(
+            E_C18_GATE, f"worker executable cannot be resolved: {argv0}"
+        ) from exc
+
+
 def _current_session_host_state() -> dict[str, Any]:
     cgroup_root, relative = _current_cgroup_root()
     return {
@@ -2936,11 +3027,155 @@ def _current_session_host_state() -> dict[str, Any]:
     }
 
 
+def _validate_runtime_profile(
+    runtime: Mapping[str, Any], *, profile_path: Path, host_profile_path: Path,
+    manifest_path: Path, launcher: OpenedObject,
+) -> None:
+    expected = {
+        "build_manifest_sha256", "cgroup", "host_profile_sha256", "landlock_abi_minimum",
+        "launcher_sha256", "mandatory_layers", "mounts", "output_resolution", "profile",
+        "schema", "seccomp",
+    }
+    _exact_keys(runtime, expected, "runtime profile", E_C18_GATE)
+    if runtime.get("schema") != "ranex-strict-local-runtime-v1" or runtime.get("profile") != "strict-local-v1":
+        _refuse(E_C18_GATE, "runtime profile schema is invalid")
+    if runtime.get("mandatory_layers") != {
+        "cgroup": True, "ipc": True, "landlock": True, "mount": True, "network": True,
+        "no_new_privs": True, "pid": True, "seccomp": True, "user": True,
+    } or runtime.get("mounts") != {
+        "subject": "read-only", "toolchain": "read-only", "output": "writable-bounded",
+        "scratch": "writable-bounded", "proc": "fresh", "dev": "minimal",
+    }:
+        _refuse(E_C18_GATE, "runtime profile has a missing mandatory layer or mount")
+    if runtime.get("cgroup") != {"controllers": ["cpu", "memory", "pids"], "start_gate_fd": 0}:
+        _refuse(E_C18_GATE, "runtime profile cgroup protocol is invalid")
+    if runtime.get("output_resolution") != ["RESOLVE_BENEATH", "RESOLVE_NO_MAGICLINKS", "RESOLVE_NO_SYMLINKS"]:
+        _refuse(E_C18_GATE, "runtime profile output resolution is invalid")
+    if runtime.get("landlock_abi_minimum") != 6 or runtime.get("seccomp") != {"architecture": "x86_64", "policy": "default-deny-v1"}:
+        _refuse(E_C18_GATE, "runtime profile policy identity is invalid")
+    if _digest(runtime.get("host_profile_sha256"), "host_profile_sha256", E_C18_GATE) != _sha256_path(host_profile_path):
+        _refuse(E_C18_GATE, "runtime profile host profile pin drifted")
+    if _digest(runtime.get("build_manifest_sha256"), "build_manifest_sha256", E_C18_GATE) != _sha256_path(manifest_path):
+        _refuse(E_C18_GATE, "runtime profile build manifest pin drifted")
+    if _digest(runtime.get("launcher_sha256"), "launcher_sha256", E_C18_GATE) != launcher.sha256:
+        _refuse(E_C18_GATE, "runtime profile launcher pin drifted")
+    # Keep the profile itself in the dependency chain rather than accepting a
+    # schema-equivalent replacement at a caller selected path.
+    if profile_path.name != "strict-local-v1.json":
+        _refuse(E_C18_GATE, "runtime profile is not the admitted strict-local profile")
+
+
+def _read_cgroup_file(path: Path, code: str) -> str:
+    try:
+        return path.read_text(encoding="ascii").strip()
+    except OSError as exc:
+        raise HostConfinementError(code, f"cannot read cgroup control {path.name}: {exc}") from exc
+
+
+def _capture_cleanup_failure(
+    failures: list[BaseException], context: str, operation: Any
+) -> None:
+    """Run every teardown operation without letting it hide an active refusal."""
+    try:
+        operation()
+    except BaseException as exc:
+        if isinstance(exc, HostConfinementError):
+            failures.append(exc)
+            return
+        cleanup_error = HostConfinementError(E_CLEANUP, f"{context}: {exc}")
+        cleanup_error.__cause__ = exc
+        failures.append(cleanup_error)
+
+
+def _finish_cleanup(primary: BaseException | None, failures: list[BaseException]) -> None:
+    if not failures:
+        return
+    if primary is not None:
+        for failure in failures:
+            primary.add_note(f"cleanup failure (preserved root cause): {failure}")
+        return
+    first = failures[0]
+    for failure in failures[1:]:
+        first.add_note(f"additional cleanup failure: {failure}")
+    raise first
+
+
+def _is_blocked_in_gate_read(pid: int, expected_fd: int) -> bool:
+    """Return whether ``pid`` is stopped in a read from the fixed gate fd."""
+    try:
+        syscall = Path(f"/proc/{pid}/syscall").read_text(encoding="ascii")
+    except OSError as exc:
+        if exc.errno in {errno.ENOENT, errno.ESRCH}:
+            return False
+        raise HostConfinementError(E_C18_GATE, f"cannot observe launcher start gate: {exc}") from exc
+    # x86-64 read is syscall 0; its first argument is the expected gate fd.
+    fields = syscall.split()
+    return len(fields) >= 2 and fields[0] == "0" and fields[1] == hex(expected_fd)
+
+
+def _descendant_pids(pid: int, levels: int = 3) -> set[int]:
+    """Boundedly enumerate descendants through every thread's children list."""
+    frontier = {pid}
+    descendants: set[int] = set()
+    for _ in range(levels):
+        next_frontier: set[int] = set()
+        for parent in frontier:
+            try:
+                tasks = tuple((Path(f"/proc/{parent}/task")).iterdir())
+            except OSError as exc:
+                if exc.errno in {errno.ENOENT, errno.ESRCH}:
+                    continue
+                raise HostConfinementError(
+                    E_C18_GATE, f"cannot enumerate launcher descendants: {exc}"
+                ) from exc
+            for task in tasks:
+                if not task.name.isdigit():
+                    continue
+                try:
+                    raw_children = (task / "children").read_text(encoding="ascii")
+                except OSError as exc:
+                    if exc.errno in {errno.ENOENT, errno.ESRCH}:
+                        continue
+                    raise HostConfinementError(
+                        E_C18_GATE, f"cannot read launcher descendant list: {exc}"
+                    ) from exc
+                try:
+                    next_frontier.update(int(value) for value in raw_children.split())
+                except ValueError as exc:
+                    raise HostConfinementError(
+                        E_C18_GATE, "launcher descendant list is malformed"
+                    ) from exc
+        next_frontier -= descendants | {pid}
+        descendants.update(next_frontier)
+        frontier = next_frontier
+        if not frontier:
+            break
+    return descendants
+
+
+def _resolve_gate_blocked_launcher(
+    bubblewrap_pid: int, *, expected_fd: int, timeout: float = 2.0
+) -> int:
+    """Find the sole bwrap descendant stopped at the controller gate."""
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        blocked = sorted(
+            pid for pid in _descendant_pids(bubblewrap_pid) if _is_blocked_in_gate_read(pid, expected_fd)
+        )
+        if len(blocked) == 1:
+            return blocked[0]
+        if len(blocked) > 1:
+            _refuse(E_C18_GATE, f"multiple launcher descendants blocked in the fd {expected_fd} start gate")
+        time.sleep(0.005)
+    _refuse(E_C18_GATE, f"no unique launcher descendant blocked in the fd {expected_fd} start gate")
+
+
 def confinement_session(
     root: Path, *, profile_arg: str, host_profile_arg: str, artifact_arg: str,
     manifest_arg: str, qualification_arg: str, descriptor_arg: str, result_arg: str,
 ) -> None:
     descriptor = _session_descriptor(root, descriptor_arg)
+    worker_executable = _resolve_worker_executable(descriptor["argv"][0])
     qualification_path = resolve_within_repository(root, qualification_arg)
     qualification = _load_json(qualification_path, E_C18_HOST_DRIFT)
     recorded = qualification.get("host_state")
@@ -2960,6 +3195,16 @@ def confinement_session(
     cgroup_root, relative = _current_cgroup_root()
     if delegation.get("cgroup_root") != str(cgroup_root) or delegation.get("cgroup_relative_path") != relative:
         _refuse(E_C18_HOST_DRIFT, "cgroup delegation drifted since qualification")
+    current = _current_session_host_state()
+    if recorded.get("boot_id") != _required_host_text(Path("/proc/sys/kernel/random/boot_id"), "boot ID") or recorded.get("machine_id") != _required_host_text(Path("/etc/machine-id"), "machine ID"):
+        _refuse(E_C18_HOST_DRIFT, "boot or machine identity drifted since qualification")
+    if _mapping(recorded.get("lsm"), "qualified LSM state", E_C18_HOST_DRIFT) != _collect_host_state(
+        {"root": str(cgroup_root), "relative_path": relative},
+        delegation_source=_string(delegation.get("source"), "delegation source", E_C18_HOST_DRIFT),
+        userns_sysctls=_unprivileged_userns_sysctls(),
+        userns_source=_string(delegation.get("userns_state_source"), "userns source", E_C18_HOST_DRIFT),
+    )["lsm"]:
+        _refuse(E_C18_HOST_DRIFT, "full LSM policy identity drifted since qualification")
     # Full launch is possible only on a qualified delegated host.  Validate all
     # pins before creating a process; there is intentionally no local fallback.
     profile_path = resolve_within_repository(root, profile_arg)
@@ -2967,10 +3212,230 @@ def confinement_session(
     manifest_path = resolve_within_repository(root, manifest_arg)
     artifact_path = resolve_within_repository(root, artifact_arg)
     runtime = _load_json(profile_path, E_C18_GATE)
-    if runtime.get("schema") != "ranex-strict-local-runtime-v1":
-        _refuse(E_C18_GATE, "runtime profile schema is invalid")
-    _validate_profile_and_objects(host_profile_path, manifest_path, artifact_path)
-    _refuse(E_C18_GATE, "qualified real-process session requires delegated runtime setup")
+    profile, _manifest, launcher, bubblewrap = _validate_profile_and_objects(host_profile_path, manifest_path, artifact_path)
+    del profile
+    try:
+        _validate_runtime_profile(runtime, profile_path=profile_path, host_profile_path=host_profile_path,
+                                  manifest_path=manifest_path, launcher=launcher)
+        # The descriptor identifies the live delegated root once.  All later
+        # operations use this object; there is no re-resolution fallback.
+        held_root = os.open(cgroup_root, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
+        try:
+            suffix = f"ranex-session-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+            controller = cgroup_root / f"{suffix}-controller"
+            worker = cgroup_root / f"{suffix}-worker"
+            gate_read = gate_write = -1
+            response_read = response_write = -1
+            child = -1
+            launcher_pid = -1
+            session: ConfinementSession | None = None
+            output_fd = -1
+            result: dict[str, Any] | None = None
+            delta: set[str] = set()
+            try:
+                _cgroup_controllers(cgroup_root)
+                _check_cgroup_kill(cgroup_root)
+                controller.mkdir(mode=0o755)
+                _move_all_cgroup_processes(cgroup_root, controller)
+                enabled = set(_read_cgroup_file(cgroup_root / "cgroup.subtree_control", E_C18_GATE).split())
+                delta = REQUIRED_CONTROLLERS - enabled
+                if delta:
+                    _write_control(cgroup_root / "cgroup.subtree_control", " ".join(f"+{name}" for name in sorted(delta)) + "\n")
+                if not REQUIRED_CONTROLLERS <= set(_read_cgroup_file(cgroup_root / "cgroup.subtree_control", E_C18_GATE).split()):
+                    _refuse(E_C18_READBACK, "required cgroup controllers did not read back")
+                worker.mkdir(mode=0o755)
+                limits = _mapping(descriptor["limits"], "limits", E_C18_GATE)
+                quota = max(
+                    1,
+                    limits["cpu_usage_usec"] * 100_000
+                    // (limits["wall_time_ms"] * 1_000),
+                )
+                wanted = {
+                    "pids.max": str(limits["pids"]),
+                    "memory.max": str(limits["memory_bytes"]),
+                    "cpu.max": f"{quota} 100000",
+                }
+                for name, value in wanted.items():
+                    _write_control(worker / name, value + "\n")
+                    if _read_cgroup_file(worker / name, E_C18_READBACK) != value:
+                        _refuse(E_C18_READBACK, f"{name} did not read back exactly")
+                gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
+                response_read, response_write = os.pipe2(os.O_CLOEXEC)
+                output_fd = os.open(descriptor["_resolved"]["output"], os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC | os.O_NOFOLLOW)
+                child = os.fork()
+                if child == 0:
+                    try:
+                        os.close(gate_write)
+                        os.close(response_read)
+                        os.dup2(gate_read, 0, inheritable=True)
+                        os.dup2(response_write, 1, inheritable=True)
+                        if gate_read != 0:
+                            os.close(gate_read)
+                        if response_write != 1:
+                            os.close(response_write)
+                        # bwrap is a pinned, held object checked immediately before fork.
+                        _execveat(bubblewrap.descriptor, [str(bubblewrap.path), "--die-with-parent", "--unshare-user", "--unshare-pid", "--unshare-ipc", "--unshare-net", "--unshare-cgroup", "--proc", "/proc", "--dev", "/dev", "--ro-bind", str(launcher.path), "/ranex-worker-launcher", "--ro-bind", str(descriptor["_resolved"]["subject"]), str(descriptor["_resolved"]["subject"]), "--ro-bind", str(descriptor["_resolved"]["toolchain"]), str(descriptor["_resolved"]["toolchain"]), "--bind", str(descriptor["_resolved"]["output"]), str(descriptor["_resolved"]["output"]), "--bind", str(descriptor["_resolved"]["scratch"]), str(descriptor["_resolved"]["scratch"]), "--ro-bind", "/usr", "/usr", "--ro-bind", "/bin", "/bin", "--ro-bind", "/lib", "/lib", "--ro-bind", "/lib64", "/lib64", "--", "/ranex-worker-launcher", "--ranex-worker-exec-gated", str(descriptor["_resolved"]["scratch"]), str(worker_executable), *descriptor["argv"][1:]], descriptor["environment"])
+                    except BaseException:
+                        os._exit(127)
+                os.close(gate_read); gate_read = -1
+                os.close(response_write); response_write = -1
+                session = ConfinementSession(worker, gate_write, dict(limits))
+                try:
+                    launcher_pid = _resolve_gate_blocked_launcher(child, expected_fd=0)
+                except HostConfinementError:
+                    try:
+                        os.kill(child, signal.SIGKILL)
+                    except ProcessLookupError:
+                        pass
+                    raise
+                session.enroll_and_read_back(launcher_pid)
+                session.release_start_gate()
+                os.close(gate_write); gate_write = -1
+                deadline = time.monotonic() + limits["wall_time_ms"] / 1000
+                while True:
+                    waited, status = os.waitpid(child, os.WNOHANG)
+                    if waited == child:
+                        child = -1
+                        break
+                    if time.monotonic() >= deadline:
+                        session.kill_tree()
+                        _refuse(E_C18_LIMIT, "wall-time limit exceeded")
+                    time.sleep(0.005)
+                cpu_stats = _parse_cgroup_events(
+                    _read_cgroup_file(worker / "cpu.stat", E_C18_LIMIT)
+                )
+                memory_limit_events = _parse_cgroup_events(
+                    _read_cgroup_file(worker / "memory.events", E_C18_LIMIT)
+                )
+                pids_limit_events = _parse_cgroup_events(
+                    _read_cgroup_file(worker / "pids.events", E_C18_LIMIT)
+                )
+                observed = {
+                    "cpu_usage_usec": cpu_stats.get("usage_usec", 0),
+                    "memory.events.max": memory_limit_events.get("max", 0),
+                    "memory.events.oom": memory_limit_events.get("oom", 0),
+                    "memory.events.oom_kill": memory_limit_events.get("oom_kill", 0),
+                    "pids.events.max": pids_limit_events.get("max", 0),
+                }
+                # Cgroup facts are cumulative and remain available even when
+                # resource exhaustion kills the worker before it writes fd 1.
+                # They must therefore outrank every response/exit refusal.
+                session.observe_limits(observed)
+                raw_response = _read_launcher_response(response_read, launcher_pid)
+                os.close(response_read); response_read = -1
+                try:
+                    namespace_response = _mapping(json.loads(raw_response), "worker namespace response", E_C18_GATE)
+                except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+                    raise HostConfinementError(
+                        E_C18_GATE,
+                        "worker produced no namespace response "
+                        f"(wait status {status}, exit code {os.waitstatus_to_exitcode(status)})",
+                    ) from exc
+                required_response = {"user", "mount", "pid", "ipc", "network", "cgroup", "no_new_privs", "landlock", "seccomp"}
+                if set(namespace_response) != required_response or any(
+                    not isinstance(namespace_response[name], str) or not namespace_response[name]
+                    for name in ("user", "mount", "pid", "ipc", "network", "cgroup")
+                ) or any(namespace_response[name] is not True for name in ("no_new_privs", "landlock", "seccomp")):
+                    _refuse(E_C18_GATE, "worker namespace or policy readbacks are incomplete")
+                if os.waitstatus_to_exitcode(status) != 0:
+                    _refuse(E_C18_GATE, "worker exited unsuccessfully")
+                memory_events = _parse_cgroup_events(
+                    _read_cgroup_file(worker / "memory.events", E_C18_LIMIT)
+                )
+                pids_events = _parse_cgroup_events(
+                    _read_cgroup_file(worker / "pids.events", E_C18_LIMIT)
+                )
+                result = {
+                    "schema": "ranex-confinement-result-v1",
+                    "profile_digests": {"runtime": _sha256_path(profile_path), "host": _sha256_path(host_profile_path), "launcher": launcher.sha256},
+                    "namespace_readbacks": {name: namespace_response[name] for name in ("user", "mount", "pid", "ipc", "network", "cgroup")},
+                    "cgroup_readbacks": {
+                        "limits": wanted,
+                        "events": {
+                            "populated": 0,
+                            "max": max(memory_events.get("max", 0), pids_events.get("max", 0)),
+                            "oom": memory_events.get("oom", 0),
+                            "oom_kill": memory_events.get("oom_kill", 0),
+                        },
+                        "usage": {"cpu_usage_usec": observed["cpu_usage_usec"]},
+                    },
+                    "command": {"argv_digest": command_digest(descriptor["argv"]), "exit_code": 0, "no_new_privs": namespace_response["no_new_privs"], "landlock": namespace_response["landlock"], "seccomp": namespace_response["seccomp"]},
+                    "teardown": {"cgroup_kill": True, "populated": 0, "cgroup_removed": True},
+                    "outputs": {"files": [], "bytes": 0, "inodes": 0},
+                }
+            finally:
+                primary = sys.exception()
+                cleanup_failures: list[BaseException] = []
+                if gate_read >= 0:
+                    _capture_cleanup_failure(cleanup_failures, "close start-gate reader", lambda: os.close(gate_read))
+                if gate_write >= 0:
+                    _capture_cleanup_failure(cleanup_failures, "close start-gate writer", lambda: os.close(gate_write))
+                if response_write >= 0:
+                    _capture_cleanup_failure(cleanup_failures, "close launcher response writer", lambda: os.close(response_write))
+                if child > 0:
+                    def kill_and_reap() -> None:
+                        try:
+                            os.kill(child, signal.SIGKILL)
+                        except ProcessLookupError:
+                            pass
+                        try:
+                            os.waitpid(child, 0)
+                        except ChildProcessError:
+                            pass
+                    _capture_cleanup_failure(cleanup_failures, "kill and reap bubblewrap", kill_and_reap)
+                worker_teardown_succeeded = True
+                if session is not None and worker.exists():
+                    failure_count = len(cleanup_failures)
+                    _capture_cleanup_failure(
+                        cleanup_failures, "kill, drain, and remove worker cgroup", session.kill_drain_remove
+                    )
+                    worker_teardown_succeeded = len(cleanup_failures) == failure_count
+                if result is not None and worker_teardown_succeeded:
+                    def collect_and_publish() -> None:
+                        result["outputs"] = collect_drained_output(
+                            output_fd, descriptor["limits"], {"populated": 0}
+                        )
+                        _write_report_atomic(root, resolve_within_repository(root, result_arg), result)
+                        if session is not None:
+                            session.result_published = True
+                    _capture_cleanup_failure(cleanup_failures, "collect and publish confinement result", collect_and_publish)
+                if response_read >= 0:
+                    _capture_cleanup_failure(cleanup_failures, "close launcher response reader", lambda: os.close(response_read))
+                if output_fd >= 0:
+                    _capture_cleanup_failure(cleanup_failures, "close held output directory", lambda: os.close(output_fd))
+                if delta:
+                    def restore_controller_delta() -> None:
+                        current_enabled = set(
+                            (cgroup_root / "cgroup.subtree_control").read_text().split()
+                        )
+                        disable_delta = delta & current_enabled
+                        if disable_delta:
+                            _write_control(
+                                cgroup_root / "cgroup.subtree_control",
+                                " ".join(f"-{name}" for name in sorted(disable_delta)) + "\n",
+                            )
+                    _capture_cleanup_failure(
+                        cleanup_failures, "restore cgroup controller delta", restore_controller_delta
+                    )
+                if controller.exists():
+                    _capture_cleanup_failure(
+                        cleanup_failures, "return controller cgroup processes",
+                        lambda: _move_all_cgroup_processes(controller, cgroup_root),
+                    )
+                if controller.exists():
+                    _capture_cleanup_failure(cleanup_failures, "remove controller cgroup", controller.rmdir)
+                _finish_cleanup(primary, cleanup_failures)
+        finally:
+            primary = sys.exception()
+            cleanup_failures = []
+            _capture_cleanup_failure(cleanup_failures, "close held cgroup root", lambda: os.close(held_root))
+            _finish_cleanup(primary, cleanup_failures)
+    finally:
+        primary = sys.exception()
+        cleanup_failures = []
+        _capture_cleanup_failure(cleanup_failures, "close held launcher", lambda: os.close(launcher.descriptor))
+        _capture_cleanup_failure(cleanup_failures, "close held bubblewrap", lambda: os.close(bubblewrap.descriptor))
+        _finish_cleanup(primary, cleanup_failures)
 
 
 def _parser() -> argparse.ArgumentParser:

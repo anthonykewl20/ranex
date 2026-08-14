@@ -24,6 +24,7 @@
 #define REQUIRED_LANDLOCK_ABI 6
 #define STAGE_TWO "--ranex-internal-stage-two"
 #define WORKER_EXEC "--ranex-worker-exec"
+#define GATED_WORKER_EXEC "--ranex-worker-exec-gated"
 #define CLOSED_FD_LIMIT 256U
 #define ENVIRONMENT_LIMIT 64U
 #define ENVIRONMENT_NAME_LIMIT 128U
@@ -96,6 +97,22 @@ static int add_path_rule(int ruleset_fd, int parent_fd, __u64 allowed_access) {
                         LANDLOCK_RULE_PATH_BENEATH, &rule, 0U);
 }
 
+static bool add_readonly_directory_rule(int ruleset_fd, const char *path) {
+    int descriptor = open(path, O_PATH | O_DIRECTORY | O_CLOEXEC);
+    int result;
+    if (descriptor < 0) {
+        return false;
+    }
+    result = add_path_rule(ruleset_fd, descriptor,
+                           LANDLOCK_ACCESS_FS_EXECUTE |
+                           LANDLOCK_ACCESS_FS_READ_FILE |
+                           LANDLOCK_ACCESS_FS_READ_DIR);
+    if (close(descriptor) != 0) {
+        return false;
+    }
+    return result == 0;
+}
+
 static bool enforce_landlock(int executable_fd, int working_directory_fd) {
     struct ranex_landlock_ruleset_attr ruleset = {0};
     struct stat executable_facts;
@@ -126,7 +143,7 @@ static bool enforce_landlock(int executable_fd, int working_directory_fd) {
                           LANDLOCK_SCOPE_SIGNAL;
     }
     ruleset_fd = (int)syscall(SYS_landlock_create_ruleset, &ruleset,
-                              sizeof(ruleset), 0U);
+                               sizeof(ruleset), 0U);
     if (ruleset_fd < 0) {
         return false;
     }
@@ -138,6 +155,68 @@ static bool enforce_landlock(int executable_fd, int working_directory_fd) {
         syscall(SYS_landlock_restrict_self, ruleset_fd, 0U) != 0 ||
         close(ruleset_fd) != 0) {
         (void)close(ruleset_fd);
+        return false;
+    }
+    return true;
+}
+
+static bool enforce_gated_landlock(int executable_fd, int working_directory_fd) {
+    struct ranex_landlock_ruleset_attr ruleset = {0};
+    struct stat executable_facts;
+    struct stat working_directory_facts;
+    long abi;
+    int ruleset_fd;
+    int null_fd;
+    __u64 filesystem_mask;
+    __u64 executable_access;
+
+    abi = syscall(SYS_landlock_create_ruleset, NULL, 0U,
+                  LANDLOCK_CREATE_RULESET_VERSION);
+    if (abi < REQUIRED_LANDLOCK_ABI ||
+        fstat(executable_fd, &executable_facts) != 0 ||
+        fstat(working_directory_fd, &working_directory_facts) != 0 ||
+        !S_ISREG(executable_facts.st_mode) ||
+        !S_ISDIR(working_directory_facts.st_mode)) {
+        return false;
+    }
+
+    filesystem_mask = landlock_fs_mask(abi);
+    ruleset.handled_access_fs = filesystem_mask;
+    if (abi >= 4) {
+        ruleset.handled_access_net =
+            LANDLOCK_ACCESS_NET_BIND_TCP | LANDLOCK_ACCESS_NET_CONNECT_TCP;
+    }
+    if (abi >= 6) {
+        ruleset.scoped = LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET |
+                          LANDLOCK_SCOPE_SIGNAL;
+    }
+    ruleset_fd = (int)syscall(SYS_landlock_create_ruleset, &ruleset,
+                               sizeof(ruleset), 0U);
+    if (ruleset_fd < 0) {
+        return false;
+    }
+    /* Gated workers replace their protocol streams with /dev/null only after
+     * the policy is live, so admit that one minimal-device object explicitly. */
+    null_fd = open("/dev/null", O_PATH | O_CLOEXEC);
+    if (null_fd < 0) {
+        (void)close(ruleset_fd);
+        return false;
+    }
+
+    /* The executable is immutable to the worker; only its scratch CWD is writable. */
+    executable_access = LANDLOCK_ACCESS_FS_EXECUTE | LANDLOCK_ACCESS_FS_READ_FILE;
+    if (add_path_rule(ruleset_fd, executable_fd, executable_access) != 0 ||
+        add_path_rule(ruleset_fd, working_directory_fd, filesystem_mask) != 0 ||
+        add_path_rule(ruleset_fd, null_fd,
+                      LANDLOCK_ACCESS_FS_READ_FILE | LANDLOCK_ACCESS_FS_WRITE_FILE) != 0 ||
+        !add_readonly_directory_rule(ruleset_fd, "/usr") ||
+        !add_readonly_directory_rule(ruleset_fd, "/bin") ||
+        !add_readonly_directory_rule(ruleset_fd, "/lib") ||
+        !add_readonly_directory_rule(ruleset_fd, "/lib64") ||
+        syscall(SYS_landlock_restrict_self, ruleset_fd, 0U) != 0 ||
+        close(ruleset_fd) != 0 || close(null_fd) != 0) {
+        (void)close(ruleset_fd);
+        (void)close(null_fd);
         return false;
     }
     return true;
@@ -161,6 +240,59 @@ static bool enforce_seccomp(void) {
         ALLOW_SYSCALL(__NR_write),
         ALLOW_SYSCALL(__NR_close),
         ALLOW_SYSCALL(__NR_openat),
+        ALLOW_SYSCALL(__NR_readlink),
+        ALLOW_SYSCALL(__NR_readlinkat),
+        ALLOW_SYSCALL(__NR_newfstatat),
+        ALLOW_SYSCALL(__NR_fstat),
+        ALLOW_SYSCALL(__NR_lseek),
+        ALLOW_SYSCALL(__NR_getdents64),
+        ALLOW_SYSCALL(__NR_mmap),
+        ALLOW_SYSCALL(__NR_mprotect),
+        ALLOW_SYSCALL(__NR_munmap),
+        ALLOW_SYSCALL(__NR_brk),
+        ALLOW_SYSCALL(__NR_madvise),
+        ALLOW_SYSCALL(__NR_rt_sigaction),
+        ALLOW_SYSCALL(__NR_rt_sigprocmask),
+        ALLOW_SYSCALL(__NR_rt_sigreturn),
+        ALLOW_SYSCALL(__NR_arch_prctl),
+        ALLOW_SYSCALL(__NR_set_tid_address),
+        ALLOW_SYSCALL(__NR_set_robust_list),
+        ALLOW_SYSCALL(__NR_rseq),
+        ALLOW_SYSCALL(__NR_prlimit64),
+        ALLOW_SYSCALL(__NR_clock_gettime),
+        ALLOW_SYSCALL(__NR_getpid),
+        ALLOW_SYSCALL(__NR_gettid),
+        ALLOW_SYSCALL(__NR_getrandom),
+        ALLOW_SYSCALL(__NR_futex),
+        ALLOW_SYSCALL(__NR_sched_yield),
+        ALLOW_SYSCALL(__NR_execveat),
+        ALLOW_SYSCALL(__NR_exit),
+        ALLOW_SYSCALL(__NR_exit_group),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (EPERM & SECCOMP_RET_DATA)),
+    };
+    const struct sock_fprog program = {
+        .len = (unsigned short)(sizeof(filter) / sizeof(filter[0])),
+        .filter = (struct sock_filter *)filter,
+    };
+    return syscall(SYS_seccomp, SECCOMP_SET_MODE_FILTER, 0U, &program) == 0;
+}
+
+static bool enforce_gated_seccomp(void) {
+    static const struct sock_filter filter[] = {
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS,
+                 offsetof(struct seccomp_data, arch)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, AUDIT_ARCH_X86_64, 1, 0),
+        BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_KILL_PROCESS),
+        BPF_STMT(BPF_LD | BPF_W | BPF_ABS,
+                 offsetof(struct seccomp_data, nr)),
+        ALLOW_SYSCALL(__NR_read),
+        ALLOW_SYSCALL(__NR_pread64),
+        ALLOW_SYSCALL(__NR_write),
+        ALLOW_SYSCALL(__NR_close),
+        ALLOW_SYSCALL(__NR_dup2),
+        ALLOW_SYSCALL(__NR_openat),
+        ALLOW_SYSCALL(__NR_readlink),
+        ALLOW_SYSCALL(__NR_readlinkat),
         ALLOW_SYSCALL(__NR_newfstatat),
         ALLOW_SYSCALL(__NR_fstat),
         ALLOW_SYSCALL(__NR_lseek),
@@ -851,8 +983,56 @@ static int stage_two(int argc, char **argv) {
 static int worker_exec(int argc, char **argv) {
     int working_directory_fd;
     int executable_fd;
+    struct stat gate_facts;
+    int gate_flags;
+    int response_flags;
+    bool response_open;
+    char gate;
+    char response[1024];
+    char user[64], mount[64], pid[64], ipc[64], network[64], cgroup[64];
 
     if (argc < 4 || argv[2][0] != '/' || argv[3][0] != '/') {
+        return 64;
+    }
+    /* FD 3 is deliberately optional for the direct launcher enforcement
+     * contract.  When the controller supplies an open read pipe it is a hard
+     * stop gate: no object is opened and no policy work begins before release. */
+    gate_flags = fcntl(3, F_GETFL);
+    response_flags = fcntl(4, F_GETFL);
+    response_open = response_flags >= 0 && fstat(4, &gate_facts) == 0 &&
+                    S_ISFIFO(gate_facts.st_mode) &&
+                    (response_flags & O_ACCMODE) == O_WRONLY;
+    if (gate_flags >= 0 && fstat(3, &gate_facts) == 0 && S_ISFIFO(gate_facts.st_mode) &&
+        (gate_flags & O_ACCMODE) == O_RDONLY) {
+        for (;;) {
+            ssize_t received = read(3, &gate, 1U);
+            if (received < 0 && errno == EINTR) {
+                continue;
+            }
+            if (received != 1) {
+                return 64;
+            }
+            break;
+        }
+        if (close(3) != 0) {
+            return 64;
+        }
+    }
+    errno = 0;
+    if (response_open && fcntl(4, F_SETFD, FD_CLOEXEC) != 0) {
+        return 64;
+    }
+    if (syscall(SYS_close_range, response_open ? 5U : 4U, UINT_MAX, 0U) != 0 && errno != ENOSYS) {
+        return 64;
+    }
+    if (errno == ENOSYS) {
+        long maximum = sysconf(_SC_OPEN_MAX);
+        if (maximum < 0) maximum = 65536;
+        for (int descriptor = response_open ? 5 : 4; descriptor < maximum; descriptor++) (void)close(descriptor);
+    }
+    /* The controller installed the closed descriptor environment with execveat.
+     * Keep it intact while still invalidating inherited keyring authority. */
+    if (syscall(SYS_keyctl, KEYCTL_JOIN_SESSION_KEYRING, 0) < 0) {
         return 64;
     }
     working_directory_fd = open(argv[2], O_PATH | O_DIRECTORY | O_CLOEXEC);
@@ -870,7 +1050,124 @@ static int worker_exec(int argc, char **argv) {
         (void)close(executable_fd);
         return 64;
     }
+    if (response_open) {
+        ssize_t lengths[] = {
+            readlink("/proc/self/ns/user", user, sizeof(user) - 1U),
+            readlink("/proc/self/ns/mnt", mount, sizeof(mount) - 1U),
+            readlink("/proc/self/ns/pid", pid, sizeof(pid) - 1U),
+            readlink("/proc/self/ns/ipc", ipc, sizeof(ipc) - 1U),
+            readlink("/proc/self/ns/net", network, sizeof(network) - 1U),
+            readlink("/proc/self/ns/cgroup", cgroup, sizeof(cgroup) - 1U),
+        };
+        char *names[] = {user, mount, pid, ipc, network, cgroup};
+        int length;
+        for (size_t index = 0; index < 6U; index++) {
+            if (lengths[index] <= 0 || (size_t)lengths[index] >= 63U) return 64;
+            names[index][lengths[index]] = '\0';
+        }
+        length = snprintf(response, sizeof(response),
+            "{\"cgroup\":\"%s\",\"ipc\":\"%s\",\"landlock\":true,\"mount\":\"%s\",\"network\":\"%s\",\"no_new_privs\":true,\"pid\":\"%s\",\"seccomp\":true,\"user\":\"%s\"}",
+            cgroup, ipc, mount, network, pid, user);
+        if (length < 0 || (size_t)length >= sizeof(response) || write_all(4, response, (size_t)length) != 0 || close(4) != 0) return 64;
+    }
 
+    /* AT_EMPTY_PATH binds exec to the same object Landlock admitted. */
+    (void)syscall(SYS_execveat, executable_fd, "", argv + 3, environ,
+                  AT_EMPTY_PATH);
+    (void)close(working_directory_fd);
+    (void)close(executable_fd);
+    return 64;
+}
+
+/* The session entry point uses stdin/stdout because bwrap preserves standard
+ * descriptors on every admitted version, unlike arbitrary inherited FDs. */
+static int gated_worker_exec(int argc, char **argv) {
+    int working_directory_fd;
+    int executable_fd;
+    int null_fd;
+    char gate;
+    char response[1024];
+    char user[64], mount[64], pid[64], ipc[64], network[64], cgroup[64];
+
+    /* Do nothing except validate and wait for the controller gate. */
+    if (!fixed_descriptor(0, O_RDONLY)) {
+        return 64;
+    }
+    for (;;) {
+        ssize_t received = read(0, &gate, 1U);
+        if (received < 0 && errno == EINTR) {
+            continue;
+        }
+        if (received != 1) {
+            return 64;
+        }
+        break;
+    }
+    if (argc < 4 || argv[2][0] != '/' || argv[3][0] != '/') {
+        return 64;
+    }
+    errno = 0;
+    if (syscall(SYS_close_range, 3U, UINT_MAX, 0U) != 0 && errno != ENOSYS) {
+        return 64;
+    }
+    if (errno == ENOSYS) {
+        long maximum = sysconf(_SC_OPEN_MAX);
+        if (maximum < 0) maximum = 65536;
+        for (int descriptor = 3; descriptor < maximum; descriptor++) (void)close(descriptor);
+    }
+    /* Do not clear the closed descriptor environment selected by the controller. */
+    if (syscall(SYS_keyctl, KEYCTL_JOIN_SESSION_KEYRING, 0) < 0) {
+        return 64;
+    }
+    working_directory_fd = open(argv[2], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    executable_fd = open(argv[3], O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    if (working_directory_fd < 0 || executable_fd < 0) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    if (fchdir(working_directory_fd) != 0 ||
+        prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
+        !enforce_gated_landlock(executable_fd, working_directory_fd) ||
+        !enforce_gated_seccomp()) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    {
+        ssize_t lengths[] = {
+            readlink("/proc/self/ns/user", user, sizeof(user) - 1U),
+            readlink("/proc/self/ns/mnt", mount, sizeof(mount) - 1U),
+            readlink("/proc/self/ns/pid", pid, sizeof(pid) - 1U),
+            readlink("/proc/self/ns/ipc", ipc, sizeof(ipc) - 1U),
+            readlink("/proc/self/ns/net", network, sizeof(network) - 1U),
+            readlink("/proc/self/ns/cgroup", cgroup, sizeof(cgroup) - 1U),
+        };
+        char *names[] = {user, mount, pid, ipc, network, cgroup};
+        int length;
+        for (size_t index = 0; index < 6U; index++) {
+            if (lengths[index] <= 0 || (size_t)lengths[index] >= 63U) return 64;
+            names[index][lengths[index]] = '\0';
+        }
+        length = snprintf(response, sizeof(response),
+            "{\"cgroup\":\"%s\",\"ipc\":\"%s\",\"landlock\":true,\"mount\":\"%s\",\"network\":\"%s\",\"no_new_privs\":true,\"pid\":\"%s\",\"seccomp\":true,\"user\":\"%s\"}",
+            cgroup, ipc, mount, network, pid, user);
+        if (length < 0 || (size_t)length >= sizeof(response) ||
+            write_all(1, response, (size_t)length) != 0 || close(1) != 0) return 64;
+    }
+    null_fd = open("/dev/null", O_RDWR | O_CLOEXEC);
+    if (null_fd < 0 || dup2(null_fd, 0) != 0 || dup2(null_fd, 1) != 1 ||
+        dup2(null_fd, 2) != 2) {
+        (void)close(null_fd);
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    if (null_fd > 2 && close(null_fd) != 0) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
     /* AT_EMPTY_PATH binds exec to the same object Landlock admitted. */
     (void)syscall(SYS_execveat, executable_fd, "", argv + 3, environ,
                   AT_EMPTY_PATH);
@@ -888,6 +1185,9 @@ int main(int argc, char **argv) {
     }
     if (argc >= 2 && strcmp(argv[1], WORKER_EXEC) == 0) {
         return worker_exec(argc, argv);
+    }
+    if (argc >= 2 && strcmp(argv[1], GATED_WORKER_EXEC) == 0) {
+        return gated_worker_exec(argc, argv);
     }
     return protocol_refusal();
 }
