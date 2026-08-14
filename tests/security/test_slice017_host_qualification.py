@@ -21,10 +21,11 @@ import stat
 import struct
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import uuid
-from collections.abc import Iterator, Mapping, Sequence
+from collections.abc import Callable, Iterator, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -656,6 +657,21 @@ def _stop_unit(unit: str) -> None:
     )
 
 
+def _await_probe_pid(marker: Path, broker: subprocess.Popen[str]) -> int:
+    """Read the controller PID recorded before it is released to exec."""
+
+    deadline = time.monotonic() + 5
+    while broker.poll() is None and time.monotonic() < deadline:
+        try:
+            value = marker.read_text(encoding="ascii").strip()
+        except FileNotFoundError:
+            value = ""
+        if value.isdecimal() and int(value) > 1:
+            return int(value)
+        time.sleep(0.001)
+    raise AssertionError("did not observe the live delegated controller PID")
+
+
 def _run_in_delegated_unit(
     subcommand: str,
     *arguments: str | Path,
@@ -663,12 +679,37 @@ def _run_in_delegated_unit(
     service_environment: Mapping[str, str] | None = None,
     observe: bool = False,
     direct_controller: bool = False,
+    on_unit_started: Callable[[int], None] | None = None,
 ) -> tuple[subprocess.CompletedProcess[str], CgroupObservation | None]:
     unit = f"ranex-acceptance-{os.getpid()}-{uuid.uuid4().hex}.service"
     command_builder = _direct_controller_argv if direct_controller else _controller_argv
     command = command_builder(subcommand, *arguments)
     if sandbox:
         command = [*(str(value) for value in sandbox), "--", *command]
+
+    marker_directory: tempfile.TemporaryDirectory[str] | None = None
+    release: Path | None = None
+    if on_unit_started is not None:
+        marker_directory = tempfile.TemporaryDirectory(prefix="ranex-cleanup-probe-")
+        marker = Path(marker_directory.name) / "pid"
+        release = Path(marker_directory.name) / "release"
+        command = [
+            sys.executable,
+            "-c",
+            (
+                "from pathlib import Path\n"
+                "import os\n"
+                "import sys\n"
+                "import time\n"
+                "Path(sys.argv[1]).write_text(str(os.getpid()), encoding='ascii')\n"
+                "while not Path(sys.argv[2]).exists():\n"
+                "    time.sleep(0.001)\n"
+                "os.execvpe(sys.argv[3], sys.argv[3:], os.environ)\n"
+            ),
+            str(marker),
+            str(release),
+            *command,
+        ]
 
     service_env = {
         "PYTHONPATH": "src",
@@ -687,19 +728,25 @@ def _run_in_delegated_unit(
     if observer is not None:
         observer.start()
     try:
-        completed = subprocess.run(
+        broker = subprocess.Popen(
             argv,
             cwd=ROOT,
             env={**os.environ, **_derived_bus_environment()},
-            capture_output=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            check=False,
-            timeout=180,
         )
+        if on_unit_started is not None:
+            on_unit_started(_await_probe_pid(marker, broker))
+            release.touch()
+        stdout, stderr = broker.communicate(timeout=180)
+        completed = subprocess.CompletedProcess(argv, broker.returncode, stdout, stderr)
     finally:
         if observer is not None:
             observer.finish()
         _stop_unit(unit)
+        if marker_directory is not None:
+            marker_directory.cleanup()
     return completed, observer
 
 
@@ -1300,6 +1347,8 @@ class CleanupBlocker:
     """Plant a live nested cgroup after the real probe has a live member."""
 
     root: Path
+    probe_pid: int | None = None
+    probe_root: Path | None = None
     stop: threading.Event = field(default_factory=threading.Event)
     planted: Path | None = None
     sleeper: subprocess.Popen[str] | None = None
@@ -1325,14 +1374,24 @@ class CleanupBlocker:
     def _plant_observed(self) -> None:
         assert self.sleeper is not None
         while not self.stop.is_set():
-            current = {path for path in self.root.rglob("*") if path.is_dir()}
+            probe_pid = self.probe_pid
+            probe_root = self.probe_root
+            if probe_pid is None or probe_root is None:
+                time.sleep(0.001)
+                continue
+            try:
+                current = {path for path in probe_root.iterdir() if path.is_dir()}
+            except (FileNotFoundError, PermissionError):
+                continue
             for candidate in current - self.baseline:
                 if candidate.name.endswith((".service", ".scope")):
                     continue
                 try:
-                    if not (candidate / "cgroup.procs").read_text().split():
+                    if str(probe_pid) not in (candidate / "cgroup.procs").read_text().split():
                         continue
-                    blocker = candidate / "acceptance-cleanup-blocker"
+                    blocker = candidate / (
+                        f"acceptance-cleanup-blocker-{os.getpid()}-{uuid.uuid4().hex[:8]}"
+                    )
                     blocker.mkdir()
                 except (FileExistsError, FileNotFoundError, PermissionError):
                     continue
@@ -1355,6 +1414,20 @@ class CleanupBlocker:
                 self.planted = blocker
                 return
             time.sleep(0.001)
+
+    def observe_probe(self, probe_pid: int) -> None:
+        try:
+            cgroup = next(
+                line.split("::", 1)[1]
+                for line in Path(f"/proc/{probe_pid}/cgroup").read_text(encoding="ascii").splitlines()
+                if "::" in line
+            )
+        except (FileNotFoundError, StopIteration):
+            raise AssertionError(f"cannot resolve cgroup for live delegated controller {probe_pid}")
+        probe_root = Path("/sys/fs/cgroup") / cgroup.lstrip("/")
+        self.baseline = {path for path in probe_root.iterdir() if path.is_dir()}
+        self.probe_root = probe_root
+        self.probe_pid = probe_pid
 
     def finish(self) -> None:
         self.stop.set()
@@ -1396,7 +1469,9 @@ def test_gate8_cleanup_failure_refuses_and_test_removes_its_blocker(
     blocker = CleanupBlocker(_user_service_cgroup_root())
     try:
         blocker.start()
-        completed, _ = _run_in_delegated_unit("qualify", *_qualify_arguments())
+        completed, _ = _run_in_delegated_unit(
+            "qualify", *_qualify_arguments(), on_unit_started=blocker.observe_probe
+        )
         assert blocker.planted is not None, "did not rendezvous with the live probe cgroup"
         _refusal(completed, E_CLEANUP)
         assert not (ROOT / REPORT).exists()
