@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.5.2` |
+| Version | `3.5.3` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-09 — **parallel research is allowed now; governed mutation fanout remains qualification-only until SLICE-044**. See §0.26 |
+| Last revised | 2026-08-14 — evidence refresh: fifteen closed slices, none open. See §0.27 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -606,6 +606,15 @@ production mutation fanout. Until then there is one open slice and one mutation
 writer. After authorization, parallel children remain jobs inside that one open
 slice; opening parallel slice documents requires a separate owner decision.
 
+### 0.27 What changed in `3.5.3` — evidence refresh
+
+SLICE-017, SLICE-019 and kernel SLICE-020 (judgment identity and the verdict
+read channel, ADR-019/020) closed 2026-08-12..13: fifteen closed slices, one
+withdrawn, none open. §1.3's coverage accounting is corrected to that count.
+The verdict channel is UI/board-track work under ADR-018/022; the P0 critical
+path remains SLICE-018, then SLICE-029..044. **No position changes** — this
+revision records evidence, not decisions.
+
 ---
 
 ## §1 Introduction and Goals
@@ -759,13 +768,13 @@ for. No part is built for it; none is precluded.
 
 | Concern | Requirements serving it | Built |
 |---|---|---|
-| `C-01` | `PR-02`, `PR-03`, `PR-04`, `PR-05`, `PR-06`, `PR-10` | **Yes, mostly.** Twelve closed slices; one withdrawn; SLICE-017 open |
+| `C-01` | `PR-02`, `PR-03`, `PR-04`, `PR-05`, `PR-06`, `PR-10` | **Yes, mostly.** Fifteen closed slices; one withdrawn; none open |
 | `C-03` | `PR-05`, `PR-06` — partially | **Weak.** The self-gate runs the full suite (SLICE-006, SLICE-009); no regression view yet |
 | `C-04` | `PR-07`, `PR-08` | **No.** `PR-07` has an accepted design in ADR-016 but remains unbuilt; the translator is absent and `ranex journal verify` only checks integrity (`RISK-12`) |
 | `C-02` | `PR-09` — one requirement | **Almost nothing.** SLICE-008's `task delegate` bounds a worker's wall clock and kills the whole process group at the bound; no budget, no escalation, no three-miss stop |
 
-**Twelve closed slices of work have gone to one of four concerns; one was withdrawn
-before implementation and SLICE-017 is open.** This is coverage accounting, not
+**Fifteen closed slices of work have gone to one of four concerns; one was
+withdrawn before implementation and none is open.** This is coverage accounting, not
 validation of the concern set or the method. The owner chose to continue
 hardening `C-01` — see §11.6.
 

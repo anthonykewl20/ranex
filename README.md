@@ -9,6 +9,9 @@ Ranex judges work by evidence and executable checks, never by model confidence.
 Removing every model credential from the machine must not change a single
 verdict.
 
+Website: [ranex.dev](https://ranex.dev) · Field notes (blog):
+[ranex.dev/blog](https://ranex.dev/blog)
+
 ---
 
 ## The problem
@@ -269,6 +272,12 @@ below is what is actually built.
   PASS; `merge` publishes a judged candidate only through ordered journalled
   checks (the kernel merges; the harness never does); prototype `fanout` runs a
   bounded pool, one worktree each. It is not approved mutation authority.
+- **Signed verdicts and a verdict read channel** — evaluation records carry
+  structured five-kind causes and self-approval; a dedicated
+  `kernel-verdict-signer` signs verdicts under the same Ed25519 keyring
+  discipline as evidence; publication is validated and atomic; and a total
+  closed-state reader projects refused and unattributable rejections
+  (SLICE-020).
 - `ranex gate evaluate`, `ranex keygen`, and repository path confinement.
 
 **Known gaps — stated plainly**
@@ -276,8 +285,9 @@ below is what is actually built.
 - **Same-UID key theft is open.** The model credential sits in a network-open
   loop, and `ranex run`'s own path still reads the signing key before spawning,
   so anything running as the same user can take it. Use a scoped, spend-limited
-  key. `RISK-06` stays open and ADR-006 stays `proposed` until SLICE-019 binds a
-  qualified confinement profile to `cmd_run`.
+  key. `RISK-06` stays open and ADR-006 stays `proposed`; binding the qualified
+  confinement profile to the `cmd_run` worker path remains open after
+  SLICE-018's lifecycle and SLICE-019's host qualification.
 - **Approver identity is unauthenticated.** `--approver` is a plain string, so a
   producer can name anyone as their approver. Evidence signing proves only that
   the holder of the registered private key signed the record; it proves nothing
@@ -317,9 +327,11 @@ watchdog; and the reconciler reorder plus its startup sweep. Three remain —
 durable retry, durable blockers, and Session-ID fencing — each gated by the
 SLICE-011 prototype record through a compiled test. The remaining durability
 sequence is parked/subordinate to P0. ADR-006 is split into closed issue #10 /
-SLICE-017 qualification, then issue #21 / SLICE-018 lifecycle and issue #22 /
-SLICE-019 `cmd_run` closure. ADR-017 is `proposed`; its planned SLICE-029..044
-run sequentially after SLICE-018.
+SLICE-017 qualification, closed issue #21 / SLICE-018 lifecycle, and closed
+issue #22 / SLICE-019 host-qualification evidence. `RISK-06` stays open and
+ADR-006 stays `proposed`: the qualified confinement profile is not yet bound to
+the `cmd_run` worker path. ADR-017 is `proposed`; its planned SLICE-029..044 run
+sequentially after SLICE-018.
 036 is qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
@@ -334,7 +346,7 @@ milestone #1.
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 738 IDs, with 67
+structured outcomes against the manifest diff — 819 IDs, with 68
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
