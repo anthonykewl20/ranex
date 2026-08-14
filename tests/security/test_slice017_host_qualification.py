@@ -1422,8 +1422,8 @@ class CleanupBlocker:
                 for line in Path(f"/proc/{probe_pid}/cgroup").read_text(encoding="ascii").splitlines()
                 if "::" in line
             )
-        except (FileNotFoundError, StopIteration):
-            raise AssertionError(f"cannot resolve cgroup for live delegated controller {probe_pid}")
+        except (FileNotFoundError, StopIteration) as error:
+            raise AssertionError(f"cannot resolve cgroup for live delegated controller {probe_pid}") from error
         probe_root = Path("/sys/fs/cgroup") / cgroup.lstrip("/")
         self.baseline = {path for path in probe_root.iterdir() if path.is_dir()}
         self.probe_root = probe_root

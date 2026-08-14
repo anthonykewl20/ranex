@@ -11,9 +11,9 @@ root must never be mistakable for honest absence.
 
 from __future__ import annotations
 
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-from dataclasses import dataclass
 
 import yaml
 

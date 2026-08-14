@@ -1325,6 +1325,9 @@ def _namespace_child(name: str, flag: int, result_descriptor: int) -> NoReturn:
     libc = ctypes.CDLL(None, use_errno=True)
     namespace_name = {"mount": "mnt", "network": "net"}.get(name, name)
 
+    # pyrefly 1.2.0 cannot prove os._exit terminal through the finally; the
+    # forked child always terminates here, so the NoReturn promise holds.
+    # pyrefly: ignore[bad-return]
     def fail(stage: str, error: int) -> NoReturn:
         detail = f"{stage}:{error}".encode()
         try:

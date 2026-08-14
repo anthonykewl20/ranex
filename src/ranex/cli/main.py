@@ -47,6 +47,7 @@ from ranex.cli.repository import (
     uncommitted_paths,
 )
 from ranex.cli.subject import (
+    Materialisation,
     SubjectError,
     materialise_subject,
     verified_blob_at_path,
@@ -63,8 +64,6 @@ from ranex.foundation.signing import (
     public_key_for,
     sign_evidence,
 )
-from ranex.governed_execution.verdict_projection import project_verdict, presentation_partition
-from ranex.governed_execution.verdict_publication import publish_verdict
 from ranex.foundation.suite_results import (
     freeze_manifest,
     load_manifest_bytes,
@@ -93,6 +92,8 @@ from ranex.governed_execution.domain.task import (
     TaskMergeIntent,
     TaskMergeOutcome,
 )
+from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
+from ranex.governed_execution.verdict_publication import publish_verdict
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     KeyringError,
     load_keyring,
@@ -1788,10 +1789,9 @@ def _execute_confinement_session(
 
     # Kept structural rather than importing host_confinement: this process owns
     # signing while the child owns its cgroup and must be able to exit first.
-    session_root = cast(object, materialisation)
-    tree = cast(Path, getattr(session_root, "tree"))
-    session_directory = cast(Path, getattr(session_root, "root"))
-    temporary = cast(Path, getattr(session_root, "temporary"))
+    session_root = cast(Materialisation, materialisation)
+    session_directory = session_root.root
+    temporary = session_root.temporary
     toolchain = deps_environment
     if toolchain is None:
         toolchain = session_directory / "toolchain"

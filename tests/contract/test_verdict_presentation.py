@@ -24,8 +24,8 @@ next.
 
 from __future__ import annotations
 
-import os
 import json
+import os
 import pty
 import re
 import subprocess

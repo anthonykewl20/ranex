@@ -45,12 +45,12 @@ from pathlib import Path
 
 import pytest
 
+from ranex.cli.main import record_evidence, subject_digest_for
 from ranex.foundation.canonical import command_digest
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.foundation.suite_results import load_manifest
-from ranex.cli.main import record_evidence, subject_digest_for
-from ranex.governed_execution.domain import admission
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
+from ranex.governed_execution.domain import admission
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate
 
 REAL_REPO = Path(__file__).resolve().parents[2]

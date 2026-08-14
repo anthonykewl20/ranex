@@ -42,7 +42,7 @@ def project_verdict(evaluation: Evaluation, admission: Admission, *, required_cl
         item.claim_id for item in admission.rejections
         if item.claim_id is not None and item.claim_id in missing
     }
-    causes = [
+    causes: list[dict[str, str | None]] = [
         {"claim_id": item.claim_id, "cause": item.cause, **({"detail": item.detail} if item.detail is not None else {})}
         for item in evaluation.causes if item.claim_id not in refused
     ]

@@ -70,7 +70,7 @@ KEYCTL_JOIN_SESSION_KEYRING = 1
 RESPONSE_LIMIT = 65_536
 # SLICE-020 deliberately changes the production entrypoint to protect and root
 # verdict-key loading/publication while retaining the frozen launcher boundary.
-MAIN_PY_SHA256 = "705ee9691494596cd25949e878f8bf4b75fac124e804103a2d554f4f861c3ff6"
+MAIN_PY_SHA256 = "466f28a271e2821a9c4d1221bf643a9c5ec527fc0286470f1414c93712455e1e"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

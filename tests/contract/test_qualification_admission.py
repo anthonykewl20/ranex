@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-import copy
 import argparse
+import copy
 import json
 import subprocess
 from pathlib import Path
@@ -11,9 +11,9 @@ from pathlib import Path
 import pytest
 
 from ranex.bootstrap.composition import build_gate_evaluator
+from ranex.cli.main import EXIT_FAIL, cmd_task_judge, subject_digest_for
 from ranex.foundation import approval, signing
 from ranex.foundation.canonical import command_digest
-from ranex.cli.main import EXIT_FAIL, cmd_task_judge, subject_digest_for
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain import admission
 from ranex.governed_execution.domain.task import TaskDispatch
