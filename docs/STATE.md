@@ -19,7 +19,7 @@ foundations. SLICE-029 pre-stage pack (A/B/C field inventory, error
 vocabulary, vector design, deferred-mechanism recommendations) lives in
 this session's report.
 
-Risk-closure session on top: CI lint/type debt cleared — the 9 findings
+Risk-closure session on top: CI lint/type debt cleared (ruff and pyrefly pass on CI again, pytest reached for the first time since Aug 11) — the 9 findings
 that pre-dated Aug 14 plus SLICE-046's four new main.py findings
 (I001 imports, F841 dead binding, B009 constant-getattr, B904 cause
 chain, pyrefly bad-return/bad-assignment), MAIN_PY_SHA256 refreshed per
@@ -44,5 +44,7 @@ Owner: merge ranex-harness worktree-provisioning when #61 lands.
 - Frozen gate-1/3 real-session tests stay expected-skips (issue #21).
 - cgroup-observer OSError(19) flake under load remains.
 - mutmut advisory not run this cycle.
-- Harness HEAD: event-manifest off-by-one pre-existing (53e5209f56);
-  stale WorktreeFailed.data in generated SDK types.
+- Harness HEAD: event-manifest off-by-one pre-existing (53e5209f56); stale WorktreeFailed.data in generated SDK types.
+- The SLICE-017/018 confinement suites fail on GitHub's hosted runners (ld.so.cache
+  digest drift vs the pinned build manifest; unprivileged userns EACCES) — they were never green
+  on CI; the owner decides their skip-vs-fail semantics there. Exposed by the lint revival, not caused by it.
