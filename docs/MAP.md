@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.5.3` |
+| Version | `3.5.4` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-14 — evidence refresh: fifteen closed slices, none open. See §0.27 |
+| Last revised | 2026-08-14 — SLICE-018 shipped and host-verified; post-closure ABI-minimum fix. See §0.28 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -614,6 +614,15 @@ withdrawn, none open. §1.3's coverage accounting is corrected to that count.
 The verdict channel is UI/board-track work under ADR-018/022; the P0 critical
 path remains SLICE-018, then SLICE-029..044. **No position changes** — this
 revision records evidence, not decisions.
+
+### 0.28 What changed in `3.5.4`
+
+SLICE-018 closed 2026-08-14 and shipped with a post-closure fix (0caa1090f):
+the session required Landlock ABI equality with the profile minimum and refused
+every real session on ABI≠6 hosts; now a true minimum. Real sessions verified on
+the qualified host via delegated systemd units (honest, output-writing,
+alias-refusal, OOM-refusal). Sixteen closed slices, none open. §1.3 coverage
+accounting now counts SLICE-018. No position changes — evidence, not decisions.
 
 ---
 

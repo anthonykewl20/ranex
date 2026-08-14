@@ -7,35 +7,33 @@
 
 ## Where we stopped
 
-SLICE-018 shipped (c31baab32) and was hardened (0caa1090f): the
-confinement-session lifecycle ENFORCES NNP → strict full-mask Landlock
-(ruleset+add+restrict) → default-deny seccomp → `execveat` behind a closed
-`--ranex-worker-exec` path. A capability-gated session owns controller/worker
-cgroup-v2 lifecycle, enrollment readback before gate release, a readiness
-witness, readback-bound honest facts, kill → drain → remove, and unsigned
-`ranex-confinement-result-v1`. The launcher uses an `openat2` resolve-beneath
-collector, environment allowlist `{LC_ALL,TZ}` with inherited-FD closure, and
-enters six namespaces: user, mount, pid, ipc, net, and cgroup.
-
-The delegated-unit battery verified on this host: an honest `/bin/true`
-session with six distinct namespace readbacks; an output-writing session;
-path-alias refusal; and static-hog OOM refusing E-C18-LIMIT with observed
-events. Full suite: 1015 passed / 0 failed + 7 declared skips at 0caa1090f.
+SLICE-018 shipped and host-verified — the confinement-session lifecycle
+(cgroup-v2 controller/worker leaves with exact readbacks, pinned bwrap
+namespaces, gated launcher enforcing NNP → Landlock → seccomp before exec,
+cumulative cpu/memory/pids/wall/output enforcement, kill → drain → populated-0
+teardown, bounded openat2 collection, validated unsigned
+`ranex-confinement-result-v1`). After closure, a delegated-systemd-unit battery
+on this host caught and fixed (0caa1090f) a Landlock ABI equality-vs-minimum bug
+that refused every real session on ABI≠6 hosts, plus symlinked-executable
+support, an initially-empty subtree_control start, and a pre-exec readiness-ack
+so membership/namespace/enforcement readbacks happen while the worker exists.
+Real sessions are now VERIFIED on this host (honest /bin/true, output-writing,
+path-alias refusal, static-hog OOM refusing E-C18-LIMIT with events); full suite
+1015 passed / 7 declared skips at the pushed commit.
 
 ## Next
 
-Next kernel slice: SLICE-029 — A/B/C contract schemas; ADR-017 is written with
-prior-art vendored.
+SLICE-029 (ADR-017 written, prior art vendored) pending owner selection;
+SLICE-045 prior-art backfill also open; harness lane progresses in its own repo.
 
 ## Known limits
 
+- Frozen gate-1/3 real-session tests stay host-gated expected-skips without a
+  directly-writable cgroup root (delegated-unit evidence on issue #21; gate-3
+  passes for real under delegation).
 - The readiness phase is unbounded if the controller itself is suspended
-  (availability, not confinement).
-- Loader/libc Landlock rules hardcode Debian multiarch paths and fail closed on
-  other distributions.
-- The device-node attack still needs `CAP_MKNOD` and is skip-declared.
-- `mutmut` does not complete on this host (SLICE-017 copy-repo environment
-  crash); advisory/non-blocking.
-- The cgroup-observer gate5 flake class remains possible under extreme load.
-- ADR-006 remains proposed and RISK-06 remains open. SLICE-019 retains the
-  exclusive right to close them; SLICE-018 did not.
+  (availability only, not confinement).
+- Gated loader/libc Landlock rules hardcode Debian multiarch paths (fails closed
+  elsewhere).
+- The cgroup-observer OSError(19) flake under load remains.
+- mutmut advisory not run this cycle.

@@ -287,7 +287,9 @@ below is what is actually built.
   so anything running as the same user can take it. Use a scoped, spend-limited
   key. `RISK-06` stays open and ADR-006 stays `proposed`; binding the qualified
   confinement profile to the `cmd_run` worker path remains open after
-  SLICE-018's lifecycle and SLICE-019's host qualification.
+  SLICE-018's lifecycle and SLICE-019's host qualification. SLICE-018's
+  lifecycle is shipped and host-verified (issue #21, including the post-closure
+  Landlock-ABI minimum fix); the binding itself is the remaining gap.
 - **Approver identity is unauthenticated.** `--approver` is a plain string, so a
   producer can name anyone as their approver. Evidence signing proves only that
   the holder of the registered private key signed the record; it proves nothing
@@ -346,7 +348,7 @@ milestone #1.
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 819 IDs, with 68
+structured outcomes against the manifest diff — 861 IDs, with 74
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
