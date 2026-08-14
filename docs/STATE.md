@@ -2,47 +2,39 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-14 (end of session)
-**Active slice:** none.
+**Updated:** 2026-08-15
+**Active slice:** none (SLICE-046 closed; SLICE-029 unblocked and next).
 
 ## Where we stopped
 
-SLICE-045 (#31) closed with proof on GitHub (closing comment + close at
-ef473d1be, pushed and tip-verified): the 2026-08-10 retrofit (56aa110e6)
-had already backfilled ADR-001/002; the closing commit retired the two
-lapsed grandfather rows. All done criteria verified — 5/5 Vendored blob
-hashes match git ls-files, no branch citations, NOTICE complete, >=2
-Rejected per ADR, full frozen suite 1015 passed / 7 skipped with the
-change present; two blind reviews approved (no P0-P2); OCR gate PASS.
-
-#32 (external verdict-topology question) answered as anthonykewl20.
-SLICE-029 (#12) blocker recorded on #12 and #11 with evidence: ADR-006
-still `proposed`, RISK-06 still open (MAP 11.5), ADR-017 still
-`proposed`; the acceptance path the tracker assigned to #21 was excluded
-by #21's own frozen scope and closed unconsumed — owner decision (accept
-on landed evidence, or reassign) is required before #12 opens.
-
-A concurrent writer remains active in this tree: uncommitted CI-hardening
-change (weekly osv-scan job, contract-test enforcement, cryptography <51
-re-lock; .github/workflows/ci.yml, pyproject.toml,
-tests/contract/test_ci_workflow.py, uv.lock) — untouched by this session,
-review belongs to its own session.
+SLICE-046 (issue #21) closed and pushed: cmd_run binds to the qualified
+strict-local session via the subprocess controller (ADR-023); evidence
+SIGNED_FIELDS 8->10 + domain v4; ADR-006 accepted, RISK-06 closed in MAP
+11.5, ADR-017 accepted — SLICE-029 (#12) prerequisites now MET. Full
+suite 1023 passed / 8 skipped at the pushed commit. Harness lane:
+SLICE-020 (#1) implementation complete on branch worktree-provisioning
+(a6c395926f, ranex-harness) — merge to ranex-trim pending the owner's
+#61 session; SLICE-021 (#2) is next there and builds on its EventV2
+foundations. SLICE-029 pre-stage pack (A/B/C field inventory, error
+vocabulary, vector design, deferred-mechanism recommendations) lives in
+this session's report.
 
 ## Next
 
-Owner: decide the SLICE-029/#12 prerequisite path (accept ADR-006/close
-RISK-06 on landed evidence, or reassign explicitly); the concurrent
-CI-hardening writer finishes or is reviewed separately; harness lane
-progresses in its own repo.
+Open SLICE-029 (#12): governance/schemas/specification/*.schema.json +
+abc-v1-vectors.json per the pre-stage pack; one open slice at a time.
+Owner: merge ranex-harness worktree-provisioning when #61 lands.
 
 ## Known limits
 
-- Frozen gate-1/3 real-session tests stay host-gated expected-skips without a
-  directly-writable cgroup root (delegated-unit evidence on issue #21; gate-3
-  passes for real under delegation).
-- The readiness phase is unbounded if the controller itself is suspended
-  (availability only, not confinement).
-- Gated loader/libc Landlock rules hardcode Debian multiarch paths (fails closed
-  elsewhere).
-- The cgroup-observer OSError(19) flake under load remains.
+- SLICE-046 real-session test stays a declared host-gated skip (no
+  delegated writable cgroup-v2 root); gate-3 passes under delegation.
+- Controller subprocess is same-uid trusted infrastructure; env
+  narrowing is a named follow-up (ADR-023 review).
+- Confinement digests are signed but not yet enforced by claim type —
+  ADR-017 follow-up work owns it.
+- Frozen gate-1/3 real-session tests stay expected-skips (issue #21).
+- cgroup-observer OSError(19) flake under load remains.
 - mutmut advisory not run this cycle.
+- Harness HEAD: event-manifest off-by-one pre-existing (53e5209f56);
+  stale WorktreeFailed.data in generated SDK types.

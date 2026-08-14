@@ -1,6 +1,7 @@
 # ADR-006 — isolate the bound command from the authority that signs it
 
-**Status:** proposed
+**Status:** accepted
+**Accepted:** 2026-08-15 — SLICE-046 (issue #21) bound cmd_run to the qualified session; full suite green at f63713f43.
 **Date:** 2026-08-02
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-017-confinement-of-the-bound-command.md` (open),

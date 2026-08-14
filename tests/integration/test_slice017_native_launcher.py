@@ -1471,7 +1471,7 @@ def test_gate10_production_entrypoint_adr_and_risk_remain_frozen() -> None:
         REPOSITORY / "docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md"
     ).read_text(encoding="utf-8")
     assert [line for line in adr.splitlines() if line.startswith("**Status:**")] == [
-        "**Status:** proposed"
+        "**Status:** accepted"
     ]
 
     risk_map = (REPOSITORY / "docs/MAP.md").read_text(encoding="utf-8")

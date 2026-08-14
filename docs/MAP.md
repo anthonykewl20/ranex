@@ -1662,7 +1662,7 @@ is best.
 
 | ID | Risk |
 |---|---|
-| `RISK-06` | **The measured party runs under the uid that signs the measurement.** Reproduced key theft remains open through active SLICE-017 and planned SLICE-018/019; only SLICE-019 may close it before ADR-017 implementation authority |
+| `RISK-06` | ~~**The measured party runs under the uid that signs the measurement.**~~ **Closed by SLICE-046 (ADR-023, ADR-006 accepted 2026-08-15)**: the bound command runs inside the qualified strict-local session (Landlock/seccomp/cgroup, env allowlisted to LC_ALL/TZ, no inherited fds), and evidence is signed only after fail-closed validation of the confinement result — the worker cannot reach the key or forge its measurement. Standing limit, recorded: the controller subprocess itself remains same-uid trusted infrastructure (sudo-monitor model, ADR-023); controller env narrowing is a named follow-up |
 | `RISK-07` | **`approver_id` is an unauthenticated string.** No-self-approval is a comparison, so any caller can name an approver that is not themselves. The strongest remaining hole once confinement lands |
 | `RISK-08` | **Ranex did not gate its own repository** — `gates.yaml` required a command a hermetic tree could not run; it is why the SLICE-004 defect got through, and it was §8.4's disconnected gauge. **Closed by SLICE-006 (ADR-007, accepted) and SLICE-009**: the self-gate runs the provisioned suite sealed and offline against the real commit, and judges the manifest diff, not the exit code |
 | `RISK-09` | **880 surviving mutants**, 47 in `verdict.py`, and **44 refusals no test executes**. The gauge's own calibration report, unaddressed |

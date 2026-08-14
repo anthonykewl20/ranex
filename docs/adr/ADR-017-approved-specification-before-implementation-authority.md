@@ -1,6 +1,7 @@
 # ADR-017 — approved specification before implementation authority
 
-**Status:** proposed
+**Status:** accepted
+**Accepted:** 2026-08-15 — confinement prerequisite closed (ADR-006 accepted, RISK-06 closed via SLICE-046); SLICE-029 may open. Accepted without broadening.
 **Date:** 2026-08-09
 **Decision-makers:** repo owner
 **Slice:** `n/a — program decision; SLICE-017 is active; SLICE-018/019 and SLICE-029..044 are planned sequentially`

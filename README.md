@@ -363,6 +363,8 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-046-cmd-run-confinement-binding** — closed 2026-08-15. `cmd_run` runs the bound command inside the qualified strict-local session (ADR-023), and evidence is signed only after fail-closed confinement-result validation; ADR-006 is accepted, RISK-06 is closed, and ADR-017 is accepted without broadening.
+
 - **SLICE-018-confinement-session-lifecycle** — closed 2026-08-14. The native
   launcher ENFORCES NNP, strict full-mask Landlock, default-deny seccomp, and
   `execveat` behind a closed worker-exec path. Its capability-gated session
