@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import ctypes
 import errno
+import hashlib
 import json
 import os
 import shutil
@@ -48,7 +49,10 @@ def test_gate2_runtime_profile_mounts_only_output_and_scratch_writable() -> None
         "output": "writable-bounded",
         "scratch": "writable-bounded",
         "proc": "fresh",
-        "dev": "minimal",
+        "dev": {
+            "type": "tmpfs",
+            "nodes": [],
+        },
     }
 
 
@@ -385,6 +389,36 @@ def test_gate1_real_process_session_observes_namespaces_landlock_and_seccomp(
             "launcher enforcement host-unverified here"
         )
     root, descriptor = _materialize_case(tmp_path)
+    compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
+    subject = descriptor.parent / "subject"
+    output = descriptor.parent / "output"
+    worker_source = subject / "output-writer.c"
+    worker = subject / "output-writer"
+    worker_source.write_text(
+        """
+#include <fcntl.h>
+#include <unistd.h>
+int main(int argc, char **argv) {
+    int fd;
+    if (argc != 2) return 99;
+    fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (fd < 0) return 98;
+    return write(fd, "collected", 9) == 9 && close(fd) == 0 ? 0 : 97;
+}
+""",
+        encoding="utf-8",
+    )
+    assert compiler.exists(), "C toolchain required for mandatory output lifecycle test"
+    compiled = subprocess.run(
+        [str(compiler), "-static", "-O2", "-o", str(worker), str(worker_source)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert compiled.returncode == 0, compiled.stdout + compiled.stderr
+    value = json.loads(descriptor.read_text())
+    value["argv"] = [str(worker), str(output / "proof.txt")]
+    descriptor.write_text(json.dumps(value, sort_keys=True, separators=(",", ":")))
     result = descriptor.parent / "result.json"
     completed = _invoke_session(root, descriptor, result)
     assert completed.returncode == 0, completed.stdout + completed.stderr
@@ -398,6 +432,16 @@ def test_gate1_real_process_session_observes_namespaces_landlock_and_seccomp(
     assert value["command"]["no_new_privs"] is True
     assert value["command"]["landlock"] is True
     assert value["command"]["seccomp"] is True
+    assert value["command"]["exit_code"] == 0
+    assert value["outputs"] == {
+        "files": [{
+            "path": "proof.txt",
+            "bytes": 9,
+            "sha256": hashlib.sha256(b"collected").hexdigest(),
+        }],
+        "bytes": 9,
+        "inodes": 1,
+    }
     assert value["teardown"] == {"cgroup_kill": True, "populated": 0, "cgroup_removed": True}
 
 
@@ -411,9 +455,14 @@ def test_gate7_launcher_enforces_landlock_and_seccomp_for_a_worker(tmp_path: Pat
     build = REPOSITORY / ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
     compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
     worker_source = tmp_path / "worker.c"
-    worker = tmp_path / "worker"
+    subject = tmp_path / "subject"
+    worker = subject / "worker"
+    toolchain = Path("/usr/lib")
+    output = tmp_path / "output"
     scratch = tmp_path / "scratch"
     denied = tmp_path / "outside-ruleset"
+    subject.mkdir()
+    output.mkdir()
     scratch.mkdir()
     worker_source.write_text(
         """
@@ -468,7 +517,10 @@ int main(int argc, char **argv) {
         assert compiled.returncode == 0, compiled.stdout + compiled.stderr
 
         permitted = subprocess.run(
-            [str(build), "--ranex-worker-exec", str(scratch), str(worker), str(scratch / "allowed")],
+            [
+                str(build), "--ranex-worker-exec", str(subject), str(toolchain), str(output),
+                str(scratch), str(worker), str(scratch / "allowed"),
+            ],
             capture_output=True,
             text=True,
             check=False,
@@ -477,7 +529,10 @@ int main(int argc, char **argv) {
         assert (scratch / "allowed").read_text(encoding="utf-8") == "ok"
 
         landlock_denied = subprocess.run(
-            [str(build), "--ranex-worker-exec", str(scratch), str(worker), str(denied)],
+            [
+                str(build), "--ranex-worker-exec", str(subject), str(toolchain), str(output),
+                str(scratch), str(worker), str(denied),
+            ],
             capture_output=True,
             text=True,
             check=False,
@@ -486,11 +541,85 @@ int main(int argc, char **argv) {
         assert not denied.exists()
 
         seccomp_denied = subprocess.run(
-            [str(build), "--ranex-worker-exec", str(scratch), str(worker), "keyctl"],
+            [
+                str(build), "--ranex-worker-exec", str(subject), str(toolchain), str(output),
+                str(scratch), str(worker), "keyctl",
+            ],
             capture_output=True,
             text=True,
             check=False,
         )
         assert seccomp_denied.returncode == 1
+
+    finally:
+        build.unlink(missing_ok=True)
+
+
+def test_gate7_dynamic_elf_interpreter_resolves_from_toolchain_mount(tmp_path: Path) -> None:
+    """The dynamic loader and libc must be readable from the declared toolchain tree."""
+    if not _unprivileged_namespaces_available():
+        pytest.skip(
+            "unprivileged user namespaces unavailable in this execution context — "
+            "launcher enforcement host-unverified here"
+        )
+    build = REPOSITORY / ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
+    compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
+    subject = tmp_path / "subject"
+    output = tmp_path / "output"
+    scratch = tmp_path / "scratch"
+    toolchain = Path("/usr/lib")
+    subject.mkdir()
+    output.mkdir()
+    scratch.mkdir()
+    worker_source = subject / "dynamic-worker.c"
+    worker = subject / "dynamic-worker"
+    worker_source.write_text(
+        """
+#include <fcntl.h>
+#include <unistd.h>
+int main(int argc, char **argv) {
+    int fd;
+    if (argc != 2) return 99;
+    fd = open(argv[1], O_WRONLY | O_CREAT | O_TRUNC, 0600);
+    if (fd < 0) return 98;
+    return write(fd, "dynamic", 7) == 7 && close(fd) == 0 ? 0 : 97;
+}
+""",
+        encoding="utf-8",
+    )
+    assert compiler.exists(), "C toolchain required for dynamic loader test"
+    try:
+        built = subprocess.run(
+            [
+                *CONTROLLER, "launcher-build", "--manifest",
+                "governance/confinement/native-launcher-build-v1.json", "--source",
+                "native/ranex-worker-launcher/launcher.c", "--output",
+                ".local/ranex/build/strict-local-v1/ranex-worker-launcher",
+            ],
+            cwd=REPOSITORY,
+            env={**os.environ, "PYTHONPATH": "src"},
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert built.returncode == 0, built.stdout + built.stderr
+        compiled = subprocess.run(
+            [str(compiler), "-O2", "-o", str(worker), str(worker_source)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert compiled.returncode == 0, compiled.stdout + compiled.stderr
+        completed = subprocess.run(
+            [
+                str(build), "--ranex-worker-exec", str(subject), str(toolchain), str(output),
+                str(scratch), str(worker), str(output / "dynamic-proof"),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stdout + completed.stderr
+        assert (output / "dynamic-proof").read_text(encoding="utf-8") == "dynamic"
     finally:
         build.unlink(missing_ok=True)

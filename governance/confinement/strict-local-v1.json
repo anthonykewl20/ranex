@@ -16,7 +16,10 @@
     "user": true
   },
   "mounts": {
-    "dev": "minimal",
+    "dev": {
+      "nodes": [],
+      "type": "tmpfs"
+    },
     "output": "writable-bounded",
     "proc": "fresh",
     "scratch": "writable-bounded",

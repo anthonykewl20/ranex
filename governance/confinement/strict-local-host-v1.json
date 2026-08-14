@@ -1,6 +1,6 @@
 {
-  "artifact_sha256": "b8bf6c2d25ec402d0ec7f1862be246db85b712ec3dbbcf43f909a84d9a256df0",
-  "build_manifest_sha256": "8e539a1ed161724c6abe8883b76abaf7f036b9553d217b7013e7fa390d665822",
+  "artifact_sha256": "9f21b59d7833755972935d8a7e3828c0063d28e4c3cfbc675b47eea217638266",
+  "build_manifest_sha256": "9fa875bdb61b3e9916a8365eaef96ceeb089e5f2e3f224f7c3aa271a510e92ac",
   "helpers": {
     "bubblewrap": {
       "path": "/usr/bin/bwrap",

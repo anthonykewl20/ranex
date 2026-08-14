@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/prctl.h>
+#include <sys/mount.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
@@ -102,22 +103,32 @@ static int add_path_rule(int ruleset_fd, int parent_fd, __u64 allowed_access) {
                         LANDLOCK_RULE_PATH_BENEATH, &rule, 0U);
 }
 
-static bool enforce_landlock(int executable_fd, int working_directory_fd) {
+static bool enforce_landlock(int executable_fd, int subject_fd, int toolchain_fd,
+                             int output_fd, int scratch_fd) {
     struct ranex_landlock_ruleset_attr ruleset = {0};
     struct stat executable_facts;
-    struct stat working_directory_facts;
+    struct stat directory_facts;
     long abi;
     int ruleset_fd;
     __u64 filesystem_mask;
     __u64 executable_access;
+    const __u64 readonly_access = LANDLOCK_ACCESS_FS_EXECUTE |
+                                  LANDLOCK_ACCESS_FS_READ_FILE |
+                                  LANDLOCK_ACCESS_FS_READ_DIR;
 
     abi = syscall(SYS_landlock_create_ruleset, NULL, 0U,
                   LANDLOCK_CREATE_RULESET_VERSION);
     if (abi < REQUIRED_LANDLOCK_ABI ||
         fstat(executable_fd, &executable_facts) != 0 ||
-        fstat(working_directory_fd, &working_directory_facts) != 0 ||
-        !S_ISREG(executable_facts.st_mode) ||
-        !S_ISDIR(working_directory_facts.st_mode)) {
+        fstat(subject_fd, &directory_facts) != 0 ||
+        !S_ISDIR(directory_facts.st_mode) ||
+        fstat(toolchain_fd, &directory_facts) != 0 ||
+        !S_ISDIR(directory_facts.st_mode) ||
+        fstat(output_fd, &directory_facts) != 0 ||
+        !S_ISDIR(directory_facts.st_mode) ||
+        fstat(scratch_fd, &directory_facts) != 0 ||
+        !S_ISDIR(directory_facts.st_mode) ||
+        !S_ISREG(executable_facts.st_mode)) {
         return false;
     }
 
@@ -137,10 +148,14 @@ static bool enforce_landlock(int executable_fd, int working_directory_fd) {
         return false;
     }
 
-    /* The executable is immutable to the worker; only its scratch CWD is writable. */
+    /* Subject and toolchain are executable read-only trees.  The two declared
+     * writable trees intentionally each receive the complete handled mask. */
     executable_access = LANDLOCK_ACCESS_FS_EXECUTE | LANDLOCK_ACCESS_FS_READ_FILE;
     if (add_path_rule(ruleset_fd, executable_fd, executable_access) != 0 ||
-        add_path_rule(ruleset_fd, working_directory_fd, filesystem_mask) != 0 ||
+        add_path_rule(ruleset_fd, subject_fd, readonly_access) != 0 ||
+        add_path_rule(ruleset_fd, toolchain_fd, readonly_access) != 0 ||
+        add_path_rule(ruleset_fd, output_fd, filesystem_mask) != 0 ||
+        add_path_rule(ruleset_fd, scratch_fd, filesystem_mask) != 0 ||
         syscall(SYS_landlock_restrict_self, ruleset_fd, 0U) != 0 ||
         close(ruleset_fd) != 0) {
         (void)close(ruleset_fd);
@@ -164,6 +179,7 @@ static bool enforce_seccomp(void) {
                  offsetof(struct seccomp_data, nr)),
         /* Minimal static-worker and libc process-startup surface. */
         ALLOW_SYSCALL(__NR_read),
+        ALLOW_SYSCALL(__NR_pread64),
         ALLOW_SYSCALL(__NR_write),
         ALLOW_SYSCALL(__NR_close),
         ALLOW_SYSCALL(__NR_openat),
@@ -245,6 +261,42 @@ static bool enter_worker_namespaces(void) {
                            CLONE_NEWIPC | CLONE_NEWNET | CLONE_NEWCGROUP;
 
     return unshare(namespaces) == 0;
+}
+
+static bool bind_mount_tree(const char *path, bool readonly) {
+    if (mount(path, path, NULL, MS_BIND | MS_REC, NULL) != 0) {
+        return false;
+    }
+    if (readonly && mount(NULL, path, NULL,
+                          MS_BIND | MS_REMOUNT | MS_RDONLY | MS_REC, NULL) != 0) {
+        return false;
+    }
+    return true;
+}
+
+static bool mount_minimal_dev(void) {
+    /* The closed profile declares no device nodes.  An empty tmpfs is therefore
+     * the entire /dev authority; adding a host device would be a policy widen. */
+    return mount("tmpfs", "/dev", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV,
+                 "mode=755") == 0;
+}
+
+static bool assemble_mounts(const char *subject, const char *toolchain,
+                            const char *output, const char *scratch) {
+    /* New propagation first: no bind/remount or tmpfs operation may escape this
+     * worker's namespace.  Read-only is applied after a recursive bind, matching
+     * the kernel mount API's bind-then-remount sequence. */
+    return mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) == 0 &&
+           bind_mount_tree(subject, true) && bind_mount_tree(toolchain, true) &&
+           bind_mount_tree(output, false) && bind_mount_tree(scratch, false) &&
+           mount_minimal_dev();
+}
+
+static bool mount_fresh_proc(void) {
+    /* CLONE_NEWPID takes effect only after fork.  Overlay proc in that child so
+     * process views name the final PID namespace, never the launcher parent. */
+    return mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV,
+                 NULL) == 0;
 }
 
 static int wait_for_worker(int child) {
@@ -963,7 +1015,10 @@ static int worker_exec(int argc, char **argv) {
         .environment_names = {"LC_ALL", "TZ"},
         .environment_count = 2U,
     };
-    int working_directory_fd;
+    int subject_fd = -1;
+    int toolchain_fd = -1;
+    int output_fd = -1;
+    int scratch_fd = -1;
     int executable_fd;
     int status_descriptor = -1;
     int argument_offset = 2;
@@ -981,33 +1036,60 @@ static int worker_exec(int argc, char **argv) {
         }
         argument_offset++;
     }
-    if (argc < argument_offset + 2 || argv[argument_offset][0] != '/' ||
-        argv[argument_offset + 1][0] != '/') {
+    if (argc < argument_offset + 5 || argv[argument_offset][0] != '/' ||
+        argv[argument_offset + 1][0] != '/' || argv[argument_offset + 2][0] != '/' ||
+        argv[argument_offset + 3][0] != '/' || argv[argument_offset + 4][0] != '/') {
         return 64;
     }
-    working_directory_fd = open(argv[argument_offset], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    executable_fd = open(argv[argument_offset + 1], O_PATH | O_NOFOLLOW | O_CLOEXEC);
-    if (working_directory_fd < 0 || executable_fd < 0) {
-        (void)close(working_directory_fd);
+    subject_fd = open(argv[argument_offset], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    toolchain_fd = open(argv[argument_offset + 1], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    output_fd = open(argv[argument_offset + 2], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    scratch_fd = open(argv[argument_offset + 3], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    executable_fd = open(argv[argument_offset + 4], O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    if (subject_fd < 0 || toolchain_fd < 0 || output_fd < 0 || scratch_fd < 0 ||
+        executable_fd < 0) {
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
     environment = build_environment(&worker_environment_request);
     if (environment == NULL) {
-        (void)close(working_directory_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
     /* CLONE_NEWPID takes effect in this forked child; the outer launcher only
      * waits and relays its exit status, so the command itself owns every
-     * namespace named in the readiness record. */
+     * namespace named in the readiness record.  Mount propagation and all
+     * descriptor-tree mounts happen before the fork; proc must wait until it. */
     if (!enter_worker_namespaces()) {
-        (void)close(working_directory_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    if (!assemble_mounts(argv[argument_offset], argv[argument_offset + 1],
+                         argv[argument_offset + 2], argv[argument_offset + 3])) {
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
     if (pipe2(pid_pipe, O_CLOEXEC) != 0) {
-        (void)close(working_directory_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
@@ -1015,7 +1097,10 @@ static int worker_exec(int argc, char **argv) {
     if (worker < 0) {
         (void)close(pid_pipe[0]);
         (void)close(pid_pipe[1]);
-        (void)close(working_directory_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
@@ -1028,7 +1113,10 @@ static int worker_exec(int argc, char **argv) {
             return 64;
         }
         (void)close(pid_pipe[1]);
-        (void)close(working_directory_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         if (status_descriptor >= 0) {
             (void)close(status_descriptor);
@@ -1040,14 +1128,20 @@ static int worker_exec(int argc, char **argv) {
     if (read(pid_pipe[0], &controller_visible_pid,
              sizeof(controller_visible_pid)) != (ssize_t)sizeof(controller_visible_pid) ||
         close(pid_pipe[0]) != 0 || controller_visible_pid <= 0) {
-        (void)close(working_directory_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
-    if (fchdir(working_directory_fd) != 0 ||
+    if (!mount_fresh_proc() || fchdir(scratch_fd) != 0 ||
         prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
-        !enforce_landlock(executable_fd, working_directory_fd)) {
-        (void)close(working_directory_fd);
+        !enforce_landlock(executable_fd, subject_fd, toolchain_fd, output_fd, scratch_fd)) {
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
@@ -1056,11 +1150,17 @@ static int worker_exec(int argc, char **argv) {
      * authority.  This is stage one's close discipline with its protocol FDs
      * replaced by the sole object needed by execveat. */
     if (executable_fd != 3 && dup2(executable_fd, 3) != 3) {
-        (void)close(working_directory_fd);
+        (void)close(subject_fd);
+        (void)close(toolchain_fd);
+        (void)close(output_fd);
+        (void)close(scratch_fd);
         (void)close(executable_fd);
         return 64;
     }
-    if (working_directory_fd != 3 && close(working_directory_fd) != 0) {
+    if ((subject_fd != 3 && close(subject_fd) != 0) ||
+        (toolchain_fd != 3 && close(toolchain_fd) != 0) ||
+        (output_fd != 3 && close(output_fd) != 0) ||
+        (scratch_fd != 3 && close(scratch_fd) != 0)) {
         (void)close(executable_fd);
         return 64;
     }
@@ -1088,7 +1188,7 @@ static int worker_exec(int argc, char **argv) {
     }
 
     /* AT_EMPTY_PATH binds exec to the same object Landlock admitted. */
-    (void)syscall(SYS_execveat, 3, "", argv + argument_offset + 1, environment,
+    (void)syscall(SYS_execveat, 3, "", argv + argument_offset + 4, environment,
                   AT_EMPTY_PATH);
     (void)close(3);
     return 64;

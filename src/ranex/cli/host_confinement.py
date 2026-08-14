@@ -2995,6 +2995,18 @@ def _session_runtime_profile(value: Mapping[str, Any]) -> None:
         "RESOLVE_BENEATH", "RESOLVE_NO_MAGICLINKS", "RESOLVE_NO_SYMLINKS"
     ]:
         _refuse(E_C18_GATE, "runtime output resolution profile is invalid")
+    if value.get("mounts") != {
+        "subject": "read-only",
+        "toolchain": "read-only",
+        "output": "writable-bounded",
+        "scratch": "writable-bounded",
+        "proc": "fresh",
+        "dev": {
+            "type": "tmpfs",
+            "nodes": [],
+        },
+    }:
+        _refuse(E_C18_GATE, "runtime mount grammar is invalid")
     if value.get("seccomp") != {"architecture": "x86_64", "policy": "default-deny-v1"}:
         _refuse(E_C18_GATE, "runtime seccomp profile is invalid")
 
@@ -3283,6 +3295,9 @@ def confinement_session(
                 f"/proc/self/fd/{launcher.descriptor}",
                 [
                     str(launcher.path), "--ranex-worker-exec", f"--ranex-status-fd={readiness_write}",
+                    str(descriptor["_resolved"]["subject"]),
+                    str(descriptor["_resolved"]["toolchain"]),
+                    str(descriptor["_resolved"]["output"]),
                     str(descriptor["_resolved"]["scratch"]),
                     f"/proc/self/fd/{command.descriptor}", *argv[1:],
                 ],
