@@ -11,8 +11,8 @@ at admission is tested in tests/security/test_slice003_command_binding.py.
 
 API pinned by these tests, in `ranex.foundation.signing`:
 
-    EVIDENCE_DOMAIN: bytes                  # b"ranex-evidence-v2\\n"
-    SIGNED_FIELDS: tuple[str, ...]          # exactly the seven content fields
+    EVIDENCE_DOMAIN: bytes                  # b"ranex-evidence-v4\\n"
+    SIGNED_FIELDS: tuple[str, ...]          # exactly the ten content fields
     generate_keypair() -> tuple[str, str]   # (private, public), "ed25519:<b64>"
     public_key_for(private_key) -> str
     signed_payload(content) -> bytes        # domain prefix + canonical bytes
@@ -81,17 +81,22 @@ def test_signed_fields_are_exactly_the_eight_content_fields(sg) -> None:
     re-checked from it at evaluation, which an unsigned field could not carry.
     """
 
-    assert set(sg.SIGNED_FIELDS) == {
-        "claim_id",
-        "command",
-        "command_digest",
-        "executable_path",
-        "exit_code",
-        "producer_id",
-        "subject_digest",
-        "suite_results",
-    }
-    assert len(sg.SIGNED_FIELDS) == 8
+    assert (sg.EVIDENCE_DOMAIN, set(sg.SIGNED_FIELDS)) == (
+        b"ranex-evidence-v4\n",
+        {
+            "claim_id",
+            "command",
+            "command_digest",
+            "executable_path",
+            "exit_code",
+            "producer_id",
+            "subject_digest",
+            "suite_results",
+            "confinement_result_digest",
+            "confinement_profile_digest",
+        },
+    )
+    assert len(sg.SIGNED_FIELDS) == 10
 
 
 def test_payload_carries_the_domain_prefix(sg) -> None:
@@ -102,7 +107,6 @@ def test_payload_carries_the_domain_prefix(sg) -> None:
     against v2 content instead of being silently accepted as a downgrade.
     """
 
-    assert sg.EVIDENCE_DOMAIN == b"ranex-evidence-v3\n"
     payload = sg.signed_payload(CONTENT)
     assert payload.startswith(sg.EVIDENCE_DOMAIN)
     assert payload == sg.EVIDENCE_DOMAIN + canonical_json_bytes(CONTENT)

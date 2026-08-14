@@ -12,9 +12,9 @@ This file pins three surfaces:
        parse_results_artifact(path, manifest) -> dict
        suite_results_from_junitxml(junitxml_bytes, manifest) -> dict
 
-2. `ranex.foundation.signing` / admission v3:
+2. `ranex.foundation.signing` / admission v4:
 
-       EVIDENCE_DOMAIN == b"ranex-evidence-v3\\n"
+        EVIDENCE_DOMAIN == b"ranex-evidence-v4\\n"
        SIGNED_FIELDS == the previous seven fields plus "suite_results"
        admit(...) refuses old v2 rows and malformed v3 `suite_results`
 
@@ -271,7 +271,7 @@ def run_real_pytest_tree(
 
 
 def test_signing_moves_to_v3_and_adds_suite_results(domain) -> None:
-    assert domain.signing.EVIDENCE_DOMAIN == b"ranex-evidence-v3\n"
+    assert domain.signing.EVIDENCE_DOMAIN == b"ranex-evidence-v4\n"
     assert domain.signing.SIGNED_FIELDS == (
         "claim_id",
         "command",
@@ -281,6 +281,8 @@ def test_signing_moves_to_v3_and_adds_suite_results(domain) -> None:
         "producer_id",
         "subject_digest",
         "suite_results",
+        "confinement_result_digest",
+        "confinement_profile_digest",
     )
 
 

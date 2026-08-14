@@ -426,8 +426,19 @@ def test_existing_evidence_domain_exact_fields_and_identity_bindings(identity) -
     private, public = identity
     record = raw_record(private)
     content = {k: v for k, v in record.items() if k != "signature"}
-    assert signing.EVIDENCE_DOMAIN == b"ranex-evidence-v3\n"
-    assert tuple(content) == signing.SIGNED_FIELDS
+    assert signing.EVIDENCE_DOMAIN == b"ranex-evidence-v4\n"
+    assert tuple(content) == (
+        "claim_id",
+        "command",
+        "command_digest",
+        "executable_path",
+        "exit_code",
+        "producer_id",
+        "subject_digest",
+        "suite_results",
+        "confinement_result_digest",
+        "confinement_profile_digest",
+    )
     assert signing.verify_evidence(content, record["signature"], public)
     for field in ("subject_digest", "producer_id"):
         altered = {**content, field: "altered"}

@@ -120,13 +120,15 @@ def test_the_evidence_domain_moved_to_v3() -> None:
 
     from ranex.foundation.signing import EVIDENCE_DOMAIN, SIGNED_FIELDS
 
-    assert EVIDENCE_DOMAIN == b"ranex-evidence-v3\n"
+    assert EVIDENCE_DOMAIN == b"ranex-evidence-v4\n"
     assert set(SIGNED_FIELDS) == set(V1_FIELDS) | {
         "command_digest",
         "executable_path",
         "suite_results",
+        "confinement_result_digest",
+        "confinement_profile_digest",
     }
-    assert len(SIGNED_FIELDS) == 8
+    assert len(SIGNED_FIELDS) == 10
 
 
 def test_a_whole_v1_record_is_not_admitted(worker: tuple[str, str]) -> None:
