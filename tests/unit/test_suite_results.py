@@ -272,7 +272,7 @@ def run_real_pytest_tree(
     return result, report.read_bytes()
 
 
-def test_signing_moves_to_v4_and_adds_suite_results(domain) -> None:
+def test_signing_moves_to_v3_and_adds_suite_results(domain) -> None:
     assert domain.signing.EVIDENCE_DOMAIN == b"ranex-evidence-v4\n"
     assert domain.signing.SIGNED_FIELDS == (
         "claim_id",
@@ -288,7 +288,7 @@ def test_signing_moves_to_v4_and_adds_suite_results(domain) -> None:
     )
 
 
-def test_a_v4_record_with_null_suite_results_is_admitted(domain, keypair) -> None:
+def test_a_v3_record_with_null_suite_results_is_admitted(domain, keypair) -> None:
     private, public = keypair
     admitted = domain.admission.admit(
         [signed(domain, private, suite_results_value=None)],
