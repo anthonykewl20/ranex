@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import ctypes
+import errno
 import json
 import os
 import shutil
@@ -211,6 +213,47 @@ def _real_host_ready() -> tuple[bool, str]:
     return True, ""
 
 
+def _unprivileged_namespaces_available() -> bool:
+    """Probe the launcher's namespace set without changing this pytest process."""
+    clone_newcgroup = 0x02000000
+    clone_newns = 0x00020000
+    clone_newipc = 0x08000000
+    clone_newpid = 0x20000000
+    clone_newuser = 0x10000000
+    clone_newnet = 0x40000000
+    read_fd, write_fd = os.pipe()
+    child = os.fork()
+    if child == 0:
+        os.close(read_fd)
+        try:
+            libc = ctypes.CDLL(None, use_errno=True)
+            libc.unshare.argtypes = [ctypes.c_int]
+            libc.unshare.restype = ctypes.c_int
+            if (
+                libc.unshare(
+                    clone_newuser
+                    | clone_newns
+                    | clone_newpid
+                    | clone_newipc
+                    | clone_newnet
+                    | clone_newcgroup
+                )
+                == 0
+            ):
+                os._exit(0)
+            os.write(write_fd, str(ctypes.get_errno()).encode())
+        finally:
+            os.close(write_fd)
+        os._exit(1)
+    os.close(write_fd)
+    try:
+        reported_errno = os.read(read_fd, 32)
+    finally:
+        os.close(read_fd)
+    os.waitpid(child, 0)
+    return reported_errno not in {str(errno.EPERM).encode(), str(errno.EINVAL).encode()}
+
+
 def _materialize_case(tmp_path: Path, argv: list[str] | None = None) -> tuple[Path, Path]:
     root = Path(
         shutil.copytree(
@@ -336,6 +379,11 @@ def test_gate1_real_process_session_observes_namespaces_landlock_and_seccomp(
     ready, reason = _real_host_ready()
     if not ready:
         pytest.skip(f"SLICE-018 host qualification unavailable: {reason}")
+    if not _unprivileged_namespaces_available():
+        pytest.skip(
+            "unprivileged user namespaces unavailable in this execution context — "
+            "launcher enforcement host-unverified here"
+        )
     root, descriptor = _materialize_case(tmp_path)
     result = descriptor.parent / "result.json"
     completed = _invoke_session(root, descriptor, result)
@@ -355,6 +403,11 @@ def test_gate1_real_process_session_observes_namespaces_landlock_and_seccomp(
 
 def test_gate7_launcher_enforces_landlock_and_seccomp_for_a_worker(tmp_path: Path) -> None:
     """NNP makes both kernel layers testable without a privileged host setup."""
+    if not _unprivileged_namespaces_available():
+        pytest.skip(
+            "unprivileged user namespaces unavailable in this execution context — "
+            "launcher enforcement host-unverified here"
+        )
     build = REPOSITORY / ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
     compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
     worker_source = tmp_path / "worker.c"
