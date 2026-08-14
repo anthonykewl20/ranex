@@ -11,6 +11,7 @@ import hashlib
 import json
 import os
 import re
+import select
 import signal
 import stat
 import struct
@@ -23,8 +24,8 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 from ranex.cli.confinement import resolve_within_repository
-from ranex.foundation.canonical import canonical_json, canonical_json_bytes, command_digest
 from ranex.foundation import atomic_writer
+from ranex.foundation.canonical import canonical_json, canonical_json_bytes, command_digest
 
 E_ARCH = "E-C17-ARCH-UNSUPPORTED"
 E_BUILD_INPUT = "E-C17-BUILD-INPUT-DRIFT"
@@ -122,6 +123,21 @@ NAMESPACE_FLAGS = {
 }
 CGROUP2_SUPER_MAGIC = 0x63677270
 RENAME_NOREPLACE = 1
+RESOLVE_NO_MAGICLINKS = 0x02
+RESOLVE_NO_SYMLINKS = 0x04
+RESOLVE_BENEATH = 0x08
+WORKER_READY_PREFIX = b"ranex-worker-ready-v1 pid="
+WORKER_READY_SUFFIX = b" namespaces=user,mount,pid,ipc,network,cgroup\n"
+WORKER_READY_MAXIMUM = (
+    len(WORKER_READY_PREFIX)
+    + 20  # decimal PID
+    + len(b" nnp=1 landlock=1 seccomp=1")
+    + len(WORKER_READY_SUFFIX)
+)
+WORKER_READY_PATTERN = re.compile(
+    rb"ranex-worker-ready-v1 pid=([1-9][0-9]*) nnp=(1) landlock=(1) seccomp=(1) "
+    rb"namespaces=user,mount,pid,ipc,network,cgroup\n\Z"
+)
 
 _SHA256_PATTERN = re.compile(r"[0-9a-f]{64}\Z")
 _TRACE_LINE = re.compile(r"^(?:\d+\s+)?([a-zA-Z0-9_]+)\((.*)$")
@@ -1021,15 +1037,39 @@ def _parse_cgroup_events(raw: str) -> dict[str, int]:
     return events
 
 
+class _OpenHow(ctypes.Structure):
+    _fields_ = [
+        ("flags", ctypes.c_ulonglong),
+        ("mode", ctypes.c_ulonglong),
+        ("resolve", ctypes.c_ulonglong),
+    ]
+
+
 def _open_output_entry(parent: int, name: str, directory: bool) -> int:
+    """Open one output name through the required kernel resolution primitive."""
+
     flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK
     if directory:
         flags |= os.O_DIRECTORY
-    try:
-        return os.open(name, flags, dir_fd=parent)
-    except OSError as exc:
-        code = E_C18_OUTPUT_RACE if exc.errno in {errno.ENOENT, errno.ESTALE} else E_C18_OUTPUT_UNSAFE
-        raise HostConfinementError(code, f"unsafe output entry {name!r}: {exc}") from exc
+    how = _OpenHow(
+        flags=flags,
+        mode=0,
+        resolve=RESOLVE_BENEATH | RESOLVE_NO_SYMLINKS | RESOLVE_NO_MAGICLINKS,
+    )
+    libc = ctypes.CDLL(None, use_errno=True)
+    descriptor = libc.syscall(
+        ctypes.c_long(SYS_OPENAT2),
+        ctypes.c_int(parent),
+        ctypes.c_char_p(os.fsencode(name)),
+        ctypes.byref(how),
+        ctypes.sizeof(how),
+    )
+    if descriptor >= 0:
+        return int(descriptor)
+    error = ctypes.get_errno()
+    code = E_C18_OUTPUT_RACE if error in {errno.ENOENT, errno.ESTALE} else E_C18_OUTPUT_UNSAFE
+    detail = "openat2 is unavailable" if error == errno.ENOSYS else os.strerror(error)
+    raise HostConfinementError(code, f"unsafe output entry {name!r}: {detail}")
 
 
 def collect_drained_output(
@@ -2936,6 +2976,225 @@ def _current_session_host_state() -> dict[str, Any]:
     }
 
 
+def _session_runtime_profile(value: Mapping[str, Any]) -> None:
+    expected = {
+        "cgroup", "landlock_abi_minimum", "mandatory_layers", "mounts",
+        "output_resolution", "profile", "schema", "seccomp",
+    }
+    if set(value) != expected or value.get("schema") != "ranex-strict-local-runtime-v1":
+        _refuse(E_C18_GATE, "runtime profile schema is invalid")
+    if value.get("landlock_abi_minimum") != 6 or value.get("profile") != "strict-local-v1":
+        _refuse(E_C18_GATE, "runtime profile differs from the admitted target")
+    mandatory = _mapping(value.get("mandatory_layers"), "runtime mandatory_layers", E_C18_GATE)
+    if mandatory != {name: True for name in ("user", "mount", "pid", "ipc", "network", "cgroup", "landlock", "seccomp", "no_new_privs")}:
+        _refuse(E_C18_GATE, "runtime profile permits a mandatory-layer fallback")
+    cgroup = _mapping(value.get("cgroup"), "runtime cgroup", E_C18_GATE)
+    if cgroup != {"controllers": ["cpu", "memory", "pids"], "start_gate_fd": 3}:
+        _refuse(E_C18_GATE, "runtime cgroup profile is invalid")
+    if value.get("output_resolution") != [
+        "RESOLVE_BENEATH", "RESOLVE_NO_MAGICLINKS", "RESOLVE_NO_SYMLINKS"
+    ]:
+        _refuse(E_C18_GATE, "runtime output resolution profile is invalid")
+    if value.get("seccomp") != {"architecture": "x86_64", "policy": "default-deny-v1"}:
+        _refuse(E_C18_GATE, "runtime seccomp profile is invalid")
+
+
+def _session_cgroup_parent() -> Path:
+    parent, _relative = _current_cgroup_root()
+    try:
+        if _statfs_type(parent) != CGROUP2_SUPER_MAGIC:
+            _refuse(E_C18_GATE, "current session cgroup root is not cgroup-v2")
+        controllers = _cgroup_controllers(parent)
+        missing = sorted(REQUIRED_CONTROLLERS - set(controllers))
+        if missing:
+            _refuse(E_C18_GATE, f"delegated cgroup lacks controllers: {', '.join(missing)}")
+        _check_cgroup_kill(parent)
+        if not os.access(parent, os.W_OK):
+            _refuse(E_C18_GATE, "delegated cgroup root is not writable")
+    except HostConfinementError as exc:
+        if exc.code in {E_DELEGATION, E_FACT}:
+            raise HostConfinementError(E_C18_GATE, exc.detail) from exc
+        raise
+    return parent
+
+
+def _read_cgroup_text(path: Path, label: str) -> str:
+    try:
+        value = path.read_text(encoding="ascii")
+    except OSError as exc:
+        raise HostConfinementError(E_C18_READBACK, f"cannot read {label}: {exc}") from exc
+    if not value or "\x00" in value:
+        _refuse(E_C18_READBACK, f"{label} readback is empty or malformed")
+    return value
+
+
+def _create_worker_cgroup(parent: Path, limits: Mapping[str, int]) -> tuple[Path, Path, dict[str, str]]:
+    """Make a controller leaf and sibling worker leaf beneath held delegation."""
+
+    token = f"ranex-slice018-{os.getpid()}-{uuid.uuid4().hex}"
+    controller = parent / f"{token}-controller"
+    worker = parent / f"{token}-worker"
+    controller.mkdir(mode=0o755)
+    try:
+        _write_control(controller / "cgroup.procs", f"{os.getpid()}\n")
+        controller_pids = {int(item) for item in _read_cgroup_text(controller / "cgroup.procs", "controller cgroup.procs").split()}
+        if os.getpid() not in controller_pids:
+            _refuse(E_C18_READBACK, "controller PID is absent from controller cgroup readback")
+        enabled = set(_read_cgroup_text(parent / "cgroup.subtree_control", "cgroup.subtree_control").split())
+        missing = REQUIRED_CONTROLLERS - {name.lstrip("+") for name in enabled}
+        if missing:
+            _write_control(parent / "cgroup.subtree_control", " ".join(f"+{name}" for name in sorted(missing)) + "\n")
+        actual = {name.lstrip("+") for name in _read_cgroup_text(parent / "cgroup.subtree_control", "cgroup.subtree_control").split()}
+        if not REQUIRED_CONTROLLERS <= actual:
+            _refuse(E_C18_READBACK, "required controllers did not read back enabled")
+        worker.mkdir(mode=0o755)
+        requested = {
+            "cpu.max": "max 100000",
+            "memory.max": str(_exact_integer(limits.get("memory_bytes"), "memory_bytes", E_C18_GATE, minimum=1)),
+            "pids.max": str(_exact_integer(limits.get("pids"), "pids", E_C18_GATE, minimum=1)),
+        }
+        for name, value in requested.items():
+            _write_control(worker / name, value + "\n")
+        readbacks = {name: _read_cgroup_text(worker / name, name).strip() for name in requested}
+        if readbacks != requested:
+            _refuse(E_C18_READBACK, "worker cgroup limit readback differs from requested limit")
+        return controller, worker, readbacks
+    except BaseException:
+        try:
+            _write_control(parent / "cgroup.procs", f"{os.getpid()}\n")
+        except OSError:
+            pass
+        for path in (worker, controller):
+            try:
+                path.rmdir()
+            except OSError:
+                pass
+        raise
+
+
+def _cgroup_usage(worker: Path) -> tuple[dict[str, int], dict[str, int], dict[str, int]]:
+    try:
+        cpu = {
+            name: int(value)
+            for name, value in (line.split() for line in (worker / "cpu.stat").read_text(encoding="ascii").splitlines())
+        }
+        memory = _parse_cgroup_events((worker / "memory.events").read_text(encoding="ascii"))
+        pids = _parse_cgroup_events((worker / "pids.events").read_text(encoding="ascii"))
+    except (OSError, ValueError) as exc:
+        raise HostConfinementError(E_C18_READBACK, f"cannot read cgroup usage: {exc}") from exc
+    if "usage_usec" not in cpu:
+        _refuse(E_C18_READBACK, "cpu.stat has no usage_usec")
+    return cpu, memory, pids
+
+
+def _worker_namespace_readbacks(worker_pid: int) -> dict[str, str]:
+    values: dict[str, str] = {}
+    for name in ("user", "mnt", "pid", "ipc", "net", "cgroup"):
+        try:
+            values[{"mnt": "mount", "net": "network"}.get(name, name)] = os.readlink(
+                f"/proc/{worker_pid}/ns/{name}"
+            )
+        except OSError as exc:
+            raise HostConfinementError(E_C18_READBACK, f"cannot read worker {name} namespace: {exc}") from exc
+    for name, worker_namespace in values.items():
+        try:
+            namespace_file = {"mount": "mnt", "network": "net"}.get(name, name)
+            controller_namespace = os.readlink(f"/proc/self/ns/{namespace_file}")
+        except OSError as exc:
+            raise HostConfinementError(
+                E_C18_READBACK, f"cannot read controller {name} namespace: {exc}"
+            ) from exc
+        if worker_namespace == controller_namespace:
+            _refuse(E_C18_READBACK, f"worker {name} namespace is not distinct from the controller")
+    return values
+
+
+def _read_launcher_readiness(descriptor: int, timeout: float) -> tuple[int, dict[str, bool]]:
+    """Read the launcher's one-shot pre-exec witness without waiting for command exit."""
+
+    deadline = time.monotonic() + timeout
+    payload = bytearray()
+    while True:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0 or not select.select([descriptor], [], [], remaining)[0]:
+            _refuse(E_C18_READBACK, "launcher did not provide a pre-exec readiness witness")
+        try:
+            chunk = os.read(descriptor, 256)
+        except OSError as exc:
+            raise HostConfinementError(E_C18_READBACK, f"cannot read launcher readiness: {exc}") from exc
+        if not chunk:
+            _refuse(E_C18_READBACK, "launcher readiness witness is absent or malformed")
+        payload.extend(chunk)
+        if len(payload) > WORKER_READY_MAXIMUM:
+            _refuse(E_C18_READBACK, "launcher readiness witness is oversized")
+        match = WORKER_READY_PATTERN.fullmatch(payload)
+        if match is not None:
+            # Reject bytes already queued after an otherwise valid record, but
+            # never wait for EOF: EOF is coupled to command lifetime here.
+            if select.select([descriptor], [], [], 0)[0] and os.read(descriptor, 256):
+                _refuse(E_C18_READBACK, "launcher readiness witness is oversized")
+            # The worker has reached the post-enforcement, pre-exec boundary.
+            # Returning now lets the controller bind its static /proc and
+            # cgroup facts before a fast command can be reaped by the launcher.
+            return int(match.group(1)), {
+                "no_new_privs": match.group(2) == b"1",
+                "landlock": match.group(3) == b"1",
+                "seccomp": match.group(4) == b"1",
+            }
+
+
+def _worker_enforcement_readbacks(worker_pid: int) -> dict[str, bool]:
+    try:
+        status = Path(f"/proc/{worker_pid}/status").read_text(encoding="utf-8")
+    except OSError as exc:
+        raise HostConfinementError(
+            E_C18_READBACK, f"cannot read worker NoNewPrivs/Seccomp status: {exc}"
+        ) from exc
+    values: dict[str, int] = {}
+    for line in status.splitlines():
+        name, separator, raw = line.partition(":")
+        if separator and name in {"NoNewPrivs", "Seccomp"}:
+            try:
+                values[name] = int(raw.strip())
+            except ValueError as exc:
+                raise HostConfinementError(
+                    E_C18_READBACK, f"worker {name} readback is malformed"
+                ) from exc
+    if values != {"NoNewPrivs": 1, "Seccomp": 2}:
+        _refuse(E_C18_READBACK, "worker NoNewPrivs/Seccomp readback does not prove enforcement")
+    return {"no_new_privs": values["NoNewPrivs"] == 1, "seccomp": values["Seccomp"] == 2}
+
+
+def _read_worker_cgroup_membership(worker: Path, worker_pid: int) -> None:
+    try:
+        enrolled = {
+            int(item)
+            for item in _read_cgroup_text(worker / "cgroup.procs", "worker cgroup.procs").split()
+        }
+    except ValueError as exc:
+        raise HostConfinementError(E_C18_READBACK, "worker cgroup PID readback is malformed") from exc
+    if worker_pid not in enrolled:
+        _refuse(E_C18_READBACK, "readiness worker PID is absent from worker cgroup")
+
+
+def _close_descriptor(descriptor: int) -> None:
+    if descriptor >= 0:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+
+
+def _session_result_path(root: Path, result_arg: str) -> Path:
+    candidate = Path(result_arg)
+    if not candidate.is_absolute():
+        return resolve_within_repository(root, result_arg)
+    path = candidate.resolve()
+    if path != root and root not in path.parents:
+        _refuse(E_C18_GATE, "result is outside the repository")
+    return path
+
+
 def confinement_session(
     root: Path, *, profile_arg: str, host_profile_arg: str, artifact_arg: str,
     manifest_arg: str, qualification_arg: str, descriptor_arg: str, result_arg: str,
@@ -2967,10 +3226,190 @@ def confinement_session(
     manifest_path = resolve_within_repository(root, manifest_arg)
     artifact_path = resolve_within_repository(root, artifact_arg)
     runtime = _load_json(profile_path, E_C18_GATE)
-    if runtime.get("schema") != "ranex-strict-local-runtime-v1":
-        _refuse(E_C18_GATE, "runtime profile schema is invalid")
-    _validate_profile_and_objects(host_profile_path, manifest_path, artifact_path)
-    _refuse(E_C18_GATE, "qualified real-process session requires delegated runtime setup")
+    _session_runtime_profile(runtime)
+    if qualification.get("qualified") is not True:
+        _refuse(E_C18_GATE, "session requires a successful strict-local qualification")
+    primitives = _mapping(qualification.get("primitives"), "qualification primitives", E_C18_GATE)
+    landlock = _mapping(primitives.get("landlock"), "qualification Landlock", E_C18_GATE)
+    if (
+        landlock.get("available") is not True
+        or landlock.get("abi") != runtime["landlock_abi_minimum"]
+        or primitives.get("seccomp_filter") is not True
+        or primitives.get("no_new_privs") is not True
+        or primitives.get("openat2") is not True
+    ):
+        _refuse(E_C18_GATE, "qualification lacks a mandatory runtime primitive")
+    _probe_openat2()
+    parent = _session_cgroup_parent()
+    launcher: OpenedObject | None = None
+    command: OpenedObject | None = None
+    output_fd = -1
+    gate_read = gate_write = -1
+    readiness_read = readiness_write = -1
+    child = -1
+    controller: Path | None = None
+    worker: Path | None = None
+    session: ConfinementSession | None = None
+    primary_error: BaseException | None = None
+    try:
+        _host, _manifest, launcher, bubblewrap = _validate_profile_and_objects(
+            host_profile_path, manifest_path, artifact_path
+        )
+        os.close(bubblewrap.descriptor)
+        argv = descriptor["argv"]
+        if not Path(argv[0]).is_absolute():
+            _refuse(E_C18_GATE, "worker executable must be an absolute path")
+        environment = descriptor["environment"]
+        if set(environment) - {"LC_ALL", "TZ"}:
+            _refuse(E_C18_GATE, "worker environment exceeds the launcher allowlist")
+        command, _command_filesystem = _open_unpinned_executable(Path(argv[0]), E_C18_GATE)
+        _require_same_named_object(command, E_C18_GATE)
+        output_fd = os.open(descriptor["_resolved"]["output"], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        controller, worker, limit_readbacks = _create_worker_cgroup(parent, descriptor["limits"])
+        gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
+        readiness_read, readiness_write = os.pipe2(os.O_CLOEXEC)
+        os.set_inheritable(launcher.descriptor, True)
+        os.set_inheritable(command.descriptor, True)
+        os.set_inheritable(readiness_write, True)
+        child = os.fork()
+        if child == 0:
+            _close_descriptor(gate_write)
+            _close_descriptor(readiness_read)
+            if os.read(gate_read, 1) != b"1":
+                os._exit(125)
+            _close_descriptor(gate_read)
+            child_environment = {name: environment.get(name, os.environ.get(name, "")) for name in ("LC_ALL", "TZ")}
+            os.execve(
+                f"/proc/self/fd/{launcher.descriptor}",
+                [
+                    str(launcher.path), "--ranex-worker-exec", f"--ranex-status-fd={readiness_write}",
+                    str(descriptor["_resolved"]["scratch"]),
+                    f"/proc/self/fd/{command.descriptor}", *argv[1:],
+                ],
+                child_environment,
+            )
+            os._exit(127)
+        _close_descriptor(gate_read)
+        gate_read = -1
+        _close_descriptor(readiness_write)
+        readiness_write = -1
+        session = ConfinementSession(worker, gate_write, dict(descriptor["limits"]))
+        session.enroll_and_read_back(child)
+        session.release_start_gate()
+        _close_descriptor(gate_write)
+        gate_write = -1
+        readiness_pid, readiness_layers = _read_launcher_readiness(
+            readiness_read, descriptor["limits"]["wall_time_ms"] / 1000
+        )
+        _close_descriptor(readiness_read)
+        readiness_read = -1
+        if readiness_pid == child:
+            _refuse(E_C18_READBACK, "launcher readiness identified itself rather than its PID-namespace worker")
+        if set(readiness_layers) != {"no_new_privs", "landlock", "seccomp"} or not all(
+            readiness_layers.values()
+        ):
+            _refuse(E_C18_READBACK, "launcher readiness witness omitted a mandatory enforcement layer")
+        # Bind facts at readiness, before waiting for the launcher pipe to
+        # drain or its wait/reap result.  There are intentionally no later
+        # worker /proc or cgroup-membership reads: after this point ENOENT or
+        # an absent PID only proves normal command completion, whose evidence
+        # is the launcher wait plus verified kill→drain→remove teardown below.
+        _read_worker_cgroup_membership(worker, readiness_pid)
+        namespace_readbacks = _worker_namespace_readbacks(readiness_pid)
+        enforcement_readbacks = _worker_enforcement_readbacks(readiness_pid)
+        deadline = time.monotonic() + (descriptor["limits"]["wall_time_ms"] / 1000)
+        status: int | None = None
+        while status is None:
+            waited, candidate = os.waitpid(child, os.WNOHANG)
+            if waited == child:
+                status = candidate
+                break
+            cpu, memory, pids = _cgroup_usage(worker)
+            session.observe_limits({
+                "cpu_usage_usec": cpu["usage_usec"],
+                "memory.events.max": memory.get("max", 0),
+                "pids.events.max": pids.get("max", 0),
+            })
+            if time.monotonic() >= deadline:
+                session.kill_tree()
+                _refuse(E_C18_LIMIT, "worker wall-time limit was exceeded")
+            time.sleep(0.01)
+        cpu, memory, pids = _cgroup_usage(worker)
+        session.observe_limits({
+            "cpu_usage_usec": cpu["usage_usec"],
+            "memory.events.max": memory.get("max", 0),
+            "pids.events.max": pids.get("max", 0),
+        })
+        session.kill_drain_remove()
+        outputs = collect_drained_output(output_fd, descriptor["limits"], {"populated": 0})
+        result_path = _session_result_path(root, result_arg)
+        result = {
+            "schema": "ranex-confinement-result-v1",
+            "profile_digests": {
+                "runtime": _sha256_path(profile_path),
+                "host": _sha256_path(host_profile_path),
+                "launcher": launcher.sha256,
+            },
+            "namespace_readbacks": namespace_readbacks,
+            "cgroup_readbacks": {
+                "limits": limit_readbacks,
+                "events": {"memory": memory, "pids": pids, "populated": 0},
+                "usage": {"cpu_usage_usec": cpu["usage_usec"]},
+            },
+            "command": {
+                "argv_digest": hashlib.sha256(canonical_json_bytes(argv)).hexdigest(),
+                "exit_code": os.waitstatus_to_exitcode(status),
+                "no_new_privs": enforcement_readbacks["no_new_privs"],
+                "landlock": readiness_layers["landlock"],
+                "seccomp": enforcement_readbacks["seccomp"],
+            },
+            "teardown": {"cgroup_kill": True, "populated": 0, "cgroup_removed": True},
+            "outputs": outputs,
+        }
+        _write_report_atomic(root, result_path, json.loads(confinement_result_bytes(result)))
+        session.result_published = True
+    except BaseException as exc:
+        primary_error = exc
+        raise
+    finally:
+        _close_descriptor(gate_read)
+        _close_descriptor(gate_write)
+        _close_descriptor(readiness_read)
+        _close_descriptor(readiness_write)
+        if session is not None and worker is not None and worker.exists():
+            try:
+                session.kill_drain_remove()
+            except HostConfinementError:
+                if primary_error is None:
+                    raise
+        elif worker is not None and worker.exists():
+            try:
+                _write_control(worker / "cgroup.kill", "1\n")
+                worker.rmdir()
+            except OSError:
+                if primary_error is None:
+                    _refuse(E_C18_DRAIN, "cannot remove worker cgroup after setup failure")
+        if child > 0:
+            try:
+                os.kill(child, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                os.waitpid(child, 0)
+            except ChildProcessError:
+                pass
+        if controller is not None:
+            try:
+                _write_control(parent / "cgroup.procs", f"{os.getpid()}\n")
+                controller.rmdir()
+            except OSError:
+                if primary_error is None:
+                    _refuse(E_C18_DRAIN, "cannot restore and remove controller cgroup")
+        _close_descriptor(output_fd)
+        if command is not None:
+            _close_descriptor(command.descriptor)
+        if launcher is not None:
+            _close_descriptor(launcher.descriptor)
 
 
 def _parser() -> argparse.ArgumentParser:

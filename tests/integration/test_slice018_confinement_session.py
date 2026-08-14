@@ -119,6 +119,88 @@ def test_gate8_malformed_or_live_result_is_refused(mutation: str) -> None:
     assert getattr(caught.value, "code", "").startswith("E-C18-")
 
 
+def test_gate8_controller_refuses_a_launcher_without_pre_exec_witness_and_checks_proc_facts(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A launcher exit is never allowed to masquerade as a command result."""
+
+    readiness_read, readiness_write = os.pipe()
+    os.close(readiness_write)
+    try:
+        with pytest.raises(host_confinement.HostConfinementError) as absent:
+            host_confinement._read_launcher_readiness(readiness_read, 0.1)
+    finally:
+        os.close(readiness_read)
+    assert absent.value.code == "E-C18-CGROUP-READBACK"
+
+    readiness_read, readiness_write = os.pipe()
+    payload = (
+        b"ranex-worker-ready-v1 pid=4242 nnp=1 landlock=1 seccomp=1 "
+        b"namespaces=user,mount,pid,ipc,network,cgroup\n"
+    )
+    os.write(readiness_write, payload)
+    os.close(readiness_write)
+    try:
+        worker_pid, layers = host_confinement._read_launcher_readiness(readiness_read, 0.1)
+    finally:
+        os.close(readiness_read)
+    assert worker_pid == 4242
+    assert layers == {"no_new_privs": True, "landlock": True, "seccomp": True}
+
+    readiness_read, readiness_write = os.pipe()
+    os.write(readiness_write, payload + b"forged")
+    os.close(readiness_write)
+    try:
+        with pytest.raises(host_confinement.HostConfinementError) as malformed:
+            host_confinement._read_launcher_readiness(readiness_read, 0.1)
+    finally:
+        os.close(readiness_read)
+    assert malformed.value.code == "E-C18-CGROUP-READBACK"
+
+    original_read_text = Path.read_text
+
+    def active_status(path: Path, *args: object, **kwargs: object) -> str:
+        if str(path) == "/proc/4242/status":
+            return "NoNewPrivs:\t1\nSeccomp:\t2\n"
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", active_status)
+    assert host_confinement._worker_enforcement_readbacks(4242) == {
+        "no_new_privs": True,
+        "seccomp": True,
+    }
+
+    def inactive_status(path: Path, *args: object, **kwargs: object) -> str:
+        if str(path) == "/proc/4242/status":
+            return "NoNewPrivs:\t0\nSeccomp:\t2\n"
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(Path, "read_text", inactive_status)
+    with pytest.raises(host_confinement.HostConfinementError) as inactive:
+        host_confinement._worker_enforcement_readbacks(4242)
+    assert inactive.value.code == "E-C18-CGROUP-READBACK"
+
+
+def test_gate1_readiness_releases_controller_before_the_worker_pipe_drains() -> None:
+    """A /bin/true-equivalent worker must not be hidden by readiness EOF waiting."""
+
+    readiness_read, readiness_write = os.pipe()
+    payload = (
+        b"ranex-worker-ready-v1 pid=4242 nnp=1 landlock=1 seccomp=1 "
+        b"namespaces=user,mount,pid,ipc,network,cgroup\n"
+    )
+    try:
+        os.write(readiness_write, payload)
+        # Keep the write end open: the worker may exec and exit immediately,
+        # so the controller must bind facts on the witness rather than EOF.
+        worker_pid, layers = host_confinement._read_launcher_readiness(readiness_read, 0.1)
+    finally:
+        os.close(readiness_write)
+        os.close(readiness_read)
+    assert worker_pid == 4242
+    assert layers == {"no_new_privs": True, "landlock": True, "seccomp": True}
+
+
 def _real_host_ready() -> tuple[bool, str]:
     required = [Path("/sys/fs/cgroup/cgroup.controllers"), Path("/usr/bin/bwrap")]
     missing = [str(path) for path in required if not path.exists()]

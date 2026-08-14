@@ -14,9 +14,11 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/prctl.h>
+#include <sys/wait.h>
 #include <sys/stat.h>
 #include <sys/syscall.h>
 #include <sys/types.h>
+#include <sched.h>
 #include <unistd.h>
 
 #define REQUEST_LIMIT 4096U
@@ -24,6 +26,10 @@
 #define REQUIRED_LANDLOCK_ABI 6
 #define STAGE_TWO "--ranex-internal-stage-two"
 #define WORKER_EXEC "--ranex-worker-exec"
+#define WORKER_STATUS_FD "--ranex-status-fd="
+#define WORKER_STATUS_DESCRIPTOR 4
+#define WORKER_READY_PREFIX "ranex-worker-ready-v1 pid="
+#define WORKER_READY_SUFFIX " nnp=1 landlock=1 seccomp=1 namespaces=user,mount,pid,ipc,network,cgroup\n"
 #define CLOSED_FD_LIMIT 256U
 #define ENVIRONMENT_LIMIT 64U
 #define ENVIRONMENT_NAME_LIMIT 128U
@@ -209,6 +215,110 @@ static int write_all(int descriptor, const char *buffer, size_t length) {
         length -= (size_t)written;
     }
     return 0;
+}
+
+static bool parse_worker_status_fd(const char *argument, int *descriptor) {
+    const char *raw;
+    char *end = NULL;
+    long value;
+
+    if (strncmp(argument, WORKER_STATUS_FD,
+                sizeof(WORKER_STATUS_FD) - 1U) != 0) {
+        return false;
+    }
+    raw = argument + sizeof(WORKER_STATUS_FD) - 1U;
+    if (*raw == '\0') {
+        return false;
+    }
+    errno = 0;
+    value = strtol(raw, &end, 10);
+    if (errno != 0 || end == raw || *end != '\0' ||
+        value < WORKER_STATUS_DESCRIPTOR || value > INT_MAX) {
+        return false;
+    }
+    *descriptor = (int)value;
+    return true;
+}
+
+static bool enter_worker_namespaces(void) {
+    const int namespaces = CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID |
+                           CLONE_NEWIPC | CLONE_NEWNET | CLONE_NEWCGROUP;
+
+    return unshare(namespaces) == 0;
+}
+
+static int wait_for_worker(int child) {
+    int status;
+
+    for (;;) {
+        if (waitpid(child, &status, 0) >= 0) {
+            break;
+        }
+        if (errno != EINTR) {
+            return 64;
+        }
+    }
+    if (WIFEXITED(status)) {
+        return WEXITSTATUS(status);
+    }
+    if (WIFSIGNALED(status)) {
+        return 128 + WTERMSIG(status);
+    }
+    return 64;
+}
+
+static bool close_worker_descriptors(int status_descriptor) {
+    long maximum;
+
+    errno = 0;
+    if (status_descriptor < 0) {
+        if (syscall(SYS_close_range, 4U, UINT_MAX, 0U) == 0) {
+            return true;
+        }
+        if (errno != ENOSYS) {
+            return false;
+        }
+    } else {
+        if (status_descriptor > 4 &&
+            syscall(SYS_close_range, 4U, (unsigned int)status_descriptor - 1U, 0U) != 0 &&
+            errno != ENOSYS) {
+            return false;
+        }
+        errno = 0;
+        if (syscall(SYS_close_range, (unsigned int)status_descriptor + 1U,
+                    UINT_MAX, 0U) == 0) {
+            return true;
+        }
+        if (errno != ENOSYS) {
+            return false;
+        }
+    }
+    maximum = sysconf(_SC_OPEN_MAX);
+    if (maximum < 0) {
+        maximum = 65536;
+    }
+    for (int descriptor = 4; descriptor < maximum; descriptor++) {
+        if (descriptor != status_descriptor) {
+            (void)close(descriptor);
+        }
+    }
+    return true;
+}
+
+static void close_all_descriptors(void) {
+    long maximum;
+
+    errno = 0;
+    if (syscall(SYS_close_range, 0U, UINT_MAX, 0U) == 0 || errno != ENOSYS) {
+        return;
+    }
+    maximum = sysconf(_SC_OPEN_MAX);
+    if (maximum < 0) {
+        maximum = 65536;
+    }
+    for (int descriptor = 0; descriptor < maximum; descriptor++) {
+        (void)close(descriptor);
+    }
 }
 
 static int protocol_refusal(void) {
@@ -849,33 +959,138 @@ static int stage_two(int argc, char **argv) {
  * protocol: qualification never accepts a command payload.
  */
 static int worker_exec(int argc, char **argv) {
+    struct probe_request worker_environment_request = {
+        .environment_names = {"LC_ALL", "TZ"},
+        .environment_count = 2U,
+    };
     int working_directory_fd;
     int executable_fd;
+    int status_descriptor = -1;
+    int argument_offset = 2;
+    int pid_pipe[2];
+    pid_t worker;
+    long controller_visible_pid;
+    char **environment;
+    char readiness[256];
+    int readiness_length;
 
-    if (argc < 4 || argv[2][0] != '/' || argv[3][0] != '/') {
+    if (argc > 2 && strncmp(argv[2], WORKER_STATUS_FD,
+                           sizeof(WORKER_STATUS_FD) - 1U) == 0) {
+        if (!parse_worker_status_fd(argv[2], &status_descriptor)) {
+            return 64;
+        }
+        argument_offset++;
+    }
+    if (argc < argument_offset + 2 || argv[argument_offset][0] != '/' ||
+        argv[argument_offset + 1][0] != '/') {
         return 64;
     }
-    working_directory_fd = open(argv[2], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    executable_fd = open(argv[3], O_PATH | O_NOFOLLOW | O_CLOEXEC);
+    working_directory_fd = open(argv[argument_offset], O_PATH | O_DIRECTORY | O_CLOEXEC);
+    executable_fd = open(argv[argument_offset + 1], O_PATH | O_NOFOLLOW | O_CLOEXEC);
     if (working_directory_fd < 0 || executable_fd < 0) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    environment = build_environment(&worker_environment_request);
+    if (environment == NULL) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    /* CLONE_NEWPID takes effect in this forked child; the outer launcher only
+     * waits and relays its exit status, so the command itself owns every
+     * namespace named in the readiness record. */
+    if (!enter_worker_namespaces()) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    if (pipe2(pid_pipe, O_CLOEXEC) != 0) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    worker = fork();
+    if (worker < 0) {
+        (void)close(pid_pipe[0]);
+        (void)close(pid_pipe[1]);
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    if (worker > 0) {
+        controller_visible_pid = (long)worker;
+        (void)close(pid_pipe[0]);
+        if (write_all(pid_pipe[1], (const char *)&controller_visible_pid,
+                      sizeof(controller_visible_pid)) != 0) {
+            (void)close(pid_pipe[1]);
+            return 64;
+        }
+        (void)close(pid_pipe[1]);
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        if (status_descriptor >= 0) {
+            (void)close(status_descriptor);
+        }
+        close_all_descriptors();
+        return wait_for_worker(worker);
+    }
+    (void)close(pid_pipe[1]);
+    if (read(pid_pipe[0], &controller_visible_pid,
+             sizeof(controller_visible_pid)) != (ssize_t)sizeof(controller_visible_pid) ||
+        close(pid_pipe[0]) != 0 || controller_visible_pid <= 0) {
         (void)close(working_directory_fd);
         (void)close(executable_fd);
         return 64;
     }
     if (fchdir(working_directory_fd) != 0 ||
         prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
-        !enforce_landlock(executable_fd, working_directory_fd) ||
-        !enforce_seccomp()) {
+        !enforce_landlock(executable_fd, working_directory_fd)) {
         (void)close(working_directory_fd);
         (void)close(executable_fd);
         return 64;
     }
 
+    /* Keep the executable on a fixed descriptor, then remove every inherited
+     * authority.  This is stage one's close discipline with its protocol FDs
+     * replaced by the sole object needed by execveat. */
+    if (executable_fd != 3 && dup2(executable_fd, 3) != 3) {
+        (void)close(working_directory_fd);
+        (void)close(executable_fd);
+        return 64;
+    }
+    if (working_directory_fd != 3 && close(working_directory_fd) != 0) {
+        (void)close(executable_fd);
+        return 64;
+    }
+    if (executable_fd != 3 && close(executable_fd) != 0) {
+        return 64;
+    }
+    (void)close(0);
+    (void)close(1);
+    (void)close(2);
+    if (!close_worker_descriptors(status_descriptor)) {
+        return 64;
+    }
+    if (!enforce_seccomp()) {
+        return 64;
+    }
+    if (status_descriptor >= 0) {
+        readiness_length = snprintf(readiness, sizeof(readiness),
+                                     WORKER_READY_PREFIX "%ld" WORKER_READY_SUFFIX,
+                                    controller_visible_pid);
+        if (readiness_length < 0 || (size_t)readiness_length >= sizeof(readiness) ||
+            write_all(status_descriptor, readiness, (size_t)readiness_length) != 0 ||
+            close(status_descriptor) != 0) {
+            return 64;
+        }
+    }
+
     /* AT_EMPTY_PATH binds exec to the same object Landlock admitted. */
-    (void)syscall(SYS_execveat, executable_fd, "", argv + 3, environ,
+    (void)syscall(SYS_execveat, 3, "", argv + argument_offset + 1, environment,
                   AT_EMPTY_PATH);
-    (void)close(working_directory_fd);
-    (void)close(executable_fd);
+    (void)close(3);
     return 64;
 }
 
