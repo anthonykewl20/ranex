@@ -3,6 +3,11 @@ name: CI
 on:
   push:
   pull_request:
+  # New advisories can affect static pins between pushes; scan weekly to keep
+  # the Security tab truthful.
+  # (GitHub disables scheduled workflows after 60 days of repo inactivity — a missing weekly run is the failure mode.)
+  schedule:
+    - cron: "0 9 * * 1"
 
 jobs:
   test:
@@ -49,3 +54,41 @@ jobs:
           uv run --frozen python -m coverage run --source=src/ranex -m pytest -q
           uv run --frozen python -m coverage xml -o coverage.xml
           uv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100
+
+  osv-scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install osv-scanner (pinned)
+        # Verify the release asset before executing it; the URL alone is not a trust boundary.
+        run: |
+          curl -fsSL https://github.com/google/osv-scanner/releases/download/v2.5.0/osv-scanner_linux_amd64 -o /tmp/osv-scanner
+          echo "edcfc41d257db36148f065055655fe3fcfc434b0b423ea67468a84c207524e0c  /tmp/osv-scanner" | sha256sum -c -
+          chmod +x /tmp/osv-scanner
+      - name: Scan the committed lockfile
+        id: scan
+        # Upload only result-bearing scans: 0 = packages found and clean, 1 = findings. 128 means "no packages found" — a successful run that scanned nothing, whose empty SARIF must NOT be published as clean. Every other non-zero is a scanner failure. All fail closed below.
+        run: |
+          set +e
+          /tmp/osv-scanner --lockfile=uv.lock --format=sarif --output=osv.sarif
+          exit_code=$?
+          echo "exit=$exit_code" >> "$GITHUB_OUTPUT"
+          exit 0
+      - name: Upload SARIF
+        if: "!cancelled() && (steps.scan.outputs.exit == '0' || steps.scan.outputs.exit == '1') && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)"
+        # v3.37.7, resolved with `gh api repos/github/codeql-action/commits/v3.37.7`.
+        # Match the existing Security-tab category so a clean scan supersedes stale alerts.
+        # Publish only result-bearing scans (0/1) — exit 128 is an empty scan that must not masquerade as clean — and only when this run can write to the Security tab (fork PRs get a read-only token and would 403).
+        uses: github/codeql-action/upload-sarif@f3712979fa5f215279b101dd0a2e3bdfb4353324
+        with:
+          sarif_file: osv.sarif
+          category: .github/workflows/ci.yml:osv-scan
+      - name: Findings block the scan
+        if: steps.scan.outputs.exit != '0'
+        run: |
+          echo "::error::osv-scanner exit ${{ steps.scan.outputs.exit }} — vulnerabilities or scanner failure; see the Security tab"
+          exit 1
