@@ -108,31 +108,58 @@ def _run_bound(
 ) -> tuple[int, str]:
     """Let ordinary subprocesses work; only the required child is substituted."""
 
-    real_run = cli.subprocess.run
+    real_popen = cli.subprocess.Popen
 
-    def invoke(arguments: object, *args: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
-        if tuple(arguments[:3]) == CONTROLLER:  # type: ignore[index]
-            result_path = Path(arguments[arguments.index("--result") + 1])  # type: ignore[index]
+    class ControllerPopen:
+        """Controller double usable through today's `run` and tomorrow's direct Popen."""
+
+        pid = 7123
+
+        def __init__(self, arguments: object, *args: object, **kwargs: object) -> None:
+            self.args = arguments
+            self.arguments = arguments
+            self.returncode = controller.returncode
             if controller.returncode == 0 and controller.stdout.startswith("WRITE-RESULT"):
+                result_path = Path(arguments[arguments.index("--result") + 1])  # type: ignore[index]
                 exit_code = int(controller.stdout.rsplit("-", 1)[-1])
                 result_path.parent.mkdir(parents=True, exist_ok=True)
-                result_path.write_bytes(
-                    json.dumps(_result(exit_code), sort_keys=True, separators=(",", ":")).encode()
-                )
-                return subprocess.CompletedProcess(arguments, 0, "", "")  # type: ignore[arg-type]
-            if controller.returncode == 0 and controller.stdout == "WRITE-INCOMPLETE":
+                result_path.write_bytes(json.dumps(_result(exit_code), sort_keys=True, separators=(",", ":")).encode())
+            elif controller.returncode == 0 and controller.stdout == "WRITE-INCOMPLETE":
+                result_path = Path(arguments[arguments.index("--result") + 1])  # type: ignore[index]
                 value = _result()
                 del value["teardown"]
                 result_path.parent.mkdir(parents=True, exist_ok=True)
                 result_path.write_text(json.dumps(value), encoding="utf-8")
-                return subprocess.CompletedProcess(arguments, 0, "", "")  # type: ignore[arg-type]
-            return controller
-        return real_run(arguments, *args, **kwargs)  # type: ignore[arg-type]
+
+        def communicate(
+            self, input: object | None = None, timeout: float | None = None
+        ) -> tuple[str, str]:
+            return controller.stdout, controller.stderr
+
+        def __enter__(self) -> ControllerPopen:
+            return self
+
+        def __exit__(self, *args: object) -> None:
+            return None
+
+        def kill(self) -> None:
+            return None
+
+        def poll(self) -> int:
+            return self.returncode
+
+        def wait(self) -> int:
+            return self.returncode
+
+    def popen(arguments: object, *args: object, **kwargs: object) -> ControllerPopen | subprocess.Popen[bytes]:
+        if tuple(arguments[:3]) == CONTROLLER:  # type: ignore[index]
+            return ControllerPopen(arguments, *args, **kwargs)
+        return real_popen(arguments, *args, **kwargs)  # type: ignore[arg-type]
 
     monkeypatch.chdir(repo)
     monkeypatch.setattr(cli, "governed_repository_root", lambda: repo)
     monkeypatch.setenv("RANEX_SIGNING_KEY", str(key))
-    monkeypatch.setattr(cli.subprocess, "run", invoke)
+    monkeypatch.setattr(cli.subprocess, "Popen", popen)
     code = cli.cmd_run(_arguments())
     return code, capsys.readouterr().err
 
