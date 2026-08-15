@@ -26,6 +26,10 @@ from typing import Any, NoReturn
 from ranex.cli.confinement import resolve_within_repository
 from ranex.foundation import atomic_writer
 from ranex.foundation.canonical import canonical_json, canonical_json_bytes, command_digest
+from ranex.foundation.confinement_result import (
+    ConfinementResultError,
+    confinement_result_bytes as _confinement_result_bytes,
+)
 
 E_ARCH = "E-C17-ARCH-UNSUPPORTED"
 E_BUILD_INPUT = "E-C17-BUILD-INPUT-DRIFT"
@@ -1164,16 +1168,10 @@ def collect_drained_output(
 
 
 def confinement_result_bytes(value: Mapping[str, Any]) -> bytes:
-    expected = {
-        "schema", "profile_digests", "namespace_readbacks", "cgroup_readbacks",
-        "command", "teardown", "outputs",
-    }
-    if set(value) != expected or value.get("schema") != "ranex-confinement-result-v1":
-        _refuse(E_C18_RESULT, "confinement result has a missing, extra, or invalid field")
-    teardown = _mapping(value.get("teardown"), "teardown", E_C18_RESULT)
-    if teardown != {"cgroup_kill": True, "populated": 0, "cgroup_removed": True}:
-        _refuse(E_C18_RESULT, "confinement result cannot be emitted before total teardown")
-    return canonical_json_bytes(value)
+    try:
+        return _confinement_result_bytes(value)
+    except ConfinementResultError as exc:
+        _refuse(exc.code, exc.detail)
 
 
 def launcher_install(

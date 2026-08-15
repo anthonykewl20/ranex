@@ -18,6 +18,7 @@ import os
 import re
 import shlex
 import shutil
+import signal
 import sqlite3
 import stat
 import subprocess
@@ -59,6 +60,7 @@ from ranex.cli.toolchain import (
 )
 from ranex.foundation.approval import candidate_row_hash, verify_approval
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
+from ranex.foundation.confinement_result import validate_confinement_result
 from ranex.foundation.signing import (
     generate_keypair,
     public_key_for,
@@ -1736,37 +1738,6 @@ _CONFINEMENT_LIMITS = {
 }
 
 
-def _validated_confinement_result(raw: bytes) -> tuple[dict[str, object], str]:
-    """Accept only the closed, canonical result emitted after controller teardown."""
-
-    try:
-        value = json.loads(raw)
-    except json.JSONDecodeError as exc:
-        raise ValueError(f"E-C18-RESULT: cannot parse confinement result: {exc}") from exc
-    if not isinstance(value, dict):
-        raise ValueError("E-C18-RESULT: confinement result must be a JSON object")
-    expected = {
-        "schema", "profile_digests", "namespace_readbacks", "cgroup_readbacks",
-        "command", "teardown", "outputs",
-    }
-    if set(value) != expected or value.get("schema") != "ranex-confinement-result-v1":
-        raise ValueError("E-C18-RESULT: confinement result has a missing, extra, or invalid field")
-    if raw != canonical_json_bytes(value):
-        raise ValueError("E-C18-RESULT: confinement result is not canonical JSON")
-    if value.get("teardown") != {"cgroup_kill": True, "populated": 0, "cgroup_removed": True}:
-        raise ValueError("E-C18-RESULT: confinement result does not prove total teardown")
-    profiles = value.get("profile_digests")
-    command = value.get("command")
-    if not isinstance(profiles, dict) or set(profiles) != {"runtime", "host", "launcher"}:
-        raise ValueError("E-C18-RESULT: confinement profile digests are invalid")
-    runtime_digest = profiles.get("runtime")
-    if not isinstance(runtime_digest, str) or re.fullmatch(r"[0-9a-f]{64}", runtime_digest) is None:
-        raise ValueError("E-C18-RESULT: runtime confinement profile digest is invalid")
-    if not isinstance(command, dict) or type(command.get("exit_code")) is not int:
-        raise ValueError("E-C18-RESULT: confinement command exit code is invalid")
-    return value, runtime_digest
-
-
 def _copy_session_input(source: Path, destination: Path) -> None:
     """Copy a host-side session prerequisite into the disposable controller root."""
 
@@ -1816,14 +1787,15 @@ def _execute_confinement_session(
         "scratch": "scratch",
         "limits": _CONFINEMENT_LIMITS,
     }))
-    environment = dict(os.environ)
     source_root = str(Path(__file__).resolve().parents[2])
-    environment["PYTHONPATH"] = (
-        source_root if not environment.get("PYTHONPATH")
-        else f"{source_root}{os.pathsep}{environment['PYTHONPATH']}"
-    )
+    environment = {
+        "PATH": "/usr/bin:/bin",
+        "PYTHONPATH": source_root,
+        "LC_ALL": "C",
+        "TZ": "UTC",
+    }
     try:
-        completed = subprocess.run(
+        process = subprocess.Popen(
             [
                 sys.executable, "-m", "ranex.cli.host_confinement", "session",
                 "--profile", f"tree/{_CONFINEMENT_RUNTIME_PROFILE}",
@@ -1834,14 +1806,26 @@ def _execute_confinement_session(
                 "--descriptor", str(descriptor_path), "--result", str(result_path),
             ],
             cwd=session_directory,
-            capture_output=True,
+            start_new_session=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
             text=True,
-            check=False,
-            timeout=30,
             env=environment,
         )
+        try:
+            stdout, stderr = process.communicate(timeout=30)
+        except subprocess.TimeoutExpired:
+            try:
+                os.killpg(os.getpgid(process.pid), signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            process.communicate()
+            raise ValueError(
+                "E-C46-CONTROLLER: confinement controller timed out and its process group was killed"
+            ) from None
     except (OSError, subprocess.SubprocessError) as exc:
         raise ValueError(f"E-C18-RESULT: cannot run confinement controller: {exc}") from exc
+    completed = subprocess.CompletedProcess(process.args, process.returncode, stdout, stderr)
     if completed.returncode != 0:
         try:
             refusal = json.loads(completed.stdout)
@@ -1860,7 +1844,7 @@ def _execute_confinement_session(
         raw_result = result_path.read_bytes()
     except OSError as exc:
         raise ValueError(f"E-C18-RESULT: cannot read confinement result: {exc}") from exc
-    result, runtime_digest = _validated_confinement_result(raw_result)
+    result, runtime_digest = validate_confinement_result(raw_result)
     result_command = cast(dict[str, object], result["command"])
     artifact: object | None = None
     if artifact_reader is not None:
