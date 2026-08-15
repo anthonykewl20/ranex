@@ -2,45 +2,47 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-15 (late)
-**Active slice:** none (SLICE-047 closed; SLICE-029 next).
+**Updated:** 2026-08-15 (session close)
+**Active slice:** none (SLICE-046/047 closed; SLICE-029 next).
 
 ## Where we stopped
 
-Security and CI hygiene closed clean. The Security tab's 109 stale osv-scanner
-alerts (pre-rewrite lineage) are fixed: cryptography >=50.0.0,<51 with a
-byte-identical epoch re-derivation, plus a contract-bound CI osv-scan job
-(push + weekly) uploading under the tracked category — 0 open since. Lint/type
-debt cleared (ruff + pyrefly pass on CI); upload-sarif on v4.37.7; SLICE-017/018
-suites made honest on hosted runners via declared host-qualification skips and
-exact-signature fail-closed refusal branches. CI fully green since f141ed128.
+SLICE-046 + SLICE-047 landed on main (tip 02b09f6b): cmd_run is bound
+to the qualified strict-local session (ADR-023; ADR-006 accepted,
+RISK-06 closed, ADR-017 accepted), the confinement-result validator is
+single-sourced in foundation/confinement_result.py, and the controller
+subprocess runs on a fixed minimal env with bounded process-group kill
+on timeout (ADR-024). Full suite 1040 passed / 8 skipped at the tip.
 
-SLICE-047 (ADR-024) is closed: all 17 frozen tests are green (16 proved
-red→green), and the SLICE-046 boundary remains 6 pass / 1 declared host skip.
-Independent double review APPROVE found no P0–P2; its P3s are dispositioned in
-the archived slice. The full-suite result is recorded at closure after Phase 3.
-
-SLICE-048 is the next confinement follow-up: enforce confinement digests by
-claim type in verdict/admission/loading. Dead LC_ALL/TZ descriptor fallback and
-worker-cgroup-leaf reconciliation remain named follow-ups, not SLICE-047 work.
-
-SLICE-029 opening design is consensus + upstream-validated: keep the code-point
-canonicalizer, use a strict parse profile and DSSE-style framing, close
-ApprovalPayloadV1, keep the error registry as data, use journal-order time,
-chained-row revocation, and allow one live batch per subject+base. Harness lane:
-merge worktree-provisioning when #61 lands; SLICE-021 then builds on EventV2.
+Harness lane: SLICE-020 (#1) MERGED to ranex-trim at 582d06d0 (merge of
+worktree-provisioning; 41 pass / 1 skip / 0 fail on the merge; branch
+deleted) — #1 closed with proof. The owner's parallel session parked the
+dormant security sweep on secfix-snapshot and advanced the local main
+checkout to 4f0965c7; local ranex-trim and origin (582d06d0) diverge on
+disjoint files — reconcile by pull/merge when convenient. Harness #84
+tracks the SDK codegen blocker (WorktreeFailed.data stale).
 
 ## Next
 
-SLICE-029 (#12): governance/schemas/specification/*.schema.json +
-abc-v1-vectors.json per the pre-stage pack; one open slice at a time.
+SLICE-029 (#12, unblocked): A/B/C schemas + canonical rules + error
+registry + abc-v1-vectors.json + the TS mirror — design is frozen in
+STATE history (02b09f6b) after consensus + upstream validation: keep
+the code-point-order canonicalizer (NOT JCS UTF-16), strict parse
+profile (duplicate-member/lone-surrogate/float/-0/lexical rejection,
+ints <= 2^53-1), DSSE-style length-prefixed domain framing, closed
+ApprovalPayloadV1 with detached signature, error registry + precedence
+as normative data, journal-order-authoritative time, chained-row
+revocation, one live batch per (subject, base). Then SLICE-048
+(claim-type confinement-digest enforcement — design in SLICE-047's
+closure). Harness: SLICE-021 (#2) builds on the merged EventV2 work.
 
 ## Known limits
 
-- Controller subprocess is same-uid trusted infrastructure; environment
-  narrowing remains an ADR-023 follow-up.
-- Confinement digests are signed but not yet enforced by claim type (SLICE-048).
-- Frozen gate-1/3 real-session tests stay expected-skips without a delegated
-  writable cgroup root; gate-3 passes under delegation.
+- SLICE-046/047 real-session tests stay declared host-gated skips.
+- CI: confinement suites fail on hosted runners (ld.so.cache drift,
+  userns EACCES) — owner-decides; owner session added honest guards
+  (f141ed128).
+- Controller same-uid trust, worker-cgroup-leaf on SIGKILL, dead
+  LC_ALL/TZ fallback: named follow-ups (ADR-024/047).
 - cgroup-observer OSError(19) flake under load remains.
 - mutmut advisory not run this cycle.
