@@ -86,5 +86,5 @@ uv run --frozen pytest -q
 
 - Done criteria met: 17 frozen tests green (16 red→green); SLICE-046 remains 6 pass / 1 skip.
 - Independent double review APPROVE: 0 P0–P2; P3s dispositioned above.
-- Full-suite result: pending the final Phase-3 run.
+- Full-suite result: 1040 passed, 8 skipped (verified after rebase).
 - Follow-ups: SLICE-048 claim-type digest enforcement; dead LC_ALL/TZ fallback; worker-cgroup-leaf reconciliation remains out of scope.
