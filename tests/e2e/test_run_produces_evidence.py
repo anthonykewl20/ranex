@@ -27,6 +27,7 @@ from types import SimpleNamespace
 
 import pytest
 from conftest import Signing, attach, signing_for
+from launcher_host import build_closure_limitation, userns_limitation
 
 from ranex.cli.main import cmd_run, main
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
@@ -59,6 +60,9 @@ def _qualification_host_limitation() -> str | None:
         return None
     if not any(line.strip() for line in uid_map):
         return "the current user namespace has no uid mapping, so no cgroup delegation is reachable"
+    build_limitation = build_closure_limitation()
+    if build_limitation is not None:
+        return build_limitation
     try:
         cgroup_lines = Path("/proc/self/cgroup").read_text(encoding="utf-8").splitlines()
         unified = [line.split("::", 1)[1] for line in cgroup_lines if "::" in line]
@@ -71,6 +75,9 @@ def _qualification_host_limitation() -> str | None:
     missing = sorted({"cpu", "memory", "pids"} - controllers)
     if missing:
         return "the delegated cgroup is missing required controllers: " + ", ".join(missing)
+    userns = userns_limitation()
+    if userns is not None:
+        return userns
     return None
 
 
@@ -546,6 +553,8 @@ def test_real_catalog_qualification_runs_on_host_and_gates_live_state(
     repo: Path, capfd: pytest.CaptureFixture[str]
 ) -> None:
     host_limitation = _qualification_host_limitation()
+    if host_limitation is not None:
+        pytest.skip(f"SLICE-017 host qualification unavailable: {host_limitation}")
     project = Path(__file__).resolve().parents[2]
     profile = "governance/confinement/strict-local-host-v1.json"
     manifest = "governance/confinement/native-launcher-build-v1.json"

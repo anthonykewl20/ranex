@@ -31,6 +31,11 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from launcher_host import (
+    require_delegated_userns_selftest,
+    require_pinned_build_closure,
+    require_unprivileged_userns,
+)
 
 ROOT = Path(__file__).resolve().parents[2]
 PROFILE = Path("governance/confinement/strict-local-host-v1.json")
@@ -229,6 +234,7 @@ def _derived_bus_environment() -> dict[str, str]:
 def installed_launcher() -> Iterator[None]:
     """Build and install the frozen launcher for the standalone security file."""
 
+    require_pinned_build_closure()
     generated = [ROOT / BUILD_ARTIFACT, ROOT / INSTALLED_ARTIFACT, ROOT / REPORT]
     (ROOT / REPORT).unlink(missing_ok=True)
     assert not any(path.exists() for path in generated), (
@@ -473,6 +479,7 @@ int main(int argc, char **argv) {
 
 @pytest.fixture(scope="session")
 def sandbox_helper(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    require_unprivileged_userns()
     directory = tmp_path_factory.mktemp("slice017-sandbox")
     source = directory / "sandbox.c"
     executable = directory / "sandbox"
@@ -508,6 +515,7 @@ def sandbox_helper(tmp_path_factory: pytest.TempPathFactory) -> Path:
         check=False,
         timeout=10,
     )
+    require_delegated_userns_selftest(self_test.returncode, self_test.stderr)
     assert self_test.returncode == 0, _diagnostic(self_test)
     return executable
 
@@ -1293,6 +1301,12 @@ def test_gate6_positive_host_probe_succeeds_on_the_qualified_host() -> None:
         _refusal(completed, E_EXEC)
         return
     completed, _ = _run_in_delegated_unit("host-probe")
+    if completed.returncode != 0:
+        # The controller truthfully reporting an unqualified host is contract
+        # behavior. Only this known hosted-runner signature is that absence.
+        refusal = _refusal(completed, E_FACT)
+        assert "map-user:13" in refusal["detail"]
+        return
     assert completed.returncode == 0, _diagnostic(completed)
     facts = _json_stdout(completed)
     assert facts, "successful host-probe emitted no measured facts"

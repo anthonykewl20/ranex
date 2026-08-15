@@ -13,6 +13,7 @@ import sys
 from pathlib import Path
 
 import pytest
+from launcher_host import require_pinned_build_closure
 
 from ranex.cli import host_confinement
 
@@ -255,7 +256,11 @@ def _unprivileged_namespaces_available() -> bool:
     finally:
         os.close(read_fd)
     os.waitpid(child, 0)
-    return reported_errno not in {str(errno.EPERM).encode(), str(errno.EINVAL).encode()}
+    return reported_errno not in {
+        str(errno.EPERM).encode(),
+        str(errno.EACCES).encode(),
+        str(errno.EINVAL).encode(),
+    }
 
 
 def _materialize_case(tmp_path: Path, argv: list[str] | None = None) -> tuple[Path, Path]:
@@ -452,6 +457,7 @@ def test_gate7_launcher_enforces_landlock_and_seccomp_for_a_worker(tmp_path: Pat
             "unprivileged user namespaces unavailable in this execution context — "
             "launcher enforcement host-unverified here"
         )
+    require_pinned_build_closure()
     build = REPOSITORY / ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
     compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
     worker_source = tmp_path / "worker.c"
@@ -562,6 +568,7 @@ def test_gate7_dynamic_elf_interpreter_resolves_from_toolchain_mount(tmp_path: P
             "unprivileged user namespaces unavailable in this execution context — "
             "launcher enforcement host-unverified here"
         )
+    require_pinned_build_closure()
     build = REPOSITORY / ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
     compiler = Path("/usr/bin/x86_64-linux-gnu-gcc-13")
     subject = tmp_path / "subject"

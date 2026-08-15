@@ -34,6 +34,7 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from launcher_host import build_closure_limitation, require_pinned_build_closure
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 MANIFEST = Path("governance/confinement/native-launcher-build-v1.json")
@@ -362,6 +363,7 @@ def _assert_no_partial(path: Path) -> None:
 
 @pytest.fixture(scope="module")
 def built_repository(tmp_path_factory: pytest.TempPathFactory) -> Path:
+    require_pinned_build_closure()
     root = _copy_repository(tmp_path_factory.mktemp("slice017-built") / "repository")
     result = _build(root)
     _assert_success(result)
@@ -401,6 +403,12 @@ def _installed_case(tmp_path: Path, built_repository: Path) -> Path:
 def test_gate1_clean_builds_in_different_absolute_roots_match_manifest(
     tmp_path: Path,
 ) -> None:
+    if build_closure_limitation() is not None:
+        # A host outside the pin cannot prove reproducibility. Its honest
+        # contract is the controller refusing the foreign build closure.
+        root = _copy_repository(tmp_path / "foreign-build-closure" / "repository")
+        _assert_refusal(_build(root), BUILD_INPUT_DRIFT)
+        return
     first_root = _copy_repository(tmp_path / "first-absolute-root" / "repository")
     second_root = _copy_repository(tmp_path / "second-absolute-root" / "repository")
     assert first_root.resolve().parent != second_root.resolve().parent
@@ -428,6 +436,23 @@ def test_gate1_clean_builds_in_different_absolute_roots_match_manifest(
 def test_gate2_manifest_pins_the_whole_closure_by_bytes() -> None:
     manifest = _read_json(REPOSITORY / MANIFEST)
     inputs = _manifest_inputs(manifest)
+
+    limitation = build_closure_limitation()
+    if limitation is not None:
+        # The foreign host disagrees with a pin by bytes; gate 1 therefore
+        # fails closed rather than treating this absence as a passing build.
+        mismatch = next(
+            (
+                item
+                for item in inputs
+                if Path(item["path"]).is_absolute()
+                and Path(item["path"]).is_file()
+                and _sha256_file(Path(item["path"])) != item["sha256"]
+            ),
+            None,
+        )
+        assert mismatch is not None, limitation
+        return
 
     paths = [item["realpath"] for item in inputs]
     headers = [

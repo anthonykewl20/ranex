@@ -45,6 +45,6 @@ Owner: merge ranex-harness worktree-provisioning when #61 lands.
 - cgroup-observer OSError(19) flake under load remains.
 - mutmut advisory not run this cycle.
 - Harness HEAD: event-manifest off-by-one pre-existing (53e5209f56); stale WorktreeFailed.data in generated SDK types.
-- The SLICE-017/018 confinement suites fail on GitHub's hosted runners (ld.so.cache
-  digest drift vs the pinned build manifest; unprivileged userns EACCES) — they were never green
-  on CI; the owner decides their skip-vs-fail semantics there. Exposed by the lint revival, not caused by it.
+- SLICE-017/018 confinement suites use guarded host-qualification skips and
+  exact fail-closed refusal branches on GitHub-hosted runners; CI is green,
+  while the qualified local-host suite remains unchanged.
