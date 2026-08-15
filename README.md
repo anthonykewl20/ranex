@@ -282,14 +282,16 @@ below is what is actually built.
 
 **Known gaps — stated plainly**
 
-- **Same-UID key theft is open.** The model credential sits in a network-open
-  loop, and `ranex run`'s own path still reads the signing key before spawning,
-  so anything running as the same user can take it. Use a scoped, spend-limited
-  key. `RISK-06` stays open and ADR-006 stays `proposed`; binding the qualified
-  confinement profile to the `cmd_run` worker path remains open after
-  SLICE-018's lifecycle and SLICE-019's host qualification. SLICE-018's
-  lifecycle is shipped and host-verified (issue #21, including the post-closure
-  Landlock-ABI minimum fix); the binding itself is the remaining gap.
+- **The confinement controller is same-uid trusted infrastructure.** The bound
+  command now runs inside the qualified strict-local session (Landlock, seccomp,
+  cgroup; environment allowlisted to LC_ALL/TZ; no inherited fds), and evidence
+  is signed only after fail-closed confinement-result validation — the measured
+  worker can no longer take the signing key (`RISK-06` closed by SLICE-046;
+  ADR-006 accepted 2026-08-15). The standing limit, stated plainly: the
+  controller subprocess that invokes the session still runs as the same user
+  (sudo-monitor model, ADR-023); controller env narrowing is a named follow-up.
+  The model credential still sits in a network-open loop — use a scoped,
+  spend-limited key.
 - **Approver identity is unauthenticated.** `--approver` is a plain string, so a
   producer can name anyone as their approver. Evidence signing proves only that
   the holder of the registered private key signed the record; it proves nothing
@@ -318,11 +320,13 @@ none of the surface around it does.
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
 **Active slice:** none.
-SLICE-018 is closed and shipped: its confinement-session lifecycle ENFORCES
-NNP → strict full-mask Landlock → default-deny seccomp → `execveat` behind a
-closed worker-exec path, with real cgroup-v2 session teardown and bounded output
-collection. Next is SLICE-029: A/B/C contract schemas under ADR-017, whose
-prior art is vendored.
+SLICE-046 is closed and shipped: `cmd_run` runs the bound command inside the
+qualified strict-local session through a subprocess controller (ADR-023), and
+evidence is signed only after fail-closed confinement-result validation. With
+that, ADR-006 is accepted and `RISK-06` is closed — the standing limit is that
+the controller subprocess itself remains same-uid trusted infrastructure.
+ADR-017 is accepted without broadening. Next is SLICE-029: A/B/C contract
+schemas, whose prior art is vendored.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -330,10 +334,10 @@ durable retry, durable blockers, and Session-ID fencing — each gated by the
 SLICE-011 prototype record through a compiled test. The remaining durability
 sequence is parked/subordinate to P0. ADR-006 is split into closed issue #10 /
 SLICE-017 qualification, closed issue #21 / SLICE-018 lifecycle, and closed
-issue #22 / SLICE-019 host-qualification evidence. `RISK-06` stays open and
-ADR-006 stays `proposed`: the qualified confinement profile is not yet bound to
-the `cmd_run` worker path. ADR-017 is `proposed`; its planned SLICE-029..044 run
-sequentially after SLICE-018.
+issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
+confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
+controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
+`accepted`; its planned SLICE-029..044 run sequentially.
 036 is qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
@@ -348,7 +352,7 @@ milestone #1.
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 861 IDs, with 74
+structured outcomes against the manifest diff — 906 IDs, with 113
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
