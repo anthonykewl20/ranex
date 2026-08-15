@@ -75,3 +75,9 @@ PYTHONPATH=src uv run --frozen pytest -q tests/unit/test_confinement_result.py t
 PYTHONPATH=src uv run --frozen pytest -q tests/security/test_slice046_cmd_run_confinement.py
 uv run --frozen pytest -q
 ```
+
+## Review disposition
+
+- Post-kill reaping is capped at 5s and fails closed if a descendant survives.
+- The import guard now rejects every direct host-confinement import form.
+- Dead LC_ALL/TZ fallback is a named follow-up, not removed to avoid descriptor-producer churn.

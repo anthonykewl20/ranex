@@ -1819,7 +1819,15 @@ def _execute_confinement_session(
                 os.killpg(os.getpgid(process.pid), signal.SIGKILL)
             except ProcessLookupError:
                 pass
-            process.communicate()
+            try:
+                process.communicate(timeout=5)
+            except subprocess.TimeoutExpired:
+                for pipe in (getattr(process, "stdout", None), getattr(process, "stderr", None)):
+                    if pipe is not None:
+                        try:
+                            pipe.close()
+                        except OSError:
+                            pass
             raise ValueError(
                 "E-C46-CONTROLLER: confinement controller timed out and its process group was killed"
             ) from None

@@ -151,7 +151,23 @@ def test_only_host_confinement_module_may_name_host_confinement() -> None:
             continue
         tree = ast.parse(path.read_text(encoding="utf-8"))
         if any(
-            isinstance(node, ast.ImportFrom) and node.module == "ranex.cli.host_confinement"
+            (
+                isinstance(node, ast.ImportFrom)
+                and node.module == "ranex.cli.host_confinement"
+            )
+            or (
+                isinstance(node, ast.Import)
+                and any(
+                    alias.name == "ranex.cli.host_confinement"
+                    or alias.name.startswith("ranex.cli.host_confinement.")
+                    for alias in node.names
+                )
+            )
+            or (
+                isinstance(node, ast.ImportFrom)
+                and node.module == "ranex.cli"
+                and any(alias.name == "host_confinement" for alias in node.names)
+            )
             for node in ast.walk(tree)
         ):
             offenders.append(path.relative_to(source_root).as_posix())
