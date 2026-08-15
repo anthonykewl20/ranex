@@ -2,8 +2,8 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-15 (session close)
-**Active slice:** none.
+**Updated:** 2026-08-15 (late)
+**Active slice:** none (SLICE-047 closed; SLICE-029 next).
 
 ## Where we stopped
 
@@ -13,33 +13,34 @@ byte-identical epoch re-derivation, plus a contract-bound CI osv-scan job
 (push + weekly) uploading under the tracked category — 0 open since. Lint/type
 debt cleared (ruff + pyrefly pass on CI); upload-sarif on v4.37.7; SLICE-017/018
 suites made honest on hosted runners via declared host-qualification skips and
-exact-signature fail-closed refusal branches (suite_manifest 906 IDs / 113
-expected-skips). CI fully green since f141ed128 — first time since Aug 7;
-the qualified-host suite is unchanged at 1023 passed / 8 skipped.
+exact-signature fail-closed refusal branches. CI fully green since f141ed128.
 
-Docs synced to that reality (README known-gaps/current-work/counts; MAP 3.5.5,
-RISK-06 closure propagated throughout). Issue tracker audited: every completed
-item's issue is already closed; the 26 open ones are unstarted program slices,
-harness-lane work, or the living P0 tracker — none closable.
+SLICE-047 (ADR-024) is closed: all 17 frozen tests are green (16 proved
+red→green), and the SLICE-046 boundary remains 6 pass / 1 declared host skip.
+Independent double review APPROVE found no P0–P2; its P3s are dispositioned in
+the archived slice. The full-suite result is recorded at closure after Phase 3.
 
-SLICE-047 (confinement hardening, ADR-024) is ACTIVE in worktree
-ranex-wt-slice047 under another session (mid-QA at last check). Do not touch
-that tree; it rebases over f141ed128 when it lands.
+SLICE-048 is the next confinement follow-up: enforce confinement digests by
+claim type in verdict/admission/loading. Dead LC_ALL/TZ descriptor fallback and
+worker-cgroup-leaf reconciliation remain named follow-ups, not SLICE-047 work.
+
+SLICE-029 opening design is consensus + upstream-validated: keep the code-point
+canonicalizer, use a strict parse profile and DSSE-style framing, close
+ApprovalPayloadV1, keep the error registry as data, use journal-order time,
+chained-row revocation, and allow one live batch per subject+base. Harness lane:
+merge worktree-provisioning when #61 lands; SLICE-021 then builds on EventV2.
 
 ## Next
 
 SLICE-029 (#12): governance/schemas/specification/*.schema.json +
 abc-v1-vectors.json per the pre-stage pack; one open slice at a time.
-Owner: merge ranex-harness worktree-provisioning when #61 lands.
 
 ## Known limits
 
-- Controller subprocess is same-uid trusted infrastructure; env narrowing is
-  a named follow-up (ADR-023 review).
-- Confinement digests are signed but not yet enforced by claim type.
+- Controller subprocess is same-uid trusted infrastructure; environment
+  narrowing remains an ADR-023 follow-up.
+- Confinement digests are signed but not yet enforced by claim type (SLICE-048).
 - Frozen gate-1/3 real-session tests stay expected-skips without a delegated
   writable cgroup root; gate-3 passes under delegation.
 - cgroup-observer OSError(19) flake under load remains.
 - mutmut advisory not run this cycle.
-- Harness HEAD: event-manifest off-by-one pre-existing (53e5209f56); stale
-  WorktreeFailed.data in generated SDK types; two harness CI runs queued ~18h.

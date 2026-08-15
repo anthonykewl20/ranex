@@ -81,3 +81,10 @@ uv run --frozen pytest -q
 - Post-kill reaping is capped at 5s and fails closed if a descendant survives.
 - The import guard now rejects every direct host-confinement import form.
 - Dead LC_ALL/TZ fallback is a named follow-up, not removed to avoid descriptor-producer churn.
+
+## Closure
+
+- Done criteria met: 17 frozen tests green (16 red→green); SLICE-046 remains 6 pass / 1 skip.
+- Independent double review APPROVE: 0 P0–P2; P3s dispositioned above.
+- Full-suite result: pending the final Phase-3 run.
+- Follow-ups: SLICE-048 claim-type digest enforcement; dead LC_ALL/TZ fallback; worker-cgroup-leaf reconciliation remains out of scope.
