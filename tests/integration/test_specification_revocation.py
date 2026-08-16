@@ -1,0 +1,91 @@
+"""Ordered pure revocation reduction vectors for SLICE-032."""
+
+from __future__ import annotations
+
+from ranex.governed_execution.domain.specification_approval import (
+    CapabilityGrant,
+    PolicyCapabilities,
+    issue_child_grant,
+)
+from ranex.governed_execution.domain.specification_events import (
+    SpecificationEvent,
+    approval_revoked_event,
+    evaluate_use,
+    grant_issued_event,
+    grant_revoked_event,
+)
+
+
+def grant() -> CapabilityGrant:
+    caps = PolicyCapabilities.from_record({
+        "executable": "python", "argv": [], "cwd": ".", "roots": ["src"], "actions": ["read"],
+        "environment": {"allow": []}, "network": {"allow": False, "hosts": []},
+        "secret": {"allow": False, "names": []}, "commit": {"allow": False},
+        "subagent": {"allow": False, "max_children": 0},
+    })
+    return CapabilityGrant("child", "sha256:" + "a" * 64, "parent", caps, "worker", "eval", "pub", 0, 50)
+
+
+def event(kind: str, seq: int, grant_id: str = "parent") -> SpecificationEvent:
+    return SpecificationEvent(f"{kind}-{seq}", kind, seq, "sha256:" + "b" * 64, "sha256:" + "a" * 64, grant_id, None, "owner", "key", None, "OK")
+
+
+def test_revoke_and_expiry_propagate_through_descendants() -> None:
+    issued_parent = event("GRANT_ISSUED", 1, "parent")
+    issued_child = SpecificationEvent("child", "GRANT_ISSUED", 2, "sha256:" + "b" * 64, "sha256:" + "a" * 64, "child", "parent", "owner", "key", issued_parent.digest, "OK")
+    revoked = SpecificationEvent("revoke", "GRANT_REVOKED", 3, "sha256:" + "b" * 64, "sha256:" + "a" * 64, "parent", None, "owner", "key", issued_child.digest, "OK")
+    assert evaluate_use((issued_parent, issued_child, revoked), grant(), 4).valid is False
+    expiry = SpecificationEvent("expiry", "EXPIRY_RECORDED", 3, "sha256:" + "b" * 64, "sha256:" + "a" * 64, "parent", None, "owner", "key", issued_child.digest, "OK")
+    assert evaluate_use((issued_parent, issued_child, expiry), grant(), 4).valid is False
+
+
+def test_event_and_use_facts_are_canonical_and_deterministic() -> None:
+    issued = event("GRANT_ISSUED", 1, "child")
+    first = evaluate_use((issued,), grant(), 2)
+    assert first == evaluate_use((issued,), grant(), 2)
+    assert first.valid is True
+    revoke = SpecificationEvent("revoke", "GRANT_REVOKED", 2, "sha256:" + "b" * 64, "sha256:" + "a" * 64, "child", None, "owner", "key", issued.digest, "OK")
+    assert evaluate_use((issued, revoke), grant(), 3).valid is False
+
+
+def test_grant_window_and_expiry_event_both_refuse_outside_boundaries() -> None:
+    base = grant()
+    child = CapabilityGrant("child", base.c_digest, "parent", base.capabilities, "worker", "eval", "pub", 10, 20)
+    issued = event("GRANT_ISSUED", 9, "child")
+    expiry = SpecificationEvent("expiry", "EXPIRY_RECORDED", 21, "sha256:" + "b" * 64, child.c_digest, "child", "parent", "owner", "key", issued.digest, "OK")
+    assert evaluate_use((issued,), child, 10).valid is True
+    assert evaluate_use((issued,), child, 20).valid is True
+    assert evaluate_use((), child, 9).code == "E-APPROVAL-WINDOW"
+    assert evaluate_use((issued,), child, 21).code == "E-APPROVAL-WINDOW"
+    assert evaluate_use((issued, expiry), child, 22).code == "E-APPROVAL-WINDOW"
+
+
+def test_three_level_revocation_is_produced_by_typed_constructors() -> None:
+    caps = grant().capabilities
+    root = CapabilityGrant("root", "sha256:" + "a" * 64, None, caps, "worker", "eval", "pub", 1, 50)
+    root_issued = grant_issued_event(
+        root, seq=1, journal_head_link="sha256:" + "a" * 64, principal_id="owner", key_id="key",
+        previous_event_digest=None,
+    )
+    child, child_issued = issue_child_grant(
+        "child", caps, root, caps, journal_position=2, journal_head_link="sha256:" + "b" * 64,
+        prior_events=(root_issued,), principal_id="owner", key_id="key",
+    )
+    grandchild, grandchild_issued = issue_child_grant(
+        "grandchild", caps, child, caps, journal_position=3, journal_head_link="sha256:" + "c" * 64,
+        prior_events=(root_issued, child_issued), principal_id="owner", key_id="key",
+    )
+    revoke = grant_revoked_event(
+        root, seq=4, journal_head_link="sha256:" + "d" * 64, principal_id="owner", key_id="key",
+        previous_event_digest=grandchild_issued.digest,
+    )
+    assert child_issued.grant_id == child.grant_id
+    assert child_issued.parent_grant_id == root.grant_id
+    assert grandchild_issued.grant_id == grandchild.grant_id
+    assert grandchild_issued.parent_grant_id == child.grant_id
+    assert evaluate_use((root_issued, child_issued, grandchild_issued, revoke), grandchild, 5).valid is False
+    approval_revoke = approval_revoked_event(
+        root.c_digest, seq=5, journal_head_link="sha256:" + "e" * 64, principal_id="owner", key_id="key",
+        previous_event_digest=revoke.digest,
+    )
+    assert evaluate_use((root_issued, child_issued, grandchild_issued, revoke, approval_revoke), grandchild, 6).valid is False
