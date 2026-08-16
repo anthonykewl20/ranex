@@ -11,10 +11,7 @@ from pathlib import Path
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.specification_abc import (
     SpecificationABCError,
-    payload_digest,
-    validate_approval_envelope,
-    validate_generated_artifact_manifest,
-    validate_spec_packet,
+    assert_abc_chain,
 )
 from ranex.governed_execution.domain.specification_trace import (
     E_TRACE_AUTHORITY,
@@ -65,7 +62,7 @@ def _check_artifacts(manifest: Mapping[str, object], candidate: Path) -> None:
     artifacts = manifest["artifacts"]
     if not isinstance(artifacts, Mapping):
         _refuse(E_TRACE_AUTHORITY, "manifest artifacts are malformed")
-    for kind in ("protected", "expected_values", "baselines", "negative_controls", "trace_projections", "sidecars"):
+    for kind in ("protected", "expected_values", "baselines", "negative_controls", "trace_projections"):
         rows = artifacts.get(kind)
         if not isinstance(rows, list):
             _refuse(E_TRACE_AUTHORITY, f"manifest {kind} rows are malformed")
@@ -78,13 +75,19 @@ def _check_artifacts(manifest: Mapping[str, object], candidate: Path) -> None:
 
 
 def _approved_values(manifest: Mapping[str, object], candidate: Path) -> Mapping[str, str]:
-    artifacts = manifest["artifacts"]
-    assert isinstance(artifacts, Mapping)
+    artifacts = manifest.get("artifacts")
+    if not isinstance(artifacts, Mapping):
+        _refuse(E_TRACE_AUTHORITY, "manifest artifacts are malformed")
+    rows = artifacts.get("expected_values")
+    if not isinstance(rows, list):
+        _refuse(E_TRACE_AUTHORITY, "manifest expected_values rows are malformed")
     expected: dict[str, str] = {}
-    for row in artifacts["expected_values"]:  # validated by _check_artifacts
-        assert isinstance(row, Mapping)
+    for row in rows:  # validated by _check_artifacts
+        if not isinstance(row, Mapping):
+            _refuse(E_TRACE_AUTHORITY, "manifest expected_values row is malformed")
+        path = row.get("path")
         try:
-            value = json.loads(_file(candidate, row["path"]).read_bytes())
+            value = json.loads(_file(candidate, path).read_bytes())
         except (UnicodeDecodeError, json.JSONDecodeError) as exc:
             raise TraceVerificationError(E_TRACE_PROTECTED, "approved expected values are not JSON") from exc
         if not isinstance(value, dict) or any(not isinstance(key, str) or not isinstance(item, str) for key, item in value.items()):
@@ -115,32 +118,34 @@ def verify_specification(
     ):
         _refuse(E_TRACE_REASONLESS, "B contains a reasonless exemption")
     try:
-        packet = validate_spec_packet(dict(a))
-        manifest = validate_generated_artifact_manifest(dict(b))
-        envelope = validate_approval_envelope(dict(c))
+        assert_abc_chain(a, b, c)
     except SpecificationABCError as exc:
-        _refuse(E_TRACE_AUTHORITY, f"A/B/C validation failed: {exc.code}")
-    payload = envelope["payload"]
-    assert isinstance(payload, Mapping)
-    if envelope["key_id"] != payload["key"] or manifest["a_digest"] != payload_digest(packet):
-        _refuse(E_TRACE_AUTHORITY, "A/B/C approval identities do not bind")
-    if payload["a_digest"] != payload_digest(packet) or payload["b_digest"] != payload_digest(manifest):
-        _refuse(E_TRACE_AUTHORITY, "C does not bind current A/B bytes")
-    if payload["task"] != packet["task"] or payload["domain"] != packet["domain"] or payload["revision"] != packet["revision"]:
-        _refuse(E_TRACE_CROSS_TASK, "C task identity differs from A")
+        _refuse(E_TRACE_CROSS_TASK, f"A/B/C chain refused: {exc.code}")
+
+    packet = a
+    manifest = b
 
     _check_artifacts(manifest, candidate)
-    artifacts = manifest["artifacts"]
-    assert isinstance(artifacts, Mapping)
-    approved_invocation = artifacts["invocation"]
-    assert isinstance(approved_invocation, Mapping)
-    if tuple(approved_invocation["argv"]) != tuple(invocation):
+    artifacts = manifest.get("artifacts")
+    if not isinstance(artifacts, Mapping):
+        _refuse(E_TRACE_AUTHORITY, "manifest artifacts are malformed")
+    approved_invocation = artifacts.get("invocation")
+    if not isinstance(approved_invocation, Mapping):
+        _refuse(E_TRACE_AUTHORITY, "manifest invocation is malformed")
+    argv = approved_invocation.get("argv")
+    if not isinstance(argv, list) or any(not isinstance(arg, str) for arg in argv):
+        _refuse(E_TRACE_AUTHORITY, "manifest invocation argv is malformed")
+    if tuple(argv) != tuple(invocation):
         _refuse(E_TRACE_PROTECTED, "observed invocation differs from B")
     trace = verify_trace_coverage(packet, manifest, base, candidate, exemption_claims=exemptions)
 
     expected = _approved_values(manifest, candidate)
-    approved_outcomes = packet["ids"]["outcome"]
-    assert isinstance(approved_outcomes, list)
+    packet_ids = packet.get("ids")
+    if not isinstance(packet_ids, Mapping):
+        _refuse(E_TRACE_AUTHORITY, "A IDs are malformed")
+    approved_outcomes = packet_ids.get("outcome")
+    if not isinstance(approved_outcomes, list) or any(not isinstance(item, str) for item in approved_outcomes):
+        _refuse(E_TRACE_AUTHORITY, "A outcome IDs are malformed")
     if set(expected) != set(approved_outcomes) or set(gauge_results) != set(approved_outcomes):
         _refuse(E_TRACE_OUTCOME, "approved outcome observations do not exactly match A")
     outcomes = tuple(

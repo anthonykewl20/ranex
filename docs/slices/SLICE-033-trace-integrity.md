@@ -43,6 +43,12 @@ must separately match protected expected-value bytes.
 Stop if this requires altering SLICE-029's A/B/C contract, adding wildcard
 matching, altering frozen red tests, or making trace markers semantic oracles.
 
+## Closure
+
+The frozen verifier fixture pins the descriptor-byte projection contract. After
+SLICE-031 lands, add the generator-to-verifier end-to-end integration test as
+the named follow-up; this slice cannot import that not-yet-merged generator.
+
 ## Verification commands
 
 ```text

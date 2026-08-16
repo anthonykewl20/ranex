@@ -62,6 +62,11 @@ gauge observations with approved expected-value bytes.
 - A valid marker cannot turn a wrong gauge observation into a pass.
 - This slice adds ports only; lifecycle, persistence, judge, CLI, and generator
   remain outside its boundary.
+- Comment anchors cover only in-place modifications of the candidate symbol
+  they directly precede. A deletion or whole-symbol rename is attributed to the
+  base-side symbol and requires a signed sidecar: the comment grammar carries
+  no symbol name, so it cannot attest to a symbol absent from the candidate.
+  Sidecars are therefore the stronger form for this asymmetric case.
 
 ### Confirmation
 

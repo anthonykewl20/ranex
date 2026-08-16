@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import difflib
+import hashlib
 import json
 import re
 from collections.abc import Mapping, Sequence
@@ -87,6 +88,7 @@ class TraceFact:
 class _ChangedTarget:
     path: str
     symbol: str
+    comment_coverable: bool
 
 
 def _refuse(code: str, detail: str) -> None:
@@ -177,18 +179,35 @@ def _in_scope(path: str, scope: Mapping[str, object]) -> bool:
     )
 
 
-def _symbol_for(lines: list[str], start: int, end: int | None = None) -> str:
-    if end is not None:
-        for line in lines[start:end]:
-            if match := _SYMBOL.match(line):
-                return match.group(1)
-    for index in range(min(start, len(lines) - 1), -1, -1):
-        if match := _SYMBOL.match(lines[index]):
-            return match.group(1)
-    for line in lines[start:]:
-        if match := _SYMBOL.match(line):
-            return match.group(1)
-    return f"line:{start + 1}"
+def _symbol_starts(lines: Sequence[str]) -> tuple[tuple[int, str], ...]:
+    return tuple((index, match.group(1)) for index, line in enumerate(lines) if (match := _SYMBOL.match(line)))
+
+
+def _symbol_for(starts: Sequence[tuple[int, str]], position: int) -> str:
+    """Resolve only against the tree's declared symbol starts, never text similarity."""
+
+    for start, symbol in reversed(starts):
+        if start <= position:
+            return symbol
+    for _start, symbol in starts:
+        return symbol
+    return f"line:{position + 1}"
+
+
+def _candidate_symbol_for_change(starts: Sequence[tuple[int, str]], start: int, end: int) -> str:
+    """Prefer a declaration introduced by this hunk; otherwise use its enclosing symbol."""
+
+    for symbol_start, symbol in starts:
+        if start <= symbol_start < end:
+            return symbol
+    return _symbol_for(starts, start)
+
+
+def _read_source(path: Path) -> list[str]:
+    try:
+        return path.read_text("utf-8").splitlines()
+    except UnicodeDecodeError as exc:
+        raise TraceVerificationError(E_TRACE_PROTECTED, f"source is not valid UTF-8: {path}") from exc
 
 
 def _changed_targets(base: Path, candidate: Path, scope: Mapping[str, object]) -> tuple[_ChangedTarget, ...]:
@@ -203,12 +222,24 @@ def _changed_targets(base: Path, candidate: Path, scope: Mapping[str, object]) -
     for path in sorted(paths):
         if not _in_scope(path, scope):
             continue
-        before = (base / path).read_text("utf-8").splitlines() if (base / path).is_file() else []
-        after = (candidate / path).read_text("utf-8").splitlines() if (candidate / path).is_file() else []
+        before = _read_source(base / path) if (base / path).is_file() else []
+        after = _read_source(candidate / path) if (candidate / path).is_file() else []
+        before_symbols = _symbol_starts(before)
+        after_symbols = _symbol_starts(after)
         matcher = difflib.SequenceMatcher(a=before, b=after, autojunk=False)
-        for tag, _left_start, _left_end, right_start, right_end in matcher.get_opcodes():
-            if tag != "equal":
-                changed.append(_ChangedTarget(path, _symbol_for(after, right_start, right_end)))
+        for tag, left_start, _left_end, right_start, right_end in matcher.get_opcodes():
+            if tag == "equal":
+                continue
+            if tag == "delete":
+                changed.append(_ChangedTarget(path, _symbol_for(before_symbols, left_start), False))
+                continue
+            candidate_symbol = _candidate_symbol_for_change(after_symbols, right_start, right_end)
+            if tag == "replace":
+                base_symbol = _symbol_for(before_symbols, left_start)
+                if base_symbol != candidate_symbol:
+                    changed.append(_ChangedTarget(path, base_symbol, False))
+                    continue
+            changed.append(_ChangedTarget(path, candidate_symbol, True))
     return tuple(changed)
 
 
@@ -225,11 +256,13 @@ def _comment_anchors(
         path = source.relative_to(candidate).as_posix()
         if not _in_scope(path, scope):
             continue
-        lines = source.read_text("utf-8").splitlines()
+        lines = _read_source(source)
         for index, line in enumerate(lines):
             if "ranex-trace:" in line:
                 parsed = parse_trace_comment(line, ids=ids, projections=projections)
-                anchors.append(TraceAnchor(path, _symbol_for(lines, index + 1), parsed.ids, parsed.projection, "comment"))
+                if index + 1 >= len(lines) or (match := _SYMBOL.match(lines[index + 1])) is None:
+                    _refuse(E_TRACE_GRAMMAR, "trace comment must directly precede a symbol")
+                anchors.append(TraceAnchor(path, match.group(1), parsed.ids, parsed.projection, "comment"))
     return tuple(anchors)
 
 
@@ -267,7 +300,11 @@ def verify_trace_coverage(
         file = _candidate_path(candidate, path)
         if not file.is_file():
             _refuse(E_TRACE_SIDECAR, "approved sidecar is absent")
-        parsed = parse_trace_sidecar(file.read_bytes(), ids=ids, projections=projections)
+        raw = file.read_bytes()
+        digest = row.get("digest")
+        if not isinstance(digest, str) or digest != "sha256:" + hashlib.sha256(raw).hexdigest():
+            _refuse(E_TRACE_SIDECAR, "approved sidecar bytes differ from B")
+        parsed = parse_trace_sidecar(raw, ids=ids, projections=projections)
         sidecars.append(TraceAnchor(parsed.path, parsed.symbol, parsed.ids, parsed.projection, "sidecar"))
     for file in candidate.rglob("*"):
         if not file.is_file() or file.suffix != ".json":
@@ -315,7 +352,13 @@ def verify_trace_coverage(
         if target.path in exact_exemptions:
             exempted += 1
             continue
-        matching = [anchor for anchor in anchors if anchor.path == target.path and anchor.symbol == target.symbol]
+        matching = [
+            anchor
+            for anchor in anchors
+            if anchor.path == target.path
+            and anchor.symbol == target.symbol
+            and (target.comment_coverable or anchor.form == "sidecar")
+        ]
         if not matching:
             _refuse(E_TRACE_UNCOVERED, f"no anchor for {target.path}:{target.symbol}")
         if len(matching) != 1:
