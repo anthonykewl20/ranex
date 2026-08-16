@@ -273,6 +273,21 @@ def test_manifest_binds_to_source_packet_and_rejects_tampered_a_digest() -> None
     assert refused.value.code == "E-ABC-017"
 
 
+def test_multi_outcome_target_emits_one_gauge_and_expected_value_per_outcome() -> None:
+    packet = _packet()
+    def add_outcome(value: dict[str, object]) -> None:
+        value["outcomes"].append({"id": "O-2", "value": "rejected"})  # type: ignore[index,union-attr]
+        value["targets"][0]["outcomes"].append("O-2")  # type: ignore[index,union-attr]
+    ids = packet["ids"]; provenance = packet["oracle_provenance"]
+    assert isinstance(ids, dict) and isinstance(provenance, dict)
+    ids["outcome"].append("O-2"); provenance["O-2"] = "requirement"
+    _mutate_dsl(packet, add_outcome)
+    result = generate_projections(packet)
+    expected = result.manifest["artifacts"]["expected_values"]  # type: ignore[index]
+    assert {row["path"] for row in expected} == {"generated/expected/O-1.json", "generated/expected/O-2.json"}
+    assert len(result.files) == 3
+
+
 def test_cross_process_generation_is_byte_identical() -> None:
     script = """
 import base64

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import hashlib
 from dataclasses import dataclass, replace
+from pathlib import PurePosixPath
 
 from ranex.foundation.specification_abc import (
     canonical_payload_bytes,
@@ -101,9 +102,9 @@ def _sidecar(target: Target) -> bytes:
     return canonical_payload_bytes(value)
 
 
-def _gauge(target: Target, scenario: Scenario, test_id: str, mapping_id: str) -> bytes:
+def _gauge(target: Target, scenario: Scenario, outcome_id: str, test_id: str, mapping_id: str) -> bytes:
     values = {item.identifier: item.value for item in scenario.outcomes}
-    expected = values[target.outcomes[0]]
+    expected = values[outcome_id]
     if target.language == "python":
         return (
             b"# ranex-gauge: placeholder-until-execution-slice\n"
@@ -117,6 +118,15 @@ def _gauge(target: Target, scenario: Scenario, test_id: str, mapping_id: str) ->
             + f"export function {target.symbol}() {{ return {expected!r}; }} // {test_id} {mapping_id}\n".encode()
         )
     return _sidecar(target)
+
+
+def _outcome_target(target: Target, outcome_id: str) -> Target:
+    """Give every declared outcome its own deterministic executable artifact."""
+
+    if len(target.outcomes) == 1:
+        return target
+    path = PurePosixPath(target.path)
+    return replace(target, path=str(path.with_name(f"{path.stem}.{outcome_id}{path.suffix}")), outcomes=(outcome_id,))
 
 
 def _refuse_artifact_path_collisions(*categories: tuple[GeneratedArtifact, ...]) -> None:
@@ -133,15 +143,20 @@ def generate_projections(spec_packet: object) -> ProjectionResult:
     outcome_values = {row.identifier: row.value for row in scenario.outcomes}
     transition_by_id = {row.identifier: row for row in scenario.transitions}
     flowchart = ("flowchart TD\n" + "".join(f"  {row.transition}[{transition_by_id[row.transition].source}] -->|{row.identifier}| {row.outcome}[{outcome_values[row.outcome]}]\n" for row in scenario.rules)).encode()
-    files = tuple(GeneratedArtifact(target.path, _gauge(target, scenario, scenario.test_ids[index % len(scenario.test_ids)], scenario.mapping_ids[index % len(scenario.mapping_ids)])) for index, target in enumerate(scenario.targets))
+    gauge_targets = tuple(
+        _outcome_target(target, outcome_id)
+        for target in scenario.targets
+        for outcome_id in target.outcomes
+    )
+    files = tuple(GeneratedArtifact(target.path, _gauge(target, scenario, target.outcomes[0], scenario.test_ids[index % len(scenario.test_ids)], scenario.mapping_ids[index % len(scenario.mapping_ids)])) for index, target in enumerate(gauge_targets))
     traces = tuple(
         GeneratedArtifact(
             target.path + ".ranex-trace",
             canonical_payload_bytes(trace_projection_descriptor(target)),
         )
-        for target in scenario.targets
+        for target in gauge_targets
     )
-    sidecars = tuple(GeneratedArtifact(target.path + ".ranex-trace.json", _sidecar(target)) for target in scenario.targets if target.language == "sidecar-json")
+    sidecars = tuple(GeneratedArtifact(target.path + ".ranex-trace.json", _sidecar(target)) for target in gauge_targets if target.language == "sidecar-json")
     expected = tuple(GeneratedArtifact(f"generated/expected/{row.identifier}.json", canonical_payload_bytes({row.identifier: row.value})) for row in scenario.outcomes)
     baselines = tuple(GeneratedArtifact(f"generated/baseline/{row.identifier}.json", canonical_payload_bytes({row.identifier: row.value})) for row in scenario.outcomes)
     controls = tuple(GeneratedArtifact(f"generated/negative/{row.identifier}.json", canonical_payload_bytes({row.identifier: row.value + "__wrong"})) for row in scenario.outcomes)
