@@ -54,6 +54,7 @@ def test_approval_binds_policy_roles_head_nonce_and_window() -> None:
     args = approved_input()
     outcome = issue_approval(*args)
     assert outcome.c_digest == payload_digest(args[2]["payload"])
+    assert outcome.grant.capabilities.as_record() == args[3].as_record()
     assert outcome.approved_event.kind == "APPROVED"
     assert outcome.implementable_event.kind == "IMPLEMENTABLE"
 

@@ -15,6 +15,7 @@ from ranex.governed_execution.domain.specification_approval import (
     CapabilityGrant,
     PolicyCapabilities,
     RoleAssignments,
+    intersect_capabilities,
 )
 from ranex.governed_execution.domain.specification_events import SpecificationEvent
 
@@ -67,7 +68,9 @@ def issue_approval(
         raise ApprovalRefusal("E-APPROVAL-WINDOW", "journal position is outside C's inclusive window")
     roles.require(payload["principal"], payload["key"], "approver", c_digest)
     grant = CapabilityGrant(
-        "grant:" + c_digest, c_digest, None, policy, roles.key_for("worker", c_digest),
+        "grant:" + c_digest, c_digest, None,
+        intersect_capabilities(PolicyCapabilities.from_record(payload["capability_request"]), policy, child=False),
+        roles.key_for("worker", c_digest),
         roles.key_for("evaluator", c_digest), roles.key_for("publisher", c_digest),
     )
     approved = SpecificationEvent(

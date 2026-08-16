@@ -245,6 +245,36 @@ def _intersection(values: Iterable[tuple[str, ...]]) -> tuple[str, ...]:
     return tuple(sorted(common))
 
 
+def intersect_capabilities(*values: PolicyCapabilities, child: bool) -> PolicyCapabilities:
+    """Return only common authority; child-only structural prohibitions are explicit."""
+
+    if not values:
+        _refuse("E-APPROVAL-SHAPE", "at least one capability record is required")
+    if (
+        len({value.executable for value in values}) != 1
+        or len({value.argv for value in values}) != 1
+        or len({value.cwd for value in values}) != 1
+    ):
+        _refuse("E-APPROVAL-EXPANSION", "executable, argv, and cwd require exact equality")
+    scopes = {
+        (root, action)
+        for root in _intersection(value.roots for value in values)
+        for action in _intersection(value.actions for value in values)
+    }
+    network_allow = all(value.network_allow for value in values)
+    return PolicyCapabilities(
+        values[0].executable, values[0].argv, values[0].cwd,
+        tuple(sorted({root for root, _ in scopes})), tuple(sorted({action for _, action in scopes})),
+        _intersection(value.environment_allow for value in values), network_allow,
+        _intersection(value.network_hosts for value in values) if network_allow else (),
+        False if child else all(value.secret_allow for value in values),
+        () if child else _intersection(value.secret_names for value in values),
+        False if child else all(value.commit_allow for value in values),
+        all(value.subagent_allow for value in values),
+        min(value.subagent_max_children for value in values),
+    )
+
+
 def issue_child_grant(
     grant_id: str,
     request: PolicyCapabilities,
@@ -259,24 +289,14 @@ def issue_child_grant(
     if parent.c_digest == "":
         _refuse("E-APPROVAL-SHAPE", "parent C digest is absent")
     values = (request, parent.capabilities, policy)
-    if len({value.executable for value in values}) != 1 or len({value.argv for value in values}) != 1 or len({value.cwd for value in values}) != 1:
-        _refuse("E-APPROVAL-EXPANSION", "executable, argv, and cwd require exact equality")
-    scopes = {(root, action) for root in _intersection(v.roots for v in values) for action in _intersection(v.actions for v in values)}
+    capabilities = intersect_capabilities(*values, child=True)
+    scopes = {(root, action) for root in capabilities.roots for action in capabilities.actions}
     for sibling in siblings:
         if sibling.parent_grant_id != parent.grant_id:
             continue
         sibling_scopes = {(root, action) for root in sibling.capabilities.roots for action in sibling.capabilities.actions}
         if scopes & sibling_scopes:
             _refuse("E-APPROVAL-OVERLAP", "siblings share a path+action scope")
-    network_allow = all(value.network_allow for value in values)
-    network_hosts = _intersection(value.network_hosts for value in values) if network_allow else ()
-    capabilities = PolicyCapabilities(
-        request.executable, request.argv, request.cwd,
-        tuple(sorted({root for root, _ in scopes})), tuple(sorted({action for _, action in scopes})),
-        _intersection(value.environment_allow for value in values), network_allow, network_hosts,
-        False, (), False, all(value.subagent_allow for value in values),
-        min(value.subagent_max_children for value in values),
-    )
     return CapabilityGrant(
         grant_id, parent.c_digest, parent.grant_id, capabilities,
         parent.worker_key, parent.evaluator_key, None,
