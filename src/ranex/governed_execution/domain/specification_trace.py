@@ -271,18 +271,24 @@ def _changed_targets(base: Path, candidate: Path, scope: Mapping[str, object]) -
         before_symbols = _symbol_starts(before)
         after_symbols = _symbol_starts(after)
         matcher = difflib.SequenceMatcher(a=before, b=after, autojunk=False)
-        for tag, left_start, _left_end, right_start, right_end in matcher.get_opcodes():
+        for tag, left_start, left_end, right_start, right_end in matcher.get_opcodes():
             if tag == "equal":
                 continue
-            if tag == "delete":
-                changed.append(_ChangedTarget(path, _symbol_for(before_symbols, left_start), False))
-                continue
-            candidate_symbols = _candidate_symbols_for_change(after_symbols, right_start, right_end)
-            if tag == "replace":
-                base_symbol = _symbol_for(before_symbols, left_start)
-                if base_symbol not in candidate_symbols:
-                    changed.append(_ChangedTarget(path, base_symbol, False))
-                    continue
+            base_symbols = (
+                _candidate_symbols_for_change(before_symbols, left_start, left_end)
+                if tag in {"delete", "replace"}
+                else ()
+            )
+            candidate_symbols = (
+                _candidate_symbols_for_change(after_symbols, right_start, right_end)
+                if tag in {"insert", "replace"}
+                else ()
+            )
+            changed.extend(
+                _ChangedTarget(path, base_symbol, False)
+                for base_symbol in base_symbols
+                if base_symbol not in candidate_symbols
+            )
             changed.extend(_ChangedTarget(path, candidate_symbol, True) for candidate_symbol in candidate_symbols)
     return tuple(dict.fromkeys(changed))
 
@@ -359,7 +365,16 @@ def verify_trace_coverage(
             _refuse(E_TRACE_SIDECAR, "approved sidecar bytes differ from B")
         parsed = parse_trace_sidecar(raw, ids=ids, projections=projections)
         descriptor = descriptors.get(parsed.projection)
-        if descriptor is None or descriptor[0] != parsed.path or descriptor[2] != parsed.symbol or descriptor[3] != parsed.ids:
+        expected_language = {".py": "python", ".ts": "typescript", ".js": "javascript"}.get(
+            Path(parsed.path).suffix, "sidecar-json"
+        )
+        if (
+            descriptor is None
+            or descriptor[0] != parsed.path
+            or descriptor[1] != expected_language
+            or descriptor[2] != parsed.symbol
+            or descriptor[3] != parsed.ids
+        ):
             _refuse(E_TRACE_STALE, "trace sidecar does not match its signed descriptor")
         sidecars.append(TraceAnchor(parsed.path, parsed.symbol, parsed.ids, parsed.projection, "sidecar"))
     for file in candidate.rglob("*"):
