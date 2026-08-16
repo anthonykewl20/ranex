@@ -161,11 +161,12 @@ class PolicyCapabilities:
 
 @dataclass(frozen=True)
 class ApprovalPendingContext:
-    semantic_digest: str
+    a_digest: str
+    subject_digest: str
     actor: str
 
     def as_record(self) -> dict[str, str]:
-        return {"semantic_digest": self.semantic_digest, "actor": self.actor}
+        return {"a_digest": self.a_digest, "subject_digest": self.subject_digest, "actor": self.actor}
 
 
 @dataclass(frozen=True)

@@ -95,12 +95,12 @@ def approval_revoked_event(
 
 def expiry_recorded_event(
     grant: CapabilityGrant, *, journal_head_link: str | None,
-    principal_id: str, key_id: str, previous_event_digest: str | None,
+    principal_id: str, key_id: str, previous_event_digest: str | None, seq: int | None = None,
 ) -> SpecificationEvent:
     """Project the inclusive grant window's first invalid position as revocation."""
 
     return SpecificationEvent(
-        f"expiry:{grant.grant_id}", "EXPIRY_RECORDED", grant.not_after + 1,
+        f"expiry:{grant.grant_id}", "EXPIRY_RECORDED", grant.not_after + 1 if seq is None else seq,
         journal_head_link, grant.c_digest, grant.grant_id, grant.parent_grant_id,
         principal_id, key_id, previous_event_digest, "OK",
     )
@@ -140,6 +140,29 @@ def evaluate_use(
     if type(journal_position) is not int or journal_position < 0:
         raise ApprovalRefusal("E-APPROVAL-EVENT", "use position is invalid")
     _checked_prefix(events_prefix, journal_position)
+    issued_by_grant = {
+        event.grant_id: event
+        for event in events_prefix
+        if event.kind == "GRANT_ISSUED" and event.grant_id is not None
+    }
+    current_grant = grant.grant_id
+    expected_parent = grant.parent_grant_id
+    seen: set[str] = set()
+    while current_grant not in seen:
+        seen.add(current_grant)
+        issued = issued_by_grant.get(current_grant)
+        if (
+            issued is None
+            or issued.c_digest != grant.c_digest
+            or issued.parent_grant_id != expected_parent
+        ):
+            raise ApprovalRefusal("E-APPROVAL-GRANT-UNISSUED", "grant has no complete C-bound issuance ancestry")
+        current_grant = expected_parent
+        if current_grant is None:
+            break
+        expected_parent = issued_by_grant.get(current_grant).parent_grant_id if current_grant in issued_by_grant else None
+    else:
+        raise ApprovalRefusal("E-APPROVAL-GRANT-UNISSUED", "grant issuance ancestry cycles")
     if not grant.not_before <= journal_position <= grant.not_after:
         head = events_prefix[-1].digest if events_prefix else None
         return UseFact(grant.grant_id, False, "E-APPROVAL-WINDOW", head, journal_position)

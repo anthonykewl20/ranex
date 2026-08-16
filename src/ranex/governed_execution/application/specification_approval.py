@@ -46,7 +46,7 @@ class ApprovalOutcome:
 def issue_approval(
     spec_packet: object, manifest: object, envelope: object, policy: PolicyCapabilities,
     pending: ApprovalPendingContext, roles: RoleAssignments, journal_position: int,
-    current_head: str | None, *, prior_events: tuple[SpecificationEvent, ...],
+    current_head: str | None, *, prior_events: tuple[SpecificationEvent, ...], prior_event_head: str | None,
 ) -> ApprovalOutcome:
     """Validate a C at the observed head and project deterministic lifecycle facts."""
 
@@ -65,12 +65,23 @@ def issue_approval(
     c_digest = payload_digest(payload)
     if payload["profile_digests"]["policy"] != policy.digest:
         raise ApprovalRefusal("E-APPROVAL-POLICY", "policy content digest differs from C")
-    if pending.semantic_digest != payload["subject_digest"] or pending.actor != payload["principal"]:
+    if (
+        pending.a_digest != payload["a_digest"]
+        or pending.subject_digest != payload["subject_digest"]
+        or pending.actor != payload["principal"]
+    ):
         raise ApprovalRefusal("E-APPROVAL-PENDING", "approval-pending context does not bind C")
     if type(journal_position) is not int or journal_position < 0:
         raise ApprovalRefusal("E-APPROVAL-POSITION", "journal position is invalid")
     if (journal_position == 0) != (current_head is None) or payload["journal_predecessor"] != current_head:
         raise ApprovalRefusal("E-APPROVAL-PREDECESSOR", "C predecessor does not equal observed head/genesis")
+    if not isinstance(prior_events, tuple) or any(not isinstance(event, SpecificationEvent) for event in prior_events):
+        raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "prior events must be an ordered event tuple")
+    actual_prior_head = prior_events[-1].digest if prior_events else None
+    if prior_event_head != actual_prior_head:
+        raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "supplied prior event head does not bind the prefix")
+    if prior_events and prior_events[-1].seq >= journal_position:
+        raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "approval position cannot follow the supplied event prefix")
     window = payload["time_window"]
     if not window["not_before"] <= journal_position <= window["not_after"]:
         raise ApprovalRefusal("E-APPROVAL-WINDOW", "journal position is outside C's inclusive window")
@@ -84,7 +95,7 @@ def issue_approval(
     )
     approved = SpecificationEvent(
         "approval:" + payload["nonce"], "APPROVED", journal_position, current_head, c_digest,
-        grant.grant_id, None, payload["principal"], payload["key"], None, "OK",
+        grant.grant_id, None, payload["principal"], payload["key"], prior_event_head, "OK",
     )
     implementable = SpecificationEvent(
         "implementable:" + c_digest, "IMPLEMENTABLE", journal_position + 1, approved.digest,
@@ -96,6 +107,6 @@ def issue_approval(
     )
     expiry = expiry_recorded_event(
         grant, journal_head_link=current_head, principal_id=payload["principal"], key_id=payload["key"],
-        previous_event_digest=issued.digest,
+        previous_event_digest=issued.digest, seq=max(grant.not_after + 1, issued.seq + 1),
     )
     return ApprovalOutcome(c_digest, grant, approved, implementable, issued, expiry)

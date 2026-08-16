@@ -2,12 +2,15 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
+
 from ranex.governed_execution.domain.specification_approval import (
     CapabilityGrant,
     PolicyCapabilities,
     issue_child_grant,
 )
 from ranex.governed_execution.domain.specification_events import (
+    ApprovalRefusal,
     SpecificationEvent,
     approval_revoked_event,
     evaluate_use,
@@ -40,24 +43,28 @@ def test_revoke_and_expiry_propagate_through_descendants() -> None:
 
 
 def test_event_and_use_facts_are_canonical_and_deterministic() -> None:
+    root = replace(grant(), parent_grant_id=None)
     issued = event("GRANT_ISSUED", 1, "child")
-    first = evaluate_use((issued,), grant(), 2)
-    assert first == evaluate_use((issued,), grant(), 2)
+    issued = replace(issued, parent_grant_id=None)
+    first = evaluate_use((issued,), root, 2)
+    assert first == evaluate_use((issued,), root, 2)
     assert first.valid is True
     revoke = SpecificationEvent("revoke", "GRANT_REVOKED", 2, "sha256:" + "b" * 64, "sha256:" + "a" * 64, "child", None, "owner", "key", issued.digest, "OK")
-    assert evaluate_use((issued, revoke), grant(), 3).valid is False
+    assert evaluate_use((issued, revoke), root, 3).valid is False
 
 
 def test_grant_window_and_expiry_event_both_refuse_outside_boundaries() -> None:
     base = grant()
     child = CapabilityGrant("child", base.c_digest, "parent", base.capabilities, "worker", "eval", "pub", 10, 20)
-    issued = event("GRANT_ISSUED", 9, "child")
+    parent = event("GRANT_ISSUED", 8, "parent")
+    issued = SpecificationEvent("GRANT_ISSUED-9", "GRANT_ISSUED", 9, "sha256:" + "b" * 64, child.c_digest, "child", "parent", "owner", "key", parent.digest, "OK")
     expiry = SpecificationEvent("expiry", "EXPIRY_RECORDED", 21, "sha256:" + "b" * 64, child.c_digest, "child", "parent", "owner", "key", issued.digest, "OK")
-    assert evaluate_use((issued,), child, 10).valid is True
-    assert evaluate_use((issued,), child, 20).valid is True
-    assert evaluate_use((), child, 9).code == "E-APPROVAL-WINDOW"
-    assert evaluate_use((issued,), child, 21).code == "E-APPROVAL-WINDOW"
-    assert evaluate_use((issued, expiry), child, 22).code == "E-APPROVAL-WINDOW"
+    assert evaluate_use((parent, issued), child, 10).valid is True
+    assert evaluate_use((parent, issued), child, 20).valid is True
+    with __import__("pytest").raises(ApprovalRefusal, match="E-APPROVAL-GRANT-UNISSUED"):
+        evaluate_use((), child, 9)
+    assert evaluate_use((parent, issued), child, 21).code == "E-APPROVAL-WINDOW"
+    assert evaluate_use((parent, issued, expiry), child, 22).code == "E-APPROVAL-WINDOW"
 
 
 def test_three_level_revocation_is_produced_by_typed_constructors() -> None:
@@ -89,3 +96,9 @@ def test_three_level_revocation_is_produced_by_typed_constructors() -> None:
         previous_event_digest=revoke.digest,
     )
     assert evaluate_use((root_issued, child_issued, grandchild_issued, revoke, approval_revoke), grandchild, 6).valid is False
+
+
+def test_use_refuses_without_a_matching_c_bound_grant_issuance() -> None:
+    with __import__("pytest").raises(ApprovalRefusal) as refused:
+        evaluate_use((), grant(), 10)
+    assert refused.value.code == "E-APPROVAL-GRANT-UNISSUED"

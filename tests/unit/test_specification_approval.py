@@ -47,13 +47,13 @@ def approved_input(*, position: int = 10, head: str | None = "sha256:" + "f" * 6
             RoleAssignment("publisher", "publisher", "ed25519:YGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGBgYGA=", "publisher", c_digest),
         )
     )
-    pending = ApprovalPendingContext(VECTORS["c_payload"]["subject_digest"], "owner")
+    pending = ApprovalPendingContext(payload_digest(VECTORS["a"]), VECTORS["c_payload"]["subject_digest"], "owner")
     return VECTORS["a"], VECTORS["b"], envelope, policy, pending, roles, position, head
 
 
 def test_approval_binds_policy_roles_head_nonce_and_window() -> None:
     args = approved_input()
-    outcome = issue_approval(*args, prior_events=())
+    outcome = issue_approval(*args, prior_events=(), prior_event_head=None)
     assert outcome.c_digest == payload_digest(args[2]["payload"])
     assert outcome.grant.capabilities.as_record() == args[3].as_record()
     assert outcome.approved_event.kind == "APPROVED"
@@ -65,29 +65,29 @@ def test_approval_binds_policy_roles_head_nonce_and_window() -> None:
     assert outcome.grant.not_after == 20
 
     for position in (10, 20):
-        assert issue_approval(*approved_input(position=position), prior_events=()).c_digest == outcome.c_digest
+        assert issue_approval(*approved_input(position=position), prior_events=(), prior_event_head=None).c_digest == outcome.c_digest
     for position in (9, 21):
         with pytest.raises(ApprovalRefusal) as refused:
-            issue_approval(*approved_input(position=position), prior_events=())
+            issue_approval(*approved_input(position=position), prior_events=(), prior_event_head=None)
         assert refused.value.code == "E-APPROVAL-WINDOW"
 
     stale = approved_input(head="sha256:" + "a" * 64)
     stale[2]["payload"]["journal_predecessor"] = "sha256:" + "b" * 64
     stale[2]["signature"] = sign_approval_payload(stale[2]["payload"], PRIVATE)
     with pytest.raises(ApprovalRefusal, match="PREDECESSOR"):
-        issue_approval(*stale, prior_events=())
+        issue_approval(*stale, prior_events=(), prior_event_head=None)
 
     conflicting = list(args[5].assignments)
     conflicting.append(RoleAssignment("bad", "worker", args[2]["payload"]["key"], "worker", outcome.c_digest))
     with pytest.raises(ApprovalRefusal, match="ROLE"):
-        issue_approval(*args[:5], RoleAssignments(tuple(conflicting)), *args[6:], prior_events=())
+        issue_approval(*args[:5], RoleAssignments(tuple(conflicting)), *args[6:], prior_events=(), prior_event_head=None)
 
 
 def test_successful_approval_nonce_is_the_only_nonce_that_is_consumed() -> None:
     args = approved_input()
-    first = issue_approval(*args, prior_events=())
+    first = issue_approval(*args, prior_events=(), prior_event_head=None)
     with pytest.raises(ApprovalRefusal) as refused:
-        issue_approval(*args, prior_events=(first.approved_event,))
+        issue_approval(*args, prior_events=(first.approved_event,), prior_event_head=first.approved_event.digest)
     assert refused.value.code == "E-ABC-015"
 
 
@@ -118,3 +118,31 @@ def test_role_assignment_sequence_is_snapshotted_as_a_tuple() -> None:
     assignments.clear()
     assert isinstance(snapshot.assignments, tuple)
     assert len(snapshot.assignments) == 4
+
+
+def test_approval_pending_context_binds_a_and_subject_to_their_distinct_c_fields() -> None:
+    args = approved_input()
+    assert issue_approval(*args, prior_events=(), prior_event_head=None).c_digest
+
+    subject_only = ApprovalPendingContext(
+        args[2]["payload"]["subject_digest"], args[2]["payload"]["subject_digest"], "owner"
+    )
+    with pytest.raises(ApprovalRefusal) as refused:
+        issue_approval(*args[:4], subject_only, *args[5:], prior_events=(), prior_event_head=None)
+    assert refused.value.code == "E-APPROVAL-PENDING"
+
+
+def test_approval_events_link_the_supplied_prefix_and_remain_monotonic_at_window_boundary() -> None:
+    args = approved_input(position=20)
+    prefix = __import__("ranex.governed_execution.domain.specification_events", fromlist=["SpecificationEvent"]).SpecificationEvent(
+        "prior", "APPROVED", 19, args[-1], "sha256:" + "a" * 64, None, None, "owner", "key", None, "OK"
+    )
+    outcome = issue_approval(*args, prior_events=(prefix,), prior_event_head=prefix.digest)
+    events = (prefix, outcome.approved_event, outcome.implementable_event, outcome.grant_issued_event, outcome.expiry_recorded_event)
+    assert [event.seq for event in events] == sorted(event.seq for event in events)
+    assert outcome.approved_event.previous_event_digest == prefix.digest
+    assert outcome.expiry_recorded_event.seq == 23
+
+    with pytest.raises(ApprovalRefusal) as refused:
+        issue_approval(*args, prior_events=(prefix,), prior_event_head=None)
+    assert refused.value.code == "E-APPROVAL-EVENT-CHAIN"
