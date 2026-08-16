@@ -1,0 +1,14 @@
+{
+  "schema": "ranex-provider-subject-v1",
+  "name": "ranex",
+  "repository": "https://github.com/anthonykewl20/ranex.git",
+  "commit": "3d0924c9c8f8f0c5483c0dc62558fdd23c51e9ce",
+  "issue": 10,
+  "license": "MIT",
+  "lockfile": {"path": "uv.lock", "sha256": "dadf979ec0c984e2ee0aa2f1f46804c63ea8c4eebf9519cfb423d4b66be3b5c2"},
+  "package_manager": {"command": ["uv", "sync", "--frozen"]},
+  "process_commands": [
+    ["uv", "run", "--frozen", "pytest", "-q", "tests/contract/test_docs_discipline.py"],
+    ["uv", "run", "--frozen", "pytest", "-q"]
+  ]
+}
