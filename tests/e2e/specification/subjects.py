@@ -117,6 +117,14 @@ def arxic_network_commands(destination: Path) -> tuple[tuple[str, ...], tuple[st
     )
 
 
+def assert_identical_local_helper(*commands: Sequence[str]) -> None:
+    """Refuse if either Arxic network command loses the exact helper argv."""
+
+    expected = ("git", "-c", PROCESS_LOCAL_HELPER)
+    if any(tuple(command[:3]) != expected for command in commands):
+        _blocked("helper-mismatch")
+
+
 def resolve_credential_reference(
     reference: str, runner: Callable[..., subprocess.CompletedProcess[str] | None] = subprocess.run,
     helper_available: Callable[[], bool] | None = None,
@@ -128,26 +136,25 @@ def resolve_credential_reference(
     helper_available = helper_available or (lambda: Path("/usr/bin/gh").is_file() and os.access("/usr/bin/gh", os.X_OK))
     if not helper_available():
         _blocked("helper-unavailable")
-    completed = runner(
-        ("gh", "auth", "status"), capture_output=True, text=True, check=False, env=broker_environment(),
-        stdin=subprocess.DEVNULL, close_fds=True,
-    )
-    if completed is None or completed.returncode != 0:
-        _blocked("credential-ref-unavailable")
+    completed = _run(runner, ("gh", "auth", "status"), failure_reason="credential-ref-unavailable")
     status = (completed.stdout or "") + (completed.stderr or "")
     if "anthonykewl20" not in status or "keyring" not in status.lower():
         _blocked("credential-ref-unavailable")
 
 
 def _run(
-    runner: Callable[..., subprocess.CompletedProcess[str]], command: Sequence[str], *, cwd: Path | None = None
+    runner: Callable[..., subprocess.CompletedProcess[str]],
+    command: Sequence[str],
+    *,
+    cwd: Path | None = None,
+    failure_reason: str = "remote-preflight-failed",
 ) -> subprocess.CompletedProcess[str]:
     completed = runner(
         tuple(command), cwd=cwd, capture_output=True, text=True, check=False, env=broker_environment(),
         stdin=subprocess.DEVNULL, close_fds=True,
     )
-    if completed.returncode != 0:
-        _blocked("remote-preflight-failed")
+    if completed is None or completed.returncode != 0:
+        _blocked(failure_reason)
     return completed
 
 
@@ -214,6 +221,7 @@ def arxic_object_store(
     resolve_credential_reference(str(subject["credential_ref"]), runner, helper_available)
     root = Path(tempfile.mkdtemp(prefix="slice035-arxic-", dir=temp_parent))
     repository = root / "repo"
+    completed = False
     try:
         root.chmod(0o700)
         view = _run(runner, ("gh", "repo", "view", "anthonykewl20/arxic", "--json", "nameWithOwner,isPrivate"))
@@ -230,6 +238,7 @@ def arxic_object_store(
         except json.JSONDecodeError:
             _blocked("subject-issue-drift")
         preflight, clone = arxic_network_commands(repository)
+        assert_identical_local_helper(preflight, clone)
         _run(runner, preflight)
         _run(runner, clone)
         config = repository / ".git" / "config"
@@ -264,39 +273,51 @@ def arxic_object_store(
         )
         _assert_credential_free_text("\n".join(audit))
         yield CredentialFreeObjectStore(repository, ARXIC_CREDENTIAL_REF, audit)
+        completed = True
     finally:
         try:
             shutil.rmtree(root)
         except OSError:
-            _blocked("cleanup-failed")
+            if completed:
+                _blocked("cleanup-failed")
 
 
-def run_ranex_subject(subject: Mapping[str, object], destination: Path) -> list[tuple[str, ...]]:
+def run_ranex_subject(
+    subject: Mapping[str, object],
+    destination: Path,
+    *,
+    runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run,
+) -> list[tuple[str, ...]]:
     """Clone and execute the locked public Ranex subject; callers own cleanup."""
 
     validate_manifest(subject)
     checkout = destination / "repo"
-    environment = broker_environment()
     commands: list[tuple[str, ...]] = [
         ("git", "clone", "--no-checkout", str(subject["repository"]), str(checkout)),
         ("git", "-C", str(checkout), "checkout", "--detach", str(subject["commit"])),
     ]
     for command in commands:
-        completed = subprocess.run(
-            command, capture_output=True, text=True, check=False, env=environment,
-            stdin=subprocess.DEVNULL, close_fds=True,
-        )
-        if completed.returncode != 0:
-            _blocked("ranex-bootstrap-failed")
-    validate_checkout(subject, checkout, str(subject["commit"]), int(subject["issue"]))
+        _run(runner, command, failure_reason="ranex-bootstrap-failed")
+    actual_commit = _run(
+        runner,
+        ("git", "-C", str(checkout), "rev-parse", "HEAD"),
+        failure_reason="ranex-bootstrap-failed",
+    ).stdout.strip()
+    issue = _run(
+        runner,
+        ("gh", "issue", "view", str(subject["issue"]), "-R", "anthonykewl20/ranex", "--json", "number"),
+        failure_reason="subject-issue-drift",
+    )
+    try:
+        actual_issue = json.loads(issue.stdout)
+    except json.JSONDecodeError:
+        _blocked("subject-issue-drift")
+    if not isinstance(actual_issue, dict) or actual_issue.get("number") != subject["issue"]:
+        _blocked("subject-issue-drift")
+    validate_checkout(subject, checkout, actual_commit, actual_issue["number"])
     manager = subject["package_manager"]
     assert isinstance(manager, dict)
     all_commands = [tuple(manager["command"]), *(tuple(command) for command in subject["process_commands"])]
     for command in all_commands:
-        completed = subprocess.run(
-            command, cwd=checkout, capture_output=True, text=True, check=False, env=environment,
-            stdin=subprocess.DEVNULL, close_fds=True,
-        )
-        if completed.returncode != 0:
-            _blocked("process-failed")
+        _run(runner, command, cwd=checkout, failure_reason="process-failed")
     return [*commands, *all_commands]

@@ -70,13 +70,18 @@ stable BLOCKED reason.
 - The controller does not reconfigure Git or GitHub globally.
 - Real public Ranex bootstrap can produce process evidence independently.
 - Host skips are explicit evidence limits, not successful provider runs.
+- The credential scan is shape-heuristic: as the reviewer noted, it cannot
+  detect a novel keyless token form.
 
 ### Confirmation
 
 `tests/e2e/test_specification_subject_bootstrap.py` freezes manifest parsing,
-negative refusals, exact helper identity, credential hygiene, and cleanup.
-It performs real Ranex bootstrap where `git` and `uv` exist, and host-gates
-Arxic only after local broker negative controls remain exercised.
+negative refusals (including missing helper and helper mismatch), exact helper
+identity, credential hygiene, and cleanup. It host-gates both
+`test_real_ranex_bootstrap_or_host_skip` and
+`test_real_arxic_bootstrap_or_host_skip`; the latter uses the real broker and
+records its actual stable BLOCKED outcome after cleanup when the host cannot
+satisfy it.
 
 ## Improvements on the prior art
 
@@ -131,13 +136,14 @@ not acceptable rollback paths.
 
 ## Test strategy
 
-`tests/e2e/test_specification_subject_bootstrap.py` uses local command fakes for wrong commit, moved issue, absent
-license, lock drift, missing ref, helper omission/mismatch, auth forwarding,
-credential-bearing remote/config/log, failed process, and cleanup survivor.
-Those controls run without GitHub access. Host-qualified runs clone pinned
-Ranex, execute `uv sync --frozen` and focused pytest; Arxic additionally runs
-the exact locked pnpm command list only after broker success. Every subprocess
-is recorded as safe argv/cwd/outcome, never a secret-bearing environment.
+`tests/e2e/test_specification_subject_bootstrap.py` uses local fixtures and
+command fakes for wrong checkout facts, absent license, lock drift, missing
+credential reference or helper, helper mismatch, credential-shaped copies, and
+cleanup. Those controls run without GitHub access. Host-qualified runs clone
+pinned Ranex, execute `uv sync --frozen` and its declared tests; Arxic runs
+the real broker and records a stable BLOCKED outcome when the host cannot
+satisfy it. Every child uses the same credential-scrubbed environment,
+`DEVNULL` stdin, closed file descriptors, and captured output.
 
 ## Code review checklist
 

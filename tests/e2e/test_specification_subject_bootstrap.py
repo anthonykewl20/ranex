@@ -61,6 +61,10 @@ def test_checkout_fact_refusals_are_stable_for_source_bytes(tmp_path: Path, monk
     subject["lockfile"]["sha256"] = digest
     monkeypatch.setitem(subjects._EXPECTED["arxic"], "lockfile", ("pnpm-lock.yaml", digest))
     subjects.validate_checkout(subject, checkout, subject["commit"], subject["issue"])
+    with pytest.raises(subjects.SubjectBlocked, match="subject-commit-drift"):
+        subjects.validate_checkout(subject, checkout, "0" * 40, subject["issue"])
+    with pytest.raises(subjects.SubjectBlocked, match="subject-issue-drift"):
+        subjects.validate_checkout(subject, checkout, subject["commit"], subject["issue"] + 1)
     lock.write_text("drift\n")
     with pytest.raises(subjects.SubjectBlocked, match="lock-drift"):
         subjects.validate_checkout(subject, checkout, subject["commit"], subject["issue"])
@@ -75,6 +79,14 @@ def test_credential_reference_refusal_is_stable() -> None:
         subjects.resolve_credential_reference("github:wrong/profile", lambda *_a, **_k: None)
 
 
+def test_missing_credential_helper_refusal_is_stable() -> None:
+    with pytest.raises(subjects.SubjectBlocked, match="helper-unavailable"):
+        subjects.resolve_credential_reference(
+            "github:anthonykewl20/arxic-read",
+            helper_available=lambda: False,
+        )
+
+
 def test_broker_uses_only_identical_local_helper() -> None:
     preflight, clone = subjects.arxic_network_commands(Path("/tmp/private/repo"))
     assert preflight[0:3] == ("git", "-c", subjects.PROCESS_LOCAL_HELPER)
@@ -82,6 +94,12 @@ def test_broker_uses_only_identical_local_helper() -> None:
     assert "repo" not in preflight and "repo" not in clone[:3]
     assert "https://github.com/anthonykewl20/arxic.git" in preflight
     assert "--no-checkout" in clone
+    subjects.assert_identical_local_helper(preflight, clone)
+    with pytest.raises(subjects.SubjectBlocked, match="helper-mismatch"):
+        subjects.assert_identical_local_helper(
+            preflight,
+            ("git", "-c", "credential.helper=!different", *clone[3:]),
+        )
 
 
 @pytest.mark.parametrize(
@@ -103,13 +121,10 @@ def test_credential_hygiene_refusals_are_stable(unsafe: str, tmp_path: Path) -> 
 
 def test_real_ranex_bootstrap_or_host_skip(tmp_path: Path) -> None:
     if os.environ.get("RANEX_SLICE035_REAL") != "1":
-        if (
-            os.environ.get("UV_PROJECT_ENVIRONMENT")
-            and os.environ.get("TMPDIR")
-            and Path.cwd().name == "tree"
-        ):
-            return
-        pytest.skip("SLICE-035 Ranex real bootstrap host-gated: set RANEX_SLICE035_REAL=1")
+        pytest.skip(
+            "SLICE-035 Ranex real bootstrap: nested-suite gate environment, "
+            "real run not requested (RANEX_SLICE035_REAL=1)"
+        )
     subject = subjects.load_subject(SPECIFICATION / "ranex-subject-v1.json")
     destination = tmp_path / "ranex"
     destination.mkdir(mode=0o700)
@@ -118,6 +133,56 @@ def test_real_ranex_bootstrap_or_host_skip(tmp_path: Path) -> None:
         assert commands[2] == ("uv", "sync", "--frozen")
     finally:
         shutil.rmtree(destination)
+
+
+def test_real_arxic_bootstrap_or_host_skip(tmp_path: Path) -> None:
+    if os.environ.get("RANEX_SLICE035_REAL") != "1":
+        pytest.skip("SLICE-035 Arxic real bootstrap host-gated: set RANEX_SLICE035_REAL=1")
+    subject = subjects.load_subject(SPECIFICATION / "arxic-subject-v1.json")
+    blocked: subjects.SubjectBlocked | None = None
+    try:
+        with subjects.arxic_object_store(subject, temp_parent=tmp_path) as store:
+            assert store.path.is_dir()
+            assert store.outcome == "credential-free-object-store"
+            assert all("credential" not in entry.lower() or entry.startswith("credential-ref=") for entry in store.audit)
+            assert all("secret" not in entry.lower() for entry in store.audit)
+    except subjects.SubjectBlocked as error:
+        blocked = error
+    assert list(tmp_path.iterdir()) == []
+    if blocked is not None:
+        pytest.skip(str(blocked))
+
+
+@pytest.mark.parametrize(
+    ("actual_commit", "actual_issue", "reason"),
+    [
+        ("0" * 40, 10, "subject-commit-drift"),
+        ("3d0924c9c8f0c5483c0dc62558fdd23c51e9ce", 11, "subject-issue-drift"),
+    ],
+)
+def test_ranex_subject_refuses_actual_checkout_facts(
+    tmp_path: Path,
+    actual_commit: str,
+    actual_issue: int,
+    reason: str,
+) -> None:
+    subject = subjects.load_subject(SPECIFICATION / "ranex-subject-v1.json")
+    calls: list[tuple[str, ...]] = []
+
+    def runner(command: tuple[str, ...], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        calls.append(command)
+        if command[-2:] == ("rev-parse", "HEAD"):
+            return subprocess.CompletedProcess(command, 0, actual_commit, "")
+        if command[:3] == ("gh", "issue", "view"):
+            return subprocess.CompletedProcess(command, 0, json.dumps({"number": actual_issue}), "")
+        return subprocess.CompletedProcess(command, 0, "", "")
+
+    with pytest.raises(subjects.SubjectBlocked, match=reason):
+        subjects.run_ranex_subject(subject, tmp_path, runner=runner)
+    assert ("git", "-C", str(tmp_path / "repo"), "rev-parse", "HEAD") in calls
+    assert (
+        "gh", "issue", "view", str(subject["issue"]), "-R", "anthonykewl20/ranex", "--json", "number"
+    ) in calls
 
 
 def test_broker_cleanup_leaves_no_survivor(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
@@ -159,3 +224,25 @@ def test_broker_cleanup_leaves_no_survivor(tmp_path: Path, monkeypatch: pytest.M
     assert list(tmp_path.iterdir()) == []
     _preflight, clone = subjects.arxic_network_commands(Path("/tmp/private/repo"))
     assert any(command[:3] == clone[:3] and "--no-checkout" in command for command in calls)
+
+
+def test_cleanup_failure_preserves_credential_refusal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    subject = subjects.load_subject(SPECIFICATION / "arxic-subject-v1.json")
+
+    def failing_rmtree(_path: Path) -> None:
+        raise OSError("cannot remove")
+
+    def credential_copy_runner(command: tuple[str, ...], **_kwargs: object) -> subprocess.CompletedProcess[str]:
+        if command[:3] == ("gh", "auth", "status"):
+            return subprocess.CompletedProcess(command, 0, "anthonykewl20 keyring", "")
+        raise subjects.SubjectBlocked("SLICE-035 BLOCKED: credential-copy-detected")
+
+    monkeypatch.setattr(subjects.shutil, "rmtree", failing_rmtree)
+    with pytest.raises(subjects.SubjectBlocked, match="credential-copy-detected"):
+        with subjects.arxic_object_store(
+            subject,
+            temp_parent=tmp_path,
+            helper_available=lambda: True,
+            runner=credential_copy_runner,
+        ):
+            pytest.fail("credential refusal must occur before yielding a store")

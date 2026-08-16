@@ -34,8 +34,10 @@ e2e bootstrap evidence, not product implementation or provider orchestration.
    `gh repo clone`, embedded credential, or omission refuses. `test_broker_uses_only_identical_local_helper`.
 5. Auth environment/FD forwarding, credential-bearing URL/config/log, dependency
    drift, and failed process refuse. `test_credential_hygiene_refusals_are_stable`.
-6. Real Ranex bootstrap runs where `git` and `uv` qualify; Arxic records an
-   explicit host-gated skip or BLOCKED outcome. `test_real_ranex_bootstrap_or_host_skip`.
+6. Real Ranex and Arxic bootstrap run only where their hosts qualify; otherwise
+   each records an explicit host-gated skip, and an attempted Arxic broker run
+   records its actual BLOCKED outcome. `test_real_ranex_bootstrap_or_host_skip`
+   and `test_real_arxic_bootstrap_or_host_skip`.
 7. Repeated cleanup leaves no clone survivor. `test_broker_cleanup_leaves_no_survivor`.
 
 ## Not owned
