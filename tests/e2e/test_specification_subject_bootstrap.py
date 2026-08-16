@@ -40,6 +40,7 @@ def test_subject_manifests_bind_real_subject_facts() -> None:
         ({"license": "Apache-2.0"}, "subject-license-drift"),
         ({"lockfile": {"path": "pnpm-lock.yaml", "sha256": "0" * 64}}, "lock-drift"),
         ({"package_manager": {"command": ["pnpm", "install"]}}, "package-manager-unpinned"),
+        ({"process_commands": [["echo", "drift"]]}, "process-command-drift"),
     ],
 )
 def test_checkout_fact_refusals_are_stable(change: dict[str, object], reason: str) -> None:

@@ -31,6 +31,10 @@ _EXPECTED: dict[str, dict[str, object]] = {
         "license": "MIT",
         "lockfile": ("uv.lock", "dadf979ec0c984e2ee0aa2f1f46804c63ea8c4eebf9519cfb423d4b66be3b5c2"),
         "package_manager": ("uv", "sync", "--frozen"),
+        "process_commands": (
+            ("uv", "run", "--frozen", "pytest", "-q", "tests/contract/test_docs_discipline.py"),
+            ("uv", "run", "--frozen", "pytest", "-q"),
+        ),
     },
     "arxic": {
         "repository": ARXIC_REPOSITORY,
@@ -39,6 +43,13 @@ _EXPECTED: dict[str, dict[str, object]] = {
         "license": "MIT",
         "lockfile": ("pnpm-lock.yaml", "4659eff963d149db1ee351ac8359f0af1990b201f10ab555b12c4b323cf4a482"),
         "package_manager": ("corepack", "pnpm@11.17.0", "install", "--frozen-lockfile"),
+        "process_commands": (
+            ("corepack", "pnpm@11.17.0", "test"),
+            ("corepack", "pnpm@11.17.0", "--filter", "reference-auth-app", "test"),
+            ("corepack", "pnpm@11.17.0", "--filter", "vulnerable-auth-app", "build"),
+            ("corepack", "pnpm@11.17.0", "--filter", "vulnerable-auth-app", "start"),
+            ("corepack", "pnpm@11.17.0", "exec", "vitest", "run"),
+        ),
     },
 }
 
@@ -90,6 +101,8 @@ def validate_manifest(subject: Mapping[str, object]) -> None:
     commands = subject.get("process_commands")
     if not isinstance(commands, list) or not all(isinstance(command, list) and command for command in commands):
         _blocked("process-command-invalid")
+    if tuple(tuple(command) for command in commands) != expected["process_commands"]:
+        _blocked("process-command-drift")
     if name == "arxic" and subject.get("credential_ref") != ARXIC_CREDENTIAL_REF:
         _blocked("credential-ref-unavailable")
 
