@@ -102,6 +102,25 @@ class _Registry:
         raise SpecificationABCError(_REGISTRY_FAILURE_CODE, "no registered failure candidate")
 
 
+class _FailureCollector:
+    """Accumulate failures so registry data, not validation phase, selects one."""
+
+    def __init__(self, registry: _Registry) -> None:
+        self._registry = registry
+        self._failures: dict[str, str] = {}
+
+    def add(self, name: str, detail: str) -> None:
+        self._failures.setdefault(name, detail)
+
+    def extend(self, failures: Mapping[str, str]) -> None:
+        for name, detail in failures.items():
+            self.add(name, detail)
+
+    def refuse_if_any(self) -> None:
+        if self._failures:
+            self._registry.refuse_first(self._failures)
+
+
 def load_error_registry(raw: bytes | None = None) -> _Registry:
     """Load the normative registry bytes; default bytes are the committed v1 file."""
     return _Registry(_REGISTRY_PATH.read_bytes() if raw is None else raw)
@@ -178,9 +197,12 @@ def _json_escape_failures(text: str) -> dict[str, str]:
                 failures.setdefault("surrogate", "high surrogate is not followed by a low surrogate")
                 if text[index + 6 : index + 8] == "\\u":
                     failures.setdefault("escape", "unicode escape must contain exactly four hexadecimal digits")
+                index += 6
             elif not 0xDC00 <= int(next_unit, 16) <= 0xDFFF:
                 failures.setdefault("surrogate", "high surrogate is not followed by a low surrogate")
-            index += 12
+                index += 6
+            else:
+                index += 12
         elif 0xDC00 <= value <= 0xDFFF:
             failures.setdefault("surrogate", "low surrogate has no preceding high surrogate")
             index += 6
@@ -194,21 +216,18 @@ def parse_strict_json(raw: bytes, *, registry: _Registry | bytes | None = None) 
     reg = _registry(registry)
     if not isinstance(raw, bytes):
         reg.refuse("input_type", type(raw).__name__)
-    failures: dict[str, str] = {}
+    failures = _FailureCollector(reg)
     if raw.startswith(b"\xef\xbb\xbf"):
-        failures["bom"] = "BOM is forbidden"
+        failures.add("bom", "BOM is forbidden")
     try:
         text = raw.decode("utf-8")
     except UnicodeDecodeError as exc:
-        failures["utf8"] = str(exc)
-        reg.refuse_first(failures)
-    if failures:
-        reg.refuse_first(failures)
-    escape_failures = _json_escape_failures(text)
-    if escape_failures:
-        reg.refuse_first(escape_failures)
+        failures.add("utf8", str(exc))
+        failures.refuse_if_any()
+        raise AssertionError("failure collector must refuse") from exc
+    failures.extend(_json_escape_failures(text))
     try:
-        return json.loads(
+        value = json.loads(
             text,
             object_pairs_hook=_pairs,
             parse_int=_integer,
@@ -216,13 +235,16 @@ def parse_strict_json(raw: bytes, *, registry: _Registry | bytes | None = None) 
             parse_constant=_constant,
         )
     except _DuplicateMember as exc:
-        reg.refuse("duplicate_member", str(exc))
+        failures.add("duplicate_member", str(exc))
     except OverflowError as exc:
-        reg.refuse("integer_range", str(exc))
+        failures.add("integer_range", str(exc))
     except ValueError as exc:
         if str(exc) == "number":
-            reg.refuse("number", "floats, exponents, and negative zero are forbidden")
-        reg.refuse("json", str(exc))
+            failures.add("number", "floats, exponents, and negative zero are forbidden")
+        else:
+            failures.add("json", str(exc))
+    failures.refuse_if_any()
+    return value
 
 
 def _reject_value_surrogates(value: object, reg: _Registry) -> None:
@@ -335,14 +357,16 @@ def validate_spec_packet(value: object, *, registry: _Registry | bytes | None = 
         reg.refuse("shape", "oracle provenance is invalid")
     ids = _object(packet["ids"], CLOSED_FIELD_SETS["ids"], reg)
     seen_ids: set[str] = set()
+    failures = _FailureCollector(reg)
     for item in ids.values():
         _strings(item, reg)
         for identifier in item:
             if not identifier.strip():
-                reg.refuse("id_grammar", "ID must not be blank or whitespace-only")
+                failures.add("id_grammar", "ID must not be blank or whitespace-only")
             if identifier in seen_ids:
-                reg.refuse("id_duplicate", identifier)
+                failures.add("id_duplicate", identifier)
             seen_ids.add(identifier)
+    failures.refuse_if_any()
     return packet
 
 
@@ -487,18 +511,22 @@ def assert_abc_chain(
     """Refuse unless B and C bind the exact supplied A/B payload identities."""
     reg = _registry(registry)
     checked_a = validate_spec_packet(spec_packet, registry=reg)
-    checked_b = validate_generated_artifact_manifest(manifest, spec_packet=checked_a, registry=reg)
+    checked_b = validate_generated_artifact_manifest(manifest, registry=reg)
     checked_envelope = _object(envelope, CLOSED_FIELD_SETS["envelope"], reg)
     checked_payload = _approval_payload(checked_envelope["payload"], reg)
-    if checked_a["domain"] != checked_b["domain"] or checked_a["domain"] != checked_payload["domain"]:
-        reg.refuse("context_binding", "A, B, and C domains must match exactly")
-    if checked_a["task"] != checked_payload["task"] or checked_a["revision"] != checked_payload["revision"]:
-        reg.refuse("context_binding", "A and C task and revision must match exactly")
+    failures = _FailureCollector(reg)
     a_digest = payload_digest(checked_a, registry=reg)
+    if checked_b["a_digest"] != a_digest:
+        failures.add("a_binding", "manifest a_digest does not bind the supplied spec packet")
     if checked_payload["a_digest"] != a_digest:
-        reg.refuse("a_binding", "approval payload a_digest does not bind the supplied spec packet")
+        failures.add("a_binding", "approval payload a_digest does not bind the supplied spec packet")
     if checked_payload["b_digest"] != payload_digest(checked_b, registry=reg):
-        reg.refuse("b_binding", "approval payload b_digest does not bind the supplied manifest")
+        failures.add("b_binding", "approval payload b_digest does not bind the supplied manifest")
+    if checked_a["domain"] != checked_b["domain"] or checked_a["domain"] != checked_payload["domain"]:
+        failures.add("context_binding", "A, B, and C domains must match exactly")
+    if checked_a["task"] != checked_payload["task"] or checked_a["revision"] != checked_payload["revision"]:
+        failures.add("context_binding", "A and C task and revision must match exactly")
+    failures.refuse_if_any()
     validate_approval_envelope(checked_envelope, used_nonces=used_nonces, registry=reg)
 
 

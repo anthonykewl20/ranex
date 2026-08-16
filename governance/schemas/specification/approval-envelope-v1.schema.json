@@ -10,11 +10,11 @@
     "payload_type": {"const": "application/vnd.ranex.approval-envelope.v1+json"},
     "payload": {"$ref": "#/$defs/payload"},
     "key_id": {"$ref": "#/$defs/publicKey"},
-    "signature": {"type": "string", "pattern": "^ed25519:[A-Za-z0-9+/]{86}==$"}
+    "signature": {"type": "string", "pattern": "^ed25519:[A-Za-z0-9+/]{85}[AQgw]==$"}
   },
   "$defs": {
     "digest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
-    "publicKey": {"type": "string", "pattern": "^ed25519:[A-Za-z0-9+/]{43}=$"},
+    "publicKey": {"type": "string", "pattern": "^ed25519:[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$"},
     "payload": {
       "type": "object", "additionalProperties": false,
       "required": ["version", "domain", "task", "revision", "subject_digest", "base_digest", "a_digest", "b_digest", "principal", "key", "role", "nonce", "journal_predecessor", "time_window", "capability_request", "profile_digests"],

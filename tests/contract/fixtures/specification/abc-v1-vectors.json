@@ -13,6 +13,7 @@
     {"name": "utf8-bom", "raw_base64": "77u/eyJvayI6MX0=", "error": "E-ABC-003"},
     {"name": "bom-precedes-invalid-utf8", "raw_base64": "77u//w==", "error": "E-ABC-003"},
     {"name": "malformed-escape-precedes-lone-surrogate", "raw": "{\"a\":\"\\uD800\\uZZZZ\"}", "error": "E-ABC-022"},
+    {"name": "malformed-escape-after-lone-surrogate", "raw": "{\"a\":\"\\uD800\\q\"}", "error": "E-ABC-022"},
     {"name": "duplicate", "raw_base64": "eyJhIjoxLCJhIjoyfQ==", "error": "E-ABC-005"},
     {"name": "lone-surrogate", "raw_base64": "eyJhIjoiXHVEODAwIn0=", "error": "E-ABC-006"},
     {"name": "negative-zero", "raw": "-0", "error": "E-ABC-007"},
@@ -27,13 +28,19 @@
     {"name": "unknown-manifest-version", "entry_point": "manifest", "source": "b", "path": ["version"], "value": "generated-artifact-manifest-v2", "error": "E-ABC-011"},
     {"name": "invalid-digest", "entry_point": "manifest", "source": "b", "path": ["a_digest"], "value": "not-a-digest", "error": "E-ABC-013"},
     {"name": "duplicate-id-within-vocabulary", "entry_point": "spec_packet", "source": "a", "path": ["ids", "question"], "value": ["Q-1", "Q-1"], "error": "E-ABC-020"},
-    {"name": "duplicate-id-across-vocabularies", "entry_point": "spec_packet", "source": "a", "path": ["ids", "rule"], "value": ["Q-1"], "error": "E-ABC-020"}
-    ,{"name": "blank-id", "entry_point": "spec_packet", "source": "a", "path": ["ids", "question"], "value": ["   "], "error": "E-ABC-023"}
+    {"name": "duplicate-id-across-vocabularies", "entry_point": "spec_packet", "source": "a", "path": ["ids", "rule"], "value": ["Q-1"], "error": "E-ABC-020"},
+    {"name": "blank-id", "entry_point": "spec_packet", "source": "a", "path": ["ids", "question"], "value": ["   "], "error": "E-ABC-023"},
+    {"name": "duplicate-blank-id-precedes-id-grammar", "entry_point": "spec_packet", "source": "a", "path": ["ids", "question"], "value": ["   ", "   "], "error": "E-ABC-020"}
   ],
   "approval_negative": [
     {"name": "noncanonical-signature-base64", "path": ["signature"], "value": "ed25519:8zwjSdWTZ1Yac/iPgn2vtZzpPnBCJ8JrK+Osy4BEt9Ps1sZsATcjpCkYeOlf1Ud3gXVGZvAWn+zmtmhQe1zyBx==", "error": "E-ABC-016"},
+    {"name": "noncanonical-public-key-base64", "path": ["payload", "key"], "value": "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbh=", "error": "E-ABC-012"},
     {"name": "key-id-dissociation", "path": ["key_id"], "value": "ed25519:ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=", "error": "E-ABC-018"},
     {"name": "reversed-time-window", "path": ["payload", "time_window", "not_before"], "value": 21, "error": "E-ABC-012"}
+  ],
+  "base64_aliases": [
+    {"name": "noncanonical-public-key-base64", "schema": "publicKey", "value": "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbh="},
+    {"name": "noncanonical-signature-base64", "schema": "signature", "value": "ed25519:8zwjSdWTZ1Yac/iPgn2vtZzpPnBCJ8JrK+Osy4BEt9Ps1sZsATcjpCkYeOlf1Ud3gXVGZvAWn+zmtmhQe1zyBx=="}
   ],
   "signing_negative": [
     {"name": "private-key-payload-key-mismatch", "private_key": "ed25519:ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=", "error": "E-ABC-014"}

@@ -4,6 +4,8 @@ import base64
 import copy
 import hashlib
 import json
+import re
+import secrets
 from pathlib import Path
 
 import pytest
@@ -38,6 +40,10 @@ def test_positive_vectors_are_canonical_and_digest_stable() -> None:
         value = parse_strict_json(vector["raw"].encode())
         assert canonical_payload_bytes(value) == vector["canonical"].encode()
         assert payload_digest(value) == vector["digest"]
+
+
+def test_strict_parser_accepts_a_valid_surrogate_pair() -> None:
+    assert parse_strict_json(b'{"emoji":"\\uD83D\\uDE00"}') == {"emoji": "😀"}
 
 
 def test_normalization_vectors_pin_distinct_byte_identities() -> None:
@@ -215,6 +221,22 @@ def test_assert_abc_chain_enforces_cross_record_context_with_a_resigned_c() -> N
         assert refused.value.code == vector["error"]
 
 
+def test_assert_abc_chain_selects_digest_binding_before_context_binding() -> None:
+    triple = VECTORS["triple"]
+    envelope = {
+        "version": "approval-envelope-v1",
+        "payload_type": "application/vnd.ranex.approval-envelope.v1+json",
+        "payload": copy.deepcopy(triple["c_payload"]),
+        "key_id": triple["key_id"],
+        "signature": triple["signature"],
+    }
+    envelope["payload"]["b_digest"] = "sha256:" + "f" * 64
+    envelope["payload"]["domain"] = "other-domain"
+    with pytest.raises(SpecificationABCError) as refused:
+        assert_abc_chain(triple["a"], triple["b"], envelope)
+    assert refused.value.code == "E-ABC-019"
+
+
 def test_closed_payload_shapes_refuse_extra_members() -> None:
     triple = VECTORS["triple"]
     validate_spec_packet(triple["a"])
@@ -263,6 +285,30 @@ def test_registry_missing_name_refuses_with_the_meta_code() -> None:
     registry = load_error_registry(json.dumps(registry_data).encode())
     with pytest.raises(SpecificationABCError, match="E-ABC-000"):
         registry.refuse("signature", "missing entry")
+
+
+def test_registry_order_selects_every_adjacent_simultaneous_candidate_pair() -> None:
+    registry_path = Path(__file__).parents[2] / "governance/schemas/specification/error-registry-v1.json"
+    registry_data = json.loads(registry_path.read_text("utf-8"))
+    registry = load_error_registry(json.dumps(registry_data).encode())
+    for index, first in enumerate(registry.check_order[:-1]):
+        second = registry.check_order[index + 1]
+        candidates = specification_abc._FailureCollector(registry)
+        candidates.add(first, "first simultaneous candidate")
+        candidates.add(second, "second simultaneous candidate")
+        with pytest.raises(SpecificationABCError) as refused:
+            candidates.refuse_if_any()
+        assert refused.value.code == registry.errors[first]["code"]
+        permuted_data = copy.deepcopy(registry_data)
+        for name in ("precedence", "check_order"):
+            permuted_data[name][index : index + 2] = [second, first]
+        permuted = load_error_registry(json.dumps(permuted_data).encode())
+        candidates = specification_abc._FailureCollector(permuted)
+        candidates.add(first, "first simultaneous candidate")
+        candidates.add(second, "second simultaneous candidate")
+        with pytest.raises(SpecificationABCError) as refused:
+            candidates.refuse_if_any()
+        assert refused.value.code == permuted.errors[second]["code"]
 
 
 def test_legacy_sign_helper_is_not_public() -> None:
@@ -315,8 +361,16 @@ def test_schema_closed_field_sets_match_the_implementation() -> None:
         assert payload["properties"][name]["minLength"] == 1
     for name in ("executable", "cwd"):
         assert capability["properties"][name]["minLength"] == 1
-    assert approval["$defs"]["publicKey"]["pattern"] == "^ed25519:[A-Za-z0-9+/]{43}=$"
-    assert approval["properties"]["signature"]["pattern"] == "^ed25519:[A-Za-z0-9+/]{86}==$"
+    public_key_pattern = approval["$defs"]["publicKey"]["pattern"]
+    signature_pattern = approval["properties"]["signature"]["pattern"]
+    assert public_key_pattern == "^ed25519:[A-Za-z0-9+/]{42}[AEIMQUYcgkosw048]=$"
+    assert signature_pattern == "^ed25519:[A-Za-z0-9+/]{85}[AQgw]==$"
+    patterns = {"publicKey": public_key_pattern, "signature": signature_pattern}
+    for alias in VECTORS["base64_aliases"]:
+        assert re.fullmatch(patterns[alias["schema"]], alias["value"]) is None
+    for _ in range(128):
+        assert base64.b64encode(secrets.token_bytes(32)).decode()[-2] in "AEIMQUYcgkosw048"
+        assert base64.b64encode(secrets.token_bytes(64)).decode()[-3] in "AQgw"
     window = payload["properties"]["time_window"]
     assert window["properties"]["not_before"]["minimum"] == 0
     assert window["properties"]["not_after"]["minimum"] == 0
