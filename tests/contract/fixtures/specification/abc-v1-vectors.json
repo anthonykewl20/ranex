@@ -1,0 +1,29 @@
+{
+  "version": "abc-v1-vectors-1",
+  "canonical": [
+    {"name": "non-bmp-code-point-order", "raw": "{\"𐀀\":\"astral\",\"\":\"bmp\"}", "canonical": "{\"\":\"bmp\",\"𐀀\":\"astral\"}", "digest": "sha256:94065525f1ea09913315f5a3f2cb846d9dda91a016d4726a60b4d99a53e50788"}
+  ],
+  "negative": [
+    {"name": "duplicate", "raw_base64": "eyJhIjoxLCJhIjoyfQ==", "error": "E-ABC-005"},
+    {"name": "lone-surrogate", "raw_base64": "eyJhIjoiXHVEODAwIn0=", "error": "E-ABC-006"},
+    {"name": "negative-zero", "raw": "-0", "error": "E-ABC-007"},
+    {"name": "float", "raw": "1.0", "error": "E-ABC-007"},
+    {"name": "exponent", "raw": "1e2", "error": "E-ABC-007"},
+    {"name": "leading-zero", "raw": "01", "error": "E-ABC-004"},
+    {"name": "plus", "raw": "+1", "error": "E-ABC-004"},
+    {"name": "unsafe-integer", "raw": "9007199254740992", "error": "E-ABC-008"}
+  ],
+  "payload_negative": [
+    {"name": "unknown-manifest-version", "source": "b", "field": "version", "value": "generated-artifact-manifest-v2", "error": "E-ABC-011"}
+  ],
+  "triple": {
+    "a": {"version":"spec-packet-v1","domain":"kernel","task":"SLICE-029","revision":1,"semantics":["freeze A/B/C"],"scope":{"include":["src/ranex/foundation"],"exclude":["tests/generated"]},"answers":{"Q-1":"owner approved"},"observable_outcomes":["closed contracts"],"non_goals":["journal API"],"oracle_provenance":{"O-1":"requirement"},"ids":{"question":["Q-1"],"rule":["R-1"],"transition":["T-1"],"outcome":["O-1"],"error":["E-1"],"test":["TEST-1"],"mapping":["M-1"]}},
+    "b": {"version":"generated-artifact-manifest-v1","domain":"kernel","a_digest":"sha256:bb0d98ed92c56892c40a4411891abb08fdd56020ae4062216a2c2d947221ae50","artifacts":{"pseudocode_flow":[{"path":"flow.txt","digest":"sha256:0000000000000000000000000000000000000000000000000000000000000000"}],"protected":[{"path":"test.txt","digest":"sha256:1111111111111111111111111111111111111111111111111111111111111111"}],"invocation":{"argv":["pytest","-q"]},"expected_values":[],"baselines":[],"negative_controls":[],"trace_projections":[],"sidecars":[]},"exemptions":[{"path":"docs/example.md","class":"docs","reason":"documentation","why_no_discriminating_red":"no executable behavior"}]},
+    "c_payload": {"version":"approval-payload-v1","domain":"kernel","task":"SLICE-029","revision":1,"subject_digest":"sha256:2222222222222222222222222222222222222222222222222222222222222222","base_digest":"sha256:3333333333333333333333333333333333333333333333333333333333333333","a_digest":"sha256:bb0d98ed92c56892c40a4411891abb08fdd56020ae4062216a2c2d947221ae50","b_digest":"sha256:710dd646e18cdffe0dac3997194c282d0d82f4ed5b7d2241587465dd6d2de436","principal":"owner","key":"ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg=","role":"approver","nonce":"nonce-029","journal_predecessor":null,"time_window":{"not_before":10,"not_after":20},"capability_request":{"executable":"python","argv":["-m","pytest"],"cwd":".","roots":["src"],"actions":["read"],"environment":{"allow":["PATH"]},"network":{"allow":false,"hosts":[]},"secret":{"allow":false,"names":[]},"commit":{"allow":false},"subagent":{"allow":false,"max_children":0}},"profile_digests":{"base":"sha256:4444444444444444444444444444444444444444444444444444444444444444","policy":"sha256:5555555555555555555555555555555555555555555555555555555555555555","generator":"sha256:6666666666666666666666666666666666666666666666666666666666666666","harness":"sha256:7777777777777777777777777777777777777777777777777777777777777777"}},
+    "a_digest": "sha256:bb0d98ed92c56892c40a4411891abb08fdd56020ae4062216a2c2d947221ae50",
+    "b_digest": "sha256:710dd646e18cdffe0dac3997194c282d0d82f4ed5b7d2241587465dd6d2de436",
+    "c_digest": "sha256:65d84f8f93e00b927cba299a0a555a917dd82f74b7fcf9c7dce4d1696f2f832f",
+    "key_id": "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg=",
+    "signature": "ed25519:iwi0fRLSkbFESI9oLXOO/Oe9gxnS677fJ/wHnyUyJ4V6bm5hSbwaunvAVF35OKwgT0gLDerZ/YjmXWee1bTIBQ=="
+  }
+}

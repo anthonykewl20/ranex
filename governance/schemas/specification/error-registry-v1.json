@@ -1,0 +1,22 @@
+{
+  "version": "ranex-specification-error-registry-v1",
+  "precedence": ["input_type", "utf8", "bom", "json", "duplicate_member", "surrogate", "number", "integer_range", "canonical", "payload_type", "version", "shape", "digest", "relation", "nonce_reuse", "signature"],
+  "errors": {
+    "input_type": {"code": "E-ABC-001", "message": "input must be bytes"},
+    "utf8": {"code": "E-ABC-002", "message": "input is not UTF-8"},
+    "bom": {"code": "E-ABC-003", "message": "input has a UTF-8 BOM"},
+    "json": {"code": "E-ABC-004", "message": "input is not strict JSON"},
+    "duplicate_member": {"code": "E-ABC-005", "message": "JSON object has a duplicate member"},
+    "surrogate": {"code": "E-ABC-006", "message": "JSON string has an invalid surrogate"},
+    "number": {"code": "E-ABC-007", "message": "JSON number is not a plain integer"},
+    "integer_range": {"code": "E-ABC-008", "message": "JSON integer is outside the safe range"},
+    "canonical": {"code": "E-ABC-009", "message": "input is not canonical JSON"},
+    "payload_type": {"code": "E-ABC-010", "message": "payload type is invalid for this contract"},
+    "version": {"code": "E-ABC-011", "message": "payload version is not supported"},
+    "shape": {"code": "E-ABC-012", "message": "payload shape is invalid"},
+    "digest": {"code": "E-ABC-013", "message": "digest has invalid grammar"},
+    "relation": {"code": "E-ABC-014", "message": "bound payload relation is invalid"},
+    "nonce_reuse": {"code": "E-ABC-015", "message": "approval nonce was already used"},
+    "signature": {"code": "E-ABC-016", "message": "detached signature is invalid"}
+  }
+}
