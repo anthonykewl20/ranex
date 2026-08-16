@@ -261,6 +261,20 @@ def test_validator_collects_simultaneous_version_shape_and_digest_candidates() -
     assert refused.value.code == "E-ABC-011"
 
 
+def test_manifest_validator_collects_nested_shape_candidates_before_digest_precedence() -> None:
+    invalid = copy.deepcopy(VECTORS["triple"]["b"])
+    invalid["a_digest"] = "bad"
+    invalid["artifacts"]["protected"] = [{"path": "missing-digest"}]
+    with pytest.raises(SpecificationABCError) as refused:
+        validate_generated_artifact_manifest(invalid)
+    assert refused.value.code == "E-ABC-012"
+
+    invalid["version"] = "generated-artifact-manifest-v2"
+    with pytest.raises(SpecificationABCError) as refused:
+        validate_generated_artifact_manifest(invalid)
+    assert refused.value.code == "E-ABC-011"
+
+
 def test_parser_collects_duplicate_member_with_bad_number_before_selecting_registry_order() -> None:
     with pytest.raises(SpecificationABCError) as refused:
         parse_strict_json(b'{"a":1,"a":-0}')

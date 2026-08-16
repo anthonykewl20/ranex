@@ -425,6 +425,64 @@ def _artifact_rows(value: object, reg: _Registry) -> None:
         _string(row["path"], reg); _digest(row["digest"], reg)
 
 
+def _collect_object_candidate(value: object, expected: frozenset[str], failures: _FailureCollector) -> Mapping[str, object] | None:
+    if not isinstance(value, dict) or set(value) != expected:
+        failures.add("shape", "object has missing or extra fields")
+        return None
+    return value
+
+
+def _collect_artifact_rows_candidates(value: object, failures: _FailureCollector) -> None:
+    if not isinstance(value, list):
+        failures.add("shape", "artifact set must be an array")
+        return
+    for item in value:
+        row = _collect_object_candidate(item, CLOSED_FIELD_SETS["artifact_row"], failures)
+        if row is not None:
+            path = row["path"]
+            if not isinstance(path, str) or not path:
+                failures.add("shape", "required string is absent or empty")
+            digest = row["digest"]
+            if not isinstance(digest, str) or _DIGEST.fullmatch(digest) is None:
+                failures.add("digest", repr(digest))
+
+
+def _collect_manifest_candidates(value: object, failures: _FailureCollector) -> None:
+    """Walk manifest children before precedence selects a top-level candidate."""
+
+    if isinstance(value, dict):
+        if "version" in value and value.get("version") != "generated-artifact-manifest-v1":
+            failures.add("version", repr(value.get("version")))
+        digest = value.get("a_digest")
+        if not isinstance(digest, str) or _DIGEST.fullmatch(digest) is None:
+            failures.add("digest", repr(digest))
+    manifest = _collect_object_candidate(value, CLOSED_FIELD_SETS["manifest"], failures)
+    if manifest is None:
+        return
+    artifacts = _collect_object_candidate(manifest["artifacts"], CLOSED_FIELD_SETS["artifacts"], failures)
+    if artifacts is not None:
+        for name in ("pseudocode_flow", "protected", "expected_values", "baselines", "negative_controls", "trace_projections", "sidecars"):
+            _collect_artifact_rows_candidates(artifacts[name], failures)
+        invocation = _collect_object_candidate(artifacts["invocation"], CLOSED_FIELD_SETS["invocation"], failures)
+        if invocation is not None and (
+            not isinstance(invocation["argv"], list)
+            or any(not isinstance(item, str) for item in invocation["argv"])
+        ):
+            failures.add("shape", "expected a string array")
+    exemptions = manifest["exemptions"]
+    if not isinstance(exemptions, list):
+        failures.add("shape", "exemptions must be an array")
+    else:
+        for item in exemptions:
+            row = _collect_object_candidate(item, CLOSED_FIELD_SETS["exemption_row"], failures)
+            if row is not None:
+                for name in ("path", "reason", "why_no_discriminating_red"):
+                    if not isinstance(row[name], str) or not row[name]:
+                        failures.add("shape", "required string is absent or empty")
+                if row["class"] not in {"generated", "vendor", "docs", "nonbehavioral"}:
+                    failures.add("shape", "exemption class is invalid")
+
+
 def validate_generated_artifact_manifest(
     value: object,
     *,
@@ -433,14 +491,7 @@ def validate_generated_artifact_manifest(
 ) -> dict[str, object]:
     reg = _registry(registry)
     failures = _FailureCollector(reg)
-    if isinstance(value, dict):
-        if "version" in value and value.get("version") != "generated-artifact-manifest-v1":
-            failures.add("version", repr(value.get("version")))
-        if set(value) != CLOSED_FIELD_SETS["manifest"]:
-            failures.add("shape", "object has missing or extra fields")
-        digest = value.get("a_digest")
-        if not isinstance(digest, str) or _DIGEST.fullmatch(digest) is None:
-            failures.add("digest", repr(digest))
+    _collect_manifest_candidates(value, failures)
     failures.refuse_if_any()
     manifest = _object(value, CLOSED_FIELD_SETS["manifest"], reg)
     _version(manifest, "generated-artifact-manifest-v1", reg)
