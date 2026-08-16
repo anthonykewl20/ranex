@@ -39,4 +39,5 @@ slices; SLICE-021 (#2) builds on merged EventV2 work in the harness lane.
 - Controller same-uid trust, worker-cgroup-leaf on SIGKILL, dead
   LC_ALL/TZ fallback: named follow-ups (ADR-024/047).
 - cgroup-observer OSError(19) flake under load remains.
+- SLICE-008 bounded-fanout timing test can flake under full-suite load; it passes in isolation and on origin/main.
 - mutmut advisory not run this cycle.
