@@ -23,11 +23,11 @@
     "sidecar_utf8": "{\"ids\":{\"outcome\":[\"O-1\"],\"rule\":[\"R-1\"],\"transition\":[\"T-1\"]},\"path\":\"tests/generated/acceptance.trace\",\"projection\":\"sha256:710d34ff927584dc11eabbf3bf005fdc3fb3901feedcc676ef29e6a9802c0394\",\"symbol\":\"acceptance_trace\",\"version\":\"trace-sidecar-v1\"}",
     "manifest_rows": {
       "pseudocode_flow": [{"path": "projections/flowchart.mmd", "digest": "sha256:8497450e4d38e17dcf4b657ca0f49fe50bfea62b034e3199ea8953508a6aa80d"}, {"path": "projections/pseudocode.txt", "digest": "sha256:8f7c9c2d397112b6ebc0b02223a532a8b23b1264991d59c990072dd65176b8ec"}],
-      "protected": [{"path": "tests/generated/acceptance.trace", "digest": "sha256:9d23096891a81e70094b64c036f85f0c3c86680a3850d24a418b480f18290665"}, {"path": "tests/generated/test_acceptance.py", "digest": "sha256:e0d0ac414b9e0f285b3a964bd72695376c95da23866360855f752fe14381cb2e"}],
+      "protected": [{"path": "tests/generated/acceptance.trace", "digest": "sha256:9d23096891a81e70094b64c036f85f0c3c86680a3850d24a418b480f18290665"}, {"path": "tests/generated/test_acceptance.py", "digest": "sha256:4b445a2469d5e38d894250afbf84b5645d08e82aa6a14cb6e5177f381a5e27ed"}],
       "invocation": {"argv": ["pytest", "-q", "tests/generated/acceptance.trace", "tests/generated/test_acceptance.py"]},
-      "expected_values": [{"path": "generated/expected/O-1.json", "digest": "sha256:4802475f167c9d8a2e2f9327b7349d7e584b8ac2c34f845efb167182c5d8881d"}],
-      "baselines": [{"path": "generated/baseline/O-1.json", "digest": "sha256:4802475f167c9d8a2e2f9327b7349d7e584b8ac2c34f845efb167182c5d8881d"}],
-      "negative_controls": [{"path": "generated/negative/O-1.json", "digest": "sha256:4215f3656b42980d52c143a4aa8e0a1a9ac5ea55c84af42f61b8a24822fc9525"}],
+      "expected_values": [{"path": "generated/expected/O-1.json", "digest": "sha256:25a546ec67fa4eaacc4f834f564420c6dc48c33f1343e3387e5a5afa528f9b02"}],
+      "baselines": [{"path": "generated/baseline/O-1.json", "digest": "sha256:25a546ec67fa4eaacc4f834f564420c6dc48c33f1343e3387e5a5afa528f9b02"}],
+      "negative_controls": [{"path": "generated/negative/O-1.json", "digest": "sha256:f6c97c0138dddc577c675386ac58ec9bd34452d11df8db05bdc40d61792d2992"}],
       "trace_projections": [{"path": "tests/generated/acceptance.trace.ranex-trace", "digest": "sha256:710d34ff927584dc11eabbf3bf005fdc3fb3901feedcc676ef29e6a9802c0394"}, {"path": "tests/generated/test_acceptance.py.ranex-trace", "digest": "sha256:b92055f5d3089e0e473196f97e4d27f2ac6e2e810fb3bfe54e928f87b1a4b892"}],
       "sidecars": [{"path": "tests/generated/acceptance.trace.ranex-trace.json", "digest": "sha256:9d23096891a81e70094b64c036f85f0c3c86680a3850d24a418b480f18290665"}]
     }

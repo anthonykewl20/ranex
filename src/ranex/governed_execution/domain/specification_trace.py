@@ -34,7 +34,7 @@ _COMMENT = re.compile(
     r"(?:#|//) ranex-trace: rule=([^\s]+) transition=([^\s]+) "
     r"outcome=([^\s]+) projection=(sha256:[0-9a-f]{64})\Z"
 )
-_SYMBOL = re.compile(r"^\s*(?:def|class|function)\s+([A-Za-z_$][\w$]*)")
+_SYMBOL = re.compile(r"^\s*(?:def|class|(?:export\s+)?function)\s+([A-Za-z_$][\w$]*)")
 _SOURCE_SUFFIXES = {".py", ".ts", ".js"}
 
 

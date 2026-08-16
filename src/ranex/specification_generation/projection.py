@@ -106,14 +106,14 @@ def _gauge(target: Target, scenario: Scenario, test_id: str, mapping_id: str) ->
     expected = values[target.outcomes[0]]
     if target.language == "python":
         return (
-            trace_comment(target)
-            + b"# ranex-gauge: placeholder-until-execution-slice\n"
+            b"# ranex-gauge: placeholder-until-execution-slice\n"
+            + trace_comment(target)
             + f"def {target.symbol}():\n    assert {expected!r} == {expected!r}  # {test_id} {mapping_id}\n".encode()
         )
     if target.language in {"typescript", "javascript"}:
         return (
-            trace_comment(target)
-            + b"// ranex-gauge: placeholder-until-execution-slice\n"
+            b"// ranex-gauge: placeholder-until-execution-slice\n"
+            + trace_comment(target)
             + f"export function {target.symbol}() {{ return {expected!r}; }} // {test_id} {mapping_id}\n".encode()
         )
     return _sidecar(target)
@@ -142,9 +142,9 @@ def generate_projections(spec_packet: object) -> ProjectionResult:
         for target in scenario.targets
     )
     sidecars = tuple(GeneratedArtifact(target.path + ".ranex-trace.json", _sidecar(target)) for target in scenario.targets if target.language == "sidecar-json")
-    expected = tuple(GeneratedArtifact(f"generated/expected/{row.identifier}.json", canonical_payload_bytes({"outcome": row.identifier, "value": row.value})) for row in scenario.outcomes)
-    baselines = tuple(GeneratedArtifact(f"generated/baseline/{row.identifier}.json", canonical_payload_bytes({"outcome": row.identifier, "value": row.value})) for row in scenario.outcomes)
-    controls = tuple(GeneratedArtifact(f"generated/negative/{row.identifier}.json", canonical_payload_bytes({"outcome": row.identifier, "wrong_value": row.value + "__wrong"})) for row in scenario.outcomes)
+    expected = tuple(GeneratedArtifact(f"generated/expected/{row.identifier}.json", canonical_payload_bytes({row.identifier: row.value})) for row in scenario.outcomes)
+    baselines = tuple(GeneratedArtifact(f"generated/baseline/{row.identifier}.json", canonical_payload_bytes({row.identifier: row.value})) for row in scenario.outcomes)
+    controls = tuple(GeneratedArtifact(f"generated/negative/{row.identifier}.json", canonical_payload_bytes({row.identifier: row.value + "__wrong"})) for row in scenario.outcomes)
     pseudocode_flow = (GeneratedArtifact("projections/pseudocode.txt", pseudocode), GeneratedArtifact("projections/flowchart.mmd", flowchart))
     _refuse_artifact_path_collisions(
         pseudocode_flow,
