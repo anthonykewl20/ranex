@@ -1,6 +1,6 @@
 # SLICE-035 — real subject bootstrap
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-16
 **Priority:** P0 — SLICE-044 must not consume substitute subjects or controller credentials.
 **ADR:** `docs/adr/ADR-026-real-subject-bootstrap.md`.
@@ -58,3 +58,12 @@ uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 uv run --frozen pytest -q tests/e2e/test_specification_subject_bootstrap.py
 uv run --frozen pytest -q
 ```
+
+## Closure
+
+Focused suite: 17 passed / 2 host-gated skips. The real Ranex bootstrap ran
+with `RANEX_SLICE035_REAL=1` and passed. The Arxic `reference-auth-app` path
+remains an explicit BLOCKED outcome when its controller-only credential profile
+is unavailable; it never substitutes a fixture. Manifest registration declares
+both host-gated skips, fixing the P1 honest-skip regression found by the
+repository self-gate.

@@ -324,9 +324,9 @@ SLICE-029 is closed kernel-side: its A/B/C schemas, canonical rules, error
 registry, vectors, and frozen manifest registration are merged locally.
 SLICE-030 lifecycle and trace contracts are merged and registered locally;
 lifecycle-fact wiring and nonce tracking belong to SLICE-032. SLICE-031 closed
-DSL projections and protected manifests, and SLICE-033's independent trace
-verifier, are merged locally. The TypeScript schema/vector mirror remains in
-the harness lane; SLICE-035 is the next integrated kernel work.
+DSL projections and protected manifests, SLICE-033's independent trace verifier,
+and SLICE-035's real-subject bootstrap are merged locally. The TypeScript
+schema/vector mirror remains in the harness lane; SLICE-032 is next.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -367,6 +367,9 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-035-real-subject-bootstrap** — closed 2026-08-16, kernel-side. Real
+  Ranex source bootstrap ran from its pinned subject; Arxic remains explicitly
+  BLOCKED without its controller-only reference-auth-app credential profile.
 - **SLICE-033-trace-integrity** — closed 2026-08-16, kernel-side. Independent
   trace coverage binds changed source symbols to exact current generated
   comment/sidecar references and separately verifies protected outcomes;
