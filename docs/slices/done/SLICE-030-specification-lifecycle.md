@@ -1,6 +1,6 @@
 # SLICE-030 — kernel lifecycle and human clarification
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-16
 **Priority:** P0 — A/B/C needs a deterministic pre-implementation lifecycle.
 **ADRs:** `docs/adr/ADR-027-specification-lifecycle.md`.
@@ -62,6 +62,8 @@ uv run --frozen pytest -q
 
 ## Closure
 
-red-test defects corrected pre-green with owner authorization: (1) contradictory
-CLI input pair split into valid/invalid inputs; (2) advance-request target-state
-field added to make replay-vs-transition determined; (3) import-order lint fix.
+Focused verification: 14 passed. Full suite: 1048 passed / 33 skipped / 1
+known flake; the flake is the documented cgroup-observer `OSError(19)` under
+load and passed in isolation. Independent review resolved all P2 findings;
+remediation landed in `2c6b7510c`. Follow-ups: SLICE-032 owns wiring lifecycle
+facts and nonce tracking.

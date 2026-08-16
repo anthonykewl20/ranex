@@ -321,9 +321,11 @@ none of the surface around it does.
 
 **Active slice:** none.
 SLICE-029 is closed kernel-side: its A/B/C schemas, canonical rules, error
-registry, vectors, and frozen manifest registration are merged locally. The
-TypeScript schema/vector mirror remains in the harness lane; SLICE-030/031/033/035
-are the next integrated or in-flight kernel work.
+registry, vectors, and frozen manifest registration are merged locally.
+SLICE-030 lifecycle and trace contracts are merged locally; lifecycle-fact
+wiring and nonce tracking belong to SLICE-032. The TypeScript schema/vector
+mirror remains in the harness lane; SLICE-031/033/035 are the next integrated
+or in-flight kernel work.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -364,6 +366,10 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-030-specification-lifecycle** — closed 2026-08-16, kernel-side.
+  Deterministic lifecycle transitions, clarification questions, durable retry,
+  and CLI status/advance paths are merged locally; lifecycle-fact wiring and
+  nonce tracking remain SLICE-032 follow-ups.
 - **SLICE-029-abc-contract-freeze** — closed 2026-08-16, kernel-side. A/B/C schemas, canonical forms, registry precedence, vectors, and the frozen suite IDs are complete; the TypeScript mirror remains a harness-lane follow-up for #12.
 - **SLICE-047-confinement-hardening** — closed 2026-08-15. The confinement-result validator is shared by producer and signer; the controller gets an explicit four-variable environment, and timeout/reap failures refuse without evidence (ADR-024).
 - **SLICE-046-cmd-run-confinement-binding** — closed 2026-08-15. `cmd_run` runs the bound command inside the qualified strict-local session (ADR-023), and evidence is signed only after fail-closed confinement-result validation; ADR-006 is accepted, RISK-06 is closed, and ADR-017 is accepted without broadening.
