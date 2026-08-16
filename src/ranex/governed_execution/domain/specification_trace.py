@@ -35,7 +35,7 @@ _COMMENT = re.compile(
     r"outcome=([^\s]+) projection=(sha256:[0-9a-f]{64})\Z"
 )
 _SYMBOL = re.compile(r"^\s*(?:def|class|function)\s+([A-Za-z_$][\w$]*)")
-_SOURCE_SUFFIXES = {".py", ".ts"}
+_SOURCE_SUFFIXES = {".py", ".ts", ".js"}
 
 
 class TraceVerificationError(ValueError):
@@ -112,7 +112,7 @@ def parse_trace_comment(
     ids: Mapping[str, Sequence[str]] | None = None,
     projections: set[str] | None = None,
 ) -> TraceAnchor:
-    """Parse exactly the generated one-line Python or TypeScript comment form."""
+    """Parse exactly the generated one-line Python or ECMAScript comment form."""
 
     match = _COMMENT.fullmatch(line)
     if match is None:

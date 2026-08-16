@@ -87,6 +87,20 @@ def test_descriptor_bytes_projection_row_interoperate_with_comment(tmp_path: Pat
     assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).outcomes[0].passed
 
 
+def test_javascript_trace_comment_is_discovered_and_covers_its_target(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    (base / "src/example.js").write_text("function value() { return 1; }\n", encoding="utf-8")
+    (candidate / "src/example.js").write_text(
+        "// ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection="
+        f"{_projection(candidate)}\nfunction value() {{ return 2; }}\n",
+        encoding="utf-8",
+    )
+    facts = verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+    assert facts.trace.covered == 1
+    assert facts.trace.anchors[0].path == "src/example.js"
+
+
 @pytest.mark.parametrize("field", ("domain", "revision"))
 def test_canonical_abc_chain_refuses_context_drift(tmp_path: Path, field: str) -> None:
     base, candidate = tmp_path / "base", tmp_path / "candidate"

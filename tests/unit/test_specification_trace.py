@@ -8,7 +8,7 @@ from ranex.governed_execution.domain.specification_trace import (
 )
 
 
-def test_comment_parser_accepts_only_the_generated_python_and_typescript_form() -> None:
+def test_comment_parser_accepts_only_the_generated_python_and_ecmascript_form() -> None:
     expected = ("R-1", "T-1", "O-1")
     for line in (
         "# ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection=sha256:" + "a" * 64,
