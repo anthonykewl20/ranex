@@ -1,6 +1,6 @@
 # SLICE-031 — closed DSL projections and protected test manifest
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-16
 **Priority:** P0 — compile approved semantic A into deterministic views and B.
 **ADR:** `docs/adr/ADR-028-closed-dsl-projections.md`.
@@ -54,3 +54,9 @@ uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 uv run --frozen ruff check src/ranex/specification_generation tests/unit/test_specification_generation.py
 uv run --frozen pytest -q
 ```
+
+## Closure
+
+Focused verification: 19 passed. Full suite under the absent-harness
+configuration: 1068 passed / 33 skipped. Independent review completed; its
+trace-projection remediation landed in `09b6c3435` before integration.
