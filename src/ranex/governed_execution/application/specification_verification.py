@@ -99,6 +99,44 @@ def _approved_values(manifest: Mapping[str, object], candidate: Path) -> Mapping
     return expected
 
 
+def _approved_outcome_artifacts(manifest: Mapping[str, object], candidate: Path) -> Mapping[str, str]:
+    """Index the B-approved per-outcome projection artifacts by outcome ID."""
+
+    artifacts = manifest.get("artifacts")
+    if not isinstance(artifacts, Mapping):
+        _refuse(E_TRACE_AUTHORITY, "manifest artifacts are malformed")
+    projections = artifacts.get("trace_projections")
+    if not isinstance(projections, list):
+        _refuse(E_TRACE_AUTHORITY, "manifest outcome artifacts are malformed")
+
+    bindings: dict[str, str] = {}
+    bound_paths: set[str] = set()
+    for row in projections:
+        if not isinstance(row, Mapping) or not isinstance(row.get("path"), str):
+            _refuse(E_TRACE_AUTHORITY, "manifest trace projection row is malformed")
+        try:
+            descriptor = json.loads(_file(candidate, row["path"]).read_bytes())
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise TraceVerificationError(E_TRACE_AUTHORITY, "trace projection descriptor is not JSON") from exc
+        if not isinstance(descriptor, Mapping):
+            _refuse(E_TRACE_AUTHORITY, "trace projection descriptor is malformed")
+        path = descriptor.get("path")
+        ids = descriptor.get("ids")
+        outcomes = ids.get("outcome") if isinstance(ids, Mapping) else None
+        if (
+            not isinstance(path, str)
+            or not isinstance(outcomes, list)
+            or len(outcomes) != 1
+            or not isinstance(outcomes[0], str)
+        ):
+            continue
+        outcome_id = outcomes[0]
+        if path not in bound_paths:
+            bindings.setdefault(outcome_id, path)
+            bound_paths.add(path)
+    return bindings
+
+
 def verify_specification(
     a: Mapping[str, object],
     b: Mapping[str, object],
@@ -146,7 +184,12 @@ def verify_specification(
     approved_outcomes = packet_ids.get("outcome")
     if not isinstance(approved_outcomes, list) or any(not isinstance(item, str) for item in approved_outcomes):
         _refuse(E_TRACE_AUTHORITY, "A outcome IDs are malformed")
-    if set(expected) != set(approved_outcomes) or set(gauge_results) != set(approved_outcomes):
+    outcome_artifacts = _approved_outcome_artifacts(manifest, candidate)
+    if (
+        set(expected) != set(approved_outcomes)
+        or set(gauge_results) != set(approved_outcomes)
+        or set(outcome_artifacts) != set(approved_outcomes)
+    ):
         _refuse(E_TRACE_OUTCOME, "approved outcome observations do not exactly match A")
     outcomes = tuple(
         OutcomeFact(outcome_id, expected[outcome_id], gauge_results.get(outcome_id), gauge_results.get(outcome_id) == expected[outcome_id])

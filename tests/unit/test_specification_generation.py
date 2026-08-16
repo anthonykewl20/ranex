@@ -201,6 +201,22 @@ def _unsafe_symbol(packet: dict[str, object]) -> None:
     _mutate_dsl(packet, lambda value: value["targets"][0].__setitem__("symbol", "bad-name"))  # type: ignore[index,union-attr]
 
 
+def _unsafe_outcome(packet: dict[str, object], identifier: str) -> None:
+    ids = packet["ids"]
+    provenance = packet["oracle_provenance"]
+    assert isinstance(ids, dict) and isinstance(provenance, dict)
+    ids["outcome"] = [identifier]
+    value = provenance.pop("O-1")
+    provenance[identifier] = value
+
+    def mutate(dsl: dict[str, object]) -> None:
+        dsl["outcomes"][0]["id"] = identifier  # type: ignore[index]
+        dsl["rules"][0]["outcome"] = identifier  # type: ignore[index]
+        dsl["targets"][0]["outcomes"] = [identifier]  # type: ignore[index]
+
+    _mutate_dsl(packet, mutate)
+
+
 def _artifact_collision(packet: dict[str, object]) -> None:
     def mutate(value: dict[str, object]) -> None:
         targets = value["targets"]
@@ -247,6 +263,14 @@ def test_closed_dsl_refusals(
     with pytest.raises(ProjectionError) as refused:
         entry_point(packet)
     assert refused.value.code == code
+
+
+@pytest.mark.parametrize("identifier", ("O/2", r"O\2", "..", " "))
+def test_outcome_ids_that_cannot_be_filenames_refuse_as_projection_errors(identifier: str) -> None:
+    packet = _packet()
+    _unsafe_outcome(packet, identifier)
+    with pytest.raises(ProjectionError):
+        parse_scenario(packet)
 
 
 @pytest.mark.parametrize("code", [E_SG_STALE, E_SG_INTEGRITY])

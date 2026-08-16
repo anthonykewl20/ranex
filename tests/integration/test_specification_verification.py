@@ -168,6 +168,24 @@ def test_malformed_absent_or_unapproved_sidecar_refuses(tmp_path: Path, case: st
         verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
 
 
+def test_sidecar_descriptor_language_must_match_the_anchored_source_path(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    descriptor = _descriptor()
+    descriptor["language"] = "javascript"
+    raw = canonical_payload_bytes(descriptor)
+    (candidate / ".ranex-trace").write_bytes(raw)
+    artifacts = b["artifacts"]
+    assert isinstance(artifacts, dict)
+    artifacts["trace_projections"] = [{"path": ".ranex-trace", "digest": _digest(raw)}]
+    _resign(c, b)
+    _add_sidecar(candidate, b, c, projection=_digest(raw))
+    (candidate / "src/example.py").write_text("def value():\n    return 2\n", encoding="utf-8")
+    with pytest.raises(TraceVerificationError) as refused:
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+    assert refused.value.code == "E-TRACE-002"
+
+
 def test_two_nonidentical_anchors_for_one_symbol_refuse(tmp_path: Path) -> None:
     base, candidate = tmp_path / "base", tmp_path / "candidate"
     a, b, c = _triple(base, candidate); _anchor(candidate)
@@ -307,3 +325,71 @@ def test_new_multi_symbol_file_requires_an_anchor_for_each_symbol(tmp_path: Path
         encoding="utf-8",
     )
     assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).trace.covered == 2
+
+
+def test_renamed_first_symbol_and_modified_second_symbol_need_all_anchors(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    (base / "src/example.py").write_text(
+        "def old():\n    return 1\n\ndef second():\n    return 1\n", encoding="utf-8"
+    )
+    artifacts = b["artifacts"]
+    assert isinstance(artifacts, dict)
+    projections: list[dict[str, str]] = []
+    digests: dict[str, str] = {}
+    for symbol in ("old", "renamed", "second"):
+        raw = canonical_payload_bytes(_descriptor(symbol=symbol))
+        path = f".{symbol}.ranex-trace"
+        (candidate / path).write_bytes(raw)
+        digests[symbol] = _digest(raw)
+        projections.append({"path": path, "digest": digests[symbol]})
+    artifacts["trace_projections"] = projections
+    _resign(c, b)
+    _add_sidecar(candidate, b, c, symbol="old", projection=digests["old"])
+    (candidate / "src/example.py").write_text(
+        "def renamed():\n    return 2\n\ndef second():\n    return 2\n", encoding="utf-8"
+    )
+    with pytest.raises(TraceVerificationError) as refused:
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+    assert refused.value.code == "E-TRACE-006"
+
+    (candidate / "src/example.py").write_text(
+        _marker(digests["renamed"], "renamed")
+        + "\n"
+        + _marker(digests["second"], "second"),
+        encoding="utf-8",
+    )
+    assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).trace.covered == 3
+
+
+def test_every_observed_outcome_needs_a_distinct_approved_gauge_descriptor(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    ids = a["ids"]
+    provenance = a["oracle_provenance"]
+    assert isinstance(ids, dict) and isinstance(provenance, dict)
+    ids["outcome"] = ["O-1", "O-2"]
+    provenance["O-2"] = "requirement"
+    a["observable_outcomes"] = ["pass", "pass-2"]
+    (candidate / "expected.json").write_text('{"O-1":"pass","O-2":"pass-2"}', encoding="utf-8")
+    artifacts = b["artifacts"]
+    assert isinstance(artifacts, dict)
+    artifacts["expected_values"] = [{"path": "expected.json", "digest": _digest((candidate / "expected.json").read_bytes())}]
+    b["a_digest"] = payload_digest(a)
+    payload = c["payload"]
+    assert isinstance(payload, dict)
+    payload["a_digest"] = payload_digest(a)
+    _resign(c, b)
+    _anchor(candidate)
+    with pytest.raises(TraceVerificationError) as refused:
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass", "O-2": "pass-2"}, ("pytest", "-q"))
+    assert refused.value.code == "E-TRACE-016"
+
+    raw = canonical_payload_bytes({
+        **_descriptor(path="src/o2.py"),
+        "ids": {"rule": ["R-1"], "transition": ["T-1"], "outcome": ["O-2"]},
+    })
+    (candidate / ".o2.ranex-trace").write_bytes(raw)
+    artifacts["trace_projections"].append({"path": ".o2.ranex-trace", "digest": _digest(raw)})  # type: ignore[index]
+    _resign(c, b)
+    assert verify_specification(a, b, c, base, candidate, {"O-1": "pass", "O-2": "pass-2"}, ("pytest", "-q")).outcomes[1].passed

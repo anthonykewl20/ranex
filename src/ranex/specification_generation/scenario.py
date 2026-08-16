@@ -32,6 +32,7 @@ _PORTABLE_RELATIVE_PATH = re.compile(
 )
 _PYTHON_SYMBOL = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 _ECMASCRIPT_SYMBOL = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]*$")
+_OUTCOME_FILENAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._-]*$")
 
 
 class ProjectionError(ValueError):
@@ -181,7 +182,10 @@ def parse_scenario(spec_packet: object) -> Scenario:
         transitions.append(Transition(_string(item["id"]), _string(item["from"]), _string(item["to"])))
     for row in _list(root["outcomes"], "outcomes"):
         item = _closed_object(row, {"id", "value"})
-        outcomes.append(Outcome(_string(item["id"]), _string(item["value"])))
+        identifier = _string(item["id"])
+        if not _OUTCOME_FILENAME.fullmatch(identifier):
+            _refuse(E_SG_PATH, "outcome ID is not filename-safe")
+        outcomes.append(Outcome(identifier, _string(item["value"])))
     for row in _list(root["targets"], "targets"):
         item = _closed_object(row, {"path", "language", "symbol", "rules", "transitions", "outcomes"})
         language = _string(item["language"])
