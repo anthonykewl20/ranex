@@ -323,11 +323,11 @@ none of the surface around it does.
 SLICE-029 is closed kernel-side: its A/B/C schemas, canonical rules, error
 registry, vectors, and frozen manifest registration are merged locally.
 SLICE-030 lifecycle and trace contracts are merged and registered locally;
-lifecycle-fact wiring and nonce tracking belong to SLICE-032. SLICE-031 closed
-DSL projections and protected manifests, SLICE-033's independent trace verifier,
-and SLICE-035's real-subject bootstrap are merged locally. The TypeScript
-schema/vector mirror remains in the harness lane. SLICE-032 approval,
-revocation, intersected child grants, and nonce tracking are closed locally.
+SLICE-032 completed its lifecycle-fact wiring and nonce tracking. SLICE-031
+closed DSL projections and protected manifests, SLICE-033's independent trace
+verifier, and SLICE-035's real-subject bootstrap are merged locally. The
+TypeScript schema/vector mirror remains in the harness lane. SLICE-032 approval,
+revocation, and intersected child grants are closed locally.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
