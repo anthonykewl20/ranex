@@ -102,3 +102,22 @@ def test_use_refuses_without_a_matching_c_bound_grant_issuance() -> None:
     with __import__("pytest").raises(ApprovalRefusal) as refused:
         evaluate_use((), grant(), 10)
     assert refused.value.code == "E-APPROVAL-GRANT-UNISSUED"
+
+
+def test_grant_ancestry_requires_parents_to_precede_descendants() -> None:
+    child = grant()
+    child_issued = SpecificationEvent(
+        "child-issued", "GRANT_ISSUED", 1, "sha256:" + "b" * 64, child.c_digest,
+        "child", "parent", "owner", "key", None, "OK",
+    )
+    parent_issued = SpecificationEvent(
+        "parent-issued", "GRANT_ISSUED", 2, "sha256:" + "b" * 64, child.c_digest,
+        "parent", None, "owner", "key", child_issued.digest, "OK",
+    )
+    with __import__("pytest").raises(ApprovalRefusal) as refused:
+        evaluate_use((child_issued, parent_issued), child, 3)
+    assert refused.value.code == "E-APPROVAL-GRANT-UNISSUED"
+
+    ordered_parent = __import__("dataclasses").replace(parent_issued, seq=1, previous_event_digest=None)
+    ordered_child = __import__("dataclasses").replace(child_issued, seq=2, previous_event_digest=ordered_parent.digest)
+    assert evaluate_use((ordered_parent, ordered_child), child, 3).valid is True

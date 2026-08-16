@@ -160,7 +160,10 @@ def evaluate_use(
         current_grant = expected_parent
         if current_grant is None:
             break
-        expected_parent = issued_by_grant.get(current_grant).parent_grant_id if current_grant in issued_by_grant else None
+        parent_issued = issued_by_grant.get(current_grant)
+        if parent_issued is None or parent_issued.seq >= issued.seq:
+            raise ApprovalRefusal("E-APPROVAL-GRANT-UNISSUED", "grant issuance ancestry is not temporally ordered")
+        expected_parent = parent_issued.parent_grant_id
     else:
         raise ApprovalRefusal("E-APPROVAL-GRANT-UNISSUED", "grant issuance ancestry cycles")
     if not grant.not_before <= journal_position <= grant.not_after:

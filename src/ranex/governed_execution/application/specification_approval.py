@@ -53,6 +53,15 @@ def issue_approval(
     if not isinstance(envelope, dict) or not isinstance(envelope.get("payload"), dict):
         raise ApprovalRefusal("E-APPROVAL-SHAPE", "approval envelope is absent")
     payload = envelope["payload"]
+    if not isinstance(prior_events, tuple) or any(not isinstance(event, SpecificationEvent) for event in prior_events):
+        raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "prior events must be an ordered event tuple")
+    previous_seq = -1
+    previous_digest: str | None = None
+    for event in prior_events:
+        if event.seq <= previous_seq or event.previous_event_digest != previous_digest:
+            raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "prior event prefix is not canonically ordered")
+        previous_seq = event.seq
+        previous_digest = event.digest
     used_nonces = tuple(
         event.event_id.removeprefix("approval:")
         for event in prior_events
@@ -75,16 +84,17 @@ def issue_approval(
         raise ApprovalRefusal("E-APPROVAL-POSITION", "journal position is invalid")
     if (journal_position == 0) != (current_head is None) or payload["journal_predecessor"] != current_head:
         raise ApprovalRefusal("E-APPROVAL-PREDECESSOR", "C predecessor does not equal observed head/genesis")
-    if not isinstance(prior_events, tuple) or any(not isinstance(event, SpecificationEvent) for event in prior_events):
-        raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "prior events must be an ordered event tuple")
+    for event in prior_events:
+        if event.seq >= journal_position:
+            raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "prior event prefix is not canonically ordered")
     actual_prior_head = prior_events[-1].digest if prior_events else None
     if prior_event_head != actual_prior_head:
         raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "supplied prior event head does not bind the prefix")
-    if prior_events and prior_events[-1].seq >= journal_position:
-        raise ApprovalRefusal("E-APPROVAL-EVENT-CHAIN", "approval position cannot follow the supplied event prefix")
     window = payload["time_window"]
     if not window["not_before"] <= journal_position <= window["not_after"]:
         raise ApprovalRefusal("E-APPROVAL-WINDOW", "journal position is outside C's inclusive window")
+    if journal_position + 2 >= window["not_after"] + 1:
+        raise ApprovalRefusal("E-APPROVAL-WINDOW", "approval lifecycle cannot fit before expiry")
     roles.require(payload["principal"], payload["key"], "approver", c_digest)
     grant = CapabilityGrant(
         "grant:" + c_digest, c_digest, None,
@@ -107,6 +117,6 @@ def issue_approval(
     )
     expiry = expiry_recorded_event(
         grant, journal_head_link=current_head, principal_id=payload["principal"], key_id=payload["key"],
-        previous_event_digest=issued.digest, seq=max(grant.not_after + 1, issued.seq + 1),
+        previous_event_digest=issued.digest, seq=grant.not_after + 1,
     )
     return ApprovalOutcome(c_digest, grant, approved, implementable, issued, expiry)

@@ -64,9 +64,9 @@ def test_approval_binds_policy_roles_head_nonce_and_window() -> None:
     assert outcome.grant.not_before == 10
     assert outcome.grant.not_after == 20
 
-    for position in (10, 20):
+    for position in (10, 18):
         assert issue_approval(*approved_input(position=position), prior_events=(), prior_event_head=None).c_digest == outcome.c_digest
-    for position in (9, 21):
+    for position in (9, 19, 20, 21):
         with pytest.raises(ApprovalRefusal) as refused:
             issue_approval(*approved_input(position=position), prior_events=(), prior_event_head=None)
         assert refused.value.code == "E-APPROVAL-WINDOW"
@@ -132,17 +132,27 @@ def test_approval_pending_context_binds_a_and_subject_to_their_distinct_c_fields
     assert refused.value.code == "E-APPROVAL-PENDING"
 
 
-def test_approval_events_link_the_supplied_prefix_and_remain_monotonic_at_window_boundary() -> None:
-    args = approved_input(position=20)
+def test_approval_events_link_only_a_complete_prefix_and_fit_before_expiry() -> None:
+    args = approved_input(position=18)
     prefix = __import__("ranex.governed_execution.domain.specification_events", fromlist=["SpecificationEvent"]).SpecificationEvent(
-        "prior", "APPROVED", 19, args[-1], "sha256:" + "a" * 64, None, None, "owner", "key", None, "OK"
+        "prior", "APPROVED", 17, args[-1], "sha256:" + "a" * 64, None, None, "owner", "key", None, "OK"
     )
     outcome = issue_approval(*args, prior_events=(prefix,), prior_event_head=prefix.digest)
     events = (prefix, outcome.approved_event, outcome.implementable_event, outcome.grant_issued_event, outcome.expiry_recorded_event)
     assert [event.seq for event in events] == sorted(event.seq for event in events)
     assert outcome.approved_event.previous_event_digest == prefix.digest
-    assert outcome.expiry_recorded_event.seq == 23
+    assert outcome.expiry_recorded_event.seq == 21
 
     with pytest.raises(ApprovalRefusal) as refused:
         issue_approval(*args, prior_events=(prefix,), prior_event_head=None)
+    assert refused.value.code == "E-APPROVAL-EVENT-CHAIN"
+
+    first = __import__("ranex.governed_execution.domain.specification_events", fromlist=["SpecificationEvent"]).SpecificationEvent(
+        "first", "APPROVED", 9, args[-1], "sha256:" + "a" * 64, None, None, "owner", "key", None, "OK"
+    )
+    reordered = __import__("ranex.governed_execution.domain.specification_events", fromlist=["SpecificationEvent"]).SpecificationEvent(
+        "reordered", "IMPLEMENTABLE", 5, args[-1], "sha256:" + "a" * 64, None, None, "owner", "key", first.digest, "OK"
+    )
+    with pytest.raises(ApprovalRefusal) as refused:
+        issue_approval(*approved_input(position=10), prior_events=(first, reordered), prior_event_head=reordered.digest)
     assert refused.value.code == "E-APPROVAL-EVENT-CHAIN"
