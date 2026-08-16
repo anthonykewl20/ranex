@@ -64,6 +64,13 @@ semantic digest with every result, so identical retry returns the same record.
 - Observed-only facts remain characterization records, never approval inputs.
 - No capability, producer invocation, subject write, journal write, or CLI-main
   registration is introduced.
+- Sad paths 4 and 5 remain distinct in the closed vocabulary:
+  `MISSING_ANSWER` is an omitted required answer and `UNKNOWN_ANSWER` names an
+  answer for a question that was never asked. Sad path 8 records
+  `INVALID_APPROVAL` when C's envelope is invalid, while sad path 9 records
+  `CHAIN_MISMATCH` after a valid envelope fails A/B/C binding. The outer
+  lifecycle code stays closed and the underlying `E-ABC-*` code is retained as
+  the result cause.
 
 ### Confirmation
 

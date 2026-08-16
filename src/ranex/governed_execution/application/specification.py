@@ -47,6 +47,8 @@ def _refuse(
     session: LifecycleSession,
     request: ClarificationInput,
     code: RefusalCode,
+    *,
+    cause: str | None = None,
 ) -> TransitionResult:
     return TransitionResult(
         accepted=False,
@@ -54,6 +56,7 @@ def _refuse(
         actor_id=request.actor_id,
         code=code,
         semantic_digest=session.semantic_digest,
+        cause=cause,
     )
 
 
@@ -67,6 +70,8 @@ def _question_refusal(request: ClarificationInput) -> RefusalCode | None:
         if len(question.allowed_answers) != 1 or not question.allowed_answers[0]:
             return RefusalCode.AMBIGUOUS_QUESTION
     answer_ids = [answer.question_id for answer in request.answers]
+    if set(answer_ids) - set(question_ids):
+        return RefusalCode.UNKNOWN_ANSWER
     if len(answer_ids) != len(set(answer_ids)) or set(answer_ids) != set(question_ids):
         return RefusalCode.MISSING_ANSWER
     allowed = {question.question_id: question.allowed_answers[0] for question in request.questions}
@@ -94,28 +99,26 @@ def advance(session: LifecycleSession, request: ClarificationInput) -> Transitio
 
     try:
         request_digest = _request_digest(request)
-    except (TypeError, ValueError):
+        if session.last_request_digest == request_digest:
+            return TransitionResult(True, session, request.actor_id, semantic_digest=session.semantic_digest)
+        if not isinstance(request.target, LifecycleState):
+            return _refuse(session, request, RefusalCode.INVALID_INPUT)
+        if not request.actor_id:
+            return _refuse(session, request, RefusalCode.MISSING_ACTOR)
+        if request.actor_id != session.actor_id:
+            return _refuse(session, request, RefusalCode.ACTOR_MISMATCH)
+        if request.base_digest != session.base_digest:
+            return _refuse(session, request, RefusalCode.STALE_BASE)
+        if _has_observed_only_intent(request):
+            return _refuse(session, request, RefusalCode.OBSERVED_ONLY_INTENT)
+        question_code = _question_refusal(request)
+        if question_code is not None:
+            return _refuse(session, request, question_code)
+        destination = TRANSITION_TABLE.get(session.state)
+        if destination is None or request.target is not destination:
+            return _refuse(session, request, RefusalCode.OUT_OF_ORDER)
+    except (TypeError, AttributeError, KeyError, IndexError, ValueError):
         return _refuse(session, request, RefusalCode.INVALID_INPUT)
-    if session.last_request_digest == request_digest:
-        return TransitionResult(True, session, request.actor_id, semantic_digest=session.semantic_digest)
-    if not isinstance(request.target, LifecycleState):
-        return _refuse(session, request, RefusalCode.INVALID_INPUT)
-    if not request.actor_id:
-        return _refuse(session, request, RefusalCode.MISSING_ACTOR)
-    if request.actor_id != session.actor_id:
-        return _refuse(session, request, RefusalCode.ACTOR_MISMATCH)
-    if request.base_digest != session.base_digest:
-        return _refuse(session, request, RefusalCode.STALE_BASE)
-    if _has_observed_only_intent(request):
-        return _refuse(session, request, RefusalCode.OBSERVED_ONLY_INTENT)
-    question_code = _question_refusal(request)
-    if question_code is not None:
-        return _refuse(session, request, question_code)
-    destination = TRANSITION_TABLE.get(session.state)
-    if destination is None:
-        return _refuse(session, request, RefusalCode.OUT_OF_ORDER)
-    if request.target is not destination:
-        return _refuse(session, request, RefusalCode.OUT_OF_ORDER)
 
     try:
         if session.state is LifecycleState.DRAFT:
@@ -124,18 +127,31 @@ def advance(session: LifecycleSession, request: ClarificationInput) -> Transitio
             validate_generated_artifact_manifest(request.manifest, spec_packet=request.spec_packet)
             semantic_digest = session.semantic_digest
         else:
-            validate_approval_envelope(request.approval_envelope)
-            assert_abc_chain(request.spec_packet, request.manifest, request.approval_envelope)
+            # SLICE-032 owns durable nonce tracking; this lifecycle has no nonce state.
+            validate_approval_envelope(request.approval_envelope, used_nonces=())
             semantic_digest = session.semantic_digest
-    except SpecificationABCError:
+    except SpecificationABCError as exc:
         code = {
             LifecycleState.DRAFT: RefusalCode.INVALID_SPECIFICATION,
             LifecycleState.SPEC_VALIDATED: RefusalCode.INVALID_MANIFEST,
             LifecycleState.TESTS_MAPPED: RefusalCode.INVALID_APPROVAL,
         }[session.state]
-        return _refuse(session, request, code)
-    except (TypeError, ValueError, KeyError):
+        return _refuse(session, request, code, cause=exc.code)
+    except (TypeError, AttributeError, KeyError, IndexError, ValueError):
         return _refuse(session, request, RefusalCode.INVALID_INPUT)
+
+    if session.state is LifecycleState.TESTS_MAPPED:
+        try:
+            assert_abc_chain(
+                request.spec_packet,
+                request.manifest,
+                request.approval_envelope,
+                used_nonces=(),
+            )
+        except SpecificationABCError as exc:
+            return _refuse(session, request, RefusalCode.CHAIN_MISMATCH, cause=exc.code)
+        except (TypeError, AttributeError, KeyError, IndexError, ValueError):
+            return _refuse(session, request, RefusalCode.INVALID_INPUT)
 
     advanced = LifecycleSession(
         state=destination,

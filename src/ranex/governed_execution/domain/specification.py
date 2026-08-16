@@ -19,12 +19,14 @@ class RefusalCode(StrEnum):
     MISSING_ACTOR = "E-SPEC-030-MISSING-ACTOR"
     STALE_BASE = "E-SPEC-030-STALE-BASE"
     MISSING_ANSWER = "E-SPEC-030-MISSING-ANSWER"
+    UNKNOWN_ANSWER = "E-SPEC-030-UNKNOWN-ANSWER"
     CONTRADICTORY_ANSWER = "E-SPEC-030-CONTRADICTORY-ANSWER"
     AMBIGUOUS_QUESTION = "E-SPEC-030-AMBIGUOUS-QUESTION"
     OBSERVED_ONLY_INTENT = "E-SPEC-030-OBSERVED-ONLY-INTENT"
     INVALID_SPECIFICATION = "E-SPEC-030-INVALID-SPECIFICATION"
     INVALID_MANIFEST = "E-SPEC-030-INVALID-MANIFEST"
     INVALID_APPROVAL = "E-SPEC-030-INVALID-APPROVAL"
+    CHAIN_MISMATCH = "E-SPEC-030-CHAIN-MISMATCH"
     INVALID_INPUT = "E-SPEC-030-INVALID-INPUT"
     OUT_OF_ORDER = "E-SPEC-030-OUT-OF-ORDER"
 
@@ -63,6 +65,12 @@ class ClarificationAnswer:
 
 @dataclass(frozen=True, slots=True)
 class ClarificationInput:
+    """Closed lifecycle input; opaque A/B/C fields retain the foundation v1 shape.
+
+    Observations are precisely ``(id, text, label)`` triples. Their label is
+    examined only for ``observed-only`` intent promotion.
+    """
+
     actor_id: str
     target: LifecycleState
     base_digest: str
@@ -127,11 +135,13 @@ class TransitionResult:
     actor_id: str
     code: RefusalCode | None = None
     semantic_digest: str | None = None
+    cause: str | None = None
 
     def as_record(self) -> dict[str, object]:
         return {
             "accepted": self.accepted,
             "actor_id": self.actor_id,
+            "cause": self.cause,
             "code": str(self.code) if self.code is not None else None,
             "semantic_digest": self.semantic_digest,
             "session": self.session.as_record(),

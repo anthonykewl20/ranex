@@ -4,7 +4,7 @@ import copy
 import json
 from pathlib import Path
 
-from ranex.foundation.specification_abc import payload_digest
+from ranex.foundation.specification_abc import payload_digest, sign_approval_payload
 from ranex.governed_execution.application.specification import advance, draft, render_questions
 from ranex.governed_execution.domain.specification import (
     ClarificationAnswer,
@@ -43,17 +43,6 @@ def clarification(**changes: object) -> ClarificationInput:
     return ClarificationInput(**values)
 
 
-def to_pending() -> tuple[object, ClarificationInput]:
-    request = clarification(target=LifecycleState.SPEC_VALIDATED)
-    session = draft(request)
-    for target in (LifecycleState.SPEC_VALIDATED, LifecycleState.TESTS_MAPPED):
-        request = clarification(target=target)
-        result = advance(session, request)
-        assert result.accepted
-        session = result.session
-    return session, request
-
-
 def test_transition_table_and_refusals_are_closed() -> None:
     session = draft(clarification(target=LifecycleState.SPEC_VALIDATED))
     expected = (
@@ -75,9 +64,14 @@ def test_transition_table_and_refusals_are_closed() -> None:
 def test_actor_base_and_answer_guards_are_distinct() -> None:
     session = draft(clarification())
     cases = (
+        (clarification(actor_id=""), RefusalCode.MISSING_ACTOR),
         (clarification(actor_id="reviewer"), RefusalCode.ACTOR_MISMATCH),
         (clarification(base_digest="sha256:" + "0" * 64), RefusalCode.STALE_BASE),
         (clarification(answers=()), RefusalCode.MISSING_ANSWER),
+        (
+            clarification(answers=(ClarificationAnswer("Q-2", "owner approved"),)),
+            RefusalCode.UNKNOWN_ANSWER,
+        ),
         (
             clarification(answers=(ClarificationAnswer("Q-1", "different"),)),
             RefusalCode.CONTRADICTORY_ANSWER,
@@ -92,6 +86,66 @@ def test_actor_base_and_answer_guards_are_distinct() -> None:
         assert not result.accepted
         assert result.code is code
         assert result.actor_id == request.actor_id
+
+
+def test_foundation_refusals_preserve_causes_and_lifecycle_context() -> None:
+    invalid_specification = copy.deepcopy(VECTORS["triple"]["a"])
+    invalid_specification["ids"]["question"] = ["Q-1", "Q-1"]
+    rejected_specification = advance(
+        draft(clarification()),
+        clarification(spec_packet=invalid_specification),
+    )
+    assert rejected_specification.code is RefusalCode.INVALID_SPECIFICATION
+    assert rejected_specification.cause == "E-ABC-020"
+
+    validated = advance(draft(clarification()), clarification())
+    assert validated.accepted
+    rejected_manifest = advance(
+        validated.session,
+        clarification(target=LifecycleState.TESTS_MAPPED, manifest={}),
+    )
+    assert rejected_manifest.code is RefusalCode.INVALID_MANIFEST
+    assert rejected_manifest.cause == "E-ABC-012"
+
+
+def test_approval_validation_and_chain_binding_refusals_are_distinct() -> None:
+    validated = advance(draft(clarification()), clarification())
+    assert validated.accepted
+    mapped = advance(validated.session, clarification(target=LifecycleState.TESTS_MAPPED))
+    assert mapped.accepted
+
+    invalid_envelope = copy.deepcopy(clarification().approval_envelope)
+    invalid_envelope["signature"] = "not-a-signature"
+    rejected_envelope = advance(
+        mapped.session,
+        clarification(target=LifecycleState.APPROVAL_PENDING, approval_envelope=invalid_envelope),
+    )
+    assert rejected_envelope.code is RefusalCode.INVALID_APPROVAL
+    assert rejected_envelope.cause == "E-ABC-016"
+
+    unbound_envelope = copy.deepcopy(clarification().approval_envelope)
+    unbound_envelope["payload"]["b_digest"] = "sha256:" + "f" * 64
+    unbound_envelope["signature"] = sign_approval_payload(
+        unbound_envelope["payload"],
+        "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+    )
+    rejected_chain = advance(
+        mapped.session,
+        clarification(target=LifecycleState.APPROVAL_PENDING, approval_envelope=unbound_envelope),
+    )
+    assert rejected_chain.code is RefusalCode.CHAIN_MISMATCH
+    assert rejected_chain.cause == "E-ABC-019"
+
+
+def test_malformed_clarification_items_become_durable_invalid_input_refusals() -> None:
+    session = draft(clarification())
+    for request in (
+        clarification(observations=(None,)),
+        clarification(questions=(None,)),
+    ):
+        result = advance(session, request)
+        assert result.code is RefusalCode.INVALID_INPUT
+        assert not result.accepted
 
 
 def test_retry_returns_the_recorded_result_without_an_effect() -> None:

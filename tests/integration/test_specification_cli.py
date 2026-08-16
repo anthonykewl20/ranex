@@ -31,7 +31,7 @@ def _input() -> dict[str, object]:
 
 def _invalid_input() -> dict[str, object]:
     value = _input()
-    value["spec_packet"] = {"version": "not-a-spec-packet"}
+    value["target"] = "NOT_A_LIFECYCLE_STATE"
     return value
 
 
@@ -41,7 +41,7 @@ def test_specification_parser_refusal_is_nonzero_and_stable(tmp_path, capsys) ->
     parser = build_parser()
     args = parser.parse_args(["specification", "draft", "--input", str(source)])
     assert args.func(args) != 0
-    assert "E-SPEC-030-" in capsys.readouterr().err
+    assert capsys.readouterr().err == "E-SPEC-030-INVALID-INPUT\n"
 
 
 def test_specification_parser_drafts_a_valid_session(tmp_path, capsys) -> None:
@@ -49,6 +49,16 @@ def test_specification_parser_drafts_a_valid_session(tmp_path, capsys) -> None:
     source.write_text(json.dumps(_input()))
     parser = build_parser()
     args = parser.parse_args(["specification", "draft", "--input", str(source)])
+    assert args.func(args) == 0
+    assert '"state":"DRAFT"' in capsys.readouterr().out
+
+
+def test_specification_parser_draft_does_not_advance_validation(tmp_path, capsys) -> None:
+    source = tmp_path / "request.json"
+    request = _input()
+    request["spec_packet"] = {"version": "not-a-spec-packet"}
+    source.write_text(json.dumps(request))
+    args = build_parser().parse_args(["specification", "draft", "--input", str(source)])
     assert args.func(args) == 0
     assert '"state":"DRAFT"' in capsys.readouterr().out
 

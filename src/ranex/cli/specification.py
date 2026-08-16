@@ -57,11 +57,8 @@ def cmd_draft(args: argparse.Namespace) -> int:
     try:
         request = _input(args.input)
         session = draft(request)
-        checked = advance(session, request)
     except (OSError, TypeError, ValueError, json.JSONDecodeError):
         return _print_refusal(RefusalCode.INVALID_INPUT)
-    if not checked.accepted:
-        return _print_refusal(checked.code or RefusalCode.INVALID_INPUT)
     print(canonical_json(session.as_record()))
     return 0
 
