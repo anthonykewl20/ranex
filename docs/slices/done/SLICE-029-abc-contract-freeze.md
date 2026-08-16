@@ -1,6 +1,6 @@
 # SLICE-029 — A/B/C contract freeze
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-16
 **Priority:** P0 — ADR-017 approval authority needs fixed bytes before lifecycle work.
 **ADRs:** `docs/adr/ADR-025-abc-contract-freeze.md`.
@@ -61,6 +61,13 @@ uv run --frozen pytest -q
 
 ## Closure
 
-Frozen vector digests were corrected pre-review in `3cf4e4e62`; the corrected
-recorded expectations are disclosed here because the suite manifest freezes IDs,
-not vector bodies.
+Kernel-side A/B/C contracts merged locally at `b30c6c819`. Frozen vector digests
+were corrected pre-review in `3cf4e4e62`; the corrected recorded expectations are
+disclosed here because the suite manifest freezes IDs, not vector bodies.
+
+Manifest registration adds only this slice's 20 contract-test IDs. Under
+`RANEX_HARNESS_DIR=/tmp/opencode/ranex-harness-absent`, the final suite was
+1035 passed / 33 skipped; with the worktree harness configuration it was 1060
+passed / 8 skipped. Two independent reviewer families completed three
+remediation rounds; all findings are closed. The TypeScript schema/vector mirror
+remains a harness-lane follow-up for #12 closure.
