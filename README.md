@@ -320,14 +320,14 @@ none of the surface around it does.
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
 **Active slice:** none.
-SLICE-029 is closed kernel-side: its A/B/C schemas, canonical rules, error
-registry, vectors, and frozen manifest registration are merged locally.
-SLICE-030 lifecycle and trace contracts are merged and registered locally;
-SLICE-032's approval, revocation, grant, and nonce controls are complete. SLICE-031
-closed DSL projections and protected manifests, SLICE-033's independent trace
-verifier, and SLICE-035's real-subject bootstrap are merged locally. The
-TypeScript schema/vector mirror remains in the harness lane. SLICE-032 approval,
-revocation, and intersected child grants are closed locally.
+All six kernel P0 spec-authority slices (SLICE-029/030/031/032/033/035) are
+landed on kernel `main` at `ff3ab802`: A/B/C contract freeze, lifecycle,
+closed-DSL projections, approval/revocation/intersected grants, trace integrity,
+and real-subject bootstrap. The byte-identical A/B/C schema/vector TypeScript
+mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in `ranex-harness`
+`ranex-trim` at `16bf036f`.
+The absent-harness full suite is 1117 passed / 62 skipped / 0 failed; its
+frozen manifest records 1179 IDs / 115 expected skips.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -353,7 +353,7 @@ milestone #1.
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 1157 IDs, with 115
+structured outcomes against the manifest diff — 1179 IDs, with 115
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
@@ -368,27 +368,30 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
-- **SLICE-032-approval-and-intersected-grants** — closed 2026-08-16,
+- **SLICE-032-approval-and-intersected-grants** — closed 2026-08-17,
   kernel-side. Approval binds closed policy and lifecycle facts; revocation,
   expiry, canonical use facts, and deterministic least-authority child grants
   refuse authority expansion. CAS/persistence and the SpecificationEvent
   atomicity contract remain SLICE-036.
-- **SLICE-035-real-subject-bootstrap** — closed 2026-08-16, kernel-side. Real
-  Ranex source bootstrap ran from its pinned subject; Arxic remains explicitly
-  BLOCKED without its controller-only reference-auth-app credential profile.
-- **SLICE-033-trace-integrity** — closed 2026-08-16, kernel-side. Independent
+- **SLICE-035-real-subject-bootstrap** — closed 2026-08-17, kernel-side. Real
+  Ranex source bootstrap ran from its pinned subject; Arxic's reference-auth-app
+  process gate remains BLOCKED at pinned `135991d9` (Arxic #109).
+- **SLICE-033-trace-integrity** — closed 2026-08-17, kernel-side. Independent
   trace coverage binds changed source symbols to exact current generated
   comment/sidecar references and separately verifies protected outcomes;
   generator interoperation covers Python, TypeScript, and JavaScript.
-- **SLICE-031-closed-dsl-projections** — closed 2026-08-16, kernel-side.
+- **SLICE-031-closed-dsl-projections** — closed 2026-08-17, kernel-side.
   Closed scenario DSL parsing emits deterministic gauges, views, trace/sidecar
   bytes, and an A-bound protected-artifact manifest; source coverage and trace
   verification remain later work.
-- **SLICE-030-specification-lifecycle** — closed 2026-08-16, kernel-side.
+- **SLICE-030-specification-lifecycle** — closed 2026-08-17, kernel-side.
   Deterministic lifecycle transitions, clarification questions, durable retry,
   and CLI status/advance paths are merged locally; lifecycle-fact wiring and
   nonce tracking remain SLICE-032 follow-ups.
-- **SLICE-029-abc-contract-freeze** — closed 2026-08-16, kernel-side. A/B/C schemas, canonical forms, registry precedence, vectors, and the frozen suite IDs are complete; the TypeScript mirror remains a harness-lane follow-up for #12.
+- **SLICE-029-abc-contract-freeze** — closed 2026-08-17. A/B/C schemas,
+  canonical forms, registry precedence, vectors, and frozen suite IDs are
+  complete; the byte-identical TypeScript mirror merged to `ranex-trim` at
+  `16bf036f`, closing #12.
 - **SLICE-047-confinement-hardening** — closed 2026-08-15. The confinement-result validator is shared by producer and signer; the controller gets an explicit four-variable environment, and timeout/reap failures refuse without evidence (ADR-024).
 - **SLICE-046-cmd-run-confinement-binding** — closed 2026-08-15. `cmd_run` runs the bound command inside the qualified strict-local session (ADR-023), and evidence is signed only after fail-closed confinement-result validation; ADR-006 is accepted, RISK-06 is closed, and ADR-017 is accepted without broadening.
 

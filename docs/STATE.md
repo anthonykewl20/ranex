@@ -2,48 +2,41 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-17 (SLICE-032 reparenting refusal registered for publish)
+**Updated:** 2026-08-17 (session close)
 **Active slice:** none.
 
 ## Where we stopped
 
-Kernel slices SLICE-029 through SLICE-033 and SLICE-035 are merged and archived.
-A/B/C schemas, lifecycle, approval/revocation and intersected grants,
-deterministic projections, independent trace verification, and real-subject
-bootstrap are complete. SLICE-032 also refuses duplicate grant issuance, so a
-later event cannot reparent an existing child. The real Ranex subject ran;
-Arxic's pinned reference-auth-app suite remains BLOCKED by the §23.12 upstream
-gap tracked in Arxic #109.
+All six kernel slices of the P0 spec-authority program landed on `main` at `ff3ab802`.
+- SLICE-029 — A/B/C contracts, error registry, and vectors.
+- SLICE-030 — lifecycle to `APPROVAL_PENDING`.
+- SLICE-031 — closed-DSL generator and projections.
+- SLICE-032 — approval, revocation, and intersected grants.
+- SLICE-033 — trace integrity and verifier ports.
+- SLICE-035 — real-subject bootstrap.
 
-The absent-harness frozen manifest is registered at 1179 IDs / 115 expected
-skips. #12 remains open for the byte-identical TypeScript schema/vector mirror
-in the harness lane; its kernel contract and frozen vectors are published here.
-
-SLICE-046 + SLICE-047 remain landed: `cmd_run` is bound to the qualified
-strict-local session (ADR-023; ADR-006 accepted, RISK-06 closed, ADR-017
-accepted), the confinement-result validator is single-sourced, and the
-controller subprocess uses a fixed minimal environment with bounded kill.
-
-Harness lane: SLICE-020 (#1) merged to ranex-trim at `582d06d0` (41 pass /
-1 skip / 0 fail); the local harness main and origin diverge on disjoint files
-and need reconciliation. Harness #84 tracks the SDK codegen blocker
-(`WorktreeFailed.data` stale). The TypeScript mirror for #12 remains there.
+Full suite: 1117 passed / 62 skipped / 0 failed under the absent-harness config.
+Frozen manifest: 1179 IDs / 115 expected skips. The TypeScript mirror merged in
+`ranex-harness` `ranex-trim` at `16bf036f` (vectors SHA-256 `9efa0baf…`,
+byte-identical, 35/35), closing #12.
 
 ## Next
 
-#12 still needs the TypeScript schema/vector mirror in the harness lane.
-SLICE-036 owns CAS/persistence and the SpecificationEvent atomicity contract.
-SLICE-048 (claim-type confinement-digest enforcement) remains after those
-slices; SLICE-021 (#2) builds on merged EventV2 work in the harness lane.
+SLICE-036 (#19) is the next planned slice. Prerequisites #12–#16 are closed;
+#18 is open but kernel-side done. Owner decision: re-pin Arxic after its
+reference-auth-app suite is fixed upstream, or accept the recorded BLOCKED
+evidence and proceed per tracker governance. SLICE-036 must implement the
+journal CAS/atomic-append and event-wiring contract documented on
+`SpecificationEvent` (`src/ranex/governed_execution/domain/specification_events.py`)
+and close the duplicate-issuance/ancestry guarantees already enforced domain-side.
 
 ## Known limits
 
-- SLICE-046/047 real-session tests stay declared host-gated skips.
-- CI: confinement suites fail on hosted runners (ld.so.cache drift,
-  userns EACCES) — owner-decides; owner session added honest guards
-  (f141ed128).
-- Controller same-uid trust, worker-cgroup-leaf on SIGKILL, dead
-  LC_ALL/TZ fallback: named follow-ups (ADR-024/047).
-- cgroup-observer OSError(19) flake under load remains.
-- SLICE-008 bounded-fanout timing test can flake under full-suite load; it passes in isolation and on origin/main.
-- mutmut advisory not run this cycle.
+- SLICE-046/047 host-gated skips remain declared.
+- CI confinement suites fail on hosted runners (ld.so.cache drift, userns EACCES).
+- Controller same-uid trust follow-ups remain.
+- cgroup-observer `OSError(19)` can flake under load.
+- SLICE-008 bounded-fanout timing can flake under full-suite load; it passes isolated and on `origin/main`.
+- mutmut is advisory and was not run this session.
+- SLICE-035 Arxic reference-auth-app process gate is BLOCKED at pinned `135991d9` (subject behavior; Arxic #109).
+- About 125 legacy test IDs remain unregistered in the frozen manifest (pre-existing and deliberately not swept by slice registrations).
