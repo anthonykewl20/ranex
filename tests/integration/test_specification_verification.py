@@ -26,7 +26,7 @@ def _descriptor(*, path: str = "src/example.py", symbol: str = "value") -> dict[
         "version": "trace-projection-v1",
         "path": path,
         "language": "python",
-        "ids": {"rule": "R-1", "transition": "T-1", "outcome": "O-1"},
+        "ids": {"rule": ["R-1"], "transition": ["T-1"], "outcome": ["O-1"]},
         "anchor": {"symbol": symbol},
     }
 
@@ -90,10 +90,17 @@ def test_descriptor_bytes_projection_row_interoperate_with_comment(tmp_path: Pat
 def test_javascript_trace_comment_is_discovered_and_covers_its_target(tmp_path: Path) -> None:
     base, candidate = tmp_path / "base", tmp_path / "candidate"
     a, b, c = _triple(base, candidate)
+    descriptor = _descriptor(path="src/example.js")
+    descriptor["language"] = "javascript"
+    raw = canonical_payload_bytes(descriptor)
+    (candidate / ".ranex-trace-js").write_bytes(raw)
+    artifacts = b["artifacts"]; assert isinstance(artifacts, dict)
+    artifacts["trace_projections"].append({"path": ".ranex-trace-js", "digest": _digest(raw)})  # type: ignore[index]
+    _resign(c, b)
     (base / "src/example.js").write_text("function value() { return 1; }\n", encoding="utf-8")
     (candidate / "src/example.js").write_text(
         "// ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection="
-        f"{_projection(candidate)}\nfunction value() {{ return 2; }}\n",
+        f"{_digest(raw)}\nfunction value() {{ return 2; }}\n",
         encoding="utf-8",
     )
     facts = verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
@@ -169,7 +176,7 @@ def test_two_nonidentical_anchors_for_one_symbol_refuse(tmp_path: Path) -> None:
     artifacts = b["artifacts"]; assert isinstance(artifacts, dict)
     artifacts["trace_projections"].append({"path": ".ranex-trace-2", "digest": _digest(second)})  # type: ignore[index]
     _add_sidecar(candidate, b, c, projection=_digest(second))
-    with pytest.raises(TraceVerificationError, match="E-TRACE-008"):
+    with pytest.raises(TraceVerificationError, match="E-TRACE-002"):
         verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
 
 
@@ -204,10 +211,10 @@ def test_deletion_and_rename_require_sidecar_but_in_place_marker_covers(tmp_path
     (base / "src/example.py").write_text(marked, encoding="utf-8")
     (candidate / "src/example.py").write_text("", encoding="utf-8")
     for root in (base, candidate):
-        (root / "src/other.py").write_text(_marker(_projection(candidate), symbol="other", result=1), encoding="utf-8")
+        (root / "src/other.py").write_text("def other():\n    return 1\n", encoding="utf-8")
     with pytest.raises(TraceVerificationError) as deleted:
         verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
-    assert deleted.value.code == "E-TRACE-006"
+    assert deleted.value.code == "E-TRACE-017"
     _add_sidecar(candidate, b, c)
     assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).trace.covered == 1
 
@@ -216,7 +223,7 @@ def test_deletion_and_rename_require_sidecar_but_in_place_marker_covers(tmp_path
     marked2 = _marker(_projection(candidate2), result=1)
     (base2 / "src/example.py").write_text(marked2, encoding="utf-8")
     (candidate2 / "src/example.py").write_text(_marker(_projection(candidate2), symbol="renamed", result=2), encoding="utf-8")
-    with pytest.raises(TraceVerificationError, match="E-TRACE-006"):
+    with pytest.raises(TraceVerificationError, match="E-TRACE-002"):
         verify_specification(a2, b2, c2, base2, candidate2, {"O-1": "pass"}, ("pytest", "-q"))
 
     base3, candidate3 = tmp_path / "base3", tmp_path / "candidate3"
@@ -248,3 +255,55 @@ def test_wrong_outcome_and_facts_are_deterministic(tmp_path: Path) -> None:
     assert first.canonical_bytes() == second.canonical_bytes()
     with pytest.raises(TraceVerificationError, match="E-TRACE-016"):
         verify_specification(a, b, c, base, candidate, {"O-1": "wrong"}, ("pytest", "-q"))
+
+
+@pytest.mark.parametrize("change", ("symbol", "path", "ids", "prefix"))
+def test_comment_anchor_must_exactly_match_its_signed_descriptor(tmp_path: Path, change: str) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    projection = _projection(candidate)
+    if change == "symbol":
+        _anchor(candidate, symbol="other")
+    elif change == "path":
+        (candidate / "src/example.py").unlink()
+        (candidate / "src/other.py").write_text(_marker(projection), encoding="utf-8")
+    elif change == "ids":
+        (candidate / "src/example.py").write_text(
+            f"# ranex-trace: rule=R-1,R-1 transition=T-1 outcome=O-1 projection={projection}\ndef value():\n    return 2\n",
+            encoding="utf-8",
+        )
+    else:
+        (candidate / "src/example.py").write_text(
+            f"// ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection={projection}\ndef value():\n    return 2\n",
+            encoding="utf-8",
+        )
+    with pytest.raises(TraceVerificationError):
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+
+
+def test_new_multi_symbol_file_requires_an_anchor_for_each_symbol(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    descriptor = _descriptor(path="src/two.py", symbol="first")
+    raw = canonical_payload_bytes(descriptor)
+    (candidate / ".ranex-trace-two").write_bytes(raw)
+    artifacts = b["artifacts"]; assert isinstance(artifacts, dict)
+    artifacts["trace_projections"] = [{"path": ".ranex-trace-two", "digest": _digest(raw)}]
+    _resign(c, b)
+    projection = _digest(raw)
+    (candidate / "src/two.py").write_text(
+        _marker(projection, "first") + "\ndef second():\n    return 2\n", encoding="utf-8"
+    )
+    with pytest.raises(TraceVerificationError, match="E-TRACE-006"):
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+
+    descriptor = _descriptor(path="src/two.py", symbol="second")
+    raw = canonical_payload_bytes(descriptor)
+    (candidate / ".ranex-trace-second").write_bytes(raw)
+    artifacts["trace_projections"].append({"path": ".ranex-trace-second", "digest": _digest(raw)})  # type: ignore[index]
+    _resign(c, b)
+    (candidate / "src/two.py").write_text(
+        _marker(projection, "first") + f"\n# ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection={_digest(raw)}\ndef second():\n    return 2\n",
+        encoding="utf-8",
+    )
+    assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).trace.covered == 2

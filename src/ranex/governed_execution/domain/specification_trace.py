@@ -31,7 +31,7 @@ E_TRACE_OUTCOME = "E-TRACE-016"
 E_TRACE_MISSING = "E-TRACE-017"
 
 _COMMENT = re.compile(
-    r"(?:#|//) ranex-trace: rule=([^\s]+) transition=([^\s]+) "
+    r"(#|//) ranex-trace: rule=([^\s]+) transition=([^\s]+) "
     r"outcome=([^\s]+) projection=(sha256:[0-9a-f]{64})\Z"
 )
 _SYMBOL = re.compile(r"^\s*(?:def|class|(?:export\s+)?function)\s+([A-Za-z_$][\w$]*)")
@@ -101,6 +101,8 @@ def _ids(raw: str, *, kind: str, vocabulary: Mapping[str, Sequence[str]] | None)
         _refuse(E_TRACE_GRAMMAR, f"empty {kind} ID")
     if any("*" in value for value in values):
         _refuse(E_TRACE_WILDCARD, f"wildcard {kind} ID")
+    if len(set(values)) != len(values):
+        _refuse(E_TRACE_GRAMMAR, f"duplicate {kind} ID")
     if vocabulary is not None and any(value not in vocabulary.get(kind, ()) for value in values):
         _refuse(E_TRACE_UNKNOWN, f"unknown {kind} ID")
     return values
@@ -117,7 +119,7 @@ def parse_trace_comment(
     match = _COMMENT.fullmatch(line)
     if match is None:
         _refuse(E_TRACE_GRAMMAR, "trace comment is not the v1 generated form")
-    rule, transition, outcome, projection = match.groups()
+    _prefix, rule, transition, outcome, projection = match.groups()
     parts = (
         _ids(rule, kind="rule", vocabulary=ids),
         _ids(transition, kind="transition", vocabulary=ids),
@@ -194,13 +196,11 @@ def _symbol_for(starts: Sequence[tuple[int, str]], position: int) -> str:
     return f"line:{position + 1}"
 
 
-def _candidate_symbol_for_change(starts: Sequence[tuple[int, str]], start: int, end: int) -> str:
-    """Prefer a declaration introduced by this hunk; otherwise use its enclosing symbol."""
+def _candidate_symbols_for_change(starts: Sequence[tuple[int, str]], start: int, end: int) -> tuple[str, ...]:
+    """Return every declaration introduced by a hunk, or its enclosing region."""
 
-    for symbol_start, symbol in starts:
-        if start <= symbol_start < end:
-            return symbol
-    return _symbol_for(starts, start)
+    introduced = tuple(symbol for symbol_start, symbol in starts if start <= symbol_start < end)
+    return introduced or (_symbol_for(starts, start),)
 
 
 def _read_source(path: Path) -> list[str]:
@@ -208,6 +208,50 @@ def _read_source(path: Path) -> list[str]:
         return path.read_text("utf-8").splitlines()
     except UnicodeDecodeError as exc:
         raise TraceVerificationError(E_TRACE_PROTECTED, f"source is not valid UTF-8: {path}") from exc
+
+
+def _projection_descriptors(rows: Sequence[object], candidate: Path) -> dict[str, tuple[str, str, str, tuple[str, ...]]]:
+    """Read each B-bound canonical descriptor and index its exact anchor identity."""
+
+    descriptors: dict[str, tuple[str, str, str, tuple[str, ...]]] = {}
+    for row in rows:
+        if not isinstance(row, Mapping) or not isinstance(row.get("path"), str) or not isinstance(row.get("digest"), str):
+            _refuse(E_TRACE_AUTHORITY, "B projection row is malformed")
+        file = _candidate_path(candidate, row["path"])
+        if not file.is_file():
+            _refuse(E_TRACE_AUTHORITY, "B projection descriptor is absent")
+        raw = file.read_bytes()
+        digest = "sha256:" + hashlib.sha256(raw).hexdigest()
+        if digest != row["digest"]:
+            _refuse(E_TRACE_AUTHORITY, "B projection descriptor bytes differ from its digest")
+        try:
+            descriptor = json.loads(raw)
+        except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+            raise TraceVerificationError(E_TRACE_AUTHORITY, "B projection descriptor is not JSON") from exc
+        if (
+            not isinstance(descriptor, dict)
+            or set(descriptor) != {"version", "path", "language", "ids", "anchor"}
+            or descriptor.get("version") != "trace-projection-v1"
+            or not isinstance(descriptor.get("path"), str)
+            or descriptor.get("language") not in {"python", "typescript", "javascript", "sidecar-json"}
+            or not isinstance(descriptor.get("anchor"), dict)
+            or set(descriptor["anchor"]) != {"symbol"}
+            or not isinstance(descriptor["anchor"].get("symbol"), str)
+            or not isinstance(descriptor.get("ids"), dict)
+            or set(descriptor["ids"]) != {"rule", "transition", "outcome"}
+            or raw != canonical_json_bytes(descriptor)
+        ):
+            _refuse(E_TRACE_AUTHORITY, "B projection descriptor is not the closed canonical v1 form")
+        flattened: list[str] = []
+        for kind in ("rule", "transition", "outcome"):
+            values = descriptor["ids"][kind]
+            if not isinstance(values, list) or any(not isinstance(value, str) or not value for value in values) or len(set(values)) != len(values):
+                _refuse(E_TRACE_AUTHORITY, "B projection descriptor IDs are malformed")
+            flattened.extend(values)
+        if digest in descriptors:
+            _refuse(E_TRACE_AUTHORITY, "B repeats a projection digest")
+        descriptors[digest] = (descriptor["path"], descriptor["language"], descriptor["anchor"]["symbol"], tuple(flattened))
+    return descriptors
 
 
 def _changed_targets(base: Path, candidate: Path, scope: Mapping[str, object]) -> tuple[_ChangedTarget, ...]:
@@ -233,14 +277,14 @@ def _changed_targets(base: Path, candidate: Path, scope: Mapping[str, object]) -
             if tag == "delete":
                 changed.append(_ChangedTarget(path, _symbol_for(before_symbols, left_start), False))
                 continue
-            candidate_symbol = _candidate_symbol_for_change(after_symbols, right_start, right_end)
+            candidate_symbols = _candidate_symbols_for_change(after_symbols, right_start, right_end)
             if tag == "replace":
                 base_symbol = _symbol_for(before_symbols, left_start)
-                if base_symbol != candidate_symbol:
+                if base_symbol not in candidate_symbols:
                     changed.append(_ChangedTarget(path, base_symbol, False))
                     continue
-            changed.append(_ChangedTarget(path, candidate_symbol, True))
-    return tuple(changed)
+            changed.extend(_ChangedTarget(path, candidate_symbol, True) for candidate_symbol in candidate_symbols)
+    return tuple(dict.fromkeys(changed))
 
 
 def _comment_anchors(
@@ -248,6 +292,7 @@ def _comment_anchors(
     ids: Mapping[str, Sequence[str]],
     projections: set[str],
     scope: Mapping[str, object],
+    descriptors: Mapping[str, tuple[str, str, str, tuple[str, ...]]],
 ) -> tuple[TraceAnchor, ...]:
     anchors: list[TraceAnchor] = []
     for source in sorted(candidate.rglob("*")):
@@ -257,12 +302,19 @@ def _comment_anchors(
         if not _in_scope(path, scope):
             continue
         lines = _read_source(source)
+        expected_prefix = {".py": "#", ".ts": "//", ".js": "//"}[source.suffix]
+        expected_language = {".py": "python", ".ts": "typescript", ".js": "javascript"}[source.suffix]
         for index, line in enumerate(lines):
             if "ranex-trace:" in line:
+                if not line.startswith(expected_prefix + " ranex-trace:"):
+                    _refuse(E_TRACE_GRAMMAR, "trace comment prefix does not match source language")
                 parsed = parse_trace_comment(line, ids=ids, projections=projections)
                 if index + 1 >= len(lines) or (match := _SYMBOL.match(lines[index + 1])) is None:
                     _refuse(E_TRACE_GRAMMAR, "trace comment must directly precede a symbol")
-                anchors.append(TraceAnchor(path, match.group(1), parsed.ids, parsed.projection, "comment"))
+                anchor = TraceAnchor(path, match.group(1), parsed.ids, parsed.projection, "comment")
+                if descriptors.get(anchor.projection) != (anchor.path, expected_language, anchor.symbol, anchor.ids):
+                    _refuse(E_TRACE_STALE, "trace comment does not match its signed descriptor")
+                anchors.append(anchor)
     return tuple(anchors)
 
 
@@ -289,7 +341,8 @@ def verify_trace_coverage(
     projections = {row.get("digest") for row in projection_rows if isinstance(row, Mapping)}
     if len(projections) != len(projection_rows) or any(not isinstance(item, str) for item in projections):
         _refuse(E_TRACE_AUTHORITY, "B projection rows are malformed")
-    comments = _comment_anchors(candidate, ids, projections, scope)
+    descriptors = _projection_descriptors(projection_rows, candidate)
+    comments = _comment_anchors(candidate, ids, projections, scope, descriptors)
     sidecars: list[TraceAnchor] = []
     approved_sidecar_paths: set[str] = set()
     for row in sidecar_rows:
@@ -305,6 +358,9 @@ def verify_trace_coverage(
         if not isinstance(digest, str) or digest != "sha256:" + hashlib.sha256(raw).hexdigest():
             _refuse(E_TRACE_SIDECAR, "approved sidecar bytes differ from B")
         parsed = parse_trace_sidecar(raw, ids=ids, projections=projections)
+        descriptor = descriptors.get(parsed.projection)
+        if descriptor is None or descriptor[0] != parsed.path or descriptor[2] != parsed.symbol or descriptor[3] != parsed.ids:
+            _refuse(E_TRACE_STALE, "trace sidecar does not match its signed descriptor")
         sidecars.append(TraceAnchor(parsed.path, parsed.symbol, parsed.ids, parsed.projection, "sidecar"))
     for file in candidate.rglob("*"):
         if not file.is_file() or file.suffix != ".json":
