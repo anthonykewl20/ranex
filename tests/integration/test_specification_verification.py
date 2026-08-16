@@ -42,6 +42,43 @@ def test_comment_and_exact_exemption_cover_changed_hunks(tmp_path: Path) -> None
     assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).outcomes[0].passed
 
 
+@pytest.mark.parametrize(
+    ("setup", "code"),
+    [
+        ("missing", "E-TRACE-017"),
+        ("uncovered", "E-TRACE-006"),
+        ("duplicate", "E-TRACE-005"),
+        ("cross-task", "E-TRACE-007"),
+        ("invented", "E-TRACE-010"),
+        ("reasonless", "E-TRACE-012"),
+    ],
+)
+def test_trace_and_exemption_refusal_partitions_are_distinct(tmp_path: Path, setup: str, code: str) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    if setup != "missing":
+        _anchor(candidate)
+    else:
+        (candidate / "src/example.py").write_text("def value():\n    return 2\n", encoding="utf-8")
+    if setup == "uncovered":
+        (candidate / "src/example.py").write_text((candidate / "src/example.py").read_text("utf-8") + "\ndef other():\n    return 3\n", encoding="utf-8")
+    elif setup == "duplicate":
+        (candidate / "src/example.py").write_text((candidate / "src/example.py").read_text("utf-8").replace("\ndef value", "\n# ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection=" + _digest((candidate / "projection.json").read_bytes()) + "\ndef value"), encoding="utf-8")
+    elif setup == "cross-task":
+        c["payload"]["task"] = "other"; c["signature"] = sign_approval_envelope(c["payload"], "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=")  # type: ignore[arg-type,index]
+    elif setup == "invented":
+        with pytest.raises(TraceVerificationError) as refused:
+            verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"), exemptions=(("src/example.py", "nonbehavioral", "invented"),))
+        assert refused.value.code == code
+        return
+    elif setup == "reasonless":
+        b["exemptions"] = [{"path": "src/example.py", "class": "nonbehavioral", "reason": "", "why_no_discriminating_red": "no semantic change"}]
+        c["payload"]["b_digest"] = payload_digest(b); c["signature"] = sign_approval_envelope(c["payload"], "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=")  # type: ignore[arg-type,index]
+    with pytest.raises(TraceVerificationError) as refused:
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+    assert refused.value.code == code
+
+
 def test_sidecar_approval_and_mismatch_refusals(tmp_path: Path) -> None:
     base, candidate = tmp_path / "base", tmp_path / "candidate"
     a, b, c = _triple(base, candidate)

@@ -27,6 +27,7 @@ E_TRACE_SIDECAR = "E-TRACE-013"
 E_TRACE_EXEMPTION = "E-TRACE-014"
 E_TRACE_PROTECTED = "E-TRACE-015"
 E_TRACE_OUTCOME = "E-TRACE-016"
+E_TRACE_MISSING = "E-TRACE-017"
 
 _COMMENT = re.compile(
     r"(?:#|//) ranex-trace: rule=([^\s]+) transition=([^\s]+) "
@@ -176,7 +177,11 @@ def _in_scope(path: str, scope: Mapping[str, object]) -> bool:
     )
 
 
-def _symbol_for(lines: list[str], start: int) -> str:
+def _symbol_for(lines: list[str], start: int, end: int | None = None) -> str:
+    if end is not None:
+        for line in lines[start:end]:
+            if match := _SYMBOL.match(line):
+                return match.group(1)
     for index in range(min(start, len(lines) - 1), -1, -1):
         if match := _SYMBOL.match(lines[index]):
             return match.group(1)
@@ -201,9 +206,9 @@ def _changed_targets(base: Path, candidate: Path, scope: Mapping[str, object]) -
         before = (base / path).read_text("utf-8").splitlines() if (base / path).is_file() else []
         after = (candidate / path).read_text("utf-8").splitlines() if (candidate / path).is_file() else []
         matcher = difflib.SequenceMatcher(a=before, b=after, autojunk=False)
-        for tag, _left_start, _left_end, right_start, _right_end in matcher.get_opcodes():
+        for tag, _left_start, _left_end, right_start, right_end in matcher.get_opcodes():
             if tag != "equal":
-                changed.append(_ChangedTarget(path, _symbol_for(after, right_start)))
+                changed.append(_ChangedTarget(path, _symbol_for(after, right_start, right_end)))
     return tuple(changed)
 
 
@@ -303,7 +308,10 @@ def verify_trace_coverage(
             _refuse(E_TRACE_INVENTED, "claimed exemption differs from signed manifest")
 
     covered = exempted = 0
-    for target in _changed_targets(base, candidate, scope):
+    targets = _changed_targets(base, candidate, scope)
+    if targets and not anchors and not exact_exemptions:
+        _refuse(E_TRACE_MISSING, "candidate has no trace anchor or signed exemption")
+    for target in targets:
         if target.path in exact_exemptions:
             exempted += 1
             continue

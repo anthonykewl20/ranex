@@ -21,6 +21,7 @@ from ranex.governed_execution.domain.specification_trace import (
     E_TRACE_CROSS_TASK,
     E_TRACE_OUTCOME,
     E_TRACE_PROTECTED,
+    E_TRACE_REASONLESS,
     TraceFact,
     TraceVerificationError,
     verify_trace_coverage,
@@ -108,6 +109,11 @@ def verify_specification(
 ) -> SpecificationVerificationFacts:
     """Refuse identity/protected drift before independently judging trace and outcomes."""
 
+    raw_exemptions = b.get("exemptions")
+    if isinstance(raw_exemptions, list) and any(
+        isinstance(row, Mapping) and row.get("reason") == "" for row in raw_exemptions
+    ):
+        _refuse(E_TRACE_REASONLESS, "B contains a reasonless exemption")
     try:
         packet = validate_spec_packet(dict(a))
         manifest = validate_generated_artifact_manifest(dict(b))
