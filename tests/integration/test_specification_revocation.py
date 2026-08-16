@@ -121,3 +121,23 @@ def test_grant_ancestry_requires_parents_to_precede_descendants() -> None:
     ordered_parent = __import__("dataclasses").replace(parent_issued, seq=1, previous_event_digest=None)
     ordered_child = __import__("dataclasses").replace(child_issued, seq=2, previous_event_digest=ordered_parent.digest)
     assert evaluate_use((ordered_parent, ordered_child), child, 3).valid is True
+
+
+def test_use_refuses_duplicate_grant_issuance_that_would_reparent_a_child() -> None:
+    child = grant()
+    parent_a = event("GRANT_ISSUED", 1, "parent-a")
+    first_child_issuance = SpecificationEvent(
+        "child-issued-a", "GRANT_ISSUED", 2, "sha256:" + "b" * 64, child.c_digest,
+        "child", "parent-a", "owner", "key", parent_a.digest, "OK",
+    )
+    parent_b = SpecificationEvent(
+        "parent-issued-b", "GRANT_ISSUED", 3, "sha256:" + "b" * 64, child.c_digest,
+        "parent", None, "owner", "key", first_child_issuance.digest, "OK",
+    )
+    second_child_issuance = SpecificationEvent(
+        "child-issued-b", "GRANT_ISSUED", 4, "sha256:" + "b" * 64, child.c_digest,
+        "child", "parent", "owner", "key", parent_b.digest, "OK",
+    )
+    with __import__("pytest").raises(ApprovalRefusal) as refused:
+        evaluate_use((parent_a, first_child_issuance, parent_b, second_child_issuance), child, 5)
+    assert refused.value.code == "E-APPROVAL-GRANT-DUPLICATE"

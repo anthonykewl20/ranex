@@ -140,11 +140,13 @@ def evaluate_use(
     if type(journal_position) is not int or journal_position < 0:
         raise ApprovalRefusal("E-APPROVAL-EVENT", "use position is invalid")
     _checked_prefix(events_prefix, journal_position)
-    issued_by_grant = {
-        event.grant_id: event
-        for event in events_prefix
-        if event.kind == "GRANT_ISSUED" and event.grant_id is not None
-    }
+    issued_by_grant: dict[str, SpecificationEvent] = {}
+    for event in events_prefix:
+        if event.kind != "GRANT_ISSUED" or event.grant_id is None:
+            continue
+        if event.grant_id in issued_by_grant:
+            raise ApprovalRefusal("E-APPROVAL-GRANT-DUPLICATE", "grant has more than one issuance event")
+        issued_by_grant[event.grant_id] = event
     current_grant = grant.grant_id
     expected_parent = grant.parent_grant_id
     seen: set[str] = set()
