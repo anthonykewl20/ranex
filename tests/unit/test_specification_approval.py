@@ -18,14 +18,13 @@ from ranex.governed_execution.domain.specification_approval import (
     RoleAssignments,
 )
 
-
 VECTORS = json.loads(
     (Path(__file__).parents[1] / "contract/fixtures/specification/abc-v1-vectors.json").read_text()
 )["triple"]
 PRIVATE = "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="
 
 
-def approved_input(*, position: int = 10, head: str | None = None):
+def approved_input(*, position: int = 10, head: str | None = "sha256:" + "f" * 64):
     policy = PolicyCapabilities.from_record(VECTORS["c_payload"]["capability_request"])
     payload = copy.deepcopy(VECTORS["c_payload"])
     payload["profile_digests"]["policy"] = policy.digest
@@ -58,6 +57,8 @@ def test_approval_binds_policy_roles_head_nonce_and_window() -> None:
     assert outcome.approved_event.kind == "APPROVED"
     assert outcome.implementable_event.kind == "IMPLEMENTABLE"
 
+    for position in (10, 20):
+        assert issue_approval(*approved_input(position=position)).c_digest == outcome.c_digest
     for position in (9, 21):
         with pytest.raises(ApprovalRefusal) as refused:
             issue_approval(*approved_input(position=position))

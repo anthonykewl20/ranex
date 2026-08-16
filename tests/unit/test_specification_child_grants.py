@@ -40,6 +40,14 @@ def test_child_intersection_is_closed_and_never_expands() -> None:
     assert grant.capabilities.secret_names == ()
     assert grant.capabilities.commit_allow is False
     assert grant.capabilities.network_allow is True
+    assert grant.publisher_key is None
+    assert "publisher_key" not in grant.as_record()
+
+    offline = issue_child_grant(
+        "offline", capability(network={"allow": False, "hosts": ["example.test"]}), parent(), capability()
+    )
+    assert offline.capabilities.network_allow is False
+    assert offline.capabilities.network_hosts == ()
 
 
 def test_capability_grammar_refuses_ambiguous_authority() -> None:

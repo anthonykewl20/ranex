@@ -2,9 +2,11 @@
 
 from __future__ import annotations
 
-from ranex.governed_execution.domain.specification_approval import CapabilityGrant
+from ranex.governed_execution.domain.specification_approval import (
+    CapabilityGrant,
+    PolicyCapabilities,
+)
 from ranex.governed_execution.domain.specification_events import SpecificationEvent, evaluate_use
-from ranex.governed_execution.domain.specification_approval import PolicyCapabilities
 
 
 def grant() -> CapabilityGrant:

@@ -127,10 +127,10 @@ the issuer without removing effect admission would be an invalid rollback.
 
 ## Test strategy
 
-`test_specification_approval.py` covers C binding, policy digest, role snapshot,
-nonce, predecessor and all window bounds. `test_specification_child_grants.py`
+`tests/unit/test_specification_approval.py` covers C binding, policy digest, role snapshot,
+nonce, predecessor and all window bounds. `tests/unit/test_specification_child_grants.py`
 covers closed capability parsing, exact/intersected fields, no secret/commit,
-wildcards, paths and sibling pairs. `test_specification_revocation.py` covers
+wildcards, paths and sibling pairs. `tests/integration/test_specification_revocation.py` covers
 event-chain determinism, ancestor propagation, expiry, and serial order races.
 
 ## Code review checklist
