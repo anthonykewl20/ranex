@@ -69,6 +69,13 @@ Its digest is raw SHA-256 of `canonical_payload_bytes(object)`, not a PAE digest
 - Sidecar-json targets use the closed approved sidecar JSON shape.
 - Comments and sidecars are coverage claims, not acceptance evidence.
 - A changed A digest makes an older projection object stale and refuses it.
+- `TRACE_PROJECTION_VERSION`, `trace_projection_descriptor(target)`, and
+  `trace_projection_digest(target)` are the exported v1 trace contract for
+  SLICE-033 and its tests. Every target emits a `.ranex-trace` artifact whose
+  bytes are the canonical descriptor; its artifact digest is the comment
+  projection value. A sidecar-json target also has that trace row with
+  `language: "sidecar-json"`, and its sidecar `projection` carries the same
+  digest.
 
 ### Confirmation
 

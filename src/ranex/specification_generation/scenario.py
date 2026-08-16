@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
-from pathlib import PurePosixPath
 
 from ranex.foundation.specification_abc import (
     SpecificationABCError,
@@ -21,9 +21,17 @@ E_SG_UNMAPPED = "E-SG-006"
 E_SG_UNKNOWN_ID = "E-SG-007"
 E_SG_PROSE_ONLY = "E-SG-008"
 E_SG_COVERAGE = "E-SG-009"
+E_SG_EMPTY_VOCABULARY = "E-SG-012"
+E_SG_PATH = "E-SG-013"
+E_SG_SYMBOL = "E-SG-014"
 
 _PREFIX = "ranex-scenario-v1:"
 _LANGUAGES = frozenset({"python", "typescript", "javascript", "sidecar-json"})
+_PORTABLE_RELATIVE_PATH = re.compile(
+    r"^(?!.*\.\.)[A-Za-z0-9][A-Za-z0-9._-]*(?:/[A-Za-z0-9][A-Za-z0-9._-]*)*$"
+)
+_PYTHON_SYMBOL = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+_ECMASCRIPT_SYMBOL = re.compile(r"^[A-Za-z_$][A-Za-z0-9_$]*$")
 
 
 class ProjectionError(ValueError):
@@ -104,10 +112,17 @@ def _ids(value: object, *, name: str) -> tuple[str, ...]:
 
 def _safe_path(value: object) -> str:
     path = _string(value)
-    parsed = PurePosixPath(path)
-    if parsed.is_absolute() or ".." in parsed.parts or path == ".":
-        _refuse(E_SG_DSL_SHAPE, "target path is not a relative contained path")
+    if not _PORTABLE_RELATIVE_PATH.fullmatch(path):
+        _refuse(E_SG_PATH, "target path is not a portable relative path")
     return path
+
+
+def _safe_symbol(value: object, language: str) -> str:
+    symbol = _string(value)
+    grammar = _ECMASCRIPT_SYMBOL if language in {"typescript", "javascript"} else _PYTHON_SYMBOL
+    if not grammar.fullmatch(symbol):
+        _refuse(E_SG_SYMBOL, f"target symbol is invalid for {language}")
+    return symbol
 
 
 def _unique_a_ids(packet: dict[str, object]) -> dict[str, set[str]]:
@@ -135,6 +150,8 @@ def parse_scenario(spec_packet: object) -> Scenario:
     except SpecificationABCError as exc:
         _refuse(E_SG_DSL_SHAPE, exc.detail)
     identifiers = _unique_a_ids(packet)
+    if not identifiers["test"] or not identifiers["mapping"]:
+        _refuse(E_SG_EMPTY_VOCABULARY, "A test and mapping vocabularies must be nonempty")
     semantics = packet["semantics"]
     assert isinstance(semantics, list)
     dsl_entries = [item for item in semantics if isinstance(item, str) and item.startswith(_PREFIX)]
@@ -170,7 +187,7 @@ def parse_scenario(spec_packet: object) -> Scenario:
         language = _string(item["language"])
         if language not in _LANGUAGES:
             _refuse(E_SG_UNSUPPORTED, f"unsupported target language: {language}")
-        targets.append(Target(_safe_path(item["path"]), language, _string(item["symbol"]), _ids(item["rules"], name="rule"), _ids(item["transitions"], name="transition"), _ids(item["outcomes"], name="outcome")))
+        targets.append(Target(_safe_path(item["path"]), language, _safe_symbol(item["symbol"], language), _ids(item["rules"], name="rule"), _ids(item["transitions"], name="transition"), _ids(item["outcomes"], name="outcome")))
     _check_ids("rule", [row.identifier for row in rules], identifiers["rule"])
     _check_ids("transition", [row.identifier for row in transitions], identifiers["transition"])
     _check_ids("outcome", [row.identifier for row in outcomes], identifiers["outcome"])
