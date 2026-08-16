@@ -1,0 +1,18 @@
+{
+  "schema": "ranex-provider-subject-v1",
+  "name": "arxic",
+  "repository": "https://github.com/anthonykewl20/arxic.git",
+  "commit": "135991d9b1a07c2ffa08e38f8e261543ec5ab980",
+  "issue": 109,
+  "license": "MIT",
+  "credential_ref": "github:anthonykewl20/arxic-read",
+  "lockfile": {"path": "pnpm-lock.yaml", "sha256": "4659eff963d149db1ee351ac8359f0af1990b201f10ab555b12c4b323cf4a482"},
+  "package_manager": {"command": ["corepack", "pnpm@11.17.0", "install", "--frozen-lockfile"]},
+  "process_commands": [
+    ["corepack", "pnpm@11.17.0", "test"],
+    ["corepack", "pnpm@11.17.0", "--filter", "reference-auth-app", "test"],
+    ["corepack", "pnpm@11.17.0", "--filter", "vulnerable-auth-app", "build"],
+    ["corepack", "pnpm@11.17.0", "--filter", "vulnerable-auth-app", "start"],
+    ["corepack", "pnpm@11.17.0", "exec", "vitest", "run"]
+  ]
+}
