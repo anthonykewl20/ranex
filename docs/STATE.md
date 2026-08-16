@@ -2,16 +2,22 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-16 (SLICE-032 archived and registered locally)
+**Updated:** 2026-08-17 (SLICE-032 reparenting refusal registered for publish)
 **Active slice:** none.
 
 ## Where we stopped
 
-Kernel slices SLICE-029 through SLICE-033 and SLICE-035 are merged, archived,
-and registered locally. A/B/C schemas, lifecycle, approval/revocation and
-intersected grants, deterministic projections, independent trace verification,
-and real-subject bootstrap are complete. The real Ranex subject ran; Arxic
-credential absence records BLOCKED. Push remains pending final review.
+Kernel slices SLICE-029 through SLICE-033 and SLICE-035 are merged and archived.
+A/B/C schemas, lifecycle, approval/revocation and intersected grants,
+deterministic projections, independent trace verification, and real-subject
+bootstrap are complete. SLICE-032 also refuses duplicate grant issuance, so a
+later event cannot reparent an existing child. The real Ranex subject ran;
+Arxic's pinned reference-auth-app suite remains BLOCKED by the §23.12 upstream
+gap tracked in Arxic #109.
+
+The absent-harness frozen manifest is registered at 1179 IDs / 115 expected
+skips. #12 remains open for the byte-identical TypeScript schema/vector mirror
+in the harness lane; its kernel contract and frozen vectors are published here.
 
 SLICE-046 + SLICE-047 remain landed: `cmd_run` is bound to the qualified
 strict-local session (ADR-023; ADR-006 accepted, RISK-06 closed, ADR-017
