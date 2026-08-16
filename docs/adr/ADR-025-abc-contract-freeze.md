@@ -71,6 +71,13 @@ liveness vocabulary; journal APIs remain deferred.
 - C binds A+B, subject/base, signer context, nonce, predecessor, capabilities,
   and base/policy/generator/harness profiles.
 - The committed registry selects deterministic `E-ABC-*` failures by precedence.
+- Registry `check_order` is the canonical parser check order: input type, BOM,
+  UTF-8, malformed escape, surrogate, then JSON and subsequent declared checks.
+- Specification IDs are case-sensitive exact matches: no trimming or Unicode
+  normalization occurs, and blank or whitespace-only IDs are refused.
+- JSON Schema expresses portable scalar constraints; `not_before <= not_after`
+  is pinned in vectors because draft 2020-12 has no portable cross-property
+  comparison keyword.
 
 ### Confirmation
 

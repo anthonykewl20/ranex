@@ -11,6 +11,8 @@
     {"name": "input-type", "input_type": "text", "raw": "{}", "error": "E-ABC-001"},
     {"name": "invalid-utf8", "raw_base64": "/w==", "error": "E-ABC-002"},
     {"name": "utf8-bom", "raw_base64": "77u/eyJvayI6MX0=", "error": "E-ABC-003"},
+    {"name": "bom-precedes-invalid-utf8", "raw_base64": "77u//w==", "error": "E-ABC-003"},
+    {"name": "malformed-escape-precedes-lone-surrogate", "raw": "{\"a\":\"\\uD800\\uZZZZ\"}", "error": "E-ABC-022"},
     {"name": "duplicate", "raw_base64": "eyJhIjoxLCJhIjoyfQ==", "error": "E-ABC-005"},
     {"name": "lone-surrogate", "raw_base64": "eyJhIjoiXHVEODAwIn0=", "error": "E-ABC-006"},
     {"name": "negative-zero", "raw": "-0", "error": "E-ABC-007"},
@@ -26,10 +28,12 @@
     {"name": "invalid-digest", "entry_point": "manifest", "source": "b", "path": ["a_digest"], "value": "not-a-digest", "error": "E-ABC-013"},
     {"name": "duplicate-id-within-vocabulary", "entry_point": "spec_packet", "source": "a", "path": ["ids", "question"], "value": ["Q-1", "Q-1"], "error": "E-ABC-020"},
     {"name": "duplicate-id-across-vocabularies", "entry_point": "spec_packet", "source": "a", "path": ["ids", "rule"], "value": ["Q-1"], "error": "E-ABC-020"}
+    ,{"name": "blank-id", "entry_point": "spec_packet", "source": "a", "path": ["ids", "question"], "value": ["   "], "error": "E-ABC-023"}
   ],
   "approval_negative": [
     {"name": "noncanonical-signature-base64", "path": ["signature"], "value": "ed25519:8zwjSdWTZ1Yac/iPgn2vtZzpPnBCJ8JrK+Osy4BEt9Ps1sZsATcjpCkYeOlf1Ud3gXVGZvAWn+zmtmhQe1zyBx==", "error": "E-ABC-016"},
-    {"name": "key-id-dissociation", "path": ["key_id"], "value": "ed25519:ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=", "error": "E-ABC-018"}
+    {"name": "key-id-dissociation", "path": ["key_id"], "value": "ed25519:ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=", "error": "E-ABC-018"},
+    {"name": "reversed-time-window", "path": ["payload", "time_window", "not_before"], "value": 21, "error": "E-ABC-012"}
   ],
   "signing_negative": [
     {"name": "private-key-payload-key-mismatch", "private_key": "ed25519:ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICA=", "error": "E-ABC-014"}
@@ -39,6 +43,25 @@
     {"name": "approval-a-does-not-bind-supplied-a", "target": "envelope", "path": ["payload", "a_digest"], "value": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "error": "E-ABC-017"},
     {"name": "approval-b-does-not-bind-supplied-b", "target": "envelope", "path": ["payload", "b_digest"], "value": "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff", "error": "E-ABC-019"}
   ],
+  "chain_context_negative": [
+    {"name": "approval-domain-does-not-match-a-and-b", "path": ["payload", "domain"], "value": "other-domain", "error": "E-ABC-021"},
+    {"name": "approval-task-does-not-match-a", "path": ["payload", "task"], "value": "SLICE-OTHER", "error": "E-ABC-021"},
+    {"name": "approval-revision-does-not-match-a", "path": ["payload", "revision"], "value": 2, "error": "E-ABC-021"}
+  ],
+  "contract": {
+    "payload_media_types": ["application/vnd.ranex.spec-packet.v1+json", "application/vnd.ranex.generated-artifact-manifest.v1+json", "application/vnd.ranex.approval-envelope.v1+json"],
+    "superseded_pae_draft": [
+      {"source": "a", "payload_type": "application/vnd.ranex.spec-packet.v1+json", "preimage_hex": "445353457631203431206170706c69636174696f6e2f766e642e72616e65782e737065632d7061636b65742e76312b6a736f6e20343633207b22616e7377657273223a7b22512d31223a226f776e657220617070726f766564227d2c22646f6d61696e223a226b65726e656c222c22696473223a7b226572726f72223a5b22452d31225d2c226d617070696e67223a5b224d2d31225d2c226f7574636f6d65223a5b224f2d31225d2c227175657374696f6e223a5b22512d31225d2c2272756c65223a5b22522d31225d2c2274657374223a5b22544553542d31225d2c227472616e736974696f6e223a5b22542d31225d7d2c226e6f6e5f676f616c73223a5b226a6f75726e616c20415049225d2c226f627365727661626c655f6f7574636f6d6573223a5b22636c6f73656420636f6e747261637473225d2c226f7261636c655f70726f76656e616e6365223a7b224f2d31223a22726571756972656d656e74227d2c227265766973696f6e223a312c2273636f7065223a7b226578636c756465223a5b2274657374732f67656e657261746564225d2c22696e636c756465223a5b227372632f72616e65782f666f756e646174696f6e225d7d2c2273656d616e74696373223a5b22667265657a6520412f422f43225d2c227461736b223a22534c4943452d303239222c2276657273696f6e223a22737065632d7061636b65742d7631227d", "digest": "sha256:efa62255ed535af0275f5d50f11c1f89b6206e156b6f0ad7ad9c9ff8676819eb"},
+      {"source": "b", "payload_type": "application/vnd.ranex.generated-artifact-manifest.v1+json", "preimage_hex": "445353457631203537206170706c69636174696f6e2f766e642e72616e65782e67656e6572617465642d61727469666163742d6d616e69666573742e76312b6a736f6e20363730207b22615f646967657374223a227368613235363a65666136323235356564353335616630323735663564353066313163316638396236323036653135366236663061643761643963396666383637363831396562222c22617274696661637473223a7b22626173656c696e6573223a5b5d2c2265787065637465645f76616c756573223a5b5d2c22696e766f636174696f6e223a7b226172677ვია223a5b22707974657374222c222d71225d7d2c226e656761746976655f636f6e74726f6c73223a5b5d2c2270726f746563746564223a5b7b22646967657374223a227368613235363a31313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131313131222c2270617468223a22746573742e747874227d5d2c2270736575646f636f64655f666c6f77223a5b7b22646967657374223a227368613235363a30303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030222c2270617468223a22666c6f772e747874227d5d2c227369646563617273223a5b5d2c2274726163655f70726f6a656374696f6e73223a5b5d7d2c22646f6d61696e223a226b65726e656c222c226578656d7074696f6e73223a5b7b22636c617373223a22646f6373222c2270617468223a22646f63732f6578616d706c652e6d64222c22726561736f6e223a22646f63756d656e746174696f6e222c227768795f6e6f5f6469736372696d696e6174696e675f726564223a226e6f2065786563757461626c65206265686176696f72227d5d2c2276657273696f6e223a2267656e6572617465642d61727469666163742d6d616e69666573742d7631227d", "digest": "sha256:9284d892d793f66e0f0149d041c9ff2bad14c280b9595175adf8a64a9a2d87e5"}
+    ],
+    "pae": [
+      {"payload_type": "application/vnd.ranex.spec-packet.v1+json", "body_hex": "7b7d", "preimage_hex": "445353457631203431206170706c69636174696f6e2f766e642e72616e65782e737065632d7061636b65742e76312b6a736f6e2032207b7d", "digest": "sha256:2278ee5f254a4f34d1cadcd759cf69f5c28c61f1b65d2a5ecf4d990c22d85930"},
+      {"payload_type": "application/vnd.ranex.generated-artifact-manifest.v1+json", "body_hex": "7b7d", "preimage_hex": "445353457631203537206170706c69636174696f6e2f766e642e72616e65782e67656e6572617465642d61727469666163742d6d616e69666573742e76312b6a736f6e2032207b7d", "digest": "sha256:01205477199b11c7f7c7bbf88fba6dcc9fc2f69fa24d836b4af257b06685651a"},
+      {"payload_type": "application/vnd.ranex.approval-envelope.v1+json", "body_hex": "7b7d", "preimage_hex": "445353457631203437206170706c69636174696f6e2f766e642e72616e65782e617070726f76616c2d656e76656c6f70652e76312b6a736f6e2032207b7d", "digest": "sha256:cd91afe257304b8241a884425ab8a18c21ad71d7b138162d53319d58b1ab3c83"}
+    ],
+    "time_window": "not_before and not_after are non-negative integers and not_before <= not_after",
+    "c_authoritative_identity": "C's authoritative identity is the approval-envelope payload digest: c_digest = payload_digest(c_payload); the detached envelope is not C's identity."
+  },
   "triple": {
     "a": {"version":"spec-packet-v1","domain":"kernel","task":"SLICE-029","revision":1,"semantics":["freeze A/B/C"],"scope":{"include":["src/ranex/foundation"],"exclude":["tests/generated"]},"answers":{"Q-1":"owner approved"},"observable_outcomes":["closed contracts"],"non_goals":["journal API"],"oracle_provenance":{"O-1":"requirement"},"ids":{"question":["Q-1"],"rule":["R-1"],"transition":["T-1"],"outcome":["O-1"],"error":["E-1"],"test":["TEST-1"],"mapping":["M-1"]}},
     "b": {"version":"generated-artifact-manifest-v1","domain":"kernel","a_digest":"sha256:efa62255ed535af0275f5d50f11c1f89b6206e156b6f0ad7ad9c9ff8676819eb","artifacts":{"pseudocode_flow":[{"path":"flow.txt","digest":"sha256:0000000000000000000000000000000000000000000000000000000000000000"}],"protected":[{"path":"test.txt","digest":"sha256:1111111111111111111111111111111111111111111111111111111111111111"}],"invocation":{"argv":["pytest","-q"]},"expected_values":[],"baselines":[],"negative_controls":[],"trace_projections":[],"sidecars":[]},"exemptions":[{"path":"docs/example.md","class":"docs","reason":"documentation","why_no_discriminating_red":"no executable behavior"}]},

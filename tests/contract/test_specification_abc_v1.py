@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import base64
 import copy
+import hashlib
 import json
 from pathlib import Path
 
@@ -13,6 +14,7 @@ from ranex.foundation.specification_abc import (
     assert_abc_chain,
     canonical_payload_bytes,
     load_error_registry,
+    pae,
     parse_canonical_payload,
     parse_strict_json,
     payload_digest,
@@ -102,6 +104,24 @@ def test_recorded_vector_digests_recompute() -> None:
     assert payload_digest(triple["c_payload"]) == triple["c_digest"]
 
 
+def test_contract_vectors_pin_pae_media_types_and_c_payload_identity() -> None:
+    contract = VECTORS["contract"]
+    assert contract["payload_media_types"] == [
+        specification_abc.SPEC_PACKET_PAYLOAD_TYPE,
+        specification_abc.MANIFEST_PAYLOAD_TYPE,
+        specification_abc.APPROVAL_PAYLOAD_TYPE,
+    ]
+    for vector in contract["pae"]:
+        preimage = pae(vector["payload_type"], bytes.fromhex(vector["body_hex"]))
+        assert preimage.hex() == vector["preimage_hex"]
+        assert "sha256:" + hashlib.sha256(preimage).hexdigest() == vector["digest"]
+    assert contract["c_authoritative_identity"] == (
+        "C's authoritative identity is the approval-envelope payload digest: "
+        "c_digest = payload_digest(c_payload); the detached envelope is not C's identity."
+    )
+    assert payload_digest(VECTORS["triple"]["c_payload"]) == VECTORS["triple"]["c_digest"]
+
+
 def test_bound_identity_changes_when_b_or_c_changes() -> None:
     triple = VECTORS["triple"]
     changed_b = copy.deepcopy(triple["b"])
@@ -175,6 +195,26 @@ def test_assert_abc_chain_enforces_a_and_b_bindings_and_envelope_validity() -> N
         assert_abc_chain(triple["a"], triple["b"], invalid_signature)
 
 
+def test_assert_abc_chain_enforces_cross_record_context_with_a_resigned_c() -> None:
+    triple = VECTORS["triple"]
+    for vector in VECTORS["chain_context_negative"]:
+        envelope = {
+            "version": "approval-envelope-v1",
+            "payload_type": "application/vnd.ranex.approval-envelope.v1+json",
+            "payload": copy.deepcopy(triple["c_payload"]),
+            "key_id": triple["key_id"],
+            "signature": triple["signature"],
+        }
+        _set_path(envelope, vector["path"], vector["value"])
+        envelope["signature"] = sign_approval_payload(
+            envelope["payload"],
+            "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=",
+        )
+        with pytest.raises(SpecificationABCError) as refused:
+            assert_abc_chain(triple["a"], triple["b"], envelope)
+        assert refused.value.code == vector["error"]
+
+
 def test_closed_payload_shapes_refuse_extra_members() -> None:
     triple = VECTORS["triple"]
     validate_spec_packet(triple["a"])
@@ -218,6 +258,7 @@ def test_registry_missing_name_refuses_with_the_meta_code() -> None:
         (Path(__file__).parents[2] / "governance/schemas/specification/error-registry-v1.json").read_text("utf-8")
     )
     registry_data["precedence"].remove("signature")
+    registry_data["check_order"].remove("signature")
     del registry_data["errors"]["signature"]
     registry = load_error_registry(json.dumps(registry_data).encode())
     with pytest.raises(SpecificationABCError, match="E-ABC-000"):
@@ -264,3 +305,20 @@ def test_schema_closed_field_sets_match_the_implementation() -> None:
     _assert_schema_fields(capability["properties"]["commit"], fields["commit"])
     _assert_schema_fields(capability["properties"]["subagent"], fields["subagent"])
     _assert_schema_fields(payload["properties"]["profile_digests"], fields["profile_digests"])
+
+    assert spec["$defs"]["idList"]["items"] == {"type": "string", "minLength": 1, "pattern": "\\S"}
+    assert manifest["$defs"]["artifactList"]["items"]["properties"]["path"]["minLength"] == 1
+    assert manifest["properties"]["exemptions"]["items"]["properties"]["path"]["minLength"] == 1
+    assert manifest["properties"]["exemptions"]["items"]["properties"]["reason"]["minLength"] == 1
+    assert manifest["properties"]["exemptions"]["items"]["properties"]["why_no_discriminating_red"]["minLength"] == 1
+    for name in ("domain", "task", "principal", "role", "nonce"):
+        assert payload["properties"][name]["minLength"] == 1
+    for name in ("executable", "cwd"):
+        assert capability["properties"][name]["minLength"] == 1
+    assert approval["$defs"]["publicKey"]["pattern"] == "^ed25519:[A-Za-z0-9+/]{43}=$"
+    assert approval["properties"]["signature"]["pattern"] == "^ed25519:[A-Za-z0-9+/]{86}==$"
+    window = payload["properties"]["time_window"]
+    assert window["properties"]["not_before"]["minimum"] == 0
+    assert window["properties"]["not_after"]["minimum"] == 0
+    assert "not_before must be less than or equal to not_after" in window["description"]
+    assert "not_before <= not_after" in VECTORS["contract"]["time_window"]

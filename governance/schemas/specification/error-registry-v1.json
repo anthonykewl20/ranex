@@ -1,6 +1,7 @@
 {
   "version": "ranex-specification-error-registry-v1",
-  "precedence": ["input_type", "utf8", "bom", "json", "duplicate_member", "surrogate", "number", "integer_range", "canonical", "payload_type", "version", "shape", "digest", "relation", "a_binding", "key_binding", "b_binding", "id_duplicate", "nonce_reuse", "signature"],
+  "precedence": ["input_type", "bom", "utf8", "escape", "surrogate", "json", "duplicate_member", "number", "integer_range", "canonical", "payload_type", "version", "shape", "digest", "relation", "a_binding", "key_binding", "b_binding", "context_binding", "id_duplicate", "id_grammar", "nonce_reuse", "signature"],
+  "check_order": ["input_type", "bom", "utf8", "escape", "surrogate", "json", "duplicate_member", "number", "integer_range", "canonical", "payload_type", "version", "shape", "digest", "relation", "a_binding", "key_binding", "b_binding", "context_binding", "id_duplicate", "id_grammar", "nonce_reuse", "signature"],
   "errors": {
     "input_type": {"code": "E-ABC-001", "message": "input must be bytes"},
     "utf8": {"code": "E-ABC-002", "message": "input is not UTF-8"},
@@ -21,6 +22,9 @@
     "a_binding": {"code": "E-ABC-017", "message": "A digest binding is invalid"},
     "key_binding": {"code": "E-ABC-018", "message": "envelope key binding is invalid"},
     "b_binding": {"code": "E-ABC-019", "message": "B digest binding is invalid"},
-    "id_duplicate": {"code": "E-ABC-020", "message": "specification ID is not globally unique"}
+    "id_duplicate": {"code": "E-ABC-020", "message": "specification ID is not globally unique"},
+    "context_binding": {"code": "E-ABC-021", "message": "A/B/C context binding is invalid"},
+    "escape": {"code": "E-ABC-022", "message": "JSON string escape is malformed"},
+    "id_grammar": {"code": "E-ABC-023", "message": "specification ID grammar is invalid"}
   }
 }
