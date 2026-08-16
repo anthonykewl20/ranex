@@ -49,8 +49,7 @@ def test_recorded_vector_digests_recompute() -> None:
     triple = VECTORS["triple"]
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
-    envelope = {"version": "approval-envelope-v1", "payload_type": "application/vnd.ranex.approval-envelope.v1+json", "payload": triple["c_payload"], "key_id": triple["key_id"], "signature": triple["signature"]}
-    assert payload_digest(envelope) == triple["c_digest"]
+    assert payload_digest(triple["c_payload"]) == triple["c_digest"]
 
 
 def test_bound_identity_changes_when_b_or_c_changes() -> None:

@@ -193,8 +193,26 @@ def canonical_payload_bytes(value: object, *, registry: _Registry | bytes | None
         reg.refuse("shape", str(exc))
 
 
-def payload_digest(value: object, *, registry: _Registry | bytes | None = None) -> str:
-    return "sha256:" + hashlib.sha256(canonical_payload_bytes(value, registry=registry)).hexdigest()
+def payload_digest(
+    value: object,
+    *,
+    payload_type: str | None = None,
+    registry: _Registry | bytes | None = None,
+) -> str:
+    """Digest canonical bytes, PAE-domain-separated for every known A/B/C payload."""
+    inferred = {
+        "spec-packet-v1": SPEC_PACKET_PAYLOAD_TYPE,
+        "generated-artifact-manifest-v1": MANIFEST_PAYLOAD_TYPE,
+        "approval-payload-v1": APPROVAL_PAYLOAD_TYPE,
+        "approval-envelope-v1": APPROVAL_PAYLOAD_TYPE,
+    }
+    if payload_type is None and isinstance(value, dict):
+        version = value.get("version")
+        if isinstance(version, str):
+            payload_type = inferred.get(version)
+    body = canonical_payload_bytes(value, registry=registry)
+    preimage = body if payload_type is None else pae(payload_type, body)
+    return "sha256:" + hashlib.sha256(preimage).hexdigest()
 
 
 def pae(payload_type: str, body: bytes) -> bytes:
