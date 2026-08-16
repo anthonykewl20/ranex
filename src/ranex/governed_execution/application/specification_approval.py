@@ -17,7 +17,11 @@ from ranex.governed_execution.domain.specification_approval import (
     RoleAssignments,
     intersect_capabilities,
 )
-from ranex.governed_execution.domain.specification_events import SpecificationEvent
+from ranex.governed_execution.domain.specification_events import (
+    SpecificationEvent,
+    expiry_recorded_event,
+    grant_issued_event,
+)
 
 
 @dataclass(frozen=True)
@@ -26,19 +30,23 @@ class ApprovalOutcome:
     grant: CapabilityGrant
     approved_event: SpecificationEvent
     implementable_event: SpecificationEvent
+    grant_issued_event: SpecificationEvent
+    expiry_recorded_event: SpecificationEvent
 
     def as_record(self) -> dict[str, object]:
         return {
             "c_digest": self.c_digest, "grant": self.grant.as_record(),
             "approved_event": self.approved_event.as_record(),
             "implementable_event": self.implementable_event.as_record(),
+            "grant_issued_event": self.grant_issued_event.as_record(),
+            "expiry_recorded_event": self.expiry_recorded_event.as_record(),
         }
 
 
 def issue_approval(
     spec_packet: object, manifest: object, envelope: object, policy: PolicyCapabilities,
     pending: ApprovalPendingContext, roles: RoleAssignments, journal_position: int,
-    current_head: str | None, *, prior_events: tuple[SpecificationEvent, ...] = (),
+    current_head: str | None, *, prior_events: tuple[SpecificationEvent, ...],
 ) -> ApprovalOutcome:
     """Validate a C at the observed head and project deterministic lifecycle facts."""
 
@@ -72,6 +80,7 @@ def issue_approval(
         intersect_capabilities(PolicyCapabilities.from_record(payload["capability_request"]), policy, child=False),
         roles.key_for("worker", c_digest),
         roles.key_for("evaluator", c_digest), roles.key_for("publisher", c_digest),
+        window["not_before"], window["not_after"],
     )
     approved = SpecificationEvent(
         "approval:" + payload["nonce"], "APPROVED", journal_position, current_head, c_digest,
@@ -81,4 +90,12 @@ def issue_approval(
         "implementable:" + c_digest, "IMPLEMENTABLE", journal_position + 1, approved.digest,
         c_digest, grant.grant_id, None, payload["principal"], payload["key"], approved.digest, "OK",
     )
-    return ApprovalOutcome(c_digest, grant, approved, implementable)
+    issued = grant_issued_event(
+        grant, seq=journal_position + 2, journal_head_link=current_head,
+        principal_id=payload["principal"], key_id=payload["key"], previous_event_digest=implementable.digest,
+    )
+    expiry = expiry_recorded_event(
+        grant, journal_head_link=current_head, principal_id=payload["principal"], key_id=payload["key"],
+        previous_event_digest=issued.digest,
+    )
+    return ApprovalOutcome(c_digest, grant, approved, implementable, issued, expiry)

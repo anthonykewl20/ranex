@@ -27,24 +27,30 @@ def _string(value: object, field: str) -> str:
     return value
 
 
-def _strings(value: object, field: str) -> tuple[str, ...]:
-    if not isinstance(value, list) or any(not isinstance(item, str) or not item for item in value):
-        _refuse("E-APPROVAL-SHAPE", f"{field} must be a string list")
+def _capability_strings(
+    value: object, field: str, *, container: type[list[object]] | type[tuple[object, ...]], ordered: bool,
+) -> tuple[str, ...]:
+    """Validate one capability collection at both untrusted construction boundaries."""
+
+    if not isinstance(value, container) or any(not isinstance(item, str) or not item for item in value):
+        label = "list" if container is list else "tuple"
+        _refuse("E-APPROVAL-SHAPE", f"{field} must be a string {label}")
     if len(set(value)) != len(value):
         _refuse("E-APPROVAL-SHAPE", f"{field} must not repeat values")
     if any("*" in item for item in value):
         _refuse("E-APPROVAL-WILDCARD", field)
-    return tuple(sorted(value))
+    values = tuple(value)
+    if container is tuple and not ordered and tuple(sorted(values)) != values:
+        _refuse("E-APPROVAL-SHAPE", f"{field} must be sorted and unique")
+    return values if ordered else tuple(sorted(values))
 
 
 def _tuple_strings(value: object, field: str) -> tuple[str, ...]:
-    if not isinstance(value, tuple) or any(not isinstance(item, str) or not item for item in value):
-        _refuse("E-APPROVAL-SHAPE", f"{field} must be a string tuple")
-    if tuple(sorted(value)) != value or len(set(value)) != len(value):
-        _refuse("E-APPROVAL-SHAPE", f"{field} must be sorted and unique")
-    if any("*" in item for item in value):
-        _refuse("E-APPROVAL-WILDCARD", field)
-    return value
+    return _capability_strings(value, field, container=tuple, ordered=field == "argv")
+
+
+def _record_strings(value: object, field: str) -> tuple[str, ...]:
+    return _capability_strings(value, field, container=list, ordered=field == "argv")
 
 
 def _portable_relative(value: str, field: str, *, cwd: bool = False) -> str:
@@ -84,10 +90,13 @@ class PolicyCapabilities:
     commit_allow: bool
     subagent_allow: bool
     subagent_max_children: int
+    version: str = "policy-capabilities-v1"
 
     def __post_init__(self) -> None:
         """Direct construction is also an untrusted boundary, not an escape hatch."""
 
+        if self.version != "policy-capabilities-v1":
+            _refuse("E-APPROVAL-SHAPE", "capability version is unsupported")
         _string(self.executable, "executable")
         _tuple_strings(self.argv, "argv")
         _portable_relative(_string(self.cwd, "cwd"), "cwd", cwd=True)
@@ -105,13 +114,16 @@ class PolicyCapabilities:
 
     @classmethod
     def from_record(cls, value: object) -> PolicyCapabilities:
-        record = _record(value, {"executable", "argv", "cwd", "roots", "actions", "environment", "network", "secret", "commit", "subagent"}, "capability")
+        expected = {"version", "executable", "argv", "cwd", "roots", "actions", "environment", "network", "secret", "commit", "subagent"}
+        if not isinstance(value, dict) or set(value) not in (expected, expected - {"version"}):
+            _refuse("E-APPROVAL-SHAPE", "capability is not a closed record")
+        record = value
         environment = _record(record["environment"], {"allow"}, "environment")
         network = _record(record["network"], {"allow", "hosts"}, "network")
         secret = _record(record["secret"], {"allow", "names"}, "secret")
         commit = _record(record["commit"], {"allow"}, "commit")
         subagent = _record(record["subagent"], {"allow", "max_children"}, "subagent")
-        roots = _strings(record["roots"], "roots")
+        roots = _record_strings(record["roots"], "roots")
         for root in roots:
             _portable_relative(root, "roots")
         cwd = _portable_relative(_string(record["cwd"], "cwd"), "cwd", cwd=True)
@@ -123,16 +135,16 @@ class PolicyCapabilities:
             _refuse("E-APPROVAL-SHAPE", "max_children must be a non-negative integer")
         return cls(
             _string(record["executable"], "executable"),
-            _strings(record["argv"], "argv"), cwd, roots, _strings(record["actions"], "actions"),
-            _strings(environment["allow"], "environment.allow"), network["allow"],
-            _strings(network["hosts"], "network.hosts"), secret["allow"],
-            _strings(secret["names"], "secret.names"), commit["allow"],
-            subagent["allow"], maximum,
+            _record_strings(record["argv"], "argv"), cwd, roots, _record_strings(record["actions"], "actions"),
+            _record_strings(environment["allow"], "environment.allow"), network["allow"],
+            _record_strings(network["hosts"], "network.hosts"), secret["allow"],
+            _record_strings(secret["names"], "secret.names"), commit["allow"],
+            subagent["allow"], maximum, record.get("version", "policy-capabilities-v1"),
         )
 
     def as_record(self) -> dict[str, object]:
         return {
-            "executable": self.executable, "argv": list(self.argv), "cwd": self.cwd,
+            "version": self.version, "executable": self.executable, "argv": list(self.argv), "cwd": self.cwd,
             "roots": list(self.roots), "actions": list(self.actions),
             "environment": {"allow": list(self.environment_allow)},
             "network": {"allow": self.network_allow, "hosts": list(self.network_hosts)},
@@ -184,9 +196,14 @@ class RoleAssignments:
     assignments: tuple[RoleAssignment, ...]
 
     def __post_init__(self) -> None:
+        if not isinstance(self.assignments, (tuple, list)):
+            _refuse("E-APPROVAL-SHAPE", "role assignments must be a sequence")
+        object.__setattr__(self, "assignments", tuple(self.assignments))
         seen_ids: set[str] = set()
         by_key: dict[str, set[str]] = {}
         for assignment in self.assignments:
+            if not isinstance(assignment, RoleAssignment):
+                _refuse("E-APPROVAL-SHAPE", "role assignments must contain role assignments")
             if not all(isinstance(value, str) and value for value in assignment.as_record().values()):
                 _refuse("E-APPROVAL-SHAPE", "role assignment fields must be non-empty strings")
             if assignment.role not in _ROLES or assignment.assignment_id in seen_ids:
@@ -222,12 +239,31 @@ class CapabilityGrant:
     worker_key: str
     evaluator_key: str
     publisher_key: str | None
+    not_before: int
+    not_after: int
+
+    def __post_init__(self) -> None:
+        for value, field in (
+            (self.grant_id, "grant_id"), (self.c_digest, "c_digest"),
+            (self.worker_key, "worker_key"), (self.evaluator_key, "evaluator_key"),
+        ):
+            _string(value, field)
+        if self.parent_grant_id is not None:
+            _string(self.parent_grant_id, "parent_grant_id")
+        if self.publisher_key is not None:
+            _string(self.publisher_key, "publisher_key")
+        if (
+            type(self.not_before) is not int or type(self.not_after) is not int
+            or self.not_before < 0 or self.not_after < self.not_before
+        ):
+            _refuse("E-APPROVAL-WINDOW", "grant window is invalid")
 
     def as_record(self) -> dict[str, object]:
         record: dict[str, object] = {
             "grant_id": self.grant_id, "c_digest": self.c_digest,
             "parent_grant_id": self.parent_grant_id, "capabilities": self.capabilities.as_record(),
             "worker_key": self.worker_key, "evaluator_key": self.evaluator_key,
+            "time_window": {"not_before": self.not_before, "not_after": self.not_after},
         }
         if self.publisher_key is not None:
             record["publisher_key"] = self.publisher_key
@@ -245,6 +281,17 @@ def _intersection(values: Iterable[tuple[str, ...]]) -> tuple[str, ...]:
     return tuple(sorted(common))
 
 
+def _root_intersection(values: Iterable[tuple[str, ...]]) -> tuple[str, ...]:
+    """Return requested roots contained by a root in every authority source."""
+
+    collections = tuple(values)
+    candidates = {root for roots in collections for root in roots}
+    return tuple(sorted(
+        candidate for candidate in candidates
+        if all(any(_path_prefix(root, candidate) for root in roots) for roots in collections)
+    ))
+
+
 def intersect_capabilities(*values: PolicyCapabilities, child: bool) -> PolicyCapabilities:
     """Return only common authority; child-only structural prohibitions are explicit."""
 
@@ -258,21 +305,26 @@ def intersect_capabilities(*values: PolicyCapabilities, child: bool) -> PolicyCa
         _refuse("E-APPROVAL-EXPANSION", "executable, argv, and cwd require exact equality")
     scopes = {
         (root, action)
-        for root in _intersection(value.roots for value in values)
+        for root in _root_intersection(value.roots for value in values)
         for action in _intersection(value.actions for value in values)
     }
-    network_allow = all(value.network_allow for value in values)
+    network_hosts = _intersection(value.network_hosts for value in values)
+    network_allow = all(value.network_allow for value in values) and bool(network_hosts)
     return PolicyCapabilities(
         values[0].executable, values[0].argv, values[0].cwd,
         tuple(sorted({root for root, _ in scopes})), tuple(sorted({action for _, action in scopes})),
         _intersection(value.environment_allow for value in values), network_allow,
-        _intersection(value.network_hosts for value in values) if network_allow else (),
+        network_hosts if network_allow else (),
         False if child else all(value.secret_allow for value in values),
         () if child else _intersection(value.secret_names for value in values),
         False if child else all(value.commit_allow for value in values),
         all(value.subagent_allow for value in values),
         min(value.subagent_max_children for value in values),
     )
+
+
+def _path_prefix(left: str, right: str) -> bool:
+    return left == right or right.startswith(left + "/")
 
 
 def issue_child_grant(
@@ -282,24 +334,45 @@ def issue_child_grant(
     policy: PolicyCapabilities,
     *,
     siblings: tuple[CapabilityGrant, ...] = (),
-) -> CapabilityGrant:
-    """Issue the closed intersection; no field has an implicit allow-all meaning."""
+    journal_position: int,
+    journal_head_link: str | None,
+    prior_events: tuple[object, ...],
+    principal_id: str,
+    key_id: str,
+) -> tuple[CapabilityGrant, object]:
+    """Issue the closed intersection and its typed event; callers supply the observed prefix."""
 
     _string(grant_id, "grant_id")
+    if not isinstance(prior_events, tuple):
+        _refuse("E-APPROVAL-EVENT", "prior events must be an ordered tuple")
     if parent.c_digest == "":
         _refuse("E-APPROVAL-SHAPE", "parent C digest is absent")
     values = (request, parent.capabilities, policy)
     capabilities = intersect_capabilities(*values, child=True)
-    scopes = {(root, action) for root in capabilities.roots for action in capabilities.actions}
     for sibling in siblings:
         if sibling.parent_grant_id != parent.grant_id:
             continue
-        sibling_scopes = {(root, action) for root in sibling.capabilities.roots for action in sibling.capabilities.actions}
-        if scopes & sibling_scopes:
-            _refuse("E-APPROVAL-OVERLAP", "siblings share a path+action scope")
-    return CapabilityGrant(
+        shared_actions = set(capabilities.actions) & set(sibling.capabilities.actions)
+        if shared_actions and any(
+            _path_prefix(root, other) or _path_prefix(other, root)
+            for root in capabilities.roots for other in sibling.capabilities.roots
+        ):
+            _refuse("E-APPROVAL-OVERLAP", "siblings share a path-prefix+action scope")
+    grant = CapabilityGrant(
         grant_id, parent.c_digest, parent.grant_id, capabilities,
-        parent.worker_key, parent.evaluator_key, None,
+        parent.worker_key, parent.evaluator_key, None, parent.not_before, parent.not_after,
+    )
+    from ranex.governed_execution.domain.specification_events import (
+        SpecificationEvent,
+        grant_issued_event,
+    )
+
+    if any(not isinstance(event, SpecificationEvent) for event in prior_events):
+        _refuse("E-APPROVAL-EVENT", "prior events must be specification events")
+    previous_event_digest = prior_events[-1].digest if prior_events else None
+    return grant, grant_issued_event(
+        grant, seq=journal_position, journal_head_link=journal_head_link,
+        principal_id=principal_id, key_id=key_id, previous_event_digest=previous_event_digest,
     )
 
 

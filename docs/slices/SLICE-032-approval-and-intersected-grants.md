@@ -31,7 +31,7 @@ ordered prefix. Persistence and CAS wiring remain SLICE-036.
    `test_child_intersection_is_closed_and_never_expands`.
 3. Wildcards, empty-list allow-all, bool counts and path escapes refuse:
    `test_capability_grammar_refuses_ambiguous_authority`.
-4. Child siblings cannot share a path+action pair:
+4. Child siblings cannot share an overlapping path-prefix+action scope:
    `test_sibling_path_action_scopes_are_disjoint`.
 5. Ancestor revoke/expiry and deterministic race order govern use:
    `test_revoke_and_expiry_propagate_through_descendants`.

@@ -65,6 +65,14 @@ must be pairwise disjoint from existing siblings by exact `(path, action)`.
 - Sequence windows are inclusive at both ends and predecessor must be current.
 - Events chain canonically in-domain and expose journal sequence/head fields.
 - Batch issuance/liveness is a typed refusal until SLICE-036.
+- `argv` is an ordered capability field: as `canonical.py`'s `command_digest`
+  doctrine states, argument order is inside the digest, so reordered arguments
+  are a different authority. Other capability collections remain sorted sets.
+- Capability records carry `policy-capabilities-v1`; SLICE-032 digest vectors
+  were regenerated for that additive self-description.
+- A grant carries C's inclusive window at use time and projects
+  `EXPIRY_RECORDED` at `not_after + 1`; revocation producers make the complete
+  pure stream constructible before SLICE-036 persists it.
 
 ### Confirmation
 

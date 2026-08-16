@@ -12,6 +12,16 @@ _KINDS = frozenset({"APPROVED", "IMPLEMENTABLE", "GRANT_ISSUED", "GRANT_REVOKED"
 
 @dataclass(frozen=True)
 class SpecificationEvent:
+    """A pure lifecycle event.
+
+    For an ``APPROVED`` event, ``journal_head_link`` is C's observed journal
+    predecessor. For projected lifecycle events it is an informational
+    predecessor token; ``previous_event_digest`` alone binds the in-domain
+    event chain. SLICE-036's CAS contract is: compare the storage head to the
+    authoritative observed head supplied to that append, append exactly one
+    event, then return the resulting storage head. It must not treat a
+    projected non-``APPROVED`` event's ``journal_head_link`` as the CAS head.
+    """
     event_id: str
     kind: str
     seq: int
@@ -43,6 +53,57 @@ class SpecificationEvent:
     @property
     def digest(self) -> str:
         return payload_digest(self.as_record())
+
+
+def grant_issued_event(
+    grant: CapabilityGrant, *, seq: int, journal_head_link: str | None,
+    principal_id: str, key_id: str, previous_event_digest: str | None,
+) -> SpecificationEvent:
+    """Construct the closed event that establishes a grant's ancestry."""
+
+    return SpecificationEvent(
+        f"grant-issued:{grant.grant_id}", "GRANT_ISSUED", seq, journal_head_link,
+        grant.c_digest, grant.grant_id, grant.parent_grant_id, principal_id, key_id,
+        previous_event_digest, "OK",
+    )
+
+
+def grant_revoked_event(
+    grant: CapabilityGrant, *, seq: int, journal_head_link: str | None,
+    principal_id: str, key_id: str, previous_event_digest: str | None,
+) -> SpecificationEvent:
+    """Construct the closed event that revokes one grant and its descendants."""
+
+    return SpecificationEvent(
+        f"grant-revoked:{grant.grant_id}", "GRANT_REVOKED", seq, journal_head_link,
+        grant.c_digest, grant.grant_id, grant.parent_grant_id, principal_id, key_id,
+        previous_event_digest, "OK",
+    )
+
+
+def approval_revoked_event(
+    c_digest: str, *, seq: int, journal_head_link: str | None,
+    principal_id: str, key_id: str, previous_event_digest: str | None,
+) -> SpecificationEvent:
+    """Construct the closed event that revokes every grant for an approval."""
+
+    return SpecificationEvent(
+        f"approval-revoked:{c_digest}", "APPROVAL_REVOKED", seq, journal_head_link,
+        c_digest, None, None, principal_id, key_id, previous_event_digest, "OK",
+    )
+
+
+def expiry_recorded_event(
+    grant: CapabilityGrant, *, journal_head_link: str | None,
+    principal_id: str, key_id: str, previous_event_digest: str | None,
+) -> SpecificationEvent:
+    """Project the inclusive grant window's first invalid position as revocation."""
+
+    return SpecificationEvent(
+        f"expiry:{grant.grant_id}", "EXPIRY_RECORDED", grant.not_after + 1,
+        journal_head_link, grant.c_digest, grant.grant_id, grant.parent_grant_id,
+        principal_id, key_id, previous_event_digest, "OK",
+    )
 
 
 @dataclass(frozen=True)
@@ -79,6 +140,9 @@ def evaluate_use(
     if type(journal_position) is not int or journal_position < 0:
         raise ApprovalRefusal("E-APPROVAL-EVENT", "use position is invalid")
     _checked_prefix(events_prefix, journal_position)
+    if not grant.not_before <= journal_position <= grant.not_after:
+        head = events_prefix[-1].digest if events_prefix else None
+        return UseFact(grant.grant_id, False, "E-APPROVAL-WINDOW", head, journal_position)
     parent_by_grant = {event.grant_id: event.parent_grant_id for event in events_prefix if event.kind == "GRANT_ISSUED" and event.grant_id}
     ancestors = {grant.grant_id}
     current = grant.parent_grant_id
