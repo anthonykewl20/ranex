@@ -251,6 +251,22 @@ def test_closed_payload_shapes_refuse_extra_members() -> None:
         validate_generated_artifact_manifest(invalid_b)
 
 
+def test_validator_collects_simultaneous_version_shape_and_digest_candidates() -> None:
+    invalid = copy.deepcopy(VECTORS["triple"]["b"])
+    invalid["version"] = "generated-artifact-manifest-v2"
+    invalid["extra"] = True
+    invalid["a_digest"] = "bad"
+    with pytest.raises(SpecificationABCError) as refused:
+        validate_generated_artifact_manifest(invalid)
+    assert refused.value.code == "E-ABC-011"
+
+
+def test_parser_collects_duplicate_member_with_bad_number_before_selecting_registry_order() -> None:
+    with pytest.raises(SpecificationABCError) as refused:
+        parse_strict_json(b'{"a":1,"a":-0}')
+    assert refused.value.code == "E-ABC-005"
+
+
 def test_sign_helper_reproduces_the_frozen_detached_signature() -> None:
     triple = VECTORS["triple"]
     private = "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8="

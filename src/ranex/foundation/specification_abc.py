@@ -211,6 +211,45 @@ def _json_escape_failures(text: str) -> dict[str, str]:
     return failures
 
 
+def _duplicate_member_failures(text: str) -> dict[str, str]:
+    """Lex object keys independently so a bad value cannot hide a duplicate."""
+
+    failures: dict[str, str] = {}
+    objects: list[set[str]] = []
+    index = 0
+    while index < len(text):
+        character = text[index]
+        if character == "{":
+            objects.append(set())
+        elif character == "}":
+            if objects:
+                objects.pop()
+        elif character == '"':
+            start = index
+            index += 1
+            while index < len(text):
+                if text[index] == "\\":
+                    index += 2
+                    continue
+                if text[index] == '"':
+                    break
+                index += 1
+            token = text[start : index + 1]
+            cursor = index + 1
+            while cursor < len(text) and text[cursor].isspace():
+                cursor += 1
+            if objects and cursor < len(text) and text[cursor] == ":":
+                try:
+                    key = json.loads(token)
+                except json.JSONDecodeError:
+                    key = token
+                if key in objects[-1]:
+                    failures.setdefault("duplicate_member", str(key))
+                objects[-1].add(key)
+        index += 1
+    return failures
+
+
 def parse_strict_json(raw: bytes, *, registry: _Registry | bytes | None = None) -> object:
     """Parse the v1 raw profile: UTF-8, unique members, safe plain integers only."""
     reg = _registry(registry)
@@ -226,6 +265,7 @@ def parse_strict_json(raw: bytes, *, registry: _Registry | bytes | None = None) 
         failures.refuse_if_any()
         raise AssertionError("failure collector must refuse") from exc
     failures.extend(_json_escape_failures(text))
+    failures.extend(_duplicate_member_failures(text))
     try:
         value = json.loads(
             text,
@@ -341,6 +381,13 @@ def _version(value: dict[str, object], expected: str, reg: _Registry) -> None:
 
 def validate_spec_packet(value: object, *, registry: _Registry | bytes | None = None) -> dict[str, object]:
     reg = _registry(registry)
+    failures = _FailureCollector(reg)
+    if isinstance(value, dict):
+        if "version" in value and value.get("version") != "spec-packet-v1":
+            failures.add("version", repr(value.get("version")))
+        if set(value) != CLOSED_FIELD_SETS["spec_packet"]:
+            failures.add("shape", "object has missing or extra fields")
+    failures.refuse_if_any()
     packet = _object(value, CLOSED_FIELD_SETS["spec_packet"], reg)
     _version(packet, "spec-packet-v1", reg)
     _string(packet["domain"], reg); _string(packet["task"], reg); _integer_value(packet["revision"], reg)
@@ -385,6 +432,16 @@ def validate_generated_artifact_manifest(
     registry: _Registry | bytes | None = None,
 ) -> dict[str, object]:
     reg = _registry(registry)
+    failures = _FailureCollector(reg)
+    if isinstance(value, dict):
+        if "version" in value and value.get("version") != "generated-artifact-manifest-v1":
+            failures.add("version", repr(value.get("version")))
+        if set(value) != CLOSED_FIELD_SETS["manifest"]:
+            failures.add("shape", "object has missing or extra fields")
+        digest = value.get("a_digest")
+        if not isinstance(digest, str) or _DIGEST.fullmatch(digest) is None:
+            failures.add("digest", repr(digest))
+    failures.refuse_if_any()
     manifest = _object(value, CLOSED_FIELD_SETS["manifest"], reg)
     _version(manifest, "generated-artifact-manifest-v1", reg)
     _string(manifest["domain"], reg); _digest(manifest["a_digest"], reg)
