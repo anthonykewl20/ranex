@@ -1,0 +1,35 @@
+{
+  "version": "projection-v1-vectors-1",
+  "packet": {
+    "version": "spec-packet-v1",
+    "domain": "kernel",
+    "task": "SLICE-031",
+    "revision": 1,
+    "semantics": ["ranex-scenario-v1:{\"outcomes\":[{\"id\":\"O-1\",\"value\":\"accepted\"}],\"rules\":[{\"id\":\"R-1\",\"outcome\":\"O-1\",\"transition\":\"T-1\",\"when\":\"request.valid\"}],\"targets\":[{\"language\":\"python\",\"outcomes\":[\"O-1\"],\"path\":\"tests/generated/test_acceptance.py\",\"rules\":[\"R-1\"],\"symbol\":\"test_acceptance\",\"transitions\":[\"T-1\"]},{\"language\":\"sidecar-json\",\"outcomes\":[\"O-1\"],\"path\":\"tests/generated/acceptance.trace\",\"rules\":[\"R-1\"],\"symbol\":\"acceptance_trace\",\"transitions\":[\"T-1\"]}],\"transitions\":[{\"from\":\"request\",\"id\":\"T-1\",\"to\":\"accepted\"}],\"version\":\"ranex-scenario-v1\"}"],
+    "scope": {"include": ["src"], "exclude": []},
+    "answers": {},
+    "observable_outcomes": ["accepted"],
+    "non_goals": ["prose"],
+    "oracle_provenance": {"O-1": "requirement"},
+    "ids": {"question": [], "rule": ["R-1"], "transition": ["T-1"], "outcome": ["O-1"], "error": [], "test": ["TEST-1"], "mapping": ["M-1"]}
+  },
+  "expected": {
+    "a_digest": "sha256:012ce409fc0cc0567e2ca2e31e7f6d50ef8765f05e7517fcd54aa883d4faea7d",
+    "pseudocode_utf8": "SPEC kernel:SLICE-031\nRULE R-1 WHEN request.valid THEN O-1\n",
+    "flowchart_utf8": "flowchart TD\n  T-1[request] -->|R-1| O-1[accepted]\n",
+    "trace_comment_utf8": "# ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection=sha256:b92055f5d3089e0e473196f97e4d27f2ac6e2e810fb3bfe54e928f87b1a4b892\n",
+    "descriptor_utf8": "{\"anchor\":{\"symbol\":\"test_acceptance\"},\"ids\":{\"outcome\":[\"O-1\"],\"rule\":[\"R-1\"],\"transition\":[\"T-1\"]},\"language\":\"python\",\"path\":\"tests/generated/test_acceptance.py\",\"version\":\"trace-projection-v1\"}",
+    "descriptor_digest": "sha256:b92055f5d3089e0e473196f97e4d27f2ac6e2e810fb3bfe54e928f87b1a4b892",
+    "sidecar_utf8": "{\"ids\":{\"outcome\":[\"O-1\"],\"rule\":[\"R-1\"],\"transition\":[\"T-1\"]},\"path\":\"tests/generated/acceptance.trace\",\"projection\":\"sha256:710d34ff927584dc11eabbf3bf005fdc3fb3901feedcc676ef29e6a9802c0394\",\"symbol\":\"acceptance_trace\",\"version\":\"trace-sidecar-v1\"}",
+    "manifest_rows": {
+      "pseudocode_flow": [{"path": "projections/flowchart.mmd", "digest": "sha256:8497450e4d38e17dcf4b657ca0f49fe50bfea62b034e3199ea8953508a6aa80d"}, {"path": "projections/pseudocode.txt", "digest": "sha256:8f7c9c2d397112b6ebc0b02223a532a8b23b1264991d59c990072dd65176b8ec"}],
+      "protected": [{"path": "tests/generated/acceptance.trace", "digest": "sha256:9d23096891a81e70094b64c036f85f0c3c86680a3850d24a418b480f18290665"}, {"path": "tests/generated/test_acceptance.py", "digest": "sha256:e0d0ac414b9e0f285b3a964bd72695376c95da23866360855f752fe14381cb2e"}],
+      "invocation": {"argv": ["pytest", "-q", "tests/generated/acceptance.trace", "tests/generated/test_acceptance.py"]},
+      "expected_values": [{"path": "generated/expected/O-1.json", "digest": "sha256:4802475f167c9d8a2e2f9327b7349d7e584b8ac2c34f845efb167182c5d8881d"}],
+      "baselines": [{"path": "generated/baseline/O-1.json", "digest": "sha256:4802475f167c9d8a2e2f9327b7349d7e584b8ac2c34f845efb167182c5d8881d"}],
+      "negative_controls": [{"path": "generated/negative/O-1.json", "digest": "sha256:4215f3656b42980d52c143a4aa8e0a1a9ac5ea55c84af42f61b8a24822fc9525"}],
+      "trace_projections": [{"path": "tests/generated/acceptance.trace.ranex-trace", "digest": "sha256:710d34ff927584dc11eabbf3bf005fdc3fb3901feedcc676ef29e6a9802c0394"}, {"path": "tests/generated/test_acceptance.py.ranex-trace", "digest": "sha256:b92055f5d3089e0e473196f97e4d27f2ac6e2e810fb3bfe54e928f87b1a4b892"}],
+      "sidecars": [{"path": "tests/generated/acceptance.trace.ranex-trace.json", "digest": "sha256:9d23096891a81e70094b64c036f85f0c3c86680a3850d24a418b480f18290665"}]
+    }
+  }
+}
