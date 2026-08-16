@@ -1,6 +1,6 @@
 # SLICE-033 — Trace-reference integrity and independent verifier ports
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-16
 **Priority:** P0 — approved specifications need independently checked references.
 **ADRs:** `docs/adr/ADR-029-trace-integrity.md`.
@@ -45,9 +45,17 @@ matching, altering frozen red tests, or making trace markers semantic oracles.
 
 ## Closure
 
-The frozen verifier fixture pins the descriptor-byte projection contract. After
-SLICE-031 lands, add the generator-to-verifier end-to-end integration test as
-the named follow-up; this slice cannot import that not-yet-merged generator.
+Focused verification: 23 verifier tests passed; the generator-to-verifier E2E
+passed for Python, TypeScript, and JavaScript plus a protected-byte refusal.
+The frozen red cases landed in `fa9e363cb`; reviewer remediation landed in
+`76c57d24c`, `7ec7acd9e`, and `29526807f`, before merge `8620cc3c5`.
+
+Integration adjudications retained strict comment-to-symbol adjacency: gauges
+now emit their placeholder before the anchor; JavaScript is source-discovered;
+and the verifier recognizes the generator's `export function name(` form. The
+generated expected-value mapping now keys values by the approved outcome ID.
+SLICE-036 owns later CAS/persistence and SpecificationEvent wiring; no trace
+anchor is executable-outcome authority.
 
 ## Verification commands
 

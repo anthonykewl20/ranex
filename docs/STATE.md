@@ -2,17 +2,18 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-16 (SLICE-031 merged locally)
-**Active slice:** none (SLICE-033/035 integrated next or in flight).
+**Updated:** 2026-08-16 (SLICE-033 integrated locally)
+**Active slice:** none (SLICE-035 integrated next).
 
 ## Where we stopped
 
 SLICE-029 is merged and registered locally: A/B/C schemas, canonical rules,
 registry precedence, vectors, and foundation implementation are complete.
 SLICE-030 is merged and registered locally: lifecycle and trace contracts are
-complete; SLICE-032 owns lifecycle-fact wiring and nonce tracking. SLICE-031 is
-merged locally at `901d8c2`: closed DSL projections and protected manifests are
-complete. Push remains pending final review.
+complete; SLICE-032 owns lifecycle-fact wiring and nonce tracking. SLICE-031
+and SLICE-033 are merged locally: deterministic projections now interoperate
+with strict independent Python/TypeScript/JavaScript trace verification. Push
+remains pending final review.
 
 SLICE-046 + SLICE-047 remain landed: `cmd_run` is bound to the qualified
 strict-local session (ADR-023; ADR-006 accepted, RISK-06 closed, ADR-017
@@ -26,10 +27,11 @@ and need reconciliation. Harness #84 tracks the SDK codegen blocker
 
 ## Next
 
-Integrate SLICE-033/035 next as their owners complete them. #12 still needs the
-TypeScript schema/vector mirror in the harness lane. SLICE-048 (claim-type
-confinement-digest enforcement) remains after those slices; SLICE-021 (#2)
-builds on merged EventV2 work in the harness lane.
+Integrate SLICE-035 next. #12 still needs the TypeScript schema/vector mirror
+in the harness lane. SLICE-032 remains pending; SLICE-036 owns CAS/persistence
+and SpecificationEvent wiring. SLICE-048 (claim-type confinement-digest
+enforcement) remains after those slices; SLICE-021 (#2) builds on merged EventV2
+work in the harness lane.
 
 ## Known limits
 
