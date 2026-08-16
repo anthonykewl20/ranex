@@ -1,6 +1,6 @@
 {
   "version": "ranex-specification-error-registry-v1",
-  "precedence": ["input_type", "utf8", "bom", "json", "duplicate_member", "surrogate", "number", "integer_range", "canonical", "payload_type", "version", "shape", "digest", "relation", "nonce_reuse", "signature"],
+  "precedence": ["input_type", "utf8", "bom", "json", "duplicate_member", "surrogate", "number", "integer_range", "canonical", "payload_type", "version", "shape", "digest", "relation", "a_binding", "key_binding", "b_binding", "id_duplicate", "nonce_reuse", "signature"],
   "errors": {
     "input_type": {"code": "E-ABC-001", "message": "input must be bytes"},
     "utf8": {"code": "E-ABC-002", "message": "input is not UTF-8"},
@@ -17,6 +17,10 @@
     "digest": {"code": "E-ABC-013", "message": "digest has invalid grammar"},
     "relation": {"code": "E-ABC-014", "message": "bound payload relation is invalid"},
     "nonce_reuse": {"code": "E-ABC-015", "message": "approval nonce was already used"},
-    "signature": {"code": "E-ABC-016", "message": "detached signature is invalid"}
+    "signature": {"code": "E-ABC-016", "message": "detached signature is invalid"},
+    "a_binding": {"code": "E-ABC-017", "message": "A digest binding is invalid"},
+    "key_binding": {"code": "E-ABC-018", "message": "envelope key binding is invalid"},
+    "b_binding": {"code": "E-ABC-019", "message": "B digest binding is invalid"},
+    "id_duplicate": {"code": "E-ABC-020", "message": "specification ID is not globally unique"}
   }
 }

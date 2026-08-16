@@ -22,6 +22,28 @@ APPROVAL_PAYLOAD_TYPE = "application/vnd.ranex.approval-envelope.v1+json"
 _DIGEST = re.compile(r"sha256:[0-9a-f]{64}\Z")
 _MAX_SAFE_INTEGER = 2**53 - 1
 _REGISTRY_PATH = Path(__file__).resolve().parents[3] / "governance/schemas/specification/error-registry-v1.json"
+_REGISTRY_FAILURE_CODE = "E-ABC-000"
+
+CLOSED_FIELD_SETS: dict[str, frozenset[str]] = {
+    "spec_packet": frozenset({"version", "domain", "task", "revision", "semantics", "scope", "answers", "observable_outcomes", "non_goals", "oracle_provenance", "ids"}),
+    "scope": frozenset({"include", "exclude"}),
+    "ids": frozenset({"question", "rule", "transition", "outcome", "error", "test", "mapping"}),
+    "manifest": frozenset({"version", "domain", "a_digest", "artifacts", "exemptions"}),
+    "artifacts": frozenset({"pseudocode_flow", "protected", "invocation", "expected_values", "baselines", "negative_controls", "trace_projections", "sidecars"}),
+    "invocation": frozenset({"argv"}),
+    "artifact_row": frozenset({"path", "digest"}),
+    "exemption_row": frozenset({"path", "class", "reason", "why_no_discriminating_red"}),
+    "envelope": frozenset({"version", "payload_type", "payload", "key_id", "signature"}),
+    "approval_payload": frozenset({"version", "domain", "task", "revision", "subject_digest", "base_digest", "a_digest", "b_digest", "principal", "key", "role", "nonce", "journal_predecessor", "time_window", "capability_request", "profile_digests"}),
+    "time_window": frozenset({"not_before", "not_after"}),
+    "capability_request": frozenset({"executable", "argv", "cwd", "roots", "actions", "environment", "network", "secret", "commit", "subagent"}),
+    "environment": frozenset({"allow"}),
+    "network": frozenset({"allow", "hosts"}),
+    "secret": frozenset({"allow", "names"}),
+    "commit": frozenset({"allow"}),
+    "subagent": frozenset({"allow", "max_children"}),
+    "profile_digests": frozenset({"base", "policy", "generator", "harness"}),
+}
 
 
 class SpecificationABCError(ValueError):
@@ -56,7 +78,9 @@ class _Registry:
         self.errors: dict[str, dict[str, str]] = errors
 
     def refuse(self, name: str, detail: str) -> NoReturn:
-        entry = self.errors[name]
+        entry = self.errors.get(name)
+        if entry is None:
+            raise SpecificationABCError(_REGISTRY_FAILURE_CODE, f"error registry has no entry for {name!r}")
         raise SpecificationABCError(entry["code"], f"{entry['message']}: {detail}")
 
 
@@ -162,8 +186,6 @@ def parse_strict_json(raw: bytes, *, registry: _Registry | bytes | None = None) 
         if str(exc) == "number":
             reg.refuse("number", "floats, exponents, and negative zero are forbidden")
         reg.refuse("json", str(exc))
-    except json.JSONDecodeError as exc:
-        reg.refuse("json", str(exc))
 
 
 def _reject_value_surrogates(value: object, reg: _Registry) -> None:
@@ -188,7 +210,7 @@ def canonical_payload_bytes(value: object, *, registry: _Registry | bytes | None
     reg = _registry(registry)
     _reject_value_surrogates(value, reg)
     try:
-        return canonical_json_bytes(value)
+        return canonical_json_bytes(value).replace(b"\xe2\x80\xa8", b"\\u2028").replace(b"\xe2\x80\xa9", b"\\u2029")
     except (TypeError, ValueError) as exc:
         reg.refuse("shape", str(exc))
 
@@ -260,12 +282,12 @@ def _version(value: dict[str, object], expected: str, reg: _Registry) -> None:
 
 def validate_spec_packet(value: object, *, registry: _Registry | bytes | None = None) -> dict[str, object]:
     reg = _registry(registry)
-    packet = _object(value, {"version", "domain", "task", "revision", "semantics", "scope", "answers", "observable_outcomes", "non_goals", "oracle_provenance", "ids"}, reg)
+    packet = _object(value, CLOSED_FIELD_SETS["spec_packet"], reg)
     _version(packet, "spec-packet-v1", reg)
     _string(packet["domain"], reg); _string(packet["task"], reg); _integer_value(packet["revision"], reg)
     for name in ("semantics", "observable_outcomes", "non_goals"):
         _strings(packet[name], reg)
-    scope = _object(packet["scope"], {"include", "exclude"}, reg)
+    scope = _object(packet["scope"], CLOSED_FIELD_SETS["scope"], reg)
     _strings(scope["include"], reg); _strings(scope["exclude"], reg)
     answers = packet["answers"]
     if not isinstance(answers, dict) or any(not isinstance(key, str) or not isinstance(item, str) for key, item in answers.items()):
@@ -274,9 +296,14 @@ def validate_spec_packet(value: object, *, registry: _Registry | bytes | None = 
     labels = {"human", "domain-rule", "requirement", "observed-only"}
     if not isinstance(provenance, dict) or any(not isinstance(key, str) or item not in labels for key, item in provenance.items()):
         reg.refuse("shape", "oracle provenance is invalid")
-    ids = _object(packet["ids"], {"question", "rule", "transition", "outcome", "error", "test", "mapping"}, reg)
+    ids = _object(packet["ids"], CLOSED_FIELD_SETS["ids"], reg)
+    seen_ids: set[str] = set()
     for item in ids.values():
         _strings(item, reg)
+        for identifier in item:
+            if identifier in seen_ids:
+                reg.refuse("id_duplicate", identifier)
+            seen_ids.add(identifier)
     return packet
 
 
@@ -284,27 +311,34 @@ def _artifact_rows(value: object, reg: _Registry) -> None:
     if not isinstance(value, list):
         reg.refuse("shape", "artifact set must be an array")
     for item in value:
-        row = _object(item, {"path", "digest"}, reg)
+        row = _object(item, CLOSED_FIELD_SETS["artifact_row"], reg)
         _string(row["path"], reg); _digest(row["digest"], reg)
 
 
-def validate_generated_artifact_manifest(value: object, *, registry: _Registry | bytes | None = None) -> dict[str, object]:
+def validate_generated_artifact_manifest(
+    value: object,
+    *,
+    spec_packet: object | None = None,
+    registry: _Registry | bytes | None = None,
+) -> dict[str, object]:
     reg = _registry(registry)
-    manifest = _object(value, {"version", "domain", "a_digest", "artifacts", "exemptions"}, reg)
+    manifest = _object(value, CLOSED_FIELD_SETS["manifest"], reg)
     _version(manifest, "generated-artifact-manifest-v1", reg)
     _string(manifest["domain"], reg); _digest(manifest["a_digest"], reg)
-    artifacts = _object(manifest["artifacts"], {"pseudocode_flow", "protected", "invocation", "expected_values", "baselines", "negative_controls", "trace_projections", "sidecars"}, reg)
+    artifacts = _object(manifest["artifacts"], CLOSED_FIELD_SETS["artifacts"], reg)
     for name in ("pseudocode_flow", "protected", "expected_values", "baselines", "negative_controls", "trace_projections", "sidecars"):
         _artifact_rows(artifacts[name], reg)
-    invocation = _object(artifacts["invocation"], {"argv"}, reg)
+    invocation = _object(artifacts["invocation"], CLOSED_FIELD_SETS["invocation"], reg)
     _strings(invocation["argv"], reg)
     if not isinstance(manifest["exemptions"], list):
         reg.refuse("shape", "exemptions must be an array")
     for item in manifest["exemptions"]:
-        row = _object(item, {"path", "class", "reason", "why_no_discriminating_red"}, reg)
+        row = _object(item, CLOSED_FIELD_SETS["exemption_row"], reg)
         _string(row["path"], reg); _string(row["reason"], reg); _string(row["why_no_discriminating_red"], reg)
         if row["class"] not in {"generated", "vendor", "docs", "nonbehavioral"}:
             reg.refuse("shape", "exemption class is invalid")
+    if spec_packet is not None and manifest["a_digest"] != payload_digest(validate_spec_packet(spec_packet, registry=reg), registry=reg):
+        reg.refuse("a_binding", "manifest a_digest does not bind the supplied spec packet")
     return manifest
 
 
@@ -317,21 +351,21 @@ def _key(value: object, reg: _Registry) -> str:
 
 
 def _capability(value: object, reg: _Registry) -> None:
-    request = _object(value, {"executable", "argv", "cwd", "roots", "actions", "environment", "network", "secret", "commit", "subagent"}, reg)
+    request = _object(value, CLOSED_FIELD_SETS["capability_request"], reg)
     _string(request["executable"], reg); _strings(request["argv"], reg); _string(request["cwd"], reg)
     _strings(request["roots"], reg); _strings(request["actions"], reg)
-    environment = _object(request["environment"], {"allow"}, reg); _strings(environment["allow"], reg)
-    network = _object(request["network"], {"allow", "hosts"}, reg); _strings(network["hosts"], reg)
-    secret = _object(request["secret"], {"allow", "names"}, reg); _strings(secret["names"], reg)
-    commit = _object(request["commit"], {"allow"}, reg)
-    subagent = _object(request["subagent"], {"allow", "max_children"}, reg); _integer_value(subagent["max_children"], reg)
+    environment = _object(request["environment"], CLOSED_FIELD_SETS["environment"], reg); _strings(environment["allow"], reg)
+    network = _object(request["network"], CLOSED_FIELD_SETS["network"], reg); _strings(network["hosts"], reg)
+    secret = _object(request["secret"], CLOSED_FIELD_SETS["secret"], reg); _strings(secret["names"], reg)
+    commit = _object(request["commit"], CLOSED_FIELD_SETS["commit"], reg)
+    subagent = _object(request["subagent"], CLOSED_FIELD_SETS["subagent"], reg); _integer_value(subagent["max_children"], reg)
     for flag in (network["allow"], secret["allow"], commit["allow"], subagent["allow"]):
         if type(flag) is not bool:
             reg.refuse("shape", "capability allow value must be boolean")
 
 
 def _approval_payload(value: object, reg: _Registry) -> dict[str, object]:
-    payload = _object(value, {"version", "domain", "task", "revision", "subject_digest", "base_digest", "a_digest", "b_digest", "principal", "key", "role", "nonce", "journal_predecessor", "time_window", "capability_request", "profile_digests"}, reg)
+    payload = _object(value, CLOSED_FIELD_SETS["approval_payload"], reg)
     _version(payload, "approval-payload-v1", reg)
     for name in ("domain", "task", "principal", "role", "nonce"):
         _string(payload[name], reg)
@@ -341,11 +375,11 @@ def _approval_payload(value: object, reg: _Registry) -> dict[str, object]:
     _key(payload["key"], reg)
     if payload["journal_predecessor"] is not None:
         _digest(payload["journal_predecessor"], reg)
-    window = _object(payload["time_window"], {"not_before", "not_after"}, reg)
+    window = _object(payload["time_window"], CLOSED_FIELD_SETS["time_window"], reg)
     if _integer_value(window["not_before"], reg) > _integer_value(window["not_after"], reg):
         reg.refuse("shape", "journal sequence window is reversed")
     _capability(payload["capability_request"], reg)
-    profiles = _object(payload["profile_digests"], {"base", "policy", "generator", "harness"}, reg)
+    profiles = _object(payload["profile_digests"], CLOSED_FIELD_SETS["profile_digests"], reg)
     for digest in profiles.values():
         _digest(digest, reg)
     return payload
@@ -353,24 +387,36 @@ def _approval_payload(value: object, reg: _Registry) -> dict[str, object]:
 
 def validate_approval_envelope(value: object, *, used_nonces: Iterable[str] = (), registry: _Registry | bytes | None = None) -> dict[str, object]:
     reg = _registry(registry)
-    envelope = _object(value, {"version", "payload_type", "payload", "key_id", "signature"}, reg)
+    envelope = _object(value, CLOSED_FIELD_SETS["envelope"], reg)
     if envelope["payload_type"] != APPROVAL_PAYLOAD_TYPE:
         reg.refuse("payload_type", repr(envelope["payload_type"]))
     _version(envelope, "approval-envelope-v1", reg)
     payload = _approval_payload(envelope["payload"], reg)
     _key(envelope["key_id"], reg)
+    if envelope["key_id"] != payload["key"]:
+        reg.refuse("key_binding", "envelope key_id does not match approval payload key")
     if payload["nonce"] in set(used_nonces):
         reg.refuse("nonce_reuse", str(payload["nonce"]))
     try:
         signature = _decode(envelope["signature"], expected=64, field="signature")
         public = _decode(payload["key"], expected=32, field="public key")
-        Ed25519PublicKey.from_public_bytes(public).verify(signature, pae(APPROVAL_PAYLOAD_TYPE, canonical_payload_bytes(payload, registry=reg)))
+        payload_type = _payload_type_from_version(payload, reg)
+        Ed25519PublicKey.from_public_bytes(public).verify(signature, pae(payload_type, canonical_payload_bytes(payload, registry=reg)))
     except (InvalidSignature, ValueError, TypeError, binascii.Error) as exc:
         reg.refuse("signature", str(exc))
     return envelope
 
 
-def sign_approval_envelope(payload: Mapping[str, object], private_key: str, *, registry: _Registry | bytes | None = None) -> str:
+def _payload_type_from_version(payload: Mapping[str, object], reg: _Registry) -> str:
+    payload_type = {
+        "approval-payload-v1": APPROVAL_PAYLOAD_TYPE,
+    }.get(payload.get("version"))
+    if payload_type is None:
+        reg.refuse("payload_type", repr(payload.get("version")))
+    return payload_type
+
+
+def sign_approval_payload(payload: Mapping[str, object], private_key: str, *, registry: _Registry | bytes | None = None) -> str:
     reg = _registry(registry)
     checked = _approval_payload(dict(payload), reg)
     try:
@@ -380,7 +426,7 @@ def sign_approval_envelope(payload: Mapping[str, object], private_key: str, *, r
     public = _encode(private.public_key().public_bytes_raw())
     if public != checked["key"]:
         reg.refuse("relation", "private key does not match approval payload key")
-    return _encode(private.sign(pae(APPROVAL_PAYLOAD_TYPE, canonical_payload_bytes(checked, registry=reg))))
+    return _encode(private.sign(pae(_payload_type_from_version(checked, reg), canonical_payload_bytes(checked, registry=reg))))
 
 
 def verify_approval_envelope(value: object, *, used_nonces: Iterable[str] = (), registry: _Registry | bytes | None = None) -> bool:
@@ -389,6 +435,28 @@ def verify_approval_envelope(value: object, *, used_nonces: Iterable[str] = (), 
     except SpecificationABCError:
         return False
     return True
+
+
+def assert_abc_chain(
+    spec_packet: object,
+    manifest: object,
+    envelope: object,
+    *,
+    used_nonces: Iterable[str] = (),
+    registry: _Registry | bytes | None = None,
+) -> None:
+    """Refuse unless B and C bind the exact supplied A/B payload identities."""
+    reg = _registry(registry)
+    checked_a = validate_spec_packet(spec_packet, registry=reg)
+    checked_b = validate_generated_artifact_manifest(manifest, spec_packet=checked_a, registry=reg)
+    checked_envelope = _object(envelope, CLOSED_FIELD_SETS["envelope"], reg)
+    checked_payload = _approval_payload(checked_envelope["payload"], reg)
+    a_digest = payload_digest(checked_a, registry=reg)
+    if checked_payload["a_digest"] != a_digest:
+        reg.refuse("a_binding", "approval payload a_digest does not bind the supplied spec packet")
+    if checked_payload["b_digest"] != payload_digest(checked_b, registry=reg):
+        reg.refuse("b_binding", "approval payload b_digest does not bind the supplied manifest")
+    validate_approval_envelope(checked_envelope, used_nonces=used_nonces, registry=reg)
 
 
 def parse_canonical_payload(raw: bytes, *, registry: _Registry | bytes | None = None) -> object:
@@ -404,8 +472,17 @@ def validate_spec_packet_bytes(raw: bytes, *, registry: _Registry | bytes | None
     return validate_spec_packet(parse_canonical_payload(raw, registry=registry), registry=registry)
 
 
-def validate_generated_artifact_manifest_bytes(raw: bytes, *, registry: _Registry | bytes | None = None) -> dict[str, object]:
-    return validate_generated_artifact_manifest(parse_canonical_payload(raw, registry=registry), registry=registry)
+def validate_generated_artifact_manifest_bytes(
+    raw: bytes,
+    *,
+    spec_packet: object | None = None,
+    registry: _Registry | bytes | None = None,
+) -> dict[str, object]:
+    return validate_generated_artifact_manifest(
+        parse_canonical_payload(raw, registry=registry),
+        spec_packet=spec_packet,
+        registry=registry,
+    )
 
 
 def validate_approval_envelope_bytes(raw: bytes, *, used_nonces: Iterable[str] = (), registry: _Registry | bytes | None = None) -> dict[str, object]:

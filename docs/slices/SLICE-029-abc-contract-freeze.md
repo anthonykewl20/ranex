@@ -58,3 +58,9 @@ outside these paths. Do not add a dependency or alter journal behavior.
 uv run --frozen pytest -q tests/contract/test_specification_abc_v1.py tests/contract/test_docs_discipline.py
 uv run --frozen pytest -q
 ```
+
+## Closure
+
+Frozen vector digests were corrected pre-review in `3cf4e4e62`; the corrected
+recorded expectations are disclosed here because the suite manifest freezes IDs,
+not vector bodies.
