@@ -1,0 +1,89 @@
+from __future__ import annotations
+
+import copy
+import hashlib
+import json
+from pathlib import Path
+
+import pytest
+
+from ranex.foundation.specification_abc import payload_digest, sign_approval_envelope
+from ranex.governed_execution.application.specification_verification import verify_specification
+from ranex.governed_execution.domain.specification_trace import TraceVerificationError
+
+
+def _digest(value: bytes) -> str:
+    return "sha256:" + hashlib.sha256(value).hexdigest()
+
+
+def _triple(base: Path, candidate: Path) -> tuple[dict[str, object], dict[str, object], dict[str, object]]:
+    for root in (base, candidate):
+        (root / "src").mkdir(parents=True)
+        (root / "src/example.py").write_text("def value():\n    return 1\n", encoding="utf-8")
+        (root / "oracle.json").write_text('{"O-1":"pass"}', encoding="utf-8")
+        (root / "expected.json").write_text('{"O-1":"pass"}', encoding="utf-8")
+        (root / "projection.json").write_text("projection", encoding="utf-8")
+    a = {"version": "spec-packet-v1", "domain": "kernel", "task": "task-1", "revision": 1, "semantics": ["value"], "scope": {"include": ["src"], "exclude": []}, "answers": {}, "observable_outcomes": ["pass"], "non_goals": [], "oracle_provenance": {"O-1": "requirement"}, "ids": {"question": [], "rule": ["R-1"], "transition": ["T-1"], "outcome": ["O-1"], "error": [], "test": [], "mapping": []}}
+    rows = lambda name: [{"path": name, "digest": _digest((candidate / name).read_bytes())}]
+    b = {"version": "generated-artifact-manifest-v1", "domain": "kernel", "a_digest": payload_digest(a), "artifacts": {"pseudocode_flow": [], "protected": rows("oracle.json"), "invocation": {"argv": ["pytest", "-q"]}, "expected_values": rows("expected.json"), "baselines": [], "negative_controls": [], "trace_projections": rows("projection.json"), "sidecars": []}, "exemptions": []}
+    payload = {"version": "approval-payload-v1", "domain": "kernel", "task": "task-1", "revision": 1, "subject_digest": "sha256:" + "2" * 64, "base_digest": "sha256:" + "3" * 64, "a_digest": payload_digest(a), "b_digest": payload_digest(b), "principal": "owner", "key": "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg=", "role": "approver", "nonce": "trace-1", "journal_predecessor": None, "time_window": {"not_before": 1, "not_after": 2}, "capability_request": {"executable": "python", "argv": ["-m", "pytest"], "cwd": ".", "roots": ["src"], "actions": ["read"], "environment": {"allow": []}, "network": {"allow": False, "hosts": []}, "secret": {"allow": False, "names": []}, "commit": {"allow": False}, "subagent": {"allow": False, "max_children": 0}}, "profile_digests": {key: "sha256:" + key[0] * 64 for key in ("base", "policy", "generator", "harness")}}
+    envelope = {"version": "approval-envelope-v1", "payload_type": "application/vnd.ranex.approval-envelope.v1+json", "payload": payload, "key_id": payload["key"], "signature": sign_approval_envelope(payload, "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=")}
+    return a, b, envelope
+
+
+def _anchor(candidate: Path) -> None:
+    projection = _digest((candidate / "projection.json").read_bytes())
+    (candidate / "src/example.py").write_text("# ranex-trace: rule=R-1 transition=T-1 outcome=O-1 projection=" + projection + "\ndef value():\n    return 2\n", encoding="utf-8")
+
+
+def test_comment_and_exact_exemption_cover_changed_hunks(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate); _anchor(candidate)
+    assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).outcomes[0].passed
+
+
+def test_sidecar_approval_and_mismatch_refusals(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate)
+    projection = _digest((candidate / "projection.json").read_bytes())
+    sidecar = {"version": "trace-sidecar-v1", "projection": projection, "path": "src/example.py", "symbol": "value", "ids": {"rule": ["R-1"], "transition": ["T-1"], "outcome": ["O-1"]}}
+    (candidate / "trace.json").write_text(json.dumps(sidecar, separators=(",", ":")), encoding="utf-8")
+    b["artifacts"]["sidecars"] = [{"path": "trace.json", "digest": _digest((candidate / "trace.json").read_bytes())}]  # type: ignore[index]
+    c["payload"]["b_digest"] = payload_digest(b); c["signature"] = sign_approval_envelope(c["payload"], "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=")  # type: ignore[arg-type,index]
+    (candidate / "src/example.py").write_text("def value():\n    return 2\n", encoding="utf-8")
+    assert verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q")).trace.covered == 1
+    bad = copy.deepcopy(c); bad["payload"]["b_digest"] = "sha256:" + "f" * 64
+    with pytest.raises(TraceVerificationError, match="E-TRACE-003"):
+        verify_specification(a, b, bad, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+
+
+def test_exemption_drift_and_moved_change_refuse(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate); _anchor(candidate)
+    b["exemptions"] = [{"path": "src/example.py", "class": "nonbehavioral", "reason": "rename", "why_no_discriminating_red": "no semantic change"}]
+    c["payload"]["b_digest"] = payload_digest(b); c["signature"] = sign_approval_envelope(c["payload"], "ed25519:AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8=")  # type: ignore[arg-type,index]
+    with pytest.raises(TraceVerificationError, match="E-TRACE-014"):
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"), exemptions=(("src/example.py", "nonbehavioral", ""),))
+
+
+def test_protected_artifact_and_invocation_precede_outcome_evaluation(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate); _anchor(candidate)
+    (candidate / "oracle.json").write_text("tampered", encoding="utf-8")
+    with pytest.raises(TraceVerificationError, match="E-TRACE-015"):
+        verify_specification(a, b, c, base, candidate, {"O-1": "wrong"}, ("wrong",))
+
+
+def test_wrong_outcome_refuses_despite_current_trace_or_exemption(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate); _anchor(candidate)
+    with pytest.raises(TraceVerificationError, match="E-TRACE-016"):
+        verify_specification(a, b, c, base, candidate, {"O-1": "wrong"}, ("pytest", "-q"))
+
+
+def test_verification_facts_are_byte_identical_for_identical_inputs(tmp_path: Path) -> None:
+    base, candidate = tmp_path / "base", tmp_path / "candidate"
+    a, b, c = _triple(base, candidate); _anchor(candidate)
+    first = verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+    second = verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
+    assert first.canonical_bytes() == second.canonical_bytes()
