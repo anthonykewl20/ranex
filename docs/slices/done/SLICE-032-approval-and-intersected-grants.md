@@ -1,6 +1,6 @@
 # SLICE-032 — approval, revocation and intersected child grants
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-16
 **Priority:** P0 — issue a bounded, revocable implementation authority.
 **ADRs:** `docs/adr/ADR-030-approval-and-intersected-grants.md`.
@@ -55,3 +55,12 @@ CAS boundary as a pure contract, or a full-suite failure outside owned paths.
 uv run --frozen pytest -q tests/unit/test_specification_approval.py tests/unit/test_specification_child_grants.py tests/integration/test_specification_revocation.py tests/contract/test_docs_discipline.py
 uv run --frozen pytest -q
 ```
+
+## Closure
+
+Consensus-hardened design: a consensus review reshaped it before implementation.
+Independent adversarial review found three P1s — argv ordering, use-time window,
+and sibling prefix overlap — remediated in `4068d953b` and `81fb410fa`.
+Focused verification: 13 passed. SLICE-036 owns CAS/persistence and the
+`SpecificationEvent` atomicity contract. Nonce tracking is wired here per
+SLICE-030's handoff.

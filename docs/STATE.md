@@ -2,19 +2,16 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-16 (SLICE-035 integrated locally)
-**Active slice:** none (SLICE-032 integrated next).
+**Updated:** 2026-08-16 (SLICE-032 archived and registered locally)
+**Active slice:** none.
 
 ## Where we stopped
 
-SLICE-029 is merged and registered locally: A/B/C schemas, canonical rules,
-registry precedence, vectors, and foundation implementation are complete.
-SLICE-030 is merged and registered locally: lifecycle and trace contracts are
-complete; SLICE-032 owns lifecycle-fact wiring and nonce tracking. SLICE-031
-and SLICE-033 are merged locally: deterministic projections now interoperate
-with strict independent Python/TypeScript/JavaScript trace verification. Push
-remains pending final review. SLICE-035 real-subject bootstrap is also merged:
-the real Ranex subject ran; Arxic credential absence records BLOCKED.
+Kernel slices SLICE-029 through SLICE-033 and SLICE-035 are merged, archived,
+and registered locally. A/B/C schemas, lifecycle, approval/revocation and
+intersected grants, deterministic projections, independent trace verification,
+and real-subject bootstrap are complete. The real Ranex subject ran; Arxic
+credential absence records BLOCKED. Push remains pending final review.
 
 SLICE-046 + SLICE-047 remain landed: `cmd_run` is bound to the qualified
 strict-local session (ADR-023; ADR-006 accepted, RISK-06 closed, ADR-017
@@ -28,11 +25,10 @@ and need reconciliation. Harness #84 tracks the SDK codegen blocker
 
 ## Next
 
-Integrate SLICE-032 next. #12 still needs the TypeScript schema/vector mirror
-in the harness lane. SLICE-036 owns CAS/persistence
-and SpecificationEvent wiring. SLICE-048 (claim-type confinement-digest
-enforcement) remains after those slices; SLICE-021 (#2) builds on merged EventV2
-work in the harness lane.
+#12 still needs the TypeScript schema/vector mirror in the harness lane.
+SLICE-036 owns CAS/persistence and the SpecificationEvent atomicity contract.
+SLICE-048 (claim-type confinement-digest enforcement) remains after those
+slices; SLICE-021 (#2) builds on merged EventV2 work in the harness lane.
 
 ## Known limits
 
