@@ -92,6 +92,7 @@ def test_successful_approval_nonce_is_the_only_nonce_that_is_consumed() -> None:
 
 
 def test_argv_order_is_preserved_and_digest_bound() -> None:
+    baseline = PolicyCapabilities.from_record(VECTORS["c_payload"]["capability_request"])
     ordered = PolicyCapabilities.from_record({
         **VECTORS["c_payload"]["capability_request"], "argv": ["pytest", "-q"],
     })
@@ -100,6 +101,8 @@ def test_argv_order_is_preserved_and_digest_bound() -> None:
     })
     assert ordered.argv == ("pytest", "-q")
     assert ordered.as_record()["argv"] == ["pytest", "-q"]
+    assert baseline.as_record()["version"] == "policy-capabilities-v1"
+    assert baseline.digest == "sha256:6bbd2e0e5e2a7b02ce001346ab3ad9dafebb0eccef33f447b7cfb2fe5f050b38"
     assert ordered.digest != reordered.digest
     assert replace(ordered, argv=("pytest", "-q")).argv == ("pytest", "-q")
 
