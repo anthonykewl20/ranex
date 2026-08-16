@@ -175,7 +175,7 @@ def test_exact_exemption_covers_change_and_moved_change_refuses(tmp_path: Path) 
     _resign(c, b)
     (candidate / "src/example.py").write_text("def value():\n    return 2\n", encoding="utf-8")
     with pytest.raises(TraceVerificationError, match="E-TRACE-014"):
-        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"), exemptions=(("src/example.py", "nonbehavioral", "drift"),))
+        verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"), exemptions=(("src/example.py", "nonbehavioral", ""),))
     facts = verify_specification(a, b, c, base, candidate, {"O-1": "pass"}, ("pytest", "-q"))
     assert facts.trace.covered == 0 and facts.trace.exempted >= 1
     (candidate / "src/moved.py").write_text("def moved():\n    return 2\n", encoding="utf-8")
