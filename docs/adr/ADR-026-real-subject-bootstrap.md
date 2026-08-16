@@ -1,6 +1,6 @@
 # ADR-026 — real subject bootstrap
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-16
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-035-real-subject-bootstrap.md`

@@ -323,7 +323,7 @@ none of the surface around it does.
 SLICE-029 is closed kernel-side: its A/B/C schemas, canonical rules, error
 registry, vectors, and frozen manifest registration are merged locally.
 SLICE-030 lifecycle and trace contracts are merged and registered locally;
-SLICE-032 completed its lifecycle-fact wiring and nonce tracking. SLICE-031
+SLICE-032's approval, revocation, grant, and nonce controls are complete. SLICE-031
 closed DSL projections and protected manifests, SLICE-033's independent trace
 verifier, and SLICE-035's real-subject bootstrap are merged locally. The
 TypeScript schema/vector mirror remains in the harness lane. SLICE-032 approval,
@@ -353,7 +353,7 @@ milestone #1.
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 906 IDs, with 113
+structured outcomes against the manifest diff — 1157 IDs, with 115
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
