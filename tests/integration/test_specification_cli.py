@@ -12,6 +12,7 @@ def _input() -> dict[str, object]:
     )["triple"]
     return {
         "actor_id": "owner",
+        "target": "SPEC_VALIDATED",
         "base_digest": triple["c_payload"]["base_digest"],
         "spec_packet": triple["a"],
         "manifest": triple["b"],

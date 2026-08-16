@@ -9,11 +9,11 @@ from ranex.governed_execution.application.specification import advance, draft, r
 from ranex.governed_execution.domain.specification import (
     ClarificationAnswer,
     ClarificationInput,
+    LifecycleSession,
     LifecycleState,
     Question,
     RefusalCode,
 )
-
 
 VECTORS = json.loads(
     (Path(__file__).parents[1] / "contract/fixtures/specification/abc-v1-vectors.json").read_text()
@@ -24,6 +24,7 @@ def clarification(**changes: object) -> ClarificationInput:
     triple = copy.deepcopy(VECTORS["triple"])
     values: dict[str, object] = {
         "actor_id": "owner",
+        "target": LifecycleState.SPEC_VALIDATED,
         "base_digest": triple["c_payload"]["base_digest"],
         "spec_packet": triple["a"],
         "manifest": triple["b"],
@@ -43,9 +44,10 @@ def clarification(**changes: object) -> ClarificationInput:
 
 
 def to_pending() -> tuple[object, ClarificationInput]:
-    request = clarification()
+    request = clarification(target=LifecycleState.SPEC_VALIDATED)
     session = draft(request)
-    for _ in range(2):
+    for target in (LifecycleState.SPEC_VALIDATED, LifecycleState.TESTS_MAPPED):
+        request = clarification(target=target)
         result = advance(session, request)
         assert result.accepted
         session = result.session
@@ -53,8 +55,7 @@ def to_pending() -> tuple[object, ClarificationInput]:
 
 
 def test_transition_table_and_refusals_are_closed() -> None:
-    request = clarification()
-    session = draft(request)
+    session = draft(clarification(target=LifecycleState.SPEC_VALIDATED))
     expected = (
         (LifecycleState.DRAFT, LifecycleState.SPEC_VALIDATED),
         (LifecycleState.SPEC_VALIDATED, LifecycleState.TESTS_MAPPED),
@@ -62,10 +63,10 @@ def test_transition_table_and_refusals_are_closed() -> None:
     )
     for source, destination in expected:
         assert session.state is source
-        result = advance(session, request)
+        result = advance(session, clarification(target=destination))
         assert result.accepted and result.session.state is destination
         session = result.session
-    refused = advance(session, request)
+    refused = advance(session, clarification(target=LifecycleState.TESTS_MAPPED))
     assert not refused.accepted
     assert refused.code is RefusalCode.OUT_OF_ORDER
     assert refused.session.state is LifecycleState.APPROVAL_PENDING
@@ -94,18 +95,26 @@ def test_actor_base_and_answer_guards_are_distinct() -> None:
 
 
 def test_retry_returns_the_recorded_result_without_an_effect() -> None:
-    request = clarification()
+    request = clarification(target=LifecycleState.SPEC_VALIDATED)
     initial = draft(request)
     result = advance(initial, request)
     assert advance(result.session, request) == result
     assert result.as_record() == advance(result.session, request).as_record()
 
 
+def test_same_target_retry_survives_session_reconstruction() -> None:
+    request = clarification(target=LifecycleState.SPEC_VALIDATED)
+    result = advance(draft(request), request)
+    reconstructed = LifecycleSession.from_record(result.session.as_record())
+    assert advance(reconstructed, request).as_record() == result.as_record()
+
+
 def test_questions_and_semantic_digest_are_stable() -> None:
-    request = clarification()
+    request = clarification(target=LifecycleState.SPEC_VALIDATED)
     assert render_questions(request) == render_questions(clarification())
     first = advance(draft(request), request)
-    second = advance(draft(clarification()), clarification())
+    second_request = clarification(target=LifecycleState.SPEC_VALIDATED)
+    second = advance(draft(second_request), second_request)
     assert first.semantic_digest == second.semantic_digest == payload_digest(request.spec_packet)
 
 

@@ -59,3 +59,9 @@ uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 uv run --frozen ruff check src/ranex/governed_execution/domain/specification.py src/ranex/governed_execution/application/specification.py src/ranex/cli/specification.py tests/unit/test_specification_lifecycle.py tests/integration/test_specification_cli.py
 uv run --frozen pytest -q
 ```
+
+## Closure
+
+red-test defects corrected pre-green with owner authorization: (1) contradictory
+CLI input pair split into valid/invalid inputs; (2) advance-request target-state
+field added to make replay-vs-transition determined; (3) import-order lint fix.
