@@ -2171,10 +2171,11 @@ def test_a_decoy_frontmatter_block_is_refused(
 # One dated owner-decision passage that names the reason (milestone 4 is P0's
 # proof substrate) and fixes the order 4 → 3 → 2. "proof substrate" sits before
 # the milestones because that is the reasoning: milestone 4 is built first AS
-# the substrate; the order then follows from it.
+# the substrate; the order then follows from it. The literal "Build order:
+# milestone 4" anchors the sequence to the passage's own order sentence.
 _OWNER_BUILD_ORDER = re.compile(
     r"Owner decision \d{4}-\d{2}-\d{2}.+?proof substrate"
-    r".+?milestone 4.+?milestone 3.+?milestone 2",
+    r".+?Build order: milestone 4.+?milestone 3.+?milestone 2",
     re.DOTALL,
 )
 
