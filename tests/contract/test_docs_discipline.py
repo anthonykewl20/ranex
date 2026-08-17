@@ -2157,3 +2157,55 @@ def test_a_decoy_frontmatter_block_is_refused(
 
     with pytest.raises(AssertionError, match="first byte"):
         test_every_skill_declares_its_identity()
+
+
+# --- the owner's build order: MAP records it, STATE points at it -------------
+#
+# Owner decision 2026-08-17: milestone 4 (real-world verification &
+# observability) is built BEFORE milestone 3 (P0) and milestone 2 (background
+# manager), because P0's own exit evidence strictly requires milestone 4's
+# observability contract and real-e2e conventions — dependency order, not a
+# competing priority. A build order an agent can read is a suggestion; these
+# two checks are the constraint, so no session needs reminding.
+
+# One dated owner-decision passage that names the reason (milestone 4 is P0's
+# proof substrate) and fixes the order 4 → 3 → 2. "proof substrate" sits before
+# the milestones because that is the reasoning: milestone 4 is built first AS
+# the substrate; the order then follows from it.
+_OWNER_BUILD_ORDER = re.compile(
+    r"Owner decision \d{4}-\d{2}-\d{2}.+?proof substrate"
+    r".+?milestone 4.+?milestone 3.+?milestone 2",
+    re.DOTALL,
+)
+
+
+def test_map_records_owner_build_order() -> None:
+    """The map carries the owner's dated build order, not a paraphrase of it."""
+
+    where = REPO_ROOT / "docs" / "MAP.md"
+    assert where.is_file(), "docs/MAP.md is the map — it must exist"
+    assert _OWNER_BUILD_ORDER.search(
+        where.read_text(encoding="utf-8")
+    ), (
+        "docs/MAP.md must carry the owner decision (dated) that fixes the "
+        "build order: milestone 4 first as P0's proof substrate, then "
+        "milestone 3, then milestone 2."
+    )
+
+
+def test_state_next_agrees_with_build_order() -> None:
+    """STATE's Next section follows the recorded order while the framework is open."""
+
+    state = (REPO_ROOT / "docs" / "STATE.md").read_text(encoding="utf-8")
+    assert "Build order: milestone 4 → milestone 3 → milestone 2" in state, (
+        "docs/STATE.md must carry the line "
+        "'Build order: milestone 4 → milestone 3 → milestone 2'."
+    )
+    # Once SLICE-055 is recorded closed, the milestone-4 framework slices are
+    # done and Next may legitimately point elsewhere (e.g. at P0's SLICE-036).
+    framework_closed = re.search(r"SLICE-055[\s\S]{0,120}closed", state)
+    if not framework_closed:
+        assert re.search(r"## Next[\s\S]*SLICE-054", state), (
+            "docs/STATE.md's '## Next' must point at SLICE-054, the first "
+            "milestone-4 framework slice, until that framework is closed."
+        )

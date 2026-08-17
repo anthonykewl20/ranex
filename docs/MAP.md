@@ -523,9 +523,17 @@ nothing.
 
 This changes sequencing, not the truth of parked work. ADR-006 is a dependency:
 it confines the admitted process, while ADR-017 decides when and why the process
-may act. The remaining durability program, background manager, measurement
-flywheel, handbook and Web UI are subordinate until the P0 real exit closes,
-except work strictly required by this dependency chain. SLICE-017, planned
+may act. The remaining durability program, background manager, handbook and
+Web UI are subordinate until the P0 real exit closes, except work strictly
+required by this dependency chain. Owner decision 2026-08-17: the real-world
+verification & observability program (GitHub milestone 4, SLICE-054..059) is
+built first as P0's proof substrate — its observability contract and real-e2e
+conventions are strictly required by P0's own exit evidence, so this is
+dependency order, not a competing priority. Build order: milestone 4 (framework
+slices SLICE-054/#34 then SLICE-055/#35) → milestone 3 (P0; SLICE-036 onward
+one slice at a time per ADR-017) → milestone 2 (background manager). P0
+remains the primary objective; no other parked work is pulled forward.
+SLICE-017, planned
 SLICE-018/019, then SLICE-029..044 open one at a time. Logical
 parallel-readiness in the DAG does not
 relax the enforced one-open-slice/one-session rule; any future relaxation needs

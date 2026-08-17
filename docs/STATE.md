@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-17 (session close)
+**Updated:** 2026-08-17 (governance session)
 **Active slice:** none.
 
 ## Where we stopped
@@ -16,19 +16,27 @@ All six kernel slices of the P0 spec-authority program landed on `main` at `ff3a
 - SLICE-035 — real-subject bootstrap.
 
 Full suite: 1117 passed / 62 skipped / 0 failed under the absent-harness config.
-Frozen manifest: 1179 IDs / 115 expected skips. The TypeScript mirror merged in
-`ranex-harness` `ranex-trim` at `16bf036f` (vectors SHA-256 `9efa0baf…`,
-byte-identical, 35/35), closing #12.
+Frozen manifest: 1179 IDs / 115 expected skips. The `ranex-harness` TypeScript
+mirror merged `ranex-trim` at `16bf036f` (vectors SHA-256 `9efa0baf…`, 35/35), closing #12.
+
+## Governance (owner, 2026-08-17)
+
+Build order: milestone 4 → milestone 3 → milestone 2
+Recorded in `docs/MAP.md` §0.24: the milestone-4 real-world verification &
+observability program is P0's proof substrate, built first — dependency
+order, not a competing priority. Milestone-4 tracker #33 carries
+SLICE-054..059 (#34-#39); M2/M3 issues are gated (`dependency-gated` labels
++ blocked-by edges). SLICE-048 stays reserved (ADR-024); P0 stays primary.
 
 ## Next
 
-SLICE-036 (#19) is the next planned slice. Prerequisites #12–#16 are closed;
-#18 is open but kernel-side done. Owner decision: re-pin Arxic after its
-reference-auth-app suite is fixed upstream, or accept the recorded BLOCKED
-evidence and proceed per tracker governance. SLICE-036 must implement the
-journal CAS/atomic-append and event-wiring contract documented on
-`SpecificationEvent` (`src/ranex/governed_execution/domain/specification_events.py`)
-and close the duplicate-issuance/ancestry guarantees already enforced domain-side.
+SLICE-054 (#34) is next; its Phase-0 ADR is the first work item. Then
+SLICE-055 (#35), then SLICE-036 (#19) per ADR-017 — prerequisite SLICE-034
+(#17) must close first, already true. #18 stays open pending the owner's
+Arxic decision: re-pin after the upstream reference-auth-app suite is fixed,
+or accept the recorded BLOCKED evidence per tracker governance. SLICE-036
+must implement the journal CAS/atomic-append and event-wiring contract on
+`SpecificationEvent` (`src/ranex/governed_execution/domain/specification_events.py`).
 
 ## Known limits
 
