@@ -2206,15 +2206,17 @@ def test_state_next_agrees_with_build_order() -> None:
     # closed <date>', the milestone-4 framework slices are done and Next may
     # legitimately point at any later slice (SLICE-056+ or milestone 3's
     # SLICE-036). The marker is deliberately literal: natural-language
-    # phrasings like 'not yet closed' must NOT trip it.
+    # phrasings like 'not yet closed' must NOT trip it, and a CR before the
+    # line break (CRLF endings) must not defeat it either.
     framework_closed = re.search(
-        r"^Framework closed: SLICE-055 closed \d{4}-\d{2}-\d{2}\.?$",
+        r"^Framework closed: SLICE-055 closed \d{4}-\d{2}-\d{2}\.?\r?$",
         state,
         re.MULTILINE,
     )
     if not framework_closed:
-        assert re.search(r"## Next[\s\S]*SLICE-054", state), (
-            "docs/STATE.md's '## Next' must point at SLICE-054, the first "
-            "milestone-4 framework slice, until STATE records the marker line "
+        assert re.search(r"## Next\s*\n[\s\S]{0,120}SLICE-054", state), (
+            "docs/STATE.md's '## Next' must NAME SLICE-054 as (or within "
+            "~a heading-line of) its first pointer, not merely mention it "
+            "anywhere after the heading, until STATE records the marker line "
             "'Framework closed: SLICE-055 closed <YYYY-MM-DD>'."
         )

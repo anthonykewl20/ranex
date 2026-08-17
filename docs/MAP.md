@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.5.6` |
+| Version | `3.5.7` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-17 — owner build order milestone 4 → 3 → 2 recorded; see §0.30 |
+| Last revised | 2026-08-17 — manager slice issues renumbered SLICE-060..068; test hardening; see §0.31 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -312,8 +312,8 @@ every earlier revision:
    members in one process — is `RISK-06`, standing, mitigated by scoped
    spend-limited keys.
 3. **The pipeline shape.** Milestone "Background worktree agent manager" on this
-   repository; slice issues #1-#9 carry the plan; SLICE-020 through SLICE-028
-   (renumbered 2026-08-07) open after SLICE-010 and after the durability
+   repository; slice issues #1-#9 carry the plan; SLICE-060 through SLICE-068
+   (renumbered 2026-08-17) open after SLICE-010 and after the durability
    program, with SLICE-010 satisfied but durability still required before the
    manager starts — SLICE-010 closed `15614e6fc`, SLICE-011 closed `e0b9886d9`.
    One slice at a time; §0.16 owns the durability program. §9
@@ -324,7 +324,9 @@ every earlier revision:
    kernel judges.
 
 `PROVISIONAL` throughout: ADR-014 is proposed, no manager slice is open (its
-slice issues were renumbered SLICE-020-028 on 2026-08-07), nothing is built.
+slice issues were renumbered SLICE-020-028 on 2026-08-07, and again to
+SLICE-060-068 on 2026-08-17, after kernel SLICE-020 closed over the range),
+nothing is built.
 
 ### 0.16 What changed in `3.2.0` — the durable execution program — `PROVISIONAL`
 
@@ -381,7 +383,8 @@ not contain; re-running the gate can.
 Evidence changed the claims, in bulk: SLICE-007 through SLICE-010 closed,
 ADR-015 opened the durability track (SLICE-011 open), and the agent-manager
 slice issues were renumbered SLICE-020-028 on 2026-08-07 to clear the collision
-with that track. Stale counts, tenses and risk standings are corrected
+with that track (and again to SLICE-060-068 on 2026-08-17, after kernel
+SLICE-020 closed over the range). Stale counts, tenses and risk standings are corrected
 throughout; no position changes.
 
 ### 0.19 What changed in `3.3.2` — SLICE-011 closed
@@ -657,7 +660,24 @@ remains the primary objective, and `tests/contract/test_docs_discipline.py`
 now enforces that MAP carries the dated decision and STATE's Next points at
 SLICE-054 until the framework closes. Enforced by
 `test_map_records_owner_build_order` and
-`test_state_next_agrees_with_build_order`.
+`test_state_next_agrees_with_build_order`. When the framework closes,
+STATE.md records the literal marker line `Framework closed: SLICE-055 closed
+<YYYY-MM-DD>` — the exact string the contract test requires.
+
+### 0.31 What changed in `3.5.7` — manager slice issues renumbered; build-order tests hardened
+
+The background-manager issues (#1-#9, GitHub milestone 2) carry SLICE-060..068,
+renumbered 2026-08-17 from SLICE-020..028: the kernel lane's closed
+SLICE-020 (judgment identity and verdict read channel) had consumed the head
+of the old range. Precedent: the 2026-08-07 renumber recorded in §0.15. No
+plan or scope change — the issues remain planned-not-active and
+dependency-gated behind milestones 4 and 3. Two hardening fixes ride along:
+STATE's `## Next` probe is bounded to the section head (a distant mere
+mention of SLICE-054 no longer satisfies it), and the framework-closed marker
+line tolerates CRLF. When the milestone-4 framework closes, STATE records the
+literal marker line "Framework closed: SLICE-055 closed <YYYY-MM-DD>" — the
+exact string `test_state_next_agrees_with_build_order` requires to release
+the Next pointer.
 
 ---
 
@@ -866,7 +886,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
 | Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | **`CONFIRMED`** only for the first rung — SLICE-008 and SLICE-010 built `ranex task dispatch/judge/merge/delegate/fanout`: a real agent ran headless in a dispatched worktree, a keyless invocation judged it to CANDIDATE, and the kernel published the checked fast-forward. Landing is serial and the pool is bounded. Current `fanout` is free-prompt JSONL convenience/prototype, not mutation authority; the immutable packet, exact child scopes and capability envelope remain unbuilt (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:445-496`) |
-| Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); manager issues #1-#9 on this repository, renumbered SLICE-020-028 on 2026-08-07 (ADR-014 predates the renumbering and cites the old numbers); nothing built. SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability production program closes. §0.15 |
+| Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); manager issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 (ADR-014 predates the renumbering and cites the old numbers); nothing built. SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability production program closes. §0.15 |
 | Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — the harness must not hang forever or strand running work | `ADR-015` **accepted 2026-08-07**. Two of five claims are in production: SLICE-012 provider watchdog and SLICE-013 reconciler hoist plus startup sweep, on harness default branch tip `9eeda0bf5d21...` (feature commits `23d6a5b4ee...` and `a8bc7bdf35...`). Durable retry is next; durable blockers and Session-ID fencing remain. The known fencing hazard is that the DB-global startup sweep can interrupt another process, so fencing must close it before multi-process use. The disposable prototype is green and digest-bound but ships nothing. §0.16, §0.20 |
 | A/B/C specification authority | Normative A holds approved semantics without generated hashes; manifest B binds exact gauge artifacts/invocation; signed envelope C binds A+B, context, identities, anti-replay and capability request; grant binds C | `PROVISIONAL` — decided, not built — ADR-017 `accepted 2026-08-15`; confinement closed; SLICE-029 (#12) next, not started |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
@@ -2003,7 +2023,7 @@ solves this, or would building it be invention?
 | Harness core + delegation (own-built) | decided in `3.0.0`: trimmed opencode fork, kernel as spine, clean-room orchestration; the fork, bridge and first delegation have since landed (SLICE-007/008 — §5.1), the foreman/supervisor layering above them has not (`RISK-14`) | **Split.** opencode is mature and MIT-forkable; the orchestration patterns are proven by oh-my-openagent in production (patterns only — its code is SUL-1.0); a governed loop with an external kernel as spine has no proven implementation anywhere. That is the genuinely novel part |
 | A/B/C specification authority | ADR-017 `accepted 2026-08-15`; SLICE-029 (#12) next, not started; no implementation | Spec Kit, OpenSpec, XState and Arxic mechanics are pinned/vendored; domain-separated approval and full composition are UNVERIFIED |
 | Budget, three-miss stop, escalation | designed; the only machinery serving `C-02`; nothing built | timeouts and circuit breakers are mature CI and distributed-systems patterns; the three-miss product question is a small, novel composition |
-| Background worktree agent manager | `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository, renumbered SLICE-020-028 on 2026-08-07 — SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability program closes; nothing built. The supervisor, durable run schema, leases, verification, orchestrator and UI are designed in those issues | **Split.** Temporal and DBOS prove the lease/fencing/recovery pattern (DBOS vendored under ADR-014); Codex's Apache-2.0 multi-agent protocol is read; vibe-kanban and Crystal prove the worktree-per-task manager form; the composition — a durable supervisor over N sessions in one governed process — is genuinely novel |
+| Background worktree agent manager | `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 — SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability program closes; nothing built. The supervisor, durable run schema, leases, verification, orchestrator and UI are designed in those issues | **Split.** Temporal and DBOS prove the lease/fencing/recovery pattern (DBOS vendored under ADR-014); Codex's Apache-2.0 multi-agent protocol is read; vibe-kanban and Crystal prove the worktree-per-task manager form; the composition — a durable supervisor over N sessions in one governed process — is genuinely novel |
 | Intake, pseudocode/flow, scenario/test compilation | decided by ADR-017; planned SLICE-030/031; never built | **Split.** specification gates and artifact graphs are mature; the Ranex chain is unproven |
 | Harness common effect admission | decided by ADR-017; shared service in SLICE-034, family wiring in 037..042 and serialized integration in 043; current visibility/prompts are not authorization | **Split.** reference monitors are mature; capturing every harness leaf is unproven |
 | Rich verdict vocabulary | designed; the kernel has `PASS`/`FAIL` only | an enum and its refusal rules — small; the taxonomy decision is recorded in §4.5 |
@@ -2174,7 +2194,7 @@ Its supervisor owns wall-clock and spend bounds, cancellation, and
   escalation; none of it is built — ADR-014 covers only the bridge, the
   supervisor slice has no ADR yet, and everything here stays ABSENT until
   the durability program's SLICE-011 completes and the manager slices
-  (SLICE-020-028) open — SLICE-010 is satisfied, but the manager remains parked
+  (SLICE-060-068, renumbered 2026-08-17) open — SLICE-010 is satisfied, but the manager remains parked
   until the durability program closes.
 ```
 
