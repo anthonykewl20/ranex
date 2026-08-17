@@ -97,6 +97,19 @@ conditions. It is **not** governed publication: it produces no kernel verdict,
 no signed evidence, no approval record. `ranex task merge` remains the only
 governed publication path, and a push never closes a slice — done-criteria do.
 
+## Agent conduct — standing owner rules (2026-08-17)
+
+1. **GitHub identity:** always `anthonykewl20` — enforce before any gh/push
+   operation; never disclose account state as a residual.
+2. **Completion is a full loop:** verify on disk, clean tree, doc sync, issue
+   sync, OCR-gated commit, fast-forward push, verified remote tip — never stop
+   half-way. Pipeline-gated work waits for its gate; nothing else waits.
+3. **No hand-waved or hand-rolled code:** verify against installed artifacts
+   and version-matched docs; no stubs shipped; no un-ADR'd replacements for
+   repo primitives or pinned prior art; nothing unverified is reported PASS.
+
+Full text in `AGENTS.md`.
+
 ## No slice without an ADR
 
 The decision behind a slice is researched and written to `docs/adr/ADR-NNN-*.md`
@@ -149,6 +162,7 @@ code. The docs layer is capped so that cannot happen again.
 | Path | Purpose | Lifecycle |
 |---|---|---|
 | `CLAUDE.md` | this file — orientation and rules | edited rarely |
+| `AGENTS.md` | agent conduct — standing owner rules (identity, completion loop, code discipline) | edited by owner-directed commit |
 | `README.md` | public overview and status | updated when public status changes |
 | `docs/MAP.md` | the map — problem, thesis, parts, risks | revised when evidence changes a claim |
 | `docs/STATE.md` | where we stopped, what is next | **rewritten** each session, ≤50 lines |

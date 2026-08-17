@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-17 (SLICE-054 phase-0 session)
+**Updated:** 2026-08-17 (SLICE-054 phase-0 done; agent-conduct rules landed)
 **Active slice:** none.
 
 ## Where we stopped
@@ -15,6 +15,9 @@ trace2 v2.45.2 (tr2_dst.c, tr2_tgt_event.c, tr2_sid.c), pino v9.4.0
 redaction.js, structlog 24.4.0 _native.py — all tag-pinned. Two
 adversarial panels (fresh-context consensus + independent acceptance)
 reviewed it; every finding remediated (review record in the ADR).
+
+Agent-conduct rules landed (owner, 2026-08-17): AGENTS.md + CLAUDE.md
+compact section + contract-test admission (`_ALLOWED_EXACT`).
 
 ## Next
 

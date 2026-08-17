@@ -230,8 +230,18 @@ _CODE_SPAN = re.compile(r"`[^`]*`")
 
 _TEST_PATH = re.compile(r"tests/[\w/]+\.py")
 
+# AGENTS.md is the root-level agent-conduct rules — the harness-neutral twin
+# of CLAUDE.md's conduct section. Admitted by owner direction 2026-08-17: it
+# is an instructions file like CLAUDE.md, not a report, and the cap exists to
+# stop report bloat, not to forbid agent instructions.
 _ALLOWED_EXACT = frozenset(
-    {"CLAUDE.md", "README.md", "docs/STATE.md", "docs/MAP.md"}
+    {
+        "AGENTS.md",
+        "CLAUDE.md",
+        "README.md",
+        "docs/MAP.md",
+        "docs/STATE.md",
+    }
 )
 
 STATE_MAX_LINES = 50
