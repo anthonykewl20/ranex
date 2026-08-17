@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.5.7` |
+| Version | `3.5.8` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-17 — manager slice issues renumbered SLICE-060..068; test hardening; see §0.31 |
+| Last revised | 2026-08-17 — Next-pointer contract made literal; see §0.32 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -672,12 +672,21 @@ SLICE-020 (judgment identity and verdict read channel) had consumed the head
 of the old range. Precedent: the 2026-08-07 renumber recorded in §0.15. No
 plan or scope change — the issues remain planned-not-active and
 dependency-gated behind milestones 4 and 3. Two hardening fixes ride along:
-STATE's `## Next` probe is bounded to the section head (a distant mere
-mention of SLICE-054 no longer satisfies it), and the framework-closed marker
-line tolerates CRLF. When the milestone-4 framework closes, STATE records the
-literal marker line "Framework closed: SLICE-055 closed <YYYY-MM-DD>" — the
-exact string `test_state_next_agrees_with_build_order` requires to release
-the Next pointer.
+STATE's `## Next` contract is now a literal mandated line — 'Next slice:
+SLICE-054' — proximity or mention grants nothing, and the framework-closed
+marker line tolerates CRLF. When the milestone-4 framework closes, STATE
+records the literal marker line "Framework closed: SLICE-055 closed
+<YYYY-MM-DD>" — the exact string `test_state_next_agrees_with_build_order`
+requires to release the Next pointer.
+
+### 0.32 What changed in `3.5.8` — the Next-pointer contract becomes a literal line
+
+`test_state_next_agrees_with_build_order` now requires the literal line
+`Next slice: SLICE-054` in STATE.md until the framework-closed marker line
+appears. This retires the proximity-based probe (and its accepted
+nearby-mention gap) in favour of the same mandated-line idiom as the
+build-order line. When the framework closes, the session rewrites the line to
+name the real next slice beside the marker line.
 
 ---
 

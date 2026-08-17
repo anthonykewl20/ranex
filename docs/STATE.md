@@ -30,13 +30,13 @@ SLICE-054..059 (#34-#39); M2/M3 issues are gated (`dependency-gated` labels
 
 ## Next
 
-SLICE-054 (#34) is next; its Phase-0 ADR is the first work item. Then
-SLICE-055 (#35), then SLICE-036 (#19) per ADR-017 — prerequisite SLICE-034
-(#17) must close first, already true. #18 stays open pending the owner's
-Arxic decision: re-pin after the upstream reference-auth-app suite is fixed,
-or accept the recorded BLOCKED evidence per tracker governance. SLICE-036
-must implement the journal CAS/atomic-append and event-wiring contract on
-`SpecificationEvent` (`src/ranex/governed_execution/domain/specification_events.py`).
+Next slice: SLICE-054
+SLICE-054 (#34) Phase-0 ADR is the first work item. Then SLICE-055 (#35), then
+SLICE-036 (#19) per ADR-017 — prerequisite SLICE-034 (#17) already closed. #18
+stays open pending the owner's Arxic decision: re-pin after the upstream
+reference-auth-app suite is fixed, or accept the recorded BLOCKED evidence per
+tracker governance. SLICE-036 must implement the journal CAS/atomic-append and
+event-wiring contract on `SpecificationEvent` (`src/ranex/governed_execution/domain/specification_events.py`).
 
 ## Known limits
 

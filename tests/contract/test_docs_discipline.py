@@ -2202,21 +2202,23 @@ def test_state_next_agrees_with_build_order() -> None:
         "docs/STATE.md must carry the line "
         "'Build order: milestone 4 → milestone 3 → milestone 2'."
     )
-    # Once STATE records the explicit marker line 'Framework closed: SLICE-055
-    # closed <date>', the milestone-4 framework slices are done and Next may
-    # legitimately point at any later slice (SLICE-056+ or milestone 3's
-    # SLICE-036). The marker is deliberately literal: natural-language
-    # phrasings like 'not yet closed' must NOT trip it, and a CR before the
-    # line break (CRLF endings) must not defeat it either.
+    # The literal 'Next slice:' line is the contract. Once STATE records the
+    # marker line 'Framework closed: SLICE-055 closed <date>', the milestone-4
+    # framework slices are done and the line is rewritten to name the actual
+    # next slice (e.g. 'Next slice: SLICE-036') alongside the marker. The
+    # marker is deliberately literal: natural-language phrasings like 'not yet
+    # closed' must NOT trip it, and a CR before the line break (CRLF endings)
+    # must not defeat it either.
     framework_closed = re.search(
         r"^Framework closed: SLICE-055 closed \d{4}-\d{2}-\d{2}\.?\r?$",
         state,
         re.MULTILINE,
     )
     if not framework_closed:
-        assert re.search(r"## Next\s*\n[\s\S]{0,120}SLICE-054", state), (
-            "docs/STATE.md's '## Next' must NAME SLICE-054 as (or within "
-            "~a heading-line of) its first pointer, not merely mention it "
-            "anywhere after the heading, until STATE records the marker line "
-            "'Framework closed: SLICE-055 closed <YYYY-MM-DD>'."
+        assert re.search(r"^Next slice: SLICE-054\r?$", state, re.MULTILINE), (
+            "docs/STATE.md must carry the literal line 'Next slice: "
+            "SLICE-054' until STATE records the marker line 'Framework "
+            "closed: SLICE-055 closed <YYYY-MM-DD>'. The literal line is "
+            "deliberate: proximity or mention of SLICE-054 anywhere else "
+            "grants nothing."
         )
