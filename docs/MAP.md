@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.5.5` |
+| Version | `3.5.6` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-15 — SLICE-046 closed RISK-06; ADR-006/ADR-017 accepted. See §0.29 |
+| Last revised | 2026-08-17 — owner build order milestone 4 → 3 → 2 recorded; see §0.30 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -533,8 +533,9 @@ dependency order, not a competing priority. Build order: milestone 4 (framework
 slices SLICE-054/#34 then SLICE-055/#35) → milestone 3 (P0; SLICE-036 onward
 one slice at a time per ADR-017) → milestone 2 (background manager). P0
 remains the primary objective; no other parked work is pulled forward.
-SLICE-017, planned
-SLICE-018/019, then SLICE-029..044 open one at a time. Logical
+Under ADR-017 the serial rule stands — SLICE-029..044 having opened one
+at a time — and milestone 3 resumes at SLICE-036 after the framework
+closes. Logical
 parallel-readiness in the DAG does not
 relax the enforced one-open-slice/one-session rule; any future relaxation needs
 its own owner/governance change after capability enforcement exists.
@@ -641,6 +642,22 @@ ADR-006 and ADR-017 are accepted (ADR-017 without broadening); `RISK-06`
 closes in §11.5 with its standing limit recorded — the controller subprocess
 remains same-uid trusted infrastructure. Seventeen closed slice documents,
 none open; SLICE-029 (#12) is next. No position changes.
+
+### 0.30 What changed in `3.5.6` — the owner's build order: milestone 4 first
+
+The owner decided (2026-08-17) that the real-world verification &
+observability program — GitHub milestone 4, SLICE-054..059 — is built
+before milestone 3 (P0) continues and before milestone 2 (background
+manager). This is dependency order, not a competing priority: P0's own
+exit evidence strictly requires milestone 4's observability contract and
+real-e2e conventions, so the framework slices (SLICE-054/#34 then
+SLICE-055/#35) come first. The subordination sentence in §0.24 is revised
+accordingly ("measurement flywheel" removed from the parked list), P0
+remains the primary objective, and `tests/contract/test_docs_discipline.py`
+now enforces that MAP carries the dated decision and STATE's Next points at
+SLICE-054 until the framework closes. Enforced by
+`test_map_records_owner_build_order` and
+`test_state_next_agrees_with_build_order`.
 
 ---
 
