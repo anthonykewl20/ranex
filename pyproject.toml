@@ -89,6 +89,7 @@ pytest_add_cli_args_test_selection = [
     # tree dies on the absent MUTANT_UNDER_TEST env var.
     "--ignore=tests/security/test_slice046_cmd_run_confinement.py",
     "--ignore=tests/security/test_slice047_confinement_hardening.py",
+    "--ignore=tests/security/test_slice017_host_qualification.py",
 ]
 
 [project.scripts]
