@@ -1,6 +1,6 @@
 # SLICE-054 — kernel observability framework
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-18
 **Priority:** P0 — milestone 4's alignment rule (every new kernel path ships a
 default-off toggleable trace, proven verdict-neutral) requires this substrate

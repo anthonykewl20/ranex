@@ -319,10 +319,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** SLICE-054-kernel-observability — the milestone-4
-observability substrate per ADR-031 (default-off `RANEX_TRACE`/
-`RANEX_TRACE_EVENT` JSONL trace, SID chaining, proven verdict-neutral);
-contract tests frozen red, implementation next.
+**Active slice:** none.
 All six kernel P0 spec-authority slices (SLICE-029/030/031/032/033/035) are
 landed on kernel `main` at `ff3ab802`: A/B/C contract freeze, lifecycle,
 closed-DSL projections, approval/revocation/intersected grants, trace integrity,
@@ -371,6 +368,17 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-054-kernel-observability** — closed 2026-08-18. The ADR-031
+  substrate landed: default-off `RANEX_TRACE`/`RANEX_TRACE_EVENT` JSONL
+  emitter with a frozen schema, SID chaining, ambient strip at the stage
+  boundaries, and the confinement-session controller seam — proven
+  verdict-neutral, off-state overhead measured (~1.3-1.6 ms cumulative
+  import, ~84-114 ns per disabled emission). Two adversarial review rounds
+  remediated (dual security + test-layer, then final-gate cumulative;
+  findings D1-D5/S1-S5a and N1-N6 all closed, records on #34). Known
+  residual: the host-gated strict-local confinement e2e arm (SID tree
+  through a real controller) is skip-declared pending a delegated cgroup-v2
+  host; in-process seams are green.
 - **SLICE-032-approval-and-intersected-grants** — closed 2026-08-17,
   kernel-side. Approval binds closed policy and lifecycle facts; revocation,
   expiry, canonical use facts, and deterministic least-authority child grants
