@@ -1,6 +1,6 @@
 # ADR-031 — kernel observability framework
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-17
 **Decision-makers:** repo owner
 **Slice:** n/a — SLICE-054 opens after the tracker-#33 Phase-1 disposable prototype; no slice is open now
