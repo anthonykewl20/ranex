@@ -190,11 +190,26 @@ def off_baseline(subject: _Subject) -> dict[str, object]:
     return baseline
 
 
-def _assert_neutral(arm: dict[str, object], baseline: dict[str, object]) -> None:
+def _assert_neutral(
+    arm: dict[str, object],
+    baseline: dict[str, object],
+    *,
+    quiet_run_err: bool = False,
+) -> None:
     for key in ("run_rc", "run_out", "eval_rc", "eval_out", "verify_rc", "verify_out",
                 "evidence_sha256"):
         assert arm[key] == baseline[key], (
             f"tracing changed {key}: off={baseline[key]!r} on={arm[key]!r}"
+        )
+    if quiet_run_err:
+        # S1 (remediation strengthening): a valid non-stderr target must keep
+        # the run's stderr byte-empty — the stream belongs to the governed
+        # command, and a valid trace target that leaks warnings or events onto
+        # it is a neutrality defect of its own. Default-off keeps the refusal
+        # arms (which legitimately warn) and the stderr arm unchanged.
+        assert arm["run_err"] == "", (
+            f"a valid off-stderr trace target leaked onto the run's stderr: "
+            f"{arm['run_err']!r}"
         )
 
 
@@ -218,7 +233,7 @@ def test_file_target_is_verdict_neutral_over_the_spine(
 ) -> None:
     target = tmp_path / "trace.jsonl"
     arm = subject.spine(extra_env={"RANEX_TRACE": str(target)})
-    _assert_neutral(arm, off_baseline)
+    _assert_neutral(arm, off_baseline, quiet_run_err=True)
     events = [
         json.loads(line)
         for line in target.read_text(encoding="utf-8").splitlines()
@@ -236,7 +251,7 @@ def test_directory_target_is_verdict_neutral_over_the_spine(
     directory = tmp_path / "trace-dir"
     directory.mkdir()
     arm = subject.spine(extra_env={"RANEX_TRACE": str(directory)})
-    _assert_neutral(arm, off_baseline)
+    _assert_neutral(arm, off_baseline, quiet_run_err=True)
     files = sorted(path for path in directory.iterdir() if path.is_file())
     assert files, "one file per traced process"
     for path in files:
@@ -288,7 +303,7 @@ def test_fd_target_is_verdict_neutral_over_the_spine(
         if saved is not None:
             os.dup2(saved, 5)
             os.close(saved)
-    _assert_neutral(arm, off_baseline)
+    _assert_neutral(arm, off_baseline, quiet_run_err=True)
 
 
 def test_governed_root_target_is_refused_and_the_run_proceeds(

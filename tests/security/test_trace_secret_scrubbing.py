@@ -20,6 +20,7 @@ emitter, so this file fails rather than passing vacuously.
 from __future__ import annotations
 
 import json
+import hashlib
 import os
 import secrets
 import subprocess
@@ -69,6 +70,25 @@ import sys
 sys.path.insert(0, __SRC__)
 import ranex.observability as observability
 
+# S4 (remediation strengthening): genuinely exercise the ambient credential
+# URL — read it out of the environment a wholesale ambient copy would hand an
+# observed command, and attempt to emit it through both a declared field
+# (`code`) and an undeclared one. This emission is hostile; it must leave only
+# refusals. Emitted BEFORE the well-formed note so the note stays the last
+# line of the stream.
+url = os.environ.get("WHEELS_INDEX_URL", "absent")
+if url != "absent":
+    observability.emit_raw(
+        {
+            "event": "note",
+            "level": "warn",
+            "module": "observability",
+            "stage": "observability.note",
+            "code": url,
+            "wheels_index_url": url,
+        }
+    )
+
 observability.emit_raw(
     {
         "event": "note",
@@ -76,6 +96,27 @@ observability.emit_raw(
         "module": "observability",
         "stage": "observability.note",
         "code": "emission_refused",
+    }
+)
+"""
+
+CODE_TOKEN_ATTACK = """
+import os
+import sys
+
+sys.path.insert(0, __SRC__)
+import ranex.observability as observability
+
+# D3: an otherwise well-formed event whose only violation is the `code` value.
+# Both spellings below are grammar-valid against the open kind/arg grammar —
+# the exact shape the closed code registry must refuse.
+observability.emit_raw(
+    {
+        "event": "note",
+        "level": "info",
+        "module": "observability",
+        "stage": "observability.note",
+        "code": __CODE__,
     }
 )
 """
@@ -204,7 +245,87 @@ def test_planted_secrets_in_ambient_target_values_never_reach_diagnostics(
     assert events[0]["event"] == "version"
     assert events[-1]["event"] == "note"
 
+    # S4: the ambient credential URL genuinely flowed through the emission
+    # surface — the attempt is recorded as refusals, never as bytes.
+    codes = [event["code"] for event in events if event["event"] == "refusal"]
+    assert "undeclared_field:wheels_index_url" in codes, codes
+    assert any(code.startswith("out_of_form:code:") for code in codes), codes
+
     _assert_zero_hits(_markers(planted), completed, target)
     warnings = [line for line in completed.stderr.splitlines() if "RANEX_TRACE" in line]
     assert len(warnings) == 1
     assert "len=" in warnings[0] and "sha256_8=" in warnings[0]
+
+
+# --- remediation arms (D3: the `code` field leaks grammar-shaped secrets) ----
+#
+# The ROGUE_ATTACK payload hides its code token behind a subject_digest
+# violation, so the code leak was masked. These arms carry NO other violation:
+# the only hostile element is the `code` value, and it must still never reach
+# any stream.
+
+
+def _run_code_attack(
+    tmp_path: Path, code_literal: str, planted: dict[str, str]
+) -> tuple[subprocess.CompletedProcess[str], Path]:
+    target = tmp_path / "trace.jsonl"
+    script = (
+        CODE_TOKEN_ATTACK.replace("__SRC__", repr(str(PROJECT / "src")))
+        .replace("__CODE__", code_literal)
+    )
+    completed = _run_attack(
+        tmp_path, script, planted, {"RANEX_TRACE": str(target)}
+    )
+    return completed, target
+
+
+def test_bearer_token_behind_a_legitimate_code_kind_never_reaches_trace_output(
+    tmp_path: Path,
+) -> None:
+    """D3 — `exit:<bearer token>` is grammar-valid today and serializes verbatim.
+
+    The arg charset admits hyphens and hex, so a bearer token rides the
+    `exit:` kind — a legitimate frozen kind — straight into the stream. The
+    closed code registry must refuse it (shape+digest only); the payload is
+    otherwise perfectly well-formed, so nothing but the refusal may flow.
+    """
+
+    planted = _planted_secrets(tmp_path)
+    token = planted["ATTACK_TOKEN"]
+    completed, target = _run_code_attack(tmp_path, f'"exit:" + {token!r}', planted)
+
+    assert target.exists(), "the on-arm must actually be tracing"
+    text = target.read_text(encoding="utf-8")
+    events = [json.loads(line) for line in text.splitlines() if line]
+    assert events[0]["event"] == "version"
+    assert token not in text, "the bearer token reached the trace stream via code"
+    codes = [event["code"] for event in events if event["event"] == "refusal"]
+    assert any(code.startswith("out_of_form:code:") for code in codes), codes
+
+    _assert_zero_hits(_markers(planted), completed, target)
+
+
+def test_hex_token_as_a_bare_code_kind_never_reaches_trace_output(
+    tmp_path: Path,
+) -> None:
+    """D3 — a bare 64-hex token matches the open kind grammar and serializes
+    verbatim; the closed registry must refuse it (shape+digest only)."""
+
+    planted = _planted_secrets(tmp_path)
+    token = planted["ATTACK_TOKEN"]
+    # 64 lowercase hex, deterministically letter-first so the bare-kind
+    # grammar ([a-z_][a-z0-9_]*) always admits it — a digest starting with a
+    # digit would be out-of-form today for accidental reasons.
+    hex_token = "de" + hashlib.sha256(token.encode("utf-8")).hexdigest()[2:]
+    assert len(hex_token) == 64 and hex_token[0] in "abcdef"
+    completed, target = _run_code_attack(tmp_path, repr(hex_token), planted)
+
+    assert target.exists(), "the on-arm must actually be tracing"
+    text = target.read_text(encoding="utf-8")
+    events = [json.loads(line) for line in text.splitlines() if line]
+    assert events[0]["event"] == "version"
+    assert hex_token not in text, "the hex token reached the trace stream via code"
+    codes = [event["code"] for event in events if event["event"] == "refusal"]
+    assert any(code.startswith("out_of_form:code:") for code in codes), codes
+
+    _assert_zero_hits(_markers(planted), completed, target)

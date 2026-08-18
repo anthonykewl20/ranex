@@ -330,3 +330,113 @@ def test_sid_on_every_event_and_identifier_shape_when_root(
 
     events = _events(target)
     assert events and all(SID_COMPONENT.match(event["sid"]) for event in events)
+
+
+# --- remediation arms (dual security + test-layer review, D3 + S2 + S3) ------
+
+
+def test_code_kind_registry_is_frozen() -> None:
+    """D3 — `code` kinds are a closed registry, not an open identifier grammar.
+
+    ADR-031 freezes "`code` from registries frozen in schema.py"; the open
+    `[a-z_][a-z0-9_]*` kind grammar admits any grammar-shaped secret as a bare
+    kind. The admissible kind vocabulary is frozen here to the emitted set;
+    unknown kinds are out-of-form (behavioral refusals pinned in
+    tests/unit/test_observability.py and the scrubbing attack suite). Adding a
+    kind is a deliberate edit to this file.
+    """
+
+    assert trace_schema.CODE_KINDS == frozenset(
+        {
+            "exit",
+            "undeclared_field",
+            "out_of_form",
+            "malformed_parent_sid",
+            "cap_exceeded",
+            "target_admission_failed",
+            "oversized_event",
+            "emission_refused",
+            "emission_not_a_mapping",
+            "refusal_code_overflow",
+        }
+    )
+
+
+def test_exe_fallback_chain_covers_the_pyproject_and_unknown_branches(
+    tmp_path: Path,
+    tmp_path_factory: pytest.TempPathFactory,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """S2 — the exe resolution chain, branch by branch.
+
+    importlib.metadata → pyproject [project] version → "unknown". The first
+    branch is exercised by test_exe_resolves_from_this_repositories_static_
+    version; this arm pins the other two by pointing the walker at a
+    controlled location. (Coverage strengthening: green on the current tree.)
+    """
+
+    import importlib.metadata
+
+    def not_installed(name: str) -> str:
+        raise importlib.metadata.PackageNotFoundError(name)
+
+    monkeypatch.setattr(importlib.metadata, "version", not_installed)
+
+    # Pyproject branch: a fake schema.py location whose parent chain carries a
+    # pyproject.toml with a [project] version.
+    vendored = tmp_path / "src" / "ranex" / "observability" / "schema.py"
+    vendored.parent.mkdir(parents=True)
+    vendored.write_text("# sentinel for the version walk\n", encoding="utf-8")
+    (tmp_path / "pyproject.toml").write_text(
+        '[project]\nname = "ranex"\nversion = "9.8.7-remediation"\n',
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(trace_schema, "__file__", str(vendored))
+    assert trace_schema.ranex_version() == "9.8.7-remediation"
+
+    # Final fallback: a location whose parent chain carries no pyproject at
+    # all — a fresh factory root, so the first arm's manifest cannot be found.
+    bare = tmp_path_factory.mktemp("no-manifest") / "schema.py"
+    bare.write_text("# sentinel\n", encoding="utf-8")
+    monkeypatch.setattr(trace_schema, "__file__", str(bare))
+    assert trace_schema.ranex_version() == "unknown"
+
+
+def test_cli_dispatch_groups_derived_from_the_parser_stay_inside_the_registry() -> None:
+    """S3 — a new CLI group without a schema edit turns this red.
+
+    Derives the dispatch groups from the real argparse tree (nesting spells
+    `gate.evaluate`, `task.dispatch`, …) and requires them to be a subset of
+    the group names the frozen STAGES registry carries. The registry already
+    pins equality today; this arm additionally catches the drift direction
+    "someone added a subcommand and forgot schema.py". (Coverage
+    strengthening: green on the current tree.)
+    """
+
+    import argparse
+
+    from ranex.cli.main import build_parser
+
+    def dispatch_groups(parser: argparse.ArgumentParser) -> set[str]:
+        groups: set[str] = set()
+        for action in parser._actions:
+            if not isinstance(action, argparse._SubParsersAction):
+                continue
+            for name, subparser in action.choices.items():
+                nested = dispatch_groups(subparser)
+                if nested:
+                    groups.update(f"{name}.{group}" for group in nested)
+                else:
+                    groups.add(name)
+        return groups
+
+    registered = {
+        stage.removeprefix("cli.").removesuffix(".start")
+        for stage in trace_schema.STAGES
+        if stage.startswith("cli.") and stage.endswith(".start")
+    }
+    derived = dispatch_groups(build_parser())
+    assert derived <= registered, (
+        f"CLI dispatch groups missing from the frozen STAGES registry: "
+        f"{sorted(derived - registered)}"
+    )
