@@ -1364,7 +1364,7 @@ def test_directory_target_admission_cannot_be_redirected(
     _note(observability)
     monkeypatch.undo()  # restore os.open before any assertions touch the fs
 
-    assert not swapped or True  # the swap fired only if admission reached open
+    assert not swapped or not any(decoy.iterdir())  # swap fired ⇒ redirect created nothing
     redirected = sorted(decoy.iterdir())
     assert not redirected, (
         f"admission followed the swapped symlink and created {redirected!r} "
@@ -1399,17 +1399,48 @@ def test_malformed_env_bytes_do_not_crash_the_import() -> None:
     problem". The import must succeed, warn once with a well-formed shape
     descriptor (length over the decoded value, digest over a surrogate-safe
     encoding), never echo the raw bytes, and disable that variable's target.
+
+    Compatibility with the repo's advisory mutation tooling (mutmut): under
+    `mutmut run` the child imports the trampolined mutants/ tree, whose
+    trampoline reads MUTANT_UNDER_TEST unguarded — the parent's value is
+    propagated (the stats-phase value normalised to mutmut's own
+    no-mutant-active marker; see the env construction below) so the child
+    still performs the real import of the (unmutated) module under the
+    hostile env. The assertion under test is unchanged and still exercised
+    in every normal run, where the parent carries no MUTANT_UNDER_TEST and
+    the child env is exactly as before this amendment.
     """
 
     project_root = Path(__file__).resolve().parents[2]
+    child_env = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": os.environ.get("HOME", str(Path.home())),
+        "PYTHONPATH": str(project_root / "src"),
+        "RANEX_TRACE": b"rel\xff\xfe.trace",  # non-UTF-8, not absolute
+    }
+    # mutmut 3.5.0 trampoline compatibility (SLICE-054 follow-up, sanctioned
+    # amendment — construction class only). The generated trampoline reads
+    # ``os.environ['MUTANT_UNDER_TEST']`` unguarded (trampoline_templates.py),
+    # so a bare child importing the mutants/ tree dies with KeyError before
+    # this test can prove anything. Propagate the parent's value when a
+    # mutmut run is active: '' — mutmut's own "no mutant active" marker
+    # (__main__.py sets it for unmutated executions) — and any value not
+    # naming a mutant of this module fall through the trampoline to the
+    # ORIGINAL code ('' matches neither the 'fail'/'stats' branches nor any
+    # '<module>.<function>__mutmut_' prefix), while a real mutant name
+    # executes that mutant, so a mutant that breaks the hostile-env import
+    # still fails this test and is killed, as it must. One normalisation:
+    # the stats-phase value 'stats' is propagated as '' — the 'stats'
+    # trampoline branch calls record_trampoline_hit, which dereferences
+    # mutmut.config (None in a fresh interpreter: AttributeError, verified
+    # against the installed 3.5.0), and its in-memory stats set can never
+    # cross the process boundary anyway, so no stats information is lost.
+    parent_mutant = os.environ.get("MUTANT_UNDER_TEST")
+    if parent_mutant is not None:
+        child_env["MUTANT_UNDER_TEST"] = "" if parent_mutant == "stats" else parent_mutant
     completed = subprocess.run(
         [sys.executable, "-c", "import ranex.observability"],
-        env={
-            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
-            "HOME": os.environ.get("HOME", str(Path.home())),
-            "PYTHONPATH": str(project_root / "src"),
-            "RANEX_TRACE": b"rel\xff\xfe.trace",  # non-UTF-8, not absolute
-        },
+        env=child_env,
         capture_output=True,
         text=False,
         check=False,
