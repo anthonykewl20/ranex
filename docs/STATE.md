@@ -37,6 +37,7 @@ Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate.
 - cgroup-observer `OSError(19)` can flake under load.
 - SLICE-008 bounded-fanout timing can flake under full-suite load; passes isolated and on `origin/main`.
 - About 125 legacy test IDs remain unregistered in the frozen manifest.
+- Trace fd targets persist O_NONBLOCK on the operator's descriptor after exit (disclosed; slice file records the trade-off).
 - mutmut: the stats phase cannot complete on the current suite shape
   (subprocess-heavy tests vs the in-process trampoline; exclusion set
   extended twice by sanction, blocked finally by test_observability.py's own

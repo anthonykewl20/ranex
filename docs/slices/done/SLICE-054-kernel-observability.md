@@ -63,12 +63,21 @@ deviation turns the schema test red. Schema evolution remains a new decision
    plus `observability.emission` and `observability.note` — 26 identifiers
    total. `subject_digest`, `hierarchy`, `child_id` stay null at the CLI
    boundary in this slice.
-4. `code` grammar: `kind[:arg]`, arg matching `[A-Za-z0-9_.=+,:-]{1,200}`.
-   Frozen examples the tests pin: `exit:<n>` (end events), `exit:-1` (dispatch
-   crash), `undeclared_field:<name>` (identifier-grammar names only),
-   `undeclared_field:len=N,sha256_8=<8hex>` (hostile names),
-   `malformed_parent_sid:<shape>`, `cap_exceeded`, `target_admission_failed`,
-   `oversized_event:len=<N>`, `out_of_form:<field>:<shape>`, `emission_refused`.
+4. `code` grammar: closed ten-kind registry, `schema.CODE_KINDS` — `exit`,
+   `undeclared_field`, `out_of_form`, `malformed_parent_sid`,
+   `cap_exceeded`, `target_admission_failed`, `oversized_event`,
+   `emission_refused`, `emission_not_a_mapping`, `refusal_code_overflow` —
+   with per-kind structural argument forms: `exit:<int>`;
+   `undeclared_field:<identifier-or-shape>` (identifier grammar, or
+   `len=N,sha256_8=<8hex>` for hostile names); `out_of_form:<field>:<shape>`
+   with `<field>` one of the frozen eleven `FIELDS`;
+   `malformed_parent_sid:<shape>`; `oversized_event:len=<N>`; the five bare
+   kinds (`cap_exceeded`, `target_admission_failed`, `emission_refused`,
+   `emission_not_a_mapping`, `refusal_code_overflow`) admit no argument at
+   all. The slice-time decision was the looser `kind[:arg]` with arg matching
+   `[A-Za-z0-9_.=+,:-]{1,200}`; final-gate finding N1 tightened it to this
+   frozen form (commits bd1458df0/32b8540c6) so a grammar-shaped secret
+   riding a legitimate kind is out of form exactly like an unknown kind.
 5. `exe` = `importlib.metadata.version("ranex")`, falling back to walking
    parents for `pyproject.toml` `[project] version`, last resort `"unknown"`
    (today `"0.0.0"` — static pyproject, `[tool.uv] package = false`).
@@ -123,7 +132,8 @@ append path; `evaluate()` stays pure and silent.
    `emit_raw` payloads) — zero planted bytes in any captured trace file or
    stderr — `tests/security/test_trace_secret_scrubbing.py`.
 5. Default full-suite run with no trace env set: zero trace output, unchanged
-   results (1117+ passed baseline holds) — full `uv run --frozen pytest -q`.
+   results — 1229 passed / 38 skipped / 0 failed at the close-out SHA
+   b3c3ca86e — full `uv run --frozen pytest -q`.
 
 ## Sanctioned frozen-test amendments (mandated by ADR-031 and STATE)
 
@@ -139,6 +149,14 @@ append path; `evaluate()` stays pure and silent.
    variables" — over the frozen four-variable base. The launcher descriptor
    env stays frozen at `{LC_ALL, TZ}`; no other frozen assertion in that file
    moves.
+
+## Residuals / disclosure
+
+- fd targets (digit form) set O_NONBLOCK and non-inheritable on the
+  operator-supplied descriptor and never restore the flags — the operator's
+  open-file description for that fd persists O_NONBLOCK after the CLI exits
+  (default-off, operator opt-in; deliberate per ADR-031 sad-path-3/CLOEXEC
+  design; claude-gate follow-up).
 
 ## Not owned
 
