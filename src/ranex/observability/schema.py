@@ -81,11 +81,32 @@ STAGES: frozenset[str] = frozenset(
 
 # Value grammars.
 _IDENTIFIER_RE = re.compile(r"\A[a-z_][a-z0-9_]*\Z")
-# code = kind[:arg], arg matching [A-Za-z0-9_.=+,:-]{1,200} (slice decision 4;
-# frozen by tests/contract/test_trace_schema.py). Colons are allowed in the
-# argument so a refusal can name ``out_of_form:<field>:<shape>`` without
-# overflowing its own grammar.
-_CODE_RE = re.compile(r"\A[a-z_][a-z0-9_]*(?::[A-Za-z0-9_.=+,:-]{1,200})?\Z")
+# ``code`` is a closed vocabulary, not an open grammar (D3): the kind must be
+# one of CODE_KINDS below — the emitted set, frozen by
+# tests/contract/test_trace_schema.py — and the argument must match the
+# bounded charset [A-Za-z0-9_.=+,:-]{1,200} (slice decision 4). Colons are
+# allowed in the argument so a refusal can name
+# ``out_of_form:<field>:<shape>`` without overflowing its own grammar. A bare
+# identifier no longer admits any grammar-shaped secret as a kind, and the
+# ``exit`` kind's argument is an integer (exit codes: frozen examples
+# ``exit:0`` / ``exit:-1``), so a token cannot ride the argument of a
+# legitimate kind either.
+CODE_KINDS: frozenset[str] = frozenset(
+    {
+        "exit",
+        "undeclared_field",
+        "out_of_form",
+        "malformed_parent_sid",
+        "cap_exceeded",
+        "target_admission_failed",
+        "oversized_event",
+        "emission_refused",
+        "emission_not_a_mapping",
+        "refusal_code_overflow",
+    }
+)
+_CODE_ARG_RE = re.compile(r"\A[A-Za-z0-9_.=+,:-]{1,200}\Z")
+_CODE_EXIT_ARG_RE = re.compile(r"\A-?[0-9]{1,200}\Z")
 _HIERARCHY_RE = re.compile(r"\A[a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*)*\Z")
 # ``subject_digest`` is hex (slice decision 3): 64 lowercase hex characters.
 _SUBJECT_DIGEST_RE = re.compile(r"\A[0-9a-f]{64}\Z")
@@ -101,7 +122,18 @@ def field_name_is_named(name: str) -> bool:
 
 
 def code_is_well_formed(code: str) -> bool:
-    return isinstance(code, str) and bool(_CODE_RE.match(code)) and len(code) <= MAX_LINE_LENGTH
+    """kind ∈ CODE_KINDS, arg bounded (integer for ``exit``), total line-bounded."""
+
+    if not isinstance(code, str) or len(code) > MAX_LINE_LENGTH:
+        return False
+    kind, separator, argument = code.partition(":")
+    if kind not in CODE_KINDS:
+        return False
+    if not separator:
+        return True
+    if kind == "exit":
+        return bool(_CODE_EXIT_ARG_RE.match(argument))
+    return bool(_CODE_ARG_RE.match(argument))
 
 
 def hierarchy_is_well_formed(hierarchy: str) -> bool:
