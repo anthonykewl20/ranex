@@ -12,7 +12,10 @@ Off state: the environment is read exactly once at import — one ``get`` per
 trace variable — and when no variable enables a target, every entry point is
 bound once to ``_nop`` (structlog's disabled-cost pattern), so a disabled
 emission is a single call returning None and never touches the environment
-again.
+again. ``SESSION_ID`` stays a module attribute but is minted lazily on first
+access, keeping the off-state import bounded to the env reads (the hostname
+lookup's socket/idna import chain is paid only when the SID is actually
+needed).
 
 An invalid target value is refused loudly at import with one shape-descriptor
 warning (never its bytes) and disables only that variable's target; caps,
@@ -60,11 +63,33 @@ for _variable in TARGET_VARIABLES:
 
 TRACING_ENABLED = bool(_ENABLED_TARGETS)
 
-_SESSION_ID, _MALFORMED_PARENT_NOTE = derive_session_id(_VALUES[PARENT_SID_VARIABLE])
-SESSION_ID = _SESSION_ID
+# The SID is minted lazily (PEP 562 module __getattr__): deriving a component
+# costs a hostname lookup whose import chain (socket, encodings.idna) is the
+# single most expensive thing this package can do, and the off state — bound
+# by ADR-031 to one env read — must not pay it. First access (an emission, or
+# a reader of the SESSION_ID attribute) mints once; the process SID never
+# changes afterwards.
+_SESSION_ID: str | None = None
+_MALFORMED_PARENT_NOTE: str | None = None
+
+
+def _session_identity() -> tuple[str, str | None]:
+    global _SESSION_ID, _MALFORMED_PARENT_NOTE
+    if _SESSION_ID is None:
+        _SESSION_ID, _MALFORMED_PARENT_NOTE = derive_session_id(
+            _VALUES[PARENT_SID_VARIABLE]
+        )
+    return _SESSION_ID, _MALFORMED_PARENT_NOTE
+
+
+def __getattr__(name: str) -> object:
+    if name == "SESSION_ID":
+        return _session_identity()[0]
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+
 
 if TRACING_ENABLED:
-    _EMITTER = Emitter(_ENABLED_TARGETS, _SESSION_ID, _MALFORMED_PARENT_NOTE)
+    _EMITTER = Emitter(_ENABLED_TARGETS, *_session_identity())
 
     def stage_begin(stage: str) -> None:
         _EMITTER.stage_begin(stage)
@@ -95,5 +120,5 @@ def controller_trace_environment() -> dict[str, str]:
     if not TRACING_ENABLED:
         return {}
     environment = dict(_ENABLED_TARGETS)
-    environment[PARENT_SID_VARIABLE] = SESSION_ID
+    environment[PARENT_SID_VARIABLE] = _session_identity()[0]
     return environment
