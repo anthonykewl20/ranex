@@ -326,8 +326,8 @@ closed-DSL projections, approval/revocation/intersected grants, trace integrity,
 and real-subject bootstrap. The byte-identical A/B/C schema/vector TypeScript
 mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in `ranex-harness`
 `ranex-trim` at `16bf036f`.
-The absent-harness full suite is 1117 passed / 62 skipped / 0 failed; its
-frozen manifest records 1179 IDs / 115 expected skips.
+The absent-harness full suite is 1229 passed / 38 skipped / 0 failed; its
+frozen manifest records 1267 IDs / 116 expected skips.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -353,7 +353,7 @@ milestone #1.
 **Ranex gates Ranex.** With SLICE-009 closed, `ranex run` executes this
 repository's own suite — provisioned, sealed and offline — against a
 materialisation of the real current commit, and `gate evaluate` judges signed
-structured outcomes against the manifest diff — 1179 IDs, with 115
+structured outcomes against the manifest diff — 1267 IDs, with 116
 ceremony-declared expected-skips — not the exit code alone. The materialisation
 is a fresh single-commit repository carrying the verified tree (ADR-009), so a
 committed suite that asks git about itself is told the truth, while the sample
