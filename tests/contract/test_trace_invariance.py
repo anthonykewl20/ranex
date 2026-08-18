@@ -12,9 +12,13 @@ too.
 Real toolchains throughout: real git subjects, real ranex keys, real CLI
 subprocesses (the emitter reads its environment once at import, so neutrality
 arms run as fresh `python -m ranex.cli.main` processes, never in-process
-re-imports). The fd arm passes an open pipe descriptor to the CLI — test-side
-plumbing the grammar explicitly admits. The confinement arms are host-gated
-with the repo's standing skip (no delegated cgroup root), matching
+re-imports). Subjects follow the canonical clone-judges-clone construction
+(tests/e2e/test_gating_real_suite.py): src/ranex is vendored into and
+committed with each subject, and the spine subprocesses run with
+PYTHONPATH=<subject>/src so the subject's own CLI judges the subject. The fd
+arm passes an open pipe descriptor to the CLI — test-side plumbing the
+grammar explicitly admits. The confinement arms are host-gated with the
+repo's standing skip (no delegated cgroup root), matching
 tests/security/test_slice046_cmd_run_confinement.py.
 """
 
@@ -59,7 +63,13 @@ def _commit_repo(path: Path) -> Path:
 
 
 class _Subject:
-    """A real governed repository plus a real producer key, outside the tree."""
+    """A real governed repository plus a real producer key, outside the tree.
+
+    Canonical clone-judges-clone construction (tests/e2e/test_gating_real_suite.py):
+    the CLI tree is vendored INTO the subject and committed, so the subject's
+    own CLI judges the subject — `governed_repository_root()` resolves through
+    the real mechanism, with no monkeypatching anywhere.
+    """
 
     def __init__(self, root: Path) -> None:
         from ranex.foundation.signing import generate_keypair
@@ -77,13 +87,14 @@ class _Subject:
             f"producers:\n  worker: {public}\n", encoding="utf-8"
         )
         (root / ".gitignore").write_text("evidence.json\n", encoding="utf-8")
+        shutil.copytree(PROJECT / "src" / "ranex", root / "src" / "ranex")
         _commit_repo(root)
 
     def base_env(self) -> dict[str, str]:
         env = {
             "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
             "HOME": os.environ.get("HOME", str(Path.home())),
-            "PYTHONPATH": str(PROJECT / "src"),
+            "PYTHONPATH": str(self.root / "src"),
             "RANEX_SIGNING_KEY": str(self.key),
         }
         for name in TRACE_VARIABLES:
@@ -330,14 +341,8 @@ def test_host_qualification_ambient_copy_strips_trace_variables(
     is mandatory slice work (ADR-031 sad path 13). The qualification probe
     writes a marker when it sees any trace variable."""
 
-    from ranex.foundation.signing import generate_keypair
-
-    root = tmp_path / "qualified"
-    root.mkdir(parents=True)
-    private, public = generate_keypair()
-    key = tmp_path / "worker.key"
-    key.write_text(private + "\n", encoding="utf-8")
-    key.chmod(0o600)
+    subject = _Subject(tmp_path / "qualified")
+    root = subject.root
     marker = tmp_path / "ambient-marker"
     probe = (
         "import os, pathlib\n"
@@ -349,7 +354,11 @@ def test_host_qualification_ambient_copy_strips_trace_variables(
         "pathlib.Path('artifacts').mkdir(exist_ok=True)\n"
         "pathlib.Path('artifacts/qualification.json').write_text('{}')\n"
     )
-    command = ["python", "-c", probe]
+    # The qualification claim's report is bound by the exact argv token
+    # --report=<path> inside the catalog command itself
+    # (src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py);
+    # the probe ignores the extra argv element.
+    command = ["python", "-c", probe, "--report=artifacts/qualification.json"]
     (root / "gates.yaml").write_text(
         "gates:\n"
         "  - gate_id: landing\n"
@@ -361,16 +370,11 @@ def test_host_qualification_ambient_copy_strips_trace_variables(
         "        qualification_report: artifacts/qualification.json\n",
         encoding="utf-8",
     )
-    (root / "producers.yaml").write_text(
-        f"producers:\n  worker: {public}\n", encoding="utf-8"
+    subprocess.run(["git", "-C", str(root), "add", "gates.yaml"], check=True)
+    subprocess.run(
+        ["git", "-C", str(root), "commit", "-q", "-m", "qualification catalog"],
+        check=True,
     )
-    (root / ".gitignore").write_text("evidence.json\n", encoding="utf-8")
-    _commit_repo(root)
-    # A bare _Subject over the qualification repo: __init__ would write the
-    # spine's check.sh/gates.yaml, which this catalog deliberately replaces.
-    subject = _Subject.__new__(_Subject)
-    subject.root = root
-    subject.key = key
     target = tmp_path / "trace.jsonl"
 
     for extra_env in ({}, {"RANEX_TRACE": str(target), "RANEX_TRACE_PARENT_SID": "planted"}):
@@ -378,7 +382,8 @@ def test_host_qualification_ambient_copy_strips_trace_variables(
             [
                 "run", "--claim", "host-qualification", "--producer", "worker",
                 "--repository", ".", "--evidence", "evidence.json",
-                "--producers", "producers.yaml", "--", *command,
+                "--producers", "producers.yaml", "--gate-catalog", "gates.yaml",
+                "--", *command,
             ],
             extra_env=extra_env,
         )
