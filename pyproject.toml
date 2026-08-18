@@ -60,8 +60,11 @@ paths_to_mutate = ["src/ranex/"]
 # the mutants/ cache so only changed functions re-test between runs.
 do_not_mutate = ["src/ranex/cli/*", "src/ranex/bootstrap/*"]
 # The frozen binding test reads the committed trust roots from the repository
-# root, which for mutmut is its copied tree.
-also_copy = ["governance/"]
+# root, which for mutmut is its copied tree. native/ carries the launcher
+# source the SLICE-047 fixtures copy — without it stats collection dies on
+# mutants/native/ranex-worker-launcher/launcher.c FileNotFoundError (a
+# pre-existing break since those fixtures landed).
+also_copy = ["governance/", "native/"]
 pytest_add_cli_args_test_selection = [
     "tests/",
     "--ignore=tests/contract/",
@@ -80,6 +83,12 @@ pytest_add_cli_args_test_selection = [
     # Mutating key confinement can write a generated private key into the real
     # repository before the copied test observes the refusal has failed.
     "--ignore=tests/security/test_keygen_key_confinement.py",
+    # Same subprocess shape as the entries above: these copy the native
+    # launcher fixtures into their subjects and spawn the confinement
+    # controller (`python -m ranex.cli.host_confinement`), whose trampolined
+    # tree dies on the absent MUTANT_UNDER_TEST env var.
+    "--ignore=tests/security/test_slice046_cmd_run_confinement.py",
+    "--ignore=tests/security/test_slice047_confinement_hardening.py",
 ]
 
 [project.scripts]
