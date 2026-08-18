@@ -187,7 +187,22 @@ class _StderrTarget(_Target):
 
 
 class _FdTarget(_Target):
-    """An already-open fd supplied by the operator (single digit 2-9)."""
+    """An already-open fd supplied by the operator (single digit 2-9).
+
+    A socket fd is refused outright: a socket is an exfiltration channel out
+    of a confined tree (ADR-031 refuses ``af_unix:`` target values for the
+    same reason; admitting an already-open socket through the fd form would
+    undo that narrowing). Regular files, character devices, and pipes are the
+    admissible streams.
+
+    At admission the fd is set non-blocking and non-inheritable. Non-blocking
+    is the never-block guarantee (ADR-031 sad path 3): a full or stalled
+    stream raises instead of parking the governed run — the write failure
+    path (one warning, target disabled, never a retry) then applies to
+    ``BlockingIOError``/``EAGAIN``/``EWOULDBLOCK`` exactly as to any other
+    ``OSError``. Non-inheritable is defense-in-depth for the CLOEXEC posture:
+    no trace fd crosses exec even if a later spawn forgets ``close_fds``.
+    """
 
     def __init__(self, variable: str, fd: int, root: Path | None) -> None:
         self.variable = variable
@@ -195,10 +210,14 @@ class _FdTarget(_Target):
         self.disabled = False
         try:
             info = os.fstat(fd)
+            if stat.S_ISSOCK(info.st_mode):
+                raise ValueError(
+                    f"fd {fd} is a socket; a socket is an exfiltration channel "
+                    "and is refused as a trace target"
+                )
             if not (
                 stat.S_ISREG(info.st_mode)
                 or stat.S_ISCHR(info.st_mode)
-                or stat.S_ISSOCK(info.st_mode)
                 or stat.S_ISFIFO(info.st_mode)
             ):
                 raise ValueError("not a usable stream")
@@ -223,6 +242,10 @@ class _FdTarget(_Target):
                     raise ValueError(
                         f"fd {fd} aliases a file inside {root} by device and inode"
                     )
+            # Admission is the one moment the emitter may adjust the stream:
+            # never block the run, never leak the fd across exec.
+            os.set_blocking(fd, False)
+            os.set_inheritable(fd, False)
         except OSError as exc:
             raise ValueError(f"fd {fd} cannot be inspected ({exc.strerror}); fail closed") from exc
 
@@ -233,6 +256,9 @@ class _FdTarget(_Target):
             os.write(self.fd, line)
             return _WRITTEN
         except OSError:
+            # BlockingIOError (EAGAIN/EWOULDBLOCK on the full, non-blocking
+            # stream) lands here like any write failure: disable, one warning
+            # in the dispatcher, never a retry, never a block.
             self.disabled = True
             return _FAILED
 

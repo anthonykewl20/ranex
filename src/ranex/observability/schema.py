@@ -198,8 +198,17 @@ def shape_descriptor(value: object) -> str:
                 "utf-8"
             )
         except (TypeError, ValueError, RecursionError):
-            digest = hashlib.sha256(type(value).__name__.encode("ascii")).hexdigest()[:8]
-            return f"type={type(value).__name__},sha256_8={digest}"
+            # A value with no JSON form at all (a set, a custom object) is
+            # described by a FIXED closed bucket, never the class name — a
+            # class name is attacker-choosable ascii and would ride a
+            # diagnostic that is otherwise shape+digest only. No length is
+            # claimed (none is well defined for an unserializable value) and
+            # the digest input is the bucket literal, so no content byte can
+            # enter and the descriptor is identical for every such value.
+            # Disclosed residual (ADR-031): a short digest is a weak offline-
+            # confirmation oracle for low-entropy refused values.
+            digest = hashlib.sha256(b"object").hexdigest()[:8]
+            return f"type=object,sha256_8={digest}"
     digest = hashlib.sha256(raw).hexdigest()[:8]
     return f"len={len(raw)},sha256_8={digest}"
 
