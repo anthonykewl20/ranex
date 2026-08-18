@@ -127,9 +127,25 @@ def _cwd_governed_root() -> Path | None:
 # implementer-free.
 _ANCHORED_GOVERNED_ROOT: Path | None = None
 
+# Live emitters of this process (remediation N2): admission is lazy at
+# first emission, and the CLI's authoritative governed root resolves only
+# at the dispatch boundary — possibly AFTER a target was already admitted
+# against the caller's cwd. Anchoring therefore re-checks every held
+# target; each emitter registers itself here so the module-level seam can
+# reach it. One emitter per process; the list exists only because the seam
+# is a module function while the targets are instance state.
+_LIVE_EMITTERS: list[Emitter] = []
+
 
 def set_governed_root(path: Path | str | None) -> None:
-    """Anchor governed-root admission to ``path``, or clear the anchor with None."""
+    """Anchor governed-root admission to ``path``, or clear the anchor with None.
+
+    Setting the anchor RE-CHECKS every admitted/held target and DROPS any
+    that sits under, or aliases, the newly anchored root (N2): one warning
+    each — a well-formed target failing the check is named in full, case
+    (a) — and fail closed when non-aliasing cannot be proven. Targets
+    admitted later are judged against the anchor directly.
+    """
 
     global _ANCHORED_GOVERNED_ROOT
     if path is None:
@@ -139,6 +155,8 @@ def set_governed_root(path: Path | str | None) -> None:
     if not anchored.is_absolute():
         raise ValueError("the governed-root anchor must be an absolute path")
     _ANCHORED_GOVERNED_ROOT = anchored
+    for emitter in list(_LIVE_EMITTERS):
+        emitter.recheck_against_anchored_root(anchored)
 
 
 def _admission_root() -> Path | None:
@@ -323,15 +341,28 @@ class _FileTarget(_Target):
                 f"{root} and would dirty the tree it observes"
             )
         try:
+            # O_NONBLOCK (remediation N3): admission of an absolute path must
+            # never park the run. On a FIFO with no reader, plain O_WRONLY
+            # blocks until a reader appears; with O_NONBLOCK the open instead
+            # fails immediately with ENXIO (or, with a reader attached,
+            # succeeds and the S_ISREG check below refuses it). Regular files
+            # are unaffected by O_NONBLOCK, so nothing else changes.
             fd = os.open(
                 path,
-                os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW,
+                os.O_WRONLY
+                | os.O_CREAT
+                | os.O_APPEND
+                | os.O_NOFOLLOW
+                | os.O_NONBLOCK,
                 0o600,
             )
         except OSError as exc:
             raise ValueError(f"trace target {path} cannot be opened: {exc.strerror}") from exc
         info = os.fstat(fd)
         if not stat.S_ISREG(info.st_mode):
+            # A FIFO, device, or socket reached through the path form: not a
+            # regular file, refused — one warning in the dispatcher, target
+            # disabled, never a block, never a crash (N3).
             os.close(fd)
             raise ValueError(f"trace target {path} is not a regular file")
         if info.st_nlink != 1:
@@ -400,7 +431,16 @@ class _FileTarget(_Target):
 
 
 class _DirTarget(_FileTarget):
-    """One file per process, named by the last SID component (git trace2)."""
+    """One file per process, named by the last SID component (git trace2).
+
+    The directory is pinned by descriptor (remediation N4): opened once
+    with ``O_DIRECTORY|O_NOFOLLOW``, and the per-process file is created
+    RELATIVE to that pinned descriptor (``dir_fd=``). The admitted path is
+    never re-walked, so swapping the directory entry for a symlink after
+    the pin cannot redirect the created file into a location admission
+    never checked — the file lands under the admitted directory's
+    filesystem identity (device and inode), rename or no rename.
+    """
 
     def __init__(self, variable: str, directory: Path, component: str, root: Path | None) -> None:
         self.variable = variable
@@ -414,37 +454,86 @@ class _DirTarget(_FileTarget):
                 f"trace directory {directory} sits under the governed repository "
                 f"root {root} and would dirty the tree it observes"
             )
+        # Resolve the directory exactly once, on the opened descriptor:
+        # O_NOFOLLOW refuses a symlinked final component, O_DIRECTORY plus
+        # the fstat below pins a real directory.
         try:
-            info = os.lstat(directory)
+            dirfd = os.open(directory, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
         except OSError as exc:
             raise ValueError(
-                f"trace directory {directory} cannot be inspected: {exc.strerror}"
+                f"trace directory {directory} cannot be opened: {exc.strerror}"
             ) from exc
-        if stat.S_ISLNK(info.st_mode) or not stat.S_ISDIR(info.st_mode):
-            raise ValueError(f"trace directory {directory} is not a real directory")
-        # O_EXCL with bounded .N retries (the git precedent); the inode is
-        # pinned at creation because only the held descriptor is ever written.
-        last: OSError | None = None
-        fd: int | None = None
-        chosen: Path | None = None
-        for name in [component] + [f"{component}.{n}" for n in range(1, 11)]:
-            try:
-                candidate = directory / name
-                fd = os.open(
-                    candidate,
-                    os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_APPEND | os.O_NOFOLLOW,
-                    0o600,
+        try:
+            info = os.fstat(dirfd)
+            if not stat.S_ISDIR(info.st_mode):
+                raise ValueError(f"trace directory {directory} is not a real directory")
+            # O_EXCL with bounded .N retries (the git precedent); O_NONBLOCK
+            # so even a pre-created FIFO entry cannot park the admission
+            # open (N3's rule on the per-process file too). Creation is
+            # RELATIVE to the pinned dirfd — never a re-walk of the path.
+            last: OSError | None = None
+            fd: int | None = None
+            chosen: str | None = None
+            for name in [component] + [f"{component}.{n}" for n in range(1, 11)]:
+                try:
+                    fd = os.open(
+                        name,
+                        os.O_WRONLY
+                        | os.O_CREAT
+                        | os.O_EXCL
+                        | os.O_APPEND
+                        | os.O_NOFOLLOW
+                        | os.O_NONBLOCK,
+                        0o600,
+                        dir_fd=dirfd,
+                    )
+                    chosen = name
+                    break
+                except OSError as exc:
+                    last = exc
+            if fd is None or chosen is None:
+                raise ValueError(
+                    f"trace directory {directory} admits no per-process file: "
+                    f"{last.strerror if last else 'unknown error'}"
                 )
-                chosen = candidate
-                break
-            except OSError as exc:
-                last = exc
-        if fd is None or chosen is None:
-            raise ValueError(
-                f"trace directory {directory} admits no per-process file: "
-                f"{last.strerror if last else 'unknown error'}"
-            )
-        self.path = chosen
+            try:
+                # The pinned descriptor's stat carries the existing
+                # alias/governed-root validation: the created child must be
+                # a regular file and must not alias any file inside the
+                # governed tree (a hard link planted under the directory
+                # would be the governed bytes by another route).
+                child = os.fstat(fd)
+                if not stat.S_ISREG(child.st_mode):
+                    raise ValueError(
+                        f"trace directory {directory} per-process entry "
+                        f"{chosen!r} is not a regular file"
+                    )
+                if root is not None:
+                    inodes = _governed_file_inodes(root)
+                    if inodes is None:
+                        raise ValueError(
+                            f"trace directory {directory}: the governed tree "
+                            f"{root} is too large to prove non-aliasing; "
+                            "refused fail-closed"
+                        )
+                    if (child.st_dev, child.st_ino) in inodes:
+                        raise ValueError(
+                            f"trace directory {directory} per-process file "
+                            f"aliases a file inside {root} by device and inode"
+                        )
+            except BaseException:
+                os.close(fd)
+                raise
+            # The pin has served its purpose: the child descriptor is held,
+            # so the directory descriptor is released, not leaked.
+            try:
+                os.close(dirfd)
+            except OSError:  # pragma: no cover - close of a valid fd
+                pass
+        except BaseException:
+            os.close(dirfd)
+            raise
+        self.path = directory / chosen
         self.fd = fd
         self.written = 0
         self.stopped = False
@@ -471,6 +560,84 @@ class Emitter:
             if kind in ("off", "invalid"):  # invalid already warned at import
                 continue
             self._plans.append((variable, kind, operand))
+        _LIVE_EMITTERS.append(self)
+
+    # -- late-anchor re-check (N2) ----------------------------------------
+
+    def recheck_against_anchored_root(self, root: Path) -> None:
+        """Drop every held target under or aliasing the anchored root.
+
+        Admission may already have happened against the caller's cwd when
+        the authoritative anchor appears (the CLI resolves its governed
+        root at the dispatch boundary); each conflicting target is dropped
+        with exactly one warning and its descriptor closed — no further
+        writes, never a warning again, fail closed.
+        """
+
+        if not self._admitted:
+            # Nothing held yet; admission judges against the anchor directly.
+            return
+        surviving: list[_Target] = []
+        for target in self._targets:
+            reason = self._anchored_root_conflict(target, root)
+            if reason is None:
+                surviving.append(target)
+                continue
+            _warn(
+                f"{target.variable}: {reason}; target dropped, tracing stays "
+                "off for this variable"
+            )
+            target.close()
+        self._targets = surviving
+
+    def _anchored_root_conflict(self, target: _Target, root: Path) -> str | None:
+        """The case-(a) drop reason for a held target against ``root``, or None."""
+
+        if isinstance(target, _StderrTarget):
+            return None  # an operator-owned stream has no location to dirty
+        if isinstance(target, _FdTarget):
+            if target.disabled:
+                return None  # already dead; its one warning has been spent
+            try:
+                info = os.fstat(target.fd)
+                link = Path(os.readlink(f"/proc/self/fd/{target.fd}"))
+            except OSError:
+                return (
+                    f"fd {target.fd} can no longer be inspected against the "
+                    f"governed repository root {root}; dropped fail-closed"
+                )
+            if link.is_absolute() and _under(link, root):
+                return f"fd {target.fd} resolves into the governed repository root {root}"
+            return self._alias_conflict(info, root, name=f"fd {target.fd}")
+        path = target.path  # file and dir targets hold the admitted path
+        if _under(path, root):
+            return (
+                f"trace target {path} sits under the governed repository root "
+                f"{root} and would dirty the tree it observes"
+            )
+        try:
+            info = os.fstat(target.fd)
+        except OSError:
+            return (
+                f"trace target {path} can no longer be inspected against the "
+                f"governed repository root {root}; dropped fail-closed"
+            )
+        return self._alias_conflict(info, root, name=str(path))
+
+    @staticmethod
+    def _alias_conflict(info: os.stat_result, root: Path, *, name: str) -> str | None:
+        inodes = _governed_file_inodes(root)
+        if inodes is None:
+            return (
+                f"trace target {name}: the governed tree {root} is too large "
+                "to prove non-aliasing; dropped fail-closed"
+            )
+        if (info.st_dev, info.st_ino) in inodes:
+            return (
+                f"trace target {name} aliases a file inside {root} by device "
+                "and inode"
+            )
+        return None
 
     # -- admission -------------------------------------------------------
 

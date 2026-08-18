@@ -2897,9 +2897,38 @@ def _dispatch_stage(args: argparse.Namespace) -> tuple[str, str] | None:
     return begin, end
 
 
+def _anchor_trace_admission_to_governed_root() -> None:
+    """Anchor trace-target admission to the CLI's authoritative root (N2).
+
+    ``governed_repository_root()`` resolves the checkout containing THIS
+    CLI — independent of the caller's cwd — which is exactly the tree trace
+    targets must never dirty. Emitter admission is lazy at first emission
+    and judges against the caller's cwd until anchored, so a CLI invoked
+    from OUTSIDE its checkout would admit a ``RANEX_TRACE`` target inside
+    the checkout before the command even runs. Resolution needs no command
+    context, so the anchor is set here, before the first stage emission;
+    ``set_governed_root`` also drops any already-held conflicting target
+    (one warning, fail closed). Off state: nothing runs — no extra
+    subprocess, no behavior change. A trace problem never crashes the run:
+    on any resolution failure the anchor is simply not set and admission
+    keeps its cwd discovery fallback.
+    """
+
+    import ranex.observability as _observability
+    from ranex.observability.emitter import set_governed_root
+
+    if not _observability.TRACING_ENABLED:
+        return
+    try:
+        set_governed_root(governed_repository_root())
+    except Exception:  # noqa: BLE001 - never crash the run for a trace problem
+        pass
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
+    _anchor_trace_admission_to_governed_root()
     stages = _dispatch_stage(args)
     if stages is not None:
         stage_begin(stages[0])
