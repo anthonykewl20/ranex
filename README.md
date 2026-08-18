@@ -319,7 +319,10 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none.
+**Active slice:** SLICE-054-kernel-observability — the milestone-4
+observability substrate per ADR-031 (default-off `RANEX_TRACE`/
+`RANEX_TRACE_EVENT` JSONL trace, SID chaining, proven verdict-neutral);
+contract tests frozen red, implementation next.
 All six kernel P0 spec-authority slices (SLICE-029/030/031/032/033/035) are
 landed on kernel `main` at `ff3ab802`: A/B/C contract freeze, lifecycle,
 closed-DSL projections, approval/revocation/intersected grants, trace integrity,

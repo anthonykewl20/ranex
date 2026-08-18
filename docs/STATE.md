@@ -2,43 +2,44 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-17 (SLICE-054 phase-0 done; agent-conduct rules landed)
-**Active slice:** none.
+**Updated:** 2026-08-18 (SLICE-054 opened; contract tests frozen red)
+**Active slice:** docs/slices/SLICE-054-kernel-observability.md
 
 ## Where we stopped
 
-Phase 0 of SLICE-054 (#34, tracker #33) is done: ADR-031
-kernel-observability-framework landed on main (see git log for the exact
-SHA; commit subject `spec(SLICE-054): phase-0 observability ADR`) as
-`proposed`. Research vendored under `docs/adr/prior-art/ADR-031/` — git
-trace2 v2.45.2 (tr2_dst.c, tr2_tgt_event.c, tr2_sid.c), pino v9.4.0
-redaction.js, structlog 24.4.0 _native.py — all tag-pinned. Two
-adversarial panels (fresh-context consensus + independent acceptance)
-reviewed it; every finding remediated (review record in the ADR).
+SLICE-054 (#34, tracker #33 PHASE 2) is open with its contract tests frozen
+RED on main. Phase 1's disposable prototype completed on
+`prototype/slice054-phase1` (never merged; findings posted to #34); its
+stale scratch-worktree registration was pruned. Slice-time decisions were
+adopted per ADR-031's delegation and frozen by
+tests/contract/test_trace_schema.py — recorded verbatim in the slice file.
+Controller seam frozen: tracing on extends the four-variable controller
+env by exactly the enabled trace target variable(s) plus
+RANEX_TRACE_PARENT_SID.
 
-Agent-conduct rules landed (owner, 2026-08-17): AGENTS.md + CLAUDE.md
-compact section + contract-test admission (`_ALLOWED_EXACT`).
+Red tests (all error pre-implementation; summary in the test commit
+message): tests/unit/test_observability.py,
+tests/contract/test_trace_schema.py,
+tests/contract/test_trace_invariance.py,
+tests/security/test_trace_secret_scrubbing.py. docs-discipline green.
 
 ## Next
 
 Next slice: SLICE-054
-Next work item: tracker-#33 Phase 1 disposable prototype — emitter plus
-one CLI stage, invariance spot-check in /tmp or a scratch worktree,
-findings posted to #34 — then open the slice and freeze red tests.
-
-Implementer must honor the acceptance panel's key ADR-031 decisions:
-two independent trace targets (RANEX_TRACE / RANEX_TRACE_EVENT);
-refusal-not-rotation cap with reserved refusal capacity; target
-admission refusing governed outputs; open-once descriptors; PARENT_SID
-seam = confinement-session controller only (frozen-test amendment at
-slice time); strip RANEX_TRACE* from every observed-command environment.
+Next work item: implementation to green (Worker B): ranex.observability
+modules, main.py stage boundary + ambient strip (including the
+host-qualification ambient copy) + PARENT_SID seam at the
+confinement-session controller, the session child's stage boundary, and
+the two sanctioned frozen-test amendments in the slice file. Then
+test-debug, review, QA gates, go-live; off-state overhead is measured at
+slice close. The four frozen test files are read-only; never weaken one to
+pass. The SID chain never rides an observed command; a trace problem never
+crashes the governed run.
 
 ## Governance (owner, 2026-08-17)
 
 Build order: milestone 4 → milestone 3 → milestone 2
-Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate —
-dependency order, not a competing priority. The slice opens only after
-the Phase-1 prototype (ADR-013/ADR-016 precedent: ADR before slice).
+Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate.
 
 ## Known limits
 
