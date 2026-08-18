@@ -115,12 +115,52 @@ def _run_bound(root: Path, key: Path, monkeypatch: pytest.MonkeyPatch, capsys: p
     return code, capsys.readouterr().err, calls
 
 
+def _reload_observability(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]):
+    """Re-import ranex.observability under a patched environment.
+
+    The emitter reads each trace variable exactly once at import, so the
+    tracing-on arm needs a fresh module (the same pattern as the frozen
+    SLICE-054 tests); main.py's controller seam resolves the module at call
+    time, so the reloaded snapshot governs the spawned environment.
+    """
+
+    for name in [
+        name
+        for name in sys.modules
+        if name == "ranex.observability" or name.startswith("ranex.observability.")
+    ]:
+        del sys.modules[name]
+    for variable in ("RANEX_TRACE", "RANEX_TRACE_EVENT", "RANEX_TRACE_PARENT_SID"):
+        monkeypatch.delenv(variable, raising=False)
+    for key, value in env.items():
+        monkeypatch.setenv(key, value)
+    import ranex.observability
+
+    return ranex.observability
+
+
 def test_controller_gets_only_the_declared_environment(repository: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     root, key = repository
     _code, _diagnostic, calls = _run_bound(root, key, monkeypatch, capsys, "success")
     environment = calls.get("env", {})
     assert set(environment) == {"PATH", "PYTHONPATH", "LC_ALL", "TZ"}
     assert "RANEX_SIGNING_KEY" not in environment
+
+    # ADR-031's tracing-on seam (sanctioned amendment, SLICE-054): over the
+    # frozen four-variable base the controller gains exactly the enabled
+    # trace target variable(s) plus RANEX_TRACE_PARENT_SID — nothing else.
+    trace_target = root.parent / "controller-trace.jsonl"
+    module = _reload_observability(monkeypatch, {"RANEX_TRACE": str(trace_target)})
+    assert module.TRACING_ENABLED is True
+    _code, _diagnostic, calls = _run_bound(root, key, monkeypatch, capsys, "success")
+    environment = calls.get("env", {})
+    assert set(environment) == {
+        "PATH", "PYTHONPATH", "LC_ALL", "TZ", "RANEX_TRACE", "RANEX_TRACE_PARENT_SID",
+    }
+    assert environment["RANEX_TRACE"] == str(trace_target)
+    assert environment["RANEX_TRACE_PARENT_SID"] == module.SESSION_ID
+    assert "RANEX_SIGNING_KEY" not in environment
+    _reload_observability(monkeypatch, {})  # restore the off state for later tests
 
 
 def test_controller_timeout_kills_group_and_refuses_without_evidence(repository: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:

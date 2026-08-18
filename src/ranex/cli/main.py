@@ -96,6 +96,8 @@ from ranex.governed_execution.domain.task import (
 )
 from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
 from ranex.governed_execution.verdict_publication import publish_verdict
+from ranex.observability import TRACE_VARIABLES, schema as trace_schema
+from ranex.observability import stage_begin, stage_end
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     KeyringError,
     load_keyring,
@@ -1794,6 +1796,16 @@ def _execute_confinement_session(
         "LC_ALL": "C",
         "TZ": "UTC",
     }
+    # ADR-031's one-child seam: when tracing is enabled, the confinement-
+    # session controller — the Ranex-owned Python child that can import the
+    # emitter — receives exactly the enabled trace target variable(s) plus
+    # RANEX_TRACE_PARENT_SID, extending its fixed four-variable base by
+    # exactly the trace variables; tracing off, byte-identical to today.
+    # Imported at call time so a reloaded emitter module (tests) governs the
+    # seam; the values come from the module's import-time env snapshot.
+    import ranex.observability as _observability
+
+    environment.update(_observability.controller_trace_environment())
     try:
         process = subprocess.Popen(
             [
@@ -2161,6 +2173,13 @@ def _execute_host_qualification(
             )
 
         environment = dict(os.environ)
+        # ADR-031 propagation boundary: an observed command that sees a trace
+        # variable can branch on it and break byte-invariance, so the ambient
+        # copy strips every RANEX_TRACE* variable (sad path 13). The observed
+        # command's own environment in the run path is a fixed dict and
+        # already admits nothing ambient.
+        for variable in TRACE_VARIABLES:
+            environment.pop(variable, None)
         source_root = str(Path(__file__).resolve().parents[2])
         existing_pythonpath = environment.get("PYTHONPATH")
         environment["PYTHONPATH"] = (
@@ -2857,10 +2876,44 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
+def _dispatch_stage(args: argparse.Namespace) -> tuple[str, str] | None:
+    """The registry stage pair for the subcommand being dispatched, or None.
+
+    ADR-031's one CLI stage boundary: `cli.<group>.start` / `cli.<group>.end`
+    around subcommand dispatch, where `<group>` is the argparse dispatch group
+    (`run`, `gate.evaluate`, …). A group outside the frozen registry emits
+    nothing — adding a CLI group is a deliberate schema-contract edit, not a
+    silent extra stage.
+    """
+
+    group = getattr(args, "group", None)
+    if not isinstance(group, str) or not group:
+        return None
+    action = getattr(args, "action", None)
+    name = f"{group}.{action}" if isinstance(action, str) and action else group
+    begin, end = f"cli.{name}.start", f"cli.{name}.end"
+    if begin not in trace_schema.STAGES or end not in trace_schema.STAGES:
+        return None
+    return begin, end
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
-    return int(args.func(args))
+    stages = _dispatch_stage(args)
+    if stages is not None:
+        stage_begin(stages[0])
+    try:
+        code = int(args.func(args))
+    except BaseException:
+        # Crash-paired end: an unmatched start is precisely the moment a
+        # trace is most valuable (slice decision 4: exit:-1 marks the crash).
+        if stages is not None:
+            stage_end(stages[1], "exit:-1")
+        raise
+    if stages is not None:
+        stage_end(stages[1], f"exit:{code}")
+    return code
 
 
 if __name__ == "__main__":  # pragma: no cover

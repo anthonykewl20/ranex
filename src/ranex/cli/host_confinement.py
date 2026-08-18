@@ -30,6 +30,7 @@ from ranex.foundation.confinement_result import (
     ConfinementResultError,
     confinement_result_bytes as _confinement_result_bytes,
 )
+from ranex.observability import stage_begin, stage_end
 
 E_ARCH = "E-C17-ARCH-UNSUPPORTED"
 E_BUILD_INPUT = "E-C17-BUILD-INPUT-DRIFT"
@@ -3499,16 +3500,28 @@ def main(argv: Sequence[str] | None = None) -> int:
                 arguments.report,
             )
         elif arguments.subcommand == "session":
-            confinement_session(
-                root,
-                profile_arg=arguments.profile,
-                host_profile_arg=arguments.host_profile,
-                artifact_arg=arguments.artifact,
-                manifest_arg=arguments.manifest,
-                qualification_arg=arguments.qualification,
-                descriptor_arg=arguments.descriptor,
-                result_arg=arguments.result,
-            )
+            # ADR-031's second CLI stage boundary: the confinement-session
+            # child emits its own stage events (cli.run.* — the run group it
+            # executes the observed command for), SID-chained under the parent
+            # via RANEX_TRACE_PARENT_SID from the controller seam. No-op with
+            # tracing off; crash-paired with exit:-1 like the dispatch
+            # boundary in main.py.
+            stage_begin("cli.run.start")
+            try:
+                confinement_session(
+                    root,
+                    profile_arg=arguments.profile,
+                    host_profile_arg=arguments.host_profile,
+                    artifact_arg=arguments.artifact,
+                    manifest_arg=arguments.manifest,
+                    qualification_arg=arguments.qualification,
+                    descriptor_arg=arguments.descriptor,
+                    result_arg=arguments.result,
+                )
+            except BaseException:
+                stage_end("cli.run.end", "exit:-1")
+                raise
+            stage_end("cli.run.end", "exit:0")
         else:
             _refuse(E_PROTOCOL, f"unknown subcommand {arguments.subcommand!r}")
     except HostConfinementError as exc:
