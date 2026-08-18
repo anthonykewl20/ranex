@@ -316,6 +316,49 @@ def test_governed_root_target_is_refused_and_the_run_proceeds(
     assert str(target) in arm["run_err"], "a case-(a) refusal names the full path"
 
 
+def test_cli_invoked_outside_its_checkout_writes_no_trace_into_the_subject(
+    subject: _Subject,
+    tmp_path: Path,
+) -> None:
+    """N2(b) — cwd-anchored admission is not the CLI's governed root.
+
+    The CLI invoked from a cwd OUTSIDE its checkout still governs the subject
+    (governed_repository_root resolves the checkout containing the CLI, not
+    the caller's cwd), but the emitter admits targets against the CWD's git
+    root — so RANEX_TRACE=<path inside the subject's tree> sails past the
+    in-repo refusal and writes into the governed tree before the command even
+    runs (dirtying the subject the CLI is about to judge). The observable:
+    no trace file appears inside the subject, whatever the exit path. The
+    journal-verify usage error proves dispatch reached the subcommand, past
+    the stage boundary that triggers admission.
+    """
+
+    target = subject.root / "trace.jsonl"
+    environment = subject.base_env() | {"RANEX_TRACE": str(target)}
+    completed = subprocess.run(
+        [
+            *CLI,
+            "journal", "verify",
+            "--journal", "governance/journal.sqlite3",
+        ],
+        cwd=tmp_path,  # outside the subject; no .git at or above
+        env=environment,
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=120,
+    )
+
+    assert completed.returncode == 2, completed.stdout + completed.stderr
+    assert "does not exist" in completed.stderr, (
+        "construction check: dispatch reached journal verify"
+    )
+    assert not target.exists(), (
+        "the emitter admitted and wrote a trace file inside the governed "
+        "subject's tree from an outside cwd"
+    )
+
+
 # --- the propagation boundary -------------------------------------------------
 
 

@@ -22,6 +22,7 @@ from __future__ import annotations
 import json
 import hashlib
 import os
+import re
 import secrets
 import subprocess
 import sys
@@ -119,6 +120,37 @@ observability.emit_raw(
         "code": __CODE__,
     }
 )
+"""
+
+CODE_ARGUMENT_ATTACK = """
+import os
+import sys
+
+sys.path.insert(0, __SRC__)
+import ranex.observability as observability
+
+# N1 (round 2): the planted token rides the ARGUMENT of a REGISTERED kind in
+# otherwise perfectly well-formed events — the exact leak the per-kind
+# structural argument forms must close. No other violation exists in these
+# payloads.
+token = os.environ["ATTACK_TOKEN"]
+for code in (
+    "out_of_form:code:" + token,
+    "out_of_form:" + token,
+    "undeclared_field:" + token,
+    "malformed_parent_sid:" + token,
+    "oversized_event:" + token,
+    "cap_exceeded:" + token,
+):
+    observability.emit_raw(
+        {
+            "event": "note",
+            "level": "info",
+            "module": "observability",
+            "stage": "observability.note",
+            "code": code,
+        }
+    )
 """
 
 
@@ -327,5 +359,38 @@ def test_hex_token_as_a_bare_code_kind_never_reaches_trace_output(
     assert hex_token not in text, "the hex token reached the trace stream via code"
     codes = [event["code"] for event in events if event["event"] == "refusal"]
     assert any(code.startswith("out_of_form:code:") for code in codes), codes
+
+    _assert_zero_hits(_markers(planted), completed, target)
+
+
+def test_registered_kind_arguments_never_leak_planted_tokens(
+    tmp_path: Path,
+) -> None:
+    """N1 — the bearer token as the ARGUMENT of a registered kind, in
+    otherwise well-formed events. The generic argument charset admits the
+    token behind every registered kind today (`out_of_form:code:<token>`,
+    `undeclared_field:<token>`, `malformed_parent_sid:<token>`,
+    `oversized_event:<token>`, even `cap_exceeded:<token>`); each must be
+    refused with the value represented by shape plus digest, and grep -F must
+    find ZERO hits of the token in every captured stream."""
+
+    planted = _planted_secrets(tmp_path)
+    target = tmp_path / "trace.jsonl"
+    script = CODE_ARGUMENT_ATTACK.replace("__SRC__", repr(str(PROJECT / "src")))
+    completed = _run_attack(
+        tmp_path, script, planted, {"RANEX_TRACE": str(target)}
+    )
+
+    assert target.exists(), "the on-arm must actually be tracing"
+    text = target.read_text(encoding="utf-8")
+    events = [json.loads(line) for line in text.splitlines() if line]
+    assert events[0]["event"] == "version"
+    assert planted["ATTACK_TOKEN"] not in text, (
+        "the bearer token reached the trace stream as a code argument"
+    )
+    codes = [event["code"] for event in events if event["event"] == "refusal"]
+    assert len(codes) >= 6, codes
+    assert all(code.startswith("out_of_form:code:") for code in codes), codes
+    assert all(re.search(r"sha256_8=[0-9a-f]{8}", code) for code in codes)
 
     _assert_zero_hits(_markers(planted), completed, target)

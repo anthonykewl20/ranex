@@ -1135,3 +1135,284 @@ def test_parent_sid_attribute_chains_strictly_under_the_parent(
     session_id = observability.SESSION_ID
     assert session_id.startswith(parent + "/")
     assert SID_COMPONENT.match(session_id.rsplit("/", 1)[-1])
+
+
+# --- round-2 remediation arms (final-gate cumulative review, N1-N5) ----------
+#
+# Authored red against the tree at 68335ad71, blind to the fixes, per
+# test-debug discipline.
+
+
+def test_code_arguments_are_pinned_per_kind(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """N1 — a registered kind's ARGUMENT is structural, not an open charset.
+
+    After the CODE_KINDS registry (D3), the argument of every non-`exit` kind
+    is still validated only by the generic charset, so a registered kind with
+    a grammar-shaped secret argument passes (`out_of_form:code:rnxs-bearer-…`
+    serializes verbatim). The internal forms are structural per kind:
+    `exit:<int>`; `undeclared_field:<identifier>` or its shape form;
+    `out_of_form:<field>:len=N,sha256_8=<8hex>` with <field> one of the frozen
+    eleven; `malformed_parent_sid:<shape>`; `oversized_event:len=<N>`; the
+    five bare kinds take NO argument at all. Anything else is refused with
+    the value represented by shape plus digest, never bytes.
+    """
+
+    accepted = (
+        "exit:0",
+        "exit:-1",
+        "undeclared_field:bearer_token",
+        "undeclared_field:len=33,sha256_8=29a80d62",
+        "out_of_form:code:len=12,sha256_8=deadbeef",
+        "out_of_form:subject_digest:len=8,sha256_8=0bad1dea",
+        "malformed_parent_sid:len=17,sha256_8=29a80d62",
+        "oversized_event:len=16385",
+        "cap_exceeded",
+        "target_admission_failed",
+        "emission_refused",
+        "emission_not_a_mapping",
+        "refusal_code_overflow",
+    )
+    for code in accepted:
+        assert trace_schema.code_is_well_formed(code), f"structural form refused: {code}"
+
+    token = "rnxs-bearer-0badf00dcafe"
+    refused = (
+        # argument-bearing kinds with hostile grammar-valid arguments
+        f"out_of_form:code:{token}",       # field is real; the arg is not a shape
+        f"out_of_form:{token}",            # not <field>:<shape> at all
+        "out_of_form:exit:len=8,sha256_8=0bad1dea",  # `exit` is not one of the eleven
+        f"undeclared_field:{token}",       # neither identifier nor shape form
+        f"malformed_parent_sid:{token}",   # must be a shape descriptor
+        f"oversized_event:{token}",        # must be len=<N>
+        # bare kinds admit no argument whatsoever
+        "cap_exceeded:anything",
+        "target_admission_failed:1",
+        "emission_refused:x",
+        "emission_not_a_mapping:y",
+        "refusal_code_overflow:len=1",
+    )
+    for code in refused:
+        assert not trace_schema.code_is_well_formed(code), f"hostile code admitted: {code}"
+
+    # Emission-level: each hostile value is refused by shape+digest and its
+    # bytes never reach the stream.
+    target = tmp_path / "trace.jsonl"
+    observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+    for code in refused:
+        _note(observability, code=code)
+
+    text = target.read_text(encoding="utf-8")
+    assert token not in text
+    refusals = [
+        code
+        for code in _refusals(target)
+        if code.startswith("out_of_form:code:")
+    ]
+    assert len(refusals) == len(refused), _refusals(target)
+    assert all(SHAPE_DESCRIPTOR.search(code) for code in refusals)
+
+
+def test_anchor_appearing_after_admission_drops_a_held_target(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """N2(a) — a late-arriving authoritative anchor must drop a held target.
+
+    The emitter admits against the cwd's git root, so a CLI invoked from
+    OUTSIDE its checkout with RANEX_TRACE pointing inside the checkout admits
+    and writes into the governed tree before the command even runs. The CLI's
+    authoritative governed root is knowable only at the boundary, after
+    admission may already have happened — so when the anchor appears, the
+    already-held targets must be re-checked and any target inside the
+    anchored root DROPPED: no further writes, exactly one warning, fail
+    closed.
+    """
+
+    repo = _git_repo(tmp_path / "governed")
+    target = repo / "trace.jsonl"
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)  # no .git at or above: no cwd root today
+
+    observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+    assert observability.TRACING_ENABLED is True
+    _note(observability)
+    assert target.exists(), "construction check: admitted today (cwd has no root)"
+    capfd.readouterr()  # admission succeeded; nothing warned yet
+
+    import ranex.observability.emitter as emitter_module
+
+    emitter_module.set_governed_root(repo)
+
+    size_at_anchor = target.stat().st_size
+    _note(observability)
+
+    assert target.stat().st_size == size_at_anchor, (
+        "a target inside the late-anchored governed root kept receiving writes"
+    )
+    first = capfd.readouterr()
+    warnings = [line for line in first.err.splitlines() if line.strip()]
+    assert len(warnings) == 1, f"exactly one drop warning, got {warnings!r}"
+    assert "RANEX_TRACE" in warnings[0]
+    assert str(target) in warnings[0], "a case-(a) refusal names the full path"
+
+    _note(observability)
+    again = capfd.readouterr()
+    assert again.err == "", "a dropped target warns once, never again"
+    assert target.stat().st_size == size_at_anchor
+
+
+def test_fifo_target_admission_never_blocks(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capfd: pytest.CaptureFixture[str]
+) -> None:
+    """N3 — an absolute FIFO path must not block admission.
+
+    `RANEX_TRACE=<path to an existing FIFO with no reader>`: the file-target
+    admission `os.open(O_WRONLY)` on a FIFO blocks until a reader appears, so
+    the first stage emission hangs the governed run — the same violation as
+    D1, on the admission path instead of the write path (ADR-031 sad path 3:
+    never block). Admission must complete by REFUSING the target: one
+    warning, tracing off for the variable, run proceeds — never a crash.
+    """
+
+    fifo = tmp_path / "trace.fifo"
+    os.mkfifo(fifo)
+    observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(fifo)})
+    assert observability.TRACING_ENABLED is True
+
+    _run_with_watchdog(lambda: _note(observability))
+
+    first = capfd.readouterr()
+    warnings = [line for line in first.err.splitlines() if line.strip()]
+    assert len(warnings) == 1, f"exactly one admission refusal, got {warnings!r}"
+    assert "RANEX_TRACE" in warnings[0]
+
+    _run_with_watchdog(lambda: _note(observability))
+    again = capfd.readouterr()
+    assert again.err == "", "a refused target warns once, never again"
+
+
+def test_directory_target_admission_cannot_be_redirected(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capfd: pytest.CaptureFixture[str],
+) -> None:
+    """N4 — the per-process file must land under the ADMITTED directory's identity.
+
+    The dir target lstat()s the directory and then opens `directory/name` by
+    re-walking the path, so swapping the directory entry for a symlink in
+    that window redirects the created trace file (e.g. into a governed root
+    that admission had just checked the ORIGINAL path against). The race
+    window is deterministic here: os.open is interposed so the swap lands
+    exactly between the emitter's lstat and its open — the mechanism of the
+    eventual fix is left entirely free; the OBSERVABLE is pinned instead: no
+    byte may be created under a redirected location, and the emitter either
+    refuses the target (fail closed, one warning) or creates the file under
+    the original directory's filesystem identity (same dev+inode as the
+    lstat'd directory — rename preserves identity, so a held-directory
+    implementation still satisfies this).
+    """
+
+    repo = _git_repo(tmp_path / "governed")
+    decoy = repo / "tracedecoy"  # inside the governed root
+    decoy.mkdir()
+    admit = tmp_path / "admitdir"  # outside every root at admission time
+    admit.mkdir()
+    real = tmp_path / "admitdir.real"  # where the original directory moves
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    monkeypatch.chdir(elsewhere)
+
+    observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(admit)})
+    import ranex.observability.emitter as emitter_module
+
+    emitter_module.set_governed_root(repo)
+
+    real_open = os.open
+    swapped = []
+
+    def swapping_open(path, flags, *args, **kwargs):
+        operand = os.fspath(path)
+        if (
+            not swapped
+            and isinstance(operand, (str, bytes))
+            and os.fspath(operand).startswith(str(admit) + os.sep)
+        ):
+            # The deterministic race: the emitter has lstat'd the real
+            # directory; before its open re-walks the path, the directory
+            # entry becomes a symlink into the governed root.
+            os.rename(admit, real)
+            os.symlink(decoy, admit)
+            swapped.append(True)
+        return real_open(path, flags, *args, **kwargs)
+
+    monkeypatch.setattr(os, "open", swapping_open)
+    _note(observability)
+    monkeypatch.undo()  # restore os.open before any assertions touch the fs
+
+    assert not swapped or True  # the swap fired only if admission reached open
+    redirected = sorted(decoy.iterdir())
+    assert not redirected, (
+        f"admission followed the swapped symlink and created {redirected!r} "
+        "inside the governed root"
+    )
+
+    if not real.exists() or not any(real.iterdir()):
+        # Fail closed is an admissible outcome: the target was refused, once.
+        warnings = [line for line in capfd.readouterr().err.splitlines() if line.strip()]
+        assert warnings, "neither a safely-created file nor a refusal — silent loss"
+        assert "RANEX_TRACE" in warnings[0]
+    else:
+        created = next(path for path in real.iterdir() if path.is_file())
+        admitted_identity = (real.stat().st_dev, real.stat().st_ino)
+        parent_identity = (
+            created.parent.stat().st_dev,
+            created.parent.stat().st_ino,
+        )
+        assert parent_identity == admitted_identity, (
+            "the per-process file was created outside the admitted directory's "
+            "filesystem identity"
+        )
+
+
+def test_malformed_env_bytes_do_not_crash_the_import() -> None:
+    """N5 — surrogate-escaped environment bytes must not crash the import.
+
+    A RANEX_TRACE value carrying non-UTF-8 bytes (injected at the bytes-env
+    level, as a hostile execve would) decodes with surrogates, and the
+    invalid-value warning's shape descriptor raises UnicodeEncodeError during
+    module import — violating "never crash the governed run for a trace
+    problem". The import must succeed, warn once with a well-formed shape
+    descriptor (length over the decoded value, digest over a surrogate-safe
+    encoding), never echo the raw bytes, and disable that variable's target.
+    """
+
+    project_root = Path(__file__).resolve().parents[2]
+    completed = subprocess.run(
+        [sys.executable, "-c", "import ranex.observability"],
+        env={
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "HOME": os.environ.get("HOME", str(Path.home())),
+            "PYTHONPATH": str(project_root / "src"),
+            "RANEX_TRACE": b"rel\xff\xfe.trace",  # non-UTF-8, not absolute
+        },
+        capture_output=True,
+        text=False,
+        check=False,
+        timeout=60,
+    )
+
+    assert completed.returncode == 0, (
+        "the import crashed on malformed environment bytes:\n"
+        + completed.stderr.decode("utf-8", "replace")
+    )
+    stderr = completed.stderr
+    assert b"UnicodeEncodeError" not in stderr
+    assert b"\xff\xfe" not in stderr, "the raw hostile bytes reached the warning"
+    text = stderr.decode("utf-8", "replace")
+    warnings = [line for line in text.splitlines() if "RANEX_TRACE" in line]
+    assert len(warnings) == 1, f"exactly one invalid-value warning, got {text!r}"
+    assert SHAPE_DESCRIPTOR.search(warnings[0]), (
+        f"the warning carries no well-formed shape descriptor: {warnings[0]!r}"
+    )
