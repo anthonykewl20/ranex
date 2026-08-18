@@ -115,10 +115,27 @@ def controller_trace_environment() -> dict[str, str]:
     trace target variable(s) plus ``RANEX_TRACE_PARENT_SID`` (the chain into
     the child), derived from the import-time snapshot; the environment is
     never re-read. No other child surface receives a trace variable.
+
+    Only variables whose targets this process actually holds propagate
+    (remediation D4): admission is forced here, and a target refused at
+    admission in the current process — or since disabled by a write failure
+    or the cap — is dropped, because the parent already warned and the child
+    must never re-receive a variable the parent could not admit (re-handing
+    it would let the child re-admit against a root where sad path 12 does
+    not fire). fd targets never propagate at all: the emitter holds its
+    descriptors non-inheritable (the CLOEXEC posture), so the child has no
+    such fd and the number would name an unrelated descriptor. The parent
+    SID still propagates whenever tracing is enabled, so the chain survives
+    even when every target was refused.
     """
 
     if not TRACING_ENABLED:
         return {}
-    environment = dict(_ENABLED_TARGETS)
+    environment: dict[str, str] = {}
+    for variable, value in _ENABLED_TARGETS.items():
+        if parse_target(value)[0] == "fd":
+            continue
+        if _EMITTER.variable_admitted(variable):
+            environment[variable] = value
     environment[PARENT_SID_VARIABLE] = _session_identity()[0]
     return environment

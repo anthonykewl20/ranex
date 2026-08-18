@@ -115,6 +115,45 @@ def _cwd_governed_root() -> Path | None:
     return None
 
 
+# ADR-031 anchor seam (D4): the confinement-session child runs with a cwd
+# that resolves to no governed repository (a disposable session directory),
+# yet its session tree IS one — sad path 12 (a target inside the governed
+# repository root is refused before the first write) must apply there too.
+# The child anchors admission to the session's governed root through
+# ``set_governed_root`` before its first emission; the anchor takes
+# precedence over cwd resolution. The observable is frozen by
+# tests/unit/test_observability.py (refuse inside the anchor, admit under no
+# root — never over-refuse); the mechanism behind the seam is otherwise
+# implementer-free.
+_ANCHORED_GOVERNED_ROOT: Path | None = None
+
+
+def set_governed_root(path: Path | str | None) -> None:
+    """Anchor governed-root admission to ``path``, or clear the anchor with None."""
+
+    global _ANCHORED_GOVERNED_ROOT
+    if path is None:
+        _ANCHORED_GOVERNED_ROOT = None
+        return
+    anchored = Path(path)
+    if not anchored.is_absolute():
+        raise ValueError("the governed-root anchor must be an absolute path")
+    _ANCHORED_GOVERNED_ROOT = anchored
+
+
+def _admission_root() -> Path | None:
+    """The governed root admission judges against: the explicit anchor, else cwd.
+
+    The aliasing walk (device+inode) applies to whichever root this returns,
+    so an anchored child gets the full sad-path-12 admission ceremony —
+    under-root refusal included — exactly as a cwd-discovered root would.
+    """
+
+    if _ANCHORED_GOVERNED_ROOT is not None:
+        return _ANCHORED_GOVERNED_ROOT
+    return _cwd_governed_root()
+
+
 def _under(path: Path, root: Path) -> bool:
     try:
         resolved = Path(os.path.realpath(path))
@@ -439,7 +478,7 @@ class Emitter:
         """Lazily, before the first write: open targets, write version first."""
 
         self._admitted = True
-        root = _cwd_governed_root()
+        root = _admission_root()
         admitted: list[_Target] = []
         failures: list[str] = []
         for variable, kind, operand in self._plans:
@@ -491,6 +530,20 @@ class Emitter:
                     "code": note,
                 }
             )
+
+    def variable_admitted(self, variable: str) -> bool:
+        """Whether ``variable``'s target is currently held, forcing admission first.
+
+        ADR-031's controller seam (D4): the seam must only ever propagate
+        variables whose targets this process actually holds, so admission is
+        forced here if it has not happened yet and the answer reflects the
+        live target list — a target refused at admission, or since disabled
+        by write failure or the cap, is not held and does not propagate.
+        """
+
+        if not self._admitted:
+            self._admit()
+        return any(target.variable == variable for target in self._targets)
 
     def _version_payload(self) -> dict:
         """The literal-built version event (bypasses screening by construction)."""

@@ -31,6 +31,7 @@ from ranex.foundation.confinement_result import (
     confinement_result_bytes as _confinement_result_bytes,
 )
 from ranex.observability import stage_begin, stage_end
+from ranex.observability.emitter import set_governed_root
 
 E_ARCH = "E-C17-ARCH-UNSUPPORTED"
 E_BUILD_INPUT = "E-C17-BUILD-INPUT-DRIFT"
@@ -2944,6 +2945,15 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
         for name, item in environment.items()
     ):
         _refuse(E_C18_GATE, "environment must be a string mapping")
+    # The launcher allowlist is enforced at descriptor validation itself
+    # (remediation S5a): a worker environment key beyond {LC_ALL, TZ} — e.g.
+    # a RANEX_TRACE* variable — is refused here, before any spawn, with the
+    # same refusal the session flow raises inline later (that inline check
+    # stays; this is the same gate at the validated entry point, so the
+    # refusal does not depend on reaching the spawn path or on a capable
+    # confinement host).
+    if set(environment) - {"LC_ALL", "TZ"}:
+        _refuse(E_C18_GATE, "worker environment exceeds the launcher allowlist")
     resolved: dict[str, Path] = {}
     for name in ("subject", "toolchain", "output", "scratch"):
         argument = _string(value.get(name), name, E_C18_GATE)
@@ -3500,12 +3510,23 @@ def main(argv: Sequence[str] | None = None) -> int:
                 arguments.report,
             )
         elif arguments.subcommand == "session":
-            # ADR-031's second CLI stage boundary: the confinement-session
-            # child emits its own stage events (cli.run.* — the run group it
-            # executes the observed command for), SID-chained under the parent
-            # via RANEX_TRACE_PARENT_SID from the controller seam. No-op with
-            # tracing off; crash-paired with exit:-1 like the dispatch
-            # boundary in main.py.
+            # ADR-031 anchor seam (remediation D4): this child's cwd is a
+            # disposable session directory with no .git at or above it, so
+            # cwd-based governed-root discovery finds nothing and sad path 12
+            # (a trace target inside the governed repository root is refused
+            # before the first write) would silently not apply here. Anchor
+            # admission to the session's governed subject tree before the
+            # first emission. Validating the descriptor here also enforces
+            # the worker-environment allowlist at the validated entry point
+            # (S5a); confinement_session revalidates identically — the check
+            # is pure and cheap.
+            session_descriptor = _session_descriptor(root, arguments.descriptor)
+            set_governed_root(session_descriptor["_resolved"]["subject"])
+            # The session child's own stage boundary (ADR-031): cli.run.* —
+            # the run group it executes the observed command for —
+            # SID-chained under the parent via RANEX_TRACE_PARENT_SID from
+            # the controller seam. No-op with tracing off; crash-paired with
+            # exit:-1 like the dispatch boundary in main.py.
             stage_begin("cli.run.start")
             try:
                 confinement_session(
