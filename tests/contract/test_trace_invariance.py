@@ -317,7 +317,6 @@ def test_governed_root_target_is_refused_and_the_run_proceeds(
 
 
 def test_cli_invoked_outside_its_checkout_writes_no_trace_into_the_subject(
-    subject: _Subject,
     tmp_path: Path,
 ) -> None:
     """N2(b) — cwd-anchored admission is not the CLI's governed root.
@@ -331,8 +330,16 @@ def test_cli_invoked_outside_its_checkout_writes_no_trace_into_the_subject(
     no trace file appears inside the subject, whatever the exit path. The
     journal-verify usage error proves dispatch reached the subcommand, past
     the stage boundary that triggers admission.
+
+    Function-scoped subject by design (round-2 harness amendment, ruled a
+    construction defect): the journal-absence construction check must not
+    depend on other arms' ordering — the module-scoped subject carries a
+    journal left by the spine arms, which turns the same check into a
+    file-order contradiction. This arm owns a fresh subject whose journal
+    state is its own.
     """
 
+    subject = _Subject(tmp_path / "governed")
     target = subject.root / "trace.jsonl"
     environment = subject.base_env() | {"RANEX_TRACE": str(target)}
     completed = subprocess.run(

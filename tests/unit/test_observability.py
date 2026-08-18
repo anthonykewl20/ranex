@@ -1300,18 +1300,20 @@ def test_directory_target_admission_cannot_be_redirected(
 ) -> None:
     """N4 — the per-process file must land under the ADMITTED directory's identity.
 
-    The dir target lstat()s the directory and then opens `directory/name` by
-    re-walking the path, so swapping the directory entry for a symlink in
-    that window redirects the created trace file (e.g. into a governed root
-    that admission had just checked the ORIGINAL path against). The race
-    window is deterministic here: os.open is interposed so the swap lands
-    exactly between the emitter's lstat and its open — the mechanism of the
-    eventual fix is left entirely free; the OBSERVABLE is pinned instead: no
-    byte may be created under a redirected location, and the emitter either
-    refuses the target (fail closed, one warning) or creates the file under
-    the original directory's filesystem identity (same dev+inode as the
-    lstat'd directory — rename preserves identity, so a held-directory
-    implementation still satisfies this).
+    The dir target commits to a directory and then creates `name` under it;
+    if the creation re-walks the admitted PATH (or pins the directory by an
+    open that a later symlink swap can still divert), swapping the directory
+    entry for a symlink in that window redirects the created trace file
+    (e.g. into a governed root that admission had just checked the ORIGINAL
+    path against). The race window is deterministic here: os.open is
+    interposed so the swap lands between the emitter's commitment to the
+    directory and the open that uses the path — the mechanism of the eventual
+    fix is left entirely free; the OBSERVABLE is pinned instead: no byte may
+    be created under a redirected location, and the emitter either refuses
+    the target (fail closed, one warning) or creates the file under the
+    original directory's filesystem identity (same dev+inode as the admitted
+    directory — rename preserves identity, so a held-directory implementation
+    still satisfies this).
     """
 
     repo = _git_repo(tmp_path / "governed")
@@ -1333,15 +1335,26 @@ def test_directory_target_admission_cannot_be_redirected(
     swapped = []
 
     def swapping_open(path, flags, *args, **kwargs):
-        operand = os.fspath(path)
+        # Separator-consistent geometry, matching the two real code shapes a
+        # `_DirTarget` can open: the directory ITSELF (a dirfd-pinning
+        # implementation opens `admit` exactly, then creates the per-process
+        # file relative via dir_fd= — a bare name that matches neither arm)
+        # and full-path CHILD opens (a path re-walking implementation opens
+        # `admit/name`). The original `startswith(str(admit) + os.sep)` alone
+        # could never fire against the dirfd shape, making the branch
+        # bookkeeping unsatisfiable for any compliant fix (round-2 harness
+        # amendment, ruled a construction defect).
+        try:
+            operand = os.fsdecode(path)
+        except (TypeError, ValueError):
+            operand = ""
         if (
             not swapped
-            and isinstance(operand, (str, bytes))
-            and os.fspath(operand).startswith(str(admit) + os.sep)
+            and (operand == str(admit) or operand.startswith(str(admit) + os.sep))
         ):
-            # The deterministic race: the emitter has lstat'd the real
-            # directory; before its open re-walks the path, the directory
-            # entry becomes a symlink into the governed root.
+            # The deterministic race: the emitter has committed to the real
+            # directory (lstat/pin); before its next open uses the path, the
+            # directory entry becomes a symlink into the governed root.
             os.rename(admit, real)
             os.symlink(decoy, admit)
             swapped.append(True)
