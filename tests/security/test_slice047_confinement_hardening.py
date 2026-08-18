@@ -141,6 +141,10 @@ def _reload_observability(monkeypatch: pytest.MonkeyPatch, env: dict[str, str]):
 
 def test_controller_gets_only_the_declared_environment(repository: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     root, key = repository
+    # Hermetic off state first: earlier tests in the same process may leave a
+    # traced emitter module behind (module state survives their monkeypatch),
+    # and the seam reads whatever module is current at spawn time.
+    _reload_observability(monkeypatch, {})
     _code, _diagnostic, calls = _run_bound(root, key, monkeypatch, capsys, "success")
     environment = calls.get("env", {})
     assert set(environment) == {"PATH", "PYTHONPATH", "LC_ALL", "TZ"}
