@@ -90,6 +90,18 @@ pytest_add_cli_args_test_selection = [
     "--ignore=tests/security/test_slice046_cmd_run_confinement.py",
     "--ignore=tests/security/test_slice047_confinement_hardening.py",
     "--ignore=tests/security/test_slice017_host_qualification.py",
+    # Sanctioned 2026-08-18 (SLICE-054 ruling extending F7): five more modules
+    # of the same subprocess-shaped family that blocked the stats phase —
+    # children import the trampolined tree and die on the absent
+    # MUTANT_UNDER_TEST env var / unset mutmut.config (NoneType) before
+    # writing evidence. The scrubbing module spawns real CLI subprocesses;
+    # its refusal/redaction branches stay under mutation in-process via
+    # tests/unit/test_observability.py, which remains in the selection.
+    "--ignore=tests/integration/test_slice017_native_launcher.py",
+    "--ignore=tests/integration/test_slice018_confinement_session.py",
+    "--ignore=tests/security/test_slice018_cgroup_output_lifecycle.py",
+    "--ignore=tests/security/test_trace_secret_scrubbing.py",
+    "--ignore=tests/unit/test_specification_generation.py",
 ]
 
 [project.scripts]
