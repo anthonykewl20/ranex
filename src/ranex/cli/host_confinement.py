@@ -3232,9 +3232,12 @@ def _session_result_path(root: Path, result_arg: str) -> Path:
 
 def confinement_session(
     root: Path, *, profile_arg: str, host_profile_arg: str, artifact_arg: str,
-    manifest_arg: str, qualification_arg: str, descriptor_arg: str, result_arg: str,
+    manifest_arg: str, qualification_arg: str, descriptor: dict[str, Any], result_arg: str,
 ) -> None:
-    descriptor = _session_descriptor(root, descriptor_arg)
+    # The descriptor executed here is the SAME parsed, validated object
+    # main() anchored admission to — parsed once, passed through (a second
+    # independent parse of the same path could drift from the anchored
+    # copy between validation and execution).
     qualification_path = resolve_within_repository(root, qualification_arg)
     qualification = _load_json(qualification_path, E_C18_HOST_DRIFT)
     recorded = qualification.get("host_state")
@@ -3518,8 +3521,9 @@ def main(argv: Sequence[str] | None = None) -> int:
             # admission to the session's governed subject tree before the
             # first emission. Validating the descriptor here also enforces
             # the worker-environment allowlist at the validated entry point
-            # (S5a); confinement_session revalidates identically — the check
-            # is pure and cheap.
+            # (S5a); the parsed object is then passed straight through to
+            # confinement_session — parsed once, never re-parsed (the same
+            # object anchors admission and executes).
             session_descriptor = _session_descriptor(root, arguments.descriptor)
             set_governed_root(session_descriptor["_resolved"]["subject"])
             # The session child's own stage boundary (ADR-031): cli.run.* —
@@ -3536,7 +3540,7 @@ def main(argv: Sequence[str] | None = None) -> int:
                     artifact_arg=arguments.artifact,
                     manifest_arg=arguments.manifest,
                     qualification_arg=arguments.qualification,
-                    descriptor_arg=arguments.descriptor,
+                    descriptor=session_descriptor,
                     result_arg=arguments.result,
                 )
             except BaseException:
