@@ -83,14 +83,25 @@ STAGES: frozenset[str] = frozenset(
 _IDENTIFIER_RE = re.compile(r"\A[a-z_][a-z0-9_]*\Z")
 # ``code`` is a closed vocabulary, not an open grammar (D3): the kind must be
 # one of CODE_KINDS below — the emitted set, frozen by
-# tests/contract/test_trace_schema.py — and the argument must match the
-# bounded charset [A-Za-z0-9_.=+,:-]{1,200} (slice decision 4). Colons are
-# allowed in the argument so a refusal can name
-# ``out_of_form:<field>:<shape>`` without overflowing its own grammar. A bare
-# identifier no longer admits any grammar-shaped secret as a kind, and the
-# ``exit`` kind's argument is an integer (exit codes: frozen examples
-# ``exit:0`` / ``exit:-1``), so a token cannot ride the argument of a
-# legitimate kind either.
+# tests/contract/test_trace_schema.py. Per-kind structural argument forms
+# (remediation N1) replace the old bounded-charset argument: a registered
+# kind's ARGUMENT is structural, so a grammar-shaped secret riding a
+# legitimate kind (`out_of_form:code:rnxs-bearer-…`) is out of form exactly
+# like an unknown kind. The admissible forms, per kind:
+#
+#   exit:<int>                            bounded integer (exit codes)
+#   undeclared_field:<identifier>         the echoable-name form
+#   undeclared_field:len=N,sha256_8=<hex> the shape form for hostile names
+#   out_of_form:<field>:len=N,sha256_8=…  <field> one of the frozen eleven
+#   malformed_parent_sid:len=N,sha256_8=… the shape form (plus the bounded
+#                                         identifier argument the frozen
+#                                         round-1 example ``af_unix`` pins)
+#   oversized_event:len=<N>               the refused line's length
+#   the five bare kinds                   NO argument whatsoever
+#
+# Anything else is refused whole-event and the value is represented by shape
+# plus digest, never its bytes. Every internal emission site emits one of
+# these forms literally.
 CODE_KINDS: frozenset[str] = frozenset(
     {
         "exit",
@@ -105,8 +116,36 @@ CODE_KINDS: frozenset[str] = frozenset(
         "refusal_code_overflow",
     }
 )
-_CODE_ARG_RE = re.compile(r"\A[A-Za-z0-9_.=+,:-]{1,200}\Z")
+# The five kinds that take no argument at all; ``kind:arg`` with one of them
+# is out of form.
+CODE_BARE_KINDS: frozenset[str] = frozenset(
+    {
+        "cap_exceeded",
+        "target_admission_failed",
+        "emission_refused",
+        "emission_not_a_mapping",
+        "refusal_code_overflow",
+    }
+)
+# The ``out_of_form`` field names one of the frozen eleven; the version-only
+# ``evt``/``exe`` members are not among them, so a refusal code naming them
+# falls back to the bounded ``emission_refused`` literal in redaction's belt.
+_CODE_OUT_OF_FORM_FIELDS: frozenset[str] = frozenset(FIELDS)
+# ``len=`` plus digits and ``len=…,sha256_8=`` plus 8 hex: the two shape-form
+# arguments, bounded so the argument alone cannot exceed the old 200-char
+# argument cap. The type-bucket form ``type=object,sha256_8=…`` is part of
+# the same closed vocabulary — ``shape_descriptor`` returns it for values
+# with no JSON form (D5's fixed bucket), and refusal codes compose
+# ``out_of_form:<field>:<shape_descriptor(value)>``, so the bucket must
+# stay an admissible argument or those refusals would degrade to the belt.
+_CODE_SHAPE_ARG_RE = re.compile(
+    r"\A(?:len=[0-9]{1,196},sha256_8=[0-9a-f]{8}|type=object,sha256_8=[0-9a-f]{8})\Z"
+)
+_CODE_LEN_ARG_RE = re.compile(r"\Alen=[0-9]{1,196}\Z")
 _CODE_EXIT_ARG_RE = re.compile(r"\A-?[0-9]{1,200}\Z")
+# The bounded identifier argument — the same [a-z_][a-z0-9_]*-form, capped at
+# 200 total, that redaction's echo path applies to echoed field names.
+_CODE_IDENTIFIER_ARG_RE = re.compile(r"\A[a-z_][a-z0-9_]{0,199}\Z")
 _HIERARCHY_RE = re.compile(r"\A[a-z_][a-z0-9_]*(?:\.[a-z_][a-z0-9_]*)*\Z")
 # ``subject_digest`` is hex (slice decision 3): 64 lowercase hex characters.
 _SUBJECT_DIGEST_RE = re.compile(r"\A[0-9a-f]{64}\Z")
@@ -122,7 +161,14 @@ def field_name_is_named(name: str) -> bool:
 
 
 def code_is_well_formed(code: str) -> bool:
-    """kind ∈ CODE_KINDS, arg bounded (integer for ``exit``), total line-bounded."""
+    """kind ∈ CODE_KINDS with its structural argument form, line-bounded.
+
+    Per-kind forms (N1): ``exit`` an integer; ``undeclared_field`` an
+    identifier or the shape form; ``out_of_form`` one of the frozen eleven
+    fields plus a shape; ``malformed_parent_sid`` the shape form (plus the
+    bounded identifier argument the frozen round-1 example ``af_unix`` pins);
+    ``oversized_event`` ``len=<N>``; the five bare kinds no argument at all.
+    """
 
     if not isinstance(code, str) or len(code) > MAX_LINE_LENGTH:
         return False
@@ -130,10 +176,30 @@ def code_is_well_formed(code: str) -> bool:
     if kind not in CODE_KINDS:
         return False
     if not separator:
-        return True
+        return kind in CODE_BARE_KINDS
+    if len(argument) > 200:
+        return False
     if kind == "exit":
         return bool(_CODE_EXIT_ARG_RE.match(argument))
-    return bool(_CODE_ARG_RE.match(argument))
+    if kind == "undeclared_field":
+        return bool(_CODE_IDENTIFIER_ARG_RE.match(argument)) or bool(
+            _CODE_SHAPE_ARG_RE.match(argument)
+        )
+    if kind == "out_of_form":
+        field, inner_separator, shape = argument.partition(":")
+        return (
+            bool(inner_separator)
+            and field in _CODE_OUT_OF_FORM_FIELDS
+            and bool(_CODE_SHAPE_ARG_RE.match(shape))
+        )
+    if kind == "malformed_parent_sid":
+        return bool(_CODE_SHAPE_ARG_RE.match(argument)) or bool(
+            _CODE_IDENTIFIER_ARG_RE.match(argument)
+        )
+    if kind == "oversized_event":
+        return bool(_CODE_LEN_ARG_RE.match(argument))
+    # The five bare kinds admit no argument whatsoever.
+    return False
 
 
 def hierarchy_is_well_formed(hierarchy: str) -> bool:
@@ -216,10 +282,17 @@ def shape_descriptor(value: object) -> str:
     and the digest input never includes the value's contents.
     Disclosed residual (ADR-031): a short digest is a weak offline-
     confirmation oracle for low-entropy refused values.
+
+    Surrogate-safe (remediation N5): a hostile ``execve`` can put non-UTF-8
+    bytes in the environment, which Python decodes with ``surrogateescape``;
+    ``str.encode("utf-8")`` would raise ``UnicodeEncodeError`` on the lone
+    surrogates and crash the import. Encoding with ``surrogatepass`` is
+    total and deterministic over such values — the descriptor never echoes
+    the raw bytes, only length and digest.
     """
 
     if isinstance(value, str):
-        raw = value.encode("utf-8")
+        raw = value.encode("utf-8", "surrogatepass")
     elif isinstance(value, (bytes, bytearray)):
         raw = bytes(value)
     else:
