@@ -665,6 +665,75 @@ stops counting too. A record that fails verification is reported as *refused*,
 with a reason — never as "no evidence", because an attack and an unfinished task
 are not the same event.
 
+## The real-e2e suite entrypoint
+
+One command runs the whole suite — the real-e2e journeys included — with
+subprocess coverage wired through every frame-wired child, tees the transcript
+and the coverage report into the ignored artifact home, and exits nonzero on
+any mismatch between the skips that happened and the skips the committed
+manifest declares (ADR-032; the frame lives in `tests/e2e/_prereqs.py` and
+`tests/e2e/coverage/sitecustomize.py`):
+
+```sh
+set -o pipefail
+mkdir -p .local/ranex-e2e/coverage
+rm -f .local/ranex-e2e/coverage/.coverage*
+export COVERAGE_PROCESS_START="$PWD/pyproject.toml"
+export COVERAGE_FILE="$PWD/.local/ranex-e2e/coverage/.coverage"
+PYTHONPATH="src:tests/e2e/coverage" \
+  uv run --frozen pytest -q tests/unit tests/integration tests/contract \
+    tests/security tests/e2e \
+    --junitxml=.local/ranex-e2e/results.xml 2>&1 \
+  | tee .local/ranex-e2e/transcript.txt \
+&& uv run --frozen python -m coverage combine --keep \
+    .local/ranex-e2e/coverage | tee -a .local/ranex-e2e/transcript.txt \
+&& uv run --frozen python -m coverage report \
+    | tee .local/ranex-e2e/coverage-report.txt \
+&& uv run --frozen python tests/e2e/_prereqs.py cross-check \
+    governance/suite_manifest.json .local/ranex-e2e/results.xml \
+&& rm -f .local/ranex-e2e/coverage/.coverage*
+```
+
+What each piece is and why it is shaped this way:
+
+- **Coverage env vars.** `COVERAGE_PROCESS_START` names this repository's
+  `pyproject.toml` (absolute), whose `[tool.coverage]` block freezes
+  `source = ["src/ranex"]`, `parallel = true`, and the fail-under threshold.
+  `COVERAGE_FILE` pins one absolute shared base under
+  `.local/ranex-e2e/coverage/` — gitignored `.local/*` territory — so every
+  process's `parallel=true` suffix file (`.coverage.<host>.<pid>.<rand>`)
+  lands in that one directory instead of scattering across working trees.
+  The hook directory rides **last** on `PYTHONPATH`
+  (`src:tests/e2e/coverage`), appended and never replacing: a replaced
+  PYTHONPATH is how a subprocess hook silently dies. The relative `source`
+  is deliberate — a clone-judges-clone child resolves it against its own
+  working directory and measures its own vendored copy of the kernel.
+- **The pre- and post-run sweeps** (`rm -f .coverage*`) are load-bearing
+  hygiene, not tidiness: stale suffix files from an interrupted run must
+  never enter a later combine, and the retained `--keep` inputs never
+  outlive the artifact. Hard-killed (SIGKILL) children remain a documented,
+  threshold-accounted coverage blind spot.
+- **The combine is `--keep` and idempotent**: repeated `coverage combine
+  --keep` over the retained immutable inputs reproduces identical combined
+  data (installed coverage deletes inputs without `--keep`, so inputs are
+  retained deliberately).
+- **The cross-check** (`tests/e2e/_prereqs.py cross-check <manifest>
+  <junitxml>`) is the declared-skip ledger, both directions: an observed
+  skip no declaration covers, and a declared skip that did not occur, each
+  exit nonzero naming the test ID and its reason. `suite freeze` itself
+  stays outcome-blind; honesty is checked here, at entrypoint time.
+- **Duration budget.** The unwired suite runs in roughly 2 to 3 minutes;
+  the full wired entrypoint (suite + combine + report + cross-check)
+  completes in about 3 minutes on a qualified host — the coverage overhead
+  is small because the traced work is mostly in-process. Anything past
+  10 minutes is a hang, not a slow run — interrupt and read the transcript.
+
+The transcript and the coverage report under `.local/ranex-e2e/` are the
+milestone's proof artifacts: a real invocation transcript and a real
+per-file, per-line coverage report a human can read at a pinned commit.
+The entrypoint never logs key material; the transcript carries suite output
+and line numbers only.
+
 ## Development
 
 One slice at a time; finish it before starting another. The rule is enforced by
