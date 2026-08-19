@@ -1,6 +1,6 @@
 # SLICE-056 — real e2e: verdict family (gate evaluate + journal verify)
 
-**Status:** open
+**Status:** done
 **ADR:** docs/adr/ADR-032-real-e2e-suite-framework.md
 **Issue:** #36 (tracker #33, milestone 4 — the ADR-032 frame's first
 family customer; SLICE-055 prerequisite accepted)
@@ -156,3 +156,45 @@ needed an ADR-032 amendment or an issue #36 change request at freeze
 time. The two implementation-lane obligations recorded above (the
 row-naming presentation change, the truncation-blind-spot ADR delta)
 are the issue's own demands, not amendments.
+
+## Close-out record (2026-08-20)
+
+- **Hermetic-freeze verification — hermetic-green.** The standing
+  `ranex suite freeze` ceremony at implementation commit b4e835c00
+  (clean tree, the 119 committed declarations re-declared verbatim)
+  ran the full suite inside the sealed environment: **1227 passed,
+  118 skipped, run_exit=0** (103.17s). Against the 41bb4fef6 ceremony
+  baseline (1219 passed / 118 skipped) that is exactly +8 passed with
+  the skip set unchanged — every family arm ran inside the sealed env
+  and passed. No env-dependent journey; the pre-registered
+  context-guard remedy was not needed and nothing was declared.
+- **Ceremony** (commit dabc91f68): suite 1337 → 1345 (+8, −0 — this
+  slice's two files' eight test IDs); expected_skips 119 → 119
+  byte-identical. New manifest
+  sha256:539315038c919050537203f6508ac76c418c43d0a0db3d7d0c24ee88300
+  97139.
+- **Full suite at close:** 1305 passed, 40 skipped, 0 failed
+  (724.72s).
+- **Red → green:** frozen red at 8931e1223 (8 failed / 0 passed);
+  green through 8bdccb60d (journal-verify row naming, the issue's
+  sanctioned src surface), 2e6947e36 (the four goldens captured from
+  the real journeys), b4e835c00 (the truncation-fixture construction
+  fix, ruling on issue #36 comment 5346068327, Option 1). The AC2
+  sabotage-control red output is posted on issue #36 by the
+  implementation lane.
+
+## Follow-ups register (carried at close)
+
+1. **ADR-032 fold-in of the truncation blind spot — not landed at
+   close.** The Determination section above assigns the close-out lane
+   the obligation to fold the characterized rollback/truncation blind
+   spot into ADR-032's record. The close lane's writable surface
+   (ceremony manifest, `docs/slices/**`, `docs/STATE.md`,
+   `README.md`) excluded `docs/adr/**`, so the edit was not made. The
+   characterization itself is frozen and asserted as the documented
+   outcome in
+   `test_journal_verify_real.py::test_tampered_row_detection_names_the_row_and_rolls_back_honestly`
+   and is recorded in this file; only the ADR prose amendment
+   remains, awaiting a surface grant or a routing decision. Closing
+   the blind spot itself remains a slice-governed change, never a
+   quiet rebase.

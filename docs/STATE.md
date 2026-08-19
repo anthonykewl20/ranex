@@ -2,34 +2,35 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-056 opened)
-**Active slice:** docs/slices/SLICE-056-real-e2e-verdict-family.md
+**Updated:** 2026-08-20 (SLICE-056 closed)
+**Active slice:** none
 
 ## Where we stopped
 
-SLICE-056 (#36, verdict-family real e2e) is open, contracts frozen red
-(Worker A). Both family files — tests/e2e/test_gate_evaluate_real.py,
-tests/e2e/test_journal_verify_real.py — commit 8 red: 7 golden-missing
-(the four `tests/e2e/expected/*.out` are the implementation lane's
-artifacts, captured from the real journeys through the ADR-032
-normalizer) plus 1 behavioral red (journal verify must name the
-byte-edited row — issue #36 sad path 3; today's CLI prints only
-`chain=invalid`). Every journey mechanic verified green against the
-installed kernel at freeze time: the no-evidence landing FAIL, the
-keygen→run→evaluate PASS over real signed evidence, openssl's
-independent Ed25519 verification, clean/tampered/truncated journal
-verifies, and the truncation blind spot (a rolled-back journal verifies
-PASS — characterized, asserted as the documented outcome, sad path 4).
-Implementation lane unblocked: goldens + row-naming presentation, then
-the sabotage-control run and `suite freeze` at close.
+SLICE-056 (#36, verdict-family real e2e) is done and archived
+(docs/slices/done/SLICE-056-real-e2e-verdict-family.md). All eight
+family arms green: four goldens captured from the real journeys
+(2e6947e36), journal-verify row naming landed (8bdccb60d), the
+truncation fixture's construction fixed per the Option-1 ruling
+(b4e835c00). The suite-freeze ceremony at b4e835c00 (dabc91f68)
+resolved the pre-registered hermetic UNKNOWN **hermetic-green** —
+sealed run 1227 passed / 118 skipped / run_exit=0, exactly +8 over
+the 41bb4fef6 baseline with the skip set unchanged, so no family arm
+behaves differently sealed and the context-guard remedy was not
+needed. Manifest: 1345 IDs (+8), expected_skips 119 byte-identical.
+Full suite at close: 1305 passed / 40 skipped / 0 failed.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-056
-Active: SLICE-056 — Worker B implements (goldens + row-naming + close
-per the slice file's done criteria); SLICE-055 follow-ups registered in
-its done slice file stay queued behind it.
+Next slice: SLICE-057
+SLICE-057 (#37, execution family — run + confinement + suite freeze
+on a qualified host) is the next milestone-4 family slice per the
+build order; it opens through governance (spec + ADR check) when
+selected. Carried follow-up from the SLICE-056 close: the ADR-032
+fold-in of the truncation blind spot (slice file's register — the
+close lane's surface excluded docs/adr/**); owner to route. The
+SLICE-055 follow-ups in its done slice file stay queued.
 
 ## Governance (owner, 2026-08-17)
 
@@ -39,12 +40,11 @@ Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate.
 ## Known limits
 
 - CI confinement suites fail on hosted runners (ld.so.cache drift, userns EACCES).
-- cgroup-observer `OSError(19)` can flake under load.
-- SLICE-008 bounded-fanout timing can flake under full-suite load; passes isolated and on `origin/main`.
+- cgroup-observer `OSError(19)` and SLICE-008 bounded-fanout timing can flake under full-suite load (both pass isolated / on `origin/main`).
 - About 125 legacy test IDs remain unregistered in the frozen manifest.
 - Trace fd targets persist O_NONBLOCK on the operator's descriptor after exit (disclosed; slice file records the trade-off).
 - mutmut: the stats phase cannot complete on the current suite shape
   (subprocess-heavy tests vs the in-process trampoline; observability
   mutants remain unchecked — mutation evidence not obtained, disclosed).
-- SLICE-056 hermetic-freeze behavior of the family journeys is an honest
-  UNKNOWN at open time (slice file records the sanctioned remedy).
+- The journal does not detect rollback/truncation (SLICE-056
+  characterized it; the ADR-032 fold-in is the queued follow-up).

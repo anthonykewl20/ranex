@@ -298,8 +298,10 @@ below is what is actually built.
   about who approved it. No-self-approval compares those unauthenticated strings.
 - **The journal does not detect rollback or truncation.** Concurrent appenders
   are serialised before they read the previous link, and `ranex journal verify`
-  recomputes the chain. But an internally consistent earlier prefix still
-  verifies after later rows are removed. *(unassigned)*
+  recomputes the chain, now naming the first chain-breaking row. But an
+  internally consistent earlier prefix still verifies after later rows are
+  removed — characterized and frozen as the documented outcome by SLICE-056;
+  the ADR-032 fold-in is queued. Closing it remains a slice-governed change.
 - **No flow graph, no scenario compilation**, no budget, no escalation. Those
   are designed, not built. Worker dispatch left this list: `ranex task
   dispatch|judge|merge|delegate|fanout` ran a real model end to end (SLICE-008),
@@ -319,25 +321,32 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-056-real-e2e-verdict-family.md
+**Active slice:** none
 
-SLICE-056 (verdict family e2e, #36) is open: the ADR-032 frame's first
-family customer. Its contracts are frozen red — two real-journey test
-files (gate evaluate on a real clone with real keygen/run evidence;
-journal verify clean, byte-tampered, and rolled back) whose transcripts
-compare against four goldens the implementation lane captures from real
-runs through the frame's one normalizer. The milestone-4 real-e2e frame
-is closed beneath it (2026-08-19): honest prereq probes, the two-tier
-declared-skip cross-check, subprocess coverage, and the documented
-entrypoint (rc 0, coverage 16.70% ≥ fail-under 15). All six kernel P0
-spec-authority slices (SLICE-029/030/031/032/033/035) are landed on
-kernel `main` at `ff3ab802`: A/B/C contract freeze, lifecycle, closed-DSL
-projections, approval/revocation/intersected grants, trace integrity,
-and real-subject bootstrap. The byte-identical A/B/C schema/vector
+SLICE-056 (verdict family e2e, #36) closed 2026-08-20 — the ADR-032
+frame's first family customer: two real-journey test files (gate
+evaluate on a real clone with real keygen/run/openssl-verified
+evidence; journal verify clean, byte-tampered with the CLI naming the
+chain-breaking row, and rolled back) whose transcripts compare
+byte-exactly against four goldens captured from the real runs through
+the frame's one normalizer. The suite-freeze ceremony registered the
+eight family IDs (manifest 1345 IDs / 119 expected skips) and resolved
+the pre-registered hermetic UNKNOWN hermetic-green: sealed run 1227
+passed / 118 skipped / run_exit=0 — every family arm runs identically
+inside the sealed environment. Full suite at close: 1305 passed / 40
+skipped / 0 failed. One carried follow-up: the ADR-032 fold-in of the
+characterized truncation blind spot (queued in the done slice file).
+The milestone-4 real-e2e frame is closed beneath it (2026-08-19):
+honest prereq probes, the two-tier declared-skip cross-check,
+subprocess coverage, and the documented entrypoint (rc 0, coverage
+16.70% ≥ fail-under 15). All six kernel P0 spec-authority slices
+(SLICE-029/030/031/032/033/035) are landed on kernel `main` at
+`ff3ab802`: A/B/C contract freeze, lifecycle, closed-DSL projections,
+approval/revocation/intersected grants, trace integrity, and
+real-subject bootstrap. The byte-identical A/B/C schema/vector
 TypeScript mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in
-`ranex-harness` `ranex-trim` at `16bf036f`. The full suite at the
-SLICE-055 close-out was 1297 passed / 40 skipped / 0 failed; its frozen
-manifest records 1337 IDs / 119 expected skips.
+`ranex-harness` `ranex-trim` at `16bf036f`. Next per the build order:
+SLICE-057 (#37, execution family), opening through governance.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -378,6 +387,18 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-056-real-e2e-verdict-family** — closed 2026-08-20. The
+  ADR-032 frame's first family customer: gate-evaluate and
+  journal-verify journeys over a real clone with real keygen/run
+  evidence and openssl's independent Ed25519 re-check; four goldens
+  captured from the real runs through the one normalizer (sabotage
+  control and fixpoint contracts refuse hand-sanitized bytes);
+  journal-verify FAIL names the chain-breaking row; the
+  rollback/truncation blind spot characterized as the documented
+  outcome. Registered through the suite-freeze ceremony (1345 IDs /
+  119 expected skips), which also proved the family hermetic-green —
+  every arm runs identically inside the sealed environment. Carried
+  follow-up: the ADR-032 fold-in of the truncation blind spot.
 - **SLICE-055-real-e2e-suite-framework** — closed 2026-08-19. The ADR-032
   frame: six honest prereq probes, the golden-transcript normalizer, the
   two-tier declared-skip cross-check (probe-backed hard / context
