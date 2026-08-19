@@ -49,6 +49,24 @@ ADR-032 decision each one compiles is named beside it.
    manifest passes. `suite freeze` itself stays outcome-blind and is not
    asked to check either. Proven by the cross-check tests in
    `tests/contract/test_prereq_gates.py`.
+
+   *Application-scope ruling (orchestrator, 2026-08-19, recorded on issue
+   #35):* direction (a) is hard everywhere — every observed skip must be
+   declared. Direction (b) is the probe-backed lie detector in two tiers:
+   a declared-but-not-observed skip is a hard failure when its declared
+   reason uses the frame grammar (`ranex-prereq:<probe>:`, the reason →
+   probe mapping) — the finding names that probe's live verdict on the
+   running host, and a present verdict locates the lie in the declaration
+   (prune it at the next freeze) — while non-probe-backed, context-bound
+   declarations (hermetic-freeze-context conditions not reproducible in
+   the entrypoint's documented environment) are reported as an
+   informational context-mismatch list, names plus count, exit 0. The
+   manifest is deliberately multi-context; an unscoped direction (b)
+   would make AC1 unsatisfiable on any single host. The frozen
+   mechanism tests keep their fixture-driven hard outcomes unchanged —
+   this scope governs application, not mechanism. Going forward,
+   stage_12's operator-gate skip (`RANEX_SIGNING_KEY` not exported) is
+   declared with the probe grammar.
 3. **Golden-transcript normalizer** — one centralized, single-argument
    function applying the ordered grammar (`<DIGEST>`, `<ABS-PATH>`,
    `<TIMESTAMP>`, `<DURATION>`, `<SID>`, `<PID>`, `<PORT>`, `<REL-PATH>`)

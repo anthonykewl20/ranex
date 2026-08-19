@@ -670,8 +670,9 @@ are not the same event.
 One command runs the whole suite — the real-e2e journeys included — with
 subprocess coverage wired through every frame-wired child, tees the transcript
 and the coverage report into the ignored artifact home, and exits nonzero on
-any mismatch between the skips that happened and the skips the committed
-manifest declares (ADR-032; the frame lives in `tests/e2e/_prereqs.py` and
+the hard skip-ledger findings: an observed skip no declaration covers, or a
+probe-backed declaration whose skip did not occur (ADR-032, application scope
+recorded on issue #35; the frame lives in `tests/e2e/_prereqs.py` and
 `tests/e2e/coverage/sitecustomize.py`):
 
 ```sh
@@ -718,10 +719,43 @@ What each piece is and why it is shaped this way:
   data (installed coverage deletes inputs without `--keep`, so inputs are
   retained deliberately).
 - **The cross-check** (`tests/e2e/_prereqs.py cross-check <manifest>
-  <junitxml>`) is the declared-skip ledger, both directions: an observed
-  skip no declaration covers, and a declared skip that did not occur, each
-  exit nonzero naming the test ID and its reason. `suite freeze` itself
-  stays outcome-blind; honesty is checked here, at entrypoint time.
+  <junitxml>`) is the declared-skip ledger in two tiers. Direction (a) is
+  hard unconditionally: an observed skip no declaration covers exits
+  nonzero naming the test ID and its reason. Direction (b) is the
+  probe-backed lie detector: a declared skip that did not occur fails hard
+  only when its declared reason uses the frame grammar
+  (`ranex-prereq:<probe>:`) — the finding names the live verdict of that
+  frame probe on the running host, and a present verdict means the
+  declaration is stale: prune it at the next `suite freeze`. `suite
+  freeze` itself stays outcome-blind; honesty is checked here, at
+  entrypoint time.
+- **Context-mismatch semantics.** A declared skip that did not occur whose
+  reason is *not* probe-backed is a context-bound declaration — the
+  manifest is deliberately multi-context (it also describes the sealed
+  hermetic freeze environment: no operator `uv` on `PATH`, no sibling
+  harness fork in the materialised sample, `unshare(CLONE_NEWUSER)`
+  denied, cold-start zero-state re-entry refusal), and those conditions
+  are not reproducible in the entrypoint's documented environment. The
+  cross-check reports them as an informational `context-mismatch` list —
+  names plus a count, `exit 0`. Forbidding them would make the entrypoint
+  unsatisfiable on any single host; the probe-backed tier above is what
+  catches checkable staleness instead.
+- **The canonical entrypoint environment.** The documented command assumes
+  the qualified operator host and nothing else: the pinned `uv` toolchain
+  on `PATH`, the sibling harness fork present at its default path
+  (`../ranex-harness` relative to this repository, or named explicitly via
+  `RANEX_HARNESS_DIR` — exporting the variable also makes the frame's
+  `harness_fork` probe agree explicitly with the fork tests' default-path
+  fallback), delegated cgroup-v2 controllers and unprivileged user
+  namespaces for the confinement surfaces, and `RANEX_SIGNING_KEY`
+  deliberately **not** exported — the `stage_12` operator gate skips on
+  exactly that, and its expected skip is declared in the manifest with the
+  probe grammar so exporting the key turns the declaration into a
+  probe-backed prune at the next freeze. `OPENROUTER_API_KEY` is likewise
+  absent on the canonical host (the first-delegation journey skips,
+  declared). The command block itself is the only environment wiring the
+  entrypoint performs: `COVERAGE_PROCESS_START`, `COVERAGE_FILE`, and the
+  hook-last `PYTHONPATH` documented above.
 - **Duration budget.** A full unwired run completes in roughly 10 minutes —
   the hermetic inner journeys re-run the whole suite nested — and the wired
   entrypoint in roughly 11 (measured 660s on the qualified host: suite,

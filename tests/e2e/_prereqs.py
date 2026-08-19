@@ -7,9 +7,12 @@ the README-documented entrypoint compose lives here:
     machine-greppable reason grammar ``ranex-prereq:<name>:``, and
     ``prereq_or_skip`` for the consuming module-scoped fixtures
     (tests/e2e/conftest.py);
-  - the declared-skip cross-check (both directions) against the committed
-    suite manifest, plus the ``cross-check`` script exit contract the
-    documented entrypoint composes;
+  - the declared-skip cross-check against the committed suite manifest —
+    direction (a) hard everywhere, direction (b) hard for probe-backed
+    declarations (reason grammar ``ranex-prereq:<name>:``, live probe
+    verdict named) and informational for context-bound ones
+    (``context_mismatches``) — plus the ``cross-check`` script exit
+    contract the documented entrypoint composes;
   - the golden-transcript normalizer (one centralized, single-argument
     function with the frozen ordered grammar) and its byte-exact comparator;
   - the subprocess-coverage wiring (append-never-replace PYTHONPATH, absolute
@@ -321,6 +324,29 @@ def prereq_or_skip(name: str) -> None:
 
 
 # --- the declared-skip cross-check, both directions ----------------------------
+#
+# Scoped application (recorded in the slice file's done-criteria contracts and
+# on issue #35, 2026-08-19): direction (a) is hard everywhere — every observed
+# skip must be declared. Direction (b) is the probe-backed lie detector, a
+# two-tier outcome keyed on the declaration's own reason grammar:
+#
+#   - a declared reason that STARTS WITH ``ranex-prereq:<probe_name>:`` (the
+#     one grammar this module freezes) has opted into frame verification: it
+#     is probe-backed, and when its test runs instead of skipping the finding
+#     is hard, naming the live probe verdict on the running host — a present
+#     verdict locates the lie in the declaration (prune it); an absent verdict
+#     names that the declared context did not hold and the fixture ran anyway.
+#   - any other reason is non-probe-backed — a context-bound declaration
+#     (hermetic-freeze-context conditions not reproducible in the entrypoint's
+#     documented environment). The manifest is deliberately multi-context, so
+#     these are reported as an informational context-mismatch list (names +
+#     count, ``context_mismatches``), never as an exit condition: an unscoped
+#     direction (b) would make AC1 unsatisfiable on any single host.
+#
+# The frozen mechanism tests stay green unchanged under this scope: their
+# fixture declarations use the grammar, so both fixture directions keep the
+# hard outcome wherever the tests run — the probe's live answer decorates the
+# hard finding, it never demotes a probe-backed one.
 
 
 def _junit_test_id(testcase: ElementTree.Element) -> str:
@@ -378,16 +404,53 @@ def _junit_outcomes(junitxml_path: Path) -> dict[str, tuple[str, str]]:
     return outcomes
 
 
+#: A declared reason starting ``ranex-prereq:<probe_name>:`` names the frame
+#: probe that can verify its stated precondition — the mapping that makes a
+#: declaration probe-backed. Built from PROBE_NAMES, so the grammar and the
+#: probe library cannot drift apart.
+_PROBE_DECLARATION_RE = re.compile(
+    rf"{re.escape(REASON_PREFIX)}(?P<name>{'|'.join(PROBE_NAMES)}):"
+)
+
+
+def _probe_backed_declaration(reason: str) -> str | None:
+    """The frame probe a declared reason names, or ``None`` when the reason
+    does not use the grammar (a non-probe-backed, context-bound declaration)."""
+
+    match = _PROBE_DECLARATION_RE.match(reason)
+    return match.group("name") if match is not None else None
+
+
+def _declared_not_observed(
+    declared: dict[str, str], outcomes: dict[str, tuple[str, str]]
+) -> list[tuple[str, str]]:
+    """Declared ``(test_id, reason)`` pairs whose test was observed running.
+
+    Only IDs the junitxml actually observed: an ID absent from the junitxml
+    is a suite-composition question, and full ID-set diffing is gate
+    evaluate's frozen job (SLICE-009), not the skip ledger's.
+    """
+
+    return [
+        (test_id, declared[test_id])
+        for test_id in sorted(declared)
+        if (observed := outcomes.get(test_id)) is not None and observed[0] != "skipped"
+    ]
+
+
 def cross_check_skips(manifest_path, junitxml_path) -> list[str]:
-    """Both directions of the declared-skip ledger, at entrypoint time.
+    """The HARD tier of the declared-skip ledger, at entrypoint time.
 
     Direction one — an observed skip with no declaration — names the test ID
-    and the OBSERVED skip reason. Direction two — a declaration whose test
-    ran and did not skip — names the ID and the DECLARED reason; it fires
-    only for IDs the junitxml actually observed, because an ID absent from
-    the junitxml is a suite-composition question, and full ID-set diffing is
-    gate evaluate's frozen job (SLICE-009), not the skip ledger's — the two
-    are never ambiguated here. Returns [] when the ledger is honest;
+    and the OBSERVED skip reason; it is hard unconditionally. Direction two —
+    a probe-backed declaration whose test ran and did not skip — names the ID,
+    the DECLARED reason, and the live verdict of the frame probe the
+    declaration's grammar named: a present verdict locates the lie in the
+    declaration (prune it); an absent verdict names that the declared context
+    did not hold on this host and the test ran anyway. Non-probe-backed
+    declarations whose tests ran are NOT hard findings — they are the
+    multi-context manifest's honest shape and are reported by
+    :func:`context_mismatches`. Returns [] when the hard ledger is honest;
     otherwise one greppable line per finding.
 
     ``suite freeze`` itself stays outcome-blind by frozen design; this check
@@ -405,11 +468,51 @@ def cross_check_skips(manifest_path, junitxml_path) -> list[str]:
         outcome, reason = outcomes[test_id]
         if outcome == "skipped" and test_id not in declared:
             findings.append(f"undeclared skip: {test_id}: {reason}")
-    for test_id in sorted(declared):
-        observed = outcomes.get(test_id)
-        if observed is not None and observed[0] != "skipped":
-            findings.append(f"declared skip not observed: {test_id}: {declared[test_id]}")
+    for test_id, declared_reason in _declared_not_observed(declared, outcomes):
+        probe_name = _probe_backed_declaration(declared_reason)
+        if probe_name is None:
+            continue  # informational tier — context_mismatches reports it
+        ok, probe_reason = _PROBES[probe_name]()
+        if ok:
+            findings.append(
+                f"declared skip not observed: {test_id}: {declared_reason} "
+                f"[frame probe {probe_name} says present on this host — "
+                f"{probe_reason}; the declaration is stale: prune it]"
+            )
+        else:
+            findings.append(
+                f"declared skip not observed: {test_id}: {declared_reason} "
+                f"[frame probe {probe_name} says absent on this host — "
+                f"{probe_reason}; the declared context did not skip here and "
+                f"the test ran anyway]"
+            )
     return findings
+
+
+def context_mismatches(manifest_path, junitxml_path) -> list[str]:
+    """The informational tier: context-bound declarations that did not skip.
+
+    Every declared-but-not-observed skip whose reason is NOT probe-backed —
+    hermetic-freeze-context conditions (sealed-env toolchain absence, the
+    materialised sample's missing sibling fork, unshare-denied hosts,
+    cold-start re-entry) not reproducible in the entrypoint's documented
+    environment. The manifest is multi-context by design, so these are
+    names plus a count in the artifact, never an exit condition: this list
+    being non-empty is the honest report of one host running another
+    context's ledger, not a lie. Probe-backed declarations never appear
+    here — they are cross_check_skips' hard tier.
+    """
+
+    manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
+    declared = manifest.get("expected_skips")
+    if not isinstance(declared, dict):
+        raise ValueError("suite manifest must carry an expected_skips object")
+    outcomes = _junit_outcomes(Path(junitxml_path))
+    return [
+        f"context-mismatch: {test_id}: {declared_reason}"
+        for test_id, declared_reason in _declared_not_observed(declared, outcomes)
+        if _probe_backed_declaration(declared_reason) is None
+    ]
 
 
 # --- the golden-transcript normalizer and comparator ----------------------------
@@ -627,14 +730,25 @@ def report_unmeasured(label: str) -> str:
 
 def _main(argv: list[str]) -> int:
     if len(argv) == 4 and argv[1] == "cross-check":
-        findings = cross_check_skips(Path(argv[2]), Path(argv[3]))
+        manifest, junitxml = Path(argv[2]), Path(argv[3])
+        findings = cross_check_skips(manifest, junitxml)
         for finding in findings:
             print(finding)
         if findings:
             return 1
+        mismatches = context_mismatches(manifest, junitxml)
+        for mismatch in mismatches:
+            print(mismatch)
+        if mismatches:
+            print(
+                f"context-mismatch count: {len(mismatches)} (informational: "
+                "declared skips whose stated context did not skip in this "
+                "entrypoint environment — non-probe-backed, exit unaffected)"
+            )
         print(
-            "skip cross-check: honest — every observed skip is declared and "
-            "every declaration observed"
+            "skip cross-check: honest — every observed skip is declared, and "
+            "no probe-backed declaration failed to occur (context-bound "
+            "declarations are listed above as informational mismatches)"
         )
         return 0
     print(
