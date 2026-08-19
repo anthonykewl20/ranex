@@ -319,25 +319,25 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** docs/slices/SLICE-056-real-e2e-verdict-family.md
 
-The milestone-4 real-e2e frame is closed (2026-08-19): ADR-032 accepted
-and revised through arbitration-remediated reviews; the frame — honest
-prereq probes, the two-tier declared-skip cross-check, the
-golden-transcript normalizer, subprocess coverage, and the documented
-entrypoint — is green through every frozen arm; the manifest's expected
-skips carry the two-grammar classification; and the captured entrypoint
-run is milestone 4's proof artifact (rc 0, coverage 16.70% ≥ fail-under
-15). Next: SLICE-056 (verdict family e2e) per tracker #33 — the frame's
-first family customer. All six kernel P0 spec-authority slices
-(SLICE-029/030/031/032/033/035) are landed on kernel `main` at
-`ff3ab802`: A/B/C contract freeze, lifecycle, closed-DSL projections,
-approval/revocation/intersected grants, trace integrity, and
-real-subject bootstrap. The byte-identical A/B/C schema/vector TypeScript
-mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in `ranex-harness`
-`ranex-trim` at `16bf036f`. The full suite at close-out is 1297 passed /
-40 skipped / 0 failed; its frozen manifest records 1337 IDs / 119
-expected skips.
+SLICE-056 (verdict family e2e, #36) is open: the ADR-032 frame's first
+family customer. Its contracts are frozen red — two real-journey test
+files (gate evaluate on a real clone with real keygen/run evidence;
+journal verify clean, byte-tampered, and rolled back) whose transcripts
+compare against four goldens the implementation lane captures from real
+runs through the frame's one normalizer. The milestone-4 real-e2e frame
+is closed beneath it (2026-08-19): honest prereq probes, the two-tier
+declared-skip cross-check, subprocess coverage, and the documented
+entrypoint (rc 0, coverage 16.70% ≥ fail-under 15). All six kernel P0
+spec-authority slices (SLICE-029/030/031/032/033/035) are landed on
+kernel `main` at `ff3ab802`: A/B/C contract freeze, lifecycle, closed-DSL
+projections, approval/revocation/intersected grants, trace integrity,
+and real-subject bootstrap. The byte-identical A/B/C schema/vector
+TypeScript mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in
+`ranex-harness` `ranex-trim` at `16bf036f`. The full suite at the
+SLICE-055 close-out was 1297 passed / 40 skipped / 0 failed; its frozen
+manifest records 1337 IDs / 119 expected skips.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —

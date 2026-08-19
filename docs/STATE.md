@@ -2,29 +2,34 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-19 (SLICE-055 complete)
-**Active slice:** none
+**Updated:** 2026-08-20 (SLICE-056 opened)
+**Active slice:** docs/slices/SLICE-056-real-e2e-verdict-family.md
 
 ## Where we stopped
 
-SLICE-055 (#35) is delivered and closed. ADR-032 is accepted and revised
-(two review panels plus arbitration remediation); the frame — probes,
-cross-check, normalizer, subprocess coverage, entrypoint — is green
-through every frozen arm (68/68 across the two contract files). The
-manifest's expected skips carry the two-grammar classification (the
-first artifact's reclassification remedied one misclassified
-declaration: prereq 4 → 3, only signing_key ×3 hard-tier, as recorded
-on #35). The entrypoint artifact at 41bb4fef6: rc 0, coverage 16.70%
-(report 17%) ≥ fail_under 15. Full suite at the pre-close-out SHA:
-1297 passed / 40 skipped / 0 failed.
+SLICE-056 (#36, verdict-family real e2e) is open, contracts frozen red
+(Worker A). Both family files — tests/e2e/test_gate_evaluate_real.py,
+tests/e2e/test_journal_verify_real.py — commit 8 red: 7 golden-missing
+(the four `tests/e2e/expected/*.out` are the implementation lane's
+artifacts, captured from the real journeys through the ADR-032
+normalizer) plus 1 behavioral red (journal verify must name the
+byte-edited row — issue #36 sad path 3; today's CLI prints only
+`chain=invalid`). Every journey mechanic verified green against the
+installed kernel at freeze time: the no-evidence landing FAIL, the
+keygen→run→evaluate PASS over real signed evidence, openssl's
+independent Ed25519 verification, clean/tampered/truncated journal
+verifies, and the truncation blind spot (a rolled-back journal verifies
+PASS — characterized, asserted as the documented outcome, sad path 4).
+Implementation lane unblocked: goldens + row-naming presentation, then
+the sabotage-control run and `suite freeze` at close.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
 Next slice: SLICE-056
-Next work item: SLICE-056 (verdict family e2e) per tracker #33 — the
-frame's first family customer; the follow-ups register in the done
-SLICE-055 slice file goes to the next test-author round.
+Active: SLICE-056 — Worker B implements (goldens + row-naming + close
+per the slice file's done criteria); SLICE-055 follow-ups registered in
+its done slice file stay queued behind it.
 
 ## Governance (owner, 2026-08-17)
 
@@ -39,10 +44,7 @@ Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate.
 - About 125 legacy test IDs remain unregistered in the frozen manifest.
 - Trace fd targets persist O_NONBLOCK on the operator's descriptor after exit (disclosed; slice file records the trade-off).
 - mutmut: the stats phase cannot complete on the current suite shape
-  (subprocess-heavy tests vs the in-process trampoline; exclusion set
-  extended twice by sanction, blocked finally by test_observability.py's own
-  child-import shape); observability mutants therefore remain unchecked —
-  mutation evidence not obtained this session, disclosed as partial.
-- SLICE-055 follow-ups (dodge-refusal sample arms, fail_under derivation
-  automation + branch=true decision, hook-shadow decoy arm) are registered
-  in the done slice file for the next test-author round.
+  (subprocess-heavy tests vs the in-process trampoline; observability
+  mutants remain unchecked — mutation evidence not obtained, disclosed).
+- SLICE-056 hermetic-freeze behavior of the family journeys is an honest
+  UNKNOWN at open time (slice file records the sanctioned remedy).
