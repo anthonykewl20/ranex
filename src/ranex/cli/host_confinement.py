@@ -3059,18 +3059,43 @@ def _read_cgroup_text(path: Path, label: str, *, allow_empty: bool = False) -> s
     return value
 
 
-def _create_worker_cgroup(parent: Path, limits: Mapping[str, int]) -> tuple[Path, Path, dict[str, str]]:
-    """Make a controller leaf and sibling worker leaf beneath held delegation."""
+def _create_worker_cgroup(
+    parent: Path, limits: Mapping[str, int]
+) -> tuple[Path, Path, dict[str, str], set[str]]:
+    """Make a controller leaf and sibling worker leaf beneath held delegation.
+
+    Returns the controller leaf, the worker leaf, the limit readbacks, and
+    the set of controllers this call enabled on ``parent`` (empty when the
+    required set was already enabled) — the delta ``_release_controller_leaf``
+    must disable at teardown.
+    """
 
     token = f"ranex-slice018-{os.getpid()}-{uuid.uuid4().hex}"
     controller = parent / f"{token}-controller"
     worker = parent / f"{token}-worker"
     controller.mkdir(mode=0o755)
+    enrolled: set[str] = set()
     try:
         _write_control(controller / "cgroup.procs", f"{os.getpid()}\n")
         controller_pids = {int(item) for item in _read_cgroup_text(controller / "cgroup.procs", "controller cgroup.procs").split()}
         if os.getpid() not in controller_pids:
             _refuse(E_C18_READBACK, "controller PID is absent from controller cgroup readback")
+        # The cgroup-v2 no-internal-process rule (the kernel defect behind
+        # the orchestrator ruling on issue #37): a non-root domain cannot
+        # hold member processes and a nonempty subtree_control at once, and
+        # the invoking tree — the CLI that spawned this controller, and
+        # whatever spawned it — sits directly in ``parent``.  Mirror the
+        # qualify probe's proven escape (``_real_cgroup_probe``): drain
+        # every remaining member of ``parent`` into this controller leaf
+        # before enabling controllers, and reverse the drain at teardown
+        # (``_release_controller_leaf``) so the next session's delegation
+        # drift binding still sees the invoking tree where it started.
+        try:
+            _move_all_cgroup_processes(parent, controller)
+        except OSError as exc:
+            raise HostConfinementError(
+                E_C18_GATE, f"cannot drain the enrollment cgroup before enabling controllers: {exc}"
+            ) from exc
         enabled = set(
             _read_cgroup_text(
                 parent / "cgroup.subtree_control", "cgroup.subtree_control", allow_empty=True
@@ -3079,6 +3104,7 @@ def _create_worker_cgroup(parent: Path, limits: Mapping[str, int]) -> tuple[Path
         missing = REQUIRED_CONTROLLERS - {name.lstrip("+") for name in enabled}
         if missing:
             _write_control(parent / "cgroup.subtree_control", " ".join(f"+{name}" for name in sorted(missing)) + "\n")
+            enrolled = set(missing)
         actual = {name.lstrip("+") for name in _read_cgroup_text(parent / "cgroup.subtree_control", "cgroup.subtree_control").split()}
         if not REQUIRED_CONTROLLERS <= actual:
             _refuse(E_C18_READBACK, "required controllers did not read back enabled")
@@ -3093,18 +3119,43 @@ def _create_worker_cgroup(parent: Path, limits: Mapping[str, int]) -> tuple[Path
         readbacks = {name: _read_cgroup_text(worker / name, name).strip() for name in requested}
         if readbacks != requested:
             _refuse(E_C18_READBACK, "worker cgroup limit readback differs from requested limit")
-        return controller, worker, readbacks
+        return controller, worker, readbacks, enrolled
     except BaseException:
         try:
-            _write_control(parent / "cgroup.procs", f"{os.getpid()}\n")
+            worker.rmdir()
         except OSError:
             pass
-        for path in (worker, controller):
-            try:
-                path.rmdir()
-            except OSError:
-                pass
+        try:
+            _release_controller_leaf(parent, controller, enrolled)
+        except (OSError, ValueError):
+            pass
         raise
+
+
+def _release_controller_leaf(parent: Path, controller: Path, enrolled: set[str]) -> None:
+    """Reverse the enrollment drain — the qualify probe's cleanup order.
+
+    A cgroup-v2 domain with enabled controllers cannot take member
+    processes, so the delta this session enabled on ``parent`` is disabled
+    first, the drained members (this controller itself included — it moves
+    last) return to ``parent``, and the now-empty leaf is removed.  The
+    pre-session topology is restored exactly as ``_real_cgroup_probe``'s
+    cleanup does, keeping the invoking tree where the next session's
+    delegation drift binding expects it.
+    """
+
+    if enrolled:
+        current = set((parent / "cgroup.subtree_control").read_text(encoding="ascii").split())
+        disable = enrolled & current
+        if disable:
+            _write_control(
+                parent / "cgroup.subtree_control",
+                " ".join(f"-{name}" for name in sorted(disable)) + "\n",
+            )
+    if controller.exists():
+        _move_all_cgroup_processes(controller, parent)
+    if controller.exists():
+        controller.rmdir()
 
 
 def _cgroup_usage(worker: Path) -> tuple[dict[str, int], dict[str, int], dict[str, int]]:
@@ -3289,6 +3340,7 @@ def confinement_session(
     child = -1
     controller: Path | None = None
     worker: Path | None = None
+    enrolled_controllers: set[str] = set()
     session: ConfinementSession | None = None
     primary_error: BaseException | None = None
     try:
@@ -3305,7 +3357,9 @@ def confinement_session(
         command, _command_filesystem = _open_unpinned_executable(Path(argv[0]), E_C18_GATE)
         _require_same_named_object(command, E_C18_GATE)
         output_fd = os.open(descriptor["_resolved"]["output"], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
-        controller, worker, limit_readbacks = _create_worker_cgroup(parent, descriptor["limits"])
+        controller, worker, limit_readbacks, enrolled_controllers = _create_worker_cgroup(
+            parent, descriptor["limits"]
+        )
         gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
         readiness_read, readiness_write = os.pipe2(os.O_CLOEXEC)
         readiness_ack_read, readiness_ack_write = os.pipe2(os.O_CLOEXEC)
@@ -3453,12 +3507,19 @@ def confinement_session(
                 os.waitpid(child, 0)
             except ChildProcessError:
                 pass
-        # A cgroup-v2 domain with enabled controllers cannot contain a process
-        # while it has child domains.  The controller therefore cannot move
-        # itself back to ``parent`` or remove its own leaf before this process
-        # exits.  The delegated transient unit owns that empty-after-exit
-        # controller subtree; the worker leaf above is the session resource
-        # whose kill→drain→remove lifecycle is reported and must complete here.
+        # The enrollment drain's inverse (the qualify probe's cleanup
+        # order): disable the controllers this session enabled on
+        # ``parent``, return every drained member — including this
+        # controller, which moves last — and remove the now-empty leaf.
+        # The invoking tree ends where it started, so the next session's
+        # delegation drift binding still holds, and no controller leaf
+        # outlives the session that created it.
+        if controller is not None:
+            try:
+                _release_controller_leaf(parent, controller, enrolled_controllers)
+            except (OSError, ValueError) as exc:
+                if primary_error is None:
+                    _refuse(E_C18_DRAIN, f"cannot release the enrollment cgroup: {exc}")
         _close_descriptor(output_fd)
         if command is not None:
             _close_descriptor(command.descriptor)
