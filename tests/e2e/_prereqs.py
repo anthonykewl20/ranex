@@ -8,13 +8,19 @@ the README-documented entrypoint compose lives here:
     ``prereq_or_skip`` for the consuming module-scoped fixtures
     (tests/e2e/conftest.py);
   - the declared-skip cross-check against the committed suite manifest —
-    direction (a) hard everywhere (undeclared observed skips, and declared
-    vs observed reason drift as an exact string comparison), direction (b)
-    hard for probe-backed declarations (reason grammar
+    direction (a) hard everywhere for undeclared observed skips, its REASON
+    comparison a hard-tier obligation only (the orchestrator's R1d ruling
+    on issue #35: ``ranex-prereq:`` declarations compare declared-vs-
+    observed reasons exactly; ``ranex-context:`` declarations are reported
+    by ``context_mismatches``, never byte-compared), direction (b) hard
+    for probe-backed declarations (reason grammar
     ``ranex-prereq:<name>:``, live probe verdict named) and informational
     for context-bound ones (``ranex-context:<context>:``,
-    ``context_mismatches``) — plus the ``cross-check`` script exit contract
-    the documented entrypoint composes;
+    ``context_mismatches``, which also reports the context tier's
+    observed-drift skips — a declared context skip observed with a
+    differing live message is named ID + declared context + observed
+    message) — plus the ``cross-check`` script exit contract the
+    documented entrypoint composes;
   - the golden-transcript normalizer (one centralized, single-argument
     function with the frozen ordered grammar; test nodeids stay
     discriminating bytes) and its byte-exact comparator (family-labelled,
@@ -80,6 +86,18 @@ COVERAGE_CONFIG = REPO_ROOT / "pyproject.toml"
 #: skip ledger, a grep, and an entrypoint finding all name the precondition
 #: the same way (tests/contract/test_prereq_gates.py freezes this constant).
 REASON_PREFIX = "ranex-prereq:"
+
+#: The informational tier's declaration grammar (the two-grammar scheme
+#: ruled on issue #35): a declared reason starting
+#: ``ranex-context:<context>:`` names the context it belongs to —
+#: hermetic-freeze-context conditions not reproducible in the entrypoint's
+#: documented environment. The frame REPORTS this tier (ID + observed
+#: message + declared context, via ``context_mismatches``) and never
+#: byte-compares its reasons: the orchestrator's R1d ruling records that
+#: 37 host-observed skips emit live messages from other slices' frozen
+#: test files — 27 of them dynamically composed — so exact comparison is
+#: unsatisfiable without prohibited mass frozen-test churn.
+CONTEXT_MARKER = "ranex-context:"
 
 #: The default shared coverage home under the ignored ``.local/*`` territory
 #: (ADR-032): every wired process's ``parallel=true`` suffix file
@@ -341,8 +359,12 @@ def prereq_or_skip(name: str) -> None:
 #
 # Scoped application (recorded in the slice file's done-criteria contracts and
 # on issue #35, 2026-08-19): direction (a) is hard everywhere — every observed
-# skip must be declared. Direction (b) is the probe-backed lie detector, a
-# two-tier outcome keyed on the declaration's own reason grammar:
+# skip must be declared — while its REASON comparison is a hard-tier
+# obligation only (the orchestrator's R1d ruling on the Worker B blocker):
+# a ``ranex-prereq:`` declaration compares declared-vs-observed reasons
+# exactly; a ``ranex-context:`` declaration is reported, never byte-compared.
+# Direction (b) is the probe-backed lie detector, a two-tier outcome keyed
+# on the declaration's own reason grammar:
 #
 #   - a declared reason that STARTS WITH ``ranex-prereq:<probe_name>:`` (the
 #     one grammar this module freezes) has opted into frame verification: it
@@ -451,6 +473,30 @@ def _probe_backed_declaration(reason: str) -> str | None:
     return match.group("name") if match is not None else None
 
 
+def _context_tier_declaration(reason: str) -> bool:
+    """Is this declared reason a WELL-FORMED context-tier declaration?
+
+    Mirrors the frozen R1c lint's acceptance exactly (marker, non-empty
+    single-token ``<context>`` slot, colon, non-empty prose): the R1d
+    exemption from direction (a)'s byte comparison belongs only to
+    honestly classified context declarations. An unmarked, malformed, or
+    otherwise unknown declaration can no longer exist (the lint refuses
+    it at freeze time), but if one somehow reaches here it fails CLOSED —
+    it does not get the exemption and falls into the exact comparison.
+    """
+
+    if not reason.startswith(CONTEXT_MARKER):
+        return False
+    rest = reason[len(CONTEXT_MARKER) :]
+    context, colon, prose = rest.partition(":")
+    return (
+        bool(colon)
+        and bool(context)
+        and not any(char.isspace() for char in context)
+        and bool(prose.strip())
+    )
+
+
 def _declared_not_observed(
     declared: dict[str, str], outcomes: dict[str, tuple[str, str]]
 ) -> list[tuple[str, str]]:
@@ -474,18 +520,27 @@ def cross_check_skips(manifest_path, junitxml_path) -> list[str]:
     Direction one — an observed skip with no declaration — names the test ID
     and the OBSERVED skip reason; it is hard unconditionally. Direction one
     also compares REASONS (remediation R1d, pinned to EXACT string equality
-    by the frozen arm): a skip that IS declared but whose observed reason
-    drifted from the declaration is a ``skip reason mismatch:`` finding
-    naming BOTH strings — an outcome-blind freeze cannot be allowed to
-    launder a reworded skip. Direction two — a probe-backed declaration
-    whose test ran and did not skip — names the ID, the DECLARED reason, and
-    the live verdict of the frame probe the declaration's grammar named: a
-    present verdict locates the lie in the declaration (prune it); an
-    absent verdict names that the declared context did not hold on this
-    host and the test ran anyway. Non-probe-backed declarations
-    (``ranex-context:<context>:``, the two-grammar scheme's informational
-    tier) whose tests ran are NOT hard findings — they are the multi-context
-    manifest's honest shape and are reported by :func:`context_mismatches`.
+    by the frozen arm) as a HARD-TIER obligation only, per the
+    orchestrator's ruling on the Worker B blocker (#35, 2026-08-19): a skip
+    declared ``ranex-prereq:`` whose observed reason drifted from the
+    declaration is a ``skip reason mismatch:`` finding naming BOTH strings
+    — an outcome-blind freeze cannot be allowed to launder a reworded
+    skip, and a prereq-tier declaration whose observed message cannot
+    carry the marker is misclassified (the classification honesty rule:
+    reclassify it context-tier through the freeze ceremony, never silence
+    the finding). A skip declared ``ranex-context:`` is EXEMPT from the
+    byte comparison — reported by :func:`context_mismatches` (ID + observed
+    message + declared context), never compared here; anything the
+    two-grammar lint would refuse fails closed into the comparison.
+    Direction two — a probe-backed declaration whose test ran and did not
+    skip — names the ID, the DECLARED reason, and the live verdict of the
+    frame probe the declaration's grammar named: a present verdict locates
+    the lie in the declaration (prune it); an absent verdict names that
+    the declared context did not hold on this host and the test ran
+    anyway. Non-probe-backed declarations (``ranex-context:<context>:``,
+    the two-grammar scheme's informational tier) whose tests ran are NOT
+    hard findings — they are the multi-context manifest's honest shape and
+    are reported by :func:`context_mismatches`.
     Returns [] when the hard ledger is honest; otherwise one greppable line
     per finding.
 
@@ -504,14 +559,23 @@ def cross_check_skips(manifest_path, junitxml_path) -> list[str]:
         outcome, reason = outcomes[test_id]
         if outcome != "skipped":
             continue
-        if test_id not in declared:
+        declared_reason = declared.get(test_id)
+        if declared_reason is None:
             findings.append(f"undeclared skip: {test_id}: {reason}")
-        elif declared[test_id] != reason:
+        elif _context_tier_declaration(declared_reason):
+            # The R1d ruling: ranex-context: declarations are reported
+            # (context_mismatches names ID + declared context + observed
+            # message), never byte-compared — their live messages come
+            # from other slices' frozen files, often dynamically composed.
+            continue
+        elif declared_reason != reason:
             findings.append(
                 f"skip reason mismatch: {test_id}: "
-                f"declared={declared[test_id]!r} observed={reason!r} "
-                "(direction (a) compares reasons exactly — the live skip "
-                "message and the declaration must be the same bytes)"
+                f"declared={declared_reason!r} observed={reason!r} "
+                "(direction (a)'s reason comparison is the hard tier — "
+                "a ranex-prereq: declaration and its live skip message "
+                "must be the same bytes; a declaration the two-grammar "
+                "lint would refuse fails closed into this comparison)"
             )
     for test_id, declared_reason in _declared_not_observed(declared, outcomes):
         probe_name = _probe_backed_declaration(declared_reason)
@@ -535,17 +599,28 @@ def cross_check_skips(manifest_path, junitxml_path) -> list[str]:
 
 
 def context_mismatches(manifest_path, junitxml_path) -> list[str]:
-    """The informational tier: context-bound declarations that did not skip.
+    """The informational tier: context-bound declarations, reported never compared.
 
-    Every declared-but-not-observed skip whose reason is NOT probe-backed —
-    hermetic-freeze-context conditions (sealed-env toolchain absence, the
-    materialised sample's missing sibling fork, unshare-denied hosts,
-    cold-start re-entry) not reproducible in the entrypoint's documented
-    environment. The manifest is multi-context by design, so these are
-    names plus a count in the artifact, never an exit condition: this list
-    being non-empty is the honest report of one host running another
-    context's ledger, not a lie. Probe-backed declarations never appear
-    here — they are cross_check_skips' hard tier.
+    Two reported shapes, both informational (never an exit condition):
+
+    - declared-but-not-observed skips whose reason is NOT probe-backed —
+      hermetic-freeze-context conditions (sealed-env toolchain absence,
+      the materialised sample's missing sibling fork, unshare-denied
+      hosts, cold-start re-entry) not reproducible in the entrypoint's
+      documented environment. The manifest is multi-context by design, so
+      these are names plus a count in the artifact: this list being
+      non-empty is the honest report of one host running another
+      context's ledger, not a lie.
+    - observed-drift skips (the R1d ruling's machine-greppable promise): a
+      declared ``ranex-context:`` skip that WAS observed skipping with a
+      differing live message — the report names the test ID, the declared
+      context, and the observed message, because the context tier is
+      reported, never byte-compared. The declared-and-observed-agree case
+      is not a mismatch and never appears here.
+
+    Probe-backed declarations never appear here in either shape — they are
+    cross_check_skips' hard tier (exact reason comparison, live probe
+    verdicts). Entries are ordered by test ID.
     """
 
     manifest = json.loads(Path(manifest_path).read_text(encoding="utf-8"))
@@ -553,11 +628,26 @@ def context_mismatches(manifest_path, junitxml_path) -> list[str]:
     if not isinstance(declared, dict):
         raise ValueError("suite manifest must carry an expected_skips object")
     outcomes = _junit_outcomes(Path(junitxml_path))
-    return [
-        f"context-mismatch: {test_id}: {declared_reason}"
-        for test_id, declared_reason in _declared_not_observed(declared, outcomes)
-        if _probe_backed_declaration(declared_reason) is None
-    ]
+    lines: dict[str, str] = {}
+    for test_id, declared_reason in _declared_not_observed(declared, outcomes):
+        if _probe_backed_declaration(declared_reason) is None:
+            lines[test_id] = f"context-mismatch: {test_id}: {declared_reason}"
+    for test_id in sorted(outcomes):
+        outcome, observed = outcomes[test_id]
+        if outcome != "skipped" or test_id not in declared:
+            continue
+        declared_reason = declared[test_id]
+        if _probe_backed_declaration(declared_reason) is not None:
+            continue  # the hard tier's exact comparison owns prereq declarations
+        if not _context_tier_declaration(declared_reason):
+            continue  # unmarked/malformed — cross_check_skips fails closed on it
+        if declared_reason == observed:
+            continue  # declared and observed agree — the faithful case
+        lines[test_id] = (
+            f"context-mismatch: {test_id}: {declared_reason} "
+            f"[observed here with a different message: {observed}]"
+        )
+    return [lines[test_id] for test_id in sorted(lines)]
 
 
 # --- the golden-transcript normalizer and comparator ----------------------------
@@ -909,14 +999,17 @@ def _main(argv: list[str]) -> int:
         if mismatches:
             print(
                 f"context-mismatch count: {len(mismatches)} (informational: "
-                "declared skips whose stated context did not skip in this "
-                "entrypoint environment — non-probe-backed, exit unaffected)"
+                "declared context-tier skips that either did not skip in "
+                "this entrypoint environment or were observed with a "
+                "different live message — reported, never byte-compared; "
+                "exit unaffected)"
             )
         print(
-            "skip cross-check: honest — every observed skip is declared with "
-            "the same reason bytes, and no probe-backed declaration failed "
-            "to occur (context-bound declarations are listed above as "
-            "informational mismatches)"
+            "skip cross-check: honest — every observed skip is declared, "
+            "every ranex-prereq: declaration carried the same reason "
+            "bytes, and no probe-backed declaration failed to occur "
+            "(ranex-context: declarations are listed above as "
+            "informational mismatches, never byte-compared)"
         )
         return 0
     print(

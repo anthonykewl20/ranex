@@ -670,10 +670,11 @@ are not the same event.
 One command runs the whole suite — the real-e2e journeys included — with
 subprocess coverage wired through every frame-wired child, tees the transcript
 and the coverage report into the ignored artifact home, and exits nonzero on
-the hard skip-ledger findings: an observed skip no declaration covers, or a
-probe-backed declaration whose skip did not occur (ADR-032, application scope
-recorded on issue #35; the frame lives in `tests/e2e/_prereqs.py` and
-`tests/e2e/coverage/sitecustomize.py`):
+the hard skip-ledger findings: an observed skip no declaration covers, a
+`ranex-prereq:` declaration whose observed skip reason drifted from the
+declaration, or a probe-backed declaration whose skip did not occur (ADR-032,
+application scope recorded on issue #35; the frame lives in
+`tests/e2e/_prereqs.py` and `tests/e2e/coverage/sitecustomize.py`):
 
 ```sh
 set -o pipefail
@@ -733,18 +734,24 @@ What each piece is and why it is shaped this way:
   retained deliberately).
 - **The cross-check** (`tests/e2e/_prereqs.py cross-check <manifest>
   <junitxml>`) is the declared-skip ledger in two tiers. Direction (a) is
-  hard unconditionally: an observed skip no declaration covers exits
-  nonzero naming the test ID and its reason, and a declared-and-observed
-  skip whose observed reason drifted from the declaration is a
+  hard unconditionally for undeclared skips: an observed skip no
+  declaration covers exits nonzero naming the test ID and its reason. Its
+  reason comparison is a hard-tier obligation only (the orchestrator's
+  R1d ruling on issue #35): a skip declared `ranex-prereq:` whose
+  observed reason drifted from the declaration is a
   `skip reason mismatch:` finding naming both strings — the comparison is
-  exact, so a live skip message and its declaration must be the same
-  bytes. Direction (b) is the probe-backed lie detector: a declared skip
-  that did not occur fails hard only when its declared reason uses the
-  frame grammar (`ranex-prereq:<probe>:`) — the finding names the live
-  verdict of that frame probe on the running host, and a present verdict
-  means the declaration is stale: prune it at the next `suite freeze`.
-  `suite freeze` itself stays outcome-blind; honesty is checked here, at
-  entrypoint time.
+  exact, so the declaration and its live skip message must be the same
+  bytes, and a prereq-tier declaration whose test's message cannot carry
+  the marker is misclassified (reclassify it context-tier through the
+  freeze ceremony, never silence the finding). A skip declared
+  `ranex-context:` is never byte-compared — its drift is reported in the
+  informational list below. Direction (b) is the probe-backed lie
+  detector: a declared skip that did not occur fails hard only when its
+  declared reason uses the frame grammar (`ranex-prereq:<probe>:`) — the
+  finding names the live verdict of that frame probe on the running host,
+  and a present verdict means the declaration is stale: prune it at the
+  next `suite freeze`. `suite freeze` itself stays outcome-blind; honesty
+  is checked here, at entrypoint time.
 - **Declaration grammars.** Every `expected_skips` reason in the manifest
   carries exactly one of two grammars (the orchestrator's ruling on
   issue #35): `ranex-prereq:<probe>: <prose>` — the HARD tier, asserting a
@@ -762,9 +769,15 @@ What each piece is and why it is shaped this way:
   denied, cold-start zero-state re-entry refusal), and those conditions
   are not reproducible in the entrypoint's documented environment. The
   cross-check reports them as an informational `context-mismatch` list —
-  names plus a count, `exit 0`. Forbidding them would make the entrypoint
-  unsatisfiable on any single host; the probe-backed tier above is what
-  catches checkable staleness instead.
+  names plus a count, `exit 0`. The same list carries the context tier's
+  **observed-drift** entries (the R1d ruling's machine-greppable
+  promise): a declared `ranex-context:` skip that *was* observed skipping
+  with a differing live message is reported as ID + declared context +
+  observed message — reported, never byte-compared, because those live
+  messages come from other slices' frozen test files and many are
+  dynamically composed host-state prose. Forbidding either shape would
+  make the entrypoint unsatisfiable on any single host; the probe-backed
+  tier above is what catches checkable staleness instead.
 - **The canonical entrypoint environment.** The documented command assumes
   the qualified operator host and nothing else: the pinned `uv` toolchain
   on `PATH`, the sibling harness fork present at its default path
