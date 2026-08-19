@@ -36,17 +36,26 @@ confinement-repo construction of tests/contract/test_trace_invariance.py.
 They first execute for real on a qualified host — an honest UNKNOWN
 until then, disclosed in the slice file rather than assumed away.
 
-The kill/drain and timeout contracts (issue #37 sad paths 3 and 8):
+The containment-by-construction and timeout contracts (issue #37 sad
+paths 3 and 8; sad path 3 as reframed by the orchestrator's sanctioned
+amendment on #37 — the frozen survivor arm was ruled vacuous):
 
-* a backgrounded worker that outlives its parent cannot escape the
-  session cgroup — the kernel validates the confinement result only
-  over a DRAINED teardown (``populated=0``, cgroup killed and removed),
-  so a surviving worker refuses the result and this file goes red on
-  the survivor (the test asserts the run completed and recorded);
+* a confined worker's descendants are UNCONSTRUCTIBLE and containment
+  holds by construction — three independent layers (the empty
+  MS_NODEV tmpfs on /dev kills dash's async-job children before exec,
+  Landlock admits EXECUTE on exactly the six pinned objects/trees, and
+  the worker is PID 1 of a new PID namespace the kernel reaps at init
+  exit) mean no fork-exec construction can create a survivor for
+  kill/drain to observe in this profile; the arm proves it with real
+  observations — an outside poller holds the worker leaf's visible
+  membership at the direct pair through a deliberate fork-exec attempt
+  — and pins all three layers against the launcher source that ran;
 * a worker that exceeds its wall-time bound is killed and refused
   (``E-C18-LIMIT``, exit 2, no evidence) — distinct reporting — while a
   worker that exits 3 propagates exactly (``RECORDED exit=3``, run
-  exits 3): no swallowed exit code, no hang dressed as a verdict.
+  exits 3): no swallowed exit code, no hang dressed as a verdict; this
+  timeout arm is also where the REAL kill/drain-over-drained-teardown
+  proof lives (a genuine wall overrun, killed and refused).
 
 The golden ``expected/confinement-report.out`` is the implementation
 lane's artifact, captured from a real qualified-host run of this journey
@@ -66,6 +75,9 @@ import re
 import shutil
 import subprocess
 import sys
+import threading
+import time
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -479,26 +491,356 @@ def test_strict_local_journey_matches_the_golden(journey: ConfinementJourney) ->
     compare_golden(journey.report_text, _GOLDEN)
 
 
-def test_worker_kill_drain_leaves_no_survivor(journey: ConfinementJourney) -> None:
-    """Issue #37 sad path 3 — a worker that outlives its parent cannot
-    escape the session: the kernel validates the result only over a
-    drained teardown, so a survivor refuses the result and this test is
-    RED on the survivor (the run could not have completed and recorded).
+# --- the descendant-probe contract (the sanctioned reframing of the frozen ---
+# --- survivor arm; the arm's docstring carries the full ruling) ---------------
+
+
+#: The direct pair the worker cgroup leaf's VISIBLE membership
+#: (``cgroup.procs``, read from outside) holds at steady state: the
+#: launcher process and the worker command itself. Live processes in the
+#: worker's PID namespace list steadily there — the worker command itself
+#: proves it in this very construction (it spins in dash's wait-poll for
+#: the whole refusal window while listed) — so a live descendant would
+#: list steadily too.
+_DIRECT_PROCESS_COUNT = 2
+
+#: A GENUINE descendant — a live ``/bin/sleep`` the shell is waiting on —
+#: would be a visible third member of the leaf for the run's whole
+#: refusal window (~1 s of cumulative CPU budget or ~5 s of wall bound;
+#: the construction refuses at ~1018 ms on this host). The forked job
+#: child that dies pre-exec appears in the visible listing for at most a
+#: sub-millisecond flicker at its fork (its corpse then holds an extra
+#: ``pids.current`` pid un-reaped until teardown — a reap-timing
+#: artifact this arm RECORDS but never asserts on). 150 ms is far beyond
+#: any observed flicker (the in-suite one was 0.04 ms) and a ~7x margin
+#: below any genuine footprint.
+_SUSTAINED_DESCENDANT_MS = 150.0
+
+#: The outside observation must not be vacuous: fewer samples than this,
+#: or a shorter window, means the poller never really watched the leaf
+#: and the assertions below would be green over nothing.
+_MIN_PROBE_SAMPLES = 30
+_MIN_PROBE_WINDOW_MS = 5.0
+
+# Layer-1 pin: /dev's ENTIRE authority is one empty MS_NODEV tmpfs — no host
+# device, no node creation ("adding a host device would be a policy widen").
+_PIN_EMPTY_DEV = (
+    'static bool mount_minimal_dev(void) { return mount("tmpfs", "/dev", '
+    '"tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=755") == 0; }'
+)
+# Layer-2 pins: the exact Landlock grant block (six path grants plus the two
+# runtime-loader grants; libc is read-only, no EXECUTE) and the subject and
+# toolchain trees' read-only access shape.
+_PIN_LANDLOCK_RULES = (
+    'executable_access = LANDLOCK_ACCESS_FS_EXECUTE | '
+    'LANDLOCK_ACCESS_FS_READ_FILE; '
+    'if (add_path_rule(ruleset_fd, executable_fd, executable_access) != 0 || '
+    'add_runtime_loader_rule(ruleset_fd, "/lib64/ld-linux-x86-64.so.2", '
+    'executable_access) != 0 || '
+    'add_runtime_loader_rule(ruleset_fd, "/lib/x86_64-linux-gnu/libc.so.6", '
+    'LANDLOCK_ACCESS_FS_READ_FILE) != 0 || '
+    'add_path_rule(ruleset_fd, subject_fd, readonly_access) != 0 || '
+    'add_path_rule(ruleset_fd, toolchain_fd, readonly_access) != 0 || '
+    'add_path_rule(ruleset_fd, output_fd, filesystem_mask) != 0 || '
+    'add_path_rule(ruleset_fd, scratch_fd, filesystem_mask) != 0 || '
+    'syscall(SYS_landlock_restrict_self, ruleset_fd, 0U) != 0 || '
+    'close(ruleset_fd) != 0) {'
+)
+_PIN_READONLY_ACCESS = (
+    'const __u64 readonly_access = LANDLOCK_ACCESS_FS_EXECUTE | '
+    'LANDLOCK_ACCESS_FS_READ_FILE | LANDLOCK_ACCESS_FS_READ_DIR;'
+)
+# Layer-3 pins: the namespace flag set (CLONE_NEWPID among them), the fresh
+# proc overlay in the forked child, and the exec itself — together they make
+# the exec'd command PID 1 of a new PID namespace.
+_PIN_NAMESPACE_FLAGS = (
+    'static bool enter_worker_namespaces(void) { const int namespaces = '
+    'CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWIPC | '
+    'CLONE_NEWNET | CLONE_NEWCGROUP; return unshare(namespaces) == 0; }'
+)
+_PIN_FRESH_PROC = (
+    'static bool mount_fresh_proc(void) { return mount("proc", "/proc", '
+    '"proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL) == 0; }'
+)
+_PIN_EXECVEAT = (
+    '(void)syscall(SYS_execveat, 3, "", argv + argument_offset + 4, '
+    'environment, AT_EMPTY_PATH); (void)close(3);'
+)
+
+
+def _launcher_code_shape(path: Path) -> str:
+    """The launcher C source as one comment-free, whitespace-collapsed
+    shape — prose edits never redden the pins, any behavioral or policy
+    change does."""
+
+    text = path.read_text(encoding="utf-8")
+    text = re.sub(r"/\*.*?\*/", " ", text, flags=re.DOTALL)
+    text = re.sub(r"//[^\n]*", " ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+class _WorkerLeafPoller(threading.Thread):
+    """Sample the confined run's worker cgroup leaf from OUTSIDE, while the
+    run is in flight (the SLICE-057 vacuity experiment's proven poller,
+    brought in-suite): the session's cgroup root grows one
+    ``ranex-slice018-*-worker`` leaf per confined run, and this thread
+    samples its visible membership (``cgroup.procs``) and ``pids.current``
+    as fast as sysfs answers."""
+
+    def __init__(self) -> None:
+        super().__init__(daemon=True)
+        unified = Path("/proc/self/cgroup").read_text(encoding="utf-8")
+        relative = unified.splitlines()[0].split("::", 1)[1]
+        self._root = Path("/sys/fs/cgroup") / relative.lstrip("/")
+        self._known = {
+            leaf.name for leaf in self._root.glob("ranex-slice018-*-worker")
+        }
+        self._stop = threading.Event()
+        self._lock = threading.Lock()
+        #: ``(t_ms, visible_members, pids_current)`` per sample — visible
+        #: membership is the asserted descendant detector; pids.current is
+        #: the recorded secondary (an un-reaped zombie corpse can hold an
+        #: extra pid in it until teardown).
+        self.samples: list[tuple[float, int, int]] = []
+
+    def run(self) -> None:
+        origin = time.monotonic()
+        leaf: Path | None = None
+        while not self._stop.is_set():
+            try:
+                if leaf is None or not leaf.exists():
+                    leaf = None
+                    for candidate in self._root.glob("ranex-slice018-*-worker"):
+                        if candidate.name not in self._known:
+                            leaf = candidate
+                            break
+                if leaf is not None:
+                    members = (leaf / "cgroup.procs").read_text(encoding="ascii")
+                    pids = int(
+                        (leaf / "pids.current").read_text(encoding="ascii").strip()
+                    )
+                    with self._lock:
+                        self.samples.append(
+                            (
+                                (time.monotonic() - origin) * 1000.0,
+                                len(members.split()),
+                                pids,
+                            )
+                        )
+            except (OSError, ValueError):
+                pass  # the leaf's birth/death windows race the reads
+
+    def finish(self) -> list[tuple[float, int, int]]:
+        self._stop.set()
+        self.join(timeout=5.0)
+        with self._lock:
+            return list(self.samples)
+
+
+def _confined_run_observed(
+    journey: ConfinementJourney, evidence: str, *command: str
+) -> tuple[int, str, str, list[tuple[float, int, int]]]:
+    """One confined run whose worker cgroup leaf is sampled from outside
+    the whole time — the ``ranex`` helper's exact environment, but a
+    Popen so the poller can watch concurrently."""
+
+    env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
+    env["PYTHONPATH"] = str(journey.subject / "src")
+    env["RANEX_SIGNING_KEY"] = str(journey.key)
+    poller = _WorkerLeafPoller()
+    poller.start()
+    process = subprocess.Popen(
+        [
+            sys.executable, "-m", "ranex.cli.main",
+            "run", "--claim", CONFINED_CLAIM, "--producer", FAMILY_PRODUCER,
+            "--repository", ".", "--evidence", evidence,
+            "--confinement", "strict-local", "--", *command,
+        ],
+        cwd=journey.subject,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        env=env,
+    )
+    try:
+        stdout, stderr = process.communicate(timeout=240)
+    except subprocess.TimeoutExpired:
+        process.kill()
+        stdout, stderr = process.communicate()
+    return process.returncode, stdout, stderr, poller.finish()
+
+
+def test_descendant_processes_are_unconstructible_and_containment_is_by_construction(
+    journey: ConfinementJourney,
+) -> None:
+    """Issue #37 sad path 3, reframed by the orchestrator's sanctioned
+    amendment (the survivor-arm vacuity ruling): the frozen
+    ``test_worker_kill_drain_leaves_no_survivor`` was VACUOUS — its
+    "backgrounded worker" never existed, because three independent
+    containment layers make a genuine descendant of the confined worker
+    unconstructible in this profile:
+
+    1. the worker's /dev is an empty MS_NODEV tmpfs (the profile declares
+       no device nodes), and dash opens /dev/null for every async job
+       BEFORE exec — the forked job child dies in under a millisecond,
+       pre-exec (the operative first killer);
+    2. Landlock admits EXECUTE on exactly six objects/trees — argv[0]'s
+       pre-opened descriptor, the pinned ELF loader, the subject,
+       toolchain, output, and scratch trees (libc is read-only) — so any
+       fork-exec of another host binary (``/bin/sleep``) is EACCES-denied
+       even if it survives layer 1;
+    3. the worker is PID 1 of a new PID namespace, and the kernel
+       SIGKILLs every process in a namespace when its init exits
+       (kernel pidns semantics) — nothing can outlive it regardless.
+
+    No dash-async construction creates a genuine descendant here (the
+    experiment on #37 proved this across subshells, explicit redirects,
+    and pipelines: /tmp/opencode/slice057-survivor/EVIDENCE.md), so "no
+    survivor escapes kill/drain" was unfalsifiable as frozen. This arm
+    holds the honest, falsifiable contract instead — containment BY
+    CONSTRUCTION:
+
+    (a) a deliberate fork-exec attempt (``sh -c '/bin/sleep 30 & wait
+        $!'``) runs confined while an outside poller samples the worker
+        cgroup leaf: its VISIBLE membership (``cgroup.procs``) must sit
+        steadily at exactly the direct pair — the launcher plus the
+        worker command — with no SUSTAINED third member. Live processes
+        in the worker's PID namespace list steadily (the spinning worker
+        command itself proves it in this very construction), so a
+        successfully-created descendant would hold a visible third
+        membership for the run's whole refusal window and redden this;
+        the dead job child's un-reaped corpse may hold an extra
+        ``pids.current`` pid until teardown — recorded, never asserted,
+        because reap timing is host-dependent. The run's own outcome is
+        the other secondary signal (the wait-spin's CPU-limit refusal
+        ``E-C18-LIMIT cpu_usage_usec``, or completion with ``RECORDED``
+        — both shapes mean nothing was reaped alive);
+    (b) the three layers above are each PINNED against the launcher
+        source that was actually built and run (comment-free code shape,
+        so prose edits never redden but any policy change does): the
+        empty-/dev mount plus no other /dev authority and no node
+        creation; the exact Landlock rule block — six path grants, no
+        more — with its access shapes; and the namespace construction
+        (CLONE_NEWPID in the pinned unshare set, entered before the
+        fork, proc overlaid in the child, exec via AT_EMPTY_PATH) that
+        makes the command PID 1;
+    (c) the REAL kill/drain proof — a genuine wall-time overrun killed
+        and refused over a drained teardown — stays where it already
+        lives and stays real: ``test_timeout_refusal_is_distinct_from_
+        the_exit_code`` below.
+
+    Supersedes the frozen ``test_worker_kill_drain_leaves_no_survivor``;
+    the freeze ceremony retires the old ID's declaration and declares
+    this arm's in the same act.
     """
 
-    evidence = ".local/ranex-e2e/confined-evidence-survivor.json"
-    escaped = _confined_run(
-        journey, evidence, "/bin/sh", "-c", "( /bin/sleep 30 & ) ; exit 0"
+    # --- (a) the runtime observation: the worker leaf, watched from outside
+    evidence = ".local/ranex-e2e/confined-evidence-descendant-probe.json"
+    code, stdout, stderr, samples = _confined_run_observed(
+        journey, evidence, "/bin/sh", "-c", "/bin/sleep 30 & wait $!"
     )
-    assert escaped.returncode == 0, (
-        "the backgrounded worker escaped the session cgroup or survived "
-        "the teardown kill — the kernel should have refused the "
-        f"undrained result: {escaped.stdout}{escaped.stderr}"
+    window_ms = samples[-1][0] - samples[0][0] if samples else 0.0
+    assert len(samples) >= _MIN_PROBE_SAMPLES and window_ms >= _MIN_PROBE_WINDOW_MS, (
+        f"the descendant-probe observation is vacuous — {len(samples)} "
+        f"samples over {window_ms:.1f} ms of the worker cgroup leaf; the "
+        "outside poller must genuinely watch the run (the in-suite "
+        "verification observed ~20000 samples over ~1020 ms on this very "
+        "construction)"
     )
-    assert escaped.stdout.startswith("RECORDED"), escaped.stdout
-    assert (journey.subject / evidence).is_file(), (
-        "a drained teardown must have admitted the confinement result "
-        "and recorded it — no record means a survivor was detected"
+    steady = Counter(visible for _, visible, _ in samples).most_common(1)[0][0]
+    longest_ms = 0.0
+    run_start: float | None = None
+    run_last = 0.0
+    for t_ms, visible, _ in samples:
+        if visible > _DIRECT_PROCESS_COUNT:
+            if run_start is None:
+                run_start = t_ms
+            run_last = t_ms
+        elif run_start is not None:
+            longest_ms = max(longest_ms, run_last - run_start)
+            run_start = None
+    if run_start is not None:
+        longest_ms = max(longest_ms, run_last - run_start)
+    assert steady == _DIRECT_PROCESS_COUNT and longest_ms < _SUSTAINED_DESCENDANT_MS, (
+        "a fork-exec attempt of another binary left the worker cgroup's "
+        f"visible membership above its direct pair: steady visible "
+        f"members={steady} (want {_DIRECT_PROCESS_COUNT}), longest "
+        f"sustained third-member excursion {longest_ms:.1f} ms (threshold "
+        f"{_SUSTAINED_DESCENDANT_MS} ms) — a genuine descendant was "
+        f"constructed and containment is NOT holding by construction "
+        f"({len(samples)} samples over {window_ms:.1f} ms, max visible="
+        f"{max(visible for _, visible, _ in samples)}, max "
+        f"pids.current={max(pids for *_, pids in samples)})"
+    )
+
+    # The run's own outcome — the secondary signal; both shapes honest.
+    if code == 0:
+        assert stdout.startswith("RECORDED"), stdout + stderr
+        assert (journey.subject / evidence).is_file(), (
+            "a recorded descendant-probe run must leave its evidence"
+        )
+    elif code == 2:
+        assert "E-C18-LIMIT" in stderr, (
+            f"the refused shape must be the limit refusal: {stderr}"
+        )
+        assert not (journey.subject / evidence).exists(), (
+            "a refused (killed) descendant-probe run must leave no evidence"
+        )
+    else:
+        raise AssertionError(
+            "the descendant-probe run's outcome is outside its two honest "
+            f"shapes (completion or limit refusal): rc={code} "
+            f"stdout={stdout!r} stderr={stderr!r}"
+        )
+
+    # --- (b) the three layers, pinned against the source that ran ----------
+    source = journey.subject / LAUNCHER_SOURCE
+    assert source.is_file(), f"the built journey's launcher source is absent: {source}"
+    shape = _launcher_code_shape(source)
+    assert _PIN_EMPTY_DEV in shape, (
+        "layer 1 is not the pinned construction: /dev's entire authority "
+        "must be the one empty MS_NODEV tmpfs (mount_minimal_dev)"
+    )
+    assert shape.count("/dev") == 1 and "mknod" not in shape.lower(), (
+        "layer 1 policy widen: the launcher source names /dev or device "
+        "creation beyond the one empty-tmpfs mount — a populated /dev "
+        "would let dash's async-job children survive to their exec attempt"
+    )
+    assert _PIN_LANDLOCK_RULES in shape and _PIN_READONLY_ACCESS in shape, (
+        "layer 2 is not the pinned construction: the Landlock grant block "
+        "(six path grants — argv[0]'s descriptor with EXECUTE, the loader "
+        "with EXECUTE, read-only libc, read-only subject/toolchain, the "
+        "two writable trees with the full mask) must be exactly this shape"
+    )
+    assert (
+        shape.count("add_path_rule(ruleset_fd") == 6
+        and shape.count("add_runtime_loader_rule(ruleset_fd") == 2
+    ), (
+        "layer 2 policy widen: the Landlock ruleset carries rule "
+        "invocations beyond the pinned set (five grants in "
+        "enforce_landlock plus the loader helper's own, and exactly two "
+        "runtime-loader grants) — any added grant reddens this pin"
+    )
+    assert _PIN_NAMESPACE_FLAGS in shape, (
+        "layer 3 is not the pinned construction: the worker's namespace "
+        "set must include CLONE_NEWPID exactly as pinned (the kernel "
+        "reaps the whole namespace at PID-1 exit)"
+    )
+    assert _PIN_FRESH_PROC in shape and _PIN_EXECVEAT in shape, (
+        "layer 3 is not the pinned construction: the forked child must "
+        "overlay fresh proc and exec via AT_EMPTY_PATH on the pre-opened "
+        "descriptor — the command itself is the namespace's PID 1"
+    )
+    assert (
+        shape.index("if (!enter_worker_namespaces())")
+        < shape.index("worker = fork();")
+        < shape.index("if (!mount_fresh_proc()")
+        < shape.index(_PIN_EXECVEAT)
+    ), (
+        "layer 3 construction order drifted: namespaces are entered "
+        "before the fork, and proc overlay + exec happen in the forked "
+        "child — that order is what makes the exec'd command PID 1 of "
+        "the new PID namespace"
     )
 
 
