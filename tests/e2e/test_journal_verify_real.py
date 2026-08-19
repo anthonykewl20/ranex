@@ -169,6 +169,24 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> JournalJourney:
     )
     assert clean.stdout.startswith("PASS"), clean.stdout
 
+    # The rollback blind spot: copy the CLEAN chain while it is still
+    # untouched, then delete the copy's LAST row out-of-band (the
+    # append-only triggers refuse nothing once dropped — this is the
+    # out-of-band edit the chain exists to catch) and verify the copy:
+    # the chain over the surviving rows is vacuously intact.
+    truncated = subject / TRUNCATED_RELATIVE
+    shutil.copy(journal, truncated)
+    connection = sqlite3.connect(truncated)
+    try:
+        connection.execute("DROP TRIGGER evaluations_no_delete")
+        connection.execute("DELETE FROM evaluations WHERE seq = (SELECT MAX(seq) FROM evaluations)")
+        connection.commit()
+    finally:
+        connection.close()
+    truncated_run = ranex(
+        subject, ["journal", "verify", "--repository", ".", "--journal", TRUNCATED_RELATIVE]
+    )
+
     # A single byte of the first row's record, edited out-of-band.
     connection = sqlite3.connect(journal)
     try:
@@ -190,22 +208,6 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> JournalJourney:
     assert tampered_run.returncode == 1, (
         "the byte-edited chain must FAIL verification (exit 1): "
         f"{tampered_run.stdout}{tampered_run.stderr}"
-    )
-
-    # The rollback blind spot: delete the LAST row out-of-band (the
-    # append-only triggers refuse nothing once dropped — this is the
-    # out-of-band edit the chain exists to catch) and verify the copy.
-    truncated = subject / TRUNCATED_RELATIVE
-    shutil.copy(journal, truncated)
-    connection = sqlite3.connect(truncated)
-    try:
-        connection.execute("DROP TRIGGER evaluations_no_delete")
-        connection.execute("DELETE FROM evaluations WHERE seq = (SELECT MAX(seq) FROM evaluations)")
-        connection.commit()
-    finally:
-        connection.close()
-    truncated_run = ranex(
-        subject, ["journal", "verify", "--repository", ".", "--journal", TRUNCATED_RELATIVE]
     )
 
     return JournalJourney(
