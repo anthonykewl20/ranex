@@ -102,3 +102,58 @@ def signing(tmp_path: Path) -> Signing:
     root = tmp_path / "keys"
     root.mkdir(parents=True, exist_ok=True)
     return Signing(root=root).register(*KNOWN_PRODUCERS)
+
+
+# --- SLICE-055 / ADR-032: the frame's module-scoped prereq fixtures -------------
+#
+# Extensions only — everything above (the Signing registry) is untouched.
+# Each fixture consumes one frozen probe from tests/e2e/_prereqs.py through
+# prereq_or_skip: a module re-evaluates its precondition at its own
+# module-scoped setup, so no cached answer crosses a module boundary or a
+# process, and every skip carries the machine-greppable reason grammar
+# (ranex-prereq:<name>:) the declared-skip ledger greps. Nothing existing
+# requests these fixtures; the family slices (SLICE-056+) do, so the default
+# suite path is unchanged.
+
+import sys as _sys  # noqa: E402
+
+if str(Path(__file__).resolve().parent) not in _sys.path:
+    _sys.path.insert(0, str(Path(__file__).resolve().parent))
+
+import _prereqs  # noqa: E402
+
+
+@pytest.fixture(scope="module")
+def prereq_pinned_resolver() -> None:
+    """Skip this module unless the pinned resolver is present and matches."""
+    _prereqs.prereq_or_skip("pinned_resolver")
+
+
+@pytest.fixture(scope="module")
+def prereq_network_available() -> None:
+    """Skip this module unless an outbound connection to the real index works."""
+    _prereqs.prereq_or_skip("network_available")
+
+
+@pytest.fixture(scope="module")
+def prereq_signing_key() -> None:
+    """Skip this module unless RANEX_SIGNING_KEY names an existing key file."""
+    _prereqs.prereq_or_skip("signing_key")
+
+
+@pytest.fixture(scope="module")
+def prereq_harness_fork() -> None:
+    """Skip this module unless RANEX_HARNESS_DIR names the sibling fork."""
+    _prereqs.prereq_or_skip("harness_fork")
+
+
+@pytest.fixture(scope="module")
+def prereq_openrouter_key() -> None:
+    """Skip this module unless a real OpenRouter credential is exported."""
+    _prereqs.prereq_or_skip("openrouter_key")
+
+
+@pytest.fixture(scope="module")
+def prereq_qualified_host() -> None:
+    """Skip this module unless this host passes the qualification limitation probe."""
+    _prereqs.prereq_or_skip("qualified_host")

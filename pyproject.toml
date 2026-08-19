@@ -28,6 +28,29 @@ dev = [
 [tool.uv]
 package = false
 
+# SLICE-055 / ADR-032: subprocess coverage config, read through
+# COVERAGE_PROCESS_START by tests/e2e/coverage/sitecustomize.py in every
+# frame-wired child. `source` is deliberately RELATIVE: installed coverage
+# 7.15.3 resolves relative source entries against the measured process's own
+# working directory (inorout.py os.path.isdir), so a clone-judges-clone child
+# running with cwd=<subject> measures the subject's vendored copy of the
+# kernel — exactly the tree under governance. `parallel=true` gives every
+# process a suffixed data file inside the one shared COVERAGE_FILE home
+# (.local/ranex-e2e/coverage/, ignored .local/* territory); combines run with
+# --keep (tests/e2e/_prereqs.py combine_coverage) because installed coverage
+# deletes inputs without it. fail_under is derived from a real wired
+# entrypoint run at this tree (measured TOTAL 17.14%: the in-process suite
+# plus environment-inheriting children; hermetic subprocess children replace
+# their PYTHONPATH and are deliberately unmeasured — ADR-032's unmeasured
+# class) with a variance margin, and must be re-derived, not guessed,
+# whenever a family slice lands (ADR-032 Consequences).
+[tool.coverage.run]
+source = ["src/ranex"]
+parallel = true
+
+[tool.coverage.report]
+fail_under = 15
+
 [tool.pytest.ini_options]
 addopts = ["--strict-config", "--strict-markers"]
 pythonpath = ["src"]
