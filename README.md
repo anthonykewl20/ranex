@@ -722,11 +722,12 @@ What each piece is and why it is shaped this way:
   skip no declaration covers, and a declared skip that did not occur, each
   exit nonzero naming the test ID and its reason. `suite freeze` itself
   stays outcome-blind; honesty is checked here, at entrypoint time.
-- **Duration budget.** The unwired suite runs in roughly 2 to 3 minutes;
-  the full wired entrypoint (suite + combine + report + cross-check)
-  completes in about 3 minutes on a qualified host — the coverage overhead
-  is small because the traced work is mostly in-process. Anything past
-  10 minutes is a hang, not a slow run — interrupt and read the transcript.
+- **Duration budget.** A full unwired run completes in roughly 10 minutes —
+  the hermetic inner journeys re-run the whole suite nested — and the wired
+  entrypoint in roughly 11 (measured 660s on the qualified host: suite,
+  combine, report, cross-check; the coverage overhead is small because the
+  traced work is mostly in-process). Treat anything past 30 minutes as a
+  hang, not a slow run — interrupt and read the transcript.
 
 The transcript and the coverage report under `.local/ranex-e2e/` are the
 milestone's proof artifacts: a real invocation transcript and a real
