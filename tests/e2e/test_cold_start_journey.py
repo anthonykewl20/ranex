@@ -26,7 +26,6 @@ of the product, and this is the only test that measures it.
 from __future__ import annotations
 
 import copy
-import hashlib
 import os
 import subprocess
 import sys
@@ -108,17 +107,22 @@ def documented(*fragments: str) -> None:
 
 
 def pinned_resolver() -> Path | None:
+    """Sanctioned spine edit (SLICE-055 M8 dedupe): the verdict is the frame
+    probe's (tests/e2e/_prereqs.py); the path is re-derived from the same
+    committed pins the probe just verified."""
+
     import yaml
 
-    if not PINS.exists():
+    e2e_dir = str(Path(__file__).resolve().parent)
+    if e2e_dir not in sys.path:
+        sys.path.insert(0, e2e_dir)
+    import _prereqs
+
+    ok, _reason = _prereqs.pinned_resolver()
+    if not ok:
         return None
     pins = yaml.safe_load(PINS.read_text())
-    path = Path(pins["resolver"]["path"])
-    if not path.is_file():
-        return None
-    if hashlib.sha256(path.read_bytes()).hexdigest() != pins["resolver"]["sha256"]:
-        return None
-    return path
+    return Path(pins["resolver"]["path"])
 
 
 class Operator:

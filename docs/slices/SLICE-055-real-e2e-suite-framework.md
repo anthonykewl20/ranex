@@ -52,21 +52,38 @@ ADR-032 decision each one compiles is named beside it.
 
    *Application-scope ruling (orchestrator, 2026-08-19, recorded on issue
    #35):* direction (a) is hard everywhere — every observed skip must be
-   declared. Direction (b) is the probe-backed lie detector in two tiers:
-   a declared-but-not-observed skip is a hard failure when its declared
-   reason uses the frame grammar (`ranex-prereq:<probe>:`, the reason →
-   probe mapping) — the finding names that probe's live verdict on the
-   running host, and a present verdict locates the lie in the declaration
-   (prune it at the next freeze) — while non-probe-backed, context-bound
-   declarations (hermetic-freeze-context conditions not reproducible in
-   the entrypoint's documented environment) are reported as an
-   informational context-mismatch list, names plus count, exit 0. The
+   declared, and its observed reason must be the declaration's same bytes
+   (remediation R1d: exact string comparison, a drift is a finding naming
+   both strings). Direction (b) is the probe-backed lie detector in two
+   tiers: a declared-but-not-observed skip is a hard failure when its
+   declared reason uses the frame grammar (`ranex-prereq:<probe>:`, the
+   reason → probe mapping) — the finding names that probe's live verdict on
+   the running host, and a present verdict locates the lie in the
+   declaration (prune it at the next freeze) — while non-probe-backed,
+   context-bound declarations (hermetic-freeze-context conditions not
+   reproducible in the entrypoint's documented environment) are reported as
+   an informational context-mismatch list, names plus count, exit 0. The
    manifest is deliberately multi-context; an unscoped direction (b)
    would make AC1 unsatisfiable on any single host. The frozen
    mechanism tests keep their fixture-driven hard outcomes unchanged —
    this scope governs application, not mechanism. Going forward,
    stage_12's operator-gate skip (`RANEX_SIGNING_KEY` not exported) is
    declared with the probe grammar.
+
+   *Declaration-grammar ruling (orchestrator, 2026-08-19, DECISION
+   [#35 #issuecomment-5343063550], extending the scope ruling above):* the
+   manifest's expected_skips carry exactly two grammars —
+   `ranex-prereq:<probe>: <prose>` (HARD tier: a context-independent
+   condition one of the six frozen probes verifies live, both directions)
+   and `ranex-context:<context>: <prose>` (INFORMATIONAL tier: the
+   declaration names its context — hermetic-freeze, host-capability,
+   operator-action; reported in the context-mismatch list, never hard).
+   Unmarked prose is refused by the frozen lint; a context marker without
+   a non-empty single-token context is refused too. Basis: the
+   single-grammar mandate would hard-fail legitimately context-bound
+   declarations (the plugin_lock harness-fork skips: absent in hermetic
+   freeze, present-and-running on the canonical entrypoint host). ADR-032
+   is revised in-place to match.
 3. **Golden-transcript normalizer** — one centralized, single-argument
    function applying the ordered grammar (`<DIGEST>`, `<ABS-PATH>`,
    `<TIMESTAMP>`, `<DURATION>`, `<SID>`, `<PID>`, `<PORT>`, `<REL-PATH>`)
@@ -105,25 +122,59 @@ ADR-032 decision each one compiles is named beside it.
 ## Frozen interface pinned by the red tests
 
 `tests/e2e/_prereqs.py` public surface (spelled in both frozen test
-docstrings): `PROBE_NAMES`; one `(ok, reason)` callable per name;
+docstrings, as amended by the sanctioned amendments below):
+`PROBE_NAMES`; one `(ok, reason)` callable per name;
 `REASON_PREFIX = "ranex-prereq:"`; `prereq_or_skip(name)`;
-`normalize_transcript(text)`; `compare_transcript(actual, expected)`;
-`cross_check_skips(manifest_path, junitxml_path)` returning lines
-`"undeclared skip: <id>: <reason>"` / `"declared skip not observed: <id>:
-<reason>"`; `wire_child_environment(base, *, coverage_home=None)`;
+`normalize_transcript(text)`; `compare_transcript(actual, expected,
+family=None)`; `cross_check_skips(manifest_path, junitxml_path)` returning
+lines `"undeclared skip: <id>: <reason>"`, `"skip reason mismatch: <id>:
+…"`, and `"declared skip not observed: <id>: <reason>"`;
+`context_mismatches(manifest_path, junitxml_path)`;
+`_junit_outcomes` classifying xfail/xpass per the kernel's frozen
+semantics (suite_results.py:142-151 — xfailed/xpassed are not skip-ledger
+entries); `wire_child_environment(base, *, coverage_home=None)`;
 `HOOK_DIR`; `default_coverage_home()`; `CoverageDataMissing`;
-`combine_coverage(home)`; `report_unmeasured(label)`; and the
-`cross-check` script exit contract.
+`combine_coverage(home, children=None)` (the child-ledger seam — a wired
+child that wrote nothing fails loudly naming the child; an unwired-only
+ledger never alarms); `report_unmeasured(children)` (consumes the real
+child ledger, refuses a label string); `probe_artifact_home_writable(home)`
+(the pre-run loud failure); and the `cross-check` script exit contract.
 
 ## Sanctioned amendments to existing frozen tests
 
-None. This slice requires no change to any existing frozen test: the docs
-discipline gate's literal `Next slice: SLICE-054` mandate in
+The docs-discipline gate's literal `Next slice: SLICE-054` mandate in
 `docs/STATE.md` is compliance with `test_state_next_agrees_with_build_order`
-(frozen-test-mandated wording, not ours to change), the existing e2e spines
-keep their behavior untouched (conftest gains fixtures only), and the
-manifest mechanics stay exactly as `tests/e2e/test_run_produces_evidence.py`
-froze them.
+(frozen-test-mandated wording, not ours to change), and the manifest
+mechanics stay exactly as `tests/e2e/test_run_produces_evidence.py` froze
+them. Beyond that baseline, the following amendments were sanctioned and
+recorded (B2's record, per the 2026-08-19 remediation arbitration):
+
+1. **8cace47e6** — frozen-helper coverage-API fix in
+   `tests/contract/test_real_suite_entrypoint.py` (`_coverage_data_hash` /
+   `_cli_lines`: `CoverageData(basename=…)` + `.read()`, matching the
+   installed coverage 7.15.3 API; `path=` does not exist there).
+   Construction only, every assertion byte-identical; sanctioned
+   in-session (BLOCKER anthonykewl20/ranex#35 issuecomment 5340988152,
+   disposition STATUS #issuecomment-5341197478). The full diff is posted
+   on #35 as its record (#issuecomment-5343065062).
+2. **c0872e8fc** — the R1c two-grammar amendment to the frozen lint arm in
+   `tests/contract/test_prereq_gates.py` (Worker A, per the orchestrator's
+   ruling on the R1c census finding; the DECISION is
+   #issuecomment-5343063550). The arm's `_declaration_defect` classifier
+   accepts the ruled reworded forms.
+3. **2026-08-19 spine edits (this slice's implementation round)** — three
+   sanctioned changes, nothing else in the two spine files: (a)
+   `test_gating_real_suite.py::ranex()` strips `COVERAGE_PROCESS_START` /
+   `COVERAGE_FILE` from the child environment (its children are unwired by
+   the frame, and this venv's `a1_coverage.pth` would measure them anyway
+   — "unwired" must mean no coverage environment at all; the PYTHONPATH
+   replacement stays as the recorded anti-pattern example); (b) stage_12's
+   skip message (~:937) aligned to
+   `ranex-prereq:signing_key: RANEX_SIGNING_KEY is not set; the operator
+   runs this stage`, byte-matching its declaration (direction (a)
+   compares reasons now); (c) both spine files' local `pinned_resolver()`
+   copies deduped into `_prereqs.pinned_resolver` (M8 — one owner of the
+   digest verdict; the path re-derived from the same committed pins).
 
 ## Ceremony and proof
 

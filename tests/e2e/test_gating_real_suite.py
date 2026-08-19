@@ -63,17 +63,27 @@ pytestmark = pytest.mark.skipif(
 
 
 def pinned_resolver() -> Path | None:
-    """The resolver the committed pins cite, if present and matching its pin."""
+    """The resolver the committed pins cite, if present and matching its pin.
+
+    Sanctioned spine edit (SLICE-055 M8 dedupe): the verdict — presence AND
+    digest match — is the frame probe's (tests/e2e/_prereqs.py owns that
+    logic; this local copy was its duplicate); the path is re-derived from
+    the same committed pins the probe just verified, so the two can never
+    disagree.
+    """
 
     import yaml
 
+    e2e_dir = str(Path(__file__).resolve().parent)
+    if e2e_dir not in sys.path:
+        sys.path.insert(0, e2e_dir)
+    import _prereqs
+
+    ok, _reason = _prereqs.pinned_resolver()
+    if not ok:
+        return None
     pins = yaml.safe_load(PINS_PATH.read_text())
-    path = Path(pins["resolver"]["path"])
-    if not path.is_file():
-        return None
-    if hashlib.sha256(path.read_bytes()).hexdigest() != pins["resolver"]["sha256"]:
-        return None
-    return path
+    return Path(pins["resolver"]["path"])
 
 
 def network_available() -> bool:
@@ -257,7 +267,20 @@ def ranex(
     """Invoke the CLI the way an operator does: a real process, the repo's
     own source on PYTHONPATH, the key in the real environment variable."""
 
-    env = {**os.environ, "PYTHONPATH": str(repo / "src")}
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        # Sanctioned spine edit (SLICE-055 R2, orchestrator-approved): this
+        # helper's children are NOT wired by the frame, and "unwired" must
+        # mean no coverage environment at all — this venv's a1_coverage.pth
+        # starts coverage in any child inheriting COVERAGE_PROCESS_START,
+        # which would silently measure the hookless clone children and blur
+        # the wired/unwired ledger distinction. The PYTHONPATH replacement
+        # below stays as-is: it is the recorded anti-pattern example
+        # (ADR-032 sad path 14), not a frame child.
+        if key not in ("COVERAGE_PROCESS_START", "COVERAGE_FILE")
+    }
+    env["PYTHONPATH"] = str(repo / "src")
     env.pop("RANEX_SIGNING_KEY", None)
     if key_path is not None:
         env["RANEX_SIGNING_KEY"] = str(key_path)
@@ -934,7 +957,15 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
         pytest.skip("the pinned resolver is absent or does not match its digest")
     key = os.environ.get("RANEX_SIGNING_KEY")
     if not key:
-        pytest.skip("RANEX_SIGNING_KEY is not set; the operator runs this stage")
+        # Sanctioned spine edit (SLICE-055 R1d): the skip message now
+        # byte-matches the manifest's probe-grammar declaration — direction
+        # (a) of the entrypoint cross-check compares declared vs observed
+        # reasons exactly, so the declared reason and the live message must
+        # be the same bytes.
+        pytest.skip(
+            "ranex-prereq:signing_key: RANEX_SIGNING_KEY is not set; "
+            "the operator runs this stage"
+        )
     dirty = subprocess.run(
         ["git", "-C", str(REAL_REPO), "status", "--porcelain"],
         capture_output=True,

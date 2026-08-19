@@ -677,6 +677,7 @@ recorded on issue #35; the frame lives in `tests/e2e/_prereqs.py` and
 
 ```sh
 set -o pipefail
+uv run --frozen python -c "import sys; sys.path.insert(0, 'tests/e2e'); import _prereqs; _prereqs.probe_artifact_home_writable('.local/ranex-e2e')"
 mkdir -p .local/ranex-e2e/coverage
 rm -f .local/ranex-e2e/coverage/.coverage*
 export COVERAGE_PROCESS_START="$PWD/pyproject.toml"
@@ -706,9 +707,21 @@ What each piece is and why it is shaped this way:
   lands in that one directory instead of scattering across working trees.
   The hook directory rides **last** on `PYTHONPATH`
   (`src:tests/e2e/coverage`), appended and never replacing: a replaced
-  PYTHONPATH is how a subprocess hook silently dies. The relative `source`
-  is deliberate — a clone-judges-clone child resolves it against its own
-  working directory and measures its own vendored copy of the kernel.
+  PYTHONPATH is how a subprocess hook silently dies, and LAST is the
+  direction that keeps the hook directory from shadowing a real package a
+  child imports. What LAST cannot prevent: Python imports the FIRST
+  `sitecustomize` on the path, so an earlier PYTHONPATH entry carrying its
+  own `sitecustomize` shadows the hook — the residual silence the frame's
+  loud wired-child no-data detection exists to catch. The relative
+  `source` is deliberate — a clone-judges-clone child resolves it against
+  its own working directory and measures its own vendored copy of the
+  kernel.
+- **The pre-run artifact-home probe** (`_prereqs.probe_artifact_home_writable`)
+  is the first command of the entrypoint: an artifact home that cannot be
+  written fails loudly — a `RuntimeError` naming the home — before the
+  suite runs at all, so no junitxml, no transcript, and no coverage report
+  is ever half-written into a home that could not hold them. A writable
+  home proceeds quietly and is left untouched by the probe.
 - **The pre- and post-run sweeps** (`rm -f .coverage*`) are load-bearing
   hygiene, not tidiness: stale suffix files from an interrupted run must
   never enter a later combine, and the retained `--keep` inputs never
@@ -721,14 +734,26 @@ What each piece is and why it is shaped this way:
 - **The cross-check** (`tests/e2e/_prereqs.py cross-check <manifest>
   <junitxml>`) is the declared-skip ledger in two tiers. Direction (a) is
   hard unconditionally: an observed skip no declaration covers exits
-  nonzero naming the test ID and its reason. Direction (b) is the
-  probe-backed lie detector: a declared skip that did not occur fails hard
-  only when its declared reason uses the frame grammar
-  (`ranex-prereq:<probe>:`) — the finding names the live verdict of that
-  frame probe on the running host, and a present verdict means the
-  declaration is stale: prune it at the next `suite freeze`. `suite
-  freeze` itself stays outcome-blind; honesty is checked here, at
+  nonzero naming the test ID and its reason, and a declared-and-observed
+  skip whose observed reason drifted from the declaration is a
+  `skip reason mismatch:` finding naming both strings — the comparison is
+  exact, so a live skip message and its declaration must be the same
+  bytes. Direction (b) is the probe-backed lie detector: a declared skip
+  that did not occur fails hard only when its declared reason uses the
+  frame grammar (`ranex-prereq:<probe>:`) — the finding names the live
+  verdict of that frame probe on the running host, and a present verdict
+  means the declaration is stale: prune it at the next `suite freeze`.
+  `suite freeze` itself stays outcome-blind; honesty is checked here, at
   entrypoint time.
+- **Declaration grammars.** Every `expected_skips` reason in the manifest
+  carries exactly one of two grammars (the orchestrator's ruling on
+  issue #35): `ranex-prereq:<probe>: <prose>` — the HARD tier, asserting a
+  context-independent condition one of the six frozen probes verifies
+  live, both directions — or `ranex-context:<context>: <prose>` — the
+  INFORMATIONAL tier, naming the context the declaration belongs to
+  (hermetic-freeze, host-capability, operator-action). Unmarked prose is
+  refused by the frozen lint; rewording happens through the freeze
+  ceremony only.
 - **Context-mismatch semantics.** A declared skip that did not occur whose
   reason is *not* probe-backed is a context-bound declaration — the
   manifest is deliberately multi-context (it also describes the sealed

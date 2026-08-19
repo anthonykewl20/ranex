@@ -8,16 +8,22 @@ the README-documented entrypoint compose lives here:
     ``prereq_or_skip`` for the consuming module-scoped fixtures
     (tests/e2e/conftest.py);
   - the declared-skip cross-check against the committed suite manifest —
-    direction (a) hard everywhere, direction (b) hard for probe-backed
-    declarations (reason grammar ``ranex-prereq:<name>:``, live probe
-    verdict named) and informational for context-bound ones
-    (``context_mismatches``) — plus the ``cross-check`` script exit
-    contract the documented entrypoint composes;
+    direction (a) hard everywhere (undeclared observed skips, and declared
+    vs observed reason drift as an exact string comparison), direction (b)
+    hard for probe-backed declarations (reason grammar
+    ``ranex-prereq:<name>:``, live probe verdict named) and informational
+    for context-bound ones (``ranex-context:<context>:``,
+    ``context_mismatches``) — plus the ``cross-check`` script exit contract
+    the documented entrypoint composes;
   - the golden-transcript normalizer (one centralized, single-argument
-    function with the frozen ordered grammar) and its byte-exact comparator;
+    function with the frozen ordered grammar; test nodeids stay
+    discriminating bytes) and its byte-exact comparator (family-labelled,
+    exactly-the-first-hunk failure output);
   - the subprocess-coverage wiring (append-never-replace PYTHONPATH, absolute
-    ``COVERAGE_PROCESS_START``, one shared absolute ``COVERAGE_FILE`` home)
-    and the combine/report helpers.
+    ``COVERAGE_PROCESS_START``, one shared absolute ``COVERAGE_FILE`` home),
+    the child-ledger combine/report helpers (loud no-data naming the wired
+    child; unwired children reported unmeasured, never alarming), and the
+    pre-run artifact-home writability probe.
 
 This module imports nothing from ``ranex`` and nothing heavy at import time:
 it is imported by bare child interpreters (the frozen cross-process probe
@@ -44,6 +50,8 @@ import os
 import re
 import subprocess
 import sys
+import tempfile
+from collections.abc import Mapping
 from pathlib import Path
 from xml.etree import ElementTree
 
@@ -51,9 +59,15 @@ E2E_DIR = Path(__file__).resolve().parent
 REPO_ROOT = E2E_DIR.parents[1]
 
 #: The subprocess hook's home directory. Appended LAST to a wired child's
-#: PYTHONPATH (append-never-replace, ADR-032): last, so nothing on the path
-#: can shadow the hook — and so the hook directory can never shadow a real
-#: package (``coverage`` itself) that a child needs to import.
+#: PYTHONPATH (append-never-replace, ADR-032). LAST is the direction that
+#: protects the CHILD: this directory rides behind every real package root,
+#: so it can never shadow a package the child imports. The mirror risk is
+#: real and NOT prevented by ordering (remediation M9, corrected rationale):
+#: Python imports the FIRST ``sitecustomize`` found on the path, so an
+#: EARLIER PYTHONPATH entry carrying its own ``sitecustomize`` shadows the
+#: hook and the child silently measures nothing — that residual silence is
+#: exactly what the loud wired-child no-data detection
+#: (``combine_coverage``'s children ledger) exists to catch.
 HOOK_DIR = E2E_DIR / "coverage"
 
 #: The coverage config the wiring names: this repository's pyproject.toml
@@ -365,7 +379,13 @@ def _junit_test_id(testcase: ElementTree.Element) -> str:
 def _junit_outcomes(junitxml_path: Path) -> dict[str, tuple[str, str]]:
     """Observed ``(outcome, skip_reason)`` per test ID, kernel ``_outcome`` shape.
 
-    The DTD/entity refusal mirrors ranex/foundation/suite_results.py: a
+    Remediation R5a: xfail/xpass classification mirrors the kernel's frozen
+    semantics (ranex/foundation/suite_results.py:142-151) exactly — a
+    ``<skipped>`` entry whose type/message marker carries ``xfail`` is
+    ``xfailed``; a ``<failure>``/``<skipped>`` whose marker carries ``xpass``
+    is ``xpassed``. Neither is a skip-ledger entry: a ledger that counted
+    them as skips would flag every strict xfail as an undeclared skip at
+    entrypoint time. The DTD/entity refusal mirrors the kernel too: a
     crafted junitxml must not expand entities into the ledger.
     """
 
@@ -396,11 +416,21 @@ def _junit_outcomes(junitxml_path: Path) -> dict[str, tuple[str, str]]:
             continue
         child = children[0]
         kind = child.tag.rsplit("}", 1)[-1]
-        if kind == "skipped":
-            reason = child.get("message") or (child.text or "").strip()
-            outcomes[test_id] = ("skipped", reason)
+        reason = child.get("message") or (child.text or "").strip()
+        # The kernel's marker shape: type and message, lowercased, grepped
+        # for the xfail/xpass words — the only x-axis the kernel's frozen
+        # classifier reads (suite_results.py:142-151).
+        marker = f"{child.get('type', '')} {child.get('message', '')}".lower()
+        if kind == "error":
+            outcomes[test_id] = ("error", "")
+        elif kind == "failure":
+            outcomes[test_id] = ("xpassed" if "xpass" in marker else "failed", "")
+        elif "xfail" in marker:
+            outcomes[test_id] = ("xfailed", reason)
+        elif "xpass" in marker:
+            outcomes[test_id] = ("xpassed", reason)
         else:
-            outcomes[test_id] = (kind, "")
+            outcomes[test_id] = ("skipped", reason)
     return outcomes
 
 
@@ -442,16 +472,22 @@ def cross_check_skips(manifest_path, junitxml_path) -> list[str]:
     """The HARD tier of the declared-skip ledger, at entrypoint time.
 
     Direction one — an observed skip with no declaration — names the test ID
-    and the OBSERVED skip reason; it is hard unconditionally. Direction two —
-    a probe-backed declaration whose test ran and did not skip — names the ID,
-    the DECLARED reason, and the live verdict of the frame probe the
-    declaration's grammar named: a present verdict locates the lie in the
-    declaration (prune it); an absent verdict names that the declared context
-    did not hold on this host and the test ran anyway. Non-probe-backed
-    declarations whose tests ran are NOT hard findings — they are the
-    multi-context manifest's honest shape and are reported by
-    :func:`context_mismatches`. Returns [] when the hard ledger is honest;
-    otherwise one greppable line per finding.
+    and the OBSERVED skip reason; it is hard unconditionally. Direction one
+    also compares REASONS (remediation R1d, pinned to EXACT string equality
+    by the frozen arm): a skip that IS declared but whose observed reason
+    drifted from the declaration is a ``skip reason mismatch:`` finding
+    naming BOTH strings — an outcome-blind freeze cannot be allowed to
+    launder a reworded skip. Direction two — a probe-backed declaration
+    whose test ran and did not skip — names the ID, the DECLARED reason, and
+    the live verdict of the frame probe the declaration's grammar named: a
+    present verdict locates the lie in the declaration (prune it); an
+    absent verdict names that the declared context did not hold on this
+    host and the test ran anyway. Non-probe-backed declarations
+    (``ranex-context:<context>:``, the two-grammar scheme's informational
+    tier) whose tests ran are NOT hard findings — they are the multi-context
+    manifest's honest shape and are reported by :func:`context_mismatches`.
+    Returns [] when the hard ledger is honest; otherwise one greppable line
+    per finding.
 
     ``suite freeze`` itself stays outcome-blind by frozen design; this check
     is the entrypoint's composition, never a manifest edit.
@@ -466,8 +502,17 @@ def cross_check_skips(manifest_path, junitxml_path) -> list[str]:
     findings: list[str] = []
     for test_id in sorted(outcomes):
         outcome, reason = outcomes[test_id]
-        if outcome == "skipped" and test_id not in declared:
+        if outcome != "skipped":
+            continue
+        if test_id not in declared:
             findings.append(f"undeclared skip: {test_id}: {reason}")
+        elif declared[test_id] != reason:
+            findings.append(
+                f"skip reason mismatch: {test_id}: "
+                f"declared={declared[test_id]!r} observed={reason!r} "
+                "(direction (a) compares reasons exactly — the live skip "
+                "message and the declaration must be the same bytes)"
+            )
     for test_id, declared_reason in _declared_not_observed(declared, outcomes):
         probe_name = _probe_backed_declaration(declared_reason)
         if probe_name is None:
@@ -558,8 +603,17 @@ _PORT_RE = re.compile(r"\bport(?P<sep>[=:]) ?\d{1,5}\b")
 
 # Relative paths: path-character runs joined by "/" that are not absolute
 # (the absolute rule has already run). The lookbehind keeps the match from
-# starting inside a longer token.
-_REL_PATH_RE = re.compile(r"(?<![\w./-])(?:[A-Za-z0-9._+@-]+/)+[A-Za-z0-9._+@-]+")
+# starting inside a longer token. Remediation R5b: a relative path
+# immediately followed by "::" is a test NODEID — which file failed is
+# verdict meaning, so nodeids are NEVER masked ("two failures in different
+# files never normalize equal"). The path body is atomic ((?>...), Python
+# 3.11+) so the refusal cannot be backtracked around: without it the engine
+# would retry a shorter final segment (masking "tests/e2e/test_x.py" down
+# to "tests/e2e/test_x.p" and leaving a stray "y::..."), and the negative
+# lookahead alone would not keep two different nodeids discriminating.
+_REL_PATH_RE = re.compile(
+    r"(?<![\w./-])(?>(?:[A-Za-z0-9._+@-]+/)+[A-Za-z0-9._+@-]+)(?!::)"
+)
 
 
 def normalize_transcript(text: str) -> str:
@@ -576,14 +630,21 @@ def normalize_transcript(text: str) -> str:
     return text
 
 
-def compare_transcript(actual: str, expected: str) -> None:
+def compare_transcript(actual: str, expected: str, family: str | None = None) -> None:
     """Byte-exact compare; on mismatch the AssertionError carries the diff.
 
-    The failure emits the first differing hunk of the unified diff,
-    untruncated — never a bare ``assert False`` (ADR-032 sad path 3). Returns
+    Remediation R5c: ``family`` names the golden's family label, and the
+    failure carries EXACTLY the first hunk of the unified diff — every line
+    of it, untruncated, the second hunk absent (one hunk names the first
+    divergence; the whole diff would bury it) — never a bare ``assert
+    False`` (ADR-032 sad path 3). A difference that survives splitlines()
+    (trailing newline only) is named exactly, family named too. Returns
     None on a clean diff so same-class different live values provably pass.
     """
 
+    family_note = (
+        f"golden family {family!r}" if family else "golden family (none named)"
+    )
     if actual == expected:
         return None
     diff = list(
@@ -595,6 +656,15 @@ def compare_transcript(actual: str, expected: str) -> None:
             lineterm="",
         )
     )
+    if not diff:
+        # Only reachable when the inputs differ in nothing splitlines() keeps —
+        # a trailing-newline difference. Name it exactly instead of emitting a
+        # hunk-less failure.
+        raise AssertionError(
+            f"golden transcript mismatch ({family_note}) — "
+            "trailing-newline difference only: "
+            f"actual={actual!r} expected={expected!r}"
+        )
     hunk: list[str] = []
     seen_hunk_header = False
     for line in diff:
@@ -603,17 +673,9 @@ def compare_transcript(actual: str, expected: str) -> None:
                 break  # the second hunk header ends the first differing hunk
             seen_hunk_header = True
         hunk.append(line)
-    if not diff:
-        # Only reachable when the inputs differ in nothing splitlines() keeps —
-        # a trailing-newline difference. Name it exactly instead of emitting a
-        # hunk-less failure.
-        raise AssertionError(
-            "golden transcript mismatch — trailing-newline difference only: "
-            f"actual={actual!r} expected={expected!r}"
-        )
     raise AssertionError(
-        "golden transcript mismatch — first differing hunk, untruncated:\n"
-        + "\n".join(hunk)
+        f"golden transcript mismatch ({family_note}) — first differing "
+        "hunk, untruncated:\n" + "\n".join(hunk)
     )
 
 
@@ -627,8 +689,8 @@ class CoverageDataMissing(RuntimeError):
     makes "measured zero" and "never measured" byte-identical upstream. The
     frame promised the hook to exactly the children it wired, so for those
     children — and only those — absence is this loud failure. Children the
-    frame does not wire are reported unmeasured (report_unmeasured) and
-    never alarm.
+    frame does not wire are reported unmeasured (report_unmeasured, fed the
+    run's child ledger) and never alarm.
     """
 
 
@@ -638,9 +700,15 @@ def wire_child_environment(base: dict[str, str], *, coverage_home=None) -> dict[
     The hook directory (HOOK_DIR) is APPENDED LAST to the child's PYTHONPATH:
     the spine's own ``ranex()`` helper replaces PYTHONPATH outright, which is
     the recorded way a hook silently dies in a ``cwd=<clone>`` child
-    (tests/e2e/test_gating_real_suite.py, ADR-032 sad path 14). ``last``
-    also means the hook directory can never shadow a real package a child
-    imports. ``COVERAGE_PROCESS_START`` names this repository's pyproject.toml
+    (tests/e2e/test_gating_real_suite.py, ADR-032 sad path 14). ``last`` is
+    what keeps THIS directory from shadowing a real package a child imports
+    (remediation M9): it rides behind every package root. What LAST cannot
+    prevent — the corrected rationale — is the mirror case: an EARLIER
+    PYTHONPATH entry carrying its own ``sitecustomize`` shadows the hook,
+    because Python imports the first ``sitecustomize`` it finds; that
+    residual silence is the wired-child no-data detection's job
+    (combine_coverage's ``children`` ledger), not the ordering's.
+    ``COVERAGE_PROCESS_START`` names this repository's pyproject.toml
     by absolute path — its ``[tool.coverage.run]`` source is deliberately
     RELATIVE, because installed coverage 7.15.3 resolves relative source
     entries against the child's own working directory
@@ -663,20 +731,68 @@ def wire_child_environment(base: dict[str, str], *, coverage_home=None) -> dict[
     return wired
 
 
-def combine_coverage(home) -> str:
+def _coverage_wired(env: Mapping[str, str]) -> bool:
+    """Did the frame promise this child a coverage measurement?
+
+    Remediation R2's honest scope, accounting for the venv wrinkle
+    discovered on the canonical host (a1_coverage.pth in site-packages
+    starts coverage in ANY child carrying COVERAGE_PROCESS_START — the
+    PYTHONPATH hook is not the only measurement path): a child is "wired"
+    exactly when its environment carries a coverage start switch. A child
+    with NO coverage environment at all is unwired — no promise, no data
+    expected, never an alarm.
+    """
+
+    return bool(env.get("COVERAGE_PROCESS_START")) or bool(
+        env.get("COVERAGE_PROCESS_CONFIG")
+    )
+
+
+def combine_coverage(home, children: Mapping[str, Mapping[str, str]] | None = None) -> str:
     """``coverage combine --keep`` over the retained parallel inputs in ``home``.
 
     Inputs are retained (--keep) so the operation is idempotent the honest
     way: a second combine over the same retained immutable inputs reproduces
     identical combined data (installed coverage deletes inputs without
     --keep, so a "second combine is a no-op" claim would be false — ADR-032
-    Consequences). Raises CoverageDataMissing loudly when no parallel data
-    file exists — the frame-wired-child no-data detection. Returns the
-    combined data file's absolute path.
+    Consequences).
+
+    Remediation R2: ``children`` is the run's child ledger — a mapping of
+    child ID to the environment that child ran with — and the loud no-data
+    detection consumes it. A frame-WIRED child (its environment carries a
+    coverage start switch, see :func:`_coverage_wired`) that produced no
+    parallel data file fails loudly as CoverageDataMissing NAMING THE CHILD:
+    the hook's silent no-op must never read as a measured zero. A run whose
+    ledger holds only unwired children never alarms — nothing was promised
+    — and combines nothing when there is nothing to combine (the returned
+    path is then the home's combined-file location, which need not exist;
+    no data is claimed). Without ``children`` the loud detection stays
+    home-scoped as before: no parallel data files at all is a refusal.
+    Parallel files carry no child identity, so when data exists the combine
+    proceeds for the whole home; per-child attribution of a silent wired
+    child beside measured siblings is the ledger's honest limit.
     """
 
     home = Path(home)
     parallel = [p for p in home.glob(".coverage.*") if p.name != ".coverage"]
+    if not parallel and children is not None:
+        wired = sorted(
+            child_id
+            for child_id, env in children.items()
+            if _coverage_wired(env)
+        )
+        if wired:
+            raise CoverageDataMissing(
+                f"no parallel coverage data files in {home} — frame-wired "
+                f"children produced no data: {', '.join(wired)}; was "
+                "sitecustomize shadowed off their PYTHONPATH, or did they "
+                "exit before any atexit save?"
+            )
+        # An unwired-only ledger that measured nothing never alarms — no
+        # promise was made, so nothing is combined and nothing is claimed
+        # (the returned location need not exist; the report of these
+        # children belongs to report_unmeasured).
+        return str(home / ".coverage")
     if not parallel:
         raise CoverageDataMissing(
             f"no parallel coverage data files in {home} — a frame-wired child "
@@ -711,18 +827,69 @@ def combine_coverage(home) -> str:
     return str(combined)
 
 
-def report_unmeasured(label: str) -> str:
-    """The non-alarming report for a child the frame did not wire.
+def report_unmeasured(children: Mapping[str, Mapping[str, str]]) -> str:
+    """The non-alarming report for the children the frame did not wire.
 
-    The frozen spine's hookless clone children are expected to produce no
-    data; they are reported unmeasured and must not false-alarm — the loud
-    no-data detection is scoped to frame-wired children only.
+    Remediation R2: consumes the run's real child ledger (child id -> the
+    environment that child ran with) and REFUSES a bare label string — the
+    report must be built from what actually ran, not from a hand-passed
+    name. A child is unmeasured exactly when its environment carries no
+    coverage start switch (:func:`_coverage_wired`): the frozen spine's
+    hookless clone children are expected to produce no data; they are
+    reported unmeasured and must not false-alarm — the loud no-data
+    detection is scoped to frame-wired children only.
     """
 
-    return (
-        f"unmeasured: {label} — not frame-wired; no subprocess coverage "
-        "expected or recorded"
+    if not isinstance(children, Mapping):
+        raise TypeError(
+            "report_unmeasured consumes the run's child ledger — a mapping "
+            "of child id to the environment that child ran with, never a "
+            f"hand-passed label string; got {type(children).__name__}: "
+            f"{children!r}"
+        )
+    unmeasured = sorted(
+        child_id
+        for child_id, env in children.items()
+        if not _coverage_wired(env)
     )
+    if not unmeasured:
+        return (
+            "unmeasured: (none — every child in the ledger was frame-wired "
+            "for subprocess coverage)"
+        )
+    return (
+        "unmeasured: " + ", ".join(unmeasured)
+        + " — not frame-wired (no coverage environment); no subprocess "
+        "coverage expected or recorded"
+    )
+
+
+def probe_artifact_home_writable(home) -> None:
+    """The entrypoint's pre-run artifact-home probe (remediation R3).
+
+    An artifact home that cannot be written fails LOUDLY — a RuntimeError
+    naming the home and "not writable" — BEFORE any suite run writes a
+    single artifact into it: no junitxml, no transcript, no partial run
+    discovered half a suite later. The probe writes and removes one
+    throwaway file, so a writable home is left byte-identical, and a home
+    that does not yet exist is created (parents included) exactly as the
+    entrypoint would. Returns None quietly on the writable path.
+    """
+
+    home = Path(home)
+    try:
+        home.mkdir(parents=True, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+            prefix=".ranex-e2e-writable-probe-", dir=home
+        ):
+            pass  # created and removed: the home is left untouched
+    except OSError as error:
+        raise RuntimeError(
+            f"artifact home {home} is not writable "
+            f"({type(error).__name__}: {error}) — refusing before any suite "
+            "run writes a single artifact"
+        ) from error
+    return None
 
 
 # --- the cross-check script (the entrypoint's nonzero-on-mismatch step) ---------
@@ -746,9 +913,10 @@ def _main(argv: list[str]) -> int:
                 "entrypoint environment — non-probe-backed, exit unaffected)"
             )
         print(
-            "skip cross-check: honest — every observed skip is declared, and "
-            "no probe-backed declaration failed to occur (context-bound "
-            "declarations are listed above as informational mismatches)"
+            "skip cross-check: honest — every observed skip is declared with "
+            "the same reason bytes, and no probe-backed declaration failed "
+            "to occur (context-bound declarations are listed above as "
+            "informational mismatches)"
         )
         return 0
     print(
