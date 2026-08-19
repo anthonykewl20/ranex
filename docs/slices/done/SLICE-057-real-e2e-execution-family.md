@@ -121,23 +121,28 @@ from the freeze commit on they are read-only to the implementer
    `E-C17-BUILD-INPUT-DRIFT` with no partial artifact (foreign host —
    the honest contract this host observes). Proven by
    `test_confinement_real.py::test_two_root_launcher_builds_drift_or_reproduce`.
-5. **Confinement journey — real build, spawn, kill/drain; golden**
-   (deterministic gate 3; sad paths 1, 3, 8): where `qualified_host`
-   holds — real build/install/qualify, a real confined spawn recording
-   evidence that binds `confinement_result_digest` and
-   `confinement_profile_digest` (openssl-verified with those fields),
-   the rendered confinement report matches
-   `expected/confinement-report.out`; a backgrounded child that
-   outlives its parent leaves no survivor (the result validates only
-   over a drained teardown — the test is red on a survivor); a
-   wall-time hang refuses `E-C18-LIMIT` (exit 2, no evidence) while a
-   confined `exit 3` propagates exactly (RECORDED exit=3, run exits 3).
-   Proven by
+5. **Confinement journey — real build, spawn, containment; golden**
+   (deterministic gate 3; sad paths 1, 3, 8 — sad path 3 as reframed
+   by the sanctioned amendment at c981074fd, below): where
+   `qualified_host` holds — real build/install/qualify, a real
+   confined spawn recording evidence that binds
+   `confinement_result_digest` and `confinement_profile_digest`
+   (openssl-verified with those fields), the rendered confinement
+   report matches `expected/confinement-report.out`; descendants of
+   the confined worker are UNCONSTRUCTIBLE and containment holds BY
+   CONSTRUCTION — an outside poller holds the worker cgroup leaf's
+   visible membership at the direct pair through a deliberate
+   fork-exec attempt, and all three construction layers are pinned
+   against the launcher source that ran (mutation-verified); the REAL
+   kill/drain proof — a genuine wall-time hang killed and refused over
+   a drained teardown (`E-C18-LIMIT`, exit 2, no evidence) — lives in
+   the timeout arm, while a confined `exit 3` propagates exactly
+   (RECORDED exit=3, run exits 3). Proven by
    `test_confinement_real.py::test_strict_local_journey_matches_the_golden`,
-   `…::test_worker_kill_drain_leaves_no_survivor`, and
-   `…::test_timeout_refusal_is_distinct_from_the_exit_code`. Where the
-   probe is absent the arms skip with the probe's named reason — never
-   a silent green — and
+   `…::test_descendant_processes_are_unconstructible_and_containment_is_by_construction`,
+   and `…::test_timeout_refusal_is_distinct_from_the_exit_code`. Where
+   the probe is absent the arms skip with the probe's named reason —
+   never a silent green — and
    `…::test_golden_contract_confinement_report` still holds the golden
    to its existence/fixpoint/token contract on every host.
 6. **Freeze round-trip byte-stable** (deterministic gate 4, AC4): the
@@ -238,14 +243,27 @@ the ceremony-sealed state per its construction).
 **Delegated-scope note** (the honest host-gating record): the
 confinement family's strict-local arms are proven in the DELEGATED
 scope (`systemd-run --user --scope -p Delegate=yes`) — 7/7 green,
-including the survivor arm proving its kill/drain contract for real
-(the confined dash forks, the backgrounded sleep outlives the shell,
-kill/drain reaches it, the result validates over the drained
-teardown) and the timeout/exit distinct reporting. In a plain session
-the five probe-gated arms skip with the live
+including the reframed containment arm. The frozen survivor arm was
+VACUOUS — its "backgrounded worker" never existed: three independent
+layers make a genuine descendant unconstructible in this profile (the
+empty MS_NODEV tmpfs on /dev kills dash's async-job children pre-exec;
+Landlock admits EXECUTE on exactly the six pinned objects/trees; the
+worker is PID 1 of a new PID namespace the kernel reaps at init
+exit), so the frozen "no survivor escapes kill/drain" claim was
+unfalsifiable as written. Reframed at c981074fd (sanctioned amendment
+on #37) into the falsifiable containment-by-construction contract:
+the outside poller observes the worker leaf's visible membership held
+at the direct pair through a deliberate fork-exec attempt, and all
+three layers are pinned against the launcher source that ran —
+mutation-verified (populating /dev, widening EXECUTE, or dropping
+CLONE_NEWPID each redden; comment-only edits stay green). The REAL
+kill/drain proof — a genuine wall-time overrun killed and refused over
+a drained teardown — lives in the timeout arm. In a plain session the
+five probe-gated arms skip with the live
 `ranex-prereq:qualified_host: the delegated cgroup is missing
 required controllers: cpu` reason — never a silent green — and the
-ceremony froze exactly those five declarations.
+ceremony froze exactly those five declarations (the correction-round
+ceremony exchanged the retired survivor ID for the reframed arm's).
 
 **Ceremony** (59479a1e7): the standing close ceremony re-declared the
 119 committed expected-skips verbatim + the 5 new qualified_host
@@ -267,10 +285,30 @@ slice018 + confinement-result + trace-invariance + kernel-unchanged
 5 skipped); the run family went green through the prototype-verified
 journeys + d2881a2e0; the confinement family through 0013bf427,
 128d13552, e1e6dc8a7 (its 7th arm — the survivor — green only at
-e1e6dc8a7); the freeze family green only past the 59479a1e7 ceremony
-(its journey arms' designed pre-ceremony red was the stale-manifest
-drift the ceremony resolves). AC2's traced event stream and AC3's
-sabotage red outputs are posted on issue #37 by the close lane.
+e1e6dc8a7, later proven VACUOUS by the #37 experiment and reframed
+into the containment-by-construction arm at c981074fd); the freeze
+family green only past the 59479a1e7 ceremony (its journey arms'
+designed pre-ceremony red was the stale-manifest drift the ceremony
+resolves). AC2's traced event stream and AC3's sabotage red outputs
+are posted on issue #37 by the close lane.
+
+**Correction round (2026-08-20, post-close).** The security review's
+vacuity finding on the survivor arm was remediated by experiment →
+reframe: the #37 experiment
+(/tmp/opencode/slice057-survivor/EVIDENCE.md) proved the frozen arm
+vacuous by three independent layers, and the sanctioned amendment
+(c981074fd) replaced it with the falsifiable
+containment-by-construction contract (verified both contexts:
+delegated 7/7 with the arm's own probe telemetry recorded; plain
+2 passed / 5 skipped on the unchanged live reason). This round
+corrected this file and docs/STATE.md, re-froze the manifest through
+the standing ceremony — the sanctioned delta: suite 1363 → 1363 with
+exactly one ID exchanged (`test_worker_kill_drain_leaves_no_survivor`
+out, `test_descendant_processes_are_unconstructible_and_containment_
+is_by_construction` in), expected_skips 124 → 124 with the same pair
+exchanged (the reframed arm stays probe-gated under the identical
+qualified_host reason) — and re-verified the full suite and the
+confinement golden's byte-equality at the final artifact.
 
 ## Follow-ups register (carried at close)
 
@@ -280,6 +318,26 @@ sabotage red outputs are posted on issue #37 by the close lane.
    flags (CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD) is a BPF
    filter redesign, ruled out of scope; the review gating the range
    owns the decision.
-2. **Mirror-pin contract test for `_journal_first_broken_row` —
+2. **Writable-tree full-mask EXECUTE — LIVE residual, recorded (the
+   security review's MINOR-4).** The launcher's Landlock grants for
+   the output and scratch trees carry the full filesystem mask
+   including EXECUTE — pre-existing since the profile's first pin,
+   but it became LIVE with the e1e6dc8a7 execve admission: a confined
+   worker can now exec a binary it wrote itself into a writable tree.
+   Contained: the executed code sheds nothing (seccomp + no_new_privs
+   + Landlock + PID-ns + cgroup all inherit), so it stays inside the
+   same confinement — in-sandbox execution only, no escape. Recorded
+   beside residual 1 (same review owns both); masking EXECUTE off the
+   writable trees is a profile change for a future slice.
+3. **Availability notes — fail-closed, recorded (the security
+   review's MINOR-1/MINOR-5).** (a) A launcher/controller crash
+   between enrollment and teardown wedges the controller leaf until
+   operator cleanup — the next session refuses `E-C18-HOST-DRIFT`
+   rather than running degraded (fail closed, not silent). (b)
+   Concurrent confinement sessions in one delegated scope interfere
+   (the qualification binds one delegation identity); serialized
+   sessions are the standing practice. Both are availability limits,
+   not escapes.
+4. **Mirror-pin contract test for `_journal_first_broken_row` —
    open** (carried from the SLICE-056 close; unchanged).
-3. **SLICE-055 follow-ups** — stay queued in its done slice file.
+5. **SLICE-055 follow-ups** — stay queued in its done slice file.
