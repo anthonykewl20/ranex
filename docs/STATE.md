@@ -2,28 +2,30 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-18 (SLICE-054 complete through remediation; go-live pending)
-**Active slice:** none
+**Updated:** 2026-08-19 (SLICE-055 opened; frame contract tests frozen red)
+**Active slice:** docs/slices/SLICE-055-real-e2e-suite-framework.md
 
 ## Where we stopped
 
-SLICE-054 (#34) implementation complete — ADR-031 substrate landed (emitter,
-schema freeze, SID chain, ambient strip, controller seam) with two adversarial
-review rounds remediated (dual security + test-layer, then final-gate
-cumulative; findings D1-D5/S1-S5a and N1-N6 all closed, records on #34).
-Full suite 1229 passed / 38 skipped / 0 failed at the pre-close-out SHA.
-Off-state overhead measured: ~1.3-1.6 ms import cumulative, ~84-114 ns
-disabled emission. Known residual: the host-gated strict-local confinement
-e2e arm (SID tree through a real controller) is skip-declared — needs a
-delegated cgroup-v2 host; in-process seams green.
+SLICE-055 (#35) is open per ADR-032 (accepted; two-panel remediation on
+record) and tracker #33 phase order — Phase-2 production. Worker A froze
+the frame's two contract test files RED before any implementation:
+probe honesty, declared-skip cross-check (both directions), and the
+golden normalizer grammar in tests/contract/test_prereq_gates.py;
+README entrypoint, subprocess-coverage harness (--keep idempotence,
+loud no-data scoped to wired children), and the joint trace+coverage
+case in tests/contract/test_real_suite_entrypoint.py. Worker B implements
+to green inside issue #35's exact ownership (tests/e2e/_prereqs.py, conftest
+extensions, coverage/sitecustomize.py, pyproject [tool.coverage], README
+entrypoint section); the frozen tests are read-only to the implementer. The
+pinned interface is spelled in both files' docstrings and in the slice file.
 
 ## Next
 
 Next slice: SLICE-054
-Next work item: go-live push of the SLICE-054 range, then SLICE-055 — the
-real-e2e suite framework; its Phase-0 ADR is still to be written/accepted
-per tracker #33. (The literal line above is held by
-tests/contract/test_docs_discipline.py until STATE records
+Next work item: SLICE-055 implementation (Worker B), then the entrypoint
+run captured as milestone 4's proof artifact. (The literal line above is
+held by tests/contract/test_docs_discipline.py until STATE records
 "Framework closed: SLICE-055 closed <date>".)
 
 ## Governance (owner, 2026-08-17)
@@ -43,3 +45,6 @@ Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate.
   extended twice by sanction, blocked finally by test_observability.py's own
   child-import shape); observability mutants therefore remain unchecked —
   mutation evidence not obtained this session, disclosed as partial.
+- SLICE-055's frozen tests are red by design until the frame lands; their
+  IDs enter governance/suite_manifest.json only at the post-implementation
+  suite-freeze ceremony (frozen criterion 8).
