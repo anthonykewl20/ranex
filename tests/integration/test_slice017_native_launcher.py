@@ -73,7 +73,9 @@ RESPONSE_LIMIT = 65_536
 # verdict-key loading/publication while retaining the frozen launcher boundary.
 # SLICE-047 deliberately refreshes this pin for its confined-controller boundary.
 # SLICE-054 (ADR-031) refreshes it again for the observability stage boundary.
-MAIN_PY_SHA256 = "3d3418dcfda54bdeabb5218fffb229154532e9578af1a1b99a20a259f0e8388d"
+# SLICE-056 (#36 sad path 3) refreshes it for the journal-verify row-naming
+# presentation in cmd_journal_verify's FAIL output.
+MAIN_PY_SHA256 = "8b62b4847ef9d3e930be163296be6d93a129bdfd58addfdac12b7fdd802b6fbc"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

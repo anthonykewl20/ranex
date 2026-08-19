@@ -908,6 +908,43 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
     return EXIT_FAIL
 
 
+def _journal_first_broken_row(journal_path: Path) -> tuple[int, int, int] | None:
+    """Name the first row that breaks the chain, for the refusal's wording.
+
+    A detection that says only ``chain=invalid`` sends the operator to
+    re-derive by hand which row to inspect. This walk mirrors
+    ``Journal.verify`` exactly — same row order, same genesis root, same
+    recomputation over the parsed record — and reports the first row that
+    fails either link check, as ``(seq, ordinal, total)``: the row's own
+    ``seq`` (AUTOINCREMENT, so after an out-of-band delete it is not its
+    position) plus its 1-based ordinal among the surviving rows. It runs
+    only after ``verify`` already said the chain is broken, read-only: it
+    is the refusal's presentation, never a second verdict. ``None`` is the
+    unreachable defensive shape (verify said False but the mirror walk
+    found no break); the caller prints the row-less refusal rather than
+    guessing one.
+    """
+
+    connection = sqlite3.connect(f"{journal_path.as_uri()}?mode=ro", uri=True)
+    try:
+        rows = connection.execute(
+            "SELECT seq, record, prev_link, link FROM evaluations ORDER BY seq ASC"
+        ).fetchall()
+    finally:
+        connection.close()
+    previous = "sha256:" + "0" * 64
+    for ordinal, (seq, record, prev_link, link) in enumerate(rows, start=1):
+        if prev_link != previous:
+            return seq, ordinal, len(rows)
+        expected = "sha256:" + canonical_sha256(
+            {"prev_link": previous, "record": json.loads(record)}
+        )
+        if expected != link:
+            return seq, ordinal, len(rows)
+        previous = link
+    return None
+
+
 def cmd_journal_verify(args: argparse.Namespace) -> int:
     """Recompute the journal chain without judging or changing an evaluation."""
 
@@ -932,6 +969,10 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         if not journal_path.is_file():
             raise ValueError(f"journal does not exist: {journal_path}")
         verified = Journal(journal_path).verify()
+        # The naming walk reads the same database verify just read, so it
+        # belongs inside the same refusal surface: a SQLite failure here is
+        # an operational refusal (exit 2), never a mangled verdict print.
+        broken = None if verified else _journal_first_broken_row(journal_path)
     except (
         ToolchainError,
         ValueError,
@@ -945,7 +986,19 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
     if verified:
         print(f"PASS  journal={journal_path}  chain=verified")
         return EXIT_PASS
-    print(f"FAIL  journal={journal_path}  chain=invalid")
+    # Sad path 3's demand (issue #36): the refusal names WHICH row broke the
+    # chain — seq plus ordinal — so the operator inspects the edited row, not
+    # the whole journal. Presentation only: detection and exit code are
+    # settled above; `None` is the unreachable defensive shape and prints the
+    # row-less refusal rather than guessing a row.
+    if broken is None:
+        print(f"FAIL  journal={journal_path}  chain=invalid")
+        return EXIT_FAIL
+    seq, ordinal, total = broken
+    print(
+        f"FAIL  journal={journal_path}  chain=invalid  "
+        f"row=seq {seq} (row {ordinal} of {total})"
+    )
     return EXIT_FAIL
 
 
