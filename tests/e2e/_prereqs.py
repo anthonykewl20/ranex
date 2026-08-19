@@ -888,13 +888,15 @@ def combine_coverage(home, children: Mapping[str, Mapping[str, str]] | None = No
             f"no parallel coverage data files in {home} — a frame-wired child "
             "produced no data; was sitecustomize absent from its PYTHONPATH?"
         )
-    # The combiner's own environment is stripped of the measurement switch:
-    # under an entrypoint session the tool child would otherwise import the
+    # The combiner's own environment is stripped of the measurement
+    # switches — COVERAGE_PROCESS_START and, symmetrically,
+    # COVERAGE_PROCESS_CONFIG (the combiner must never auto-start): under
+    # an entrypoint session the tool child would otherwise import the
     # hook off the inherited PYTHONPATH and race its own combine.
     tool_env = {
         key: value
         for key, value in os.environ.items()
-        if key != "COVERAGE_PROCESS_START"
+        if key not in ("COVERAGE_PROCESS_START", "COVERAGE_PROCESS_CONFIG")
     }
     completed = subprocess.run(
         [sys.executable, "-m", "coverage", "combine", "--keep", str(home)],
@@ -943,6 +945,8 @@ def report_unmeasured(children: Mapping[str, Mapping[str, str]]) -> str:
         if not _coverage_wired(env)
     )
     if not unmeasured:
+        if not children:
+            return "unmeasured: (none — the ledger holds no children)"
         return (
             "unmeasured: (none — every child in the ledger was frame-wired "
             "for subprocess coverage)"

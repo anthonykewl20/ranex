@@ -146,35 +146,44 @@ The docs-discipline gate's literal `Next slice: SLICE-054` mandate in
 `docs/STATE.md` is compliance with `test_state_next_agrees_with_build_order`
 (frozen-test-mandated wording, not ours to change), and the manifest
 mechanics stay exactly as `tests/e2e/test_run_produces_evidence.py` froze
-them. Beyond that baseline, the following amendments were sanctioned and
-recorded (B2's record, per the 2026-08-19 remediation arbitration):
+them. Beyond that baseline, the FULL amendment chain — B2's record, per
+the 2026-08-19 remediation arbitration and its ruling trail on issue #35 —
+enumerated one entry per sanctioned amendment:
 
-1. **8cace47e6** — frozen-helper coverage-API fix in
-   `tests/contract/test_real_suite_entrypoint.py` (`_coverage_data_hash` /
-   `_cli_lines`: `CoverageData(basename=…)` + `.read()`, matching the
-   installed coverage 7.15.3 API; `path=` does not exist there).
-   Construction only, every assertion byte-identical; sanctioned
-   in-session (BLOCKER anthonykewl20/ranex#35 issuecomment 5340988152,
-   disposition STATUS #issuecomment-5341197478). The full diff is posted
-   on #35 as its record (#issuecomment-5343065062).
-2. **c0872e8fc** — the R1c two-grammar amendment to the frozen lint arm in
-   `tests/contract/test_prereq_gates.py` (Worker A, per the orchestrator's
-   ruling on the R1c census finding; the DECISION is
-   #issuecomment-5343063550). The arm's `_declaration_defect` classifier
-   accepts the ruled reworded forms.
-3. **2026-08-19 spine edits (this slice's implementation round)** — three
-   sanctioned changes, nothing else in the two spine files: (a)
-   `test_gating_real_suite.py::ranex()` strips `COVERAGE_PROCESS_START` /
-   `COVERAGE_FILE` from the child environment (its children are unwired by
-   the frame, and this venv's `a1_coverage.pth` would measure them anyway
-   — "unwired" must mean no coverage environment at all; the PYTHONPATH
-   replacement stays as the recorded anti-pattern example); (b) stage_12's
-   skip message (~:937) aligned to
-   `ranex-prereq:signing_key: RANEX_SIGNING_KEY is not set; the operator
-   runs this stage`, byte-matching its declaration (direction (a)
-   compares reasons now); (c) both spine files' local `pinned_resolver()`
-   copies deduped into `_prereqs.pinned_resolver` (M8 — one owner of the
-   digest verdict; the path re-derived from the same committed pins).
+1. **8cace47e6** — frozen-helper coverage-API construction fix in
+   `tests/contract/test_real_suite_entrypoint.py`
+   (`_coverage_data_hash`/`_cli_lines`: `CoverageData(basename=…)` +
+   `.read()`, matching the installed coverage 7.15.3 API; `path=` does
+   not exist there), assertions byte-identical; sanctioned in-session
+   (BLOCKER anthonykewl20/ranex#35 #issuecomment-5340988152, disposition
+   STATUS #issuecomment-5341197478; full diff posted as its record,
+   #issuecomment-5343065062).
+2. **b3426c3c3** — remediation arms red (Worker A): the
+   arbitration-confirmed groups (B1/R1c+R1d cross-check, B4/R2 child
+   ledger, M4/R3 artifact-home probe, R5 normalizer/comparator) plus the
+   P2 gaps committed RED in the two frozen files — 10 red, 52 green at
+   landing — the fixes being the implementer's next step.
+3. **c0872e8fc** — the R1c two-grammar amendment to the frozen lint arm
+   in `tests/contract/test_prereq_gates.py` (Worker A; the arm's
+   `_declaration_defect` classifier accepts the ruled reworded forms);
+   DECISION #issuecomment-5343063550.
+4. **25bf6eac0** — the R1d hard-tier scoping amendment (Worker A, the
+   R1d arm + its fixtures + its doc lines only): `ranex-prereq:`
+   declarations compare declared-vs-observed reasons exactly,
+   `ranex-context:` declarations reported-not-compared; ruling on Worker
+   B's BLOCKER #issuecomment-5343719923, DECISION
+   #issuecomment-5344433341.
+5. **0b62c9287 (the spine edits)** — the three sanctioned spine changes,
+   nothing else in the two spine files: `test_gating_real_suite.py::ranex()`
+   strips `COVERAGE_PROCESS_START`/`COVERAGE_FILE` (its children are
+   unwired by the frame, and this venv's `a1_coverage.pth` would measure
+   them anyway — "unwired" must mean no coverage environment at all; the
+   PYTHONPATH replacement stays as the recorded anti-pattern example);
+   stage_12's skip message (~:937) byte-aligned to its
+   `ranex-prereq:signing_key:` declaration (direction (a) compares
+   reasons now); both spine files' local `pinned_resolver()` copies
+   deduped into `_prereqs.pinned_resolver` (M8 — one owner of the digest
+   verdict); sanctioned in the same ruling trail.
 
 ## Ceremony and proof
 
@@ -185,3 +194,18 @@ recorded (B2's record, per the 2026-08-19 remediation arbitration):
 - Hard-killed (SIGKILL) children remain a documented, threshold-accounted
   coverage blind spot; the entrypoint's sweep of the shared coverage home
   is load-bearing freeze hygiene.
+
+## Follow-ups register (accepted for the next test-author round)
+
+Close-out verification review (2026-08-19), P3 lane — accepted, unarmed
+today; each lands as a frozen arm first, then an implementation:
+
+- Dodge-refusal sample arms for the declaration lint's refusal paths —
+  the unknown-probe form and the prose-less-marker form, both refused in
+  code at `_declaration_defect` with no frozen arm proving either refusal.
+- `fail_under` derivation automation (the threshold re-derived from a
+  real report as families land, never hand-guessed) plus the explicit
+  `branch=true` decision.
+- Hook-shadow decoy arm — an earlier PYTHONPATH entry carrying a
+  competing `sitecustomize.py` (first-hit-wins) shadows the frame's hook;
+  today only the loud wired-child no-data detection would catch it.
