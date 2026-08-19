@@ -597,7 +597,9 @@ def test_declared_skip_not_observed_fails_naming_id_and_reason(
 # informational context tier, ruled on issue #35) had no frozen arms — only
 # the mechanism tests for the unscoped directions. R1a/R1b pin the ruled
 # scope permanently; R1c lints the manifest's own declarations into the
-# probe grammar; R1d adds the missing direction (a) reason comparison.
+# ruled two grammars (amended per the orchestrator's R1c census ruling:
+# prereq hard / context informational); R1d adds the missing direction (a)
+# reason comparison.
 
 
 _CONTEXT_BOUND_REASON = (
@@ -756,25 +758,141 @@ def test_declared_observed_skip_with_drifted_reason_is_a_finding_naming_both(
     assert _DRIFTED_OBSERVED in completed.stdout
 
 
-#: R1c — the arbitration's probe-checkable wording table. A declared reason
-#: naming any of these conditions states a precondition the frame's live
-#: probes can verify, so it MUST use the ``ranex-prereq:<probe>:`` grammar;
-#: a reason that names a checkable precondition while refusing verification
-#: is the exact lie the probe-backed tier exists to catch.
-_PROBE_CHECKABLE_TRIGGERS: tuple[tuple[str, tuple[str, ...]], ...] = (
-    ("harness_fork", ("ranex_harness_dir", "harness fork")),
-    ("signing_key", ("ranex_signing_key",)),
-    ("openrouter_key", ("openrouter",)),
-    ("qualified_host", ("host qualification", "qualified host", "cgroup")),
+#: R1c — the two-grammar declaration mandate (orchestrator ruling on issue
+#: #35, replacing the single-grammar mandate ruled unsound): the manifest
+#: legitimately serves multiple contexts — a hermetic freeze and a
+#: documented entrypoint host — so a context-bound declaration is honest
+#: when it NAMES its context. Two grammars, two tiers:
+#:
+#:     ``ranex-prereq:<probe>: <prose>`` — HARD tier. The declaration
+#:     asserts a context-independent, probe-verifiable condition;
+#:     ``<probe>`` must be one of the six frozen probes, exactly the
+#:     mapping the cross-check's probe-backed tier verifies live in both
+#:     directions.
+#:
+#:     ``ranex-context:<context>: <prose>`` — INFORMATIONAL tier. The
+#:     declaration names the context it belongs to (e.g.
+#:     ``hermetic-freeze``); ``context_mismatches`` reports it with its
+#:     context named, never hard. The seven plugin_lock harness-fork
+#:     declarations are the ruled example: absent in the hermetic freeze,
+#:     present-and-running on the canonical entrypoint host, so forcing
+#:     them into the probe-backed tier would hard-fail a green entrypoint.
+#:
+#: Every expected_skip reason must start with one of the two grammars —
+#: unmarked prose is refused. A context marker without a non-empty
+#: single-token ``<context>`` is refused too: the context slot names a
+#: context, conditions belong in the prose.
+_CONTEXT_MARKER = "ranex-context:"
+
+
+def _declaration_defect(reason: str) -> str | None:
+    """The two-grammar lint verdict for ONE declared reason: ``None`` when
+    the declaration carries a valid grammar, the greppable defect line
+    naming what is wrong when it does not."""
+
+    if reason.startswith(_prereqs.REASON_PREFIX):
+        rest = reason[len(_prereqs.REASON_PREFIX) :]
+        probe, colon, prose = rest.partition(":")
+        if not colon:
+            return "carries the probe marker but no '<probe>:' slot"
+        if probe not in _prereqs.PROBE_NAMES:
+            return (
+                f"names {probe!r} — not one of the six frozen probes — so "
+                "the probe-backed tier cannot verify it and the declaration "
+                "would silently fall informational"
+            )
+        if not prose.strip():
+            return "carries no prose after the probe marker"
+        return None
+
+    if reason.startswith(_CONTEXT_MARKER):
+        rest = reason[len(_CONTEXT_MARKER) :]
+        context, colon, prose = rest.partition(":")
+        if not colon or not context or any(char.isspace() for char in context):
+            return (
+                "carries the context marker but no non-empty single-token "
+                "<context> — a context declaration must NAME the context it "
+                "belongs to"
+            )
+        if not prose.strip():
+            return "carries no prose after the context marker"
+        return None
+
+    return (
+        "unmarked prose — the reason must start with "
+        f"'{_prereqs.REASON_PREFIX}<probe>:' (hard tier, probe-verified) or "
+        f"'{_CONTEXT_MARKER}<context>:' (informational tier, context-named)"
+    )
+
+
+#: The arm's sample declarations, one per ruled form, pinning the lint's
+#: cross-tier consistency: (reason, the defect substring the refusal must
+#: carry — None when the lint must ACCEPT — the ruled form's id).
+_DECLARATION_SAMPLES: tuple[tuple[str, str | None, str], ...] = (
+    (
+        "ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty",
+        None,
+        "valid-prereq",
+    ),
+    (
+        "ranex-context:hermetic-freeze: the sealed environment provides "
+        "neither operator uv nor an unwritable system interpreter",
+        None,
+        "valid-context",
+    ),
+    (
+        "needs the sibling harness fork (RANEX_HARNESS_DIR); a materialised "
+        "sample does not carry it",
+        "unmarked prose",
+        "refuse-unmarked",
+    ),
+    (
+        "ranex-context:: the context slot was left empty",
+        "no non-empty single-token <context>",
+        "refuse-contextless-context",
+    ),
 )
 
 
-def test_manifest_probe_checkable_declarations_use_the_probe_grammar() -> None:
-    """R1c: the grammar mandate, linted over the committed manifest. Every
-    expected_skip whose reason names a probe-checkable condition (the probe
-    env variables, or the qualified-host/cgroup wording) must start with
-    ``ranex-prereq:<probe>:`` for the probe its wording names — RED until
-    the manifest is reworded through the freeze ceremony."""
+@pytest.mark.parametrize(
+    ("reason", "expected_defect"),
+    [(r, d) for r, d, _ in _DECLARATION_SAMPLES],
+    ids=[form for _, _, form in _DECLARATION_SAMPLES],
+)
+def test_two_grammar_lint_classifies_the_ruled_sample_declarations(
+    reason: str, expected_defect: str | None
+) -> None:
+    """R1c self-check: the lint accepts each ruled valid form — the prereq
+    grammar the cross-check's probe-backed tier verifies live, and the
+    context grammar the informational tier reports — and refuses each ruled
+    invalid form: unmarked prose, and a context marker without a context."""
+
+    defect = _declaration_defect(reason)
+    if expected_defect is None:
+        assert defect is None, (
+            f"the two-grammar lint must accept {reason!r}; "
+            f"defect={defect!r}"
+        )
+    else:
+        assert defect is not None, (
+            f"the two-grammar lint must refuse {reason!r} "
+            f"({expected_defect!r})"
+        )
+        assert expected_defect in defect, (
+            f"the refusal must name the defect {expected_defect!r}: "
+            f"{defect!r}"
+        )
+
+
+def test_manifest_declarations_carry_one_of_the_two_grammars() -> None:
+    """R1c: the two-grammar mandate, linted over the committed manifest.
+    Every expected_skip reason must start with ``ranex-prereq:<probe>:``
+    (hard tier — the probe-backed cross-check verifies it live both
+    directions) or ``ranex-context:<context>:`` (informational tier — the
+    declaration names its context; ``context_mismatches`` reports it,
+    never hard). Unmarked prose is refused; a context marker without a
+    non-empty ``<context>`` token is refused too — RED until the manifest
+    is reworded through the freeze ceremony."""
 
     manifest = json.loads(
         (REPO_ROOT / "governance" / "suite_manifest.json").read_text(
@@ -782,24 +900,17 @@ def test_manifest_probe_checkable_declarations_use_the_probe_grammar() -> None:
         )
     )
     declared = manifest["expected_skips"]
-    violators: list[str] = []
-    for test_id, reason in sorted(declared.items()):
-        lowered = reason.lower()
-        for probe, patterns in _PROBE_CHECKABLE_TRIGGERS:
-            if not any(pattern in lowered for pattern in patterns):
-                continue
-            grammar = f"{_prereqs.REASON_PREFIX}{probe}:"
-            if not reason.startswith(grammar):
-                violators.append(
-                    f"{test_id}: reason names {probe}-checkable conditions "
-                    f"but does not start with {grammar!r}: {reason!r}"
-                )
-            break
+    violators = [
+        f"{test_id}: {defect}: {reason!r}"
+        for test_id, reason in sorted(declared.items())
+        if (defect := _declaration_defect(reason)) is not None
+    ]
     assert not violators, (
-        f"{len(violators)} expected_skip declaration(s) name probe-checkable "
-        "conditions without the probe grammar — reword them through the "
-        "freeze ceremony so the probe-backed tier can verify them:\n"
-        + "\n".join(violators)
+        f"{len(violators)} expected_skip declaration(s) carry neither "
+        "declaration grammar — reword them through the freeze ceremony "
+        f"into '{_prereqs.REASON_PREFIX}<probe>:' (context-independent, "
+        f"probe-verifiable) or '{_CONTEXT_MARKER}<context>:' "
+        "(context-bound, the context named):\n" + "\n".join(violators)
     )
 
 
