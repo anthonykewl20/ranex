@@ -235,6 +235,7 @@ static bool enforce_seccomp(void) {
         ALLOW_SYSCALL(__NR_rseq),
         ALLOW_SYSCALL(__NR_prlimit64),
         ALLOW_SYSCALL(__NR_clock_gettime),
+        ALLOW_SYSCALL(__NR_clock_nanosleep),
         ALLOW_SYSCALL(__NR_getpid),
         ALLOW_SYSCALL(__NR_gettid),
         ALLOW_SYSCALL(__NR_getrandom),
