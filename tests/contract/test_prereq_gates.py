@@ -23,19 +23,30 @@ The frozen interface this file pins (the frame's one library module,
                                        — it NEVER skips when its probe says
                                        present
     normalize_transcript(text) -> str  the ONE centralized normalizer; a
-                                       single `text` argument and nothing
-                                       else — per-test/per-family masks
-                                       cannot be injected
-    compare_transcript(actual, expected) -> None
-                                       byte-exact compare; on mismatch the
-                                       AssertionError carries the unified
-                                       diff of the first differing hunk,
-                                       untruncated
+                                        single `text` argument and nothing
+                                        else — per-test/per-family masks
+                                        cannot be injected. A relative path
+                                        immediately followed by `::` is a
+                                        test nodeid — nodeids stay
+                                        discriminating bytes (remediation
+                                        R5b: two failures in different
+                                        files never normalize equal).
+    compare_transcript(actual, expected, family=None) -> None
+                                        byte-exact compare; on mismatch the
+                                        AssertionError carries the unified
+                                        diff of the first differing hunk,
+                                        untruncated, EXACTLY one hunk
+                                        (remediation R5c) and names the
+                                        golden's family label.
     cross_check_skips(manifest_path, junitxml_path) -> list[str]
-                                       both directions at entrypoint time:
-                                       "undeclared skip: <id>: <reason>" and
-                                       "declared skip not observed: <id>:
-                                       <reason>"; [] when honest
+                                        both directions at entrypoint time:
+                                        "undeclared skip: <id>: <reason>" and
+                                        "declared skip not observed: <id>:
+                                        <reason>"; [] when honest. A declared
+                                        skip that WAS observed but with a
+                                        drifted reason is a finding too
+                                        (remediation R1d: exact reason
+                                        comparison, both strings named).
     `python tests/e2e/_prereqs.py cross-check <manifest> <junitxml>`
                                        exit 0 when honest, nonzero printing
                                        each finding — the step the README
@@ -52,6 +63,9 @@ values — verdict words, exit codes, test names — stay discriminating.
 
 from __future__ import annotations
 
+import ast
+import hashlib
+import importlib.util
 import inspect
 import json
 import os
@@ -262,10 +276,157 @@ def test_prereq_or_skip_fires_exactly_on_absence(
         _prereqs.prereq_or_skip(probe_name)
 
     monkeypatch.setenv(env_var, _make_present(kind, tmp_path))
-    assert _prereqs.prereq_or_skip(probe_name) is None, (
-        f"prereq_or_skip({probe_name!r}) skipped or signaled while its "
+    # Remediation R4c (strengthening, recorded): the bare `assert ... is None`
+    # could never FAIL a wrong skip — pytest.skip propagates as SKIPPED. The
+    # refusal is now caught and converted to a loud failure.
+    try:
+        returned = _prereqs.prereq_or_skip(probe_name)
+    except pytest.skip.Exception:
+        pytest.fail(
+            f"prereq_or_skip({probe_name!r}) skipped while its probe says "
+            "present — the frame refuses probe-says-present-but-fixture-"
+            "skipped"
+        )
+    assert returned is None, (
+        f"prereq_or_skip({probe_name!r}) signaled {returned!r} while its "
         "probe says present — the frame refuses probe-says-present-but-"
         "fixture-skipped"
+    )
+
+
+# --- 1b. non-env probes under injected preconditions (remediation R4a/R4b) -----
+#
+# The arbitration finding: the three host-dependent probes had no present-case
+# arms and no flip arms — their honesty was asserted only "wherever absent
+# here". The drivers below inject the precondition at its real seam (a tmp
+# governance/deps.yaml tree for pinned_resolver, a socket test double for
+# network_available, a limitation return for qualified_host), so both verdicts
+# are driven deterministically on any host.
+
+
+def _drive_pinned_resolver(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, *, correct_pin: bool
+) -> None:
+    """Point the probe's repository root at a tmp tree with a real resolver
+    file — its pinned digest correct or wrong."""
+
+    root = tmp_path / "pin-root"
+    (root / "governance").mkdir(parents=True, exist_ok=True)
+    resolver = root / "resolver.bin"
+    resolver.write_bytes(b"resolver-bytes-for-the-frozen-probe")
+    digest = hashlib.sha256(resolver.read_bytes()).hexdigest()
+    (root / "governance" / "deps.yaml").write_text(
+        "resolver:\n"
+        f"  path: {resolver}\n"
+        f"  sha256: {digest if correct_pin else 'f' * 64}\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(_prereqs, "REPO_ROOT", root)
+
+
+class _DoubleSocket:
+    """A socket test double: connect() refuses or succeeds on demand."""
+
+    def __init__(self, *, refuse: bool) -> None:
+        self._refuse = refuse
+
+    def settimeout(self, seconds: float) -> None:
+        return None
+
+    def connect(self, address: object) -> None:
+        if self._refuse:
+            raise ConnectionRefusedError(f"test double refusal for {address!r}")
+        return None
+
+    def close(self) -> None:
+        return None
+
+
+def _drive_network(monkeypatch: pytest.MonkeyPatch, *, refuse: bool) -> None:
+    import socket
+
+    monkeypatch.setattr(socket, "socket", lambda: _DoubleSocket(refuse=refuse))
+
+
+def _drive_qualified_host(
+    monkeypatch: pytest.MonkeyPatch, limitation: str | None
+) -> None:
+    monkeypatch.setattr(
+        _prereqs, "_qualification_host_limitation", lambda: limitation
+    )
+
+
+def _inject_absent(
+    probe_name: str, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    if probe_name == "pinned_resolver":
+        _drive_pinned_resolver(monkeypatch, tmp_path, correct_pin=False)
+    elif probe_name == "network_available":
+        _drive_network(monkeypatch, refuse=True)
+    else:
+        _drive_qualified_host(
+            monkeypatch, "injected limitation: the test double denies this host"
+        )
+
+
+def _inject_present(
+    probe_name: str, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    if probe_name == "pinned_resolver":
+        _drive_pinned_resolver(monkeypatch, tmp_path, correct_pin=True)
+    elif probe_name == "network_available":
+        _drive_network(monkeypatch, refuse=False)
+    else:
+        _drive_qualified_host(monkeypatch, None)
+
+
+@pytest.mark.parametrize("probe_name", NON_ENV_PROBES)
+def test_non_env_probe_absent_case_keeps_the_grammar_under_injection(
+    probe_name: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R4a: the absent verdict under an injected precondition is a real
+    (False, reason) pair carrying the greppable grammar — not a guess, an
+    error, or a present."""
+
+    _inject_absent(probe_name, monkeypatch, tmp_path)
+    ok, reason = getattr(_prereqs, probe_name)()
+    prefix = f"ranex-prereq:{probe_name}:"
+    assert ok is False, (
+        f"{probe_name}: injected precondition is absent but the probe "
+        f"reports present — {reason!r}"
+    )
+    assert reason.startswith(prefix), (
+        f"{probe_name} reason {reason!r} does not start with {prefix!r}; "
+        "every skip reason must be machine-greppable"
+    )
+    assert len(reason) > len(prefix), (
+        f"{probe_name} reason carries no explanation after the prefix"
+    )
+
+
+@pytest.mark.parametrize("probe_name", NON_ENV_PROBES)
+def test_non_env_probe_re_evaluates_when_the_precondition_flips_in_process(
+    probe_name: str, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """R4a present-case + R4b no-cache: same process, precondition flipped
+    between two calls — the second answer must follow the flipped
+    precondition (mirrors the signing_key env-flip arm's construction).
+    With pinned_resolver the present case is a REAL satisfied fixture: a
+    tmp deps.yaml whose pin matches the digest of the file it names."""
+
+    _inject_absent(probe_name, monkeypatch, tmp_path)
+    absent_ok, _ = getattr(_prereqs, probe_name)()
+    assert absent_ok is False, (
+        f"{probe_name}: the absent injection did not take (probe reports "
+        "present before the flip — the fixture is broken)"
+    )
+
+    _inject_present(probe_name, monkeypatch, tmp_path)
+    present_ok, present_reason = getattr(_prereqs, probe_name)()
+    assert present_ok is True, (
+        f"{probe_name}: precondition flipped present but the probe still "
+        f"reports absent ({present_reason!r}) — a cached answer is a "
+        "cached lie"
     )
 
 
@@ -428,6 +589,218 @@ def test_declared_skip_not_observed_fails_naming_id_and_reason(
     completed = _cross_script(manifest, junit)
     assert completed.returncode != 0, "declared-but-not-observed must exit nonzero"
     assert _STALE_ID in completed.stdout
+
+
+# --- 2b. remediation arms: the scoped cross-check made contractual --------------
+#
+# Arbitration B1/M4: the two-tier scope (hard probe-backed tier +
+# informational context tier, ruled on issue #35) had no frozen arms — only
+# the mechanism tests for the unscoped directions. R1a/R1b pin the ruled
+# scope permanently; R1c lints the manifest's own declarations into the
+# probe grammar; R1d adds the missing direction (a) reason comparison.
+
+
+_CONTEXT_BOUND_REASON = (
+    "needs operator uv on PATH and an unwritable system interpreter; the "
+    "sealed hermetic environment provides neither"
+)
+
+
+def test_non_probe_backed_declared_not_observed_is_informational_only(
+    tmp_path: Path,
+) -> None:
+    """R1a: a context-bound declaration whose test ran on this host is NOT a
+    hard finding — the manifest is multi-context by design. The hard ledger
+    stays empty, the informational tier names the ID with a count line, and
+    the script path exits 0 with the ID in its output."""
+
+    manifest = _manifest(tmp_path, {_CROSSED_ID: _CONTEXT_BOUND_REASON})
+    junit = _junitxml(
+        tmp_path,
+        _JUNIT_PASSED.format(name=_CROSSED_ID.split("::")[1])
+        + _JUNIT_PASSED.format(name=_UNDECLARED_ID.split("::")[1])
+        + _JUNIT_PASSED.format(name=_STALE_ID.split("::")[1]),
+        skipped=0,
+        tests=3,
+    )
+
+    assert _cross(manifest, junit) == [], (
+        "a non-probe-backed declared-not-observed skip must not enter the "
+        "hard ledger — it is the informational context-mismatch tier"
+    )
+    mismatches = _prereqs.context_mismatches(manifest, junit)
+    assert any(_CROSSED_ID in line for line in mismatches), (
+        f"the informational tier must name the ID: {mismatches!r}"
+    )
+
+    completed = _cross_script(manifest, junit)
+    assert completed.returncode == 0, (
+        f"a context mismatch is informational, never an exit condition; "
+        f"stdout={completed.stdout!r} stderr={completed.stderr!r}"
+    )
+    assert _CROSSED_ID in completed.stdout, (
+        f"the ID must appear in the mismatch list output: {completed.stdout!r}"
+    )
+    assert re.search(r"context-mismatch count: 1\b", completed.stdout), (
+        f"the composed output must carry the count line: {completed.stdout!r}"
+    )
+
+
+def test_probe_backed_declared_not_observed_with_absent_probe_is_hard(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """R1b: the absent-verdict branch of the probe-backed tier. A grammar
+    declaration whose probe is verifiably ABSENT on the running host, whose
+    test ran anyway, is a HARD finding naming the live probe verdict — the
+    distinguishing text is 'the declared context did not skip here'."""
+
+    monkeypatch.delenv("RANEX_SIGNING_KEY", raising=False)
+    probe_ok, _ = _prereqs.signing_key()
+    assert probe_ok is False, (
+        "fixture precondition: the signing_key probe must be verifiably "
+        "absent in this process for the absent-verdict branch to be driven"
+    )
+
+    manifest = _manifest(tmp_path, {_CROSSED_ID: _CROSSED_REASON})
+    junit = _junitxml(
+        tmp_path,
+        _JUNIT_PASSED.format(name=_CROSSED_ID.split("::")[1])
+        + _JUNIT_PASSED.format(name=_UNDECLARED_ID.split("::")[1])
+        + _JUNIT_PASSED.format(name=_STALE_ID.split("::")[1]),
+        skipped=0,
+        tests=3,
+    )
+    findings = _cross(manifest, junit)
+    assert findings, "a probe-backed declared-not-observed skip must be hard"
+    line = findings[0]
+    assert line.startswith("declared skip not observed:"), (
+        f"finding must start with the greppable grammar: {line!r}"
+    )
+    assert "says absent" in line, (
+        f"the finding must name the live ABSENT probe verdict: {line!r}"
+    )
+    assert "the declared context did not skip here" in line, (
+        f"the finding must carry the absent-verdict branch's distinguishing "
+        f"text: {line!r}"
+    )
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            str(E2E_DIR / "_prereqs.py"),
+            "cross-check",
+            str(manifest),
+            str(junit),
+        ],
+        capture_output=True,
+        text=True,
+        cwd=str(REPO_ROOT),
+        timeout=120,
+        check=False,
+        env={
+            key: value
+            for key, value in os.environ.items()
+            if key != "RANEX_SIGNING_KEY"
+        },
+    )
+    assert completed.returncode != 0, (
+        "the probe-backed absent-verdict branch must exit nonzero"
+    )
+    assert "the declared context did not skip here" in completed.stdout
+
+
+_DRIFTED_DECLARED = (
+    "ranex-prereq:signing_key: declared at freeze time with this wording"
+)
+_DRIFTED_OBSERVED = (
+    "ranex-prereq:signing_key: the live fixture skipped with different wording"
+)
+
+
+def test_declared_observed_skip_with_drifted_reason_is_a_finding_naming_both(
+    tmp_path: Path,
+) -> None:
+    """R1d: direction (a) reason comparison, pinned to EXACT string equality
+    (the arbitration's pick-one). A skip that IS declared but whose observed
+    reason drifted from the declaration is a finding naming both strings —
+    an outcome-blind freeze cannot be allowed to launder a reworded skip."""
+
+    manifest = _manifest(tmp_path, {_CROSSED_ID: _DRIFTED_DECLARED})
+    junit = _junitxml(
+        tmp_path,
+        _JUNIT_SKIPPED.format(
+            name=_CROSSED_ID.split("::")[1], reason=_DRIFTED_OBSERVED
+        )
+        + _JUNIT_PASSED.format(name=_UNDECLARED_ID.split("::")[1])
+        + _JUNIT_PASSED.format(name=_STALE_ID.split("::")[1]),
+        skipped=1,
+        tests=3,
+    )
+    findings = _cross(manifest, junit)
+    assert findings, (
+        "a declared skip observed with a drifted reason must produce a "
+        "finding — direction (a) compares reasons, not just IDs"
+    )
+    line = findings[0]
+    assert line.startswith("skip reason mismatch:"), (
+        f"finding must start with the greppable grammar: {line!r}"
+    )
+    assert _DRIFTED_DECLARED in line and _DRIFTED_OBSERVED in line, (
+        f"finding must name BOTH the declared and the observed reason: {line!r}"
+    )
+
+    completed = _cross_script(manifest, junit)
+    assert completed.returncode != 0, "a drifted skip reason must exit nonzero"
+    assert "skip reason mismatch:" in completed.stdout
+    assert _DRIFTED_OBSERVED in completed.stdout
+
+
+#: R1c — the arbitration's probe-checkable wording table. A declared reason
+#: naming any of these conditions states a precondition the frame's live
+#: probes can verify, so it MUST use the ``ranex-prereq:<probe>:`` grammar;
+#: a reason that names a checkable precondition while refusing verification
+#: is the exact lie the probe-backed tier exists to catch.
+_PROBE_CHECKABLE_TRIGGERS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("harness_fork", ("ranex_harness_dir", "harness fork")),
+    ("signing_key", ("ranex_signing_key",)),
+    ("openrouter_key", ("openrouter",)),
+    ("qualified_host", ("host qualification", "qualified host", "cgroup")),
+)
+
+
+def test_manifest_probe_checkable_declarations_use_the_probe_grammar() -> None:
+    """R1c: the grammar mandate, linted over the committed manifest. Every
+    expected_skip whose reason names a probe-checkable condition (the probe
+    env variables, or the qualified-host/cgroup wording) must start with
+    ``ranex-prereq:<probe>:`` for the probe its wording names — RED until
+    the manifest is reworded through the freeze ceremony."""
+
+    manifest = json.loads(
+        (REPO_ROOT / "governance" / "suite_manifest.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    declared = manifest["expected_skips"]
+    violators: list[str] = []
+    for test_id, reason in sorted(declared.items()):
+        lowered = reason.lower()
+        for probe, patterns in _PROBE_CHECKABLE_TRIGGERS:
+            if not any(pattern in lowered for pattern in patterns):
+                continue
+            grammar = f"{_prereqs.REASON_PREFIX}{probe}:"
+            if not reason.startswith(grammar):
+                violators.append(
+                    f"{test_id}: reason names {probe}-checkable conditions "
+                    f"but does not start with {grammar!r}: {reason!r}"
+                )
+            break
+    assert not violators, (
+        f"{len(violators)} expected_skip declaration(s) name probe-checkable "
+        "conditions without the probe grammar — reword them through the "
+        "freeze ceremony so the probe-backed tier can verify them:\n"
+        + "\n".join(violators)
+    )
 
 
 # --- 3. normalizer grammar freeze ---------------------------------------------
@@ -599,16 +972,11 @@ def test_normalizer_is_one_centralized_function_without_mask_inputs() -> None:
         f"normalize_transcript must take exactly one argument (text); got "
         f"{parameters}. Masking is centralized, never per-call-site."
     )
-    # Golden conventions: tests/e2e/expected/ holds plain <family>.out
-    # transcripts only — no config file a family could add masks through.
-    expected_dir = E2E_DIR / "expected"
-    if expected_dir.is_dir():
-        for path in sorted(expected_dir.rglob("*")):
-            if path.is_file():
-                assert path.suffix == ".out", (
-                    f"{path} is not a plain <family>.out golden; no mask "
-                    "config ships beside goldens"
-                )
+    # Remediation R5d (recorded transformation): the golden-directory sweep
+    # that lived here was dead code — tests/e2e/expected/ does not exist on
+    # this tree, so the `if` could never fire. It was made LIVE (not
+    # removed) in test_exactly_one_normalizer_entry_point_under_tests_e2e
+    # below, alongside the structural centralization sweeps.
 
 
 def test_reason_prefix_constant_is_the_one_grammar() -> None:
@@ -619,3 +987,364 @@ def test_reason_prefix_constant_is_the_one_grammar() -> None:
     assert re.escape(_prereqs.REASON_PREFIX) in re.escape(
         "ranex-prereq:signing_key:"
     )
+
+
+# --- 3b. remediation arms: classifier, nodeid masking, comparator hunks --------
+
+
+_JUNIT_XFAILED = (
+    '<testcase classname="tests.contract.test_prereq_gates" '
+    'name="test_xfailed_case" time="0.000"><skipped '
+    'type="pytest.xfail" message="xfail condition: {reason}">'
+    "xfail condition: {reason}</skipped></testcase>"
+)
+_JUNIT_XPASSED_STRICT = (
+    '<testcase classname="tests.contract.test_prereq_gates" '
+    'name="test_xpassed_strict_case" time="0.000"><failure '
+    'type="pytest.xfail" message="XPASS(strict) {reason}">'
+    "XPASS(strict) {reason}</failure></testcase>"
+)
+_JUNIT_XPASSED_SKIPPED = (
+    '<testcase classname="tests.contract.test_prereq_gates" '
+    'name="test_xpassed_skip_case" time="0.000"><skipped '
+    'type="pytest.xpass" message="xpass {reason}">'
+    "xpass {reason}</skipped></testcase>"
+)
+
+
+def test_junit_xfail_and_xpass_are_not_skip_ledger_entries(
+    tmp_path: Path,
+) -> None:
+    """R5a: xfailed/xpassed entries are NOT skips — the frame's classifier
+    must match the kernel's frozen semantics (suite_results.py:142-151:
+    skipped+xfail marker -> xfailed; failure/skipped with an xpass marker ->
+    xpassed). A ledger that counts them as skips would flag every strict
+    xfail as an undeclared skip at entrypoint time."""
+
+    junit = _junitxml(
+        tmp_path,
+        _JUNIT_XFAILED.format(reason="boundary-one")
+        + _JUNIT_XPASSED_STRICT.format(reason="boundary-two")
+        + _JUNIT_XPASSED_SKIPPED.format(reason="boundary-three"),
+        skipped=2,
+        tests=3,
+    )
+    outcomes = _prereqs._junit_outcomes(junit)
+    by_name = {
+        test_id.split("::")[1]: outcome
+        for test_id, (outcome, _) in outcomes.items()
+    }
+    assert by_name.get("test_xfailed_case") == "xfailed", (
+        f"a <skipped type=pytest.xfail> entry classifies xfailed, kernel "
+        f"semantics: {by_name!r}"
+    )
+    assert by_name.get("test_xpassed_strict_case") == "xpassed", (
+        f"a strict-XPASS <failure type=pytest.xfail> entry classifies "
+        f"xpassed, kernel semantics: {by_name!r}"
+    )
+    assert by_name.get("test_xpassed_skip_case") == "xpassed", (
+        f"a <skipped type=pytest.xpass> entry classifies xpassed, kernel "
+        f"semantics: {by_name!r}"
+    )
+
+    # The ledger consequence: with zero declarations, none of the three is
+    # an "undeclared skip" — the cross-check stays honest.
+    manifest = _manifest(tmp_path, {})
+    assert _cross(manifest, junit) == [], (
+        "xfail/xpass entries must not raise undeclared-skip findings"
+    )
+
+
+def test_nodeid_paths_stay_discriminating_while_volatile_relative_paths_mask() -> (
+    None
+):
+    """R5b, decision pinned: a relative path immediately followed by `::` is
+    a test nodeid and is NEVER masked — two failures in different files
+    remain different bytes — while genuine volatile relative paths (tmp
+    artifact paths, golden paths) still mask to <REL-PATH>."""
+
+    failed_delegation = "failed tests/e2e/test_first_delegation.py::test_journey"
+    failed_cold_start = "failed tests/e2e/test_cold_start_journey.py::test_journey"
+    assert (
+        _prereqs.normalize_transcript(failed_delegation)
+        != _prereqs.normalize_transcript(failed_cold_start)
+    ), (
+        "over-masking refused: the normalizer masked two different test "
+        "nodeids into equal bytes — which file failed is verdict meaning"
+    )
+    assert "tests/e2e/test_first_delegation.py" in _prereqs.normalize_transcript(
+        failed_delegation
+    ), "the nodeid's file path must survive normalization byte-for-byte"
+
+    tmp_artifact_a = (
+        "wrote pytest-tmp-of-worker/pytest-123/wired-child/report.txt out"
+    )
+    tmp_artifact_b = (
+        "wrote pytest-tmp-of-worker/pytest-456/wired-child/report.txt out"
+    )
+    assert (
+        _prereqs.normalize_transcript(tmp_artifact_a)
+        == _prereqs.normalize_transcript(tmp_artifact_b)
+    ), (
+        "volatile relative artifact paths must still mask — two runs with "
+        "different tmp locations normalize equal"
+    )
+
+
+_FAMILY = "first-delegation-family"
+
+
+def _first_hunk_lines(actual: str, expected: str) -> list[str]:
+    import difflib
+
+    diff = list(
+        difflib.unified_diff(
+            expected.splitlines(),
+            actual.splitlines(),
+            fromfile="expected (golden)",
+            tofile="actual (run)",
+            lineterm="",
+        )
+    )
+    hunk: list[str] = []
+    seen_header = False
+    for line in diff:
+        if line.startswith("@@"):
+            if seen_header:
+                break
+            seen_header = True
+        hunk.append(line)
+    return hunk
+
+
+def test_multi_hunk_mismatch_carries_exactly_the_first_hunk_and_names_the_family() -> (
+    None
+):
+    """R5c: compare_transcript gains a family label; on a >=2-hunk mismatch
+    the failure carries EXACTLY the first hunk (every line present, the
+    second hunk absent) and names the family. The trailing-newline-only
+    case is covered with the family named too."""
+
+    parameters = list(inspect.signature(_prereqs.compare_transcript).parameters)
+    assert parameters == ["actual", "expected", "family"], (
+        f"compare_transcript must take (actual, expected, family); got "
+        f"{parameters}. The family label is how a failure names its golden."
+    )
+
+    filler = [f"common-line-{index}" for index in range(2, 9)]
+    expected = "\n".join(
+        ["start", "HUNK-ONE-EXPECTED", *filler, "HUNK-TWO-EXPECTED", "end"]
+    )
+    actual = "\n".join(
+        ["start", "HUNK-ONE-ACTUAL", *filler, "HUNK-TWO-ACTUAL", "end"]
+    )
+    # sanity: the inputs really produce two diff hunks at default context
+    hunk_lines = _first_hunk_lines(actual, expected)
+    assert any("HUNK-TWO" in line for line in _all_hunks(actual, expected)), (
+        "fixture precondition: the sabotage must produce >= 2 hunks"
+    )
+
+    with pytest.raises(AssertionError) as refused:
+        _prereqs.compare_transcript(actual, expected, family=_FAMILY)
+    message = str(refused.value)
+    assert _FAMILY in message, (
+        f"the failure must name the golden's family: {message!r}"
+    )
+    for line in hunk_lines:
+        assert line in message, (
+            f"every line of the FIRST hunk must appear untruncated "
+            f"(missing {line!r}): {message!r}"
+        )
+    assert "HUNK-TWO-EXPECTED" not in message and "HUNK-TWO-ACTUAL" not in message, (
+        f"the second hunk must be absent — exactly one hunk, never the "
+        f"whole diff: {message!r}"
+    )
+
+    # the two-argument call still returns None on a clean diff (the frozen
+    # mechanism arms call it exactly that way)
+    assert _prereqs.compare_transcript(actual, actual, family=_FAMILY) is None
+    assert _prereqs.compare_transcript(actual, actual) is None
+
+    # trailing-newline-only difference: named exactly, family named
+    with pytest.raises(AssertionError) as newline_only:
+        _prereqs.compare_transcript("start\n", "start", family=_FAMILY)
+    newline_message = str(newline_only.value)
+    assert "trailing-newline" in newline_message, (
+        f"a trailing-newline-only diff must be named exactly: "
+        f"{newline_message!r}"
+    )
+    assert _FAMILY in newline_message
+
+
+def _all_hunks(actual: str, expected: str) -> list[str]:
+    import difflib
+
+    return list(
+        difflib.unified_diff(
+            expected.splitlines(),
+            actual.splitlines(),
+            fromfile="expected (golden)",
+            tofile="actual (run)",
+            lineterm="",
+        )
+    )
+
+
+_MASK_CONFIG_NAME = re.compile(
+    r"^(?:masks?)\.(?:ya?ml|json|toml|txt|cfg|ini)$|\.masks\.", re.IGNORECASE
+)
+
+
+def test_exactly_one_normalizer_entry_point_under_tests_e2e() -> None:
+    """R5d, structural: exactly one normalizer entry point lives under
+    tests/e2e — no sibling ``normalize_*`` function a family slice could
+    hand mask inputs to — no mask-config file ships anywhere under the e2e
+    tree, and the golden convention (plain ``<family>.out`` transcripts
+    only in tests/e2e/expected/, whenever it ships) is evaluated LIVE on
+    every run (the dead conditional sweep from
+    test_normalizer_is_one_centralized_function_without_mask_inputs was
+    folded in here — recorded transformation)."""
+
+    normalizers: set[tuple[str, str]] = set()
+    for path in sorted(E2E_DIR.rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in tree.body:
+            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)) and node.name.startswith("normalize"):
+                normalizers.add((path.relative_to(E2E_DIR).as_posix(), node.name))
+    assert normalizers == {("_prereqs.py", "normalize_transcript")}, (
+        f"the ONE normalizer entry point is _prereqs.normalize_transcript; "
+        f"siblings with their own normalize_* entry points are the "
+        f"centralization hole: {sorted(normalizers)}"
+    )
+
+    mask_configs = sorted(
+        path.relative_to(E2E_DIR).as_posix()
+        for path in E2E_DIR.rglob("*")
+        if path.is_file() and _MASK_CONFIG_NAME.match(path.name)
+    )
+    assert not mask_configs, (
+        f"no mask config may ship under tests/e2e — masks live in one "
+        f"audited function, never a config file: {mask_configs}"
+    )
+
+    expected_dir = E2E_DIR / "expected"
+    non_out = sorted(
+        path.relative_to(E2E_DIR).as_posix()
+        for path in expected_dir.rglob("*")
+        if path.is_file() and path.suffix != ".out"
+    ) if expected_dir.is_dir() else []
+    assert not non_out, (
+        f"tests/e2e/expected/ holds plain <family>.out goldens only — no "
+        f"config file a family could add masks through: {non_out}"
+    )
+
+
+_REAL_READ_TEXT = Path.read_text
+
+
+def _bind_proc_facts(
+    monkeypatch: pytest.MonkeyPatch,
+    *,
+    uid_map: str = "1000 1000 65536\n",
+    cgroup: str = "0::/delegated\n",
+    controllers: str = "cpu memory pids\n",
+) -> None:
+    """Inject identical /proc facts under both copies of the limitation
+    probe (both read them through Path.read_text). Unknown paths fall
+    through to the real filesystem."""
+
+    def _read_text(self: Path, *args: object, **kwargs: object) -> str:
+        posix = self.as_posix()
+        if posix == "/proc/self/uid_map":
+            return uid_map
+        if posix == "/proc/self/cgroup":
+            return cgroup
+        if posix.endswith("/cgroup.controllers"):
+            return controllers
+        return _REAL_READ_TEXT(self, *args, **kwargs)  # type: ignore[return-value]
+
+    monkeypatch.setattr(Path, "read_text", _read_text)
+
+
+def _load_spine_evidence_module():
+    """Load tests/e2e/test_run_produces_evidence.py as a module, with its
+    ``from conftest import ...`` resolving to tests/e2e/conftest.py exactly
+    as the e2e suite's own import mode resolves it."""
+
+    e2e_conftest_spec = importlib.util.spec_from_file_location(
+        "conftest", E2E_DIR / "conftest.py"
+    )
+    assert e2e_conftest_spec is not None and e2e_conftest_spec.loader is not None
+    e2e_conftest = importlib.util.module_from_spec(e2e_conftest_spec)
+    saved_conftest = sys.modules.get("conftest")
+    sys.modules["conftest"] = e2e_conftest
+    try:
+        e2e_conftest_spec.loader.exec_module(e2e_conftest)
+        spec = importlib.util.spec_from_file_location(
+            "spine_evidence_module", E2E_DIR / "test_run_produces_evidence.py"
+        )
+        assert spec is not None and spec.loader is not None
+        spine = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(spine)
+    finally:
+        if saved_conftest is not None:
+            sys.modules["conftest"] = saved_conftest
+        else:
+            sys.modules.pop("conftest", None)
+    return spine
+
+
+def test_frame_qualification_limitation_matches_the_spine_copy_on_identical_inputs(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """R5d, drift pin: _prereqs._qualification_host_limitation mirrors
+    tests/e2e/test_run_produces_evidence.py's frozen copy — identical
+    injected inputs (uid map, launcher build closure, cgroup controllers,
+    user namespaces) must yield the same output from both: both None, or
+    the identical limitation string. If either copy drifts, this reddens."""
+
+    spine = _load_spine_evidence_module()
+
+    import launcher_host
+
+    scenarios: list[tuple[str, dict[str, str], str | None, str | None]] = [
+        # name, /proc bindings, build limitation, userns limitation
+        ("uid-map-blank", {"uid_map": "\n"}, "not-reached", "not-reached"),
+        (
+            "build-closure-limitation",
+            {},
+            "injected build closure drift",
+            None,
+        ),
+        ("controllers-missing", {"controllers": "cpu io\n"}, None, None),
+        ("userns-limitation", {}, None, "injected userns limitation"),
+        ("all-clear", {}, None, None),
+    ]
+    for name, proc_facts, build, userns in scenarios:
+        _bind_proc_facts(monkeypatch, **proc_facts)
+        monkeypatch.setattr(
+            launcher_host, "build_closure_limitation", lambda b=build: b
+        )
+        monkeypatch.setattr(
+            launcher_host, "userns_limitation", lambda u=userns: u
+        )
+        monkeypatch.setattr(
+            spine, "build_closure_limitation", lambda b=build: b
+        )
+        monkeypatch.setattr(spine, "userns_limitation", lambda u=userns: u)
+
+        frame_verdict = _prereqs._qualification_host_limitation()
+        spine_verdict = spine._qualification_host_limitation()
+        assert frame_verdict == spine_verdict, (
+            f"scenario {name!r}: the frame's qualification limitation "
+            f"drifted from the spine's frozen copy on identical inputs — "
+            f"frame={frame_verdict!r} spine={spine_verdict!r}"
+        )
+        assert frame_verdict is None or (
+            isinstance(frame_verdict, str) and frame_verdict
+        ), (
+            f"scenario {name!r}: the limitation output shape is None or a "
+            f"non-empty string, not {frame_verdict!r}"
+        )

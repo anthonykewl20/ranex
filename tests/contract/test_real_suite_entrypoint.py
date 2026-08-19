@@ -25,6 +25,19 @@ and in docs/slices/SLICE-055-real-e2e-suite-framework.md):
   CoverageDataMissing (loudly) when a frame-wired child produced no
   parallel data file; report_unmeasured(label) is the non-alarming path
   for children the frame does not wire.
+- Remediation R2 (arbitration B4): the loud-no-data scope is real, not
+  nominal. combine_coverage(home, children=None) accepts the run's child
+  ledger — a mapping of child ID to the environment the frame wired for
+  it — and a wired child that produced no data fails loudly NAMING THE
+  CHILD, while a run whose ledger holds only unwired children never
+  alarms. report_unmeasured(children) consumes that same real input (a
+  child-id -> environment mapping) and REFUSES a bare label string
+  (TypeError): it names exactly the children whose environment the frame
+  did not wire.
+- Remediation R3: the frame exposes probe_artifact_home_writable(home),
+  the entrypoint's pre-run check — an unwritable artifact home fails
+  loudly (RuntimeError naming the home and "not writable") BEFORE any
+  suite run writes a single artifact; a writable home returns quietly.
 - The joint trace+coverage case: one real traced, coverage-measured CLI
   subprocess over a real governed subject — out-of-governed-root trace
   artifact, version-first stream, byte-identical governed outputs,
@@ -39,6 +52,7 @@ and in docs/slices/SLICE-055-real-e2e-suite-framework.md):
 from __future__ import annotations
 
 import hashlib
+import inspect
 import json
 import os
 import re
@@ -104,6 +118,73 @@ def test_readme_documents_the_real_suite_entrypoint() -> None:
         )
     assert _DURATION_BUDGET.search(body) is not None, (
         "the section must state the expected duration budget"
+    )
+
+
+def test_readme_entrypoint_wiring_is_bound_to_wire_child_environment() -> None:
+    """R6a (strengthening): the documented entrypoint's environment wiring
+    is BOUND to the function — the fence's PYTHONPATH composition and
+    COVERAGE_* values must equal wire_child_environment's outputs for the
+    default home. Documentation that drifts from the harness is a silent
+    unwired suite."""
+
+    frame = _frame()
+    readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    section = re.search(
+        rf"^{re.escape(ENTRYPOINT_HEADING)}\s*\n(.*?)(?=^## |\Z)",
+        readme,
+        re.MULTILINE | re.DOTALL,
+    )
+    assert section is not None
+    fence = re.search(r"```sh\n(.*?)```", section.group(1), re.DOTALL)
+    assert fence is not None, "the section must carry a fenced command block"
+    command = fence.group(1)
+
+    documented_start = re.search(
+        r'export COVERAGE_PROCESS_START="([^"]+)"', command
+    )
+    documented_file = re.search(r'export COVERAGE_FILE="([^"]+)"', command)
+    documented_path = re.search(r'PYTHONPATH="([^"]+)"', command)
+    assert documented_start and documented_file and documented_path, (
+        f"the fence must export COVERAGE_PROCESS_START, COVERAGE_FILE and "
+        f"compose PYTHONPATH explicitly: {command!r}"
+    )
+
+    def _resolved(raw: str) -> str:
+        return raw.replace("$PWD", str(REPO_ROOT))
+
+    default_wired = frame.wire_child_environment(
+        {"PATH": os.environ.get("PATH", "/usr/bin:/bin"), "PYTHONPATH": "src"}
+    )
+    assert _resolved(documented_start.group(1)) == (
+        default_wired["COVERAGE_PROCESS_START"]
+    ), (
+        "the documented COVERAGE_PROCESS_START must equal the wiring's "
+        "output for the default home"
+    )
+    assert _resolved(documented_file.group(1)) == default_wired["COVERAGE_FILE"], (
+        "the documented COVERAGE_FILE must equal the wiring's output for "
+        "the default home"
+    )
+
+    documented_entries = [
+        Path(REPO_ROOT, entry).resolve()
+        for entry in documented_path.group(1).split(os.pathsep)
+        if entry
+    ]
+    wired_entries = [
+        Path(REPO_ROOT, entry).resolve()
+        for entry in default_wired["PYTHONPATH"].split(os.pathsep)
+        if entry
+    ]
+    assert documented_entries == wired_entries, (
+        f"the documented PYTHONPATH composition must equal the wiring's "
+        f"append-last output: documented={documented_entries!r} "
+        f"wired={wired_entries!r}"
+    )
+    assert documented_entries[-1] == Path(frame.HOOK_DIR).resolve(), (
+        "the documented composition rides the hook dir LAST, exactly as "
+        "the wiring appends it"
     )
 
 
@@ -269,6 +350,22 @@ def test_real_subprocess_coverage_counts_cli_lines_and_combine_keep_is_idempoten
     assert lines_again == lines
 
 
+def _spine_unwired_child_env(clone_src: Path) -> dict[str, str]:
+    """The spine's real unwired-child environment — the replace shape
+    (``{**os.environ, "PYTHONPATH": <clone>/src}``) with no
+    COVERAGE_PROCESS_START/COVERAGE_FILE inheritance: the recorded way a
+    hook silently dies in a ``cwd=<clone>`` child."""
+
+    clone_src.mkdir(parents=True, exist_ok=True)
+    env = {
+        key: value
+        for key, value in os.environ.items()
+        if key not in ("COVERAGE_PROCESS_START", "COVERAGE_FILE", "PYTHONPATH")
+    }
+    env["PYTHONPATH"] = str(clone_src)
+    return env
+
+
 def test_no_data_detection_is_loud_for_wired_children_only() -> None:
     """Sad path 7, scoped: a frame-wired child whose data file is absent
     fails loudly (never a fake zero); children the frame does not wire are
@@ -285,9 +382,223 @@ def test_no_data_detection_is_loud_for_wired_children_only() -> None:
     finally:
         shutil.rmtree(empty, ignore_errors=True)
 
-    report = frame.report_unmeasured("clone-child-1")
+    # Remediation R2b (recorded transformation): the report used to take a
+    # hand-passed label string; it now consumes the run's real child ledger
+    # (child id -> the environment that child ran with). The assertion is
+    # unchanged — unwired children are reported unmeasured, never alarming.
+    unwired = _spine_unwired_child_env(Path(empty).parent / "clone" / "src")
+    report = frame.report_unmeasured({"clone-child-1": unwired})
     assert isinstance(report, str) and "unmeasured" in report.lower(), (
         f"unwired children are reported unmeasured, never alarming: {report!r}"
+    )
+
+
+def test_wired_child_that_wrote_nothing_fails_loud_naming_the_child(
+    tmp_path: Path,
+) -> None:
+    """R2a: a child the frame WIRED — hook promised — that produces no data
+    file is a loud CoverageDataMissing failure NAMING THE CHILD. The
+    construction is real: the frame-wired environment with the hook dir
+    removed from the child's PYTHONPATH (shadow/loss), running a child
+    that exits before any atexit coverage save — on hosts where a venv
+    .pth would measure the child regardless of the hook, the early exit is
+    what makes 'produced no data' true."""
+
+    frame = _frame()
+    assert "children" in inspect.signature(frame.combine_coverage).parameters, (
+        "combine_coverage must accept the run's child ledger (children=...) "
+        "so the loud no-data detection can name the wired child it is about"
+    )
+    home = tmp_path / "cov"
+    home.mkdir()
+    base = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": os.environ.get("HOME", str(Path.home())),
+    }
+    promised = frame.wire_child_environment(dict(base), coverage_home=home)
+    sabotaged_path = os.pathsep.join(
+        entry
+        for entry in promised["PYTHONPATH"].split(os.pathsep)
+        if Path(entry) != Path(frame.HOOK_DIR)
+    )
+    child = subprocess.run(
+        [sys.executable, "-c", "import os; os._exit(0)"],
+        cwd=str(tmp_path),
+        env={**promised, "PYTHONPATH": sabotaged_path},
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    assert child.returncode == 0, child.stderr
+    assert not [p for p in home.glob(".coverage.*") if p.name != ".coverage"], (
+        "fixture precondition: the sabotaged wired child must have "
+        f"produced no data file in {home}"
+    )
+
+    with pytest.raises(frame.CoverageDataMissing, match="wired-silent-child"):
+        frame.combine_coverage(home, children={"wired-silent-child": promised})
+
+
+def test_unwired_child_never_alarms_and_is_reported_from_real_environments(
+    tmp_path: Path,
+) -> None:
+    """R2b: a child NOT wired by the frame — the spine's plain replace-shape
+    environment, no COVERAGE_PROCESS_START inheritance — raises nothing,
+    and appears in report_unmeasured output built from the run's real
+    environments. The label-string grammar is refused outright."""
+
+    frame = _frame()
+    assert list(inspect.signature(frame.report_unmeasured).parameters) == [
+        "children"
+    ], (
+        "report_unmeasured must consume the run's child ledger "
+        "(children: child id -> environment), never a hand-passed label"
+    )
+    home = tmp_path / "cov"
+    home.mkdir()
+    unwired = _spine_unwired_child_env(tmp_path / "clone" / "src")
+    child = subprocess.run(
+        [sys.executable, "-c", "print('ok')"],
+        cwd=str(tmp_path),
+        env=unwired,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    assert child.returncode == 0 and child.stdout.strip() == "ok", child.stderr
+
+    with pytest.raises(TypeError):
+        frame.report_unmeasured("clone-child-1")
+
+    report = frame.report_unmeasured({"clone-child-1": unwired})
+    assert isinstance(report, str), (
+        f"the report is a string naming the unmeasured children: {report!r}"
+    )
+    assert "clone-child-1" in report and "unmeasured" in report.lower(), (
+        f"the unwired child must appear in the unmeasured report: {report!r}"
+    )
+
+    try:
+        frame.combine_coverage(home, children={"clone-child-1": unwired})
+    except frame.CoverageDataMissing:
+        pytest.fail(
+            "an unwired child's missing data must never alarm the "
+            "wired-child loud path — the scope is the wiring, not the home"
+        )
+
+
+def test_report_unmeasured_names_exactly_the_unmeasured_children(
+    tmp_path: Path,
+) -> None:
+    """R2c: after a combined run holding at least one measured wired child
+    and one unwired child, the report names EXACTLY the unmeasured ones —
+    the unwired child appears, the measured wired child does not. The
+    ledger mechanism stays free; the observable does not."""
+
+    frame = _frame()
+    assert "children" in inspect.signature(frame.combine_coverage).parameters, (
+        "combine_coverage must accept the run's child ledger (children=...) "
+        "so a combined run can be reconciled against its real children"
+    )
+    home = tmp_path / "cov"
+    home.mkdir()
+    base = {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "HOME": os.environ.get("HOME", str(Path.home())),
+    }
+    wired = frame.wire_child_environment(dict(base), coverage_home=home)
+    unwired = _spine_unwired_child_env(tmp_path / "clone" / "src")
+
+    wired_child = subprocess.run(
+        [sys.executable, "-c", "pass"],
+        cwd=str(tmp_path),
+        env=wired,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    unwired_child = subprocess.run(
+        [sys.executable, "-c", "pass"],
+        cwd=str(tmp_path),
+        env=unwired,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    assert wired_child.returncode == 0, wired_child.stderr
+    assert unwired_child.returncode == 0, unwired_child.stderr
+    assert [p for p in home.glob(".coverage.*") if p.name != ".coverage"], (
+        "fixture precondition: the wired child must have produced data"
+    )
+
+    children = {"wired-1": wired, "clone-a": unwired}
+    combined = frame.combine_coverage(home, children=children)
+    assert Path(combined).is_absolute() and Path(combined).is_file(), (
+        "a run whose wired children measured combines without alarm"
+    )
+
+    report = frame.report_unmeasured(children)
+    assert isinstance(report, str), f"the report is a string: {report!r}"
+    assert "clone-a" in report, (
+        f"the unwired child must be named unmeasured: {report!r}"
+    )
+    assert "wired-1" not in report, (
+        f"a measured wired child is NOT unmeasured — the report must name "
+        f"exactly the unmeasured children: {report!r}"
+    )
+
+
+# --- 4b. the pre-run artifact-home probe (remediation R3) ----------------------
+
+
+def test_pre_run_artifact_home_probe_fails_loud_before_any_suite_run(
+    tmp_path: Path,
+) -> None:
+    """R3: the entrypoint's pre-run writability check. An unwritable
+    artifact home fails LOUDLY — RuntimeError naming the home — BEFORE any
+    suite run: no artifact (no junitxml, no transcript) is written into
+    it. A writable home proceeds quietly."""
+
+    if os.geteuid() == 0:
+        pytest.skip(
+            "construction limit: root ignores mode bits, so chmod 0555 "
+            "cannot make a directory unwritable for this test's process"
+        )
+    frame = _frame()
+    probe = getattr(frame, "probe_artifact_home_writable", None)
+    assert probe is not None and callable(probe), (
+        "the frame must expose probe_artifact_home_writable(home) — the "
+        "entrypoint's pre-run check (mechanism free, the observable frozen)"
+    )
+    assert list(inspect.signature(probe).parameters) == ["home"], (
+        "probe_artifact_home_writable takes exactly the artifact home"
+    )
+
+    unwritable = tmp_path / "unwritable-home"
+    unwritable.mkdir()
+    unwritable.chmod(0o555)
+    try:
+        with pytest.raises(RuntimeError, match="not writable") as loud:
+            probe(unwritable)
+        assert str(unwritable) in str(loud.value), (
+            f"the failure must name the artifact home: {loud.value!r}"
+        )
+        assert sorted(p.name for p in unwritable.iterdir()) == [], (
+            "the pre-run failure leaves the artifact home untouched — no "
+            "junitxml, no transcript, nothing written before the refusal"
+        )
+    finally:
+        unwritable.chmod(0o755)
+
+    writable = tmp_path / "writable-home"
+    writable.mkdir()
+    assert probe(writable) is None, (
+        "a writable artifact home proceeds quietly — the probe alarms "
+        "exactly on the unwritable case"
     )
 
 
@@ -523,3 +834,73 @@ def test_both_new_contract_files_are_in_the_frozen_manifest() -> None:
             f"{prefix} IDs not in the frozen manifest (run the suite-freeze "
             f"ceremony; hand edits are refused): {missing}"
         )
+
+
+# --- 7. module-scope prereq re-evaluation (remediation R6b) ---------------------
+
+_CONSUMPTION_MODULES = (
+    "tests/e2e/test_slice055_fixture_consumption_a.py",
+    "tests/e2e/test_slice055_fixture_consumption_b.py",
+)
+
+
+def test_module_scope_prereq_fixtures_re_evaluate_per_module_not_per_session(
+    tmp_path: Path,
+) -> None:
+    """R6b: two consuming modules, one precondition flipped between them.
+    Module A consumes the module-scoped prereq_signing_key fixture with
+    the precondition present (its test runs); module B — same session —
+    flips the precondition away before its OWN module-scoped evaluation
+    and must see the flipped verdict as a skip carrying the greppable
+    reason. A session-cached fixture would hand B A's verdict and run B's
+    test instead. The two tiny consuming modules are this slice's
+    permitted test surface; consuming the conftest fixtures here also
+    kills the dead-fixture finding."""
+
+    key = tmp_path / "worker.key"
+    key.write_text("test-private-key-material\n", encoding="utf-8")
+    env = {
+        key_: value
+        for key_, value in os.environ.items()
+        if key_ not in ("COVERAGE_PROCESS_START", "COVERAGE_FILE")
+    }
+    env["RANEX_SIGNING_KEY"] = str(key)
+    env["RANEX_SLICE055_FLIP"] = "1"
+
+    completed = subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "pytest",
+            "-q",
+            "-rs",
+            "--strict-config",
+            "--strict-markers",
+            *_CONSUMPTION_MODULES,
+        ],
+        cwd=str(REPO_ROOT),
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=300,
+        check=False,
+    )
+    assert completed.returncode == 0, (
+        f"skips are not failures; stdout tail: {completed.stdout[-800:]!r} "
+        f"stderr: {completed.stderr[-800:]!r}"
+    )
+    assert "2 passed" not in completed.stdout, (
+        "a session-cached fixture verdict would run BOTH modules' tests — "
+        f"each module must re-evaluate its own precondition: {completed.stdout!r}"
+    )
+    assert "1 passed, 1 skipped" in completed.stdout, (
+        f"module A (precondition present) passes; module B (flipped) skips: "
+        f"{completed.stdout!r}"
+    )
+    assert "ranex-prereq:signing_key:" in completed.stdout, (
+        f"module B's own skip must carry the greppable reason grammar: "
+        f"{completed.stdout!r}"
+    )
+    assert "test_slice055_fixture_consumption_b.py" in completed.stdout, (
+        f"the skip must be module B's test, not module A's: {completed.stdout!r}"
+    )
