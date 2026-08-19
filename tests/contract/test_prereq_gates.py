@@ -44,9 +44,17 @@ The frozen interface this file pins (the frame's one library module,
                                         "declared skip not observed: <id>:
                                         <reason>"; [] when honest. A declared
                                         skip that WAS observed but with a
-                                        drifted reason is a finding too
-                                        (remediation R1d: exact reason
-                                        comparison, both strings named).
+                                        drifted reason is a finding of the
+                                        HARD tier only (remediation R1d as
+                                        scoped by the orchestrator ruling on
+                                        Worker B's #35 blocker: a
+                                        ``ranex-prereq:`` declaration
+                                        compares reasons EXACTLY, both
+                                        strings named; a ``ranex-context:``
+                                        declaration is never byte-compared —
+                                        its drift is reported by
+                                        ``context_mismatches`` naming ID +
+                                        observed message + declared context).
     `python tests/e2e/_prereqs.py cross-check <manifest> <junitxml>`
                                        exit 0 when honest, nonzero printing
                                        each finding — the step the README
@@ -599,7 +607,13 @@ def test_declared_skip_not_observed_fails_naming_id_and_reason(
 # scope permanently; R1c lints the manifest's own declarations into the
 # ruled two grammars (amended per the orchestrator's R1c census ruling:
 # prereq hard / context informational); R1d adds the missing direction (a)
-# reason comparison.
+# reason comparison — scoped, per the orchestrator ruling on Worker B's
+# #35 blocker (comment 5343719923), to a HARD-tier obligation only: exact
+# comparison for ranex-prereq: declarations, reported-not-compared for
+# ranex-context: ones, and a prereq-tier declaration whose observed
+# message cannot carry the marker is misclassified — a finding until it is
+# reclassified context-tier through the freeze ceremony (classification
+# honesty).
 
 
 _CONTEXT_BOUND_REASON = (
@@ -723,10 +737,14 @@ _DRIFTED_OBSERVED = (
 def test_declared_observed_skip_with_drifted_reason_is_a_finding_naming_both(
     tmp_path: Path,
 ) -> None:
-    """R1d: direction (a) reason comparison, pinned to EXACT string equality
-    (the arbitration's pick-one). A skip that IS declared but whose observed
-    reason drifted from the declaration is a finding naming both strings —
-    an outcome-blind freeze cannot be allowed to launder a reworded skip."""
+    """R1d, hard tier: direction (a) reason comparison for a PREREQ-tier
+    declaration, pinned to EXACT string equality (the arbitration's
+    pick-one; scope confirmed by the orchestrator ruling on Worker B's #35
+    blocker). A skip that IS declared with ``ranex-prereq:`` but whose
+    observed reason drifted is a finding naming both strings — an
+    outcome-blind freeze cannot be allowed to launder a reworded skip.
+    Both fixtures carry the marker: this tier's tests are designed to emit
+    marker-carrying skip messages."""
 
     manifest = _manifest(tmp_path, {_CROSSED_ID: _DRIFTED_DECLARED})
     junit = _junitxml(
@@ -756,6 +774,144 @@ def test_declared_observed_skip_with_drifted_reason_is_a_finding_naming_both(
     assert completed.returncode != 0, "a drifted skip reason must exit nonzero"
     assert "skip reason mismatch:" in completed.stdout
     assert _DRIFTED_OBSERVED in completed.stdout
+
+
+#: The ruled case, verbatim from Worker B's blocker (#35 comment 5343719923):
+#: a live skip message emitted by ANOTHER slice's frozen test file —
+#: dynamically composed build-closure prose whose "(1 of 213 traced inputs
+#: differ, e.g. /etc/ld.so.cache)" detail varies with host state, so it can
+#: never byte-match a freeze-time declaration. Exactly the message class the
+#: ruling holds out of the hard tier's exact comparison.
+_FOREIGN_DYNAMIC_OBSERVED = (
+    "SLICE-017 build host unavailable: the pinned launcher build closure "
+    "does not match this host (1 of 213 traced inputs differ, e.g. "
+    "/etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here"
+)
+
+
+def test_context_tier_declared_observed_drift_is_reported_not_compared(
+    tmp_path: Path,
+) -> None:
+    """R1d, informational tier: a ``ranex-context:`` declaration observed
+    skipping with a wildly different (here: dynamically composed, foreign)
+    live message produces NO reason finding — ``cross_check_skips`` stays
+    empty, the entrypoint exits zero — and the drift is REPORTED: the ID
+    appears in ``context_mismatches`` output alongside its declared context
+    and the observed message (the ruling's machine-greppable promise:
+    reported, never byte-compared)."""
+
+    declared = (
+        "ranex-context:launcher-build-host: the sealed hermetic freeze never "
+        "materialises the pinned launcher build closure this journey needs"
+    )
+    manifest = _manifest(tmp_path, {_CROSSED_ID: declared})
+    junit = _junitxml(
+        tmp_path,
+        _JUNIT_SKIPPED.format(
+            name=_CROSSED_ID.split("::")[1], reason=_FOREIGN_DYNAMIC_OBSERVED
+        )
+        + _JUNIT_PASSED.format(name=_UNDECLARED_ID.split("::")[1])
+        + _JUNIT_PASSED.format(name=_STALE_ID.split("::")[1]),
+        skipped=1,
+        tests=3,
+    )
+
+    assert _cross(manifest, junit) == [], (
+        "a context-tier declaration whose observed message drifted is "
+        "reported, never a hard reason-mismatch finding — the informational "
+        "tier is not byte-compared (orchestrator ruling, #35)"
+    )
+
+    mismatches = _prereqs.context_mismatches(manifest, junit)
+    reported = [line for line in mismatches if _CROSSED_ID in line]
+    assert reported, (
+        "the drifted context-tier skip must be REPORTED with its ID: "
+        f"{mismatches!r}"
+    )
+    line = reported[0]
+    assert "launcher-build-host" in line, (
+        "the report must name the declared context: "
+        f"{line!r}"
+    )
+    assert _FOREIGN_DYNAMIC_OBSERVED in line, (
+        "the report must name the observed message next to the declared "
+        f"context (ID + observed + declared context): {line!r}"
+    )
+
+    completed = _cross_script(manifest, junit)
+    assert completed.returncode == 0, (
+        "a context-tier reason drift is informational, never an exit "
+        f"condition; stdout={completed.stdout!r} stderr={completed.stderr!r}"
+    )
+    assert _CROSSED_ID in completed.stdout, (
+        f"the ID must appear in the mismatch list output: {completed.stdout!r}"
+    )
+    assert _FOREIGN_DYNAMIC_OBSERVED in completed.stdout, (
+        "the artifact must carry the observed message next to the ID: "
+        f"{completed.stdout!r}"
+    )
+    assert re.search(r"context-mismatch count: 1\b", completed.stdout), (
+        f"the composed output must carry the count line: {completed.stdout!r}"
+    )
+
+
+def test_prereq_tier_declaration_with_unmarked_observed_message_is_a_finding(
+    tmp_path: Path,
+) -> None:
+    """R1d, classification honesty (the hard tier restated with the marker
+    check pinned): a ``ranex-prereq:`` declaration observed with a live
+    message that does NOT carry the marker is a finding naming both
+    strings. A prereq-tier declaration whose test's message cannot carry
+    the marker is misclassified — the remedy is reclassifying it
+    context-tier through the freeze ceremony, never silencing the
+    finding."""
+
+    declared = (
+        "ranex-prereq:qualified_host: this host was declared at freeze time "
+        "to lack the confinement qualification"
+    )
+    # The marker check, pinned explicitly: the declaration carries the
+    # prereq marker, the observed message does not — the misclassification
+    # the classification-honesty rule names.
+    assert declared.startswith(f"{_prereqs.REASON_PREFIX}qualified_host:"), (
+        "fixture precondition: the declaration must carry the prereq marker"
+    )
+    assert not _FOREIGN_DYNAMIC_OBSERVED.startswith(_prereqs.REASON_PREFIX), (
+        "fixture precondition: the observed message must NOT carry the "
+        "marker — this is the misclassified case"
+    )
+
+    manifest = _manifest(tmp_path, {_CROSSED_ID: declared})
+    junit = _junitxml(
+        tmp_path,
+        _JUNIT_SKIPPED.format(
+            name=_CROSSED_ID.split("::")[1], reason=_FOREIGN_DYNAMIC_OBSERVED
+        )
+        + _JUNIT_PASSED.format(name=_UNDECLARED_ID.split("::")[1])
+        + _JUNIT_PASSED.format(name=_STALE_ID.split("::")[1]),
+        skipped=1,
+        tests=3,
+    )
+    findings = _cross(manifest, junit)
+    assert findings, (
+        "a prereq-tier declaration observed with an unmarked message is a "
+        "finding — the classification-honesty rule"
+    )
+    line = findings[0]
+    assert line.startswith("skip reason mismatch:"), (
+        f"finding must start with the greppable grammar: {line!r}"
+    )
+    assert declared in line and _FOREIGN_DYNAMIC_OBSERVED in line, (
+        f"finding must name BOTH the declared and the observed reason: {line!r}"
+    )
+
+    completed = _cross_script(manifest, junit)
+    assert completed.returncode != 0, (
+        "a prereq-tier reason mismatch must exit nonzero however foreign "
+        "the observed message is"
+    )
+    assert "skip reason mismatch:" in completed.stdout
+    assert _FOREIGN_DYNAMIC_OBSERVED in completed.stdout
 
 
 #: R1c — the two-grammar declaration mandate (orchestrator ruling on issue
