@@ -185,16 +185,31 @@ are the issue's own demands, not amendments.
 
 ## Follow-ups register (carried at close)
 
-1. **ADR-032 fold-in of the truncation blind spot — not landed at
-   close.** The Determination section above assigns the close-out lane
-   the obligation to fold the characterized rollback/truncation blind
-   spot into ADR-032's record. The close lane's writable surface
-   (ceremony manifest, `docs/slices/**`, `docs/STATE.md`,
-   `README.md`) excluded `docs/adr/**`, so the edit was not made. The
-   characterization itself is frozen and asserted as the documented
-   outcome in
-   `test_journal_verify_real.py::test_tampered_row_detection_names_the_row_and_rolls_back_honestly`
-   and is recorded in this file; only the ADR prose amendment
-   remains, awaiting a surface grant or a routing decision. Closing
-   the blind spot itself remains a slice-governed change, never a
+1. **ADR-032 fold-in of the truncation blind spot — RESOLVED at
+   8a5ed3837.** The Determination section above assigned the
+   close-out lane the obligation to fold the characterized
+   rollback/truncation blind spot into ADR-032's record; the close
+   lane's writable surface excluded `docs/adr/**`, so the edit
+   landed as the follow-up commit 8a5ed3837 (docs(ADR-032): fold
+   in the SLICE-056 truncation blind-spot characterization —
+   disclosed kernel limit). ADR-032 now records the limit —
+   `journal verify` proves integrity over the rows present and
+   nothing more, so a journal whose last row was deleted out-of-band
+   still reports `PASS chain=verified` — pinned by the frozen
+   truncation layer of
+   `test_journal_verify_real.py::test_tampered_row_detection_names_the_row_and_rolls_back_honestly`,
+   with the closing rule that changing the semantics needs an ADR
+   of its own. The characterization itself stays frozen and
+   asserted as the documented outcome in that test; closing the
+   blind spot itself remains a slice-governed change, never a
    quiet rebase.
+2. **Mirror-pin contract test for `_journal_first_broken_row` —
+   open; the next test-author follow-up (the final-gate review's
+   P3).** The row-naming presentation helper landed at 8bdccb60d
+   mirrors `Journal.verify`'s detection walk (same row order,
+   genesis root, and recomputation) by construction, but no
+   contract test yet pins that mirror: a future change to
+   `Journal.verify`'s detection semantics that leaves the naming
+   walk un-updated would name the wrong row silently. The next
+   test-author lane adds a mirror-pin contract test so such drift
+   fails loudly.

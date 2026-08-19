@@ -301,7 +301,8 @@ below is what is actually built.
   recomputes the chain, now naming the first chain-breaking row. But an
   internally consistent earlier prefix still verifies after later rows are
   removed — characterized and frozen as the documented outcome by SLICE-056;
-  the ADR-032 fold-in is queued. Closing it remains a slice-governed change.
+  the ADR-032 fold-in landed (8a5ed3837). Closing it remains a slice-governed
+  change.
 - **No flow graph, no scenario compilation**, no budget, no escalation. Those
   are designed, not built. Worker dispatch left this list: `ranex task
   dispatch|judge|merge|delegate|fanout` ran a real model end to end (SLICE-008),
@@ -334,8 +335,10 @@ eight family IDs (manifest 1345 IDs / 119 expected skips) and resolved
 the pre-registered hermetic UNKNOWN hermetic-green: sealed run 1227
 passed / 118 skipped / run_exit=0 — every family arm runs identically
 inside the sealed environment. Full suite at close: 1305 passed / 40
-skipped / 0 failed. One carried follow-up: the ADR-032 fold-in of the
-characterized truncation blind spot (queued in the done slice file).
+skipped / 0 failed. The carried follow-up — the ADR-032 fold-in of
+the characterized truncation blind spot — landed at 8a5ed3837; the
+register's open item is now the mirror-pin test for
+`_journal_first_broken_row`.
 The milestone-4 real-e2e frame is closed beneath it (2026-08-19):
 honest prereq probes, the two-tier declared-skip cross-check,
 subprocess coverage, and the documented entrypoint (rc 0, coverage
@@ -397,8 +400,9 @@ chosen by the party being measured. Both are closed.
   rollback/truncation blind spot characterized as the documented
   outcome. Registered through the suite-freeze ceremony (1345 IDs /
   119 expected skips), which also proved the family hermetic-green —
-  every arm runs identically inside the sealed environment. Carried
-  follow-up: the ADR-032 fold-in of the truncation blind spot.
+  every arm runs identically inside the sealed environment. The
+  carried follow-up — the ADR-032 fold-in of the truncation blind
+  spot — landed at 8a5ed3837 as a disclosed kernel limit.
 - **SLICE-055-real-e2e-suite-framework** — closed 2026-08-19. The ADR-032
   frame: six honest prereq probes, the golden-transcript normalizer, the
   two-tier declared-skip cross-check (probe-backed hard / context

@@ -27,9 +27,9 @@ Next slice: SLICE-057
 SLICE-057 (#37, execution family — run + confinement + suite freeze
 on a qualified host) is the next milestone-4 family slice per the
 build order; it opens through governance (spec + ADR check) when
-selected. Carried follow-up from the SLICE-056 close: the ADR-032
-fold-in of the truncation blind spot (slice file's register — the
-close lane's surface excluded docs/adr/**); owner to route. The
+selected. The SLICE-056 carried follow-up — the ADR-032 fold-in of
+the truncation blind spot — landed at 8a5ed3837; the register's open
+item is the P3 mirror-pin test for _journal_first_broken_row. The
 SLICE-055 follow-ups in its done slice file stay queued.
 
 ## Governance (owner, 2026-08-17)
@@ -47,4 +47,4 @@ Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate.
   (subprocess-heavy tests vs the in-process trampoline; observability
   mutants remain unchecked — mutation evidence not obtained, disclosed).
 - The journal does not detect rollback/truncation (SLICE-056
-  characterized it; the ADR-032 fold-in is the queued follow-up).
+  characterized it; the ADR-032 fold-in landed at 8a5ed3837).
