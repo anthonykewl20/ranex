@@ -1,6 +1,6 @@
 # ADR-032 — real-e2e suite framework: prereqs, goldens, subprocess coverage, one proof entrypoint
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-19 (revised same day — two-panel remediation; review record in More Information)
 **Decision-makers:** repo owner
 **Slice:** n/a — no slice FILE is open; issue #35's `in-progress` label is the standing claim rule firing at Phase-0 start (this ADR is that claimed Phase-0 work), and the SLICE-055 file itself opens at SPEC PRD only after this ADR is accepted, per tracker #33 phase order
