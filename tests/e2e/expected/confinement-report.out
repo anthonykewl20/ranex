@@ -1,0 +1,7 @@
+RECORDED  claim=confined-observed  producer=execution-family  exit=0
+          subject=<DIGEST>
+confinement_result_digest=<DIGEST>
+confinement_profile_digest=<DIGEST>
+launcher_builds_reproducible=true
+qualification_schema=ranex-strict-local-qualification-v1
+qualification_qualified=true
