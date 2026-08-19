@@ -322,8 +322,26 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** SLICE-057-real-e2e-execution-family (#37 — run + confinement + suite freeze)
+**Active slice:** none
 
+SLICE-057 (execution family e2e, #37) closed 2026-08-20 — the ADR-032
+frame's second family customer: three real-journey test files (real
+`run` producing signed, subject-digest-bound evidence with openssl's
+independent re-check; real launcher build/install/qualify and confined
+spawns whose kill/drain the kernel validates over a drained teardown;
+the real hermetic suite-freeze round-trip) compared byte-exactly
+against three goldens captured from the real journeys through the
+frame's one normalizer. The journey forced three never-executed-code
+kernel fixes, each an orchestrator-ruled allowlist/re-pin amendment on
+#37 (session enrollment drain; the sleep family; the process-creation
+family with its recorded nr-only-clone residual — the security review
+gates the range before push). The confinement family's strict-local
+arms are proven in the delegated scope (`systemd-run --user --scope
+-p Delegate=yes`, 7/7) and skip with the live probe reason in a plain
+session — the ceremony froze exactly those five declarations.
+Ceremony: manifest 1363 IDs (+18) / 124 expected skips (+5), sealed
+run 1260 passed / 103 skipped / run_exit=0. Full suite at close:
+1345 passed / 18 skipped / 0 failed.
 SLICE-056 (verdict family e2e, #36) closed 2026-08-20 — the ADR-032
 frame's first family customer: two real-journey test files (gate
 evaluate on a real clone with real keygen/run/openssl-verified
@@ -390,6 +408,24 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-057-real-e2e-execution-family** — closed 2026-08-20. The
+  ADR-032 frame's second family customer: the run family (real signed
+  evidence, stdlib subject-digest recompute, openssl Ed25519
+  verification, both post-run sabotage refusals, the traced-run
+  artifact with verdict neutrality), the confinement family (two-root
+  launcher reproducibility, real build/install/qualify, confined
+  spawn binding both confinement digests, the kill/drain survivor
+  contract, timeout-vs-exit distinct reporting), and the freeze
+  family (byte-stable manifest round-trip, dirty-tree and hand-edit
+  refusals) — three goldens captured from the real journeys through
+  the one normalizer. The journey forced three never-executed-code
+  kernel fixes through orchestrator-ruled amendments (enrollment
+  drain, sleep family, process-creation family; nr-only-clone
+  residual recorded for the security review gating the range).
+  Strict-local arms proven in the delegated scope (7/7); plain
+  sessions skip with the live probe reason. Registered through the
+  ceremony: 1363 IDs / 124 expected skips, sealed run 1260/103/
+  run_exit=0.
 - **SLICE-056-real-e2e-verdict-family** — closed 2026-08-20. The
   ADR-032 frame's first family customer: gate-evaluate and
   journal-verify journeys over a real clone with real keygen/run

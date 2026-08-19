@@ -1,6 +1,6 @@
 # SLICE-057 — real e2e: execution family (run + confinement + suite freeze)
 
-**Status:** open
+**Status:** done
 **ADR:** docs/adr/ADR-032-real-e2e-suite-framework.md
 **Issue:** #37 (tracker #33, milestone 4 — the ADR-032 frame's second
 family customer; SLICE-055 prerequisite accepted 2026-08-19)
@@ -191,3 +191,95 @@ obligations — capturing the three goldens from the real journeys,
 posting AC2's traced event stream and AC3's sabotage red output, and
 the registration ceremony — are the issue's own demands, not
 amendments.
+
+## Close-out record (2026-08-20)
+
+Closed against the nine done-criteria contracts, every one proven by
+the named frozen tests at the final state. Commits this slice:
+7bdcae8b2 (frozen red) → 0013bf427, f4b09b264, 128d13552 (the two
+early kernel fixes + re-qualification) → d2881a2e0 (run + confinement
+goldens) → 36983ae31 (blocked state) → e1e6dc8a7 (the process-creation
+allowlist fix + re-pin) → 59479a1e7 (ceremony + freeze golden) → the
+docs close-out.
+
+**The three never-executed-code kernel fixes the journey forced**
+(each an orchestrator-ruled amendment on #37, each a one-family
+allowlist/re-pin through the f4b09b264 mechanics; the security review
+gates the whole range 0013bf427…e1e6dc8a7 before push):
+
+1. **Enrollment drain** (0013bf427): the strict-local session's
+   controller leaf could not enroll on the host's delegated cgroup
+   (cgroup-v2 no-internal-process rule) — `_create_worker_cgroup` now
+   mirrors the qualify probe's drain (`_move_all_cgroup_processes`)
+   and reverses it at teardown (`_release_controller_leaf`).
+2. **Sleep family** (128d13552): `default-deny-v1` omitted
+   `clock_nanosleep`, so every sleep-family observed command died
+   instantly under EPERM; admitted after the strace census.
+3. **Process-creation family** (e1e6dc8a7): the allowlist also omitted
+   `clone`/`execve`/`wait4` + the dash id-probes
+   (`getuid/getgid/geteuid/getegid/getppid`), so the survivor arm's
+   dash died with "Cannot fork" (RECORDED exit=2); the eight census'd
+   entries admitted. RECORDED RESIDUAL: the filter is nr-only, so
+   `clone` is admitted with ANY flags (nested userns/PID-ns creation
+   contained by the inheritance facts: seccomp+NNP+Landlock inherit,
+   descendants stay in the PID namespace and the confined cgroup,
+   cgroup.kill reaches nested namespaces, pids bounds the count); an
+   argument-filtered clone is a filter redesign, ruled out of scope.
+
+**Goldens** — run-evidence `d8c363a9`… (held from the prototype
+journey, re-verified at every run-family pass, both contexts);
+confinement-report `e688a37d`… (captured at artifact d9dd15b8…,
+KEPT at the final artifact ea17bcae… — verified equal in-scope: the
+normalized report's digests are `<DIGEST>`-tamed, so the golden is
+artifact-digest-insensitive); suite-freeze-manifest `c12033d6`…
+(the ceremony's own FROZEN line through the normalizer, captured at
+the ceremony-sealed state per its construction).
+
+**Delegated-scope note** (the honest host-gating record): the
+confinement family's strict-local arms are proven in the DELEGATED
+scope (`systemd-run --user --scope -p Delegate=yes`) — 7/7 green,
+including the survivor arm proving its kill/drain contract for real
+(the confined dash forks, the backgrounded sleep outlives the shell,
+kill/drain reaches it, the result validates over the drained
+teardown) and the timeout/exit distinct reporting. In a plain session
+the five probe-gated arms skip with the live
+`ranex-prereq:qualified_host: the delegated cgroup is missing
+required controllers: cpu` reason — never a silent green — and the
+ceremony froze exactly those five declarations.
+
+**Ceremony** (59479a1e7): the standing close ceremony re-declared the
+119 committed expected-skips verbatim + the 5 new qualified_host
+declarations; sealed run **1260 passed / 103 skipped / run_exit=0**
+(120.65s). Manifest 1345 → **1363 IDs** (+18: run 5, confinement 7,
+freeze 6), expected_skips 119 → **124**. The observed-skip count sits
+below the declared count because the closure-matching host now RUNS
+tests whose standing declarations date from the pre-re-qualification
+drift — declared-but-passed is tolerated by the verdict's non_passed
+check (the SLICE-056 ceremony's own shape).
+
+**Full suite at close (plain session):** 1345 passed / 18 skipped /
+0 failed (912.10s). Frozen suites over the final re-pin: slice017
+launcher + host-qualification 47 passed; slice046 + slice047 +
+slice018 + confinement-result + trace-invariance + kernel-unchanged
+52 passed / 3 pre-existing skips (delegated; plain 50/5).
+
+**Red → green:** frozen red at 7bdcae8b2 (8 failed / 5 passed /
+5 skipped); the run family went green through the prototype-verified
+journeys + d2881a2e0; the confinement family through 0013bf427,
+128d13552, e1e6dc8a7 (its 7th arm — the survivor — green only at
+e1e6dc8a7); the freeze family green only past the 59479a1e7 ceremony
+(its journey arms' designed pre-ceremony red was the stale-manifest
+drift the ceremony resolves). AC2's traced event stream and AC3's
+sabotage red outputs are posted on issue #37 by the close lane.
+
+## Follow-ups register (carried at close)
+
+1. **Argument-filtered `clone` — open, security-review-owned.** The
+   recorded residual of the e1e6dc8a7 amendment: `default-deny-v1`
+   admits clone nr-only (any flags). Masking the entry to the census'd
+   flags (CLONE_CHILD_CLEARTID|CLONE_CHILD_SETTID|SIGCHLD) is a BPF
+   filter redesign, ruled out of scope; the review gating the range
+   owns the decision.
+2. **Mirror-pin contract test for `_journal_first_broken_row` —
+   open** (carried from the SLICE-056 close; unchanged).
+3. **SLICE-055 follow-ups** — stay queued in its done slice file.
