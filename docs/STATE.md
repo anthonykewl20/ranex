@@ -7,30 +7,29 @@
 
 ## Where we stopped
 
-SLICE-057 (#37, execution family — run + confinement + suite freeze)
-opened through governance: slice file written (ADR-032 link, the issue's
-exact ownership, host-gating strategy recorded), STATE/README synced,
-`in-progress` claimed on #37. Every kernel behavior the family asserts
-was prototyped against e84b5176a in /tmp/opencode: the run journey with
-stdlib digest recompute + openssl verification and both sabotage
-refusals, the two-root launcher-build drift contract, the real-tree
-freeze round-trip (byte-stable, 53931503…97139, run_exit=0), and the
-dirty-tree/hand-edit refusals. This host is confinement-unqualified
-(pinned build closure drifts, /etc/ld.so.cache), so the strict-local
-arms ride the frame's `qualified_host` probe — named skips here,
-assertions on a qualified host.
+SLICE-057 (#37, execution family) is open and RED-frozen. Opened at
+61753dc84 (slice file, ADR-032 link, host-gating strategy, STATE/README
+synced, `in-progress` claimed). Worker A froze the three test files red
+at 7bdcae8b2 — per-file: test_run_real 3F/2P, test_confinement_real
+1F/1P/5S (named `ranex-prereq:qualified_host:` skips — this host's
+build closure drifts), test_suite_freeze_real 4F/2P (the real-tree
+round-trip named its drift: +18 IDs, run_exit=1). Total 8F/5P/5S. Every
+kernel behavior asserted was prototyped against e84b5176a in
+/tmp/opencode (run journey, drift arm, real-tree freeze byte-stable,
+dirty/hand-edit refusals); the strict-local arms are frozen from
+SLICE-046/017/018-proven shapes and first execute on a qualified host.
+Goldens are absent on purpose — the implementation lane captures them.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-057 (open now)
-Worker A freezes the three red test files + golden contracts
-(test_run_real, test_confinement_real, test_suite_freeze_real);
+Next slice: SLICE-057 (open, red-frozen)
 Worker B implements: capture the three goldens from the real journeys,
-post AC2's traced event stream + AC3's sabotage red output, run the
-registration ceremony. The register's open follow-ups stand: the P3
-mirror-pin test for `_journal_first_broken_row`, and the SLICE-055
-follow-ups queued in its done slice file.
+post AC2's traced event stream + AC3's sabotage red output on #37, run
+the registration ceremony (18 new IDs; the five confinement skips
+declare context-tier per the slice's strategy). The register's open
+follow-ups stand: the P3 mirror-pin test for `_journal_first_broken_row`,
+and the SLICE-055 follow-ups queued in its done slice file.
 
 ## Governance (owner, 2026-08-17)
 
