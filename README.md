@@ -322,7 +322,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** SLICE-057-real-e2e-execution-family (#37 — run + confinement + suite freeze)
 
 SLICE-056 (verdict family e2e, #36) closed 2026-08-20 — the ADR-032
 frame's first family customer: two real-journey test files (gate

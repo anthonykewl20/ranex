@@ -2,35 +2,35 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-056 closed)
-**Active slice:** none
+**Updated:** 2026-08-20 (SLICE-057 opened)
+**Active slice:** docs/slices/SLICE-057-real-e2e-execution-family.md
 
 ## Where we stopped
 
-SLICE-056 (#36, verdict-family real e2e) is done and archived
-(docs/slices/done/SLICE-056-real-e2e-verdict-family.md). All eight
-family arms green: four goldens captured from the real journeys
-(2e6947e36), journal-verify row naming landed (8bdccb60d), the
-truncation fixture's construction fixed per the Option-1 ruling
-(b4e835c00). The suite-freeze ceremony at b4e835c00 (dabc91f68)
-resolved the pre-registered hermetic UNKNOWN **hermetic-green** —
-sealed run 1227 passed / 118 skipped / run_exit=0, exactly +8 over
-the 41bb4fef6 baseline with the skip set unchanged, so no family arm
-behaves differently sealed and the context-guard remedy was not
-needed. Manifest: 1345 IDs (+8), expected_skips 119 byte-identical.
-Full suite at close: 1305 passed / 40 skipped / 0 failed.
+SLICE-057 (#37, execution family — run + confinement + suite freeze)
+opened through governance: slice file written (ADR-032 link, the issue's
+exact ownership, host-gating strategy recorded), STATE/README synced,
+`in-progress` claimed on #37. Every kernel behavior the family asserts
+was prototyped against e84b5176a in /tmp/opencode: the run journey with
+stdlib digest recompute + openssl verification and both sabotage
+refusals, the two-root launcher-build drift contract, the real-tree
+freeze round-trip (byte-stable, 53931503…97139, run_exit=0), and the
+dirty-tree/hand-edit refusals. This host is confinement-unqualified
+(pinned build closure drifts, /etc/ld.so.cache), so the strict-local
+arms ride the frame's `qualified_host` probe — named skips here,
+assertions on a qualified host.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-057
-SLICE-057 (#37, execution family — run + confinement + suite freeze
-on a qualified host) is the next milestone-4 family slice per the
-build order; it opens through governance (spec + ADR check) when
-selected. The SLICE-056 carried follow-up — the ADR-032 fold-in of
-the truncation blind spot — landed at 8a5ed3837; the register's open
-item is the P3 mirror-pin test for _journal_first_broken_row. The
-SLICE-055 follow-ups in its done slice file stay queued.
+Next slice: SLICE-057 (open now)
+Worker A freezes the three red test files + golden contracts
+(test_run_real, test_confinement_real, test_suite_freeze_real);
+Worker B implements: capture the three goldens from the real journeys,
+post AC2's traced event stream + AC3's sabotage red output, run the
+registration ceremony. The register's open follow-ups stand: the P3
+mirror-pin test for `_journal_first_broken_row`, and the SLICE-055
+follow-ups queued in its done slice file.
 
 ## Governance (owner, 2026-08-17)
 
