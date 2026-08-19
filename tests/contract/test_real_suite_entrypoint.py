@@ -193,7 +193,8 @@ def _coverage_data_hash(home: Path) -> str:
 
     from coverage import CoverageData  # noqa: PLC0415 — dev dependency, pinned
 
-    data = CoverageData(path=str(home / ".coverage"))
+    data = CoverageData(basename=str(home / ".coverage"))
+    data.read()
     snapshot = {
         measured: sorted(data.lines(measured) or [])
         for measured in sorted(data.measured_files())
@@ -206,7 +207,8 @@ def _coverage_data_hash(home: Path) -> str:
 def _cli_lines(home: Path) -> tuple[str, list[int]]:
     from coverage import CoverageData  # noqa: PLC0415
 
-    data = CoverageData(path=str(home / ".coverage"))
+    data = CoverageData(basename=str(home / ".coverage"))
+    data.read()
     for measured in sorted(data.measured_files()):
         if measured.endswith("src/ranex/cli/main.py"):
             return measured, sorted(data.lines(measured) or [])
