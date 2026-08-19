@@ -319,19 +319,25 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-055-real-e2e-suite-framework.md — the
-real-e2e suite framework per ADR-032 (#35): honest prereq probes, the
-golden-transcript normalizer, a subprocess coverage harness, and one
-documented proof entrypoint. The frame's two contract test files are frozen
-red ahead of implementation; no per-feature real tests land in this slice.
-All six kernel P0 spec-authority slices (SLICE-029/030/031/032/033/035) are
-landed on kernel `main` at `ff3ab802`: A/B/C contract freeze, lifecycle,
-closed-DSL projections, approval/revocation/intersected grants, trace integrity,
-and real-subject bootstrap. The byte-identical A/B/C schema/vector TypeScript
+**Active slice:** none
+
+The milestone-4 real-e2e frame is closed (2026-08-19): ADR-032 accepted
+and revised through arbitration-remediated reviews; the frame — honest
+prereq probes, the two-tier declared-skip cross-check, the
+golden-transcript normalizer, subprocess coverage, and the documented
+entrypoint — is green through every frozen arm; the manifest's expected
+skips carry the two-grammar classification; and the captured entrypoint
+run is milestone 4's proof artifact (rc 0, coverage 16.70% ≥ fail-under
+15). Next: SLICE-056 (verdict family e2e) per tracker #33 — the frame's
+first family customer. All six kernel P0 spec-authority slices
+(SLICE-029/030/031/032/033/035) are landed on kernel `main` at
+`ff3ab802`: A/B/C contract freeze, lifecycle, closed-DSL projections,
+approval/revocation/intersected grants, trace integrity, and
+real-subject bootstrap. The byte-identical A/B/C schema/vector TypeScript
 mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in `ranex-harness`
-`ranex-trim` at `16bf036f`.
-The absent-harness full suite is 1229 passed / 38 skipped / 0 failed; its
-frozen manifest records 1267 IDs / 116 expected skips.
+`ranex-trim` at `16bf036f`. The full suite at close-out is 1297 passed /
+40 skipped / 0 failed; its frozen manifest records 1337 IDs / 119
+expected skips.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -372,6 +378,15 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-055-real-e2e-suite-framework** — closed 2026-08-19. The ADR-032
+  frame: six honest prereq probes, the golden-transcript normalizer, the
+  two-tier declared-skip cross-check (probe-backed hard / context
+  informational), subprocess coverage with loud wired-child no-data
+  detection, and one README-documented entrypoint whose captured run is
+  milestone 4's proof artifact. Adversarial reviews remediated through
+  arbitration (two-grammar scheme, R1d hard-tier scoping); the sanctioned
+  amendment chain and the follow-ups register are recorded in the slice
+  file.
 - **SLICE-054-kernel-observability** — closed 2026-08-18. The ADR-031
   substrate landed: default-off `RANEX_TRACE`/`RANEX_TRACE_EVENT` JSONL
   emitter with a frozen schema, SID chaining, ambient strip at the stage

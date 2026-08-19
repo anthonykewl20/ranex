@@ -1,6 +1,6 @@
 # SLICE-055 — real-e2e suite framework
 
-**Status:** open
+**Status:** done
 **ADR:** docs/adr/ADR-032-real-e2e-suite-framework.md
 **Issue:** #35 (tracker #33, milestone 4 — PHASE 2 production; Phase-0 ADR
 accepted, Phase-1 disposable prototype completed out-of-tree)
