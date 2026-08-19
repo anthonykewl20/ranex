@@ -1,0 +1,3 @@
+FAIL  gate=landing  rule=TESTS_EXECUTED
+      no evidence for required claim: host-qualification, tests-executed
+      subject=<DIGEST>
