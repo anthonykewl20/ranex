@@ -2,32 +2,36 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-057 opened)
+**Updated:** 2026-08-20 (SLICE-057 mid-flight, BLOCKER 3 ruling pending)
 **Active slice:** docs/slices/SLICE-057-real-e2e-execution-family.md
 
 ## Where we stopped
 
-SLICE-057 (#37, execution family) is open and RED-frozen. Opened at
-61753dc84 (slice file, ADR-032 link, host-gating strategy, STATE/README
-synced, `in-progress` claimed). Worker A froze the three test files red
-at 7bdcae8b2 — per-file: test_run_real 3F/2P, test_confinement_real
-1F/1P/5S (named `ranex-prereq:qualified_host:` skips — this host's
-build closure drifts), test_suite_freeze_real 4F/2P (the real-tree
-round-trip named its drift: +18 IDs, run_exit=1). Total 8F/5P/5S. Every
-kernel behavior asserted was prototyped against e84b5176a in
-/tmp/opencode (run journey, drift arm, real-tree freeze byte-stable,
-dirty/hand-edit refusals); the strict-local arms are frozen from
-SLICE-046/017/018-proven shapes and first execute on a qualified host.
-Goldens are absent on purpose — the implementation lane captures them.
+SLICE-057 (#37) mid-implementation, STOPPED at the survivor arm —
+BLOCKER 3 on #37 (comment 5347838349) awaits the amendment ruling.
+Landed this range (main, not pushed): 0013bf427 enrollment drain fix
+(BLOCKER 1), f4b09b264 re-qualification (ld.so.cache), 128d13552
+default-deny-v1 admits `clock_nanosleep` + tracked re-pin (BLOCKER 2
+ruling applied; `nanosleep` not issued by the pinned artifact — not
+admitted), d2881a2e0 the run + confinement goldens. State at d2881a2e0:
+run family 5 passed plain AND delegated; confinement delegated 6
+passed / 1 failed (survivor: dash "Cannot fork" — the allowlist also
+omits clone/execve/wait4 + id-probes; census in the BLOCKER), plain
+2 passed + 5 declared `qualified_host` skips; freeze 2 passed / 4 red
+as designed (manifest stale +18 IDs, golden lands at the ceremony).
+Frozen suites over the re-pin: slice017 47 passed; slice046/047/018 +
+confinement-result/trace-invariance/kernel-unchanged 52 passed / 3
+pre-existing skips; no test pins the shifted digests.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-057 (open, red-frozen)
-Worker B implements: capture the three goldens from the real journeys,
-post AC2's traced event stream + AC3's sabotage red output on #37, run
-the registration ceremony (18 new IDs; the five confinement skips
-declare context-tier per the slice's strategy). The register's open
+Next slice: SLICE-057 (open, implementation lane, ruling pending)
+Worker B resumes on the BLOCKER 3 ruling: (a/a′) process-creation
+allowlist completion → same rebuild/re-qualify/re-pin mechanics →
+survivor arm green → full suite green (5 skips declared) → ceremony
+(+18 IDs, 5 context-tier declarations) → freeze golden → AC2 trace
+stream + AC3 sabotage red posted → close per the issue's bar. Open
 follow-ups stand: the P3 mirror-pin test for `_journal_first_broken_row`,
 and the SLICE-055 follow-ups queued in its done slice file.
 
@@ -42,8 +46,5 @@ Recorded in `docs/MAP.md` §0.24: milestone 4 is P0's proof substrate.
 - cgroup-observer `OSError(19)` and SLICE-008 bounded-fanout timing can flake under full-suite load (both pass isolated / on `origin/main`).
 - About 125 legacy test IDs remain unregistered in the frozen manifest.
 - Trace fd targets persist O_NONBLOCK on the operator's descriptor after exit (disclosed; slice file records the trade-off).
-- mutmut: the stats phase cannot complete on the current suite shape
-  (subprocess-heavy tests vs the in-process trampoline; observability
-  mutants remain unchecked — mutation evidence not obtained, disclosed).
-- The journal does not detect rollback/truncation (SLICE-056
-  characterized it; the ADR-032 fold-in landed at 8a5ed3837).
+- mutmut: the stats phase cannot complete on the current suite shape (subprocess-heavy tests vs the in-process trampoline; disclosed).
+- The journal does not detect rollback/truncation (SLICE-056 characterized; fold-in at 8a5ed3837).
