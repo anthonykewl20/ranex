@@ -475,9 +475,12 @@ def local_index_journey(
     THAT server — the lock derived by the pinned resolver itself against
     it, so fetch's byte-compare is a genuine reproducibility question."""
 
+    import fcntl
     import hashlib
     import io
     import json as jsonlib
+    import socket
+    import struct
     import threading
     import zipfile
     from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -544,6 +547,73 @@ def local_index_journey(
 
         def do_HEAD(self) -> None:
             self._respond()
+
+    # The hermetic-freeze seal runs this very suite inside the network
+    # namespace _deny_network creates (src/ranex/cli/main.py: unshare
+    # CLONE_NEWUSER|CLONE_NEWNET between fork and exec), and a fresh netns
+    # starts with loopback DOWN: the server below binds, but nothing — the
+    # resolver's lock derivation, a fetch — can connect to it (ENETUNREACH),
+    # so the frozen construction errors inside every sealed ceremony run
+    # (issue #38 blocker comment 5350181287). Owner ruling 2026-08-20,
+    # option B: the fixture itself raises ``lo`` in the current netns
+    # before binding — the pure-stdlib ``ip link set lo up`` (SIOCSIFFLAGS
+    # over flags read by SIOCGIFFLAGS); loopback only, so the seal's
+    # no-external-network intent is untouched. Best-effort and guarded:
+    # outside the seal lo is already up (idempotent no-op), and where a
+    # host refuses the ioctl the loopback probe below is the same ruling's
+    # sanctioned fallback (option A): the two arms skip with a named
+    # reason instead of erroring. On this host the sealed shape does
+    # refuse it — the seal's exec after the unshare drops CAP_NET_ADMIN
+    # (uid unmapped in the fresh userns, CapEff=0; EPERM observed) — so
+    # the fallback is the path that holds here; a sealed netns whose
+    # loopback can be raised runs the arms genuinely.
+    SIOCGIFFLAGS = 0x8913  # <linux/sockios.h>: read a netdev's flags
+    SIOCSIFFLAGS = 0x8914  # ...and write them back — `ip link set lo up`
+    IFF_UP = 0x1  # <linux/if.h>: the UP bit SIOCSIFFLAGS sets
+
+    def _raise_loopback() -> None:
+        ifreq = struct.Struct("16sH22x")  # struct ifreq: ifr_name[16] + union
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as control:
+                packed = fcntl.ioctl(control.fileno(), SIOCGIFFLAGS, ifreq.pack(b"lo", 0))
+                flags = ifreq.unpack(packed)[1]
+                if not flags & IFF_UP:
+                    fcntl.ioctl(
+                        control.fileno(), SIOCSIFFLAGS, ifreq.pack(b"lo", flags | IFF_UP)
+                    )
+        except OSError:
+            pass  # the loopback probe below reports the outcome honestly
+
+    def _loopback_available() -> bool:
+        """The fixture's real dependency, probed exactly as consumed: a
+        loopback TCP connect — the resolver and the fetches are child
+        processes connecting to 127.0.0.1, this probe's client shape."""
+
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+                listener.bind(("127.0.0.1", 0))
+                listener.listen(1)
+                port = listener.getsockname()[1]
+                listener.settimeout(5)
+                with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client:
+                    client.settimeout(5)
+                    client.connect(("127.0.0.1", port))
+                    accepted, _peer = listener.accept()
+                    accepted.close()
+        except OSError:
+            return False
+        return True
+
+    _raise_loopback()
+    if not _loopback_available():
+        pytest.skip(
+            "loopback TCP is unavailable in this network namespace: the "
+            "hermetic-freeze seal starts lo DOWN and this host refuses the "
+            "ruled option-B lo-raise (EPERM: no CAP_NET_ADMIN after the "
+            "seal's fork-unshare-exec), so the local-index journey cannot "
+            "construct its loopback index here (issue #38 ruling 2026-08-20 "
+            "on blocker comment 5350181287, option-A fallback)"
+        )
 
     server = HTTPServer(("127.0.0.1", 0), IndexHandler)
     port = server.server_port
