@@ -1,6 +1,8 @@
 # SLICE-059 — real e2e: task family (dispatch/judge/merge/delegate + fanout qualification)
 
-**Status:** open
+**Status:** done
+**Opened:** 2026-08-20
+**Closed:** 2026-08-21 (ceremony 56c445a1f; the comparator ruling DECISION issuecomment-5359345600)
 **ADR:** docs/adr/ADR-032-real-e2e-suite-framework.md
 **Issue:** #39 (tracker #33, milestone 4 — the ADR-032 frame's fourth and
 final family customer; SLICE-055 prerequisite closed 2026-08-19; the three
@@ -331,3 +333,76 @@ slices' frozen test files). The debt was owned and fixed on main
 (isort 3f900d027, pyrefly 9243bea41, re-pins eb1c1e413/8dc685cca) and
 merged forward into this branch; `uvx ruff@0.16.2 check src tests` is
 exit 0 here (G-2).
+
+## Close-out record (2026-08-21)
+
+**The G-4 capture (5fe0d3849, the CCR-2/CCR-3-amended wrappers).** The
+real delegated journey ran green end-to-end on the first attempt after
+CCR-3: dispatch → the REAL model call over OpenRouter (owner's
+credential via CCR-2's store-read; value never printed/logged/
+committed, store never mutated) → bridge commit `c345c6e6…` → the
+kernel-recorded suite `1 passed` (the red-at-base note test green only
+through the model's work) → CANDIDATE judgement exit 1 naming
+`tests-executed`, no PASS anywhere, journal chain verifies. Provenance:
+harness HEAD `9b9b521c61cb` (branch `prototype-spec`, six known dirty
+github-auth files, none touched by this work), bun 1.3.14. The golden
+`delegation-diff.out` (sha256 `cac49c48…`, raw diff sha256
+`95fc3987…`) is those bytes; with it committed, G-1 at its contract
+shape (credential unset, SP-1 named skip) is 12 passed / 2 skipped /
+exit 0.
+
+**The blocker and the ruling.** C-4's byte-exact re-run clause is
+unsatisfiable with the frozen free model (six runs, three note-line
+forms, `temperature: 0` included — BLOCKER issuecomment-5359180442).
+Ruled Option 1 — bless the contract-shaped close (DECISION
+issuecomment-5359345600): residual R-SLICE-059-1 recorded above under
+the universal-alignment valve; zero frozen-test changes; CCR-4
+shape-golden text drafted in the DECISION for any future owner, not
+applied.
+
+**fail_under re-derived (d91c5ac7f).** Measured TOTAL 16.68%
+(75085/62558) from a real wired entrypoint measurement at the
+content-final tree; floor − 2 = 14 under the standing convention
+(baseline precedent 17.14 → 15). pyproject 15 → 14; derivation quoted
+in its comment and in this file.
+
+**The ceremony (56c445a1f).** The standing close ceremony on the clean
+tree at d91c5ac7f: the 134 committed declarations re-declared verbatim
+plus two new — the fanout arm (`ranex-context:fanout-gated:`, the
+byte-stable static reason citing #19; the faithful case — declared
+bytes equal the live skip message) and the delegation journey
+(`ranex-context:operator-action:`, the first-delegation precedent for
+the same credential-gated shape; a probe-backed declaration would turn
+every credentialed re-run — the DECISION-blessed residual path — into
+a hard stale-prune finding at the entrypoint cross-check). Sealed run:
+1262 passed / 135 skipped / 0 failed in 125.39s — run_exit=0. FROZEN
+tests=1397 expected_skips=136. Sanctioned delta verified exact by set
+difference: suite 1383 → 1397 (+14: task family 10, delegation family
+4), expected_skips 134 → 136 (+2, nothing reworded, nothing removed);
+manifest canonical (the kernel's own loader accepts; sha256
+`dc4ecadd…`). Freeze golden re-captured from the ceremony's own FROZEN
+line through the frame normalizer (`suite-freeze-manifest.out` sha256
+`2886644c…` — the golden embeds the frozen counts, so every re-freeze
+re-captures it).
+
+**Final verification at the ceremony-sealed state (56c445a1f).**
+Freeze round-trip file 6/6 on the clean tree (the nested sealed
+re-ceremony, 129.71s, reproduces the committed manifest byte-exactly
+and matches the re-captured golden). Entrypoint cross-check over the
+derivation run's plain-session junitxml with the fresh manifest: exit
+0, hard tier honest (every observed skip declared, every
+`ranex-prereq:` declaration byte-matched, no probe-backed lie), 132
+informational context mismatches — the multi-context manifest's
+standing shape; the fanout declaration is the faithful case (absent
+from the mismatch list), the delegation journey reports
+observed-drift informationally exactly as first_delegation does.
+G-1/G-2/G-3/G-5 at the final tested SHA run after this archive lands,
+and their verbatim tails + exits are posted in the close-time EVIDENCE
+comment on #39 (the contract's deterministic-recording clause).
+
+**Commits this slice:** 305938bf6 (frozen red) → 7b134fbe9 (the two
+local goldens) → bcc70b24b (CCR-1 MAP row + docs) → 0344644ff (main
+merge: the CI-debt fixes) → 5fe0d3849 (CCR-2/CCR-3 wrappers + the
+delegation golden) → bbc4e4d0d (blocked-state docs) → d91c5ac7f (the
+ruling + fail_under 14 + discipline-valid STATE) → 56c445a1f (the
+ceremony) → the docs close-out.

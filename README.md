@@ -322,32 +322,28 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** SLICE-059-real-e2e-task-family (#39, the task family)
+**Active slice:** none
 
-SLICE-059 (task family, #39) opened 2026-08-20 under the frozen
-contract on #39 — milestone 4's last family slice, the ADR-032 frame's
-fourth customer. The two family files are committed in the family
-pattern: `tests/e2e/test_task_real.py` (dispatch→work→`run`→judge over a
-real disposable worktree, the tampered-evidence refusal, self-approval /
-moved-base / digest-mismatch merge refusals on real evidence, the clean
-PUBLISHED merge, worktree-residue detection, and the fanout
-qualification arm skipped-with-name until #19 closes) and
-`tests/e2e/test_delegation_real.py` (the red-at-base proof, the real
-delegated model over OpenRouter with the ATTEMPTS=3 fresh-task-id
-budget, the real diff against the journal's dispatch base, no PASS
-anywhere). Red freeze: 8 failed / 4 passed / 2 skipped — the failures
-were exactly the golden arms naming their missing goldens. The two
-LOCAL goldens are captured and committed at 7b134fbe9 from real runs
-of the frozen journeys (byte-stable across independent runs; sabotage
-controls red both on mutated golden bytes and on mutated kernel
-behavior in throwaway copies; `sha256sum` digests in the slice file):
-the task family is fully green — 10 passed / 1 fanout skip. The
-delegation golden waits on the owner's scoped OpenRouter key (G-4/AC-3;
-a named prereq skip never counts as AC-3 evidence), so G-1 holds at
-exit 1 (3 failed / 9 passed / 2 skipped) and the close-time ceremony
-follows the key-holding capture. CCR-1 (approved, #39
-issuecomment-5354660541) added docs/MAP.md §4.7's SLICE-059 row to
-the allowed surface; the row landed with this sync.
+SLICE-059 (task family e2e, #39) closed 2026-08-21 — the ADR-032
+frame's fourth and final family customer, closing milestone 4's family
+work: the real dispatch→work→`run`→judge lifecycle over a real
+disposable worktree (DISPATCHED/RECORDED/CANDIDATE goldens), the
+engineered refusals on real evidence (tampered judge evidence refused
+naming its claim; self-approval refused `sad-path-14`; moved base
+`sad-path-9 tip-mismatch`; digest mismatch `sad-path-5
+subject-digest-mismatch`), the clean PUBLISHED merge through the five
+ordered journalled checks, worktree-residue detection, and the real
+delegated OpenRouter model run (CCR-2's store-read credential +
+CCR-3's seeded GitHub-tool deny; red-at-base note test green only via
+the model's work, CANDIDATE naming `tests-executed`, no PASS
+anywhere). Three goldens captured from the real journeys
+(sha256 dbe923e7…/f7ff1f74…/cac49c48…); the byte-exact re-run clause's
+free-model nondeterminism is a written owner risk-acceptance (DECISION
+on #39, issuecomment-5359345600; zero frozen-test changes; shape-golden
+CCR-4 text drafted for any future owner). Ceremony 56c445a1f: FROZEN
+tests=1397 expected_skips=136, sealed 1262/135/0, round-trip 6/6;
+fail_under re-derived 16.68 → 14. The fanout qualification arm stays
+skipped-with-name until #19 (SLICE-036) closes.
 
 SLICE-060 (gate-evaluate presentation dedup, #40) closed 2026-08-20 —
 a mixed stale+absent verdict no longer prints the absence sentence
@@ -422,8 +418,9 @@ real-subject bootstrap. The byte-identical A/B/C schema/vector
 TypeScript mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in
 `ranex-harness` `ranex-trim` at `16bf036f`. The execution family
 followed and closed (SLICE-057, #37, 2026-08-20 — below), then the
-provisioning family (SLICE-058, #38, 2026-08-20 — below); milestone
-4's last family slice is the task family (SLICE-059, #39).
+provisioning family (SLICE-058, #38, 2026-08-20 — below), then the
+task family (SLICE-059, #39, 2026-08-21 — below): milestone 4's
+family work is complete.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -464,6 +461,19 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-059-real-e2e-task-family** — closed 2026-08-21. The ADR-032
+  frame's fourth and final family customer: the governed task
+  lifecycle (dispatch → the kernel's own `run` producing real evidence
+  → judge) proven on a real disposable worktree with two goldens, the
+  engineered merge refusals (self-approval, moved base, digest
+  mismatch — stable named reasons) plus the tampered-evidence refusal
+  proven against the clean journey's green, the clean PUBLISHED merge
+  through the ordered journalled checks, worktree-residue detection,
+  and a real delegated OpenRouter model run whose kernel-recorded
+  suite proves execution (red-at-base green only via the model's
+  work). The free model's note-line nondeterminism is a written owner
+  risk-acceptance (DECISION on #39); +14 suite IDs through the
+  standing ceremony (tests=1397, expected_skips=136, sealed green).
 - **SLICE-060-gate-evaluate-presentation-dedup** — closed 2026-08-20.
   A mixed stale+absent verdict printed the absence sentence twice; the
   FAIL block now dedups by anchored suffix comparison against the exact
