@@ -79,18 +79,20 @@ change is demanded anywhere.
 
 The delegation file's journey consumes `prereq_openrouter_key` AND
 `prereq_harness_fork` through module-scoped fixtures (SP-1/C-5: a host
-without the credential gets the named
-`ranex-prereq:openrouter_key:` skip, never green; the harness fork names
-its own probe) plus the bun toolchain as a local hard requirement
+without the credential skips on the probe's live
+`ranex-prereq:openrouter_key:` message, never green; the harness fork
+names its own probe) plus the bun toolchain as a local hard requirement
 (first-delegation's skip shape). The task file's journeys and every
 golden-contract arm declare no skips — they run wherever git and the
 interpreter run. The fanout arm's skip is the two-grammar scheme's context
 tier (`ranex-context:fanout-gated:` — a static, byte-stable reason citing
 #19), declared in the suite manifest at the close-time ceremony and
 enabled only in a follow-up governed change after #19 closes. The
-close-time freeze ceremony declares the observed skips with the probe
-grammar — context-independent conditions the frame verifies live, both
-directions.
+delegation journey's ceremony declaration is the context tier too —
+`ranex-context:operator-action:`, the first-delegation precedent: a
+probe-backed `ranex-prereq:openrouter_key:` declaration would turn every
+credentialed re-run into a hard stale-prune finding (the ceremony
+record's rationale, below).
 
 ## Frozen decisions carried as done-criteria contracts
 
@@ -144,11 +146,14 @@ step 6).
    the ungated `…::test_golden_contract_delegation_diff` holds the golden
    to its contract on every host.
 8. **Credential absence is a named skip, never green** (C-5, SP-1): the
-   delegation journey consumes `prereq_openrouter_key`; the skip carries
-   the `ranex-prereq:openrouter_key:` grammar and is declared at the
-   ceremony. The skip fires (not green) on any credential-less host,
-   including the red freeze below. AC-3 evidence remains the real G-4 run
-   alone — a named skip never counts.
+   delegation journey consumes `prereq_openrouter_key`; the skip is
+   declared at the ceremony as `ranex-context:operator-action:` — a
+   probe-backed declaration would turn credentialed re-runs into hard
+   stale-prune findings (the ceremony record's rationale, below), while
+   the live message on a credential-less host stays the probe's
+   `ranex-prereq:openrouter_key:` one. The skip fires (not green) on any
+   credential-less host, including the red freeze below. AC-3 evidence
+   remains the real G-4 run alone — a named skip never counts.
 9. **Golden integrity contracts** (AC-1; ADR-032's red control): each
    golden is a normalizer fixpoint carrying real volatile material, a
    live-byte-doctored golden provably cannot match, and a mutated golden
@@ -184,13 +189,15 @@ missing-golden assertion — the honest red, never a silent pass.
   green at the freeze (tampered-evidence refusal, moved-base/digest
   named-reason refusals with replay equality, clean PUBLISHED merge,
   worktree-residue detection). The 2 skips are the fanout arm
-  (`ranex-context:fanout-gated:` … #19) and the delegation journey
-  (`ranex-prereq:openrouter_key:` — OPENROUTER_API_KEY absent on this
-  host), both named, both the sanctioned shapes. (Corrected 2026-08-20
-  from the freeze-time draft's "9 failed / 3 passed": the executed run —
-  re-run at the capture, output in the capture record — is 8/4/2; the
-  freeze-time STATUS comment 5354489393 already carried the correct
-  counts.)
+  (`ranex-context:fanout-gated:` … #19) and the delegation journey (the
+  probe's live `ranex-prereq:openrouter_key:` message —
+  OPENROUTER_API_KEY absent on this host; its ceremony declaration is
+  `ranex-context:operator-action:` per the rationale in the ceremony
+  record below), both named, both the sanctioned shapes. (Corrected
+  2026-08-20 from the freeze-time draft's "9 failed / 3 passed": the
+  executed run — re-run at the capture, output in the capture record —
+  is 8/4/2; the freeze-time STATUS comment 5354489393 already carried
+  the correct counts.)
 - Suite collection with the frozen files present: 1397 IDs collect
   (1383 prior + 14 new), no import breakage.
 
