@@ -322,7 +322,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** docs/slices/SLICE-058-real-e2e-provisioning-family.md
 
 SLICE-057 (execution family e2e, #37) closed 2026-08-20 — the ADR-032
 frame's second family customer: three real-journey test files (real
@@ -367,8 +367,9 @@ approval/revocation/intersected grants, trace integrity, and
 real-subject bootstrap. The byte-identical A/B/C schema/vector
 TypeScript mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in
 `ranex-harness` `ranex-trim` at `16bf036f`. The execution family
-followed and closed (SLICE-057, #37, 2026-08-20 — below); next per
-the build order: SLICE-058, opening through governance.
+followed and closed (SLICE-057, #37, 2026-08-20 — below); the
+provisioning family (SLICE-058, #38) is now open with its frozen tests
+committed red.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —

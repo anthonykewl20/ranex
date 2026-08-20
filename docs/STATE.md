@@ -2,35 +2,35 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-057 closed; codex final gate remediated)
-**Active slice:** none
+**Updated:** 2026-08-20 (SLICE-058 opened; frozen tests + golden contracts committed red)
+**Active slice:** docs/slices/SLICE-058-real-e2e-provisioning-family.md
 
 ## Where we stopped
 
-SLICE-057 (#37, execution-family real e2e) is done, archived, corrected, and
-past the codex final gate (done slice: docs/slices/done/SLICE-057-*). The
-frozen survivor arm was VACUOUS (MS_NODEV /dev pre-exec kill, six-grant
-Landlock EXECUTE, PID-1 pidns reaping); reframed c981074fd, rescoped 5510c7767
-to test_shell_constructed_descendants_die_and_the_layers_are_pinned (layers
-pinned to call sites, _stop shadow fixed); the real kill/drain proof lives in
-the timeout arm. Families green: run 5/5 both contexts; confinement 7/7
-delegated; freeze past the final ceremony b82c081c8 — 1363 IDs / 124 skips,
-the rescoped ID exchanged in both maps, the five confinement declarations
-reclassified ranex-context:host-capability per the slice's recorded strategy
-(cross-check informational; lint green). Final suite: 1345 / 18 / 0 (794.45s).
-Goldens: d8c363a9…, e688a37d…, c12033d6…. Kernel fixes 0013bf427, 128d13552,
-e1e6dc8a7 (orchestrator-ruled amendments); the security review
-(PASS-WITH-RESIDUALS) gates the range before push. Pins: ea17bcae…,
-bcb4fef1…, 5c001f70…, e9b8df6b….
+SLICE-058 (#38, provisioning-family real e2e — deps fetch/approve +
+keygen) is OPEN with its frozen tests committed red: tests/e2e/
+test_deps_real.py (4 red / 7 green — the four golden-consuming arms red
+on the missing golden; real-index journey on the real pins, sha256sum
+store re-hash, wheel byte-flip quarantine + one-wheel repair, drift/
+epoch refusals, env-injection ignored, and the ADR-032 sad-path-12
+local-index fixture: liar names the wheel, dead refuses clean) and
+tests/e2e/test_keygen_real.py (3 red / 1 green — kernel signs and
+accepts the keygen key, openssl verifies both directions over PKCS#8/
+SPKI DER, confinement gates). The two goldens (deps-fetch-lock.out,
+keygen-verify.out) are the implementation lane's artifacts. Every
+asserted behavior was prototyped against the kernel at 271344443 first.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
 Next slice: SLICE-058
-Per ADR-032's deferral note the next milestone-4 family slice is the provisioning family
-(likely SLICE-058), opening through governance. Carried follow-ups: the argument-filtered
-clone decision and the writable-tree full-mask EXECUTE residual (both security-review-owned),
-the mirror-pin test for `_journal_first_broken_row` (SLICE-056), the SLICE-055 items.
+The implementation lane captures the two goldens from the real journeys,
+posts AC3's sabotage red output on #38, and closes through the standing
+freeze ceremony (probe-grammar declarations for the deps arms' skips).
+Carried follow-ups: the argument-filtered clone decision and the
+writable-tree full-mask EXECUTE residual (both security-review-owned),
+the mirror-pin test for `_journal_first_broken_row` (SLICE-056), the
+SLICE-055 items.
 
 ## Governance (owner, 2026-08-17)
 
