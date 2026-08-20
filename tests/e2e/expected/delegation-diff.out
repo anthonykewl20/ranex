@@ -1,0 +1,8 @@
+diff --git <REL-PATH> <REL-PATH>
+new file mode 100644
+index 0000000..57733e4
+--- <ABS-PATH>
++++ <REL-PATH>
+@@ -0,0 +1 @@
++delegated work happened. Do not do anything else.
+\ No newline at end of file

@@ -170,11 +170,25 @@ def build_target(tmp_path: Path) -> Path:
 def write_wrapper(path: Path, bun: Path, harness: Path) -> Path:
     """The delegate spawns [harness, --dir, ...] in a pinned-PATH environment
     where bun does not resolve; this wrapper supplies the absolute runtime and
-    the `run` subcommand, exactly as `bin/ranex run` would."""
+    the `run` subcommand, exactly as `bin/ranex run` would. The kernel's
+    scratch HOME carries no harness config, so the wrapper also seeds the one
+    piece the delegated journey needs: the build agent denying the GitHub
+    tool family, whose union-shaped parameter schemas (a top-level ``anyOf``
+    without ``type``) the frozen free model's upstream rejects on every turn
+    (issue #39 CCR-2's real entry; CCR-3's seeded deny)."""
 
     path.write_text(
         "#!/bin/sh\n"
-        f'exec "{bun}" run --cwd "{harness / "packages" / "opencode"}" '
+        'mkdir -p "$HOME/.config/ranex/agent"\n'
+        "cat >\"$HOME/.config/ranex/agent/build.md\" <<'CONF'\n"
+        "---\n"
+        "permission:\n"
+        "  github_issue: deny\n"
+        "  github_milestone: deny\n"
+        "  github_project: deny\n"
+        "---\n"
+        "CONF\n"
+        f'exec "{bun}" run --cwd "{harness / "packages" / "ranex"}" '
         '--conditions=browser src/index.ts run "$@"\n',
         encoding="utf-8",
     )
