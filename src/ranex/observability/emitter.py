@@ -675,7 +675,7 @@ class Emitter:
         # whose remaining capacity cannot fit it refuses at setup instead.
         if self._targets:
             self._dispatch(self._version_payload(), internal=True)
-        for variable in failures:
+        for _variable in failures:
             self._dispatch(
                 {
                     "event": "refusal",

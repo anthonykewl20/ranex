@@ -8,7 +8,6 @@ from collections.abc import Mapping
 
 from ranex.foundation.canonical import canonical_json_bytes
 
-
 E_C18_RESULT = "E-C18-RESULT"
 
 
