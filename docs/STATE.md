@@ -2,33 +2,33 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-059 spec opened; task-family tests frozen red)
+**Updated:** 2026-08-20 (SLICE-059: two local goldens captured; delegation golden gated on the owner's key)
 **Active slice:** SLICE-059 — docs/slices/SLICE-059-real-e2e-task-family.md
 
 ## Where we stopped
 
-SLICE-059 (#39, the task family — milestone 4's last family slice) is
-open per the frozen contract on #39 (status:ready 2026-08-20). The two
-family files are committed red in the SLICE-056..058 pattern: 9 failed /
-3 passed / 2 skipped at the freeze (the 9 = every golden arm naming its
-missing golden; the skips = the fanout arm citing #19 and the delegation
-journey's ranex-prereq:openrouter_key: — the key is absent on this
-host). Every kernel behavior asserted was observed against 5e1ea681d in
-/tmp/opencode prototypes before freezing.
+SLICE-059 (#39, milestone 4's last family slice) is mid-implementation
+on issue/39. The two LOCAL goldens are captured at 7b134fbe9 from real
+runs of the frozen journeys (digests, stability and sabotage record in
+the slice file); the task family is fully green (10 passed / 1 fanout
+skip, #19). The delegation file's three ungated golden arms stay red:
+`delegation-diff.out` needs the owner's OPENROUTER_API_KEY (C-4/G-4),
+so G-1 holds at exit 1 (3 failed / 9 passed / 2 skipped) and the
+ceremony waits (precedent ceremonies seal green). CCR-1 (#39
+issuecomment-5354660541, approved) added the MAP §4.7 SLICE-059 row.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
-The implementation lane captures the three goldens, records their
-sha256 digests in the slice file, posts AC-2's refusal artifacts on
-#39, and runs G-4's real delegation (the owner exports the scoped
-OpenRouter key; AC-3 evidence is the real run alone). G-3 re-derives
-fail_under; the ceremony registers the family. Carried follow-ups
+The owner exports the scoped OpenRouter key, then G-4's real run
+captures `delegation-diff.out` (digest into the slice file), G-1 exits
+0 with only the two named skips, G-3 re-derives fail_under, the
+ceremony registers the family and re-captures the freeze golden, and
+EVIDENCE + validator close follow per the contract. Carried follow-ups
 unchanged: the argument-filtered clone decision and the writable-tree
 full-mask EXECUTE residual (security-review-owned), the mirror-pin
-test for `_journal_first_broken_row` (SLICE-056), the SLICE-055 items,
-and SLICE-060's review-named pair (cross-claim-set duplication;
-newline-bearing claim IDs).
+test for `_journal_first_broken_row` (SLICE-056), and SLICE-060's
+review-named pair (cross-claim-set duplication; newline-bearing IDs).
 
 ## Governance (owner, 2026-08-17)
 
@@ -37,7 +37,7 @@ Build order: milestone 4 → milestone 3 → milestone 2 (MAP §0.24: milestone 
 ## Known limits
 
 - CI's `test` job is red on main at 5e1ea681d, pre-dating SLICE-059: `uvx ruff@0.16.2 check src tests` fails on nine findings in src/ranex and earlier slices' frozen test files (disclosed on #39; SLICE-059's surface denies them — owner-directed).
-- Tracker #33's Phase-2 "MAP §4.7 row at open time" cannot be met inside #39's frozen surface (docs/MAP.md denied); no SLICE-054..060 row exists — owner to resolve (CCR or owner-directed governance commit).
+- MAP §4.7 rows for SLICE-054..058/060 remain absent (tracker #33 Phase-2 cure applied to SLICE-059 only, via CCR-1; the others wait on their own owner acts).
 - CI confinement suites fail on hosted runners (ld.so.cache drift, userns EACCES).
 - cgroup-observer `OSError(19)` and SLICE-008 bounded-fanout timing can flake under full-suite load (both pass isolated / on `origin/main`).
 - About 125 legacy test IDs remain unregistered in the frozen manifest.

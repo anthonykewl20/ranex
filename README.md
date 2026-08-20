@@ -326,7 +326,7 @@ none of the surface around it does.
 
 SLICE-059 (task family, #39) opened 2026-08-20 under the frozen
 contract on #39 — milestone 4's last family slice, the ADR-032 frame's
-fourth customer. The two family files are committed red in the family
+fourth customer. The two family files are committed in the family
 pattern: `tests/e2e/test_task_real.py` (dispatch→work→`run`→judge over a
 real disposable worktree, the tampered-evidence refusal, self-approval /
 moved-base / digest-mismatch merge refusals on real evidence, the clean
@@ -335,12 +335,19 @@ qualification arm skipped-with-name until #19 closes) and
 `tests/e2e/test_delegation_real.py` (the red-at-base proof, the real
 delegated model over OpenRouter with the ATTEMPTS=3 fresh-task-id
 budget, the real diff against the journal's dispatch base, no PASS
-anywhere). Red freeze at 5e1ea681d-lineage: 9 failed / 3 passed /
-2 skipped — the failures are exactly the golden arms naming their
-missing goldens; the three goldens are the implementation lane's
-capture, with `sha256sum` digests recorded in the slice file at the
-capture. G-4's real delegation waits on the owner's scoped
-OpenRouter key; a named prereq skip never counts as AC-3 evidence.
+anywhere). Red freeze: 8 failed / 4 passed / 2 skipped — the failures
+were exactly the golden arms naming their missing goldens. The two
+LOCAL goldens are captured and committed at 7b134fbe9 from real runs
+of the frozen journeys (byte-stable across independent runs; sabotage
+controls red both on mutated golden bytes and on mutated kernel
+behavior in throwaway copies; `sha256sum` digests in the slice file):
+the task family is fully green — 10 passed / 1 fanout skip. The
+delegation golden waits on the owner's scoped OpenRouter key (G-4/AC-3;
+a named prereq skip never counts as AC-3 evidence), so G-1 holds at
+exit 1 (3 failed / 9 passed / 2 skipped) and the close-time ceremony
+follows the key-holding capture. CCR-1 (approved, #39
+issuecomment-5354660541) added docs/MAP.md §4.7's SLICE-059 row to
+the allowed surface; the row landed with this sync.
 
 SLICE-060 (gate-evaluate presentation dedup, #40) closed 2026-08-20 —
 a mixed stale+absent verdict no longer prints the absence sentence
