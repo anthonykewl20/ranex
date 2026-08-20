@@ -2,23 +2,21 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-060 opened)
-**Active slice:** `docs/slices/SLICE-060-gate-evaluate-presentation-dedup.md`
+**Updated:** 2026-08-20 (SLICE-060 closed through the standing ceremony)
+**Active slice:** none
 
 ## Where we stopped
 
-SLICE-060 (#40) is open: `cmd_gate_evaluate`'s FAIL block prints the
-absence sentence twice in a mixed stale+absent verdict (observed
-2026-08-20 against a real journey — the ranex-video ep02 demo). The
-repair dedups presentation only — the block records what it said and
-drops exact clause repeats from the printed reason; the recorded
-reason bytes are untouched (ADR-020's invariant). Spec is open; next
-is the red freeze of `tests/e2e/test_gate_evaluate_mixed_cli.py`
-(fresh-context author), then the fix (hand-verified candidate at
-099698769 on `fix/duplicate-absence-sentence`, re-landed through this
-slice) with the `MAIN_PY_SHA256` refresh, then the standing ceremony
-(+4 IDs), qa-gate on the full publish range, automatic go-live.
-SLICE-058 closed 2026-08-20 (ceremony 81d63d495; details on #38).
+SLICE-060 (#40, gate-evaluate presentation dedup) is done and archived
+(docs/slices/done/SLICE-060-*): a mixed stale+absent verdict no longer
+prints the absence sentence twice. The dedup is anchored — exact
+suffix comparison against the partition's own sentence — and steps
+aside whenever a missing claim ID contains "; " (round 1's confirmed
+blocker: a split-based fix truncated adversarial claim IDs). Reason
+bytes untouched (ADR-020). 5 frozen arms (2 red→green), ceremonies
+7c99838fa/8cda414af (FROZEN tests=1383 expected_skips=134 run_exit=0),
+full suite 1365/18/0 at 8cda414af, two non-author APPROVEs (round-2
+fuzz: 789,672 cases, zero violations); evidence on #40.
 
 ## Next
 
@@ -30,7 +28,9 @@ riding ADR-032's frame as the fourth family customer (spec opens via
 idea-refine/spec-prd on owner-confirmed intent). Carried follow-ups:
 the argument-filtered clone decision and the writable-tree full-mask
 EXECUTE residual (security-review-owned), the mirror-pin test for
-`_journal_first_broken_row` (SLICE-056), the SLICE-055 items.
+`_journal_first_broken_row` (SLICE-056), the SLICE-055 items, and
+SLICE-060's review-named pair — cross-claim-set duplication (refused
+restated as absence; slice candidate) and newline-bearing claim IDs.
 
 ## Governance (owner, 2026-08-17)
 

@@ -322,7 +322,21 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** `docs/slices/SLICE-060-gate-evaluate-presentation-dedup.md` (#40) — gate evaluate prints the absence sentence twice in a mixed stale+absent verdict; the repair dedups presentation only, the recorded reason bytes are untouched.
+**Active slice:** none
+
+SLICE-060 (gate-evaluate presentation dedup, #40) closed 2026-08-20 —
+a mixed stale+absent verdict no longer prints the absence sentence
+twice: `gate evaluate`'s FAIL block removes the recorded reason's
+final absence clause by anchored suffix comparison against exactly the
+sentence its own partition printed, and steps aside entirely — full
+reason verbatim, duplicate and all — whenever a missing claim ID
+contains "; " (qa-gate round 1's confirmed blocker: a split-based
+dedup truncated adversarially named claim IDs). The recorded reason
+bytes are untouched (ADR-020's invariant). Five frozen arms, two
+red→green; ceremonies at 7c99838fa/8cda414af (FROZEN tests=1383,
+expected_skips=134, sealed green); full suite 1365/18/0; two
+non-author APPROVEs, round-2 adversarial fuzz 789,672 cases with zero
+loss-of-information violations.
 
 SLICE-058 (provisioning family e2e, #38) closed 2026-08-20 — the
 ADR-032 frame's third family customer: the real deps journey (a real
@@ -425,6 +439,13 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-060-gate-evaluate-presentation-dedup** — closed 2026-08-20.
+  A mixed stale+absent verdict printed the absence sentence twice; the
+  FAIL block now dedups by anchored suffix comparison against the exact
+  partition sentence, disabled whenever a missing claim ID contains
+  "; " so the printed diagnosis can repeat but never truncate. Reason
+  bytes untouched; five frozen arms; +5 suite IDs through two standing
+  ceremonies (tests=1383, sealed green).
 - **SLICE-058-real-e2e-provisioning-family** — closed 2026-08-20. The
   ADR-032 frame's third family customer: the deps family (the real
   pinned-inputs fetch reproducing the committed lock byte-exactly and
