@@ -28,6 +28,8 @@ from ranex.foundation import atomic_writer
 from ranex.foundation.canonical import canonical_json, canonical_json_bytes, command_digest
 from ranex.foundation.confinement_result import (
     ConfinementResultError,
+)
+from ranex.foundation.confinement_result import (
     confinement_result_bytes as _confinement_result_bytes,
 )
 from ranex.observability import stage_begin, stage_end

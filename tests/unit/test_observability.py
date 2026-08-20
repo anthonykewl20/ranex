@@ -32,7 +32,7 @@ from pathlib import Path
 
 import pytest
 
-import ranex.observability
+import ranex.observability  # noqa: F401 — frozen surface
 from ranex.observability import schema as trace_schema
 from ranex.observability.emitter import parse_target  # noqa: F401 — frozen surface
 from ranex.observability.redaction import screen_event  # noqa: F401 — frozen surface
@@ -60,7 +60,7 @@ def _fresh_observability(monkeypatch: pytest.MonkeyPatch, env: dict[str, str] | 
         monkeypatch.delenv(variable, raising=False)
     for key, value in (env or {}).items():
         monkeypatch.setenv(key, value)
-    import ranex.observability
+    import ranex.observability  # noqa: F811 — frozen surface
 
     return ranex.observability
 

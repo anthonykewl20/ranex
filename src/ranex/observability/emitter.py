@@ -44,6 +44,7 @@ import os
 import stat
 import time
 from pathlib import Path
+from typing import cast
 
 import ranex.observability.schema as schema
 from ranex.observability.redaction import screen_event
@@ -609,14 +610,17 @@ class Emitter:
             if link.is_absolute() and _under(link, root):
                 return f"fd {target.fd} resolves into the governed repository root {root}"
             return self._alias_conflict(info, root, name=f"fd {target.fd}")
-        path = target.path  # file and dir targets hold the admitted path
+        # stderr and fd targets returned above; what remains is a file or
+        # dir target, both of which hold the admitted path and open fd.
+        held = cast(_FileTarget, target)
+        path = held.path  # file and dir targets hold the admitted path
         if _under(path, root):
             return (
                 f"trace target {path} sits under the governed repository root "
                 f"{root} and would dirty the tree it observes"
             )
         try:
-            info = os.fstat(target.fd)
+            info = os.fstat(held.fd)
         except OSError:
             return (
                 f"trace target {path} can no longer be inspected against the "
@@ -654,7 +658,7 @@ class Emitter:
                 if kind == "stderr":
                     target = _StderrTarget(variable)
                 elif kind == "fd":
-                    target = _FdTarget(variable, int(operand), root)
+                    target = _FdTarget(variable, cast(int, operand), root)
                 elif kind == "file":
                     target = _FileTarget(variable, operand, root)  # type: ignore[arg-type]
                 elif kind == "dir":
@@ -675,7 +679,7 @@ class Emitter:
         # whose remaining capacity cannot fit it refuses at setup instead.
         if self._targets:
             self._dispatch(self._version_payload(), internal=True)
-        for variable in failures:
+        for _variable in failures:
             self._dispatch(
                 {
                     "event": "refusal",

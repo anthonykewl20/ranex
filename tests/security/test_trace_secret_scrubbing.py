@@ -19,16 +19,14 @@ emitter, so this file fails rather than passing vacuously.
 
 from __future__ import annotations
 
-import json
 import hashlib
+import json
 import os
 import re
 import secrets
 import subprocess
 import sys
 from pathlib import Path
-
-import pytest
 
 import ranex.observability  # noqa: F401 — the module's existence is the contract
 

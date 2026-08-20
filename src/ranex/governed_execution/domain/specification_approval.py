@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterable
 from dataclasses import dataclass
+from typing import NoReturn, cast
 
 from ranex.foundation.specification_abc import canonical_payload_bytes, payload_digest
 
@@ -17,7 +18,7 @@ class ApprovalRefusal(ValueError):
         self.detail = detail
 
 
-def _refuse(code: str, detail: str) -> None:
+def _refuse(code: str, detail: str) -> NoReturn:
     raise ApprovalRefusal(code, detail)
 
 
@@ -35,11 +36,11 @@ def _capability_strings(
     if not isinstance(value, container) or any(not isinstance(item, str) or not item for item in value):
         label = "list" if container is list else "tuple"
         _refuse("E-APPROVAL-SHAPE", f"{field} must be a string {label}")
-    if len(set(value)) != len(value):
+    values = cast(tuple[str, ...], tuple(value))
+    if len(set(values)) != len(values):
         _refuse("E-APPROVAL-SHAPE", f"{field} must not repeat values")
-    if any("*" in item for item in value):
+    if any("*" in item for item in values):
         _refuse("E-APPROVAL-WILDCARD", field)
-    values = tuple(value)
     if container is tuple and not ordered and tuple(sorted(values)) != values:
         _refuse("E-APPROVAL-SHAPE", f"{field} must be sorted and unique")
     return values if ordered else tuple(sorted(values))
@@ -136,10 +137,10 @@ class PolicyCapabilities:
         return cls(
             _string(record["executable"], "executable"),
             _record_strings(record["argv"], "argv"), cwd, roots, _record_strings(record["actions"], "actions"),
-            _record_strings(environment["allow"], "environment.allow"), network["allow"],
-            _record_strings(network["hosts"], "network.hosts"), secret["allow"],
-            _record_strings(secret["names"], "secret.names"), commit["allow"],
-            subagent["allow"], maximum, record.get("version", "policy-capabilities-v1"),
+            _record_strings(environment["allow"], "environment.allow"), cast(bool, network["allow"]),
+            _record_strings(network["hosts"], "network.hosts"), cast(bool, secret["allow"]),
+            _record_strings(secret["names"], "secret.names"), cast(bool, commit["allow"]),
+            cast(bool, subagent["allow"]), maximum, record.get("version", "policy-capabilities-v1"),
         )
 
     def as_record(self) -> dict[str, object]:
@@ -370,7 +371,8 @@ def issue_child_grant(
 
     if any(not isinstance(event, SpecificationEvent) for event in prior_events):
         _refuse("E-APPROVAL-EVENT", "prior events must be specification events")
-    previous_event_digest = prior_events[-1].digest if prior_events else None
+    events = cast(tuple[SpecificationEvent, ...], prior_events)
+    previous_event_digest = events[-1].digest if events else None
     return grant, grant_issued_event(
         grant, seq=journal_position, journal_head_link=journal_head_link,
         principal_id=principal_id, key_id=key_id, previous_event_digest=previous_event_digest,

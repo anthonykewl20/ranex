@@ -96,8 +96,8 @@ from ranex.governed_execution.domain.task import (
 )
 from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
 from ranex.governed_execution.verdict_publication import publish_verdict
-from ranex.observability import TRACE_VARIABLES, schema as trace_schema
-from ranex.observability import stage_begin, stage_end
+from ranex.observability import TRACE_VARIABLES, stage_begin, stage_end
+from ranex.observability import schema as trace_schema
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     KeyringError,
     load_keyring,

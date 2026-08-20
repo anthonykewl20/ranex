@@ -94,7 +94,7 @@ def _fresh_observability(monkeypatch: pytest.MonkeyPatch, env: dict[str, str] | 
         monkeypatch.delenv(variable, raising=False)
     for key, value in (env or {}).items():
         monkeypatch.setenv(key, value)
-    import ranex.observability
+    import ranex.observability  # noqa: F811 — frozen surface
 
     return ranex.observability
 

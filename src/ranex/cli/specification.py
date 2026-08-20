@@ -6,6 +6,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
+from typing import cast
 
 from ranex.foundation.canonical import canonical_json
 from ranex.governed_execution.application.specification import advance, draft, render_questions
@@ -30,12 +31,16 @@ def _input(path: str) -> ClarificationInput:
     questions = value.get("questions")
     answers = value.get("answers")
     observations = value.get("observations")
+    # The casts on actor_id/base_digest satisfy the type-checker only — no
+    # runtime validation happens here. The domain owns those refusals:
+    # advance() refuses an empty actor as MISSING_ACTOR and a mismatched
+    # base_digest as STALE_BASE.
     if not isinstance(questions, list) or not isinstance(answers, list) or not isinstance(observations, list):
         raise ValueError("request has invalid clarification fields")
     return ClarificationInput(
-        actor_id=value.get("actor_id"),
+        actor_id=cast(str, value.get("actor_id")),
         target=LifecycleState(value.get("target")),
-        base_digest=value.get("base_digest"),
+        base_digest=cast(str, value.get("base_digest")),
         spec_packet=value.get("spec_packet"),
         manifest=value.get("manifest"),
         approval_envelope=value.get("approval_envelope"),

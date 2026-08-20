@@ -78,7 +78,11 @@ RESPONSE_LIMIT = 65_536
 # SLICE-060 (#40) refreshes it for the mixed-verdict presentation dedup in
 # cmd_gate_evaluate's FAIL output, and again for the qa-gate remediation:
 # anchored suffix dedup that steps aside on ambiguous claim IDs.
-MAIN_PY_SHA256 = "28a7e160d228862c97324da20ecf71a7b900902e5259a30ae26e2746880a0e51"
+# The CI lint-debt repair (fix/ci-lint-debt, off main 5e1ea681d) refreshes
+# it for ruff 0.16.2 isort reordering only: the two ranex.observability
+# import statements re-split their names into canonical order; no other
+# statement added, removed, or changed.
+MAIN_PY_SHA256 = "996939c90ebd85f7cf9e253708d42967ec9e6fafd61d5329730dcdc9a109b6d7"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
