@@ -366,8 +366,9 @@ subprocess coverage, and the documented entrypoint (rc 0, coverage
 approval/revocation/intersected grants, trace integrity, and
 real-subject bootstrap. The byte-identical A/B/C schema/vector
 TypeScript mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in
-`ranex-harness` `ranex-trim` at `16bf036f`. Next per the build order:
-SLICE-057 (#37, execution family), opening through governance.
+`ranex-harness` `ranex-trim` at `16bf036f`. The execution family
+followed and closed (SLICE-057, #37, 2026-08-20 — below); next per
+the build order: SLICE-058, opening through governance.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -414,8 +415,11 @@ chosen by the party being measured. Both are closed.
   verification, both post-run sabotage refusals, the traced-run
   artifact with verdict neutrality), the confinement family (two-root
   launcher reproducibility, real build/install/qualify, confined
-  spawn binding both confinement digests, the kill/drain survivor
-  contract, timeout-vs-exit distinct reporting), and the freeze
+  spawn binding both confinement digests, the shell-descendant
+  containment contract — shell-constructed descendants die with the
+  three construction layers pinned to their call sites, the real
+  kill/drain proof living in the timeout arm — and timeout-vs-exit
+  distinct reporting), and the freeze
   family (byte-stable manifest round-trip, dirty-tree and hand-edit
   refusals) — three goldens captured from the real journeys through
   the one normalizer. The journey forced three never-executed-code

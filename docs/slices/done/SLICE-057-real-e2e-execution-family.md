@@ -14,7 +14,9 @@ family customer; SLICE-055 prerequisite accepted 2026-08-19)
 - `tests/e2e/test_confinement_real.py` — the confinement family: the
   launcher build-drift/reproducibility contract (SLICE-017 gate 1's
   shapes), and — where the host qualifies — real build/install/qualify,
-  real confined spawn, kill/drain survivor detection, and timeout-vs-exit
+  real confined spawn, the descendant-containment contract (final
+  scope at 5510c7767: shell-constructed descendants die and the
+  three layers are pinned to their call sites), and timeout-vs-exit
   distinct reporting (Worker A, committed red).
 - `tests/e2e/test_suite_freeze_real.py` — the freeze family: the real
   hermetic `suite freeze` round-trip on the committed tree, the
@@ -310,6 +312,30 @@ exchanged (the reframed arm stays probe-gated under the identical
 qualified_host reason) — and re-verified the full suite and the
 confinement golden's byte-equality at the final artifact.
 
+**Final-gate round (2026-08-20, post-correction).** The codex final
+gate's three P1 remediations and P2 record corrections landed:
+P1-2/P1-3 at 5510c7767 (the descendant arm rescoped to its proven
+claim — `test_shell_constructed_descendants_die_and_the_layers_are_
+pinned`, the three layers pinned to their CALL SITES by the
+string-aware per-function scanner, mutation-sanity red on call
+removal with definitions intact; the poller's `_stop` shadow renamed
+`_stop_event`, process stderr clean in both contexts); P1-1 at
+b82c081c8 (the standing ceremony: the rescoped arm's ID exchanged in
+both maps, and all five confinement declarations reclassified
+`ranex-prereq:qualified_host:` → `ranex-context:host-capability:` per
+this file's recorded host-gating strategy — the live limitation
+varies by host and the arms legitimately run on qualified hosts, so
+prereq-tier would hard-fail both directions off this host; sealed run
+1260/103/run_exit=0, lint green, the entrypoint cross-check
+informational thereafter). P2s: this file's and STATE's
+writable-EXECUTE residual timeline corrected (live since the execveat
+admission at 321cb524d, pre-e1e6dc8a7 — openat+execveat; e1e6dc8a7's
+execve widened the surface further), README's next-slice line and
+retired kill/drain-survivor wording corrected. Final state: full
+suite 1345 passed / 18 skipped / 0 failed (794.45s); delegated
+confinement module 7/7 (20.31s); all three goldens byte-verified at
+the final state.
+
 ## Follow-ups register (carried at close)
 
 1. **Argument-filtered `clone` — open, security-review-owned.** The
@@ -322,8 +348,12 @@ confinement golden's byte-equality at the final artifact.
    security review's MINOR-4).** The launcher's Landlock grants for
    the output and scratch trees carry the full filesystem mask
    including EXECUTE — pre-existing since the profile's first pin,
-   but it became LIVE with the e1e6dc8a7 execve admission: a confined
-   worker can now exec a binary it wrote itself into a writable tree.
+   and LIVE since the execveat admission, BEFORE e1e6dc8a7: openat
+   and execveat were both admitted from the first pinned filter, so
+   a confined worker could already exec a binary it wrote itself
+   into a writable tree by fd (openat + execveat AT_EMPTY_PATH).
+   e1e6dc8a7's execve admission widened the surface further — plain
+   pathname exec of a self-written binary — both facts recorded here.
    Contained: the executed code sheds nothing (seccomp + no_new_privs
    + Landlock + PID-ns + cgroup all inherit), so it stays inside the
    same confinement — in-sandbox execution only, no escape. Recorded
