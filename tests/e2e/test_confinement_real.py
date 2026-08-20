@@ -36,20 +36,26 @@ confinement-repo construction of tests/contract/test_trace_invariance.py.
 They first execute for real on a qualified host — an honest UNKNOWN
 until then, disclosed in the slice file rather than assumed away.
 
-The containment-by-construction and timeout contracts (issue #37 sad
-paths 3 and 8; sad path 3 as reframed by the orchestrator's sanctioned
-amendment on #37 — the frozen survivor arm was ruled vacuous):
+The shell-descendant and timeout contracts (issue #37 sad paths 3 and
+8; sad path 3 as reframed by the orchestrator's sanctioned amendment
+on #37 — the frozen survivor arm was ruled vacuous, and the first
+reframe's unconstructibility claim was itself ruled an overclaim by
+the final gate and rescoped to what the arm proves):
 
-* a confined worker's descendants are UNCONSTRUCTIBLE and containment
-  holds by construction — three independent layers (the empty
-  MS_NODEV tmpfs on /dev kills dash's async-job children before exec,
-  Landlock admits EXECUTE on exactly the six pinned objects/trees, and
-  the worker is PID 1 of a new PID namespace the kernel reaps at init
-  exit) mean no fork-exec construction can create a survivor for
-  kill/drain to observe in this profile; the arm proves it with real
-  observations — an outside poller holds the worker leaf's visible
-  membership at the direct pair through a deliberate fork-exec attempt
-  — and pins all three layers against the launcher source that ran;
+* SHELL-constructed descendants die, and the three layers are pinned
+  to their call sites — every dash-mediated construction goes through
+  the shell's async-job machinery, and three independent layers (the
+  empty MS_NODEV tmpfs on /dev kills dash's job children at their
+  pre-exec /dev/null open, Landlock admits EXECUTE on exactly the
+  pinned objects/trees, and the worker is PID 1 of a new PID namespace
+  the kernel reaps at init exit) kill those constructions before any
+  survivor exists; the arm proves it with real observations — an
+  outside poller holds the worker leaf's visible membership at the
+  direct pair through a deliberate shell fork-exec attempt — and pins
+  all three layers against the launcher source that ran. NOT claimed:
+  descendant unconstructibility — a NON-shell argv[0] can sustain
+  descendants under the current policy, and their containment is the
+  recorded inheritance residual (the slice file's seccomp entry);
 * a worker that exceeds its wall-time bound is killed and refused
   (``E-C18-LIMIT``, exit 2, no evidence) — distinct reporting — while a
   worker that exits 3 propagates exactly (``RECORDED exit=3``, run
@@ -491,8 +497,9 @@ def test_strict_local_journey_matches_the_golden(journey: ConfinementJourney) ->
     compare_golden(journey.report_text, _GOLDEN)
 
 
-# --- the descendant-probe contract (the sanctioned reframing of the frozen ---
-# --- survivor arm; the arm's docstring carries the full ruling) ---------------
+# --- the shell-descendant contract (the sanctioned reframing of the frozen ---
+# --- survivor arm, rescoped to the proven claim by the final gate; the -------
+# --- arm's docstring carries the full ruling) --------------------------------
 
 
 #: The direct pair the worker cgroup leaf's VISIBLE membership
@@ -522,15 +529,21 @@ _SUSTAINED_DESCENDANT_MS = 150.0
 _MIN_PROBE_SAMPLES = 30
 _MIN_PROBE_WINDOW_MS = 5.0
 
-# Layer-1 pin: /dev's ENTIRE authority is one empty MS_NODEV tmpfs — no host
+# Layer-1 pins: /dev's ENTIRE authority is one empty MS_NODEV tmpfs — no host
 # device, no node creation ("adding a host device would be a policy widen").
-_PIN_EMPTY_DEV = (
-    'static bool mount_minimal_dev(void) { return mount("tmpfs", "/dev", '
-    '"tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, "mode=755") == 0; }'
+# Pinned as mount_minimal_dev's whole BODY; the call-site binding (the final
+# gate's P1-2 remedy) is _assert_three_layers_pinned's assemble_mounts call
+# count below — a defined-but-uncalled mount is the vacuity the first
+# reframe's definition-only pins could not see.
+_PIN_MINIMAL_DEV_BODY = (
+    'return mount("tmpfs", "/dev", "tmpfs", MS_NOSUID | MS_NOEXEC | MS_NODEV, '
+    '"mode=755") == 0;'
 )
 # Layer-2 pins: the exact Landlock grant block (six path grants plus the two
 # runtime-loader grants; libc is read-only, no EXECUTE) and the subject and
-# toolchain trees' read-only access shape.
+# toolchain trees' read-only access shape — fragments of enforce_landlock's
+# body, asserted inside that body with the enforcer itself call-bound in
+# worker_exec.
 _PIN_LANDLOCK_RULES = (
     'executable_access = LANDLOCK_ACCESS_FS_EXECUTE | '
     'LANDLOCK_ACCESS_FS_READ_FILE; '
@@ -550,17 +563,18 @@ _PIN_READONLY_ACCESS = (
     'const __u64 readonly_access = LANDLOCK_ACCESS_FS_EXECUTE | '
     'LANDLOCK_ACCESS_FS_READ_FILE | LANDLOCK_ACCESS_FS_READ_DIR;'
 )
-# Layer-3 pins: the namespace flag set (CLONE_NEWPID among them), the fresh
-# proc overlay in the forked child, and the exec itself — together they make
-# the exec'd command PID 1 of a new PID namespace.
-_PIN_NAMESPACE_FLAGS = (
-    'static bool enter_worker_namespaces(void) { const int namespaces = '
-    'CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID | CLONE_NEWIPC | '
-    'CLONE_NEWNET | CLONE_NEWCGROUP; return unshare(namespaces) == 0; }'
+# Layer-3 pins: the namespace flag set (CLONE_NEWPID among them) and the
+# fresh proc overlay — WHOLE BODIES of enter_worker_namespaces and
+# mount_fresh_proc, call-bound in worker_exec together with the exec itself;
+# together they make the exec'd command PID 1 of a new PID namespace.
+_PIN_NAMESPACE_BODY = (
+    'const int namespaces = CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID | '
+    'CLONE_NEWIPC | CLONE_NEWNET | CLONE_NEWCGROUP; '
+    'return unshare(namespaces) == 0;'
 )
-_PIN_FRESH_PROC = (
-    'static bool mount_fresh_proc(void) { return mount("proc", "/proc", '
-    '"proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, NULL) == 0; }'
+_PIN_FRESH_PROC_BODY = (
+    'return mount("proc", "/proc", "proc", MS_NOSUID | MS_NOEXEC | MS_NODEV, '
+    'NULL) == 0;'
 )
 _PIN_EXECVEAT = (
     '(void)syscall(SYS_execveat, 3, "", argv + argument_offset + 4, '
@@ -568,15 +582,286 @@ _PIN_EXECVEAT = (
 )
 
 
+def _launcher_code(text: str) -> tuple[str, list[bool]]:
+    """The launcher C source as comment-free text (string and character
+    literals kept verbatim), with a parallel per-character flag marking
+    which emitted characters are code rather than literal contents.
+
+    One string-aware scanner feeds both the whole-file shape grammar and
+    the function-body extractor below, so a ``//`` or ``/*`` inside a
+    literal can never be mistaken for a comment, and a brace or paren
+    inside a literal never opens a body — the structural judgment the
+    call-site pins stand on.
+    """
+
+    out: list[str] = []
+    structural: list[bool] = []
+    index = 0
+    length = len(text)
+    while index < length:
+        char = text[index]
+        following = text[index + 1] if index + 1 < length else ""
+        if char == "/" and following == "*":
+            end = text.find("*/", index + 2)
+            end = length if end < 0 else end + 2
+            out.append(" ")
+            structural.append(True)
+            index = end
+        elif char == "/" and following == "/":
+            end = text.find("\n", index)
+            index = length if end < 0 else end
+        elif char in ('"', "'"):
+            out.append(char)
+            structural.append(False)
+            index += 1
+            while index < length:
+                current = text[index]
+                out.append(current)
+                structural.append(False)
+                index += 1
+                if current == "\\":
+                    if index < length:
+                        out.append(text[index])
+                        structural.append(False)
+                        index += 1
+                    continue
+                if current == char:
+                    break
+        else:
+            out.append(char)
+            structural.append(True)
+            index += 1
+    return "".join(out), structural
+
+
 def _launcher_code_shape(path: Path) -> str:
     """The launcher C source as one comment-free, whitespace-collapsed
     shape — prose edits never redden the pins, any behavioral or policy
-    change does."""
+    change does. (Structural descendant of the first reframe's regex
+    stripper: byte-equivalent on this source, and correct under
+    string-borne comment markers too.)"""
 
-    text = path.read_text(encoding="utf-8")
-    text = re.sub(r"/\*.*?\*/", " ", text, flags=re.DOTALL)
-    text = re.sub(r"//[^\n]*", " ", text)
-    return re.sub(r"\s+", " ", text).strip()
+    code, _structural = _launcher_code(path.read_text(encoding="utf-8"))
+    return re.sub(r"\s+", " ", code).strip()
+
+
+def _parameter_list_owner(code: str, structural: list[bool], close_paren: int) -> str:
+    """The function name owning the parameter list that closes at
+    ``close_paren``: walk back (paren-depth aware, structural characters
+    only) to the list's opening paren, then over whitespace, and take
+    the identifier ending there."""
+
+    depth = 0
+    index = close_paren
+    while index >= 0:
+        if structural[index]:
+            if code[index] == ")":
+                depth += 1
+            elif code[index] == "(":
+                depth -= 1
+                if depth == 0:
+                    break
+        index -= 1
+    else:
+        raise ValueError("unbalanced parentheses in launcher source")
+    index -= 1
+    while index >= 0 and (not structural[index] or code[index].isspace()):
+        index -= 1
+    name_end = index + 1
+    while index >= 0 and structural[index] and (
+        code[index].isalnum() or code[index] == "_"
+    ):
+        index -= 1
+    return code[index + 1 : name_end]
+
+
+def _matching_brace(code: str, structural: list[bool], open_brace: int) -> int:
+    """The structural ``}`` matching the structural ``{`` at ``open_brace``."""
+
+    depth = 0
+    for index in range(open_brace, len(code)):
+        if not structural[index]:
+            continue
+        if code[index] == "{":
+            depth += 1
+        elif code[index] == "}":
+            depth -= 1
+            if depth == 0:
+                return index
+    raise ValueError("unbalanced braces in launcher source")
+
+
+def _launcher_function_bodies(path: Path) -> dict[str, str]:
+    """Every top-level function of the launcher source as name → its
+    comment-free, whitespace-collapsed body — the C-side form of the
+    repo's structural pin precedent
+    (test_only_host_confinement_module_may_name_host_confinement walks
+    Python's ast; C has no stdlib parser and the one installed C parser
+    is an undeclared transitive of cryptography, so this scanner is the
+    test file's own structure walk). A depth-0 brace opened by a
+    parameter list is a function body; braces and parens inside string
+    or character literals never count. Pins scoped to a body therefore
+    bind CALL SITES: removing a call from the function redds while
+    comment edits stay green — the mutation probes recorded with the
+    arm's rescope verify both directions.
+    """
+
+    code, structural = _launcher_code(path.read_text(encoding="utf-8"))
+    bodies: dict[str, str] = {}
+    depth = 0
+    index = 0
+    last_significant = -1
+    length = len(code)
+    while index < length:
+        if not structural[index]:
+            index += 1
+            continue
+        char = code[index]
+        if char == "{":
+            if (
+                depth == 0
+                and last_significant >= 0
+                and code[last_significant] == ")"
+            ):
+                name = _parameter_list_owner(code, structural, last_significant)
+                end = _matching_brace(code, structural, index)
+                if name in bodies:
+                    raise ValueError(
+                        f"duplicate function definition in launcher source: {name}"
+                    )
+                bodies[name] = re.sub(r"\s+", " ", code[index + 1 : end]).strip()
+                last_significant = end
+                index = end + 1
+                continue
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            last_significant = index
+        elif not char.isspace():
+            last_significant = index
+        index += 1
+    return bodies
+
+
+def _assert_three_layers_pinned(source: Path) -> None:
+    """The arm's part (b), the final gate's P1-2 remedy: the three layers,
+    pinned against the launcher source that was actually built and run —
+    the DEFINITIONS as whole bodies AND the CALL SITES that make those
+    definitions the worker's live construction (the first reframe pinned
+    definition text only, so a defined-but-uncalled layer stayed green).
+    """
+
+    bodies = _launcher_function_bodies(source)
+
+    def body(name: str) -> str:
+        assert name in bodies, (
+            f"the launcher source no longer defines {name}() — the layer "
+            "pins bind the call sites inside it"
+        )
+        return bodies[name]
+
+    worker_exec = body("worker_exec")
+    assemble_mounts = body("assemble_mounts")
+    minimal_dev = body("mount_minimal_dev")
+    namespaces = body("enter_worker_namespaces")
+    fresh_proc = body("mount_fresh_proc")
+    landlock = body("enforce_landlock")
+    loader_rule = body("add_runtime_loader_rule")
+
+    # Layer 1 — the definition is the whole pinned body, /dev's only
+    # authority, and assemble_mounts (what worker_exec runs) CALLS it.
+    assert minimal_dev == _PIN_MINIMAL_DEV_BODY, (
+        "layer 1 is not the pinned construction: /dev's entire authority "
+        "must be the one empty MS_NODEV tmpfs (mount_minimal_dev)"
+    )
+    assert assemble_mounts.count("mount_minimal_dev()") == 1, (
+        "layer 1 call-site drift: assemble_mounts must CALL "
+        "mount_minimal_dev exactly once — a definition without the call "
+        "leaves the worker's /dev unpopulated by the pinned empty tmpfs, "
+        "the vacuity the first reframe's definition-only pins could not "
+        "see (final gate P1-2)"
+    )
+    shape = _launcher_code_shape(source)
+    assert shape.count("/dev") == 1 and "mknod" not in shape.lower(), (
+        "layer 1 policy widen: the launcher source names /dev or device "
+        "creation beyond the one empty-tmpfs mount — a populated /dev "
+        "would let dash's async-job children survive to their exec attempt"
+    )
+
+    # Layer 2 — the exact grant block inside enforce_landlock's own body,
+    # the rule counts at their pinned sites, and worker_exec CALLS the
+    # enforcer.
+    assert _PIN_LANDLOCK_RULES in landlock and _PIN_READONLY_ACCESS in landlock, (
+        "layer 2 is not the pinned construction: the Landlock grant block "
+        "(six path grants — argv[0]'s descriptor with EXECUTE, the loader "
+        "with EXECUTE, read-only libc, read-only subject/toolchain, the "
+        "two writable trees with the full mask) must be exactly this shape"
+    )
+    assert (
+        shape.count("add_path_rule(ruleset_fd") == 6
+        and shape.count("add_runtime_loader_rule(ruleset_fd") == 2
+    ), (
+        "layer 2 policy widen: the Landlock ruleset carries rule "
+        "invocations beyond the pinned set (five grants in "
+        "enforce_landlock plus the loader helper's own, and exactly two "
+        "runtime-loader grants) — any added grant reddens this pin"
+    )
+    assert (
+        landlock.count("add_path_rule(ruleset_fd") == 5
+        and loader_rule.count("add_path_rule(ruleset_fd") == 1
+        and landlock.count("add_runtime_loader_rule(ruleset_fd") == 2
+    ), (
+        "layer 2 call-site drift: the six grants must live at their "
+        "pinned sites — five add_path_rule calls inside enforce_landlock "
+        "plus the loader helper's own, and exactly two runtime-loader "
+        "grants inside enforce_landlock"
+    )
+    assert worker_exec.count("enforce_landlock(") == 1, (
+        "layer 2 call-site drift: worker_exec must CALL enforce_landlock "
+        "exactly once — a ruleset defined but never enforced by the worker "
+        "path is the vacuity definition-only pins could not see"
+    )
+
+    # Layer 3 — the unshare set (CLONE_NEWPID among the flags) as the whole
+    # body of the function worker_exec calls, proc overlaid in the forked
+    # child, exec last, and the whole construction order pinned inside
+    # worker_exec's own body (call sites, not file positions).
+    assert namespaces == _PIN_NAMESPACE_BODY, (
+        "layer 3 is not the pinned construction: the worker's namespace "
+        "set must include CLONE_NEWPID exactly as pinned (the kernel "
+        "reaps the whole namespace at PID-1 exit)"
+    )
+    assert fresh_proc == _PIN_FRESH_PROC_BODY, (
+        "layer 3 is not the pinned construction: the forked child must "
+        "overlay fresh proc (mount_fresh_proc)"
+    )
+    assert (
+        worker_exec.count("enter_worker_namespaces(") == 1
+        and worker_exec.count("assemble_mounts(") == 1
+        and worker_exec.count("mount_fresh_proc(") == 1
+    ), (
+        "layer 3 call-site drift: worker_exec must call "
+        "enter_worker_namespaces, assemble_mounts, and mount_fresh_proc "
+        "exactly once each"
+    )
+    assert _PIN_EXECVEAT in worker_exec, (
+        "layer 3 is not the pinned construction: the forked child must "
+        "exec via AT_EMPTY_PATH on the pre-opened descriptor — the "
+        "command itself is the namespace's PID 1"
+    )
+    assert (
+        worker_exec.index("enter_worker_namespaces(")
+        < worker_exec.index("assemble_mounts(")
+        < worker_exec.index("worker = fork();")
+        < worker_exec.index("mount_fresh_proc(")
+        < worker_exec.index("enforce_landlock(")
+        < worker_exec.index(_PIN_EXECVEAT)
+    ), (
+        "layer 3 construction order drifted: namespaces are entered and "
+        "mounts assembled before the fork, proc overlay and landlock "
+        "happen in the forked child, and exec is last — that order is "
+        "what makes the exec'd command PID 1 of the new PID namespace"
+    )
 
 
 class _WorkerLeafPoller(threading.Thread):
@@ -595,7 +880,16 @@ class _WorkerLeafPoller(threading.Thread):
         self._known = {
             leaf.name for leaf in self._root.glob("ranex-slice018-*-worker")
         }
-        self._stop = threading.Event()
+        #: ``_stop_event``, never ``_stop``: that name shadows
+        #: ``threading.Thread._stop`` on Python <=3.13, where ``join()``
+        #: calls it at thread exit — ``TypeError: 'Event' object is not
+        #: callable`` (final gate P1-3, reproduced on 3.12.3; the
+        #: installed 3.14 removed ``Thread._stop``, which is why the
+        #: shadow stayed silent here). The helper's whole attribute
+        #: surface (_root, _known, _stop_event, _lock, samples) is
+        #: audited collision-free against Thread on both installed
+        #: generations (3.12, 3.14).
+        self._stop_event = threading.Event()
         self._lock = threading.Lock()
         #: ``(t_ms, visible_members, pids_current)`` per sample — visible
         #: membership is the asserted descendant detector; pids.current is
@@ -606,7 +900,7 @@ class _WorkerLeafPoller(threading.Thread):
     def run(self) -> None:
         origin = time.monotonic()
         leaf: Path | None = None
-        while not self._stop.is_set():
+        while not self._stop_event.is_set():
             try:
                 if leaf is None or not leaf.exists():
                     leaf = None
@@ -631,7 +925,7 @@ class _WorkerLeafPoller(threading.Thread):
                 pass  # the leaf's birth/death windows race the reads
 
     def finish(self) -> list[tuple[float, int, int]]:
-        self._stop.set()
+        self._stop_event.set()
         self.join(timeout=5.0)
         with self._lock:
             return list(self.samples)
@@ -670,68 +964,83 @@ def _confined_run_observed(
     return process.returncode, stdout, stderr, poller.finish()
 
 
-def test_descendant_processes_are_unconstructible_and_containment_is_by_construction(
+def test_shell_constructed_descendants_die_and_the_layers_are_pinned(
     journey: ConfinementJourney,
 ) -> None:
-    """Issue #37 sad path 3, reframed by the orchestrator's sanctioned
-    amendment (the survivor-arm vacuity ruling): the frozen
-    ``test_worker_kill_drain_leaves_no_survivor`` was VACUOUS — its
-    "backgrounded worker" never existed, because three independent
-    containment layers make a genuine descendant of the confined worker
-    unconstructible in this profile:
+    """Issue #37 sad path 3, scoped to exactly what this arm proves.
 
-    1. the worker's /dev is an empty MS_NODEV tmpfs (the profile declares
-       no device nodes), and dash opens /dev/null for every async job
-       BEFORE exec — the forked job child dies in under a millisecond,
-       pre-exec (the operative first killer);
-    2. Landlock admits EXECUTE on exactly six objects/trees — argv[0]'s
-       pre-opened descriptor, the pinned ELF loader, the subject,
-       toolchain, output, and scratch trees (libc is read-only) — so any
-       fork-exec of another host binary (``/bin/sleep``) is EACCES-denied
-       even if it survives layer 1;
+    Lineage: the frozen ``test_worker_kill_drain_leaves_no_survivor``
+    was ruled VACUOUS by the orchestrator's sanctioned amendment (its
+    "backgrounded worker" never existed); the first reframe then claimed
+    descendants are UNCONSTRUCTIBLE and containment holds BY
+    CONSTRUCTION — an overclaim the final gate struck down (codex P1-2,
+    confirmed): every construction that reframe tried goes through
+    dash's async-job machinery, and under the current policy a NON-shell
+    argv[0] CAN sustain a descendant. This is the honest rescope of that
+    arm to its proven claim.
+
+    PROVEN — SHELL-constructed descendants die, by three independent
+    layers, observed live. Every dash-mediated construction (subshells,
+    explicit redirects, pipelines — /tmp/opencode/slice057-survivor/
+    EVIDENCE.md) funnels through the shell job machinery's pre-exec
+    ``open("/dev/null")``:
+
+    1. the worker's /dev is one empty MS_NODEV tmpfs (the profile
+       declares no device nodes), so dash's job child dies at that
+       open — pre-exec, in under a millisecond (the operative first
+       killer);
+    2. Landlock admits EXECUTE on exactly the pinned objects/trees —
+       argv[0]'s pre-opened descriptor, the pinned ELF loader, the
+       subject, toolchain, output, and scratch trees (libc is
+       read-only) — so a job child that survived layer 1 would still be
+       EACCES-denied at its exec of any other host binary;
     3. the worker is PID 1 of a new PID namespace, and the kernel
-       SIGKILLs every process in a namespace when its init exits
-       (kernel pidns semantics) — nothing can outlive it regardless.
+       SIGKILLs every process in a namespace when its init exits —
+       nothing can outlive it.
 
-    No dash-async construction creates a genuine descendant here (the
-    experiment on #37 proved this across subshells, explicit redirects,
-    and pipelines: /tmp/opencode/slice057-survivor/EVIDENCE.md), so "no
-    survivor escapes kill/drain" was unfalsifiable as frozen. This arm
-    holds the honest, falsifiable contract instead — containment BY
-    CONSTRUCTION:
+    The runtime observation, with the polling numbers of the verified
+    construction: an outside poller (~7-10 kHz) watches the worker
+    cgroup leaf while ``sh -c '/bin/sleep 30 & wait $!'`` runs confined
+    — the leaf's VISIBLE membership (``cgroup.procs``) sits steadily at
+    exactly the direct pair (launcher + worker command) with no
+    SUSTAINED third member; the in-suite verification held ~20000
+    samples over ~1020 ms, the longest observed third-member flicker
+    was 0.04 ms (the dying job child's un-reaped corpse may hold an
+    extra ``pids.current`` pid until teardown — recorded, never
+    asserted, because reap timing is host-dependent), and the run
+    refuses at ~1018 ms with ``E-C18-LIMIT cpu_usage_usec`` — the
+    wait-spin's cumulative-CPU refusal, itself evidence no live sleeper
+    existed. 150 ms is the sustained-descendant threshold: far beyond
+    any flicker, ~7x below any genuine footprint.
 
-    (a) a deliberate fork-exec attempt (``sh -c '/bin/sleep 30 & wait
-        $!'``) runs confined while an outside poller samples the worker
-        cgroup leaf: its VISIBLE membership (``cgroup.procs``) must sit
-        steadily at exactly the direct pair — the launcher plus the
-        worker command — with no SUSTAINED third member. Live processes
-        in the worker's PID namespace list steadily (the spinning worker
-        command itself proves it in this very construction), so a
-        successfully-created descendant would hold a visible third
-        membership for the run's whole refusal window and redden this;
-        the dead job child's un-reaped corpse may hold an extra
-        ``pids.current`` pid until teardown — recorded, never asserted,
-        because reap timing is host-dependent. The run's own outcome is
-        the other secondary signal (the wait-spin's CPU-limit refusal
-        ``E-C18-LIMIT cpu_usage_usec``, or completion with ``RECORDED``
-        — both shapes mean nothing was reaped alive);
-    (b) the three layers above are each PINNED against the launcher
-        source that was actually built and run (comment-free code shape,
-        so prose edits never redden but any policy change does): the
-        empty-/dev mount plus no other /dev authority and no node
-        creation; the exact Landlock rule block — six path grants, no
-        more — with its access shapes; and the namespace construction
-        (CLONE_NEWPID in the pinned unshare set, entered before the
-        fork, proc overlaid in the child, exec via AT_EMPTY_PATH) that
-        makes the command PID 1;
-    (c) the REAL kill/drain proof — a genuine wall-time overrun killed
-        and refused over a drained teardown — stays where it already
-        lives and stays real: ``test_timeout_refusal_is_distinct_from_
-        the_exit_code`` below.
+    NOT CLAIMED — descendant unconstructibility. A NON-shell argv[0] —
+    a fork-and-loop program exec'd directly as the observed command —
+    CAN sustain live descendants under the current policy (the seccomp
+    filter is nr-only, so clone is admitted with any flags; Landlock
+    granted EXECUTE on argv[0] itself). Their containment rests on the
+    inheritance facts, the slice file's RECORDED RESIDUAL (seccomp+NNP+
+    Landlock inherit; descendants stay in the PID namespace and the
+    confined cgroup; cgroup.kill reaches nested namespaces; pids bounds
+    the count) — not on anything this arm observes. The REAL kill/drain
+    proof — a genuine wall-time overrun killed and refused over a
+    drained teardown — is for the worker itself and lives where it
+    already lives: ``test_timeout_refusal_is_distinct_from_the_exit_
+    code`` below.
 
-    Supersedes the frozen ``test_worker_kill_drain_leaves_no_survivor``;
-    the freeze ceremony retires the old ID's declaration and declares
-    this arm's in the same act.
+    The three layers are pinned against the launcher source that was
+    actually built and run, bound to their CALL SITES (the repo's
+    structural pin precedent:
+    test_only_host_confinement_module_may_name_host_confinement): the
+    source is scanned comment- and string-aware into per-function
+    bodies, so prose edits stay green, any policy change reddens, and
+    REMOVING A CALL reddens even with its definition intact — the
+    vacuity the first reframe's definition-only pins could not see.
+
+    Supersedes the frozen ``test_worker_kill_drain_leaves_no_survivor``
+    and its own first reframe, ``test_descendant_processes_are_
+    unconstructible_and_containment_is_by_construction``; the freeze
+    ceremony retires the previous IDs' declarations and declares this
+    arm's in the same act.
     """
 
     # --- (a) the runtime observation: the worker leaf, watched from outside
@@ -793,55 +1102,10 @@ def test_descendant_processes_are_unconstructible_and_containment_is_by_construc
             f"stdout={stdout!r} stderr={stderr!r}"
         )
 
-    # --- (b) the three layers, pinned against the source that ran ----------
+    # --- (b) the three layers, pinned to their call sites ------------------
     source = journey.subject / LAUNCHER_SOURCE
     assert source.is_file(), f"the built journey's launcher source is absent: {source}"
-    shape = _launcher_code_shape(source)
-    assert _PIN_EMPTY_DEV in shape, (
-        "layer 1 is not the pinned construction: /dev's entire authority "
-        "must be the one empty MS_NODEV tmpfs (mount_minimal_dev)"
-    )
-    assert shape.count("/dev") == 1 and "mknod" not in shape.lower(), (
-        "layer 1 policy widen: the launcher source names /dev or device "
-        "creation beyond the one empty-tmpfs mount — a populated /dev "
-        "would let dash's async-job children survive to their exec attempt"
-    )
-    assert _PIN_LANDLOCK_RULES in shape and _PIN_READONLY_ACCESS in shape, (
-        "layer 2 is not the pinned construction: the Landlock grant block "
-        "(six path grants — argv[0]'s descriptor with EXECUTE, the loader "
-        "with EXECUTE, read-only libc, read-only subject/toolchain, the "
-        "two writable trees with the full mask) must be exactly this shape"
-    )
-    assert (
-        shape.count("add_path_rule(ruleset_fd") == 6
-        and shape.count("add_runtime_loader_rule(ruleset_fd") == 2
-    ), (
-        "layer 2 policy widen: the Landlock ruleset carries rule "
-        "invocations beyond the pinned set (five grants in "
-        "enforce_landlock plus the loader helper's own, and exactly two "
-        "runtime-loader grants) — any added grant reddens this pin"
-    )
-    assert _PIN_NAMESPACE_FLAGS in shape, (
-        "layer 3 is not the pinned construction: the worker's namespace "
-        "set must include CLONE_NEWPID exactly as pinned (the kernel "
-        "reaps the whole namespace at PID-1 exit)"
-    )
-    assert _PIN_FRESH_PROC in shape and _PIN_EXECVEAT in shape, (
-        "layer 3 is not the pinned construction: the forked child must "
-        "overlay fresh proc and exec via AT_EMPTY_PATH on the pre-opened "
-        "descriptor — the command itself is the namespace's PID 1"
-    )
-    assert (
-        shape.index("if (!enter_worker_namespaces())")
-        < shape.index("worker = fork();")
-        < shape.index("if (!mount_fresh_proc()")
-        < shape.index(_PIN_EXECVEAT)
-    ), (
-        "layer 3 construction order drifted: namespaces are entered "
-        "before the fork, and proc overlay + exec happen in the forked "
-        "child — that order is what makes the exec'd command PID 1 of "
-        "the new PID namespace"
-    )
+    _assert_three_layers_pinned(source)
 
 
 def test_timeout_refusal_is_distinct_from_the_exit_code(
