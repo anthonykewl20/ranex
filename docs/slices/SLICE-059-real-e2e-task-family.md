@@ -233,25 +233,59 @@ arms enforce that and run green against these bytes.
   src/ranex/cli/main.py:1405 → red at the refusal arm's transcript
   assert; `DISPATCHED`→`DISPATCHXD` at main.py:1117 → red at the
   comparator. Every control diffs dirty; nothing passed vacuously.
-- `delegation-diff.out` is NOT captured: OPENROUTER_API_KEY is absent on
-  this host, and the contract's own sequencing (C-4/G-4 + the Rollback
-  commitment "the owner exports the scoped OpenRouter credential for
-  G-4") puts that capture at key-availability time. Its digest is
-  recorded here when that capture lands. Until then G-1 cannot exit 0
-  (the delegation file's three ungated golden-contract arms are its
-  honest red) and the close-time ceremony holds (every precedent
-  ceremony sealed a green run, run_exit=0 — SLICE-056/057/058).
+- `delegation-diff.out` — captured 2026-08-21 from the real G-4 run
+  (CCR-2/CCR-3 below): sha256
+  `cac49c48a6283364ef90ef57d89fc459d8b66bad43aa16dd93b6296537afba9d`
+  (raw diff sha256
+  `95fc39873cdf5333b25e2f046923c3252a15161f2768b9c8a5ce6fd282fb8491`),
+  task `T-TASK-FAMILY-DELEGATION-1`, emitted commit `c345c6e6…`,
+  kernel-recorded suite `1 passed`, judgement CANDIDATE exit 1 with
+  missing claims `tests-executed`, no PASS anywhere, journal verifies.
+  With these bytes committed, G-1 at its contract shape (credential
+  unset, SP-1 named skip) is green: **12 passed / 2 skipped, exit 0**.
+  KNOWN DEFECT (BLOCKER issuecomment-5359180442, owner decision pending):
+  the free model's note-line content is nondeterministic — six real runs,
+  three distinct forms, `temperature: 0` included — so the frozen file's
+  byte-exact comparator cannot hold for repeated credential-bearing runs;
+  the gate re-run exited 1 on exactly the content-derived lines. The
+  comparator's fate (bless the contract-shaped close / CCR-4 shape
+  golden / retry budget / model change) is the owner's ruling.
 
-## Sanctioned amendments — none
+## Sanctioned amendments — CCR-1, CCR-2, CCR-3 (records on #39)
 
-The frame exists for this family; nothing in the frozen contracts needed
-an ADR-032 amendment or an issue #39 change request at freeze time, and
-no `src/` change is demanded: every refusal, transcript, and binding
-asserted was observed against the installed kernel at 5e1ea681d. The
-implementation lane's obligations — capturing the three goldens from the
-real journeys, posting AC-2's refusal artifacts and AC-3's real G-4 run
-on #39, the fail_under re-derivation (G-3), and the registration
-ceremony — are the issue's own demands, not amendments.
+* **CCR-1** (issuecomment-5354660541): docs/MAP.md §4.7 added to the
+  surface — one SLICE-059 row (tracker #33 Phase-2 mandate).
+* **CCR-2** (issuecomment-5358926531; DECISION 5358927994), 2026-08-21:
+  (a) the delegation wrappers invoke the real bridge entry
+  `packages/ranex/src/index.ts` — `packages/opencode` holds only
+  node_modules at the provenance-pinned harness HEAD; (b) the G-4
+  credential mechanism reads the owner's EXISTING OpenRouter credential
+  from the owner's store into the run environment only (free model,
+  value never printed/logged/committed, store never mutated) — the
+  Rollback checkpoint's substance under the owner's standing
+  instructions ("complete all"; key-export objection; "we have our own
+  harness").
+* **CCR-3** (issuecomment-5359078756), 2026-08-21: the harness's three
+  GitHub tools (the only `Schema.Union` parameters in the tree) lower to
+  a top-level `anyOf` without `type`, which the frozen free model's
+  upstream (Cohere via OpenRouter) rejects on every turn —
+  deterministic, all ATTEMPTS=3. The wrappers seed the harness-native
+  agent config denying exactly that family into the kernel's scratch
+  HOME; remedy proven by a real run end-to-end before application. G-4
+  environment wiring only; no assertion semantics change.
+
+BLOCKED (issuecomment-5359180442): C-4's byte-exact golden idempotency
+is unsatisfiable with the frozen free model (content nondeterminism,
+OBSERVED over six runs). The owner's ruling on the comparator's fate
+gates the ceremony, G-2/G-3/G-5 at the final SHA, docs close-out, and
+EVIDENCE.
+
+The implementation lane's remaining obligations — posting AC-2's
+refusal artifacts (captured 2026-08-20, green in every G-1 run since),
+the fail_under re-derivation (G-3), and the registration ceremony —
+wait on that ruling, not on any further implementation work: every
+journey the frozen files define has run green against the real subjects
+at 5fe0d3849.
 
 NOTICED, NOT TOUCHING (outside this slice's denied surface, reported for
 the owner): CI's `test` job is red on main at 5e1ea681d (pre-dating this
