@@ -75,7 +75,9 @@ RESPONSE_LIMIT = 65_536
 # SLICE-054 (ADR-031) refreshes it again for the observability stage boundary.
 # SLICE-056 (#36 sad path 3) refreshes it for the journal-verify row-naming
 # presentation in cmd_journal_verify's FAIL output.
-MAIN_PY_SHA256 = "8b62b4847ef9d3e930be163296be6d93a129bdfd58addfdac12b7fdd802b6fbc"
+# SLICE-060 (#40) refreshes it for the mixed-verdict presentation dedup in
+# cmd_gate_evaluate's FAIL output.
+MAIN_PY_SHA256 = "d29b0cd94d9614c1dee46a2ea6321754607cbed958ad105beeb0c9b8745a12c2"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

@@ -882,19 +882,28 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
     unattributable, refused, absent, observed = presentation_partition(projected, admission)
     missing = set(result.missing_claims)
 
+    # What this block has already told the operator, verbatim. The kernel's
+    # own diagnosis is printed after it and may restate some of the same
+    # clauses; a sentence printed twice reads as two separate problems.
+    said: list[str] = []
+
+    def say(sentence: str) -> None:
+        said.append(sentence)
+        print(f"      {sentence}")
+
     if refused:
-        print(
-            f"      {len(admission.rejections)} record(s) were refused above; "
+        say(
+            f"{len(admission.rejections)} record(s) were refused above; "
             f"no verifying evidence remains for: {', '.join(refused)}"
         )
     if absent and unattributable:
-        print(
-            f"      {unattributable} record(s) above were refused without a usable "
+        say(
+            f"{unattributable} record(s) above were refused without a usable "
             "claim_id, so these required claims cannot be called work never "
             f"done: {', '.join(absent)}"
         )
     elif absent:
-        print(f"      no evidence for required claim: {', '.join(absent)}")
+        say(f"no evidence for required claim: {', '.join(absent)}")
     if result.reason and (observed or not missing):
         # The kernel's own diagnosis, kept whenever it says something the
         # partition cannot: which of the four ways a record failed to satisfy
@@ -902,7 +911,20 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         # self-approval refusal that names no claim at all. Withheld when every
         # missing claim is genuinely absent, because then it would only repeat
         # the sentence printed above — possibly for claims that were refused.
-        print(f"      {result.reason}")
+        #
+        # That withholding covered the all-absent case only. In the mixed case
+        # — one claim stale, another genuinely absent — the reason carries both
+        # clauses and the absence one was already printed above, so it appeared
+        # twice in a single verdict. Drop only exact repeats of what was just
+        # said; every clause the partition could not express still prints, and
+        # a clause naming a different claim set is not a repeat and survives.
+        # The reason string itself is unchanged — it is the recorded diagnosis
+        # and what the journal and verdict record carry. This is presentation.
+        remaining = [
+            clause for clause in result.reason.split("; ") if clause not in said
+        ]
+        if remaining:
+            print(f"      {'; '.join(remaining)}")
 
     print(f"      subject={result.subject_digest}")
     return EXIT_FAIL
