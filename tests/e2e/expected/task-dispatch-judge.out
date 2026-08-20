@@ -1,0 +1,4 @@
+DISPATCHED  task=T-TASK-FAMILY  worktree=<ABS-PATH>
+RECORDED  claim=tree-clean  producer=worker  exit=0
+          subject=<DIGEST>
+CANDIDATE  task=T-TASK-FAMILY  gate=task-family  subject=<DIGEST>

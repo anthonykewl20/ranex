@@ -176,22 +176,71 @@ missing-golden assertion — the honest red, never a silent pass.
 - Command: `uv run --frozen pytest -q tests/e2e/test_task_real.py
   tests/e2e/test_delegation_real.py` (repo root, clean tree plus the two
   frozen files).
-- Outcome: **exit 1 — 9 failed / 3 passed / 2 skipped**. The 9 failures
-  are exactly the golden arms (6 task, 3 delegation), each naming its
-  missing golden. The 3 passes are the non-golden arms whose journeys run
-  green at the freeze (tampered-evidence refusal, clean PUBLISHED merge,
+- Outcome: **exit 1 — 8 failed / 4 passed / 2 skipped**. The 8 failures
+  are exactly the golden arms (5 task, 3 delegation), each naming its
+  missing golden. The 4 passes are the non-golden arms whose journeys run
+  green at the freeze (tampered-evidence refusal, moved-base/digest
+  named-reason refusals with replay equality, clean PUBLISHED merge,
   worktree-residue detection). The 2 skips are the fanout arm
   (`ranex-context:fanout-gated:` … #19) and the delegation journey
   (`ranex-prereq:openrouter_key:` — OPENROUTER_API_KEY absent on this
-  host), both named, both the sanctioned shapes.
+  host), both named, both the sanctioned shapes. (Corrected 2026-08-20
+  from the freeze-time draft's "9 failed / 3 passed": the executed run —
+  re-run at the capture, output in the capture record — is 8/4/2; the
+  freeze-time STATUS comment 5354489393 already carried the correct
+  counts.)
 - Suite collection with the frozen files present: 1397 IDs collect
   (1383 prior + 14 new), no import breakage.
-- Golden digests: the three goldens do not exist at this freeze — per the
-  contract's deterministic-recording clause, their `sha256sum` digests are
-  written here beside the golden-capture commit SHA when the capture
-  lands, and re-stated in the close-time EVIDENCE at the final tested
-  SHA. No digest is pinned in the contract body (family precedent:
-  SLICE-056/057/058 pinned none).
+
+## Golden-capture record (2026-08-20)
+
+Beside the red-freeze commit `305938bf6` (per the contract's
+deterministic-recording clause; re-stated in the close-time EVIDENCE at
+the final tested SHA): the two LOCAL goldens are captured from real runs
+of the frozen journeys
+themselves — the SLICE-056 (2e6947e365) / SLICE-058 (8fb7d79597)
+precedent: the committed `family` fixture driven verbatim (imported from
+the frozen file, its original reached through pytest 9's `__wrapped__`)
+against a real temp factory on this host, transcripts piped through
+`_prereqs.normalize_transcript` exactly as `compare_golden` applies it.
+No hand-sanitization; the frozen normalizer-application and sabotage
+arms enforce that and run green against these bytes.
+
+- `task-dispatch-judge.out`
+  sha256 dbe923e77121c5a2c4836509354acd6239e815bfdeda8e277e363388f79f678e
+  — DISPATCHED/RECORDED/CANDIDATE over the real journey; raw transcript
+  sha256 897a006725929045fa1134fbf9d3c2b0a350959f9d909637ca549a4f3fb2161b.
+- `task-merge-refusal.out`
+  sha256 f7ff1f74c86c20c3a8165305e426f95a048552aad8f263e002a72bee31bf6b77
+  — the C-2 self-approval REFUSED line on the approver's own real run
+  evidence (its raw bytes are already mask-free: the digest equals the
+  raw transcript's).
+- Byte-stability (C-1's idempotency clause): two independent journeys in
+  separate roots (`/tmp/opencode/slice059/run1`, `run2`) produced
+  byte-identical normalized goldens (`diff` clean both files; digests
+  equal).
+- With these bytes committed, `uv run --frozen pytest -q
+  tests/e2e/test_task_real.py tests/e2e/test_delegation_real.py` =
+  3 failed / 9 passed / 2 skipped — the task family fully green (10
+  passed / 1 fanout skip in its file), the 3 failures exactly the
+  delegation file's ungated golden arms.
+- Sabotage controls (throwaway copies; the real tree untouched):
+  mutated golden bytes — `CANDIDATE`→`QANDIDATE` in
+  task-dispatch-judge.out → 3 red (contract, transcript-match, sabotage
+  arms), exit 1; `self-approval`→`self-approvaX` in
+  task-merge-refusal.out → 2 red (refusal-match, volatile-material),
+  exit 1. Mutated kernel behavior — `sad-path-14 self-approval`→`…X` at
+  src/ranex/cli/main.py:1405 → red at the refusal arm's transcript
+  assert; `DISPATCHED`→`DISPATCHXD` at main.py:1117 → red at the
+  comparator. Every control diffs dirty; nothing passed vacuously.
+- `delegation-diff.out` is NOT captured: OPENROUTER_API_KEY is absent on
+  this host, and the contract's own sequencing (C-4/G-4 + the Rollback
+  commitment "the owner exports the scoped OpenRouter credential for
+  G-4") puts that capture at key-availability time. Its digest is
+  recorded here when that capture lands. Until then G-1 cannot exit 0
+  (the delegation file's three ungated golden-contract arms are its
+  honest red) and the close-time ceremony holds (every precedent
+  ceremony sealed a green run, run_exit=0 — SLICE-056/057/058).
 
 ## Sanctioned amendments — none
 
