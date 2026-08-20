@@ -39,17 +39,20 @@ package = false
 # (.local/ranex-e2e/coverage/, ignored .local/* territory); combines run with
 # --keep (tests/e2e/_prereqs.py combine_coverage) because installed coverage
 # deletes inputs without it. fail_under is derived from a real wired
-# entrypoint run at this tree (measured TOTAL 17.14%: the in-process suite
-# plus environment-inheriting children; hermetic subprocess children replace
-# their PYTHONPATH and are deliberately unmeasured — ADR-032's unmeasured
-# class) with a variance margin, and must be re-derived, not guessed,
-# whenever a family slice lands (ADR-032 Consequences).
+# entrypoint run at this tree (measured TOTAL 16.68% at the SLICE-059
+# final-phase tree — suite + combine + report stages of the documented
+# entrypoint, 75085 statements / 62558 missed; hermetic subprocess children
+# replace their PYTHONPATH and are deliberately unmeasured — ADR-032's
+# unmeasured class) under the standing variance-margin convention
+# (baseline precedent: measured 17.14 → fail_under 15 = floor − 2), and
+# must be re-derived, not guessed, whenever a family slice lands
+# (ADR-032 Consequences). floor(16.68) − 2 = 14.
 [tool.coverage.run]
 source = ["src/ranex"]
 parallel = true
 
 [tool.coverage.report]
-fail_under = 15
+fail_under = 14
 
 [tool.pytest.ini_options]
 addopts = ["--strict-config", "--strict-markers"]

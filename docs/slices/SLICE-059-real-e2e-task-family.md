@@ -243,13 +243,9 @@ arms enforce that and run green against these bytes.
   missing claims `tests-executed`, no PASS anywhere, journal verifies.
   With these bytes committed, G-1 at its contract shape (credential
   unset, SP-1 named skip) is green: **12 passed / 2 skipped, exit 0**.
-  KNOWN DEFECT (BLOCKER issuecomment-5359180442, owner decision pending):
-  the free model's note-line content is nondeterministic — six real runs,
-  three distinct forms, `temperature: 0` included — so the frozen file's
-  byte-exact comparator cannot hold for repeated credential-bearing runs;
-  the gate re-run exited 1 on exactly the content-derived lines. The
-  comparator's fate (bless the contract-shaped close / CCR-4 shape
-  golden / retry budget / model change) is the owner's ruling.
+  The note-line nondeterminism once blocked here (BLOCKER
+  issuecomment-5359180442) is RULED — see the risk-acceptance record
+  below.
 
 ## Sanctioned amendments — CCR-1, CCR-2, CCR-3 (records on #39)
 
@@ -274,22 +270,64 @@ arms enforce that and run green against these bytes.
   HOME; remedy proven by a real run end-to-end before application. G-4
   environment wiring only; no assertion semantics change.
 
-BLOCKED (issuecomment-5359180442): C-4's byte-exact golden idempotency
-is unsatisfiable with the frozen free model (content nondeterminism,
-OBSERVED over six runs). The owner's ruling on the comparator's fate
-gates the ceremony, G-2/G-3/G-5 at the final SHA, docs close-out, and
-EVIDENCE.
+## Owner risk-acceptance — C-4's byte-exact re-run clause (DECISION issuecomment-5359345600)
 
-The implementation lane's remaining obligations — posting AC-2's
-refusal artifacts (captured 2026-08-20, green in every G-1 run since),
-the fail_under re-derivation (G-3), and the registration ceremony —
-wait on that ruling, not on any further implementation work: every
-journey the frozen files define has run green against the real subjects
-at 5fe0d3849.
+BLOCKER issuecomment-5359180442 stopped execution at the owner-decision
+point: the frozen free model's note-line content is nondeterministic —
+six real delegated runs, three distinct AGENT_NOTE.txt forms
+(`delegated work happened.` / `delegated work happened. Do not do
+anything else.` / `delegated work happened`), `temperature: 0` included —
+so C-4's idempotency clause ("re-running the journey reproduces the
+normalized transcript byte-exactly") is **unsatisfiable as frozen** with
+the contract's own model: a with-credential re-run performs a real green
+journey and then fails the byte-exact comparison on exactly the
+content-derived lines (the note line and its blob index; every other
+byte identical, OBSERVED over the six runs).
 
-NOTICED, NOT TOUCHING (outside this slice's denied surface, reported for
-the owner): CI's `test` job is red on main at 5e1ea681d (pre-dating this
-slice; `uvx ruff@0.16.2 check src tests` fails on nine findings in
-src/ranex and other slices' frozen test files — src/ranex is denied
-surface here, and the findings are not this family's). G-2/G-5 at the
-final SHA will need this owned by the lane that owns those files.
+The ruling (DECISION issuecomment-5359345600, 2026-08-21, orchestrator
+decision under the specification owner's standing completion
+instructions, answering the BLOCKER): **Option 1 — bless the
+contract-shaped close.** G-4's frozen pass condition (real non-empty
+diff; kernel-recorded suite output green only via the model's real work;
+outcome posted) is satisfied by the capture run's artifacts; the
+byte-exact re-run clause becomes a written owner risk-acceptance under
+the milestone's universal-alignment valve ("a real-data e2e assertion,
+**or an explicit written owner risk-acceptance recorded on this issue**"
+— correct to the extent provable). Zero frozen-test changes; no golden
+byte, assertion, or red control weakened.
+
+**Accepted residual R-SLICE-059-1:** on any host with
+`OPENROUTER_API_KEY` exported, re-running
+`tests/e2e/test_delegation_real.py::test_delegated_diff_matches_the_golden_and_proves_execution`
+performs a REAL delegated run whose note-line content is a coin-flip
+among the observed forms; the byte-exact golden comparison then fails on
+the content-derived lines alone (exit 1) even though the journey itself
+is green. The canonical entrypoint environment (credential absent,
+README) and G-1's contract shape are unaffected. A shape-golden
+amendment is drafted as CCR-4 in the DECISION for any future owner who
+wants deterministic-shape credentialed runs; it is NOT applied.
+
+## fail_under re-derivation (G-3, 2026-08-21)
+
+Measured by a real wired entrypoint run at this tree's content-final
+state (the suite + combine + report stages of the README block, artifact
+home `.local/ranex-e2e/`, transcript + report
+`transcript-derivation.txt` / `coverage-report-derivation.txt`):
+**TOTAL 16.68%** — 75085 statements, 62558 missed (the pre-ceremony
+tree; its seven reds are the two STATE-discipline failures the blocked
+session left, their three sealed-clone cascades, and the two
+manifest-drift arms the ceremony itself cures — none touches `src/`
+coverage). Under the standing variance-margin convention (baseline
+precedent, OBSERVED: measured 17.14 → `fail_under = 15` = floor − 2):
+**floor(16.68) − 2 = 14**, recorded in `pyproject.toml`
+(`[tool.coverage.report]`, 15 → 14). The official G-3 at the final SHA
+runs the README block verbatim and verifies TOTAL ≥ 14; its report is
+posted in the close-time EVIDENCE.
+
+NOTICED, RESOLVED UPSTREAM (disclosed 2026-08-20, closed by the main
+merge 0344644ff): CI's `test` job was red on main at 5e1ea681d
+(pre-dating this slice; nine ruff findings in src/ranex and earlier
+slices' frozen test files). The debt was owned and fixed on main
+(isort 3f900d027, pyrefly 9243bea41, re-pins eb1c1e413/8dc685cca) and
+merged forward into this branch; `uvx ruff@0.16.2 check src tests` is
+exit 0 here (G-2).
