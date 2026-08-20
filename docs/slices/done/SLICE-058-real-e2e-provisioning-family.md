@@ -1,6 +1,7 @@
 # SLICE-058 — real e2e: provisioning family (deps fetch/approve + keygen)
 
-**Status:** open
+**Status:** done
+**Closed:** 2026-08-20 (ceremony 81d63d495; full suite 1360/18/0)
 **ADR:** docs/adr/ADR-032-real-e2e-suite-framework.md
 **Issue:** #38 (tracker #33, milestone 4 — the ADR-032 frame's third
 family customer; SLICE-055 prerequisite accepted 2026-08-19)
@@ -153,5 +154,73 @@ contracts needed an ADR-032 amendment or an issue #38 change request at
 freeze time, and no `src/` change is demanded: every refusal, transcript,
 and binding asserted was observed against the installed kernel at
 271344443. The implementation lane's obligations — capturing the two
-goldens from the real journeys, posting AC3's sabotage red output, and
-the registration ceremony — are the issue's own demands, not amendments.
+    goldens from the real journeys, posting AC3's sabotage red output, and
+    the registration ceremony — are the issue's own demands, not amendments.
+
+    (The one frozen-file amendment that DID land — 571dfcacf, the
+    local-index fixture's ruled option-B lo-raise with the option-A
+    loopback-probe fallback — was the test owner's ruling on blocker
+    comment 5350181287, not a slice amendment: the sealed ceremony could
+    not seal green with the fixture as frozen, and the owner's ruling is
+    recorded there and in STATUS comment 5350387292.)
+
+## Close-out record (2026-08-20)
+
+**The capture (8fb7d7959, Worker B).** Both goldens captured from the
+frozen journeys' own fixture functions driven on this host, piped
+through `_prereqs.normalize_transcript` exactly as `compare_golden`
+applies it: `deps-fetch-lock.out` (25-package closure, live depset
+`sha256:2faa6d3c…`, the one volatile class `<DIGEST>`-tamed; sha256
+`cdee1264…`) and `keygen-verify.out` (the two external openssl verdict
+lines; sha256 `c98af419…`). Red → green: 7 failed/8 passed at
+cea28a6ce → 15 passed with the goldens committed.
+
+**The blocker and the ruled amendment (571dfcacf, Worker A).** The
+two local-index arms errored inside every sealed ceremony run (fresh
+netns starts `lo` DOWN; the fixture's lock derivation hit ENETUNREACH
+at the frozen assert — blocker comment 5350181287, red sealed at
+8fb7d7959: 1265/111/2 errors, run_exit=1). The owner's ruling: option
+B first (the fixture raises `lo` via pure-stdlib SIOCSIFFLAGS), with
+option A (loopback probe + named skip) as the sanctioned fallback. The
+seal's fork-unshare-exec drops CAP_NET_ADMIN (uid unmapped, CapEff=0),
+so the fallback is the path that holds on this host: inside the seal
+the two arms SKIP with the ruled byte-stable reason; outside it they
+run green (`2 passed`); the family 15/15 in both the plain session and
+the sealed ceremony thereafter.
+
+**The ceremony (81d63d495).** The standing close ceremony on the clean
+tree at 571dfcacf: the 124 committed declarations re-declared verbatim
+plus ten new `ranex-context:hermetic-freeze:` declarations — the 8
+real-index arms and the 2 local-index arms. Tier decided per the
+blocker's option-A sanctioned delta (the cold-start precedent) and the
+b82c081c8 classification rule, verified mechanically before declaring:
+the 8 arms' live sealed reason is byte-stable across two sealed runs
+(`ranex-prereq:network_available: pypi.org:443 unreachable (gaierror:
+[Errno -3] Temporary failure in name resolution)`) but carries dynamic
+error prose, and a prereq-tier declaration makes the documented
+entrypoint cross-check exit 1 on every networked host (8 hard "stale:
+prune it" findings, observed over a plain-session junitxml); the
+context tier exits 0 with all ten reported informationally. The 2
+loopback declarations carry Worker A's exact ruled reason bytes after
+the context marker. Sealed run: 1265 passed / 113 skipped / 0 errors,
+107.16s, run_exit=0. FROZEN tests=1378 expected_skips=134. Sanctioned
+delta verified exact by set difference: suite 1363 → 1378 (+15: deps
+11, keygen 4), expected_skips 124 → 134 (+10, nothing reworded,
+nothing removed). Manifest canonical (load_manifest_bytes accepts,
+digest `sha256:ae1ea577…`); R1c two-grammar lint green; the freeze
+golden re-captured from the ceremony's FROZEN line
+(`suite-freeze-manifest.out` sha256 `1f774a84…`, the 59479a1e7
+re-capture pairing — the golden embeds the frozen counts, so every
+re-freeze re-captures it).
+
+**Final verification.** Round-trip file 6/6 at 81d63d495 (the nested
+sealed re-ceremony reproduces the committed manifest byte-exactly and
+matches the re-captured golden). Full suite, plain session:
+1360 passed / 18 skipped / 0 failed in 846.03s (1378 IDs — all 15
+family arms green, none among the skips). Entrypoint cross-check over
+the plain full-suite junitxml: exit 0, hard tier honest, 131
+informational context mismatches (the multi-context manifest's
+standing shape). The AC evidence quotes — sha256sum re-hash of every
+store entry, the AC3 sabotage red output (exit 2, naming the wheel,
+quarantine, no new evidence, repair downloaded=1), and the openssl
+both-direction verdicts — posted on #38 in the closing STATUS.

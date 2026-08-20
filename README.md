@@ -322,7 +322,22 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-058-real-e2e-provisioning-family.md
+**Active slice:** none
+
+SLICE-058 (provisioning family e2e, #38) closed 2026-08-20 — the
+ADR-032 frame's third family customer: the real deps journey (a real
+clone keeping its committed `governance/deps.yaml`, the pinned resolver
+re-deriving the committed lock byte-exactly over the real index, a
+content-addressed wheel store re-hashed entry-by-entry by `sha256sum`,
+approve/third-fetch bookkeeping, env-injection ignored) and the real
+keygen journey (the kernel signs and accepts the keygen key; openssl —
+OpenSSL 3.0.13 — verifies independently both directions over
+PKCS#8/SPKI DER) — two goldens captured from the real journeys, the
+sabotage controls (wheel byte-flip quarantine + one-wheel repair,
+lying/dead local index, lock drift and epoch-block refusals), and the
+ruled sealed-netns fallback for the loopback fixture. Registered
+through the standing ceremony at 81d63d495: 1378 IDs / 134
+declarations, sealed run_exit=0.
 
 SLICE-057 (execution family e2e, #37) closed 2026-08-20 — the ADR-032
 frame's second family customer: three real-journey test files (real
@@ -367,9 +382,9 @@ approval/revocation/intersected grants, trace integrity, and
 real-subject bootstrap. The byte-identical A/B/C schema/vector
 TypeScript mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in
 `ranex-harness` `ranex-trim` at `16bf036f`. The execution family
-followed and closed (SLICE-057, #37, 2026-08-20 — below); the
-provisioning family (SLICE-058, #38) is now open with its frozen tests
-committed red.
+followed and closed (SLICE-057, #37, 2026-08-20 — below), then the
+provisioning family (SLICE-058, #38, 2026-08-20 — below); milestone
+4's last family slice is the task family (SLICE-059, #39).
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -410,6 +425,22 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-058-real-e2e-provisioning-family** — closed 2026-08-20. The
+  ADR-032 frame's third family customer: the deps family (the real
+  pinned-inputs fetch reproducing the committed lock byte-exactly and
+  freezing its FETCHED transcript against a golden captured from the
+  real journey; every wheel-store entry re-hashed by `sha256sum` to its
+  own content address; second-fetch reuse, `deps approve`, third-fetch
+  consistency; hostile `UV_*`/`PIP_*` injection ignored at an identical
+  depset; the wheel byte-flip admission refusal with quarantine and the
+  one-wheel repair fetch; lock-drift and missing-epoch-block refusals;
+  the ADR-032 sad-path-12 local-index fixture — lying and dead loopback
+  sources refuse, with the owner-ruled sealed-netns lo-raise/loopback-
+  probe fallback) and the keygen family (the kernel signs and accepts
+  the keygen key; openssl independently verifies both directions, the
+  tampered-message refusal as the discriminating negative; key-material
+  confinement gates). Registered through the standing freeze ceremony:
+  1378 suite IDs, 134 declarations, sealed run green.
 - **SLICE-057-real-e2e-execution-family** — closed 2026-08-20. The
   ADR-032 frame's second family customer: the run family (real signed
   evidence, stdlib subject-digest recompute, openssl Ed25519
