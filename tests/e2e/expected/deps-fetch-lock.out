@@ -1,0 +1,3 @@
+FETCHED  packages=25  downloaded=25  reused=0
+         depset=<DIGEST>
+         not yet approved: run `ranex deps approve --approver <id>`
