@@ -2,23 +2,23 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-058 closed through the standing ceremony)
-**Active slice:** none
+**Updated:** 2026-08-20 (SLICE-060 opened)
+**Active slice:** `docs/slices/SLICE-060-gate-evaluate-presentation-dedup.md`
 
 ## Where we stopped
 
-SLICE-058 (#38, provisioning-family real e2e) is done and archived
-(docs/slices/done/SLICE-058-*): both goldens captured from the real
-journeys at 8fb7d7959 (deps `cdee1264…`, keygen `c98af419…`); the
-ruled local-index amendment at 571dfcacf (the seal's exec drops
-CAP_NET_ADMIN, so the option-A loopback fallback holds here); the
-ceremony at 81d63d495 registered +15 IDs / +10 declarations in the
-`ranex-context:hermetic-freeze:` tier (blocker 5350181287 sanctioned
-delta, b82c081c8 classification; the loopback pair carries the ruled
-exact reason bytes). Sealed 1265/113/0, run_exit=0, FROZEN
-tests=1378 expected_skips=134; manifest `sha256:ae1ea577…`; freeze
-golden re-captured (`1f774a84…`); round-trip 6/6; full suite 1360/18/0
-(846.03s, all 15 arms green); cross-check exit 0; evidence on #38.
+SLICE-060 (#40) is open: `cmd_gate_evaluate`'s FAIL block prints the
+absence sentence twice in a mixed stale+absent verdict (observed
+2026-08-20 against a real journey — the ranex-video ep02 demo). The
+repair dedups presentation only — the block records what it said and
+drops exact clause repeats from the printed reason; the recorded
+reason bytes are untouched (ADR-020's invariant). Spec is open; next
+is the red freeze of `tests/e2e/test_gate_evaluate_mixed_cli.py`
+(fresh-context author), then the fix (hand-verified candidate at
+099698769 on `fix/duplicate-absence-sentence`, re-landed through this
+slice) with the `MAIN_PY_SHA256` refresh, then the standing ceremony
+(+4 IDs), qa-gate on the full publish range, automatic go-live.
+SLICE-058 closed 2026-08-20 (ceremony 81d63d495; details on #38).
 
 ## Next
 

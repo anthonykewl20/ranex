@@ -322,7 +322,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** `docs/slices/SLICE-060-gate-evaluate-presentation-dedup.md` (#40) — gate evaluate prints the absence sentence twice in a mixed stale+absent verdict; the repair dedups presentation only, the recorded reason bytes are untouched.
 
 SLICE-058 (provisioning family e2e, #38) closed 2026-08-20 — the
 ADR-032 frame's third family customer: the real deps journey (a real
