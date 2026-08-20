@@ -322,7 +322,25 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** SLICE-059-real-e2e-task-family (#39, the task family)
+
+SLICE-059 (task family, #39) opened 2026-08-20 under the frozen
+contract on #39 — milestone 4's last family slice, the ADR-032 frame's
+fourth customer. The two family files are committed red in the family
+pattern: `tests/e2e/test_task_real.py` (dispatch→work→`run`→judge over a
+real disposable worktree, the tampered-evidence refusal, self-approval /
+moved-base / digest-mismatch merge refusals on real evidence, the clean
+PUBLISHED merge, worktree-residue detection, and the fanout
+qualification arm skipped-with-name until #19 closes) and
+`tests/e2e/test_delegation_real.py` (the red-at-base proof, the real
+delegated model over OpenRouter with the ATTEMPTS=3 fresh-task-id
+budget, the real diff against the journal's dispatch base, no PASS
+anywhere). Red freeze at 5e1ea681d-lineage: 9 failed / 3 passed /
+2 skipped — the failures are exactly the golden arms naming their
+missing goldens; the three goldens are the implementation lane's
+capture, with `sha256sum` digests recorded in the slice file at the
+capture. G-4's real delegation waits on the owner's scoped
+OpenRouter key; a named prereq skip never counts as AC-3 evidence.
 
 SLICE-060 (gate-evaluate presentation dedup, #40) closed 2026-08-20 —
 a mixed stale+absent verdict no longer prints the absence sentence

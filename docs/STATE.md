@@ -2,35 +2,33 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-20 (SLICE-060 closed through the standing ceremony)
-**Active slice:** none
+**Updated:** 2026-08-20 (SLICE-059 spec opened; task-family tests frozen red)
+**Active slice:** SLICE-059 — docs/slices/SLICE-059-real-e2e-task-family.md
 
 ## Where we stopped
 
-SLICE-060 (#40, gate-evaluate presentation dedup) is done and archived
-(docs/slices/done/SLICE-060-*): a mixed stale+absent verdict no longer
-prints the absence sentence twice. The dedup is anchored — exact
-suffix comparison against the partition's own sentence — and steps
-aside whenever a missing claim ID contains "; " (round 1's confirmed
-blocker: a split-based fix truncated adversarial claim IDs). Reason
-bytes untouched (ADR-020). 5 frozen arms (2 red→green), ceremonies
-7c99838fa/8cda414af (FROZEN tests=1383 expected_skips=134 run_exit=0),
-full suite 1365/18/0 at 8cda414af, two non-author APPROVEs (round-2
-fuzz: 789,672 cases, zero violations); evidence on #40.
+SLICE-059 (#39, the task family — milestone 4's last family slice) is
+open per the frozen contract on #39 (status:ready 2026-08-20). The two
+family files are committed red in the SLICE-056..058 pattern: 9 failed /
+3 passed / 2 skipped at the freeze (the 9 = every golden arm naming its
+missing golden; the skips = the fanout arm citing #19 and the delegation
+journey's ranex-prereq:openrouter_key: — the key is absent on this
+host). Every kernel behavior asserted was observed against 5e1ea681d in
+/tmp/opencode prototypes before freezing.
 
 ## Next
 
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-059
-Milestone 4's last family slice (#39): the task family — real
-dispatch/judge/merge/delegate journeys plus the fanout qualification,
-riding ADR-032's frame as the fourth family customer (spec opens via
-idea-refine/spec-prd on owner-confirmed intent). Carried follow-ups:
-the argument-filtered clone decision and the writable-tree full-mask
-EXECUTE residual (security-review-owned), the mirror-pin test for
-`_journal_first_broken_row` (SLICE-056), the SLICE-055 items, and
-SLICE-060's review-named pair — cross-claim-set duplication (refused
-restated as absence; slice candidate) and newline-bearing claim IDs.
+The implementation lane captures the three goldens, records their
+sha256 digests in the slice file, posts AC-2's refusal artifacts on
+#39, and runs G-4's real delegation (the owner exports the scoped
+OpenRouter key; AC-3 evidence is the real run alone). G-3 re-derives
+fail_under; the ceremony registers the family. Carried follow-ups
+unchanged: the argument-filtered clone decision and the writable-tree
+full-mask EXECUTE residual (security-review-owned), the mirror-pin
+test for `_journal_first_broken_row` (SLICE-056), the SLICE-055 items,
+and SLICE-060's review-named pair (cross-claim-set duplication;
+newline-bearing claim IDs).
 
 ## Governance (owner, 2026-08-17)
 
@@ -38,6 +36,8 @@ Build order: milestone 4 → milestone 3 → milestone 2 (MAP §0.24: milestone 
 
 ## Known limits
 
+- CI's `test` job is red on main at 5e1ea681d, pre-dating SLICE-059: `uvx ruff@0.16.2 check src tests` fails on nine findings in src/ranex and earlier slices' frozen test files (disclosed on #39; SLICE-059's surface denies them — owner-directed).
+- Tracker #33's Phase-2 "MAP §4.7 row at open time" cannot be met inside #39's frozen surface (docs/MAP.md denied); no SLICE-054..060 row exists — owner to resolve (CCR or owner-directed governance commit).
 - CI confinement suites fail on hosted runners (ld.so.cache drift, userns EACCES).
 - cgroup-observer `OSError(19)` and SLICE-008 bounded-fanout timing can flake under full-suite load (both pass isolated / on `origin/main`).
 - About 125 legacy test IDs remain unregistered in the frozen manifest.
@@ -45,6 +45,6 @@ Build order: milestone 4 → milestone 3 → milestone 2 (MAP §0.24: milestone 
 - mutmut: the stats phase cannot complete on the current suite shape (subprocess-heavy tests vs the in-process trampoline; disclosed).
 - The journal does not detect rollback/truncation (SLICE-056 characterized; fold-in at 8a5ed3837).
 - default-deny-v1 admits `clone` nr-only (any flags) — SLICE-057's recorded residual; contained by the inheritance facts, review-owned.
-- Writable trees carry full-mask Landlock EXECUTE — live since the execveat admission (321cb524d's first pinned filter admitted openat+execveat, so self-written binaries were executable by fd BEFORE e1e6dc8a7; e1e6dc8a7's execve widened the surface to plain pathname exec) — self-written binaries exec in-sandbox; contained by inheritance; SLICE-057 MINOR-4, review-owned.
+- Writable trees carry full-mask Landmark EXECUTE — live since the execveat admission (SLICE-057 MINOR-4, review-owned).
 - Availability, fail-closed (SLICE-057 MINOR-1/5): an enrollment/teardown crash wedges the controller leaf (next session refuses E-C18-HOST-DRIFT); concurrent sessions in one delegated scope interfere (serialize).
 - The hermetic seal's netns starts `lo` DOWN and the seal's exec drops CAP_NET_ADMIN, so loopback-only fixtures skip inside the seal (SLICE-058's ruled option-A fallback; the two local-index arms run outside it).
