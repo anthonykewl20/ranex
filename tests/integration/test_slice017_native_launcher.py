@@ -80,8 +80,8 @@ RESPONSE_LIMIT = 65_536
 # anchored suffix dedup that steps aside on ambiguous claim IDs.
 # The CI lint-debt repair (fix/ci-lint-debt, off main 5e1ea681d) refreshes
 # it for ruff 0.16.2 isort reordering only: the two ranex.observability
-# import statements merged into canonical order; no other statement added,
-# removed, or changed.
+# import statements re-split their names into canonical order; no other
+# statement added, removed, or changed.
 MAIN_PY_SHA256 = "996939c90ebd85f7cf9e253708d42967ec9e6fafd61d5329730dcdc9a109b6d7"
 
 PTRACE_TRACEME = 0
