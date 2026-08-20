@@ -7,6 +7,7 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NoReturn
 
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.specification_abc import (
@@ -45,7 +46,7 @@ class SpecificationVerificationFacts:
         return canonical_json_bytes({"trace": self.trace.as_record(), "outcomes": [outcome.as_record() for outcome in self.outcomes]})
 
 
-def _refuse(code: str, detail: str, *, facts: object | None = None) -> None:
+def _refuse(code: str, detail: str, *, facts: object | None = None) -> NoReturn:
     raise TraceVerificationError(code, detail, facts=facts)
 
 

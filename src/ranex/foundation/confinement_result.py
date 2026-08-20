@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import re
 from collections.abc import Mapping
+from typing import NoReturn
 
 from ranex.foundation.canonical import canonical_json_bytes
 
@@ -20,7 +21,7 @@ class ConfinementResultError(ValueError):
         self.detail = detail
 
 
-def _refuse(detail: str) -> None:
+def _refuse(detail: str) -> NoReturn:
     raise ConfinementResultError(E_C18_RESULT, detail)
 
 

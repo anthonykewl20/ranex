@@ -6,7 +6,7 @@ import binascii
 import hashlib
 import json
 import re
-from collections.abc import Iterable, Mapping
+from collections.abc import Iterable, Mapping, Set
 from pathlib import Path
 from typing import NoReturn
 
@@ -283,8 +283,13 @@ def parse_strict_json(raw: bytes, *, registry: _Registry | bytes | None = None) 
             failures.add("number", "floats, exponents, and negative zero are forbidden")
         else:
             failures.add("json", str(exc))
+    else:
+        failures.refuse_if_any()
+        return value
+    # Every handler above records a failure, so this refuse always raises;
+    # pyrefly cannot see that state dependency, hence the explicit shape.
     failures.refuse_if_any()
-    return value
+    raise AssertionError("failure collector must refuse")  # pragma: no cover - unreachable by the handlers' contract
 
 
 def _reject_value_surrogates(value: object, reg: _Registry) -> None:
@@ -344,7 +349,7 @@ def pae(payload_type: str, body: bytes) -> bytes:
     return b"DSSEv1 " + str(len(type_bytes)).encode() + b" " + type_bytes + b" " + str(len(body)).encode() + b" " + body
 
 
-def _object(value: object, expected: set[str], reg: _Registry) -> dict[str, object]:
+def _object(value: object, expected: Set[str], reg: _Registry) -> dict[str, object]:
     if not isinstance(value, dict) or set(value) != expected:
         reg.refuse("shape", "object has missing or extra fields")
     return value
@@ -406,8 +411,7 @@ def validate_spec_packet(value: object, *, registry: _Registry | bytes | None = 
     seen_ids: set[str] = set()
     failures = _FailureCollector(reg)
     for item in ids.values():
-        _strings(item, reg)
-        for identifier in item:
+        for identifier in _strings(item, reg):
             if not identifier.strip():
                 failures.add("id_grammar", "ID must not be blank or whitespace-only")
             if identifier in seen_ids:
@@ -579,9 +583,8 @@ def validate_approval_envelope(value: object, *, used_nonces: Iterable[str] = ()
 
 
 def _payload_type_from_version(payload: Mapping[str, object], reg: _Registry) -> str:
-    payload_type = {
-        "approval-payload-v1": APPROVAL_PAYLOAD_TYPE,
-    }.get(payload.get("version"))
+    version = payload.get("version")
+    payload_type = APPROVAL_PAYLOAD_TYPE if version == "approval-payload-v1" else None
     if payload_type is None:
         reg.refuse("payload_type", repr(payload.get("version")))
     return payload_type

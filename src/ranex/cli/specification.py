@@ -30,7 +30,16 @@ def _input(path: str) -> ClarificationInput:
     questions = value.get("questions")
     answers = value.get("answers")
     observations = value.get("observations")
-    if not isinstance(questions, list) or not isinstance(answers, list) or not isinstance(observations, list):
+    # actor_id/base_digest are type-checked only: emptiness is domain state —
+    # advance() refuses an empty actor as MISSING_ACTOR and a mismatched
+    # base_digest as STALE_BASE.
+    if (
+        not isinstance(questions, list)
+        or not isinstance(answers, list)
+        or not isinstance(observations, list)
+        or not isinstance(value.get("actor_id"), str)
+        or not isinstance(value.get("base_digest"), str)
+    ):
         raise ValueError("request has invalid clarification fields")
     return ClarificationInput(
         actor_id=value.get("actor_id"),

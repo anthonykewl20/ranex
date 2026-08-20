@@ -160,7 +160,7 @@ def field_name_is_named(name: str) -> bool:
     return bool(_IDENTIFIER_RE.match(name)) and len(name) <= IDENTIFIER_NAME_CAP
 
 
-def code_is_well_formed(code: str) -> bool:
+def code_is_well_formed(code: object) -> bool:
     """kind ∈ CODE_KINDS with its structural argument form, line-bounded.
 
     Per-kind forms (N1): ``exit`` an integer; ``undeclared_field`` an
@@ -202,7 +202,7 @@ def code_is_well_formed(code: str) -> bool:
     return False
 
 
-def hierarchy_is_well_formed(hierarchy: str) -> bool:
+def hierarchy_is_well_formed(hierarchy: object) -> bool:
     return (
         isinstance(hierarchy, str)
         and bool(_HIERARCHY_RE.match(hierarchy))
@@ -210,11 +210,11 @@ def hierarchy_is_well_formed(hierarchy: str) -> bool:
     )
 
 
-def subject_digest_is_well_formed(digest: str) -> bool:
+def subject_digest_is_well_formed(digest: object) -> bool:
     return isinstance(digest, str) and bool(_SUBJECT_DIGEST_RE.match(digest))
 
 
-def exe_is_well_formed(exe: str) -> bool:
+def exe_is_well_formed(exe: object) -> bool:
     return isinstance(exe, str) and bool(_EXE_RE.match(exe))
 
 

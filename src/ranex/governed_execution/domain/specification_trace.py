@@ -9,6 +9,7 @@ import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import NoReturn
 
 from ranex.foundation.canonical import canonical_json_bytes
 
@@ -52,7 +53,7 @@ class TraceVerificationError(ValueError):
 class TraceAnchor:
     path: str
     symbol: str
-    ids: tuple[str, str, str]
+    ids: tuple[str, ...]
     projection: str
     form: str
 
@@ -91,7 +92,7 @@ class _ChangedTarget:
     comment_coverable: bool
 
 
-def _refuse(code: str, detail: str) -> None:
+def _refuse(code: str, detail: str) -> NoReturn:
     raise TraceVerificationError(code, detail)
 
 
@@ -344,7 +345,10 @@ def verify_trace_coverage(
     sidecar_rows = artifacts.get("sidecars")
     if not isinstance(projection_rows, list) or not isinstance(sidecar_rows, list) or not isinstance(exemptions, list):
         _refuse(E_TRACE_AUTHORITY, "B trace artifacts are malformed")
-    projections = {row.get("digest") for row in projection_rows if isinstance(row, Mapping)}
+    # A non-str digest cannot join the set: every row shape the filter drops
+    # (non-object row, missing or non-text digest) fails the length identity
+    # below with the same refusal the isinstance arm used to raise.
+    projections = {digest for row in projection_rows if isinstance(row, Mapping) and isinstance((digest := row.get("digest")), str)}
     if len(projections) != len(projection_rows) or any(not isinstance(item, str) for item in projections):
         _refuse(E_TRACE_AUTHORITY, "B projection rows are malformed")
     descriptors = _projection_descriptors(projection_rows, candidate)

@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from typing import NoReturn
 
 from ranex.foundation.specification_abc import (
     SpecificationABCError,
@@ -87,7 +88,7 @@ class Scenario:
     mapping_ids: tuple[str, ...]
 
 
-def _refuse(code: str, detail: str) -> None:
+def _refuse(code: str, detail: str) -> NoReturn:
     raise ProjectionError(code, detail)
 
 
