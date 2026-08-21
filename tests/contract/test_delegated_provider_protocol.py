@@ -12,7 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT = ROOT / "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json"
-EXPECTED_SHA256 = "c37e4fd270b78f1a0f6070cfe757a9f463ae68147081a0037425201de7ea7db4"
+EXPECTED_SHA256 = "8aa6cc646f7c4ca331c729b2a691bfde1ac5d506fdeab3b94c492bef27f162ea"
 EXPECTED_VECTOR_IDS = (
     "handshake-ok",
     "handshake-replay",
@@ -50,9 +50,12 @@ EXPECTED_PROTOCOL_KEYS = {
     "requestBytes",
     "responseBytes",
     "oversizeStream",
+    "chatAccounting",
     "transport",
     "policy",
     "outcome",
+    "schemaValidation",
+    "validation",
     "logging",
     "fixture",
 }
@@ -106,12 +109,18 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert protocol["distinctRequestIds"] == "up to 8 per session"
     assert protocol["requestBytes"] == "raw HTTP request body"
     assert protocol["responseBytes"] == "cumulative SSE bytes"
-    assert protocol["oversizeStream"] == "close streams, record response_too_large, omit [DONE], harness reports upstream_protocol"
+    assert protocol["oversizeStream"] == "close streams, broker records response_too_large, omit [DONE], harness may report local upstream_protocol only"
+    assert protocol["chatAccounting"] == {
+        "remainingRequests": "broker session state returned by handshake only; never carried in relayed SSE",
+        "decrement": "one successful distinct chat requestId consumes one request",
+        "replay": "replayed requestId consumes no additional request",
+    }
     assert protocol["transport"] == {
-        "capability": "inherited FD/pipe at spawn only",
+        "capability": "inherited file descriptor 3 (pipe) at spawn only",
         "prohibited": ["argv", "environment", "files", "logs"],
         "harnessStorage": "bounded in-memory only",
-        "brokerTransport": "direct TLS via stdlib",
+        "brokerTransport": "direct TLS through a verified HTTP stack",
+        "httpStack": "stdlib HTTP stack with standard TLS verification; no custom TLS or SSE replacement",
         "proxyEnvironment": "ignored",
         "redirects": "refuse",
     }
@@ -123,22 +132,57 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert protocol["policy"]["default"] == "deny"
     assert protocol["policy"]["hostedProviderTools"] == "refuse"
     assert protocol["outcome"] == "provider_attempt"
+    assert protocol["schemaValidation"] == (
+        "schema block is structural validation only; authoritative provider/model/tool "
+        "enforcement and error ordering are in validation+policy and MUST run before upstream"
+    )
+    assert protocol["validation"] == {
+        "precedence": [
+            "request_too_large", "invalid_protocol", "unsupported_version", "unauthorized",
+            "handshake_required", "session_mismatch", "replay", "expired",
+            "provider_not_allowed", "model_not_allowed", "tool_not_allowed", "invalid_request",
+            "concurrency_limit", "request_limit", "upstream",
+        ],
+        "fieldErrors": {
+            "capability": "unauthorized",
+            "session": "unauthorized",
+            "requestId": {
+                "replay": "replay",
+                "structural": "invalid_request",
+            },
+            "provider": "provider_not_allowed",
+            "model": "model_not_allowed",
+            "tools": "tool_not_allowed",
+            "structuralFields": ["protocol", "messages", "stream", "requestId"],
+        },
+        "terminalOutcomes": {
+            "response": ["response_too_large"],
+            "upstream": ["upstream_timeout", "upstream_http", "redirect_refused", "upstream_protocol"],
+            "broker": ["server_shutdown", "internal"],
+        },
+        "failBeforeUpstream": True,
+    }
     assert protocol["fixture"] == {
         "path": "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json",
         "harness": "vendor exact JSON fixture",
-        "sha256": "authoritative contract-test pin",
+        "sha256": "pinned in tests/contract/test_delegated_provider_protocol.py EXPECTED_SHA256",
     }
     assert protocol["logging"] == {
         "events": ["cli.task.delegate.start", "cli.task.delegate.end"],
+        "authoritativeEmitter": "kernel broker",
+        "harness": "must not emit provider_attempt or either delegation audit event",
         "format": "JSONL",
         "time": "UTC",
-        "fields": ["correlation", "outcome", "duration"],
+        "fields": ["sid", "code", "duration_us"],
         "broker": "no independent logs",
         "secrets": "no session/auth headers/raw prompts",
     }
 
     schemas = artifact["schemas"]
     assert "requestId" in schemas["chatRequest"]["required"]
+    assert schemas["handshakeRequest"]["properties"]["provider"] == {
+        "type": "string", "minLength": 1, "maxLength": 256
+    }
     assert schemas["handshakeResponse"]["required"][-1] == "remainingRequests"
     assert set(schemas["error"]["properties"]["error"]["enum"]) == ERRORS
     assert artifact["$defs"]["capability"]["pattern"] == f"^{CAPABILITY_PATTERN}$"
@@ -151,10 +195,17 @@ def test_delegated_provider_protocol_freeze() -> None:
     vectors = artifact["vectors"]
     assert tuple(vector["id"] for vector in vectors) == EXPECTED_VECTOR_IDS
     assert vectors[0]["response"]["remainingRequests"] == 8
-    assert vectors[2]["response"]["remainingRequests"] == 7
-    assert vectors[4]["response"]["remainingRequests"] == 6
+    assert vectors[2]["expected"] == {
+        "remainingRequests": 7,
+        "sse": "opaque relay; not a literal vector body",
+    }
+    assert vectors[4]["expected"] == {
+        "remainingRequests": 6,
+        "sse": "opaque relay; not a literal vector body",
+    }
     assert vectors[1]["response"]["error"] == "replay"
-    assert vectors[3]["response"]["error"] == "replay"
+    assert vectors[3]["expected"]["error"] == "replay"
+    assert "response" not in vectors[2] and "response" not in vectors[3] and "response" not in vectors[4]
     assert vectors[2]["request"]["requestId"] == vectors[3]["request"]["requestId"]
     assert vectors[2]["request"]["requestId"] != vectors[4]["request"]["requestId"]
     assert all(re.fullmatch(CAPABILITY_PATTERN, vector["request"]["capability"]) for vector in vectors)

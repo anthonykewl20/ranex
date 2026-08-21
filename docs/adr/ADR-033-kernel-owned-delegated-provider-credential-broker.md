@@ -46,13 +46,17 @@ Issue #43 records that delegated launch places an OpenRouter credential in the c
 
 In the context of credential-bearing delegated execution, facing an untrusted harness boundary, we choose a kernel-owned `ranex-delegated-provider` v1 broker on `127.0.0.1` with an ephemeral port, to keep the raw OpenRouter key out of the harness, accepting same-UID capability theft as a residual rather than claiming perfect privilege isolation.
 
-The kernel reads the key by authorized FD/pipe, starts the broker, and passes only a 32-random-byte capability. The harness performs `POST /v1/handshake`, then `POST /v1/chat/completions` as SSE. Upstream is exactly `https://openrouter.ai/api/v1/chat/completions`; redirects are refused.
+The kernel reads the key from inherited file descriptor 3, a pipe available only at spawn, starts the broker, and passes only a 32-random-byte capability. The capability is prohibited from argv, environment, files, and logs. The harness performs `POST /v1/handshake`, then `POST /v1/chat/completions` as SSE. Upstream is exactly `https://openrouter.ai/api/v1/chat/completions`; proxies are ignored and redirects are refused.
 
-The broker intentionally treats model SSE response structure as opaque and relays the upstream event bytes; it does not constrain `chatResponse.choices` or reinterpret model-specific fields. Safety comes from the fixed upstream, policy checks, and byte/time limits (16 MiB response and 120-second timeout), not response-shape validation.
+The broker intentionally treats model SSE response structure as opaque and relays the upstream event bytes; it does not constrain `chatResponse.choices` or reinterpret model-specific fields. Chat vectors are expected protocol-state observations, not literal opaque SSE response bodies: `remainingRequests` is broker session state returned by handshake/state accounting and is never carried in relayed SSE. Safety comes from the fixed upstream, policy checks, and byte/time limits (16 MiB response and 120-second timeout), not response-shape validation.
+
+The wire transport must use the standard-library HTTP stack with standard TLS certificate and hostname verification; no custom TLS or SSE replacement is permitted. A separately owner-approved pinned, mature, license-compatible client may be substituted only after evidence, but this specification slice adds no dependency.
 
 TTL is 300 seconds, maximum eight requests, concurrency one, request 4 MiB, response 16 MiB, and timeout 120 seconds. The harness never retries. Neither prompt nor output is persisted.
 
-Schemas, vectors, and the complete stable error vocabulary are canonical in `governance/schemas/delegated-provider/ranex-delegated-provider-v1.json`; harness consumes pinned vectors and digests.
+Schemas, vectors, and the complete stable error vocabulary are canonical in `governance/schemas/delegated-provider/ranex-delegated-provider-v1.json`; harness consumes pinned vectors and digests. The fixture records the pin location; the canonical digest is `tests/contract/test_delegated_provider_protocol.py`'s `EXPECTED_SHA256` and is not embedded self-referentially in the fixture.
+
+The `schemas` block is structural validation only. Authoritative provider/model/tool enforcement and error ordering live in `validation` plus `policy` and MUST run before upstream. Validation is deterministic and fail-before-upstream: capability or session authentication maps to `unauthorized`; a replayed request ID maps to `replay`; provider, model, and tool policy mismatches map to `provider_not_allowed`, `model_not_allowed`, and `tool_not_allowed`; structural failures in protocol shape, messages, stream, or request ID map to `invalid_request`. Size, protocol/version, expiry, concurrency/request limits, and terminal response/upstream/broker failures retain their named stable errors.
 
 ### Consequences
 
@@ -61,7 +65,7 @@ Schemas, vectors, and the complete stable error vocabulary are canonical in `gov
 - Bad: same-UID code can steal a live capability; the capability limits spend but does not create privilege isolation.
 - Bad: credentialed delegation is unavailable during broker shutdown or any refusal.
 - No new journal record is added in v1: `provider_attempt` is the bounded outcome field introduced by SLICE-069; there is no `TaskProviderAttempt` record.
-- The broker emits no independent raw logs; existing `cli.task.delegate.start/end` events retain UTC, stable event name, correlation, outcome, and duration through the current emitter.
+- The kernel broker is the sole authority for `provider_attempt` and the terminal delegation audit outcome. It emits both existing `cli.task.delegate.start` and `cli.task.delegate.end` events through the current emitter, using the literal schema fields `sid`, `code`, and `duration_us` (plus the schema's required null fields); the harness emits neither delegation audit event. An oversized response has canonical broker outcome `response_too_large`; a harness observation of the closed stream may be reported locally as `upstream_protocol` only and cannot become an authoritative provider-attempt outcome.
 
 ### Confirmation
 
@@ -120,7 +124,7 @@ Derived by equivalence partitions, boundary values, and protocol state transitio
 
 Kernel paths: `tests/unit/test_delegation.py` covers the existing delegation boundary and no-secret assertions; `tests/integration/test_delegation_command.py` covers the existing loopback command boundary. `tests/contract/test_delegated_provider_protocol.py` freezes this artifact. Broker unit and security paths are opened by SLICE-069; harness paths use `packages/opencode` and are specified by issue #106.
 
-`tests/contract/test_docs_discipline.py` verifies this ADR's sections, prior-art pins, vendored blob hashes, NOTICE, line budgets, sad-path count, and test paths. `tests/contract/test_delegated_provider_protocol.py` freezes the JSON artifact digest, exact vector IDs, constants, errors, and request/session/model/tool semantics before implementation; red-first implementation tests are owned by SLICE-069, not this specification commit.
+`tests/contract/test_docs_discipline.py` verifies this ADR's sections, prior-art pins, vendored blob hashes, NOTICE, line budgets, sad-path count, and test paths. `tests/contract/test_delegated_provider_protocol.py` freezes the JSON artifact digest, exact vector IDs, constants, errors, validation precedence, transport/accounting, event authorship/fields, and request/session/model/tool semantics before implementation; chat vectors assert expected broker state rather than SSE bodies. Red-first implementation tests are owned by SLICE-069, not this specification commit.
 
 ## Code review checklist
 

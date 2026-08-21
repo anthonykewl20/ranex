@@ -35,12 +35,18 @@
     "timeoutScope": "whole request/stream",
     "requestBytes": "raw HTTP request body",
     "responseBytes": "cumulative SSE bytes",
-    "oversizeStream": "close streams, record response_too_large, omit [DONE], harness reports upstream_protocol",
+    "oversizeStream": "close streams, broker records response_too_large, omit [DONE], harness may report local upstream_protocol only",
+    "chatAccounting": {
+      "remainingRequests": "broker session state returned by handshake only; never carried in relayed SSE",
+      "decrement": "one successful distinct chat requestId consumes one request",
+      "replay": "replayed requestId consumes no additional request"
+    },
     "transport": {
-      "capability": "inherited FD/pipe at spawn only",
+      "capability": "inherited file descriptor 3 (pipe) at spawn only",
       "prohibited": ["argv", "environment", "files", "logs"],
       "harnessStorage": "bounded in-memory only",
-      "brokerTransport": "direct TLS via stdlib",
+      "brokerTransport": "direct TLS through a verified HTTP stack",
+      "httpStack": "stdlib HTTP stack with standard TLS verification; no custom TLS or SSE replacement",
       "proxyEnvironment": "ignored",
       "redirects": "refuse"
     },
@@ -54,18 +60,58 @@
       "hostedProviderTools": "refuse"
     },
     "outcome": "provider_attempt",
+    "schemaValidation": "schema block is structural validation only; authoritative provider/model/tool enforcement and error ordering are in validation+policy and MUST run before upstream",
+    "validation": {
+      "precedence": [
+        "request_too_large",
+        "invalid_protocol",
+        "unsupported_version",
+        "unauthorized",
+        "handshake_required",
+        "session_mismatch",
+        "replay",
+        "expired",
+        "provider_not_allowed",
+        "model_not_allowed",
+        "tool_not_allowed",
+        "invalid_request",
+        "concurrency_limit",
+        "request_limit",
+        "upstream"
+      ],
+      "fieldErrors": {
+        "capability": "unauthorized",
+        "session": "unauthorized",
+        "requestId": {
+          "replay": "replay",
+          "structural": "invalid_request"
+        },
+        "provider": "provider_not_allowed",
+        "model": "model_not_allowed",
+        "tools": "tool_not_allowed",
+        "structuralFields": ["protocol", "messages", "stream", "requestId"]
+      },
+      "terminalOutcomes": {
+        "response": ["response_too_large"],
+        "upstream": ["upstream_timeout", "upstream_http", "redirect_refused", "upstream_protocol"],
+        "broker": ["server_shutdown", "internal"]
+      },
+      "failBeforeUpstream": true
+    },
     "logging": {
       "events": ["cli.task.delegate.start", "cli.task.delegate.end"],
+      "authoritativeEmitter": "kernel broker",
+      "harness": "must not emit provider_attempt or either delegation audit event",
       "format": "JSONL",
       "time": "UTC",
-      "fields": ["correlation", "outcome", "duration"],
+      "fields": ["sid", "code", "duration_us"],
       "broker": "no independent logs",
       "secrets": "no session/auth headers/raw prompts"
     },
     "fixture": {
       "path": "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json",
       "harness": "vendor exact JSON fixture",
-      "sha256": "authoritative contract-test pin"
+      "sha256": "pinned in tests/contract/test_delegated_provider_protocol.py EXPECTED_SHA256"
     }
   },
   "schemas": {
@@ -78,7 +124,7 @@
         "version": {"const": 1},
         "capability": {"$ref": "#/$defs/capability"},
         "model": {"type": "string", "minLength": 1, "maxLength": 256},
-        "provider": {"type": "string", "const": "openrouter"},
+         "provider": {"type": "string", "minLength": 1, "maxLength": 256},
         "tools": {"type": "array", "items": {"type": "string", "minLength": 1, "maxLength": 256}, "maxItems": 32}
       }
     },
@@ -135,9 +181,9 @@
   "vectors": [
     {"id": "handshake-ok", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "model": "example/model", "provider": "openrouter", "tools": ["weather"]}, "response": {"protocol": "ranex-delegated-provider", "version": 1, "session": "session-vector-01", "expiresAt": "2030-01-01T00:05:00Z", "remainingRequests": 8}},
     {"id": "handshake-replay", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "model": "example/model", "provider": "openrouter", "tools": ["weather"]}, "response": {"error": "replay", "message": "capability session already handshaken"}},
-    {"id": "chat-first-request", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "session": "session-vector-01", "requestId": "AAAAAAAAAAAAAAAAAAAAAQ", "model": "example/model", "messages": [{"role": "user", "content": "vector"}], "tools": [{"type": "function", "function": {"name": "weather"}}], "stream": true}, "response": {"remainingRequests": 7}},
-    {"id": "chat-replay", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "session": "session-vector-01", "requestId": "AAAAAAAAAAAAAAAAAAAAAQ", "model": "example/model", "messages": [{"role": "user", "content": "vector"}], "stream": true}, "response": {"error": "replay", "message": "session request already consumed"}},
-    {"id": "chat-distinct-second-request", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "session": "session-vector-01", "requestId": "AAAAAAAAAAAAAAAAAAAABA", "model": "example/model", "messages": [{"role": "user", "content": "second vector"}], "stream": true}, "response": {"remainingRequests": 6}},
+     {"id": "chat-first-request", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "session": "session-vector-01", "requestId": "AAAAAAAAAAAAAAAAAAAAAQ", "model": "example/model", "messages": [{"role": "user", "content": "vector"}], "tools": [{"type": "function", "function": {"name": "weather"}}], "stream": true}, "expected": {"remainingRequests": 7, "sse": "opaque relay; not a literal vector body"}},
+     {"id": "chat-replay", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "session": "session-vector-01", "requestId": "AAAAAAAAAAAAAAAAAAAAAQ", "model": "example/model", "messages": [{"role": "user", "content": "vector"}], "stream": true}, "expected": {"error": "replay", "message": "session request already consumed"}},
+     {"id": "chat-distinct-second-request", "request": {"protocol": "ranex-delegated-provider", "version": 1, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "session": "session-vector-01", "requestId": "AAAAAAAAAAAAAAAAAAAABA", "model": "example/model", "messages": [{"role": "user", "content": "second vector"}], "stream": true}, "expected": {"remainingRequests": 6, "sse": "opaque relay; not a literal vector body"}},
     {"id": "unsupported-version", "request": {"protocol": "ranex-delegated-provider", "version": 2, "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "model": "example/model", "provider": "openrouter"}, "response": {"error": "unsupported_version", "message": "protocol version is not supported"}}
   ]
 }
