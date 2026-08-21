@@ -5,12 +5,18 @@
 > Rules an agent can read are suggestions. Rules compiled into code are
 > constraints.
 
-Ranex judges work by evidence and executable checks, never by model confidence.
-Removing every model credential from the machine must not change a single
-verdict.
+Ranex is an open-source kernel and agent harness that judges software work by
+evidence and executable checks—not by an AI model's confidence. Removing every
+model credential from the machine must not change a single verdict.
 
-Website: [ranex.dev](https://ranex.dev) · Field notes (blog):
-[ranex.dev/blog](https://ranex.dev/blog)
+[Website](https://ranex.dev) · [Field notes](https://ranex.dev/blog) ·
+[YouTube](https://www.youtube.com/@RanexDev) · [Architecture map](docs/MAP.md) ·
+[Current state](docs/STATE.md)
+
+> [!IMPORTANT]
+> Ranex is pre-release. The kernel has a working governed verdict and task path;
+> the complete owner-facing product described below is still being built. The
+> [status section](#status) separates implemented mechanisms from intended ones.
 
 ---
 
@@ -59,25 +65,31 @@ apparatus: the code, the inspector, and the record.
 
 ## How it works
 
-### Topology
+The kernel is the foreman and judge, not the coder. It controls the task,
+observes what actually happened, evaluates evidence, records the decision, and
+owns the merge.
 
+```mermaid
+flowchart LR
+    O["Owner<br/>approves the target"] --> K
+
+    subgraph KERNEL["RANEX KERNEL — deterministic code"]
+        K["State machine"] --> G["Gates"]
+        G --> V["Verdict"]
+        V --> J["Hash-chained journal"]
+        V --> M["Controlled merge"]
+    end
+
+    K --> MP["Model port<br/>propose · critique · translate"]
+    K --> WP["Worker port<br/>agent in isolated worktree"]
+    K --> CP["Check port<br/>tests · types · scanners"]
+
+    MP -. "proposal, never a verdict" .-> K
+    WP -. "diff, never self-approval" .-> K
+    CP -- "executed evidence" --> G
 ```
-                       ┌────────────────────────────────────┐
-  the person who ─────▶│   RANEX KERNEL  —  code only       │
-  owns the target      │   state machine · gates · journal  │
-                       │   budget · merge · escalation      │
-                       └───┬──────────────┬─────────────┬───┘
-                           │              │             │
-                    ┌──────▼─────┐  ┌─────▼──────┐ ┌────▼───────┐
-                    │ Model port │  │Worker port │ │ Check port │
-                    │ one call,  │  │ an agent   │ │ pytest,tsc,│
-                    │ schema-    │  │ in its own │ │ Gherkin,   │
-                    │ constrained│  │ worktree   │ │ scanners   │
-                    └──────┬─────┘  └─────┬──────┘ └────┬───────┘
-                           │              │             │
-                      proposals,      diff + evidence  VERDICTS
-                     translations                   (the only ones)
-```
+
+### Trust topology
 
 Three ports, and only one of them produces a verdict.
 
@@ -110,17 +122,48 @@ derived mechanically; everything to its left is a conversation.
 
 ### The build loop
 
+```mermaid
+flowchart TD
+    A["Owner describes the desired product"] --> B["Create a visual behavior graph"]
+    B --> C{"Owner approves<br/>the target?"}
+    C -- "No" --> B
+    C -- "Yes" --> D["Compile graph into paths,<br/>scenarios, tests, tasks, and gates"]
+
+    D --> E["Freeze the approved target and tests"]
+    E --> F["Take the next ready task"]
+    F --> G["Create an isolated Git worktree"]
+    G --> H["Worker agent changes code"]
+    H --> I["Read the real diff from disk"]
+    I --> J["Run independent checks"]
+    J --> K{"Kernel verdict"}
+
+    K -- "FAIL: attempt 1–2" --> L["Return exact failure evidence"]
+    L --> H
+    K -- "FAIL: third attempt" --> N["Ask the owner a plain-language<br/>product question"]
+    N --> O{"Owner decides"}
+    O -- "Clarify" --> B
+    O -- "Stop" --> P["Record failure and stop safely"]
+
+    K -- "PASS" --> Q["Record signed evidence and verdict"]
+    Q --> R["Kernel merges; worker cannot merge"]
+    R --> S{"More tasks?"}
+    S -- "Yes" --> F
+    S -- "No" --> T["Run the complete frozen suite"]
+    T --> U{"Whole product passes?"}
+    U -- "No" --> L
+    U -- "Yes" --> V["Publish the exact tested commit"]
+    V --> W["Owner verifies the real product"]
 ```
-  take the next ready task
-     → create an isolated git worktree
-     → spawn a worker with the task envelope
-     → wait for it to exit
-     → read the DIFF ON DISK  (the worker's own summary is discarded)
-     → run the checks         (code, not a model)
-     ├─ pass → THE KERNEL merges                    (workers never merge)
-     └─ fail → retry ×3 with the failure output
-                 → still failing → escalate to the human in plain language
-```
+
+Inside one task, the kernel follows a deliberately small loop:
+
+1. Create an isolated worktree and dispatch one bounded task.
+2. Wait for the worker to exit, discard its self-report, and read the actual
+   repository diff.
+3. Run the bound checks against the exact subject revision.
+4. Evaluate the resulting evidence using deterministic policy.
+5. Merge a passing candidate through the kernel, or return concrete failure
+   evidence for a bounded retry and eventual owner escalation.
 
 **Ranex never trusts the worker.** It does not need to control what happens
 inside the loop, only what is allowed out of it. Containment is a smaller problem
@@ -232,6 +275,18 @@ That is the claim. These are **not** claims Ranex makes:
 
 "Conformant to an approved specification" is real, defensible, and deliverable.
 "Correct" is not a claim anybody can make.
+
+## Follow the build
+
+- Visit **[ranex.dev](https://ranex.dev)** for the public project home.
+- Read the engineering **[field notes](https://ranex.dev/blog)** for decisions,
+  experiments, and lessons from building the kernel.
+- Subscribe to **[RanexDev on YouTube](https://www.youtube.com/@RanexDev)** for
+  demonstrations and project updates.
+- Read **[the architecture map](docs/MAP.md)** for the full system design,
+  maturity ledger, risks, and architectural boundaries.
+- Read **[the current state](docs/STATE.md)** for the implemented frontier and
+  the next governed slice.
 
 ---
 

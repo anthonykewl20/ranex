@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-21 (SLICE-059 closed through the standing ceremony)
+**Updated:** 2026-08-21 (SLICE-059 closed; public README refreshed under #41)
 **Active slice:** none
 
 ## Where we stopped
