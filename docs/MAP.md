@@ -2037,9 +2037,9 @@ that cannot name its evidence or its absence is not in the ledger.
 | Deterministic closed-DSL projections and manifest B | SLICE-031; generated flow/pseudocode/protected-gauge artifacts, mappings, controls and invocation metadata are digest-bound by manifest B | no owner-facing authoring product; today's suite freezes protected test IDs rather than complete test bodies |
 | Trace integrity and real-subject bootstrap | SLICE-033/035; authority/evidence continuity and bootstrap against the real subject are exercised by repository gauges | common harness admission and the real concurrent mutation exit remain unproven |
 | Landlock confinement of the bound command | ADR-006 accepted; SLICE-017/018/019/046 closed with qualification, lifecycle, host evidence and `cmd_run` attack gauges | the controller subprocess remains same-uid trusted infrastructure (§11.5 standing limit) |
-| Dependency provisioning for gated suites | ADR-007 accepted; SLICE-006 closed; the self-gate runs from the approved SHA-256-addressed wheel store and `RISK-08` is closed | the mature model is pip's vendored hash-checking implementation |
+| Dependency provisioning for gated suites | ADR-007 accepted; SLICE-006 closed; the self-gate runs from the approved SHA-256-addressed wheel store and `RISK-08` is closed | does not prove dependency consumption across the full installed harness composition |
 
-### 15.2 IMMATURE / UNPROVEN — nothing running behind it
+### 15.2 IMMATURE / UNPROVEN — no complete composition running behind it
 
 Two grades, worst last. The right column is the adoption question the owner's
 rule asks of every unbuilt mechanism: is there code the world already runs that
