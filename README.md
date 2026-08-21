@@ -238,7 +238,7 @@ Maria owns a dog-grooming shop and wants online booking. She cannot read code.
 | | Maria signs ApprovalEnvelope C, binding A+B plus the base, execution profile, requested capabilities, identity, and anti-replay context. | **Maria** ⏸ |
 | **PLAN** | The C-approved batch binds the task DAG, file ownership, interface contracts, capability requests, retries, checks, and maximum pool.<br>*Gate: every scenario maps to ≥1 task; mutation scopes do not overlap.* | kernel admission |
 | **BUILD** | N workers, one worktree each, running the loop above.<br>*Gates: tests pass · types check · owns only its files · no new dependencies.* | code |
-| **INTEGRATE** | One key-exclusive integrator orders accepted child candidates and constructs the batch tree; workers cannot merge.<br>*Gate: full suite green; all 34 scenarios pass together.* | kernel-controlled integrator |
+| **INTEGRATE** | One key-exclusive integrator orders accepted child candidates and constructs the batch tree; workers cannot merge or judge that candidate.<br>*Gate: full suite green; all 34 scenarios pass together.* | independent kernel/check gate |
 | **SHIP** | Deploy, smoke test, live URL. She clicks through her own flow graph in a real app. | **Maria** ⏸ |
 
 Human authority stays at the product boundaries: clarify normative A, review the
