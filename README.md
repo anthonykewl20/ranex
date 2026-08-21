@@ -71,10 +71,10 @@ owns the merge.
 
 ```mermaid
 flowchart LR
-    O["Owner<br/>approves the target"] --> K
+    O["Owner approves<br/>exact TaskPacket digest"] --> K
 
     subgraph KERNEL["RANEX KERNEL — deterministic code"]
-        K["State machine"] --> G["Gates"]
+        K["Grant and state machine"] --> G["Gate evaluation"]
         G --> V["Verdict"]
         V --> J["Hash-chained journal"]
         V --> M["Controlled merge"]
@@ -86,18 +86,20 @@ flowchart LR
 
     MP -. "proposal, never a verdict" .-> K
     WP -. "diff, never self-approval" .-> K
-    CP -- "executed evidence" --> G
+    CP -- "signed, subject-bound evidence" --> G
 ```
 
 ### Trust topology
 
-Three ports, and only one of them produces a verdict.
+Three ports surround the kernel. None of them produces a verdict; the check port
+alone produces evidence that the kernel may evaluate.
 
 - **Model port** — one completion, forced structured output. Intake, review,
   translating machine state into plain language. Stateless.
 - **Worker port** — an agent with its own loop and tools, running in an isolated
   git worktree. Returns a diff. Replaceable by design.
-- **Check port** — the only thing on the diagram whose output counts.
+- **Check port** — executes the bound checks and returns signed, subject-bound
+  evidence. Its output counts, but it still does not decide.
 
 Models appear at leaf nodes in exactly three roles, and **none of them can pass
 a gate**:
@@ -110,58 +112,65 @@ a gate**:
 
 ### The chain
 
-```
-idea → flow graph → covering paths → scenarios → contract tests → gates → verdict
-         ▲                                                                   │
-         │                                                                   ▼
-   human approves this                                            evidence + journal
+```text
+idea → clarify → canonical TaskPacket → generated views and tests
+                               ▲
+                     owner approves exact digest
+                               │
+                               ▼
+kernel grant → harness admission → isolated work → signed evidence → verdict → merge
 ```
 
-The **approved flow graph is the root of trust.** Everything to its right is
-derived mechanically; everything to its left is a conversation.
+The **canonical TaskPacket—not its flowchart or prose rendering—is the root of
+trust.** Pseudocode, the visual flow, scenarios, and clause mappings are derived
+views that help a person understand what the packet means. Approval binds the
+exact packet digest, so changing the normative target requires approval again.
 
 ### The build loop
 
 ```mermaid
 flowchart TD
-    A["Owner describes the desired product"] --> B["Create a visual behavior graph"]
-    B --> C{"Owner approves<br/>the target?"}
-    C -- "No" --> B
-    C -- "Yes" --> D["Compile graph into paths,<br/>scenarios, tests, tasks, and gates"]
+    A["Owner describes the desired product"] --> B["Clarify rules, outcomes,<br/>errors, and unresolved blockers"]
+    B --> C["Create canonical TaskPacket"]
+    C --> D["Render flow, pseudocode, scenarios,<br/>tests, and mappings as derived views"]
+    D --> E{"Owner approves the<br/>exact TaskPacket digest?"}
+    E -- "No" --> B
+    E -- "Yes" --> F["Kernel issues a bounded grant;<br/>harness admits approved work"]
+    F --> G["Take the next ready task"]
+    G --> H["Create an isolated Git worktree"]
+    H --> I["Worker agent changes code"]
+    I --> J["Read the real diff from disk"]
+    J --> K["Run independent bound checks"]
+    K --> L["Sign and record subject-bound evidence"]
+    L --> M{"Kernel evaluates evidence<br/>and produces verdict"}
 
-    D --> E["Freeze the approved target and tests"]
-    E --> F["Take the next ready task"]
-    F --> G["Create an isolated Git worktree"]
-    G --> H["Worker agent changes code"]
-    H --> I["Read the real diff from disk"]
-    I --> J["Run independent checks"]
-    J --> K{"Kernel verdict"}
+    M -- "FAIL: attempt 1–2" --> N["Return exact failure evidence"]
+    N --> I
+    M -- "FAIL: third attempt" --> O["Ask the owner a plain-language<br/>product question"]
+    O --> P{"Owner decides"}
+    P -- "Clarify target" --> B
+    P -- "Stop" --> Q["Record failure and stop safely"]
 
-    K -- "FAIL: attempt 1–2" --> L["Return exact failure evidence"]
-    L --> H
-    K -- "FAIL: third attempt" --> N["Ask the owner a plain-language<br/>product question"]
-    N --> O{"Owner decides"}
-    O -- "Clarify" --> B
-    O -- "Stop" --> P["Record failure and stop safely"]
-
-    K -- "PASS" --> Q["Record signed evidence and verdict"]
-    Q --> R["Kernel merges; worker cannot merge"]
-    R --> S{"More tasks?"}
-    S -- "Yes" --> F
-    S -- "No" --> T["Run the complete frozen suite"]
-    T --> U{"Whole product passes?"}
-    U -- "No" --> L
-    U -- "Yes" --> V["Publish the exact tested commit"]
-    V --> W["Owner verifies the real product"]
+    M -- "PASS" --> R["Append verdict to journal"]
+    R --> S["Kernel merges; worker cannot merge"]
+    S --> T{"More approved tasks?"}
+    T -- "Yes" --> G
+    T -- "No" --> U["Run the complete frozen suite"]
+    U --> V{"Whole product passes?"}
+    V -- "No" --> X["Diagnose integration failure and<br/>create a bounded remediation task"]
+    X --> G
+    V -- "Yes" --> Y["Publish the exact tested commit"]
+    Y --> Z["Owner verifies the real product"]
 ```
 
 Inside one task, the kernel follows a deliberately small loop:
 
-1. Create an isolated worktree and dispatch one bounded task.
+1. Admit an approved bounded task, then create its isolated worktree.
 2. Wait for the worker to exit, discard its self-report, and read the actual
    repository diff.
-3. Run the bound checks against the exact subject revision.
-4. Evaluate the resulting evidence using deterministic policy.
+3. Run the bound checks against the exact subject revision, then sign and record
+   the resulting evidence.
+4. Verify and evaluate that evidence using deterministic policy.
 5. Merge a passing candidate through the kernel, or return concrete failure
    evidence for a bounded retry and eventual owner escalation.
 
@@ -203,23 +212,27 @@ Maria owns a dog-grooming shop and wants online booking. She cannot read code.
 | Phase | What happens | Who decides |
 |---|---|---|
 | **INTAKE** | She describes it. Ranex asks ~12 non-technical questions: *when someone books, who gets notified? can two people take the same slot?* | — |
-| | A **flow graph** appears — screens as boxes, transitions as arrows, rules as diamonds. She drags things, deletes the payment step, approves. | **Maria** ⏸ |
-| **COMPILE** | Pure code, no model. Graph → covering paths → scenarios in plain English: *"when a customer picks a slot someone already took, they are shown the next three openings."* | — |
-| | 34 scenarios, and a cost and time estimate. | **Maria** ⏸ |
-| **PLAN** | One worker turns scenarios into a task DAG with file ownership and interface contracts.<br>*Gate: every scenario maps to ≥1 task; no file owned twice.* | code |
+| | Ranex presents a **derived flow view** — screens as boxes, transitions as arrows, rules as diamonds. She drags things and deletes the payment step. | **Maria** ⏸ |
+| **COMPILE** | The clarified intent becomes a canonical TaskPacket. Ranex renders covering paths and scenarios in plain English: *"when a customer picks a slot someone already took, they are shown the next three openings."* | — |
+| | Maria approves the exact packet digest represented by the flow, scenarios, protected tests, and mappings. | **Maria** ⏸ |
+| **PLAN** | The approved batch binds the task DAG, file ownership, interface contracts, and capability requests.<br>*Gate: every scenario maps to ≥1 task; mutation scopes do not overlap.* | kernel admission |
 | **BUILD** | N workers, one worktree each, running the loop above.<br>*Gates: tests pass · types check · owns only its files · no new dependencies.* | code |
 | **INTEGRATE** | One worker on the merged tree.<br>*Gate: full suite green; all 34 scenarios pass together.* | code |
 | **SHIP** | Deploy, smoke test, live URL. She clicks through her own flow graph in a real app. | **Maria** ⏸ |
 
-Three human gates. Everything between them is the loop turning.
+Human authority stays at the product boundaries: clarify the target, approve the
+exact canonical packet, and verify the integrated product. The visual flow is an
+important approval view, but editing that view alone does not grant execution;
+the approval is bound to the packet digest it represents.
 
 When a gate fails three times, she gets a **product** question, not a stack
 trace: *"Two customers hit the same slot at the same instant. Tell the second one
 immediately, or offer a waitlist?"* That she can answer.
 
-Underneath, invisible to her: every file traces to a scenario, traces to a node
-she approved, with evidence and a verdict pinned to an exact content digest. She
-will never look at it. Her acquirer's diligence team will.
+Underneath, invisible to her: every behavior-bearing change traces through
+stable rule, transition, outcome, and mapping IDs to the canonical packet digest
+she approved, with evidence and a verdict pinned to the exact code digest. She
+will never look at the ledger. Her acquirer's diligence team will.
 
 ---
 
