@@ -169,7 +169,7 @@ flowchart TD
     P -- "Clarify target" --> B
     P -- "Stop" --> Q["Record failure and stop safely"]
 
-    M -- "PASS" --> R["Kernel signs and appends task verdict"]
+    M -- "Child checks satisfied" --> R["Kernel signs and records<br/>the child candidate/result"]
     R --> S["Stage candidate for the single integrator;<br/>children cannot merge"]
     S --> T{"More approved tasks?"}
     T -- "Yes" --> G
@@ -262,8 +262,9 @@ at the ledger. Her acquirer's diligence team will.
 An agent that can edit its own tests can paint the target around its output. The
 complete A/B/C architecture is intended to prevent that with four controls:
 
-1. **Tests are frozen before BUILD.** Generated in COMPILE, digested, read-only.
-   Any diff touching a test file fails the gate instantly.
+1. **Protected gauges are frozen before BUILD.** Every B-bound gauge and
+   generated artifact is digested. Changing one revokes authority and fails
+   admission; any enumerated exception must be declared in A/B and signed by C.
 2. **Red-then-green, enforced.** Every generated test must fail against the
    pre-implementation tree. A test that passes before the code exists is not a
    target — it is a circle painted around a dart.
@@ -535,7 +536,8 @@ SLICE-017 qualification, closed issue #21 / SLICE-018 lifecycle, and closed
 issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
 confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
 controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
-`accepted`; its planned SLICE-029..044 run sequentially.
+`accepted`; SLICE-029..035 built the kernel-side authority substrate, and
+SLICE-036..044 complete and prove the installed composition sequentially.
 036 is qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
