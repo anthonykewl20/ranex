@@ -14,7 +14,7 @@ Issue #43 records that delegated launch places an OpenRouter credential in the c
 - Raw provider material is kernel-only; the harness gets only a capability.
 - Fixed endpoint and explicit policy prevent provider, model, redirect, and tool escape.
 - Bounds must be exact, fail closed, and have stable machine-readable errors.
-- Existing task provider-attempt data and CLI events remain the observability surface.
+- The `provider_attempt` outcome and CLI events remain the observability surface.
 - Compatibility must reject old credentialed harnesses without breaking keyless mode.
 
 ## Prior art
@@ -60,7 +60,7 @@ Schemas, vectors, and the complete stable error vocabulary are canonical in `gov
 - Good: exact bounds and fixed upstream make provider attempts finite and reviewable.
 - Bad: same-UID code can steal a live capability; the capability limits spend but does not create privilege isolation.
 - Bad: credentialed delegation is unavailable during broker shutdown or any refusal.
-- No new journal record is added in v1: only the existing bounded `provider_attempt` outcome is represented via `TaskProviderAttempt`.
+- No new journal record is added in v1: `provider_attempt` is the bounded outcome field introduced by SLICE-069; there is no `TaskProviderAttempt` record.
 - The broker emits no independent raw logs; existing `cli.task.delegate.start/end` events retain UTC, stable event name, correlation, outcome, and duration through the current emitter.
 
 ### Confirmation
@@ -73,11 +73,11 @@ The kernel tests must prove the FD/pipe boundary, constant-time capability compa
 2. Retain kubelet-style version and policy matching, but make provider and endpoint closed rather than configuration-selected.
 3. Use Envoy's explicit check boundary while refusing its fail-open option and allowing no response mutation or credential return.
 4. Add constant-time capability validation, one-use session state, TTL/request/concurrency/byte/time bounds, and redirect refusal.
-5. Reuse existing `provider_attempt` and delegate event fields instead of adding a journal row or broker log stream.
+5. Reuse the `provider_attempt` outcome and delegate event fields instead of adding a journal row or broker log stream.
 
 ## Architecture surface
 
-Kernel: `src/ranex/cli/delegation.py`, `src/ranex/cli/credential_broker.py`, and the existing task provider-attempt domain. Harness consumption is the coordinated issue #106 surface; no harness code lands here. Contract artifact is the governance JSON named above. No dependency, manifest, or new observability schema changes.
+Kernel: `src/ranex/cli/delegation.py`, `src/ranex/cli/credential_broker.py`, and the existing delegate outcome surface. SLICE-069's intended implementation lanes are `tests/unit/test_credential_broker.py` and `tests/security/test_credential_broker.py`; they are not part of this specification-only change. Harness consumption is the coordinated issue #106 surface; no harness code lands here. Contract artifact is the governance JSON named above. No dependency, manifest, or new observability schema changes.
 
 ## Scope and threat delta
 
@@ -118,9 +118,9 @@ Derived by equivalence partitions, boundary values, and protocol state transitio
 
 ## Test strategy
 
-Kernel paths: `tests/unit/test_delegation.py` covers delegation boundary and no-secret assertions; `tests/integration/test_delegation_command.py` covers real loopback startup, SSE, shutdown, fixed endpoint, and refusal; `tests/security/test_trace_secret_scrubbing.py` is the existing artifact/log scrubbing precedent and will be extended by the broker security path; `tests/e2e/test_delegation_real.py` covers the authorized sentinel journey after harness issue #106 merges. Harness paths are specified by issue #106: `packages/opencode/test/session/llm-native.test.ts` and `packages/opencode/test/session/delegated-provider.test.ts`.
+Kernel paths: `tests/unit/test_delegation.py` covers the existing delegation boundary and no-secret assertions; `tests/integration/test_delegation_command.py` covers the existing loopback command boundary. `tests/contract/test_delegated_provider_protocol.py` freezes this artifact. Broker unit and security paths are opened by SLICE-069; harness paths use `packages/opencode` and are specified by issue #106.
 
-`tests/contract/test_docs_discipline.py` verifies this ADR's sections, prior-art pins, vendored blob hashes, NOTICE, line budgets, sad-path count, and test paths. Contract tests freeze the JSON artifact digest and vectors before implementation; red-first implementation tests are owned by SLICE-069, not this specification commit.
+`tests/contract/test_docs_discipline.py` verifies this ADR's sections, prior-art pins, vendored blob hashes, NOTICE, line budgets, sad-path count, and test paths. `tests/contract/test_delegated_provider_protocol.py` freezes the JSON artifact digest, exact vector IDs, constants, errors, and request/session/model/tool semantics before implementation; red-first implementation tests are owned by SLICE-069, not this specification commit.
 
 ## Code review checklist
 
