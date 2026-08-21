@@ -2,42 +2,39 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-21 (SLICE-059 closed; public architecture docs refreshed under #41)
+**Updated:** 2026-08-22 (ADR-033 panel follow-up; pending new commit)
 **Active slice:** none
-
 ## Where we stopped
-
-SLICE-059 (#39, task family — milestone 4's last family slice) is done
-and archived (docs/slices/done/SLICE-059-*): dispatch→work→`run`→judge,
-the tampered-evidence/self-approval/moved-base/digest-mismatch refusals,
-the clean PUBLISHED merge, worktree-residue detection, and the real
-delegated model run — three goldens captured from the real journeys
-(sha256 dbe923e7…/f7ff1f74…/cac49c48…), red controls dirty, fanout arm
-skipped-with-name until #19. The byte-exact re-run blocker was ruled
-Option 1 (DECISION issuecomment-5359345600): C-4's clause is a written
-owner risk-acceptance; zero frozen-test changes. Ceremony 56c445a1f:
-FROZEN tests=1397 expected_skips=136 run_exit=0 (sealed 1262/135/0);
-round-trip 6/6; cross-check exit 0 honest; fail_under 16.68 → 14.
-G-1 12/2/0, G-2 clean, G-3/G-5 at the final SHA — tails in the
-close-time EVIDENCE on #39 (status:review).
-
+ADR-033's branch/spec is panel-approved at the current pending new commit; the
+protocol fixture and vector semantics are frozen, but the ADR is not claimed
+merged, accepted, or closed. Handshake/version vectors use `response` as
+literal wire bodies; chat vectors use `expected` as broker state observations,
+never SSE bodies. Unknown/unauthenticated sessions return `unauthorized`;
+active sessions under a different valid capability return `session_mismatch`,
+with deterministic fail-before-upstream precedence and no oracle beyond stable
+ errors.
+SLICE-059 (#39, task family — milestone 4's last family slice) is done and
+archived: dispatch→work→`run`→judge, tamper/self-approval/moved-base/digest
+refusals, clean PUBLISHED merge, residue detection, and real delegated model
+run; three journey goldens are captured (dbe923e7…/f7ff1f74…/cac49c48…). The
+byte-exact blocker is Option 1 (DECISION issuecomment-5359345600), with zero
+frozen-test changes. Ceremony 56c445a1f: FROZEN 1397/136/0, round-trip 6/6,
+cross-check 0 honest, fail_under 16.68 → 14; G-1 12/2/0, G-2 clean, G-3/G-5
+ at final SHA.
 ## Next
-
 Framework closed: SLICE-055 closed 2026-08-19
 Next slice: SLICE-036
-Milestone 4's family work is complete (tracker #33 closure is the
-validator's act); milestone 3 resumes at SLICE-036 (#19, MAP §0.24),
-which also un-gates the fanout assertions' follow-up change. Carried
-follow-ups unchanged: the argument-filtered clone decision and the
-writable-tree full-mask EXECUTE residual (security-review-owned), the
-mirror-pin test for `_journal_first_broken_row` (SLICE-056), and
-SLICE-060's review-named pair (cross-claim-set duplication;
-newline-bearing IDs).
-
+Implementation order: harness issue #106 first, then kernel issue #43 via
+SLICE-069. Issues #39 and #33 remain blocked pending secure G-4; neither is
+claimed merged, accepted, or closed by this specification work.
+Milestone 4's family work remains subject to tracker #33's validator act;
+milestone 3 resumes at SLICE-036 (#19, MAP §0.24). Follow-ups: argument-
+filtered clone and writable-tree full-mask EXECUTE (security review), the
+`_journal_first_broken_row` mirror-pin test (SLICE-056), and SLICE-060's
+ review-named duplication pair (cross-claim-set and newline-bearing IDs).
 ## Governance (owner, 2026-08-17)
-
-Build order: milestone 4 → milestone 3 → milestone 2 (MAP §0.24: milestone 4 is P0's proof substrate)
-
+Build order: milestone 4 → milestone 3 → milestone 2 (MAP §0.24: milestone 4
+ is P0's proof substrate)
 ## Known limits
 
 - CI's `test` job is green again on main after the CI-debt fixes (3f900d027, 9243bea41, eb1c1e413/8dc685cca), merged into issue/39 at 0344644ff; confinement suites still fail on hosted runners (ld.so.cache drift, userns EACCES).

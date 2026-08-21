@@ -12,7 +12,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT = ROOT / "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json"
-EXPECTED_SHA256 = "8aa6cc646f7c4ca331c729b2a691bfde1ac5d506fdeab3b94c492bef27f162ea"
+EXPECTED_SHA256 = "0acbf5b97b034ff830dad9a180acf015ad644bb2482975375f79f7e1645308ba"
 EXPECTED_VECTOR_IDS = (
     "handshake-ok",
     "handshake-replay",
@@ -144,8 +144,16 @@ def test_delegated_provider_protocol_freeze() -> None:
             "concurrency_limit", "request_limit", "upstream",
         ],
         "fieldErrors": {
-            "capability": "unauthorized",
-            "session": "unauthorized",
+            "capability": {
+                "error": "unauthorized",
+                "comparison": "constant-time",
+            },
+            "session": {
+                "unknownOrUnauthenticated": "unauthorized",
+                "activeUnderDifferentValidCapability": "session_mismatch",
+                "comparison": "constant-time capability comparison",
+                "oracle": "stable error code and generic message only; disclose no session existence or capability details",
+            },
             "requestId": {
                 "replay": "replay",
                 "structural": "invalid_request",
@@ -190,6 +198,14 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert artifact["vectorSemantics"] == {
         "ordering": "explicit",
         "independence": "each vector is evaluated from its declared state; replay vectors reuse only their declared key",
+        "handshakeAndVersion": {
+            "field": "response",
+            "meaning": "literal wire body",
+        },
+        "chat": {
+            "field": "expected",
+            "meaning": "broker state observation; never an SSE body",
+        },
     }
 
     vectors = artifact["vectors"]
