@@ -366,7 +366,7 @@ actually built and what remains open.
   deterministic closed-DSL flow/pseudocode/scenario/gauge/mapping projections;
   lifecycle, approval, revocation, intersected grants, trace integrity, and
   real-subject bootstrap. These kernel mechanisms are built and tested
-  (SLICE-029–035), but the installed end-to-end mutation path is not yet
+  (SLICE-029–033 and SLICE-035), but the installed end-to-end mutation path is not yet
   authorized.
 - **`ranex task dispatch|judge|merge|delegate|fanout`** — worker dispatch. The
   kernel records task→worktree at dispatch; `delegate` runs a real agent
@@ -536,8 +536,9 @@ SLICE-017 qualification, closed issue #21 / SLICE-018 lifecycle, and closed
 issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
 confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
 controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
-`accepted`; SLICE-029..035 built the kernel-side authority substrate, and
-SLICE-036..044 complete and prove the installed composition sequentially.
+`accepted`; SLICE-029..033 and SLICE-035 built the kernel-side authority
+substrate, while SLICE-034 and SLICE-036..044 complete and prove the installed
+composition sequentially.
 036 is qualification-only and 044 alone authorizes production mutation fanout.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
