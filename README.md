@@ -233,12 +233,12 @@ Maria owns a dog-grooming shop and wants online booking. She cannot read code.
 | Phase | What happens | Who decides |
 |---|---|---|
 | **INTAKE** | She describes it. Ranex asks ~12 non-technical questions: *when someone books, who gets notified? can two people take the same slot?* | — |
-| | Ranex presents a **derived flow view** — screens as boxes, transitions as arrows, rules as diamonds. She drags things and deletes the payment step. | **Maria** ⏸ |
-| **COMPILE** | The clarified intent becomes normative SpecPacket A. Ranex generates the flow, covering paths, protected gauges, controls, and mappings whose exact bytes are hashed by manifest B. | — |
+| | Ranex records her answers in draft SpecPacket A, then deterministically renders a **draft flow view** — screens as boxes, transitions as arrows, rules as diamonds. She requests changes; Ranex updates draft A and re-renders the view. | **Maria** ⏸ |
+| **COMPILE** | The clarified draft becomes normative SpecPacket A. Ranex generates the final flow, covering paths, protected gauges, controls, and mappings whose exact bytes are hashed by manifest B. | — |
 | | Maria signs ApprovalEnvelope C, binding A+B plus the base, execution profile, requested capabilities, identity, and anti-replay context. | **Maria** ⏸ |
 | **PLAN** | The C-approved batch binds the task DAG, file ownership, interface contracts, capability requests, retries, checks, and maximum pool.<br>*Gate: every scenario maps to ≥1 task; mutation scopes do not overlap.* | kernel admission |
 | **BUILD** | N workers, one worktree each, running the loop above.<br>*Gates: tests pass · types check · owns only its files · no new dependencies.* | code |
-| **INTEGRATE** | One worker on the merged tree.<br>*Gate: full suite green; all 34 scenarios pass together.* | code |
+| **INTEGRATE** | One key-exclusive integrator orders accepted child candidates and constructs the batch tree; workers cannot merge.<br>*Gate: full suite green; all 34 scenarios pass together.* | kernel-controlled integrator |
 | **SHIP** | Deploy, smoke test, live URL. She clicks through her own flow graph in a real app. | **Maria** ⏸ |
 
 Human authority stays at the product boundaries: clarify normative A, review the

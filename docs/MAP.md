@@ -1261,7 +1261,7 @@ The future-slice DAG is logical; current execution stays sequential:
        ├─ 033 trace/verifier ports                             │
        ├─ 034 harness admission service                        │
        └─ 035 real subject/bootstrap lane                      │
-019 + 030..035 ──> 036 qualification-only approved batch <───┘
+019 + 030..033 + 035 ──> 036 qualification-only approved batch <───┘
 034 + 036 ─┬─> 037 core process/fs/Git/output effects
             ├─> 038 Ranex tool/session/Git/worktree/PR effects
             ├─> 039 PTY/process-handler effects
