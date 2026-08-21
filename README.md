@@ -93,7 +93,8 @@ flowchart LR
 ### Trust topology
 
 Three ports surround the kernel. None of them produces a verdict; the check port
-alone produces evidence that the kernel may evaluate.
+produces measurements and raw results that trusted kernel infrastructure may
+turn into admissible evidence.
 
 - **Model port** — one completion, forced structured output. Intake, review,
   translating machine state into plain language. Stateless.
@@ -159,7 +160,7 @@ flowchart TD
     I --> J["Read the real diff from disk"]
     J --> K["Run independent bound checks"]
     K --> L["Kernel validates, signs, and records<br/>subject-bound evidence"]
-    L --> M{"Kernel verifies admitted evidence<br/>and evaluates the gate"}
+    L --> M{"Kernel verifies signed evidence,<br/>admits it, and evaluates the gate"}
 
     M -- "FAIL: attempt 1–2" --> N["Return exact failure evidence"]
     N --> I
@@ -168,16 +169,17 @@ flowchart TD
     P -- "Clarify target" --> B
     P -- "Stop" --> Q["Record failure and stop safely"]
 
-    M -- "PASS" --> R["Kernel signs and appends verdict"]
-    R --> S["Kernel merges; worker cannot merge"]
+    M -- "PASS" --> R["Kernel signs and appends task verdict"]
+    R --> S["Stage candidate for the single integrator;<br/>children cannot merge"]
     S --> T{"More approved tasks?"}
     T -- "Yes" --> G
-    T -- "No" --> U["Run the complete frozen suite"]
+    T -- "No" --> AA["One integrator orders results and<br/>builds the batch candidate"]
+    AA --> U["Run the complete frozen suite"]
     U --> V{"Whole product passes?"}
     V -- "No" --> X{"Approved remediation task<br/>already exists in the batch?"}
     X -- "Yes" --> G
     X -- "No: authority must change" --> B
-    V -- "Yes" --> Y["Publish the exact tested commit"]
+    V -- "Yes" --> Y["Kernel publishes the exact tested<br/>commit by stale-base CAS"]
     Y --> Z["Owner verifies the real product"]
 ```
 
@@ -189,8 +191,9 @@ Inside one task, the kernel follows a deliberately small loop:
 3. Run the bound checks against the exact subject revision; the trusted
    kernel-side controller validates, signs, and records the resulting evidence.
 4. Verify and evaluate that evidence using deterministic policy.
-5. Merge a passing candidate through the kernel, or return concrete failure
-   evidence for a bounded retry and eventual owner escalation.
+5. Stage a passing child candidate for the single integrator—never merge from a
+   child—or return concrete failure evidence for a bounded retry and eventual
+   owner escalation.
 
 **Ranex never trusts the worker.** It does not need to control what happens
 inside the loop, only what is allowed out of it. Containment is a smaller problem
@@ -256,21 +259,25 @@ at the ledger. Her acquirer's diligence team will.
 
 ## What makes a verdict trustworthy
 
-An agent that can edit its own tests will always pass. Four rules prevent it:
+An agent that can edit its own tests can paint the target around its output. The
+complete A/B/C architecture is intended to prevent that with four controls:
 
 1. **Tests are frozen before BUILD.** Generated in COMPILE, digested, read-only.
    Any diff touching a test file fails the gate instantly.
 2. **Red-then-green, enforced.** Every generated test must fail against the
    pre-implementation tree. A test that passes before the code exists is not a
    target — it is a circle painted around a dart.
-3. **Edge coverage as a gate, not a metric.** Not "80% of lines" but *"every edge
-   in the approved graph has ≥1 passing test."*
+3. **Approved behavior coverage as a gate, not a metric.** Not "80% of lines"
+   but *"every required outcome and transition in A maps to a protected,
+   passing gauge bound by B and C."*
 4. **No self-approval.** Whoever produced the evidence cannot approve it, and the
    task that implements a scenario never authors or judges its test.
 
-This project applies those rules to itself. The SLICE-001 tests were committed
-red at `b495e3635`, before any implementation existed — red-then-green as a fact
-in the git history rather than a claim in a document.
+Ranex has proven the red-then-green control in its own history: the SLICE-001
+tests were committed red at `b495e3635`, before the implementation existed. The
+current suite manifest freezes test IDs, not test bodies, so the complete
+protected-gauge freeze line is **not** claimed as implemented end to end today.
+The [status section](#status) records that boundary explicitly.
 
 ## The determinism ledger
 
@@ -323,9 +330,11 @@ That is the claim. These are **not** claims Ranex makes:
 
 ## Status
 
-**Pre-release. This is not a usable product yet.** It is a kernel with a working
-verdict path and very little else. The full picture above is designed; the list
-below is what is actually built.
+**Pre-release. This is not a usable product yet.** The kernel has a working
+verdict and task path plus the A/B/C specification-authority substrate. The
+owner-facing harness and governed concurrent composition are still incomplete.
+The full picture above is the intended product; the lists below state what is
+actually built and what remains open.
 
 **Works today**
 
@@ -351,6 +360,13 @@ below is what is actually built.
   satisfies a claim, and the kernel compares its digest, so a record of `true`
   no longer satisfies `tests-executed`. Read the next section for what it does
   *not* buy.
+- **The A/B/C specification-authority substrate** — canonical schemas and
+  vectors for SpecPacket A, GeneratedArtifactManifest B, and ApprovalEnvelope C;
+  deterministic closed-DSL flow/pseudocode/scenario/gauge/mapping projections;
+  lifecycle, approval, revocation, intersected grants, trace integrity, and
+  real-subject bootstrap. These kernel mechanisms are built and tested
+  (SLICE-029–035), but the installed end-to-end mutation path is not yet
+  authorized.
 - **`ranex task dispatch|judge|merge|delegate|fanout`** — worker dispatch. The
   kernel records task→worktree at dispatch; `delegate` runs a real agent
   headless in that worktree and measures the frozen suite sealed; a separate
@@ -389,11 +405,13 @@ below is what is actually built.
   removed — characterized and frozen as the documented outcome by SLICE-056;
   the ADR-032 fold-in landed (8a5ed3837). Closing it remains a slice-governed
   change.
-- **No flow graph, no scenario compilation**, no budget, no escalation. Those
-  are designed, not built. Worker dispatch left this list: `ranex task
-  dispatch|judge|merge|delegate|fanout` ran a real model end to end (SLICE-008),
-  and the kernel publishes the judged candidate (SLICE-010). The free-prompt
-  `fanout` grammar remains prototype-only until ADR-017's SLICE-044 exit.
+- **No owner-facing intake/clarification product and no installed A/B/C →
+  harness admission → concurrent mutation composition.** Kernel-side A/B/C
+  validation, deterministic projections, lifecycle, grants, trace integrity,
+  and real-subject bootstrap exist; budget and plain-language escalation do not.
+  Worker dispatch ran a real model end to end (SLICE-008), and the kernel can
+  publish a judged serial candidate (SLICE-010). Free-prompt `fanout` remains
+  prototype-only until ADR-017's SLICE-044 exit authorizes production mutation.
 - **Review-consensus authenticity gaps remain unstarted in production.** Two
   independent adversarial reviews (2026-08-06) confirmed the gaps above and
   added: the suite manifest freezes test IDs, not test bodies; `evidence.json` is
