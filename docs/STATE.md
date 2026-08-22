@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-22 (ADR-033 OCR remediation; pending re-review)
+**Updated:** 2026-08-23 (ADR-033 OCR remediation; pending re-review)
 **Active slice:** none
 ## Where we stopped
 ADR-033 is proposed and awaiting landing; this OCR remediation is pending
@@ -21,7 +21,8 @@ archived: dispatch→work→`run`→judge, tamper/self-approval/moved-base/diges
 refusals, clean PUBLISHED merge, residue detection, and real delegated model
 run; three journey goldens are captured (dbe923e7…/f7ff1f74…/cac49c48…). The
 byte-exact blocker is Option 1 (DECISION issuecomment-5359345600), with zero
-frozen-test changes. Ceremony 56c445a1f: FROZEN 1397/136/0, round-trip 6/6,
+frozen-test changes. Ceremony 2bab8c9bee2ab93d4b84b2f5c4505944442405e: FROZEN
+tests=1399 expected_skips=136 run_exit=0, round-trip 6/6,
 cross-check 0 honest, fail_under 16.68 → 14; G-1 12/2/0, G-2 clean, G-3/G-5
  at final SHA.
 ## Next
