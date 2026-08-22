@@ -180,6 +180,9 @@
       "preStream": "return bounded generic JSON {error,message}; never leak upstream body",
       "post200": "after downstream 200 headers commit, close downstream without synthetic SSE; no pre-stream status is returned and the stage audit is authoritative"
     },
+    "preDownstreamHttpStatus": {
+      "response_too_large": 502
+    },
     "redirects": "refuse",
     "requestBytes": "raw HTTP request body",
     "requestId": {

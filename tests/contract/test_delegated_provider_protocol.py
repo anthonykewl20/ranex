@@ -11,7 +11,7 @@ from ranex.observability import schema as trace_schema
 
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT = ROOT / "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json"
-EXPECTED_SHA256 = "94bff0f1647382fd3f24c78176b5e6ab3b917173b3ae9627889489892cfdb48f"
+EXPECTED_SHA256 = "42c689947190e38a2d63655948805b407e08ab0fca62ee64eb9c4849c9f8d0e6"
 ERRORS = {
     "invalid_protocol", "unsupported_version", "unauthorized", "handshake_required",
     "session_mismatch", "replay", "expired", "model_not_allowed", "provider_not_allowed",
@@ -45,7 +45,7 @@ EXPECTED_PROTOCOL_KEYS = {
     "distinctRequestIds", "fixture", "grant", "handshake", "handshakeAccounting",
     "handshakeReplayKey", "handshakeUse", "httpSse", "logging", "maxBootstrapBytes",
     "maxConcurrency", "maxRequestBytes", "maxRequests", "maxRequestsScope",
-    "maxResponseBytes", "name", "persistence", "policy", "preStreamHttpStatus",
+    "maxResponseBytes", "name", "persistence", "policy", "preDownstreamHttpStatus", "preStreamHttpStatus",
     "redirects", "requestBytes", "requestId", "responseBytes", "retry", "schemaValidation",
     "stream", "timeoutScope", "timeoutSeconds", "transport", "ttlAccounting", "ttlSeconds",
     "upstream", "validation", "version",
@@ -114,6 +114,7 @@ def test_delegated_provider_protocol_freeze() -> None:
         "request_too_large": 413, "concurrency_limit": 429, "request_limit": 429,
     }
     assert "response_too_large" not in status and "upstream_protocol" not in status
+    assert protocol["preDownstreamHttpStatus"] == {"response_too_large": 502}
 
     assert set(artifact["schemas"]["error"]["properties"]["error"]["enum"]) == ERRORS
     assert len(ERRORS) == 21
