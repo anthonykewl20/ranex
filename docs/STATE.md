@@ -2,17 +2,20 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-22 (ADR-033 panel follow-up; pending new commit)
+**Updated:** 2026-08-22 (ADR-033 OCR remediation; pending re-review)
 **Active slice:** none
 ## Where we stopped
-ADR-033's branch/spec is panel-approved at the current pending new commit; the
-protocol fixture and vector semantics are frozen, but the ADR is not claimed
-merged, accepted, or closed. Handshake/version vectors use `response` as
+ADR-033 is proposed and awaiting landing; this OCR remediation is pending
+re-review, and it is not accepted, merged, or closed. The remediation freezes the
+loopback/http/ephemeral-port bootstrap object, 65,536-byte bootstrap and
+32-tool bounds, inherited-FD raw-key ingress plus FD3 replacement/close
+semantics, stdlib HTTP/TLS plus the policy-specific bounded SSE validator,
+pre-stream status mapping, reservation-state accounting, optional session-bound
+chat-provider policy, and an additive
+ADR-031 stage event owned by #43. Handshake/version vectors use `response` as
 literal wire bodies; chat vectors use `expected` as broker state observations,
-never SSE bodies. Unknown/unauthenticated sessions return `unauthorized`;
-active sessions under a different valid capability return `session_mismatch`,
-with deterministic fail-before-upstream precedence and no oracle beyond stable
- errors.
+never SSE bodies. Vectors cover replay, ninth-request, concurrency, expiry,
+response-too-large, invalid tool ordering, and invalid requestId terminal syntax.
 SLICE-059 (#39, task family — milestone 4's last family slice) is done and
 archived: dispatch→work→`run`→judge, tamper/self-approval/moved-base/digest
 refusals, clean PUBLISHED merge, residue detection, and real delegated model
@@ -36,7 +39,6 @@ filtered clone and writable-tree full-mask EXECUTE (security review), the
 Build order: milestone 4 → milestone 3 → milestone 2 (MAP §0.24: milestone 4
  is P0's proof substrate)
 ## Known limits
-
 - CI's `test` job is green again on main after the CI-debt fixes (3f900d027, 9243bea41, eb1c1e413/8dc685cca), merged into issue/39 at 0344644ff; confinement suites still fail on hosted runners (ld.so.cache drift, userns EACCES).
 - MAP §4.7 rows for SLICE-054..058/060 remain absent (tracker #33 Phase-2 cure applied to SLICE-059 only, via CCR-1; the others wait on their own owner acts).
 - cgroup-observer `OSError(19)` and SLICE-008 bounded-fanout timing can flake under full-suite load (both pass isolated / on `origin/main`).
