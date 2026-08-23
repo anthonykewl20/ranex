@@ -290,7 +290,7 @@ def validate_kogg_metadata(subject: Mapping[str, object], checkout: Path) -> dic
         "package.json": (checkout / "package.json", package_json, "package_json"),
     }
     verified: dict[str, str] = {}
-    for name, (path, facts, prefix) in expected.items():
+    for _name, (path, facts, prefix) in expected.items():
         if not path.is_file():
             _drift("subject-metadata-drift")
         content = path.read_bytes()
