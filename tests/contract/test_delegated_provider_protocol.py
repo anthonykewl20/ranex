@@ -11,7 +11,7 @@ from ranex.observability import schema as trace_schema
 
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT = ROOT / "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json"
-EXPECTED_SHA256 = "4b559a8406a15f3fc11b3aa22835774c833e6a36ff9adcd8be74ff5f9430bb6b"
+EXPECTED_SHA256 = "1708771b32fd3420776b4923a8f14023aa50a5b3dfc022ae94bb157a1f8fb35c"
 ERRORS = {
     "invalid_protocol", "unsupported_version", "unauthorized", "handshake_required",
     "session_mismatch", "replay", "expired", "model_not_allowed", "provider_not_allowed",
@@ -43,7 +43,9 @@ EXPECTED_VECTOR_IDS = {
     "expired-before-reservation",
     "response-too-large-post-reservation",
     "upstream-dns-post-reservation", "upstream-connect-post-reservation",
-    "upstream-tls-post-reservation", "client-cancelled-post-reservation",
+    "upstream-tls-post-reservation", "upstream-non-200-status-post-reservation",
+    "upstream-redirect-refused-post-reservation",
+    "upstream-wrong-media-type-post-reservation", "client-cancelled-post-reservation",
     "sse-headers-then-immediate-eof-post-reservation", "client-cancel-during-upstream-failure",
     "ninth-distinct-request-limit-before-reservation",
 }
@@ -135,8 +137,8 @@ def test_delegated_provider_protocol_freeze() -> None:
         "no secret material"
     )
     assert protocol["logging"]["reservationLedger"]["stageEventLinkage"] == (
-        "both ledger rows and the single ADR-031 provider_attempt stage event are emitted within the same reserved attempt and "
-        "correlate through taskId, session, and requestId available in the emission context; no new trace-schema field is introduced"
+        "the single ADR-031 provider_attempt stage event carries attemptCorrelationId as its non-null subject_digest; ledger rows and "
+        "the stage event join on attemptCorrelationId; no new trace-schema field is introduced"
     )
     assert protocol["logging"]["reservationLedger"]["crashRecovery"] == (
         "at broker start, a reserved row without a terminal row is reconciled by appending a terminal row with outcome internal and "
@@ -255,11 +257,14 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert attempt["event"] == "stage"
     assert attempt["module"] == "cli"
     assert attempt["stage"] == "cli.task.delegate.provider_attempt"
+    assert attempt["subjectDigest"] == (
+        "non-null; equals attemptCorrelationId = sha256 over canonical JSON {taskId, session, requestId} with sorted keys and compact separators"
+    )
     assert attempt["stage"] not in trace_schema.STAGES
     assert attempt["code"] == {"form": "delegation_provider_attempt:<argument>", "argumentSet": OUTCOMES}
     assert attempt["fields"] == {
-        "nonNull": ["event", "sid", "time", "level", "module", "stage", "duration_us", "code"],
-        "null": ["subject_digest", "hierarchy", "child_id"],
+        "nonNull": ["event", "sid", "time", "level", "module", "stage", "subject_digest", "duration_us", "code"],
+        "null": ["hierarchy", "child_id"],
     }
     assert set(attempt["fields"]["nonNull"]) | set(attempt["fields"]["null"]) == set(trace_schema.FIELDS)
     assert "stage" in trace_schema.EVENT_NAMES and "cli" in trace_schema.MODULES
@@ -335,6 +340,15 @@ def test_delegated_provider_protocol_freeze() -> None:
             "emissionCount": 1, "outcome": outcome, "reserved": True,
         }
     assert vectors_by_id["sse-headers-then-immediate-eof-post-reservation"]["expected"] == {
+        "emissionCount": 1, "outcome": "upstream_protocol", "reserved": True,
+    }
+    assert vectors_by_id["upstream-non-200-status-post-reservation"]["expected"] == {
+        "emissionCount": 1, "outcome": "upstream_http", "reserved": True,
+    }
+    assert vectors_by_id["upstream-redirect-refused-post-reservation"]["expected"] == {
+        "emissionCount": 1, "outcome": "redirect_refused", "reserved": True,
+    }
+    assert vectors_by_id["upstream-wrong-media-type-post-reservation"]["expected"] == {
         "emissionCount": 1, "outcome": "upstream_protocol", "reserved": True,
     }
     assert vectors_by_id["client-cancel-during-upstream-failure"]["expected"] == {

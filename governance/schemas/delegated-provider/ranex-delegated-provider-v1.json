@@ -145,7 +145,7 @@
           "terminal after upstream attempt"
         ],
         "identity": "each row carries the secret-free correlation fields taskId, session, requestId (when applicable), provider, model, and attemptCorrelationId = sha256 over canonical JSON {taskId, session, requestId} with sorted keys and compact separators; no secret material",
-        "stageEventLinkage": "both ledger rows and the single ADR-031 provider_attempt stage event are emitted within the same reserved attempt and correlate through taskId, session, and requestId available in the emission context; no new trace-schema field is introduced",
+        "stageEventLinkage": "the single ADR-031 provider_attempt stage event carries attemptCorrelationId as its non-null subject_digest; ledger rows and the stage event join on attemptCorrelationId; no new trace-schema field is introduced",
         "crashRecovery": "at broker start, a reserved row without a terminal row is reconciled by appending a terminal row with outcome internal and marker reconciled_after_restart before any new reservation is accepted; a reconciliation pass applies the same rule to reserved rows older than timeoutSeconds + 60 seconds without a terminal row",
         "fields": "secret-free row identity, outcome code on terminal row, and hash-chain link",
         "prohibited": [
@@ -183,18 +183,19 @@
             "level",
             "module",
             "stage",
+            "subject_digest",
             "duration_us",
             "code"
           ],
           "null": [
-            "subject_digest",
             "hierarchy",
             "child_id"
           ]
         },
         "module": "cli",
         "stage": "cli.task.delegate.provider_attempt",
-        "emitter": "kernel broker exactly once per reserved attempt; harness never emits"
+        "emitter": "kernel broker exactly once per reserved attempt; harness never emits",
+        "subjectDigest": "non-null; equals attemptCorrelationId = sha256 over canonical JSON {taskId, session, requestId} with sorted keys and compact separators"
       },
       "schemaEvolution": "issue #43 owns the additive schema.py registry entry and its schema contract tests; this ADR and fixture define the valid event instance",
       "secrets": "no session/auth headers/raw prompts",
@@ -392,10 +393,10 @@
       }
     },
     "version": 1,
-    "preDownstreamNormalization": "ordered states, each with exactly one non-overlapping named code: DNS failure \u2192 upstream_dns; TCP connect failure \u2192 upstream_connect; TLS failure \u2192 upstream_tls; upstream disconnect or transport error before COMPLETE valid response headers \u2192 upstream_http; after valid 200 text/event-stream response headers are received and the downstream 200 is committed, EOF before the SSE DONE sentinel or any other upstream protocol violation \u2192 upstream_protocol with post-200 close-downstream semantics (no synthetic status); client_cancelled has no downstream status because downstream is already gone and its reservation is consumed",
+    "preDownstreamNormalization": "ordered states, each with exactly one non-overlapping named code: DNS failure \u2192 upstream_dns; TCP connect failure \u2192 upstream_connect; TLS failure \u2192 upstream_tls; upstream disconnect or transport error before COMPLETE valid response headers \u2192 upstream_http; a complete upstream response (classification at status line and headers, before any body) with a 3xx redirect status \u2192 redirect_refused (redirects are refused, never followed); any other non-200 status \u2192 upstream_http; a 200 response with missing, malformed, or non-text/event-stream Content-Type (media-type parameters permitted per RFC 9110) \u2192 upstream_protocol; all classified before downstream commitment (downstream receives the mapped 502 pre-stream status, never the upstream body); after valid 200 text/event-stream response headers are received and the downstream 200 is committed, EOF before the SSE DONE sentinel or any other upstream protocol violation \u2192 upstream_protocol with post-200 close-downstream semantics (no synthetic status); client_cancelled has no downstream status because downstream is already gone and its reservation is consumed",
     "terminalPrecedence": "the terminal outcome is the first terminal condition the broker observes; if a downstream client close and an upstream failure are observed in the same event-loop iteration, client_cancelled takes precedence"
   },
-  "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
+  "protocolFingerprint": "115c60229299f4769d01e88f4c4c758a0be6a9bbfd6090bb6ace9c2562f27ca2",
   "schemas": {
     "handshakeRequest": {
       "additionalProperties": false,
@@ -777,7 +778,7 @@
           "ttlSeconds": 300
         },
         "model": "example/model",
-        "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
+        "protocolFingerprint": "115c60229299f4769d01e88f4c4c758a0be6a9bbfd6090bb6ace9c2562f27ca2",
         "provider": "openrouter",
         "protocol": "ranex-delegated-provider",
         "taskId": "task-vector-01",
@@ -828,7 +829,7 @@
         "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "model": "example/model",
         "protocol": "ranex-delegated-provider",
-        "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
+        "protocolFingerprint": "115c60229299f4769d01e88f4c4c758a0be6a9bbfd6090bb6ace9c2562f27ca2",
         "provider": "openrouter",
         "tools": [
           "alpha",
@@ -839,7 +840,7 @@
       "response": {
         "expiresAt": "2030-01-01T00:05:00Z",
         "protocol": "ranex-delegated-provider",
-        "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
+        "protocolFingerprint": "115c60229299f4769d01e88f4c4c758a0be6a9bbfd6090bb6ace9c2562f27ca2",
         "remainingRequests": 8,
         "session": "session-vector-01",
         "version": 1
@@ -1035,6 +1036,30 @@
       "expected": {
         "emissionCount": 1,
         "outcome": "upstream_tls",
+        "reserved": true
+      }
+    },
+    {
+      "id": "upstream-non-200-status-post-reservation",
+      "expected": {
+        "emissionCount": 1,
+        "outcome": "upstream_http",
+        "reserved": true
+      }
+    },
+    {
+      "id": "upstream-redirect-refused-post-reservation",
+      "expected": {
+        "emissionCount": 1,
+        "outcome": "redirect_refused",
+        "reserved": true
+      }
+    },
+    {
+      "id": "upstream-wrong-media-type-post-reservation",
+      "expected": {
+        "emissionCount": 1,
+        "outcome": "upstream_protocol",
         "reserved": true
       }
     },
