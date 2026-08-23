@@ -2,20 +2,18 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-23 (ADR-033 OCR remediation; pending re-review)
+**Updated:** 2026-08-23 (review remediation applied (consensus P0/P1 + review P2/P3); pending re-review)
 **Active slice:** none
 ## Where we stopped
-ADR-033 is proposed and awaiting landing; this OCR remediation is pending
-re-review, and it is not accepted, merged, or closed. The remediation freezes the
-loopback/http/ephemeral-port bootstrap object, 65,536-byte bootstrap and
-32-tool bounds, inherited-FD raw-key ingress plus FD3 replacement/close
-semantics, stdlib HTTP/TLS plus the policy-specific bounded SSE validator,
-pre-stream status mapping, reservation-state accounting, optional session-bound
-chat-provider policy, and an additive
-ADR-031 stage event owned by #43. Handshake/version vectors use `response` as
-literal wire bodies; chat vectors use `expected` as broker state observations,
-never SSE bodies. Vectors cover replay, ninth-request, concurrency, expiry,
-response-too-large, invalid tool ordering, and invalid requestId terminal syntax.
+ADR-033 remains proposed pending re-review; it is not accepted, merged, or
+closed, and has no active slice. The remediated design freezes the narrowed
+accidental-secret non-propagation claim, total DNS/connect/TLS/pre-first-byte
+transport mapping, durable two-row reservation ledger, peer fingerprint
+comparison obligation, bootstrap/fieldErrors fingerprint consistency + chat
+mismatch vector, admission caps, direct fixed HTTPS upstream construction,
+and unsupported_version=400. Vectors and the contract test pin both the protocol
+fingerprint and external artifact SHA; wrong bootstrap/handshake/chat fingerprints
+fail closed before reservation or upstream; suite manifest IDs are unchanged.
 SLICE-059 (#39, task family — milestone 4's last family slice) is done and
 archived: dispatch→work→`run`→judge, tamper/self-approval/moved-base/digest
 refusals, clean PUBLISHED merge, residue detection, and real delegated model

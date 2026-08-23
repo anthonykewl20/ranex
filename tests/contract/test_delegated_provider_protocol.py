@@ -11,17 +11,19 @@ from ranex.observability import schema as trace_schema
 
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT = ROOT / "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json"
-EXPECTED_SHA256 = "42c689947190e38a2d63655948805b407e08ab0fca62ee64eb9c4849c9f8d0e6"
+EXPECTED_SHA256 = "f2afc4993012632fefe0b900aecd7566c05970e3094ca47d3fcc2bd18336508b"
 ERRORS = {
     "invalid_protocol", "unsupported_version", "unauthorized", "handshake_required",
     "session_mismatch", "replay", "expired", "model_not_allowed", "provider_not_allowed",
     "invalid_request", "tool_not_allowed", "request_too_large", "response_too_large",
     "concurrency_limit", "request_limit", "upstream_timeout", "upstream_http",
     "redirect_refused", "upstream_protocol", "server_shutdown", "internal",
+    "upstream_dns", "upstream_connect", "upstream_tls", "client_cancelled",
 }
 OUTCOMES = [
-    "success", "response_too_large", "upstream_timeout", "upstream_http",
-    "redirect_refused", "upstream_protocol", "server_shutdown", "internal",
+    "success", "upstream_dns", "upstream_connect", "upstream_tls", "client_cancelled",
+    "response_too_large", "upstream_timeout", "upstream_http", "redirect_refused",
+    "upstream_protocol", "server_shutdown", "internal",
 ]
 EXPECTED_VECTOR_IDS = {
     "bootstrap-complete-example-non-normative-port",
@@ -31,6 +33,8 @@ EXPECTED_VECTOR_IDS = {
     "chat-replay",
     "chat-distinct-second-request",
     "unsupported-version",
+    "fingerprint-mismatch", "fingerprint-mismatch-bootstrap", "fingerprint-mismatch-handshake-response",
+    "fingerprint-mismatch-chat-request",
     "chat-upstream-failure-consumes-attempt",
     "chat-failed-request-replay-does-not-consume",
     "invalid-tool-order",
@@ -38,6 +42,8 @@ EXPECTED_VECTOR_IDS = {
     "concurrency-limit-before-reservation",
     "expired-before-reservation",
     "response-too-large-post-reservation",
+    "upstream-dns-post-reservation", "upstream-connect-post-reservation",
+    "upstream-tls-post-reservation", "client-cancelled-post-reservation",
     "ninth-distinct-request-limit-before-reservation",
 }
 EXPECTED_PROTOCOL_KEYS = {
@@ -45,7 +51,9 @@ EXPECTED_PROTOCOL_KEYS = {
     "distinctRequestIds", "fixture", "grant", "handshake", "handshakeAccounting",
     "handshakeReplayKey", "handshakeUse", "httpSse", "logging", "maxBootstrapBytes",
     "maxConcurrency", "maxRequestBytes", "maxRequests", "maxRequestsScope",
-    "maxResponseBytes", "name", "persistence", "policy", "preDownstreamHttpStatus", "preStreamHttpStatus",
+    "maxResponseBytes", "name", "persistence", "policy", "preDownstreamHttpStatus", "preDownstreamNormalization", "preStreamHttpStatus",
+    "security",
+    "httpAdmission",
     "redirects", "requestBytes", "requestId", "responseBytes", "retry", "schemaValidation",
     "stream", "timeoutScope", "timeoutSeconds", "transport", "ttlAccounting", "ttlSeconds",
     "upstream", "validation", "version",
@@ -71,9 +79,18 @@ def _artifact() -> dict[str, object]:
     return json.loads(raw, object_pairs_hook=_reject_duplicate_keys)
 
 
+def _protocol_fingerprint(artifact: dict[str, object]) -> str:
+    payload = {"protocol": artifact["protocol"], "schemas": artifact["schemas"]}
+    canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    return hashlib.sha256(canonical).hexdigest()
+
+
 def test_delegated_provider_protocol_freeze() -> None:
     artifact = _artifact()
     protocol = artifact["protocol"]
+    assert artifact["protocolFingerprint"] == _protocol_fingerprint(artifact)
+    schemas = artifact["schemas"]
+    assert protocol["bootstrap"]["required"] == schemas["bootstrap"]["required"]
     assert set(protocol) == EXPECTED_PROTOCOL_KEYS
     assert protocol["name"] == "ranex-delegated-provider"
     assert protocol["version"] == 1
@@ -83,7 +100,8 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert protocol["timeoutSeconds"] == 120
     assert protocol["upstream"] == "https://openrouter.ai/api/v1/chat/completions"
     assert protocol["redirects"] == "refuse"
-    assert protocol["retry"] == protocol["persistence"] == "none"
+    assert protocol["retry"] == "none"
+    assert protocol["persistence"] == "no prompts or outputs; exactly two secret-free hash-chained reservation ledger rows per reserved attempt"
     assert protocol["chatReplayKey"] == ["session", "requestId"]
     assert protocol["handshakeReplayKey"] == ["capability"]
     assert protocol["requestId"] == {"encoding": "base64url", "randomBytes": 16, "length": 22, "finalCharacters": "AQgw"}
@@ -92,6 +110,52 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert protocol["policy"]["chatProvider"] == (
         "if omitted, use the authenticated session provider; if present, it must equal the session provider"
     )
+    assert protocol["transport"]["upstreamRequest"] == {
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+        "connection": "direct HTTPSConnection to openrouter.ai:443; no proxy, tunnel, or configurable endpoint",
+        "authorization": "broker constructs Authorization internally from the kernel-only raw key",
+        "forwarded": "harness cannot supply or forward Authorization, custom headers, proxy settings, endpoint, transport, TLS, or debug options",
+        "debuglevel": 0,
+        "redirects": "refuse",
+    }
+    assert protocol["logging"]["audit"] == {
+        "durable": False,
+        "emitter": "exactly one ADR-031 emitter invocation per reserved attempt",
+        "materialization": "materialized only when tracing is enabled; tracing disabled is verdict-neutral and emits nothing",
+        "authority": "observability event only; not an authoritative durable audit",
+    }
+    assert protocol["logging"]["reservationLedger"]["rows"] == 2
+    assert protocol["logging"]["reservationLedger"]["sequence"] == [
+        "reserved before any upstream I/O", "terminal after upstream attempt"
+    ]
+    assert "does not detect rollback or truncation" in protocol["logging"]["reservationLedger"]["residual"]
+    assert protocol["security"]["scope"].startswith("accidental secret non-propagation")
+    assert "not isolation against an adversarial same-UID harness" in protocol["security"]["scope"]
+    assert protocol["httpAdmission"] == {
+        "maxHeaderBytes": 16384,
+        "maxHeaderCount": 100,
+        "maxPendingUnauthenticatedConnections": 64,
+        "maxRequestLineBytes": 8192,
+        "oversizedContentLengthStatus": 413,
+        "errorCodes": {
+            "oversizedContentLength": "request_too_large",
+            "chunked": "invalid_protocol",
+            "contentLengthWithTransferEncoding": "invalid_protocol",
+            "duplicateContentLength": "invalid_protocol",
+            "conflictingContentLength": "invalid_protocol",
+            "missingContentLength": "invalid_protocol",
+            "duplicateJsonKey": "invalid_protocol",
+        },
+        "acceptLoop": "bounded non-blocking accept loop; refuse further accepts while 64 unauthenticated connections are pending",
+        "unauthenticatedReadDeadlineSeconds": 5,
+        "framing": "Content-Length is required for requests with a body; Transfer-Encoding/chunked, Content-Length plus Transfer-Encoding, duplicate Content-Length, and conflicting Content-Length values are rejected",
+        "json": "strict duplicate-key rejection before authentication or body dispatch",
+        "providerSlot": "unauthenticated header/body admission is completed before authentication, validation, and the single provider-attempt slot reservation; partial unauthenticated clients cannot consume that slot",
+        "implementation": "bounded parser and socket deadlines; do not rely on undocumented http.server knobs",
+        "rationale": "16 KiB headers, 100 fields, and 8 KiB request lines stay below common stdlib line limits while bounding unauthenticated memory and header abuse; five seconds matches the handshake deadline",
+        "pendingRationale": "64 pending unauthenticated connections bound pre-auth resource use and prevent admission starvation",
+        "contentLengthRationale": "rejecting a declared body above maxRequestBytes at admission avoids allocating or reading an oversized unauthenticated request",
+    }
 
     transport = protocol["transport"]
     assert transport["rawKeyIngress"] == "kernel receives the raw provider key only through an inherited FD/pipe owned by the kernel process"
@@ -108,26 +172,38 @@ def test_delegated_provider_protocol_freeze() -> None:
         "invalid_request", "tool_not_allowed", "request_too_large", "concurrency_limit", "request_limit",
     }
     assert {key: status[key] for key in status if key not in {"preStream", "post200"}} == {
-        "invalid_protocol": 400, "unsupported_version": 426, "unauthorized": 401, "handshake_required": 401,
+        "invalid_protocol": 400, "unsupported_version": 400, "unauthorized": 401, "handshake_required": 401,
         "session_mismatch": 401, "replay": 409, "expired": 410, "model_not_allowed": 403,
         "provider_not_allowed": 403, "invalid_request": 400, "tool_not_allowed": 403,
         "request_too_large": 413, "concurrency_limit": 429, "request_limit": 429,
     }
     assert "response_too_large" not in status and "upstream_protocol" not in status
-    assert protocol["preDownstreamHttpStatus"] == {"response_too_large": 502}
+    assert protocol["preDownstreamHttpStatus"] == {
+        "upstream_dns": 502, "upstream_connect": 502, "upstream_tls": 502, "client_cancelled": None,
+        "response_too_large": 502,
+        "upstream_timeout": 504,
+        "upstream_http": 502,
+        "redirect_refused": 502,
+        "upstream_protocol": 502,
+        "server_shutdown": 503,
+        "internal": 500,
+    }
+    assert "exactly one non-overlapping named code" in protocol["preDownstreamNormalization"]
 
     assert set(artifact["schemas"]["error"]["properties"]["error"]["enum"]) == ERRORS
-    assert len(ERRORS) == 21
-    schemas = artifact["schemas"]
+    assert len(ERRORS) == 25
     assert {"handshakeRequest", "handshakeResponse", "chatRequest", "chatResponse"} <= set(schemas)
-    for schema_name in ("handshakeRequest", "handshakeResponse", "chatRequest"):
+    for schema_name in ("handshakeRequest", "handshakeResponse", "chatRequest", "bootstrap"):
+        assert "protocolFingerprint" in schemas[schema_name]["required"]
+        assert schemas[schema_name]["properties"]["protocolFingerprint"]["pattern"] == r"^[0-9a-f]{64}$"
         schema = schemas[schema_name]
-        if "provider" in schema["properties"]:
-            assert schema["properties"]["provider"]["type"] == "string"
-        if "model" in schema["properties"]:
-            assert "const" not in schema["properties"]["model"]
-        if "provider" in schema["properties"]:
-            assert "const" not in schema["properties"]["provider"]
+        if schema_name != "bootstrap":
+            if "provider" in schema["properties"]:
+                assert schema["properties"]["provider"]["type"] == "string"
+            if "model" in schema["properties"]:
+                assert "const" not in schema["properties"]["model"]
+            if "provider" in schema["properties"]:
+                assert "const" not in schema["properties"]["provider"]
     assert schemas["chatResponse"] == {
         "description": "Opaque raw SSE relay; each event is forwarded without constraining model-specific response structure.",
         "type": "object",
@@ -157,6 +233,7 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert attempt["event"] == "stage"
     assert attempt["module"] == "cli"
     assert attempt["stage"] == "cli.task.delegate.provider_attempt"
+    assert attempt["stage"] not in trace_schema.STAGES
     assert attempt["code"] == {"form": "delegation_provider_attempt:<argument>", "argumentSet": OUTCOMES}
     assert attempt["fields"] == {
         "nonNull": ["event", "sid", "time", "level", "module", "stage", "duration_us", "code"],
@@ -164,7 +241,7 @@ def test_delegated_provider_protocol_freeze() -> None:
     }
     assert set(attempt["fields"]["nonNull"]) | set(attempt["fields"]["null"]) == set(trace_schema.FIELDS)
     assert "stage" in trace_schema.EVENT_NAMES and "cli" in trace_schema.MODULES
-    assert attempt["stage"] not in trace_schema.STAGES
+    assert attempt["stage"] == "cli.task.delegate.provider_attempt"
     assert "#43" in protocol["logging"]["schemaEvolution"]
 
     vectors = artifact["vectors"]
@@ -189,12 +266,52 @@ def test_delegated_provider_protocol_freeze() -> None:
         for vector in vectors
         if "requestId" in vector and vector["id"] != "invalid-request-id-terminal-character"
     )
+    fingerprint = artifact["protocolFingerprint"]
+    assert vectors_by_id["handshake-ok"]["request"]["protocolFingerprint"] == fingerprint
+    assert vectors_by_id["handshake-ok"]["response"]["protocolFingerprint"] == fingerprint
+    assert vectors[0]["bootstrap"]["protocolFingerprint"] == fingerprint
+    fingerprint_mismatch = vectors_by_id["fingerprint-mismatch"]
+    mismatched_value = fingerprint_mismatch["request"]["protocolFingerprint"]
+    fingerprint_schema = schemas["handshakeRequest"]["properties"]["protocolFingerprint"]
+    assert isinstance(mismatched_value, str)
+    assert re.fullmatch(fingerprint_schema["pattern"], mismatched_value)
+    assert len(mismatched_value) == 64
+    assert mismatched_value != fingerprint
+    assert fingerprint_mismatch["response"]["error"] == "unsupported_version"
+    assert fingerprint_mismatch["expected"] == {
+        "error": "unsupported_version",
+        "reserved": False,
+        "upstream": False,
+    }
+    assert vectors_by_id["fingerprint-mismatch-bootstrap"]["bootstrap"]["protocolFingerprint"] == "0" * 64
+    assert vectors_by_id["fingerprint-mismatch-bootstrap"]["expected"] == fingerprint_mismatch["expected"]
+    assert vectors_by_id["fingerprint-mismatch-handshake-response"]["response"]["protocolFingerprint"] == "0" * 64
+    assert vectors_by_id["fingerprint-mismatch-handshake-response"]["expected"] == fingerprint_mismatch["expected"]
+    chat_mismatch = vectors_by_id["fingerprint-mismatch-chat-request"]
+    chat_mismatch_value = chat_mismatch["request"]["protocolFingerprint"]
+    chat_fingerprint_schema = schemas["chatRequest"]["properties"]["protocolFingerprint"]
+    assert re.fullmatch(chat_fingerprint_schema["pattern"], chat_mismatch_value)
+    assert chat_mismatch_value != fingerprint
+    assert chat_mismatch["expected"] == fingerprint_mismatch["expected"]
+    assert chat_mismatch["response"] == {
+        "error": "unsupported_version",
+        "message": "protocol fingerprint is not supported",
+    }
+    assert protocol["validation"]["reservationState"]["preReservation"] == {
+        "consumes": 0,
+        "emits": 0,
+        "errors": PRE_RESERVATION_ERRORS,
+    }
     invalid_request_id = next(vector for vector in vectors if vector["id"] == "invalid-request-id-terminal-character")
     assert len(invalid_request_id["requestId"]) == 22
     assert invalid_request_id["requestId"][-1] == "Z"
     assert not request_id_regex.fullmatch(invalid_request_id["requestId"])
     response_too_large = vectors_by_id["response-too-large-post-reservation"]
     assert response_too_large["expected"] == {"emissionCount": 1, "outcome": "response_too_large", "reserved": True}
+    for outcome in ("upstream_dns", "upstream_connect", "upstream_tls", "client_cancelled"):
+        assert vectors_by_id[f"{outcome.replace('_', '-')}-post-reservation"]["expected"] == {
+            "emissionCount": 1, "outcome": outcome, "reserved": True,
+        }
 
     request_limit = vectors_by_id["ninth-distinct-request-limit-before-reservation"]
     accepted = request_limit["state"]["acceptedRequestIds"]
