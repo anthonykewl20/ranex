@@ -33,3 +33,4 @@ governance/evidence.json
 
 # Signed verdict read channel; runtime state, never part of its own subject.
 governance/verdicts/
+.worktrees/

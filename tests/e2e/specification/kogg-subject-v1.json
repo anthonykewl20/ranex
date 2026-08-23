@@ -1,0 +1,14 @@
+{
+  "schema": "ranex-provider-subject-v1",
+  "name": "kogg",
+  "repository": "https://github.com/anthonykewl20/kogg.git",
+  "commit": "dc3763d9517eda5919dfce8bac7f251517b82c7d",
+  "issue": 40,
+  "license": "Apache-2.0",
+  "lockfile": {"path": "package-lock.json", "sha256": "282ab64ad33d0e2e28b6e91ed4d43a373b84e783102e9800672951caedd9b413", "bytes": 1192252, "blob": "7dcfe14ccbf5660f11e585650b71fb0c5b275ab8"},
+  "license_metadata": {"bytes": 11361, "sha256": "55367b61ccd2a016a0159ad886bd66a3ee6cb5e873d0c75c803c897dd245b075", "blob": "2d4f1fee82272cbad5f22394dc064e621f668aac"},
+  "package_json": {"bytes": 9003, "sha256": "391993bc493dda411cb5c5d5bc93b7a34731f9ee1d2b9c36ade77829858b204d", "blob": "20048b9758ad3fc696ffb5a4b1208003e5eabca3"},
+  "package_manager": {"command": ["npm", "11.6.0"]},
+  "credential_ref": "env:RANEX_SUBJECT_KOGG_CREDENTIAL_REF",
+  "process_commands": [["npm", "test"]]
+}
