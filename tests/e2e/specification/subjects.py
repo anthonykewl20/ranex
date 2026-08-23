@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import pwd
 import re
 import shutil
 import subprocess
@@ -67,61 +68,66 @@ _EXPECTED: dict[str, dict[str, object]] = {
 
 
 class SubjectBlocked(RuntimeError):
-    """A stable, deliberately credential-free bootstrap refusal."""
+    """Legacy base for the stable subject refusal assertions."""
+
+
+class SubjectDrift(SubjectBlocked):
+    """A frozen subject fact mismatch; this is not the credential oracle."""
 
 
 class _CredentialProfileUnavailable(RuntimeError):
     """The ordered controller-only profile check found no usable profile."""
 
 
-def _blocked(reason: str) -> None:
-    raise SubjectBlocked(f"SLICE-035 BLOCKED: {reason}")
+def _drift(reason: str) -> None:
+    """Raise a subject mismatch without selecting the BLOCKED oracle."""
+    raise SubjectDrift(f"SLICE-035 subject drift: {reason}")
 
 
 def load_subject(path: Path) -> dict[str, object]:
     try:
         value = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        _blocked("subject-manifest-unreadable")
+        raise RuntimeError(f"subject manifest unreadable: path={str(path)!r}") from None
     if not isinstance(value, dict):
-        _blocked("subject-manifest-unreadable")
+        raise RuntimeError(f"subject manifest unreadable: path={str(path)!r}")
     return value
 
 
 def validate_manifest(subject: Mapping[str, object]) -> None:
     name = subject.get("name")
     if not isinstance(name, str) or name not in _EXPECTED:
-        _blocked("subject-name-invalid")
+        _drift("subject-name-invalid")
     expected = _EXPECTED[name]
     if subject.get("schema") != "ranex-provider-subject-v1":
-        _blocked("subject-schema-invalid")
+        _drift("subject-schema-invalid")
     for field, reason in (("repository", "subject-repository-drift"), ("commit", "subject-commit-drift"),
                           ("issue", "subject-issue-drift"), ("license", "subject-license-drift")):
         if subject.get(field) != expected[field]:
-            _blocked(reason)
+            _drift(reason)
     commit = subject["commit"]
     if not isinstance(commit, str) or not _HEX.fullmatch(commit):
-        _blocked("subject-commit-drift")
+        _drift("subject-commit-drift")
     lockfile = subject.get("lockfile")
     if not isinstance(lockfile, dict) or (lockfile.get("path"), lockfile.get("sha256")) != expected["lockfile"]:
-        _blocked("lock-drift")
+        _drift("lock-drift")
     if not isinstance(lockfile.get("sha256"), str) or not _SHA256.fullmatch(lockfile["sha256"]):
-        _blocked("lock-drift")
+        _drift("lock-drift")
     manager = subject.get("package_manager")
     if not isinstance(manager, dict) or tuple(manager.get("command", ())) != expected["package_manager"]:
-        _blocked("package-manager-unpinned")
+        _drift("package-manager-unpinned")
     commands = subject.get("process_commands")
     if not isinstance(commands, list) or not all(isinstance(command, list) and command for command in commands):
-        _blocked("process-command-invalid")
+        _drift("process-command-invalid")
     if tuple(tuple(command) for command in commands) != expected["process_commands"]:
-        _blocked("process-command-drift")
+        _drift("process-command-drift")
     if name == "kogg" and subject.get("credential_ref") != KOGG_CREDENTIAL_REF:
-        _blocked("credential-ref-unavailable")
+        _drift("credential-ref-unavailable")
     if name == "kogg":
         license_metadata = subject.get("license_metadata")
         package_json = subject.get("package_json")
         if not isinstance(license_metadata, dict) or not isinstance(package_json, dict):
-            _blocked("subject-metadata-drift")
+            _drift("subject-metadata-drift")
         for key, expected_value in expected["metadata"].items():
             actual = {
                 "license_bytes": license_metadata.get("bytes"),
@@ -135,7 +141,7 @@ def validate_manifest(subject: Mapping[str, object]) -> None:
                 "package_json_blob": package_json.get("blob"),
             }.get(key)
             if actual != expected_value:
-                _blocked("subject-metadata-drift")
+                _drift("subject-metadata-drift")
 
 
 def broker_environment(source: Mapping[str, str] | None = None) -> dict[str, str]:
@@ -152,6 +158,21 @@ def broker_environment(source: Mapping[str, str] | None = None) -> dict[str, str
     return environment
 
 
+def controller_environment(source: Mapping[str, str] | None = None) -> dict[str, str]:
+    """Preserve controller authority while making its GH config explicit.
+
+    The G-4 isolation wrapper replaces HOME/XDG_CONFIG_HOME, but does not
+    provision a GH profile. Resolve the real passwd home rather than the
+    brokered HOME; this environment is never passed to subject processes.
+    """
+    source = os.environ if source is None else source
+    environment = dict(source)
+    if not environment.get("GH_CONFIG_DIR"):
+        real_home = Path(pwd.getpwuid(os.getuid()).pw_dir)
+        environment["GH_CONFIG_DIR"] = str(real_home / ".config" / "gh")
+    return environment
+
+
 def kogg_network_commands(destination: Path) -> tuple[tuple[str, ...], tuple[str, ...]]:
     prefix = ("git", "-c", PROCESS_LOCAL_HELPER)
     return (*prefix, "ls-remote", KOGG_REPOSITORY, "HEAD"), (*prefix, "clone", "--no-checkout", KOGG_REPOSITORY, str(destination))
@@ -160,7 +181,7 @@ def kogg_network_commands(destination: Path) -> tuple[tuple[str, ...], tuple[str
 def assert_identical_local_helper(*commands: Sequence[str]) -> None:
     expected = ("git", "-c", PROCESS_LOCAL_HELPER)
     if any(tuple(command[:3]) != expected for command in commands):
-        _blocked("helper-mismatch")
+        _drift("helper-mismatch")
 
 
 def resolve_credential_reference(
@@ -179,23 +200,36 @@ def resolve_credential_reference(
         raise RuntimeError("helper-unavailable")
     try:
         completed = runner(("gh", "auth", "status"), capture_output=True, text=True, check=False,
-                           env=broker_environment(source), stdin=subprocess.DEVNULL, close_fds=True, timeout=5)
+                            env=controller_environment(source), stdin=subprocess.DEVNULL, close_fds=True, timeout=5)
     except subprocess.TimeoutExpired as error:
-        raise _CredentialProfileUnavailable("credential-ref-unavailable") from error
-    if completed is None or completed.returncode != 0:
+        raise RuntimeError("credential profile command timed out: argv=('gh', 'auth', 'status')") from error
+    if completed is None:
         raise _CredentialProfileUnavailable("credential-ref-unavailable")
     status = (completed.stdout or "") + (completed.stderr or "")
+    if completed.returncode != 0:
+        if re.search(r"not logged in|not authenticated|no authentication", status, re.IGNORECASE):
+            raise _CredentialProfileUnavailable("credential-ref-unavailable")
+        raise RuntimeError(
+            f"credential profile command failed: argv=('gh', 'auth', 'status') returncode={completed.returncode} "
+            f"stdout_tail={(completed.stdout or '')[-2000:]!r} stderr_tail={(completed.stderr or '')[-2000:]!r}"
+        )
     profiles = re.findall(r"account\s+([A-Za-z0-9_-]+)", status)
     if profiles != ["anthonykewl20"] or "keyring" not in status.lower() or "Active account: true" not in status:
         raise _CredentialProfileUnavailable("credential-ref-unavailable")
 
 
 def _run(runner: Callable[..., subprocess.CompletedProcess[str]], command: Sequence[str], *, cwd: Path | None = None,
-          failure_reason: str = "remote-preflight-failed") -> subprocess.CompletedProcess[str]:
-    completed = runner(tuple(command), cwd=cwd, capture_output=True, text=True, check=False, env=broker_environment(),
+         environment: Mapping[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+    completed = runner(tuple(command), cwd=cwd, capture_output=True, text=True, check=False,
+                       env=dict(controller_environment() if environment is None else environment),
                        stdin=subprocess.DEVNULL, close_fds=True)
     if completed is None or completed.returncode != 0:
-        _blocked(failure_reason)
+        stdout = (completed.stdout if completed is not None else "") or ""
+        stderr = (completed.stderr if completed is not None else "") or ""
+        raise RuntimeError(
+            f"controller command failed: argv={tuple(command)!r} returncode={completed.returncode if completed is not None else 'unknown'} "
+            f"stdout_tail={stdout[-2000:]!r} stderr_tail={stderr[-2000:]!r}"
+        )
     return completed
 
 
@@ -217,31 +251,31 @@ def assert_credential_free(paths: Sequence[Path], environment: Mapping[str, str]
         try:
             content = path.read_text(encoding="utf-8")
         except OSError:
-            _blocked("credential-hygiene-unreadable")
+            raise RuntimeError(f"credential hygiene unreadable: path={str(path)!r}") from None
         if _CREDENTIAL_COPY.search(content):
-            _blocked("credential-copy-detected")
+            raise SubjectDrift("SLICE-035 subject hygiene failure: credential-copy-detected")
     safe_git_controls = {"GIT_CONFIG_NOSYSTEM", "GIT_CONFIG_GLOBAL", "GIT_TERMINAL_PROMPT"}
     if environment is not None and any(key.startswith(("GH_", "GITHUB_", "GIT_", "SSH_", "RANEX_SUBJECT_"))
                                       and key not in safe_git_controls for key in environment):
-        _blocked("credential-copy-detected")
+        raise SubjectDrift("SLICE-035 subject hygiene failure: credential-copy-detected")
 
 
 def validate_checkout(subject: Mapping[str, object], checkout: Path, actual_commit: str, issue: int) -> None:
     validate_manifest(subject)
     if actual_commit != subject["commit"]:
-        _blocked("subject-commit-drift")
+        _drift("subject-commit-drift")
     if issue != subject["issue"]:
-        _blocked("subject-issue-drift")
+        _drift("subject-issue-drift")
     license_path = checkout / "LICENSE"
     if not license_path.is_file() or (subject["license"] == "MIT" and "MIT License" not in license_path.read_text(encoding="utf-8")):
-        _blocked("subject-license-drift")
+        _drift("subject-license-drift")
     if subject["license"] == "Apache-2.0" and "Apache License" not in license_path.read_text(encoding="utf-8"):
-        _blocked("subject-license-drift")
+        _drift("subject-license-drift")
     lock = subject["lockfile"]
     assert isinstance(lock, dict)
     lock_path = checkout / str(lock["path"])
     if not lock_path.is_file() or hashlib.sha256(lock_path.read_bytes()).hexdigest() != lock["sha256"]:
-        _blocked("lock-drift")
+        _drift("lock-drift")
 
 
 def validate_kogg_metadata(subject: Mapping[str, object], checkout: Path) -> dict[str, str]:
@@ -249,7 +283,7 @@ def validate_kogg_metadata(subject: Mapping[str, object], checkout: Path) -> dic
     package_json = subject.get("package_json")
     lock = subject.get("lockfile")
     if not isinstance(metadata, dict) or not isinstance(package_json, dict) or not isinstance(lock, dict):
-        _blocked("subject-metadata-drift")
+        _drift("subject-metadata-drift")
     expected = {
         "LICENSE": (checkout / "LICENSE", metadata, "license"),
         str(lock["path"]): (checkout / str(lock["path"]), lock, "lockfile"),
@@ -258,12 +292,12 @@ def validate_kogg_metadata(subject: Mapping[str, object], checkout: Path) -> dic
     verified: dict[str, str] = {}
     for name, (path, facts, prefix) in expected.items():
         if not path.is_file():
-            _blocked("subject-metadata-drift")
+            _drift("subject-metadata-drift")
         content = path.read_bytes()
         blob = hashlib.sha1(f"blob {len(content)}\0".encode() + content).hexdigest()
         if (len(content) != facts.get("bytes") or hashlib.sha256(content).hexdigest() != facts.get("sha256")
                 or blob != facts.get("blob")):
-            _blocked("subject-metadata-drift")
+            _drift("subject-metadata-drift")
         verified[f"{prefix}_sha256"] = hashlib.sha256(content).hexdigest()
         verified[f"{prefix}_blob"] = blob
     return verified
@@ -279,9 +313,8 @@ def run_kogg_subject(subject: Mapping[str, object], destination: Path, *, outcom
                      runner: Callable[..., subprocess.CompletedProcess[str]] = subprocess.run) -> str:
     """Run the credential gate; only its unavailable branch is accepted as BLOCKED."""
 
-    validate_manifest(subject)
     try:
-        resolve_credential_reference(str(subject["credential_ref"]), runner)
+        resolve_credential_reference(str(subject.get("credential_ref", "")), runner)
     except _CredentialProfileUnavailable:
         write_blocked_outcome(outcome_journal)
         print(BLOCKED_LINE)
@@ -314,19 +347,23 @@ def run_ranex_subject(subject: Mapping[str, object], destination: Path, *, runne
     commands: list[tuple[str, ...]] = [("git", "clone", "--no-checkout", str(subject["repository"]), str(checkout)),
                                       ("git", "-C", str(checkout), "checkout", "--detach", str(subject["commit"]))]
     for command in commands:
-        _run(runner, command, failure_reason="ranex-bootstrap-failed")
-    actual_commit = _run(runner, ("git", "-C", str(checkout), "rev-parse", "HEAD"), failure_reason="ranex-bootstrap-failed").stdout.strip()
-    issue = _run(runner, ("gh", "issue", "view", str(subject["issue"]), "-R", "anthonykewl20/ranex", "--json", "number"), failure_reason="subject-issue-drift")
+        _run(runner, command)
+    actual_commit = _run(runner, ("git", "-C", str(checkout), "rev-parse", "HEAD")).stdout.strip()
+    issue = _run(runner, ("gh", "issue", "view", str(subject["issue"]), "-R", "anthonykewl20/ranex", "--json", "number"))
+    issue_command = ("gh", "issue", "view", str(subject["issue"]), "-R", "anthonykewl20/ranex", "--json", "number")
     try:
         actual_issue = json.loads(issue.stdout)
     except json.JSONDecodeError:
-        _blocked("subject-issue-drift")
+        raise RuntimeError(
+            f"controller command returned invalid JSON: argv={issue_command!r} "
+            f"stdout_tail={issue.stdout[-2000:]!r} stderr_tail={issue.stderr[-2000:]!r}"
+        ) from None
     if not isinstance(actual_issue, dict) or actual_issue.get("number") != subject["issue"]:
-        _blocked("subject-issue-drift")
+        _drift("subject-issue-drift")
     validate_checkout(subject, checkout, actual_commit, actual_issue["number"])
     manager = subject["package_manager"]
     assert isinstance(manager, dict)
     all_commands = [tuple(manager["command"]), *(tuple(command) for command in subject["process_commands"])]
     for command in all_commands:
-        _run(runner, command, cwd=checkout, failure_reason="process-failed")
+        _run_lifecycle(runner, command, cwd=checkout)
     return [*commands, *all_commands]
