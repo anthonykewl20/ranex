@@ -11,7 +11,7 @@ from ranex.observability import schema as trace_schema
 
 ROOT = Path(__file__).resolve().parents[2]
 ARTIFACT = ROOT / "governance/schemas/delegated-provider/ranex-delegated-provider-v1.json"
-EXPECTED_SHA256 = "f2afc4993012632fefe0b900aecd7566c05970e3094ca47d3fcc2bd18336508b"
+EXPECTED_SHA256 = "4b559a8406a15f3fc11b3aa22835774c833e6a36ff9adcd8be74ff5f9430bb6b"
 ERRORS = {
     "invalid_protocol", "unsupported_version", "unauthorized", "handshake_required",
     "session_mismatch", "replay", "expired", "model_not_allowed", "provider_not_allowed",
@@ -44,6 +44,7 @@ EXPECTED_VECTOR_IDS = {
     "response-too-large-post-reservation",
     "upstream-dns-post-reservation", "upstream-connect-post-reservation",
     "upstream-tls-post-reservation", "client-cancelled-post-reservation",
+    "sse-headers-then-immediate-eof-post-reservation", "client-cancel-during-upstream-failure",
     "ninth-distinct-request-limit-before-reservation",
 }
 EXPECTED_PROTOCOL_KEYS = {
@@ -51,7 +52,7 @@ EXPECTED_PROTOCOL_KEYS = {
     "distinctRequestIds", "fixture", "grant", "handshake", "handshakeAccounting",
     "handshakeReplayKey", "handshakeUse", "httpSse", "logging", "maxBootstrapBytes",
     "maxConcurrency", "maxRequestBytes", "maxRequests", "maxRequestsScope",
-    "maxResponseBytes", "name", "persistence", "policy", "preDownstreamHttpStatus", "preDownstreamNormalization", "preStreamHttpStatus",
+    "maxResponseBytes", "name", "persistence", "policy", "preDownstreamHttpStatus", "preDownstreamNormalization", "terminalPrecedence", "preStreamHttpStatus",
     "security",
     "httpAdmission",
     "redirects", "requestBytes", "requestId", "responseBytes", "retry", "schemaValidation",
@@ -128,6 +129,20 @@ def test_delegated_provider_protocol_freeze() -> None:
     assert protocol["logging"]["reservationLedger"]["sequence"] == [
         "reserved before any upstream I/O", "terminal after upstream attempt"
     ]
+    assert protocol["logging"]["reservationLedger"]["identity"] == (
+        "each row carries the secret-free correlation fields taskId, session, requestId (when applicable), provider, model, "
+        "and attemptCorrelationId = sha256 over canonical JSON {taskId, session, requestId} with sorted keys and compact separators; "
+        "no secret material"
+    )
+    assert protocol["logging"]["reservationLedger"]["stageEventLinkage"] == (
+        "both ledger rows and the single ADR-031 provider_attempt stage event are emitted within the same reserved attempt and "
+        "correlate through taskId, session, and requestId available in the emission context; no new trace-schema field is introduced"
+    )
+    assert protocol["logging"]["reservationLedger"]["crashRecovery"] == (
+        "at broker start, a reserved row without a terminal row is reconciled by appending a terminal row with outcome internal and "
+        "marker reconciled_after_restart before any new reservation is accepted; a reconciliation pass applies the same rule to "
+        "reserved rows older than timeoutSeconds + 60 seconds without a terminal row"
+    )
     assert "does not detect rollback or truncation" in protocol["logging"]["reservationLedger"]["residual"]
     assert protocol["security"]["scope"].startswith("accidental secret non-propagation")
     assert "not isolation against an adversarial same-UID harness" in protocol["security"]["scope"]
@@ -153,12 +168,15 @@ def test_delegated_provider_protocol_freeze() -> None:
         "providerSlot": "unauthenticated header/body admission is completed before authentication, validation, and the single provider-attempt slot reservation; partial unauthenticated clients cannot consume that slot",
         "implementation": "bounded parser and socket deadlines; do not rely on undocumented http.server knobs",
         "rationale": "16 KiB headers, 100 fields, and 8 KiB request lines stay below common stdlib line limits while bounding unauthenticated memory and header abuse; five seconds matches the handshake deadline",
-        "pendingRationale": "64 pending unauthenticated connections bound pre-auth resource use and prevent admission starvation",
+        "pendingRationale": "64 pending unauthenticated connections bound pre-auth resource use; a local process can still occupy the pending pool for up to the read deadline and deny the legitimate harness admission — a bounded local availability residual (the provider slot itself is never consumed)",
+        "availabilityResidual": "bounded local admission DoS remains possible; owner-accepted availability trade-off, recorded with the other known limits",
         "contentLengthRationale": "rejecting a declared body above maxRequestBytes at admission avoids allocating or reading an oversized unauthenticated request",
     }
 
     transport = protocol["transport"]
-    assert transport["rawKeyIngress"] == "kernel receives the raw provider key only through an inherited FD/pipe owned by the kernel process"
+    assert transport["rawKeyIngress"] == "kernel receives the raw provider key only through an inherited FD/pipe owned by the kernel process under non-adversarial broker dataflow (see protocol.security.sameUidResidual)"
+    assert transport["harnessStorage"] == "bounded in-memory only under non-adversarial broker dataflow (see protocol.security.sameUidResidual)"
+    assert transport["rawKeyProhibited"][-1] == "request bodies; under non-adversarial broker dataflow (see protocol.security.sameUidResidual)"
     assert "environment" not in transport["rawKeyIngress"]
     assert "environment" not in " ".join(transport["rawKeyProhibited"])
     assert "FD 3" in transport["fd3CloseAll"] and "distinct child pipe" in transport["fd3CloseAll"]
@@ -189,6 +207,10 @@ def test_delegated_provider_protocol_freeze() -> None:
         "internal": 500,
     }
     assert "exactly one non-overlapping named code" in protocol["preDownstreamNormalization"]
+    assert protocol["terminalPrecedence"] == (
+        "the terminal outcome is the first terminal condition the broker observes; if a downstream client close and an upstream failure "
+        "are observed in the same event-loop iteration, client_cancelled takes precedence"
+    )
 
     assert set(artifact["schemas"]["error"]["properties"]["error"]["enum"]) == ERRORS
     assert len(ERRORS) == 25
@@ -312,6 +334,12 @@ def test_delegated_provider_protocol_freeze() -> None:
         assert vectors_by_id[f"{outcome.replace('_', '-')}-post-reservation"]["expected"] == {
             "emissionCount": 1, "outcome": outcome, "reserved": True,
         }
+    assert vectors_by_id["sse-headers-then-immediate-eof-post-reservation"]["expected"] == {
+        "emissionCount": 1, "outcome": "upstream_protocol", "reserved": True,
+    }
+    assert vectors_by_id["client-cancel-during-upstream-failure"]["expected"] == {
+        "emissionCount": 1, "outcome": "client_cancelled", "reserved": True,
+    }
 
     request_limit = vectors_by_id["ninth-distinct-request-limit-before-reservation"]
     accepted = request_limit["state"]["acceptedRequestIds"]

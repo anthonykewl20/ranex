@@ -80,7 +80,8 @@
       "providerSlot": "unauthenticated header/body admission is completed before authentication, validation, and the single provider-attempt slot reservation; partial unauthenticated clients cannot consume that slot",
       "implementation": "bounded parser and socket deadlines; do not rely on undocumented http.server knobs",
       "rationale": "16 KiB headers, 100 fields, and 8 KiB request lines stay below common stdlib line limits while bounding unauthenticated memory and header abuse; five seconds matches the handshake deadline",
-      "pendingRationale": "64 pending unauthenticated connections bound pre-auth resource use and prevent admission starvation",
+      "pendingRationale": "64 pending unauthenticated connections bound pre-auth resource use; a local process can still occupy the pending pool for up to the read deadline and deny the legitimate harness admission \u2014 a bounded local availability residual (the provider slot itself is never consumed)",
+      "availabilityResidual": "bounded local admission DoS remains possible; owner-accepted availability trade-off, recorded with the other known limits",
       "contentLengthRationale": "rejecting a declared body above maxRequestBytes at admission avoids allocating or reading an oversized unauthenticated request"
     },
     "handshakeAccounting": "uncounted",
@@ -143,6 +144,9 @@
           "reserved before any upstream I/O",
           "terminal after upstream attempt"
         ],
+        "identity": "each row carries the secret-free correlation fields taskId, session, requestId (when applicable), provider, model, and attemptCorrelationId = sha256 over canonical JSON {taskId, session, requestId} with sorted keys and compact separators; no secret material",
+        "stageEventLinkage": "both ledger rows and the single ADR-031 provider_attempt stage event are emitted within the same reserved attempt and correlate through taskId, session, and requestId available in the emission context; no new trace-schema field is introduced",
+        "crashRecovery": "at broker start, a reserved row without a terminal row is reconciled by appending a terminal row with outcome internal and marker reconciled_after_restart before any new reservation is accepted; a reconciliation pass applies the same rule to reserved rows older than timeoutSeconds + 60 seconds without a terminal row",
         "fields": "secret-free row identity, outcome code on terminal row, and hash-chain link",
         "prohibited": [
           "prompts",
@@ -272,7 +276,7 @@
       "fd3CloseAll": "kernel reads and closes its ingress FD 3; after that it creates a distinct child pipe whose read end is mapped to harness FD 3 and whose bytes are capability bootstrap only; the descriptor number is reused across process boundaries, never the bytes",
       "fd3SelfAlias": "source read fd == 3 is repaired before posix_spawn by CLOEXEC duplication to fd >=4; no self-DUP2 close-order ambiguity",
       "harnessEntry": "reads bounded capability bootstrap from child FD 3 at earliest entrypoint, validates, closes FD 3 immediately after the bounded read and before command/session/model/children",
-      "harnessStorage": "bounded in-memory only",
+      "harnessStorage": "bounded in-memory only under non-adversarial broker dataflow (see protocol.security.sameUidResidual)",
       "httpStack": "Python stdlib http.client HTTPSConnection directly to openrouter.ai:443 with normal certificate and hostname verification; no custom HTTP or TLS replacement",
       "upstreamRequest": {
         "endpoint": "https://openrouter.ai/api/v1/chat/completions",
@@ -283,16 +287,16 @@
         "redirects": "refuse"
       },
       "legacyRefusal": "any harness absent/malformed/unsupported FD3 bootstrap, non-FD3 bootstrap, or handshake not authenticated within 5 seconds is terminated/refused as invalid_protocol or unsupported_version before upstream; no raw-key fallback or legacy CLI",
-      "rawKeyIngress": "kernel receives the raw provider key only through an inherited FD/pipe owned by the kernel process",
+      "rawKeyIngress": "kernel receives the raw provider key only through an inherited FD/pipe owned by the kernel process under non-adversarial broker dataflow (see protocol.security.sameUidResidual)",
       "rawKeyProhibited": [
         "harness process",
         "argv",
         "bootstrap",
         "files",
         "logs",
-        "request bodies"
+        "request bodies; under non-adversarial broker dataflow (see protocol.security.sameUidResidual)"
       ],
-      "rawKeyResidency": "kernel/broker memory only",
+      "rawKeyResidency": "kernel/broker memory only under non-adversarial broker dataflow (see protocol.security.sameUidResidual)",
       "redirects": "refuse",
       "spawn": "kernel reads and closes its inherited raw-key ingress FD; it then creates a distinct O_CLOEXEC child pipe, maps only the capability bootstrap read end to harness FD 3, closes the source/original and unrelated descriptors using the verified close-all strategy, then setsid",
       "sseValidator": "in-repository bounded frame validator implementing exactly the frozen WHATWG-compatible grammar; no custom TLS/HTTP replacement"
@@ -388,9 +392,10 @@
       }
     },
     "version": 1,
-    "preDownstreamNormalization": "DNS failure, connect failure, TLS failure, and upstream disconnect before the first byte each normalize to exactly one non-overlapping named code: upstream_dns, upstream_connect, upstream_tls, or upstream_http respectively; client_cancelled has no downstream status because downstream is already gone and its reservation is consumed"
+    "preDownstreamNormalization": "ordered states, each with exactly one non-overlapping named code: DNS failure \u2192 upstream_dns; TCP connect failure \u2192 upstream_connect; TLS failure \u2192 upstream_tls; upstream disconnect or transport error before COMPLETE valid response headers \u2192 upstream_http; after valid 200 text/event-stream response headers are received and the downstream 200 is committed, EOF before the SSE DONE sentinel or any other upstream protocol violation \u2192 upstream_protocol with post-200 close-downstream semantics (no synthetic status); client_cancelled has no downstream status because downstream is already gone and its reservation is consumed",
+    "terminalPrecedence": "the terminal outcome is the first terminal condition the broker observes; if a downstream client close and an upstream failure are observed in the same event-loop iteration, client_cancelled takes precedence"
   },
-  "protocolFingerprint": "5ecf5a42a8da6e17299e760baf5be8d6b9c0b3ea07a86ce3e4ad4d1cd712d0ad",
+  "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
   "schemas": {
     "handshakeRequest": {
       "additionalProperties": false,
@@ -772,7 +777,7 @@
           "ttlSeconds": 300
         },
         "model": "example/model",
-        "protocolFingerprint": "5ecf5a42a8da6e17299e760baf5be8d6b9c0b3ea07a86ce3e4ad4d1cd712d0ad",
+        "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
         "provider": "openrouter",
         "protocol": "ranex-delegated-provider",
         "taskId": "task-vector-01",
@@ -823,7 +828,7 @@
         "capability": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "model": "example/model",
         "protocol": "ranex-delegated-provider",
-        "protocolFingerprint": "5ecf5a42a8da6e17299e760baf5be8d6b9c0b3ea07a86ce3e4ad4d1cd712d0ad",
+        "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
         "provider": "openrouter",
         "tools": [
           "alpha",
@@ -834,7 +839,7 @@
       "response": {
         "expiresAt": "2030-01-01T00:05:00Z",
         "protocol": "ranex-delegated-provider",
-        "protocolFingerprint": "5ecf5a42a8da6e17299e760baf5be8d6b9c0b3ea07a86ce3e4ad4d1cd712d0ad",
+        "protocolFingerprint": "bb33877620f5be52d2eb572247eaa3a8875d7deacafb77cdba7e54b599ec5c4a",
         "remainingRequests": 8,
         "session": "session-vector-01",
         "version": 1
@@ -1035,6 +1040,22 @@
     },
     {
       "id": "client-cancelled-post-reservation",
+      "expected": {
+        "emissionCount": 1,
+        "outcome": "client_cancelled",
+        "reserved": true
+      }
+    },
+    {
+      "id": "sse-headers-then-immediate-eof-post-reservation",
+      "expected": {
+        "emissionCount": 1,
+        "outcome": "upstream_protocol",
+        "reserved": true
+      }
+    },
+    {
+      "id": "client-cancel-during-upstream-failure",
       "expected": {
         "emissionCount": 1,
         "outcome": "client_cancelled",

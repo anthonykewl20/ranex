@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-23 (review remediation applied (consensus P0/P1 + review P2/P3); pending re-review)
+**Updated:** 2026-08-23 (round-2 review remediation: ledger correlation/crash contract, terminal precedence, qualified residency, availability residual; pending re-review)
 **Active slice:** none
 ## Where we stopped
 ADR-033 remains proposed pending re-review; it is not accepted, merged, or
