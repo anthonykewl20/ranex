@@ -28,6 +28,7 @@ _SKIP_DIRS = {
     ".pytest_cache",
     "__pycache__",
     "node_modules",
+    ".worktrees",
     "legacy",
 }
 
