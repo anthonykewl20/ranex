@@ -1,8 +1,10 @@
 """Frozen RED contract for SLICE-036 approved-batch qualification.
 
-The 5586d68/34fa pair below is the frozen E2E subject fixture.  It is not a
-production restriction: the implementation must accept a separately approved
-future exact base/subject pair and must never substitute a mutable ref name.
+The successor pair below is the frozen E2E subject fixture.  The real E2E
+reconstructs it deterministically from the public parent, committed owner key,
+and every child input.  It is not a production restriction: implementation
+must accept a separately approved future pair and never substitute a mutable
+ref name.
 """
 
 from __future__ import annotations
@@ -16,11 +18,14 @@ from pathlib import Path
 import pytest
 
 from ranex.cli.fanout import cmd_task_fanout
-from ranex.cli.main import build_parser, subject_digest_for
+from ranex.cli.main import build_parser
 from ranex.foundation.signing import SIGNED_FIELDS
 from ranex.foundation.specification_abc import assert_abc_chain, payload_digest
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
-from ranex.governed_execution.domain.specification_approval import PolicyCapabilities
+from ranex.governed_execution.domain.specification_approval import (
+    PolicyCapabilities,
+    intersect_capabilities,
+)
 
 ROOT = Path(__file__).parents[2]
 FIXTURES = ROOT / "tests/contract/fixtures/specification"
@@ -53,8 +58,10 @@ BASELINE = json.loads((FIXTURES / "approved-batch-baseline-v1.json").read_text()
 NEGATIVE_CONTROLS = json.loads(
     (FIXTURES / "approved-batch-negative-controls-v1.json").read_text()
 )
-BASE_COMMIT = "5586d68b0936f554759022caabe847087f1d03ef"
-SUBJECT_DIGEST = "sha256:34fa645d616fc0b0383d424573d60a447ddd829e8891b7f992b809be9a783953"
+FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
+BASE_COMMIT = "2576c144f9f1e705dffc32d71f2a02563c94e4e0"
+SUBJECT_DIGEST = "sha256:8da54cc69dc14c368720abbeb98d2c6b52de166de5117f4d809b8a4c521507ad"
+OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 
 
 def envelope() -> dict[str, object]:
@@ -88,9 +95,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-4"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 2
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v4"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-10"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 8
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v10"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -129,7 +136,7 @@ def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fix
             "digest": VECTORS["digests"][vector_name],
         }
 
-    assert len(FLOW["steps"]) == 9 and len(FLOW["flows"]) == 2
+    assert len(FLOW["steps"]) == 10 and len(FLOW["flows"]) == 2
     assert EXPECTED_VALUES["canonical_results"] == list(DESCRIPTOR["children"])
     assert BASELINE["journal"] == {"head": None, "rows": 0}
     assert BASELINE["target_ref"]["oid"] == BASE_COMMIT
@@ -195,9 +202,33 @@ def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fix
 def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contract() -> None:
     assert DESCRIPTOR["base_commit"] == BASE_COMMIT
     assert DESCRIPTOR["subject_digest"] == SUBJECT_DIGEST
-    assert subject_digest_for(ROOT, BASE_COMMIT) == SUBJECT_DIGEST
     assert VECTORS["triple"]["c_payload"]["base_digest"] == SUBJECT_DIGEST
     assert VECTORS["triple"]["c_payload"]["subject_digest"] == SUBJECT_DIGEST
+    successor = EXPECTED_VALUES["fixture_successor"]
+    assert successor == {
+        "author_email": "fixture@ranex.invalid",
+        "author_name": "Ranex Fixture",
+        "commit": BASE_COMMIT,
+        "commit_date": "2000-01-01T00:00:00 +0000",
+        "committed_paths": [
+            "governance/producers.yaml",
+            "governance/qualification/inputs/SLICE-036-child-A.json",
+            "governance/qualification/inputs/SLICE-036-child-B.json",
+            "governance/qualification/inputs/SLICE-036-child-C.json",
+            "governance/qualification/inputs/SLICE-036-child-D.json",
+        ],
+        "message": "test(SLICE-036): materialize governed qualification fixture",
+        "parent": FIXTURE_PARENT_COMMIT,
+        "subject_digest": SUBJECT_DIGEST,
+    }
+    assert EXPECTED_VALUES["committed_keyring_observers"] == {
+        "admission": "existing load_keyring_text plus admit",
+        "descriptor_role": "cross-check-only-never-trust-root",
+        "path": "governance/producers.yaml",
+        "producer_id": "owner",
+        "public_key": OWNER_PUBLIC_KEY,
+        "snapshots": ["base_commit", "candidate_commit", "target_tip"],
+    }
     invocation = VECTORS["triple"]["b"]["artifacts"]["invocation"]["argv"]
     assert invocation[invocation.index("--target") + 1] == "."
     assert invocation[invocation.index("--journal") + 1] == (
@@ -224,10 +255,10 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "pythonpath": "absolute-development-worktree-src",
         "source_in_governed_repository": False,
     }
-    assert (
-        PolicyCapabilities.from_record(DESCRIPTOR["policy"]).digest
-        == VECTORS["triple"]["c_payload"]["profile_digests"]["policy"]
-    )
+    parent_policy = PolicyCapabilities.from_record(DESCRIPTOR["policy"])
+    assert parent_policy.digest == VECTORS["triple"]["c_payload"][
+        "profile_digests"
+    ]["policy"]
 
     required = set(SCHEMA["$defs"]["childRequest"]["required"])
     assert all(set(row) == required for row in ROWS)
@@ -237,6 +268,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         ["SLICE-036-child-A", "SLICE-036-child-B"],
     ]
     sibling_pairs: set[tuple[str, str]] = set()
+    exact_argv: list[str] | None = None
     for row in ROWS:
         assert row["base_commit"] == BASE_COMMIT
         assert row["worktree"] == "disposable" and row["publication"] is False
@@ -249,6 +281,31 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         ]
         assert "--confinement" in row["invocation"]["argv"]
         assert "strict-local" in row["invocation"]["argv"]
+        if exact_argv is None:
+            exact_argv = row["invocation"]["argv"]
+        assert row["invocation"]["argv"] == exact_argv
+        assert row["capability_request"]["argv"] == exact_argv[-2:]
+        assert row["capability_request"]["cwd"] == "."
+        assert row["capability_request"]["environment"] == {
+            "allow": ["LC_ALL", "TZ"]
+        }
+        child_policy = PolicyCapabilities.from_record(row["capability_request"])
+        intersection = intersect_capabilities(
+            parent_policy,
+            child_policy,
+            child=True,
+        )
+        assert intersection.argv == child_policy.argv
+        assert intersection.cwd == child_policy.cwd == "."
+        assert intersection.roots == child_policy.roots
+        assert intersection.environment_allow == ("LC_ALL", "TZ")
+        assert "RANEX_BATCH_TASK_ID" not in json.dumps(row)
+        expected_input = (
+            f"governance/qualification/inputs/{row['task_id']}.json"
+        )
+        assert row["invocation"]["runtime_input_path"] == expected_input
+        assert expected_input in row["scope"]["roots"]
+        assert expected_input in row["capability_request"]["roots"]
         assert row["checks"] == [
             {
                 "check_id": "slice036-network-process-and-exit",
@@ -271,6 +328,13 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         assert runtime["mode"] == "normal"
         assert runtime["task_id"] == row["task_id"]
         assert runtime["loopback_ports"] == {"start": 46120, "end": 46135}
+        assert set(runtime) == {
+            "delays_ms",
+            "flow_ids",
+            "loopback_ports",
+            "mode",
+            "task_id",
+        }
     assert len(sibling_pairs) == sum(
         len(row["scope"]["roots"]) * len(row["scope"]["actions"])
         for row in ROWS
@@ -279,6 +343,90 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     assert "aaaaaaaaaaaaaaaa" not in serialized
     assert "bbbbbbbbbbbbbbbb" not in serialized
     assert "cccccccccccccccc" not in serialized
+    assert SCHEMA["$defs"]["childRequest"]["properties"]["attempt"] == {
+        "maximum": 6,
+        "minimum": 0,
+        "type": "integer",
+    }
+    runtime_schema = SCHEMA["$defs"]["runtimeInput"]
+    assert set(runtime_schema["required"]) == {
+        "delays_ms",
+        "flow_ids",
+        "loopback_ports",
+        "mode",
+        "task_id",
+    }
+    assert runtime_schema["properties"]["flow_ids"]["maxItems"] == 2
+    assert SCHEMA["$defs"]["capability"]["properties"]["environment"][
+        "properties"
+    ]["allow"] == {
+        "maxItems": 2,
+        "minItems": 2,
+        "prefixItems": [{"const": "LC_ALL"}, {"const": "TZ"}],
+        "type": "array",
+        "uniqueItems": True,
+    }
+    assert SCHEMA["$defs"]["childRequest"]["properties"]["invocation"][
+        "properties"
+    ]["runtime_input_path"]["pattern"] == (
+        r"^governance/qualification/inputs/[A-Za-z0-9-]+\.json$"
+    )
+    assert EXPECTED_VALUES["child_input_geometry"] == {
+        "attempt_path": "<root>/children/<task-id>/attempt-<n>",
+        "embedded_task_id_must_match": True,
+        "input_path": "governance/qualification/inputs/<task-id>.json",
+        "task_id_source": "controller-owned-worktree-path",
+        "tracked_at_base": True,
+        "worker_environment": ["LC_ALL", "TZ"],
+        "worktree_clean_before_run": True,
+    }
+    provisioning = EXPECTED_VALUES["child_provisioning"]
+    assert provisioning["controller"] == [
+        "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "ranex.cli.host_confinement",
+    ]
+    assert [command[0] for command in provisioning["commands"]] == [
+        "launcher-build",
+        "launcher-install",
+        "qualify",
+    ]
+    assert provisioning["before"] == "ranex run --confinement strict-local"
+    assert provisioning["manual_local_copy"] is False
+    assert provisioning["application_events_trusted"] is False
+    assert provisioning["observer"] == "strace-execve-chdir-v1"
+    assert provisioning["observer_tool"] == {
+        "path": "/usr/bin/strace",
+        "sha256": (
+            "sha256:28f957c227012de0b18d1bd7fff2d396"
+            "cb693ea60ed8013be68de071e84b5001"
+        ),
+        "version": "strace -- version 6.8",
+    }
+    assert provisioning["provenance_path"] == "outside-governed-repository"
+    assert provisioning["release_invariant"] == (
+        "each clean child independently runs exact public launcher-build "
+        "launcher-install and qualify commands in its own cwd before run and "
+        "its final launcher report and qualified state are independently verified"
+    )
+    assert provisioning["transient_copy_absence_required"] is False
+    assert set(provisioning["required_observations"]) == {
+        "child_cwd_geometry",
+        "clean_initial_qualification_state",
+        "command_order_before_run",
+        "exact_exec_argv",
+        "exact_public_commands",
+        "final_child_launcher_digest",
+        "final_child_report_digest",
+        "final_child_qualified_state",
+        "observer_tool_digest",
+        "observer_tool_version",
+        "run_count",
+        "step_count",
+    }
 
 
 def test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows() -> None:
@@ -304,11 +452,26 @@ def test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows() -
     network = read_rows("network_rows")
     survivor = read_rows("survivor_rows")
     mismatch = read_rows("oracle_mismatch_rows")
+    input_mismatch = read_rows("input_mismatch_rows")
     assert [row["task_id"] for row in unapproved][-1] == "SLICE-036-child-D"
-    assert overlap[0]["scope"]["roots"] == overlap[1]["scope"]["roots"]
+    assert set(overlap[0]["scope"]["roots"]) & set(
+        overlap[1]["scope"]["roots"]
+    ) == {"src/ranex/foundation/canonical.py"}
+    assert overlap[0]["invocation"]["runtime_input_path"] != overlap[1][
+        "invocation"
+    ]["runtime_input_path"]
     assert network[0]["runtime_input"]["mode"] == "network-control"
     assert survivor[0]["runtime_input"]["mode"] == "survivor"
     assert mismatch[2]["runtime_input"]["mode"] == "oracle-mismatch"
+    assert input_mismatch[0]["task_id"] == "SLICE-036-child-A"
+    assert input_mismatch[0]["attempt"] == 6
+    assert input_mismatch[0]["invocation"]["runtime_input_path"] == (
+        "governance/qualification/inputs/SLICE-036-child-B.json"
+    )
+    for row in input_mismatch[1:]:
+        assert row["invocation"]["runtime_input_path"] == (
+            f"governance/qualification/inputs/{row['task_id']}.json"
+        )
     exact_argv = "\n".join(network[0]["invocation"]["argv"])
     assert "socket.create_connection" in exact_argv
     assert "ranex-slice036-survivor-control-v1" in "\n".join(

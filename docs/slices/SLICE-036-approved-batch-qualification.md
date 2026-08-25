@@ -18,19 +18,51 @@ descriptor carries a separate path/digest reference to each populated oracle;
 it is not reused as a placeholder for any class. C therefore binds those
 bytes, maximum pool two, exact base/subject identity, policy, and roles.
 
-The frozen `5586d68b0936f554759022caabe847087f1d03ef` commit and
-`sha256:34fa645d616fc0b0383d424573d60a447ddd829e8891b7f992b809be9a783953`
-subject are the deterministic E2E fixture only. Production qualification must
-accept any separately approved exact 40-hex base and its existing ADR-012
+The frozen `2576c144f9f1e705dffc32d71f2a02563c94e4e0` commit and
+`sha256:8da54cc69dc14c368720abbeb98d2c6b52de166de5117f4d809b8a4c521507ad`
+subject are the deterministic E2E fixture only. The E2E reconstructs that
+successor from public parent `5ded60d9a9c8213828dce7acc0e77acad0c25731`
+using fixed author/committer identity, time, and message. The successor adds
+the fixture owner's real public key to the existing producer keyring and
+canonical tracked inputs for every B-bound A/B/C/D row; it changes no
+production source. Production qualification must accept any separately
+approved exact 40-hex base and its existing ADR-012
 `sha256(canonical_json({"tree": git rev-parse <base>^{tree}}))` identity; it
 must never replace either with a mutable ref or caller assertion.
 
 Children execute only through the existing `ranex run --confinement
-strict-local` boundary in disposable worktrees. Signed rows bind claim/check
-names, exact child argv/runtime-control inputs, and relative evidence/outcome
-paths, not unknowable pre-execution output digests. The B-bound public-CLI
-negative inputs plant an unapproved D row, sibling scope overlap, a real
-loopback attempt, a named survivor process, and an oracle-result mismatch.
+strict-local` boundary in disposable worktrees. Before every such run, the
+controller must invoke the existing public `ranex.cli.host_confinement`
+`launcher-build`, `launcher-install`, and `qualify` commands inside that child
+checkout and verify the launcher, manifest, profile, report schema, host-state
+binding, and qualification result. Each child starts with no built launcher,
+installed launcher, or usable qualification report. A positive independent
+calibration constructs all six clean child geometries, runs the exact three
+public commands in each child's cwd, and verifies that child's installed
+launcher digest, canonical report digest, host binding, and `qualified=true`
+state. An external `strace` command observer records only `execve`, process
+ancestry, and cwd changes; it requires the same exact command sequence in every
+actual child before that child's `ranex run`. Its canonical provenance artifact
+is outside the governed repository, and the B-protected manifest pins literal
+`/usr/bin/strace`, its version, and installed-file SHA-256.
+
+This release does not claim to prove the absence of every transient filesystem
+copy or model every Linux write syscall. Copying that is subsequently replaced
+by the independently executed public build/install/qualify sequence and passes
+the final per-child hash and qualified-state checks is not a release blocker.
+Application-emitted provisioning booleans remain untrusted. Signed rows bind
+one byte-identical argv/cwd
+literal and preserve the worker environment exactly as `{LC_ALL,TZ}`; they do
+not add a task-id environment channel. The command instead derives closed
+`task_id` and `attempt` values from controller-owned geometry
+`<root>/children/<task-id>/attempt-<n>`, verifies the signed row/path scheme,
+then reads the base-committed
+`governance/qualification/inputs/<task-id>.json`. The embedded task ID must
+match, the input must be tracked at the signed base, and the child worktree
+must be clean before provisioning and execution. The B-bound public-CLI
+negative inputs plant a path/task-id mismatch, an unapproved D row, sibling
+scope overlap, a real loopback attempt, a named survivor process, and an
+oracle-result mismatch.
 Both A/B completion orders are observed, canonical results stay
 A/B/C-ordered, and C is released only after the join. One clean disposable
 governed repository and its `refs/heads/main` identity span qualification,
@@ -56,7 +88,13 @@ canonical `batch-qualification-v1` outcome. Its evidence-v4 attestation signs
 the canonical payload digest and therefore binds A/B/C, descriptor, child
 requests/results, exact base commit/digest, producer, and the exact
 `batch-qualified` journal sequence/predecessor/head. The payload is permanently
-`publication_allowed:false`. Batch-aware judge and merge accept the additive
+`publication_allowed:false`. Qualification admission loads the owner's key
+from the signed base commit using the existing keyring loader and `admit`;
+the descriptor role is only an equality cross-check, never a trust root.
+Before publication refusal the E2E independently reads immutable keyring bytes
+from the base commit, actual dispatched candidate commit, and current target
+tip, requires byte equality, and admits the actual qualification attestation
+through every snapshot. Batch-aware judge and merge accept the additive
 `--batch-qualification <actual-outcome>` flag, verify that signature and every
 digest through the existing keyring/admission path, match the exact journal
 row, then emit `E-BATCH-PUBLICATION-REFUSED` before legacy judge, merge-intent,
@@ -83,6 +121,7 @@ grammar and behavior.
 - `tests/contract/fixtures/specification/approved-batch-network-escape-v1.jsonl`
 - `tests/contract/fixtures/specification/approved-batch-child-survivor-v1.jsonl`
 - `tests/contract/fixtures/specification/approved-batch-oracle-mismatch-v1.jsonl`
+- `tests/contract/fixtures/specification/approved-batch-input-mismatch-v1.jsonl`
 - `tests/integration/test_approved_batch_qualification_contract.py`
 - `tests/e2e/test_specification_batch_qualification.py`
 - `tests/e2e/expected/slice036-approved-batch-qualification.out`
@@ -124,18 +163,30 @@ grammar and behavior.
    signed artifact, dispatch, judge, merge, and refusal. The journey
    independently queries that ref, SQLite row/head, `git worktree list`,
    filesystem residue, SHA-256 of child evidence, a `/proc` survivor scan, and
-   a calibrated real loopback listener. Five B-bound fixtures drive public CLI
-   refusal arms for unapproved row, scope overlap, network attempt, survivor,
-   and oracle mismatch. It also plants golden, journal, ref, worktree, pool,
+   a calibrated real loopback listener. It reconstructs the deterministic
+   successor commit, verifies every committed child input is tracked and the
+   checkout clean and canonically provisions strict-local in the governed
+   checkout. A positive calibration begins every governed child without a
+   launcher or usable qualification report, independently runs the three exact
+   public host-confinement commands in that child's cwd, and verifies its final
+   launcher/report digests and qualified host binding. A manifest-pinned command
+   observer—not application output—proves the same exact sequence and child cwd
+   before every actual child run and records one canonical provenance artifact.
+   The release deliberately makes no exhaustive transient-copy or Linux-syscall
+   absence claim; the canonical sequence must replace any prior bytes. Six
+   B-bound fixtures drive public CLI refusal arms for input/path mismatch,
+   unapproved row, scope overlap, network attempt, survivor, and oracle
+   mismatch. It also plants golden, journal, ref, worktree, pool,
    and protected-byte controls. It independently verifies the actual canonical
-   qualification artifact using the existing keyring loader/admission verifier,
-   passes that artifact to real judge/merge, and compares normalized goldens.
+   qualification artifact using committed base, candidate, and tip keyring
+   bytes through the existing keyring loader/admission verifier, passes that
+   artifact to real judge/merge, and compares normalized goldens.
 
 ## Stable refusal order
 
 `E-BATCH-SCHEMA` → `E-BATCH-PROTECTED-ARTIFACT` →
 `E-BATCH-STALE-BASE` → `E-BATCH-UNAPPROVED-ROW` →
-`E-BATCH-POOL-EXCEEDS` → `E-BATCH-SCOPE-OVERLAP` →
+`E-BATCH-INPUT-MISMATCH` → `E-BATCH-POOL-EXCEEDS` → `E-BATCH-SCOPE-OVERLAP` →
 `E-BATCH-NETWORK-ESCAPE` → `E-BATCH-CHILD-SURVIVOR` →
 `E-BATCH-WORKTREE-RESIDUE` → `E-BATCH-ORACLE-MISMATCH` →
 `E-BATCH-PUBLICATION-REFUSED`. All input, authority, liveness, negative-oracle,

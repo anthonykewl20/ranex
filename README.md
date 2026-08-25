@@ -435,8 +435,21 @@ strict-local worktrees. Distinct signed oracle/control fixtures drive real CLI
 refusal proofs; one evidence-v4-signed, journal-linked qualification artifact
 is structurally non-publishable and batch-aware judge/merge refuse it before
 legacy writes. One clean governed repository/ref spans qualification, dispatch,
-judge, and merge refusal; staged development code remains outside it and is
-loaded through an absolute, independently manifest-hashed `PYTHONPATH`. Legacy
+judge, and merge refusal. Its deterministic successor commits the owner's real
+public key and every signed child input; task identity comes only from the
+controller-owned child-worktree path, and each child is canonically built,
+installed, and host-qualified in place before strict-local execution. An
+external syscall/process observer binds each exact command/cwd/order and
+its manifest-pinned binary identity is independently verified. A separate
+positive calibration starts every child without a launcher or usable report,
+runs the exact public build/install/qualify sequence in that child's cwd, and
+verifies final launcher/report hashes and qualified host state. This release
+does not claim exhaustive transient-copy or Linux-write-syscall absence;
+replacement followed by independent qualification is sufficient.
+Application-emitted provisioning booleans are not trusted. The
+actual qualification is admitted through equal immutable base/candidate/tip
+keyring bytes. Staged development code remains outside the governed checkout
+and is loaded through an absolute, independently manifest-hashed `PYTHONPATH`. Legacy
 `task fanout` and unflagged publication remain unchanged; it does not reopen the
 withdrawn harness, broker, task-family, or production-exit work.
 

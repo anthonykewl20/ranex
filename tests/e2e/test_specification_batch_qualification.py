@@ -5,7 +5,9 @@ crosses ``python -m ranex.cli.main task batch qualify`` in a subprocess, and
 all safety claims are re-read through Git, stdlib sqlite3, the filesystem,
 hashlib, os.kill, or a real host-loopback listener.
 
-The fixed 5586d68/34fa pair is this E2E fixture's exact approved subject.  It
+The fixed successor commit/subject pair is this E2E fixture's exact approved
+subject.  The successor is reconstructed from the public parent with fixed
+metadata, the owner's committed public key, and every signed child input.  It
 does not restrict a production command to the Ranex repository or this commit.
 """
 
@@ -15,6 +17,7 @@ import base64
 import hashlib
 import json
 import os
+import re
 import shlex
 import shutil
 import socket
@@ -47,8 +50,66 @@ VECTORS = json.loads(
 DESCRIPTOR = json.loads(
     (FIXTURES / "approved-batch-v1.json").read_text(encoding="utf-8")
 )
-BASE_COMMIT = "5586d68b0936f554759022caabe847087f1d03ef"
-SUBJECT_DIGEST = "sha256:34fa645d616fc0b0383d424573d60a447ddd829e8891b7f992b809be9a783953"
+EXPECTED_VALUES = json.loads(
+    (FIXTURES / "approved-batch-expected-values-v1.json").read_text(encoding="utf-8")
+)
+FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
+BASE_COMMIT = "2576c144f9f1e705dffc32d71f2a02563c94e4e0"
+SUBJECT_DIGEST = "sha256:8da54cc69dc14c368720abbeb98d2c6b52de166de5117f4d809b8a4c521507ad"
+OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
+FIXTURE_AUTHOR_NAME = "Ranex Fixture"
+FIXTURE_AUTHOR_EMAIL = "fixture@ranex.invalid"
+FIXTURE_COMMIT_DATE = "2000-01-01T00:00:00 +0000"
+FIXTURE_COMMIT_MESSAGE = "test(SLICE-036): materialize governed qualification fixture"
+ROW_FIXTURES = (
+    "approved-batch-child-requests-v1.jsonl",
+    "approved-batch-network-escape-v1.jsonl",
+    "approved-batch-child-survivor-v1.jsonl",
+    "approved-batch-oracle-mismatch-v1.jsonl",
+    "approved-batch-scope-overlap-v1.jsonl",
+    "approved-batch-unapproved-row-v1.jsonl",
+    "approved-batch-input-mismatch-v1.jsonl",
+)
+LAUNCHER_MANIFEST = "governance/confinement/native-launcher-build-v1.json"
+LAUNCHER_SOURCE = "native/ranex-worker-launcher/launcher.c"
+LAUNCHER_BUILD = ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
+INSTALLED_LAUNCHER = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
+HOST_PROFILE = "governance/confinement/strict-local-host-v1.json"
+QUALIFICATION_REPORT = ".local/ranex/qualification/strict-local-v1.json"
+HOST_PROVISIONING_COMMANDS = (
+    (
+        "launcher-build",
+        "--manifest",
+        LAUNCHER_MANIFEST,
+        "--source",
+        LAUNCHER_SOURCE,
+        "--output",
+        LAUNCHER_BUILD,
+    ),
+    (
+        "launcher-install",
+        "--manifest",
+        LAUNCHER_MANIFEST,
+        "--artifact",
+        LAUNCHER_BUILD,
+        "--destination",
+        INSTALLED_LAUNCHER,
+    ),
+    (
+        "qualify",
+        "--profile",
+        HOST_PROFILE,
+        "--artifact",
+        INSTALLED_LAUNCHER,
+        "--manifest",
+        LAUNCHER_MANIFEST,
+        "--report",
+        QUALIFICATION_REPORT,
+    ),
+)
+OBSERVER_TRACE_SYSCALLS = (
+    "trace=execve,clone,clone3,vfork,fork,chdir,fchdir"
+)
 PORTS = range(46120, 46136)
 SURVIVOR_TOKEN = b"ranex-slice036-survivor-control-v1"
 
@@ -58,6 +119,22 @@ class DevelopmentSource:
     manifest_digest: str
     module_path: Path
     pythonpath: Path
+
+
+@dataclass(frozen=True)
+class GovernedProvisioning:
+    artifact_digest: str
+    build_manifest_digest: str
+    host_state_digest: str
+    profile_digest: str
+    report_digest: str
+    schema: str
+
+
+@dataclass(frozen=True)
+class TracedProcess:
+    completed: subprocess.CompletedProcess[str]
+    trace_path: Path
 
 
 def run(
@@ -82,8 +159,44 @@ def git(repository: Path, *argv: str) -> str:
     return completed.stdout.strip()
 
 
+def git_blob(repository: Path, commit: str, relative: str) -> bytes:
+    completed = subprocess.run(
+        ["git", "-C", str(repository), "show", f"{commit}:{relative}"],
+        capture_output=True,
+        check=False,
+        timeout=120,
+    )
+    assert completed.returncode == 0, completed.stderr.decode("utf-8", errors="replace")
+    return completed.stdout
+
+
 def file_digest(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def pinned_strace() -> Path:
+    """Admit the literal observer only through the B-protected tool manifest."""
+
+    expected_values_path = VECTORS["paths"]["expected_values"]
+    protected = {
+        row["path"]: row["digest"]
+        for row in VECTORS["triple"]["b"]["artifacts"]["protected"]
+    }
+    assert protected[expected_values_path] == file_digest(ROOT / expected_values_path)
+    manifest = EXPECTED_VALUES["child_provisioning"]["observer_tool"]
+    assert manifest == {
+        "path": "/usr/bin/strace",
+        "sha256": "sha256:28f957c227012de0b18d1bd7fff2d396cb693ea60ed8013be68de071e84b5001",
+        "version": "strace -- version 6.8",
+    }
+    observer = Path(manifest["path"])
+    assert observer == Path("/usr/bin/strace")
+    assert observer.is_file() and not observer.is_symlink()
+    assert file_digest(observer) == manifest["sha256"]
+    version = run(str(observer), "--version", env={"LC_ALL": "C", "TZ": "UTC"})
+    assert version.returncode == 0, version.stderr
+    assert version.stdout.splitlines()[0] == manifest["version"]
+    return observer
 
 
 def journal_snapshot(path: Path) -> tuple[int, str | None]:
@@ -233,16 +346,120 @@ def loopback_sentinel() -> LoopbackSentinel:
     sentinel.close()
 
 
+def fixture_input_records() -> dict[str, dict[str, object]]:
+    """Derive the exact committed child inputs from every B-bound signed row."""
+
+    records: dict[str, dict[str, object]] = {}
+    for name in ROW_FIXTURES:
+        for line in (FIXTURES / name).read_text(encoding="utf-8").splitlines():
+            row = json.loads(line)
+            task_id = row["task_id"]
+            expected_path = f"governance/qualification/inputs/{task_id}.json"
+            actual_path = row["invocation"]["runtime_input_path"]
+            if actual_path != expected_path:
+                assert name == "approved-batch-input-mismatch-v1.jsonl"
+                continue
+            record = records.setdefault(
+                actual_path,
+                {
+                    "attempts": {},
+                    "loopback_ports": list(PORTS),
+                    "task_id": task_id,
+                    "version": "slice036-child-input-v1",
+                },
+            )
+            assert record["task_id"] == task_id
+            attempt = str(row["attempt"])
+            current = {
+                "delays_ms": row["runtime_input"]["delays_ms"],
+                "mode": row["runtime_input"]["mode"],
+            }
+            attempts = record["attempts"]
+            assert isinstance(attempts, dict)
+            existing = attempts.get(attempt)
+            assert existing is None or existing == current
+            attempts[attempt] = current
+    assert set(records) == {
+        f"governance/qualification/inputs/SLICE-036-child-{name}.json"
+        for name in "ABCD"
+    }
+    return records
+
+
 def materialize_governed_checkout(path: Path) -> Path:
-    """Build the one unmodified repository qualified and publication-refused."""
+    """Construct the one deterministic governed fixture repository."""
 
     completed = run("git", "clone", "--quiet", str(ROOT), str(path))
     assert completed.returncode == 0, completed.stderr
-    git(path, "checkout", "--quiet", "-B", "main", BASE_COMMIT)
+    git(path, "checkout", "--quiet", "-B", "main", FIXTURE_PARENT_COMMIT)
+    keyring_path = path / "governance/producers.yaml"
+    keyring_text = keyring_path.read_text(encoding="utf-8")
+    assert "  owner:" not in keyring_text
+    keyring_path.write_text(
+        keyring_text.replace(
+            "producers:\n",
+            f"producers:\n  owner: {OWNER_PUBLIC_KEY}\n",
+            1,
+        ),
+        encoding="utf-8",
+    )
+    input_records = fixture_input_records()
+    for relative, record in sorted(input_records.items()):
+        destination = path / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        destination.write_bytes(canonical_json_bytes(record))
+    git(path, "add", "governance/producers.yaml", "governance/qualification/inputs")
+    commit_environment = dict(os.environ)
+    commit_environment.update(
+        {
+            "GIT_AUTHOR_NAME": FIXTURE_AUTHOR_NAME,
+            "GIT_AUTHOR_EMAIL": FIXTURE_AUTHOR_EMAIL,
+            "GIT_AUTHOR_DATE": FIXTURE_COMMIT_DATE,
+            "GIT_COMMITTER_NAME": FIXTURE_AUTHOR_NAME,
+            "GIT_COMMITTER_EMAIL": FIXTURE_AUTHOR_EMAIL,
+            "GIT_COMMITTER_DATE": FIXTURE_COMMIT_DATE,
+        }
+    )
+    committed = run(
+        "git",
+        "-C",
+        str(path),
+        "-c",
+        "commit.gpgSign=false",
+        "commit",
+        "--quiet",
+        "-m",
+        FIXTURE_COMMIT_MESSAGE,
+        env=commit_environment,
+    )
+    assert committed.returncode == 0, committed.stderr
     assert git(path, "rev-parse", "HEAD") == BASE_COMMIT
     assert git(path, "rev-parse", "refs/heads/main") == BASE_COMMIT
+    assert git(path, "rev-parse", f"{BASE_COMMIT}^") == FIXTURE_PARENT_COMMIT
     tree = git(path, "rev-parse", f"{BASE_COMMIT}^{{tree}}")
     assert "sha256:" + canonical_sha256({"tree": tree}) == SUBJECT_DIGEST
+    assert git(path, "show", "-s", "--format=%an", BASE_COMMIT) == FIXTURE_AUTHOR_NAME
+    assert git(path, "show", "-s", "--format=%ae", BASE_COMMIT) == FIXTURE_AUTHOR_EMAIL
+    assert git(path, "show", "-s", "--format=%aI", BASE_COMMIT) == (
+        "2000-01-01T00:00:00+00:00"
+    )
+    assert git(path, "show", "-s", "--format=%s", BASE_COMMIT) == (
+        FIXTURE_COMMIT_MESSAGE
+    )
+    changed = set(
+        git(path, "diff-tree", "--no-commit-id", "--name-only", "-r", BASE_COMMIT)
+        .splitlines()
+    )
+    assert changed == {"governance/producers.yaml", *input_records}
+    committed_keyring = git_blob(path, BASE_COMMIT, "governance/producers.yaml")
+    keyring = load_keyring_text(committed_keyring.decode("utf-8"), BASE_COMMIT)
+    assert keyring["owner"] == OWNER_PUBLIC_KEY
+    assert "anthony" in keyring
+    role = next(role for role in DESCRIPTOR["roles"] if role["principal"] == "owner")
+    assert role["key"] == keyring["owner"]
+    for relative, record in sorted(input_records.items()):
+        assert git(path, "ls-files", "--error-unmatch", relative) == relative
+        assert git_blob(path, BASE_COMMIT, relative) == canonical_json_bytes(record)
     assert git(path, "status", "--porcelain") == ""
     assert path.resolve() != ROOT.resolve()
     return path
@@ -328,6 +545,81 @@ def observe_development_source(governed: Path) -> tuple[DevelopmentSource, str]:
     return source, canonical_json_bytes(record).decode("utf-8") + "\n"
 
 
+def provision_strict_local(governed: Path) -> tuple[GovernedProvisioning, str]:
+    """Run and independently verify the repository's public host controller."""
+
+    controller = [
+        shutil.which("uv") or "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "ranex.cli.host_confinement",
+    ]
+    for arguments in HOST_PROVISIONING_COMMANDS:
+        completed = run(
+            *controller,
+            *arguments,
+            cwd=governed,
+            env=cli_environment(),
+        )
+        assert completed.returncode == 0, completed.stdout + completed.stderr
+
+    manifest_path = governed / LAUNCHER_MANIFEST
+    profile_path = governed / HOST_PROFILE
+    built_path = governed / LAUNCHER_BUILD
+    installed_path = governed / INSTALLED_LAUNCHER
+    report_path = governed / QUALIFICATION_REPORT
+    manifest = json.loads(manifest_path.read_bytes())
+    assert built_path.read_bytes() == installed_path.read_bytes()
+    artifact_digest = file_digest(installed_path)
+    assert artifact_digest == "sha256:" + manifest["artifact"]["sha256"]
+    raw_report = report_path.read_bytes()
+    report = json.loads(raw_report)
+    assert raw_report == canonical_json_bytes(report)
+    assert report["schema"] == "ranex-strict-local-qualification-v1"
+    assert report["qualified"] is True and report["refusal"] is None
+    assert report["kernel"] == {
+        "architecture": os.uname().machine,
+        "release": os.uname().release,
+    }
+    assert report["digests"] == {
+        "artifact": artifact_digest.removeprefix("sha256:"),
+        "build_manifest": file_digest(manifest_path).removeprefix("sha256:"),
+        "profile": file_digest(profile_path).removeprefix("sha256:"),
+    }
+    host_state = report["host_state"]
+    assert host_state["boot_id"] == Path(
+        "/proc/sys/kernel/random/boot_id"
+    ).read_text(encoding="utf-8").strip()
+    assert host_state["machine_id"] == Path("/etc/machine-id").read_text(
+        encoding="utf-8"
+    ).strip()
+    assert host_state["delegation_identity"]["uid"] == os.geteuid()
+    assert host_state["delegation_identity"]["gid"] == os.getegid()
+    provisioning = GovernedProvisioning(
+        artifact_digest=artifact_digest,
+        build_manifest_digest=file_digest(manifest_path),
+        host_state_digest="sha256:" + canonical_sha256(host_state),
+        profile_digest=file_digest(profile_path),
+        report_digest=file_digest(report_path),
+        schema=report["schema"],
+    )
+    assert git(governed, "status", "--porcelain") == ""
+    transcript = canonical_json_bytes(
+        {
+            "artifact_digest": provisioning.artifact_digest,
+            "build_manifest_digest": provisioning.build_manifest_digest,
+            "event": "governed.strict-local.provisioned",
+            "host_state_digest": provisioning.host_state_digest,
+            "profile_digest": provisioning.profile_digest,
+            "report_digest": provisioning.report_digest,
+            "schema": provisioning.schema,
+        }
+    ).decode("utf-8") + "\n"
+    return provisioning, transcript
+
+
 def qualify_command(
     *,
     authority: tuple[Path, Path, Path],
@@ -381,6 +673,243 @@ def invoke(
         cwd=checkout,
         env=cli_environment(signing_key=signing_key),
     )
+
+
+def invoke_traced(
+    command: list[str],
+    *,
+    checkout: Path,
+    signing_key: Path,
+    trace_path: Path,
+) -> TracedProcess:
+    """Run the real CLI below an external syscall/process observer."""
+
+    strace = pinned_strace()
+    assert not trace_path.resolve().is_relative_to(checkout.resolve())
+    completed = run(
+        str(strace),
+        "-f",
+        "-qq",
+        "-ttt",
+        "-s",
+        "8192",
+        "-yy",
+        "-e",
+        OBSERVER_TRACE_SYSCALLS,
+        "-o",
+        str(trace_path),
+        *command,
+        cwd=checkout,
+        env=cli_environment(signing_key=signing_key),
+    )
+    assert trace_path.is_file()
+    return TracedProcess(completed=completed, trace_path=trace_path)
+
+
+def observe_child_provisioning(
+    traced: TracedProcess,
+    *,
+    governed: Path,
+    provenance_path: Path,
+) -> str:
+    """Observe exact per-child public commands and ordering, not filesystem history."""
+
+    lines = traced.trace_path.read_text(encoding="utf-8").splitlines()
+    process_parent: dict[int, int] = {}
+    process_cwd: dict[int, Path] = {}
+    executions: list[tuple[int, float, Path, list[str]]] = []
+    root_pid: int | None = None
+
+    def lexical_absolute(path: Path, *, base: Path | None = None) -> Path:
+        if not path.is_absolute():
+            assert base is not None
+            path = base / path
+        return Path(os.path.abspath(os.fspath(path)))
+
+    for line in lines:
+        process = re.match(
+            r"^(?P<pid>\d+)\s+\d+\.\d+\s+"
+            r"(?:clone|clone3|vfork|fork)\(.*\)\s+=\s+(?P<child>\d+)$",
+            line,
+        ) or re.match(
+            r"^(?P<pid>\d+)\s+\d+\.\d+\s+<\.\.\. "
+            r"(?:clone|clone3|vfork|fork) resumed>.*\)\s+=\s+(?P<child>\d+)$",
+            line,
+        )
+        if process is not None:
+            process_parent[int(process["child"])] = int(process["pid"])
+
+    def inherited_cwd(pid: int) -> Path | None:
+        seen: set[int] = set()
+        while pid not in seen:
+            seen.add(pid)
+            if pid in process_cwd:
+                return process_cwd[pid]
+            if pid not in process_parent:
+                return None
+            pid = process_parent[pid]
+        return None
+
+    call_pattern = re.compile(
+        r"^(?P<pid>\d+)\s+(?P<time>\d+\.\d+)\s+"
+        r"(?P<call>execve|clone|clone3|vfork|fork|chdir|fchdir)\("
+    )
+    for line in lines:
+        match = call_pattern.match(line)
+        if match is None:
+            continue
+        pid = int(match["pid"])
+        timestamp = float(match["time"])
+        call = match["call"]
+        if root_pid is None:
+            root_pid = pid
+            process_cwd[pid] = lexical_absolute(governed)
+        if call in {"clone", "clone3", "vfork", "fork"}:
+            continue
+        if call == "chdir":
+            changed = re.search(r'chdir\(("(?:\\.|[^"\\])*")\)\s+=\s+0$', line)
+            assert changed is not None, line
+            destination = Path(json.loads(changed.group(1)))
+            if not destination.is_absolute():
+                current = inherited_cwd(pid)
+                assert current is not None
+                destination = current / destination
+            process_cwd[pid] = lexical_absolute(destination)
+            continue
+        if call == "fchdir":
+            assert not line.endswith("= 0"), (
+                "command observer cannot independently resolve a successful fchdir"
+            )
+            continue
+        invoked = re.search(
+            r'execve\("(?:\\.|[^"\\])*", (\[.*\]), '
+            r'(?:0x[0-9a-f]+|\[).*$',
+            line,
+        )
+        assert invoked is not None, line
+        argv = json.loads(invoked.group(1))
+        assert isinstance(argv, list) and all(isinstance(arg, str) for arg in argv)
+        cwd = inherited_cwd(pid)
+        assert cwd is not None, line
+        executions.append((pid, timestamp, cwd, argv))
+
+    def geometry(cwd: Path) -> tuple[str, str, int] | None:
+        if cwd.parent.parent.name != "children":
+            return None
+        if re.fullmatch(r"attempt-[0-6]", cwd.name) is None:
+            return None
+        return (
+            cwd.parent.parent.parent.name,
+            cwd.parent.name,
+            int(cwd.name.removeprefix("attempt-")),
+        )
+
+    expected = {
+        (flow_id, task_id, 0)
+        for flow_id in ("a-before-b", "b-before-a")
+        for task_id in DESCRIPTOR["children"]
+    }
+    uv_executable = Path(shutil.which("uv") or "uv").resolve()
+    host_prefix = ["run", "--frozen", "python", "-m", "ranex.cli.host_confinement"]
+    run_prefix = ["run", "--frozen", "python", "-m", "ranex.cli.main", "run"]
+    observed: dict[tuple[str, str, int], list[tuple[float, tuple[str, ...]]]] = {}
+    child_runs: dict[tuple[str, str, int], float] = {}
+    roots: dict[tuple[str, str, int], set[Path]] = {}
+    for _, timestamp, cwd, argv in executions:
+        current = geometry(cwd)
+        if current is None:
+            continue
+        roots.setdefault(current, set()).add(cwd)
+        if argv[1:6] == host_prefix:
+            assert Path(argv[0]).resolve() == uv_executable
+            arguments = tuple(argv[6:])
+            assert arguments in HOST_PROVISIONING_COMMANDS
+            observed.setdefault(current, []).append((timestamp, arguments))
+        if argv[1:7] == run_prefix:
+            assert Path(argv[0]).resolve() == uv_executable
+            child_runs.setdefault(current, timestamp)
+
+    assert set(observed) == expected
+    assert set(child_runs) == expected
+    assert set(roots) == expected
+    records = []
+    observer_root = Path(os.path.abspath(os.fspath(governed.parent)))
+    for current in sorted(expected):
+        child_roots = roots[current]
+        assert len(child_roots) == 1
+        child_root = next(iter(child_roots))
+        assert child_root.is_relative_to(observer_root)
+        steps = sorted(observed[current])
+        assert tuple(step[1] for step in steps) == HOST_PROVISIONING_COMMANDS
+        assert steps[-1][0] < child_runs[current]
+        flow_id, task_id, attempt = current
+        records.append(
+            {
+                "attempt": attempt,
+                "commands": [["uv", *host_prefix, *step[1]] for step in steps],
+                "flow_id": flow_id,
+                "task_id": task_id,
+            }
+        )
+
+    assert not provenance_path.resolve().is_relative_to(governed.resolve())
+    provenance = {
+        "observer": "strace-execve-chdir-v1",
+        "observer_tool": EXPECTED_VALUES["child_provisioning"]["observer_tool"],
+        "records": records,
+        "version": "slice036-child-command-observer-v1",
+    }
+    provenance_path.write_bytes(canonical_json_bytes(provenance))
+    assert json.loads(provenance_path.read_bytes()) == provenance
+    event = {
+        "event": "child.provisioning.observed",
+        "executions_digest": "sha256:" + canonical_sha256(provenance),
+        "observer": provenance["observer"],
+        "observer_digest": provenance["observer_tool"]["sha256"],
+        "observer_version": provenance["observer_tool"]["version"],
+        "provenance_path": str(provenance_path.resolve()),
+        "run_count": len(child_runs),
+        "step_count": sum(len(steps) for steps in observed.values()),
+    }
+    return canonical_json_bytes(event).decode("utf-8") + "\n"
+
+
+def calibrate_child_provisioning_release_invariant(root: Path) -> str:
+    """Start clean, provision each child publicly, then verify its final state."""
+
+    records = []
+    for flow_id in ("a-before-b", "b-before-a"):
+        for task_id in DESCRIPTOR["children"]:
+            child = materialize_governed_checkout(
+                root / flow_id / "children" / task_id / "attempt-0"
+            )
+            assert git(child, "status", "--porcelain") == ""
+            assert not (child / LAUNCHER_BUILD).exists()
+            assert not (child / INSTALLED_LAUNCHER).exists()
+            assert not (child / QUALIFICATION_REPORT).exists()
+            provisioning, _ = provision_strict_local(child)
+            report = json.loads((child / QUALIFICATION_REPORT).read_bytes())
+            assert report["qualified"] is True and report["refusal"] is None
+            assert file_digest(child / INSTALLED_LAUNCHER) == provisioning.artifact_digest
+            assert file_digest(child / QUALIFICATION_REPORT) == provisioning.report_digest
+            records.append(
+                {
+                    "artifact_digest": provisioning.artifact_digest,
+                    "flow_id": flow_id,
+                    "qualified": True,
+                    "report_digest": provisioning.report_digest,
+                    "task_id": task_id,
+                }
+            )
+    assert len(records) == 6
+    event = {
+        "event": "child.provisioning.calibrated",
+        "records_digest": "sha256:" + canonical_sha256({"records": records}),
+        "run_count": len(records),
+        "version": "slice036-child-provisioning-release-v1",
+    }
+    return canonical_json_bytes(event).decode("utf-8") + "\n"
+
 
 
 def compare_golden(actual: str, name: str, sandbox: Path) -> None:
@@ -487,15 +1016,17 @@ def verify_actual_qualification(
 
     attestation = artifact["attestation"]
     assert isinstance(attestation, dict)
+    keyring_bytes = git_blob(governed, BASE_COMMIT, "governance/producers.yaml")
+    keyring = load_keyring_text(
+        keyring_bytes.decode("utf-8"),
+        f"{BASE_COMMIT}:governance/producers.yaml",
+    )
     role = next(
         role
         for role in DESCRIPTOR["roles"]
         if role["principal"] == payload["producer_id"]
     )
-    keyring = load_keyring_text(
-        f"producers:\n  {payload['producer_id']}: {role['key']}\n",
-        "approved-batch descriptor roles",
-    )
+    assert keyring[payload["producer_id"]] == role["key"] == OWNER_PUBLIC_KEY
     admission = admit([attestation], keyring)
     assert admission.rejections == ()
     assert len(admission.evidence) == 1
@@ -519,6 +1050,36 @@ def verify_actual_qualification(
         "xpassed": 0,
     }
     return artifact, file_digest(path)
+
+
+def verify_publication_keyrings(
+    artifact: dict[str, object],
+    *,
+    governed: Path,
+    candidate_worktree: Path,
+    candidate: str,
+    tip: str,
+) -> None:
+    """Admit the actual outcome through all immutable publication snapshots."""
+
+    relative = "governance/producers.yaml"
+    snapshots = {
+        f"base:{BASE_COMMIT}": git_blob(governed, BASE_COMMIT, relative),
+        f"candidate:{candidate}": git_blob(candidate_worktree, candidate, relative),
+        f"tip:{tip}": git_blob(governed, tip, relative),
+    }
+    assert len(set(snapshots.values())) == 1
+    descriptor_role = next(
+        role for role in DESCRIPTOR["roles"] if role["principal"] == "owner"
+    )
+    attestation = artifact["attestation"]
+    assert isinstance(attestation, dict)
+    for identity, raw_keyring in snapshots.items():
+        keyring = load_keyring_text(raw_keyring.decode("utf-8"), identity)
+        assert keyring["owner"] == descriptor_role["key"] == OWNER_PUBLIC_KEY
+        admission = admit([attestation], keyring)
+        assert admission.rejections == ()
+        assert len(admission.evidence) == 1
 
 
 def assert_pre_journal_refusal(
@@ -619,9 +1180,13 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
 
     sandbox = tmp_path / "slice036"
     sandbox.mkdir()
+    child_calibration_transcript = calibrate_child_provisioning_release_invariant(
+        sandbox / "child-provisioning-calibration"
+    )
     governed = materialize_governed_checkout(sandbox / "governed")
     governed_source_before = source_manifest(governed)
     development_source, source_transcript = observe_development_source(governed)
+    provisioning, provisioning_transcript = provision_strict_local(governed)
     assert not development_source.module_path.is_relative_to(governed.resolve())
     provenance_record = {
         "governed_repository": str(governed.resolve()),
@@ -651,14 +1216,25 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
         governed.resolve()
     )
     assert journal.resolve() == governed.resolve() / "governance/journal.sqlite3"
-    completed = invoke(
+    traced = invoke_traced(
         positive_command,
         checkout=governed,
         signing_key=signing_key,
+        trace_path=sandbox / "child-provisioning.strace",
     )
+    completed = traced.completed
     assert completed.returncode == 0, completed.stderr
+    child_observer_transcript = observe_child_provisioning(
+        traced,
+        governed=governed,
+        provenance_path=sandbox / "child-provisioning-observer.json",
+    )
     compare_golden(
-        source_transcript + completed.stdout,
+        source_transcript
+        + provisioning_transcript
+        + child_calibration_transcript
+        + child_observer_transcript
+        + completed.stdout,
         "slice036-approved-batch-qualification.out",
         sandbox,
     )
@@ -667,6 +1243,7 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     assert worktree_snapshot(governed) == worktrees_before
     assert git(governed, "status", "--porcelain") == ""
     assert source_manifest(governed) == governed_source_before
+    assert file_digest(governed / QUALIFICATION_REPORT) == provisioning.report_digest
     assert len(loopback_sentinel.accepted) == network_before
 
     rows, head = journal_snapshot(journal)
@@ -736,6 +1313,7 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     }
     public_controls = (
         ("unapproved_rows", "E-BATCH-UNAPPROVED-ROW"),
+        ("input_mismatch_rows", "E-BATCH-INPUT-MISMATCH"),
         ("overlap_rows", "E-BATCH-SCOPE-OVERLAP"),
         ("network_rows", "E-BATCH-NETWORK-ESCAPE"),
         ("oracle_mismatch_rows", "E-BATCH-ORACLE-MISMATCH"),
@@ -786,6 +1364,7 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     with pytest.raises(AssertionError, match="normalized transcript differs"):
         compare_golden(
             source_transcript
+            + provisioning_transcript
             + completed.stdout.replace('"publication":false', '"publication":true'),
             "slice036-approved-batch-qualification.out",
             sandbox,
@@ -944,6 +1523,14 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     governed_evidence.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(first_evidence, governed_evidence)
     candidate = git(publication_worktree, "rev-parse", "HEAD")
+    assert candidate == BASE_COMMIT
+    verify_publication_keyrings(
+        qualification,
+        governed=governed,
+        candidate_worktree=publication_worktree,
+        candidate=candidate,
+        tip=ref_before,
+    )
     judge = [
         shutil.which("uv") or "uv",
         "run",

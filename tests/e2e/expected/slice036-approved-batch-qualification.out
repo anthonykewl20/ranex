@@ -1,5 +1,8 @@
 {"event":"development.source","manifest_digest":"<DIGEST>","module_path":"<ABS-PATH>","pythonpath":"<ABS-PATH>","version":"slice036-development-source-v1"}
-{"base_commit":"5586d68b0936f554759022caabe847087f1d03ef","event":"batch.accepted","maximum_pool":2,"subject_digest":"<DIGEST>"}
+{"artifact_digest":"<DIGEST>","build_manifest_digest":"<DIGEST>","event":"governed.strict-local.provisioned","host_state_digest":"<DIGEST>","profile_digest":"<DIGEST>","report_digest":"<DIGEST>","schema":"ranex-strict-local-qualification-v1"}
+{"event":"child.provisioning.calibrated","records_digest":"<DIGEST>","run_count":6,"version":"slice036-child-provisioning-release-v1"}
+{"event":"child.provisioning.observed","executions_digest":"<DIGEST>","observer":"strace-execve-chdir-v1","observer_digest":"<DIGEST>","observer_version":"strace -- version 6.8","provenance_path":"<ABS-PATH>","run_count":6,"step_count":18}
+{"base_commit":"2576c144f9f1e705dffc32d71f2a02563c94e4e0","event":"batch.accepted","maximum_pool":2,"subject_digest":"<DIGEST>"}
 {"event":"batch.ready","flow_id":"a-before-b","tasks":["SLICE-036-child-A","SLICE-036-child-B"]}
 {"canonical_results":["SLICE-036-child-A","SLICE-036-child-B","SLICE-036-child-C"],"completion_order":["SLICE-036-child-A","SLICE-036-child-B","SLICE-036-child-C"],"event":"batch.completed","flow_id":"a-before-b"}
 {"event":"batch.join","flow_id":"a-before-b","released":"SLICE-036-child-C","satisfied_by":["SLICE-036-child-A","SLICE-036-child-B"]}

@@ -38,9 +38,16 @@
           "additionalProperties": false,
           "properties": {
             "allow": {
-              "items": {
-                "type": "string"
-              },
+              "maxItems": 2,
+              "minItems": 2,
+              "prefixItems": [
+                {
+                  "const": "LC_ALL"
+                },
+                {
+                  "const": "TZ"
+                }
+              ],
               "type": "array",
               "uniqueItems": true
             }
@@ -139,7 +146,9 @@
       "additionalProperties": false,
       "properties": {
         "attempt": {
-          "const": 0
+          "maximum": 6,
+          "minimum": 0,
+          "type": "integer"
         },
         "base_commit": {
           "pattern": "^[0-9a-f]{40}$",
@@ -220,7 +229,8 @@
               "$ref": "#/$defs/portablePath"
             },
             "runtime_input_path": {
-              "$ref": "#/$defs/portablePath"
+              "pattern": "^governance/qualification/inputs/[A-Za-z0-9-]+\\.json$",
+              "type": "string"
             }
           },
           "required": [
@@ -318,15 +328,23 @@
     "runtimeInput": {
       "additionalProperties": false,
       "properties": {
-        "delay_source": {
-          "$ref": "#/$defs/portablePath"
+        "delays_ms": {
+          "additionalProperties": {
+            "minimum": 0,
+            "type": "integer"
+          },
+          "minProperties": 1,
+          "propertyNames": {
+            "pattern": "^[a-z0-9-]+$"
+          },
+          "type": "object"
         },
         "flow_ids": {
           "items": {
             "pattern": "^[a-z0-9-]+$",
             "type": "string"
           },
-          "minItems": 2,
+          "minItems": 1,
           "maxItems": 2,
           "type": "array",
           "uniqueItems": true
@@ -361,7 +379,7 @@
         }
       },
       "required": [
-        "delay_source",
+        "delays_ms",
         "flow_ids",
         "loopback_ports",
         "mode",
