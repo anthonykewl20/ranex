@@ -199,16 +199,16 @@ Inside one task, the kernel follows a deliberately small loop:
 inside the loop, only what is allowed out of it. Containment is a smaller problem
 than control: the exits are enumerable, the interior is not.
 
-This is the intended governed loop, not a claim that mutation fanout is safe
-today. Bounded read-only research/review jobs may run concurrently now because
+This is the historical intended governed loop, not the kernel-only initial
+release. Bounded read-only research/review jobs may run concurrently because
 they cannot mutate files/refs or external state and receive no secrets. Current
 `task fanout` is a convenience/prototype over free-prompt JSONL; it has no A/B/C
 approval, exact child path+action scope, child-grant intersection or common
-harness admission. Keep one mutation writer until SLICE-044's real concurrent
-attack exit.
+harness admission. Production fanout and the harness lane are withdrawn from
+the current release; keep one mutation writer for kernel work.
 
-The planned governed CLI preserves the existing command but replaces free
-authority with approved inputs:
+The following grammar remains historical design context, not a current release
+entrypoint or authorization claim:
 
 ```text
 PYTHONPATH=src uv run --frozen python -m ranex.cli.main task fanout \
@@ -221,8 +221,9 @@ B/C own harness, model, timeout and suite; child rows name approved scope and
 capability-request IDs; `--pool` can only narrow the approved maximum. Children
 use isolated worktrees and cannot receive secrets or merge. Results are ordered
 canonically for one kernel-controlled stale-base CAS integrator. SLICE-036 will
-qualify that shape only in disposable worktrees with publication blocked;
-production use remains unauthorized until SLICE-044.
+qualify the kernel continuity shape only in disposable worktrees with
+publication blocked. The later harness effect-family and production-exit
+slices were withdrawn; no production mutation authority is claimed.
 
 ---
 
@@ -331,11 +332,12 @@ That is the claim. These are **not** claims Ranex makes:
 
 ## Status
 
-**Pre-release. This is not a usable product yet.** The kernel has a working
-verdict and task path plus the A/B/C specification-authority substrate. The
-owner-facing harness and governed concurrent composition are still incomplete.
-The full picture above is the intended product; the lists below state what is
-actually built and what remains open.
+**Pre-release kernel-only initial release.** The kernel has a working verdict,
+serial task path, provisioning, confinement, and the A/B/C
+specification-authority substrate. The owner-facing harness, credential-broker
+qualification, task-family real-provider proof, and governed concurrent
+production composition are outside this release and are not claimed complete.
+The lists below state what the kernel actually provides and what remains open.
 
 **Works today**
 
@@ -368,13 +370,11 @@ actually built and what remains open.
   real-subject bootstrap. These kernel mechanisms are built and tested
   (SLICE-029–033 and SLICE-035), but the installed end-to-end mutation path is not yet
   authorized.
-- **`ranex task dispatch|judge|merge|delegate|fanout`** — worker dispatch. The
-  kernel records task→worktree at dispatch; `delegate` runs a real agent
-  headless in that worktree and measures the frozen suite sealed; a separate
-  keyless invocation judges — a CANDIDATE naming its missing claims, never a
-  PASS; `merge` publishes a judged candidate only through ordered journalled
-  checks (the kernel merges; the harness never does); prototype `fanout` runs a
-  bounded pool, one worktree each. It is not approved mutation authority.
+- **`ranex task dispatch|judge|merge`** — the serial kernel task path. The
+  kernel records task→worktree at dispatch; a separate keyless invocation
+  judges a CANDIDATE naming its missing claims, never a PASS; `merge` publishes
+  only through ordered journalled checks. The delegated first rung and bounded
+  `fanout` remain historical prototype mechanics, not release authority.
 - **Signed verdicts and a verdict read channel** — evaluation records carry
   structured five-kind causes and self-approval; a dedicated
   `kernel-verdict-signer` signs verdicts under the same Ed25519 keyring
@@ -406,13 +406,13 @@ actually built and what remains open.
   removed — characterized and frozen as the documented outcome by SLICE-056;
   the ADR-032 fold-in landed (8a5ed3837). Closing it remains a slice-governed
   change.
-- **No owner-facing intake/clarification product and no installed A/B/C →
-  harness admission → concurrent mutation composition.** Kernel-side A/B/C
-  validation, deterministic projections, lifecycle, grants, trace integrity,
-  and real-subject bootstrap exist; budget and plain-language escalation do not.
-  Worker dispatch ran a real model end to end (SLICE-008), and the kernel can
-  publish a judged serial candidate (SLICE-010). Free-prompt `fanout` remains
-  prototype-only until ADR-017's SLICE-044 exit authorizes production mutation.
+- **No owner-facing intake product or installed A/B/C → harness admission →
+  concurrent mutation composition.** Kernel-side A/B/C validation,
+  deterministic projections, lifecycle, grants, trace integrity, and
+  real-subject bootstrap exist; budget and plain-language escalation do not.
+  The harness lane, broker qualification, task-family real-provider proof, and
+  production fanout exit were withdrawn from this kernel-only release. No
+  production mutation authority is claimed.
 - **Review-consensus authenticity gaps remain unstarted in production.** Two
   independent adversarial reviews (2026-08-06) confirmed the gaps above and
   added: the suite manifest freezes test IDs, not test bodies; `evidence.json` is
@@ -429,9 +429,16 @@ none of the surface around it does.
 
 **Active slice:** none
 
-SLICE-059 (task family e2e, #39) closed 2026-08-21 — the ADR-032
-frame's fourth and final family customer, closing milestone 4's family
-work: the real dispatch→work→`run`→judge lifecycle over a real
+**Next slice:** SLICE-036 (#19), the only planned delivery. It qualifies the
+approved batch and kernel continuity in disposable worktrees with publication
+blocked; it does not reopen the withdrawn harness, broker, task-family, or
+production-exit work.
+
+SLICE-059 (task family e2e, #39) was implemented as historical test work and
+closed in its prior ceremony, but is withdrawn from the release as of
+2026-08-25. It is not a completed real-provider release gate: the ADR-032
+frame's fourth family customer remained below the owner's final acceptance bar.
+The historical artifact covered the real dispatch→work→`run`→judge lifecycle over a real
 disposable worktree (DISPATCHED/RECORDED/CANDIDATE goldens), the
 engineered refusals on real evidence (tampered judge evidence refused
 naming its claim; self-approval refused `sad-path-14`; moved base
@@ -447,8 +454,8 @@ free-model nondeterminism is a written owner risk-acceptance (DECISION
 on #39, issuecomment-5359345600; zero frozen-test changes; shape-golden
 CCR-4 text drafted for any future owner). Ceremony 56c445a1f: FROZEN
 tests=1397 expected_skips=136, sealed 1262/135/0, round-trip 6/6;
-fail_under re-derived 16.68 → 14. The fanout qualification arm stays
-skipped-with-name until #19 (SLICE-036) closes.
+  fail_under re-derived 16.68 → 14. The fanout qualification arm remains
+  withdrawn from the kernel-only release.
 
 SLICE-060 (gate-evaluate presentation dedup, #40) closed 2026-08-20 —
 a mixed stale+absent verdict no longer prints the absence sentence
@@ -523,9 +530,9 @@ real-subject bootstrap. The byte-identical A/B/C schema/vector
 TypeScript mirror (35/35; vectors SHA-256 `9efa0baf…`) is merged in
 `ranex-harness` `ranex-trim` at `16bf036f`. The execution family
 followed and closed (SLICE-057, #37, 2026-08-20 — below), then the
-provisioning family (SLICE-058, #38, 2026-08-20 — below), then the
-task family (SLICE-059, #39, 2026-08-21 — below): milestone 4's
-family work is complete.
+provisioning family (SLICE-058, #38, 2026-08-20 — below). The task-family
+entry (SLICE-059, #39) is retained as historical implementation evidence but
+was withdrawn from release scope; milestone 4 is closed with partial delivery.
 
 Two of ADR-015's five durability claims are now in production: the provider
 watchdog; and the reconciler reorder plus its startup sweep. Three remain —
@@ -537,9 +544,9 @@ issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
 confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
 controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
 `accepted`; SLICE-029..033 and SLICE-035 built the kernel-side authority
-substrate, while SLICE-034 and SLICE-036..044 complete and prove the installed
-composition sequentially.
-036 is qualification-only and 044 alone authorizes production mutation fanout.
+  substrate. SLICE-036 is the only retained next delivery and is
+  qualification-only with publication blocked; the harness-effect and
+  production-exit slices were withdrawn.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
 harness (`23d6a5b4ee`): a stalled provider stream now reaches a terminal state
@@ -568,8 +575,10 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
-- **SLICE-059-real-e2e-task-family** — closed 2026-08-21. The ADR-032
-  frame's fourth and final family customer: the governed task
+- **SLICE-059-real-e2e-task-family** — historical implementation closed
+  2026-08-21, withdrawn from the release on 2026-08-25. It is retained here
+  as an implemented test artifact, not claimed as completed real-provider
+  release proof. The ADR-032 frame's fourth family customer covered the governed task
   lifecycle (dispatch → the kernel's own `run` producing real evidence
   → judge) proven on a real disposable worktree with two goldens, the
   engineered merge refusals (self-approval, moved base, digest
@@ -662,7 +671,7 @@ chosen by the party being measured. Both are closed.
   kernel-side. Approval binds closed policy and lifecycle facts; revocation,
   expiry, canonical use facts, and deterministic least-authority child grants
   refuse authority expansion. CAS/persistence and the SpecificationEvent
-  atomicity contract remain SLICE-036.
+  atomicity contract remain the retained SLICE-036 kernel-continuity scope.
 - **SLICE-035-real-subject-bootstrap** — closed 2026-08-17, kernel-side. Real
   Ranex source bootstrap ran from its pinned subject; Arxic's reference-auth-app
   process gate remains BLOCKED at pinned `135991d9` (Arxic #109).

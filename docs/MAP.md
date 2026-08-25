@@ -526,22 +526,14 @@ nothing.
 
 This changes sequencing, not the truth of parked work. ADR-006 is a dependency:
 it confines the admitted process, while ADR-017 decides when and why the process
-may act. The remaining durability program, background manager, handbook and
-Web UI are subordinate until the P0 real exit closes, except work strictly
-required by this dependency chain. Owner decision 2026-08-17: the real-world
-verification & observability program (GitHub milestone 4, SLICE-054..059) is
-built first as P0's proof substrate — its observability contract and real-e2e
-conventions are strictly required by P0's own exit evidence, so this is
-dependency order, not a competing priority. Build order: milestone 4 (framework
-slices SLICE-054/#34 then SLICE-055/#35) → milestone 3 (P0; SLICE-036 onward
-one slice at a time per ADR-017) → milestone 2 (background manager). P0
-remains the primary objective; no other parked work is pulled forward.
-Under ADR-017 the serial rule stands — SLICE-029..044 having opened one
-at a time — and milestone 3 resumes at SLICE-036 after the framework
-closes. Logical
-parallel-readiness in the DAG does not
-relax the enforced one-open-slice/one-session rule; any future relaxation needs
-its own owner/governance change after capability enforcement exists.
+may act. The 2026-08-17 milestone-4-first decision is historical provenance;
+the owner superseded it on 2026-08-25 by closing milestone 4 with partial
+delivery and stopping the harness lane. The initial release is kernel-only.
+Harness effect admission, broker qualification, real-provider task proof,
+concurrent production mutation and production fanout are not release scope.
+Only #19 / SLICE-036 remains next: qualification-only approved-batch and kernel
+continuity in disposable worktrees, with publication blocked. Logical
+parallel-readiness in the historical DAG does not open another slice or writer.
 
 **The TUI redesign (`ADR-018`) is outside this sequence.** The owner recorded on
 2026-08-10 that it is a separate track: harness work packages BOARD-01..BOARD-22,
@@ -551,15 +543,11 @@ Its one kernel dependency, a structured per-claim cause on `Evaluation`
 (BOARD-02), is governed work and needs its own slice like anything else that
 touches the kernel. Do not confuse it with the Web UI, which stays parked (§15.2).
 
-The milestone is deliberately composition-level. Unit, mock and synthetic tests
-support work packages but cannot close it. Closure requires installed Ranex CLI,
-the actual ranex-harness, real Git repositories/worktrees, OS processes and
-ADR-006 confinement, plus a real model/provider on both pinned repository
-journeys in final SLICE-044. The full human
-clarification → approval → parallel implementation → deterministic verification
-→ kernel merge journey repeats from pinned clean state with immutable evidence,
-a passing baseline and a failing wrong-result/admission-bypass negative control.
-Until that runs, the composition is `UNVERIFIED`.
+The former milestone was deliberately composition-level. Its installed-harness,
+real-provider and concurrent-production closure criteria are retained as
+historical provenance only; owner scope reset 2026-08-25 withdrew that program.
+The current release is kernel-only and #19 / SLICE-036 qualifies approved-batch
+continuity in disposable worktrees with publication blocked.
 
 ### 0.25 What changed in `3.5.1` — confinement becomes session-sized
 
@@ -610,13 +598,11 @@ authority and tests. Completion order never changes canonical result order.
 Children get parent ∩ request and no secret, approval, integration, merge or
 publication capability. One key-exclusive integrator consumes accepted results
 in canonical dependency/task/attempt order; the kernel alone publishes with a
-stale-base CAS. SLICE-036 implements only qualification in disposable child
-worktrees with publication blocked. SLICE-037..042 close the enumerated harness
-effect families, 043 serially integrates every leaf and CAS seam, and SLICE-044's
-two real provider/repository journeys plus concurrent attack exit alone authorize
-production mutation fanout. Until then there is one open slice and one mutation
-writer. After authorization, parallel children remain jobs inside that one open
-slice; opening parallel slice documents requires a separate owner decision.
+stale-base CAS. SLICE-036 remains the only retained qualification slice, in
+disposable child worktrees with publication blocked. The SLICE-037..044
+harness-effect and production-exit program is historical design provenance and
+was withdrawn by the 2026-08-25 owner scope decision. There is one open slice
+and one mutation writer; no production fanout authorization is claimed.
 
 ### 0.27 What changed in `3.5.3` — evidence refresh
 
@@ -699,6 +685,28 @@ system-level composition: there is still no owner-facing intake product, common
 harness effect admission, governed concurrent mutation, or real SLICE-044 exit.
 SLICE-036 is next. No architecture decision changed; stale maturity labels were
 corrected to match the repository and `docs/STATE.md`.
+
+### 0.34 What changed in `3.6.0` — kernel-only initial release scope
+
+Owner decision 2026-08-25: milestone 4 is closed with partial delivery. The
+kernel observability, real-e2e framework, verdict, execution and provisioning
+families (#34–#38 / SLICE-054–058) remain valid historical implementation
+evidence. The task-family proof (#39 / SLICE-059) and protocol-v1 broker
+qualification (#43 / SLICE-069) are withdrawn, not completed release gates.
+
+Historical marker: Owner decision 2026-08-17: milestone 4 was P0's proof substrate.
+Build order: milestone 4 → milestone 3 → milestone 2. This order
+is superseded by the 2026-08-25 kernel-only scope reset.
+
+Development requiring the ranex-harness lane is stopped. The initial release
+is kernel-only: deterministic verdict/evidence/journal, provisioning,
+confinement, A/B/C authority substrate, and serial task continuity. Harness
+effect admission, credential-broker qualification, real-provider task proof,
+concurrent production mutation and production fanout are out of scope and make
+no closure claim. #19 / SLICE-036 is the only next delivery: approved-batch
+qualification and kernel continuity in disposable worktrees, with publication
+blocked. The older milestone-4-first build order remains historical provenance,
+not a current dependency order.
 
 ---
 
@@ -906,10 +914,10 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Confinement of the measured party | The bound command cannot reach the key that signs its own measurement | **`CONFIRMED`** — ADR-006 accepted 2026-08-15; built through SLICE-017/018/019 and closed by SLICE-046 (ADR-023): the bound command runs in the qualified strict-local session and evidence signs only after fail-closed confinement-result validation (`RISK-06` closed, §11.5). Standing limit: the controller subprocess remains same-uid trusted infrastructure. The retained isolation profile is outside the repository (`/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
 | Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
-| Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | **`CONFIRMED`** only for the first rung — SLICE-008 and SLICE-010 built `ranex task dispatch/judge/merge/delegate/fanout`: a real agent ran headless in a dispatched worktree, a keyless invocation judged it to CANDIDATE, and the kernel published the checked fast-forward. Landing is serial and the pool is bounded. Current `fanout` is free-prompt JSONL convenience/prototype, not mutation authority; the immutable packet, exact child scopes and capability envelope remain unbuilt (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/architecture/AI_AGENT_FLEET_CONTROL_PLANE.md:445-496`) |
+| Worker dispatch | Accept an immutable packet and handoff, grant only declared capabilities/configuration, then inspect disk rather than a summary | **`CONFIRMED`** for the retained serial kernel path — SLICE-008 and SLICE-010 built `ranex task dispatch/judge/merge`; the separate delegated first rung and bounded pool remain historical prototype mechanics. Current `fanout` is free-prompt JSONL convenience/prototype, not release authority; the approved-batch qualification is the only retained next delivery in #19/SLICE-036. |
 | Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); manager issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 (ADR-014 predates the renumbering and cites the old numbers); nothing built. SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability production program closes. §0.15 |
 | Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — the harness must not hang forever or strand running work | `ADR-015` **accepted 2026-08-07**. Two of five claims are in production: SLICE-012 provider watchdog and SLICE-013 reconciler hoist plus startup sweep, on harness default branch tip `9eeda0bf5d21...` (feature commits `23d6a5b4ee...` and `a8bc7bdf35...`). Durable retry is next; durable blockers and Session-ID fencing remain. The known fencing hazard is that the DB-global startup sweep can interrupt another process, so fencing must close it before multi-process use. The disposable prototype is green and digest-bound but ships nothing. §0.16, §0.20 |
-| A/B/C specification authority | Normative A holds approved semantics without generated hashes; manifest B binds exact gauge artifacts/invocation; signed envelope C binds A+B, context, identities, anti-replay and capability request; grant binds C | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap. The installed A/B/C → common harness admission → concurrent mutation composition remains `UNVERIFIED` until SLICE-044 |
+| A/B/C specification authority | Normative A holds approved semantics without generated hashes; manifest B binds exact gauge artifacts/invocation; signed envelope C binds A+B, context, identities, anti-replay and capability request; grant binds C | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap. The installed harness-admission/concurrent-mutation composition is withdrawn from the kernel-only release, not completed by SLICE-044. |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:24-26`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
 | Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:736-756`) |
@@ -1292,16 +1300,18 @@ The future-slice DAG is logical; current execution stays sequential:
 | `041` / issue #26 | `packages/core/src/plugin.ts`<br>`packages/core/src/plugin/**`<br>`packages/core/src/provider.ts`<br>`packages/core/src/models-dev.ts`<br>`packages/core/src/github-copilot/**`<br>`packages/ranex/src/plugin/**`<br>`packages/ranex/src/provider/**`<br>`packages/ranex/src/session/llm.ts`<br>`packages/ranex/src/session/llm/**`<br>`packages/ranex/src/session/message-v2.ts`<br>`packages/ranex/src/cli/network.ts`<br>`packages/ranex/src/cli/cmd/github.handler.ts`<br>`packages/ranex/src/cli/cmd/import.ts`<br>`packages/ranex/src/cli/cmd/providers.ts`<br>`packages/ranex/src/cli/cmd/run.ts`<br>`packages/ranex/src/cli/tui/worker.ts`<br>`packages/ranex/src/control-plane/dev/debug-workspace-plugin.ts`<br>`packages/ranex/src/lsp/server.ts`<br>`packages/ranex/src/server/server.ts`<br>`packages/ranex/src/server/routes/instance/httpapi/groups/provider.ts`<br>`packages/ranex/src/server/routes/instance/httpapi/handlers/provider.ts`<br>`packages/ranex/test/control-plane/specification-network-effects.test.ts` | 034 service + 036 grants → admitted plugin/provider network calls | raw fetch/socket/dynamic-provider/plugin-hook/CLI/server bypass inventory and host/method/body/credential-scope attacks | closes direct network family only |
 | `042` / issue #27 | `packages/core/src/database/**`<br>`packages/core/src/account/sql.ts`<br>`packages/core/src/credential/sql.ts`<br>`packages/core/src/event/sql.ts`<br>`packages/core/src/permission/sql.ts`<br>`packages/core/src/project/sql.ts`<br>`packages/core/src/session/sql.ts`<br>`packages/core/src/share/sql.ts`<br>`packages/core/src/control-plane/workspace.sql.ts`<br>`packages/core/src/data-migration.sql.ts`<br>`packages/ranex/src/storage/**`<br>`packages/ranex/test/control-plane/specification-storage-effects.test.ts` | 034 service + 036 grants → admitted storage transaction | create/update/delete/migrate/path/rollback attacks; omitted repositories prove routing through revalidated DB/storage services | closes storage family only |
 | `043` / issue #28 | `src/ranex/cli/main.py`<br>`src/ranex/cli/delegation.py`<br>`src/ranex/cli/fanout.py`<br>`src/ranex/governed_execution/adapters/persistence/sqlite/journal.py`<br>`tests/integration/test_specification_continuity.py`<br>`packages/ranex/test/control-plane/specification-effect-inventory.test.ts`<br>`packages/ranex/test/control-plane/specification-integration.test.ts` | 030..042 ports/effects → serialized A/B/C/grant/evidence/judge/merge chain | every direct primitive classified; every omitted caller dynamically proves admitted service route; digest/identity/exemption/crash/bypass substitution refuses before single-writer stale-base CAS | sole serialized all-leaf integration owner |
-| `044` / issue #29 | `tests/e2e/test_specification_program_exit.py`<br>`docs/slices/SLICE-044-approved-specification-program.md`<br>`docs/slices/done/SLICE-044-approved-specification-program.md`<br>`docs/slices/done/SLICE-044-approved-specification-program.exit-record.json`<br>`docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md`<br>`docs/adr/ADR-017-approved-specification-before-implementation-authority.md`<br>`docs/MAP.md`<br>`docs/STATE.md`<br>`README.md` | installed composition → both real provider journeys | repetitions; actual concurrent child agents; every effect/exemption/trace attack; wrong outcome; baseline; no required skip | immutable exit alone authorizes production mutation fanout and closes milestone |
-| `059` open 2026-08-20 / issue #39 (CCR-1, #39 issuecomment-5354660541) | `tests/e2e/test_task_real.py`<br>`tests/e2e/test_delegation_real.py`<br>`tests/e2e/expected/task-dispatch-judge.out`<br>`tests/e2e/expected/task-merge-refusal.out`<br>`tests/e2e/expected/delegation-diff.out`<br>`docs/slices/SLICE-059-real-e2e-task-family.md` | frozen contract on #39 (ADR-032 frame, fourth family customer): real dispatch→work→`run`→judge over a real disposable worktree, tampered-evidence / self-approval / moved-base / digest-mismatch refusals on real evidence, clean PUBLISHED merge, and a real delegated OpenRouter model run → normalized transcript goldens, red-controlled per family precedent | G-1 family suite exit 0 (goldens diff-clean, every refusal arm demonstrated, every red control dirty once, fanout arms skipped-with-name until #19); G-2 ruff parity; G-3 documented entrypoint with fail_under re-derived; G-4 real OpenRouter run under the owner's scoped key; G-5 whole tree + CI parity | the governed task lifecycle and a real delegated model run — the kernel's thesis — proven end to end on real subjects with reviewable goldens |
+| `044` / issue #29 — withdrawn 2026-08-25 | `tests/e2e/test_specification_program_exit.py`<br>`docs/slices/SLICE-044-approved-specification-program.md`<br>`docs/slices/done/SLICE-044-approved-specification-program.md`<br>`docs/slices/done/SLICE-044-approved-specification-program.exit-record.json`<br>`docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md`<br>`docs/adr/ADR-017-approved-specification-before-implementation-authority.md`<br>`docs/MAP.md`<br>`docs/STATE.md`<br>`README.md` | historical installed-composition/real-provider exit design | withdrawn from the kernel-only release; no production fanout authorization | not a current delivery gate |
+| `059` historical implementation / issue #39 withdrawn 2026-08-25 | `tests/e2e/test_task_real.py`<br>`tests/e2e/test_delegation_real.py`<br>`tests/e2e/expected/task-dispatch-judge.out`<br>`tests/e2e/expected/task-merge-refusal.out`<br>`tests/e2e/expected/delegation-diff.out`<br>`docs/slices/done/SLICE-059-real-e2e-task-family.md` | retained as historical task-family test work, but withdrawn from the kernel-only release; its real-provider/production closure claim is not accepted | prior artifacts remain evidence records only; no G-4/G-5 release claim and no fanout authorization | not a current delivery gate; #19/SLICE-036 is the only retained next slice |
 
-No slice document is open: 017, 018, 019, 020 and 046 are archived in
+Rows 037–044 remain historical planned-contract records only; the owner
+withdrew that harness-effect and production-exit program on 2026-08-25. No
+slice document is open: 017, 018, 019, 020 and 046 are archived in
 `docs/slices/done/`. A future slice document is created when it opens, after
 its prerequisites and predecessor close. Slices 018/019 are serial;
-030/031/033/034/035 are logically parallel-ready after 029 but run one at a
-time; 037..042 are logically parallel-ready after 036 but also run sequentially
-until 044 authorizes mutation fanout. No 038..044 slice document exists yet;
-issues #20 and #23..#29 mirror planned SLICE-037..044.
+030/031/033/034/035 are historical logically parallel-ready records; #19 /
+SLICE-036 is the only retained next delivery and runs one slice at a time with
+publication blocked. Issues #20 and #23..#29 mirror withdrawn work and are not
+current release gates.
 Mock/synthetic/unit tests support a slice but cannot close the milestone or
 either real journey.
 
@@ -1334,13 +1344,14 @@ mock-close. Records contain only credential-ref ID and outcome. All pnpm command
 pin `corepack pnpm@11.17.0`. Issue #109 is a
 maintainer test/measurement gap exercising actual Express/Playwright processes,
 not a production-app defect.
-SLICE-044 installs both products, invokes a real provider for both, and covers clarification and digest
-approval, parallel children, preapproval mutation through every tool family,
-scope denial, pool broadening, retry widening, child intersection, revocation,
-stale mapping, signed-exemption drift, protected-oracle tampering,
-timeout/survivors, evidence substitution and honest kernel PASS.
-`observed-only` oracles remain characterization; acceptance needs human,
-domain-rule or requirement provenance.
+The former SLICE-044 installed both products, invoked a real provider for both,
+and covered clarification, digest approval, parallel children, effect-family
+bypasses, scope/pool/retry widening, revocation, stale mapping, protected
+oracles, timeout/survivors, evidence substitution and kernel PASS. That exit
+is historical design provenance and was withdrawn; it does not authorize
+production mutation in this release. `observed-only` oracles remain
+characterization; kernel acceptance needs human, domain-rule or requirement
+provenance.
 
 Every behavior-changing WP carries a discriminating baseline and a negative
 control or mutation. Only an authenticated exemption enumerated by exact
@@ -1362,12 +1373,12 @@ control, unverifiable evidence, or model-reported success.
 | `cli/` | Operator entry point, path confinement, subject materialisation, toolchain pinning | **`CONFIRMED`**; mutmut recorded 573 survivors and 65 unreached in `cli/main.py`, but key e2e tests are excluded, so the signal is weak (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) |
 | `bootstrap/` | Composition root; the CLI also imports and constructs SQLite/YAML concretes directly | **`PROVISIONAL`** |
 | `provisioning/` | Dependency provisioning behind `deps fetch`/`deps approve`: clean lock derivation under pinned inputs, the SHA-256-addressed wheel store, and approval recording | **`CONFIRMED`** — SLICE-006 |
-| **Harness core** | Trimmed opencode fork: the agent loop, molded to call the kernel at every workflow step | **built** — ADR-008 accepted; SLICE-007 closed: forked at `v1.18.11` (`012c2f57`), trimmed to the keep-set, startup fails closed unbridged |
-| **Kernel bridge** | The process boundary: hooks collect inside the harness; the kernel outside judges, signs, journals | **built** — the commit-then-materialise bridge runs (`tests/integration/test_fork_startup_bridge.py`, gear-mesh e2e); the per-member protocol (`ADR-014`) stays `proposed` |
-| **Delegation** | Foreman → department supervisors → workers; category→model routing; plan-before-execute. Clean-room patterns learned from oh-my-openagent | **built** for the first rung only — ADR-010 accepted, SLICE-008 closed: `task delegate`/prototype `task fanout` ran a real model end to end; it has no A/B/C or child-grant admission and is not production mutation authority; the foreman/supervisor layering above it is not designed |
-| **Specification authority** | A normative SpecPacket/scope; B exact generated/protected gauge manifest; signed anti-replay ApprovalEnvelope C; role-separated grant/revocation, lifecycle and evidence continuity | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, deterministic projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap; the installed A/B/C → harness admission → concurrent mutation composition remains `UNVERIFIED` until SLICE-044 |
-| **Harness admission** | Shared enforcement at every tool, plugin, MCP, process, Git, hosted and subagent effect leaf; exact child-intersected grant | `PROVISIONAL` — decided, not built — tool visibility and prompts are explicitly insufficient; process confinement of the bound command is closed (ADR-006 accepted) but admits no harness effect |
-| **Agent-run manager** | Durable supervisor + capability-gated orchestrator over N worktrees/sessions in one harness process; per-member bridge (`ADR-014`); worktree provisioning, schema, leases, verification and UI are harness decisions (§0.15) | **parked** — `ADR-014` `proposed`; slice issues #1-#9; nothing built |
+| **Harness core** | Historical trimmed opencode fork and agent loop | **out of scope for the kernel-only initial release** — prior first-rung implementation is retained as provenance, not current release authority |
+| **Kernel bridge** | Historical process boundary between harness collection and kernel judgment | **out of scope for the kernel-only initial release** — no current harness dependency gates #19 |
+| **Delegation** | Historical first-rung worker delegation and bounded prototype pool | **prototype/history only** — broker qualification, real-provider task proof, and production fanout were withdrawn; no mutation authority |
+| **Specification authority** | A normative SpecPacket/scope; B exact generated/protected gauge manifest; signed anti-replay ApprovalEnvelope C; role-separated grant/revocation, lifecycle and evidence continuity | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, deterministic projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap; installed harness admission and concurrent mutation are withdrawn from the kernel-only release |
+| **Harness admission** | Shared enforcement at every tool, plugin, MCP, process, Git, hosted and subagent effect leaf; exact child-intersected grant | **withdrawn from the kernel-only release** — no claim of production harness admission |
+| **Agent-run manager** | Durable supervisor + capability-gated orchestrator over N worktrees/sessions | **withdrawn/out of scope** — no manager delivery follows #19 |
 | **Kernel handbook** | `governance/` as the library every agent reads: rules, manuals, recipes. Reading guides; only the kernel enforces | **decided `3.0.0`**; the catalog exists, the injection does not |
 | **TUI redesign — the board** | The harness front door: spec → gates → evidence → verdict, replacing the inherited opencode chat landing. Added as a new route plus feature-plugin slots, never a rewrite of `routes/session` | `PROVISIONAL` — decided, not built — `ADR-018` `accepted`. **A separate track, not a slice**: work packages BOARD-01..BOARD-22 live on the harness repository under milestone "TUI redesign — the board is the front door", design record in its `specs/tui-redesign/`. They do not contend for the one-open-slice rule and do not queue behind the P0 sequence (§0.17) |
 | Web UI | Later surface; features sliced from the quarry (§15.3). **Distinct from the TUI redesign above** — that is the terminal front door and is active; this is the browser surface and is not | **parked `3.0.0`** |
@@ -1394,10 +1405,12 @@ Breaking one is a bug, not a tradeoff.
 
 ### 5.3 What exists with executed evidence
 
-The closed ledger lives under `docs/slices/done/`. SLICE-029–033, SLICE-035, and milestone
-4's execution/provisioning/task family work are closed; no slice is active, and
-SLICE-036 is next per `docs/STATE.md`. Full-suite counts remain evidence records
-in the closed slices; this map does not manufacture a new count.
+The closed ledger lives under `docs/slices/done/`. SLICE-029–033, SLICE-035,
+and milestone 4's retained observability/execution/provisioning work are closed;
+the task-family artifact is historical but withdrawn from release scope. No
+slice is active, and SLICE-036 is the only next delivery per `docs/STATE.md`.
+Full-suite counts remain evidence records in the closed slices; this map does
+not manufacture a new count.
 
 ### 5.4 Data ownership — `PROVISIONAL`
 
@@ -1437,9 +1450,10 @@ Normative A carries approved semantics, deterministic manifest B binds its exact
 generated artifacts and protected gauges, and signed envelope C approves A+B
 plus execution context. Everything before C is conversation or deterministic
 generation; everything after it requires a C-bound kernel grant. SLICE-029–033 and SLICE-035
-built that kernel-side substrate. Owner-facing intake, common harness admission,
-governed concurrent mutation, serial integration and the real exit remain for
-SLICE-034 and SLICE-036–044.
+built that kernel-side substrate. Owner-facing intake and the installed harness
+admission/concurrent-mutation composition are not part of the kernel-only
+initial release. SLICE-036 is the only retained next delivery and remains
+qualification-only with publication blocked.
 
 ### 6.2 The build loop — `UNRESOLVED`, decided as own-built in `3.0.0`, not yet complete
 
@@ -1460,8 +1474,9 @@ SLICE-008 and SLICE-010, but an approved packet has never fed that path and the
 harness has no common effect admission boundary. The confinement
 prerequisite is closed (SLICE-017/018/019 plus SLICE-046's `cmd_run`
 binding), and SLICE-029–033 plus SLICE-035 built the kernel-side A/B/C substrate.
-SLICE-034 and SLICE-036–044 remain; only SLICE-044's real installed composition exit can change this section
-to confirmed (`RISK-14`, `RISK-25`).
+SLICE-036 remains as the sole kernel-continuity delivery; the former
+SLICE-037–044 installed composition path was withdrawn and cannot be treated as
+a pending release gate (`RISK-14`, `RISK-25`).
 
 ### 6.3 The verdict path — **`CONFIRMED`**
 
@@ -1772,7 +1787,7 @@ is best.
 | `RISK-22` | **Mutation testing validates the operator's model of defects, not that model's validity.** It measures repeatability and does not replace a reviewer who challenges the defect model |
 | `RISK-23` | **The coverage table proves only the stated hole exists.** It does not validate the concern set, the mapping method, or the product reasoning |
 | `RISK-24` | **One complete thread is operator-selected and likely the easiest available.** Passing it proves the mechanism runs, not that it handles the cases behind `C-02`, `C-03` or `C-04` |
-| `RISK-25` | **Ranex dispatches prose without specification authority or common harness effect admission.** Until ADR-017's SLICE-044 exit closes, a prompt cannot prove human approval, prevent every preapproval mutation path, or keep A/B/C/grant/evidence identity continuous through merge |
+| `RISK-25` | **Ranex's historical delegation path dispatched prose without common harness effect admission.** The harness admission and SLICE-044 production-exit program are withdrawn from the kernel-only release; the retained #19/SLICE-036 scope does not claim governed concurrent mutation |
 
 ### 11.6 Sequencing decisions — owner, 2026-08-03
 
@@ -2033,7 +2048,7 @@ that cannot name its evidence or its absence is not in the ledger.
 | Docs-discipline self-gauge | `tests/contract/test_docs_discipline.py` | the BOM checker is structural, not semantic (§5.5) |
 | Red-then-green as git fact | `b495e3635` (red target) is an ancestor of `0762cf7428` (implementation) | ancestry is forgeable while history is unrewritten and unsigned (`RISK-20`) |
 | Mutation census as calibration report | `mutmut` ran on the closing SLICE-004 commit: 880 survivors recorded (`docs/slices/done/SLICE-004-hermetic-observation.md:239-257`) | nothing consumes the result as a gate; no negative control (§8.4) |
-| A/B/C canonical authority, lifecycle and grants | SLICE-029/030/032; canonical schemas/vectors, lifecycle transitions, signed approval, revocation reduction and intersected grants have executed contract, unit, integration and security gauges | owner-facing intake and the installed harness composition remain unproven until SLICE-044 |
+| A/B/C canonical authority, lifecycle and grants | SLICE-029/030/032; canonical schemas/vectors, lifecycle transitions, signed approval, revocation reduction and intersected grants have executed contract, unit, integration and security gauges | owner-facing intake and installed harness composition remain outside the kernel-only release |
 | Deterministic closed-DSL projections and manifest B | SLICE-031; generated flow/pseudocode/protected-gauge artifacts, mappings, controls and invocation metadata are digest-bound by manifest B | no owner-facing authoring product; today's suite freezes protected test IDs rather than complete test bodies |
 | Trace integrity and real-subject bootstrap | SLICE-033/035; authority/evidence continuity and bootstrap against the real subject are exercised by repository gauges | common harness admission and the real concurrent mutation exit remain unproven |
 | Landlock confinement of the bound command | ADR-006 accepted; SLICE-017/018/019/046 closed with qualification, lifecycle, host evidence and `cmd_run` attack gauges | the controller subprocess remains same-uid trusted infrastructure (§11.5 standing limit) |
@@ -2049,12 +2064,12 @@ solves this, or would building it be invention?
 
 | Mechanism | State | Prior art to adopt |
 |---|---|---|
-| Harness core + delegation (own-built) | decided in `3.0.0`: trimmed opencode fork, kernel as spine, clean-room orchestration; the fork, bridge and first delegation have since landed (SLICE-007/008 — §5.1), the foreman/supervisor layering above them has not (`RISK-14`) | **Split.** opencode is mature and MIT-forkable; the orchestration patterns are proven by oh-my-openagent in production (patterns only — its code is SUL-1.0); a governed loop with an external kernel as spine has no proven implementation anywhere. That is the genuinely novel part |
-| Owner-facing clarification and installed A/B/C/harness composition | kernel-side authority substrate built in SLICE-029–033 and SLICE-035; owner-facing intake, common admission and the real composed loop are not built | Spec Kit, OpenSpec, XState and Arxic mechanics are pinned/vendored; the Ranex composition remains UNVERIFIED |
+| Harness core + delegation (own-built) | historical trimmed fork, bridge and first delegation landed (SLICE-007/008); the harness lane is stopped and no further production composition is planned in the kernel-only release | **Out of scope for this release.** Historical prior art and implementation remain provenance only |
+| Owner-facing clarification and installed A/B/C/harness composition | kernel-side authority substrate built in SLICE-029–033 and SLICE-035; owner-facing intake, common admission and the real composed loop are not built | Out of scope for the kernel-only initial release; no completion claim |
 | Budget, three-miss stop, escalation | designed; the only machinery serving `C-02`; nothing built | timeouts and circuit breakers are mature CI and distributed-systems patterns; the three-miss product question is a small, novel composition |
 | Background worktree agent manager | `ADR-014` `proposed` (the bridge); milestone #2 and slice issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 — SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability program closes; nothing built. The supervisor, durable run schema, leases, verification, orchestrator and UI are designed in those issues | **Split.** Temporal and DBOS prove the lease/fencing/recovery pattern (DBOS vendored under ADR-014); Codex's Apache-2.0 multi-agent protocol is read; vibe-kanban and Crystal prove the worktree-per-task manager form; the composition — a durable supervisor over N sessions in one governed process — is genuinely novel |
 | Owner-facing intake and full harness compilation path | deterministic closed-DSL projection and manifest generation are built; interactive clarification and installed end-to-end consumption are not | **Split.** specification gates and artifact graphs are mature; the Ranex product composition is unproven |
-| Harness common effect admission | decided by ADR-017; shared service in SLICE-034, family wiring in 037..042 and serialized integration in 043; current visibility/prompts are not authorization | **Split.** reference monitors are mature; capturing every harness leaf is unproven |
+| Harness common effect admission | historical ADR-017 design; shared service/family wiring/integration were withdrawn from this release | **Out of scope.** No harness leaf-admission or production-fanout claim |
 | Rich verdict vocabulary | designed; the kernel has `PASS`/`FAIL` only | an enum and its refusal rules — small; the taxonomy decision is recorded in §4.5 |
 | Independence record, canonical roles | designed in the pre-reset corpus only | no off-the-shelf equivalent; the composition is novel |
 | End-to-end protected-gauge freeze line | approval, B-bound gauges, revocation and continuity components are built in SLICE-029–033 and SLICE-035; full harness enforcement remains unproven | read-only targets are mature; the installed composition remains unproven |
@@ -2075,11 +2090,11 @@ solves this, or would building it be invention?
 | Approver authentication | no design; `RISK-07` | mature elsewhere (signature-bound approval); not yet designed here |
 | Calibration consumption, negative controls | §8.4 names four consequences; none satisfied | negative controls are standard assay practice (§8.4); the machinery is small and unbuilt |
 
-**The system-level verdict.** Every row in §15.1 is a component fact. Real
-delegation and kernel merge have happened, but the approved-specification loop
-has not closed (`RISK-14`, `RISK-25`). ADR-017
-SLICE-034 and SLICE-036..044 are the remaining P0 path to that
-proof; until its real exit runs, the whole stays IMMATURE/UNPROVEN.
+**The system-level verdict.** Every row in §15.1 is a component fact. The
+kernel substrate and serial kernel path exist; the approved-specification
+harness composition and production fanout are withdrawn, not pending release
+gates (`RISK-14`, `RISK-25`). #19 / SLICE-036 is the sole retained next delivery
+and remains qualification-only with publication blocked.
 
 ### 15.3 External maturity and the adoption rule — owner directive, 2026-08-03
 
