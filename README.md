@@ -439,11 +439,17 @@ judge, and merge refusal. Its deterministic successor commits the owner's real
 public key and every signed child input; task identity comes only from the
 controller-owned child-worktree path, and each child is canonically built,
 installed, and host-qualified in place before strict-local execution. An
-external syscall/process observer binds each exact command/cwd/order and
-its manifest-pinned binary identity is independently verified. A separate
+external syscall/process observer targets the resolved absolute development
+Python controller directly—never `uv`—under pinned `/usr/bin/strace -f
+--detach-on=execve -s 8192`, while binding each spawned public `uv`
+command/cwd/order. Its binary identity is independently verified. A separate
 positive calibration starts every child without a launcher or usable report,
-runs the exact public build/install/qualify sequence in that child's cwd, and
+runs the exact public build/install/qualify sequence in that child's cwd across
+both sequential and concurrent siblings, and
 verifies final launcher/report hashes and qualified host state. This release
+uses the existing dependency derivation/approval gate before that observer
+self-test and distinguishes its canonical host-drift result from the still-RED
+actual batch success assertion. This release
 does not claim exhaustive transient-copy or Linux-write-syscall absence;
 replacement followed by independent qualification is sufficient.
 Application-emitted provisioning booleans are not trusted. The

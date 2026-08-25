@@ -40,11 +40,35 @@ installed launcher, or usable qualification report. A positive independent
 calibration constructs all six clean child geometries, runs the exact three
 public commands in each child's cwd, and verifies that child's installed
 launcher digest, canonical report digest, host binding, and `qualified=true`
-state. An external `strace` command observer records only `execve`, process
-ancestry, and cwd changes; it requires the same exact command sequence in every
-actual child before that child's `ranex run`. Its canonical provenance artifact
-is outside the governed repository, and the B-protected manifest pins literal
-`/usr/bin/strace`, its version, and installed-file SHA-256.
+state. The outer observer invokes the already-resolved absolute development
+Python controller directly—never `uv`—under literal `/usr/bin/strace -f
+--detach-on=execve -s 8192`. It records only `execve`, process ancestry, and cwd
+changes while retaining every spawned public `uv run --frozen` argv; it
+requires the same exact command sequence in every actual child before that
+child's `ranex run`. Its focused calibration observes both sequential and
+concurrent sibling controllers. Its canonical provenance artifact is outside
+the governed repository, and the B-protected manifest pins literal
+`/usr/bin/strace`, its version, and installed-file SHA-256. The canonical inner
+host-confinement tracer and all final launcher/report/host checks are unchanged.
+Installed strace 6.8 behavior is frozen explicitly: the controller's launch-time
+`execve` is recorded while the root remains traced, and each later child
+`execve` is recorded before that child detaches. Losing the root necessarily
+fails the closed 24-execution calibration (18 host steps plus six runs). The observer rejects any extra or duplicate
+child execution and matches the complete signed `ranex run --confinement
+strict-local` argv, whose existing public session owner performs the canonical
+full host-state drift verification. The successor intentionally commits no
+mutable dependency journal, so the calibration first uses the child base's
+existing public `deps fetch`, `deps approve`, and `journal verify` path. Those
+commands prepare governed admission before tracing; they are not child host
+provisioning observations. On the current broker-qualified host the exact run
+then reaches that canonical verifier and returns its exact
+`E-C18-HOST-DRIFT` cgroup refusal. That closed self-calibration is separate
+from the actual batch success assertion, which remains RED at the absent batch
+parser and may not turn the verifier refusal into qualification.
+The B-bound child command uses pinned-toolchain name `python3` (verified as
+`/usr/bin/python3` by the current resolver), while the public controller argv
+remains `uv run --frozen python -m ranex.cli.main ...`; this distinction keeps
+the controller public and makes the confined bound executable admissible.
 
 This release does not claim to prove the absence of every transient filesystem
 copy or model every Linux write syscall. Copying that is subsequently replaced
@@ -170,8 +194,16 @@ grammar and behavior.
    launcher or usable qualification report, independently runs the three exact
    public host-confinement commands in that child's cwd, and verifies its final
    launcher/report digests and qualified host binding. A manifest-pinned command
-   observer—not application output—proves the same exact sequence and child cwd
-   before every actual child run and records one canonical provenance artifact.
+   observer—not application output—targets the resolved absolute development
+   Python controller directly with `-f --detach-on=execve -s 8192`, never wraps
+   `uv`, and proves the same exact spawned public `uv` sequence and child cwd
+   before every actual child run. Sequential and concurrent sibling
+   calibrations both produce one canonical provenance artifact. Because the
+   deterministic successor has no mutable dependency journal, the observer
+   self-test invokes the existing child-base dependency derivation, approval,
+   and journal verification commands before tracing. Its exact full signed run
+   must then either pass or return only the existing canonical host-drift
+   verifier refusal; actual batch qualification is asserted separately.
    The release deliberately makes no exhaustive transient-copy or Linux-syscall
    absence claim; the canonical sequence must replace any prior bytes. Six
    B-bound fixtures drive public CLI refusal arms for input/path mismatch,

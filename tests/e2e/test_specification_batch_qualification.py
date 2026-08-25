@@ -31,6 +31,7 @@ from pathlib import Path
 import _prereqs
 import pytest
 
+from ranex.cli.toolchain import resolve_tool
 from ranex.foundation.canonical import (
     canonical_json_bytes,
     canonical_sha256,
@@ -112,10 +113,18 @@ OBSERVER_TRACE_SYSCALLS = (
 )
 PORTS = range(46120, 46136)
 SURVIVOR_TOKEN = b"ranex-slice036-survivor-control-v1"
+CHILD_RUN_ARGV = tuple(
+    json.loads(
+        (FIXTURES / "approved-batch-child-requests-v1.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()[0]
+    )["invocation"]["argv"]
+)
 
 
 @dataclass(frozen=True)
 class DevelopmentSource:
+    controller_python: Path
     manifest_digest: str
     module_path: Path
     pythonpath: Path
@@ -134,6 +143,8 @@ class GovernedProvisioning:
 @dataclass(frozen=True)
 class TracedProcess:
     completed: subprocess.CompletedProcess[str]
+    controller_argv: tuple[str, ...]
+    controller_python: Path
     trace_path: Path
 
 
@@ -522,20 +533,30 @@ def observe_development_source(governed: Path) -> tuple[DevelopmentSource, str]:
         "--frozen",
         "python",
         "-c",
-        "from pathlib import Path; import ranex.cli.main; "
-        "print(Path(ranex.cli.main.__file__).resolve())",
+        "import json, sys; from pathlib import Path; import ranex.cli.main; "
+        "print(json.dumps({'controller_python': str(Path(sys.executable).resolve()), "
+        "'module_path': str(Path(ranex.cli.main.__file__).resolve())}, "
+        "sort_keys=True, separators=(',', ':')))",
         cwd=governed,
         env=cli_environment(development_source=pythonpath),
     )
     assert completed.returncode == 0, completed.stderr
-    observed_module = Path(completed.stdout.strip())
+    observed = json.loads(completed.stdout)
+    assert set(observed) == {"controller_python", "module_path"}
+    controller_python = Path(observed["controller_python"])
+    observed_module = Path(observed["module_path"])
+    assert controller_python.is_absolute() and controller_python.is_file()
+    assert controller_python.resolve() == controller_python
+    assert controller_python != Path(shutil.which("uv") or "uv").resolve()
     assert observed_module == expected_module
     source = DevelopmentSource(
+        controller_python=controller_python,
         manifest_digest=source_manifest_digest(ROOT),
         module_path=observed_module,
         pythonpath=pythonpath,
     )
     record = {
+        "controller_python": str(source.controller_python),
         "event": "development.source",
         "manifest_digest": source.manifest_digest,
         "module_path": str(source.module_path),
@@ -546,7 +567,7 @@ def observe_development_source(governed: Path) -> tuple[DevelopmentSource, str]:
 
 
 def provision_strict_local(governed: Path) -> tuple[GovernedProvisioning, str]:
-    """Run and independently verify the repository's public host controller."""
+    """Run the repository's public host controller, then verify its result."""
 
     controller = [
         shutil.which("uv") or "uv",
@@ -564,6 +585,65 @@ def provision_strict_local(governed: Path) -> tuple[GovernedProvisioning, str]:
             env=cli_environment(),
         )
         assert completed.returncode == 0, completed.stdout + completed.stderr
+
+    return verify_strict_local(governed)
+
+
+def provision_dependency_admission(governed: Path) -> None:
+    """Use the existing public dependency gate before exercising real ``run``."""
+
+    controller = [
+        shutil.which("uv") or "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "ranex.cli.main",
+    ]
+    environment = dict(os.environ)
+    environment.pop("VIRTUAL_ENV", None)
+    environment["PYTHONPATH"] = str((governed / "src").resolve())
+    journal = governed / "governance/journal.sqlite3"
+    assert journal_snapshot(journal) == (0, None)
+    fetched = run(
+        *controller,
+        "deps",
+        "fetch",
+        "--repository",
+        ".",
+        cwd=governed,
+        env=environment,
+    )
+    assert fetched.returncode == 0, fetched.stdout + fetched.stderr
+    assert "FETCHED" in fetched.stdout
+    approved = run(
+        *controller,
+        "deps",
+        "approve",
+        "--repository",
+        ".",
+        "--approver",
+        "slice036-observer-calibration",
+        cwd=governed,
+        env=environment,
+    )
+    assert approved.returncode == 0, approved.stdout + approved.stderr
+    assert "APPROVED" in approved.stdout
+    verified = run(
+        *controller,
+        "journal",
+        "verify",
+        "--repository",
+        ".",
+        cwd=governed,
+        env=environment,
+    )
+    assert verified.returncode == 0, verified.stdout + verified.stderr
+    assert "chain=verified" in verified.stdout
+
+
+def verify_strict_local(governed: Path) -> tuple[GovernedProvisioning, str]:
+    """Independently verify one child's final strict-local state."""
 
     manifest_path = governed / LAUNCHER_MANIFEST
     profile_path = governed / HOST_PROFILE
@@ -675,35 +755,72 @@ def invoke(
     )
 
 
-def invoke_traced(
-    command: list[str],
+def trace_direct_controller(
+    controller_arguments: list[str],
     *,
     checkout: Path,
-    signing_key: Path,
+    controller_python: Path,
+    environment: dict[str, str],
     trace_path: Path,
 ) -> TracedProcess:
-    """Run the real CLI below an external syscall/process observer."""
+    """Trace one resolved Python controller and detach each child at exec."""
 
     strace = pinned_strace()
+    assert controller_python.is_absolute() and controller_python.is_file()
+    assert controller_python.resolve() == controller_python
+    assert controller_python != Path(shutil.which("uv") or "uv").resolve()
     assert not trace_path.resolve().is_relative_to(checkout.resolve())
+    controller_argv = (str(controller_python), *controller_arguments)
+    # Installed strace 6.8 records the launch-time controller exec and remains
+    # attached to that root; each later child exec is recorded with
+    # ``<detached ...>``.  The six-child calibration below discriminates this
+    # behavior: losing the root would make all 24 closed child execs absent.
     completed = run(
         str(strace),
         "-f",
-        "-qq",
-        "-ttt",
+        "--detach-on=execve",
         "-s",
         "8192",
+        "-qq",
+        "-ttt",
         "-yy",
         "-e",
         OBSERVER_TRACE_SYSCALLS,
         "-o",
         str(trace_path),
-        *command,
+        *controller_argv,
         cwd=checkout,
-        env=cli_environment(signing_key=signing_key),
+        env=environment,
     )
     assert trace_path.is_file()
-    return TracedProcess(completed=completed, trace_path=trace_path)
+    return TracedProcess(
+        completed=completed,
+        controller_argv=controller_argv,
+        controller_python=controller_python,
+        trace_path=trace_path,
+    )
+
+
+def invoke_traced(
+    command: list[str],
+    *,
+    checkout: Path,
+    controller_python: Path,
+    signing_key: Path,
+    trace_path: Path,
+) -> TracedProcess:
+    """Run the real CLI below the direct-controller external observer."""
+
+    uv_executable = Path(shutil.which("uv") or "uv").resolve()
+    assert Path(command[0]).resolve() == uv_executable
+    assert command[1:4] == ["run", "--frozen", "python"]
+    return trace_direct_controller(
+        command[4:],
+        checkout=checkout,
+        controller_python=controller_python,
+        environment=cli_environment(signing_key=signing_key),
+        trace_path=trace_path,
+    )
 
 
 def observe_child_provisioning(
@@ -711,6 +828,7 @@ def observe_child_provisioning(
     *,
     governed: Path,
     provenance_path: Path,
+    sibling_modes: dict[str, str] | None = None,
 ) -> str:
     """Observe exact per-child public commands and ordering, not filesystem history."""
 
@@ -793,6 +911,16 @@ def observe_child_provisioning(
         assert cwd is not None, line
         executions.append((pid, timestamp, cwd, argv))
 
+    assert root_pid is not None
+    controller_executions = [
+        argv for pid, _, _, argv in executions if pid == root_pid
+    ]
+    assert controller_executions == [list(traced.controller_argv)]
+    assert Path(controller_executions[0][0]) == traced.controller_python
+    assert Path(controller_executions[0][0]).resolve() != Path(
+        shutil.which("uv") or "uv"
+    ).resolve()
+
     def geometry(cwd: Path) -> tuple[str, str, int] | None:
         if cwd.parent.parent.name != "children":
             return None
@@ -811,7 +939,7 @@ def observe_child_provisioning(
     }
     uv_executable = Path(shutil.which("uv") or "uv").resolve()
     host_prefix = ["run", "--frozen", "python", "-m", "ranex.cli.host_confinement"]
-    run_prefix = ["run", "--frozen", "python", "-m", "ranex.cli.main", "run"]
+    exact_run = ["run", "--frozen", *CHILD_RUN_ARGV]
     observed: dict[tuple[str, str, int], list[tuple[float, tuple[str, ...]]]] = {}
     child_runs: dict[tuple[str, str, int], float] = {}
     roots: dict[tuple[str, str, int], set[Path]] = {}
@@ -825,13 +953,45 @@ def observe_child_provisioning(
             arguments = tuple(argv[6:])
             assert arguments in HOST_PROVISIONING_COMMANDS
             observed.setdefault(current, []).append((timestamp, arguments))
-        if argv[1:7] == run_prefix:
+        elif argv[1:] == exact_run:
             assert Path(argv[0]).resolve() == uv_executable
-            child_runs.setdefault(current, timestamp)
+            assert current not in child_runs
+            child_runs[current] = timestamp
+        else:
+            raise AssertionError(f"unexpected child execution in {cwd}: {argv}")
 
     assert set(observed) == expected
     assert set(child_runs) == expected
     assert set(roots) == expected
+    if sibling_modes is not None:
+        assert sibling_modes == {
+            "a-before-b": "sequential",
+            "b-before-a": "concurrent",
+        }
+        first, second, joined = DESCRIPTOR["children"]
+        sequential = [
+            ("a-before-b", first, 0),
+            ("a-before-b", second, 0),
+            ("a-before-b", joined, 0),
+        ]
+        assert child_runs[sequential[0]] < min(
+            timestamp for timestamp, _ in observed[sequential[1]]
+        )
+        assert child_runs[sequential[1]] < min(
+            timestamp for timestamp, _ in observed[sequential[2]]
+        )
+        concurrent = [
+            ("b-before-a", first, 0),
+            ("b-before-a", second, 0),
+        ]
+        assert max(
+            min(timestamp for timestamp, _ in observed[current])
+            for current in concurrent
+        ) < min(child_runs[current] for current in concurrent)
+        concurrent_join = ("b-before-a", joined, 0)
+        assert max(child_runs[current] for current in concurrent) < min(
+            timestamp for timestamp, _ in observed[concurrent_join]
+        )
     records = []
     observer_root = Path(os.path.abspath(os.fspath(governed.parent)))
     for current in sorted(expected):
@@ -854,14 +1014,18 @@ def observe_child_provisioning(
 
     assert not provenance_path.resolve().is_relative_to(governed.resolve())
     provenance = {
+        "controller_argv": list(traced.controller_argv),
+        "controller_python": str(traced.controller_python),
         "observer": "strace-execve-chdir-v1",
         "observer_tool": EXPECTED_VALUES["child_provisioning"]["observer_tool"],
         "records": records,
+        "sibling_modes": sibling_modes,
         "version": "slice036-child-command-observer-v1",
     }
     provenance_path.write_bytes(canonical_json_bytes(provenance))
     assert json.loads(provenance_path.read_bytes()) == provenance
     event = {
+        "controller_python": str(traced.controller_python),
         "event": "child.provisioning.observed",
         "executions_digest": "sha256:" + canonical_sha256(provenance),
         "observer": provenance["observer"],
@@ -874,36 +1038,177 @@ def observe_child_provisioning(
     return canonical_json_bytes(event).decode("utf-8") + "\n"
 
 
-def calibrate_child_provisioning_release_invariant(root: Path) -> str:
-    """Start clean, provision each child publicly, then verify its final state."""
+def calibrate_child_provisioning_release_invariant(
+    root: Path,
+    *,
+    controller_python: Path,
+    signing_key: Path,
+) -> str:
+    """Trace sequential/concurrent siblings, then verify every final child state."""
 
-    records = []
+    children: dict[tuple[str, str], Path] = {}
+    rows = [
+        json.loads(line)
+        for line in (FIXTURES / "approved-batch-child-requests-v1.jsonl")
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    assert {tuple(row["invocation"]["argv"]) for row in rows} == {CHILD_RUN_ARGV}
+    assert "--confinement" in CHILD_RUN_ARGV
+    assert CHILD_RUN_ARGV[CHILD_RUN_ARGV.index("--confinement") + 1] == "strict-local"
+    separator = CHILD_RUN_ARGV.index("--")
+    assert CHILD_RUN_ARGV[separator + 1] == "python3"
+    assert resolve_tool("python3") == Path("/usr/bin/python3").resolve()
     for flow_id in ("a-before-b", "b-before-a"):
         for task_id in DESCRIPTOR["children"]:
             child = materialize_governed_checkout(
                 root / flow_id / "children" / task_id / "attempt-0"
             )
+            children[(flow_id, task_id)] = child
             assert git(child, "status", "--porcelain") == ""
             assert not (child / LAUNCHER_BUILD).exists()
             assert not (child / INSTALLED_LAUNCHER).exists()
             assert not (child / QUALIFICATION_REPORT).exists()
-            provisioning, _ = provision_strict_local(child)
-            report = json.loads((child / QUALIFICATION_REPORT).read_bytes())
-            assert report["qualified"] is True and report["refusal"] is None
-            assert file_digest(child / INSTALLED_LAUNCHER) == provisioning.artifact_digest
-            assert file_digest(child / QUALIFICATION_REPORT) == provisioning.report_digest
-            records.append(
-                {
-                    "artifact_digest": provisioning.artifact_digest,
-                    "flow_id": flow_id,
-                    "qualified": True,
-                    "report_digest": provisioning.report_digest,
-                    "task_id": task_id,
-                }
-            )
+            # The deterministic successor commits dependency inputs, but a
+            # journal is deliberately not part of the commit.  Exercise the
+            # existing derivation/approval owner so the exact real child run
+            # reaches the canonical strict-local session verifier.
+            provision_dependency_admission(child)
+
+    plan = {
+        "commands": [list(arguments) for arguments in HOST_PROVISIONING_COMMANDS],
+        "concurrent": [
+            str(children[("b-before-a", task_id)])
+            for task_id in DESCRIPTOR["children"][:2]
+        ],
+        "concurrent_after": str(
+            children[("b-before-a", DESCRIPTOR["children"][2])]
+        ),
+        "sequential": [
+            str(children[("a-before-b", task_id)])
+            for task_id in DESCRIPTOR["children"]
+        ],
+        "run": [
+            str(Path(shutil.which("uv") or "uv").resolve()),
+            "run",
+            "--frozen",
+            *CHILD_RUN_ARGV,
+        ],
+        "results": str(root / "controller-results.json"),
+        "uv": str(Path(shutil.which("uv") or "uv").resolve()),
+    }
+    plan_path = root / "controller-plan.json"
+    plan_path.write_bytes(canonical_json_bytes(plan))
+    controller = """\
+import json, os, subprocess, sys, threading
+from concurrent.futures import ThreadPoolExecutor
+
+p = json.load(open(sys.argv[1], encoding="utf-8"))
+host = [p["uv"], "run", "--frozen", "python", "-m", "ranex.cli.host_confinement"]
+child_run = p["run"]
+results = []
+lock = threading.Lock()
+
+def one(cwd):
+    for command in p["commands"]:
+        subprocess.run(host + command, cwd=cwd, env=os.environ, check=True)
+    completed = subprocess.run(
+        child_run,
+        cwd=cwd,
+        env=os.environ,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    with lock:
+        results.append(
+            {
+                "cwd": cwd,
+                "returncode": completed.returncode,
+                "stderr": completed.stderr,
+            }
+        )
+
+for cwd in p["sequential"]:
+    one(cwd)
+with ThreadPoolExecutor(max_workers=2) as pool:
+    futures = [pool.submit(one, cwd) for cwd in p["concurrent"]]
+    for future in futures:
+        future.result()
+one(p["concurrent_after"])
+with open(p["results"], "w", encoding="utf-8") as destination:
+    json.dump(results, destination, sort_keys=True, separators=(",", ":"))
+"""
+    traced = trace_direct_controller(
+        ["-c", controller, str(plan_path)],
+        checkout=root,
+        controller_python=controller_python,
+        environment=cli_environment(signing_key=signing_key),
+        trace_path=root.parent / "child-provisioning-calibration.strace",
+    )
+    assert traced.completed.returncode == 0, (
+        traced.completed.stdout + traced.completed.stderr
+    )
+    outcomes = json.loads(Path(plan["results"]).read_bytes())
+    assert {outcome["cwd"] for outcome in outcomes} == {
+        str(child) for child in children.values()
+    }
+    assert len(outcomes) == 6
+    verifier_outcomes = set()
+    for outcome in outcomes:
+        assert set(outcome) == {"cwd", "returncode", "stderr"}
+        if outcome["returncode"] == 0:
+            verifier_outcomes.add("passed")
+            continue
+        assert outcome == {
+            "cwd": outcome["cwd"],
+            "returncode": 2,
+            "stderr": (
+                "ERROR  E-C18-HOST-DRIFT: cgroup delegation drifted "
+                "since qualification\n"
+            ),
+        }
+        verifier_outcomes.add("E-C18-HOST-DRIFT")
+    # Every exact child run above crosses the existing public strict-local
+    # session owner, which performs the canonical full host-state drift check
+    # before opening the launcher.  The independent reads below then verify
+    # the resulting launcher/report bytes and qualified state.
+    observer_event = json.loads(
+        observe_child_provisioning(
+            traced,
+            governed=root,
+            provenance_path=root.parent / "child-provisioning-calibration-observer.json",
+            sibling_modes={
+                "a-before-b": "sequential",
+                "b-before-a": "concurrent",
+            },
+        )
+    )
+    assert observer_event["run_count"] == 6
+    assert observer_event["step_count"] == 18
+
+    records = []
+    for (flow_id, task_id), child in sorted(children.items()):
+        provisioning, _ = verify_strict_local(child)
+        report = json.loads((child / QUALIFICATION_REPORT).read_bytes())
+        assert report["qualified"] is True and report["refusal"] is None
+        assert file_digest(child / INSTALLED_LAUNCHER) == provisioning.artifact_digest
+        assert file_digest(child / QUALIFICATION_REPORT) == provisioning.report_digest
+        records.append(
+            {
+                "artifact_digest": provisioning.artifact_digest,
+                "flow_id": flow_id,
+                "qualified": True,
+                "report_digest": provisioning.report_digest,
+                "task_id": task_id,
+            }
+        )
     assert len(records) == 6
     event = {
+        "canonical_verifier_outcomes": sorted(verifier_outcomes),
         "event": "child.provisioning.calibrated",
+        "observation_modes": ["sequential", "concurrent-siblings"],
+        "observer_executions_digest": observer_event["executions_digest"],
         "records_digest": "sha256:" + canonical_sha256({"records": records}),
         "run_count": len(records),
         "version": "slice036-child-provisioning-release-v1",
@@ -1180,15 +1485,19 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
 
     sandbox = tmp_path / "slice036"
     sandbox.mkdir()
-    child_calibration_transcript = calibrate_child_provisioning_release_invariant(
-        sandbox / "child-provisioning-calibration"
-    )
     governed = materialize_governed_checkout(sandbox / "governed")
     governed_source_before = source_manifest(governed)
     development_source, source_transcript = observe_development_source(governed)
+    signing_key = materialize_signing_key(tmp_path / "slice036-owner.key")
+    child_calibration_transcript = calibrate_child_provisioning_release_invariant(
+        sandbox / "child-provisioning-calibration",
+        controller_python=development_source.controller_python,
+        signing_key=signing_key,
+    )
     provisioning, provisioning_transcript = provision_strict_local(governed)
     assert not development_source.module_path.is_relative_to(governed.resolve())
     provenance_record = {
+        "controller_python": str(development_source.controller_python),
         "governed_repository": str(governed.resolve()),
         "manifest_digest": development_source.manifest_digest,
         "module_path": str(development_source.module_path),
@@ -1198,7 +1507,6 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     provenance_path = sandbox / "source-provenance.json"
     provenance_path.write_bytes(canonical_json_bytes(provenance_record))
     assert json.loads(provenance_path.read_bytes()) == provenance_record
-    signing_key = materialize_signing_key(tmp_path / "slice036-owner.key")
     authority = materialize_authority(sandbox / "authority")
     journal = governed / "governance/journal.sqlite3"
     outcome = sandbox / "outcomes"
@@ -1219,6 +1527,7 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     traced = invoke_traced(
         positive_command,
         checkout=governed,
+        controller_python=development_source.controller_python,
         signing_key=signing_key,
         trace_path=sandbox / "child-provisioning.strace",
     )

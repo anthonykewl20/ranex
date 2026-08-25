@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-25 (SLICE-036 CCR-3 correction pre-OCR)
+**Updated:** 2026-08-26 (SLICE-036 outer-observer correction)
 **Active slice:** `docs/slices/SLICE-036-approved-batch-qualification.md`
 ## Where we stopped
 Milestone 4 is closed with partial delivery, not full-program completion; retained kernel/framework work: #34–#38 (SLICE-054–058). #39/SLICE-059
@@ -22,16 +22,16 @@ review. The deterministic governed successor commits the owner's real public
 key and every A/B/C/D child input; signed child argv derives task identity from
 controller-owned worktree geometry with no task-id environment channel. Every
 child is canonically launcher-built, installed, and host-qualified in its own clean
-checkout before strict-local execution. A manifest-pinned observer binds exact public
-command cwd/order before run; clean-child calibration verifies final launcher/report
-hashes and qualified state without claiming transient-copy or syscall absence.
+checkout before strict-local execution. Pinned outer `/usr/bin/strace` targets the
+resolved absolute development Python directly—never `uv`—and binds spawned command cwd/order across sibling modes; its self-test uses the existing dependency gate and
+canonical host verifier separately from actual-batch success. Final-state checks make no transient-copy claim.
 Publication admission uses equal immutable base/candidate/tip keyring bytes.
 Staged development source remains outside the governed checkout, transcript-bound
 by an independently recomputed manifest digest and exact module path. The actual
 qualification is evidence-v4-signed, bound to its `batch-qualified` row, and
 refused by additive batch-aware judge/merge before any legacy write.
-Implementation remains unauthorized until external review approves
-CCR-3, the specification owner accepts it, and `status:ready` is applied.
+Implementation resumes only after this narrow frozen-test correction passes OCR
+and its exact commit is verified on `main`; `status:ready` remains authoritative.
 No harness, broker, task-family proof, or production-exit slice gates it.
 ## Governance (owner, 2026-08-25)
 Current release: kernel-only initial release; one open slice and one mutation

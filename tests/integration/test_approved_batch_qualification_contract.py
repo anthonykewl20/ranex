@@ -95,9 +95,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-10"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 8
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v10"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-12"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 10
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v12"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -256,6 +256,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "source_in_governed_repository": False,
     }
     parent_policy = PolicyCapabilities.from_record(DESCRIPTOR["policy"])
+    assert parent_policy.executable == "python3"
     assert parent_policy.digest == VECTORS["triple"]["c_payload"][
         "profile_digests"
     ]["policy"]
@@ -285,6 +286,9 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
             exact_argv = row["invocation"]["argv"]
         assert row["invocation"]["argv"] == exact_argv
         assert row["capability_request"]["argv"] == exact_argv[-2:]
+        assert row["capability_request"]["executable"] == "python3"
+        separator = row["invocation"]["argv"].index("--")
+        assert row["invocation"]["argv"][separator + 1] == "python3"
         assert row["capability_request"]["cwd"] == "."
         assert row["capability_request"]["environment"] == {
             "allow": ["LC_ALL", "TZ"]
@@ -309,7 +313,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         assert row["checks"] == [
             {
                 "check_id": "slice036-network-process-and-exit",
-                "command": ["python", *row["capability_request"]["argv"]],
+                "command": ["python3", *row["capability_request"]["argv"]],
             }
         ]
         for evidence in row["evidence"]:
@@ -398,6 +402,53 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     assert provisioning["manual_local_copy"] is False
     assert provisioning["application_events_trusted"] is False
     assert provisioning["observer"] == "strace-execve-chdir-v1"
+    assert provisioning["outer_command_prefix"] == [
+        "/usr/bin/strace",
+        "-f",
+        "--detach-on=execve",
+        "-s",
+        "8192",
+    ]
+    assert provisioning["controller_target"] == (
+        "resolved-absolute-development-python-direct-never-uv"
+    )
+    assert provisioning["sibling_observation"] == [
+        "sequential",
+        "concurrent-siblings",
+    ]
+    assert provisioning["run_argv_source"] == (
+        "B-bound-byte-identical-child-invocation"
+    )
+    assert provisioning["dependency_admission"] == {
+        "commands": [
+            ["deps", "fetch", "--repository", "."],
+            [
+                "deps",
+                "approve",
+                "--repository",
+                ".",
+                "--approver",
+                "slice036-observer-calibration",
+            ],
+            ["journal", "verify", "--repository", "."],
+        ],
+        "controller": [
+            "uv",
+            "run",
+            "--frozen",
+            "python",
+            "-m",
+            "ranex.cli.main",
+        ],
+        "development_source": False,
+        "phase": "observer-calibration-before-trace",
+    }
+    assert provisioning["canonical_verifier"] == {
+        "accepted_self_test_outcomes": ["passed", "E-C18-HOST-DRIFT"],
+        "actual_batch_success_separate": True,
+        "invocation": "exact-full-B-bound-ranex-run-argv",
+        "owner": "ranex run --confinement strict-local",
+    }
     assert provisioning["observer_tool"] == {
         "path": "/usr/bin/strace",
         "sha256": (
@@ -414,10 +465,17 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     )
     assert provisioning["transient_copy_absence_required"] is False
     assert set(provisioning["required_observations"]) == {
+        "canonical_public_host_verifier",
+        "canonical_verifier_outcome_closed",
         "child_cwd_geometry",
         "clean_initial_qualification_state",
+        "closed_child_exec_multiset",
         "command_order_before_run",
+        "controller_python_absolute",
+        "controller_target_not_uv",
+        "dependency_derivation_approval_verified",
         "exact_exec_argv",
+        "exact_full_run_argv",
         "exact_public_commands",
         "final_child_launcher_digest",
         "final_child_report_digest",
@@ -425,6 +483,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "observer_tool_digest",
         "observer_tool_version",
         "run_count",
+        "sequential_and_concurrent_siblings",
         "step_count",
     }
 
