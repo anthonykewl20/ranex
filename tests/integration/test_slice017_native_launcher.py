@@ -82,7 +82,9 @@ RESPONSE_LIMIT = 65_536
 # it for ruff 0.16.2 isort reordering only: the two ranex.observability
 # import statements re-split their names into canonical order; no other
 # statement added, removed, or changed.
-MAIN_PY_SHA256 = "996939c90ebd85f7cf9e253708d42967ec9e6fafd61d5329730dcdc9a109b6d7"
+# SLICE-070's sanctioned sole main.py change is the strict-local runtime-profile
+# selector from v1 to v2; the whole-file pin remains the Gate 10 authority.
+MAIN_PY_SHA256 = "d59b7428931414ce54a31e081f79ad3c9cd04c72433794b64143d424a35b8a4a"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
