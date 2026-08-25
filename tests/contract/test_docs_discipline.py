@@ -33,7 +33,7 @@ _SKIP_DIRS = {
 }
 
 _SLICE_NAME = re.compile(r"^SLICE-\d{3}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
-_STATUS = re.compile(r"^\*\*Status:\*\*\s+(open|done)\s*$", re.MULTILINE)
+_STATUS = re.compile(r"^\*\*Status:\*\*\s+(open|blocked|done)\s*$", re.MULTILINE)
 
 _ADR_NAME = re.compile(r"^ADR-\d{3}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 _ADR_STATUS = re.compile(
@@ -400,7 +400,40 @@ def test_every_slice_declares_a_status(done: bool) -> None:
         for path in _slice_files(done=done)
         if _STATUS.search(path.read_text(encoding="utf-8")) is None
     ]
-    assert not missing, f"slices without a '**Status:** open|done' line: {missing}"
+    assert not missing, (
+        "slices without a '**Status:** open|blocked|done' line: " f"{missing}"
+    )
+
+
+def test_blocked_slice_does_not_consume_the_single_open_slot(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A named dependency pauses work without pretending that it is done."""
+
+    blocked = tmp_path / "SLICE-998-blocked.md"
+    blocked.write_text("# blocked\n\n**Status:** blocked\n", encoding="utf-8")
+    active = tmp_path / "SLICE-999-active.md"
+    active.write_text("# active\n\n**Status:** open\n", encoding="utf-8")
+    monkeypatch.setattr(
+        sys.modules[__name__], "_slice_files", lambda *, done: [] if done else [blocked, active]
+    )
+
+    test_at_most_one_slice_is_open()
+
+
+def test_unknown_slice_status_is_still_refused(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Adding ``blocked`` does not turn status into an open vocabulary."""
+
+    unknown = tmp_path / "SLICE-999-paused.md"
+    unknown.write_text("# paused\n\n**Status:** paused\n", encoding="utf-8")
+    monkeypatch.setattr(
+        sys.modules[__name__], "_slice_files", lambda *, done: [] if done else [unknown]
+    )
+
+    with pytest.raises(AssertionError, match=r"open\|blocked\|done"):
+        test_every_slice_declares_a_status(False)
 
 
 def test_state_stays_a_pointer_not_a_log() -> None:

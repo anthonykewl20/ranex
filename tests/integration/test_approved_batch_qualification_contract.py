@@ -12,6 +12,7 @@ from __future__ import annotations
 import hashlib
 import json
 import sqlite3
+import subprocess
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -59,8 +60,8 @@ NEGATIVE_CONTROLS = json.loads(
     (FIXTURES / "approved-batch-negative-controls-v1.json").read_text()
 )
 FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
-BASE_COMMIT = "2576c144f9f1e705dffc32d71f2a02563c94e4e0"
-SUBJECT_DIGEST = "sha256:8da54cc69dc14c368720abbeb98d2c6b52de166de5117f4d809b8a4c521507ad"
+BASE_COMMIT = "a0cbee4b1ac88fa143a5f4c2835c1da09989618c"
+SUBJECT_DIGEST = "sha256:920a1588d1f9cfcc36a07c7d0b296ad319afb9b120db534b8e0237804b1df9f8"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 
 
@@ -95,9 +96,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-12"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 10
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v12"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-13"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 11
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v13"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -205,22 +206,17 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     assert VECTORS["triple"]["c_payload"]["base_digest"] == SUBJECT_DIGEST
     assert VECTORS["triple"]["c_payload"]["subject_digest"] == SUBJECT_DIGEST
     successor = EXPECTED_VALUES["fixture_successor"]
-    assert successor == {
+    assert {key: successor[key] for key in successor if key != "committed_paths"} == {
         "author_email": "fixture@ranex.invalid",
         "author_name": "Ranex Fixture",
         "commit": BASE_COMMIT,
         "commit_date": "2000-01-01T00:00:00 +0000",
-        "committed_paths": [
-            "governance/producers.yaml",
-            "governance/qualification/inputs/SLICE-036-child-A.json",
-            "governance/qualification/inputs/SLICE-036-child-B.json",
-            "governance/qualification/inputs/SLICE-036-child-C.json",
-            "governance/qualification/inputs/SLICE-036-child-D.json",
-        ],
-        "message": "test(SLICE-036): materialize governed qualification fixture",
+        "message": "test(SLICE-036): materialize governed static-worker fixture",
         "parent": FIXTURE_PARENT_COMMIT,
         "subject_digest": SUBJECT_DIGEST,
     }
+    assert len(successor["committed_paths"]) == 29
+    assert "governance/qualification/worker/slice036-worker" in successor["committed_paths"]
     assert EXPECTED_VALUES["committed_keyring_observers"] == {
         "admission": "existing load_keyring_text plus admit",
         "descriptor_role": "cross-check-only-never-trust-root",
@@ -256,7 +252,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "source_in_governed_repository": False,
     }
     parent_policy = PolicyCapabilities.from_record(DESCRIPTOR["policy"])
-    assert parent_policy.executable == "python3"
+    assert parent_policy.executable == "/ranex/toolchain/bin/slice036-worker"
     assert parent_policy.digest == VECTORS["triple"]["c_payload"][
         "profile_digests"
     ]["policy"]
@@ -285,10 +281,13 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         if exact_argv is None:
             exact_argv = row["invocation"]["argv"]
         assert row["invocation"]["argv"] == exact_argv
-        assert row["capability_request"]["argv"] == exact_argv[-2:]
-        assert row["capability_request"]["executable"] == "python3"
+        assert row["capability_request"]["argv"] == ["--task"]
+        assert row["capability_request"]["executable"] == "/ranex/toolchain/bin/slice036-worker"
         separator = row["invocation"]["argv"].index("--")
-        assert row["invocation"]["argv"][separator + 1] == "python3"
+        assert row["invocation"]["argv"][separator + 1 :] == [
+            "/ranex/toolchain/bin/slice036-worker",
+            "--task",
+        ]
         assert row["capability_request"]["cwd"] == "."
         assert row["capability_request"]["environment"] == {
             "allow": ["LC_ALL", "TZ"]
@@ -305,7 +304,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         assert intersection.environment_allow == ("LC_ALL", "TZ")
         assert "RANEX_BATCH_TASK_ID" not in json.dumps(row)
         expected_input = (
-            f"governance/qualification/inputs/{row['task_id']}.json"
+            f"governance/qualification/inputs/{row['task_id']}"
         )
         assert row["invocation"]["runtime_input_path"] == expected_input
         assert expected_input in row["scope"]["roots"]
@@ -313,7 +312,10 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         assert row["checks"] == [
             {
                 "check_id": "slice036-network-process-and-exit",
-                "command": ["python3", *row["capability_request"]["argv"]],
+                "command": [
+                    "/ranex/toolchain/bin/slice036-worker",
+                    *row["capability_request"]["argv"],
+                ],
             }
         ]
         for evidence in row["evidence"]:
@@ -373,13 +375,15 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     assert SCHEMA["$defs"]["childRequest"]["properties"]["invocation"][
         "properties"
     ]["runtime_input_path"]["pattern"] == (
-        r"^governance/qualification/inputs/[A-Za-z0-9-]+\.json$"
+        r"^governance/qualification/inputs/[A-Za-z0-9-]+$"
     )
     assert EXPECTED_VALUES["child_input_geometry"] == {
         "attempt_path": "<root>/children/<task-id>/attempt-<n>",
         "embedded_task_id_must_match": True,
-        "input_path": "governance/qualification/inputs/<task-id>.json",
-        "task_id_source": "controller-owned-worktree-path",
+        "input_path": "governance/qualification/inputs/<task-id>",
+        "mounted_file": "/ranex/input/task.json",
+        "selection": "signed-directory plus closed flow-id/task-id/attempt member",
+        "task_id_source": "signed-runtime-input-object",
         "tracked_at_base": True,
         "worker_environment": ["LC_ALL", "TZ"],
         "worktree_clean_before_run": True,
@@ -444,8 +448,17 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "phase": "observer-calibration-before-trace",
     }
     assert provisioning["canonical_verifier"] == {
-        "accepted_self_test_outcomes": ["passed", "E-C18-HOST-DRIFT"],
+        "accepted_self_test_outcomes": ["passed"],
         "actual_batch_success_separate": True,
+        "current_preimplementation_refusal": (
+            "missing-v2-fixed-toolchain-executable-resolution"
+        ),
+        "expected_progression": [
+            "v2 fixed-toolchain execution succeeds",
+            "batch parser/application seams are RED",
+            "batch parser/application lands",
+            "frozen journey succeeds",
+        ],
         "invocation": "exact-full-B-bound-ranex-run-argv",
         "owner": "ranex run --confinement strict-local",
     }
@@ -488,6 +501,37 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     }
 
 
+def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
+    static = EXPECTED_VALUES["static_worker"]
+    manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
+    source = ROOT / static["source"]
+    assert file_digest(source) == static["source_sha256"]
+    compiler = Path(manifest["build"]["compiler"]["path"])
+    assert file_digest(compiler) == "sha256:" + manifest["build"]["compiler"]["sha256"]
+    for item in manifest["build"]["inputs"]:
+        assert file_digest(Path(item["path"])) == "sha256:" + item["sha256"]
+    artifacts = []
+    for ordinal in range(2):
+        output = tmp_path / f"worker-{ordinal}"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
+            .replace("<output>", str(output))
+            .replace("<source>", str(source))
+            for token in manifest["build"]["flags"]
+        ]
+        completed = subprocess.run(
+            [str(compiler), *flags],
+            cwd=ROOT,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+        )
+        assert completed.returncode == 0, completed.stderr.decode()
+        artifacts.append(output.read_bytes())
+    assert artifacts[0] == artifacts[1]
+    assert hashlib.sha256(artifacts[0]).hexdigest() == manifest["artifact"]["sha256"]
+
+
 def test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows() -> None:
     controls = {row["control_id"]: row for row in NEGATIVE_CONTROLS["controls"]}
     protected = {
@@ -515,7 +559,7 @@ def test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows() -
     assert [row["task_id"] for row in unapproved][-1] == "SLICE-036-child-D"
     assert set(overlap[0]["scope"]["roots"]) & set(
         overlap[1]["scope"]["roots"]
-    ) == {"src/ranex/foundation/canonical.py"}
+    ) == {"governance/qualification/worker/slice036-worker.c"}
     assert overlap[0]["invocation"]["runtime_input_path"] != overlap[1][
         "invocation"
     ]["runtime_input_path"]
@@ -525,17 +569,21 @@ def test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows() -
     assert input_mismatch[0]["task_id"] == "SLICE-036-child-A"
     assert input_mismatch[0]["attempt"] == 6
     assert input_mismatch[0]["invocation"]["runtime_input_path"] == (
-        "governance/qualification/inputs/SLICE-036-child-B.json"
+        "governance/qualification/inputs/SLICE-036-child-B"
     )
     for row in input_mismatch[1:]:
         assert row["invocation"]["runtime_input_path"] == (
-            f"governance/qualification/inputs/{row['task_id']}.json"
+            f"governance/qualification/inputs/{row['task_id']}"
         )
-    exact_argv = "\n".join(network[0]["invocation"]["argv"])
-    assert "socket.create_connection" in exact_argv
-    assert "ranex-slice036-survivor-control-v1" in "\n".join(
-        survivor[0]["invocation"]["argv"]
-    )
+    assert network[0]["checks"][0]["command"] == [
+        "/ranex/toolchain/bin/slice036-worker",
+        "--task",
+    ]
+    static_worker = EXPECTED_VALUES["static_worker"]
+    assert file_digest(ROOT / static_worker["source"]) == static_worker["source_sha256"]
+    assert file_digest(ROOT / static_worker["build_manifest"]) == static_worker[
+        "build_manifest_sha256"
+    ]
 
 
 def test_separate_batch_qualify_parser_preserves_the_exact_legacy_fanout_surface() -> None:

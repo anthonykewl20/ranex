@@ -229,7 +229,7 @@
               "$ref": "#/$defs/portablePath"
             },
             "runtime_input_path": {
-              "pattern": "^governance/qualification/inputs/[A-Za-z0-9-]+\\.json$",
+              "pattern": "^governance/qualification/inputs/[A-Za-z0-9-]+$",
               "type": "string"
             }
           },

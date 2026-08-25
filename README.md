@@ -427,17 +427,25 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** [SLICE-036](docs/slices/SLICE-036-approved-batch-qualification.md)
+**Active slice:** [SLICE-070](docs/slices/SLICE-070-stable-strict-local-io-namespace.md)
 
-**Current slice:** SLICE-036 (#19), the only planned delivery. Its frozen-red
-contract adds a separate kernel-only `task batch qualify` surface in disposable
-strict-local worktrees. Distinct signed oracle/control fixtures drive real CLI
+**Current slice:** SLICE-070 (#47) is the generic strict-local I/O prerequisite;
+SLICE-036 (#19) is blocked on it, not complete. SLICE-070 freezes four
+runtime-owned stable I/O aliases for exact descriptor-held objects: read-only
+`/ranex/input` and `/ranex/toolchain`, plus bounded writable `/ranex/output` and
+`/ranex/scratch`; cwd is `/ranex/input`, while the observed subject remains
+separately read-only. Initial v2 admits self-contained static executables only;
+dynamic runtime closure is explicitly refused and deferred to #48. The launcher owns private-root,
+held-FD mount assembly and no path-preserving fallback. The retained SLICE-036
+frozen-red contract adds a separate kernel-only `task batch qualify` surface in
+disposable strict-local worktrees. Distinct signed oracle/control fixtures drive real CLI
 refusal proofs; one evidence-v4-signed, journal-linked qualification artifact
 is structurally non-publishable and batch-aware judge/merge refuse it before
 legacy writes. One clean governed repository/ref spans qualification, dispatch,
 judge, and merge refusal. Its deterministic successor commits the owner's real
-public key and every signed child input; task identity comes only from the
-controller-owned child-worktree path, and each child is canonically built,
+public key, every signed child input, and the reproducibly built static worker;
+flow/task/attempt identity comes from the signed tracked input object and is
+cross-checked against controller geometry, and each child is canonically built,
 installed, and host-qualified in place before strict-local execution. An
 external syscall/process observer targets the resolved absolute development
 Python controller directly—never `uv`—under pinned `/usr/bin/strace -f
@@ -569,8 +577,8 @@ issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
 confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
 controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
 `accepted`; SLICE-029..033 and SLICE-035 built the kernel-side authority
-  substrate. SLICE-036 is the only retained next delivery and is
-  qualification-only with publication blocked; the harness-effect and
+  substrate. SLICE-070 is the sole open delivery; SLICE-036 remains blocked and
+  qualification-only with publication blocked. The harness-effect and
   production-exit slices were withdrawn.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the

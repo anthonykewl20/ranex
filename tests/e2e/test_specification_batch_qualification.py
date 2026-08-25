@@ -22,6 +22,7 @@ import shlex
 import shutil
 import socket
 import sqlite3
+import struct
 import subprocess
 import threading
 import time
@@ -31,7 +32,6 @@ from pathlib import Path
 import _prereqs
 import pytest
 
-from ranex.cli.toolchain import resolve_tool
 from ranex.foundation.canonical import (
     canonical_json_bytes,
     canonical_sha256,
@@ -55,13 +55,13 @@ EXPECTED_VALUES = json.loads(
     (FIXTURES / "approved-batch-expected-values-v1.json").read_text(encoding="utf-8")
 )
 FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
-BASE_COMMIT = "2576c144f9f1e705dffc32d71f2a02563c94e4e0"
-SUBJECT_DIGEST = "sha256:8da54cc69dc14c368720abbeb98d2c6b52de166de5117f4d809b8a4c521507ad"
+BASE_COMMIT = "a0cbee4b1ac88fa143a5f4c2835c1da09989618c"
+SUBJECT_DIGEST = "sha256:920a1588d1f9cfcc36a07c7d0b296ad319afb9b120db534b8e0237804b1df9f8"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 FIXTURE_AUTHOR_NAME = "Ranex Fixture"
 FIXTURE_AUTHOR_EMAIL = "fixture@ranex.invalid"
 FIXTURE_COMMIT_DATE = "2000-01-01T00:00:00 +0000"
-FIXTURE_COMMIT_MESSAGE = "test(SLICE-036): materialize governed qualification fixture"
+FIXTURE_COMMIT_MESSAGE = "test(SLICE-036): materialize governed static-worker fixture"
 ROW_FIXTURES = (
     "approved-batch-child-requests-v1.jsonl",
     "approved-batch-network-escape-v1.jsonl",
@@ -365,36 +365,120 @@ def fixture_input_records() -> dict[str, dict[str, object]]:
         for line in (FIXTURES / name).read_text(encoding="utf-8").splitlines():
             row = json.loads(line)
             task_id = row["task_id"]
-            expected_path = f"governance/qualification/inputs/{task_id}.json"
+            expected_path = f"governance/qualification/inputs/{task_id}"
             actual_path = row["invocation"]["runtime_input_path"]
             if actual_path != expected_path:
                 assert name == "approved-batch-input-mismatch-v1.jsonl"
-                continue
-            record = records.setdefault(
-                actual_path,
-                {
-                    "attempts": {},
-                    "loopback_ports": list(PORTS),
+            for flow_id in row["runtime_input"]["flow_ids"]:
+                relative = (
+                    f"governance/qualification/inputs/{task_id}/{flow_id}/"
+                    f"attempt-{row['attempt']}/task.json"
+                )
+                delays = row["runtime_input"]["delays_ms"]
+                record = {
+                    "attempt": row["attempt"],
+                    "delay_ms": delays[flow_id] if flow_id in delays else 0,
+                    "flow_id": flow_id,
+                    "mode": row["runtime_input"]["mode"],
                     "task_id": task_id,
-                    "version": "slice036-child-input-v1",
-                },
-            )
-            assert record["task_id"] == task_id
-            attempt = str(row["attempt"])
-            current = {
-                "delays_ms": row["runtime_input"]["delays_ms"],
-                "mode": row["runtime_input"]["mode"],
-            }
-            attempts = record["attempts"]
-            assert isinstance(attempts, dict)
-            existing = attempts.get(attempt)
-            assert existing is None or existing == current
-            attempts[attempt] = current
-    assert set(records) == {
-        f"governance/qualification/inputs/SLICE-036-child-{name}.json"
-        for name in "ABCD"
-    }
+                    "version": "slice036-child-input-v2",
+                }
+                existing = records.get(relative)
+                assert existing is None or existing == record
+                records[relative] = record
+    assert len(records) == 25
     return records
+
+
+def _assert_closed_static_elf(image: bytes) -> None:
+    """Inspect ELF64 bytes using the exact installed ``/usr/include/elf.h`` ABI."""
+
+    elf_h = Path("/usr/include/elf.h").read_text(encoding="utf-8")
+    for spelling in (
+        "#define ET_EXEC\t\t2",
+        "#define EM_X86_64\t62",
+        "#define PT_INTERP\t3",
+        "#define PT_NOTE\t\t4",
+        "#define PT_GNU_STACK\t0x6474e551",
+        "#define PT_GNU_RELRO\t0x6474e552",
+        "#define PF_X\t\t(1 << 0)",
+        "#define NT_GNU_BUILD_ID\t3",
+    ):
+        assert spelling in elf_h
+
+    elf64_header = struct.Struct("<16sHHIQQQIHHHHHH")
+    elf64_program_header = struct.Struct("<IIQQQQQQ")
+    assert len(image) >= elf64_header.size
+    header = elf64_header.unpack_from(image)
+    ident = header[0]
+    assert ident[:7] == b"\x7fELF\x02\x01\x01"
+    assert header[1] == 2  # ET_EXEC
+    assert header[2] == 62  # EM_X86_64
+    assert header[8] == elf64_header.size
+    program_offset, program_entry_size, program_count = header[5], header[9], header[10]
+    assert program_entry_size == elf64_program_header.size
+    assert program_offset + program_entry_size * program_count <= len(image)
+    programs = [
+        elf64_program_header.unpack_from(image, program_offset + index * program_entry_size)
+        for index in range(program_count)
+    ]
+    assert all(program[0] != 3 for program in programs)  # no PT_INTERP
+    stacks = [program for program in programs if program[0] == 0x6474E551]
+    assert len(stacks) == 1
+    assert stacks[0][1] & 1 == 0  # PT_GNU_STACK lacks PF_X
+    assert any(program[0] == 0x6474E552 for program in programs)  # PT_GNU_RELRO
+
+    for program in programs:
+        if program[0] != 4:  # PT_NOTE
+            continue
+        offset, size = program[2], program[5]
+        assert offset + size <= len(image)
+        cursor, end = offset, offset + size
+        while cursor < end:
+            assert cursor + 12 <= end
+            name_size, description_size, note_type = struct.unpack_from(
+                "<III", image, cursor
+            )
+            cursor += 12
+            name_end = cursor + name_size
+            assert name_end <= end
+            name = image[cursor:name_end]
+            cursor = (name_end + 3) & ~3
+            description_end = cursor + description_size
+            assert description_end <= end
+            cursor = (description_end + 3) & ~3
+            assert not (name == b"GNU\x00" and note_type == 3)  # NT_GNU_BUILD_ID
+
+
+def test_static_worker_twice_built_bytes_have_required_elf_properties(
+    tmp_path: Path,
+) -> None:
+    """Claims in the manifest do not substitute for inspecting both artifacts."""
+
+    manifest_path = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+    source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+    manifest = json.loads(manifest_path.read_bytes())
+    artifacts: list[bytes] = []
+    for index in range(2):
+        output = tmp_path / f"slice036-worker-{index}"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
+            .replace("<output>", str(output))
+            .replace("<source>", str(source))
+            for token in manifest["build"]["flags"]
+        ]
+        built = run(
+            manifest["build"]["compiler"]["path"],
+            *flags,
+            cwd=ROOT,
+            env=manifest["build"]["environment"],
+        )
+        assert built.returncode == 0, built.stderr
+        image = output.read_bytes()
+        assert hashlib.sha256(image).hexdigest() == manifest["artifact"]["sha256"]
+        _assert_closed_static_elf(image)
+        artifacts.append(image)
+    assert artifacts[0] == artifacts[1]
 
 
 def materialize_governed_checkout(path: Path) -> Path:
@@ -419,7 +503,30 @@ def materialize_governed_checkout(path: Path) -> Path:
         destination = path / relative
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_bytes(canonical_json_bytes(record))
-    git(path, "add", "governance/producers.yaml", "governance/qualification/inputs")
+    worker_root = path / "governance/qualification/worker"
+    worker_root.mkdir(parents=True)
+    worker_source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+    worker_manifest = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+    shutil.copyfile(worker_source, worker_root / "slice036-worker.c")
+    shutil.copyfile(worker_manifest, worker_root / "slice036-worker-build-v1.json")
+    manifest = json.loads(worker_manifest.read_bytes())
+    flags = [
+        token.replace("<ABS_REPO_ROOT>", str(path.resolve()))
+        .replace("<output>", str(worker_root / "slice036-worker"))
+        .replace("<source>", str(worker_root / "slice036-worker.c"))
+        for token in manifest["build"]["flags"]
+    ]
+    built = run(
+        manifest["build"]["compiler"]["path"],
+        *flags,
+        cwd=path,
+        env=manifest["build"]["environment"],
+    )
+    assert built.returncode == 0, built.stderr
+    worker_binary = worker_root / "slice036-worker"
+    assert file_digest(worker_binary) == "sha256:" + manifest["artifact"]["sha256"]
+    worker_binary.chmod(0o555)
+    git(path, "add", "governance/producers.yaml", "governance/qualification")
     commit_environment = dict(os.environ)
     commit_environment.update(
         {
@@ -461,7 +568,13 @@ def materialize_governed_checkout(path: Path) -> Path:
         git(path, "diff-tree", "--no-commit-id", "--name-only", "-r", BASE_COMMIT)
         .splitlines()
     )
-    assert changed == {"governance/producers.yaml", *input_records}
+    assert changed == {
+        "governance/producers.yaml",
+        *input_records,
+        "governance/qualification/worker/slice036-worker",
+        "governance/qualification/worker/slice036-worker-build-v1.json",
+        "governance/qualification/worker/slice036-worker.c",
+    }
     committed_keyring = git_blob(path, BASE_COMMIT, "governance/producers.yaml")
     keyring = load_keyring_text(committed_keyring.decode("utf-8"), BASE_COMMIT)
     assert keyring["owner"] == OWNER_PUBLIC_KEY
@@ -1057,8 +1170,10 @@ def calibrate_child_provisioning_release_invariant(
     assert "--confinement" in CHILD_RUN_ARGV
     assert CHILD_RUN_ARGV[CHILD_RUN_ARGV.index("--confinement") + 1] == "strict-local"
     separator = CHILD_RUN_ARGV.index("--")
-    assert CHILD_RUN_ARGV[separator + 1] == "python3"
-    assert resolve_tool("python3") == Path("/usr/bin/python3").resolve()
+    assert CHILD_RUN_ARGV[separator + 1 :] == (
+        "/ranex/toolchain/bin/slice036-worker",
+        "--task",
+    )
     for flow_id in ("a-before-b", "b-before-a"):
         for task_id in DESCRIPTOR["children"]:
             child = materialize_governed_checkout(
@@ -1154,21 +1269,14 @@ with open(p["results"], "w", encoding="utf-8") as destination:
         str(child) for child in children.values()
     }
     assert len(outcomes) == 6
-    verifier_outcomes = set()
     for outcome in outcomes:
         assert set(outcome) == {"cwd", "returncode", "stderr"}
-        if outcome["returncode"] == 0:
-            verifier_outcomes.add("passed")
-            continue
-        assert outcome == {
-            "cwd": outcome["cwd"],
-            "returncode": 2,
-            "stderr": (
-                "ERROR  E-C18-HOST-DRIFT: cgroup delegation drifted "
-                "since qualification\n"
-            ),
-        }
-        verifier_outcomes.add("E-C18-HOST-DRIFT")
+        assert outcome["returncode"] == 0, (
+            "pre-implementation dependency RED: #47 has not yet supplied v2 "
+            "fixed-toolchain executable resolution; after v2 lands this "
+            "calibration passes and the journey advances to the batch "
+            f"parser/application seams: {outcome['stderr']}"
+        )
     # Every exact child run above crosses the existing public strict-local
     # session owner, which performs the canonical full host-state drift check
     # before opening the launcher.  The independent reads below then verify
@@ -1205,7 +1313,7 @@ with open(p["results"], "w", encoding="utf-8") as destination:
         )
     assert len(records) == 6
     event = {
-        "canonical_verifier_outcomes": sorted(verifier_outcomes),
+        "canonical_verifier_outcomes": ["passed"],
         "event": "child.provisioning.calibrated",
         "observation_modes": ["sequential", "concurrent-siblings"],
         "observer_executions_digest": observer_event["executions_digest"],

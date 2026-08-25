@@ -1,8 +1,10 @@
 # SLICE-036 — approved-batch qualification
 
-**Status:** open
+**Status:** blocked
 **Opened:** 2026-08-25
 **Priority:** P0 — kernel-only qualification; publication blocked
+**Dependency:** #47 / `SLICE-070` must land the generic strict-local stable I/O
+namespace before child execution or frozen-fixture correction resumes.
 **ADRs:** `docs/adr/ADR-017-approved-specification-before-implementation-authority.md`, `docs/adr/ADR-025-abc-contract-freeze.md`, `docs/adr/ADR-030-approval-and-intersected-grants.md`
 
 ## Contract
@@ -18,8 +20,8 @@ descriptor carries a separate path/digest reference to each populated oracle;
 it is not reused as a placeholder for any class. C therefore binds those
 bytes, maximum pool two, exact base/subject identity, policy, and roles.
 
-The frozen `2576c144f9f1e705dffc32d71f2a02563c94e4e0` commit and
-`sha256:8da54cc69dc14c368720abbeb98d2c6b52de166de5117f4d809b8a4c521507ad`
+The frozen `a0cbee4b1ac88fa143a5f4c2835c1da09989618c` commit and
+`sha256:920a1588d1f9cfcc36a07c7d0b296ad319afb9b120db534b8e0237804b1df9f8`
 subject are the deterministic E2E fixture only. The E2E reconstructs that
 successor from public parent `5ded60d9a9c8213828dce7acc0e77acad0c25731`
 using fixed author/committer identity, time, and message. The successor adds
@@ -60,29 +62,36 @@ full host-state drift verification. The successor intentionally commits no
 mutable dependency journal, so the calibration first uses the child base's
 existing public `deps fetch`, `deps approve`, and `journal verify` path. Those
 commands prepare governed admission before tracing; they are not child host
-provisioning observations. On the current broker-qualified host the exact run
-then reaches that canonical verifier and returns its exact
-`E-C18-HOST-DRIFT` cgroup refusal. That closed self-calibration is separate
-from the actual batch success assertion, which remains RED at the absent batch
-parser and may not turn the verifier refusal into qualification.
-The B-bound child command uses pinned-toolchain name `python3` (verified as
-`/usr/bin/python3` by the current resolver), while the public controller argv
-remains `uv run --frozen python -m ranex.cli.main ...`; this distinction keeps
-the controller public and makes the confined bound executable admissible.
+provisioning observations. The older undelegated calibration reached the
+canonical verifier's `E-C18-HOST-DRIFT` refusal; that was a valid host-identity
+control, never the current release boundary. With #47 unpublished, the actual
+child journey now refuses earlier at the missing v2 fixed-toolchain executable
+resolution. It cannot reach the absent batch parser/application seams or turn
+either refusal into qualification.
+The B-bound child command is byte-identical for every row:
+`/ranex/toolchain/bin/slice036-worker --task`, with the validator-compatible
+policy cwd literal `.` mapped by v2 to actual cwd `/ranex/input`. Its C source
+and build provenance are committed in the deterministic
+successor. The exact `/usr/bin/x86_64-linux-gnu-gcc-13` 13.3.0 compiler,
+installed linker/static inputs, closed environment, absent build ID, source
+digest, two byte-identical builds, ELF properties, and final binary digest are
+B-protected. The controller verifies those bytes before placing them in the
+held toolchain object; the observed subject remains non-executable authority.
+The public controller remains `uv run --frozen python -m ranex.cli.main ...`;
+the public CLI is unchanged.
 
 This release does not claim to prove the absence of every transient filesystem
 copy or model every Linux write syscall. Copying that is subsequently replaced
 by the independently executed public build/install/qualify sequence and passes
 the final per-child hash and qualified-state checks is not a release blocker.
 Application-emitted provisioning booleans remain untrusted. Signed rows bind
-one byte-identical argv/cwd
-literal and preserve the worker environment exactly as `{LC_ALL,TZ}`; they do
-not add a task-id environment channel. The command instead derives closed
-`task_id` and `attempt` values from controller-owned geometry
-`<root>/children/<task-id>/attempt-<n>`, verifies the signed row/path scheme,
-then reads the base-committed
-`governance/qualification/inputs/<task-id>.json`. The embedded task ID must
-match, the input must be tracked at the signed base, and the child worktree
+one byte-identical argv/cwd literal and preserve the worker environment exactly
+as `{LC_ALL,TZ}`; they do not add a task-id environment channel. The controller
+derives closed flow/task/attempt values from its owned geometry, cross-checks
+the signed row, and opens the exact signed base-committed
+`governance/qualification/inputs/<task-id>/<flow-id>/attempt-<n>/task.json`
+as `/ranex/input/task.json`. Embedded flow/task/attempt identity must match,
+the input must be tracked at the signed base, and the child worktree
 must be clean before provisioning and execution. The B-bound public-CLI
 negative inputs plant a path/task-id mismatch, an unapproved D row, sibling
 scope overlap, a real loopback attempt, a named survivor process, and an
@@ -241,8 +250,12 @@ uv run --frozen pytest -q tests/e2e/test_specification_batch_qualification.py
 uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 ```
 
-The focused integration and E2E commands must remain honestly RED only at the
-absent public batch application/CLI, qualification-artifact linkage, and
-`Journal.append_if_head` surfaces. Docs and fixture closure must be green.
+While dependency #47 is unpublished, the first pre-implementation RED is the
+strict-local v2 fixed toolchain executable-resolution refusal. That refusal is
+the truthful current boundary, not `E-C18-HOST-DRIFT` and not a batch parser
+claim. After v2 lands, the expected RED progression is the absent public batch
+parser/application seams, qualification-artifact linkage, and
+`Journal.append_if_head`; after those land the frozen journey succeeds. Docs,
+fixture closure, and the byte-level static ELF checks must remain green.
 Implementation starts only after independent review, owner CCR acceptance,
 and `status:ready`; this slice never self-approves.

@@ -1,0 +1,73 @@
+{
+  "artifact": {
+    "elf": {
+      "class": "ELF64",
+      "dynamic_interpreter": false,
+      "machine": "x86-64",
+      "non_executable_stack": true,
+      "relro": true,
+      "type": "EXEC"
+    },
+    "sha256": "f126106fd346eb9be2a7d5320b3cf1429a66746f592b501658cf4a94d26ff575",
+    "successor_path": "governance/qualification/worker/slice036-worker",
+    "toolchain_destination": "/ranex/toolchain/bin/slice036-worker"
+  },
+  "build": {
+    "compiler": {
+      "path": "/usr/bin/x86_64-linux-gnu-gcc-13",
+      "sha256": "1b99826121ae6682a634e5efe09bd3e3df58ce58e0b28f849114ab5b89139c26",
+      "version": "13.3.0"
+    },
+    "environment": {
+      "LC_ALL": "C",
+      "PATH": "/usr/bin:/bin",
+      "SOURCE_DATE_EPOCH": "0",
+      "TZ": "UTC"
+    },
+    "flags": [
+      "-std=gnu17",
+      "-D_GNU_SOURCE",
+      "-O2",
+      "-static",
+      "-fno-pie",
+      "-no-pie",
+      "-fstack-protector-strong",
+      "-D_FORTIFY_SOURCE=3",
+      "-Werror=format-security",
+      "-Wl,-z,relro,-z,now",
+      "-Wl,-z,noexecstack",
+      "-Wl,--build-id=none",
+      "-fno-record-gcc-switches",
+      "-frandom-seed=ranex-slice036-worker-v2",
+      "-ffile-prefix-map=<ABS_REPO_ROOT>=.",
+      "-fmacro-prefix-map=<ABS_REPO_ROOT>=.",
+      "-o",
+      "<output>",
+      "<source>"
+    ],
+    "inputs": [
+      {"path": "/usr/bin/x86_64-linux-gnu-as", "role": "assembler", "sha256": "21aff249b692b5c31a44007491f922dcb49f41323e362c57d2ada3f52eddb7f0"},
+      {"path": "/usr/bin/x86_64-linux-gnu-ld.bfd", "role": "linker", "sha256": "e9ceb054c12207970f2726dfc07e9a66b411602748628baf27399f02a9bbb31b"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crt1.o", "role": "crt1", "sha256": "5cfb30db1d2c92a9a818f6c015ad7fcd6519afaa1b88148e831504fe6e299479"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crti.o", "role": "crti", "sha256": "077ccb6c68db1794da3ee262c4a16a3c6f8e902845dd0829110ad4b7065e5aa3"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/crtbeginT.o", "role": "crtbegin", "sha256": "42171a80795909e1a0743f71c60b503ff2951ed40bf94cae9ca55c324a8cc26a"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/libc.a", "role": "libc-static", "sha256": "d2a01bdb5e0443c6213f96f7ed90dd13006cc6913ee1cd306de7456def86ff2f"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc.a", "role": "libgcc-static", "sha256": "d9376c55f97863a4e5fbb6c6beca2591b319bf786f3a7ca56da8964c5662171f"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/libgcc_eh.a", "role": "libgcc-eh-static", "sha256": "f853cbbf842ff8714cc8dd986e2fd5bb309d34d490b0707203223ee4d52c76bc"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/crtend.o", "role": "crtend", "sha256": "9c8b2caad195193301ef072895dc89bea1d23371d4c19accd821debe27773063"},
+      {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crtn.o", "role": "crtn", "sha256": "a2266079f95b84ccc2162ebbf279bcd78858a748aa1882e0bdb912316c76a58f"}
+    ],
+    "source": {
+      "sha256": "da19ddf04271149eaf4e51e579cfce5123f4b7b48f49d950e781b73791c530a9",
+      "spec_path": "tests/e2e/fixtures/slice036-worker.c",
+      "successor_path": "governance/qualification/worker/slice036-worker.c"
+    },
+    "verification": {
+      "build_id": "absent",
+      "independent_builds": 2,
+      "linkage": "static",
+      "require_byte_identical": true
+    }
+  },
+  "version": "slice036-static-worker-build-v1"
+}
