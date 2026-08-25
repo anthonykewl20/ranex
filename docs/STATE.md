@@ -2,8 +2,8 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-25 (owner scope reset: milestone 4 closed partial; kernel-only release)
-**Active slice:** none
+**Updated:** 2026-08-25 (SLICE-036 CCR v4 finalizer pre-OCR)
+**Active slice:** `docs/slices/SLICE-036-approved-batch-qualification.md`
 ## Where we stopped
 Milestone 4 is closed with partial delivery, not full-program completion.
 Retained kernel/framework work: #34–#38 (SLICE-054–058). #39/SLICE-059
@@ -14,11 +14,19 @@ production mutation fanout. The kernel code at origin/main remains the source
 of truth for the initial release.
 ## Next
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-036
 Only planned delivery: #19 / SLICE-036, approved-batch qualification and
-kernel continuity in disposable worktrees with publication blocked. It awaits
-the owner host-provisioning decision and `status:ready`; no harness issue,
-broker issue, task-family proof, or production-exit slice gates it.
+kernel continuity in disposable strict-local worktrees with publication
+blocked. Its signed schema/descriptor/children, distinct protected oracle
+artifacts, B-bound public-CLI negative controls, and one-repository/ref
+qualification-through-publication-refusal proof are frozen RED for external
+review. Staged development source remains outside the governed checkout and is
+bound in the transcript by an independently recomputed manifest digest and
+exact imported module path. The actual canonical qualification outcome is
+evidence-v4-signed, bound to its exact `batch-qualified` journal row, and
+refused by additive batch-aware judge/merge before any legacy publication
+write. Implementation remains unauthorized until external review approves CCR
+v4, the specification owner accepts it, and `status:ready` is applied.
+No harness, broker, task-family proof, or production-exit slice gates it.
 ## Governance (owner, 2026-08-25)
 Current release: kernel-only initial release; one open slice and one mutation
 writer. The prior build order remains historical provenance only:

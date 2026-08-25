@@ -427,12 +427,18 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** [SLICE-036](docs/slices/SLICE-036-approved-batch-qualification.md)
 
-**Next slice:** SLICE-036 (#19), the only planned delivery. It qualifies the
-approved batch and kernel continuity in disposable worktrees with publication
-blocked; it does not reopen the withdrawn harness, broker, task-family, or
-production-exit work.
+**Current slice:** SLICE-036 (#19), the only planned delivery. Its frozen-red
+contract adds a separate kernel-only `task batch qualify` surface in disposable
+strict-local worktrees. Distinct signed oracle/control fixtures drive real CLI
+refusal proofs; one evidence-v4-signed, journal-linked qualification artifact
+is structurally non-publishable and batch-aware judge/merge refuse it before
+legacy writes. One clean governed repository/ref spans qualification, dispatch,
+judge, and merge refusal; staged development code remains outside it and is
+loaded through an absolute, independently manifest-hashed `PYTHONPATH`. Legacy
+`task fanout` and unflagged publication remain unchanged; it does not reopen the
+withdrawn harness, broker, task-family, or production-exit work.
 
 SLICE-059 (task family e2e, #39) was implemented as historical test work and
 closed in its prior ceremony, but is withdrawn from the release as of

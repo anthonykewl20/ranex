@@ -1,0 +1,535 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$defs": {
+    "capability": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "argv": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "commit": {
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "const": false
+            }
+          },
+          "required": [
+            "allow"
+          ],
+          "type": "object"
+        },
+        "cwd": {
+          "const": "."
+        },
+        "environment": {
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "items": {
+                "type": "string"
+              },
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "allow"
+          ],
+          "type": "object"
+        },
+        "executable": {
+          "type": "string"
+        },
+        "network": {
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "const": false
+            },
+            "hosts": {
+              "maxItems": 0,
+              "type": "array"
+            }
+          },
+          "required": [
+            "allow",
+            "hosts"
+          ],
+          "type": "object"
+        },
+        "roots": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 1,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "secret": {
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "const": false
+            },
+            "names": {
+              "maxItems": 0,
+              "type": "array"
+            }
+          },
+          "required": [
+            "allow",
+            "names"
+          ],
+          "type": "object"
+        },
+        "subagent": {
+          "additionalProperties": false,
+          "properties": {
+            "allow": {
+              "type": "boolean"
+            },
+            "max_children": {
+              "minimum": 0,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "allow",
+            "max_children"
+          ],
+          "type": "object"
+        },
+        "version": {
+          "const": "policy-capabilities-v1"
+        }
+      },
+      "required": [
+        "actions",
+        "argv",
+        "commit",
+        "cwd",
+        "environment",
+        "executable",
+        "network",
+        "roots",
+        "secret",
+        "subagent",
+        "version"
+      ],
+      "type": "object"
+    },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "childRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "attempt": {
+          "const": 0
+        },
+        "base_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        "capability_request": {
+          "$ref": "#/$defs/capability"
+        },
+        "checks": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "check_id": {
+                "type": "string"
+              },
+              "command": {
+                "items": {
+                  "type": "string"
+                },
+                "minItems": 2,
+                "type": "array"
+              }
+            },
+            "required": [
+              "check_id",
+              "command"
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "depends_on": {
+          "items": {
+            "type": "string"
+          },
+          "type": "array",
+          "uniqueItems": true
+        },
+        "evidence": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "check_id": {
+                "type": "string"
+              },
+              "claim": {
+                "type": "string"
+              },
+              "path": {
+                "$ref": "#/$defs/portablePath"
+              }
+            },
+            "required": [
+              "check_id",
+              "claim",
+              "path"
+            ],
+            "type": "object"
+          },
+          "minItems": 1,
+          "type": "array"
+        },
+        "invocation": {
+          "additionalProperties": false,
+          "properties": {
+            "argv": {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 10,
+              "type": "array"
+            },
+            "confinement": {
+              "const": "strict-local"
+            },
+            "runtime_evidence_path": {
+              "$ref": "#/$defs/portablePath"
+            },
+            "runtime_input_path": {
+              "$ref": "#/$defs/portablePath"
+            }
+          },
+          "required": [
+            "argv",
+            "confinement",
+            "runtime_evidence_path",
+            "runtime_input_path"
+          ],
+          "type": "object"
+        },
+        "publication": {
+          "const": false
+        },
+        "retry_limit": {
+          "const": 1
+        },
+        "scope": {
+          "additionalProperties": false,
+          "properties": {
+            "actions": {
+              "items": {
+                "type": "string"
+              },
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            },
+            "roots": {
+              "items": {
+                "$ref": "#/$defs/portablePath"
+              },
+              "minItems": 1,
+              "type": "array",
+              "uniqueItems": true
+            }
+          },
+          "required": [
+            "actions",
+            "roots"
+          ],
+          "type": "object"
+        },
+        "task_id": {
+          "pattern": "^[A-Za-z0-9-]+$",
+          "type": "string"
+        },
+        "timeout_seconds": {
+          "const": 900
+        },
+        "worktree": {
+          "const": "disposable"
+        },
+        "runtime_input": {
+          "$ref": "#/$defs/runtimeInput"
+        }
+      },
+      "required": [
+        "attempt",
+        "base_commit",
+        "capability_request",
+        "checks",
+        "depends_on",
+        "evidence",
+        "invocation",
+        "publication",
+        "retry_limit",
+        "runtime_input",
+        "scope",
+        "task_id",
+        "timeout_seconds",
+        "worktree"
+      ],
+      "type": "object"
+    },
+    "portablePath": {
+      "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$",
+      "type": "string"
+    },
+    "artifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        }
+      },
+      "required": [
+        "digest",
+        "path"
+      ],
+      "type": "object"
+    },
+    "runtimeInput": {
+      "additionalProperties": false,
+      "properties": {
+        "delay_source": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "flow_ids": {
+          "items": {
+            "pattern": "^[a-z0-9-]+$",
+            "type": "string"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "loopback_ports": {
+          "additionalProperties": false,
+          "properties": {
+            "end": {
+              "const": 46135
+            },
+            "start": {
+              "const": 46120
+            }
+          },
+          "required": [
+            "end",
+            "start"
+          ],
+          "type": "object"
+        },
+        "mode": {
+          "enum": [
+            "normal",
+            "network-control",
+            "survivor",
+            "oracle-mismatch"
+          ]
+        },
+        "task_id": {
+          "pattern": "^[A-Za-z0-9-]+$",
+          "type": "string"
+        }
+      },
+      "required": [
+        "delay_source",
+        "flow_ids",
+        "loopback_ports",
+        "mode",
+        "task_id"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "base_commit": {
+      "pattern": "^[0-9a-f]{40}$",
+      "type": "string"
+    },
+    "children": {
+      "items": {
+        "pattern": "^[A-Za-z0-9-]+$",
+        "type": "string"
+      },
+      "minItems": 3,
+      "type": "array",
+      "uniqueItems": true
+    },
+    "domain": {
+      "const": "kernel"
+    },
+    "maximum_pool": {
+      "const": 2
+    },
+    "oracle": {
+      "additionalProperties": false,
+      "properties": {
+        "error_precedence": {
+          "items": {
+            "pattern": "^E-BATCH-[A-Z-]+$",
+            "type": "string"
+          },
+          "minItems": 8,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "goldens": {
+          "items": {
+            "$ref": "#/$defs/portablePath"
+          },
+          "minItems": 2,
+          "type": "array",
+          "uniqueItems": true
+        },
+        "protected_artifacts": {
+          "additionalProperties": false,
+          "properties": {
+            "baseline": {
+              "$ref": "#/$defs/artifactRef"
+            },
+            "expected_values": {
+              "$ref": "#/$defs/artifactRef"
+            },
+            "negative_controls": {
+              "$ref": "#/$defs/artifactRef"
+            },
+            "pseudocode_flow": {
+              "$ref": "#/$defs/artifactRef"
+            }
+          },
+          "required": [
+            "baseline",
+            "expected_values",
+            "negative_controls",
+            "pseudocode_flow"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "error_precedence",
+        "goldens",
+        "protected_artifacts"
+      ],
+      "type": "object"
+    },
+    "policy": {
+      "$ref": "#/$defs/capability"
+    },
+    "retry_limit": {
+      "const": 1
+    },
+    "roles": {
+      "items": {
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "pattern": "^ed25519:[A-Za-z0-9+/]+=*$",
+            "type": "string"
+          },
+          "principal": {
+            "type": "string"
+          },
+          "role": {
+            "enum": [
+              "approver",
+              "worker",
+              "evaluator"
+            ]
+          }
+        },
+        "required": [
+          "key",
+          "principal",
+          "role"
+        ],
+        "type": "object"
+      },
+      "minItems": 3,
+      "type": "array"
+    },
+    "subject_digest": {
+      "$ref": "#/$defs/digest"
+    },
+    "version": {
+      "const": "approved-batch-v1"
+    },
+    "qualification_output": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "const": "approved-batch-qualified"
+        },
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "producer_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "publication_allowed": {
+          "const": false
+        },
+        "schema": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "signature_primitive": {
+          "const": "ranex-evidence-v4"
+        }
+      },
+      "required": [
+        "claim_id",
+        "path",
+        "producer_id",
+        "publication_allowed",
+        "schema",
+        "signature_primitive"
+      ],
+      "type": "object"
+    }
+  },
+  "required": [
+    "base_commit",
+    "children",
+    "domain",
+    "maximum_pool",
+    "oracle",
+    "policy",
+    "qualification_output",
+    "retry_limit",
+    "roles",
+    "subject_digest",
+    "version"
+  ],
+  "type": "object"
+}

@@ -1,0 +1,2 @@
+task judge: ERROR  E-BATCH-PUBLICATION-REFUSED: approved-batch child results are qualification-only
+task merge: ERROR  E-BATCH-PUBLICATION-REFUSED: approved-batch child results are qualification-only

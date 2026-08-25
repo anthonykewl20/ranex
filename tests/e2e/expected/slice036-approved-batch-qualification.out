@@ -1,0 +1,13 @@
+{"event":"development.source","manifest_digest":"<DIGEST>","module_path":"<ABS-PATH>","pythonpath":"<ABS-PATH>","version":"slice036-development-source-v1"}
+{"base_commit":"5586d68b0936f554759022caabe847087f1d03ef","event":"batch.accepted","maximum_pool":2,"subject_digest":"<DIGEST>"}
+{"event":"batch.ready","flow_id":"a-before-b","tasks":["SLICE-036-child-A","SLICE-036-child-B"]}
+{"canonical_results":["SLICE-036-child-A","SLICE-036-child-B","SLICE-036-child-C"],"completion_order":["SLICE-036-child-A","SLICE-036-child-B","SLICE-036-child-C"],"event":"batch.completed","flow_id":"a-before-b"}
+{"event":"batch.join","flow_id":"a-before-b","released":"SLICE-036-child-C","satisfied_by":["SLICE-036-child-A","SLICE-036-child-B"]}
+{"event":"batch.ready","flow_id":"b-before-a","tasks":["SLICE-036-child-A","SLICE-036-child-B"]}
+{"canonical_results":["SLICE-036-child-A","SLICE-036-child-B","SLICE-036-child-C"],"completion_order":["SLICE-036-child-B","SLICE-036-child-A","SLICE-036-child-C"],"event":"batch.completed","flow_id":"b-before-a"}
+{"event":"batch.join","flow_id":"b-before-a","released":"SLICE-036-child-C","satisfied_by":["SLICE-036-child-A","SLICE-036-child-B"]}
+{"digest":"<DIGEST>","event":"batch.evidence","path":"<REL-PATH>","task_id":"SLICE-036-child-A"}
+{"digest":"<DIGEST>","event":"batch.evidence","path":"<REL-PATH>","task_id":"SLICE-036-child-B"}
+{"digest":"<DIGEST>","event":"batch.evidence","path":"<REL-PATH>","task_id":"SLICE-036-child-C"}
+{"digest":"<DIGEST>","event":"batch.qualification","path":"batch-qualification.json","producer_id":"owner"}
+{"event":"batch.qualified","journal_head":"<DIGEST>","journal_position":1,"network":"denied","publication":false,"residue":[]}

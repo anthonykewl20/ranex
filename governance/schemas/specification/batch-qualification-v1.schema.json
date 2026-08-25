@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ranex.local/schemas/specification/batch-qualification-v1.schema.json",
+  "$defs": {
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
+    "evidence": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "const": "approved-batch-qualified"
+        },
+        "command": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "command_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "confinement_profile_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "confinement_result_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "executable_path": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "exit_code": {
+          "const": 0
+        },
+        "producer_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "signature": {
+          "pattern": "^ed25519:[A-Za-z0-9+/]+=*$",
+          "type": "string"
+        },
+        "subject_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "suite_results": {
+          "additionalProperties": false,
+          "properties": {
+            "counts": {
+              "additionalProperties": false,
+              "properties": {
+                "errors": {
+                  "const": 0
+                },
+                "failed": {
+                  "const": 0
+                },
+                "passed": {
+                  "minimum": 3,
+                  "type": "integer"
+                },
+                "skipped": {
+                  "const": 0
+                },
+                "xfailed": {
+                  "const": 0
+                },
+                "xpassed": {
+                  "const": 0
+                }
+              },
+              "required": [
+                "errors",
+                "failed",
+                "passed",
+                "skipped",
+                "xfailed",
+                "xpassed"
+              ],
+              "type": "object"
+            },
+            "extra_count": {
+              "const": 0
+            },
+            "manifest_digest": {
+              "$ref": "#/$defs/digest"
+            },
+            "missing": {
+              "maxItems": 0,
+              "type": "array"
+            },
+            "non_passed": {
+              "maxItems": 0,
+              "type": "array"
+            },
+            "outcome_digest": {
+              "$ref": "#/$defs/digest"
+            }
+          },
+          "required": [
+            "counts",
+            "extra_count",
+            "manifest_digest",
+            "missing",
+            "non_passed",
+            "outcome_digest"
+          ],
+          "type": "object"
+        }
+      },
+      "required": [
+        "claim_id",
+        "command",
+        "command_digest",
+        "confinement_profile_digest",
+        "confinement_result_digest",
+        "executable_path",
+        "exit_code",
+        "producer_id",
+        "signature",
+        "subject_digest",
+        "suite_results"
+      ],
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "attestation": {
+      "$ref": "#/$defs/evidence"
+    },
+    "payload": {
+      "additionalProperties": false,
+      "properties": {
+        "a_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "b_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "base_commit": {
+          "pattern": "^[0-9a-f]{40}$",
+          "type": "string"
+        },
+        "base_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "batch_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "c_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "child_requests_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "child_results_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "descriptor_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "producer_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "publication_allowed": {
+          "const": false
+        },
+        "qualification_journal": {
+          "additionalProperties": false,
+          "properties": {
+            "head": {
+              "$ref": "#/$defs/digest"
+            },
+            "previous_head": {
+              "$ref": "#/$defs/digest"
+            },
+            "seq": {
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          "required": [
+            "head",
+            "previous_head",
+            "seq"
+          ],
+          "type": "object"
+        },
+        "qualification_record_digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "version": {
+          "const": "batch-qualification-payload-v1"
+        }
+      },
+      "required": [
+        "a_digest",
+        "b_digest",
+        "base_commit",
+        "base_digest",
+        "batch_digest",
+        "c_digest",
+        "child_requests_digest",
+        "child_results_digest",
+        "descriptor_digest",
+        "producer_id",
+        "publication_allowed",
+        "qualification_journal",
+        "qualification_record_digest",
+        "version"
+      ],
+      "type": "object"
+    },
+    "version": {
+      "const": "batch-qualification-v1"
+    }
+  },
+  "required": [
+    "attestation",
+    "payload",
+    "version"
+  ],
+  "type": "object"
+}
