@@ -54,6 +54,7 @@ the existing qualification/host-drift checks remain authoritative.
 - `tests/security/test_slice070_strict_local_io_security.py`
 - `tests/e2e/fixtures/slice070-input.txt`
 - `tests/e2e/fixtures/slice070-subject/anchor.txt`
+- `tests/e2e/fixtures/slice070-noexec/task.json`
 - `tests/e2e/fixtures/slice070-worker.c`
 - `tests/e2e/fixtures/slice036-worker.c`
 - `tests/e2e/fixtures/slice036-worker-build-v1.json`
@@ -81,7 +82,11 @@ the existing qualification/host-drift checks remain authoritative.
 7. The real journey mounts subject authority from a distinct tracked sibling
    worktree, proves both-direction realpath non-overlap with input/toolchain/
    output/scratch, and proves its tracked-tree fingerprint stays clean across
-   the ignored subject-exec refusal calibration.
+   the ignored subject-exec refusal calibration. The top-level argv remains a
+   fixed toolchain worker; only committed input selects its fixed child
+   `execve` of `/ranex/subject/.local/subject-worker`. The result must exist
+   with exact EACCES/noexec exit 80, zero collected output, and no side effect;
+   successful exec and other errno have distinct failure exits.
 8. The real journey independently verifies the tracked input, child exit,
    output file bytes, canonical collected path/size/SHA-256 rows, profile
    digests, and drained-teardown result. Undelegated use fails closed.

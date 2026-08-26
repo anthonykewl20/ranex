@@ -7,10 +7,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 #include <sys/prctl.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <time.h>
 #include <unistd.h>
 
@@ -18,6 +20,11 @@
 #define OUTPUT_PATH "/ranex/output/result.json"
 #define INPUT_LIMIT 512
 #define OUTPUT_LIMIT 512
+#define SUBJECT_EXEC_PATH "/ranex/subject/.local/subject-worker"
+#define NOEXEC_DENIED 80
+#define NOEXEC_SUCCEEDED 81
+#define NOEXEC_OTHER_ERRNO 82
+#define NOEXEC_SUPERVISION_FAILURE 83
 
 static int refuse_input(void) {
     static const char refusal[] =
@@ -27,9 +34,44 @@ static int refuse_input(void) {
 }
 
 static bool closed_word(const char *value, const char *a, const char *b,
-                        const char *c, const char *d) {
+                        const char *c, const char *d, const char *e) {
     return strcmp(value, a) == 0 || strcmp(value, b) == 0 ||
-           strcmp(value, c) == 0 || strcmp(value, d) == 0;
+           strcmp(value, c) == 0 || strcmp(value, d) == 0 ||
+           strcmp(value, e) == 0;
+}
+
+static int calibrate_subject_noexec(void) {
+    int *exec_error = mmap(NULL, sizeof(*exec_error), PROT_READ | PROT_WRITE,
+                           MAP_SHARED | MAP_ANONYMOUS, -1, 0);
+    if (exec_error == MAP_FAILED) return NOEXEC_SUPERVISION_FAILURE;
+    *exec_error = 0;
+    pid_t child = fork();
+    if (child < 0) {
+        (void)munmap(exec_error, sizeof(*exec_error));
+        return NOEXEC_SUPERVISION_FAILURE;
+    }
+    if (child == 0) {
+        char *const arguments[] = {SUBJECT_EXEC_PATH, NULL};
+        char *const environment[] = {"LC_ALL=C", "TZ=UTC", NULL};
+        (void)execve(SUBJECT_EXEC_PATH, arguments, environment);
+        *exec_error = errno;
+        _exit(0);
+    }
+
+    int status = 0;
+    pid_t waited;
+    do {
+        waited = waitpid(child, &status, 0);
+    } while (waited < 0 && errno == EINTR);
+    int observed_error = *exec_error;
+    if (munmap(exec_error, sizeof(*exec_error)) != 0 || waited != child) {
+        return NOEXEC_SUPERVISION_FAILURE;
+    }
+    if (observed_error == 0) return NOEXEC_SUCCEEDED;
+    if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+        return NOEXEC_SUPERVISION_FAILURE;
+    }
+    return observed_error == EACCES ? NOEXEC_DENIED : NOEXEC_OTHER_ERRNO;
 }
 
 static int connect_loopback(void) {
@@ -77,6 +119,7 @@ int main(int argc, char **argv) {
     char flow_id[32] = {0};
     char mode[32] = {0};
     char trailing = '\0';
+    char extra = '\0';
     unsigned attempt = 0;
     unsigned delay_ms = 0;
     if (argc != 2 || strcmp(argv[1], "--task") != 0) return 64;
@@ -89,16 +132,21 @@ int main(int argc, char **argv) {
         input,
         "{\"attempt\":%u,\"delay_ms\":%u,\"flow_id\":\"%31[A-Za-z0-9-]\","
         "\"mode\":\"%31[A-Za-z0-9-]\",\"task_id\":\"%63[A-Za-z0-9-]\","
-        "\"version\":\"slice036-child-input-v2\"}%c",
-        &attempt, &delay_ms, flow_id, mode, task_id, &trailing);
-    if (fields != 5 || attempt > 6 || delay_ms > 5000 ||
+        "\"version\":\"slice036-child-input-v2\"}%c%c",
+        &attempt, &delay_ms, flow_id, mode, task_id, &trailing, &extra);
+    if (!((fields == 5) || (fields == 6 && trailing == '\n')) ||
+        attempt > 6 || delay_ms > 5000 ||
         !closed_word(flow_id, "a-before-b", "b-before-a", "network-control",
-                     "survivor-control") ||
+                     "survivor-control", "subject-noexec-control") ||
         !closed_word(mode, "normal", "network-control", "survivor",
-                     "oracle-mismatch") ||
+                     "oracle-mismatch", "subject-noexec") ||
+        ((strcmp(mode, "subject-noexec") == 0) !=
+         (strcmp(flow_id, "subject-noexec-control") == 0)) ||
         strncmp(task_id, "SLICE-036-child-", 16) != 0 || strlen(task_id) != 17) {
         return refuse_input();
     }
+
+    if (strcmp(mode, "subject-noexec") == 0) return calibrate_subject_noexec();
 
     struct timespec delay = {
         .tv_sec = (time_t)(delay_ms / 1000U),

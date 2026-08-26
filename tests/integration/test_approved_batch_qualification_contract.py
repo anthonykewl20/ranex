@@ -60,8 +60,8 @@ NEGATIVE_CONTROLS = json.loads(
     (FIXTURES / "approved-batch-negative-controls-v1.json").read_text()
 )
 FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
-BASE_COMMIT = "a0cbee4b1ac88fa143a5f4c2835c1da09989618c"
-SUBJECT_DIGEST = "sha256:920a1588d1f9cfcc36a07c7d0b296ad319afb9b120db534b8e0237804b1df9f8"
+BASE_COMMIT = "f1eeddc9c7509a3fea9c78783772fbfc3f08d450"
+SUBJECT_DIGEST = "sha256:4f1ad8498ae13f8e702748fcdf28ab8a6f13d0f4dacb033071f45fe9e124fa55"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 
 
@@ -96,9 +96,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-13"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 11
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v13"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-14"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 12
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v14"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -530,6 +530,37 @@ def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
         artifacts.append(output.read_bytes())
     assert artifacts[0] == artifacts[1]
     assert hashlib.sha256(artifacts[0]).hexdigest() == manifest["artifact"]["sha256"]
+
+
+def test_static_worker_noexec_calibration_is_input_selected_and_discriminating() -> None:
+    calibration = EXPECTED_VALUES["subject_noexec_calibration"]
+    assert calibration == {
+        "expected_exit_code": 80,
+        "exec_result_channel": "MAP_SHARED|MAP_ANONYMOUS errno cell",
+        "forbidden_output": "/ranex/output/result.json",
+        "input": "tests/e2e/fixtures/slice070-noexec/task.json",
+        "input_sha256": file_digest(
+            ROOT / "tests/e2e/fixtures/slice070-noexec/task.json"
+        ),
+        "mode": "subject-noexec",
+        "other_errno_exit_code": 82,
+        "outputs": {"bytes": 0, "files": [], "inodes": 0},
+        "subject_executable": "/ranex/subject/.local/subject-worker",
+        "successful_exec_exit_code": 81,
+        "supervision_failure_exit_code": 83,
+        "top_level_argv": [
+            "/ranex/toolchain/bin/slice036-worker",
+            "--task",
+        ],
+    }
+    assert len(
+        {
+            calibration["expected_exit_code"],
+            calibration["successful_exec_exit_code"],
+            calibration["other_errno_exit_code"],
+            calibration["supervision_failure_exit_code"],
+        }
+    ) == 4
 
 
 def test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows() -> None:

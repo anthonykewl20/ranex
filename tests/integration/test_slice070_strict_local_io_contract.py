@@ -199,6 +199,117 @@ def test_descriptor_cannot_add_a_caller_selected_destination(tmp_path: Path) -> 
     assert refusal.value.code == host_confinement.E_C18_GATE
 
 
+def test_public_gate_refuses_subject_selected_top_level_executable(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The profile-aware public seam refuses before launcher or result."""
+
+    authorities = {
+        name: tmp_path / name
+        for name in ("input", "output", "scratch", "subject", "toolchain")
+    }
+    for authority in authorities.values():
+        authority.mkdir()
+    subject_worker = authorities["subject"] / ".local" / "subject-worker"
+    subject_worker.parent.mkdir()
+    subject_worker.write_bytes(b"executable subject calibration\n")
+    subject_worker.chmod(0o555)
+    toolchain_worker = authorities["toolchain"] / "bin" / "worker"
+    toolchain_worker.parent.mkdir()
+    toolchain_worker.write_bytes(b"valid fixed toolchain authority\n")
+    toolchain_worker.chmod(0o555)
+
+    runtime_profile = tmp_path / "strict-local-v2.json"
+    runtime_profile.write_bytes(PROFILE.read_bytes())
+    for name in ("host-profile.json", "manifest.json", "launcher"):
+        (tmp_path / name).write_bytes(b"present before admission\n")
+    qualification = {
+        "host_state": {
+            "boot_id": "fixture-boot",
+            "delegation_identity": {
+                "cgroup_relative_path": "/fixture",
+                "cgroup_root": str(tmp_path / "cgroup"),
+            },
+            "lsm": {"securityfs_lsm": "landlock,fixture"},
+            "machine_id": "fixture-machine",
+            "unprivileged_userns_sysctls": {"fixture": 1},
+        },
+        "primitives": {
+            "landlock": {"abi": 6, "available": True},
+            "no_new_privs": True,
+            "openat2": True,
+            "seccomp_filter": True,
+        },
+        "qualified": True,
+        "schema": "ranex-strict-local-qualification-v1",
+    }
+    qualification_path = tmp_path / "qualification.json"
+    qualification_path.write_bytes(canonical_json_bytes(qualification))
+    result_path = tmp_path / "result.json"
+    descriptor = {
+        "argv": ["/ranex/subject/.local/subject-worker"],
+        "environment": {"LC_ALL": "C", "TZ": "UTC"},
+        "limits": {
+            "cpu_usage_usec": 1_000_000,
+            "memory_bytes": 134_217_728,
+            "output_bytes": 65_536,
+            "output_depth": 8,
+            "output_inodes": 32,
+            "pids": 16,
+            "wall_time_ms": 5_000,
+        },
+        "_resolved": authorities,
+    }
+
+    monkeypatch.setattr(
+        host_confinement,
+        "_required_host_text",
+        lambda _path, _name: "landlock,fixture",
+    )
+    monkeypatch.setattr(
+        host_confinement,
+        "_unprivileged_userns_sysctls",
+        lambda: {"fixture": 1},
+    )
+    monkeypatch.setattr(
+        host_confinement,
+        "_current_cgroup_root",
+        lambda: (tmp_path / "cgroup", "/fixture"),
+    )
+    monkeypatch.setattr(host_confinement, "_probe_openat2", lambda: None)
+    monkeypatch.setattr(
+        host_confinement,
+        "_session_cgroup_parent",
+        lambda: tmp_path / "cgroup",
+    )
+
+    def launcher_must_not_be_reached(*_args: object) -> object:
+        raise AssertionError("launcher validation ran before argv0 authority refusal")
+
+    monkeypatch.setattr(
+        host_confinement,
+        "_validate_profile_and_objects",
+        launcher_must_not_be_reached,
+    )
+    with pytest.raises(
+        host_confinement.HostConfinementError,
+        match="worker executable must be under /ranex/toolchain",
+    ) as refusal:
+        host_confinement.confinement_session(
+            tmp_path,
+            profile_arg=runtime_profile.name,
+            host_profile_arg="host-profile.json",
+            artifact_arg="launcher",
+            manifest_arg="manifest.json",
+            qualification_arg=qualification_path.name,
+            descriptor=descriptor,
+            result_arg=result_path.name,
+        )
+    assert refusal.value.code == host_confinement.E_C18_GATE
+    assert not result_path.exists()
+
+
 def test_existing_held_identity_owner_discriminates_path_substitution(
     tmp_path: Path,
 ) -> None:

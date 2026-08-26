@@ -149,7 +149,14 @@ fixed targets, private-root detach, and post-setup mount denial.
 for the public delegated journey. Its subject authority is a distinct tracked
 sibling worktree; the journey asserts both-direction realpath non-overlap with
 every I/O authority and an unchanged clean tracked-tree fingerprint across the
-ignored subject-exec refusal calibration. `tests/contract/test_docs_discipline.py`
+ignored subject-exec refusal calibration. Its top-level executable remains the
+held toolchain worker; committed input alone selects a fixed child `execve` of
+`/ranex/subject/.local/subject-worker`. Kernel `EACCES`, successful exec, and
+other errno map to distinct frozen exits through a shared anonymous errno cell,
+and the expected denial has zero
+collected output and no side effect. This supplements the public
+`E-C18-GATE` refusal for subject-selected top-level argv.
+`tests/contract/test_docs_discipline.py`
 freezes the `blocked` status token while preserving at-most-one `open` slice.
 
 ## Code review checklist

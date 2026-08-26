@@ -31,6 +31,11 @@ BUILD_OUTPUT = ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
 INSTALLED_LAUNCHER = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
 QUALIFICATION = ".local/ranex/qualification/strict-local-v1.json"
 LAUNCHER = ROOT / LAUNCHER_SOURCE
+STATIC_WORKER_MANIFEST = FIXTURES / "slice036-worker-build-v1.json"
+STATIC_WORKER_SOURCE = FIXTURES / "slice036-worker.c"
+NOEXEC_DENIED = 80
+NOEXEC_SUCCEEDED = 81
+NOEXEC_OTHER_ERRNO = 82
 BROKER_PREFIX = [
     "/usr/bin/systemd-run",
     "--user",
@@ -112,6 +117,27 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
     )
     assert built.returncode == 0, built.stderr
 
+    static_manifest = json.loads(STATIC_WORKER_MANIFEST.read_bytes())
+    noexec_worker = tmp_path / "slice036-worker"
+    static_flags = [
+        token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
+        .replace("<output>", str(noexec_worker))
+        .replace("<source>", str(STATIC_WORKER_SOURCE))
+        for token in static_manifest["build"]["flags"]
+    ]
+    noexec_built = subprocess.run(
+        [static_manifest["build"]["compiler"]["path"], *static_flags],
+        cwd=ROOT,
+        env=static_manifest["build"]["environment"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert noexec_built.returncode == 0, noexec_built.stderr
+    assert hashlib.sha256(noexec_worker.read_bytes()).hexdigest() == static_manifest[
+        "artifact"
+    ]["sha256"]
+
     case = subject / ".local" / "ranex" / "slice070"
     case.mkdir(parents=True)
     input_checkout = case / "input"
@@ -151,6 +177,9 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
     confined_worker.parent.mkdir()
     confined_worker.write_bytes(worker.read_bytes())
     confined_worker.chmod(0o555)
+    noexec_confined_worker = paths["toolchain"] / "bin" / "slice036-worker"
+    noexec_confined_worker.write_bytes(noexec_worker.read_bytes())
+    noexec_confined_worker.chmod(0o555)
     subject_anchor = (
         subject_authority
         / "tests"
@@ -192,6 +221,17 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
         check=False,
     )
     assert tracked.returncode == 0, tracked.stderr
+    noexec_input = (
+        input_checkout / "tests" / "e2e" / "fixtures" / "slice070-noexec"
+    )
+    noexec_input_relative = str(noexec_input.relative_to(input_checkout))
+    assert _git(
+        input_checkout,
+        "ls-files",
+        "--error-unmatch",
+        "--",
+        f"{noexec_input_relative}/task.json",
+    ).strip() == f"{noexec_input_relative}/task.json"
 
     ordinary_input = case / "ordinary-input.txt"
     ordinary_input.write_bytes(expected)
@@ -242,11 +282,10 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
     subject_exec_descriptor = {
         **descriptor,
         "argv": [
-            "/ranex/subject/.local/subject-worker",
-            "--require-input-read-only",
-            "/ranex/input/tests/e2e/fixtures/slice070-input.txt",
-            "/ranex/output/subject-exec-must-not-exist.txt",
+            "/ranex/toolchain/bin/slice036-worker",
+            "--task",
         ],
+        "input": str(noexec_input.relative_to(subject)),
     }
     subject_exec_descriptor_path = case / "subject-exec-descriptor.json"
     subject_exec_result_path = case / "subject-exec-result.json"
@@ -271,15 +310,15 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
             development_python, "session", "--profile", PROFILE,
             "--host-profile", HOST_PROFILE, "--artifact", INSTALLED_LAUNCHER,
             "--manifest", MANIFEST, "--qualification", QUALIFICATION,
-            "--descriptor", str(descriptor_path.relative_to(subject)),
-            "--result", str(result_path.relative_to(subject)),
+            "--descriptor", str(subject_exec_descriptor_path.relative_to(subject)),
+            "--result", str(subject_exec_result_path.relative_to(subject)),
         ),
         _controller(
             development_python, "session", "--profile", PROFILE,
             "--host-profile", HOST_PROFILE, "--artifact", INSTALLED_LAUNCHER,
             "--manifest", MANIFEST, "--qualification", QUALIFICATION,
-            "--descriptor", str(subject_exec_descriptor_path.relative_to(subject)),
-            "--result", str(subject_exec_result_path.relative_to(subject)),
+            "--descriptor", str(descriptor_path.relative_to(subject)),
+            "--result", str(result_path.relative_to(subject)),
         ),
     ]
     shell_program = "set -eu; " + "; ".join(shlex.join(step) for step in steps)
@@ -310,9 +349,13 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
     subject_exec_result = json.loads(
         subject_exec_result_path.read_text(encoding="utf-8")
     )
-    assert subject_exec_result["command"]["exit_code"] != 0
+    assert subject_exec_result["command"]["exit_code"] == NOEXEC_DENIED
+    assert subject_exec_result["command"]["exit_code"] not in {
+        NOEXEC_SUCCEEDED,
+        NOEXEC_OTHER_ERRNO,
+    }
     assert subject_exec_result["outputs"] == {"bytes": 0, "files": [], "inodes": 0}
-    assert not (paths["output"] / "subject-exec-must-not-exist.txt").exists()
+    assert not (paths["output"] / "result.json").exists()
 
     result = json.loads(result_path.read_text(encoding="utf-8"))
     confined_result = paths["output"] / "result.txt"

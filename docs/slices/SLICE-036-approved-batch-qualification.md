@@ -20,8 +20,8 @@ descriptor carries a separate path/digest reference to each populated oracle;
 it is not reused as a placeholder for any class. C therefore binds those
 bytes, maximum pool two, exact base/subject identity, policy, and roles.
 
-The frozen `a0cbee4b1ac88fa143a5f4c2835c1da09989618c` commit and
-`sha256:920a1588d1f9cfcc36a07c7d0b296ad319afb9b120db534b8e0237804b1df9f8`
+The frozen `f1eeddc9c7509a3fea9c78783772fbfc3f08d450` commit and
+`sha256:4f1ad8498ae13f8e702748fcdf28ab8a6f13d0f4dacb033071f45fe9e124fa55`
 subject are the deterministic E2E fixture only. The E2E reconstructs that
 successor from public parent `5ded60d9a9c8213828dce7acc0e77acad0c25731`
 using fixed author/committer identity, time, and message. The successor adds
@@ -77,6 +77,15 @@ installed linker/static inputs, closed environment, absent build ID, source
 digest, two byte-identical builds, ELF properties, and final binary digest are
 B-protected. The controller verifies those bytes before placing them in the
 held toolchain object; the observed subject remains non-executable authority.
+For the SLICE-070 behavioral noexec calibration, committed input bytes select a
+closed `subject-noexec` mode inside that same fixed toolchain worker. It forks
+and attempts only `/ranex/subject/.local/subject-worker`: kernel `EACCES` maps
+to exit 80, successful execution maps to 81, any other `execve` errno maps to
+82, and supervision failure maps to 83. A shared anonymous errno cell, using
+only the existing strict-local seccomp surface, makes successful `execve`
+unambiguous even if the executed program exits 80. The expected denial creates no output.
+The top-level argv never names the subject; the public `E-C18-GATE` defense
+against caller-selected subject executables remains independently required.
 The public controller remains `uv run --frozen python -m ranex.cli.main ...`;
 the public CLI is unchanged.
 
@@ -157,6 +166,7 @@ grammar and behavior.
 - `tests/contract/fixtures/specification/approved-batch-input-mismatch-v1.jsonl`
 - `tests/integration/test_approved_batch_qualification_contract.py`
 - `tests/e2e/test_specification_batch_qualification.py`
+- `tests/e2e/fixtures/slice070-noexec/task.json`
 - `tests/e2e/expected/slice036-approved-batch-qualification.out`
 - `tests/e2e/expected/slice036-approved-batch-publication-refusal.out`
 - `README.md`, `docs/STATE.md`, and this slice
@@ -210,9 +220,9 @@ grammar and behavior.
    calibrations both produce one canonical provenance artifact. Because the
    deterministic successor has no mutable dependency journal, the observer
    self-test invokes the existing child-base dependency derivation, approval,
-   and journal verification commands before tracing. Its exact full signed run
-   must then either pass or return only the existing canonical host-drift
-   verifier refusal; actual batch qualification is asserted separately.
+   and journal verification commands before tracing. After SLICE-070 lands,
+   its exact full signed run must pass the canonical host verifier; actual
+   batch qualification is asserted separately.
    The release deliberately makes no exhaustive transient-copy or Linux-syscall
    absence claim; the canonical sequence must replace any prior bytes. Six
    B-bound fixtures drive public CLI refusal arms for input/path mismatch,

@@ -55,8 +55,8 @@ EXPECTED_VALUES = json.loads(
     (FIXTURES / "approved-batch-expected-values-v1.json").read_text(encoding="utf-8")
 )
 FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
-BASE_COMMIT = "a0cbee4b1ac88fa143a5f4c2835c1da09989618c"
-SUBJECT_DIGEST = "sha256:920a1588d1f9cfcc36a07c7d0b296ad319afb9b120db534b8e0237804b1df9f8"
+BASE_COMMIT = "f1eeddc9c7509a3fea9c78783772fbfc3f08d450"
+SUBJECT_DIGEST = "sha256:4f1ad8498ae13f8e702748fcdf28ab8a6f13d0f4dacb033071f45fe9e124fa55"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 FIXTURE_AUTHOR_NAME = "Ranex Fixture"
 FIXTURE_AUTHOR_EMAIL = "fixture@ranex.invalid"
