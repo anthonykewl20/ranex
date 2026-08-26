@@ -2897,6 +2897,7 @@ def qualify(
         except HostConfinementError:
             endpoint = None
         local_probe_error: HostConfinementError | None = None
+        probe: dict[str, object] = {}
         with _host_probe_lock():
             cgroup_root, relative = _current_cgroup_root()
             controllers = _cgroup_controllers(cgroup_root)
