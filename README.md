@@ -431,9 +431,18 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** [SLICE-072-digest-bound-dynamic-runtime-closure](docs/slices/SLICE-072-digest-bound-dynamic-runtime-closure.md)
 
-**Current slice:** SLICE-071 (#49) is complete. It delivers the retained
+**Current slice:** SLICE-072 (#48) specifies an additive strict-local v3
+runtime tree for a top-level dynamic interpreter, transitive libraries, native
+extensions, and runtime data. Every file becomes a sealed descriptor mounted
+only beneath `/ranex/runtime`; pyelftools and a confined held glibc loader check
+the same private snapshot before execution, with no host-root/cache/environment
+fallback. This is native dependency closure, not interpreted/JIT policy. Existing
+ordinary, strict-local v1, and static v2 behavior stays unchanged. Its target
+tests are frozen RED before implementation.
+
+SLICE-071 (#49) is complete. It delivers the retained
 SLICE-036 contract after closing the looping #19 as superseded: the explicit
 public `ranex run` source-selector/materialisation seam and a separate
 kernel-only `task batch qualify` surface in
@@ -578,7 +587,7 @@ issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
 confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
 controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
 `accepted`; SLICE-029..033 and SLICE-035 built the kernel-side authority
-  substrate. No slice is open; SLICE-071 completes the retained
+  substrate. SLICE-072 is the sole open slice; SLICE-071 completed the retained
   qualification-only SLICE-036 scope with publication still structurally
   refused. The
   harness-effect and production-exit slices were withdrawn.
