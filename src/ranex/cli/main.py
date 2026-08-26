@@ -66,6 +66,7 @@ from ranex.foundation.signing import (
     public_key_for,
     sign_evidence,
 )
+from ranex.foundation.static_executable import inspect_self_contained_static_executable
 from ranex.foundation.suite_results import (
     freeze_manifest,
     load_manifest_bytes,
@@ -1121,6 +1122,24 @@ def cmd_task_dispatch(args: argparse.Namespace) -> int:
 def cmd_task_judge(args: argparse.Namespace) -> int:
     """Materialise a candidate from the dispatched worktree without approving it."""
 
+    if getattr(args, "batch_qualification", None) is not None:
+        try:
+            from ranex.governed_execution.application.specification_batch import (
+                verify_publication_refusal,
+            )
+
+            governed = Path.cwd().resolve()
+            verify_publication_refusal(
+                Path(args.batch_qualification).resolve(),
+                governed=governed,
+                journal_path=Path(args.journal).resolve(),
+                candidate_repository=Path(args.emitted_worktree).resolve(),
+                candidate=args.emitted_commit,
+            )
+        except (ValueError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
+            print(f"ERROR  {exc}", file=sys.stderr)
+            return EXIT_FAIL
+
     try:
         journal_path = Path(args.journal).resolve()
         if not journal_path.is_file():
@@ -1310,6 +1329,25 @@ def _merge_refuse(
 
 def cmd_task_merge(args: argparse.Namespace) -> int:
     """Publish an already judged candidate through ordered, journalled checks."""
+
+    if getattr(args, "batch_qualification", None) is not None:
+        try:
+            from ranex.governed_execution.application.specification_batch import (
+                verify_publication_refusal,
+            )
+
+            governed = Path.cwd().resolve()
+            verify_publication_refusal(
+                Path(args.batch_qualification).resolve(),
+                governed=governed,
+                journal_path=governed / DEFAULT_JOURNAL,
+                candidate_repository=governed,
+                candidate=args.candidate,
+                target_ref=args.target_ref,
+            )
+        except (ValueError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
+            print(f"ERROR  {exc}", file=sys.stderr)
+            return EXIT_FAIL
 
     journal: Journal | None = None
     intent: TaskMergeIntent | None = None
@@ -1803,9 +1841,21 @@ class CommandObservation:
     artifact: object | None
     confinement_result_digest: str | None = None
     confinement_profile_digest: str | None = None
+    runtime_result: dict[str, object] | None = None
 
 
-_CONFINEMENT_RUNTIME_PROFILE = "governance/confinement/strict-local-v2.json"
+@dataclass(frozen=True, slots=True)
+class StrictLocalSources:
+    """The two committed source objects admitted for one v2 child run."""
+
+    runtime_input: Path
+    toolchain_root: Path
+    worker: Path
+
+
+_CONFINEMENT_RUNTIME_PROFILE_V1 = "governance/confinement/strict-local-v1.json"
+_CONFINEMENT_RUNTIME_PROFILE_V2 = "governance/confinement/strict-local-v2.json"
+_CONFINEMENT_RUNTIME_PROFILE = _CONFINEMENT_RUNTIME_PROFILE_V2
 _CONFINEMENT_HOST_PROFILE = "governance/confinement/strict-local-host-v1.json"
 _CONFINEMENT_LAUNCHER_MANIFEST = "governance/confinement/native-launcher-build-v1.json"
 _CONFINEMENT_LAUNCHER = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
@@ -1820,6 +1870,178 @@ _CONFINEMENT_LIMITS = {
     "wall_time_ms": 5_000,
 }
 
+_SLICE036_INPUT = re.compile(
+    r"governance/qualification/inputs/([A-Za-z0-9-]+)/([a-z0-9-]+)/attempt-([0-6])\Z"
+)
+_SLICE036_TOOLCHAIN = Path("governance/qualification/worker")
+_SLICE036_WORKER = Path("slice036-worker")
+_SLICE036_SOURCE = Path("slice036-worker.c")
+_SLICE036_MANIFEST = Path("slice036-worker-build-v1.json")
+_SLICE036_VIRTUAL_WORKER = Path("/ranex/toolchain/bin/slice036-worker")
+
+
+def _selector_name(root: Path, raw: object, description: str) -> Path:
+    """Admit one exact repo-relative spelling without following an alias."""
+
+    if not isinstance(raw, str) or not raw:
+        raise ValueError(f"E-C18-GATE: {description} selector must be a non-empty path")
+    # The shared confinement owner provides the remote/absolute/outside-root
+    # grammar.  Raw components are checked first because normalisation would
+    # otherwise erase the traversal spelling the public selector must refuse.
+    if any(part in {"", ".", ".."} for part in raw.split("/")):
+        raise ValueError(f"E-C18-PATH-ALIAS: {description} selector is not canonical")
+    resolve_within_repository(root, raw)
+    return named_within_repository(root, raw).relative_to(root)
+
+
+def _refuse_selector_symlink(root: Path, relative: Path, description: str) -> None:
+    """Use lstat on every component so no selector alias is ever followed."""
+
+    candidate = root
+    for part in relative.parts:
+        candidate /= part
+        try:
+            identity = os.lstat(candidate)
+        except FileNotFoundError:
+            return
+        if stat.S_ISLNK(identity.st_mode):
+            raise ValueError(
+                f"E-C18-PATH-ALIAS: {description} selector contains a symlink"
+            )
+
+
+def _tracked_selector_bytes(
+    root: Path,
+    started_at: str,
+    relative: Path,
+    description: str,
+) -> bytes:
+    """Bind a live selector file to the exact captured commit bytes."""
+
+    source = committed_bytes(root, started_at, root / relative)
+    if source is None:
+        tracked = git(
+            root,
+            "ls-files",
+            "--cached",
+            "--error-unmatch",
+            "-z",
+            "--",
+            f":(literal){relative.as_posix()}",
+        )
+        if tracked.returncode == 0:
+            raise ValueError(f"E-C18-GATE: {description} selector is absent from started_at")
+        raise ValueError(f"E-C18-GATE: {description} selector is not tracked at started_at")
+    try:
+        live = (root / relative).read_bytes()
+    except OSError as exc:
+        raise ValueError(f"E-C18-GATE: cannot read {description} selector: {exc}") from exc
+    if live != source:
+        raise ValueError(f"E-C18-GATE: {description} selector differs from started_at")
+    return source
+
+
+def _committed_subtree_paths(root: Path, started_at: str, relative: Path) -> tuple[str, ...]:
+    listed = git(root, "ls-tree", "-r", "--name-only", started_at, "--", relative.as_posix())
+    if listed.returncode != 0:
+        raise ValueError("E-C18-GATE: cannot enumerate selector source at started_at")
+    return tuple(line for line in listed.stdout.splitlines() if line)
+
+
+def _validate_static_worker(worker: Path, worker_bytes: bytes) -> None:
+    """Apply the shared strict-local v2 ELF closure admission."""
+
+    descriptor = os.open(worker, os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        identity = os.fstat(descriptor)
+        if not stat.S_ISREG(identity.st_mode):
+            raise ValueError("E-C18-GATE: v2 worker is not a regular file")
+        opened = os.pread(descriptor, len(worker_bytes), 0)
+        if opened != worker_bytes:
+            raise ValueError("E-C18-GATE: toolchain worker differs from started_at")
+        try:
+            inspect_self_contained_static_executable(descriptor, worker)
+        except ValueError as exc:
+            raise ValueError(f"E-C18-GATE: {exc}") from exc
+    finally:
+        os.close(descriptor)
+
+
+def _strict_local_sources(
+    root: Path,
+    started_at: str,
+    runtime_raw: object,
+    toolchain_raw: object,
+    command: Sequence[str],
+) -> StrictLocalSources:
+    """Admit signed v2 source selectors before provisioning or materialisation."""
+
+    runtime = _selector_name(root, runtime_raw, "runtime input")
+    toolchain = _selector_name(root, toolchain_raw, "toolchain")
+    _refuse_selector_symlink(root, runtime, "runtime input")
+    _refuse_selector_symlink(root, toolchain, "toolchain")
+    if runtime == toolchain or runtime in toolchain.parents or toolchain in runtime.parents:
+        raise ValueError("E-C18-PATH-ALIAS: input and toolchain source objects overlap")
+
+    match = _SLICE036_INPUT.fullmatch(runtime.as_posix())
+    if match is None:
+        raise ValueError("E-C18-GATE: runtime input selector has an invalid shape")
+    if toolchain != _SLICE036_TOOLCHAIN:
+        raise ValueError("E-C18-GATE: toolchain selector is not the approved source root")
+    if list(command) != [str(_SLICE036_VIRTUAL_WORKER), "--task"]:
+        raise ValueError("E-C18-GATE: v2 worker command is not the approved virtual argv")
+
+    task_relative = runtime / "task.json"
+    task_source = _tracked_selector_bytes(root, started_at, task_relative, "runtime input")
+    if _committed_subtree_paths(root, started_at, runtime) != (task_relative.as_posix(),):
+        raise ValueError("E-C18-GATE: runtime input selector is not an exact task.json authority")
+    try:
+        task = json.loads(task_source)
+    except json.JSONDecodeError as exc:
+        raise ValueError("E-C18-GATE: runtime task.json is not valid JSON") from exc
+    task_id, flow_id, attempt = match.groups()
+    if (
+        not isinstance(task, dict)
+        or task.get("task_id") != task_id
+        or task.get("flow_id") != flow_id
+        or task.get("attempt") != int(attempt)
+    ):
+        raise ValueError("E-C18-GATE: runtime task.json identity disagrees with its selector")
+
+    expected_toolchain = tuple(
+        sorted(
+            (toolchain / item).as_posix()
+            for item in (_SLICE036_WORKER, _SLICE036_SOURCE, _SLICE036_MANIFEST)
+        )
+    )
+    if tuple(sorted(_committed_subtree_paths(root, started_at, toolchain))) != expected_toolchain:
+        raise ValueError("E-C18-GATE: toolchain selector is not the closed approved subtree")
+    source = _tracked_selector_bytes(
+        root, started_at, toolchain / _SLICE036_SOURCE, "toolchain source"
+    )
+    worker = _tracked_selector_bytes(
+        root, started_at, toolchain / _SLICE036_WORKER, "toolchain worker"
+    )
+    manifest_source = _tracked_selector_bytes(
+        root, started_at, toolchain / _SLICE036_MANIFEST, "toolchain manifest"
+    )
+    try:
+        manifest = json.loads(manifest_source)
+        source_digest = manifest["build"]["source"]["sha256"]
+        worker_digest = manifest["artifact"]["sha256"]
+        destination = manifest["artifact"]["toolchain_destination"]
+    except (json.JSONDecodeError, KeyError, TypeError) as exc:
+        raise ValueError("E-C18-GATE: toolchain build manifest is invalid") from exc
+    if hashlib.sha256(source).hexdigest() != source_digest:
+        raise ValueError("E-C18-GATE: toolchain source digest differs from its build manifest")
+    if hashlib.sha256(worker).hexdigest() != worker_digest:
+        raise ValueError("E-C18-GATE: toolchain worker digest differs from its build manifest")
+    if destination != str(_SLICE036_VIRTUAL_WORKER):
+        raise ValueError("E-C18-GATE: toolchain destination differs from its build manifest")
+    worker_path = root / toolchain / _SLICE036_WORKER
+    _validate_static_worker(worker_path, worker)
+    return StrictLocalSources(runtime, toolchain, _SLICE036_WORKER)
+
 
 def _copy_session_input(source: Path, destination: Path) -> None:
     """Copy a host-side session prerequisite into the disposable controller root."""
@@ -1829,6 +2051,30 @@ def _copy_session_input(source: Path, destination: Path) -> None:
         shutil.copy2(source, destination)
 
 
+def _materialise_strict_local_sources(
+    materialisation: Materialisation,
+    sources: StrictLocalSources,
+) -> tuple[Path, Path]:
+    """Copy only captured-commit selector bytes into fixed disjoint objects."""
+
+    runtime_input = materialisation.root / "input"
+    runtime_input.mkdir(mode=0o700)
+    shutil.copy2(
+        materialisation.tree / sources.runtime_input / "task.json",
+        runtime_input / "task.json",
+    )
+
+    toolchain = materialisation.root / "toolchain"
+    (toolchain / "bin").mkdir(parents=True, mode=0o700)
+    source_root = materialisation.tree / sources.toolchain_root
+    worker = toolchain / "bin" / sources.worker
+    shutil.copy2(source_root / sources.worker, worker)
+    worker.chmod(0o555)
+    shutil.copy2(source_root / _SLICE036_SOURCE, toolchain / _SLICE036_SOURCE)
+    shutil.copy2(source_root / _SLICE036_MANIFEST, toolchain / _SLICE036_MANIFEST)
+    return runtime_input, toolchain
+
+
 def _execute_confinement_session(
     root: Path,
     materialisation: object,
@@ -1836,6 +2082,7 @@ def _execute_confinement_session(
     executable: Path,
     deps_environment: Path | None,
     *,
+    runtime_input: Path | None = None,
     artifact_relative: Path | None,
     artifact_reader: Callable[[Path], object] | None,
 ) -> CommandObservation:
@@ -1857,10 +2104,19 @@ def _execute_confinement_session(
     # live repository only into the disposable controller root.  The controller
     # revalidates both before opening an executable.
     _copy_session_input(root / _CONFINEMENT_LAUNCHER, session_directory / _CONFINEMENT_LAUNCHER)
-    _copy_session_input(root / _CONFINEMENT_QUALIFICATION, session_directory / _CONFINEMENT_QUALIFICATION)
+    _copy_session_input(
+        root / _CONFINEMENT_QUALIFICATION, session_directory / _CONFINEMENT_QUALIFICATION
+    )
+    runtime_profile = f"tree/{_CONFINEMENT_RUNTIME_PROFILE_V1}"
+    if runtime_input is not None:
+        runtime_profile = _CONFINEMENT_RUNTIME_PROFILE_V2
+        _copy_session_input(
+            governed_repository_root() / _CONFINEMENT_RUNTIME_PROFILE_V2,
+            session_directory / _CONFINEMENT_RUNTIME_PROFILE_V2,
+        )
     descriptor_path = session_directory / "confinement-command.json"
     result_path = session_directory / "confinement-result.json"
-    descriptor_path.write_bytes(canonical_json_bytes({
+    descriptor = {
         "schema": "ranex-confinement-command-v1",
         "argv": [str(executable), *command[1:]],
         "environment": {"LC_ALL": "C", "TZ": "UTC"},
@@ -1869,7 +2125,10 @@ def _execute_confinement_session(
         "output": str(temporary.relative_to(session_directory)),
         "scratch": "scratch",
         "limits": _CONFINEMENT_LIMITS,
-    }))
+    }
+    if runtime_input is not None:
+        descriptor["input"] = str(runtime_input.relative_to(session_directory))
+    descriptor_path.write_bytes(canonical_json_bytes(descriptor))
     source_root = str(Path(__file__).resolve().parents[2])
     environment = {
         "PATH": "/usr/bin:/bin",
@@ -1890,13 +2149,24 @@ def _execute_confinement_session(
     try:
         process = subprocess.Popen(
             [
-                sys.executable, "-m", "ranex.cli.host_confinement", "session",
-                "--profile", f"tree/{_CONFINEMENT_RUNTIME_PROFILE}",
-                "--host-profile", f"tree/{_CONFINEMENT_HOST_PROFILE}",
-                "--artifact", _CONFINEMENT_LAUNCHER,
-                "--manifest", f"tree/{_CONFINEMENT_LAUNCHER_MANIFEST}",
-                "--qualification", _CONFINEMENT_QUALIFICATION,
-                "--descriptor", str(descriptor_path), "--result", str(result_path),
+                sys.executable,
+                "-m",
+                "ranex.cli.host_confinement",
+                "session",
+                "--profile",
+                runtime_profile,
+                "--host-profile",
+                f"tree/{_CONFINEMENT_HOST_PROFILE}",
+                "--artifact",
+                _CONFINEMENT_LAUNCHER,
+                "--manifest",
+                f"tree/{_CONFINEMENT_LAUNCHER_MANIFEST}",
+                "--qualification",
+                _CONFINEMENT_QUALIFICATION,
+                "--descriptor",
+                str(descriptor_path),
+                "--result",
+                str(result_path),
             ],
             cwd=session_directory,
             start_new_session=True,
@@ -1948,16 +2218,36 @@ def _execute_confinement_session(
     result, runtime_digest = validate_confinement_result(raw_result)
     result_command = cast(dict[str, object], result["command"])
     artifact: object | None = None
+    runtime_result: dict[str, object] | None = None
     if artifact_reader is not None:
         if artifact_relative is None:
             raise ValueError("artifact reader has no confined artifact path")
         artifact = artifact_reader(temporary / artifact_relative)
+    if runtime_input is not None:
+        runtime_result_path = temporary / "result.json"
+        if runtime_result_path.is_file():
+            try:
+                runtime_result_raw = runtime_result_path.read_bytes()
+                parsed_runtime_result = json.loads(runtime_result_raw)
+            except (OSError, json.JSONDecodeError) as exc:
+                raise ValueError(f"E-C18-RESULT: cannot read batch runtime result: {exc}") from exc
+            if (
+                not isinstance(parsed_runtime_result, dict)
+                or runtime_result_raw != canonical_json_bytes(parsed_runtime_result) + b"\n"
+            ):
+                raise ValueError("E-C18-RESULT: batch runtime result is not canonical JSON")
+            runtime_result = parsed_runtime_result
+        elif int(cast(int, result_command["exit_code"])) != 0:
+            runtime_result = {"exit_code": int(cast(int, result_command["exit_code"]))}
+        else:
+            raise ValueError("E-C18-RESULT: successful batch run has no runtime result")
     return CommandObservation(
         subprocess.CompletedProcess(command, cast(int, result_command["exit_code"])),
         executable,
         artifact,
         hashlib.sha256(raw_result).hexdigest(),
         runtime_digest,
+        runtime_result,
     )
 
 
@@ -2044,6 +2334,7 @@ def _execute_hermetically(
     artifact_relative: Path | None = None,
     artifact_reader: Callable[[Path], object] | None = None,
     confinement: str | None = None,
+    strict_local_sources: StrictLocalSources | None = None,
 ) -> CommandObservation:
     """Run once inside the shared verified, offline, sealed execution boundary."""
 
@@ -2066,6 +2357,45 @@ def _execute_hermetically(
                 )
             finally:
                 os.close(assembly)
+
+        if strict_local_sources is not None:
+            if confinement != "strict-local":
+                raise ValueError("strict-local source objects require strict-local confinement")
+            runtime_input, selected_toolchain = _materialise_strict_local_sources(
+                materialisation,
+                strict_local_sources,
+            )
+            observed = materialisation.tracked_paths
+            untouched = stat_fingerprint(materialisation.tree, observed)
+            confined = _execute_confinement_session(
+                root,
+                materialisation,
+                command,
+                _SLICE036_VIRTUAL_WORKER,
+                selected_toolchain,
+                runtime_input=runtime_input,
+                artifact_relative=artifact_relative,
+                artifact_reader=artifact_reader,
+            )
+            if head_commit(root) != started_at:
+                raise ValueError(
+                    "refusing to record evidence: the command moved HEAD from "
+                    f"{started_at[:12]} during the run"
+                )
+            written = sorted(
+                path
+                for path, fingerprint in stat_fingerprint(
+                    materialisation.tree, observed
+                ).items()
+                if fingerprint != untouched[path]
+            )
+            if written:
+                raise ValueError(
+                    "refusing to record evidence: the command wrote to tracked "
+                    f"file(s) while it ran — {', '.join(written)} — so the observed "
+                    "commit no longer describes the tree the command saw"
+                )
+            return confined
 
         resolution = preliminary or resolve_executable(
             command[0], materialisation.tree
@@ -2349,7 +2679,27 @@ def cmd_run(args: argparse.Namespace) -> int:
         # whether this subject provisions dependencies is also a question
         # about this exact commit.
         started_at = head_commit(root)
-        provisioning = _provisioning_for(root, started_at, args.store)
+        strict_local_sources: StrictLocalSources | None = None
+        runtime_input_path = getattr(args, "runtime_input_path", None)
+        toolchain_root = getattr(args, "toolchain_root", None)
+        if runtime_input_path is not None or toolchain_root is not None:
+            if confinement != "strict-local" or runtime_input_path is None or toolchain_root is None:
+                raise ValueError(
+                    "strict-local source selectors must be supplied together with "
+                    "--confinement strict-local"
+                )
+            strict_local_sources = _strict_local_sources(
+                root,
+                started_at,
+                runtime_input_path,
+                toolchain_root,
+                command,
+            )
+        provisioning = (
+            None
+            if strict_local_sources is not None
+            else _provisioning_for(root, started_at, args.store)
+        )
         results_artifact: str | None = None
         qualification_report: str | None = None
         suite_manifest: dict[str, object] | None = None
@@ -2382,7 +2732,10 @@ def cmd_run(args: argparse.Namespace) -> int:
         # resolve them before materialisation. This keeps the governed-root
         # route and inode controls live for absolute same-uid access, including
         # a committed symlink whose tree entry the materialiser also refuses.
-        if qualification_report is not None:
+        if strict_local_sources is not None:
+            preliminary = None
+            provisioned_resolver = False
+        elif qualification_report is not None:
             preliminary = _host_qualification_resolution(root, command)
             provisioned_resolver = False
         else:
@@ -2488,6 +2841,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 artifact_relative=artifact_relative,
                 artifact_reader=artifact_reader,
                 confinement=confinement,
+                strict_local_sources=strict_local_sources,
             )
         completed = observation.completed
         executable = observation.executable
@@ -2507,10 +2861,22 @@ def cmd_run(args: argparse.Namespace) -> int:
             "confinement_result_digest": observation.confinement_result_digest,
             "confinement_profile_digest": observation.confinement_profile_digest,
         }
-        record_evidence(
-            evidence_path,
-            {**content, "signature": sign_evidence(content, private_key)},
-        )
+        signed_record = {**content, "signature": sign_evidence(content, private_key)}
+        if strict_local_sources is None:
+            record_evidence(evidence_path, signed_record)
+        else:
+            # The v2 approved-batch caller owns durable child evidence.  Return
+            # the exact legacy evidence bytes over the controller channel so a
+            # direct calibration leaves its governed worktree clean.
+            if observation.runtime_result is None:
+                raise ValueError("E-C18-RESULT: strict-local v2 run has no runtime result")
+            sys.stderr.write(
+                "RANEX-BATCH-RESULT "
+                + canonical_json_bytes(observation.runtime_result).decode("utf-8")
+                + "\n"
+            )
+            sys.stdout.write(json.dumps([signed_record], indent=2) + "\n")
+            return int(completed.returncode)
     except (
         ProvisioningError,
         SubjectError,
@@ -2719,8 +3085,110 @@ def cmd_keygen(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
+    """Qualify one closed signed batch; never dispatch or publish children."""
+
+    try:
+        from ranex.governed_execution.application.specification_batch import (
+            qualify_batch,
+        )
+
+        target = Path(args.target).resolve()
+        base = head_commit(target)
+        subject = subject_digest_for(target, base)
+        signing_key = private_signing_key(target)
+        signed_command = (
+            "python",
+            "-m",
+            "ranex.cli.main",
+            "task",
+            "batch",
+            "qualify",
+            "--spec-packet",
+            args.spec_packet,
+            "--artifact-manifest",
+            args.artifact_manifest,
+            "--approval-envelope",
+            args.approval_envelope,
+            "--descriptor",
+            args.descriptor,
+            "--tasks",
+            args.tasks,
+            "--target",
+            args.target,
+            "--journal",
+            args.journal,
+            "--outcome-dir",
+            args.outcome_dir,
+            "--pool",
+            str(args.pool),
+        )
+        result = qualify_batch(
+            spec_packet=Path(args.spec_packet),
+            artifact_manifest=Path(args.artifact_manifest),
+            approval_envelope=Path(args.approval_envelope),
+            descriptor_path=Path(args.descriptor),
+            tasks_path=Path(args.tasks),
+            target=target,
+            journal_path=Path(args.journal),
+            outcome_dir=Path(args.outcome_dir),
+            pool=args.pool,
+            signed_command=signed_command,
+            private_key=signing_key,
+            subject_digest=subject,
+        )
+    except (
+        KeyringError,
+        SubjectError,
+        ToolchainError,
+        ValueError,
+        TypeError,
+        KeyError,
+        OSError,
+        sqlite3.Error,
+        json.JSONDecodeError,
+    ) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    for line in result.lines:
+        print(line)
+    return EXIT_PASS
+
+
+class RanexArgumentParser(argparse.ArgumentParser):
+    """Apply the paired v2 selector contract after argparse owns the argv."""
+
+    def parse_args(
+        self,
+        args: Sequence[str] | None = None,
+        namespace: argparse.Namespace | None = None,
+    ) -> argparse.Namespace:
+        parsed = super().parse_args(args, namespace)
+        if getattr(parsed, "group", None) != "run":
+            return parsed
+        runtime = getattr(parsed, "runtime_input_path", [])
+        toolchain = getattr(parsed, "toolchain_root", [])
+        if len(runtime) > 1:
+            self.error("--runtime-input-path may be supplied only once")
+        if len(toolchain) > 1:
+            self.error("--toolchain-root may be supplied only once")
+        parsed.runtime_input_path = runtime[0] if runtime else None
+        parsed.toolchain_root = toolchain[0] if toolchain else None
+        if bool(runtime) != bool(toolchain):
+            self.error("--runtime-input-path and --toolchain-root must be supplied together")
+        if runtime and parsed.confinement != "strict-local":
+            self.error("source selectors require --confinement strict-local")
+        command = list(parsed.command)
+        if command and command[0] == "--":
+            command = command[1:]
+        if not runtime and command and command[0].startswith("/ranex/toolchain/"):
+            self.error("a /ranex/toolchain command requires the paired source selectors")
+        return parsed
+
+
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
+    parser = RanexArgumentParser(
         prog="ranex",
         description="Deterministic governance for AI agents that build software",
     )
@@ -2806,6 +3274,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="opt into the named qualified confinement profile",
     )
     rn.add_argument(
+        "--runtime-input-path",
+        action="append",
+        default=[],
+        help="strict-local v2 committed attempt-directory selector",
+    )
+    rn.add_argument(
+        "--toolchain-root",
+        action="append",
+        default=[],
+        help="strict-local v2 committed toolchain-source selector",
+    )
+    rn.add_argument(
         "command",
         nargs=argparse.REMAINDER,
         help="the command to run, after --",
@@ -2887,6 +3367,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="suite manifest from the dispatch-time base tree",
     )
     judge.add_argument("--journal", required=True, help="external task journal")
+    judge.add_argument(
+        "--batch-qualification",
+        help="qualification artifact whose publication must be refused",
+    )
     judge.set_defaults(func=cmd_task_judge)
 
     merge = task_actions.add_parser("merge", help="publish a judged task candidate")
@@ -2894,6 +3378,10 @@ def build_parser() -> argparse.ArgumentParser:
     merge.add_argument("--target-ref", required=True, help="governed target ref")
     merge.add_argument("--candidate", required=True, help="candidate commit OID")
     merge.add_argument("--approval", required=True, help="signed approval JSON")
+    merge.add_argument(
+        "--batch-qualification",
+        help="qualification artifact whose publication must be refused",
+    )
     merge.set_defaults(func=cmd_task_merge)
 
     delegate = task_actions.add_parser("delegate", help="execute and attest a task in a worktree")
@@ -2954,6 +3442,23 @@ def build_parser() -> argparse.ArgumentParser:
     )
     fanout.add_argument("--pool", required=True, type=int, help="max concurrent delegations")
     fanout.set_defaults(func=cmd_task_fanout)
+
+    batch = task_actions.add_parser(
+        "batch", help="approved-batch qualification operations"
+    ).add_subparsers(dest="batch_action", required=True)
+    qualify = batch.add_parser(
+        "qualify", help="qualify a signed approved batch without publication"
+    )
+    qualify.add_argument("--spec-packet", required=True)
+    qualify.add_argument("--artifact-manifest", required=True)
+    qualify.add_argument("--approval-envelope", required=True)
+    qualify.add_argument("--descriptor", required=True)
+    qualify.add_argument("--tasks", required=True)
+    qualify.add_argument("--target", required=True)
+    qualify.add_argument("--journal", required=True)
+    qualify.add_argument("--outcome-dir", required=True)
+    qualify.add_argument("--pool", required=True, type=int)
+    qualify.set_defaults(func=cmd_task_batch_qualify)
     return parser
 
 

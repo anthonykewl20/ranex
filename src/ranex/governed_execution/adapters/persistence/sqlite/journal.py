@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -34,6 +35,15 @@ BEGIN
     SELECT RAISE(ABORT, 'evaluations is append-only');
 END;
 """
+
+
+@dataclass(frozen=True, slots=True)
+class JournalAppend:
+    """The committed position and hash-chain facts for one CAS append."""
+
+    position: int
+    previous_head: str
+    head: str
 
 
 class Journal:
@@ -81,25 +91,61 @@ class Journal:
         payload = canonical_json(record)
         with self._connect() as conn:
             conn.execute("BEGIN IMMEDIATE")
-            row = conn.execute(
-                "SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1"
-            ).fetchone()
+            row = conn.execute("SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1").fetchone()
             prev_link = row["link"] if row is not None else _GENESIS
-            link = "sha256:" + canonical_sha256(
-                {"prev_link": prev_link, "record": record}
-            )
+            link = "sha256:" + canonical_sha256({"prev_link": prev_link, "record": record})
             conn.execute(
                 "INSERT INTO evaluations (record, prev_link, link) VALUES (?, ?, ?)",
                 (payload, prev_link, link),
             )
         return link
 
+    def append_if_head(self, expected_head: str | None, evaluation: Any) -> JournalAppend:
+        """Append iff the durable predecessor is exactly ``expected_head``.
+
+        The predecessor read, comparison, and insert intentionally share one
+        ``BEGIN IMMEDIATE`` transaction.  This is the journal's canonical
+        compare-and-swap boundary; callers must not emulate it with a prior
+        read followed by ``append``.
+        """
+
+        record = evaluation.as_record()
+        payload = canonical_json(record)
+        with self._connect() as conn:
+            conn.execute("BEGIN IMMEDIATE")
+            row = conn.execute(
+                "SELECT seq, link FROM evaluations ORDER BY seq DESC LIMIT 1"
+            ).fetchone()
+            actual_head = row["link"] if row is not None else None
+            if actual_head != expected_head:
+                raise ValueError(
+                    "E-BATCH-STALE-BASE: journal head changed "
+                    f"(expected {expected_head!r}, observed {actual_head!r})"
+                )
+            prev_link = actual_head if actual_head is not None else _GENESIS
+            link = "sha256:" + canonical_sha256({"prev_link": prev_link, "record": record})
+            cursor = conn.execute(
+                "INSERT INTO evaluations (record, prev_link, link) VALUES (?, ?, ?)",
+                (payload, prev_link, link),
+            )
+            if cursor.lastrowid is None:  # pragma: no cover - SQLite contract
+                raise sqlite3.DatabaseError("journal insert returned no position")
+            position = int(cursor.lastrowid)
+        return JournalAppend(position, prev_link, link)
+
     def entries(self) -> list[dict[str, Any]]:
         with self._connect() as conn:
-            rows = conn.execute(
-                "SELECT record FROM evaluations ORDER BY seq ASC"
-            ).fetchall()
+            rows = conn.execute("SELECT record FROM evaluations ORDER BY seq ASC").fetchall()
         return [json.loads(row["record"]) for row in rows]
+
+    def head(self) -> str | None:
+        """Return the current durable chain head without creating storage."""
+
+        with self._connect_for_verification() as conn:
+            row = conn.execute(
+                "SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1"
+            ).fetchone()
+        return None if row is None else str(row["link"])
 
     def verify(self) -> bool:
         """Recompute the chain. False means a row changed outside `append`."""

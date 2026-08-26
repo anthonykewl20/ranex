@@ -73,6 +73,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "task.merge",
     "task.delegate",
     "task.fanout",
+    "task.batch.qualify",
 )
 
 STAGES: frozenset[str] = frozenset(

@@ -84,7 +84,9 @@ RESPONSE_LIMIT = 65_536
 # statement added, removed, or changed.
 # SLICE-070's sanctioned sole main.py change is the strict-local runtime-profile
 # selector from v1 to v2; the whole-file pin remains the Gate 10 authority.
-MAIN_PY_SHA256 = "d59b7428931414ce54a31e081f79ad3c9cd04c72433794b64143d424a35b8a4a"
+# SLICE-071 refreshes it for the approved-batch CLI and source-selector
+# admission path while preserving the launcher boundary.
+MAIN_PY_SHA256 = "d050878679ecd5a23dd666fa6ba7e3c7c89c19ece56bed3be4088a509f8f291c"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

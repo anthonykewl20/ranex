@@ -2,28 +2,23 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-26 (SLICE-036 source-selector CCR in review)
-**Active slice:** none — SLICE-036 remains blocked and dependency-gated while
-its explicit public run-source-selector CCR is frozen and independently reviewed
+**Updated:** 2026-08-26 (SLICE-071 implementation complete)
+**Active slice:** none
 
 ## Where we stopped
-SLICE-070/#47 is complete, published, remotely verified, and archived.
-Strict-local v2 now gives self-contained static workers held, stable
-`/ranex/input`, `/ranex/toolchain`, `/ranex/output`, `/ranex/scratch`, and
-no-exec `/ranex/subject` mounts without changing the explicit v1 session API.
-The qualified-host v2 journey and delegated legacy v1 regressions are green.
+SLICE-071/#49 completes the retained approved-batch qualification task from
+superseded #19. The public v2 source selectors, separate `task batch qualify`
+surface, protected A/B/C admission, sequential joined execution, atomic
+qualification journal append, signed non-publishable outcome, and batch-aware
+judge/merge refusal are implemented. Host-probe mutations serialize across
+processes without weakening the existing strict-local v1/v2 boundaries.
 
 ## Next
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-036
-Review and publish the explicit SLICE-036 public `ranex run`
-source-selector/materialisation CCR, then remove #19's dependency gate and
-restore `status:ready`. The seam for the fixed
-`/ranex/toolchain/bin/slice036-worker` deliberately remains outside #47.
+Next slice: none selected. Dynamic v2 runtime closure remains deferred to #48.
 
 ## Governance
-Kernel-only initial release; no open slice while #19 awaits its explicit CCR.
-`dependency-gated` is distinct from `done` and does not consume the one-open slot.
+Kernel-only initial release; no open slice after SLICE-071.
 Build order: milestone 4 → milestone 3 → milestone 2
 
 ## Known limits
@@ -32,9 +27,6 @@ Build order: milestone 4 → milestone 3 → milestone 2
   confinement requires user namespaces and delegated cgroup controllers.
 - Dynamic v2 runtime closure is unsupported/refused; #48 owns it and there is
   no host-root fallback.
-- The full suite remains intentionally red first at SLICE-036's public-run
-  source selector and then its four absent batch seams; suite-freeze also lacks committed
-  dependency-derivation admission. These are not SLICE-070 acceptance failures.
 - About 125 legacy test IDs remain unregistered; trace fd targets retain O_NONBLOCK on the operator descriptor after exit (disclosed).
 - mutmut statistics remain unavailable for subprocess-heavy surfaces; default-deny clone and writable-tree EXECUTE residuals remain review-owned.
 - The approver remains an unauthenticated string; the journal does not detect a

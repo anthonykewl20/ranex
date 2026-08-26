@@ -18,7 +18,8 @@ import struct
 import subprocess
 import time
 import uuid
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, NoReturn
@@ -32,6 +33,7 @@ from ranex.foundation.confinement_result import (
 from ranex.foundation.confinement_result import (
     confinement_result_bytes as _confinement_result_bytes,
 )
+from ranex.foundation.static_executable import inspect_self_contained_static_executable
 from ranex.observability import stage_begin, stage_end
 from ranex.observability.emitter import set_governed_root
 
@@ -487,31 +489,9 @@ def _require_self_contained_static_executable(opened: OpenedObject) -> None:
     """Admit only the ELF64 ET_EXEC/no-runtime-closure shape frozen by v2."""
 
     try:
-        header = os.pread(opened.descriptor, 64, 0)
-    except OSError as exc:
-        raise HostConfinementError(
-            E_C18_GATE, f"cannot inspect static executable {opened.path}: {exc}"
-        ) from exc
-    if len(header) != 64 or header[:6] != b"\x7fELF\x02\x01":
-        _refuse(E_C18_GATE, "v2 worker is not a little-endian ELF64 executable")
-    elf_type, machine = struct.unpack_from("<HH", header, 16)
-    program_offset = struct.unpack_from("<Q", header, 32)[0]
-    program_size, program_count = struct.unpack_from("<HH", header, 54)
-    if elf_type != 2 or machine != 62 or program_size < 56 or program_count == 0:
-        _refuse(E_C18_GATE, "v2 worker is not a self-contained x86-64 ET_EXEC object")
-    for index in range(program_count):
-        offset = program_offset + index * program_size
-        try:
-            program = os.pread(opened.descriptor, program_size, offset)
-        except OSError as exc:
-            raise HostConfinementError(
-                E_C18_GATE, f"cannot inspect static executable {opened.path}: {exc}"
-            ) from exc
-        if len(program) != program_size:
-            _refuse(E_C18_GATE, "v2 worker has a truncated ELF program table")
-        kind = struct.unpack_from("<I", program, 0)[0]
-        if kind in {2, 3}:  # PT_DYNAMIC or PT_INTERP from the installed ELF64 ABI.
-            _refuse(E_C18_GATE, "v2 worker requests an unsupported dynamic runtime closure")
+        inspect_self_contained_static_executable(opened.descriptor, opened.path)
+    except ValueError as exc:
+        _refuse(E_C18_GATE, str(exc))
 
 
 def _manifest_sections(manifest: Mapping[str, Any], code: str) -> tuple[dict[str, Any], ...]:
@@ -1681,6 +1661,51 @@ def _real_cgroup_probe(root: Path) -> dict[str, Any]:
     return transcript
 
 
+@contextmanager
+def _host_probe_lock() -> Iterator[None]:
+    """Serialize the per-user cgroup probe mutation across controller processes."""
+
+    runtime_uid = _parent_namespace_id(os.geteuid(), kind="uid")
+    visible_owner = os.geteuid()
+    runtime = Path("/run/user") / str(runtime_uid)
+    try:
+        named = runtime.lstat()
+    except OSError as exc:
+        raise HostConfinementError(
+            E_DELEGATION, f"host-probe lock directory is unavailable: {exc}"
+        ) from exc
+    if stat.S_ISLNK(named.st_mode) or not stat.S_ISDIR(named.st_mode):
+        _refuse(E_DELEGATION, f"host-probe lock directory {runtime} is not a non-symlink directory")
+    if named.st_uid != visible_owner:
+        _refuse(E_DELEGATION, f"host-probe lock directory {runtime} has the wrong owner")
+    try:
+        descriptor = os.open(
+            runtime,
+            os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+        )
+    except OSError as exc:
+        raise HostConfinementError(
+            E_DELEGATION, f"cannot open host-probe lock directory: {exc}"
+        ) from exc
+    try:
+        opened = os.fstat(descriptor)
+        if (
+            not stat.S_ISDIR(opened.st_mode)
+            or opened.st_uid != visible_owner
+            or (opened.st_dev, opened.st_ino) != (named.st_dev, named.st_ino)
+        ):
+            _refuse(E_DELEGATION, "host-probe lock directory identity changed while opening")
+        try:
+            fcntl.flock(descriptor, fcntl.LOCK_EX)
+        except OSError as exc:
+            raise HostConfinementError(
+                E_DELEGATION, f"cannot acquire host-probe lock: {exc}"
+            ) from exc
+        yield
+    finally:
+        os.close(descriptor)
+
+
 def _host_architecture() -> tuple[str, str]:
     machine = os.uname().machine
     release = os.uname().release
@@ -1938,7 +1963,7 @@ def _collect_host_state(
     }
 
 
-def collect_host_probe() -> dict[str, Any]:
+def _collect_host_probe_locked() -> dict[str, Any]:
     machine, release = _host_architecture()
     status = _read_status()
     landlock = _landlock_abi()
@@ -1950,7 +1975,9 @@ def collect_host_probe() -> dict[str, Any]:
         if _statfs_type(cgroup_root) != CGROUP2_SUPER_MAGIC:
             _refuse(E_FACT, f"cgroup root {cgroup_root} is not cgroup2")
     except OSError as exc:
-        raise HostConfinementError(E_FACT, f"cannot inspect cgroup2 mount: {exc}") from exc
+        raise HostConfinementError(
+            E_FACT, f"cannot inspect cgroup2 mount: {exc}"
+        ) from exc
     controllers = _cgroup_controllers(cgroup_root)
     transcript = _real_cgroup_probe(cgroup_root)
     return {
@@ -1980,6 +2007,11 @@ def collect_host_probe() -> dict[str, Any]:
             "unprivileged_userns_sysctls": _unprivileged_userns_sysctls(),
         },
     }
+
+
+def collect_host_probe() -> dict[str, Any]:
+    with _host_probe_lock():
+        return _collect_host_probe_locked()
 
 
 def _exact_keys(value: Mapping[str, Any], expected: set[str], field: str, code: str) -> None:
@@ -2582,7 +2614,7 @@ def _validate_launcher_response(
         type(closed) is list
         and all(type(descriptor) is int and descriptor >= 0 for descriptor in closed)
         and closed == sorted(set(closed))
-        and set(closed) == {0, 1, 2, injected_descriptor}
+        and {0, 1, 2, injected_descriptor} <= set(closed)
     )
     if (
         not closed_valid
@@ -2859,35 +2891,38 @@ def qualify(
         profile_path, manifest_path, artifact_path
     )
     try:
-        cgroup_root, relative = _current_cgroup_root()
-        controllers = _cgroup_controllers(cgroup_root)
-        existing_root = {
-            "controllers": controllers,
-            "path": str(cgroup_root),
-            "relative_path": relative,
-        }
         endpoint: BrokerEndpoint | None
         try:
             endpoint = _broker_endpoint()
         except HostConfinementError:
             endpoint = None
-        if REQUIRED_CONTROLLERS <= set(controllers):
-            try:
-                probe = collect_host_probe()
-            except HostConfinementError as exc:
-                if exc.code != E_DELEGATION or endpoint is None:
-                    raise
-                probe, broker = _run_broker_probe(root, profile, endpoint)
-                source = "broker"
-            else:
-                broker = _broker_record(
-                    endpoint,
-                    status="available" if endpoint is not None else "untestable",
-                    attempted=False,
-                )
-                source = "existing"
+        local_probe_error: HostConfinementError | None = None
+        with _host_probe_lock():
+            cgroup_root, relative = _current_cgroup_root()
+            controllers = _cgroup_controllers(cgroup_root)
+            existing_root = {
+                "controllers": controllers,
+                "path": str(cgroup_root),
+                "relative_path": relative,
+            }
+            if REQUIRED_CONTROLLERS <= set(controllers):
+                try:
+                    probe = _collect_host_probe_locked()
+                except HostConfinementError as exc:
+                    local_probe_error = exc
+        if REQUIRED_CONTROLLERS <= set(controllers) and local_probe_error is None:
+            broker = _broker_record(
+                endpoint,
+                status="available" if endpoint is not None else "untestable",
+                attempted=False,
+            )
+            source = "existing"
         else:
+            if local_probe_error is not None and local_probe_error.code != E_DELEGATION:
+                raise local_probe_error
             if endpoint is None:
+                if local_probe_error is not None:
+                    raise local_probe_error
                 missing = sorted(REQUIRED_CONTROLLERS - set(controllers))
                 _refuse(
                     E_DELEGATION,

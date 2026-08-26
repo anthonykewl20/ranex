@@ -17,6 +17,7 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import pytest
+from launcher_host import require_unprivileged_userns
 
 from ranex.cli.fanout import cmd_task_fanout
 from ranex.cli.main import build_parser
@@ -233,6 +234,17 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
             "path": "governance/confinement/strict-local-host-v1.json",
         },
     }
+    history = subprocess.run(
+        ["git", "cat-file", "-e", f"{FIXTURE_PARENT_COMMIT}^{{commit}}"],
+        cwd=ROOT,
+        capture_output=True,
+        check=False,
+    )
+    if history.returncode != 0:
+        pytest.skip(
+            "ranex-context: published fixture ancestry is absent from the "
+            "ADR-009 materialised subject"
+        )
     for identity in ("launcher_manifest", "launcher_source", "profile"):
         record = published_authority[identity]
         observed = subprocess.run(
@@ -630,6 +642,7 @@ def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
 def test_static_worker_succeeds_with_stdout_closed_and_only_exact_output_file(
     tmp_path: Path,
 ) -> None:
+    require_unprivileged_userns()
     static = EXPECTED_VALUES["static_worker"]
     manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
     source = ROOT / static["source"]

@@ -1,10 +1,10 @@
-# SLICE-036 — approved-batch qualification
+# SLICE-071 — approved-batch qualification
 
-**Status:** blocked
+**Status:** done
 **Opened:** 2026-08-25
 **Priority:** P0 — kernel-only qualification; publication blocked
-**Dependency:** the final #19 CCR must publish the explicit public strict-local
-run-source-selector seam before implementation resumes; SLICE-070/#47 is landed.
+**Dependency:** satisfied by the published SLICE-070/#47 strict-local v2
+boundary and the SLICE-071 source-selector implementation.
 **ADRs:** `docs/adr/ADR-017-approved-specification-before-implementation-authority.md`, `docs/adr/ADR-025-abc-contract-freeze.md`, `docs/adr/ADR-030-approval-and-intersected-grants.md`
 
 ## Contract
@@ -241,7 +241,8 @@ grammar and behavior.
    `refs/heads/main` span qualification, its actual SQLite journal row and
    signed artifact, dispatch, judge, merge, and refusal. The journey
    independently queries that ref, SQLite row/head, `git worktree list`,
-   filesystem residue, SHA-256 of child evidence, a `/proc` survivor scan, and
+   filesystem residue, SHA-256 of child evidence, the confined worker's
+   canonical positive survivor PID followed by a `/proc` no-leak scan, and
    a calibrated real loopback listener. It reconstructs the deterministic
    successor commit, verifies every committed child input is tracked and the
    checkout clean and canonically provisions strict-local in the governed
@@ -298,17 +299,8 @@ uv run --frozen pytest -q tests/e2e/test_specification_batch_qualification.py
 uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 ```
 
-The first pre-implementation RED is the absent public strict-local v2 source
-selector parser/application seam. That refusal is the truthful current
-boundary, not `E-C18-HOST-DRIFT`. After the selector seam lands, the expected
-RED progression is the absent public batch parser/application seams,
-qualification-artifact linkage, and
-`Journal.append_if_head`; after those land the frozen journey succeeds. Docs,
-fixture closure, and the byte-level static ELF checks must remain green.
-Implementation starts only after independent review, owner CCR acceptance,
-and `status:ready`; this slice never self-approves.
-
-Gate10 deliberately retains the currently published whole-file `main.py` pin
-`d59b7428931414ce54a31e081f79ad3c9cd04c72433794b64143d424a35b8a4a`.
-The future selector implementation must make that pin RED and update it to the
-reviewed production bytes; this specification does not precompute a source hash.
+SLICE-071 implements the selector, batch parser/application, qualification
+artifact linkage, and `Journal.append_if_head` seams. The frozen focused
+contract, source-selector security suite, host-probe serialization control,
+and both delegated completion-order E2E journeys pass. Gate10 now pins the
+reviewed production entrypoint bytes that contain those additive surfaces.

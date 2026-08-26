@@ -53,9 +53,9 @@ EXPECTED_FIELDS = (
 # two members, admitted on `version` events only.
 EXPECTED_VERSION_ONLY_FIELDS = ("evt", "exe")
 
-# The 12 CLI dispatch groups enumerated from src/ranex/cli/main.py's argparse
+# The 13 CLI dispatch groups enumerated from src/ranex/cli/main.py's argparse
 # subcommands (run; gate evaluate; journal verify; suite freeze; deps fetch;
-# deps approve; keygen; task dispatch/judge/merge/delegate/fanout) — verified
+# deps approve; keygen; task dispatch/judge/merge/delegate/fanout/batch qualify) — verified
 # against main.py at freeze time and recorded as a literal, so adding or
 # removing a CLI group is a deliberate edit here.
 CLI_DISPATCH_GROUPS = (
@@ -71,6 +71,7 @@ CLI_DISPATCH_GROUPS = (
     "task.merge",
     "task.delegate",
     "task.fanout",
+    "task.batch.qualify",
 )
 
 EXPECTED_STAGES = (
