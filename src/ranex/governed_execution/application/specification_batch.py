@@ -18,7 +18,7 @@ import sys
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import Any, NoReturn, cast
 
 from ranex.cli.repository import git, uncommitted_paths
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
@@ -568,7 +568,7 @@ def qualify_batch(
     _require_protected_input(tasks_path, rows_raw, protected)
 
     base = descriptor["base_commit"]
-    payload = c["payload"]
+    payload = cast(dict[str, object], c["payload"])
     target = target.resolve()
     journal_path = journal_path.resolve()
     if (
@@ -579,7 +579,7 @@ def qualify_batch(
         or payload["subject_digest"] != subject_digest
     ):
         _refuse("E-BATCH-STALE-BASE", "signed base, subject, HEAD, or refs/heads/main moved")
-    expected_head = payload["journal_predecessor"]
+    expected_head = cast(str | None, payload["journal_predecessor"])
     if journal_path.exists():
         journal = Journal(journal_path)
         if not journal.verify():

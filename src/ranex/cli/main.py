@@ -25,10 +25,10 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
-from typing import cast
+from typing import TypeVar, cast, overload
 
 from ranex.bootstrap.composition import (
     build_gate_evaluator,
@@ -124,6 +124,8 @@ from ranex.provisioning.pins import (
 from ranex.provisioning.root import assemble_root, verified_wheel_paths
 from ranex.provisioning.store import WheelStore
 from ranex.provisioning.target import probe_target
+
+_N = TypeVar("_N")
 
 EXIT_PASS = 0
 EXIT_FAIL = 1
@@ -3159,32 +3161,47 @@ def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
 class RanexArgumentParser(argparse.ArgumentParser):
     """Apply the paired v2 selector contract after argparse owns the argv."""
 
+    @overload
     def parse_args(
         self,
-        args: Sequence[str] | None = None,
-        namespace: argparse.Namespace | None = None,
-    ) -> argparse.Namespace:
+        args: Iterable[str] | None = None,
+        namespace: None = None,
+    ) -> argparse.Namespace: ...
+
+    @overload
+    def parse_args(self, args: Iterable[str] | None, namespace: _N) -> _N: ...
+
+    @overload
+    def parse_args(self, *, namespace: _N) -> _N: ...
+
+    def parse_args(
+        self,
+        args: Iterable[str] | None = None,
+        namespace: _N | None = None,
+    ) -> _N | argparse.Namespace:
         parsed = super().parse_args(args, namespace)
+        if parsed is None:
+            raise RuntimeError("argparse returned no namespace")
         if getattr(parsed, "group", None) != "run":
-            return parsed
+            return cast(_N | argparse.Namespace, parsed)
         runtime = getattr(parsed, "runtime_input_path", [])
         toolchain = getattr(parsed, "toolchain_root", [])
         if len(runtime) > 1:
             self.error("--runtime-input-path may be supplied only once")
         if len(toolchain) > 1:
             self.error("--toolchain-root may be supplied only once")
-        parsed.runtime_input_path = runtime[0] if runtime else None
-        parsed.toolchain_root = toolchain[0] if toolchain else None
+        vars(parsed)["runtime_input_path"] = runtime[0] if runtime else None
+        vars(parsed)["toolchain_root"] = toolchain[0] if toolchain else None
         if bool(runtime) != bool(toolchain):
             self.error("--runtime-input-path and --toolchain-root must be supplied together")
-        if runtime and parsed.confinement != "strict-local":
+        if runtime and getattr(parsed, "confinement", None) != "strict-local":
             self.error("source selectors require --confinement strict-local")
-        command = list(parsed.command)
+        command = list(getattr(parsed, "command", []))
         if command and command[0] == "--":
             command = command[1:]
         if not runtime and command and command[0].startswith("/ranex/toolchain/"):
             self.error("a /ranex/toolchain command requires the paired source selectors")
-        return parsed
+        return cast(_N | argparse.Namespace, parsed)
 
 
 def build_parser() -> argparse.ArgumentParser:
