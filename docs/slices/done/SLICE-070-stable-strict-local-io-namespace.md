@@ -1,7 +1,8 @@
 # SLICE-070 — stable strict-local I/O namespace
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-26
+**Closed:** 2026-08-26 (published)
 **Priority:** P0 — generic kernel prerequisite for SLICE-036
 **Issue:** #47
 **Parent tracker:** #11
@@ -20,10 +21,19 @@ executable authority. V2 Landlock grants subject read-file/read-directory but
 never execute, while the v1 policy remains byte-for-byte unchanged. The descriptor
 retains source fields only. Destinations are launcher literals, never caller paths.
 
-The launcher creates a private tmpfs root and fixed targets, clones each source
-from its held directory FD with `open_tree`, recursively applies read-only with
-`mount_setattr` to input/toolchain, attaches held mount FD to held target FD with
-`move_mount`, pivots, and detaches the old root. Failure of any syscall, flag,
+The controller opens every source and the fixed toolchain executable beneath a
+held repository/toolchain dirfd with `openat2` plus
+`RESOLVE_BENEATH|RESOLVE_NO_SYMLINKS|RESOLVE_NO_MAGICLINKS`, then passes only
+those internal FDs. The launcher maps namespace root for setup. Because an
+inherited FD names the parent mount namespace, it reopens the procfd-derived
+name component-safely inside the private namespace and requires exact held
+`(dev,ino)` identity before `open_tree(AT_EMPTY_PATH)`. It recursively applies
+read-only with `mount_setattr`, attaches held mount FDs to held fixed target FDs
+with `move_mount`, pivots, and detaches the old root. It similarly binds the
+virtual toolchain executable to the held executable identity, while worker
+`argv[0]` remains `/ranex/toolchain/...` and never exposes `/proc/self/fd`.
+The final worker enters an unprivileged nested user namespace and drops all
+capabilities before Landlock, seccomp, and exec. Failure of any syscall, flag,
 identity recheck, or target check refuses; path-preserving bind mount is not a
 fallback. The worker cannot call mount APIs after seccomp.
 
@@ -118,7 +128,13 @@ uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 uv run --frozen ruff check tests/contract/test_docs_discipline.py tests/integration/test_slice070_strict_local_io_contract.py tests/security/test_slice070_strict_local_io_security.py tests/e2e/test_strict_local_io_real.py
 ```
 
-At SPEC PRD, profile/descriptor/security closure is green and implementation
-tests are honestly RED only at the absent v2 parser, selector, mount assembly,
-and real journey. Implementation starts only after independent review, owner
-approval, OCR, fast-forward publication, and `status:ready` on #47.
+Implementation acceptance on the qualified host: focused Gate10 plus SLICE-070
+integration/security `22 passed`; delegated v2 real E2E `2 passed`; delegated
+legacy v1 real E2E `7 passed`; broader confinement integration `60 passed, 1
+skipped`; broader confinement security `56 passed, 4 skipped`; docs discipline
+`65 passed`. Two independently clean native builds and the public
+`launcher-build` command produced the same admitted artifact digest. The full
+repository run reached `1376 passed, 46 skipped`; its remaining failures are
+the separately frozen SLICE-036 production RED and the existing dependency-
+derivation/suite-freeze gate, not SLICE-070 acceptance failures. Independent
+review, OCR, fast-forward publication, and remote verification are complete.

@@ -1805,7 +1805,7 @@ class CommandObservation:
     confinement_profile_digest: str | None = None
 
 
-_CONFINEMENT_RUNTIME_PROFILE = "governance/confinement/strict-local-v1.json"
+_CONFINEMENT_RUNTIME_PROFILE = "governance/confinement/strict-local-v2.json"
 _CONFINEMENT_HOST_PROFILE = "governance/confinement/strict-local-host-v1.json"
 _CONFINEMENT_LAUNCHER_MANIFEST = "governance/confinement/native-launcher-build-v1.json"
 _CONFINEMENT_LAUNCHER = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"

@@ -483,6 +483,37 @@ def _elf_facts_from_descriptor(descriptor: int, label: Path) -> dict[str, Any]:
     }
 
 
+def _require_self_contained_static_executable(opened: OpenedObject) -> None:
+    """Admit only the ELF64 ET_EXEC/no-runtime-closure shape frozen by v2."""
+
+    try:
+        header = os.pread(opened.descriptor, 64, 0)
+    except OSError as exc:
+        raise HostConfinementError(
+            E_C18_GATE, f"cannot inspect static executable {opened.path}: {exc}"
+        ) from exc
+    if len(header) != 64 or header[:6] != b"\x7fELF\x02\x01":
+        _refuse(E_C18_GATE, "v2 worker is not a little-endian ELF64 executable")
+    elf_type, machine = struct.unpack_from("<HH", header, 16)
+    program_offset = struct.unpack_from("<Q", header, 32)[0]
+    program_size, program_count = struct.unpack_from("<HH", header, 54)
+    if elf_type != 2 or machine != 62 or program_size < 56 or program_count == 0:
+        _refuse(E_C18_GATE, "v2 worker is not a self-contained x86-64 ET_EXEC object")
+    for index in range(program_count):
+        offset = program_offset + index * program_size
+        try:
+            program = os.pread(opened.descriptor, program_size, offset)
+        except OSError as exc:
+            raise HostConfinementError(
+                E_C18_GATE, f"cannot inspect static executable {opened.path}: {exc}"
+            ) from exc
+        if len(program) != program_size:
+            _refuse(E_C18_GATE, "v2 worker has a truncated ELF program table")
+        kind = struct.unpack_from("<I", program, 0)[0]
+        if kind in {2, 3}:  # PT_DYNAMIC or PT_INTERP from the installed ELF64 ABI.
+            _refuse(E_C18_GATE, "v2 worker requests an unsupported dynamic runtime closure")
+
+
 def _manifest_sections(manifest: Mapping[str, Any], code: str) -> tuple[dict[str, Any], ...]:
     return (
         _mapping(manifest.get("build"), "build", code),
@@ -1060,12 +1091,9 @@ class _OpenHow(ctypes.Structure):
     ]
 
 
-def _open_output_entry(parent: int, name: str, directory: bool) -> int:
-    """Open one output name through the required kernel resolution primitive."""
+def _open_beneath(parent: int, name: str, flags: int) -> int:
+    """Open one relative name with the repository's closed resolution policy."""
 
-    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK
-    if directory:
-        flags |= os.O_DIRECTORY
     how = _OpenHow(
         flags=flags,
         mode=0,
@@ -1082,9 +1110,70 @@ def _open_output_entry(parent: int, name: str, directory: bool) -> int:
     if descriptor >= 0:
         return int(descriptor)
     error = ctypes.get_errno()
+    raise OSError(error, os.strerror(error), name)
+
+
+def _open_output_entry(parent: int, name: str, directory: bool) -> int:
+    """Open one output name through the required kernel resolution primitive."""
+
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK
+    if directory:
+        flags |= os.O_DIRECTORY
+    try:
+        return _open_beneath(parent, name, flags)
+    except OSError as exc:
+        error = exc.errno or errno.EIO
     code = E_C18_OUTPUT_RACE if error in {errno.ENOENT, errno.ESTALE} else E_C18_OUTPUT_UNSAFE
     detail = "openat2 is unavailable" if error == errno.ENOSYS else os.strerror(error)
     raise HostConfinementError(code, f"unsafe output entry {name!r}: {detail}")
+
+
+def _open_session_authority(
+    parent: int,
+    name: str,
+    *,
+    directory: bool,
+) -> int:
+    """Hold one descriptor authority without following any named component."""
+
+    flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC
+    if directory:
+        flags |= os.O_DIRECTORY
+    try:
+        return _open_beneath(parent, name, flags)
+    except OSError as exc:
+        error = exc.errno or errno.EIO
+    detail = "openat2 is unavailable" if error == errno.ENOSYS else os.strerror(error)
+    raise HostConfinementError(
+        E_C18_GATE,
+        f"cannot hold session authority {name!r}: {detail}",
+    )
+
+
+def _open_session_executable(
+    parent: int,
+    name: str,
+    virtual_path: Path,
+) -> OpenedObject:
+    descriptor = _open_session_authority(parent, name, directory=False)
+    try:
+        facts = os.fstat(descriptor)
+        mode = stat.S_IMODE(facts.st_mode)
+        if not stat.S_ISREG(facts.st_mode) or mode & 0o111 == 0:
+            _refuse(E_C18_GATE, f"{virtual_path} is not a regular executable")
+        _require_trusted_owner_and_mode(virtual_path, facts, mode, E_C18_GATE)
+        if _capability_xattr(descriptor):
+            _refuse(E_C18_GATE, f"{virtual_path} carries security.capability")
+        return OpenedObject(
+            descriptor,
+            virtual_path,
+            _sha256_descriptor(descriptor),
+            facts.st_uid,
+            mode,
+        )
+    except (OSError, HostConfinementError):
+        os.close(descriptor)
+        raise
 
 
 def collect_drained_output(
@@ -2933,8 +3022,12 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
         path = resolve_within_repository(root, descriptor_arg)
     raw = path.read_bytes()
     value = _mapping(json.loads(raw), "confinement descriptor", E_C18_GATE)
-    expected = {"schema", "argv", "environment", "subject", "toolchain", "output", "scratch", "limits"}
-    if set(value) != expected or value.get("schema") != "ranex-confinement-command-v1":
+    expected = {"schema", "argv", "environment", "input", "subject", "toolchain", "output", "scratch", "limits"}
+    legacy_expected = expected - {"input"}
+    if (
+        frozenset(value) not in {frozenset(expected), frozenset(legacy_expected)}
+        or value.get("schema") != "ranex-confinement-command-v1"
+    ):
         _refuse(E_C18_GATE, "confinement descriptor schema is not closed")
     if raw != canonical_json_bytes(value):
         _refuse(E_C18_GATE, "confinement descriptor is not canonical JSON")
@@ -2957,7 +3050,12 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
     if set(environment) - {"LC_ALL", "TZ"}:
         _refuse(E_C18_GATE, "worker environment exceeds the launcher allowlist")
     resolved: dict[str, Path] = {}
-    for name in ("subject", "toolchain", "output", "scratch"):
+    source_names = (
+        ("input", "subject", "toolchain", "output", "scratch")
+        if "input" in value
+        else ("subject", "toolchain", "output", "scratch")
+    )
+    for name in source_names:
         argument = _string(value.get(name), name, E_C18_GATE)
         candidate = resolve_within_repository(root, argument)
         try:
@@ -2971,7 +3069,9 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
     if len(set(identities.values())) != len(identities):
         _refuse(E_C18_PATH_ALIAS, "descriptor paths alias the same filesystem object")
     for writable in ("output", "scratch"):
-        for authority in ("subject", "toolchain"):
+        for authority in ("input", "subject", "toolchain"):
+            if authority not in resolved:
+                continue
             if resolved[authority] in resolved[writable].parents or resolved[writable] in resolved[authority].parents:
                 _refuse(E_C18_PATH_ALIAS, "writable and authority trees overlap")
     limits = _mapping(value.get("limits"), "limits", E_C18_GATE)
@@ -2981,6 +3081,7 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
     for name in expected_limits:
         _exact_integer(limits.get(name), name, E_C18_GATE, minimum=1)
     value["_resolved"] = resolved
+    value["_identities"] = identities
     return value
 
 
@@ -2997,7 +3098,165 @@ def _current_session_host_state() -> dict[str, Any]:
     }
 
 
-def _session_runtime_profile(value: Mapping[str, Any]) -> None:
+def _session_runtime_profile(value: Mapping[str, Any]) -> bool:
+    schema = value.get("schema")
+    if schema == "ranex-strict-local-runtime-v2":
+        expected_v2 = {
+            "cgroup",
+            "cwd",
+            "landlock",
+            "landlock_abi_minimum",
+            "mandatory_layers",
+            "mount_api",
+            "mounts",
+            "output_contract",
+            "output_resolution",
+            "profile",
+            "schema",
+            "seccomp",
+            "worker_executable",
+            "worker_io",
+        }
+        if set(value) != expected_v2 or value.get("profile") != "strict-local-v2":
+            _refuse(E_C18_GATE, "runtime profile schema is invalid")
+        if value.get("cwd") != "/ranex/input" or value.get("landlock_abi_minimum") != 6:
+            _refuse(E_C18_GATE, "runtime profile differs from the admitted target")
+        mandatory = _mapping(value.get("mandatory_layers"), "runtime mandatory_layers", E_C18_GATE)
+        if mandatory != {
+            name: True
+            for name in (
+                "user",
+                "mount",
+                "pid",
+                "ipc",
+                "network",
+                "cgroup",
+                "landlock",
+                "seccomp",
+                "no_new_privs",
+            )
+        }:
+            _refuse(E_C18_GATE, "runtime profile permits a mandatory-layer fallback")
+        if value.get("cgroup") != {
+            "controllers": ["cpu", "memory", "pids"],
+            "start_gate_fd": 3,
+        }:
+            _refuse(E_C18_GATE, "runtime cgroup profile is invalid")
+        if value.get("output_resolution") != [
+            "RESOLVE_BENEATH",
+            "RESOLVE_NO_MAGICLINKS",
+            "RESOLVE_NO_SYMLINKS",
+        ]:
+            _refuse(E_C18_GATE, "runtime output resolution profile is invalid")
+        if value.get("mounts") != {
+            "dev": {"nodes": [], "type": "tmpfs"},
+            "input": {
+                "access": "read-only",
+                "destination": "/ranex/input",
+                "source": "input",
+            },
+            "output": {
+                "access": "writable-bounded",
+                "destination": "/ranex/output",
+                "source": "output",
+            },
+            "proc": "fresh",
+            "scratch": {
+                "access": "writable-bounded",
+                "destination": "/ranex/scratch",
+                "source": "scratch",
+            },
+            "subject": {
+                "access": "read-only-noexec",
+                "destination": "/ranex/subject",
+                "mount_attributes": ["MOUNT_ATTR_RDONLY", "MOUNT_ATTR_NOEXEC"],
+                "source": "subject",
+            },
+            "toolchain": {
+                "access": "read-only",
+                "destination": "/ranex/toolchain",
+                "source": "toolchain",
+            },
+        }:
+            _refuse(E_C18_GATE, "runtime mount grammar is invalid")
+        if value.get("mount_api") != {
+            "attach": {
+                "flags": ["MOVE_MOUNT_F_EMPTY_PATH", "MOVE_MOUNT_T_EMPTY_PATH"],
+                "from_path": "",
+                "syscall": "move_mount",
+                "to_path": "",
+            },
+            "clone": {
+                "flags": [
+                    "OPEN_TREE_CLONE",
+                    "OPEN_TREE_CLOEXEC",
+                    "AT_EMPTY_PATH",
+                    "AT_RECURSIVE",
+                ],
+                "path": "",
+                "syscall": "open_tree",
+            },
+            "fallback": "refuse",
+            "readonly": {
+                "attr_set": ["MOUNT_ATTR_RDONLY"],
+                "flags": ["AT_EMPTY_PATH", "AT_RECURSIVE"],
+                "path": "",
+                "syscall": "mount_setattr",
+            },
+            "readonly_noexec": {
+                "attr_set": ["MOUNT_ATTR_RDONLY", "MOUNT_ATTR_NOEXEC"],
+                "attr_set_mask": "0x00000009",
+                "flags": ["AT_EMPTY_PATH", "AT_RECURSIVE"],
+                "path": "",
+                "syscall": "mount_setattr",
+            },
+            "root": {
+                "old_root": "detached",
+                "owner": "runtime",
+                "pivot": "pivot_root",
+                "type": "tmpfs",
+            },
+        }:
+            _refuse(E_C18_GATE, "runtime mount API grammar is invalid")
+        if value.get("landlock") != {
+            "subject_allowed_access": [
+                "LANDLOCK_ACCESS_FS_READ_FILE",
+                "LANDLOCK_ACCESS_FS_READ_DIR",
+            ],
+            "toolchain_allowed_access": [
+                "LANDLOCK_ACCESS_FS_EXECUTE",
+                "LANDLOCK_ACCESS_FS_READ_FILE",
+                "LANDLOCK_ACCESS_FS_READ_DIR",
+            ],
+            "v1_policy": "unchanged",
+        }:
+            _refuse(E_C18_GATE, "runtime Landlock grammar is invalid")
+        if value.get("output_contract") != {
+            "collection_source": "descriptor-held-output-object",
+            "declared_paths": "absolute-beneath-root",
+            "root": "/ranex/output",
+        }:
+            _refuse(E_C18_GATE, "runtime output contract is invalid")
+        if value.get("worker_executable") != {
+            "dynamic_runtime_closure": "unsupported-refuse",
+            "required_linkage": "self-contained-static",
+            "source": "descriptor-held-toolchain-object",
+        }:
+            _refuse(E_C18_GATE, "runtime executable contract is invalid")
+        if value.get("worker_io") != {
+            "environment": ["LC_ALL", "TZ"],
+            "inherited_data_fds": "closed",
+            "predecessor_inputs": "none",
+            "stdin": "closed",
+        }:
+            _refuse(E_C18_GATE, "runtime worker I/O contract is invalid")
+        if value.get("seccomp") != {
+            "architecture": "x86_64",
+            "policy": "default-deny-v1",
+        }:
+            _refuse(E_C18_GATE, "runtime seccomp profile is invalid")
+        return True
+
     expected = {
         "cgroup", "landlock_abi_minimum", "mandatory_layers", "mounts",
         "output_resolution", "profile", "schema", "seccomp",
@@ -3030,6 +3289,7 @@ def _session_runtime_profile(value: Mapping[str, Any]) -> None:
         _refuse(E_C18_GATE, "runtime mount grammar is invalid")
     if value.get("seccomp") != {"architecture": "x86_64", "policy": "default-deny-v1"}:
         _refuse(E_C18_GATE, "runtime seccomp profile is invalid")
+    return False
 
 
 def _session_cgroup_parent() -> Path:
@@ -3317,7 +3577,25 @@ def confinement_session(
     manifest_path = resolve_within_repository(root, manifest_arg)
     artifact_path = resolve_within_repository(root, artifact_arg)
     runtime = _load_json(profile_path, E_C18_GATE)
-    _session_runtime_profile(runtime)
+    runtime_v2 = _session_runtime_profile(runtime)
+    relative_command: Path | None = None
+    if runtime_v2:
+        command_path = Path(descriptor["argv"][0])
+        try:
+            relative_command = command_path.relative_to(Path("/ranex/toolchain"))
+        except ValueError:
+            _refuse(
+                E_C18_GATE,
+                "worker executable must be under /ranex/toolchain",
+            )
+        if not relative_command.parts or any(
+            part in {".", ".."} for part in relative_command.parts
+        ):
+            _refuse(E_C18_GATE, "v2 worker executable does not name a toolchain object")
+    if runtime_v2 and "input" not in descriptor["_resolved"]:
+        _refuse(E_C18_GATE, "v2 confinement descriptor has no input source")
+    if not runtime_v2 and "input" in descriptor["_resolved"]:
+        _refuse(E_C18_GATE, "v1 confinement descriptor carries a v2 input source")
     if qualification.get("qualified") is not True:
         _refuse(E_C18_GATE, "session requires a successful strict-local qualification")
     primitives = _mapping(qualification.get("primitives"), "qualification primitives", E_C18_GATE)
@@ -3335,6 +3613,8 @@ def confinement_session(
     parent = _session_cgroup_parent()
     launcher: OpenedObject | None = None
     command: OpenedObject | None = None
+    repository_fd = -1
+    authority_fds: dict[str, int] = {}
     output_fd = -1
     gate_read = gate_write = -1
     readiness_read = readiness_write = -1
@@ -3356,9 +3636,53 @@ def confinement_session(
         environment = descriptor["environment"]
         if set(environment) - {"LC_ALL", "TZ"}:
             _refuse(E_C18_GATE, "worker environment exceeds the launcher allowlist")
-        command, _command_filesystem = _open_unpinned_executable(Path(argv[0]), E_C18_GATE)
-        _require_same_named_object(command, E_C18_GATE)
-        output_fd = os.open(descriptor["_resolved"]["output"], os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+        command_path = Path(argv[0])
+        if runtime_v2:
+            assert relative_command is not None
+            try:
+                repository_fd = os.open(
+                    root,
+                    os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                )
+            except OSError as exc:
+                raise HostConfinementError(
+                    E_C18_GATE,
+                    f"cannot hold repository root: {exc}",
+                ) from exc
+            for name in ("input", "subject", "toolchain", "output", "scratch"):
+                held = _open_session_authority(
+                    repository_fd,
+                    descriptor[name],
+                    directory=True,
+                )
+                try:
+                    facts = os.fstat(held)
+                    expected_identity = descriptor["_identities"][name]
+                    if (facts.st_dev, facts.st_ino) != expected_identity:
+                        _refuse(
+                            E_C18_GATE,
+                            f"{name} authority changed after descriptor validation",
+                        )
+                    authority_fds[name] = held
+                except (OSError, HostConfinementError):
+                    os.close(held)
+                    raise
+            command = _open_session_executable(
+                authority_fds["toolchain"],
+                relative_command.as_posix(),
+                command_path,
+            )
+            _require_self_contained_static_executable(command)
+            output_fd = authority_fds["output"]
+        else:
+            command, _command_filesystem = _open_unpinned_executable(
+                command_path, E_C18_GATE
+            )
+            _require_same_named_object(command, E_C18_GATE)
+            output_fd = os.open(
+                descriptor["_resolved"]["output"],
+                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+            )
         controller, worker, limit_readbacks, enrolled_controllers = _create_worker_cgroup(
             parent, descriptor["limits"]
         )
@@ -3378,17 +3702,41 @@ def confinement_session(
                 os._exit(125)
             _close_descriptor(gate_read)
             child_environment = {name: environment.get(name, os.environ.get(name, "")) for name in ("LC_ALL", "TZ")}
+            launcher_arguments = [
+                str(launcher.path),
+                "--ranex-worker-exec",
+                f"--ranex-status-fd={readiness_write}",
+                f"--ranex-ready-ack-fd={readiness_ack_read}",
+            ]
+            if runtime_v2:
+                for held in (*authority_fds.values(), command.descriptor):
+                    os.set_inheritable(held, True)
+                launcher_arguments.extend(
+                    [
+                        "--ranex-runtime-v2",
+                        f"--ranex-input-fd={authority_fds['input']}",
+                        f"--ranex-subject-fd={authority_fds['subject']}",
+                        f"--ranex-toolchain-fd={authority_fds['toolchain']}",
+                        f"--ranex-output-fd={authority_fds['output']}",
+                        f"--ranex-scratch-fd={authority_fds['scratch']}",
+                        f"--ranex-executable-fd={command.descriptor}",
+                        *argv,
+                    ]
+                )
+            else:
+                launcher_arguments.extend(
+                    [
+                        str(descriptor["_resolved"]["subject"]),
+                        str(descriptor["_resolved"]["toolchain"]),
+                        str(descriptor["_resolved"]["output"]),
+                        str(descriptor["_resolved"]["scratch"]),
+                        f"/proc/self/fd/{command.descriptor}",
+                        *argv[1:],
+                    ]
+                )
             os.execve(
                 f"/proc/self/fd/{launcher.descriptor}",
-                [
-                    str(launcher.path), "--ranex-worker-exec", f"--ranex-status-fd={readiness_write}",
-                    f"--ranex-ready-ack-fd={readiness_ack_read}",
-                    str(descriptor["_resolved"]["subject"]),
-                    str(descriptor["_resolved"]["toolchain"]),
-                    str(descriptor["_resolved"]["output"]),
-                    str(descriptor["_resolved"]["scratch"]),
-                    f"/proc/self/fd/{command.descriptor}", *argv[1:],
-                ],
+                launcher_arguments,
                 child_environment,
             )
             os._exit(127)
@@ -3523,6 +3871,10 @@ def confinement_session(
                 if primary_error is None:
                     _refuse(E_C18_DRAIN, f"cannot release the enrollment cgroup: {exc}")
         _close_descriptor(output_fd)
+        for held in authority_fds.values():
+            if held != output_fd:
+                _close_descriptor(held)
+        _close_descriptor(repository_fd)
         if command is not None:
             _close_descriptor(command.descriptor)
         if launcher is not None:

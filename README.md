@@ -357,6 +357,10 @@ The lists below state what the kernel actually provides and what remains open.
   from verified blobs, executes the command there with an environment built from
   empty and a pinned toolchain, then records its exit code and subject digest.
   `run` then `gate evaluate` is a closed loop for self-contained commands.
+- **Strict-local v2 stable I/O** — the public host-confinement session API gives
+  self-contained static workers fixed held-object mounts at `/ranex/input`,
+  `/ranex/toolchain`, `/ranex/output`, `/ranex/scratch`, and no-exec
+  `/ranex/subject`; v1 remains available through its explicit session profile.
 - **Signed evidence** — Ed25519, verified against a committed keyring before a
   record is admitted. The verifier holds only public keys and cannot forge.
 - **Claim↔command binding** — the committed catalog declares the argv that
@@ -427,17 +431,15 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** [SLICE-070](docs/slices/SLICE-070-stable-strict-local-io-namespace.md)
+**Active slice:** none — SLICE-036 is ready but remains dependency-gated pending
+its explicit public run-source-selector CCR
 
-**Current slice:** SLICE-070 (#47) is the generic strict-local I/O prerequisite;
-SLICE-036 (#19) is blocked on it, not complete. SLICE-070 freezes four
-runtime-owned stable I/O aliases for exact descriptor-held objects: read-only
-`/ranex/input` and `/ranex/toolchain`, plus bounded writable `/ranex/output` and
-`/ranex/scratch`; cwd is `/ranex/input`, while the observed subject remains
-separately read-only. Initial v2 admits self-contained static executables only;
-dynamic runtime closure is explicitly refused and deferred to #48. The launcher owns private-root,
-held-FD mount assembly and no path-preserving fallback. The retained SLICE-036
-frozen-red contract adds a separate kernel-only `task batch qualify` surface in
+**Current slice:** SLICE-070 (#47), the generic strict-local I/O prerequisite,
+is complete and published. SLICE-036 (#19) remains ready and dependency-gated
+until its explicit public `ranex run` source-selector/materialisation CCR is
+published and the next spec owner claims it; that seam belongs to its fixed
+toolchain worker. The retained SLICE-036 frozen-red contract adds
+a separate kernel-only `task batch qualify` surface in
 disposable strict-local worktrees. Distinct signed oracle/control fixtures drive real CLI
 refusal proofs; one evidence-v4-signed, journal-linked qualification artifact
 is structurally non-publishable and batch-aware judge/merge refuse it before
@@ -577,9 +579,9 @@ issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
 confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
 controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
 `accepted`; SLICE-029..033 and SLICE-035 built the kernel-side authority
-  substrate. SLICE-070 is the sole open delivery; SLICE-036 remains blocked and
-  qualification-only with publication blocked. The harness-effect and
-  production-exit slices were withdrawn.
+  substrate. No slice is open; SLICE-036 is ready but remains dependency-gated
+  and qualification-only pending its public run-source-selector CCR. The
+  harness-effect and production-exit slices were withdrawn.
 
 **Durability is no longer only a design.** The provider watchdog shipped to the
 harness (`23d6a5b4ee`): a stalled provider stream now reaches a terminal state
@@ -608,6 +610,12 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-070-stable-strict-local-io-namespace** — completed and published
+  2026-08-26. Additive strict-local v2 constructs a private root from
+  held source objects with recursive read-only input/toolchain, bounded writable
+  output/scratch, and read-only/no-exec subject mounts at fixed `/ranex/*`
+  aliases. The qualified v2 journey and delegated legacy v1 regressions pass;
+  dynamic runtime closure remains deferred to #48.
 - **SLICE-059-real-e2e-task-family** — historical implementation closed
   2026-08-21, withdrawn from the release on 2026-08-25. It is retained here
   as an implemented test artifact, not claimed as completed real-provider

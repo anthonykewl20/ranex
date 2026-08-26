@@ -2,38 +2,28 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-26 (SLICE-070 strict-local I/O prerequisite)
-**Active slice:** `docs/slices/SLICE-070-stable-strict-local-io-namespace.md`
+**Updated:** 2026-08-26 (SLICE-070 complete and published)
+**Active slice:** none — SLICE-036 is ready but remains dependency-gated pending
+its explicit public run-source-selector CCR
 
 ## Where we stopped
-Milestone 4 remains closed with partial kernel delivery; harness, broker,
-task-family real-provider proof, and production mutation fanout are withdrawn.
-SLICE-036/#19 is not done: its frozen approved-batch command cannot truthfully
-read committed inputs from strict-local v1's scratch cwd without hidden checkout
-geometry. It is now `blocked` on SLICE-070/#47.
+SLICE-070/#47 is complete, published, remotely verified, and archived.
+Strict-local v2 now gives self-contained static workers held, stable
+`/ranex/input`, `/ranex/toolchain`, `/ranex/output`, `/ranex/scratch`, and
+no-exec `/ranex/subject` mounts without changing the explicit v1 session API.
+The qualified-host v2 journey and delegated legacy v1 regressions are green.
 
 ## Next
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: SLICE-070
-SLICE-070 is the sole open slice. ADR-034 freezes an additive strict-local v2
-ABI: exact descriptor-held input/toolchain are recursive read-only at
-`/ranex/input` and `/ranex/toolchain`; exact bounded output/scratch are writable
-at `/ranex/output` and `/ranex/scratch`; cwd is `/ranex/input`. Descriptors carry
-sources only. The launcher creates fixed targets in a private root and uses
-held-FD `open_tree`, `mount_setattr`, and `move_mount` with no legacy fallback.
-Worker env stays `{LC_ALL,TZ}`; stdin/data FDs stay closed. Initial v2 admits
-only genuinely self-contained static executables; dynamic runtime closure is
-unsupported/refused and tracked separately in #48.
-The frozen real journey uses existing public build/install/qualify/session
-commands sequentially inside one delegated systemd unit. Self-contained static code
-reads committed input, observes input write refusal, creates explicit output,
-and is checked against ordinary-result bytes plus canonical collected hashes.
-SLICE-036 C consumes no predecessor bytes, so no predecessor namespace is added.
-Implementation waits for independent review, OCR, publication, and #47 ready.
+Next slice: SLICE-036
+Publish the explicit SLICE-036 public `ranex run`
+source-selector/materialisation CCR, then let the next spec owner claim #19 and
+remove its dependency gate. The seam for the fixed
+`/ranex/toolchain/bin/slice036-worker` deliberately remains outside #47.
 
 ## Governance
-Kernel-only initial release; one open slice and one mutation writer. `blocked`
-is distinct from `done` and does not consume the one-open slot.
+Kernel-only initial release; no open slice while #19 awaits its explicit CCR.
+`dependency-gated` is distinct from `done` and does not consume the one-open slot.
 Build order: milestone 4 → milestone 3 → milestone 2
 
 ## Known limits
@@ -42,6 +32,9 @@ Build order: milestone 4 → milestone 3 → milestone 2
   confinement requires user namespaces and delegated cgroup controllers.
 - Dynamic v2 runtime closure is unsupported/refused; #48 owns it and there is
   no host-root fallback.
+- The full suite remains intentionally red at SLICE-036's four absent batch
+  seams and its public-run source selector; suite-freeze also lacks committed
+  dependency-derivation admission. These are not SLICE-070 acceptance failures.
 - About 125 legacy test IDs remain unregistered; trace fd targets retain O_NONBLOCK on the operator descriptor after exit (disclosed).
 - mutmut statistics remain unavailable for subprocess-heavy surfaces; default-deny clone and writable-tree EXECUTE residuals remain review-owned.
 - The approver remains an unauthenticated string; the journal does not detect a

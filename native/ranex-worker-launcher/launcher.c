@@ -27,8 +27,15 @@
 #define REQUIRED_LANDLOCK_ABI 6
 #define STAGE_TWO "--ranex-internal-stage-two"
 #define WORKER_EXEC "--ranex-worker-exec"
+#define WORKER_RUNTIME_V2 "--ranex-runtime-v2"
 #define WORKER_STATUS_FD "--ranex-status-fd="
 #define WORKER_READY_ACK_FD "--ranex-ready-ack-fd="
+#define WORKER_INPUT_FD "--ranex-input-fd="
+#define WORKER_SUBJECT_FD "--ranex-subject-fd="
+#define WORKER_TOOLCHAIN_FD "--ranex-toolchain-fd="
+#define WORKER_OUTPUT_FD "--ranex-output-fd="
+#define WORKER_SCRATCH_FD "--ranex-scratch-fd="
+#define WORKER_EXECUTABLE_FD "--ranex-executable-fd="
 #define WORKER_STATUS_DESCRIPTOR 4
 #define WORKER_READY_PREFIX "ranex-worker-ready-v1 pid="
 #define WORKER_READY_SUFFIX " nnp=1 landlock=1 seccomp=1 namespaces=user,mount,pid,ipc,network,cgroup\n"
@@ -47,6 +54,33 @@ struct stage_metadata {
     size_t closed_count;
     long session_keyring_before;
 };
+
+/* Copied from the installed Linux openat2 UAPI.  The build manifest pins the
+ * source bytes, while these names stay local to avoid widening its header
+ * closure. */
+struct ranex_open_how {
+    __u64 flags;
+    __u64 mode;
+    __u64 resolve;
+};
+
+/* Linux capability v3 UAPI, matching the vendored bubblewrap drop-all-caps
+ * sequence without adding a new build input. */
+struct ranex_cap_header {
+    uint32_t version;
+    int pid;
+};
+
+struct ranex_cap_data {
+    uint32_t effective;
+    uint32_t permitted;
+    uint32_t inheritable;
+};
+
+#define RANEX_RESOLVE_NO_MAGICLINKS 0x02U
+#define RANEX_RESOLVE_NO_SYMLINKS 0x04U
+#define RANEX_RESOLVE_BENEATH 0x08U
+#define RANEX_LINUX_CAPABILITY_VERSION_3 0x20080522U
 
 /* Build hosts may carry pre-ABI-5 Landlock headers while the qualified kernel
  * exposes ABI 6.  Keep the ABI-6 UAPI layout and bit assignments explicit. */
@@ -104,6 +138,20 @@ static int add_path_rule(int ruleset_fd, int parent_fd, __u64 allowed_access) {
                         LANDLOCK_RULE_PATH_BENEATH, &rule, 0U);
 }
 
+static __u64 v2_subject_allowed_access(void) {
+    return LANDLOCK_ACCESS_FS_READ_FILE | LANDLOCK_ACCESS_FS_READ_DIR;
+}
+
+static int add_v2_path_rule(int ruleset_fd, int parent_fd,
+                            __u64 allowed_access) {
+    struct landlock_path_beneath_attr rule = {
+        .allowed_access = allowed_access,
+        .parent_fd = parent_fd,
+    };
+    return (int)syscall(SYS_landlock_add_rule, ruleset_fd,
+                        LANDLOCK_RULE_PATH_BENEATH, &rule, 0U);
+}
+
 static int add_runtime_loader_rule(int ruleset_fd, const char *path, __u64 allowed_access) {
     struct stat facts;
     char *resolved = realpath(path, NULL);
@@ -125,8 +173,9 @@ static int add_runtime_loader_rule(int ruleset_fd, const char *path, __u64 allow
     return result;
 }
 
-static bool enforce_landlock(int executable_fd, int subject_fd, int toolchain_fd,
-                             int output_fd, int scratch_fd) {
+static bool enforce_landlock(bool runtime_v2, int executable_fd, int input_fd,
+                             int subject_fd, int toolchain_fd, int output_fd,
+                             int scratch_fd) {
     struct ranex_landlock_ruleset_attr ruleset = {0};
     struct stat executable_facts;
     struct stat directory_facts;
@@ -142,6 +191,8 @@ static bool enforce_landlock(int executable_fd, int subject_fd, int toolchain_fd
                   LANDLOCK_CREATE_RULESET_VERSION);
     if (abi < REQUIRED_LANDLOCK_ABI ||
         fstat(executable_fd, &executable_facts) != 0 ||
+        (runtime_v2 && fstat(input_fd, &directory_facts) != 0) ||
+        (runtime_v2 && !S_ISDIR(directory_facts.st_mode)) ||
         fstat(subject_fd, &directory_facts) != 0 ||
         !S_ISDIR(directory_facts.st_mode) ||
         fstat(toolchain_fd, &directory_facts) != 0 ||
@@ -170,8 +221,32 @@ static bool enforce_landlock(int executable_fd, int subject_fd, int toolchain_fd
         return false;
     }
 
-    /* Subject and toolchain are executable read-only trees.  The two declared
-     * writable trees intentionally each receive the complete handled mask. */
+    if (runtime_v2) {
+        const __u64 input_access = LANDLOCK_ACCESS_FS_READ_FILE |
+                                   LANDLOCK_ACCESS_FS_READ_DIR;
+        const __u64 toolchain_access = LANDLOCK_ACCESS_FS_EXECUTE |
+                                       LANDLOCK_ACCESS_FS_READ_FILE |
+                                       LANDLOCK_ACCESS_FS_READ_DIR;
+        executable_access = LANDLOCK_ACCESS_FS_EXECUTE |
+                            LANDLOCK_ACCESS_FS_READ_FILE;
+        if (add_v2_path_rule(ruleset_fd, executable_fd, executable_access) != 0 ||
+            add_v2_path_rule(ruleset_fd, input_fd, input_access) != 0 ||
+            add_v2_path_rule(ruleset_fd, subject_fd,
+                             v2_subject_allowed_access()) != 0 ||
+            add_v2_path_rule(ruleset_fd, toolchain_fd,
+                             toolchain_access) != 0 ||
+            add_v2_path_rule(ruleset_fd, output_fd, filesystem_mask) != 0 ||
+            add_v2_path_rule(ruleset_fd, scratch_fd, filesystem_mask) != 0 ||
+            syscall(SYS_landlock_restrict_self, ruleset_fd, 0U) != 0 ||
+            close(ruleset_fd) != 0) {
+            (void)close(ruleset_fd);
+            return false;
+        }
+        return true;
+    }
+
+    /* V1 subject and toolchain remain executable read-only trees.  The two
+     * declared writable trees intentionally each receive the complete mask. */
     executable_access = LANDLOCK_ACCESS_FS_EXECUTE | LANDLOCK_ACCESS_FS_READ_FILE;
     if (add_path_rule(ruleset_fd, executable_fd, executable_access) != 0 ||
         /* The pinned x86-64 ELF ABI needs its interpreter and libc before the
@@ -199,8 +274,8 @@ static bool enforce_landlock(int executable_fd, int subject_fd, int toolchain_fd
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, (number), 0, 1),                        \
     BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ALLOW)
 
-static bool enforce_seccomp(void) {
-    static const struct sock_filter filter[] = {
+static bool enforce_seccomp(bool runtime_v2) {
+    const struct sock_filter filter[] = {
         BPF_STMT(BPF_LD | BPF_W | BPF_ABS,
                  offsetof(struct seccomp_data, arch)),
         BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, AUDIT_ARCH_X86_64, 1, 0),
@@ -252,6 +327,10 @@ static bool enforce_seccomp(void) {
         ALLOW_SYSCALL(__NR_wait4),
         ALLOW_SYSCALL(__NR_exit),
         ALLOW_SYSCALL(__NR_exit_group),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mkdir, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 runtime_v2 ? SECCOMP_RET_ALLOW
+                            : SECCOMP_RET_ERRNO | (EPERM & SECCOMP_RET_DATA)),
         BPF_STMT(BPF_RET | BPF_K, SECCOMP_RET_ERRNO | (EPERM & SECCOMP_RET_DATA)),
     };
     const struct sock_fprog program = {
@@ -322,6 +401,34 @@ static bool parse_worker_ready_ack_fd(const char *argument, int *descriptor) {
     return true;
 }
 
+static bool parse_worker_object_fd(const char *argument, const char *prefix,
+                                   int *descriptor) {
+    const char *raw;
+    char *end = NULL;
+    long value;
+    int held;
+
+    if (*descriptor >= 0 || strncmp(argument, prefix, strlen(prefix)) != 0) {
+        return false;
+    }
+    raw = argument + strlen(prefix);
+    if (*raw == '\0') {
+        return false;
+    }
+    errno = 0;
+    value = strtol(raw, &end, 10);
+    if (errno != 0 || end == raw || *end != '\0' ||
+        value < WORKER_STATUS_DESCRIPTOR || value > INT_MAX) {
+        return false;
+    }
+    held = fcntl((int)value, F_DUPFD_CLOEXEC, WORKER_STATUS_DESCRIPTOR);
+    if (held < 0) {
+        return false;
+    }
+    *descriptor = held;
+    return true;
+}
+
 static int open_worker_executable(const char *path) {
     static const char descriptor_prefix[] = "/proc/self/fd/";
     const char *raw;
@@ -346,11 +453,73 @@ static int open_worker_executable(const char *path) {
     return fcntl((int)descriptor, F_DUPFD_CLOEXEC, WORKER_STATUS_DESCRIPTOR);
 }
 
+static bool write_namespace_mapping(const char *path, const char *mapping) {
+    int descriptor = open(path, O_WRONLY | O_CLOEXEC);
+    bool written;
+
+    if (descriptor < 0) {
+        return false;
+    }
+    written = write_all(descriptor, mapping, strlen(mapping)) == 0;
+    return close(descriptor) == 0 && written;
+}
+
 static bool enter_worker_namespaces(void) {
     const int namespaces = CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID |
                            CLONE_NEWIPC | CLONE_NEWNET | CLONE_NEWCGROUP;
 
     return unshare(namespaces) == 0;
+}
+
+static bool enter_worker_namespaces_v2(uid_t *worker_uid, gid_t *worker_gid) {
+    const int namespaces = CLONE_NEWUSER | CLONE_NEWNS | CLONE_NEWPID |
+                           CLONE_NEWIPC | CLONE_NEWNET | CLONE_NEWCGROUP;
+    char mapping[64];
+    uid_t parent_uid = getuid();
+    gid_t parent_gid = getgid();
+
+    if (unshare(namespaces) != 0) {
+        return false;
+    }
+    if (snprintf(mapping, sizeof(mapping), "0 %u 1\n",
+                 (unsigned int)parent_uid) < 0 ||
+        !write_namespace_mapping("/proc/self/uid_map", mapping) ||
+        !write_namespace_mapping("/proc/self/setgroups", "deny\n") ||
+        snprintf(mapping, sizeof(mapping), "0 %u 1\n",
+                 (unsigned int)parent_gid) < 0 ||
+        !write_namespace_mapping("/proc/self/gid_map", mapping)) {
+        return false;
+    }
+    *worker_uid = parent_uid == 0U ? 65534U : parent_uid;
+    *worker_gid = parent_gid == 0U ? 65534U : parent_gid;
+    return true;
+}
+
+static bool enter_unprivileged_worker_user_namespace_v2(uid_t worker_uid,
+                                                        gid_t worker_gid) {
+    char mapping[64];
+
+    if (unshare(CLONE_NEWUSER) != 0 ||
+        snprintf(mapping, sizeof(mapping), "%u 0 1\n",
+                 (unsigned int)worker_uid) < 0 ||
+        !write_namespace_mapping("/proc/self/uid_map", mapping) ||
+        !write_namespace_mapping("/proc/self/setgroups", "deny\n") ||
+        snprintf(mapping, sizeof(mapping), "%u 0 1\n",
+                 (unsigned int)worker_gid) < 0 ||
+        !write_namespace_mapping("/proc/self/gid_map", mapping)) {
+        return false;
+    }
+    return true;
+}
+
+static bool drop_worker_capabilities_v2(void) {
+    struct ranex_cap_header header = {
+        .version = RANEX_LINUX_CAPABILITY_VERSION_3,
+        .pid = 0,
+    };
+    struct ranex_cap_data data[2] = {{0}};
+
+    return syscall(SYS_capset, &header, data) == 0;
 }
 
 static bool bind_mount_tree(const char *path, bool readonly) {
@@ -371,15 +540,280 @@ static bool mount_minimal_dev(void) {
                  "mode=755") == 0;
 }
 
-static bool assemble_mounts(const char *subject, const char *toolchain,
-                            const char *output, const char *scratch) {
-    /* New propagation first: no bind/remount or tmpfs operation may escape this
-     * worker's namespace.  Read-only is applied after a recursive bind, matching
-     * the kernel mount API's bind-then-remount sequence. */
-    return mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) == 0 &&
-           bind_mount_tree(subject, true) && bind_mount_tree(toolchain, true) &&
-           bind_mount_tree(output, false) && bind_mount_tree(scratch, false) &&
-           mount_minimal_dev();
+static bool same_directory_object(int descriptor, const char *path) {
+    struct stat held;
+    struct stat named;
+    struct stat link;
+
+    return fstat(descriptor, &held) == 0 && S_ISDIR(held.st_mode) &&
+           lstat(path, &link) == 0 && !S_ISLNK(link.st_mode) &&
+           stat(path, &named) == 0 && S_ISDIR(named.st_mode) &&
+           held.st_dev == named.st_dev && held.st_ino == named.st_ino;
+}
+
+static int reopen_held_directory_in_mount_namespace(int descriptor) {
+    static const char deleted_suffix[] = " (deleted)";
+    struct ranex_open_how how = {
+        .flags = O_PATH | O_DIRECTORY | O_CLOEXEC,
+        .mode = 0U,
+        .resolve = RANEX_RESOLVE_BENEATH | RANEX_RESOLVE_NO_SYMLINKS |
+                   RANEX_RESOLVE_NO_MAGICLINKS,
+    };
+    struct stat held;
+    struct stat reopened;
+    char descriptor_path[64];
+    char named_path[PATH_MAX];
+    int root_fd = -1;
+    int namespace_fd = -1;
+    int length;
+    ssize_t named_length;
+
+    length = snprintf(descriptor_path, sizeof(descriptor_path),
+                      "/proc/self/fd/%d", descriptor);
+    if (length < 0 || (size_t)length >= sizeof(descriptor_path) ||
+        fstat(descriptor, &held) != 0 || !S_ISDIR(held.st_mode)) {
+        return -1;
+    }
+    named_length = readlink(descriptor_path, named_path, sizeof(named_path) - 1U);
+    if (named_length <= 1 || (size_t)named_length >= sizeof(named_path) ||
+        named_path[0] != '/') {
+        errno = EINVAL;
+        return -1;
+    }
+    named_path[named_length] = '\0';
+    if ((size_t)named_length >= sizeof(deleted_suffix) - 1U &&
+        memcmp(named_path + named_length - (sizeof(deleted_suffix) - 1U),
+               deleted_suffix, sizeof(deleted_suffix) - 1U) == 0) {
+        errno = ESTALE;
+        return -1;
+    }
+    root_fd = open("/", O_PATH | O_DIRECTORY | O_CLOEXEC);
+    if (root_fd < 0) {
+        return -1;
+    }
+    namespace_fd = (int)syscall(
+        SYS_openat2, root_fd, named_path + 1, &how, sizeof(how));
+    if (namespace_fd < 0 || fstat(namespace_fd, &reopened) != 0 ||
+        !S_ISDIR(reopened.st_mode) || held.st_dev != reopened.st_dev ||
+        held.st_ino != reopened.st_ino) {
+        (void)close(namespace_fd);
+        (void)close(root_fd);
+        errno = ESTALE;
+        return -1;
+    }
+    if (close(root_fd) != 0) {
+        (void)close(namespace_fd);
+        return -1;
+    }
+    return namespace_fd;
+}
+
+static int reopen_held_executable_at_virtual_path(int descriptor,
+                                                  const char *virtual_path) {
+    struct ranex_open_how how = {
+        .flags = O_PATH | O_CLOEXEC,
+        .mode = 0U,
+        .resolve = RANEX_RESOLVE_BENEATH | RANEX_RESOLVE_NO_SYMLINKS |
+                   RANEX_RESOLVE_NO_MAGICLINKS,
+    };
+    struct stat held;
+    struct stat reopened;
+    int root_fd = -1;
+    int namespace_fd = -1;
+
+    if (virtual_path[0] != '/' || virtual_path[1] == '\0' ||
+        fstat(descriptor, &held) != 0 || !S_ISREG(held.st_mode)) {
+        errno = EINVAL;
+        return -1;
+    }
+    root_fd = open("/", O_PATH | O_DIRECTORY | O_CLOEXEC);
+    if (root_fd < 0) {
+        return -1;
+    }
+    namespace_fd = (int)syscall(
+        SYS_openat2, root_fd, virtual_path + 1, &how, sizeof(how));
+    if (namespace_fd < 0 || fstat(namespace_fd, &reopened) != 0 ||
+        !S_ISREG(reopened.st_mode) || held.st_dev != reopened.st_dev ||
+        held.st_ino != reopened.st_ino) {
+        (void)close(namespace_fd);
+        (void)close(root_fd);
+        errno = ESTALE;
+        return -1;
+    }
+    if (close(root_fd) != 0) {
+        (void)close(namespace_fd);
+        return -1;
+    }
+    return namespace_fd;
+}
+
+static bool mount_fresh_proc(void);
+
+static bool assemble_mounts(bool runtime_v2, int input_fd, int subject_fd,
+                            int toolchain_fd, int output_fd, int scratch_fd,
+                            const char *input, const char *subject,
+                            const char *toolchain, const char *output,
+                            const char *scratch) {
+    bool setup_complete = false;
+
+    (void)input;
+
+    /* New propagation first: no mount operation may escape this namespace.
+     * V1 retains its path-preserving bind/remount construction unchanged. */
+    if (mount(NULL, "/", NULL, MS_REC | MS_PRIVATE, NULL) != 0) {
+        return false;
+    }
+    if (!runtime_v2) {
+        setup_complete = bind_mount_tree(subject, true) &&
+                         bind_mount_tree(toolchain, true) &&
+                         bind_mount_tree(output, false) &&
+                         bind_mount_tree(scratch, false);
+    } else {
+        char root_template[] = "/tmp/ranex-root-XXXXXX";
+        char ranex_path[PATH_MAX];
+        char old_root_path[PATH_MAX];
+        char proc_path[PATH_MAX];
+        char dev_path[PATH_MAX];
+        char target_paths[5][PATH_MAX];
+        const char *target_names[] = {"input", "toolchain", "output", "scratch", "subject"};
+        const char *targets[] = {"/ranex/input", "/ranex/toolchain", "/ranex/output",
+                                 "/ranex/scratch", "/ranex/subject"};
+        int source_fds[] = {input_fd, toolchain_fd, output_fd, scratch_fd, subject_fd};
+        int namespace_source_fds[] = {-1, -1, -1, -1, -1};
+        int target_fds[] = {-1, -1, -1, -1, -1};
+        int mount_fds[] = {-1, -1, -1, -1, -1};
+        int root_parent_fd = -1;
+        const char *root_name;
+        bool root_mounted = false;
+        bool pivoted = false;
+
+        if (mkdtemp(root_template) == NULL ||
+            snprintf(ranex_path, sizeof(ranex_path), "%s/ranex", root_template) < 0 ||
+            snprintf(old_root_path, sizeof(old_root_path), "%s/oldroot", root_template) < 0 ||
+            snprintf(proc_path, sizeof(proc_path), "%s/proc", root_template) < 0 ||
+            snprintf(dev_path, sizeof(dev_path), "%s/%s", root_template,
+                     "dev") < 0) {
+            goto v2_cleanup;
+        }
+        root_name = strrchr(root_template, '/');
+        if (root_name == NULL || root_name[1] == '\0') {
+            goto v2_cleanup;
+        }
+        root_name++;
+        root_parent_fd = open("/tmp", O_RDONLY | O_DIRECTORY | O_CLOEXEC);
+        if (root_parent_fd < 0 ||
+            mount("tmpfs", root_template, "tmpfs", MS_NODEV | MS_NOSUID,
+                  "mode=755") != 0) {
+            goto v2_cleanup;
+        }
+        root_mounted = true;
+        if (mkdir(ranex_path, 0755) != 0 || mkdir(old_root_path, 0755) != 0 ||
+            mkdir(proc_path, 0755) != 0 || mkdir(dev_path, 0755) != 0) {
+            goto v2_cleanup;
+        }
+        for (size_t index = 0U; index < 5U; index++) {
+            struct stat source_facts;
+            int length = snprintf(target_paths[index], sizeof(target_paths[index]),
+                                  "%s/%s", ranex_path, target_names[index]);
+            if (length < 0 || (size_t)length >= sizeof(target_paths[index]) ||
+                mkdir(target_paths[index], 0755) != 0) {
+                goto v2_cleanup;
+            }
+            target_fds[index] = open(target_paths[index], O_PATH | O_DIRECTORY | O_CLOEXEC);
+            namespace_source_fds[index] =
+                reopen_held_directory_in_mount_namespace(source_fds[index]);
+            if (target_fds[index] < 0 || namespace_source_fds[index] < 0 ||
+                fstat(source_fds[index], &source_facts) != 0 ||
+                !S_ISDIR(source_facts.st_mode)) {
+                goto v2_cleanup;
+            }
+            for (size_t prior = 0U; prior < index; prior++) {
+                struct stat current_facts;
+                struct stat prior_facts;
+                if (fstat(target_fds[index], &current_facts) != 0 ||
+                    fstat(target_fds[prior], &prior_facts) != 0 ||
+                    (current_facts.st_dev == prior_facts.st_dev &&
+                     current_facts.st_ino == prior_facts.st_ino)) {
+                    goto v2_cleanup;
+                }
+            }
+        }
+        for (size_t index = 0U; index < 5U; index++) {
+            struct mount_attr attributes = {0};
+            mount_fds[index] = (int)syscall(
+                SYS_open_tree, namespace_source_fds[index], "",
+                OPEN_TREE_CLONE | OPEN_TREE_CLOEXEC | AT_EMPTY_PATH | AT_RECURSIVE);
+            if (mount_fds[index] < 0) {
+                goto v2_cleanup;
+            }
+            if (index == 0U || index == 1U || index == 4U) {
+                attributes.attr_set = MOUNT_ATTR_RDONLY;
+                if (index == 4U) {
+                    attributes.attr_set |= MOUNT_ATTR_NOEXEC;
+                }
+                if (syscall(SYS_mount_setattr, mount_fds[index], "",
+                            AT_EMPTY_PATH | AT_RECURSIVE, &attributes,
+                            sizeof(attributes)) != 0) {
+                    goto v2_cleanup;
+                }
+            }
+            if (syscall(SYS_move_mount, mount_fds[index], "", target_fds[index], "",
+                        MOVE_MOUNT_F_EMPTY_PATH | MOVE_MOUNT_T_EMPTY_PATH) != 0 ||
+                close(mount_fds[index]) != 0) {
+                mount_fds[index] = -1;
+                goto v2_cleanup;
+            }
+            mount_fds[index] = -1;
+            if (!same_directory_object(source_fds[index], target_paths[index])) {
+                goto v2_cleanup;
+            }
+        }
+        if (syscall(SYS_pivot_root, root_template, old_root_path) != 0 ||
+            chdir("/") != 0) {
+            goto v2_cleanup;
+        }
+        pivoted = true;
+        if (!mount_fresh_proc() ||
+            unlinkat(root_parent_fd, root_name, AT_REMOVEDIR) != 0 ||
+            umount2("/oldroot", MNT_DETACH) != 0 || rmdir("/oldroot") != 0) {
+            goto v2_cleanup;
+        }
+        for (size_t index = 0U; index < 5U; index++) {
+            if (!same_directory_object(source_fds[index], targets[index])) {
+                goto v2_cleanup;
+            }
+        }
+        setup_complete = true;
+
+v2_cleanup:
+        for (size_t index = 0U; index < 5U; index++) {
+            if (mount_fds[index] >= 0) {
+                (void)close(mount_fds[index]);
+            }
+            if (target_fds[index] >= 0) {
+                (void)close(target_fds[index]);
+            }
+            if (namespace_source_fds[index] >= 0) {
+                (void)close(namespace_source_fds[index]);
+            }
+        }
+        if (!pivoted && root_mounted) {
+            (void)umount2(root_template, MNT_DETACH);
+        }
+        if (!pivoted) {
+            (void)rmdir(root_template);
+        }
+        if (root_parent_fd >= 0) {
+            (void)close(root_parent_fd);
+        }
+    }
+    return setup_complete && mount_minimal_dev();
+}
+
+static bool assemble_mounts_v2(int input_fd, int subject_fd, int toolchain_fd,
+                               int output_fd, int scratch_fd) {
+    return assemble_mounts(true, input_fd, subject_fd, toolchain_fd, output_fd,
+                           scratch_fd, NULL, NULL, NULL, NULL, NULL);
 }
 
 static bool mount_fresh_proc(void) {
@@ -1082,14 +1516,23 @@ static int worker_exec(int argc, char **argv) {
         .environment_names = {"LC_ALL", "TZ"},
         .environment_count = 2U,
     };
+    bool runtime_v2 = false;
+    int input_fd = -1;
     int subject_fd = -1;
     int toolchain_fd = -1;
     int output_fd = -1;
     int scratch_fd = -1;
-    int executable_fd;
+    int executable_fd = -1;
     int status_descriptor = -1;
     int acknowledgement_descriptor = -1;
     int argument_offset = 2;
+    int subject_index = -1;
+    int toolchain_index = -1;
+    int output_index = -1;
+    int scratch_index = -1;
+    int executable_index = -1;
+    uid_t worker_uid = 0U;
+    gid_t worker_gid = 0U;
     int pid_pipe[2];
     pid_t worker;
     long controller_visible_pid;
@@ -1110,6 +1553,53 @@ static int worker_exec(int argc, char **argv) {
                 !parse_worker_ready_ack_fd(argv[argument_offset], &acknowledgement_descriptor)) {
                 return 64;
             }
+        } else if (strcmp(argv[argument_offset], WORKER_RUNTIME_V2) == 0) {
+            if (runtime_v2) {
+                return 64;
+            }
+            runtime_v2 = true;
+        } else if (strncmp(argv[argument_offset], WORKER_INPUT_FD,
+                           sizeof(WORKER_INPUT_FD) - 1U) == 0) {
+            if (!runtime_v2 ||
+                !parse_worker_object_fd(argv[argument_offset], WORKER_INPUT_FD,
+                                        &input_fd)) {
+                return 64;
+            }
+        } else if (strncmp(argv[argument_offset], WORKER_SUBJECT_FD,
+                           sizeof(WORKER_SUBJECT_FD) - 1U) == 0) {
+            if (!runtime_v2 ||
+                !parse_worker_object_fd(argv[argument_offset], WORKER_SUBJECT_FD,
+                                        &subject_fd)) {
+                return 64;
+            }
+        } else if (strncmp(argv[argument_offset], WORKER_TOOLCHAIN_FD,
+                           sizeof(WORKER_TOOLCHAIN_FD) - 1U) == 0) {
+            if (!runtime_v2 ||
+                !parse_worker_object_fd(argv[argument_offset], WORKER_TOOLCHAIN_FD,
+                                        &toolchain_fd)) {
+                return 64;
+            }
+        } else if (strncmp(argv[argument_offset], WORKER_OUTPUT_FD,
+                           sizeof(WORKER_OUTPUT_FD) - 1U) == 0) {
+            if (!runtime_v2 ||
+                !parse_worker_object_fd(argv[argument_offset], WORKER_OUTPUT_FD,
+                                        &output_fd)) {
+                return 64;
+            }
+        } else if (strncmp(argv[argument_offset], WORKER_SCRATCH_FD,
+                           sizeof(WORKER_SCRATCH_FD) - 1U) == 0) {
+            if (!runtime_v2 ||
+                !parse_worker_object_fd(argv[argument_offset], WORKER_SCRATCH_FD,
+                                        &scratch_fd)) {
+                return 64;
+            }
+        } else if (strncmp(argv[argument_offset], WORKER_EXECUTABLE_FD,
+                           sizeof(WORKER_EXECUTABLE_FD) - 1U) == 0) {
+            if (!runtime_v2 ||
+                !parse_worker_object_fd(argv[argument_offset], WORKER_EXECUTABLE_FD,
+                                        &executable_fd)) {
+                return 64;
+            }
         } else {
             return 64;
         }
@@ -1119,18 +1609,41 @@ static int worker_exec(int argc, char **argv) {
         (acknowledgement_descriptor < 0 || acknowledgement_descriptor == status_descriptor)) {
         return 64;
     }
-    if (argc < argument_offset + 5 || argv[argument_offset][0] != '/' ||
-        argv[argument_offset + 1][0] != '/' || argv[argument_offset + 2][0] != '/' ||
-        argv[argument_offset + 3][0] != '/' || argv[argument_offset + 4][0] != '/') {
+    if (runtime_v2) {
+        executable_index = argument_offset;
+        if (argc < executable_index + 1 ||
+            strncmp(argv[executable_index], "/ranex/toolchain/",
+                    sizeof("/ranex/toolchain/") - 1U) != 0 ||
+            argv[executable_index][sizeof("/ranex/toolchain/") - 1U] == '\0' ||
+            input_fd < 0 || subject_fd < 0 || toolchain_fd < 0 || output_fd < 0 ||
+            scratch_fd < 0 || executable_fd < 0) {
+            return 64;
+        }
+    } else {
+        subject_index = argument_offset;
+        toolchain_index = subject_index + 1;
+        output_index = subject_index + 2;
+        scratch_index = subject_index + 3;
+        executable_index = subject_index + 4;
+        if (argc < executable_index + 1 || argv[subject_index][0] != '/' ||
+            argv[toolchain_index][0] != '/' || argv[output_index][0] != '/' ||
+            argv[scratch_index][0] != '/' || argv[executable_index][0] != '/') {
+            return 64;
+        }
+    }
+    if (runtime_v2 && !enter_worker_namespaces_v2(&worker_uid, &worker_gid)) {
         return 64;
     }
-    subject_fd = open(argv[argument_offset], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    toolchain_fd = open(argv[argument_offset + 1], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    output_fd = open(argv[argument_offset + 2], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    scratch_fd = open(argv[argument_offset + 3], O_PATH | O_DIRECTORY | O_CLOEXEC);
-    executable_fd = open_worker_executable(argv[argument_offset + 4]);
-    if (subject_fd < 0 || toolchain_fd < 0 || output_fd < 0 || scratch_fd < 0 ||
-        executable_fd < 0) {
+    if (!runtime_v2) {
+        subject_fd = open(argv[subject_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
+        toolchain_fd = open(argv[toolchain_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
+        output_fd = open(argv[output_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
+        scratch_fd = open(argv[scratch_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
+        executable_fd = open_worker_executable(argv[executable_index]);
+    }
+    if ((runtime_v2 && input_fd < 0) || subject_fd < 0 || toolchain_fd < 0 ||
+        output_fd < 0 || scratch_fd < 0 || executable_fd < 0) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1140,6 +1653,7 @@ static int worker_exec(int argc, char **argv) {
     }
     environment = build_environment(&worker_environment_request);
     if (environment == NULL) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1151,7 +1665,8 @@ static int worker_exec(int argc, char **argv) {
      * waits and relays its exit status, so the command itself owns every
      * namespace named in the readiness record.  Mount propagation and all
      * descriptor-tree mounts happen before the fork; proc must wait until it. */
-    if (!enter_worker_namespaces()) {
+    if (!runtime_v2 && !enter_worker_namespaces()) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1159,8 +1674,12 @@ static int worker_exec(int argc, char **argv) {
         (void)close(executable_fd);
         return 64;
     }
-    if (!assemble_mounts(argv[argument_offset], argv[argument_offset + 1],
-                         argv[argument_offset + 2], argv[argument_offset + 3])) {
+    if (!runtime_v2 &&
+        !assemble_mounts(false, input_fd, subject_fd, toolchain_fd,
+                         output_fd, scratch_fd, NULL, argv[subject_index],
+                         argv[toolchain_index], argv[output_index],
+                         argv[scratch_index])) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1169,6 +1688,7 @@ static int worker_exec(int argc, char **argv) {
         return 64;
     }
     if (pipe2(pid_pipe, O_CLOEXEC) != 0) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1180,6 +1700,7 @@ static int worker_exec(int argc, char **argv) {
     if (worker < 0) {
         (void)close(pid_pipe[0]);
         (void)close(pid_pipe[1]);
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1196,6 +1717,7 @@ static int worker_exec(int argc, char **argv) {
             return 64;
         }
         (void)close(pid_pipe[1]);
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1211,6 +1733,7 @@ static int worker_exec(int argc, char **argv) {
     if (read(pid_pipe[0], &controller_visible_pid,
              sizeof(controller_visible_pid)) != (ssize_t)sizeof(controller_visible_pid) ||
         close(pid_pipe[0]) != 0 || controller_visible_pid <= 0) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1218,9 +1741,31 @@ static int worker_exec(int argc, char **argv) {
         (void)close(executable_fd);
         return 64;
     }
-    if (!mount_fresh_proc() || fchdir(scratch_fd) != 0 ||
+    if (runtime_v2) {
+        int namespace_executable = -1;
+
+        if (!assemble_mounts_v2(input_fd, subject_fd, toolchain_fd, output_fd,
+                                scratch_fd)) {
+            return 64;
+        }
+        namespace_executable = reopen_held_executable_at_virtual_path(
+            executable_fd, argv[executable_index]);
+        if (namespace_executable < 0 || close(executable_fd) != 0) {
+            (void)close(namespace_executable);
+            return 64;
+        }
+        executable_fd = namespace_executable;
+        if (!enter_unprivileged_worker_user_namespace_v2(worker_uid, worker_gid)) {
+            return 64;
+        }
+    }
+    if ((!runtime_v2 && !mount_fresh_proc()) ||
+        (runtime_v2 ? chdir("/ranex/input") : fchdir(scratch_fd)) != 0 ||
+        (runtime_v2 && !drop_worker_capabilities_v2()) ||
         prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
-        !enforce_landlock(executable_fd, subject_fd, toolchain_fd, output_fd, scratch_fd)) {
+        !enforce_landlock(runtime_v2, executable_fd, input_fd, subject_fd,
+                          toolchain_fd, output_fd, scratch_fd)) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1233,6 +1778,7 @@ static int worker_exec(int argc, char **argv) {
      * authority.  This is stage one's close discipline with its protocol FDs
      * replaced by the sole object needed by execveat. */
     if (executable_fd != 3 && dup2(executable_fd, 3) != 3) {
+        (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
         (void)close(output_fd);
@@ -1240,7 +1786,8 @@ static int worker_exec(int argc, char **argv) {
         (void)close(executable_fd);
         return 64;
     }
-    if ((subject_fd != 3 && close(subject_fd) != 0) ||
+    if ((input_fd >= 0 && input_fd != 3 && close(input_fd) != 0) ||
+        (subject_fd != 3 && close(subject_fd) != 0) ||
         (toolchain_fd != 3 && close(toolchain_fd) != 0) ||
         (output_fd != 3 && close(output_fd) != 0) ||
         (scratch_fd != 3 && close(scratch_fd) != 0)) {
@@ -1256,7 +1803,7 @@ static int worker_exec(int argc, char **argv) {
     if (!close_worker_descriptors(status_descriptor, acknowledgement_descriptor)) {
         return 64;
     }
-    if (!enforce_seccomp()) {
+    if (!enforce_seccomp(runtime_v2)) {
         return 64;
     }
     if (status_descriptor >= 0) {
@@ -1279,6 +1826,12 @@ static int worker_exec(int argc, char **argv) {
     }
 
     /* AT_EMPTY_PATH binds exec to the same object Landlock admitted. */
+    if (runtime_v2) {
+        (void)syscall(SYS_execveat, 3, "", argv + executable_index, environment,
+                      AT_EMPTY_PATH);
+        (void)close(3);
+        return 64;
+    }
     (void)syscall(SYS_execveat, 3, "", argv + argument_offset + 4, environment,
                   AT_EMPTY_PATH);
     (void)close(3);
