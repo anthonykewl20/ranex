@@ -27,9 +27,6 @@
 #define NOEXEC_SUPERVISION_FAILURE 83
 
 static int refuse_input(void) {
-    static const char refusal[] =
-        "{\"code\":\"E-BATCH-INPUT-MISMATCH\",\"event\":\"batch.child.refused\"}\n";
-    if (write(STDOUT_FILENO, refusal, sizeof(refusal) - 1U) < 0) return 96;
     return 92;
 }
 
@@ -176,11 +173,8 @@ int main(int argc, char **argv) {
     int output_fd = open(OUTPUT_PATH,
                          O_WRONLY | O_CREAT | O_EXCL | O_CLOEXEC | O_NOFOLLOW,
                          0600);
-    if (output_fd < 0 ||
-        write_all(output_fd, output, (size_t)output_length) != 0 ||
-        close(output_fd) != 0 ||
-        write_all(STDOUT_FILENO, output, (size_t)output_length) != 0) {
-        return 95;
-    }
+    if (output_fd < 0) return 95;
+    int output_status = write_all(output_fd, output, (size_t)output_length);
+    if (close(output_fd) != 0 || output_status != 0) return 95;
     return escaped || strcmp(mode, "network-control") == 0 ? 91 : 0;
 }

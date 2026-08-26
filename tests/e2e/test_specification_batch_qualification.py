@@ -55,8 +55,8 @@ EXPECTED_VALUES = json.loads(
     (FIXTURES / "approved-batch-expected-values-v1.json").read_text(encoding="utf-8")
 )
 FIXTURE_PARENT_COMMIT = "6d8e690f959305922c3a65d93216c46143a3232d"
-BASE_COMMIT = "faed9b4c04d3c71e17342380e650fb4725d2a8d8"
-SUBJECT_DIGEST = "sha256:81d874f118d23480e34787f1edf506b5603c0908e8528d9c1c1a8d2af9d457a3"
+BASE_COMMIT = "59924e2689e8025bafeed998bd7725fe50bb9a95"
+SUBJECT_DIGEST = "sha256:7340607090dddf9cf1faf96a110d20da41157532396cc324661fe829eea3921d"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 FIXTURE_AUTHOR_NAME = "Ranex Fixture"
 FIXTURE_AUTHOR_EMAIL = "fixture@ranex.invalid"
@@ -1100,7 +1100,7 @@ def observe_child_provisioning(
     if sibling_modes is not None:
         assert sibling_modes == {
             "a-before-b": "sequential",
-            "b-before-a": "concurrent",
+            "b-before-a": "concurrent-provisioning-sequential-sessions",
         }
         first, second, joined = DESCRIPTOR["children"]
         sequential = [
@@ -1122,8 +1122,9 @@ def observe_child_provisioning(
             min(timestamp for timestamp, _ in observed[current])
             for current in concurrent
         ) < min(child_runs[current] for current in concurrent)
+        assert child_runs[concurrent[1]] < child_runs[concurrent[0]]
         concurrent_join = ("b-before-a", joined, 0)
-        assert max(child_runs[current] for current in concurrent) < min(
+        assert child_runs[concurrent[0]] < min(
             timestamp for timestamp, _ in observed[concurrent_join]
         )
     records = []
@@ -1178,7 +1179,7 @@ def calibrate_child_provisioning_release_invariant(
     controller_python: Path,
     signing_key: Path,
 ) -> str:
-    """Trace sequential/concurrent siblings, then verify every final child state."""
+    """Trace pool-two provisioning and serialized sessions, then verify state."""
 
     children: dict[tuple[str, str], Path] = {}
     rows = [
@@ -1214,14 +1215,21 @@ def calibrate_child_provisioning_release_invariant(
 
     plan = {
         "commands": [list(arguments) for arguments in HOST_PROVISIONING_COMMANDS],
-        "concurrent": [
+        "concurrent_provisioning": [
             {
                 "cwd": str(children[("b-before-a", task_id)]),
                 "run": list(CHILD_RUN_ARGV_BY_KEY[("b-before-a", task_id, 0)]),
             }
             for task_id in DESCRIPTOR["children"][:2]
         ],
-        "concurrent_after": {
+        "concurrent_session_order": [
+            {
+                "cwd": str(children[("b-before-a", task_id)]),
+                "run": list(CHILD_RUN_ARGV_BY_KEY[("b-before-a", task_id, 0)]),
+            }
+            for task_id in reversed(DESCRIPTOR["children"][:2])
+        ],
+        "concurrent_join": {
             "cwd": str(children[("b-before-a", DESCRIPTOR["children"][2])]),
             "run": list(CHILD_RUN_ARGV_BY_KEY[("b-before-a", DESCRIPTOR["children"][2], 0)]),
         },
@@ -1245,37 +1253,68 @@ p = json.load(open(sys.argv[1], encoding="utf-8"))
 host = [p["uv"], "run", "--frozen", "python", "-m", "ranex.cli.host_confinement"]
 results = []
 lock = threading.Lock()
+provisioning_barrier = threading.Barrier(2)
+active_provisioning = 0
+active_sessions = 0
+maximum_active_provisioning = 0
+maximum_active_sessions = 0
 
-def one(entry):
+def provision(entry, *, concurrent=False):
+    global active_provisioning, maximum_active_provisioning
     cwd = entry["cwd"]
-    for command in p["commands"]:
-        subprocess.run(host + command, cwd=cwd, env=os.environ, check=True)
-    completed = subprocess.run(
-        [p["uv"], "run", "--frozen", *entry["run"]],
-        cwd=cwd,
-        env=os.environ,
-        check=False,
-        capture_output=True,
-        text=True,
-    )
     with lock:
-        results.append(
-            {
-                "cwd": cwd,
-                "returncode": completed.returncode,
-                "stderr": completed.stderr,
-            }
-        )
+        active_provisioning += 1
+        maximum_active_provisioning = max(maximum_active_provisioning, active_provisioning)
+    try:
+        if concurrent:
+            provisioning_barrier.wait()
+        for command in p["commands"]:
+            subprocess.run(host + command, cwd=cwd, env=os.environ, check=True)
+    finally:
+        with lock:
+            active_provisioning -= 1
 
-for cwd in p["sequential"]:
-    one(cwd)
+def execute(entry):
+    global active_sessions, maximum_active_sessions
+    cwd = entry["cwd"]
+    with lock:
+        active_sessions += 1
+        maximum_active_sessions = max(maximum_active_sessions, active_sessions)
+        if active_sessions != 1:
+            raise RuntimeError("overlapping strict-local sessions are forbidden")
+    try:
+        completed = subprocess.run(
+            [p["uv"], "run", "--frozen", *entry["run"]],
+            cwd=cwd,
+            env=os.environ,
+            check=False,
+            capture_output=True,
+            text=True,
+        )
+        with lock:
+            results.append({"cwd": cwd, "returncode": completed.returncode,
+                            "stderr": completed.stderr})
+    finally:
+        with lock:
+            active_sessions -= 1
+
+for entry in p["sequential"]:
+    provision(entry)
+    execute(entry)
 with ThreadPoolExecutor(max_workers=2) as pool:
-    futures = [pool.submit(one, cwd) for cwd in p["concurrent"]]
+    futures = [pool.submit(provision, entry, concurrent=True)
+               for entry in p["concurrent_provisioning"]]
     for future in futures:
         future.result()
-one(p["concurrent_after"])
+for entry in p["concurrent_session_order"]:
+    execute(entry)
+provision(p["concurrent_join"])
+execute(p["concurrent_join"])
 with open(p["results"], "w", encoding="utf-8") as destination:
-    json.dump(results, destination, sort_keys=True, separators=(",", ":"))
+    json.dump({"maximum_active_provisioning": maximum_active_provisioning,
+               "maximum_active_sessions": maximum_active_sessions,
+               "outcomes": results}, destination, sort_keys=True,
+              separators=(",", ":"))
 """
     traced = trace_direct_controller(
         ["-c", controller, str(plan_path)],
@@ -1287,7 +1326,10 @@ with open(p["results"], "w", encoding="utf-8") as destination:
     assert traced.completed.returncode == 0, (
         traced.completed.stdout + traced.completed.stderr
     )
-    outcomes = json.loads(Path(plan["results"]).read_bytes())
+    calibration = json.loads(Path(plan["results"]).read_bytes())
+    assert calibration["maximum_active_provisioning"] == 2
+    assert calibration["maximum_active_sessions"] == 1
+    outcomes = calibration["outcomes"]
     assert {outcome["cwd"] for outcome in outcomes} == {
         str(child) for child in children.values()
     }
@@ -1311,7 +1353,7 @@ with open(p["results"], "w", encoding="utf-8") as destination:
             provenance_path=root.parent / "child-provisioning-calibration-observer.json",
             sibling_modes={
                 "a-before-b": "sequential",
-                "b-before-a": "concurrent",
+                "b-before-a": "concurrent-provisioning-sequential-sessions",
             },
         )
     )
@@ -1338,7 +1380,11 @@ with open(p["results"], "w", encoding="utf-8") as destination:
     event = {
         "canonical_verifier_outcomes": ["passed"],
         "event": "child.provisioning.calibrated",
-        "observation_modes": ["sequential", "concurrent-siblings"],
+        "maximum_active_provisioning": calibration["maximum_active_provisioning"],
+        "maximum_active_sessions": calibration["maximum_active_sessions"],
+        "observation_modes": [
+            "sequential", "concurrent-provisioning", "sequential-sessions"
+        ],
         "observer_executions_digest": observer_event["executions_digest"],
         "records_digest": "sha256:" + canonical_sha256({"records": records}),
         "run_count": len(records),

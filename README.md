@@ -454,9 +454,11 @@ Python controller directly—never `uv`—under pinned `/usr/bin/strace -f
 --detach-on=execve -s 8192`, while binding each spawned public `uv`
 command/cwd/order. Its binary identity is independently verified. A separate
 positive calibration starts every child without a launcher or usable report,
-runs the exact public build/install/qualify sequence in that child's cwd across
-both sequential and concurrent siblings, and
-verifies final launcher/report hashes and qualified host state. This release
+runs the exact public build/install/qualify sequence in that child's cwd with
+pool-two concurrent provisioning, then serializes strict-local sessions in the
+signed A/B/C or B/A/C completion order. It proves maximum active provisioning
+two and maximum active sessions one and verifies final launcher/report hashes
+and qualified host state. This release
 uses the existing dependency derivation/approval gate before that observer
 self-test and distinguishes its canonical host-drift result from the still-RED
 actual batch success assertion. This release

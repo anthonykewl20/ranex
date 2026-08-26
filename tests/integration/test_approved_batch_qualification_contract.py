@@ -60,8 +60,8 @@ NEGATIVE_CONTROLS = json.loads(
     (FIXTURES / "approved-batch-negative-controls-v1.json").read_text()
 )
 FIXTURE_PARENT_COMMIT = "6d8e690f959305922c3a65d93216c46143a3232d"
-BASE_COMMIT = "faed9b4c04d3c71e17342380e650fb4725d2a8d8"
-SUBJECT_DIGEST = "sha256:81d874f118d23480e34787f1edf506b5603c0908e8528d9c1c1a8d2af9d457a3"
+BASE_COMMIT = "59924e2689e8025bafeed998bd7725fe50bb9a95"
+SUBJECT_DIGEST = "sha256:7340607090dddf9cf1faf96a110d20da41157532396cc324661fe829eea3921d"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 
 
@@ -96,9 +96,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-16"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 14
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v16"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-17"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 15
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v17"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -499,8 +499,13 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     )
     assert provisioning["sibling_observation"] == [
         "sequential",
-        "concurrent-siblings",
+        "concurrent-provisioning",
+        "sequential-sessions",
     ]
+    assert provisioning["maximum_active_provisioning"] == 2
+    assert provisioning["maximum_active_sessions"] == 1
+    assert provisioning["session_overlap_allowed"] is False
+    assert provisioning["session_orders"] == EXPECTED_VALUES["completion_orders"]
     assert provisioning["run_argv_source"] == (
         "B-bound-flow-specific-full-child-invocation"
     )
@@ -554,8 +559,10 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     assert provisioning["provenance_path"] == "outside-governed-repository"
     assert provisioning["release_invariant"] == (
         "each clean child independently runs exact public launcher-build "
-        "launcher-install and qualify commands in its own cwd before run and "
-        "its final launcher report and qualified state are independently verified"
+        "launcher-install and qualify commands in its own cwd before run; pool two "
+        "permits concurrent planning provisioning and readiness only; strict-local "
+        "sessions execute sequentially in signed completion order; final launcher "
+        "report and qualified state are independently verified"
     )
     assert provisioning["transient_copy_absence_required"] is False
     assert set(provisioning["required_observations"]) == {
@@ -577,13 +584,20 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "observer_tool_digest",
         "observer_tool_version",
         "run_count",
-        "sequential_and_concurrent_siblings",
+        "concurrent_provisioning_maximum",
+        "sequential_session_maximum",
+        "signed_session_orders",
         "step_count",
     }
 
 
 def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
     static = EXPECTED_VALUES["static_worker"]
+    assert static["stdout"] == "closed-no-authority"
+    assert static["observable_output"] == "/ranex/output/result.json"
+    assert static["success_exit_code"] == 0
+    assert static["input_refusal_exit_code"] == 92
+    assert static["output_failure_exit_code"] == 95
     manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
     source = ROOT / static["source"]
     assert file_digest(source) == static["source_sha256"]
@@ -611,6 +625,61 @@ def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
         artifacts.append(output.read_bytes())
     assert artifacts[0] == artifacts[1]
     assert hashlib.sha256(artifacts[0]).hexdigest() == manifest["artifact"]["sha256"]
+
+
+def test_static_worker_succeeds_with_stdout_closed_and_only_exact_output_file(
+    tmp_path: Path,
+) -> None:
+    static = EXPECTED_VALUES["static_worker"]
+    manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
+    source = ROOT / static["source"]
+    worker = tmp_path / "slice036-worker"
+    compiler = Path(manifest["build"]["compiler"]["path"])
+    flags = [
+        token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
+        .replace("<output>", str(worker))
+        .replace("<source>", str(source))
+        for token in manifest["build"]["flags"]
+    ]
+    built = subprocess.run(
+        [str(compiler), *flags], cwd=ROOT,
+        env=manifest["build"]["environment"], capture_output=True, check=False,
+    )
+    assert built.returncode == 0, built.stderr.decode()
+    assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+    host_profile = json.loads(
+        (ROOT / "governance/confinement/strict-local-host-v1.json").read_bytes()
+    )
+    bubblewrap = Path(host_profile["helpers"]["bubblewrap"]["path"])
+    assert file_digest(bubblewrap) == "sha256:" + host_profile["helpers"]["bubblewrap"]["sha256"]
+    runtime_input, runtime_output = tmp_path / "input", tmp_path / "output"
+    runtime_input.mkdir()
+    runtime_output.mkdir()
+    task = {"attempt": 0, "delay_ms": 0, "flow_id": "a-before-b", "mode": "normal",
+            "task_id": "SLICE-036-child-A", "version": "slice036-child-input-v2"}
+    (runtime_input / "task.json").write_bytes(
+        json.dumps(task, sort_keys=True, separators=(",", ":")).encode()
+    )
+
+    completed = subprocess.run(
+        ["/bin/sh", "-c", 'exec 1>&-; exec "$@"', "slice036-close-stdout",
+         str(bubblewrap), "--unshare-all", "--die-with-parent", "--new-session",
+         "--clearenv", "--dir", "/ranex", "--ro-bind", str(runtime_input),
+         "/ranex/input", "--dir", "/ranex/output", "--bind", str(runtime_output),
+         "/ranex/output", "--dir", "/ranex/toolchain", "--dir",
+         "/ranex/toolchain/bin", "--ro-bind", str(worker),
+         "/ranex/toolchain/bin/slice036-worker", "--chdir", "/ranex/input",
+         "--setenv", "LC_ALL", "C", "--setenv", "TZ", "UTC",
+         "/ranex/toolchain/bin/slice036-worker", "--task"],
+        cwd=ROOT, env={"LC_ALL": "C", "TZ": "UTC"}, stdout=None,
+        stderr=subprocess.PIPE, check=False,
+    )
+    assert completed.returncode == 0, completed.stderr.decode()
+    assert [path.name for path in runtime_output.iterdir()] == ["result.json"]
+    assert (runtime_output / "result.json").read_bytes() == (
+        b'{"attempt":0,"flow_id":"a-before-b","network":"denied",'
+        b'"pid":null,"task_id":"SLICE-036-child-A","value":"ok"}\n'
+    )
 
 
 def test_static_worker_noexec_calibration_is_input_selected_and_discriminating() -> None:
@@ -914,6 +983,8 @@ def test_signed_plan_has_both_completion_orders_canonical_results_and_c_join() -
         for flow in plan.flows
     )
     assert all(flow.join_released == "SLICE-036-child-C" for flow in plan.flows)
+    assert [flow["maximum_active_provisioning"] for flow in FLOW["flows"]] == [2, 2]
+    assert [flow["maximum_active_sessions"] for flow in FLOW["flows"]] == [1, 1]
 
 
 def test_append_if_head_is_one_begin_immediate_cas_and_stale_reentry_is_stable(

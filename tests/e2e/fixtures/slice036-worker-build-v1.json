@@ -8,7 +8,7 @@
       "relro": true,
       "type": "EXEC"
     },
-    "sha256": "1826defb0b04028a86702bf8dd7879cb8c8b75843f56b20daf842fa6e4d1cb02",
+    "sha256": "ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9",
     "successor_path": "governance/qualification/worker/slice036-worker",
     "toolchain_destination": "/ranex/toolchain/bin/slice036-worker"
   },
@@ -58,7 +58,7 @@
       {"path": "/usr/lib/gcc/x86_64-linux-gnu/13/../../../x86_64-linux-gnu/crtn.o", "role": "crtn", "sha256": "a2266079f95b84ccc2162ebbf279bcd78858a748aa1882e0bdb912316c76a58f"}
     ],
     "source": {
-      "sha256": "19f2746976a6102a01dc82b2d35b668a980831fe7cc1c17ad66b67cef26d76a0",
+      "sha256": "093bc85cac9e780ae50649977d9fcfc880704729628761b53fc6ff4ce535a929",
       "spec_path": "tests/e2e/fixtures/slice036-worker.c",
       "successor_path": "governance/qualification/worker/slice036-worker.c"
     },

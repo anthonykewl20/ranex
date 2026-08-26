@@ -20,8 +20,8 @@ descriptor carries a separate path/digest reference to each populated oracle;
 it is not reused as a placeholder for any class. C therefore binds those
 bytes, maximum pool two, exact base/subject identity, policy, and roles.
 
-The frozen `faed9b4c04d3c71e17342380e650fb4725d2a8d8` commit and
-`sha256:81d874f118d23480e34787f1edf506b5603c0908e8528d9c1c1a8d2af9d457a3`
+The frozen `59924e2689e8025bafeed998bd7725fe50bb9a95` commit and
+`sha256:7340607090dddf9cf1faf96a110d20da41157532396cc324661fe829eea3921d`
 subject are the deterministic E2E fixture only. The E2E reconstructs that
 successor from public parent `6d8e690f959305922c3a65d93216c46143a3232d`
 using fixed author/committer identity, time, and message. The successor adds
@@ -53,8 +53,13 @@ Python controller directly—never `uv`—under literal `/usr/bin/strace -f
 --detach-on=execve -s 8192`. It records only `execve`, process ancestry, and cwd
 changes while retaining every spawned public `uv run --frozen` argv; it
 requires the same exact command sequence in every actual child before that
-child's `ranex run`. Its focused calibration observes both sequential and
-concurrent sibling controllers. Its canonical provenance artifact is outside
+child's `ranex run`. Pool two permits concurrent planning, provisioning, and
+readiness only. The focused calibration proves maximum active provisioning is
+two, then executes strict-local sessions sequentially with maximum active
+sessions one: A → B → C or B → A → C, exactly as the signed completion order
+requires. The current host-confinement owner supports one session lifecycle per
+delegated root; no broker or per-child delegated-unit authority is introduced.
+Its canonical provenance artifact is outside
 the governed repository, and the B-protected manifest pins literal
 `/usr/bin/strace`, its version, and installed-file SHA-256. The canonical inner
 host-confinement tracer and all final launcher/report/host checks are unchanged.
@@ -83,6 +88,11 @@ installed linker/static inputs, closed environment, absent build ID, source
 digest, two byte-identical builds, ELF properties, and final binary digest are
 B-protected. The controller verifies those bytes before placing them in the
 held toolchain object; the observed subject remains non-executable authority.
+Strict-local closes file descriptors 0, 1, and 2. The worker therefore treats
+stdout as no authority and writes only the exact
+`/ranex/output/result.json`. Successful file output returns zero; exit 95 is
+reserved for a real output open, write, or close failure. Input refusal remains
+exit 92 and the distinct noexec calibration exits remain unchanged.
 For the SLICE-070 behavioral noexec calibration, committed input bytes select a
 closed `subject-noexec` mode inside that same fixed toolchain worker. It forks
 and attempts only `/ranex/subject/.local/subject-worker`: kernel `EACCES` maps
@@ -120,7 +130,8 @@ selector grammar/trust/alias/toolchain drift, path/task mismatch, an unapproved 
 scope overlap, a real loopback attempt, a named survivor process, and an
 oracle-result mismatch.
 Both A/B completion orders are observed, canonical results stay
-A/B/C-ordered, and C is released only after the join. One clean disposable
+A/B/C-ordered, and C is released only after the join. Fork/join readiness may
+overlap, but strict-local session execution never does. One clean disposable
 governed repository and its `refs/heads/main` identity span qualification,
 the `batch-qualified` journal row and signed artifact, dispatch, judge, merge,
 and publication refusal. Qualification may append one continuity fact; judge,
@@ -241,8 +252,10 @@ grammar and behavior.
    observer—not application output—targets the resolved absolute development
    Python controller directly with `-f --detach-on=execve -s 8192`, never wraps
    `uv`, and proves the same exact spawned public `uv` sequence and child cwd
-   before every actual child run. Sequential and concurrent sibling
-   calibrations both produce one canonical provenance artifact. Because the
+   before every actual child run. Sequential flow and concurrent-provisioning
+   calibrations produce one canonical provenance artifact and executable
+   maxima of two active provisioners and one active session. Sessions execute
+   only in signed A/B/C or B/A/C order. Because the
    deterministic successor has no mutable dependency journal, the observer
    self-test invokes the existing child-base dependency derivation, approval,
    and journal verification commands before tracing. After SLICE-070 lands,
