@@ -96,9 +96,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-14"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 12
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v14"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-15"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 13
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v15"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -259,13 +259,14 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
 
     required = set(SCHEMA["$defs"]["childRequest"]["required"])
     assert all(set(row) == required for row in ROWS)
+    assert len(ROWS) == 6
     assert [row["depends_on"] for row in ROWS] == [
-        [],
-        [],
+        [], [], [], [],
+        ["SLICE-036-child-A", "SLICE-036-child-B"],
         ["SLICE-036-child-A", "SLICE-036-child-B"],
     ]
-    sibling_pairs: set[tuple[str, str]] = set()
-    exact_argv: list[str] | None = None
+    full_invocations: set[tuple[str, ...]] = set()
+    wrapped_invocations: set[tuple[str, ...]] = set()
     for row in ROWS:
         assert row["base_commit"] == BASE_COMMIT
         assert row["worktree"] == "disposable" and row["publication"] is False
@@ -278,12 +279,11 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         ]
         assert "--confinement" in row["invocation"]["argv"]
         assert "strict-local" in row["invocation"]["argv"]
-        if exact_argv is None:
-            exact_argv = row["invocation"]["argv"]
-        assert row["invocation"]["argv"] == exact_argv
+        full_invocations.add(tuple(row["invocation"]["argv"]))
         assert row["capability_request"]["argv"] == ["--task"]
         assert row["capability_request"]["executable"] == "/ranex/toolchain/bin/slice036-worker"
         separator = row["invocation"]["argv"].index("--")
+        wrapped_invocations.add(tuple(row["invocation"]["argv"][separator + 1 :]))
         assert row["invocation"]["argv"][separator + 1 :] == [
             "/ranex/toolchain/bin/slice036-worker",
             "--task",
@@ -303,12 +303,22 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         assert intersection.roots == child_policy.roots
         assert intersection.environment_allow == ("LC_ALL", "TZ")
         assert "RANEX_BATCH_TASK_ID" not in json.dumps(row)
+        runtime = row["runtime_input"]
         expected_input = (
-            f"governance/qualification/inputs/{row['task_id']}"
+            f"governance/qualification/inputs/{row['task_id']}/"
+            f"{runtime['flow_id']}/attempt-{row['attempt']}"
         )
         assert row["invocation"]["runtime_input_path"] == expected_input
-        assert expected_input in row["scope"]["roots"]
-        assert expected_input in row["capability_request"]["roots"]
+        assert row["invocation"]["toolchain_root"] == (
+            "governance/qualification/worker"
+        )
+        assert row["invocation"]["argv"][separator - 4 : separator] == [
+            "--runtime-input-path", expected_input,
+            "--toolchain-root", "governance/qualification/worker",
+        ]
+        authority_root = f"governance/qualification/inputs/{row['task_id']}"
+        assert authority_root in row["scope"]["roots"]
+        assert authority_root in row["capability_request"]["roots"]
         assert row["checks"] == [
             {
                 "check_id": "slice036-network-process-and-exit",
@@ -325,25 +335,61 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
             assert not Path(evidence["path"]).is_absolute()
             assert ".." not in Path(evidence["path"]).parts
             assert "digest" not in evidence
-        sibling_pairs.update(
-            (root, action)
-            for root in row["scope"]["roots"]
-            for action in row["scope"]["actions"]
-        )
-        runtime = row["runtime_input"]
         assert runtime["mode"] == "normal"
         assert runtime["task_id"] == row["task_id"]
         assert runtime["loopback_ports"] == {"start": 46120, "end": 46135}
         assert set(runtime) == {
-            "delays_ms",
-            "flow_ids",
+            "delay_ms",
+            "flow_id",
             "loopback_ports",
             "mode",
             "task_id",
         }
-    assert len(sibling_pairs) == sum(
-        len(row["scope"]["roots"]) * len(row["scope"]["actions"])
+    assert len(full_invocations) == 6
+    assert wrapped_invocations == {("/ranex/toolchain/bin/slice036-worker", "--task")}
+    for flow_id in ("a-before-b", "b-before-a"):
+        flow_rows = [
+            row for row in ROWS if row["runtime_input"]["flow_id"] == flow_id
+        ]
+        assert [row["task_id"] for row in flow_rows] == list(DESCRIPTOR["children"])
+        flow_scopes = [
+            {
+                (root, action)
+                for root in row["scope"]["roots"]
+                for action in row["scope"]["actions"]
+            }
+            for row in flow_rows
+        ]
+        assert all(
+            left.isdisjoint(right)
+            for ordinal, left in enumerate(flow_scopes)
+            for right in flow_scopes[ordinal + 1 :]
+        )
+    golden_events = [
+        json.loads(line)
+        for line in (ROOT / VECTORS["paths"]["qualification_golden"])
+        .read_text(encoding="utf-8")
+        .splitlines()
+    ]
+    source_events = [
+        event for event in golden_events if event["event"] == "batch.child.sources"
+    ]
+    assert [
+        (event["flow_id"], event["task_id"], event["runtime_input_path"])
+        for event in source_events
+    ] == sorted(
+        (
+            row["runtime_input"]["flow_id"],
+            row["task_id"],
+            row["invocation"]["runtime_input_path"],
+        )
         for row in ROWS
+    )
+    assert all(
+        event["input"] == "/ranex/input/task.json"
+        and event["toolchain"] == "/ranex/toolchain"
+        and event["toolchain_root"] == "governance/qualification/worker"
+        for event in source_events
     )
     serialized = json.dumps(ROWS)
     assert "aaaaaaaaaaaaaaaa" not in serialized
@@ -356,13 +402,16 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     }
     runtime_schema = SCHEMA["$defs"]["runtimeInput"]
     assert set(runtime_schema["required"]) == {
-        "delays_ms",
-        "flow_ids",
+        "delay_ms",
+        "flow_id",
         "loopback_ports",
         "mode",
         "task_id",
     }
-    assert runtime_schema["properties"]["flow_ids"]["maxItems"] == 2
+    assert runtime_schema["properties"]["delay_ms"] == {
+        "minimum": 0,
+        "type": "integer",
+    }
     assert SCHEMA["$defs"]["capability"]["properties"]["environment"][
         "properties"
     ]["allow"] == {
@@ -375,16 +424,21 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     assert SCHEMA["$defs"]["childRequest"]["properties"]["invocation"][
         "properties"
     ]["runtime_input_path"]["pattern"] == (
-        r"^governance/qualification/inputs/[A-Za-z0-9-]+$"
+        r"^governance/qualification/inputs/[A-Za-z0-9-]+/[a-z0-9-]+/attempt-[0-6]$"
     )
+    assert SCHEMA["$defs"]["childRequest"]["properties"]["invocation"][
+        "properties"
+    ]["toolchain_root"] == {
+        "const": "governance/qualification/worker",
+        "type": "string",
+    }
     assert EXPECTED_VALUES["child_input_geometry"] == {
-        "attempt_path": "<root>/children/<task-id>/attempt-<n>",
-        "embedded_task_id_must_match": True,
-        "input_path": "governance/qualification/inputs/<task-id>",
+        "embedded_attempt_flow_task_must_match": True,
+        "input_path": "governance/qualification/inputs/<task-id>/<flow-id>/attempt-<n>",
         "mounted_file": "/ranex/input/task.json",
-        "selection": "signed-directory plus closed flow-id/task-id/attempt member",
-        "task_id_source": "signed-runtime-input-object",
-        "tracked_at_base": True,
+        "selection": "exact signed public runtime-input-path selector",
+        "task_id_source": "tracked-base-committed-task-json",
+        "tracked_at_started_base": True,
         "worker_environment": ["LC_ALL", "TZ"],
         "worktree_clean_before_run": True,
     }
@@ -421,7 +475,7 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "concurrent-siblings",
     ]
     assert provisioning["run_argv_source"] == (
-        "B-bound-byte-identical-child-invocation"
+        "B-bound-flow-specific-full-child-invocation"
     )
     assert provisioning["dependency_admission"] == {
         "commands": [
@@ -451,10 +505,10 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
         "accepted_self_test_outcomes": ["passed"],
         "actual_batch_success_separate": True,
         "current_preimplementation_refusal": (
-            "missing-v2-fixed-toolchain-executable-resolution"
+            "missing-public-v2-run-source-selector-parser"
         ),
         "expected_progression": [
-            "v2 fixed-toolchain execution succeeds",
+            "public v2 run source selectors parse and validate",
             "batch parser/application seams are RED",
             "batch parser/application lands",
             "frozen journey succeeds",
@@ -600,12 +654,75 @@ def test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows() -
     assert input_mismatch[0]["task_id"] == "SLICE-036-child-A"
     assert input_mismatch[0]["attempt"] == 6
     assert input_mismatch[0]["invocation"]["runtime_input_path"] == (
-        "governance/qualification/inputs/SLICE-036-child-B"
+        "governance/qualification/inputs/SLICE-036-child-B/"
+        "input-mismatch-control/attempt-6"
     )
     for row in input_mismatch[1:]:
         assert row["invocation"]["runtime_input_path"] == (
-            f"governance/qualification/inputs/{row['task_id']}"
+            f"governance/qualification/inputs/{row['task_id']}/"
+            f"input-mismatch-control/attempt-6"
         )
+    selector_controls = {
+        control_id
+        for control_id in controls
+        if control_id.startswith("selector-")
+    }
+    assert selector_controls == {
+        "selector-absolute",
+        "selector-digest-drift",
+        "selector-dirty",
+        "selector-dynamic-elf",
+        "selector-extra",
+        "selector-held-overlap",
+        "selector-host-executable",
+        "selector-intermediate-symlink-alias",
+        "selector-manifest-drift",
+        "selector-missing-pair",
+        "selector-remote",
+        "selector-symlink-alias",
+        "selector-traversal",
+        "selector-untracked",
+        "selector-wrong-base",
+    }
+    assert all(controls[name]["pre_journal"] for name in selector_controls)
+    executable_refusals = EXPECTED_VALUES["public_run_source_selectors"][
+        "executable_refusal_controls"
+    ]
+    assert executable_refusals == {
+        "selector-digest-drift": (
+            "E-C18-GATE: toolchain worker digest differs from its build manifest"
+        ),
+        "selector-dirty": "E-C18-GATE: runtime input selector differs from started_at",
+        "selector-dynamic-elf": (
+            "E-C18-GATE: v2 worker requests an unsupported dynamic runtime closure"
+        ),
+        "selector-held-overlap": (
+            "E-C18-PATH-ALIAS: input and toolchain source objects overlap"
+        ),
+        "selector-intermediate-symlink-alias": (
+            "E-C18-PATH-ALIAS: runtime input selector contains a symlink"
+        ),
+        "selector-manifest-drift": (
+            "E-C18-GATE: toolchain source digest differs from its build manifest"
+        ),
+        "selector-symlink-alias": (
+            "E-C18-PATH-ALIAS: runtime input selector contains a symlink"
+        ),
+        "selector-untracked": (
+            "E-C18-GATE: runtime input selector is not tracked at started_at"
+        ),
+        "selector-wrong-base": (
+            "E-C18-GATE: runtime input selector is absent from started_at"
+        ),
+    }
+    for control_id, refusal in executable_refusals.items():
+        assert controls[control_id]["plant"]["refusal"] == refusal
+        assert controls[control_id]["plant"]["observation"].startswith(
+            "public cmd_run returns EXIT_USAGE with exact refusal"
+        )
+    selector_security = VECTORS["paths"]["selector_security"]
+    assert selector_security == "tests/security/test_slice036_run_source_selectors.py"
+    assert protected[selector_security] == file_digest(ROOT / selector_security)
     assert network[0]["checks"][0]["command"] == [
         "/ranex/toolchain/bin/slice036-worker",
         "--task",
@@ -674,6 +791,36 @@ def test_separate_batch_qualify_parser_preserves_the_exact_legacy_fanout_surface
     )
     assert approved.action == "batch"
     assert approved.batch_action == "qualify"
+
+
+def test_public_run_parser_owns_paired_strict_local_source_selectors_only() -> None:
+    parser = build_parser()
+    row = ROWS[0]
+    argv = row["invocation"]["argv"][3:]
+    parsed = parser.parse_args(argv)
+    assert parsed.confinement == "strict-local"
+    assert parsed.runtime_input_path == row["invocation"]["runtime_input_path"]
+    assert parsed.toolchain_root == "governance/qualification/worker"
+    assert parsed.command == ["--", "/ranex/toolchain/bin/slice036-worker", "--task"]
+
+    separator = argv.index("--")
+    without_toolchain = argv[:]
+    start = without_toolchain.index("--toolchain-root")
+    del without_toolchain[start : start + 2]
+    with pytest.raises(SystemExit):
+        parser.parse_args(without_toolchain)
+
+    duplicated = argv[:separator]
+    duplicated.extend(["--runtime-input-path", row["invocation"]["runtime_input_path"]])
+    duplicated.extend(argv[separator:])
+    with pytest.raises(SystemExit):
+        parser.parse_args(duplicated)
+
+    ordinary = argv[:]
+    confinement = ordinary.index("--confinement")
+    del ordinary[confinement : separator + 1]
+    with pytest.raises(SystemExit):
+        parser.parse_args(ordinary)
 
 
 def test_batch_qualification_flag_is_additive_to_legacy_judge_and_merge() -> None:

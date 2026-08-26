@@ -1,6 +1,21 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$defs": {
+    "artifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "$ref": "#/$defs/digest"
+        },
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        }
+      },
+      "required": [
+        "digest",
+        "path"
+      ],
+      "type": "object"
+    },
     "capability": {
       "additionalProperties": false,
       "properties": {
@@ -138,10 +153,6 @@
       ],
       "type": "object"
     },
-    "digest": {
-      "pattern": "^sha256:[0-9a-f]{64}$",
-      "type": "string"
-    },
     "childRequest": {
       "additionalProperties": false,
       "properties": {
@@ -229,7 +240,11 @@
               "$ref": "#/$defs/portablePath"
             },
             "runtime_input_path": {
-              "pattern": "^governance/qualification/inputs/[A-Za-z0-9-]+$",
+              "pattern": "^governance/qualification/inputs/[A-Za-z0-9-]+/[a-z0-9-]+/attempt-[0-6]$",
+              "type": "string"
+            },
+            "toolchain_root": {
+              "const": "governance/qualification/worker",
               "type": "string"
             }
           },
@@ -237,7 +252,8 @@
             "argv",
             "confinement",
             "runtime_evidence_path",
-            "runtime_input_path"
+            "runtime_input_path",
+            "toolchain_root"
           ],
           "type": "object"
         },
@@ -246,6 +262,9 @@
         },
         "retry_limit": {
           "const": 1
+        },
+        "runtime_input": {
+          "$ref": "#/$defs/runtimeInput"
         },
         "scope": {
           "additionalProperties": false,
@@ -282,9 +301,6 @@
         },
         "worktree": {
           "const": "disposable"
-        },
-        "runtime_input": {
-          "$ref": "#/$defs/runtimeInput"
         }
       },
       "required": [
@@ -305,49 +321,24 @@
       ],
       "type": "object"
     },
+    "digest": {
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "type": "string"
+    },
     "portablePath": {
       "pattern": "^(?!/)(?!.*(?:^|/)\\.\\.(?:/|$))(?!.*\\\\)[A-Za-z0-9._/-]+$",
       "type": "string"
     },
-    "artifactRef": {
-      "additionalProperties": false,
-      "properties": {
-        "digest": {
-          "$ref": "#/$defs/digest"
-        },
-        "path": {
-          "$ref": "#/$defs/portablePath"
-        }
-      },
-      "required": [
-        "digest",
-        "path"
-      ],
-      "type": "object"
-    },
     "runtimeInput": {
       "additionalProperties": false,
       "properties": {
-        "delays_ms": {
-          "additionalProperties": {
-            "minimum": 0,
-            "type": "integer"
-          },
-          "minProperties": 1,
-          "propertyNames": {
-            "pattern": "^[a-z0-9-]+$"
-          },
-          "type": "object"
+        "delay_ms": {
+          "minimum": 0,
+          "type": "integer"
         },
-        "flow_ids": {
-          "items": {
-            "pattern": "^[a-z0-9-]+$",
-            "type": "string"
-          },
-          "minItems": 1,
-          "maxItems": 2,
-          "type": "array",
-          "uniqueItems": true
+        "flow_id": {
+          "pattern": "^[a-z0-9-]+$",
+          "type": "string"
         },
         "loopback_ports": {
           "additionalProperties": false,
@@ -379,8 +370,8 @@
         }
       },
       "required": [
-        "delays_ms",
-        "flow_ids",
+        "delay_ms",
+        "flow_id",
         "loopback_ports",
         "mode",
         "task_id"
@@ -388,6 +379,7 @@
       "type": "object"
     }
   },
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
     "base_commit": {
@@ -464,6 +456,39 @@
     "policy": {
       "$ref": "#/$defs/capability"
     },
+    "qualification_output": {
+      "additionalProperties": false,
+      "properties": {
+        "claim_id": {
+          "const": "approved-batch-qualified"
+        },
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "producer_id": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "publication_allowed": {
+          "const": false
+        },
+        "schema": {
+          "$ref": "#/$defs/artifactRef"
+        },
+        "signature_primitive": {
+          "const": "ranex-evidence-v4"
+        }
+      },
+      "required": [
+        "claim_id",
+        "path",
+        "producer_id",
+        "publication_allowed",
+        "schema",
+        "signature_primitive"
+      ],
+      "type": "object"
+    },
     "retry_limit": {
       "const": 1
     },
@@ -501,39 +526,6 @@
     },
     "version": {
       "const": "approved-batch-v1"
-    },
-    "qualification_output": {
-      "additionalProperties": false,
-      "properties": {
-        "claim_id": {
-          "const": "approved-batch-qualified"
-        },
-        "path": {
-          "$ref": "#/$defs/portablePath"
-        },
-        "producer_id": {
-          "minLength": 1,
-          "type": "string"
-        },
-        "publication_allowed": {
-          "const": false
-        },
-        "schema": {
-          "$ref": "#/$defs/artifactRef"
-        },
-        "signature_primitive": {
-          "const": "ranex-evidence-v4"
-        }
-      },
-      "required": [
-        "claim_id",
-        "path",
-        "producer_id",
-        "publication_allowed",
-        "schema",
-        "signature_primitive"
-      ],
-      "type": "object"
     }
   },
   "required": [

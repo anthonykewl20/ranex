@@ -3,8 +3,8 @@
 **Status:** blocked
 **Opened:** 2026-08-25
 **Priority:** P0 — kernel-only qualification; publication blocked
-**Dependency:** #47 / `SLICE-070` must land the generic strict-local stable I/O
-namespace before child execution or frozen-fixture correction resumes.
+**Dependency:** the final #19 CCR must publish the explicit public strict-local
+run-source-selector seam before implementation resumes; SLICE-070/#47 is landed.
 **ADRs:** `docs/adr/ADR-017-approved-specification-before-implementation-authority.md`, `docs/adr/ADR-025-abc-contract-freeze.md`, `docs/adr/ADR-030-approval-and-intersected-grants.md`
 
 ## Contract
@@ -64,11 +64,11 @@ existing public `deps fetch`, `deps approve`, and `journal verify` path. Those
 commands prepare governed admission before tracing; they are not child host
 provisioning observations. The older undelegated calibration reached the
 canonical verifier's `E-C18-HOST-DRIFT` refusal; that was a valid host-identity
-control, never the current release boundary. With #47 unpublished, the actual
-child journey now refuses earlier at the missing v2 fixed-toolchain executable
-resolution. It cannot reach the absent batch parser/application seams or turn
-either refusal into qualification.
-The B-bound child command is byte-identical for every row:
+control, never the current release boundary. The actual child journey now
+refuses at the missing public v2 run-source-selector parser/application seam.
+It cannot reach the absent batch parser/application seams or turn that refusal
+into qualification.
+The B-bound wrapped child command is byte-identical for every row:
 `/ranex/toolchain/bin/slice036-worker --task`, with the validator-compatible
 policy cwd literal `.` mapped by v2 to actual cwd `/ranex/input`. Its C source
 and build provenance are committed in the deterministic
@@ -86,23 +86,31 @@ only the existing strict-local seccomp surface, makes successful `execve`
 unambiguous even if the executed program exits 80. The expected denial creates no output.
 The top-level argv never names the subject; the public `E-C18-GATE` defense
 against caller-selected subject executables remains independently required.
-The public controller remains `uv run --frozen python -m ranex.cli.main ...`;
-the public CLI is unchanged.
+The public controller remains `uv run --frozen python -m ranex.cli.main ...`.
+Its additive v2-only surface is `--runtime-input-path <repo-relative attempt
+directory> --toolchain-root <repo-relative approved source root>`, legal only
+with `--confinement strict-local`; ordinary and v1 invocations remain unchanged.
 
 This release does not claim to prove the absence of every transient filesystem
 copy or model every Linux write syscall. Copying that is subsequently replaced
 by the independently executed public build/install/qualify sequence and passes
 the final per-child hash and qualified-state checks is not a release blocker.
-Application-emitted provisioning booleans remain untrusted. Signed rows bind
-one byte-identical argv/cwd literal and preserve the worker environment exactly
-as `{LC_ALL,TZ}`; they do not add a task-id environment channel. The controller
-derives closed flow/task/attempt values from its owned geometry, cross-checks
-the signed row, and opens the exact signed base-committed
+Application-emitted provisioning booleans remain untrusted. Six signed rows
+bind one flow-specific full public invocation each while preserving the exact
+identical wrapped worker argv and environment `{LC_ALL,TZ}`; they add no task-id
+environment channel. `main` captures `started_at` before resolving either
+selector. It rejects absolute, traversal, remote, symlinked, untracked, dirty,
+wrong-base, aliased, or overlapping sources, then opens the exact signed
+base-committed
 `governance/qualification/inputs/<task-id>/<flow-id>/attempt-<n>/task.json`
-as `/ranex/input/task.json`. Embedded flow/task/attempt identity must match,
-the input must be tracked at the signed base, and the child worktree
-must be clean before provisioning and execution. The B-bound public-CLI
-negative inputs plant a path/task-id mismatch, an unapproved D row, sibling
+and the B-protected `governance/qualification/worker` subtree. It independently
+materializes those tracked bytes into disjoint held objects mounted only at
+fixed `/ranex/input` and `/ranex/toolchain`; neither may overlap the observed
+subject, output, scratch, or each other. Embedded flow/task/attempt identity,
+static ELF shape, build manifest, and exact B digests must match before any
+launcher, result, journal, or held-object side effect. Virtual argv0 is accepted
+only below `/ranex/toolchain`. The B-bound public-CLI negative inputs plant
+selector grammar/trust/alias/toolchain drift, path/task mismatch, an unapproved D row, sibling
 scope overlap, a real loopback attempt, a named survivor process, and an
 oracle-result mismatch.
 Both A/B completion orders are observed, canonical results stay
@@ -165,6 +173,7 @@ grammar and behavior.
 - `tests/contract/fixtures/specification/approved-batch-oracle-mismatch-v1.jsonl`
 - `tests/contract/fixtures/specification/approved-batch-input-mismatch-v1.jsonl`
 - `tests/integration/test_approved_batch_qualification_contract.py`
+- `tests/security/test_slice036_run_source_selectors.py`
 - `tests/e2e/test_specification_batch_qualification.py`
 - `tests/e2e/fixtures/slice070-noexec/task.json`
 - `tests/e2e/expected/slice036-approved-batch-qualification.out`
@@ -178,13 +187,23 @@ grammar and behavior.
    empty oracle class or fabricated child-evidence digest remains.
 2. `test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contract`
    recomputes the fixture subject, freezes strict-local invocations, disjoint
-   child scopes, required claim/check names, and relative evidence paths.
+   child scopes independently within each completion flow, required claim/check
+   names, and relative evidence paths. Duplicate task IDs across the two flows
+   never collapse or weaken the pairwise A/B/C disjointness check.
 3. `test_b_bound_negative_inputs_plant_each_public_cli_control_in_child_rows`
    proves every negative input is independently populated, B-protected, and
    carries the exact row/argv/runtime plant the E2E supplies through `--tasks`.
 4. `test_separate_batch_qualify_parser_preserves_the_exact_legacy_fanout_surface`
    proves the new three-token grammar is separate and legacy fanout still owns
    its current parser/function without A/B/C flags.
+   `test_public_run_parser_owns_paired_strict_local_source_selectors_only` and
+   the security suite freeze the additive paired flags, v2-only legality, exact
+   tracked-base validation order, and pre-side-effect refusal surface. The
+   B-protected parameterized public `cmd_run` fixture executes final and
+   intermediate symlink, untracked, dirty, wrong-base, held-object overlap,
+   dynamic-ELF, source-manifest-drift, and worker-digest-drift arms. Each binds
+   exact stderr and proves unchanged journal head, refs, tracked tree, worktree
+   status, filesystem, output, scratch, result, evidence, and provisioning state.
 5. `test_signed_plan_has_both_completion_orders_canonical_results_and_c_join`
    proves A/B and B/A completion, canonical result ordering, and the C join
    from signed inputs without public test knobs.
@@ -260,12 +279,17 @@ uv run --frozen pytest -q tests/e2e/test_specification_batch_qualification.py
 uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 ```
 
-While dependency #47 is unpublished, the first pre-implementation RED is the
-strict-local v2 fixed toolchain executable-resolution refusal. That refusal is
-the truthful current boundary, not `E-C18-HOST-DRIFT` and not a batch parser
-claim. After v2 lands, the expected RED progression is the absent public batch
-parser/application seams, qualification-artifact linkage, and
+The first pre-implementation RED is the absent public strict-local v2 source
+selector parser/application seam. That refusal is the truthful current
+boundary, not `E-C18-HOST-DRIFT`. After the selector seam lands, the expected
+RED progression is the absent public batch parser/application seams,
+qualification-artifact linkage, and
 `Journal.append_if_head`; after those land the frozen journey succeeds. Docs,
 fixture closure, and the byte-level static ELF checks must remain green.
 Implementation starts only after independent review, owner CCR acceptance,
 and `status:ready`; this slice never self-approves.
+
+Gate10 deliberately retains the currently published whole-file `main.py` pin
+`d59b7428931414ce54a31e081f79ad3c9cd04c72433794b64143d424a35b8a4a`.
+The future selector implementation must make that pin RED and update it to the
+reviewed production bytes; this specification does not precompute a source hash.

@@ -113,13 +113,18 @@ OBSERVER_TRACE_SYSCALLS = (
 )
 PORTS = range(46120, 46136)
 SURVIVOR_TOKEN = b"ranex-slice036-survivor-control-v1"
-CHILD_RUN_ARGV = tuple(
-    json.loads(
-        (FIXTURES / "approved-batch-child-requests-v1.jsonl")
-        .read_text(encoding="utf-8")
-        .splitlines()[0]
-    )["invocation"]["argv"]
+PRIMARY_ROWS = tuple(
+    json.loads(line)
+    for line in (FIXTURES / "approved-batch-child-requests-v1.jsonl")
+    .read_text(encoding="utf-8")
+    .splitlines()
 )
+CHILD_RUN_ARGV_BY_KEY = {
+    (row["runtime_input"]["flow_id"], row["task_id"], row["attempt"]): tuple(
+        row["invocation"]["argv"]
+    )
+    for row in PRIMARY_ROWS
+}
 
 
 @dataclass(frozen=True)
@@ -365,27 +370,26 @@ def fixture_input_records() -> dict[str, dict[str, object]]:
         for line in (FIXTURES / name).read_text(encoding="utf-8").splitlines():
             row = json.loads(line)
             task_id = row["task_id"]
-            expected_path = f"governance/qualification/inputs/{task_id}"
+            flow_id = row["runtime_input"]["flow_id"]
+            expected_path = (
+                f"governance/qualification/inputs/{task_id}/{flow_id}/"
+                f"attempt-{row['attempt']}"
+            )
             actual_path = row["invocation"]["runtime_input_path"]
             if actual_path != expected_path:
                 assert name == "approved-batch-input-mismatch-v1.jsonl"
-            for flow_id in row["runtime_input"]["flow_ids"]:
-                relative = (
-                    f"governance/qualification/inputs/{task_id}/{flow_id}/"
-                    f"attempt-{row['attempt']}/task.json"
-                )
-                delays = row["runtime_input"]["delays_ms"]
-                record = {
-                    "attempt": row["attempt"],
-                    "delay_ms": delays[flow_id] if flow_id in delays else 0,
-                    "flow_id": flow_id,
-                    "mode": row["runtime_input"]["mode"],
-                    "task_id": task_id,
-                    "version": "slice036-child-input-v2",
-                }
-                existing = records.get(relative)
-                assert existing is None or existing == record
-                records[relative] = record
+            relative = expected_path + "/task.json"
+            record = {
+                "attempt": row["attempt"],
+                "delay_ms": row["runtime_input"]["delay_ms"],
+                "flow_id": flow_id,
+                "mode": row["runtime_input"]["mode"],
+                "task_id": task_id,
+                "version": "slice036-child-input-v2",
+            }
+            existing = records.get(relative)
+            assert existing is None or existing == record
+            records[relative] = record
     assert len(records) == 25
     return records
 
@@ -1052,7 +1056,6 @@ def observe_child_provisioning(
     }
     uv_executable = Path(shutil.which("uv") or "uv").resolve()
     host_prefix = ["run", "--frozen", "python", "-m", "ranex.cli.host_confinement"]
-    exact_run = ["run", "--frozen", *CHILD_RUN_ARGV]
     observed: dict[tuple[str, str, int], list[tuple[float, tuple[str, ...]]]] = {}
     child_runs: dict[tuple[str, str, int], float] = {}
     roots: dict[tuple[str, str, int], set[Path]] = {}
@@ -1066,7 +1069,9 @@ def observe_child_provisioning(
             arguments = tuple(argv[6:])
             assert arguments in HOST_PROVISIONING_COMMANDS
             observed.setdefault(current, []).append((timestamp, arguments))
-        elif argv[1:] == exact_run:
+        elif current in CHILD_RUN_ARGV_BY_KEY and argv[1:] == [
+            "run", "--frozen", *CHILD_RUN_ARGV_BY_KEY[current]
+        ]:
             assert Path(argv[0]).resolve() == uv_executable
             assert current not in child_runs
             child_runs[current] = timestamp
@@ -1166,14 +1171,15 @@ def calibrate_child_provisioning_release_invariant(
         .read_text(encoding="utf-8")
         .splitlines()
     ]
-    assert {tuple(row["invocation"]["argv"]) for row in rows} == {CHILD_RUN_ARGV}
-    assert "--confinement" in CHILD_RUN_ARGV
-    assert CHILD_RUN_ARGV[CHILD_RUN_ARGV.index("--confinement") + 1] == "strict-local"
-    separator = CHILD_RUN_ARGV.index("--")
-    assert CHILD_RUN_ARGV[separator + 1 :] == (
-        "/ranex/toolchain/bin/slice036-worker",
-        "--task",
-    )
+    assert len(rows) == 6
+    assert len({tuple(row["invocation"]["argv"]) for row in rows}) == 6
+    for row in rows:
+        argv = row["invocation"]["argv"]
+        assert argv[argv.index("--confinement") + 1] == "strict-local"
+        separator = argv.index("--")
+        assert argv[separator + 1 :] == [
+            "/ranex/toolchain/bin/slice036-worker", "--task"
+        ]
     for flow_id in ("a-before-b", "b-before-a"):
         for task_id in DESCRIPTOR["children"]:
             child = materialize_governed_checkout(
@@ -1193,21 +1199,22 @@ def calibrate_child_provisioning_release_invariant(
     plan = {
         "commands": [list(arguments) for arguments in HOST_PROVISIONING_COMMANDS],
         "concurrent": [
-            str(children[("b-before-a", task_id)])
+            {
+                "cwd": str(children[("b-before-a", task_id)]),
+                "run": list(CHILD_RUN_ARGV_BY_KEY[("b-before-a", task_id, 0)]),
+            }
             for task_id in DESCRIPTOR["children"][:2]
         ],
-        "concurrent_after": str(
-            children[("b-before-a", DESCRIPTOR["children"][2])]
-        ),
+        "concurrent_after": {
+            "cwd": str(children[("b-before-a", DESCRIPTOR["children"][2])]),
+            "run": list(CHILD_RUN_ARGV_BY_KEY[("b-before-a", DESCRIPTOR["children"][2], 0)]),
+        },
         "sequential": [
-            str(children[("a-before-b", task_id)])
+            {
+                "cwd": str(children[("a-before-b", task_id)]),
+                "run": list(CHILD_RUN_ARGV_BY_KEY[("a-before-b", task_id, 0)]),
+            }
             for task_id in DESCRIPTOR["children"]
-        ],
-        "run": [
-            str(Path(shutil.which("uv") or "uv").resolve()),
-            "run",
-            "--frozen",
-            *CHILD_RUN_ARGV,
         ],
         "results": str(root / "controller-results.json"),
         "uv": str(Path(shutil.which("uv") or "uv").resolve()),
@@ -1220,15 +1227,15 @@ from concurrent.futures import ThreadPoolExecutor
 
 p = json.load(open(sys.argv[1], encoding="utf-8"))
 host = [p["uv"], "run", "--frozen", "python", "-m", "ranex.cli.host_confinement"]
-child_run = p["run"]
 results = []
 lock = threading.Lock()
 
-def one(cwd):
+def one(entry):
+    cwd = entry["cwd"]
     for command in p["commands"]:
         subprocess.run(host + command, cwd=cwd, env=os.environ, check=True)
     completed = subprocess.run(
-        child_run,
+        [p["uv"], "run", "--frozen", *entry["run"]],
         cwd=cwd,
         env=os.environ,
         check=False,
@@ -1272,9 +1279,9 @@ with open(p["results"], "w", encoding="utf-8") as destination:
     for outcome in outcomes:
         assert set(outcome) == {"cwd", "returncode", "stderr"}
         assert outcome["returncode"] == 0, (
-            "pre-implementation dependency RED: #47 has not yet supplied v2 "
-            "fixed-toolchain executable resolution; after v2 lands this "
-            "calibration passes and the journey advances to the batch "
+            "pre-implementation RED: public strict-local v2 run source "
+            "selectors have not landed; after that seam lands this calibration "
+            "passes and the journey advances to the batch "
             f"parser/application seams: {outcome['stderr']}"
         )
     # Every exact child run above crosses the existing public strict-local

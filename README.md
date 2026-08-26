@@ -431,13 +431,13 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none — SLICE-036 is ready but remains dependency-gated pending
-its explicit public run-source-selector CCR
+**Active slice:** none — SLICE-036 remains blocked and dependency-gated while
+its explicit public run-source-selector CCR is frozen and independently reviewed
 
 **Current slice:** SLICE-070 (#47), the generic strict-local I/O prerequisite,
-is complete and published. SLICE-036 (#19) remains ready and dependency-gated
+is complete and published. SLICE-036 (#19) remains draft and dependency-gated
 until its explicit public `ranex run` source-selector/materialisation CCR is
-published and the next spec owner claims it; that seam belongs to its fixed
+published and independently approved; that seam belongs to its fixed
 toolchain worker. The retained SLICE-036 frozen-red contract adds
 a separate kernel-only `task batch qualify` surface in
 disposable strict-local worktrees. Distinct signed oracle/control fixtures drive real CLI
@@ -446,8 +446,8 @@ is structurally non-publishable and batch-aware judge/merge refuse it before
 legacy writes. One clean governed repository/ref spans qualification, dispatch,
 judge, and merge refusal. Its deterministic successor commits the owner's real
 public key, every signed child input, and the reproducibly built static worker;
-flow/task/attempt identity comes from the signed tracked input object and is
-cross-checked against controller geometry, and each child is canonically built,
+flow/task/attempt identity comes from each signed exact repo-relative selector
+and its tracked input object, never controller geometry, and each child is canonically built,
 installed, and host-qualified in place before strict-local execution. An
 external syscall/process observer targets the resolved absolute development
 Python controller directly—never `uv`—under pinned `/usr/bin/strace -f
@@ -579,7 +579,7 @@ issue #22 / SLICE-019 host-qualification evidence, and SLICE-046's `cmd_run`
 confinement binding — ADR-006 is accepted and `RISK-06` is closed (the
 controller subprocess remains same-uid trusted; ADR-023). ADR-017 is
 `accepted`; SLICE-029..033 and SLICE-035 built the kernel-side authority
-  substrate. No slice is open; SLICE-036 is ready but remains dependency-gated
+  substrate. No slice is open; SLICE-036 remains blocked and dependency-gated
   and qualification-only pending its public run-source-selector CCR. The
   harness-effect and production-exit slices were withdrawn.
 
