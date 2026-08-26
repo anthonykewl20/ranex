@@ -6,6 +6,7 @@ import argparse
 import hashlib
 import json
 import os
+import shlex
 import shutil
 import subprocess
 import sys
@@ -14,7 +15,14 @@ from pathlib import Path
 import pytest
 
 from ranex.cli import main as cli
-from ranex.foundation.signing import SIGNED_FIELDS, generate_keypair, verify_evidence
+from ranex.foundation.canonical import canonical_json_bytes, command_digest
+from ranex.foundation.confinement_result import validate_confinement_result
+from ranex.foundation.signing import (
+    SIGNED_FIELDS,
+    generate_keypair,
+    sign_evidence,
+    verify_evidence,
+)
 
 PROJECT = Path(__file__).resolve().parents[2]
 CONTROLLER = (sys.executable, "-m", "ranex.cli.host_confinement")
@@ -49,8 +57,17 @@ def _real_host_ready() -> tuple[bool, str]:
     missing = [str(path) for path in required if not path.exists()]
     if missing:
         return False, f"real host prerequisites absent: {missing}"
-    if not os.access("/sys/fs/cgroup", os.W_OK):
-        return False, "no delegated writable cgroup-v2 root"
+    probed = subprocess.run(
+        [*CONTROLLER, "host-probe"],
+        cwd=PROJECT,
+        env={**os.environ, "PYTHONPATH": str(PROJECT / "src")},
+        capture_output=True,
+        text=True,
+        check=False,
+        timeout=30,
+    )
+    if probed.returncode != 0:
+        return False, probed.stdout.strip() or probed.stderr.strip()
     return True, ""
 
 
@@ -270,20 +287,91 @@ def test_real_strict_local_session_is_host_gated_and_binds_its_result(
             text=True, check=False, timeout=180,
         )
         assert completed.returncode == 0, completed.stdout + completed.stderr
+    case = root / ".local" / "ranex" / "slice046-v1-session"
+    authorities = {
+        name: case / name
+        for name in ("subject", "toolchain", "output", "scratch")
+    }
+    for authority in authorities.values():
+        authority.mkdir(parents=True)
+    command = ("/bin/true",)
+    descriptor = case / "descriptor.json"
+    result_path = case / "result.json"
+    descriptor.write_bytes(
+        canonical_json_bytes(
+            {
+                "argv": list(command),
+                "environment": {"LC_ALL": "C", "TZ": "UTC"},
+                "limits": {
+                    "cpu_usage_usec": 1_000_000,
+                    "memory_bytes": 134_217_728,
+                    "output_bytes": 65_536,
+                    "output_depth": 8,
+                    "output_inodes": 32,
+                    "pids": 16,
+                    "wall_time_ms": 5_000,
+                },
+                "output": str(authorities["output"].relative_to(root)),
+                "schema": "ranex-confinement-command-v1",
+                "scratch": str(authorities["scratch"].relative_to(root)),
+                "subject": str(authorities["subject"].relative_to(root)),
+                "toolchain": str(authorities["toolchain"].relative_to(root)),
+            }
+        )
+    )
     completed = subprocess.run(
         [
-            sys.executable, "-m", "ranex.cli.main", "run", "--claim", "tests-executed",
-            "--producer", "worker", "--repository", ".", "--evidence", "evidence.json",
-            "--producers", "producers.yaml", "--confinement", "strict-local", "--", "/bin/true",
+            *controller,
+            "session",
+            "--profile",
+            "governance/confinement/strict-local-v1.json",
+            "--host-profile",
+            "governance/confinement/strict-local-host-v1.json",
+            "--artifact",
+            ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
+            "--manifest",
+            "governance/confinement/native-launcher-build-v1.json",
+            "--qualification",
+            ".local/ranex/qualification/strict-local-v1.json",
+            "--descriptor",
+            str(descriptor.relative_to(root)),
+            "--result",
+            str(result_path.relative_to(root)),
         ],
         cwd=root,
-        env={**environment, "RANEX_SIGNING_KEY": str(key)},
+        env=environment,
         capture_output=True,
         text=True,
         check=False,
         timeout=180,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
+    raw_result = result_path.read_bytes()
+    result, runtime_digest = validate_confinement_result(raw_result)
+    result_command = result["command"]
+    assert isinstance(result_command, dict)
+    assert result_command["exit_code"] == 0
+    assert result_command["argv_digest"] == command_digest(command).removeprefix(
+        "sha256:"
+    )
+    commit = cli.head_commit(root)
+    content = {
+        "claim_id": "tests-executed",
+        "subject_digest": cli.subject_digest_for(root, commit),
+        "producer_id": "worker",
+        "command": shlex.join(command),
+        "command_digest": command_digest(command),
+        "executable_path": str(cli.resolve_executable(command[0], root).executable),
+        "exit_code": int(result_command["exit_code"]),
+        "suite_results": None,
+        "confinement_result_digest": hashlib.sha256(raw_result).hexdigest(),
+        "confinement_profile_digest": runtime_digest,
+    }
+    private_key = key.read_text(encoding="utf-8").strip()
+    cli.record_evidence(
+        root / "evidence.json",
+        {**content, "signature": sign_evidence(content, private_key)},
+    )
     (record,) = json.loads((root / "evidence.json").read_text(encoding="utf-8"))
     assert record["confinement_result_digest"]
     assert record["confinement_profile_digest"]

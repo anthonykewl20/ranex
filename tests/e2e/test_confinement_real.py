@@ -26,8 +26,9 @@ roots, identical refusals); the reproducibility branch is frozen from
 tests/integration/test_slice017_native_launcher.py gate 1's verified
 shape and first executes for real on a closure-matching host.
 
-The qualified-host journeys (real build → install → qualify → confined
-``run --confinement strict-local``) are frozen from shapes the existing
+The qualified-host journeys (real build → install → qualify → public
+``host_confinement session`` with the explicit v1 profile) are frozen from
+shapes the existing
 suites already prove on qualified hosts: the real-session signing and
 refusal propagation of tests/security/test_slice046_cmd_run_confinement.py,
 the E-C18-LIMIT kill-and-refuse lifecycle of
@@ -57,9 +58,9 @@ the final gate and rescoped to what the arm proves):
   descendants under the current policy, and their containment is the
   recorded inheritance residual (the slice file's seccomp entry);
 * a worker that exceeds its wall-time bound is killed and refused
-  (``E-C18-LIMIT``, exit 2, no evidence) — distinct reporting — while a
-  worker that exits 3 propagates exactly (``RECORDED exit=3``, run
-  exits 3): no swallowed exit code, no hang dressed as a verdict; this
+  (``E-C18-LIMIT``, no result/evidence) — distinct reporting — while a
+  worker that exits 3 publishes that exact result and signed projection
+  (``RECORDED exit=3``): no swallowed exit code, no hang dressed as a verdict; this
   timeout arm is also where the REAL kill/drain-over-drained-teardown
   proof lives (a genuine wall overrun, killed and refused).
 
@@ -78,6 +79,7 @@ import hashlib
 import json
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -95,7 +97,15 @@ if str(E2E_DIR) not in sys.path:
 import _prereqs  # noqa: E402
 import launcher_host  # noqa: E402
 
-from ranex.foundation.signing import signed_payload  # noqa: E402
+from ranex.cli.main import (  # noqa: E402
+    head_commit,
+    record_evidence,
+    resolve_executable,
+    subject_digest_for,
+)
+from ranex.foundation.canonical import canonical_json_bytes, command_digest  # noqa: E402
+from ranex.foundation.confinement_result import validate_confinement_result  # noqa: E402
+from ranex.foundation.signing import sign_evidence, signed_payload  # noqa: E402
 
 REAL_REPO = E2E_DIR.parents[1]
 EXPECTED = E2E_DIR / "expected"
@@ -107,6 +117,7 @@ LAUNCHER_SOURCE = "native/ranex-worker-launcher/launcher.c"
 BUILD_OUTPUT = ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
 INSTALLED_LAUNCHER = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
 QUALIFICATION_REPORT = ".local/ranex/qualification/strict-local-v1.json"
+RUNTIME_PROFILE = "governance/confinement/strict-local-v1.json"
 HOST_PROFILE = "governance/confinement/strict-local-host-v1.json"
 CONTROLLER = (sys.executable, "-m", "ranex.cli.host_confinement")
 BUILD_INPUT_DRIFT = "E-C17-BUILD-INPUT-DRIFT"
@@ -242,6 +253,153 @@ class ConfinementJourney:
     report_text: str
 
 
+@dataclass(frozen=True)
+class V1SessionObservation:
+    """One public v1 session plus the existing signed evidence projection."""
+
+    controller: subprocess.CompletedProcess[str]
+    result: dict[str, object] | None
+    record: dict[str, object] | None
+    recorded_transcript: str
+    result_path: Path
+    evidence_path: Path
+
+
+def _controller_environment(subject: Path) -> dict[str, str]:
+    return {
+        "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+        "PYTHONPATH": str(subject / "src"),
+        "LC_ALL": "C",
+        "TZ": "UTC",
+    }
+
+
+def _prepare_v1_session(
+    subject: Path,
+    evidence: str,
+    command: tuple[str, ...],
+) -> tuple[list[str], Path, Path]:
+    """Freeze the canonical public v1 descriptor and exact session argv."""
+
+    token = Path(evidence).stem
+    assert re.fullmatch(r"[a-z0-9-]+", token), token
+    session_root = subject / ".local" / "ranex-e2e" / "strict-local-v1" / token
+    assert not session_root.exists(), f"duplicate v1 session identity: {session_root}"
+    authorities = {
+        name: session_root / name
+        for name in ("subject", "toolchain", "output", "scratch")
+    }
+    for authority in authorities.values():
+        authority.mkdir(parents=True)
+    descriptor_path = session_root / "descriptor.json"
+    result_path = session_root / "result.json"
+    descriptor_path.write_bytes(
+        canonical_json_bytes(
+            {
+                "argv": list(command),
+                "environment": {"LC_ALL": "C", "TZ": "UTC"},
+                "limits": {
+                    "cpu_usage_usec": 1_000_000,
+                    "memory_bytes": 134_217_728,
+                    "output_bytes": 65_536,
+                    "output_depth": 8,
+                    "output_inodes": 32,
+                    "pids": 16,
+                    "wall_time_ms": 5_000,
+                },
+                "output": str(authorities["output"].relative_to(subject)),
+                "schema": "ranex-confinement-command-v1",
+                "scratch": str(authorities["scratch"].relative_to(subject)),
+                "subject": str(authorities["subject"].relative_to(subject)),
+                "toolchain": str(authorities["toolchain"].relative_to(subject)),
+            }
+        )
+    )
+    arguments = [
+        "session",
+        "--profile",
+        RUNTIME_PROFILE,
+        "--host-profile",
+        HOST_PROFILE,
+        "--artifact",
+        INSTALLED_LAUNCHER,
+        "--manifest",
+        LAUNCHER_MANIFEST,
+        "--qualification",
+        QUALIFICATION_REPORT,
+        "--descriptor",
+        str(descriptor_path.relative_to(subject)),
+        "--result",
+        str(result_path.relative_to(subject)),
+    ]
+    return arguments, descriptor_path, result_path
+
+
+def _finish_v1_session(
+    subject: Path,
+    key: Path,
+    evidence: str,
+    command: tuple[str, ...],
+    completed: subprocess.CompletedProcess[str],
+    result_path: Path,
+) -> V1SessionObservation:
+    evidence_path = subject / evidence
+    if completed.returncode != 0:
+        return V1SessionObservation(
+            completed, None, None, "", result_path, evidence_path
+        )
+
+    raw_result = result_path.read_bytes()
+    result, runtime_digest = validate_confinement_result(raw_result)
+    result_command = result["command"]
+    assert isinstance(result_command, dict)
+    assert result_command["argv_digest"] == command_digest(command).removeprefix(
+        "sha256:"
+    )
+    commit = head_commit(subject)
+    subject_digest = subject_digest_for(subject, commit)
+    executable = resolve_executable(command[0], subject).executable
+    content = {
+        "claim_id": CONFINED_CLAIM,
+        "subject_digest": subject_digest,
+        "producer_id": FAMILY_PRODUCER,
+        "command": shlex.join(command),
+        "command_digest": command_digest(command),
+        "executable_path": str(executable),
+        "exit_code": int(result_command["exit_code"]),
+        "suite_results": None,
+        "confinement_result_digest": hashlib.sha256(raw_result).hexdigest(),
+        "confinement_profile_digest": runtime_digest,
+    }
+    private_key = key.read_text(encoding="utf-8").strip()
+    record = {**content, "signature": sign_evidence(content, private_key)}
+    record_evidence(evidence_path, record)
+    transcript = (
+        f"RECORDED  claim={CONFINED_CLAIM}  producer={FAMILY_PRODUCER}  "
+        f"exit={result_command['exit_code']}\n"
+        f"          subject={subject_digest}\n"
+    )
+    return V1SessionObservation(
+        completed, result, record, transcript, result_path, evidence_path
+    )
+
+
+def _run_v1_session(
+    subject: Path,
+    key: Path,
+    evidence: str,
+    *command: str,
+) -> V1SessionObservation:
+    exact_command = tuple(command)
+    arguments, _descriptor_path, result_path = _prepare_v1_session(
+        subject, evidence, exact_command
+    )
+    completed = controller(subject, arguments)
+    return _finish_v1_session(
+        subject, key, evidence, exact_command, completed, result_path
+    )
+
+
 @pytest.fixture(scope="module")
 def journey(
     tmp_path_factory: pytest.TempPathFactory, prereq_qualified_host: None
@@ -308,20 +466,22 @@ def journey(
     # --- the real confined run: spawn, kill/drain, signed evidence -------
     (subject / ".local" / "ranex-e2e").mkdir(parents=True, exist_ok=True)
     evidence = ".local/ranex-e2e/confined-evidence.json"
-    confined = ranex(
+    confined = _run_v1_session(
         subject,
-        [
-            "run", "--claim", CONFINED_CLAIM, "--producer", FAMILY_PRODUCER,
-            "--repository", ".", "--evidence", evidence,
-            "--confinement", "strict-local", "--", "/bin/sleep", "2",
-        ],
-        key=key,
+        key,
+        evidence,
+        "/bin/sleep",
+        "2",
     )
-    assert confined.returncode == 0, (
-        f"the confined run must complete (exit 0): {confined.stdout}{confined.stderr}"
+    assert confined.controller.returncode == 0, (
+        "the public v1 session must publish its result: "
+        f"{confined.controller.stdout}{confined.controller.stderr}"
     )
-    assert confined.stdout.startswith("RECORDED"), confined.stdout
-    record = json.loads((subject / evidence).read_text(encoding="utf-8"))[0]
+    assert confined.recorded_transcript.startswith("RECORDED"), (
+        confined.recorded_transcript
+    )
+    assert confined.record is not None
+    record = confined.record
     assert record["exit_code"] == 0
     for field in ("confinement_result_digest", "confinement_profile_digest"):
         value = record[field]
@@ -330,7 +490,7 @@ def journey(
         ), f"the confined record must bind {field}: {value!r}"
 
     report_text = (
-        confined.stdout
+        confined.recorded_transcript
         + f"confinement_result_digest=sha256:{record['confinement_result_digest']}\n"
         + f"confinement_profile_digest=sha256:{record['confinement_profile_digest']}\n"
         + "launcher_builds_reproducible=true\n"
@@ -343,21 +503,18 @@ def journey(
         key=key,
         public=public,
         record=record,
-        recorded_transcript=confined.stdout,
+        recorded_transcript=confined.recorded_transcript,
         qualification=qualification,
         report_text=report_text,
     )
 
 
 def _confined_run(journey: ConfinementJourney, evidence: str, *command: str):
-    return ranex(
+    return _run_v1_session(
         journey.subject,
-        [
-            "run", "--claim", CONFINED_CLAIM, "--producer", FAMILY_PRODUCER,
-            "--repository", ".", "--evidence", evidence,
-            "--confinement", "strict-local", "--", *command,
-        ],
-        key=journey.key,
+        journey.key,
+        evidence,
+        *command,
     )
 
 
@@ -933,35 +1090,42 @@ class _WorkerLeafPoller(threading.Thread):
 
 def _confined_run_observed(
     journey: ConfinementJourney, evidence: str, *command: str
-) -> tuple[int, str, str, list[tuple[float, int, int]]]:
+) -> tuple[V1SessionObservation, list[tuple[float, int, int]]]:
     """One confined run whose worker cgroup leaf is sampled from outside
-    the whole time — the ``ranex`` helper's exact environment, but a
-    Popen so the poller can watch concurrently."""
+    the whole time — the public v1 session's exact environment, but a Popen
+    so the poller can watch concurrently."""
 
-    env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
-    env["PYTHONPATH"] = str(journey.subject / "src")
-    env["RANEX_SIGNING_KEY"] = str(journey.key)
+    exact_command = tuple(command)
+    arguments, _descriptor_path, result_path = _prepare_v1_session(
+        journey.subject, evidence, exact_command
+    )
     poller = _WorkerLeafPoller()
     poller.start()
     process = subprocess.Popen(
-        [
-            sys.executable, "-m", "ranex.cli.main",
-            "run", "--claim", CONFINED_CLAIM, "--producer", FAMILY_PRODUCER,
-            "--repository", ".", "--evidence", evidence,
-            "--confinement", "strict-local", "--", *command,
-        ],
+        [*CONTROLLER, *arguments],
         cwd=journey.subject,
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
         text=True,
-        env=env,
+        env=_controller_environment(journey.subject),
     )
     try:
         stdout, stderr = process.communicate(timeout=240)
     except subprocess.TimeoutExpired:
         process.kill()
         stdout, stderr = process.communicate()
-    return process.returncode, stdout, stderr, poller.finish()
+    completed = subprocess.CompletedProcess(
+        process.args, process.returncode, stdout, stderr
+    )
+    observation = _finish_v1_session(
+        journey.subject,
+        journey.key,
+        evidence,
+        exact_command,
+        completed,
+        result_path,
+    )
+    return observation, poller.finish()
 
 
 def test_shell_constructed_descendants_die_and_the_layers_are_pinned(
@@ -1045,7 +1209,7 @@ def test_shell_constructed_descendants_die_and_the_layers_are_pinned(
 
     # --- (a) the runtime observation: the worker leaf, watched from outside
     evidence = ".local/ranex-e2e/confined-evidence-descendant-probe.json"
-    code, stdout, stderr, samples = _confined_run_observed(
+    observation, samples = _confined_run_observed(
         journey, evidence, "/bin/sh", "-c", "/bin/sleep 30 & wait $!"
     )
     window_ms = samples[-1][0] - samples[0][0] if samples else 0.0
@@ -1083,23 +1247,29 @@ def test_shell_constructed_descendants_die_and_the_layers_are_pinned(
     )
 
     # The run's own outcome — the secondary signal; both shapes honest.
-    if code == 0:
-        assert stdout.startswith("RECORDED"), stdout + stderr
-        assert (journey.subject / evidence).is_file(), (
+    if observation.controller.returncode == 0:
+        assert observation.recorded_transcript.startswith("RECORDED"), (
+            observation.recorded_transcript
+        )
+        assert observation.evidence_path.is_file(), (
             "a recorded descendant-probe run must leave its evidence"
         )
-    elif code == 2:
-        assert "E-C18-LIMIT" in stderr, (
-            f"the refused shape must be the limit refusal: {stderr}"
-        )
-        assert not (journey.subject / evidence).exists(), (
+    elif observation.controller.returncode == 1:
+        refusal = _refusal_of(observation.controller)
+        assert refusal["refusal"] == "E-C18-LIMIT", refusal
+        assert not observation.evidence_path.exists(), (
             "a refused (killed) descendant-probe run must leave no evidence"
+        )
+        assert not observation.result_path.exists(), (
+            "a refused public v1 session must leave no result"
         )
     else:
         raise AssertionError(
             "the descendant-probe run's outcome is outside its two honest "
-            f"shapes (completion or limit refusal): rc={code} "
-            f"stdout={stdout!r} stderr={stderr!r}"
+            "shapes (completion or limit refusal): "
+            f"rc={observation.controller.returncode} "
+            f"stdout={observation.controller.stdout!r} "
+            f"stderr={observation.controller.stderr!r}"
         )
 
     # --- (b) the three layers, pinned to their call sites ------------------
@@ -1115,33 +1285,38 @@ def test_timeout_refusal_is_distinct_from_the_exit_code(
     name and writes nothing; an observed exit code propagates exactly.
 
     The hang arm (``/bin/sleep 30`` against a 5000 ms wall bound) must
-    be reported distinctly — the E-C18-LIMIT kill-and-refuse lifecycle,
-    exit 2, no evidence — while the exit arm (``exit 3``) must come
-    through the run verbatim: RECORDED exit=3, run exits 3. Neither
-    code is swallowed into the other's shape.
+    be reported distinctly — the public session emits E-C18-LIMIT and no
+    result or evidence — while the exit arm (``exit 3``) must publish a
+    validated result and signed projection carrying exact exit 3. Neither
+    outcome is swallowed into the other's shape.
     """
 
     hang_evidence = ".local/ranex-e2e/confined-evidence-hang.json"
     hang = _confined_run(journey, hang_evidence, "/bin/sleep", "30")
-    assert hang.returncode == 2, (
-        "a wall-time-exceeding worker must be refused (exit 2), not "
-        f"recorded: {hang.stdout}{hang.stderr}"
+    assert hang.controller.returncode == 1, (
+        "a wall-time-exceeding worker must be refused by the public v1 "
+        f"session: {hang.controller.stdout}{hang.controller.stderr}"
     )
-    assert "E-C18-LIMIT" in hang.stderr, (
-        f"the timeout refusal must be distinctly named: {hang.stderr}"
-    )
-    assert not (journey.subject / hang_evidence).exists(), (
+    refusal = _refusal_of(hang.controller)
+    assert refusal["refusal"] == "E-C18-LIMIT", refusal
+    assert not hang.evidence_path.exists(), (
         "a refused (killed) worker must leave no evidence"
     )
+    assert not hang.result_path.exists(), "a refused session must leave no result"
 
     exit_evidence = ".local/ranex-e2e/confined-evidence-exit3.json"
     exited = _confined_run(journey, exit_evidence, "/bin/sh", "-c", "exit 3")
-    assert exited.returncode == 3, (
-        f"the observed command's exit code must propagate exactly: {exited.stdout}"
+    assert exited.controller.returncode == 0, (
+        "a completed public v1 session must publish the observed result: "
+        f"{exited.controller.stdout}{exited.controller.stderr}"
     )
-    assert exited.stdout.startswith("RECORDED"), exited.stdout
-    assert "exit=3" in exited.stdout, exited.stdout
-    assert (journey.subject / exit_evidence).is_file()
+    assert exited.result is not None
+    result_command = exited.result["command"]
+    assert isinstance(result_command, dict)
+    assert result_command["exit_code"] == 3
+    assert exited.recorded_transcript.startswith("RECORDED")
+    assert "exit=3" in exited.recorded_transcript
+    assert exited.evidence_path.is_file()
 
 
 def test_goldens_carry_real_volatile_material(journey: ConfinementJourney) -> None:
