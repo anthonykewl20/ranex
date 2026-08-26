@@ -54,9 +54,9 @@ DESCRIPTOR = json.loads(
 EXPECTED_VALUES = json.loads(
     (FIXTURES / "approved-batch-expected-values-v1.json").read_text(encoding="utf-8")
 )
-FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
-BASE_COMMIT = "f1eeddc9c7509a3fea9c78783772fbfc3f08d450"
-SUBJECT_DIGEST = "sha256:4f1ad8498ae13f8e702748fcdf28ab8a6f13d0f4dacb033071f45fe9e124fa55"
+FIXTURE_PARENT_COMMIT = "6d8e690f959305922c3a65d93216c46143a3232d"
+BASE_COMMIT = "faed9b4c04d3c71e17342380e650fb4725d2a8d8"
+SUBJECT_DIGEST = "sha256:81d874f118d23480e34787f1edf506b5603c0908e8528d9c1c1a8d2af9d457a3"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 FIXTURE_AUTHOR_NAME = "Ranex Fixture"
 FIXTURE_AUTHOR_EMAIL = "fixture@ranex.invalid"
@@ -579,6 +579,22 @@ def materialize_governed_checkout(path: Path) -> Path:
         "governance/qualification/worker/slice036-worker-build-v1.json",
         "governance/qualification/worker/slice036-worker.c",
     }
+    published_authority = EXPECTED_VALUES["published_v2_authority"]
+    assert published_authority["commit"] == FIXTURE_PARENT_COMMIT
+    authority_paths = {
+        "launcher_manifest": LAUNCHER_MANIFEST,
+        "launcher_source": LAUNCHER_SOURCE,
+        "profile": HOST_PROFILE,
+    }
+    for name, relative in authority_paths.items():
+        expected = published_authority[name]
+        assert expected["path"] == relative
+        parent_bytes = git_blob(path, FIXTURE_PARENT_COMMIT, relative)
+        assert git_blob(path, BASE_COMMIT, relative) == parent_bytes
+        assert (path / relative).read_bytes() == parent_bytes
+        assert "sha256:" + hashlib.sha256(parent_bytes).hexdigest() == expected[
+            "digest"
+        ]
     committed_keyring = git_blob(path, BASE_COMMIT, "governance/producers.yaml")
     keyring = load_keyring_text(committed_keyring.decode("utf-8"), BASE_COMMIT)
     assert keyring["owner"] == OWNER_PUBLIC_KEY

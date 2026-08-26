@@ -59,9 +59,9 @@ BASELINE = json.loads((FIXTURES / "approved-batch-baseline-v1.json").read_text()
 NEGATIVE_CONTROLS = json.loads(
     (FIXTURES / "approved-batch-negative-controls-v1.json").read_text()
 )
-FIXTURE_PARENT_COMMIT = "5ded60d9a9c8213828dce7acc0e77acad0c25731"
-BASE_COMMIT = "f1eeddc9c7509a3fea9c78783772fbfc3f08d450"
-SUBJECT_DIGEST = "sha256:4f1ad8498ae13f8e702748fcdf28ab8a6f13d0f4dacb033071f45fe9e124fa55"
+FIXTURE_PARENT_COMMIT = "6d8e690f959305922c3a65d93216c46143a3232d"
+BASE_COMMIT = "faed9b4c04d3c71e17342380e650fb4725d2a8d8"
+SUBJECT_DIGEST = "sha256:81d874f118d23480e34787f1edf506b5603c0908e8528d9c1c1a8d2af9d457a3"
 OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
 
 
@@ -96,9 +96,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-15"
-    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 13
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v15"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-16"
+    assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 14
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v16"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -217,6 +217,33 @@ def test_fixture_uses_exact_base_subject_and_provenanced_runtime_evidence_contra
     }
     assert len(successor["committed_paths"]) == 29
     assert "governance/qualification/worker/slice036-worker" in successor["committed_paths"]
+    published_authority = EXPECTED_VALUES["published_v2_authority"]
+    assert published_authority == {
+        "commit": FIXTURE_PARENT_COMMIT,
+        "launcher_manifest": {
+            "digest": "sha256:58371a372609d9a33d6de450cf5e0e094cefd4fa98a2d5fc393f372be828ac14",
+            "path": "governance/confinement/native-launcher-build-v1.json",
+        },
+        "launcher_source": {
+            "digest": "sha256:ea6143f3b468546e8e6119c58909572247a0c1077660a911f18a1404b3dc141a",
+            "path": "native/ranex-worker-launcher/launcher.c",
+        },
+        "profile": {
+            "digest": "sha256:cf1610a7de909503a508f33ac328ced303c304478166636c59e0da2b8e01b1da",
+            "path": "governance/confinement/strict-local-host-v1.json",
+        },
+    }
+    for identity in ("launcher_manifest", "launcher_source", "profile"):
+        record = published_authority[identity]
+        observed = subprocess.run(
+            ["git", "show", f"{FIXTURE_PARENT_COMMIT}:{record['path']}"],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+        ).stdout
+        assert "sha256:" + hashlib.sha256(observed).hexdigest() == record[
+            "digest"
+        ]
     assert EXPECTED_VALUES["committed_keyring_observers"] == {
         "admission": "existing load_keyring_text plus admit",
         "descriptor_role": "cross-check-only-never-trust-root",

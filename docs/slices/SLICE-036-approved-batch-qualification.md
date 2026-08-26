@@ -20,10 +20,10 @@ descriptor carries a separate path/digest reference to each populated oracle;
 it is not reused as a placeholder for any class. C therefore binds those
 bytes, maximum pool two, exact base/subject identity, policy, and roles.
 
-The frozen `f1eeddc9c7509a3fea9c78783772fbfc3f08d450` commit and
-`sha256:4f1ad8498ae13f8e702748fcdf28ab8a6f13d0f4dacb033071f45fe9e124fa55`
+The frozen `faed9b4c04d3c71e17342380e650fb4725d2a8d8` commit and
+`sha256:81d874f118d23480e34787f1edf506b5603c0908e8528d9c1c1a8d2af9d457a3`
 subject are the deterministic E2E fixture only. The E2E reconstructs that
-successor from public parent `5ded60d9a9c8213828dce7acc0e77acad0c25731`
+successor from public parent `6d8e690f959305922c3a65d93216c46143a3232d`
 using fixed author/committer identity, time, and message. The successor adds
 the fixture owner's real public key to the existing producer keyring and
 canonical tracked inputs for every B-bound A/B/C/D row; it changes no
@@ -31,6 +31,12 @@ production source. Production qualification must accept any separately
 approved exact 40-hex base and its existing ADR-012
 `sha256(canonical_json({"tree": git rev-parse <base>^{tree}}))` identity; it
 must never replace either with a mutable ref or caller assertion.
+
+That public parent is the exact published SLICE-070 production authority. The
+fixture and every disposable child independently require its inherited
+launcher source, launcher build manifest, and strict-local host profile bytes
+to equal the B-protected published digests; the deterministic successor cannot
+replace or shadow any of them.
 
 Children execute only through the existing `ranex run --confinement
 strict-local` boundary in disposable worktrees. Before every such run, the
