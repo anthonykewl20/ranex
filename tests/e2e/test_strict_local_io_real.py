@@ -135,6 +135,9 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
         name: case / name
         for name in ("toolchain", "output", "scratch")
     }
+    ordinary_output = case / "ordinary-output"
+    for directory in (*paths.values(), ordinary_output):
+        directory.mkdir(parents=True)
     authority_paths = {"input": input_checkout, "subject": subject_authority, **paths}
     resolved_authorities = {
         name: path.resolve(strict=True) for name, path in authority_paths.items()
@@ -144,9 +147,6 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
         for right in authorities[index + 1 :]:
             assert not left.is_relative_to(right)
             assert not right.is_relative_to(left)
-    ordinary_output = case / "ordinary-output"
-    for directory in (*paths.values(), ordinary_output):
-        directory.mkdir(parents=True)
     confined_worker = paths["toolchain"] / "bin" / "slice070-worker"
     confined_worker.parent.mkdir()
     confined_worker.write_bytes(worker.read_bytes())
