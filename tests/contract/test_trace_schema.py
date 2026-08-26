@@ -131,7 +131,7 @@ def test_version_only_fields_are_frozen() -> None:
 
 
 def test_schema_constants_are_frozen() -> None:
-    assert trace_schema.SCHEMA_NUMBER == 1
+    assert trace_schema.SCHEMA_NUMBER == 2
     assert trace_schema.MAX_LINE_LENGTH == 16384
     assert trace_schema.TRACE_BYTE_CAP == 1_048_576
     assert trace_schema.IDENTIFIER_NAME_CAP == 256
@@ -440,4 +440,41 @@ def test_cli_dispatch_groups_derived_from_the_parser_stay_inside_the_registry() 
     assert derived <= registered, (
         f"CLI dispatch groups missing from the frozen STAGES registry: "
         f"{sorted(derived - registered)}"
+    )
+
+
+def test_nested_batch_qualify_parser_resolves_its_registered_dispatch_stages() -> None:
+    """The nested parser emits the schema-v2 stage pair registered by this CCR."""
+
+    from ranex.cli.main import _dispatch_stage, build_parser
+
+    args = build_parser().parse_args(
+        [
+            "task",
+            "batch",
+            "qualify",
+            "--spec-packet",
+            "packet.json",
+            "--artifact-manifest",
+            "manifest.json",
+            "--approval-envelope",
+            "approval.json",
+            "--descriptor",
+            "descriptor.json",
+            "--tasks",
+            "tasks.jsonl",
+            "--target",
+            ".",
+            "--journal",
+            "journal.sqlite3",
+            "--outcome-dir",
+            "outcomes",
+            "--pool",
+            "2",
+        ]
+    )
+
+    assert _dispatch_stage(args) == (
+        "cli.task.batch.qualify.start",
+        "cli.task.batch.qualify.end",
     )

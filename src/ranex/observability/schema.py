@@ -13,8 +13,9 @@ import hashlib
 import re
 from pathlib import Path
 
-# The schema number carried by every ``version`` event as ``evt``.
-SCHEMA_NUMBER = 1
+# The schema number carried by every ``version`` event as ``evt``. Version 2
+# adds the ``task.batch.qualify`` CLI dispatch stage pair.
+SCHEMA_NUMBER = 2
 
 # The frozen eleven-field set, in canonical serialization order. Every event
 # carries all eleven; inapplicable members are null, never absent, because

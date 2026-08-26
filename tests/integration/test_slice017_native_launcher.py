@@ -86,7 +86,9 @@ RESPONSE_LIMIT = 65_536
 # selector from v1 to v2; the whole-file pin remains the Gate 10 authority.
 # SLICE-071 refreshes it for the approved-batch CLI and source-selector
 # admission path while preserving the launcher boundary.
-MAIN_PY_SHA256 = "d050878679ecd5a23dd666fa6ba7e3c7c89c19ece56bed3be4088a509f8f291c"
+# Issue #50 refreshes it for the nested batch-qualification trace dispatch
+# binding while preserving the launcher boundary.
+MAIN_PY_SHA256 = "e286be9652762db2f5922b5415ee22e93474871c9fd8fa5c7507bf156ba5e30b"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

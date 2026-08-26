@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-26 (SLICE-071 implementation complete)
+**Updated:** 2026-08-26 (trace-schema CCR #50 complete)
 **Active slice:** none
 
 ## Where we stopped
@@ -12,6 +12,8 @@ surface, protected A/B/C admission, sequential joined execution, atomic
 qualification journal append, signed non-publishable outcome, and batch-aware
 judge/merge refusal are implemented. Host-probe mutations serialize across
 processes without weakening the existing strict-local v1/v2 boundaries.
+Follow-up #50 advances the trace schema to v2 and registers and emits the
+`cli.task.batch.qualify.start/end` boundary for that nested command.
 
 ## Next
 Framework closed: SLICE-055 closed 2026-08-19

@@ -3458,7 +3458,10 @@ def build_parser() -> argparse.ArgumentParser:
     qualify.add_argument("--journal", required=True)
     qualify.add_argument("--outcome-dir", required=True)
     qualify.add_argument("--pool", required=True, type=int)
-    qualify.set_defaults(func=cmd_task_batch_qualify)
+    qualify.set_defaults(
+        func=cmd_task_batch_qualify,
+        trace_dispatch_group="task.batch.qualify",
+    )
     return parser
 
 
@@ -3466,17 +3469,24 @@ def _dispatch_stage(args: argparse.Namespace) -> tuple[str, str] | None:
     """The registry stage pair for the subcommand being dispatched, or None.
 
     ADR-031's one CLI stage boundary: `cli.<group>.start` / `cli.<group>.end`
-    around subcommand dispatch, where `<group>` is the argparse dispatch group
-    (`run`, `gate.evaluate`, …). A group outside the frozen registry emits
-    nothing — adding a CLI group is a deliberate schema-contract edit, not a
-    silent extra stage.
+    around subcommand dispatch. Ordinary commands derive ``<group>`` from the
+    argparse ``group``/``action`` pair (``run``, ``gate.evaluate``, …); deeper
+    parser trees set ``trace_dispatch_group`` to their exact dotted path. A
+    group outside the frozen registry emits nothing — adding a CLI group is a
+    deliberate schema-contract edit, not a silent extra stage.
     """
 
-    group = getattr(args, "group", None)
-    if not isinstance(group, str) or not group:
-        return None
-    action = getattr(args, "action", None)
-    name = f"{group}.{action}" if isinstance(action, str) and action else group
+    explicit_name = getattr(args, "trace_dispatch_group", None)
+    if explicit_name is not None:
+        if not isinstance(explicit_name, str) or not explicit_name:
+            return None
+        name = explicit_name
+    else:
+        group = getattr(args, "group", None)
+        if not isinstance(group, str) or not group:
+            return None
+        action = getattr(args, "action", None)
+        name = f"{group}.{action}" if isinstance(action, str) and action else group
     begin, end = f"cli.{name}.start", f"cli.{name}.end"
     if begin not in trace_schema.STAGES or end not in trace_schema.STAGES:
         return None
