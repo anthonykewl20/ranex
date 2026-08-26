@@ -53,6 +53,7 @@ the existing qualification/host-drift checks remain authoritative.
 - `tests/integration/test_slice070_strict_local_io_contract.py`
 - `tests/security/test_slice070_strict_local_io_security.py`
 - `tests/e2e/fixtures/slice070-input.txt`
+- `tests/e2e/fixtures/slice070-subject/anchor.txt`
 - `tests/e2e/fixtures/slice070-worker.c`
 - `tests/e2e/fixtures/slice036-worker.c`
 - `tests/e2e/fixtures/slice036-worker-build-v1.json`
@@ -77,10 +78,14 @@ the existing qualification/host-drift checks remain authoritative.
 6. A compiled self-contained static fixture reads a committed input through
    `/ranex/input`, observes input write refusal, produces
    `/ranex/output/result.txt`, and matches ordinary execution's result bytes.
-7. The real journey independently verifies the tracked input, child exit,
+7. The real journey mounts subject authority from a distinct tracked sibling
+   worktree, proves both-direction realpath non-overlap with input/toolchain/
+   output/scratch, and proves its tracked-tree fingerprint stays clean across
+   the ignored subject-exec refusal calibration.
+8. The real journey independently verifies the tracked input, child exit,
    output file bytes, canonical collected path/size/SHA-256 rows, profile
    digests, and drained-teardown result. Undelegated use fails closed.
-8. Existing strict-local v1, ordinary runs, output collection, qualification,
+9. Existing strict-local v1, ordinary runs, output collection, qualification,
    host-drift, Landlock, seccomp, cgroup, and evidence tests remain green.
 
 ## Stable refusal order

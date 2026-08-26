@@ -146,7 +146,10 @@ parser/selector RED seams, descriptor closure, aliases, overlaps, and traversal.
 `tests/security/test_slice070_strict_local_io_security.py` freezes syscall order,
 fixed targets, private-root detach, and post-setup mount denial.
 `tests/e2e/test_strict_local_io_real.py` is ungated RED at launcher v2 and host-gated
-for the public delegated journey. `tests/contract/test_docs_discipline.py`
+for the public delegated journey. Its subject authority is a distinct tracked
+sibling worktree; the journey asserts both-direction realpath non-overlap with
+every I/O authority and an unchanged clean tracked-tree fingerprint across the
+ignored subject-exec refusal calibration. `tests/contract/test_docs_discipline.py`
 freezes the `blocked` status token while preserving at-most-one `open` slice.
 
 ## Code review checklist

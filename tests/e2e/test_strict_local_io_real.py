@@ -51,6 +51,22 @@ def _controller(python: Path, *arguments: str) -> list[str]:
     return [str(python), "-m", "ranex.cli.host_confinement", *arguments]
 
 
+def _git(checkout: Path, *arguments: str) -> str:
+    completed = subprocess.run(
+        ["git", "-C", str(checkout), *arguments],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+    return completed.stdout
+
+
+def _clean_tracked_tree_fingerprint(checkout: Path) -> str:
+    assert _git(checkout, "status", "--porcelain", "--untracked-files=all") == ""
+    return _git(checkout, "write-tree").strip()
+
+
 def test_real_journey_is_wired_to_the_v2_public_surface() -> None:
     """Ungated RED: a profile cannot hide an unimplemented launcher."""
 
@@ -106,10 +122,28 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
         check=False,
     )
     assert worktree.returncode == 0, worktree.stderr
+    subject_authority = case / "subject"
+    _git(
+        subject,
+        "worktree",
+        "add",
+        "--detach",
+        str(subject_authority),
+        "HEAD",
+    )
     paths = {
         name: case / name
         for name in ("toolchain", "output", "scratch")
     }
+    authority_paths = {"input": input_checkout, "subject": subject_authority, **paths}
+    resolved_authorities = {
+        name: path.resolve(strict=True) for name, path in authority_paths.items()
+    }
+    authorities = tuple(resolved_authorities.values())
+    for index, left in enumerate(authorities):
+        for right in authorities[index + 1 :]:
+            assert not left.is_relative_to(right)
+            assert not right.is_relative_to(left)
     ordinary_output = case / "ordinary-output"
     for directory in (*paths.values(), ordinary_output):
         directory.mkdir(parents=True)
@@ -117,9 +151,34 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
     confined_worker.parent.mkdir()
     confined_worker.write_bytes(worker.read_bytes())
     confined_worker.chmod(0o555)
-    observed_worker = case / "subject-worker"
+    subject_anchor = (
+        subject_authority
+        / "tests"
+        / "e2e"
+        / "fixtures"
+        / "slice070-subject"
+        / "anchor.txt"
+    )
+    anchor_relative = str(subject_anchor.relative_to(subject_authority))
+    assert _git(
+        subject_authority,
+        "ls-files",
+        "--error-unmatch",
+        "--",
+        anchor_relative,
+    ).strip() == anchor_relative
+    observed_worker = subject_authority / ".local" / "subject-worker"
+    observed_worker.parent.mkdir()
     observed_worker.write_bytes(worker.read_bytes())
     observed_worker.chmod(0o555)
+    _git(
+        subject_authority,
+        "check-ignore",
+        "--quiet",
+        "--",
+        str(observed_worker.relative_to(subject_authority)),
+    )
+    subject_fingerprint = _clean_tracked_tree_fingerprint(subject_authority)
 
     committed_input = input_checkout / "tests" / "e2e" / "fixtures" / "slice070-input.txt"
     expected = committed_input.read_bytes()
@@ -174,7 +233,7 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
         "output": str(paths["output"].relative_to(subject)),
         "schema": "ranex-confinement-command-v1",
         "scratch": str(paths["scratch"].relative_to(subject)),
-        "subject": ".",
+        "subject": str(subject_authority.relative_to(subject)),
         "toolchain": str(paths["toolchain"].relative_to(subject)),
     }
     descriptor_path = case / "descriptor.json"
@@ -183,7 +242,7 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
     subject_exec_descriptor = {
         **descriptor,
         "argv": [
-            "/ranex/subject/.local/ranex/slice070/subject-worker",
+            "/ranex/subject/.local/subject-worker",
             "--require-input-read-only",
             "/ranex/input/tests/e2e/fixtures/slice070-input.txt",
             "/ranex/output/subject-exec-must-not-exist.txt",
@@ -212,15 +271,15 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
             development_python, "session", "--profile", PROFILE,
             "--host-profile", HOST_PROFILE, "--artifact", INSTALLED_LAUNCHER,
             "--manifest", MANIFEST, "--qualification", QUALIFICATION,
-            "--descriptor", str(subject_exec_descriptor_path.relative_to(subject)),
-            "--result", str(subject_exec_result_path.relative_to(subject)),
+            "--descriptor", str(descriptor_path.relative_to(subject)),
+            "--result", str(result_path.relative_to(subject)),
         ),
         _controller(
             development_python, "session", "--profile", PROFILE,
             "--host-profile", HOST_PROFILE, "--artifact", INSTALLED_LAUNCHER,
             "--manifest", MANIFEST, "--qualification", QUALIFICATION,
-            "--descriptor", str(descriptor_path.relative_to(subject)),
-            "--result", str(result_path.relative_to(subject)),
+            "--descriptor", str(subject_exec_descriptor_path.relative_to(subject)),
+            "--result", str(subject_exec_result_path.relative_to(subject)),
         ),
     ]
     shell_program = "set -eu; " + "; ".join(shlex.join(step) for step in steps)
@@ -246,6 +305,7 @@ def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
         timeout=240,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
+    assert _clean_tracked_tree_fingerprint(subject_authority) == subject_fingerprint
 
     subject_exec_result = json.loads(
         subject_exec_result_path.read_text(encoding="utf-8")
