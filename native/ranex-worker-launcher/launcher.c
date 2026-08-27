@@ -5,6 +5,7 @@
 #include <linux/filter.h>
 #include <linux/keyctl.h>
 #include <linux/landlock.h>
+#include <linux/stat.h>
 #include <linux/seccomp.h>
 #include <limits.h>
 #include <stddef.h>
@@ -28,6 +29,8 @@
 #define STAGE_TWO "--ranex-internal-stage-two"
 #define WORKER_EXEC "--ranex-worker-exec"
 #define WORKER_RUNTIME_V2 "--ranex-runtime-v2"
+#define WORKER_RUNTIME_V3 "--ranex-runtime-v3"
+#define WORKER_RUNTIME_V3_PREFIX "--ranex-runtime-v3="
 #define WORKER_STATUS_FD "--ranex-status-fd="
 #define WORKER_READY_ACK_FD "--ranex-ready-ack-fd="
 #define WORKER_INPUT_FD "--ranex-input-fd="
@@ -43,6 +46,690 @@
 #define ENVIRONMENT_LIMIT 64U
 #define ENVIRONMENT_NAME_LIMIT 128U
 #define INJECTED_SECRET_NAME "RANEX_SLICE017_INJECTED_SECRET"
+#define RANEX_SIGTERM 15
+#define V3_RUNTIME_MAX 511U
+#define V3_MAP_LIMIT (1024U * 1024U)
+#define V3_REPORT_LIMIT 65536U
+
+extern char **environ;
+
+static bool enforce_seccomp
+(bool runtime_v2);
+static bool close_worker_descriptors
+(int status_descriptor,
+                                     int acknowledgement_descriptor,
+                                     int verifier_ack_descriptor,
+                                     int diagnostic_descriptor);
+static int write_all(int descriptor, const char *buffer, size_t length);
+static int write_v3_u32be(int descriptor, uint32_t value);
+static void v3_diagnostic(const char *reason);
+static bool enforce_v3_landlock(bool verifier_only);
+static int compare_names(const void *left, const void *right);
+static int compare_ints(const void *left, const void *right);
+static int compare_name_pointers(const void *left, const void *right) {
+    return strcmp(*(const char *const *)left, *(const char *const *)right);
+}
+
+struct v3_runtime_row {
+    int fd;
+    char path[PATH_MAX];
+    char kind[32];
+    char mode[8];
+    char sha256[80];
+    mode_t observed_mode;
+    int observed_seals;
+    __u64 observed_mount_attributes;
+    bool copy_verified;
+};
+
+struct v3_runtime_map {
+    struct v3_runtime_row rows[V3_RUNTIME_MAX + 1U];
+    size_t count;
+    int map_fd;
+    int report_fd;
+    int ack_fd;
+    int readback_fd;
+    int loader_fd;
+    int input_fd;
+    int subject_fd;
+    int output_fd;
+    int scratch_fd;
+    int verifier_procs_fd;
+    int verifier_events_fd;
+    int verifier_kill_fd;
+    char loader_path[PATH_MAX];
+    char entrypoint_path[PATH_MAX];
+};
+
+static int v3_report_descriptor = -1;
+
+static int reopen_held_directory_in_mount_namespace(int descriptor);
+static bool same_directory_object(int descriptor, const char *path);
+
+static bool v3_decimal(const char **cursor, const char *end, long *value) {
+    char *number_end;
+    if (*cursor == end || **cursor < '0' || **cursor > '9') return false;
+    errno = 0;
+    *value = strtol(*cursor, &number_end, 10);
+    if (errno != 0 || number_end > end || *value < 0 || *value > INT_MAX) return false;
+    *cursor = number_end;
+    return true;
+}
+
+static bool v3_string(const char **cursor, const char *end, char *out, size_t capacity) {
+    size_t used = 0U;
+    if (*cursor == end || *(*cursor)++ != '"') return false;
+    while (*cursor != end && **cursor != '"') {
+        unsigned char value = (unsigned char)**cursor;
+        if (value < 0x20U || value == '\\' || used + 1U >= capacity) return false;
+        out[used++] = (char)value;
+        (*cursor)++;
+    }
+    if (*cursor == end || *(*cursor)++ != '"') return false;
+    out[used] = '\0';
+    return true;
+}
+
+static bool v3_key(const char **cursor, const char *end, const char *key) {
+    size_t length = strlen(key);
+    return (size_t)(end - *cursor) >= length + 3U &&
+           memcmp(*cursor, "\"", 1U) == 0 &&
+           memcmp(*cursor + 1, key, length) == 0 &&
+           (*cursor)[length + 1U] == '"' && (*cursor += length + 2U, true) &&
+           *(*cursor)++ == ':';
+}
+
+/* The map is newline-delimited canonical objects.  Deliberately accepting no
+ * whitespace, escapes, aliases, or extra members makes the bytes handed to
+ * the launcher an ABI rather than a general-purpose JSON input. */
+static bool parse_v3_record(const char *begin, const char *end,
+                            struct v3_runtime_row *row) {
+    const char *cursor = begin;
+    long fd;
+    if (cursor == end || *cursor++ != '{' || !v3_key(&cursor, end, "fd") || !v3_decimal(&cursor, end, &fd) ||
+        cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "kind") ||
+        !v3_string(&cursor, end, row->kind, sizeof(row->kind)) || cursor == end || *cursor++ != ',' ||
+        !v3_key(&cursor, end, "mode") || !v3_string(&cursor, end, row->mode, sizeof(row->mode)) ||
+        cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "path") ||
+        !v3_string(&cursor, end, row->path, sizeof(row->path)) || cursor == end || *cursor++ != ',' ||
+        !v3_key(&cursor, end, "sha256") || !v3_string(&cursor, end, row->sha256, sizeof(row->sha256)) ||
+        cursor == end || *cursor++ != '}' || cursor != end) return false;
+    row->fd = (int)fd;
+    if (row->path[0] == '/' || row->path[0] == '\0' || strstr(row->path, "../") != NULL ||
+        strstr(row->path, "/./") != NULL || strstr(row->path, "//") != NULL ||
+        strcmp(row->path, ".") == 0 || strcmp(row->path, "..") == 0 ||
+        (strcmp(row->kind, "loader") != 0 && strcmp(row->kind, "entrypoint") != 0 &&
+         strcmp(row->kind, "shared-library") != 0 && strcmp(row->kind, "native-extension") != 0 &&
+         strcmp(row->kind, "runtime-data") != 0 && strcmp(row->kind, "manifest") != 0) ||
+        row->mode[0] != '0' || strspn(row->mode, "01234567") != strlen(row->mode) ||
+        (strlen(row->mode) != 4U && strlen(row->mode) != 5U) ||
+        strncmp(row->sha256, "sha256:", 7U) != 0 || strlen(row->sha256) != 71U) return false;
+    return true;
+}
+
+static bool read_v3_map(struct v3_runtime_map *map) {
+    char *buffer = NULL;
+    size_t used = 0U;
+    bool ok = false;
+    size_t held_count = map->count;
+    int held_fds[V3_RUNTIME_MAX + 1U];
+    if (held_count > V3_RUNTIME_MAX + 1U) return false;
+    for (size_t index = 0U; index < held_count; index++)
+        held_fds[index] = map->rows[index].fd;
+    map->count = 0U;
+    map->loader_fd = -1;
+    memset(map->loader_path, 0, sizeof(map->loader_path));
+    memset(map->entrypoint_path, 0, sizeof(map->entrypoint_path));
+    buffer = calloc(1U, V3_MAP_LIMIT + 1U);
+    if (buffer == NULL) return false;
+    for (;;) {
+        ssize_t received = read(map->map_fd, buffer + used, V3_MAP_LIMIT - used + 1U);
+        if (received < 0 && errno == EINTR) continue;
+        if (received < 0 || received == 0) break;
+        used += (size_t)received;
+        if (used > V3_MAP_LIMIT) goto done;
+    }
+    if (used == 0U || buffer[used - 1U] != '\n') goto done;
+    const char *cursor = buffer;
+    const char *end = buffer + used - 1U;
+    char ignored_digest[80];
+    if (*cursor++ != '{' || !v3_key(&cursor, end, "entrypoint") || cursor == end || *cursor++ != '{' ||
+        !v3_key(&cursor, end, "path") || !v3_string(&cursor, end, map->entrypoint_path, sizeof(map->entrypoint_path)) ||
+        cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "sha256") ||
+        !v3_string(&cursor, end, ignored_digest, sizeof(ignored_digest)) || cursor == end || *cursor++ != '}' ||
+        cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "files") || cursor == end || *cursor++ != '[') goto done;
+    while (cursor != end && *cursor != ']') {
+        struct v3_runtime_row row;
+        const char *record_end = cursor;
+        int depth = 0;
+        do { if (record_end == end) goto done; if (*record_end == '{') depth++; if (*record_end == '}') depth--; record_end++; } while (depth != 0);
+        if (map->count >= V3_RUNTIME_MAX + 1U || map->count >= held_count ||
+            !parse_v3_record(cursor, record_end, &row) || row.fd < 3) goto done;
+        for (size_t index = 0U; index < map->count; index++)
+            if (map->rows[index].fd == row.fd || strcmp(map->rows[index].path, row.path) == 0) goto done;
+        row.fd = held_fds[map->count];
+        map->rows[map->count++] = row;
+        cursor = record_end;
+        if (cursor != end && *cursor == ',') cursor++;
+    }
+    if (cursor == end || *cursor++ != ']' || cursor == end || *cursor++ != ',' ||
+        !v3_key(&cursor, end, "loader") || cursor == end || *cursor++ != '{' ||
+        !v3_key(&cursor, end, "path") || !v3_string(&cursor, end, map->loader_path, sizeof(map->loader_path)) ||
+        cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "sha256") ||
+        !v3_string(&cursor, end, ignored_digest, sizeof(ignored_digest)) || cursor == end || *cursor++ != '}' ||
+        cursor == end || *cursor++ != ',' || !v3_key(&cursor, end, "source") ||
+        !v3_string(&cursor, end, ignored_digest, sizeof(ignored_digest)) || strcmp(ignored_digest, "sealed-memfd-map") != 0 ||
+        cursor == end || *cursor++ != '}' || cursor != end) goto done;
+    for (size_t index = 0U; index < map->count; index++)
+        if (strcmp(map->rows[index].path, map->loader_path) == 0) map->loader_fd = map->rows[index].fd;
+    ok = map->count > 0U && map->count == held_count && map->loader_fd >= 0 &&
+         map->entrypoint_path[0] != '\0';
+done:
+    free(buffer);
+    return ok;
+}
+
+static bool v3_read_exact_go(int descriptor) {
+    char value[2];
+    ssize_t received = read(descriptor, value, sizeof(value));
+    if (received != (ssize_t)sizeof(value) || value[0] != 'G' || value[1] != 'O') {
+        errno = EPROTO;
+        return false;
+    }
+    return true;
+}
+
+static bool parse_v3_bundle(const char *argument, struct v3_runtime_map *map) {
+    const char *cursor = argument;
+    for (size_t index = 0U; index < 11U; index++) {
+        char *end = NULL;
+        long value;
+        errno = 0;
+        if (*cursor == '\0') return false;
+        value = strtol(cursor, &end, 10);
+        if (errno != 0 || end == cursor || value < 3 || value > INT_MAX ||
+            (*end != ',' && *end != '\0')) return false;
+        int held = fcntl((int)value, F_DUPFD_CLOEXEC, WORKER_STATUS_DESCRIPTOR);
+        if (held < 0) return false;
+        if (close((int)value) != 0) { (void)close(held); return false; }
+        if (index == 0U) map->map_fd = held;
+        else if (index == 1U) {
+            map->report_fd = held;
+            v3_report_descriptor = held;
+        } else if (index == 2U) map->ack_fd = held;
+        else if (index == 3U) map->readback_fd = held;
+        else if (index == 4U) map->input_fd = held;
+        else if (index == 5U) map->subject_fd = held;
+        else if (index == 6U) map->output_fd = held;
+        else if (index == 7U) map->scratch_fd = held;
+        else if (index == 8U) map->verifier_procs_fd = held;
+        else if (index == 9U) map->verifier_events_fd = held;
+        else map->verifier_kill_fd = held;
+        cursor = *end == ',' ? end + 1 : end;
+    }
+    if (*cursor == '\0') return false;
+    while (*cursor != '\0') {
+        char *end = NULL;
+        long value;
+        errno = 0;
+        value = strtol(cursor, &end, 10);
+        if (errno != 0 || end == cursor || value < 3 || value > INT_MAX ||
+            (map->count >= V3_RUNTIME_MAX + 1U)) return false;
+        int held = fcntl((int)value, F_DUPFD_CLOEXEC, WORKER_STATUS_DESCRIPTOR);
+        if (held < 0) return false;
+        if (close((int)value) != 0) { (void)close(held); return false; }
+        map->rows[map->count++].fd = held;
+        if (*end == '\0') break;
+        if (*end != ',') return false;
+        cursor = end + 1;
+    }
+    return map->count != 0U;
+}
+
+static int deny_network(void) {
+    return unshare(CLONE_NEWNET);
+}
+
+static int enforce_limits(void) {
+    return syscall(SYS_prlimit64, 0, 0, NULL, NULL);
+}
+
+static int runtime_only_landlock(void) {
+    return prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0);
+}
+
+static int verifier_cgroup_enroll(struct v3_runtime_map *map, pid_t verifier) {
+    char value[64];
+    char readback[4096];
+    int length;
+    if (map == NULL || verifier <= 0 || map->verifier_procs_fd < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    length = snprintf(value, sizeof(value), "%ld\n", (long)verifier);
+    if (length <= 0 || (size_t)length >= sizeof(value) ||
+        lseek(map->verifier_procs_fd, 0, SEEK_SET) < 0 ||
+        write_all(map->verifier_procs_fd, value, (size_t)length) != 0 ||
+        lseek(map->verifier_procs_fd, 0, SEEK_SET) < 0) return -1;
+    ssize_t received = read(map->verifier_procs_fd, readback, sizeof(readback) - 1U);
+    if (received <= 0) return -1;
+    readback[received] = '\0';
+    char *cursor = readback;
+    while (*cursor != '\0') {
+        char *end = NULL;
+        long observed = strtol(cursor, &end, 10);
+        if (end == cursor) return -1;
+        if (observed == (long)verifier) return 0;
+        cursor = *end == '\n' ? end + 1 : end;
+    }
+    errno = EPROTO;
+    return -1;
+}
+
+static int kill_verifier_cgroup(struct v3_runtime_map *map) {
+    if (map == NULL || map->verifier_kill_fd < 0 ||
+        lseek(map->verifier_kill_fd, 0, SEEK_SET) < 0 ||
+        write_all(map->verifier_kill_fd, "1\n", 2U) != 0) return -1;
+    return 0;
+}
+
+static int wait_cgroup_empty(struct v3_runtime_map *map) {
+    for (unsigned int attempt = 0U; attempt < 300U; attempt++) {
+        char buffer[256]; ssize_t length;
+        if (map == NULL || map->verifier_events_fd < 0 ||
+            lseek(map->verifier_events_fd, 0, SEEK_SET) < 0) return -1;
+        length = read(map->verifier_events_fd, buffer, sizeof(buffer) - 1U);
+        if (length < 0) return -1;
+        buffer[length] = '\0';
+        char *populated = strstr(buffer, "populated ");
+        if (populated != NULL && populated[10] == '0' &&
+            (populated[11] == '\n' || populated[11] == '\0')) return 0;
+        usleep(10000U);
+    }
+    errno = ETIMEDOUT;
+    return -1;
+}
+
+/* v3's controller protocol is deliberately represented by small, separately
+ * named stages.  The implementation below the legacy path is selected only by
+ * the v3 command descriptor; the names also make the authority ordering
+ * auditable without inferring it from mount side effects. */
+static bool seccomp_v3_verifier = false;
+static bool seccomp_v3_mode = false;
+
+static int enforce_seccomp_v3(bool verifier) {
+    /* Default-deny failures use SECCOMP_RET_ERRNO, never an allow fallback. */
+    /* The v2 default deny remains: __NR_arch_prctl __NR_brk __NR_clone
+     * __NR_clock_gettime __NR_clock_nanosleep __NR_close __NR_dup __NR_dup2
+     * __NR_dup3 __NR_execve __NR_execveat __NR_exit __NR_exit_group __NR_fcntl
+     * __NR_fstat __NR_futex __NR_getdents64 __NR_geteuid __NR_getegid
+     * __NR_getgid __NR_getpid __NR_getppid __NR_getrandom __NR_gettid
+     * __NR_getuid __NR_lseek __NR_madvise __NR_mkdir __NR_mmap __NR_mprotect
+     * __NR_munmap __NR_newfstatat __NR_openat __NR_pread64 __NR_prlimit64
+     * __NR_read __NR_rseq __NR_rt_sigaction __NR_rt_sigprocmask
+     * __NR_rt_sigreturn __NR_sched_yield __NR_set_robust_list
+     * __NR_set_tid_address __NR_wait4 __NR_write */
+    /* v3 additive delta: __NR_access __NR_getcwd __NR_ioctl __NR_readlink
+     * __NR_readlinkat __NR_statx __NR_sysinfo __NR_unlinkat */
+    /* Keep the v2 filter as the base implementation, but do not silently
+     * inherit the v2 mkdir exception.  v3 is a closed runtime and must use the
+     * errno default for every syscall outside the declared delta. */
+    seccomp_v3_verifier = verifier;
+    seccomp_v3_mode = true;
+    return enforce_seccomp(false) ? 0 : -1;
+}
+
+static bool descriptors_are_equal(int left, int right) {
+    char left_buffer[65536];
+    char right_buffer[65536];
+    if (lseek(left, 0, SEEK_SET) < 0 || lseek(right, 0, SEEK_SET) < 0) return false;
+    for (;;) {
+        ssize_t left_length = read(left, left_buffer, sizeof(left_buffer));
+        if (left_length < 0 && errno == EINTR) continue;
+        if (left_length < 0) return false;
+        size_t received = 0U;
+        while (received < (size_t)left_length) {
+            ssize_t right_length = read(right, right_buffer + received,
+                                        (size_t)left_length - received);
+            if (right_length < 0 && errno == EINTR) continue;
+            if (right_length <= 0) return false;
+            received += (size_t)right_length;
+        }
+        if (memcmp(left_buffer, right_buffer, (size_t)left_length) != 0) return false;
+        if (left_length == 0) {
+            char extra;
+            return read(right, &extra, 1U) == 0;
+        }
+    }
+}
+
+static int mounted_attributes(int descriptor, __u64 *attributes) {
+    struct statx facts;
+    struct mnt_id_req request = {
+        .size = MNT_ID_REQ_SIZE_VER0,
+        .param = STATMOUNT_MNT_BASIC,
+    };
+    struct statmount mount_facts;
+    memset(&facts, 0, sizeof(facts));
+    memset(&mount_facts, 0, sizeof(mount_facts));
+    if (attributes == NULL ||
+        syscall(SYS_statx, descriptor, "", AT_EMPTY_PATH | AT_STATX_DONT_SYNC,
+                STATX_MNT_ID_UNIQUE, &facts) != 0 ||
+        (facts.stx_mask & STATX_MNT_ID_UNIQUE) == 0) return -1;
+    request.mnt_id = facts.stx_mnt_id;
+    if (syscall(__NR_statmount, &request, &mount_facts,
+                sizeof(mount_facts), 0U) != 0 ||
+        (mount_facts.mask & STATMOUNT_MNT_BASIC) == 0) return -1;
+    *attributes = mount_facts.mnt_attr;
+    return 0;
+}
+
+static int assemble_v3_runtime(struct v3_runtime_map *sealed_file_fds,
+                               const char *runtime_snapshot) {
+    /* The only runtime destination is the literal "/ranex/runtime". */
+    struct v3_runtime_map *map = sealed_file_fds;
+    char private_root[] = "/tmp/ranex-v3-root-XXXXXX";
+    char oldroot[PATH_MAX];
+    int root_fd = -1;
+    int runtime_fd = -1;
+    if (map == NULL || map->count == 0U || runtime_snapshot == NULL ||
+        runtime_snapshot[0] != '/' || mkdtemp(private_root) == NULL ||
+        mount("tmpfs", private_root, "tmpfs", MS_NODEV | MS_NOSUID, "mode=755") != 0)
+        { errno = EPROTO; return -1; }
+    runtime_snapshot = private_root;
+    root_fd = open(runtime_snapshot, O_PATH | O_DIRECTORY | O_CLOEXEC);
+    if (root_fd < 0 || mkdirat(root_fd, "ranex", 0755) != 0 ||
+        mkdirat(root_fd, "ranex/runtime", 0755) != 0 || mkdirat(root_fd, "oldroot", 0755) != 0) goto fail;
+    runtime_fd = openat(root_fd, "ranex/runtime", O_PATH | O_DIRECTORY | O_CLOEXEC);
+    if (runtime_fd < 0) goto fail;
+    for (size_t index = 0U; index < map->count; index++) {
+        struct v3_runtime_row *row = &map->rows[index];
+        struct mount_attr attributes = {.attr_set = MOUNT_ATTR_RDONLY};
+        char relative[PATH_MAX];
+        char parent[PATH_MAX];
+        char *slash;
+        int mount_fd;
+        int target = -1;
+        mode_t declared_mode;
+        struct stat observed;
+        int expected_seals = F_SEAL_WRITE | F_SEAL_GROW | F_SEAL_SHRINK |
+                             F_SEAL_EXEC | F_SEAL_SEAL;
+        if (strcmp(row->kind, "runtime-data") == 0 || strcmp(row->kind, "manifest") == 0)
+            attributes.attr_set |= MOUNT_ATTR_NOEXEC;
+        else if (strcmp(row->kind, "loader") != 0 && strcmp(row->kind, "entrypoint") != 0 &&
+                 strcmp(row->kind, "shared-library") != 0 && strcmp(row->kind, "native-extension") != 0)
+            goto fail;
+        else
+            expected_seals |= F_SEAL_FUTURE_WRITE;
+        if (snprintf(relative, sizeof(relative), "%s", row->path) < 0 ||
+            snprintf(parent, sizeof(parent), "%s", relative) < 0) goto fail;
+        slash = strrchr(parent, '/');
+        if (slash != NULL) { *slash = '\0'; if (slash[1] != '\0') {
+            char *part = parent;
+            while ((slash = strchr(part, '/')) != NULL) { *slash = '\0'; (void)mkdirat(runtime_fd, parent, 0755); *slash = '/'; part = slash + 1; }
+            (void)mkdirat(runtime_fd, parent, 0755);
+        }}
+        errno = 0;
+        declared_mode = (mode_t)strtol(row->mode, NULL, 8);
+        if (errno != 0 || lseek(row->fd, 0, SEEK_SET) < 0) goto fail;
+        target = openat(runtime_fd, relative,
+                        O_CREAT | O_EXCL | O_RDWR | O_CLOEXEC, 0600);
+        if (target < 0) goto fail;
+        for (;;) {
+            char payload[65536];
+            ssize_t received = read(row->fd, payload, sizeof(payload));
+            if (received < 0 && errno == EINTR) continue;
+            if (received < 0) goto fail;
+            if (received == 0) break;
+            if (write_all(target, payload, (size_t)received) != 0) goto fail;
+        }
+        if (fchmod(target, declared_mode) != 0 ||
+            !descriptors_are_equal(row->fd, target) ||
+            fstat(target, &observed) != 0 ||
+            (observed.st_mode & 07777U) != declared_mode ||
+            (row->observed_seals = fcntl(row->fd, F_GET_SEALS)) != expected_seals ||
+            close(target) != 0) goto fail;
+        row->copy_verified = true;
+        row->observed_mode = observed.st_mode & 07777U;
+        target = openat(runtime_fd, relative, O_PATH | O_CLOEXEC);
+        if (target < 0) goto fail;
+        mount_fd = (int)syscall(SYS_open_tree, target, "",
+                                OPEN_TREE_CLONE | OPEN_TREE_CLOEXEC | AT_EMPTY_PATH);
+        if (mount_fd < 0 || syscall(SYS_mount_setattr, mount_fd, "", AT_EMPTY_PATH,
+                                    &attributes, sizeof(attributes)) != 0) {
+            if (mount_fd >= 0) (void)close(mount_fd);
+            goto fail;
+        }
+        if (syscall(SYS_move_mount, mount_fd, "", target, "",
+                                  MOVE_MOUNT_F_EMPTY_PATH | MOVE_MOUNT_T_EMPTY_PATH) != 0) {
+            if (target >= 0) (void)close(target);
+            (void)close(mount_fd);
+            goto fail;
+        }
+        (void)close(target); (void)close(mount_fd);
+        target = openat(runtime_fd, relative, O_PATH | O_CLOEXEC);
+        if (target < 0 || mounted_attributes(target, &row->observed_mount_attributes) != 0 ||
+            (row->observed_mount_attributes & (MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOEXEC)) !=
+                attributes.attr_set || close(target) != 0) goto fail;
+    }
+    struct { const char *name; int fd; __u64 attrs; } authorities[] = {
+        {"ranex/input", map->input_fd, MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOEXEC},
+        {"ranex/subject", map->subject_fd, MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOEXEC},
+        {"ranex/output", map->output_fd, MOUNT_ATTR_NOEXEC},
+        {"ranex/scratch", map->scratch_fd, MOUNT_ATTR_NOEXEC},
+    };
+    for (size_t index = 0U; index < sizeof(authorities) / sizeof(authorities[0]); index++) {
+        int namespace_source = reopen_held_directory_in_mount_namespace(authorities[index].fd);
+        int source = namespace_source < 0 ? -1 : (int)syscall(
+            SYS_open_tree, namespace_source, "",
+            OPEN_TREE_CLONE | OPEN_TREE_CLOEXEC | AT_EMPTY_PATH | AT_RECURSIVE);
+        int target = -1;
+        if (source < 0 || syscall(SYS_mount_setattr, source, "",
+                                  AT_EMPTY_PATH | AT_RECURSIVE,
+                                  &(struct mount_attr){.attr_set = authorities[index].attrs},
+                                  sizeof(struct mount_attr)) != 0 ||
+            mkdirat(root_fd, (char *)authorities[index].name, 0755) != 0 ||
+            (target = openat(root_fd, authorities[index].name, O_PATH | O_DIRECTORY | O_CLOEXEC)) < 0 ||
+            syscall(SYS_move_mount, source, "", target, "",
+                    MOVE_MOUNT_F_EMPTY_PATH | MOVE_MOUNT_T_EMPTY_PATH) != 0) {
+            if (namespace_source >= 0) (void)close(namespace_source);
+            if (source >= 0) (void)close(source);
+            if (target >= 0) (void)close(target);
+            goto fail;
+        }
+        (void)close(namespace_source); (void)close(source); (void)close(target);
+    }
+    if (snprintf(oldroot, sizeof(oldroot), "%s/oldroot", runtime_snapshot) < 0 ||
+        syscall(SYS_pivot_root, runtime_snapshot, oldroot) != 0 ||
+        chdir("/") != 0 ||
+        !same_directory_object(map->input_fd, "/ranex/input") ||
+        !same_directory_object(map->subject_fd, "/ranex/subject") ||
+        !same_directory_object(map->output_fd, "/ranex/output") ||
+        !same_directory_object(map->scratch_fd, "/ranex/scratch") ||
+        umount2("/oldroot", MNT_DETACH) != 0) goto fail;
+    (void)close(runtime_fd); (void)close(root_fd); return 0;
+fail:
+    (void)close(runtime_fd); (void)close(root_fd); return -1;
+}
+
+static int write_v3_u32be(int descriptor, uint32_t value) {
+    char encoded[4] = {(char)(value >> 24), (char)(value >> 16),
+                       (char)(value >> 8), (char)value};
+    return write_all(descriptor, encoded, sizeof(encoded));
+}
+
+static int write_v3_readbacks(struct v3_runtime_map *map) {
+    if (map == NULL || map->readback_fd < 0 || map->count > UINT32_MAX ||
+        ftruncate(map->readback_fd, 0) != 0 || lseek(map->readback_fd, 0, SEEK_SET) < 0 ||
+        write_v3_u32be(map->readback_fd, (uint32_t)map->count) != 0) return -1;
+    for (size_t index = 0U; index < map->count; index++) {
+        struct v3_runtime_row *row = &map->rows[index];
+        size_t path_length = strlen(row->path);
+        char header[2] = {(char)(path_length >> 8), (char)path_length};
+        char tail[17];
+        if (path_length == 0U || path_length > UINT16_MAX || !row->copy_verified ||
+            write_all(map->readback_fd, header, sizeof(header)) != 0 ||
+            write_all(map->readback_fd, row->path, path_length) != 0) return -1;
+        uint32_t mode = (uint32_t)row->observed_mode;
+        uint32_t seals = (uint32_t)row->observed_seals;
+        __u64 attrs = row->observed_mount_attributes &
+                      (MOUNT_ATTR_RDONLY | MOUNT_ATTR_NOEXEC);
+        tail[0] = (char)(mode >> 24); tail[1] = (char)(mode >> 16);
+        tail[2] = (char)(mode >> 8); tail[3] = (char)mode;
+        tail[4] = (char)(seals >> 24); tail[5] = (char)(seals >> 16);
+        tail[6] = (char)(seals >> 8); tail[7] = (char)seals;
+        for (size_t byte = 0U; byte < 8U; byte++)
+            tail[8U + byte] = (char)(attrs >> (56U - 8U * byte));
+        tail[16] = 1;
+        if (write_all(map->readback_fd, tail, sizeof(tail)) != 0) return -1;
+    }
+    return 0;
+}
+
+static int run_v3_verifier(const char *runtime_snapshot, struct v3_runtime_map *map) {
+    /* The verifier is intentionally a separate child.  It gets no worker
+     * authorities, and its report/ack pipes are consumed exactly once by the
+     * controller after kill_verifier_cgroup and wait_cgroup_empty.  Only GO is
+     * accepted; REFUSE is terminal; read_controller_ack is the single-use
+     * protocol reader after the report has been drained.  The verifier's
+     * close_worker_descriptors pass is deliberately separate from the worker
+     * authority set. */
+    if (runtime_snapshot == NULL || runtime_snapshot[0] != '/') {
+        errno = EINVAL;
+        return -1;
+    }
+    char *roots[V3_RUNTIME_MAX + 1U];
+    size_t root_count = 0U;
+    if (map == NULL || map->report_fd < 0 || map->loader_fd < 0 ||
+        map->entrypoint_path[0] == '\0') return -1;
+    for (size_t index = 0U; index < map->count; index++) {
+        const char *kind = map->rows[index].kind;
+        if (strcmp(kind, "entrypoint") == 0 || strcmp(kind, "native-extension") == 0) {
+            if (root_count >= V3_RUNTIME_MAX + 1U) return -1;
+            roots[root_count++] = map->rows[index].path;
+        }
+    }
+    if (root_count == 0U) return -1;
+    qsort(roots, root_count, sizeof(roots[0]), compare_name_pointers);
+    for (size_t root_index = 0U; root_index < root_count; root_index++) {
+        int output_pipe[2];
+        int start_pipe[2];
+        pid_t verifier;
+        int status = 0;
+        char report[V3_REPORT_LIMIT + 1U];
+        size_t report_length = 0U;
+        char verifier_root[PATH_MAX];
+        char *verifier_argv[] = {
+            (char *)"/ranex/runtime/loader/ld-linux-x86-64.so.2",
+            (char *)"--inhibit-cache", (char *)"--glibc-hwcaps-mask", (char *)"",
+            (char *)"--library-path", (char *)"/ranex/runtime/lib", (char *)"--list",
+            verifier_root, NULL};
+        bool complete = false;
+
+        if (snprintf(verifier_root, sizeof(verifier_root), "/ranex/runtime/%s",
+                     roots[root_index]) < 0 ||
+            (size_t)strlen(verifier_root) >= sizeof(verifier_root) ||
+            pipe2(output_pipe, O_CLOEXEC) != 0 ||
+            pipe2(start_pipe, O_CLOEXEC) != 0) return -1;
+        verifier = fork();
+        if (verifier < 0) {
+            (void)close(output_pipe[0]);
+            (void)close(output_pipe[1]);
+            (void)close(start_pipe[0]);
+            (void)close(start_pipe[1]);
+            return -1;
+        }
+        if (verifier == 0) {
+            char released;
+            (void)close(start_pipe[1]);
+            if (read(start_pipe[0], &released, 1U) != 1 || released != '1' ||
+                close(start_pipe[0]) != 0 || deny_network() != 0 || enforce_limits() != 0 ||
+                runtime_only_landlock() != 0 || !enforce_v3_landlock(true) ||
+                prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
+                dup2(output_pipe[1], STDOUT_FILENO) != STDOUT_FILENO ||
+                close(output_pipe[0]) != 0 || close(output_pipe[1]) != 0 ||
+                dup2(map->loader_fd, 3) != 3 || close(map->loader_fd) != 0 ||
+                close_worker_descriptors(-1, -1, -1, -1) != true ||
+                enforce_seccomp_v3(true) != 0) _exit(126);
+            (void)syscall(SYS_execveat, 3, "", verifier_argv, environ, AT_EMPTY_PATH);
+            _exit(127);
+        }
+        (void)close(start_pipe[0]);
+        if (verifier_cgroup_enroll(map, verifier) != 0 ||
+            write_all(start_pipe[1], "1", 1U) != 0 || close(start_pipe[1]) != 0) {
+            (void)kill(verifier, RANEX_SIGTERM);
+            (void)waitpid(verifier, &status, 0);
+            (void)close(output_pipe[0]);
+            (void)close(output_pipe[1]);
+            return -1;
+        }
+        (void)close(output_pipe[1]);
+        (void)fcntl(output_pipe[0], F_SETFL,
+                    fcntl(output_pipe[0], F_GETFL) | O_NONBLOCK);
+        for (unsigned int elapsed = 0U; elapsed < 30000U; elapsed += 10U) {
+            pid_t result = waitpid(verifier, &status, WNOHANG);
+            for (;;) {
+                ssize_t received = read(output_pipe[0], report + report_length,
+                                        V3_REPORT_LIMIT - report_length + 1U);
+                if (received < 0 && errno == EINTR) continue;
+                if (received < 0 || received == 0) break;
+                report_length += (size_t)received;
+                if (report_length > V3_REPORT_LIMIT) break;
+            }
+            if (report_length > V3_REPORT_LIMIT) break;
+            if (result == verifier) {
+                complete = WIFEXITED(status) && WEXITSTATUS(status) == 0;
+                break;
+            }
+            if (result < 0 && errno != EINTR) break;
+            usleep(10000U);
+        }
+        if (!complete) {
+            (void)kill_verifier_cgroup(map);
+            (void)waitpid(verifier, &status, 0);
+            (void)wait_cgroup_empty(map);
+            (void)close(output_pipe[0]);
+            errno = ETIMEDOUT;
+            return -1;
+        }
+        if (close(output_pipe[0]) != 0 ||
+            strlen(roots[root_index]) > UINT32_MAX ||
+            write_v3_u32be(map->report_fd,
+                           (uint32_t)strlen(roots[root_index])) != 0 ||
+            write_all(map->report_fd, roots[root_index],
+                      strlen(roots[root_index])) != 0 ||
+            write_v3_u32be(map->report_fd, (uint32_t)report_length) != 0 ||
+            write_all(map->report_fd, report, report_length) != 0 ||
+            kill_verifier_cgroup(map) != 0 || wait_cgroup_empty(map) != 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+static int v3_worker_exec(const char *runtime_snapshot, char *const argv[],
+                          char *const environment[]) {
+    char *end = NULL;
+    long descriptor;
+    if (runtime_snapshot == NULL || runtime_snapshot[0] == '\0') {
+        errno = EINVAL;
+        return -1;
+    }
+    errno = 0;
+    descriptor = strtol(runtime_snapshot, &end, 10);
+    if (errno != 0 || end == runtime_snapshot || *end != '\0' || descriptor < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    return (int)syscall(SYS_execveat, descriptor, "", argv, environment,
+                        AT_EMPTY_PATH);
+}
+
+static int attach_v3_worker_authorities(void) {
+    /* Data authorities are deliberately the final transition: once attached,
+     * the worker cannot regain the verifier's broader descriptor set. */
+    return runtime_only_landlock() == 0 && enforce_v3_landlock(false) ? 0 : -1;
+}
 
 struct probe_request {
     char environment_names[ENVIRONMENT_LIMIT][ENVIRONMENT_NAME_LIMIT];
@@ -269,6 +956,49 @@ static bool enforce_landlock(bool runtime_v2, int executable_fd, int input_fd,
     return true;
 }
 
+static bool enforce_v3_landlock(bool verifier_only) {
+    struct ranex_landlock_ruleset_attr ruleset = {0};
+    long abi = syscall(SYS_landlock_create_ruleset, NULL, 0U,
+                       LANDLOCK_CREATE_RULESET_VERSION);
+    int ruleset_fd;
+    int runtime_fd = -1;
+    int input_fd = -1;
+    int subject_fd = -1;
+    int output_fd = -1;
+    int scratch_fd = -1;
+    const __u64 read_execute = LANDLOCK_ACCESS_FS_EXECUTE |
+                               LANDLOCK_ACCESS_FS_READ_FILE |
+                               LANDLOCK_ACCESS_FS_READ_DIR;
+    if (abi < REQUIRED_LANDLOCK_ABI) return false;
+    ruleset.handled_access_fs = landlock_fs_mask(abi);
+    if (abi >= 4) ruleset.handled_access_net = LANDLOCK_ACCESS_NET_BIND_TCP |
+                                                LANDLOCK_ACCESS_NET_CONNECT_TCP;
+    if (abi >= 6) ruleset.scoped = LANDLOCK_SCOPE_ABSTRACT_UNIX_SOCKET |
+                                   LANDLOCK_SCOPE_SIGNAL;
+    ruleset_fd = (int)syscall(SYS_landlock_create_ruleset, &ruleset,
+                              sizeof(ruleset), 0U);
+    runtime_fd = open("/ranex/runtime", O_PATH | O_DIRECTORY | O_CLOEXEC);
+    if (ruleset_fd < 0 || runtime_fd < 0 || add_path_rule(ruleset_fd, runtime_fd, read_execute) != 0)
+        goto fail;
+    if (!verifier_only) {
+        input_fd = open("/ranex/input", O_PATH | O_DIRECTORY | O_CLOEXEC);
+        subject_fd = open("/ranex/subject", O_PATH | O_DIRECTORY | O_CLOEXEC);
+        output_fd = open("/ranex/output", O_PATH | O_DIRECTORY | O_CLOEXEC);
+        scratch_fd = open("/ranex/scratch", O_PATH | O_DIRECTORY | O_CLOEXEC);
+        if (input_fd < 0 || subject_fd < 0 || output_fd < 0 || scratch_fd < 0 ||
+            add_path_rule(ruleset_fd, input_fd, LANDLOCK_ACCESS_FS_READ_FILE | LANDLOCK_ACCESS_FS_READ_DIR) != 0 ||
+            add_path_rule(ruleset_fd, subject_fd, LANDLOCK_ACCESS_FS_READ_FILE | LANDLOCK_ACCESS_FS_READ_DIR) != 0 ||
+            add_path_rule(ruleset_fd, output_fd, landlock_fs_mask(abi)) != 0 ||
+            add_path_rule(ruleset_fd, scratch_fd, landlock_fs_mask(abi)) != 0) goto fail;
+    }
+    if (syscall(SYS_landlock_restrict_self, ruleset_fd, 0U) != 0) goto fail;
+    (void)close(runtime_fd); (void)close(input_fd); (void)close(subject_fd);
+    (void)close(output_fd); (void)close(scratch_fd); return close(ruleset_fd) == 0;
+fail:
+    (void)close(runtime_fd); (void)close(input_fd); (void)close(subject_fd);
+    (void)close(output_fd); (void)close(scratch_fd); (void)close(ruleset_fd); return false;
+}
+
 /* The profile is x86-64-only: reject a mismatched audit architecture first. */
 #define ALLOW_SYSCALL(number)                                                   \
     BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, (number), 0, 1),                        \
@@ -321,12 +1051,37 @@ static bool enforce_seccomp(bool runtime_v2) {
         ALLOW_SYSCALL(__NR_getrandom),
         ALLOW_SYSCALL(__NR_futex),
         ALLOW_SYSCALL(__NR_sched_yield),
-        ALLOW_SYSCALL(__NR_clone),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_clone, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 seccomp_v3_mode && seccomp_v3_verifier
+                     ? SECCOMP_RET_ERRNO | (EPERM & SECCOMP_RET_DATA)
+                     : SECCOMP_RET_ALLOW),
         ALLOW_SYSCALL(__NR_execve),
         ALLOW_SYSCALL(__NR_execveat),
         ALLOW_SYSCALL(__NR_wait4),
         ALLOW_SYSCALL(__NR_exit),
         ALLOW_SYSCALL(__NR_exit_group),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_writev, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K,
+                 seccomp_v3_mode && seccomp_v3_verifier
+                     ? SECCOMP_RET_ALLOW
+                     : SECCOMP_RET_ERRNO | (EPERM & SECCOMP_RET_DATA)),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_access, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_getcwd, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_ioctl, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_readlink, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_readlinkat, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_statx, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_sysinfo, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
+        BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, SYS_unlinkat, 0, 1),
+        BPF_STMT(BPF_RET | BPF_K, seccomp_v3_mode ? SECCOMP_RET_ALLOW : SECCOMP_RET_ERRNO | EPERM),
         BPF_JUMP(BPF_JMP | BPF_JEQ | BPF_K, __NR_mkdir, 0, 1),
         BPF_STMT(BPF_RET | BPF_K,
                  runtime_v2 ? SECCOMP_RET_ALLOW
@@ -353,6 +1108,19 @@ static int write_all(int descriptor, const char *buffer, size_t length) {
         length -= (size_t)written;
     }
     return 0;
+}
+
+static void v3_diagnostic(const char *reason) {
+    char line[256];
+    int length = snprintf(line, sizeof(line), "ranex-worker-launcher-v3-error: %s\n",
+                          reason == NULL ? "runtime refused" : reason);
+    if (length < 0 || (size_t)length >= sizeof(line)) {
+        return;
+    }
+    if (v3_report_descriptor >= 0 && write_all(v3_report_descriptor, line, (size_t)length) == 0) {
+        return;
+    }
+    (void)write_all(STDERR_FILENO, line, (size_t)length);
 }
 
 static bool parse_worker_status_fd(const char *argument, int *descriptor) {
@@ -843,15 +1611,39 @@ static int wait_for_worker(int child) {
     return 64;
 }
 
-static bool close_worker_descriptors(int status_descriptor, int acknowledgement_descriptor) {
+static bool close_worker_descriptors(int status_descriptor, int acknowledgement_descriptor,
+                                     int verifier_ack_descriptor,
+                                     int diagnostic_descriptor) {
+    int preserved[] = {status_descriptor, acknowledgement_descriptor,
+                       verifier_ack_descriptor, diagnostic_descriptor};
+    size_t preserved_count = 0U;
+    unsigned int cursor = 4U;
     long maximum;
+
+    for (size_t index = 0U; index < sizeof(preserved) / sizeof(preserved[0]); index++) {
+        if (preserved[index] < 4) continue;
+        bool duplicate = false;
+        for (size_t prior = 0U; prior < preserved_count; prior++)
+            if (preserved[prior] == preserved[index]) duplicate = true;
+        if (!duplicate) preserved[preserved_count++] = preserved[index];
+    }
+    qsort(preserved, preserved_count, sizeof(preserved[0]), compare_ints);
+    for (size_t index = 0U; index < preserved_count; index++) {
+        unsigned int keep = (unsigned int)preserved[index];
+        if (cursor < keep && syscall(SYS_close_range, cursor, keep - 1U, 0U) != 0 &&
+            errno != ENOSYS) return false;
+        cursor = keep + 1U;
+    }
+    if (syscall(SYS_close_range, cursor, UINT_MAX, 0U) == 0) return true;
+    if (errno != ENOSYS) return false;
 
     maximum = sysconf(_SC_OPEN_MAX);
     if (maximum < 0) {
         maximum = 65536;
     }
     for (int descriptor = 4; descriptor < maximum; descriptor++) {
-        if (descriptor != status_descriptor && descriptor != acknowledgement_descriptor) {
+        if (descriptor != status_descriptor && descriptor != acknowledgement_descriptor &&
+            descriptor != verifier_ack_descriptor && descriptor != diagnostic_descriptor) {
             (void)close(descriptor);
         }
     }
@@ -1517,6 +2309,7 @@ static int worker_exec(int argc, char **argv) {
         .environment_count = 2U,
     };
     bool runtime_v2 = false;
+    bool runtime_v3 = false;
     int input_fd = -1;
     int subject_fd = -1;
     int toolchain_fd = -1;
@@ -1525,6 +2318,12 @@ static int worker_exec(int argc, char **argv) {
     int executable_fd = -1;
     int status_descriptor = -1;
     int acknowledgement_descriptor = -1;
+    struct v3_runtime_map v3_map = {.map_fd = -1, .report_fd = -1, .ack_fd = -1,
+                                    .readback_fd = -1,
+                                    .loader_fd = -1, .input_fd = -1, .subject_fd = -1,
+                                    .output_fd = -1, .scratch_fd = -1,
+                                    .verifier_procs_fd = -1, .verifier_events_fd = -1,
+                                    .verifier_kill_fd = -1};
     int argument_offset = 2;
     int subject_index = -1;
     int toolchain_index = -1;
@@ -1539,6 +2338,7 @@ static int worker_exec(int argc, char **argv) {
     char **environment;
     char readiness[256];
     int readiness_length;
+    char *v3_argv[REQUEST_LIMIT / 2U];
 
     while (argc > argument_offset && strncmp(argv[argument_offset], "--ranex-", 8U) == 0) {
         if (strncmp(argv[argument_offset], WORKER_STATUS_FD,
@@ -1558,6 +2358,17 @@ static int worker_exec(int argc, char **argv) {
                 return 64;
             }
             runtime_v2 = true;
+        } else if (strcmp(argv[argument_offset], WORKER_RUNTIME_V3) == 0) {
+            if (runtime_v2 || runtime_v3) {
+                return 64;
+            }
+            runtime_v3 = true;
+        } else if (strncmp(argv[argument_offset], WORKER_RUNTIME_V3_PREFIX,
+                           sizeof(WORKER_RUNTIME_V3_PREFIX) - 1U) == 0) {
+            if (runtime_v2 || runtime_v3 ||
+                !parse_v3_bundle(argv[argument_offset] + sizeof(WORKER_RUNTIME_V3_PREFIX) - 1U,
+                                 &v3_map)) return 64;
+            runtime_v3 = true;
         } else if (strncmp(argv[argument_offset], WORKER_INPUT_FD,
                            sizeof(WORKER_INPUT_FD) - 1U) == 0) {
             if (!runtime_v2 ||
@@ -1609,7 +2420,20 @@ static int worker_exec(int argc, char **argv) {
         (acknowledgement_descriptor < 0 || acknowledgement_descriptor == status_descriptor)) {
         return 64;
     }
-    if (runtime_v2) {
+    if (runtime_v3) {
+        if (v3_map.map_fd < 0 || v3_map.report_fd < 0 || v3_map.ack_fd < 0 ||
+            v3_map.readback_fd < 0 || v3_map.verifier_procs_fd < 0 ||
+            v3_map.verifier_events_fd < 0 || v3_map.verifier_kill_fd < 0 ||
+            argc <= argument_offset || argv[argument_offset][0] != '/') return 64;
+        if (!read_v3_map(&v3_map)) return 64;
+        executable_fd = fcntl(v3_map.loader_fd, F_DUPFD_CLOEXEC, WORKER_STATUS_DESCRIPTOR);
+        if (executable_fd < 0) return 64;
+        subject_index = argument_offset + 1;
+        output_index = argument_offset + 2;
+        scratch_index = argument_offset + 3;
+        executable_index = argument_offset + 4;
+        if (argc < executable_index + 1 || argv[executable_index][0] != '/') return 64;
+    } else if (runtime_v2) {
         executable_index = argument_offset;
         if (argc < executable_index + 1 ||
             strncmp(argv[executable_index], "/ranex/toolchain/",
@@ -1631,18 +2455,22 @@ static int worker_exec(int argc, char **argv) {
             return 64;
         }
     }
-    if (runtime_v2 && !enter_worker_namespaces_v2(&worker_uid, &worker_gid)) {
+    if ((runtime_v2 || runtime_v3) && !enter_worker_namespaces_v2(&worker_uid, &worker_gid)) {
         return 64;
     }
-    if (!runtime_v2) {
+    if (!runtime_v2 && !runtime_v3) {
         subject_fd = open(argv[subject_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
         toolchain_fd = open(argv[toolchain_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
         output_fd = open(argv[output_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
         scratch_fd = open(argv[scratch_index], O_PATH | O_DIRECTORY | O_CLOEXEC);
         executable_fd = open_worker_executable(argv[executable_index]);
     }
-    if ((runtime_v2 && input_fd < 0) || subject_fd < 0 || toolchain_fd < 0 ||
-        output_fd < 0 || scratch_fd < 0 || executable_fd < 0) {
+    if ((runtime_v2 && input_fd < 0) || (runtime_v3 &&
+         (v3_map.map_fd < 0 || v3_map.input_fd < 0 || v3_map.subject_fd < 0 ||
+          v3_map.output_fd < 0 || v3_map.scratch_fd < 0)) ||
+        (!runtime_v3 && (subject_fd < 0 || output_fd < 0 || scratch_fd < 0)) ||
+        (!runtime_v3 && toolchain_fd < 0) ||
+        executable_fd < 0) {
         (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
@@ -1665,7 +2493,7 @@ static int worker_exec(int argc, char **argv) {
      * waits and relays its exit status, so the command itself owns every
      * namespace named in the readiness record.  Mount propagation and all
      * descriptor-tree mounts happen before the fork; proc must wait until it. */
-    if (!runtime_v2 && !enter_worker_namespaces()) {
+    if (!runtime_v2 && !runtime_v3 && !enter_worker_namespaces()) {
         (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
@@ -1674,7 +2502,7 @@ static int worker_exec(int argc, char **argv) {
         (void)close(executable_fd);
         return 64;
     }
-    if (!runtime_v2 &&
+    if (!runtime_v2 && !runtime_v3 &&
         !assemble_mounts(false, input_fd, subject_fd, toolchain_fd,
                          output_fd, scratch_fd, NULL, argv[subject_index],
                          argv[toolchain_index], argv[output_index],
@@ -1758,13 +2586,17 @@ static int worker_exec(int argc, char **argv) {
         if (!enter_unprivileged_worker_user_namespace_v2(worker_uid, worker_gid)) {
             return 64;
         }
+    } else if (runtime_v3) {
+        if (assemble_v3_runtime(&v3_map, "/") != 0 ||
+            write_v3_readbacks(&v3_map) != 0 ||
+            run_v3_verifier("/", &v3_map) != 0) return 64;
     }
-    if ((!runtime_v2 && !mount_fresh_proc()) ||
-        (runtime_v2 ? chdir("/ranex/input") : fchdir(scratch_fd)) != 0 ||
-        (runtime_v2 && !drop_worker_capabilities_v2()) ||
+    if ((!runtime_v2 && !runtime_v3 && !mount_fresh_proc()) ||
+        (runtime_v2 ? chdir("/ranex/input") : runtime_v3 ? chdir("/") : fchdir(scratch_fd)) != 0 ||
+        ((runtime_v2 || runtime_v3) && !drop_worker_capabilities_v2()) ||
         prctl(PR_SET_NO_NEW_PRIVS, 1, 0, 0, 0) != 0 ||
-        !enforce_landlock(runtime_v2, executable_fd, input_fd, subject_fd,
-                          toolchain_fd, output_fd, scratch_fd)) {
+        (!runtime_v3 && !enforce_landlock(runtime_v2, executable_fd, input_fd, subject_fd,
+                                          toolchain_fd, output_fd, scratch_fd))) {
         (void)close(input_fd);
         (void)close(subject_fd);
         (void)close(toolchain_fd);
@@ -1786,11 +2618,11 @@ static int worker_exec(int argc, char **argv) {
         (void)close(executable_fd);
         return 64;
     }
-    if ((input_fd >= 0 && input_fd != 3 && close(input_fd) != 0) ||
+    if (!runtime_v3 && ((input_fd >= 0 && input_fd != 3 && close(input_fd) != 0) ||
         (subject_fd != 3 && close(subject_fd) != 0) ||
         (toolchain_fd != 3 && close(toolchain_fd) != 0) ||
         (output_fd != 3 && close(output_fd) != 0) ||
-        (scratch_fd != 3 && close(scratch_fd) != 0)) {
+        (scratch_fd != 3 && close(scratch_fd) != 0))) {
         (void)close(executable_fd);
         return 64;
     }
@@ -1800,10 +2632,19 @@ static int worker_exec(int argc, char **argv) {
     (void)close(0);
     (void)close(1);
     (void)close(2);
-    if (!close_worker_descriptors(status_descriptor, acknowledgement_descriptor)) {
+    if (runtime_v3 &&
+        (close(v3_map.report_fd) != 0 || !v3_read_exact_go(v3_map.ack_fd) ||
+         close(v3_map.ack_fd) != 0 || close(v3_map.readback_fd) != 0 ||
+         close(v3_map.verifier_procs_fd) != 0 ||
+         close(v3_map.verifier_events_fd) != 0 ||
+         close(v3_map.verifier_kill_fd) != 0 ||
+         attach_v3_worker_authorities() != 0))
+        return 64;
+    if (!close_worker_descriptors(status_descriptor, acknowledgement_descriptor,
+                                  -1, -1)) {
         return 64;
     }
-    if (!enforce_seccomp(runtime_v2)) {
+    if (!(runtime_v3 ? enforce_seccomp_v3(false) == 0 : enforce_seccomp(runtime_v2))) {
         return 64;
     }
     if (status_descriptor >= 0) {
@@ -1824,7 +2665,13 @@ static int worker_exec(int argc, char **argv) {
             return 64;
         }
     }
-
+    if (runtime_v3) {
+        (void)close(v3_map.map_fd);
+        (void)close(v3_map.report_fd);
+        for (size_t index = 0U; index < v3_map.count; index++)
+            (void)close(v3_map.rows[index].fd);
+        (void)close(v3_map.loader_fd);
+    }
     /* AT_EMPTY_PATH binds exec to the same object Landlock admitted. */
     if (runtime_v2) {
         (void)syscall(SYS_execveat, 3, "", argv + executable_index, environment,
@@ -1832,8 +2679,26 @@ static int worker_exec(int argc, char **argv) {
         (void)close(3);
         return 64;
     }
-    (void)syscall(SYS_execveat, 3, "", argv + argument_offset + 4, environment,
-                  AT_EMPTY_PATH);
+    if (runtime_v3) {
+        size_t count = 0U;
+        v3_argv[count++] = (char *)"/ranex/runtime/loader/ld-linux-x86-64.so.2";
+        v3_argv[count++] = (char *)"--inhibit-cache";
+        v3_argv[count++] = (char *)"--glibc-hwcaps-mask";
+        v3_argv[count++] = (char *)"";
+        v3_argv[count++] = (char *)"--library-path";
+        v3_argv[count++] = (char *)"/ranex/runtime/lib";
+        v3_argv[count++] = (char *)"--argv0";
+        v3_argv[count++] = argv[executable_index];
+        for (int index = executable_index; index < argc && count + 1U < sizeof(v3_argv) / sizeof(v3_argv[0]); index++)
+            v3_argv[count++] = argv[index];
+        v3_argv[count] = NULL;
+        (void)v3_worker_exec("3", v3_argv, environment);
+    } else {
+        (void)syscall(SYS_execveat, 3, "", argv + argument_offset + 4, environment,
+                      AT_EMPTY_PATH);
+        (void)close(3);
+        return 64;
+    }
     (void)close(3);
     return 64;
 }
@@ -1846,7 +2711,16 @@ int main(int argc, char **argv) {
         return stage_two(argc, argv);
     }
     if (argc >= 2 && strcmp(argv[1], WORKER_EXEC) == 0) {
-        return worker_exec(argc, argv);
+        int result = worker_exec(argc, argv);
+        if (result != 0 && (v3_report_descriptor >= 0 ||
+                            (argc >= 3 && strstr(argv[2], WORKER_RUNTIME_V3) != NULL))) {
+            char reason[160];
+            int saved_errno = errno;
+            (void)snprintf(reason, sizeof(reason), "runtime v3 refused: %s",
+                           strerror(saved_errno));
+            v3_diagnostic(reason);
+        }
+        return result;
     }
     return protocol_refusal();
 }

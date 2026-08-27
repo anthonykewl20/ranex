@@ -361,6 +361,12 @@ The lists below state what the kernel actually provides and what remains open.
   self-contained static workers fixed held-object mounts at `/ranex/input`,
   `/ranex/toolchain`, `/ranex/output`, `/ranex/scratch`, and no-exec
   `/ranex/subject`; v1 remains available through its explicit session profile.
+- **Strict-local v3 dynamic runtime closure** — a canonical committed closure
+  selects exact loader, interpreter, library, native-extension, and runtime-data
+  bytes. Sealed and rehashed source descriptors populate one inaccessible
+  private runtime snapshot; structured ELF analysis and a confined held-loader
+  probe must agree before the worker is released. No host library, loader cache,
+  toolchain mount, or ambient loader environment is available.
 - **Signed evidence** — Ed25519, verified against a committed keyring before a
   record is admitted. The verifier holds only public keys and cannot forge.
 - **Claim↔command binding** — the committed catalog declares the argv that
@@ -431,16 +437,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** [SLICE-072-digest-bound-dynamic-runtime-closure](docs/slices/SLICE-072-digest-bound-dynamic-runtime-closure.md)
-
-**Current slice:** SLICE-072 (#48) specifies an additive strict-local v3
-runtime tree for a top-level dynamic interpreter, transitive libraries, native
-extensions, and runtime data. Every file becomes a sealed descriptor mounted
-only beneath `/ranex/runtime`; pyelftools and a confined held glibc loader check
-the same private snapshot before execution, with no host-root/cache/environment
-fallback. This is native dependency closure, not interpreted/JIT policy. Existing
-ordinary, strict-local v1, and static v2 behavior stays unchanged. Its target
-tests are frozen RED before implementation.
+**Active slice:** none
 
 SLICE-071 (#49) is complete. It delivers the retained
 SLICE-036 contract after closing the looping #19 as superseded: the explicit
@@ -619,6 +616,14 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-072-digest-bound-dynamic-runtime-closure** — completed 2026-08-28.
+  Additive strict-local v3 admits a canonical captured-commit runtime closure,
+  seals and rehashes every source file, constructs one private per-file-mounted
+  tmpfs snapshot, and requires pinned pyelftools closure to agree with a
+  confined held-loader probe before GO. Qualified-host tests cover Python,
+  native extensions, runtime data, direct loading, noexec authorities,
+  tampering, deterministic results, and signed evidence without changing v1 or
+  static-v2 behavior.
 - **SLICE-071-approved-batch-qualification** — completed 2026-08-26.
   Exact signed-base source selectors materialize held v2 input/toolchain
   objects; protected A/B/C rows qualify in both approved completion orders
@@ -631,7 +636,7 @@ chosen by the party being measured. Both are closed.
   held source objects with recursive read-only input/toolchain, bounded writable
   output/scratch, and read-only/no-exec subject mounts at fixed `/ranex/*`
   aliases. The qualified v2 journey and delegated legacy v1 regressions pass;
-  dynamic runtime closure remains deferred to #48.
+  dynamic runtime closure was delivered by SLICE-072.
 - **SLICE-059-real-e2e-task-family** — historical implementation closed
   2026-08-21, withdrawn from the release on 2026-08-25. It is retained here
   as an implemented test artifact, not claimed as completed real-provider

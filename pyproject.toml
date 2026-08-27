@@ -13,6 +13,7 @@ dependencies = [
     # dependency provisioning. Already in the closure transitively via pytest;
     # declared because ranex.provisioning imports it directly.
     "packaging>=26,<27",
+    "pyelftools==0.32",
 ]
 
 [dependency-groups]

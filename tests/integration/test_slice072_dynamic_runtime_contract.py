@@ -155,6 +155,30 @@ def test_v3_profile_has_no_dynamic_toolchain_or_caller_destination() -> None:
     assert "destination" not in value["runtime_files"]
 
 
+@pytest.mark.parametrize(
+    ("section", "field", "replacement"),
+    (
+        ("loader_tcb", "allowed_objects", []),
+        ("verifier", "decision", "controller-may-skip"),
+        ("seccomp", "unknown_syscall", "allow"),
+        ("mounts", "runtime", {"destination": "/tmp/runtime"}),
+        ("sealed_mount_attributes", "executable", ["RDONLY"]),
+    ),
+)
+def test_v3_profile_refuses_every_mutated_policy_section(
+    section: str,
+    field: str,
+    replacement: object,
+) -> None:
+    changed = json.loads(V3_PROFILE.read_text(encoding="utf-8"))
+    changed[section][field] = replacement
+    with pytest.raises(
+        host_confinement.HostConfinementError,
+        match="runtime v3 profile differs from the admitted contract",
+    ):
+        host_confinement._session_runtime_profile(changed)
+
+
 def test_three_new_schemas_are_closed_and_exactly_versioned() -> None:
     manifest = json.loads(MANIFEST_SCHEMA.read_text(encoding="utf-8"))
     command = json.loads(COMMAND_SCHEMA.read_text(encoding="utf-8"))
@@ -353,6 +377,47 @@ def test_dynamic_selector_reuses_canonical_repo_relative_grammar(
 ) -> None:
     with pytest.raises(ValueError):
         main._selector_name(tmp_path, hostile, "runtime closure")
+
+
+def test_dynamic_materialisation_uses_captured_commit_bytes(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ranex.cli.subject import Materialisation
+
+    live = tmp_path / "live"
+    captured = tmp_path / "captured"
+    session = tmp_path / "session"
+    for base, marker in ((live, b"live-mutated"), (captured, b"captured-commit")):
+        (base / "selected/input").mkdir(parents=True)
+        (base / "selected/runtime/data").mkdir(parents=True)
+        (base / "selected/input/task.json").write_bytes(marker)
+        (base / "selected/runtime/data/value.txt").write_bytes(marker)
+    session.mkdir()
+    monkeypatch.chdir(live)
+    materialisation = Materialisation(
+        root=session,
+        tree=captured,
+        home=session / "home",
+        temporary=session / "tmp",
+        tracked_paths=(),
+    )
+
+    runtime_input, runtime = main._materialise_dynamic_runtime_sources(
+        materialisation,
+        main.DynamicRuntimeSources(Path("selected/input"), Path("selected/runtime")),
+    )
+
+    assert (runtime_input / "task.json").read_bytes() == b"captured-commit"
+    assert (runtime / "data/value.txt").read_bytes() == b"captured-commit"
+
+
+def test_dynamic_runtime_path_never_enters_dependency_provisioning() -> None:
+    source = (ROOT / "src/ranex/cli/main.py").read_text(encoding="utf-8")
+    assert (
+        "if strict_local_sources is not None or dynamic_runtime_sources is not None\n"
+        "            else _provisioning_for(root, started_at, args.store)"
+    ) in source
 
 
 def test_sealed_runtime_file_cannot_change_after_source_write_or_replace(
@@ -590,7 +655,7 @@ def test_result_v2_consumer_refuses_runtime_digest_substitution() -> None:
             "kind": "entrypoint",
             "sha256": "sha256:" + "a" * 64,
             "elf": _elf(pt_interp="/lib64/ld-linux-x86-64.so.2"),
-            "seals": ["WRITE", "GROW", "SHRINK", "EXEC", "SEAL"],
+            "seals": ["WRITE", "GROW", "SHRINK", "FUTURE_WRITE", "EXEC", "SEAL"],
             "mount_attributes": ["RDONLY"],
         },
         {
@@ -615,6 +680,35 @@ def test_result_v2_consumer_refuses_runtime_digest_substitution() -> None:
     file_set_digest = hashlib.sha256(canonical_json_bytes(sealed_files)).hexdigest()
     value: dict[str, object] = {
         "schema": "ranex-confinement-result-v2",
+        "profile_digests": {
+            "runtime": "1" * 64,
+            "host": "2" * 64,
+            "launcher": "3" * 64,
+        },
+        "namespace_readbacks": {
+            "user": "user:[1001]",
+            "mount": "mnt:[1002]",
+            "pid": "pid:[1003]",
+            "ipc": "ipc:[1004]",
+            "network": "net:[1005]",
+            "cgroup": "cgroup:[1006]",
+        },
+        "cgroup_readbacks": {
+            "limits": {
+                "cpu.max": "max 100000",
+                "memory.max": "1073741824",
+                "pids.max": "16",
+            },
+            "events": {"memory": {"max": 0}, "pids": {"max": 0}, "populated": 0},
+            "usage": {"cpu_usage_usec": 1},
+        },
+        "command": {
+            "argv_digest": "4" * 64,
+            "exit_code": 0,
+            "no_new_privs": True,
+            "landlock": True,
+            "seccomp": True,
+        },
         "runtime_closure": {
             "manifest_digest": "a" * 64,
             "sealed_file_set_digest": file_set_digest,
@@ -627,9 +721,17 @@ def test_result_v2_consumer_refuses_runtime_digest_substitution() -> None:
         "outputs": [],
         "teardown": {"cgroup_kill": True, "populated": 0, "cgroup_removed": True},
     }
-    expected = dict(value["runtime_closure"])
+    runtime_expected = dict(value["runtime_closure"])
+    expected = {
+        "runtime_closure": runtime_expected,
+        "profile_digests": dict(value["profile_digests"]),
+        "argv_digest": value["command"]["argv_digest"],
+        "cgroup_limits": dict(value["cgroup_readbacks"]["limits"]),
+        "namespace_readbacks": dict(value["namespace_readbacks"]),
+        "cgroup_readbacks": json.loads(json.dumps(value["cgroup_readbacks"])),
+    }
     validate_confinement_result_v2(value, expected)
-    for digest_name in expected:
+    for digest_name in runtime_expected:
         changed = json.loads(json.dumps(value))
         changed["runtime_closure"][digest_name] = "0" * 64
         with pytest.raises(ValueError, match=digest_name):
@@ -649,6 +751,94 @@ def test_result_v2_consumer_refuses_runtime_digest_substitution() -> None:
     del missing["runtime_closure"]["manifest_digest"]
     with pytest.raises(ValueError, match="manifest_digest"):
         validate_confinement_result_v2(missing, expected)
+    for field in (
+        "profile_digests",
+        "namespace_readbacks",
+        "cgroup_readbacks",
+        "command",
+        "teardown",
+    ):
+        changed = json.loads(json.dumps(value))
+        changed[field] = {}
+        with pytest.raises(ValueError, match=field.replace("_digests", "_digests")):
+            validate_confinement_result_v2(changed, expected)
+    for field, mutation in (
+        ("profile_digests", lambda changed: changed["profile_digests"].update(runtime="0" * 64)),
+        ("command", lambda changed: changed["command"].update(argv_digest="0" * 64)),
+        ("cgroup_readbacks", lambda changed: changed["cgroup_readbacks"]["limits"].update({"pids.max": "17"})),
+        ("cgroup_readbacks", lambda changed: changed["cgroup_readbacks"]["events"]["memory"].update(max=1)),
+        ("cgroup_readbacks", lambda changed: changed["cgroup_readbacks"]["usage"].update(cpu_usage_usec=999_999)),
+        ("namespace_readbacks", lambda changed: changed["namespace_readbacks"].update(user="user:[999999]")),
+    ):
+        changed = json.loads(json.dumps(value))
+        mutation(changed)
+        with pytest.raises(ValueError, match=field):
+            validate_confinement_result_v2(changed, expected)
+
+
+def test_production_expected_map_binds_the_realized_graph() -> None:
+    from ranex.foundation.dynamic_runtime import (
+        expected_realized_runtime_graph,
+        parse_runtime_manifest,
+        realized_graph_digest,
+    )
+
+    manifest_path = ROOT / "tests/e2e/fixtures/slice072-runtime/closure.json"
+    manifest = parse_runtime_manifest(manifest_path.read_bytes())
+    assert realized_graph_digest(expected_realized_runtime_graph(manifest)) == (
+        "6e9354103f3e38a3ffdd6aadab1e7370cc3ecd9b5166fb993fac472bd3b3e365"
+    )
+    source = (ROOT / "src/ranex/cli/main.py").read_text(encoding="utf-8")
+    assert '"realized_graph_digest": realized_graph_digest(' in source
+    assert '"profile_digests": {' in source
+    assert '"argv_digest": hashlib.sha256(' in source
+    assert '"cgroup_limits": {' in source
+    assert 'expected_runtime_closure["namespace_readbacks"] = observations[' in source
+    assert 'expected_runtime_closure["cgroup_readbacks"] = observations[' in source
+
+
+def test_v3_shared_deadline_refuses_before_readiness_or_ack(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(host_confinement.time, "monotonic", lambda: 10.0)
+    assert host_confinement._remaining_session_time(10.25, "launcher readiness") == 0.25
+    for boundary in ("launcher readiness", "readiness acknowledgement"):
+        with pytest.raises(host_confinement.HostConfinementError, match=boundary):
+            host_confinement._remaining_session_time(10.0, boundary)
+
+    source = (ROOT / "src/ranex/cli/host_confinement.py").read_text(encoding="utf-8")
+    deadline = source.index("session_deadline = time.monotonic() + (")
+    release_start = source.index("session.release_start_gate()", deadline)
+    mount_readback = source.index(
+        '_remaining_session_time(session_deadline, "runtime mount readback")'
+    )
+    drain = source.index(
+        '_remaining_session_time(session_deadline, "verifier cgroup drain")',
+        mount_readback,
+    )
+    verifier_go = source.index(
+        '_remaining_session_time(session_deadline, "runtime verifier GO")', drain
+    )
+    readiness = source.index(
+        '_remaining_session_time(\n                session_deadline, "launcher readiness"'
+    )
+    readbacks = source.index("_read_worker_cgroup_membership", readiness)
+    acknowledgement = source.index(
+        '_remaining_session_time(session_deadline, "readiness acknowledgement")',
+        readbacks,
+    )
+    release = source.index('os.write(readiness_ack_write, b"1")', acknowledgement)
+    assert (
+        deadline
+        < release_start
+        < mount_readback
+        < drain
+        < verifier_go
+        < readiness
+        < readbacks
+        < acknowledgement
+        < release
+    )
 
 
 def test_controller_admits_v3_and_preserves_ordinary_and_v2_parsing() -> None:

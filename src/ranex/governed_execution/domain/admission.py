@@ -247,18 +247,40 @@ def _validate_open_object(value: Any, field: str) -> None:
 
 
 def _validate_qualification_report(value: Any) -> Mapping[str, Any]:
-    report = _mapping_with_keys(
-        value,
-        {
-            "schema", "qualified", "refusal", "kernel", "primitives", "cgroup",
-            "open_objects", "digests", "delegation", "host_state",
-        },
-        "host-qualification report",
-    )
+    base_keys = {
+        "schema", "qualified", "refusal", "kernel", "primitives", "cgroup",
+        "open_objects", "digests", "delegation", "host_state",
+    }
+    if not isinstance(value, Mapping) or frozenset(value) not in {
+        frozenset(base_keys),
+        frozenset(base_keys | {"runtime_v3_verifier_isolation"}),
+    }:
+        raise ValueError("host-qualification report does not match its closed schema")
+    report = value
     if report["schema"] != _QUALIFICATION_SCHEMA:
         raise ValueError(f"unknown host-qualification schema: {report['schema']!r}")
     if report["qualified"] is not True or report["refusal"] is not None:
         raise ValueError("host-qualification report is not a successful qualification")
+    if "runtime_v3_verifier_isolation" in report:
+        isolation = _mapping_with_keys(
+            report["runtime_v3_verifier_isolation"],
+            {
+                "fork",
+                "output_write",
+                "scratch_write",
+                "worker_released",
+                "verifier_cgroup_populated_after_drain",
+            },
+            "runtime-v3 verifier isolation",
+        )
+        if isolation != {
+            "fork": "EPERM",
+            "output_write": "ENOENT",
+            "scratch_write": "ENOENT",
+            "worker_released": False,
+            "verifier_cgroup_populated_after_drain": 0,
+        }:
+            raise ValueError("runtime-v3 verifier isolation probe did not pass")
     kernel = _mapping_with_keys(report["kernel"], {"release", "architecture"}, "kernel")
     _required_text(kernel["release"], "kernel.release")
     _required_text(kernel["architecture"], "kernel.architecture")

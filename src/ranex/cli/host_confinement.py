@@ -60,6 +60,12 @@ E_C18_RESULT = "E-C18-RESULT"
 E_C18_PATH_ALIAS = "E-C18-PATH-ALIAS"
 E_C18_HOST_DRIFT = "E-C18-HOST-DRIFT"
 
+# v3 keeps the command envelope closed and supplies only the runtime source;
+# destinations are fixed by the profile and never become caller-controlled data.
+_RUNTIME_VERIFIER_REPORT_ARG = "--ranex-verifier-report-fd"
+_RUNTIME_VERIFIER_ACK_ARG = "--ranex-verifier-ack-fd"
+RUNTIME_V3_CANONICAL_SHA256 = "ec521ade8163ac2e86069daf07d8404e352b9b96b62583284574ba71fcb1172e"
+
 PROTOCOL = "ranex-launcher-v1"
 RESPONSE_LIMIT = 65_536
 REQUEST_LIMIT = 4_096
@@ -193,6 +199,357 @@ class BrokerEndpoint:
     bus: Path
     runtime_mode: int
     bus_mode: int
+
+
+@dataclass(frozen=True)
+class RuntimeProfile:
+    schema: str
+
+
+def parse_runtime_verifier_frames(raw: bytes, roots: Sequence[str]) -> dict[str, bytes]:
+    """Parse exactly one bounded report frame for each ordered root."""
+    if raw.startswith(b"ranex-worker-launcher-v3-error:"):
+        raise ValueError(raw.decode("utf-8", errors="replace").strip())
+    result: dict[str, bytes] = {}
+    offset = 0
+    for root in roots:
+        if offset + 4 > len(raw): raise ValueError("truncated verifier frame")
+        root_length = struct.unpack_from(">I", raw, offset)[0]; offset += 4
+        if root_length == 0 or offset + root_length > len(raw): raise ValueError("invalid root frame")
+        encoded_root = raw[offset:offset + root_length]
+        try:
+            actual_root = encoded_root.decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValueError(
+                f"non-UTF-8 verifier root at {offset}/{len(raw)}: {encoded_root[:64].hex()}"
+            ) from exc
+        offset += root_length
+        if actual_root != root or actual_root in result: raise ValueError("reordered verifier frame")
+        if offset + 4 > len(raw): raise ValueError("truncated report frame")
+        report_length = struct.unpack_from(">I", raw, offset)[0]; offset += 4
+        if report_length > 65536 or offset + report_length > len(raw): raise ValueError("invalid report frame")
+        result[root] = raw[offset:offset + report_length]; offset += report_length
+    if offset != len(raw):
+        raise ValueError(
+            f"trailing verifier frame at {offset}/{len(raw)}: {raw[offset:offset + 64].hex()}"
+        )
+    return result
+
+
+def runtime_verifier_decision(expected: Mapping[str, Mapping[str, object]], reports: Mapping[str, bytes]) -> bytes:
+    """Return GO only when every report normalizes to its independently expected set."""
+    from ranex.foundation.dynamic_runtime import normalize_loader_report
+    if list(reports) != sorted(expected) or set(reports) != set(expected): return b"REFUSE"
+    try:
+        normalized = {
+            root: normalize_loader_report(reports[root], "/ranex/runtime/" + root)
+            for root in sorted(expected)
+        }
+    except (ValueError, UnicodeError):
+        return b"REFUSE"
+    return b"GO" if normalized == {root: expected[root] for root in sorted(expected)} else b"REFUSE"
+
+
+def _runtime_map_bytes(closure: Any, manifest: Mapping[str, Any], descriptors: Mapping[str, int]) -> bytes:
+    """Encode the canonical, destination-free descriptor map for the launcher."""
+    rows = []
+    for row in closure.file_set:
+        path = str(row["path"])
+        rows.append({
+            "fd": descriptors[path], "path": path, "kind": row["kind"],
+            "mode": row["mode"], "sha256": row["sha256"],
+        })
+    value = {
+        "source": "sealed-memfd-map",
+        "files": sorted(rows, key=lambda row: str(row["path"])),
+        "loader": {"path": manifest["loader"]["path"], "sha256": manifest["loader"]["sha256"]},
+        "entrypoint": {"path": manifest["entrypoint"]["path"], "sha256": manifest["entrypoint"]["sha256"]},
+    }
+    return canonical_json_bytes(value) + b"\n"
+
+
+def _read_runtime_verifier_report(
+    verifier_report_read: int, roots: Sequence[str], deadline: float
+) -> dict[str, bytes]:
+    chunks: list[bytes] = []
+    total = 0
+    poller = select.poll()
+    poller.register(verifier_report_read, select.POLLIN | select.POLLHUP | select.POLLERR)
+    while True:
+        remaining_ms = max(0, int((deadline - time.monotonic()) * 1000))
+        if remaining_ms == 0 or not poller.poll(remaining_ms):
+            raise ValueError("verifier report timed out before controller GO")
+        chunk = os.read(verifier_report_read, 65536)
+        if not chunk:
+            break
+        total += len(chunk)
+        if total > 65536 * max(1, len(roots)):
+            raise ValueError("verifier report is oversized")
+        chunks.append(chunk)
+    return parse_runtime_verifier_frames(b"".join(chunks), roots)
+
+
+def _read_runtime_mount_readbacks(
+    descriptor: int, expected_rows: Sequence[Mapping[str, Any]]
+) -> list[dict[str, Any]]:
+    """Read the launcher's bounded binary observations and exact-compare policy."""
+
+    os.lseek(descriptor, 0, os.SEEK_SET)
+    raw = bytearray()
+    while block := os.read(descriptor, 65536):
+        raw.extend(block)
+        if len(raw) > 1024 * 1024:
+            raise ValueError("runtime mount readback is oversized")
+    if len(raw) < 4:
+        raise ValueError("runtime mount readback is truncated")
+    count = int.from_bytes(raw[:4], "big")
+    cursor = 4
+    observations: dict[str, tuple[int, int, int, bool]] = {}
+    for _index in range(count):
+        if cursor + 2 > len(raw):
+            raise ValueError("runtime mount readback is truncated")
+        path_length = int.from_bytes(raw[cursor : cursor + 2], "big")
+        cursor += 2
+        end = cursor + path_length
+        if path_length == 0 or end + 17 > len(raw):
+            raise ValueError("runtime mount readback is truncated")
+        try:
+            path = bytes(raw[cursor:end]).decode("utf-8")
+        except UnicodeDecodeError as exc:
+            raise ValueError("runtime mount readback path is not UTF-8") from exc
+        cursor = end
+        mode = int.from_bytes(raw[cursor : cursor + 4], "big")
+        seals = int.from_bytes(raw[cursor + 4 : cursor + 8], "big")
+        attributes = int.from_bytes(raw[cursor + 8 : cursor + 16], "big")
+        copied = raw[cursor + 16] == 1
+        cursor += 17
+        if path in observations:
+            raise ValueError("duplicate runtime mount readback path")
+        observations[path] = (mode, seals, attributes, copied)
+    if cursor != len(raw) or count != len(expected_rows):
+        raise ValueError("runtime mount readback count or trailing bytes differ")
+    observed_rows: list[dict[str, Any]] = []
+    for expected in expected_rows:
+        path = str(expected["path"])
+        observation = observations.get(path)
+        expected_attributes = 0x01 | (
+            0x08 if expected["mount_attributes"] == ["RDONLY", "NOEXEC"] else 0
+        )
+        expected_seals = 0x01 | 0x02 | 0x04 | 0x08 | 0x20
+        if "FUTURE_WRITE" in expected["seals"]:
+            expected_seals |= 0x10
+        if observation != (
+            int(str(expected["mode"]), 8),
+            expected_seals,
+            expected_attributes,
+            True,
+        ):
+            raise ValueError(f"runtime mount readback differs for {path}")
+        observed_rows.append(dict(expected))
+    return observed_rows
+
+
+def validate_confinement_result_v2(value: Mapping[str, Any], expected: Mapping[str, Any]) -> None:
+    """Consume the exact result-v2 envelope and independently bound digests."""
+    top_level = {
+        "schema",
+        "profile_digests",
+        "namespace_readbacks",
+        "cgroup_readbacks",
+        "command",
+        "teardown",
+        "outputs",
+        "runtime_closure",
+        "sealed_files",
+    }
+    if set(value) != top_level or value.get("schema") != "ranex-confinement-result-v2":
+        raise ValueError("result-v2 envelope")
+    runtime = value.get("runtime_closure")
+    runtime_fields = {
+        "manifest_digest",
+        "sealed_file_set_digest",
+        "parsed_graph_digest",
+        "realized_graph_digest",
+        "loader_digest",
+        "profile_digest",
+    }
+    if not isinstance(runtime, dict):
+        raise ValueError("runtime_closure")
+    if set(runtime) != runtime_fields:
+        missing = sorted(runtime_fields - set(runtime))
+        raise ValueError(missing[0] if missing else "runtime_closure")
+    if any(
+        not isinstance(runtime[name], str)
+        or re.fullmatch(r"[0-9a-f]{64}", runtime[name]) is None
+        for name in runtime_fields
+    ):
+        raise ValueError("runtime closure digest")
+    if set(expected) != {
+        "runtime_closure",
+        "profile_digests",
+        "argv_digest",
+        "cgroup_limits",
+        "namespace_readbacks",
+        "cgroup_readbacks",
+    }:
+        raise ValueError("expected result bindings")
+    expected_runtime = expected.get("runtime_closure")
+    if not isinstance(expected_runtime, dict) or set(expected_runtime) != runtime_fields:
+        raise ValueError("expected runtime bindings")
+    for name, digest in expected_runtime.items():
+        if runtime.get(name) != digest:
+            raise ValueError(name)
+    rows = value.get("sealed_files")
+    if not isinstance(rows, list) or not rows:
+        raise ValueError("sealed files")
+    actual = hashlib.sha256(canonical_json_bytes(rows)).hexdigest()
+    if runtime.get("sealed_file_set_digest") != actual:
+        raise ValueError("sealed file set")
+    previous = ""
+    for row in rows:
+        if (
+            not isinstance(row, dict)
+            or set(row)
+            != {
+                "path",
+                "mode",
+                "kind",
+                "sha256",
+                "elf",
+                "seals",
+                "mount_attributes",
+            }
+            or not isinstance(row.get("path"), str)
+            or not row["path"]
+            or row["path"] <= previous
+            or row.get("kind")
+            not in {
+                "loader",
+                "entrypoint",
+                "shared-library",
+                "native-extension",
+                "runtime-data",
+                "manifest",
+            }
+            or (row.get("elf") is not None and not isinstance(row.get("elf"), dict))
+            or row.get("seals")
+            not in (
+                ["WRITE", "GROW", "SHRINK", "EXEC", "SEAL"],
+                ["WRITE", "GROW", "SHRINK", "FUTURE_WRITE", "EXEC", "SEAL"],
+            )
+            or row.get("mount_attributes") not in (["RDONLY"], ["RDONLY", "NOEXEC"])
+            or not isinstance(row.get("mode"), str)
+            or re.fullmatch(r"0[0-7]{3,4}", row["mode"]) is None
+            or not isinstance(row.get("sha256"), str)
+            or re.fullmatch(r"sha256:[0-9a-f]{64}", row["sha256"]) is None
+        ):
+            raise ValueError("sealed file")
+        previous = row["path"]
+    outputs = value.get("outputs")
+    if not isinstance(outputs, list):
+        raise ValueError("outputs")
+    for row in outputs:
+        if (
+            not isinstance(row, dict)
+            or set(row) != {"path", "bytes", "sha256"}
+            or not isinstance(row["path"], str)
+            or not row["path"]
+            or not isinstance(row["bytes"], int)
+            or row["bytes"] < 0
+            or not isinstance(row["sha256"], str)
+            or re.fullmatch(r"[0-9a-f]{64}", row["sha256"]) is None
+        ):
+            raise ValueError("output row")
+    profiles = value.get("profile_digests")
+    if not isinstance(profiles, dict) or set(profiles) != {"runtime", "host", "launcher"}:
+        raise ValueError("profile_digests")
+    if any(
+        not isinstance(profiles[name], str)
+        or re.fullmatch(r"[0-9a-f]{64}", profiles[name]) is None
+        for name in profiles
+    ):
+        raise ValueError("profile_digests")
+    if profiles != expected.get("profile_digests"):
+        raise ValueError("profile_digests")
+    namespaces = value.get("namespace_readbacks")
+    namespace_fields = {"user", "mount", "pid", "ipc", "network", "cgroup"}
+    namespace_prefixes = {"mount": "mnt", "network": "net"}
+    if (
+        not isinstance(namespaces, dict)
+        or set(namespaces) != namespace_fields
+        or any(
+            not isinstance(namespaces[name], str)
+            or re.fullmatch(
+                rf"{namespace_prefixes.get(name, name)}:\[[1-9][0-9]*\]",
+                namespaces[name],
+            )
+            is None
+            for name in namespaces
+        )
+    ):
+        raise ValueError("namespace_readbacks")
+    if namespaces != expected.get("namespace_readbacks"):
+        raise ValueError("namespace_readbacks")
+    cgroup = value.get("cgroup_readbacks")
+    if (
+        not isinstance(cgroup, dict)
+        or set(cgroup) != {"limits", "events", "usage"}
+        or any(not isinstance(cgroup[name], dict) for name in cgroup)
+    ):
+        raise ValueError("cgroup_readbacks")
+    if cgroup != expected.get("cgroup_readbacks"):
+        raise ValueError("cgroup_readbacks")
+    if cgroup["limits"] != expected.get("cgroup_limits"):
+        raise ValueError("cgroup_readbacks")
+    events = cgroup["events"]
+    usage = cgroup["usage"]
+    if (
+        set(events) != {"memory", "pids", "populated"}
+        or not isinstance(events["memory"], dict)
+        or not isinstance(events["pids"], dict)
+        or any(
+            not isinstance(name, str) or type(count) is not int or count < 0
+            for group in (events["memory"], events["pids"])
+            for name, count in group.items()
+        )
+        or events["populated"] != 0
+        or set(usage) != {"cpu_usage_usec"}
+        or type(usage["cpu_usage_usec"]) is not int
+        or usage["cpu_usage_usec"] < 0
+    ):
+        raise ValueError("cgroup_readbacks")
+    command = value.get("command")
+    if (
+        not isinstance(command, dict)
+        or set(command)
+        != {"argv_digest", "exit_code", "no_new_privs", "landlock", "seccomp"}
+        or not isinstance(command.get("argv_digest"), str)
+        or re.fullmatch(r"[0-9a-f]{64}", command["argv_digest"]) is None
+        or type(command.get("exit_code")) is not int
+        or command.get("no_new_privs") is not True
+        or command.get("landlock") is not True
+        or command.get("seccomp") is not True
+    ):
+        raise ValueError("command")
+    if command["argv_digest"] != expected.get("argv_digest"):
+        raise ValueError("command")
+    if value.get("teardown") != {
+        "cgroup_kill": True,
+        "populated": 0,
+        "cgroup_removed": True,
+    }:
+        raise ValueError("teardown")
+
+
+def _release_runtime_worker(verifier_ack_write: int, reports: Mapping[str, bytes], expected: Mapping[str, Mapping[str, object]]) -> None:
+    expected_v2 = {"schema", "argv", "environment", "input", "subject", "runtime", "output", "scratch", "limits"}
+    _ = expected_v2
+    decision = runtime_verifier_decision(expected, reports)
+    if decision != b"GO":
+        os.write(verifier_ack_write, b"REFUSE")
+        return
+    os.write(verifier_ack_write, b"GO")
+    _read_launcher_readiness(verifier_ack_write)
 
 
 def _refuse(code: str, detail: str) -> NoReturn:
@@ -372,7 +729,7 @@ def _open_verified(
             _refuse(code, f"{path} carries security.capability")
         actual_digest = _sha256_descriptor(descriptor)
         if actual_digest != expected_digest:
-            _refuse(code, f"{path} sha256 does not match its pin")
+            _refuse(code, "opened object sha256 does not match its pin")
         return OpenedObject(descriptor, path, actual_digest, facts.st_uid, mode)
     except (OSError, HostConfinementError):
         os.close(descriptor)
@@ -2767,15 +3124,17 @@ def _validate_profile_and_objects(
     ):
         _refuse(E_EXEC, "profile does not bind the supplied build manifest")
     artifact_digest = _digest(artifact.get("sha256"), "artifact.sha256", E_EXEC)
-    if _digest(profile.get("artifact_sha256"), "artifact_sha256", E_EXEC) != artifact_digest:
-        _refuse(E_EXEC, "profile and manifest artifact digests differ")
+    profile_artifact_digest = _digest(profile.get("artifact_sha256"), "artifact_sha256", E_EXEC)
     launcher = _open_verified(
         artifact_path,
-        artifact_digest,
+        profile_artifact_digest,
         code=E_EXEC,
         exact_mode=0o555,
         required_owner=os.geteuid(),
     )
+    if launcher.sha256 != artifact_digest:
+        os.close(launcher.descriptor)
+        _refuse(E_EXEC, "profile and manifest artifact digests differ")
     bubblewrap_path, bubblewrap_digest = _helper_pin(profile, "bubblewrap")
     try:
         bubblewrap = _open_verified(bubblewrap_path, bubblewrap_digest, code=E_EXEC)
@@ -2865,6 +3224,110 @@ def _qualification_open_object(
         "security_capability": False,
         "filesystem": dict(filesystem),
     }
+
+
+def _runtime_v3_verifier_isolation_probe() -> dict[str, Any]:
+    """Exercise the verifier-only fork and absent writable trees in a sacrificial child."""
+    class _Filter(ctypes.Structure):
+        _fields_ = [("code", ctypes.c_ushort), ("jt", ctypes.c_ubyte),
+                    ("jf", ctypes.c_ubyte), ("k", ctypes.c_uint32)]
+    class _Program(ctypes.Structure):
+        _fields_ = [("length", ctypes.c_ushort), ("filter", ctypes.POINTER(_Filter))]
+    parent, _relative = _current_cgroup_root()
+    if _statfs_type(parent) != CGROUP2_SUPER_MAGIC or not os.access(parent, os.W_OK):
+        _refuse(E_C18_GATE, "qualification verifier lacks writable cgroup-v2")
+    available = REQUIRED_CONTROLLERS & set(_cgroup_controllers(parent))
+    if "pids" not in available:
+        _refuse(E_C18_GATE, "qualification verifier lacks the pids controller")
+    controller, verifier, _readbacks, enrolled = _create_worker_cgroup(
+        parent,
+        {"memory_bytes": 67108864, "pids": 2},
+        required_controllers=available,
+    )
+    gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
+    pipe_read, pipe_write = os.pipe2(os.O_CLOEXEC)
+    child = os.fork()
+    if child == 0:
+        try:
+            os.close(gate_write)
+            os.close(pipe_read)
+            if os.read(gate_read, 1) != b"1":
+                os._exit(125)
+            libc = ctypes.CDLL(None, use_errno=True)
+            libc.prctl(38, 1, 0, 0, 0)  # PR_SET_NO_NEW_PRIVS
+            filters = (_Filter * 6)(
+                _Filter(0x20, 0, 0, 0), _Filter(0x15, 3, 0, 56),
+                _Filter(0x15, 2, 0, 57), _Filter(0x15, 1, 0, 58),
+                _Filter(0x06, 0, 0, 0x7fff0000),
+                _Filter(0x06, 0, 0, 0x00050000 | errno.EPERM),
+            )
+            program = _Program(6, filters)
+            libc.syscall(317, 1, 0, ctypes.byref(program))  # seccomp SET_MODE_FILTER
+            try:
+                os.fork()
+                fork_result = "0"
+            except OSError as exc:
+                fork_result = errno.errorcode.get(exc.errno, str(exc.errno))
+            writes = []
+            for path in ("/ranex/output/probe", "/ranex/scratch/probe"):
+                try:
+                    Path(path).write_bytes(b"x")
+                    writes.append("OK")
+                except OSError as exc:
+                    writes.append(errno.errorcode.get(exc.errno, str(exc.errno)))
+            os.write(pipe_write, json.dumps({"fork": fork_result, "writes": writes}).encode())
+            signal.pause()
+        finally:
+            os._exit(0)
+    os.close(gate_read)
+    os.close(pipe_write)
+    try:
+        _write_control(verifier / "cgroup.procs", f"{child}\n")
+        members = [int(value) for value in (verifier / "cgroup.procs").read_text().split()]
+        if members != [child]:
+            _refuse(E_C18_READBACK, "qualification verifier cgroup enrollment differs")
+        if os.write(gate_write, b"1") != 1:
+            _refuse(E_C18_READBACK, "cannot release qualification verifier")
+        os.close(gate_write)
+        gate_write = -1
+        result = json.loads(os.read(pipe_read, 4096))
+        _write_control(verifier / "cgroup.kill", "1\n")
+        os.waitpid(child, 0)
+        child = -1
+        events = _parse_cgroup_events((verifier / "cgroup.events").read_text())
+        if events.get("populated") != 0 or (verifier / "cgroup.procs").read_text().split():
+            _refuse(E_C18_DRAIN, "qualification verifier cgroup did not drain")
+        verifier.rmdir()
+        return {
+            "fork": result.get("fork"),
+            "output_write": result.get("writes", [None, None])[0],
+            "scratch_write": result.get("writes", [None, None])[1],
+            "worker_released": False,
+            "verifier_cgroup_populated_after_drain": events["populated"],
+        }
+    finally:
+        os.close(pipe_read)
+        if gate_write >= 0:
+            os.close(gate_write)
+        if child > 0:
+            try:
+                os.kill(child, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            try:
+                os.waitpid(child, 0)
+            except ChildProcessError:
+                pass
+        if verifier.exists():
+            try:
+                _write_control(verifier / "cgroup.kill", "1\n")
+                verifier.rmdir()
+            except OSError:
+                pass
+        try:
+            _release_controller_leaf(parent, controller, enrolled)
+        except (OSError, ValueError):
+            pass
 
 
 def qualify(
@@ -3041,6 +3504,7 @@ def qualify(
                 userns_sysctls=userns_sysctls,
                 userns_source=userns_source,
             ),
+            "runtime_v3_verifier_isolation": _runtime_v3_verifier_isolation_probe(),
         }
         _write_report_atomic(root, report, report_value)
     finally:
@@ -3058,12 +3522,17 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
         path = resolve_within_repository(root, descriptor_arg)
     raw = path.read_bytes()
     value = _mapping(json.loads(raw), "confinement descriptor", E_C18_GATE)
-    expected = {"schema", "argv", "environment", "input", "subject", "toolchain", "output", "scratch", "limits"}
-    legacy_expected = expected - {"input"}
-    if (
-        frozenset(value) not in {frozenset(expected), frozenset(legacy_expected)}
-        or value.get("schema") != "ranex-confinement-command-v1"
-    ):
+    v1_expected = {"schema", "argv", "environment", "input", "subject", "toolchain", "output", "scratch", "limits"}
+    v1_legacy_expected = v1_expected - {"input"}
+    v2_expected = {"schema", "argv", "environment", "input", "subject", "runtime", "output", "scratch", "limits"}
+    valid_shape = (
+        value.get("schema") == "ranex-confinement-command-v1"
+        and frozenset(value) in {frozenset(v1_expected), frozenset(v1_legacy_expected)}
+    ) or (
+        value.get("schema") == "ranex-confinement-command-v2"
+        and frozenset(value) == frozenset(v2_expected)
+    )
+    if not valid_shape:
         _refuse(E_C18_GATE, "confinement descriptor schema is not closed")
     if raw != canonical_json_bytes(value):
         _refuse(E_C18_GATE, "confinement descriptor is not canonical JSON")
@@ -3086,11 +3555,12 @@ def _session_descriptor(root: Path, descriptor_arg: str) -> dict[str, Any]:
     if set(environment) - {"LC_ALL", "TZ"}:
         _refuse(E_C18_GATE, "worker environment exceeds the launcher allowlist")
     resolved: dict[str, Path] = {}
-    source_names = (
-        ("input", "subject", "toolchain", "output", "scratch")
-        if "input" in value
-        else ("subject", "toolchain", "output", "scratch")
-    )
+    source_names = (("input", "subject", "runtime", "output", "scratch")
+                    if value.get("schema") == "ranex-confinement-command-v2" else
+                    (("input", "subject", "toolchain", "output", "scratch")
+                     if "input" in value else ("subject", "toolchain", "output", "scratch")))
+    if "runtime" in value:
+        source_names = (*source_names, "runtime")
     for name in source_names:
         argument = _string(value.get(name), name, E_C18_GATE)
         candidate = resolve_within_repository(root, argument)
@@ -3136,6 +3606,22 @@ def _current_session_host_state() -> dict[str, Any]:
 
 def _session_runtime_profile(value: Mapping[str, Any]) -> bool:
     schema = value.get("schema")
+    if schema == "ranex-strict-local-runtime-v3":
+        expected = {
+            "schema", "inherits", "runtime_root", "runtime_files", "sealed_mount_attributes",
+            "mounts", "loader_tcb", "verifier", "seccomp",
+        }
+        if set(value) != expected or value.get("runtime_root") != "/ranex/runtime":
+            _refuse(E_C18_GATE, "runtime v3 root is invalid")
+        if hashlib.sha256(canonical_json_bytes(value)).hexdigest() != RUNTIME_V3_CANONICAL_SHA256:
+            _refuse(E_C18_GATE, "runtime v3 profile differs from the admitted contract")
+        files = _mapping(value.get("runtime_files"), "runtime v3 files", E_C18_GATE)
+        if files != {"maximum": 511, "sealed_descriptors_maximum": 512, "source": "sealed-memfd-map"}:
+            _refuse(E_C18_GATE, "runtime v3 file profile is invalid")
+        mounts = _mapping(value.get("mounts"), "runtime v3 mounts", E_C18_GATE)
+        if set(mounts) != {"input", "output", "runtime", "scratch", "subject"}:
+            _refuse(E_C18_GATE, "runtime v3 mount profile is invalid")
+        return RuntimeProfile(schema)
     if schema == "ranex-strict-local-runtime-v2":
         expected_v2 = {
             "cgroup",
@@ -3358,7 +3844,10 @@ def _read_cgroup_text(path: Path, label: str, *, allow_empty: bool = False) -> s
 
 
 def _create_worker_cgroup(
-    parent: Path, limits: Mapping[str, int]
+    parent: Path,
+    limits: Mapping[str, int],
+    *,
+    required_controllers: set[str] | frozenset[str] = REQUIRED_CONTROLLERS,
 ) -> tuple[Path, Path, dict[str, str], set[str]]:
     """Make a controller leaf and sibling worker leaf beneath held delegation.
 
@@ -3399,19 +3888,27 @@ def _create_worker_cgroup(
                 parent / "cgroup.subtree_control", "cgroup.subtree_control", allow_empty=True
             ).split()
         )
-        missing = REQUIRED_CONTROLLERS - {name.lstrip("+") for name in enabled}
+        missing = set(required_controllers) - {name.lstrip("+") for name in enabled}
         if missing:
             _write_control(parent / "cgroup.subtree_control", " ".join(f"+{name}" for name in sorted(missing)) + "\n")
             enrolled = set(missing)
         actual = {name.lstrip("+") for name in _read_cgroup_text(parent / "cgroup.subtree_control", "cgroup.subtree_control").split()}
-        if not REQUIRED_CONTROLLERS <= actual:
+        if not set(required_controllers) <= actual:
             _refuse(E_C18_READBACK, "required controllers did not read back enabled")
         worker.mkdir(mode=0o755)
-        requested = {
-            "cpu.max": "max 100000",
-            "memory.max": str(_exact_integer(limits.get("memory_bytes"), "memory_bytes", E_C18_GATE, minimum=1)),
-            "pids.max": str(_exact_integer(limits.get("pids"), "pids", E_C18_GATE, minimum=1)),
-        }
+        requested: dict[str, str] = {}
+        if "cpu" in required_controllers:
+            requested["cpu.max"] = "max 100000"
+        if "memory" in required_controllers:
+            requested["memory.max"] = str(
+                _exact_integer(
+                    limits.get("memory_bytes"), "memory_bytes", E_C18_GATE, minimum=1
+                )
+            )
+        if "pids" in required_controllers:
+            requested["pids.max"] = str(
+                _exact_integer(limits.get("pids"), "pids", E_C18_GATE, minimum=1)
+            )
         for name, value in requested.items():
             _write_control(worker / name, value + "\n")
         readbacks = {name: _read_cgroup_text(worker / name, name).strip() for name in requested}
@@ -3428,6 +3925,62 @@ def _create_worker_cgroup(
         except (OSError, ValueError):
             pass
         raise
+
+
+def _create_verifier_cgroup(worker: Path, limits: Mapping[str, int]) -> Path:
+    """Create the dedicated, bounded verifier sibling before launcher release."""
+
+    verifier = worker.with_name(worker.name.removesuffix("-worker") + "-verifier")
+    verifier.mkdir(mode=0o755)
+    try:
+        requested = {
+            "cpu.max": "max 100000",
+            "memory.max": str(
+                _exact_integer(
+                    limits.get("memory_bytes"), "memory_bytes", E_C18_GATE, minimum=1
+                )
+            ),
+            "pids.max": str(
+                _exact_integer(limits.get("pids"), "pids", E_C18_GATE, minimum=1)
+            ),
+        }
+        for name, value in requested.items():
+            _write_control(verifier / name, value + "\n")
+        readbacks = {
+            name: _read_cgroup_text(verifier / name, f"verifier {name}").strip()
+            for name in requested
+        }
+        if readbacks != requested:
+            _refuse(E_C18_READBACK, "verifier cgroup limit readback differs")
+        return verifier
+    except BaseException:
+        try:
+            verifier.rmdir()
+        except OSError:
+            pass
+        raise
+
+
+def _drain_remove_verifier_cgroup(verifier: Path) -> None:
+    """Require the verifier leaf empty, kill it defensively, then remove it."""
+
+    if not verifier.exists():
+        return
+    _write_control(verifier / "cgroup.kill", "1\n")
+    events = _parse_cgroup_events(
+        _read_cgroup_text(verifier / "cgroup.events", "verifier cgroup.events")
+    )
+    members = _read_cgroup_text(
+        verifier / "cgroup.procs", "verifier cgroup.procs", allow_empty=True
+    ).split()
+    if events.get("populated") != 0 or members:
+        _refuse(E_C18_DRAIN, "verifier cgroup did not drain before GO")
+    try:
+        verifier.rmdir()
+    except OSError as exc:
+        raise HostConfinementError(
+            E_C18_DRAIN, f"cannot remove drained verifier cgroup: {exc}"
+        ) from exc
 
 
 def _release_controller_leaf(parent: Path, controller: Path, enrolled: set[str]) -> None:
@@ -3527,6 +4080,13 @@ def _read_launcher_readiness(descriptor: int, timeout: float) -> tuple[int, dict
             }
 
 
+def _remaining_session_time(deadline: float, boundary: str) -> float:
+    remaining = deadline - time.monotonic()
+    if remaining <= 0:
+        _refuse(E_C18_READBACK, f"session deadline expired before {boundary}")
+    return remaining
+
+
 def _worker_enforcement_readbacks(worker_pid: int) -> dict[str, bool]:
     try:
         status = Path(f"/proc/{worker_pid}/status").read_text(encoding="utf-8")
@@ -3613,7 +4173,9 @@ def confinement_session(
     manifest_path = resolve_within_repository(root, manifest_arg)
     artifact_path = resolve_within_repository(root, artifact_arg)
     runtime = _load_json(profile_path, E_C18_GATE)
-    runtime_v2 = _session_runtime_profile(runtime)
+    runtime_profile_value = _session_runtime_profile(runtime)
+    runtime_v3 = isinstance(runtime_profile_value, RuntimeProfile)
+    runtime_v2 = runtime_profile_value is True
     relative_command: Path | None = None
     if runtime_v2:
         command_path = Path(descriptor["argv"][0])
@@ -3628,18 +4190,21 @@ def confinement_session(
             part in {".", ".."} for part in relative_command.parts
         ):
             _refuse(E_C18_GATE, "v2 worker executable does not name a toolchain object")
-    if runtime_v2 and "input" not in descriptor["_resolved"]:
+    if (runtime_v2 or runtime_v3) and "input" not in descriptor["_resolved"]:
         _refuse(E_C18_GATE, "v2 confinement descriptor has no input source")
-    if not runtime_v2 and "input" in descriptor["_resolved"]:
+    if not runtime_v2 and not runtime_v3 and "input" in descriptor["_resolved"]:
         _refuse(E_C18_GATE, "v1 confinement descriptor carries a v2 input source")
+    if runtime_v3 and "runtime" not in descriptor["_resolved"]:
+        _refuse(E_C18_GATE, "v3 confinement descriptor has no runtime source")
     if qualification.get("qualified") is not True:
         _refuse(E_C18_GATE, "session requires a successful strict-local qualification")
     primitives = _mapping(qualification.get("primitives"), "qualification primitives", E_C18_GATE)
     landlock = _mapping(primitives.get("landlock"), "qualification Landlock", E_C18_GATE)
+    landlock_abi_minimum = 6 if runtime_v3 else runtime["landlock_abi_minimum"]
     if (
         landlock.get("available") is not True
         or not isinstance(landlock.get("abi"), int)
-        or landlock["abi"] < runtime["landlock_abi_minimum"]
+        or landlock["abi"] < landlock_abi_minimum
         or primitives.get("seccomp_filter") is not True
         or primitives.get("no_new_privs") is not True
         or primitives.get("openat2") is not True
@@ -3655,11 +4220,23 @@ def confinement_session(
     gate_read = gate_write = -1
     readiness_read = readiness_write = -1
     readiness_ack_read = readiness_ack_write = -1
+    verifier_report_read = verifier_report_write = -1
+    verifier_ack_read = verifier_ack_write = -1
+    verifier_procs_fd = verifier_events_fd = verifier_kill_fd = -1
+    runtime_map_fd = runtime_readback_fd = -1
     child = -1
     controller: Path | None = None
     worker: Path | None = None
+    verifier_cgroup: Path | None = None
     enrolled_controllers: set[str] = set()
     session: ConfinementSession | None = None
+    runtime_closure: Any | None = None
+    runtime_manifest: dict[str, Any] | None = None
+    runtime_expected: dict[str, Mapping[str, object]] | None = None
+    runtime_parsed_digest: str | None = None
+    runtime_realized_digest: str | None = None
+    runtime_observed_rows: list[dict[str, Any]] | None = None
+    session_deadline: float | None = None
     primary_error: BaseException | None = None
     try:
         _host, _manifest, launcher, bubblewrap = _validate_profile_and_objects(
@@ -3710,6 +4287,60 @@ def confinement_session(
             )
             _require_self_contained_static_executable(command)
             output_fd = authority_fds["output"]
+        elif runtime_v3:
+            from ranex.foundation.dynamic_runtime import (
+                expected_realized_graph,
+                parse_runtime_manifest,
+                parsed_graph_digest,
+                parsed_runtime_graph,
+                seal_runtime_closure,
+            )
+            runtime_root = descriptor["_resolved"].get("runtime")
+            if runtime_root is None:
+                _refuse(E_C18_GATE, "v3 confinement descriptor has no runtime source")
+            closure_path = runtime_root / "closure.json"
+            raw_manifest = closure_path.read_bytes()
+            if raw_manifest != canonical_json_bytes(json.loads(raw_manifest)) + b"\n":
+                _refuse(E_C18_GATE, "runtime manifest is not canonical JSON")
+            runtime_manifest = json.loads(raw_manifest)
+            runtime_closure = seal_runtime_closure(runtime_root, raw_manifest)
+            parsed_manifest = parse_runtime_manifest(raw_manifest)
+            parsed_rows = parsed_runtime_graph(
+                runtime_root,
+                parsed_manifest,
+                {path: sealed.descriptor for path, sealed in runtime_closure.files},
+            )
+            runtime_parsed_digest = parsed_graph_digest(parsed_rows)
+            runtime_expected = expected_realized_graph(parsed_manifest)
+            loader_path = runtime_root / runtime_manifest["loader"]["path"]
+            entrypoint_path = runtime_root / runtime_manifest["entrypoint"]["path"]
+            if Path(descriptor["argv"][0]).as_posix() != "/ranex/runtime/" + runtime_manifest["entrypoint"]["path"]:
+                _refuse(E_C18_GATE, "v3 command is not the manifest entrypoint")
+            if _sha256_path(loader_path) != runtime_manifest["loader"]["sha256"].removeprefix("sha256:"):
+                _refuse(E_C18_GATE, "runtime loader digest differs from manifest")
+            if _sha256_path(entrypoint_path) != runtime_manifest["entrypoint"]["sha256"].removeprefix("sha256:"):
+                _refuse(E_C18_GATE, "runtime entrypoint digest differs from manifest")
+            if runtime_manifest["loader"]["sha256"] != runtime["loader_tcb"]["sha256"]:
+                _refuse(E_C18_GATE, "runtime loader is not pinned by the profile")
+            repository_fd = os.open(
+                root,
+                os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+            )
+            for name in ("input", "subject", "output", "scratch"):
+                held = _open_session_authority(
+                    repository_fd,
+                    descriptor[name],
+                    directory=True,
+                )
+                facts = os.fstat(held)
+                if (facts.st_dev, facts.st_ino) != descriptor["_identities"][name]:
+                    os.close(held)
+                    _refuse(
+                        E_C18_GATE,
+                        f"{name} authority changed after descriptor validation",
+                    )
+                authority_fds[name] = held
+            output_fd = authority_fds["output"]
         else:
             command, _command_filesystem = _open_unpinned_executable(
                 command_path, E_C18_GATE
@@ -3725,10 +4356,58 @@ def confinement_session(
         gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
         readiness_read, readiness_write = os.pipe2(os.O_CLOEXEC)
         readiness_ack_read, readiness_ack_write = os.pipe2(os.O_CLOEXEC)
+        if runtime_v3:
+            assert runtime_closure is not None and runtime_manifest is not None
+            verifier_cgroup = _create_verifier_cgroup(worker, descriptor["limits"])
+            verifier_report_read, verifier_report_write = os.pipe2(os.O_CLOEXEC)
+            verifier_ack_read, verifier_ack_write = os.pipe2(os.O_CLOEXEC)
+            verifier_procs_fd = os.open(
+                verifier_cgroup / "cgroup.procs", os.O_RDWR | os.O_CLOEXEC
+            )
+            verifier_events_fd = os.open(
+                verifier_cgroup / "cgroup.events", os.O_RDONLY | os.O_CLOEXEC
+            )
+            verifier_kill_fd = os.open(
+                verifier_cgroup / "cgroup.kill", os.O_WRONLY | os.O_CLOEXEC
+            )
+            from ranex.foundation.dynamic_runtime import (
+                create_runtime_memfd,
+                seal_runtime_bytes,
+            )
+
+            descriptors = {
+                path: sealed.descriptor for path, sealed in runtime_closure.files
+            }
+            map_sealed = seal_runtime_bytes(
+                _runtime_map_bytes(runtime_closure, runtime_manifest, descriptors),
+                kind="manifest",
+                mode=0o444,
+            )
+            runtime_map_fd = map_sealed.descriptor
+            runtime_readback_fd = create_runtime_memfd(
+                b"ranex-v3-readback",
+                0x0001 | getattr(os, "MFD_NOEXEC_SEAL", 0x0008),
+            )
         os.set_inheritable(launcher.descriptor, True)
-        os.set_inheritable(command.descriptor, True)
+        if command is not None:
+            os.set_inheritable(command.descriptor, True)
         os.set_inheritable(readiness_write, True)
         os.set_inheritable(readiness_ack_read, True)
+        if runtime_v3:
+            os.set_inheritable(verifier_report_write, True)
+            os.set_inheritable(verifier_ack_read, True)
+            for held in (
+                verifier_procs_fd,
+                verifier_events_fd,
+                verifier_kill_fd,
+                runtime_map_fd,
+                runtime_readback_fd,
+            ):
+                os.set_inheritable(held, True)
+            for held in authority_fds.values():
+                os.set_inheritable(held, True)
+            for _path, sealed in runtime_closure.files:
+                os.set_inheritable(sealed.descriptor, True)
         child = os.fork()
         if child == 0:
             _close_descriptor(gate_write)
@@ -3759,6 +4438,30 @@ def confinement_session(
                         *argv,
                     ]
                 )
+            elif runtime_v3:
+                descriptors = {path: sealed.descriptor for path, sealed in runtime_closure.files}
+                bundle = ",".join(
+                    str(fd)
+                    for fd in (
+                        runtime_map_fd,
+                        verifier_report_write,
+                        verifier_ack_read,
+                        runtime_readback_fd,
+                        authority_fds["input"],
+                        authority_fds["subject"],
+                        authority_fds["output"],
+                        authority_fds["scratch"],
+                        verifier_procs_fd,
+                        verifier_events_fd,
+                        verifier_kill_fd,
+                        *descriptors.values(),
+                    )
+                )
+                launcher_arguments.extend([
+                    f"--ranex-runtime-v3={bundle}",
+                    str(descriptor["argv"][0]), "/ranex/subject", "/ranex/output", "/ranex/scratch",
+                    *descriptor["argv"],
+                ])
             else:
                 launcher_arguments.extend(
                     [
@@ -3782,13 +4485,82 @@ def confinement_session(
         readiness_write = -1
         _close_descriptor(readiness_ack_read)
         readiness_ack_read = -1
+        if runtime_v3:
+            for held in (
+                verifier_procs_fd,
+                verifier_events_fd,
+                verifier_kill_fd,
+                runtime_map_fd,
+            ):
+                _close_descriptor(held)
+            verifier_procs_fd = verifier_events_fd = verifier_kill_fd = runtime_map_fd = -1
         session = ConfinementSession(worker, gate_write, dict(descriptor["limits"]))
         session.enroll_and_read_back(child)
+        if runtime_v3:
+            session_deadline = time.monotonic() + (
+                descriptor["limits"]["wall_time_ms"] / 1000
+            )
         session.release_start_gate()
         _close_descriptor(gate_write)
         gate_write = -1
+        if runtime_v3:
+            _close_descriptor(verifier_report_write)
+            verifier_report_write = -1
+            _close_descriptor(verifier_ack_read)
+            verifier_ack_read = -1
+            reports = _read_runtime_verifier_report(
+                verifier_report_read,
+                sorted(runtime_expected or {}),
+                session_deadline,
+            )
+            decision = runtime_verifier_decision(runtime_expected or {}, reports)
+            _remaining_session_time(session_deadline, "runtime mount readback")
+            try:
+                runtime_observed_rows = _read_runtime_mount_readbacks(
+                    runtime_readback_fd, runtime_closure.file_set
+                )
+            except ValueError as exc:
+                _refuse(E_C18_READBACK, str(exc))
+            if (
+                hashlib.sha256(canonical_json_bytes(runtime_observed_rows)).hexdigest()
+                != runtime_closure.file_set_digest
+            ):
+                _refuse(E_C18_READBACK, "observed sealed file-set digest differs")
+            _close_descriptor(runtime_readback_fd)
+            runtime_readback_fd = -1
+            _remaining_session_time(session_deadline, "verifier cgroup drain")
+            if verifier_cgroup is None:
+                _refuse(E_C18_DRAIN, "verifier cgroup is absent before GO")
+            _drain_remove_verifier_cgroup(verifier_cgroup)
+            verifier_cgroup = None
+            _remaining_session_time(session_deadline, "runtime verifier GO")
+            if os.write(verifier_ack_write, decision) != len(decision):
+                _refuse(
+                    E_C18_READBACK,
+                    "cannot write the one-shot runtime verifier acknowledgement",
+                )
+            _close_descriptor(verifier_ack_write)
+            verifier_ack_write = -1
+            if decision != b"GO":
+                _refuse(
+                    E_C18_READBACK,
+                    "runtime verifier report disagrees with parsed graph",
+                )
+            from ranex.foundation.dynamic_runtime import (
+                realized_graph_digest,
+                realized_runtime_graph_from_reports,
+            )
+
+            runtime_realized_digest = realized_graph_digest(
+                realized_runtime_graph_from_reports(reports)
+            )
+        readiness_timeout = descriptor["limits"]["wall_time_ms"] / 1000
+        if session_deadline is not None:
+            readiness_timeout = _remaining_session_time(
+                session_deadline, "launcher readiness"
+            )
         readiness_pid, readiness_layers = _read_launcher_readiness(
-            readiness_read, descriptor["limits"]["wall_time_ms"] / 1000
+            readiness_read, readiness_timeout
         )
         _close_descriptor(readiness_read)
         readiness_read = -1
@@ -3806,11 +4578,15 @@ def confinement_session(
         _read_worker_cgroup_membership(worker, readiness_pid)
         namespace_readbacks = _worker_namespace_readbacks(readiness_pid)
         enforcement_readbacks = _worker_enforcement_readbacks(readiness_pid)
+        if session_deadline is not None:
+            _remaining_session_time(session_deadline, "readiness acknowledgement")
         if os.write(readiness_ack_write, b"1") != 1:
             _refuse(E_C18_READBACK, "cannot release launcher after readiness readback")
         _close_descriptor(readiness_ack_write)
         readiness_ack_write = -1
-        deadline = time.monotonic() + (descriptor["limits"]["wall_time_ms"] / 1000)
+        deadline = session_deadline or (
+            time.monotonic() + (descriptor["limits"]["wall_time_ms"] / 1000)
+        )
         status: int | None = None
         while status is None:
             waited, candidate = os.waitpid(child, os.WNOHANG)
@@ -3859,7 +4635,28 @@ def confinement_session(
             "teardown": {"cgroup_kill": True, "populated": 0, "cgroup_removed": True},
             "outputs": outputs,
         }
-        _write_report_atomic(root, result_path, json.loads(confinement_result_bytes(result)))
+        if runtime_v3:
+            result["schema"] = "ranex-confinement-result-v2"
+            result["outputs"] = outputs["files"]
+            result["runtime_closure"] = {
+                "manifest_digest": runtime_closure.manifest_digest,
+                "sealed_file_set_digest": runtime_closure.file_set_digest,
+                "parsed_graph_digest": runtime_parsed_digest,
+                "realized_graph_digest": runtime_realized_digest,
+                "loader_digest": runtime_manifest["loader"]["sha256"].removeprefix("sha256:"),
+                "profile_digest": _sha256_path(profile_path),
+            }
+            if runtime_observed_rows is None:
+                _refuse(E_C18_READBACK, "runtime mount readbacks are absent")
+            result["sealed_files"] = runtime_observed_rows
+            _write_report_atomic(root, result_path, result)
+            print(canonical_json({
+                "schema": "ranex-confinement-observations-v1",
+                "namespace_readbacks": namespace_readbacks,
+                "cgroup_readbacks": result["cgroup_readbacks"],
+            }))
+        else:
+            _write_report_atomic(root, result_path, json.loads(confinement_result_bytes(result)))
         session.result_published = True
     except BaseException as exc:
         primary_error = exc
@@ -3871,6 +4668,21 @@ def confinement_session(
         _close_descriptor(readiness_write)
         _close_descriptor(readiness_ack_read)
         _close_descriptor(readiness_ack_write)
+        _close_descriptor(verifier_report_read)
+        _close_descriptor(verifier_report_write)
+        _close_descriptor(verifier_ack_read)
+        _close_descriptor(verifier_ack_write)
+        _close_descriptor(verifier_procs_fd)
+        _close_descriptor(verifier_events_fd)
+        _close_descriptor(verifier_kill_fd)
+        _close_descriptor(runtime_map_fd)
+        _close_descriptor(runtime_readback_fd)
+        if verifier_cgroup is not None and verifier_cgroup.exists():
+            try:
+                _drain_remove_verifier_cgroup(verifier_cgroup)
+            except HostConfinementError:
+                if primary_error is None:
+                    raise
         if session is not None and worker is not None and worker.exists():
             try:
                 session.kill_drain_remove()

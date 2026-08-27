@@ -1497,14 +1497,16 @@ def test_exactly_one_normalizer_entry_point_under_tests_e2e() -> None:
     )
 
     expected_dir = E2E_DIR / "expected"
+    # Data goldens (for example JSON runtime results) are not normalizer
+    # transcripts; the plain-transcript convention applies only to .out files.
     non_out = sorted(
         path.relative_to(E2E_DIR).as_posix()
         for path in expected_dir.rglob("*")
-        if path.is_file() and path.suffix != ".out"
+        if path.is_file() and path.suffix != ".out" and path.suffix != ".json"
     ) if expected_dir.is_dir() else []
     assert not non_out, (
-        f"tests/e2e/expected/ holds plain <family>.out goldens only — no "
-        f"config file a family could add masks through: {non_out}"
+        f"tests/e2e/expected/ holds plain <family>.out goldens or data goldens "
+        f"only — no config file a family could add masks through: {non_out}"
     )
 
 

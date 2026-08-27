@@ -226,7 +226,11 @@ def _independent_file_set_rows(repository: Path) -> list[dict[str, object]]:
         rows.append(
             {
                 **item,
-                "seals": ["WRITE", "GROW", "SHRINK", "EXEC", "SEAL"],
+                "seals": (
+                    ["WRITE", "GROW", "SHRINK", "EXEC", "SEAL"]
+                    if item["kind"] == "runtime-data"
+                    else ["WRITE", "GROW", "SHRINK", "FUTURE_WRITE", "EXEC", "SEAL"]
+                ),
                 "mount_attributes": (
                     ["RDONLY", "NOEXEC"]
                     if item["kind"] == "runtime-data"

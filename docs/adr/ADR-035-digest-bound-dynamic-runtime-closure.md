@@ -1,9 +1,9 @@
 # ADR-035 — digest-bound dynamic runtime closure
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-26
 **Decision-makers:** repo owner
-**Slice:** `docs/slices/SLICE-072-digest-bound-dynamic-runtime-closure.md`
+**Slice:** `docs/slices/done/SLICE-072-digest-bound-dynamic-runtime-closure.md`
 
 ## Context and Problem Statement
 
@@ -51,7 +51,10 @@ resolution cannot drift or fall back to the host.
 1. Loader flags over the host root. Rejected: installed glibc found host defaults.
 2. Patch PT_INTERP/RPATH. Rejected: executable bytes lose ordinary-mode parity.
 3. Read-only bind a validated directory. Rejected: descendant bytes can drift.
-4. Seal every approved file, mount only those in a private tree, and probe the held loader there before releasing the same snapshot. Chosen.
+4. Seal every approved source file, copy only those immutable bytes into a
+   private tmpfs tree, and probe the held loader there before releasing the
+   same snapshot. Chosen. Direct memfd mounts were rejected because the
+   qualified Linux 7.0 host does not implement the January 2026 memfd-mount RFC.
 
 ## Decision Outcome
 
@@ -61,8 +64,8 @@ Closed `closure.json` binds top-level ELF class/endian/machine/OSABI/ABI version
 Each row binds path, octal mode, kind (`loader`, `entrypoint`, `shared-library`, `native-extension`, or `runtime-data`), SHA-256, and either null ELF metadata or exact class/endian/machine/OSABI/ABI/type/PT_INTERP/SONAME/DT_NEEDED; RPATH, RUNPATH, FILTER, AUXILIARY, AUDIT, DEPAUDIT, slash-bearing and `$` dynamic strings are refused.
 The manifest is the sole source byte outside `files`: it is separately sealed/digested and mounted noexec; top-level loader/entrypoint facts must equal their corresponding rows, and rows cover every other source byte exactly.
 Paths have at most 16 components/255 bytes, components follow the repository grammar, ancestors are directories only, and reserved `closure.json` cannot be a row. Kinds have fixed prefixes: loader under `loader/`, entrypoint under `bin/`, libraries/extensions under `lib/`, and data under `data/`; file/ancestor collisions refuse. The v3 profile pins the one admitted loader SHA-256, self-id, version, and architecture, so loader probing is an independently governed TCB, not closure self-attestation.
-The controller copies each captured-commit regular file into a separately sealed memfd, rehashes it after sealing, parses that descriptor with pinned pyelftools 0.32, and passes only the derived path/kind/FD map; links, special files, undeclared bytes, path/SONAME duplicates, and unresolved edges refuse. Native rows use `MFD_ALLOW_SEALING|MFD_EXEC`; data and manifest use `MFD_ALLOW_SEALING|MFD_NOEXEC_SEAL`; declared mode is applied before `F_SEAL_WRITE|F_SEAL_GROW|F_SEAL_SHRINK|F_SEAL_EXEC|F_SEAL_SEAL`, then mode/seals are re-read. Qualification refuses kernels/`vm.memfd_noexec` settings that cannot provide those semantics.
-The launcher creates a private tmpfs root, mounts each sealed FD only at its manifest-derived literal beneath `/ranex/runtime`, marks native rows read-only and data/manifest rows read-only-noexec, makes input/subject read-only-noexec and output/scratch writable-noexec, pivots, and detaches the old root.
+The controller copies each captured-commit regular file into a separately sealed memfd, rehashes it after sealing, parses that descriptor with pinned pyelftools 0.32, and passes only the derived path/kind/FD map; links, special files, undeclared bytes, path/SONAME duplicates, and unresolved edges refuse. Native rows use `MFD_ALLOW_SEALING|MFD_EXEC`; data and manifest use `MFD_ALLOW_SEALING|MFD_NOEXEC_SEAL`; declared mode is applied before `F_SEAL_WRITE|F_SEAL_GROW|F_SEAL_SHRINK|F_SEAL_FUTURE_WRITE|F_SEAL_EXEC|F_SEAL_SEAL`, then mode/seals are re-read. Qualification refuses kernels/`vm.memfd_noexec` settings that cannot provide those semantics.
+The launcher creates a private tmpfs root, copies each sealed descriptor into its manifest-derived literal beneath `/ranex/runtime`, rechecks byte count and digest, and opens a detached mount for each private file. Native rows become read-only; data/manifest rows become read-only-noexec; input/subject become read-only-noexec; output/scratch become writable-noexec. After pivot and old-root detach the tmpfs source directory is inaccessible, so verifier and worker can reach only the same per-file mounted snapshot.
 Before any data authority is attached, a sacrificial verifier in a distinct PID/cgroup lifecycle sees only the sealed runtime tree read/execute and a bounded report FD. It runs the profile-pinned held loader with `--inhibit-cache --glibc-hwcaps-mask '' --library-path /ranex/runtime/lib --list` for the entrypoint and every extension root. RPATH/RUNPATH safety comes from descriptor parsing and refusal; glibc's empty `--inhibit-rpath` argument is intentionally not used because it inhibits no object.
 Verifier Landlock exposes no input, subject, output, scratch, host paths, other FDs, fork, or writes. The launcher kills the verifier cgroup, waits for population zero, verifies no descendants, and only then may attach worker authorities.
 The exact path-sorted root list is controller-supplied. Each root produces one `u32be root-length + root + u32be report-length + report` frame, with a 64-KiB per-root and `roots * 64 KiB` overflow-checked total bound. Missing, duplicate, reordered, replayed, or trailing frames refuse. The controller strips addresses, requires the one kernel `linux-vdso.so.1` pseudo-row and held loader row, compares each root's realized transitive set with the pyelftools set, then sends one bounded GO/REFUSE acknowledgement; GO attaches input/subject/output/scratch and directly invokes the held loader and entrypoint in the immutable snapshot.
@@ -73,7 +76,8 @@ This is native dependency/filesystem closure, not a claim that an approved inter
 ### Consequences
 
 - Good: interpreters, extensions, and data run from one exact host-detached tree.
-- Good: verification and execution share sealed inodes rather than a mutable directory.
+- Good: verification and execution share one inaccessible private snapshot
+  copied from sealed, rehashed descriptors rather than a mutable source directory.
 - Good: no ambient toolchain, distribution root, or loader configuration survives.
 - Bad: closures are architecture-specific and capped at 511 files plus one manifest descriptor.
 - Bad: runtime data may need deterministic archives to stay within that bound.
@@ -95,7 +99,8 @@ or implementation-generated booleans.
 1. Pair glibc's realized transitive sets with pyelftools-derived sets and an approved manifest.
 2. Replace auto-patchelf's mutation/ignored-missing mode with closed unique edges.
 3. Preserve executable bytes by direct loader invocation rather than ELF mutation.
-4. Replace mutable directory binds with per-file sealed descriptors and one verify-then-GO snapshot.
+4. Replace mutable directory binds with sealed source descriptors, exact
+   private-file copies, and one verify-then-GO snapshot.
 
 ## Architecture surface
 
@@ -170,7 +175,8 @@ file sets, graphs, results, and evidence on a qualified host.
 
 ## Code review checklist
 
-- Verify every mounted runtime inode is sealed and manifest-derived; no source path survives.
+- Verify every mounted runtime file is copied from a sealed, manifest-derived
+  descriptor and its private source path is inaccessible after pivot.
 - Verify loader execution occurs only in the private verifier/final snapshot.
 - Verify direct/transitive/pseudo-row normalization and all forbidden dynamic tags.
 - Verify GO is single-use, bounded, controller-decided, and precedes worker effect.

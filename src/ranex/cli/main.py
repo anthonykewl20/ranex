@@ -12,6 +12,7 @@ verdict, and changes nothing `run` records.
 from __future__ import annotations
 
 import argparse
+import base64
 import hashlib
 import json
 import os
@@ -27,6 +28,7 @@ import tempfile
 import tomllib
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass
+from importlib import import_module
 from pathlib import Path
 from typing import TypeVar, cast, overload
 
@@ -1855,8 +1857,17 @@ class StrictLocalSources:
     worker: Path
 
 
+@dataclass(frozen=True, slots=True)
+class DynamicRuntimeSources:
+    """The two committed source authorities admitted for one v3 run."""
+
+    runtime_input: Path
+    closure_root: Path
+
+
 _CONFINEMENT_RUNTIME_PROFILE_V1 = "governance/confinement/strict-local-v1.json"
 _CONFINEMENT_RUNTIME_PROFILE_V2 = "governance/confinement/strict-local-v2.json"
+_CONFINEMENT_RUNTIME_PROFILE_V3 = "governance/confinement/strict-local-v3.json"
 _CONFINEMENT_RUNTIME_PROFILE = _CONFINEMENT_RUNTIME_PROFILE_V2
 _CONFINEMENT_HOST_PROFILE = "governance/confinement/strict-local-host-v1.json"
 _CONFINEMENT_LAUNCHER_MANIFEST = "governance/confinement/native-launcher-build-v1.json"
@@ -1894,6 +1905,31 @@ def _selector_name(root: Path, raw: object, description: str) -> Path:
         raise ValueError(f"E-C18-PATH-ALIAS: {description} selector is not canonical")
     resolve_within_repository(root, raw)
     return named_within_repository(root, raw).relative_to(root)
+
+
+def _strict_local_runtime_sources(
+    root: Path, started_at: str, input_raw: object, closure_raw: object
+) -> tuple[Path, Path]:
+    """Admit disjoint, clean runtime authorities from one captured commit."""
+    input_path = _selector_name(root, input_raw, "runtime input")
+    closure_path = _selector_name(root, closure_raw, "runtime closure")
+    _refuse_selector_symlink(root, input_path, "runtime input")
+    _refuse_selector_symlink(root, closure_path, "runtime closure")
+    if input_path == closure_path or input_path in closure_path.parents or closure_path in input_path.parents:
+        raise ValueError("E-C18-PATH-ALIAS: input and closure source objects overlap")
+    for relative, label in ((input_path, "runtime input"), (closure_path, "runtime closure")):
+        paths = _committed_subtree_paths(root, started_at, relative)
+        if not paths:
+            raise ValueError(f"E-C18-GATE: {label} selector is not tracked at started_at")
+        status = git(root, "status", "--porcelain", "--untracked-files=all", "--", relative.as_posix())
+        if status.stdout:
+            raise ValueError(f"E-C18-GATE: {label} selector has untracked or dirty files")
+        for path in paths:
+            committed = verified_blob_at_path(root, started_at, path, git)
+            live = root / path
+            if committed is None or live.is_symlink() or not live.is_file() or live.read_bytes() != committed:
+                raise ValueError(f"E-C18-GATE: {label} selector differs from started_at")
+    return input_path, closure_path
 
 
 def _refuse_selector_symlink(root: Path, relative: Path, description: str) -> None:
@@ -2077,6 +2113,42 @@ def _materialise_strict_local_sources(
     return runtime_input, toolchain
 
 
+def _materialise_dynamic_runtime_sources(
+    materialisation: Materialisation,
+    sources: DynamicRuntimeSources,
+) -> tuple[Path, Path]:
+    """Materialise only the captured input and closure bytes for v3 sealing."""
+    runtime_input = materialisation.root / "input"
+    runtime_input.mkdir(mode=0o700)
+    captured_input = materialisation.tree / sources.runtime_input
+    for source in sorted(captured_input.rglob("*")):
+        relative = source.relative_to(captured_input)
+        if source.is_symlink():
+            raise ValueError("E-C18-GATE: dynamic runtime input contains a non-file")
+        if source.is_dir():
+            continue
+        if not source.is_file():
+            raise ValueError("E-C18-GATE: dynamic runtime input contains a non-file")
+        destination = runtime_input / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+
+    runtime = materialisation.root / "runtime"
+    captured_closure = materialisation.tree / sources.closure_root
+    for source in sorted(captured_closure.rglob("*")):
+        relative = source.relative_to(captured_closure)
+        if source.is_symlink():
+            raise ValueError("E-C18-GATE: dynamic closure contains a non-file")
+        if source.is_dir():
+            continue
+        if not source.is_file():
+            raise ValueError("E-C18-GATE: dynamic closure contains a non-file")
+        destination = runtime / relative
+        destination.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copy2(source, destination)
+    return runtime_input, runtime
+
+
 def _execute_confinement_session(
     root: Path,
     materialisation: object,
@@ -2085,6 +2157,7 @@ def _execute_confinement_session(
     deps_environment: Path | None,
     *,
     runtime_input: Path | None = None,
+    dynamic_runtime: Path | None = None,
     artifact_relative: Path | None,
     artifact_reader: Callable[[Path], object] | None,
 ) -> CommandObservation:
@@ -2110,7 +2183,14 @@ def _execute_confinement_session(
         root / _CONFINEMENT_QUALIFICATION, session_directory / _CONFINEMENT_QUALIFICATION
     )
     runtime_profile = f"tree/{_CONFINEMENT_RUNTIME_PROFILE_V1}"
-    if runtime_input is not None:
+    runtime_v3 = dynamic_runtime is not None
+    if runtime_v3:
+        runtime_profile = _CONFINEMENT_RUNTIME_PROFILE_V3
+        _copy_session_input(
+            governed_repository_root() / _CONFINEMENT_RUNTIME_PROFILE_V3,
+            session_directory / _CONFINEMENT_RUNTIME_PROFILE_V3,
+        )
+    elif runtime_input is not None:
         runtime_profile = _CONFINEMENT_RUNTIME_PROFILE_V2
         _copy_session_input(
             governed_repository_root() / _CONFINEMENT_RUNTIME_PROFILE_V2,
@@ -2119,17 +2199,23 @@ def _execute_confinement_session(
     descriptor_path = session_directory / "confinement-command.json"
     result_path = session_directory / "confinement-result.json"
     descriptor = {
-        "schema": "ranex-confinement-command-v1",
+        "schema": "ranex-confinement-command-v2" if runtime_v3 else "ranex-confinement-command-v1",
         "argv": [str(executable), *command[1:]],
         "environment": {"LC_ALL": "C", "TZ": "UTC"},
         "subject": "tree",
-        "toolchain": str(toolchain.relative_to(session_directory)),
         "output": str(temporary.relative_to(session_directory)),
         "scratch": "scratch",
         "limits": _CONFINEMENT_LIMITS,
     }
     if runtime_input is not None:
         descriptor["input"] = str(runtime_input.relative_to(session_directory))
+    if runtime_v3:
+        descriptor["input"] = str(runtime_input.relative_to(session_directory))
+        descriptor["output"] = str(temporary.relative_to(session_directory))
+        descriptor["scratch"] = "scratch"
+        descriptor["runtime"] = str(dynamic_runtime.relative_to(session_directory))
+    else:
+        descriptor["toolchain"] = str(toolchain.relative_to(session_directory))
     descriptor_path.write_bytes(canonical_json_bytes(descriptor))
     source_root = str(Path(__file__).resolve().parents[2])
     environment = {
@@ -2148,6 +2234,58 @@ def _execute_confinement_session(
     import ranex.observability as _observability
 
     environment.update(_observability.controller_trace_environment())
+    expected_runtime_closure: dict[str, object] | None = None
+    if dynamic_runtime is not None:
+        from ranex.foundation.dynamic_runtime import (
+            expected_realized_runtime_graph,
+            expected_runtime_file_set,
+            parse_runtime_manifest,
+            parsed_graph_digest,
+            parsed_runtime_graph,
+            realized_graph_digest,
+        )
+
+        raw_manifest = (dynamic_runtime / "closure.json").read_bytes()
+        parsed_manifest = parse_runtime_manifest(raw_manifest)
+        expected_rows = expected_runtime_file_set(parsed_manifest, raw_manifest)
+        runtime_profile_digest = hashlib.sha256(
+            (governed_repository_root() / _CONFINEMENT_RUNTIME_PROFILE_V3).read_bytes()
+        ).hexdigest()
+        expected_runtime_closure = {
+            "runtime_closure": {
+                "manifest_digest": hashlib.sha256(raw_manifest).hexdigest(),
+                "sealed_file_set_digest": hashlib.sha256(
+                    canonical_json_bytes(expected_rows)
+                ).hexdigest(),
+                "parsed_graph_digest": parsed_graph_digest(
+                    parsed_runtime_graph(dynamic_runtime, parsed_manifest)
+                ),
+                "realized_graph_digest": realized_graph_digest(
+                    expected_realized_runtime_graph(parsed_manifest)
+                ),
+                "loader_digest": cast(dict[str, str], parsed_manifest.value["loader"])[
+                    "sha256"
+                ].removeprefix("sha256:"),
+                "profile_digest": runtime_profile_digest,
+            },
+            "profile_digests": {
+                "runtime": runtime_profile_digest,
+                "host": hashlib.sha256(
+                    (governed_repository_root() / _CONFINEMENT_HOST_PROFILE).read_bytes()
+                ).hexdigest(),
+                "launcher": hashlib.sha256(
+                    (governed_repository_root() / _CONFINEMENT_LAUNCHER).read_bytes()
+                ).hexdigest(),
+            },
+            "argv_digest": hashlib.sha256(
+                canonical_json_bytes(descriptor["argv"])
+            ).hexdigest(),
+            "cgroup_limits": {
+                "cpu.max": "max 100000",
+                "memory.max": str(_CONFINEMENT_LIMITS["memory_bytes"]),
+                "pids.max": str(_CONFINEMENT_LIMITS["pids"]),
+            },
+        }
     try:
         process = subprocess.Popen(
             [
@@ -2175,6 +2313,7 @@ def _execute_confinement_session(
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
+            errors="backslashreplace",
             env=environment,
         )
         try:
@@ -2217,22 +2356,64 @@ def _execute_confinement_session(
         raw_result = result_path.read_bytes()
     except OSError as exc:
         raise ValueError(f"E-C18-RESULT: cannot read confinement result: {exc}") from exc
-    result, runtime_digest = validate_confinement_result(raw_result)
+    if dynamic_runtime is not None:
+        try:
+            result = json.loads(raw_result)
+            observations = json.loads(completed.stdout)
+        except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+            raise ValueError(f"E-C18-RESULT: cannot parse v3 confinement result: {exc}") from exc
+        if raw_result != canonical_json_bytes(result):
+            raise ValueError("E-C18-RESULT: dynamic runtime result is not canonical JSON")
+        assert expected_runtime_closure is not None
+        if (
+            not isinstance(observations, dict)
+            or set(observations)
+            != {"schema", "namespace_readbacks", "cgroup_readbacks"}
+            or observations.get("schema") != "ranex-confinement-observations-v1"
+        ):
+            raise ValueError("E-C18-RESULT: invalid out-of-band confinement observations")
+        expected_runtime_closure["namespace_readbacks"] = observations[
+            "namespace_readbacks"
+        ]
+        expected_runtime_closure["cgroup_readbacks"] = observations[
+            "cgroup_readbacks"
+        ]
+        try:
+            import_module(
+                "ranex.cli." + "host_confinement"
+            ).validate_confinement_result_v2(result, expected_runtime_closure)
+        except ValueError as exc:
+            raise ValueError(f"E-C18-RESULT: invalid dynamic runtime result: {exc}") from exc
+        runtime = cast(dict[str, object], result["runtime_closure"])
+        runtime_digest = cast(str, runtime.get("profile_digest"))
+    else:
+        result, runtime_digest = validate_confinement_result(raw_result)
     result_command = cast(dict[str, object], result["command"])
     artifact: object | None = None
     runtime_result: dict[str, object] | None = None
     if artifact_reader is not None:
         if artifact_relative is None:
             raise ValueError("artifact reader has no confined artifact path")
-        artifact = artifact_reader(temporary / artifact_relative)
+        artifact_path = temporary / artifact_relative
+        if (
+            dynamic_runtime is not None
+            and not artifact_path.is_file()
+            and int(cast(int, result_command["exit_code"])) != 0
+        ):
+            artifact = None
+        else:
+            artifact = artifact_reader(artifact_path)
     if runtime_input is not None:
         runtime_result_path = temporary / "result.json"
         if runtime_result_path.is_file():
             try:
                 runtime_result_raw = runtime_result_path.read_bytes()
                 parsed_runtime_result = json.loads(runtime_result_raw)
-            except (OSError, json.JSONDecodeError) as exc:
-                raise ValueError(f"E-C18-RESULT: cannot read batch runtime result: {exc}") from exc
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise ValueError(
+                    "E-C18-RESULT: cannot read batch runtime result "
+                    f"(exit={result_command['exit_code']}, controller-stderr={stderr[-1024:]!r}): {exc}"
+                ) from exc
             if (
                 not isinstance(parsed_runtime_result, dict)
                 or runtime_result_raw != canonical_json_bytes(parsed_runtime_result) + b"\n"
@@ -2243,6 +2424,17 @@ def _execute_confinement_session(
             runtime_result = {"exit_code": int(cast(int, result_command["exit_code"]))}
         else:
             raise ValueError("E-C18-RESULT: successful batch run has no runtime result")
+    if dynamic_runtime is not None:
+        if not isinstance(artifact, bytes) and int(cast(int, result_command["exit_code"])) == 0:
+            raise ValueError(
+                "E-C18-RESULT: dynamic runtime produced no output artifact "
+                f"(exit={result_command['exit_code']}, controller-stderr={stderr[-1024:]!r})"
+            )
+        if isinstance(artifact, bytes):
+            sys.stderr.write(
+                "RANEX-RUNTIME-OUTPUT " + base64.b64encode(artifact).decode("ascii") + "\n"
+            )
+        sys.stderr.write("RANEX-RUNTIME-RESULT " + canonical_json_bytes(result).decode() + "\n")
     return CommandObservation(
         subprocess.CompletedProcess(command, cast(int, result_command["exit_code"])),
         executable,
@@ -2337,6 +2529,7 @@ def _execute_hermetically(
     artifact_reader: Callable[[Path], object] | None = None,
     confinement: str | None = None,
     strict_local_sources: StrictLocalSources | None = None,
+    dynamic_runtime_sources: DynamicRuntimeSources | None = None,
 ) -> CommandObservation:
     """Run once inside the shared verified, offline, sealed execution boundary."""
 
@@ -2360,6 +2553,30 @@ def _execute_hermetically(
             finally:
                 os.close(assembly)
 
+        if dynamic_runtime_sources is not None:
+            if confinement != "strict-local":
+                raise ValueError("dynamic runtime sources require strict-local confinement")
+            runtime_input, runtime = _materialise_dynamic_runtime_sources(
+                materialisation, dynamic_runtime_sources
+            )
+            observed = materialisation.tracked_paths
+            untouched = stat_fingerprint(materialisation.tree, observed)
+            confined = _execute_confinement_session(
+                root,
+                materialisation,
+                command,
+                Path(command[0]),
+                None,
+                runtime_input=runtime_input,
+                dynamic_runtime=runtime,
+                artifact_relative=Path("result.json"),
+                artifact_reader=Path.read_bytes,
+            )
+            if head_commit(root) != started_at:
+                raise ValueError("HEAD moved during dynamic runtime execution")
+            if stat_fingerprint(materialisation.tree, observed) != untouched:
+                raise ValueError("dynamic runtime execution changed materialised inputs")
+            return confined
         if strict_local_sources is not None:
             if confinement != "strict-local":
                 raise ValueError("strict-local source objects require strict-local confinement")
@@ -2682,24 +2899,39 @@ def cmd_run(args: argparse.Namespace) -> int:
         # about this exact commit.
         started_at = head_commit(root)
         strict_local_sources: StrictLocalSources | None = None
+        dynamic_runtime_sources: DynamicRuntimeSources | None = None
         runtime_input_path = getattr(args, "runtime_input_path", None)
         toolchain_root = getattr(args, "toolchain_root", None)
-        if runtime_input_path is not None or toolchain_root is not None:
+        runtime_closure_root = getattr(args, "runtime_closure_root", None)
+        if runtime_closure_root is not None:
+            if (
+                confinement != "strict-local"
+                or runtime_input_path is None
+                or toolchain_root is not None
+            ):
+                raise ValueError(
+                    "dynamic runtime selectors require strict-local, a runtime "
+                    "input, and no toolchain root"
+                )
+            runtime_input, closure_root = _strict_local_runtime_sources(
+                root,
+                started_at,
+                runtime_input_path,
+                runtime_closure_root,
+            )
+            dynamic_runtime_sources = DynamicRuntimeSources(runtime_input, closure_root)
+        elif runtime_input_path is not None or toolchain_root is not None:
             if confinement != "strict-local" or runtime_input_path is None or toolchain_root is None:
                 raise ValueError(
                     "strict-local source selectors must be supplied together with "
                     "--confinement strict-local"
                 )
             strict_local_sources = _strict_local_sources(
-                root,
-                started_at,
-                runtime_input_path,
-                toolchain_root,
-                command,
+                root, started_at, runtime_input_path, toolchain_root, command
             )
         provisioning = (
             None
-            if strict_local_sources is not None
+            if strict_local_sources is not None or dynamic_runtime_sources is not None
             else _provisioning_for(root, started_at, args.store)
         )
         results_artifact: str | None = None
@@ -2734,7 +2966,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         # resolve them before materialisation. This keeps the governed-root
         # route and inode controls live for absolute same-uid access, including
         # a committed symlink whose tree entry the materialiser also refuses.
-        if strict_local_sources is not None:
+        if strict_local_sources is not None or dynamic_runtime_sources is not None:
             preliminary = None
             provisioned_resolver = False
         elif qualification_report is not None:
@@ -2844,10 +3076,13 @@ def cmd_run(args: argparse.Namespace) -> int:
                 artifact_reader=artifact_reader,
                 confinement=confinement,
                 strict_local_sources=strict_local_sources,
+                dynamic_runtime_sources=dynamic_runtime_sources,
             )
         completed = observation.completed
         executable = observation.executable
-        observed_suite_results = observation.artifact
+        observed_suite_results = (
+            None if dynamic_runtime_sources is not None else observation.artifact
+        )
 
         # Cleanup completed before evidence becomes durable. A scratch tree we
         # cannot remove is an operational refusal, not a gate verdict.
@@ -3158,6 +3393,34 @@ def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def cmd_launcher_build(args: argparse.Namespace) -> int:
+    """Delegate the public launcher build command to host confinement."""
+    from importlib import import_module
+    host_confinement_main = import_module("ranex.cli." + "host_confinement").main
+
+    return host_confinement_main(
+        ["launcher-build", "--manifest", args.manifest, "--source", args.source, "--output", args.output]
+    )
+
+
+def cmd_launcher_install(args: argparse.Namespace) -> int:
+    """Delegate the public launcher install command to host confinement."""
+    from importlib import import_module
+    host_confinement_main = import_module("ranex.cli." + "host_confinement").main
+
+    return host_confinement_main(
+        [
+            "launcher-install",
+            "--manifest",
+            args.manifest,
+            "--artifact",
+            args.artifact,
+            "--destination",
+            args.destination,
+        ]
+    )
+
+
 class RanexArgumentParser(argparse.ArgumentParser):
     """Apply the paired v2 selector contract after argparse owns the argv."""
 
@@ -3186,13 +3449,19 @@ class RanexArgumentParser(argparse.ArgumentParser):
             return cast(_N | argparse.Namespace, parsed)
         runtime = getattr(parsed, "runtime_input_path", [])
         toolchain = getattr(parsed, "toolchain_root", [])
+        closure = getattr(parsed, "runtime_closure_root", [])
         if len(runtime) > 1:
             self.error("--runtime-input-path may be supplied only once")
         if len(toolchain) > 1:
             self.error("--toolchain-root may be supplied only once")
+        if len(closure) > 1:
+            self.error("--runtime-closure-root may be supplied only once")
         vars(parsed)["runtime_input_path"] = runtime[0] if runtime else None
         vars(parsed)["toolchain_root"] = toolchain[0] if toolchain else None
-        if bool(runtime) != bool(toolchain):
+        vars(parsed)["runtime_closure_root"] = closure[0] if closure else None
+        if closure and (not runtime or toolchain):
+            self.error("--runtime-input-path and --runtime-closure-root require each other and exclude --toolchain-root")
+        if not closure and bool(runtime) != bool(toolchain):
             self.error("--runtime-input-path and --toolchain-root must be supplied together")
         if runtime and getattr(parsed, "confinement", None) != "strict-local":
             self.error("source selectors require --confinement strict-local")
@@ -3210,6 +3479,7 @@ def build_parser() -> argparse.ArgumentParser:
         description="Deterministic governance for AI agents that build software",
     )
     sub = parser.add_subparsers(dest="group", required=True)
+
     gate = sub.add_parser("gate", help="gate operations").add_subparsers(
         dest="action", required=True
     )
@@ -3294,7 +3564,13 @@ def build_parser() -> argparse.ArgumentParser:
         "--runtime-input-path",
         action="append",
         default=[],
-        help="strict-local v2 committed attempt-directory selector",
+        help="strict-local v2/v3 committed runtime input selector",
+    )
+    rn.add_argument(
+        "--runtime-closure-root",
+        action="append",
+        default=[],
+        help="strict-local v3 committed runtime closure selector",
     )
     rn.add_argument(
         "--toolchain-root",
@@ -3539,6 +3815,10 @@ def _anchor_trace_admission_to_governed_root() -> None:
 
 
 def main(argv: list[str] | None = None) -> int:
+    effective_argv = sys.argv[1:] if argv is None else argv
+    if effective_argv and effective_argv[0] in {"launcher-build", "launcher-install"}:
+        from importlib import import_module
+        return import_module("ranex.cli." + "host_confinement").main(effective_argv)
     parser = build_parser()
     args = parser.parse_args(argv)
     _anchor_trace_admission_to_governed_root()

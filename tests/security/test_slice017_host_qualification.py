@@ -884,6 +884,7 @@ def _assert_success_report(completed: subprocess.CompletedProcess[str]) -> dict[
         "digests",
         "delegation",
         "host_state",
+        "runtime_v3_verifier_isolation",
     }
     assert isinstance(report["schema"], str) and report["schema"]
     assert report["qualified"] is True

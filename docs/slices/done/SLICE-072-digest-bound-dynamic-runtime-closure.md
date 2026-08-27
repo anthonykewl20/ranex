@@ -1,7 +1,8 @@
 # SLICE-072 — digest-bound dynamic runtime closure
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-26
+**Completed:** 2026-08-28
 **Priority:** P0 — complete strict-local dynamic execution
 **Issue:** #48
 **ADR:** `docs/adr/ADR-035-digest-bound-dynamic-runtime-closure.md`
@@ -11,9 +12,10 @@
 Implement ADR-035 as an additive strict-local v3 branch selected by exactly
 `--runtime-input-path` plus `--runtime-closure-root`; static v2 retains its
 existing input/toolchain pair. V3 admits a canonical manifest, turns every
-captured-commit runtime file into a separately rehashed sealed memfd, and mounts
-only those files at manifest-derived literals beneath `/ranex/runtime` in a
-private root. It has no toolchain mount or host fallback.
+captured-commit runtime file into a separately rehashed sealed memfd, and copies
+only those immutable bytes to manifest-derived literals beneath
+`/ranex/runtime` in an inaccessible private tmpfs. Per-file mounts expose that
+one snapshot to verifier and worker. It has no toolchain mount or host fallback.
 
 Pinned pyelftools derives each native root's transitive set. A sacrificial
 confined verifier runs the held loader in the same immutable snapshot; the
@@ -49,15 +51,16 @@ predecessor artifacts, or new environment/stdin/data-FD authority.
    rejection of links, specials, duplicates, forbidden tags/strings, missing,
    ambiguous, and architecture-incompatible edges.
 3. Real sealing tests prove captured bytes are copied to separate memfds,
-   post-seal SHA-256 matches, WRITE/GROW/SHRINK/EXEC/SEAL and per-kind memfd
+   post-seal SHA-256 matches, WRITE/GROW/SHRINK/FUTURE_WRITE/EXEC/SEAL and per-kind memfd
    execution flags hold, and source mutation either preserves declared bytes or refuses.
 4. Graph tests use real ELF fixtures to prove pyelftools direct/transitive sets
    and normalized held-loader sets match per entrypoint/extension root, with
    exact loader/VDSO handling and missing/host-default/extra/malformed refusal.
-5. Security tests prove the launcher mounts only sealed FDs at fixed runtime
-   paths, applies per-kind read-only/noexec plus noexec data authorities, pivots
-   and detaches, confines/drains a runtime-only verifier before attaching data
-   authorities, and releases no worker/output without one timely controller GO.
+5. Security tests prove the launcher copies only sealed-FD bytes to fixed
+   runtime paths in private tmpfs, verifies each copy, applies per-kind
+   read-only/noexec plus noexec data authorities, pivots and detaches,
+   confines/drains a runtime-only verifier before attaching data authorities,
+   and releases no worker/output without one timely controller GO.
 6. Black-box probes independently prove direct `dlopen`, mmap(PROT_EXEC),
    execve, execveat, and explicit-loader attempts using known-valid ELF pairs
    from input, subject, output, scratch, and runtime-data are denied; manifest
@@ -102,6 +105,7 @@ uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 uv run --frozen ruff check tests/integration/test_slice072_dynamic_runtime_contract.py tests/security/test_slice072_dynamic_runtime_security.py tests/e2e/test_dynamic_runtime_closure_real.py
 ```
 
-The SLICE-072 suites are frozen RED in the specification commit and read-only
-to implementation. Acceptance additionally runs relevant broader confinement,
-evidence, compatibility, native reproducibility, and full repository gates.
+The SLICE-072 suites were frozen RED in specification commit `0053024fa`.
+Implementation acceptance ran the focused integration/security/compatibility
+suites and the qualified-host E2E, with the full repository and mutation gates
+recorded in the closing issue proof.

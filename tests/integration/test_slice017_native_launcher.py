@@ -88,7 +88,8 @@ RESPONSE_LIMIT = 65_536
 # admission path while preserving the launcher boundary.
 # Issue #50 refreshes it for the nested batch-qualification trace dispatch
 # binding while preserving the launcher boundary.
-MAIN_PY_SHA256 = "e286be9652762db2f5922b5415ee22e93474871c9fd8fa5c7507bf156ba5e30b"
+# SLICE-072 refreshes it for dynamic runtime closure while preserving the launcher boundary.
+MAIN_PY_SHA256 = "fd7363a40e4669940df5172c2ed70121cec0be62fa30f90823083e825757dce7"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

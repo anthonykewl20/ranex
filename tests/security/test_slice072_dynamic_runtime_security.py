@@ -91,6 +91,7 @@ def test_profile_pins_loader_tcb_and_closed_dynamic_syscall_delta() -> None:
     }
     assert value["loader_tcb"]["sha256"].startswith("sha256:")
     assert value["seccomp"]["base_profile"] == "strict-local-v2"
+    assert value["seccomp"]["verifier_additions"] == ["writev"]
     assert value["seccomp"]["worker_additions"] == [
         "access",
         "getcwd",
