@@ -219,34 +219,9 @@ def _materialisation_root(
 
     repository = repository_root.resolve()
     supplied = os.environ if environment is None else environment
-    enclosing = next(
-        (
-            candidate
-            for candidate in repository.parents
-            if candidate.name.startswith("ranex-subject-") and candidate.is_dir()
-        ),
-        None,
-    )
+    enclosing = _validated_enclosing_root(repository, supplied)
     if enclosing is not None:
-        expected = {
-            "HOME": enclosing / "home",
-            "TMPDIR": enclosing / "tmp",
-            "UV_PROJECT_ENVIRONMENT": enclosing / "deps" / "env",
-            "VIRTUAL_ENV": enclosing / "deps" / "env",
-        }
-        for name, path in expected.items():
-            raw = supplied.get(name)
-            try:
-                candidate = Path(raw).absolute() if raw is not None else None
-                resolved = candidate.resolve(strict=True) if candidate is not None else None
-                expected_resolved = path.resolve(strict=True)
-            except (OSError, RuntimeError):
-                resolved = expected_resolved = None
-            if candidate != resolved or resolved != expected_resolved or not path.is_dir():
-                raise SubjectError(
-                    "nested materialisation environment does not match its enclosing root"
-                )
-        bases = (expected["TMPDIR"],)
+        bases = (enclosing / "tmp",)
     else:
         # An operator-controlled TMPDIR must not choose the construction root.
         bases = (Path("/tmp"), Path("/var/tmp"))
@@ -265,6 +240,42 @@ def _materialisation_root(
         f"cannot create a materialisation outside the governed repository at "
         f"{repository_root}"
     )
+
+
+def _validated_enclosing_root(
+    repository: Path,
+    environment: Mapping[str, str],
+) -> Path | None:
+    """Return the exact enclosing subject root or refuse an imitation."""
+
+    enclosing = next(
+        (
+            candidate
+            for candidate in repository.parents
+            if candidate.name.startswith("ranex-subject-") and candidate.is_dir()
+        ),
+        None,
+    )
+    if enclosing is not None:
+        expected = {
+            "HOME": enclosing / "home",
+            "TMPDIR": enclosing / "tmp",
+            "UV_PROJECT_ENVIRONMENT": enclosing / "deps" / "env",
+            "VIRTUAL_ENV": enclosing / "deps" / "env",
+        }
+        for name, path in expected.items():
+            raw = environment.get(name)
+            try:
+                candidate = Path(raw).absolute() if raw is not None else None
+                resolved = candidate.resolve(strict=True) if candidate is not None else None
+                expected_resolved = path.resolve(strict=True)
+            except (OSError, RuntimeError):
+                resolved = expected_resolved = None
+            if candidate != resolved or resolved != expected_resolved or not path.is_dir():
+                raise SubjectError(
+                    "nested materialisation environment does not match its enclosing root"
+                )
+    return enclosing
 
 
 _CONSTRUCTION_ENVIRONMENT = {

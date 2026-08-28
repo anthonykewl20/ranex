@@ -20,8 +20,10 @@ import shutil
 import signal
 import socket
 import stat
+import struct
 import subprocess
 import sys
+import threading
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -29,11 +31,16 @@ from types import TracebackType
 from typing import Any, NoReturn, Self
 
 from ranex.cli import subject as subject_module
-from ranex.cli.subject import _materialisation_root, _remove_materialisation
+from ranex.cli.subject import (
+    _materialisation_root,
+    _remove_materialisation,
+    _validated_enclosing_root,
+)
 
 _MESSAGE_LIMIT = 65_536
 _DRAIN_TIMEOUT = 15.0
 _BWRAP_PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+_NESTED_SOCKET_NAME = ".ranex-lifecycle.sock"
 
 
 class ProcessSupervisorError(ValueError):
@@ -535,6 +542,103 @@ def bubblewrap_arguments(
     ]
 
 
+class _NestedBroker:
+    """Delegate nested lifecycles back to the one external guardian."""
+
+    def __init__(self, root: Path, lifeline: int, bwrap: int, python: int) -> None:
+        self.path = root / "tmp" / _NESTED_SOCKET_NAME
+        self._lifeline = lifeline
+        self._bwrap = bwrap
+        self._python = python
+        self._listener = socket.socket(
+            socket.AF_UNIX, socket.SOCK_SEQPACKET | socket.SOCK_CLOEXEC
+        )
+        self._listener.bind(str(self.path))
+        self.path.chmod(0o600)
+        self._listener.listen(16)
+        self._listener.settimeout(0.1)
+        self._stop = threading.Event()
+        self._lock = threading.Lock()
+        self._connections: set[socket.socket] = set()
+        self._sessions: list[threading.Thread] = []
+        self._acceptor: threading.Thread | None = None
+        self._namespace: tuple[int, int] | None = None
+
+    def start(self, namespace_init: int) -> None:
+        facts = os.stat(f"/proc/{namespace_init}/ns/pid")
+        self._namespace = (facts.st_dev, facts.st_ino)
+        self._acceptor = threading.Thread(target=self._serve, daemon=True)
+        self._acceptor.start()
+
+    def _peer_is_subject(self, endpoint: socket.socket) -> bool:
+        try:
+            credentials = endpoint.getsockopt(
+                socket.SOL_SOCKET,
+                socket.SO_PEERCRED,
+                struct.calcsize("3i"),
+            )
+            peer_pid, _uid, _gid = struct.unpack("3i", credentials)
+            facts = os.stat(f"/proc/{peer_pid}/ns/pid")
+            return self._namespace == (facts.st_dev, facts.st_ino)
+        except (OSError, struct.error):
+            return False
+
+    def _serve(self) -> None:
+        while not self._stop.is_set():
+            try:
+                endpoint, _address = self._listener.accept()
+            except TimeoutError:
+                continue
+            except OSError:
+                return
+            if not self._peer_is_subject(endpoint):
+                endpoint.close()
+                continue
+            with self._lock:
+                self._connections.add(endpoint)
+            session = threading.Thread(
+                target=self._run_session,
+                args=(endpoint,),
+                daemon=True,
+            )
+            with self._lock:
+                self._sessions.append(session)
+            session.start()
+
+    def _run_session(self, endpoint: socket.socket) -> None:
+        try:
+            _guardian_session(
+                endpoint,
+                self._lifeline,
+                self._bwrap,
+                self._python,
+            )
+        finally:
+            with self._lock:
+                self._connections.discard(endpoint)
+            endpoint.close()
+
+    def close(self) -> None:
+        self._stop.set()
+        self._listener.close()
+        with self._lock:
+            connections = tuple(self._connections)
+            sessions = tuple(self._sessions)
+        for endpoint in connections:
+            try:
+                endpoint.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
+        if self._acceptor is not None:
+            self._acceptor.join(timeout=_DRAIN_TIMEOUT)
+        for session in sessions:
+            session.join(timeout=_DRAIN_TIMEOUT)
+        try:
+            self.path.unlink()
+        except FileNotFoundError:
+            pass
+
+
 def _guardian_execute(
     endpoint: socket.socket,
     lifeline: int,
@@ -553,12 +657,20 @@ def _guardian_execute(
     config_read, config_write = os.pipe2(os.O_CLOEXEC)
     process: subprocess.Popen[bytes] | None = None
     pidfd: int | None = None
+    broker: _NestedBroker | None = None
     try:
+        supplied_environment = message.get("environment")
+        if not isinstance(supplied_environment, dict) or not all(
+            isinstance(name, str) and isinstance(value, str)
+            for name, value in supplied_environment.items()
+        ):
+            raise ProcessSupervisorError("RUN environment is invalid")
+        broker = _NestedBroker(root, lifeline, bwrap, python)
         config = {
             "argv": message.get("argv"),
             "cwd": message.get("cwd"),
             "deny_network": message.get("deny_network"),
-            "environment": message.get("environment"),
+            "environment": dict(supplied_environment),
         }
         config_data = _json_bytes(config)
         if len(config_data) > _MESSAGE_LIMIT:
@@ -612,6 +724,7 @@ def _guardian_execute(
             raise ProcessSupervisorError("bubblewrap PID-1 identity has an invalid PID")
         pidfd = _pidfd_open(child_pid)
         _validate_namespace_init(pidfd, child_pid)
+        broker.start(child_pid)
         _send(
             endpoint,
             {"bwrap_pid": process.pid, "kind": "IDENTITY", "pid": child_pid},
@@ -709,6 +822,8 @@ def _guardian_execute(
         )
         return True
     finally:
+        if broker is not None:
+            broker.close()
         for descriptor in (
             executable,
             gate,
@@ -741,16 +856,14 @@ def _guardian_execute(
             os.close(pidfd)
 
 
-def _guardian(
+def _guardian_session(
     endpoint: socket.socket,
     lifeline: int,
     bwrap: int,
     python: int,
-) -> NoReturn:
+) -> int:
     root: Path | None = None
     try:
-        os.set_blocking(lifeline, False)
-        _close_except({endpoint.fileno(), lifeline, bwrap, python})
         while True:
             readable, _writable, _exceptional = select.select(
                 [endpoint, lifeline], [], [], None
@@ -758,7 +871,7 @@ def _guardian(
             if lifeline in readable and _lifeline_closed(lifeline):
                 if root is not None and root.exists():
                     _remove_materialisation(root)
-                os._exit(0)
+                return 0
             if endpoint not in readable:
                 continue
             message, descriptors = _receive(endpoint)
@@ -781,12 +894,12 @@ def _guardian(
                 if not _guardian_execute(
                     endpoint, lifeline, bwrap, python, message, descriptors, root
                 ):
-                    os._exit(0)
+                    return 0
             elif kind == "CLEANUP" and root is not None and not descriptors:
                 if root.exists():
                     _remove_materialisation(root)
                 _send(endpoint, {"kind": "CLEANED"})
-                os._exit(0)
+                return 0
             else:
                 for descriptor in descriptors:
                     os.close(descriptor)
@@ -801,7 +914,18 @@ def _guardian(
                 _remove_materialisation(root)
             except BaseException:
                 pass
-        os._exit(126)
+        return 126
+
+
+def _guardian(
+    endpoint: socket.socket,
+    lifeline: int,
+    bwrap: int,
+    python: int,
+) -> NoReturn:
+    os.set_blocking(lifeline, False)
+    _close_except({endpoint.fileno(), lifeline, bwrap, python})
+    os._exit(_guardian_session(endpoint, lifeline, bwrap, python))
 
 
 class KillSafeSupervisor:
@@ -819,6 +943,8 @@ class KillSafeSupervisor:
         self._root: Path | None = None
         self._last_raw_status: RawStatus | None = None
         self._finished = False
+        self._delegated = False
+        self._enclosing_root: Path | None = None
 
     @property
     def last_raw_status(self) -> RawStatus | None:
@@ -826,6 +952,26 @@ class KillSafeSupervisor:
 
     def __enter__(self) -> Self:
         from ranex.foundation.dynamic_runtime import seal_runtime_bytes
+
+        try:
+            enclosing = _validated_enclosing_root(self._repository, os.environ)
+        except subject_module.SubjectError as exc:
+            raise ProcessSupervisorError(str(exc)) from exc
+        if enclosing is not None:
+            control = socket.socket(
+                socket.AF_UNIX, socket.SOCK_SEQPACKET | socket.SOCK_CLOEXEC
+            )
+            try:
+                control.connect(str(enclosing / "tmp" / _NESTED_SOCKET_NAME))
+            except OSError as exc:
+                control.close()
+                raise ProcessSupervisorError(
+                    "nested lifecycle guardian is unavailable"
+                ) from exc
+            self._control = control
+            self._delegated = True
+            self._enclosing_root = enclosing
+            return self
 
         resolved_bwrap = shutil.which("bwrap", path=_BWRAP_PATH)
         if resolved_bwrap is None:
@@ -939,10 +1085,12 @@ class KillSafeSupervisor:
         if response.get("kind") != "ROOT" or not isinstance(path, str):
             self._raise_response(response)
         root = Path(path).resolve()
-        if not root.name.startswith("ranex-subject-") or root.parent not in {
-            Path("/tmp"),
-            Path("/var/tmp"),
-        }:
+        valid_parents = (
+            {self._enclosing_root / "tmp"}
+            if self._enclosing_root is not None
+            else {Path("/tmp"), Path("/var/tmp")}
+        )
+        if not root.name.startswith("ranex-subject-") or root.parent not in valid_parents:
             raise ProcessSupervisorError("guardian returned an invalid materialisation root")
         self._root = root
         return root
@@ -1063,7 +1211,7 @@ class KillSafeSupervisor:
             if self._control is not None:
                 self._control.close()
                 self._control = None
-            if self._guardian_pid > 0:
+            if self._guardian_pid > 0 and not self._delegated:
                 returncode = (
                     self._guardian_process.wait()
                     if self._guardian_process is not None

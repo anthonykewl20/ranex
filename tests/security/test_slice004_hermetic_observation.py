@@ -1385,6 +1385,88 @@ def test_current_user_owned_bubblewrap_substitute_is_still_refused(
         _open_regular(substitute, root_owned=True)
 
 
+def test_real_nested_supervisor_delegates_to_the_external_guardian() -> None:
+    """Nested Ranex gets a fresh sibling PID namespace, not nested userns."""
+
+    from ranex.cli.process_supervisor import KillSafeSupervisor
+    from ranex.cli.repository import git
+    from ranex.cli.subject import materialise_subject
+
+    repository = Path(__file__).resolve().parents[2]
+    started_at = subprocess.run(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    interpreter = Path(sys.executable).resolve()
+    descriptor = os.open(interpreter, os.O_RDONLY | os.O_CLOEXEC)
+    outer_socket: Path | None = None
+    try:
+        with KillSafeSupervisor(repository) as supervisor:
+            with materialise_subject(
+                repository,
+                started_at,
+                git,
+                root_factory=supervisor.allocate_root,
+                cleanup=False,
+            ) as materialisation:
+                dependency_root = materialisation.root / "deps" / "env"
+                dependency_root.mkdir(parents=True)
+                marker = materialisation.temporary / "nested-finished"
+                script = "\n".join(
+                    (
+                        "import os, subprocess, sys",
+                        "from pathlib import Path",
+                        "from ranex.cli.process_supervisor import KillSafeSupervisor",
+                        "from ranex.cli.repository import git",
+                        "from ranex.cli.subject import materialise_subject",
+                        "repository, executable, marker = sys.argv[1:]",
+                        "repository = Path(repository)",
+                        "started_at = subprocess.run(['git', '-C', str(repository), 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()",
+                        "descriptor = os.open(executable, os.O_RDONLY | os.O_CLOEXEC)",
+                        "with KillSafeSupervisor(repository) as supervisor:",
+                        "    with materialise_subject(repository, started_at, git, root_factory=supervisor.allocate_root, cleanup=False) as materialisation:",
+                        "        nested_root = materialisation.root",
+                        "        completed = supervisor.run([executable, '-c', 'raise SystemExit(0)'], descriptor, cwd=materialisation.tree, environment={'LANG': 'C.UTF-8', 'PATH': '/usr/bin:/bin'}, deny_network=True)",
+                        "        assert completed.returncode == 0",
+                        "os.close(descriptor)",
+                        "assert not nested_root.exists()",
+                        "Path(marker).write_text('ok', encoding='ascii')",
+                    )
+                )
+                completed = supervisor.run(
+                    [
+                        str(interpreter),
+                        "-c",
+                        script,
+                        str(materialisation.tree),
+                        str(interpreter),
+                        str(marker),
+                    ],
+                    descriptor,
+                    cwd=materialisation.tree,
+                    environment={
+                        "HOME": str(materialisation.home),
+                        "LANG": "C.UTF-8",
+                        "PATH": "/usr/bin:/bin",
+                        "PYTHONPATH": str(repository / "src"),
+                        "TMPDIR": str(materialisation.temporary),
+                        "UV_PROJECT_ENVIRONMENT": str(dependency_root),
+                        "VIRTUAL_ENV": str(dependency_root),
+                    },
+                    deny_network=True,
+                )
+                assert completed.returncode == 0
+                assert marker.read_text(encoding="ascii") == "ok"
+                outer_socket = materialisation.temporary / ".ranex-lifecycle.sock"
+                assert outer_socket.is_socket()
+        assert outer_socket is not None
+        assert not outer_socket.exists()
+    finally:
+        os.close(descriptor)
+
+
 def test_real_supervisor_exposes_only_its_exact_scratch_root_read_write() -> None:
     """The subject can write host tmp and inside root but cannot rename root."""
 
