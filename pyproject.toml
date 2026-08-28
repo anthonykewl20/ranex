@@ -52,6 +52,9 @@ package = false
 source = ["src/ranex"]
 parallel = true
 
+[tool.coverage.paths]
+source = ["src/ranex", "*/src/ranex"]
+
 [tool.coverage.report]
 fail_under = 14
 
