@@ -602,6 +602,9 @@ class _NestedBroker:
                 continue
             except OSError:
                 return
+            if self._stop.is_set():
+                endpoint.close()
+                return
             if not self._peer_is_subject(endpoint):
                 endpoint.close()
                 continue
@@ -633,6 +636,13 @@ class _NestedBroker:
     def close(self) -> None:
         self._stop.set()
         self._listener.close()
+        with self._lock:
+            connections = tuple(self._connections)
+        for endpoint in connections:
+            try:
+                endpoint.shutdown(socket.SHUT_RDWR)
+            except OSError:
+                pass
         if self._acceptor is not None:
             self._acceptor.join(timeout=_DRAIN_TIMEOUT)
             if self._acceptor.is_alive():
