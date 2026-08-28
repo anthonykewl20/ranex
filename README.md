@@ -446,8 +446,8 @@ the exact root and a fresh PID namespace, transfers verified PID-1 pidfds behind
 an exact start gate, preserves raw exit/signal status, and drains and removes
 the root before admission. Nested Ranex uses the guardian's authenticated local
 broker to obtain a fresh sibling namespace without attempting a forbidden
-nested user namespace. The governed repository reached 1,443 passed / 105
-declared skips and froze 1,548 IDs / 150 declarations with `run_exit=0`;
+nested user namespace. The governed repository reached 1,441 passed / 109
+declared skips and froze 1,550 IDs / 154 declarations with `run_exit=0`;
 kernel, guardian, and nested-controller SIGKILL arms left no owned process or
 root. Simultaneous kernel-plus-guardian death, pre-identity guardian death,
 host-`/tmp` interference, and hostile same-UID broker substitution remain
@@ -634,8 +634,8 @@ chosen by the party being measured. Both are closed.
   An external guardian now owns each exact scratch root and fresh PID namespace,
   while a namespace-authenticated broker gives real nested Ranex workflows fresh
   sibling namespaces. Destructive kernel, guardian, and nested-controller runs
-  proved drain and cleanup; the frozen catalog contains 1,548 IDs / 150
-  declarations and the final governed run passed 1,443 / skipped 105.
+  proved drain and cleanup; the frozen catalog contains 1,550 IDs / 154
+  declarations and the final governed run passed 1,441 / skipped 109.
 - **SLICE-073-provider-neutral-real-world-e2e** — completed 2026-08-28.
   Delegation now launches an opaque executable adapter with a minimal pinned
   environment and no OpenRouter or other provider credential requirement.

@@ -77,9 +77,10 @@ implementation and must clean any deliberately orphaned process tree in their
 own teardown.
 
 Final verification on 2026-08-29: the real governed full clone completed with
-1,442 passed / 105 declared skips and signed zero-exit evidence. The official
-freeze ceremony then completed with 1,443 passed / 105 declared skips and
-froze 1,548 IDs / 150 declarations with `run_exit=0`. Direct destructive tests
+1,442 passed / 105 declared skips and signed zero-exit evidence. After
+adversarial repair, the official freeze completed with 1,441 passed / 109
+declared skips and froze 1,550 IDs / 154 declarations with `run_exit=0`.
+Direct destructive tests
 prove kernel SIGKILL, guardian SIGKILL, and nested-controller SIGKILL leave no
 owned namespace descendant or exact root. Broad unit/integration/security
 verification completed with 1,074 passed / 5 capability skips. No Ranex

@@ -14,8 +14,9 @@ to that external guardian through a PID-namespace-authenticated broker, so it
 gets a fresh sibling namespace without forbidden nested user namespaces.
 
 Real governed verification reached 1,442 passed / 105 declared skips with
-signed zero-exit evidence. The final freeze reached 1,443 passed / 105 declared
-skips and froze 1,548 IDs / 150 declarations with `run_exit=0`. Kernel,
+signed zero-exit evidence. After adversarial repair, the final freeze reached
+1,441 passed / 109 declared skips and froze 1,550 IDs / 154 declarations with
+`run_exit=0`. Kernel,
 guardian, and nested-controller SIGKILL arms left no owned process or root.
 
 ## Next
