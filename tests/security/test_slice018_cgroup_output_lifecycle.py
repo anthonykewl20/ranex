@@ -134,7 +134,11 @@ def _make_output_attack(root: Path, kind: str) -> Callable[[], None]:
         os.mkfifo(root / "attack")
     elif kind == "socket":
         listener = socket.socket(socket.AF_UNIX)
-        listener.bind(str(root / "attack"))
+        root_fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
+        try:
+            listener.bind(f"/proc/self/fd/{root_fd}/attack")
+        finally:
+            os.close(root_fd)
         cleanups.append(listener.close)
     elif kind == "hardlink-exceed":
         original = root / "original"

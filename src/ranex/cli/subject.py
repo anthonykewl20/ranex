@@ -218,8 +218,8 @@ def _materialisation_root(
     """Create scratch outside the subject, nesting only under a proven outer root."""
 
     repository = repository_root.resolve()
-    supplied = os.environ if environment is None else environment
-    enclosing = _validated_enclosing_root(repository, supplied)
+    del environment
+    enclosing = _enclosing_subject_root(repository)
     if enclosing is not None:
         bases = (enclosing / "tmp",)
     else:
@@ -242,11 +242,8 @@ def _materialisation_root(
     )
 
 
-def _validated_enclosing_root(
-    repository: Path,
-    environment: Mapping[str, str],
-) -> Path | None:
-    """Return the exact enclosing subject root or refuse an imitation."""
+def _enclosing_subject_root(repository: Path) -> Path | None:
+    """Return an enclosing subject root whose fixed layout is canonical."""
 
     enclosing = next(
         (
@@ -263,17 +260,16 @@ def _validated_enclosing_root(
             "UV_PROJECT_ENVIRONMENT": enclosing / "deps" / "env",
             "VIRTUAL_ENV": enclosing / "deps" / "env",
         }
-        for name, path in expected.items():
-            raw = environment.get(name)
+        for path in expected.values():
             try:
-                candidate = Path(raw).absolute() if raw is not None else None
-                resolved = candidate.resolve(strict=True) if candidate is not None else None
+                candidate = path.absolute()
+                resolved = candidate.resolve(strict=True)
                 expected_resolved = path.resolve(strict=True)
             except (OSError, RuntimeError):
                 resolved = expected_resolved = None
             if candidate != resolved or resolved != expected_resolved or not path.is_dir():
                 raise SubjectError(
-                    "nested materialisation environment does not match its enclosing root"
+                    "nested materialisation layout does not match its enclosing root"
                 )
     return enclosing
 

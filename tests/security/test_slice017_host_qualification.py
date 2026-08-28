@@ -101,17 +101,26 @@ LANDLOCK_CREATE_RULESET_VERSION = 1
 def _confined_no_delegation() -> bool:
     """True inside the landing gate's network-denial sandbox.
 
-    That sandbox runs after unshare(CLONE_NEWUSER|CLONE_NEWNET) with no uid
-    mapping, so /proc/self/uid_map is empty: the controller cannot trust a
-    launcher built there nor reach a delegated cgroup. Detecting that lets a
-    test assert the controller's real refusal instead of constructing a
-    host-only scenario it cannot build here.
+    A historical launcher can expose either an empty uid map; the lifecycle
+    guardian's bubblewrap exposes a nested PID identity instead.  Neither can
+    observe host service PIDs or drive the host's delegated cgroup. Detecting
+    both lets a test assert the controller's real refusal instead of
+    constructing a host-only scenario it cannot build here.
     """
     try:
         lines = Path("/proc/self/uid_map").read_text(encoding="utf-8").splitlines()
     except OSError:
         return False
-    return not any(line.strip() for line in lines)
+    if not any(line.strip() for line in lines):
+        return True
+    try:
+        status = Path("/proc/self/status").read_text(encoding="utf-8").splitlines()
+        namespace_pids = next(
+            line.split()[1:] for line in status if line.startswith("NSpid:")
+        )
+    except (OSError, StopIteration):
+        return False
+    return len(namespace_pids) >= 2
 
 
 def _controller_argv(subcommand: str, *arguments: str | Path) -> list[str]:

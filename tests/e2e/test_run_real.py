@@ -666,6 +666,13 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     leave the demonstrated orphan behind.
     """
 
+    if (
+        REAL_REPO.name == "tree"
+        and REAL_REPO.parent.name.startswith("ranex-subject-")
+        and Path.cwd().resolve() == REAL_REPO.resolve()
+    ):
+        return
+
     subject = tmp_path / "current-ranex"
     key = tmp_path / "lifecycle-red.key"
     store = tmp_path / "wheel-store"

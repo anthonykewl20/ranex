@@ -32,9 +32,9 @@ from typing import Any, NoReturn, Self
 
 from ranex.cli import subject as subject_module
 from ranex.cli.subject import (
+    _enclosing_subject_root,
     _materialisation_root,
     _remove_materialisation,
-    _validated_enclosing_root,
 )
 
 _MESSAGE_LIMIT = 65_536
@@ -954,7 +954,7 @@ class KillSafeSupervisor:
         from ranex.foundation.dynamic_runtime import seal_runtime_bytes
 
         try:
-            enclosing = _validated_enclosing_root(self._repository, os.environ)
+            enclosing = _enclosing_subject_root(self._repository)
         except subject_module.SubjectError as exc:
             raise ProcessSupervisorError(str(exc)) from exc
         if enclosing is not None:

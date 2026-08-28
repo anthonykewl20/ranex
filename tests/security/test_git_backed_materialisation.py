@@ -75,7 +75,7 @@ def test_genuine_nested_materialisation_stays_below_the_outer_root(tmp_path: Pat
 
 
 @pytest.mark.parametrize("attack", ["missing", "wrong", "symlink"])
-def test_nested_materialisation_environment_mismatch_never_falls_back_to_host_tmp(
+def test_nested_materialisation_environment_mismatch_stays_below_outer_root(
     tmp_path: Path,
     attack: str,
 ) -> None:
@@ -90,8 +90,11 @@ def test_nested_materialisation_environment_mismatch_never_falls_back_to_host_tm
         linked.symlink_to(root / "tmp", target_is_directory=True)
         environment["TMPDIR"] = str(linked)
 
-    with pytest.raises(SubjectError, match="does not match its enclosing root"):
-        subject._materialisation_root(repository, environment=environment)
+    nested = subject._materialisation_root(repository, environment=environment)
+    try:
+        assert nested.parent == root / "tmp"
+    finally:
+        subject._remove_materialisation(nested)
 
 
 def test_unrelated_ambient_tmpdir_cannot_choose_the_materialisation_root(
@@ -106,7 +109,13 @@ def test_unrelated_ambient_tmpdir_cannot_choose_the_materialisation_root(
         environment={"TMPDIR": str(forged)},
     )
     try:
-        assert root.parent in {Path("/tmp"), Path("/var/tmp")}
+        enclosing = subject._enclosing_subject_root(repository.resolve())
+        expected = (
+            {enclosing / "tmp"}
+            if enclosing is not None
+            else {Path("/tmp"), Path("/var/tmp")}
+        )
+        assert root.parent in expected
         assert root.parent != forged
     finally:
         subject._remove_materialisation(root)

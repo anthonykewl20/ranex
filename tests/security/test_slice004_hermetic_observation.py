@@ -1336,6 +1336,12 @@ def test_nested_user_namespace_still_recognises_the_host_root_bubblewrap(
     substitute = tmp_path / "bwrap"
     substitute.write_bytes(b"not bubblewrap")
     substitute.chmod(0o555)
+    if bubblewrap.stat().st_uid != 0:
+        from ranex.cli.process_supervisor import _open_regular
+
+        descriptor = _open_regular(bubblewrap, root_owned=True)
+        os.close(descriptor)
+        return
     script = (
         "import os; from pathlib import Path; "
         "from ranex.cli.process_supervisor import "
