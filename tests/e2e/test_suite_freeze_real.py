@@ -201,7 +201,6 @@ def journey(
     base = tmp_path_factory.mktemp("suite-freeze-disposable")
     repository = base / "ranex-subject"
     home = base / "home"
-    store = base / "wheel-store"
     home.mkdir()
     cloned = subprocess.run(
         ["git", "clone", "--quiet", str(REAL_REPO), str(repository)],
@@ -220,7 +219,7 @@ def journey(
     )
 
     fetched = ranex_real(
-        ["deps", "fetch", "--repository", ".", "--store", str(store)],
+        ["deps", "fetch", "--repository", "."],
         repository=repository,
         home=home,
         timeout=600.0,
