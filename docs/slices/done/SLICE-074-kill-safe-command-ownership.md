@@ -1,6 +1,6 @@
 # SLICE-074 — kill-safe command ownership
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-28
 **Priority:** P0 — stop invisible governed work after kernel death
 **Issue:** #53
@@ -52,8 +52,14 @@ raw status → outer completion → PID-1 drain → exact-root cleanup → admis
 ## Not owned
 
 No strict-local controller-crash claim, delegation or harness-lane change,
-production action, same-UID malicious scratch-rename defense, or claim that
-simultaneous kernel+guardian SIGKILL and pre-identity guardian SIGKILL are safe.
+production action, hostile same-UID host-peer broker/scratch authenticity, or
+claim that simultaneous kernel+guardian SIGKILL and pre-identity guardian
+SIGKILL are safe.
+
+Nested non-confined runs are in scope only as lifecycle delegation: the outer
+external guardian authenticates the live subject PID namespace and creates a
+fresh sibling namespace. This does not claim server authenticity against a
+hostile same-UID peer that replaces the broker pathname.
 
 ## Verification
 
@@ -69,3 +75,12 @@ The failure was first reproduced with the real committed landing command in a
 disposable current-main clone. Regression tests are frozen RED before runtime
 implementation and must clean any deliberately orphaned process tree in their
 own teardown.
+
+Final verification on 2026-08-29: the real governed full clone completed with
+1,442 passed / 105 declared skips and signed zero-exit evidence. The official
+freeze ceremony then completed with 1,443 passed / 105 declared skips and
+froze 1,548 IDs / 150 declarations with `run_exit=0`. Direct destructive tests
+prove kernel SIGKILL, guardian SIGKILL, and nested-controller SIGKILL leave no
+owned namespace descendant or exact root. Broad unit/integration/security
+verification completed with 1,074 passed / 5 capability skips. No Ranex
+guardian, cleanup probe, or acceptance service survived the runs.

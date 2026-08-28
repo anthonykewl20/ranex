@@ -437,13 +437,21 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** [SLICE-074-kill-safe-command-ownership](docs/slices/SLICE-074-kill-safe-command-ownership.md)
+**Active slice:** none
 
-SLICE-074 (#53) is open after a destructive real current-main run proved that
-SIGKILL of the kernel can orphan the governed uv, pytest, nested Ranex, strace,
-and compiler tree under PID 1 without evidence. ADR-037 specifies an external
-guardian, PID-namespace ownership, raw-status preservation, namespace drain,
-and exact-root cleanup; implementation remains RED-first and unverified.
+SLICE-074 (#53) is complete. Destructive real-repository runs first proved that
+SIGKILL of the kernel orphaned the governed uv, pytest, nested Ranex, strace,
+and compiler tree under PID 1 without evidence. An external guardian now owns
+the exact root and a fresh PID namespace, transfers verified PID-1 pidfds behind
+an exact start gate, preserves raw exit/signal status, and drains and removes
+the root before admission. Nested Ranex uses the guardian's authenticated local
+broker to obtain a fresh sibling namespace without attempting a forbidden
+nested user namespace. The governed repository reached 1,443 passed / 105
+declared skips and froze 1,548 IDs / 150 declarations with `run_exit=0`;
+kernel, guardian, and nested-controller SIGKILL arms left no owned process or
+root. Simultaneous kernel-plus-guardian death, pre-identity guardian death,
+host-`/tmp` interference, and hostile same-UID broker substitution remain
+explicit boundaries.
 
 SLICE-071 (#49) is complete. It delivers the retained
 SLICE-036 contract after closing the looping #19 as superseded: the explicit
@@ -622,6 +630,12 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-074-kill-safe-command-ownership** — completed 2026-08-29.
+  An external guardian now owns each exact scratch root and fresh PID namespace,
+  while a namespace-authenticated broker gives real nested Ranex workflows fresh
+  sibling namespaces. Destructive kernel, guardian, and nested-controller runs
+  proved drain and cleanup; the frozen catalog contains 1,548 IDs / 150
+  declarations and the final governed run passed 1,443 / skipped 105.
 - **SLICE-073-provider-neutral-real-world-e2e** — completed 2026-08-28.
   Delegation now launches an opaque executable adapter with a minimal pinned
   environment and no OpenRouter or other provider credential requirement.

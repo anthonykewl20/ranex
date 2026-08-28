@@ -2,33 +2,38 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-28 (SLICE-074 opened)
-**Active slice:** `docs/slices/SLICE-074-kill-safe-command-ownership.md`
+**Updated:** 2026-08-29 (SLICE-074 closed)
+**Active slice:** none
 
 ## Where we stopped
-A disposable current-main clone ran the real committed landing command after
-real key generation, producer registration, and approval of all 26 locked
-wheels. SIGKILL of the kernel left uv, pytest, nested Ranex, strace, GCC, and
-cc1 alive under PID 1 with no evidence and a stale subject root. Issue #53
-contains the process-tree proof. The pre-change canonical suite is green at
-1,503 passed / 29 skipped, so existing tests do not cover this failure.
+SLICE-074 closes the real SIGKILL orphan defect in non-confined `run` and
+`suite freeze`. An external guardian owns the exact root and fresh PID
+namespace, transfers verified PID-1 pidfds behind an exact start gate, preserves
+raw exit/signal status, and cleans before admission. Nested Ranex delegates back
+to that external guardian through a PID-namespace-authenticated broker, so it
+gets a fresh sibling namespace without forbidden nested user namespaces.
+
+Real governed verification reached 1,442 passed / 105 declared skips with
+signed zero-exit evidence. The final freeze reached 1,443 passed / 105 declared
+skips and froze 1,548 IDs / 150 declarations with `run_exit=0`. Kernel,
+guardian, and nested-controller SIGKILL arms left no owned process or root.
 
 ## Next
-Freeze the real failure as RED, implement ADR-037's external guardian and
-PID-namespace ownership, then repeat the destructive real journey.
 Framework closed: SLICE-055 closed 2026-08-19
 Next slice: SLICE-054
 
 ## Governance
-Kernel-only initial release; one P0 implementation slice is active.
-ADR-037 is accepted after independent operability and security review.
+Kernel-only initial release; no implementation slice is active.
 Build order: milestone 4 → milestone 3 → milestone 2
 
 ## Known limits
 
+- Simultaneous kernel+guardian SIGKILL and pre-identity guardian SIGKILL remain
+  unverified; strict-local controller crash remains a separate boundary.
+- Host `/tmp` stays writable. A hostile same-UID host peer can attack scratch or
+  replace the pathname broker; client-side server authenticity is not claimed.
 - Unqualified-host skips remain; qualified-host dynamic execution is supported.
-- The strict-local controller remains same-UID trusted infrastructure; hosted
-  confinement requires user namespaces and delegated cgroup controllers.
+- Hosted confinement requires user namespaces and delegated cgroup controllers.
 - About 125 legacy test IDs remain unregistered; trace fd targets retain O_NONBLOCK on the operator descriptor after exit (disclosed).
 - mutmut statistics remain unavailable for subprocess-heavy surfaces; default-deny clone and writable-tree EXECUTE residuals remain review-owned.
 - The approver remains an unauthenticated string; the journal does not detect a
