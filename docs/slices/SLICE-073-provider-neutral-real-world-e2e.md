@@ -71,6 +71,6 @@ uv run --frozen pytest -q tests/contract/test_docs_discipline.py
 uv run --frozen pytest -q
 ```
 
-The five provider-neutral tests were frozen RED before production changes. The
+The six provider-neutral tests were frozen RED before production changes. The
 three existing real-e2e failures from the baseline are already frozen regression
 tests; implementation may not weaken or delete them.

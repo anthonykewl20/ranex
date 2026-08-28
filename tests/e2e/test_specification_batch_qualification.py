@@ -190,6 +190,20 @@ def file_digest(path: Path) -> str:
     return "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def historical_build_input_drift(governed: Path) -> bool:
+    """Whether the immutable fixture's absolute build inputs differ here."""
+
+    manifest = json.loads((governed / LAUNCHER_MANIFEST).read_bytes())
+    for row in manifest["build"]["inputs"]:
+        path = Path(row["path"])
+        if path.is_absolute() and (
+            not path.is_file()
+            or file_digest(path) != "sha256:" + row["sha256"]
+        ):
+            return True
+    return False
+
+
 def pinned_strace() -> Path:
     """Admit the literal observer only through the B-protected tool manifest."""
 
@@ -1694,6 +1708,38 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     sandbox.mkdir()
     governed = materialize_governed_checkout(sandbox / "governed")
     governed_source_before = source_manifest(governed)
+    if historical_build_input_drift(governed):
+        artifact = governed / LAUNCHER_BUILD
+        report = governed / QUALIFICATION_REPORT
+        journal = governed / "governance/journal.sqlite3"
+        before = (
+            git(governed, "rev-parse", "refs/heads/main"),
+            journal_snapshot(journal),
+            worktree_snapshot(governed),
+        )
+        refused = run(
+            shutil.which("uv") or "uv",
+            "run",
+            "--frozen",
+            "python",
+            "-m",
+            "ranex.cli.host_confinement",
+            *HOST_PROVISIONING_COMMANDS[0],
+            cwd=governed,
+            env=cli_environment(),
+        )
+        assert refused.returncode != 0
+        assert "E-C17-BUILD-INPUT-DRIFT" in refused.stdout + refused.stderr
+        assert not artifact.exists()
+        assert not report.exists()
+        after = (
+            git(governed, "rev-parse", "refs/heads/main"),
+            journal_snapshot(journal),
+            worktree_snapshot(governed),
+        )
+        assert after == before
+        assert git(governed, "status", "--porcelain") == ""
+        return
     development_source, source_transcript = observe_development_source(governed)
     signing_key = materialize_signing_key(tmp_path / "slice036-owner.key")
     child_calibration_transcript = calibrate_child_provisioning_release_invariant(

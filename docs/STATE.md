@@ -2,22 +2,24 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 
-**Updated:** 2026-08-28 (SLICE-072 delivered)
-**Active slice:** none
+**Updated:** 2026-08-28 (SLICE-073 implementation verification)
+**Active slice:** `docs/slices/SLICE-073-provider-neutral-real-world-e2e.md`
 
 ## Where we stopped
-SLICE-072 delivered the ADR-035 dynamic runtime closure. Qualified hosts now
-execute strict-local dynamic inputs; the captured qualified-host journey and
-the full focused closure are complete. The approved-batch specification vectors,
-Gate 10 pin, and prerequisite reconciliation are refreshed for the delivered
-runtime.
+The provider-specific delegation credential was removed. Unit, integration,
+security, and a real pinned Ranex red/green adapter journey are green. Historical
+batch qualification now proves exact build-input refusal on foreign hosts, and
+suite freeze provisions disposable dependency state. Canonical freeze/full-suite
+verification remains before close.
 
 ## Next
 Framework closed: SLICE-055 closed 2026-08-19
-Next: harness-lane continuation per MAP and milestone order.
+Next slice: SLICE-054
+SLICE-073 next action: suite-manifest ceremony, canonical e2e/stress rerun,
+docs close, issue proof, commit, and push.
 
 ## Governance
-Kernel-only initial release; no implementation slice is active.
+Kernel-only initial release; SLICE-073 is the sole active implementation slice.
 Build order: milestone 4 → milestone 3 → milestone 2
 
 ## Known limits

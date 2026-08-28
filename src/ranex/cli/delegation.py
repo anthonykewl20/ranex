@@ -22,7 +22,6 @@ from ranex.cli.toolchain import ToolchainError, pinned_path_value
 from ranex.foundation.suite_results import load_manifest_bytes, parse_results_artifact
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
-MODEL_CREDENTIAL_VARIABLE = "OPENROUTER_API_KEY"
 BRIDGE_TASK_VARIABLE = "RANEX_TASK_ID"
 BRIDGE_EMIT_VARIABLE = "RANEX_EMIT"
 SIGNING_KEY_VARIABLE = "RANEX_SIGNING_KEY"
@@ -67,18 +66,11 @@ def execute_environment(
             f"refusing to execute with signing credential in ambient: "
             f"{VERDICT_SIGNING_KEY_VARIABLE} was present in the environment"
         )
-    if MODEL_CREDENTIAL_VARIABLE not in ambient:
-        raise ValueError(
-            f"refusing to execute without model credential: "
-            f"{MODEL_CREDENTIAL_VARIABLE} must be present"
-        )
-
     return {
         "PATH": pinned_path_value(),
         "HOME": home,
         BRIDGE_TASK_VARIABLE: task_id,
         BRIDGE_EMIT_VARIABLE: emit,
-        MODEL_CREDENTIAL_VARIABLE: ambient[MODEL_CREDENTIAL_VARIABLE],
     }
 
 
@@ -245,11 +237,6 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 "refusing to delegate execution while a signing credential "
                 "(RANEX_SIGNING_KEY or RANEX_VERDICT_SIGNING_KEY) is present"
             )
-        if not os.environ.get(MODEL_CREDENTIAL_VARIABLE):
-            raise ValueError(
-                f"refusing to delegate execution: {MODEL_CREDENTIAL_VARIABLE} is absent"
-            )
-
         harness = Path(args.harness)
         if (not harness.is_file()) or (not os.access(harness, os.X_OK)):
             raise ValueError(f"refusing harness executable {harness}")

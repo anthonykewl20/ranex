@@ -1,6 +1,6 @@
 # ADR-036 — provider-neutral real-world e2e portability
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-28
 **Decision-makers:** repo owner
 **Slice:** `docs/slices/SLICE-073-provider-neutral-real-world-e2e.md`

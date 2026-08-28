@@ -1792,7 +1792,8 @@ def test_main_parses_task_delegate_and_reaches_its_refusal(tmp_path: Path, monke
     captured = capsys.readouterr()
 
     assert result == EXIT_USAGE
-    assert "OPENROUTER_API_KEY" in captured.err
+    assert "refusing harness executable" in captured.err
+    assert "OPENROUTER_API_KEY" not in captured.err
 
 
 def test_main_parses_task_fanout_and_reaches_its_refusal(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:

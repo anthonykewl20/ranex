@@ -86,18 +86,24 @@ _STRIPPED_ENV = (
 _GOLDEN = "suite-freeze-manifest.out"
 
 
-def ranex_real(argv: list[str], *, timeout: float = 240.0) -> subprocess.CompletedProcess[str]:
-    """Invoke the CLI in the real repository the way the operator's
-    ceremony does: the real tree's own source on PYTHONPATH, the real
-    HOME (the wheel store and journal are live operator state)."""
+def ranex_real(
+    argv: list[str],
+    *,
+    repository: Path = REAL_REPO,
+    home: Path | None = None,
+    timeout: float = 240.0,
+) -> subprocess.CompletedProcess[str]:
+    """Invoke the real CLI against an explicit real repository subject."""
 
     env = {k: v for k, v in os.environ.items() if k not in _STRIPPED_ENV}
-    env["PYTHONPATH"] = str(REAL_REPO / "src")
+    env["PYTHONPATH"] = str(repository / "src")
+    if home is not None:
+        env["HOME"] = str(home)
     env.setdefault("LC_ALL", "C")
     env.setdefault("TZ", "UTC")
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *argv],
-        cwd=REAL_REPO,
+        cwd=repository,
         capture_output=True,
         text=True,
         env=env,
@@ -192,7 +198,50 @@ def journey(
         "test_dirty_tree_freeze_refuses_with_stable_reason below."
     )
 
-    committed_bytes = COMMITTED_MANIFEST.read_bytes()
+    base = tmp_path_factory.mktemp("suite-freeze-disposable")
+    repository = base / "ranex-subject"
+    home = base / "home"
+    store = base / "wheel-store"
+    home.mkdir()
+    cloned = subprocess.run(
+        ["git", "clone", "--quiet", str(REAL_REPO), str(repository)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert cloned.returncode == 0, cloned.stderr
+    subprocess.run(
+        ["git", "-C", str(repository), "config", "user.email", "freeze-e2e@example.invalid"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(repository), "config", "user.name", "Freeze E2E"],
+        check=True,
+    )
+
+    fetched = ranex_real(
+        ["deps", "fetch", "--repository", ".", "--store", str(store)],
+        repository=repository,
+        home=home,
+        timeout=600.0,
+    )
+    assert fetched.returncode == 0, fetched.stdout + fetched.stderr
+    approved = ranex_real(
+        ["deps", "approve", "--repository", ".", "--approver", "suite-freeze-e2e"],
+        repository=repository,
+        home=home,
+    )
+    assert approved.returncode == 0, approved.stdout + approved.stderr
+    subprocess.run(
+        ["git", "-C", str(repository), "add", "governance/journal.sqlite3"],
+        check=True,
+    )
+    subprocess.run(
+        ["git", "-C", str(repository), "commit", "--quiet", "-m", "test: approve disposable freeze deps"],
+        check=True,
+    )
+
+    committed_bytes = (repository / "governance" / "suite_manifest.json").read_bytes()
     committed = json.loads(committed_bytes)
     declarations = [
         f"{test_id}={reason}"
@@ -209,8 +258,13 @@ def journey(
         argv += ["--expected-skip", declaration]
     argv += ["--", "uv", "run", "pytest", "-q", f"--junitxml={ARTIFACT}"]
 
-    completed = ranex_real(argv, timeout=1500.0)
-    produced = REAL_REPO / output
+    completed = ranex_real(
+        argv,
+        repository=repository,
+        home=home,
+        timeout=1500.0,
+    )
+    produced = repository / output
     try:
         assert completed.returncode == 0, (
             "the real-tree freeze cycle must succeed — the journey "

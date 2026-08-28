@@ -6,32 +6,17 @@ import json
 import subprocess
 from pathlib import Path
 
+from _provider_neutral_subject import (
+    BASE_COMMIT,
+    FOCUSED_TEST,
+    PATCH_COMMIT,
+    environment,
+    git,
+    materialize,
+    run_focused,
+)
 
-REAL_REPO = Path(__file__).resolve().parents[2]
-BASE_COMMIT = "f940da0f44a78fd754a402bcae98d745515b6354"
-PATCH_COMMIT = "cebc06a33ba1f28fd21815bb21edbdc768b4a669"
-FOCUSED_TEST = "tests/integration/test_slice072_dynamic_runtime_contract.py"
-
-
-def _environment(home: Path) -> dict[str, str]:
-    return {
-        "PATH": "/usr/bin:/bin",
-        "HOME": str(home),
-        "PYTHONPATH": str(REAL_REPO / "src"),
-        "LC_ALL": "C",
-        "PYTHONDONTWRITEBYTECODE": "1",
-    }
-
-
-def _git(repository: Path, *arguments: str, home: Path) -> str:
-    completed = subprocess.run(
-        ["git", "-C", str(repository), *arguments],
-        check=True,
-        capture_output=True,
-        text=True,
-        env=_environment(home),
-    )
-    return completed.stdout.strip()
+from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 
 
 def _adapter(path: Path) -> Path:
@@ -56,28 +41,10 @@ def _adapter(path: Path) -> Path:
 def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
     tmp_path: Path,
 ) -> None:
-    home = tmp_path / "home"
-    home.mkdir()
-    target = tmp_path / "ranex-subject"
-    subprocess.run(
-        ["git", "clone", "--quiet", str(REAL_REPO), str(target)],
-        check=True,
-        env=_environment(home),
-    )
-    _git(target, "checkout", "--quiet", BASE_COMMIT, home=home)
-    assert _git(target, "rev-parse", f"{PATCH_COMMIT}^", home=home) == BASE_COMMIT
-
-    python = str(REAL_REPO / ".venv" / "bin" / "python3")
-    suite = [python, "-m", "pytest", "-q", FOCUSED_TEST]
-    red = subprocess.run(
-        suite,
-        cwd=target,
-        capture_output=True,
-        text=True,
-        check=False,
-        env=_environment(home),
-        timeout=120,
-    )
+    subject = materialize(tmp_path)
+    assert git(subject, "rev-parse", f"{PATCH_COMMIT}^") == BASE_COMMIT
+    suite = [str(subject.python), "-m", "pytest", "-q", FOCUSED_TEST]
+    red = run_focused(subject)
     assert red.returncode == 1
     assert "failed" in red.stdout
 
@@ -86,7 +53,7 @@ def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
     outcome = tmp_path / "outcome.json"
     adapter = _adapter(tmp_path / "real-code-adapter")
     command = [
-        python,
+        str(subject.python),
         "-m",
         "ranex.cli.main",
         "task",
@@ -94,7 +61,7 @@ def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
         "--task-id",
         "T-REAL-RANEX-PATCH",
         "--target",
-        str(target),
+        str(subject.repository),
         "--worktree",
         str(worktree),
         "--journal",
@@ -116,11 +83,11 @@ def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
     ]
     delegated = subprocess.run(
         command,
-        cwd=target,
+        cwd=subject.repository,
         capture_output=True,
         text=True,
         check=False,
-        env=_environment(home),
+        env=environment(subject),
         timeout=180,
     )
     assert delegated.returncode == 0, delegated.stderr
@@ -129,10 +96,16 @@ def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
     assert result["commit"] == PATCH_COMMIT
     assert result["suite_exit"] == 0
     assert "57 passed" in result["suite_output_tail"]
-    assert _git(
-        worktree,
+    assert "PASS" not in delegated.stdout
+    rows = Journal(journal).entries()
+    dispatches = [row for row in rows if row.get("type") == "task-dispatch"]
+    assert len(dispatches) == 1
+    assert dispatches[0]["task_id"] == "T-REAL-RANEX-PATCH"
+    assert dispatches[0]["base_commit"] == BASE_COMMIT
+    emitted = type(subject)(worktree, subject.home, subject.python)
+    assert git(
+        emitted,
         "diff",
         "--stat",
         f"{BASE_COMMIT}..{PATCH_COMMIT}",
-        home=home,
     )

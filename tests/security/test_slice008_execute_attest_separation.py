@@ -739,7 +739,7 @@ print(ranex.cli.delegation.exec_environment_holds_signing_key())
     assert completed.stdout.strip() == "True", completed.stderr
 
 
-def test_delegate_refuses_without_the_model_credential(
+def test_delegate_runs_without_a_model_credential(
     tmp_path: Path,
 ) -> None:
     target, _, _ = build_target(tmp_path)
@@ -760,11 +760,12 @@ def test_delegate_refuses_without_the_model_credential(
         signing_key=None,
     )
 
-    assert result.returncode == EXIT_USAGE
-    assert re.search(r"ERROR  .*refusing.*OPENROUTER_API_KEY", result.stderr)
-    assert not worktree.exists()
-    assert journal_rows(journal) == []
-    assert not outcome.exists()
+    assert result.returncode == EXIT_PASS, result.stderr
+    assert "DELEGATED" in result.stdout
+    assert "OPENROUTER_API_KEY" not in result.stdout + result.stderr
+    assert worktree.exists()
+    assert any(row.get("type") == "task-dispatch" for row in journal_rows(journal))
+    assert read_outcome(outcome)["suite_exit"] == 0
 
 
 def test_delegate_refuses_a_harness_that_is_not_executable(
@@ -842,7 +843,6 @@ def test_no_signing_key_is_reachable_from_the_execute_process_tree(
         "HOME",
         "RANEX_TASK_ID",
         "RANEX_EMIT",
-        "OPENROUTER_API_KEY",
     }
     assert set(child_names) == allowed
     assert len(parsed) >= 2

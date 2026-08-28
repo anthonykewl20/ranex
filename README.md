@@ -437,7 +437,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** `docs/slices/SLICE-073-provider-neutral-real-world-e2e.md`
 
 SLICE-071 (#49) is complete. It delivers the retained
 SLICE-036 contract after closing the looping #19 as superseded: the explicit
@@ -1135,9 +1135,9 @@ What each piece is and why it is shaped this way:
   deliberately **not** exported — the `stage_12` operator gate skips on
   exactly that, and its expected skip is declared in the manifest with the
   probe grammar so exporting the key turns the declaration into a
-  probe-backed prune at the next freeze. `OPENROUTER_API_KEY` is likewise
-  absent on the canonical host (the first-delegation journey skips,
-  declared). The command block itself is the only environment wiring the
+  probe-backed prune at the next freeze. Delegation needs no provider-specific
+  environment variable; authentication, when needed, belongs to the selected
+  outer host or adapter-side broker. The command block itself is the only environment wiring the
   entrypoint performs: `COVERAGE_PROCESS_START`, `COVERAGE_FILE`, and the
   hook-last `PYTHONPATH` documented above.
 - **Duration budget.** A full unwired run completes in roughly 10 minutes —
