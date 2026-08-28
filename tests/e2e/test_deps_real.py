@@ -556,8 +556,8 @@ def local_index_journey(
             self._respond()
 
     # The hermetic-freeze seal runs this very suite inside the network
-    # namespace _deny_network creates (src/ranex/cli/main.py: unshare
-    # CLONE_NEWUSER|CLONE_NEWNET between fork and exec), and a fresh netns
+    # namespace the kill-safe guardian asks bubblewrap to create before exec,
+    # and a fresh netns
     # starts with loopback DOWN: the server below binds, but nothing — the
     # resolver's lock derivation, a fetch — can connect to it (ENETUNREACH),
     # so the frozen construction errors inside every sealed ceremony run

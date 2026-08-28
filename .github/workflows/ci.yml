@@ -28,6 +28,11 @@ jobs:
       - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
         with:
           python-version: "3.14"
+      - name: Install kill-safe lifecycle owner
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends bubblewrap
+          bwrap --version
       # Lint and type gates run first so a style or type regression fails fast
       # before the slower suite. Both run via uvx with pinned versions so they
       # do not touch uv.lock (a trust root) and stay reproducible.

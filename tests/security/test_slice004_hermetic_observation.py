@@ -30,6 +30,7 @@ import json
 import os
 import shlex
 import shutil
+import signal
 import stat
 import subprocess
 import sys
@@ -1228,3 +1229,47 @@ def test_a_tool_absent_from_the_pinned_toolchain_is_refused() -> None:
 
     with pytest.raises(ToolchainError):
         resolve_tool("ranex-tool-that-does-not-exist")
+
+
+@pytest.mark.parametrize(
+    ("shell_body", "expected_kind", "expected_code"),
+    (("exit 143", "exited", 143), ("kill -TERM $$", "signalled", signal.SIGTERM)),
+)
+def test_real_supervisor_distinguishes_exit_143_from_sigterm(
+    shell_body: str, expected_kind: str, expected_code: int
+) -> None:
+    """Raw wait status remains truthful when legacy return codes are identical."""
+
+    from ranex.cli.process_supervisor import KillSafeSupervisor, RawStatus
+    from ranex.cli.repository import git
+    from ranex.cli.subject import materialise_subject
+
+    repository = Path(__file__).resolve().parents[2]
+    started_at = subprocess.run(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    shell = Path(shutil.which("sh") or "").resolve()
+    descriptor = os.open(shell, os.O_RDONLY | os.O_CLOEXEC)
+    try:
+        with KillSafeSupervisor(repository) as supervisor:
+            with materialise_subject(
+                repository,
+                started_at,
+                git,
+                root_factory=supervisor.allocate_root,
+                cleanup=False,
+            ) as materialisation:
+                completed = supervisor.run(
+                    [str(shell), "-c", shell_body],
+                    descriptor,
+                    cwd=materialisation.tree,
+                    environment={"LANG": "C.UTF-8", "PATH": "/usr/bin:/bin"},
+                    deny_network=False,
+                )
+        assert completed.returncode == 143
+        assert supervisor.last_raw_status == RawStatus(expected_kind, expected_code)
+    finally:
+        os.close(descriptor)

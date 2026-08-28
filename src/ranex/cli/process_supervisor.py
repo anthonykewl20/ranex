@@ -728,7 +728,12 @@ class KillSafeSupervisor:
         self._pidfd = -1
         self._process_group: int | None = None
         self._root: Path | None = None
+        self._last_raw_status: RawStatus | None = None
         self._finished = False
+
+    @property
+    def last_raw_status(self) -> RawStatus | None:
+        return self._last_raw_status
 
     def __enter__(self) -> Self:
         from ranex.foundation.dynamic_runtime import seal_runtime_bytes
@@ -893,6 +898,7 @@ class KillSafeSupervisor:
         if kind not in {"exited", "signalled"} or not isinstance(code, int):
             raise ProcessSupervisorError("guardian returned invalid raw status")
         raw = RawStatus(kind, code)
+        self._last_raw_status = raw
         return subprocess.CompletedProcess(list(command), raw.returncode)
 
     def _receive_or_fallback(self) -> tuple[dict[str, Any], tuple[int, ...]]:
