@@ -89,7 +89,9 @@ RESPONSE_LIMIT = 65_536
 # Issue #50 refreshes it for the nested batch-qualification trace dispatch
 # binding while preserving the launcher boundary.
 # SLICE-072 refreshes it for dynamic runtime closure while preserving the launcher boundary.
-MAIN_PY_SHA256 = "fd7363a40e4669940df5172c2ed70121cec0be62fa30f90823083e825757dce7"
+# SLICE-074 refreshes it for kill-safe non-confined command ownership; the
+# strict-local launcher and controller branch remain unchanged.
+MAIN_PY_SHA256 = "3b37ae96ef7a6d1801dd072e5f58ee4c4d87863818e65a27cd99692cc6fe29fa"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

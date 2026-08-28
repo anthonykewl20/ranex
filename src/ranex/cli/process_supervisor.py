@@ -410,6 +410,52 @@ def _parse_raw(data: bytes) -> RawStatus:
     return RawStatus(kind, code)
 
 
+def bubblewrap_arguments(
+    *,
+    block: int,
+    status: int,
+    cwd: Path,
+    python: int,
+    gate: int,
+    raw: int,
+    executable: int,
+    config: int,
+    deny_network: bool,
+) -> list[str]:
+    """Return the one reviewed lifecycle argv used by the real guardian."""
+
+    return [
+        "bwrap",
+        "--bind",
+        "/",
+        "/",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--unshare-pid",
+        "--die-with-parent",
+        *(["--unshare-net"] if deny_network else []),
+        "--block-fd",
+        str(block),
+        "--json-status-fd",
+        str(status),
+        "--chdir",
+        str(cwd),
+        "--",
+        f"/proc/self/fd/{python}",
+        "-I",
+        "-S",
+        "-c",
+        _RELAY,
+        str(gate),
+        str(raw),
+        str(executable),
+        str(config),
+    ]
+
+
 def _guardian_execute(
     endpoint: socket.socket,
     lifeline: int,
@@ -441,36 +487,20 @@ def _guardian_execute(
         os.write(config_write, config_data)
         os.close(config_write)
         config_write = -1
-        argv = [
-            "bwrap",
-            "--bind",
-            "/",
-            "/",
-            "--dev-bind",
-            "/dev",
-            "/dev",
-            "--proc",
-            "/proc",
-            "--unshare-pid",
-            "--die-with-parent",
-            *(["--unshare-net"] if message.get("deny_network") is True else []),
-            "--block-fd",
-            str(block_read),
-            "--json-status-fd",
-            str(status_write),
-            "--chdir",
-            str(message.get("cwd")),
-            "--",
-            f"/proc/self/fd/{python}",
-            "-I",
-            "-S",
-            "-c",
-            _RELAY,
-            str(gate),
-            str(raw_write),
-            str(executable),
-            str(config_read),
-        ]
+        cwd = message.get("cwd")
+        if not isinstance(cwd, str):
+            raise ProcessSupervisorError("RUN cwd is invalid")
+        argv = bubblewrap_arguments(
+            block=block_read,
+            status=status_write,
+            cwd=Path(cwd),
+            python=python,
+            gate=gate,
+            raw=raw_write,
+            executable=executable,
+            config=config_read,
+            deny_network=message.get("deny_network") is True,
+        )
         process = subprocess.Popen(
             argv,
             executable=f"/proc/self/fd/{bwrap}",

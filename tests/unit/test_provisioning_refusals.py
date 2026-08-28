@@ -704,18 +704,35 @@ def test_assemble_root_refuses_an_unspawnable_resolver(tmp_path: Path) -> None:
         os.close(descriptor)
 
 
-def test_deny_network_requests_a_fresh_user_and_network_namespace(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    # The flags are the whole control: CLONE_NEWNET is what leaves the child
-    # with no interfaces, and CLONE_NEWUSER is what lets an unprivileged
-    # process ask for it at all. Asserted against a fake because calling the
-    # real one would unshare THIS process — the child actually being unable
-    # to reach the network is proven separately, end to end, by
-    # tests/security/test_slice006_dependency_provisioning.py.
-    from ranex.cli import main as cli
+def test_deny_network_requests_a_fresh_network_namespace() -> None:
+    # The external-connect denial is separately proven end to end. This freezes
+    # the reviewed real argv owner so lifecycle wrapping cannot omit that netns.
+    from ranex.cli.process_supervisor import bubblewrap_arguments
 
-    requested: list[int] = []
-    monkeypatch.setattr(cli.os, "unshare", requested.append)
-    cli._deny_network()
-    assert requested == [os.CLONE_NEWUSER | os.CLONE_NEWNET]
+    arguments = bubblewrap_arguments(
+        block=10,
+        status=11,
+        cwd=Path("/tmp/subject"),
+        python=12,
+        gate=13,
+        raw=14,
+        executable=15,
+        config=16,
+        deny_network=True,
+    )
+
+    assert arguments[:12] == [
+        "bwrap",
+        "--bind",
+        "/",
+        "/",
+        "--dev-bind",
+        "/dev",
+        "/dev",
+        "--proc",
+        "/proc",
+        "--unshare-pid",
+        "--die-with-parent",
+        "--unshare-net",
+    ]
+    assert "--new-session" not in arguments
