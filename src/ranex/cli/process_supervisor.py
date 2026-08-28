@@ -951,8 +951,6 @@ class KillSafeSupervisor:
         return self._last_raw_status
 
     def __enter__(self) -> Self:
-        from ranex.foundation.dynamic_runtime import seal_runtime_bytes
-
         try:
             enclosing = _enclosing_subject_root(self._repository)
         except subject_module.SubjectError as exc:
@@ -972,6 +970,8 @@ class KillSafeSupervisor:
             self._delegated = True
             self._enclosing_root = enclosing
             return self
+
+        from ranex.foundation.dynamic_runtime import seal_runtime_bytes
 
         resolved_bwrap = shutil.which("bwrap", path=_BWRAP_PATH)
         if resolved_bwrap is None:

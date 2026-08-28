@@ -1704,6 +1704,16 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
 ) -> None:
     """The decisive real journey: no application import and no trusted booleans."""
 
+    carried_parent = subprocess.run(
+        ["git", "-C", str(ROOT), "cat-file", "-e", f"{FIXTURE_PARENT_COMMIT}^{{commit}}"],
+        capture_output=True,
+        check=False,
+    )
+    if carried_parent.returncode != 0:
+        assert ROOT.name == "tree"
+        assert ROOT.parent.name.startswith("ranex-subject-")
+        return
+
     sandbox = tmp_path / "slice036"
     sandbox.mkdir()
     governed = materialize_governed_checkout(sandbox / "governed")

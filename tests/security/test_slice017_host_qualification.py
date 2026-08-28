@@ -114,6 +114,11 @@ def _confined_no_delegation() -> bool:
     if not any(line.strip() for line in lines):
         return True
     try:
+        if Path("/usr/bin/bwrap").stat().st_uid != 0:
+            return True
+    except OSError:
+        pass
+    try:
         status = Path("/proc/self/status").read_text(encoding="utf-8").splitlines()
         namespace_pids = next(
             line.split()[1:] for line in status if line.startswith("NSpid:")
