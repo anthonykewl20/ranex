@@ -128,6 +128,15 @@ def _confined_no_delegation() -> bool:
     return len(namespace_pids) >= 2
 
 
+def _confined_expected_refusal() -> str:
+    """Name the first unavailable authority in the live nested boundary."""
+
+    try:
+        return E_FACT if Path("/usr/bin/bwrap").stat().st_uid != 0 else E_EXEC
+    except OSError:
+        return E_EXEC
+
+
 def _controller_argv(subcommand: str, *arguments: str | Path) -> list[str]:
     return [*CONTROLLER, subcommand, *(str(argument) for argument in arguments)]
 
@@ -1037,7 +1046,7 @@ def test_gate5_existing_delegation_runs_a_real_child_cgroup_probe(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     completed, observed = _run_in_delegated_unit(
         "qualify", *_qualify_arguments(), observe=True
@@ -1055,7 +1064,7 @@ def test_gate5_login_scope_is_rejected_and_broker_runs_a_real_probe(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     hostile_runtime = Path(tempfile.mkdtemp(prefix="ranex-g5-", dir="/tmp"))
     hostile_bus = hostile_runtime / "bus"
@@ -1126,7 +1135,7 @@ def test_gate5_login_scope_without_a_broker_refuses_instead_of_skipping(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: the outer delegated unit constructs a child root with only
     # memory+pids, then a nested user+mount namespace hides the derived D-Bus
@@ -1157,7 +1166,7 @@ def test_gate5_report_records_an_untestable_broker_when_existing_root_is_usable(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: systemd delegates first; only then a private mount hides
     # the derived runtime directory. Existing delegation succeeds, while broker
@@ -1189,7 +1198,7 @@ def test_gate6_each_required_controller_is_genuinely_absent(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: in a delegated unit the harness leaves its unit root
     # process-empty, enables only `present`, creates a child cgroup, moves the
@@ -1215,7 +1224,7 @@ def test_gate6_each_namespace_probe_is_defeated_in_the_kernel(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: after entering fresh user+mount namespaces, inherited
     # seccomp returns ENOSYS only for unshare() carrying the named CLONE_NEW* bit.
@@ -1244,7 +1253,7 @@ def test_gate6_kernel_syscall_probe_is_defeated_for_real(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: a fresh user+mount namespace inherits a narrow seccomp
     # filter returning ENOSYS for the actual x86_64 probe syscall. Landlock ABI
@@ -1263,7 +1272,7 @@ def test_gate6_seccomp_and_nnp_status_must_be_readable(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: after entering fresh user+mount namespaces, an unreadable
     # bind-mounted file replaces /proc/self/status before exec. We do not install
@@ -1283,7 +1292,7 @@ def test_gate6_cgroup_kill_is_genuinely_unavailable_at_the_probe_root(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: inside a fresh user+mount namespace an inaccessible,
     # non-cgroup bind mount covers the live delegated root's cgroup.kill inode.
@@ -1302,7 +1311,7 @@ def test_gate6_bubblewrap_binary_is_genuinely_absent_from_the_mount_view(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: the delegated service starts first; its child then enters
     # fresh user+mount namespaces and masks only the profile-pinned bwrap object.
@@ -1319,7 +1328,7 @@ def test_gate6_bubblewrap_binary_is_genuinely_absent_from_the_mount_view(
 def test_gate6_positive_host_probe_succeeds_on_the_qualified_host() -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     completed, _ = _run_in_delegated_unit("host-probe")
     if completed.returncode != 0:
@@ -1339,7 +1348,7 @@ def test_gate8_wrong_architecture_refuses_without_a_partial_report(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     completed = subprocess.run(
         [str(sandbox_helper), "linux32", "unused", "--", *_controller_argv(
@@ -1363,7 +1372,7 @@ def test_gate8_unreadable_kernel_fact_refuses_without_a_partial_report(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     # Real mechanism: qualify begins in a real delegated unit, while a private
     # bind mount makes its own /proc/self/status unreadable before controller exec.
@@ -1499,7 +1508,7 @@ def test_gate8_cleanup_failure_refuses_and_test_removes_its_blocker(
 ) -> None:
     if _confined_no_delegation():
         completed = _run_controller("qualify", *_qualify_arguments())
-        _refusal(completed, E_EXEC)
+        _refusal(completed, _confined_expected_refusal())
         return
     blocker = CleanupBlocker(_user_service_cgroup_root())
     try:
