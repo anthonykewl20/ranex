@@ -36,6 +36,8 @@ import socket
 import stat
 import subprocess
 import sys
+import threading
+import time
 import zlib
 from contextlib import nullcontext
 from pathlib import Path
@@ -1469,6 +1471,124 @@ def test_real_nested_supervisor_delegates_to_the_external_guardian() -> None:
                 assert outer_socket.is_socket()
         assert outer_socket is not None
         assert not outer_socket.exists()
+    finally:
+        os.close(descriptor)
+
+
+def test_nested_controller_sigkill_drains_its_delegated_namespace() -> None:
+    """A dead nested controller closes its broker session and owns no orphan."""
+
+    from ranex.cli.process_supervisor import KillSafeSupervisor
+    from ranex.cli.repository import git
+    from ranex.cli.subject import materialise_subject
+
+    repository = Path(__file__).resolve().parents[2]
+    started_at = subprocess.run(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    interpreter = Path(sys.executable).resolve()
+    descriptor = os.open(interpreter, os.O_RDONLY | os.O_CLOEXEC)
+    token = f"ranex-nested-kill-{os.getpid()}"
+
+    def matching_pids(needle: str) -> set[int]:
+        matches: set[int] = set()
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdecimal():
+                continue
+            try:
+                command = (entry / "cmdline").read_bytes().replace(b"\0", b" ")
+            except (FileNotFoundError, PermissionError, ProcessLookupError):
+                continue
+            if needle.encode() in command:
+                matches.add(int(entry.name))
+        return matches
+
+    try:
+        with KillSafeSupervisor(repository) as supervisor:
+            with materialise_subject(
+                repository,
+                started_at,
+                git,
+                root_factory=supervisor.allocate_root,
+                cleanup=False,
+            ) as materialisation:
+                dependency_root = materialisation.root / "deps" / "env"
+                dependency_root.mkdir(parents=True)
+                root_marker = materialisation.temporary / "nested-root"
+                script = "\n".join(
+                    (
+                        "import os, subprocess, sys",
+                        "from pathlib import Path",
+                        "from ranex.cli.process_supervisor import KillSafeSupervisor",
+                        "from ranex.cli.repository import git",
+                        "from ranex.cli.subject import materialise_subject",
+                        "repository, executable, root_marker, token = sys.argv[1:]",
+                        "repository = Path(repository)",
+                        "started_at = subprocess.run(['git', '-C', str(repository), 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()",
+                        "descriptor = os.open(executable, os.O_RDONLY | os.O_CLOEXEC)",
+                        "with KillSafeSupervisor(repository) as supervisor:",
+                        "    with materialise_subject(repository, started_at, git, root_factory=supervisor.allocate_root, cleanup=False) as materialisation:",
+                        "        Path(root_marker).write_text(str(materialisation.root), encoding='utf-8')",
+                        "        supervisor.run([executable, '-c', 'import time; time.sleep(300)', token], descriptor, cwd=materialisation.tree, environment={'LANG': 'C.UTF-8', 'PATH': '/usr/bin:/bin'}, deny_network=True)",
+                    )
+                )
+                outcome: list[subprocess.CompletedProcess[str]] = []
+
+                def run_nested_controller() -> None:
+                    outcome.append(
+                        supervisor.run(
+                            [
+                                str(interpreter),
+                                "-c",
+                                script,
+                                str(materialisation.tree),
+                                str(interpreter),
+                                str(root_marker),
+                                token,
+                            ],
+                            descriptor,
+                            cwd=materialisation.tree,
+                            environment={
+                                "HOME": str(materialisation.home),
+                                "LANG": "C.UTF-8",
+                                "PATH": "/usr/bin:/bin",
+                                "PYTHONPATH": str(repository / "src"),
+                                "TMPDIR": str(materialisation.temporary),
+                                "UV_PROJECT_ENVIRONMENT": str(dependency_root),
+                                "VIRTUAL_ENV": str(dependency_root),
+                            },
+                            deny_network=True,
+                        )
+                    )
+
+                worker = threading.Thread(target=run_nested_controller)
+                worker.start()
+                deadline = time.monotonic() + 15
+                controller_pid: int | None = None
+                nested_root: Path | None = None
+                while time.monotonic() < deadline:
+                    if root_marker.exists():
+                        nested_root = Path(root_marker.read_text(encoding="utf-8"))
+                        controllers = matching_pids(str(root_marker))
+                        if len(controllers) == 1 and matching_pids(token) - controllers:
+                            controller_pid = controllers.pop()
+                            break
+                    time.sleep(0.01)
+                assert controller_pid is not None and nested_root is not None
+                os.kill(controller_pid, signal.SIGKILL)
+                worker.join(timeout=20)
+                assert not worker.is_alive()
+                deadline = time.monotonic() + 15
+                while time.monotonic() < deadline:
+                    if not matching_pids(token) and not nested_root.exists():
+                        break
+                    time.sleep(0.01)
+                assert not matching_pids(token)
+                assert not nested_root.exists()
+                assert outcome and outcome[0].returncode == 137
     finally:
         os.close(descriptor)
 
