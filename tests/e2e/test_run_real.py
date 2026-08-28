@@ -67,8 +67,10 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -147,6 +149,51 @@ def git(subject: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
         text=True,
         check=False,
     )
+
+
+def _proc_rows() -> dict[int, tuple[int, int, str, Path | None]]:
+    """Read the real Linux process table without invoking a test double."""
+
+    rows: dict[int, tuple[int, int, str, Path | None]] = {}
+    for entry in Path("/proc").iterdir():
+        if not entry.name.isdigit():
+            continue
+        try:
+            stat_row = (entry / "stat").read_text(encoding="utf-8")
+            fields = stat_row[stat_row.rfind(")") + 2 :].split()
+            command = (entry / "cmdline").read_bytes().replace(b"\0", b" ").decode(
+                "utf-8", errors="backslashreplace"
+            )
+            try:
+                cwd = Path(os.readlink(entry / "cwd"))
+            except OSError:
+                cwd = None
+            rows[int(entry.name)] = (int(fields[1]), int(fields[2]), command, cwd)
+        except (FileNotFoundError, PermissionError, ProcessLookupError, ValueError):
+            continue
+    return rows
+
+
+def _descendants(root_pid: int, rows: dict[int, tuple[int, int, str, Path | None]]) -> set[int]:
+    found: set[int] = set()
+    frontier = {root_pid}
+    while frontier:
+        children = {pid for pid, (ppid, _pgid, _command, _cwd) in rows.items() if ppid in frontier}
+        children -= found
+        if not children:
+            break
+        found.update(children)
+        frontier = children
+    return found
+
+
+def _materialisation_from_cwd(cwd: Path | None) -> Path | None:
+    if cwd is None:
+        return None
+    for candidate in (cwd, *cwd.parents):
+        if candidate.name.startswith("ranex-subject-"):
+            return candidate
+    return None
 
 
 def golden_text(name: str) -> str:
@@ -571,4 +618,191 @@ def test_sabotage_control_mutated_golden_diffs_dirty(journey: RunJourney) -> Non
     )
     assert "Q" + verdict_word[1:] in message, (
         "the first hunk must show the mutated bytes untruncated: " + message
+    )
+
+
+@pytest.mark.skipif(sys.platform != "linux", reason="the lifecycle contract uses Linux /proc")
+def test_kernel_sigkill_cannot_orphan_real_landing_command(tmp_path: Path) -> None:
+    """ADR-037's primary destructive regression uses the real operator path.
+
+    This is intentionally not a generated sleep payload. It clones the current
+    Ranex tree, uses the public key/dependency commands, launches the exact
+    committed landing command against the real locked wheels and repository
+    corpus, and kills only the kernel after the real pytest descendant starts.
+    Teardown owns the old-runtime process group so freezing this RED cannot
+    leave the demonstrated orphan behind.
+    """
+
+    subject = tmp_path / "current-ranex"
+    key = tmp_path / "lifecycle-red.key"
+    store = tmp_path / "wheel-store"
+    cloned = subprocess.run(
+        ["git", "clone", "-q", str(REAL_REPO), str(subject)],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
+    for name, value in (
+        ("user.email", "lifecycle-red@example.com"),
+        ("user.name", "lifecycle RED journey"),
+    ):
+        configured = git(subject, "config", name, value)
+        assert configured.returncode == 0, configured.stderr
+
+    producer = "lifecycle-red"
+    generated = ranex(subject, ["keygen", "--producer", producer], key=key)
+    assert generated.returncode == 0, generated.stderr
+    public = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+    assert public, f"keygen printed no public key: {generated.stdout!r}"
+    keyring = subject / "governance" / "producers.yaml"
+    keyring_text = keyring.read_text(encoding="utf-8")
+    keyring.write_text(
+        keyring_text.replace("producers:\n", f"producers:\n  {producer}: {public.group(1)}\n", 1),
+        encoding="utf-8",
+    )
+    committed = git(subject, "add", "governance/producers.yaml")
+    assert committed.returncode == 0, committed.stderr
+    committed = git(subject, "commit", "-q", "-m", "register lifecycle RED producer")
+    assert committed.returncode == 0, committed.stderr
+
+    fetched = ranex(
+        subject,
+        ["deps", "fetch", "--repository", ".", "--store", str(store)],
+    )
+    assert fetched.returncode == 0, (
+        "the real locked wheel derivation did not complete: "
+        f"{fetched.stdout}{fetched.stderr}"
+    )
+    approved = ranex(
+        subject,
+        ["deps", "approve", "--repository", ".", "--approver", "lifecycle-reviewer"],
+    )
+    assert approved.returncode == 0, (
+        f"the real locked wheel approval did not complete: {approved.stdout}{approved.stderr}"
+    )
+
+    landing_command = (
+        "uv",
+        "run",
+        "pytest",
+        "-q",
+        "--junitxml=governance/suite_results.xml",
+    )
+    gate_catalog = (subject / "governance" / "gates.yaml").read_text(encoding="utf-8")
+    assert 'command: ["uv", "run", "pytest", "-q", ' in gate_catalog
+    assert '"--junitxml=governance/suite_results.xml"]' in gate_catalog
+
+    env = {name: value for name, value in os.environ.items() if name not in _STRIPPED_ENV}
+    env.update({"PYTHONPATH": str(subject / "src"), "RANEX_SIGNING_KEY": str(key)})
+    evidence = subject / "governance" / "evidence.json"
+    stdout_log = tmp_path / "kernel.stdout"
+    stderr_log = tmp_path / "kernel.stderr"
+    process: subprocess.Popen[str] | None = None
+    materialisation: Path | None = None
+    observed_pids: set[int] = set()
+    survivors: set[int] = set()
+    scratch_survived = False
+    evidence_survived = False
+    try:
+        with stdout_log.open("w", encoding="utf-8") as stdout, stderr_log.open(
+            "w", encoding="utf-8"
+        ) as stderr:
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    "-m",
+                    "ranex.cli.main",
+                    "run",
+                    "--claim",
+                    "tests-executed",
+                    "--producer",
+                    producer,
+                    "--gate",
+                    "landing",
+                    "--repository",
+                    ".",
+                    "--store",
+                    str(store),
+                    "--",
+                    *landing_command,
+                ],
+                cwd=subject,
+                stdout=stdout,
+                stderr=stderr,
+                text=True,
+                env=env,
+                start_new_session=True,
+            )
+
+            started_deadline = time.monotonic() + 120
+            pytest_pid: int | None = None
+            while time.monotonic() < started_deadline:
+                assert process.poll() is None, (
+                    "the real landing command exited before destructive injection: "
+                    f"stdout={stdout_log.read_text(encoding='utf-8')!r} "
+                    f"stderr={stderr_log.read_text(encoding='utf-8')!r}"
+                )
+                rows = _proc_rows()
+                observed_pids = _descendants(process.pid, rows)
+                pytest_pid = next(
+                    (
+                        pid
+                        for pid in observed_pids
+                        if "pytest -q --junitxml=governance/suite_results.xml"
+                        in rows[pid][2]
+                    ),
+                    None,
+                )
+                if pytest_pid is not None:
+                    materialisation = _materialisation_from_cwd(rows[pytest_pid][3])
+                    if materialisation is not None:
+                        break
+                time.sleep(0.05)
+            assert pytest_pid is not None and materialisation is not None, (
+                "the public run never reached real pytest in a verified materialisation; "
+                f"stdout={stdout_log.read_text(encoding='utf-8')!r} "
+                f"stderr={stderr_log.read_text(encoding='utf-8')!r}"
+            )
+
+            os.kill(process.pid, signal.SIGKILL)
+            assert process.wait(timeout=10) == -signal.SIGKILL
+
+            contained_deadline = time.monotonic() + 10
+            while time.monotonic() < contained_deadline:
+                rows = _proc_rows()
+                survivors = {pid for pid in observed_pids if pid in rows and rows[pid][2]}
+                scratch_survived = materialisation.exists()
+                if not survivors and not scratch_survived:
+                    break
+                time.sleep(0.05)
+            evidence_survived = evidence.exists()
+    finally:
+        if process is not None:
+            try:
+                os.killpg(process.pid, signal.SIGKILL)
+            except ProcessLookupError:
+                pass
+            for pid in observed_pids:
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            try:
+                process.wait(timeout=10)
+            except subprocess.TimeoutExpired:
+                pass
+        if materialisation is not None and materialisation.exists():
+            # The real wheel environment is deliberately read-only. Reuse the
+            # kernel's one permission-repair cleanup implementation so the RED
+            # injection cannot strand its exact scratch tree.
+            from ranex.cli.subject import _remove_materialisation
+
+            _remove_materialisation(materialisation)
+
+    assert not survivors and not scratch_survived and not evidence_survived, (
+        "SIGKILL of the kernel violated lifecycle containment: "
+        f"surviving real landing descendants={sorted(survivors)}, "
+        f"exact materialisation={materialisation} survived={scratch_survived}, "
+        f"evidence survived={evidence_survived}"
     )
