@@ -437,7 +437,7 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** `docs/slices/SLICE-073-provider-neutral-real-world-e2e.md`
+**Active slice:** none
 
 SLICE-071 (#49) is complete. It delivers the retained
 SLICE-036 contract after closing the looping #19 as superseded: the explicit
@@ -616,6 +616,14 @@ chosen by the party being measured. Both are closed.
 
 ## Completed slices
 
+- **SLICE-073-provider-neutral-real-world-e2e** — completed 2026-08-28.
+  Delegation now launches an opaque executable adapter with a minimal pinned
+  environment and no OpenRouter or other provider credential requirement.
+  Real pinned Ranex Git red/green journeys, disposable suite freeze,
+  fail-closed historical-host qualification, and repeated fanout/policy/journal
+  stress validate portability across outer agent hosts. The final frozen
+  catalog contains 1,532 IDs / 150 declarations; the canonical run completed
+  1,503 passed / 29 declared skips with 72% canonical source coverage.
 - **SLICE-072-digest-bound-dynamic-runtime-closure** — completed 2026-08-28.
   Additive strict-local v3 admits a canonical captured-commit runtime closure,
   seals and rehashes every source file, constructs one private per-file-mounted

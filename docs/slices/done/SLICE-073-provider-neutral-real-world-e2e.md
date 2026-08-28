@@ -1,6 +1,6 @@
 # SLICE-073 — provider-neutral real-world e2e portability
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-28
 **Priority:** P0 — restore portable real-e2e truth
 **Issue:** #52
@@ -48,6 +48,9 @@ or proves the exact fail-closed refusal elsewhere.
 7. The canonical full real-e2e entrypoint passes coverage and honest skip-ledger
    checks on the exact final commit; any unavailable host-only feature remains
    explicitly unverified rather than green by absence.
+8. Sustained journal contention completes 4,000 writes from eight concurrent
+   writers without exposing SQLite's transient busy condition, and the final
+   hash chain verifies.
 
 ## Stable refusal order
 
@@ -72,5 +75,14 @@ uv run --frozen pytest -q
 ```
 
 The six provider-neutral tests were frozen RED before production changes. The
-three existing real-e2e failures from the baseline are already frozen regression
-tests; implementation may not weaken or delete them.
+three existing real-e2e failures from the baseline were retained as regression
+tests; none were weakened or deleted.
+
+Final verification on 2026-08-28: the disposable sealed freeze completed with
+1,404 passed / 128 declared skips and froze 1,532 IDs / 150 declarations. The
+canonical entrypoint completed with 1,503 passed / 29 declared skips in
+1,664.05 seconds, 72% canonical source coverage (10,294 statements), and an
+honest skip-ledger cross-check. Policy stress evaluated 300,000 mixed cases plus
+100,000 PASS and 100,000 absence-failure cases with zero mismatches. Journal
+stress verified 5,000 sequential and 4,000 eight-writer appends. The bounded
+fanout control passed 10/10 runs.
