@@ -175,6 +175,13 @@ def git(subject: Path, *arguments: str) -> subprocess.CompletedProcess[str]:
     )
 
 
+def configure_local_git_identity(subject: Path) -> None:
+    email = git(subject, "config", "user.email", "deps-e2e@example.invalid")
+    name = git(subject, "config", "user.name", "Deps E2E")
+    assert email.returncode == 0, email.stderr
+    assert name.returncode == 0, name.stderr
+
+
 def golden_text(name: str) -> str:
     """Read a family golden, refusing its absence loudly.
 
@@ -910,6 +917,7 @@ def test_lock_drift_and_missing_epoch_block_refuse(
     subprocess.run(
         ["git", "clone", "-q", str(journey.subject), str(drift)], check=True
     )
+    configure_local_git_identity(drift)
     with (drift / "uv.lock").open("a", encoding="utf-8") as file:
         file.write("\n# hand edit\n")
     added = git(drift, "add", "uv.lock")
@@ -929,6 +937,7 @@ def test_lock_drift_and_missing_epoch_block_refuse(
     subprocess.run(
         ["git", "clone", "-q", str(journey.subject), str(epoch)], check=True
     )
+    configure_local_git_identity(epoch)
     pins = yaml.safe_load((epoch / "governance" / "deps.yaml").read_text(encoding="utf-8"))
     block = f'\n[options]\nexclude-newer = "{pins["exclude_newer"]}"\n'
     lock_text = (epoch / "uv.lock").read_text(encoding="utf-8")

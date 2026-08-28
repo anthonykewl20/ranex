@@ -10,6 +10,7 @@ not a collection error.
 from __future__ import annotations
 
 import ctypes
+import errno
 import hashlib
 import json
 import os
@@ -557,6 +558,10 @@ class CgroupObservation:
                 }
             except (FileNotFoundError, NotADirectoryError, PermissionError, ValueError):
                 continue
+            except OSError as exc:
+                if exc.errno in {errno.ENOENT, errno.ENODEV}:
+                    continue
+                raise
             if pids:
                 self.live_pids.setdefault(path, set()).update(pids)
 
@@ -1038,8 +1043,7 @@ def test_gate5_login_scope_is_rejected_and_broker_runs_a_real_probe(
         completed = _run_controller("qualify", *_qualify_arguments())
         _refusal(completed, E_EXEC)
         return
-    hostile_runtime = tmp_path / "attacker-runtime"
-    hostile_runtime.mkdir()
+    hostile_runtime = Path(tempfile.mkdtemp(prefix="ranex-g5-", dir="/tmp"))
     hostile_bus = hostile_runtime / "bus"
     trap = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     trap.bind(str(hostile_bus))
@@ -1072,6 +1076,8 @@ def test_gate5_login_scope_is_rejected_and_broker_runs_a_real_probe(
             trap_connected = True
             connection.close()
         trap.close()
+        hostile_bus.unlink(missing_ok=True)
+        hostile_runtime.rmdir()
 
     report = _assert_success_report(completed)
     delegation = report["delegation"]

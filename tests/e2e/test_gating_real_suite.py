@@ -1027,12 +1027,9 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     assert live_claim.results_artifact is not None
     assert f"--junitxml={live_claim.results_artifact}" in live_claim.command
     assert len(live_manifest["suite"]) >= 687
-    openrouter_id = (
-        "tests/e2e/test_first_delegation.py::"
-        "test_first_delegation_ends_in_candidate_with_reviewable_diff"
-    )
-    declared_skips = set(live_manifest["expected_skips"])
-    assert openrouter_id in declared_skips
+    declared_skips = live_manifest["expected_skips"]
+    assert not any("OPENROUTER_API_KEY" in reason for reason in declared_skips.values())
+    assert not any("first_delegation" in test_id for test_id in declared_skips)
 
     missing_id = "tests/contract/test_bom_is_honest.py::test_bom_is_honest"
     assert missing_id in live_manifest["suite"]
