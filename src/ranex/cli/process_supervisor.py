@@ -23,6 +23,7 @@ import stat
 import struct
 import subprocess
 import sys
+import tempfile
 import threading
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -85,17 +86,27 @@ def _receive(endpoint: socket.socket) -> tuple[dict[str, Any], tuple[int, ...]]:
         descriptor_space,
         getattr(socket, "MSG_CMSG_CLOEXEC", 0),
     )
-    if not data:
-        raise EOFError("lifecycle control channel closed")
-    if flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC) or len(data) > _MESSAGE_LIMIT:
-        raise ProcessSupervisorError("lifecycle control message was truncated")
     descriptors: list[int] = []
     for level, kind, payload in ancillary:
-        if level != socket.SOL_SOCKET or kind != socket.SCM_RIGHTS:
-            raise ProcessSupervisorError("lifecycle control carried unknown ancillary data")
-        packed = array.array("i")
-        packed.frombytes(payload[: len(payload) - (len(payload) % packed.itemsize)])
-        descriptors.extend(packed)
+        if level == socket.SOL_SOCKET and kind == socket.SCM_RIGHTS:
+            packed = array.array("i")
+            packed.frombytes(payload[: len(payload) - (len(payload) % packed.itemsize)])
+            descriptors.extend(packed)
+    if not data:
+        for descriptor in descriptors:
+            os.close(descriptor)
+        raise EOFError("lifecycle control channel closed")
+    if flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC) or len(data) > _MESSAGE_LIMIT:
+        for descriptor in descriptors:
+            os.close(descriptor)
+        raise ProcessSupervisorError("lifecycle control message was truncated")
+    if any(
+        level != socket.SOL_SOCKET or kind != socket.SCM_RIGHTS
+        for level, kind, _payload in ancillary
+    ):
+        for descriptor in descriptors:
+            os.close(descriptor)
+        raise ProcessSupervisorError("lifecycle control carried unknown ancillary data")
     try:
         for descriptor in descriptors:
             os.set_inheritable(descriptor, False)
@@ -439,7 +450,7 @@ def _kill_owned(pidfd: int | None, process_group: int | None) -> None:
             _pidfd_kill(pidfd)
         except OSError:
             pass
-    if process_group is not None:
+    elif process_group is not None:
         try:
             os.killpg(process_group, signal.SIGKILL)
         except ProcessLookupError:
@@ -560,7 +571,7 @@ class _NestedBroker:
         self._stop = threading.Event()
         self._lock = threading.Lock()
         self._connections: set[socket.socket] = set()
-        self._sessions: list[threading.Thread] = []
+        self._sessions: set[threading.Thread] = set()
         self._acceptor: threading.Thread | None = None
         self._namespace: tuple[int, int] | None = None
 
@@ -577,9 +588,9 @@ class _NestedBroker:
                 socket.SO_PEERCRED,
                 struct.calcsize("3i"),
             )
-            peer_pid, _uid, _gid = struct.unpack("3i", credentials)
+            peer_pid, uid, _gid = struct.unpack("3i", credentials)
             facts = os.stat(f"/proc/{peer_pid}/ns/pid")
-            return self._namespace == (facts.st_dev, facts.st_ino)
+            return uid == os.geteuid() and self._namespace == (facts.st_dev, facts.st_ino)
         except (OSError, struct.error):
             return False
 
@@ -602,7 +613,7 @@ class _NestedBroker:
                 daemon=True,
             )
             with self._lock:
-                self._sessions.append(session)
+                self._sessions.add(session)
             session.start()
 
     def _run_session(self, endpoint: socket.socket) -> None:
@@ -616,11 +627,16 @@ class _NestedBroker:
         finally:
             with self._lock:
                 self._connections.discard(endpoint)
+                self._sessions.discard(threading.current_thread())
             endpoint.close()
 
     def close(self) -> None:
         self._stop.set()
         self._listener.close()
+        if self._acceptor is not None:
+            self._acceptor.join(timeout=_DRAIN_TIMEOUT)
+            if self._acceptor.is_alive():
+                raise ProcessSupervisorError("nested lifecycle acceptor did not stop")
         with self._lock:
             connections = tuple(self._connections)
             sessions = tuple(self._sessions)
@@ -629,10 +645,10 @@ class _NestedBroker:
                 endpoint.shutdown(socket.SHUT_RDWR)
             except OSError:
                 pass
-        if self._acceptor is not None:
-            self._acceptor.join(timeout=_DRAIN_TIMEOUT)
         for session in sessions:
             session.join(timeout=_DRAIN_TIMEOUT)
+            if session.is_alive():
+                raise ProcessSupervisorError("nested lifecycle session did not drain")
         try:
             self.path.unlink()
         except FileNotFoundError:
@@ -649,12 +665,18 @@ def _guardian_execute(
     root: Path,
 ) -> bool:
     if len(descriptors) != 2:
+        for descriptor in descriptors:
+            os.close(descriptor)
         raise ProcessSupervisorError("RUN requires executable and start-gate descriptors")
     executable, gate = descriptors
     block_read, block_write = os.pipe2(os.O_CLOEXEC)
     status_read, status_write = os.pipe2(os.O_CLOEXEC)
     raw_read, raw_write = os.pipe2(os.O_CLOEXEC)
-    config_read, config_write = os.pipe2(os.O_CLOEXEC)
+    config_read, config_path = tempfile.mkstemp(
+        prefix=".ranex-relay-config-", dir=root / "tmp"
+    )
+    os.unlink(config_path)
+    config_write = -1
     process: subprocess.Popen[bytes] | None = None
     pidfd: int | None = None
     broker: _NestedBroker | None = None
@@ -665,9 +687,14 @@ def _guardian_execute(
             for name, value in supplied_environment.items()
         ):
             raise ProcessSupervisorError("RUN environment is invalid")
+        supplied_argv = message.get("argv")
+        if not isinstance(supplied_argv, list) or not supplied_argv or not all(
+            isinstance(argument, str) and argument for argument in supplied_argv
+        ):
+            raise ProcessSupervisorError("RUN argv is invalid")
         broker = _NestedBroker(root, lifeline, bwrap, python)
         config = {
-            "argv": message.get("argv"),
+            "argv": supplied_argv,
             "cwd": message.get("cwd"),
             "deny_network": message.get("deny_network"),
             "environment": dict(supplied_environment),
@@ -675,9 +702,10 @@ def _guardian_execute(
         config_data = _json_bytes(config)
         if len(config_data) > _MESSAGE_LIMIT:
             raise ProcessSupervisorError("relay configuration exceeds 65536 bytes")
-        os.write(config_write, config_data)
-        os.close(config_write)
-        config_write = -1
+        written = os.write(config_read, config_data)
+        if written != len(config_data):
+            raise ProcessSupervisorError("relay configuration write was truncated")
+        os.lseek(config_read, 0, os.SEEK_SET)
         cwd = message.get("cwd")
         if not isinstance(cwd, str):
             raise ProcessSupervisorError("RUN cwd is invalid")
@@ -738,6 +766,8 @@ def _guardian_execute(
                 _kill_owned(pidfd, process.pid)
                 _wait_pidfd(pidfd)
                 process.wait(timeout=_DRAIN_TIMEOUT)
+                active_broker, broker = broker, None
+                active_broker.close()
                 _remove_materialisation(root)
                 return False
             if endpoint in readable:
@@ -768,6 +798,8 @@ def _guardian_execute(
                 _kill_owned(pidfd, process.pid)
                 _wait_pidfd(pidfd)
                 process.wait(timeout=_DRAIN_TIMEOUT)
+                active_broker, broker = broker, None
+                active_broker.close()
                 _remove_materialisation(root)
                 return False
             if endpoint in readable:
@@ -778,6 +810,8 @@ def _guardian_execute(
                     _kill_owned(pidfd, process.pid)
                     _wait_pidfd(pidfd)
                     process.wait(timeout=_DRAIN_TIMEOUT)
+                    active_broker, broker = broker, None
+                    active_broker.close()
                     _send(endpoint, {"kind": "ABORTED"})
                     return True
                 raise ProcessSupervisorError("unexpected control message during command")
@@ -816,6 +850,8 @@ def _guardian_execute(
             raise ProcessSupervisorError("bubblewrap exit status is invalid JSON") from exc
         if exit_document != {"exit-code": raw.returncode}:
             raise ProcessSupervisorError("bubblewrap exit status disagrees with raw status")
+        active_broker, broker = broker, None
+        active_broker.close()
         _send(
             endpoint,
             {"code": raw.code, "kind": "RESULT", "status_kind": raw.kind},
@@ -1132,6 +1168,8 @@ class KillSafeSupervisor:
             if not isinstance(pid, int) or not isinstance(process_group, int):
                 os.close(descriptors[0])
                 raise ProcessSupervisorError("guardian returned invalid process identity")
+            if self._pidfd >= 0:
+                os.close(self._pidfd)
             self._pidfd = descriptors[0]
             self._process_group = process_group
             _send(self._control, {"kind": "ACK"})

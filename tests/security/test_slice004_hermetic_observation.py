@@ -1393,6 +1393,24 @@ def test_current_user_owned_bubblewrap_substitute_is_still_refused(
         _open_regular(substitute, root_owned=True)
 
 
+def test_pidfd_kill_never_targets_a_recycled_process_group(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Once exact PID-1 authority exists, a numeric PID is not kill authority."""
+
+    from ranex.cli import process_supervisor
+
+    pidfds: list[int] = []
+    groups: list[tuple[int, signal.Signals]] = []
+    monkeypatch.setattr(process_supervisor, "_pidfd_kill", pidfds.append)
+    monkeypatch.setattr(os, "killpg", lambda pid, sig: groups.append((pid, sig)))
+
+    process_supervisor._kill_owned(71, 72)
+
+    assert pidfds == [71]
+    assert groups == []
+
+
 def test_real_nested_supervisor_delegates_to_the_external_guardian() -> None:
     """Nested Ranex gets a fresh sibling PID namespace, not nested userns."""
 
@@ -1468,7 +1486,7 @@ def test_real_nested_supervisor_delegates_to_the_external_guardian() -> None:
                 assert completed.returncode == 0
                 assert marker.read_text(encoding="ascii") == "ok"
                 outer_socket = materialisation.temporary / ".ranex-lifecycle.sock"
-                assert outer_socket.is_socket()
+                assert not outer_socket.exists()
         assert outer_socket is not None
         assert not outer_socket.exists()
     finally:
@@ -1488,7 +1506,10 @@ def test_nested_controller_sigkill_drains_its_delegated_namespace() -> None:
         and repository.parent.name.startswith("ranex-subject-")
         and Path.cwd().resolve() == repository.resolve()
     ):
-        return
+        pytest.skip(
+            "ranex-context:hermetic-freeze: destructive host-observer arm runs "
+            "directly because a sealed subject cannot observe its sibling namespace"
+        )
     started_at = subprocess.run(
         ["git", "-C", str(repository), "rev-parse", "HEAD"],
         capture_output=True,
@@ -1597,6 +1618,119 @@ def test_nested_controller_sigkill_drains_its_delegated_namespace() -> None:
                 assert outcome and outcome[0].returncode == 137
     finally:
         os.close(descriptor)
+
+
+def test_outer_kernel_sigkill_drains_active_nested_real_repository_work(
+    tmp_path: Path,
+) -> None:
+    """Kernel death drains a broker sibling before deleting the outer root."""
+
+    repository = Path(__file__).resolve().parents[2]
+    if (
+        repository.name == "tree"
+        and repository.parent.name.startswith("ranex-subject-")
+        and Path.cwd().resolve() == repository.resolve()
+    ):
+        pytest.skip(
+            "ranex-context:hermetic-freeze: destructive host-observer arm runs "
+            "directly because a sealed subject cannot observe its sibling namespace"
+        )
+    interpreter = Path(sys.executable).resolve()
+    outer_marker = tmp_path / "outer-root"
+    nested_marker = tmp_path / "nested-root"
+    token = f"ranex-outer-kill-nested-{os.getpid()}"
+
+    def matching_pids(needle: str) -> set[int]:
+        matches: set[int] = set()
+        for entry in Path("/proc").iterdir():
+            if not entry.name.isdecimal():
+                continue
+            try:
+                command = (entry / "cmdline").read_bytes().replace(b"\0", b" ")
+            except (FileNotFoundError, PermissionError, ProcessLookupError):
+                continue
+            if needle.encode() in command:
+                matches.add(int(entry.name))
+        return matches
+
+    nested_script = "\n".join(
+        (
+            "import os, subprocess, sys",
+            "from pathlib import Path",
+            "from ranex.cli.process_supervisor import KillSafeSupervisor",
+            "from ranex.cli.repository import git",
+            "from ranex.cli.subject import materialise_subject",
+            "repository, executable, marker, token = sys.argv[1:]",
+            "repository = Path(repository)",
+            "started_at = subprocess.run(['git', '-C', str(repository), 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()",
+            "descriptor = os.open(executable, os.O_RDONLY | os.O_CLOEXEC)",
+            "with KillSafeSupervisor(repository) as supervisor:",
+            "    with materialise_subject(repository, started_at, git, root_factory=supervisor.allocate_root, cleanup=False) as materialisation:",
+            "        Path(marker).write_text(str(materialisation.root), encoding='utf-8')",
+            "        corpus_worker = 'import hashlib, pathlib, sys; root=pathlib.Path(sys.argv[1]); token=sys.argv[2]; exec(\"while True:\\\\n for path in root.rglob(\\\"*\\\"):\\\\n  if path.is_file(): hashlib.sha256(path.read_bytes()).digest()\")'",
+            "        supervisor.run([executable, '-c', corpus_worker, str(materialisation.tree), token], descriptor, cwd=materialisation.tree, environment={'LANG': 'C.UTF-8', 'PATH': '/usr/bin:/bin'}, deny_network=True)",
+        )
+    )
+    controller_script = "\n".join(
+        (
+            "import os, subprocess, sys",
+            "from pathlib import Path",
+            "from ranex.cli.process_supervisor import KillSafeSupervisor",
+            "from ranex.cli.repository import git",
+            "from ranex.cli.subject import materialise_subject",
+            "repository, executable, outer_marker, nested_marker, token, nested_script = sys.argv[1:]",
+            "repository = Path(repository)",
+            "started_at = subprocess.run(['git', '-C', str(repository), 'rev-parse', 'HEAD'], capture_output=True, text=True, check=True).stdout.strip()",
+            "descriptor = os.open(executable, os.O_RDONLY | os.O_CLOEXEC)",
+            "with KillSafeSupervisor(repository) as supervisor:",
+            "    with materialise_subject(repository, started_at, git, root_factory=supervisor.allocate_root, cleanup=False) as materialisation:",
+            "        Path(outer_marker).write_text(str(materialisation.root), encoding='utf-8')",
+            "        dependency_root = materialisation.root / 'deps' / 'env'",
+            "        dependency_root.mkdir(parents=True)",
+            "        supervisor.run([executable, '-c', nested_script, str(materialisation.tree), executable, nested_marker, token], descriptor, cwd=materialisation.tree, environment={'HOME': str(materialisation.home), 'LANG': 'C.UTF-8', 'PATH': '/usr/bin:/bin', 'PYTHONPATH': str(repository / 'src'), 'TMPDIR': str(materialisation.temporary), 'UV_PROJECT_ENVIRONMENT': str(dependency_root), 'VIRTUAL_ENV': str(dependency_root)}, deny_network=True)",
+        )
+    )
+    controller = subprocess.Popen(
+        [
+            str(interpreter),
+            "-c",
+            controller_script,
+            str(repository),
+            str(interpreter),
+            str(outer_marker),
+            str(nested_marker),
+            token,
+            nested_script,
+        ],
+        env={
+            **os.environ,
+            "PYTHONPATH": str(repository / "src"),
+        },
+    )
+    try:
+        deadline = time.monotonic() + 30
+        while time.monotonic() < deadline:
+            if outer_marker.exists() and nested_marker.exists() and matching_pids(token):
+                break
+            assert controller.poll() is None
+            time.sleep(0.02)
+        assert outer_marker.exists() and nested_marker.exists() and matching_pids(token)
+        outer_root = Path(outer_marker.read_text(encoding="utf-8"))
+        nested_root = Path(nested_marker.read_text(encoding="utf-8"))
+        os.kill(controller.pid, signal.SIGKILL)
+        assert controller.wait(timeout=20) == -signal.SIGKILL
+        deadline = time.monotonic() + 20
+        while time.monotonic() < deadline:
+            if not matching_pids(token) and not outer_root.exists() and not nested_root.exists():
+                break
+            time.sleep(0.02)
+        assert not matching_pids(token)
+        assert not nested_root.exists()
+        assert not outer_root.exists()
+    finally:
+        if controller.poll() is None:
+            controller.kill()
+            controller.wait(timeout=10)
 
 
 def test_real_supervisor_exposes_only_its_exact_scratch_root_read_write() -> None:
