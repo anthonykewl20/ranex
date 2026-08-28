@@ -662,32 +662,47 @@ class TestRunRefusals:
         record_derivation(repo)
         record_approval(repo)
 
-        real_run = subprocess.run
         boundary_seen = False
 
-        def observe_boundary(*arguments, **kwargs):
-            nonlocal boundary_seen
-            if kwargs.get("preexec_fn") is None:
-                return real_run(*arguments, **kwargs)
-            boundary_seen = True
-            assert kwargs["preexec_fn"] is cli._deny_network
-            environment = kwargs["env"]
-            assert environment["UV_NO_SYNC"] == "1"
-            assert environment["UV_OFFLINE"] == "1"
-            assert environment["UV_NO_CONFIG"] == "1"
-            assert environment["UV_FROZEN"] == "1"
-            dependency_root = Path(environment["UV_PROJECT_ENVIRONMENT"])
-            assert Path(environment["VIRTUAL_ENV"]) == dependency_root
-            assert stat.S_IMODE(dependency_root.stat().st_mode) & 0o222 == 0
-            (Path(kwargs["cwd"]) / "report.xml").write_text(
-                '<testsuites><testsuite><testcase '
-                'classname="tests.test_sample" name="test_one" />'
-                '</testsuite></testsuites>',
-                encoding="utf-8",
-            )
-            return subprocess.CompletedProcess(arguments[0], 0)
+        class ObserveSupervisor:
+            def __init__(self, _repository: Path) -> None:
+                self.root: Path | None = None
 
-        monkeypatch.setattr("ranex.cli.main.subprocess.run", observe_boundary)
+            def __enter__(self):
+                return self
+
+            def allocate_root(self, repository: Path) -> Path:
+                from ranex.cli.subject import _materialisation_root
+
+                self.root = _materialisation_root(repository)
+                return self.root
+
+            def run(self, arguments, _descriptor, *, cwd, environment, deny_network):
+                nonlocal boundary_seen
+                boundary_seen = True
+                assert deny_network is True
+                assert environment["UV_NO_SYNC"] == "1"
+                assert environment["UV_OFFLINE"] == "1"
+                assert environment["UV_NO_CONFIG"] == "1"
+                assert environment["UV_FROZEN"] == "1"
+                dependency_root = Path(environment["UV_PROJECT_ENVIRONMENT"])
+                assert Path(environment["VIRTUAL_ENV"]) == dependency_root
+                assert stat.S_IMODE(dependency_root.stat().st_mode) & 0o222 == 0
+                (Path(cwd) / "report.xml").write_text(
+                    '<testsuites><testsuite><testcase '
+                    'classname="tests.test_sample" name="test_one" />'
+                    '</testsuite></testsuites>',
+                    encoding="utf-8",
+                )
+                return subprocess.CompletedProcess(arguments, 0)
+
+            def __exit__(self, *_exc_info) -> None:
+                from ranex.cli.subject import _remove_materialisation
+
+                assert self.root is not None
+                _remove_materialisation(self.root)
+
+        monkeypatch.setattr(cli, "KillSafeSupervisor", ObserveSupervisor)
         assert invoke(
             repo,
             [
@@ -812,14 +827,19 @@ class TestSpawnFailure:
         record_derivation(repo)
         record_approval(repo)
 
-        real = subprocess.run
+        import ranex.cli.main as cli
 
-        def refuse(*args, **kwargs):
-            if kwargs.get("preexec_fn") is not None:
-                raise OSError("unprivileged user namespaces are disabled")
-            return real(*args, **kwargs)
+        class RefusingSupervisor:
+            def __init__(self, _repository: Path) -> None:
+                pass
 
-        monkeypatch.setattr("ranex.cli.main.subprocess.run", refuse)
+            def __enter__(self):
+                raise ValueError("unprivileged user namespaces are disabled")
+
+            def __exit__(self, *_exc_info) -> None:
+                pass
+
+        monkeypatch.setattr(cli, "KillSafeSupervisor", RefusingSupervisor)
         assert run(repo, RUN_COMMAND, monkeypatch) == 2
-        assert "cannot run" in capsys.readouterr().err
+        assert "unprivileged user namespaces are disabled" in capsys.readouterr().err
         assert repo.evidence() is None

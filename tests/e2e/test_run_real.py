@@ -622,7 +622,10 @@ def test_sabotage_control_mutated_golden_diffs_dirty(journey: RunJourney) -> Non
 
 
 @pytest.mark.skipif(sys.platform != "linux", reason="the lifecycle contract uses Linux /proc")
-def test_kernel_sigkill_cannot_orphan_real_landing_command(tmp_path: Path) -> None:
+@pytest.mark.parametrize("kill_target", ["kernel", "guardian"])
+def test_kernel_sigkill_cannot_orphan_real_landing_command(
+    tmp_path: Path, kill_target: str
+) -> None:
     """ADR-037's primary destructive regression uses the real operator path.
 
     This is intentionally not a generated sleep payload. It clones the current
@@ -765,8 +768,22 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(tmp_path: Path) -> No
                 f"stderr={stderr_log.read_text(encoding='utf-8')!r}"
             )
 
-            os.kill(process.pid, signal.SIGKILL)
-            assert process.wait(timeout=10) == -signal.SIGKILL
+            if kill_target == "kernel":
+                os.kill(process.pid, signal.SIGKILL)
+                assert process.wait(timeout=10) == -signal.SIGKILL
+            else:
+                rows = _proc_rows()
+                direct_children = {
+                    pid
+                    for pid in observed_pids
+                    if pid in rows and rows[pid][0] == process.pid
+                }
+                assert len(direct_children) == 1, (
+                    "the real kernel did not expose exactly one lifecycle guardian: "
+                    f"{sorted(direct_children)}"
+                )
+                os.kill(direct_children.pop(), signal.SIGKILL)
+                assert process.wait(timeout=10) == 2
 
             contained_deadline = time.monotonic() + 10
             while time.monotonic() < contained_deadline:
@@ -801,7 +818,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(tmp_path: Path) -> No
             _remove_materialisation(materialisation)
 
     assert not survivors and not scratch_survived and not evidence_survived, (
-        "SIGKILL of the kernel violated lifecycle containment: "
+        f"SIGKILL of the {kill_target} violated lifecycle containment: "
         f"surviving real landing descendants={sorted(survivors)}, "
         f"exact materialisation={materialisation} survived={scratch_survived}, "
         f"evidence survived={evidence_survived}"
