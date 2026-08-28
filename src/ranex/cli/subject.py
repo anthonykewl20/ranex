@@ -148,6 +148,8 @@ def verified_blob_at_path(
 
 
 def _remove_materialisation(root: Path) -> None:
+    if not root.exists():
+        return
     try:
         # Pytest's on_rm_rf_error intentionally does not retry os.open: unlike
         # unlink and rmdir, it needs arguments beyond the path.  We take that
@@ -249,10 +251,17 @@ def materialise_subject(
     repository_root: Path,
     ref: str,
     git: GitRunner,
+    *,
+    root_factory: Callable[[Path], Path] | None = None,
+    cleanup: bool = True,
 ) -> Iterator[Materialisation]:
     """Yield a fresh verified tree and remove its whole scratch root afterwards."""
 
-    root = _materialisation_root(repository_root)
+    root = (
+        root_factory(repository_root)
+        if root_factory is not None
+        else _materialisation_root(repository_root)
+    )
     tree = root / "tree"
     home = root / "home"
     temporary = root / "tmp"
@@ -298,8 +307,9 @@ def materialise_subject(
         # The tree is always removed either way. Only the *reporting* of a
         # cleanup failure is suppressed, and only while something better is
         # already on its way to the operator.
-        try:
-            _remove_materialisation(root)
-        except SubjectError:
-            if completed:
-                raise
+        if cleanup:
+            try:
+                _remove_materialisation(root)
+            except SubjectError:
+                if completed:
+                    raise

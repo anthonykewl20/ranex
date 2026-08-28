@@ -27,6 +27,7 @@ import sys
 import tempfile
 import tomllib
 from collections.abc import Callable, Iterable, Mapping, Sequence
+from contextlib import ExitStack
 from dataclasses import dataclass
 from importlib import import_module
 from pathlib import Path
@@ -40,6 +41,7 @@ from ranex.bootstrap.composition import (
 from ranex.cli.confinement import resolve_within_repository
 from ranex.cli.delegation import cmd_task_delegate
 from ranex.cli.fanout import cmd_task_fanout
+from ranex.cli.process_supervisor import KillSafeSupervisor
 from ranex.cli.repository import (
     committable_into,
     git,
@@ -1560,20 +1562,6 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
-def _deny_network() -> None:
-    """Child-side, between fork and exec: no network, no privileges needed.
-
-    A fresh user namespace makes CLONE_NEWNET available to an unprivileged
-    process, and a fresh network namespace has no interfaces up — every
-    connect fails with ENETUNREACH. This is the run-time half of ADR-007's
-    hermeticity row; a host that refuses unprivileged user namespaces fails
-    the spawn, and that failure is a refusal: a provisioned run that cannot
-    be denied the network is not run at all.
-    """
-
-    os.unshare(os.CLONE_NEWUSER | os.CLONE_NEWNET)
-
-
 @dataclass(frozen=True, slots=True)
 class Provisioning:
     """Everything the provisioned paths agree on, read once from the commit."""
@@ -2516,6 +2504,52 @@ def _approved_artifacts(
     return artifacts
 
 
+def _opened_command_descriptor(
+    command_name: str,
+    executable: Path,
+    roots: Sequence[tuple[Path, str]],
+    *,
+    descriptor: int | None = None,
+) -> int:
+    """Open once and verify the executable identity against governed roots."""
+
+    opened_descriptor = (
+        descriptor
+        if descriptor is not None
+        else os.open(executable, EXECUTABLE_OPEN_FLAGS)
+    )
+    try:
+        identity = os.fstat(opened_descriptor)
+        if not stat.S_ISREG(identity.st_mode):
+            raise ValueError(
+                f"refusing to run {command_name!r}: {executable} is not a "
+                "regular file, so what would execute is not what was resolved"
+            )
+        opened = path_behind(
+            opened_descriptor,
+            f"cannot confirm which file {command_name!r} opened, so it will not be run",
+        )
+        if opened != executable:
+            raise ValueError(
+                f"refusing to run {command_name!r}: it resolved to {executable} "
+                f"and the file actually opened is {opened}; the path changed "
+                "while it was being checked"
+            )
+        for subject_root, description in roots:
+            twin = same_file_inside(identity, subject_root)
+            if twin is not None:
+                raise ValueError(
+                    f"refusing to run {command_name!r}: {executable} is the "
+                    f"same file as {twin}, inside {description}. A hard link "
+                    "and a bind mount are both a second name for one file, "
+                    "not a second file, so the observed tree chose the bytes"
+                )
+        return opened_descriptor
+    except BaseException:
+        os.close(opened_descriptor)
+        raise
+
+
 def _execute_hermetically(
     root: Path,
     started_at: str,
@@ -2533,7 +2567,31 @@ def _execute_hermetically(
 ) -> CommandObservation:
     """Run once inside the shared verified, offline, sealed execution boundary."""
 
-    with materialise_subject(root, started_at, git) as materialisation:
+    if artifact_reader is not None and confinement is None and artifact_relative is None:
+        raise ValueError("artifact reader has no confined artifact path")
+    if confinement is None and preliminary is not None and not provisioned_resolver:
+        early_descriptor = _opened_command_descriptor(
+            command[0],
+            preliminary.executable,
+            ((root, "the governed repository under observation"),),
+        )
+        os.close(early_descriptor)
+
+    with ExitStack() as stack:
+        supervisor = (
+            stack.enter_context(KillSafeSupervisor(root))
+            if confinement is None
+            else None
+        )
+        materialisation = stack.enter_context(
+            materialise_subject(
+                root,
+                started_at,
+                git,
+                root_factory=supervisor.allocate_root if supervisor is not None else None,
+                cleanup=supervisor is None,
+            )
+        )
         confinement_result_digest: str | None = None
         confinement_profile_digest: str | None = None
         confined_artifact: object | None = None
@@ -2633,44 +2691,23 @@ def _execute_hermetically(
             "the materialised subject tree",
         )
 
-        descriptor = (
+        raw_descriptor = (
             verified_pinned_binary(
                 provisioning.pins.resolver, provisioning.pins.resolver_sha256
             )
             if provisioned_resolver and provisioning is not None
-            else os.open(executable, EXECUTABLE_OPEN_FLAGS)
+            else None
         )
-        try:
-            identity = os.fstat(descriptor)
-            if not stat.S_ISREG(identity.st_mode):
-                raise ValueError(
-                    f"refusing to run {command[0]!r}: {executable} is not a "
-                    "regular file, so what would execute is not what was resolved"
-                )
-            opened = path_behind(
-                descriptor,
-                f"cannot confirm which file {command[0]!r} opened, so it will "
-                "not be run",
-            )
-            if opened != executable:
-                raise ValueError(
-                    f"refusing to run {command[0]!r}: it resolved to {executable} "
-                    f"and the file actually opened is {opened}; the path changed "
-                    "while it was being checked"
-                )
-            for subject_root, description in (
+        descriptor = _opened_command_descriptor(
+            command[0],
+            executable,
+            (
                 (root, "the governed repository under observation"),
                 (materialisation.tree, "the materialised subject tree"),
-            ):
-                twin = same_file_inside(identity, subject_root)
-                if twin is not None:
-                    raise ValueError(
-                        f"refusing to run {command[0]!r}: {executable} is the "
-                        f"same file as {twin}, inside {description}. A hard link "
-                        "and a bind mount are both a second name for one file, "
-                        "not a second file, so the observed tree chose the bytes"
-                    )
-
+            ),
+            descriptor=raw_descriptor,
+        )
+        try:
             observed = materialisation.tracked_paths
             untouched = stat_fingerprint(materialisation.tree, observed)
             environment = {
@@ -2681,7 +2718,7 @@ def _execute_hermetically(
                 "GIT_CONFIG_NOSYSTEM": "1",
                 "GIT_ATTR_NOSYSTEM": "1",
             }
-            before_exec = None
+            deny_network = False
             if provisioning is not None and deps_environment is not None:
                 environment["PATH"] = (
                     f"{deps_environment / 'bin'}{os.pathsep}{environment['PATH']}"
@@ -2698,7 +2735,7 @@ def _execute_hermetically(
                         "UV_CACHE_DIR": str(materialisation.temporary / "uv-cache"),
                     }
                 )
-                before_exec = _deny_network
+                deny_network = True
             if confinement is not None:
                 confined = _execute_confinement_session(
                     root,
@@ -2714,25 +2751,20 @@ def _execute_hermetically(
                 confinement_result_digest = confined.confinement_result_digest
                 confinement_profile_digest = confined.confinement_profile_digest
             else:
-                try:
-                    completed = subprocess.run(
-                        [str(executable), *command[1:]],
-                        executable=f"/proc/self/fd/{descriptor}",
-                        pass_fds=(descriptor,),
-                        cwd=materialisation.tree,
-                        check=False,
-                        env=environment,
-                        preexec_fn=before_exec,
-                    )
-                except (OSError, subprocess.SubprocessError) as exc:
-                    raise ValueError(f"cannot run {command[0]!r}: {exc}") from exc
+                assert supervisor is not None
+                completed = supervisor.run(
+                    [str(executable), *command[1:]],
+                    descriptor,
+                    cwd=materialisation.tree,
+                    environment=environment,
+                    deny_network=deny_network,
+                )
         finally:
             os.close(descriptor)
 
         artifact: object | None = confined_artifact
         if artifact_reader is not None and confinement is None:
-            if artifact_relative is None:
-                raise ValueError("artifact reader has no confined artifact path")
+            assert artifact_relative is not None
             artifact = artifact_reader(materialisation.tree / artifact_relative)
 
         if head_commit(root) != started_at:
