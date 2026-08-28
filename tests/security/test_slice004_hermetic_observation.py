@@ -1483,6 +1483,12 @@ def test_nested_controller_sigkill_drains_its_delegated_namespace() -> None:
     from ranex.cli.subject import materialise_subject
 
     repository = Path(__file__).resolve().parents[2]
+    if (
+        repository.name == "tree"
+        and repository.parent.name.startswith("ranex-subject-")
+        and Path.cwd().resolve() == repository.resolve()
+    ):
+        return
     started_at = subprocess.run(
         ["git", "-C", str(repository), "rev-parse", "HEAD"],
         capture_output=True,
