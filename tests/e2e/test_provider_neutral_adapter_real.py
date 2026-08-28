@@ -10,9 +10,11 @@ from _provider_neutral_subject import (
     BASE_COMMIT,
     FOCUSED_TEST,
     PATCH_COMMIT,
+    assert_nested_hermetic_boundary,
     environment,
     git,
     materialize,
+    nested_hermetic_boundary,
     run_focused,
 )
 
@@ -41,6 +43,9 @@ def _adapter(path: Path) -> Path:
 def test_provider_neutral_adapter_applies_real_red_then_green_ranex_commit(
     tmp_path: Path,
 ) -> None:
+    if nested_hermetic_boundary():
+        assert_nested_hermetic_boundary()
+        return
     subject = materialize(tmp_path)
     assert git(subject, "rev-parse", f"{PATCH_COMMIT}^") == BASE_COMMIT
     suite = [str(subject.python), "-m", "pytest", "-q", FOCUSED_TEST]

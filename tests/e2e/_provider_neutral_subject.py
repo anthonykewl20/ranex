@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import os
 import subprocess
 from dataclasses import dataclass
 from pathlib import Path
@@ -10,6 +11,29 @@ REAL_REPO = Path(__file__).resolve().parents[2]
 BASE_COMMIT = "f940da0f44a78fd754a402bcae98d745515b6354"
 PATCH_COMMIT = "cebc06a33ba1f28fd21815bb21edbdc768b4a669"
 FOCUSED_TEST = "tests/integration/test_slice072_dynamic_runtime_contract.py"
+
+
+def nested_hermetic_boundary() -> bool:
+    dependency_root = os.environ.get("UV_PROJECT_ENVIRONMENT")
+    home = os.environ.get("HOME")
+    temporary = os.environ.get("TMPDIR")
+    if not dependency_root or not home or not temporary:
+        return False
+    materialisation = REAL_REPO.parent
+    return (
+        REAL_REPO.name == "tree"
+        and materialisation.name.startswith("ranex-subject-")
+        and Path.cwd().resolve() == REAL_REPO.resolve()
+        and Path(dependency_root) == materialisation / "deps" / "env"
+        and Path(home) == materialisation / "home"
+        and Path(temporary) == materialisation / "tmp"
+    )
+
+
+def assert_nested_hermetic_boundary() -> None:
+    assert nested_hermetic_boundary()
+    assert (REAL_REPO / "src/ranex/cli/delegation.py").is_file()
+    assert (REAL_REPO / FOCUSED_TEST).is_file()
 
 
 @dataclass(frozen=True)

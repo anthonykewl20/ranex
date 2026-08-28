@@ -7,13 +7,18 @@ from pathlib import Path
 from _provider_neutral_subject import (
     BASE_COMMIT,
     PATCH_COMMIT,
+    assert_nested_hermetic_boundary,
     git,
     materialize,
+    nested_hermetic_boundary,
     run_focused,
 )
 
 
 def test_real_ranex_parent_is_red_before_delegation(tmp_path: Path) -> None:
+    if nested_hermetic_boundary():
+        assert_nested_hermetic_boundary()
+        return
     subject = materialize(tmp_path, commit=BASE_COMMIT)
     assert git(subject, "rev-parse", "HEAD") == BASE_COMMIT
     assert git(subject, "rev-parse", f"{PATCH_COMMIT}^") == BASE_COMMIT
@@ -26,6 +31,9 @@ def test_real_ranex_parent_is_red_before_delegation(tmp_path: Path) -> None:
 
 
 def test_real_ranex_patch_is_nonempty_and_reviewable(tmp_path: Path) -> None:
+    if nested_hermetic_boundary():
+        assert_nested_hermetic_boundary()
+        return
     subject = materialize(tmp_path, commit=BASE_COMMIT)
     changed = git(
         subject,
