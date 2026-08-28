@@ -27,9 +27,9 @@ def probe_environment() -> dict[str, str]:
     }
 
 
-def test_model_credential_variable_is_pinned() -> None:
+def test_kernel_has_no_provider_credential_variable() -> None:
     module = delegation()
-    assert module.MODEL_CREDENTIAL_VARIABLE == "OPENROUTER_API_KEY"
+    assert not hasattr(module, "MODEL_CREDENTIAL_VARIABLE")
 
 
 def test_exec_environment_holds_signing_key_uses_proc_environ(tmp_path: Path) -> None:
@@ -279,7 +279,7 @@ def test_run_harness_timeout_no_process_group_still_reaps(tmp_path: Path, monkey
     assert process.wait_calls == 1
 
 
-def test_execute_environment_only_includes_the_bridge_variables() -> None:
+def test_execute_environment_only_includes_provider_neutral_bridge_variables() -> None:
     module = delegation()
     # No RANEX_SIGNING_KEY here: its presence is a refusal, pinned by
     # test_execute_environment_rejects_signing_key_in_ambient. This case pins
@@ -287,7 +287,9 @@ def test_execute_environment_only_includes_the_bridge_variables() -> None:
     ambient = {
         "PATH": "/usr/bin:/bin",
         "HOME": "/tmp/ignored-home",
-        "OPENROUTER_API_KEY": "token-present",
+        "OPENROUTER_API_KEY": "must-not-cross",
+        "ANTHROPIC_API_KEY": "must-not-cross",
+        "CODEX_API_KEY": "must-not-cross",
         "UNRELATED": "ignore-me",
     }
     environment = module.execute_environment(
@@ -301,12 +303,11 @@ def test_execute_environment_only_includes_the_bridge_variables() -> None:
         "HOME",
         "RANEX_TASK_ID",
         "RANEX_EMIT",
-        "OPENROUTER_API_KEY",
     }
     assert environment["RANEX_TASK_ID"] == "T-008"
     assert environment["RANEX_EMIT"] == "/tmp/emit.jsonl"
     assert environment["HOME"] == "/tmp/delegation-home"
-    assert environment["OPENROUTER_API_KEY"] == "token-present"
+    assert not any(name.endswith("API_KEY") for name in environment)
     assert "RANEX_VERDICT_SIGNING_KEY" not in environment
     assert "RANEX_VERDICT_DIR" not in environment
 
@@ -337,15 +338,20 @@ def test_execute_environment_rejects_verdict_signing_key_in_ambient() -> None:
         )
 
 
-def test_execute_environment_rejects_a_missing_model_credential() -> None:
+def test_execute_environment_needs_no_model_credential() -> None:
     module = delegation()
-    with pytest.raises(ValueError, match=r"OPENROUTER_API_KEY"):
-        module.execute_environment(
-            {
-                "PATH": "/usr/bin:/bin",
-                "HOME": "/tmp/delegation-home",
-            },
-            task_id="T-008",
-            emit="/tmp/emit.jsonl",
-            home="/tmp/delegation-home",
-        )
+    environment = module.execute_environment(
+        {
+            "PATH": "/usr/bin:/bin",
+            "HOME": "/tmp/delegation-home",
+        },
+        task_id="T-008",
+        emit="/tmp/emit.jsonl",
+        home="/tmp/delegation-home",
+    )
+    assert environment == {
+        "PATH": module.pinned_path_value(),
+        "HOME": "/tmp/delegation-home",
+        "RANEX_TASK_ID": "T-008",
+        "RANEX_EMIT": "/tmp/emit.jsonl",
+    }

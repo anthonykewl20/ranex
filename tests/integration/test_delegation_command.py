@@ -39,6 +39,7 @@ from ranex.cli.main import (
     main,
     subject_digest_for,
 )
+from ranex.cli.toolchain import pinned_path_value
 from ranex.foundation.canonical import canonical_json_bytes, command_digest
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
@@ -868,18 +869,24 @@ def test_execute_environment_refuses_signing_key_in_ambient(tmp_path: Path) -> N
         execute_environment(ambient, task_id="T", emit="/tmp/e.jsonl", home=str(tmp_path))
 
 
-def test_execute_environment_refuses_without_model_credential(tmp_path: Path) -> None:
+def test_execute_environment_runs_without_model_credential(tmp_path: Path) -> None:
     ambient: dict[str, str] = {}
-    with pytest.raises(ValueError, match="model credential"):
-        execute_environment(ambient, task_id="T", emit="/tmp/e.jsonl", home=str(tmp_path))
+    assert execute_environment(
+        ambient, task_id="T", emit="/tmp/e.jsonl", home=str(tmp_path)
+    ) == {
+        "PATH": pinned_path_value(),
+        "HOME": str(tmp_path),
+        "RANEX_TASK_ID": "T",
+        "RANEX_EMIT": "/tmp/e.jsonl",
+    }
 
 
 def test_execute_environment_is_built_from_scratch(tmp_path: Path) -> None:
-    ambient = {"OPENROUTER_API_KEY": "k"}
+    ambient = {"OPENROUTER_API_KEY": "must-not-cross"}
     env = execute_environment(ambient, task_id="T", emit="/tmp/e.jsonl", home=str(tmp_path))
     assert env["RANEX_TASK_ID"] == "T"
     assert env["RANEX_EMIT"] == "/tmp/e.jsonl"
-    assert env["OPENROUTER_API_KEY"] == "k"
+    assert "OPENROUTER_API_KEY" not in env
     assert env["HOME"] == str(tmp_path)
     assert "PATH" in env
 
@@ -1851,7 +1858,7 @@ def test_cmd_task_delegate_refuses_missing_harness(tmp_path: Path, monkeypatch: 
     assert "refusing harness executable" in captured.err.lower()
 
 
-def test_cmd_task_delegate_refuses_missing_model_credential(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
+def test_cmd_task_delegate_reaches_provider_neutral_harness_without_model_credential(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     task_id = "T-8"
     worktree = tmp_path / "dispatch-worktree"
     journal = tmp_path / "journal.sqlite3"
@@ -1860,12 +1867,15 @@ def test_cmd_task_delegate_refuses_missing_model_credential(tmp_path: Path, monk
 
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.setattr("ranex.cli.delegation.exec_environment_holds_signing_key", lambda: False)
+    worktree.mkdir()
+    monkeypatch.setattr("ranex.cli.main._perform_task_dispatch", lambda *_a, **_k: worktree)
 
     result = cmd_task_delegate(args)
     captured = capsys.readouterr()
 
     assert result == EXIT_USAGE
-    assert "refusing to delegate execution: OPENROUTER_API_KEY is absent" in captured.err
+    assert "OPENROUTER_API_KEY" not in captured.err
+    assert "emission" in captured.err
 
 
 def test_cmd_task_delegate_refuses_non_executable_harness(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
