@@ -15,6 +15,7 @@ import subprocess
 import sys
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -508,6 +509,27 @@ def test_concurrent_appends_preserve_the_digest_chain(tmp_path: Path) -> None:
     assert worker_results == [(25, None)] * len(processes)
     assert len(Journal(path).entries()) == 151
     assert Journal(path).verify() is True
+
+
+def test_eight_writer_burst_completes_without_exposing_sqlite_busy(
+    tmp_path: Path,
+) -> None:
+    """An honest sustained writer burst waits for the journal, then commits."""
+
+    path = tmp_path / "burst.sqlite3"
+    journal = Journal(path)
+    workers = 8
+    appends_per_worker = 500
+
+    def append_batch(worker: int) -> None:
+        for number in range(appends_per_worker):
+            journal.append(make_evaluation(f"worker-{worker}-append-{number}"))
+
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        list(pool.map(append_batch, range(workers)))
+
+    assert len(journal.entries()) == workers * appends_per_worker
+    assert journal.verify() is True
 
 
 def test_verify_missing_journal_does_not_create_it(tmp_path: Path) -> None:

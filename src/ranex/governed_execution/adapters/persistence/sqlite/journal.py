@@ -17,6 +17,13 @@ from ranex.foundation.canonical import canonical_json, canonical_sha256
 
 _GENESIS = "sha256:" + "0" * 64
 
+# SQLite permits one write transaction at a time.  The connection timeout is
+# the busy-handler budget for acquiring that transaction, not a transaction
+# duration limit.  A ten-second budget was too short for an honest burst of
+# eight appenders; a late writer could be starved long enough to surface
+# SQLITE_BUSY even though every holder committed normally.
+_WRITE_LOCK_TIMEOUT_SECONDS = 60
+
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS evaluations (
     seq        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -54,9 +61,13 @@ class Journal:
 
     def _connect(self) -> sqlite3.Connection:
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        # Ten seconds lets the small number of concurrent gate evaluations wait
-        # for their turn instead of failing immediately on SQLite's write lock.
-        conn = sqlite3.connect(self._path, isolation_level=None, timeout=10)
+        # Let honest concurrent gate evaluations serialize on SQLite's single
+        # writer instead of exposing a transient lock as a journal failure.
+        conn = sqlite3.connect(
+            self._path,
+            isolation_level=None,
+            timeout=_WRITE_LOCK_TIMEOUT_SECONDS,
+        )
         conn.row_factory = sqlite3.Row
         conn.executescript(_SCHEMA)
         return conn
