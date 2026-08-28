@@ -437,7 +437,13 @@ none of the surface around it does.
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** [SLICE-074-kill-safe-command-ownership](docs/slices/SLICE-074-kill-safe-command-ownership.md)
+
+SLICE-074 (#53) is open after a destructive real current-main run proved that
+SIGKILL of the kernel can orphan the governed uv, pytest, nested Ranex, strace,
+and compiler tree under PID 1 without evidence. ADR-037 specifies an external
+guardian, PID-namespace ownership, raw-status preservation, namespace drain,
+and exact-root cleanup; implementation remains RED-first and unverified.
 
 SLICE-071 (#49) is complete. It delivers the retained
 SLICE-036 contract after closing the looping #19 as superseded: the explicit
