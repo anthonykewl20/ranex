@@ -232,15 +232,6 @@ def journey(
         home=home,
     )
     assert approved.returncode == 0, approved.stdout + approved.stderr
-    subprocess.run(
-        ["git", "-C", str(repository), "add", "governance/journal.sqlite3"],
-        check=True,
-    )
-    subprocess.run(
-        ["git", "-C", str(repository), "commit", "--quiet", "-m", "test: approve disposable freeze deps"],
-        check=True,
-    )
-
     committed_bytes = (repository / "governance" / "suite_manifest.json").read_bytes()
     committed = json.loads(committed_bytes)
     declarations = [
