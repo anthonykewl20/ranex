@@ -1,6 +1,6 @@
 """Kill-safe ownership for non-confined governed commands.
 
-The kernel cannot clean up after SIGKILL.  This module therefore forks one
+The kernel cannot clean up after SIGKILL.  This module therefore execs one
 minimal guardian before scratch allocation.  The guardian allocates and owns
 the exact scratch root, and runs the command below bubblewrap's PID-namespace
 init.  A lifeline EOF is the guardian's instruction to kill PID 1 directly,
@@ -73,7 +73,11 @@ def _send(
 
 def _receive(endpoint: socket.socket) -> tuple[dict[str, Any], tuple[int, ...]]:
     descriptor_space = socket.CMSG_SPACE(8 * array.array("i").itemsize)
-    data, ancillary, flags, _address = endpoint.recvmsg(_MESSAGE_LIMIT + 1, descriptor_space)
+    data, ancillary, flags, _address = endpoint.recvmsg(
+        _MESSAGE_LIMIT + 1,
+        descriptor_space,
+        getattr(socket, "MSG_CMSG_CLOEXEC", 0),
+    )
     if not data:
         raise EOFError("lifecycle control channel closed")
     if flags & (socket.MSG_TRUNC | socket.MSG_CTRUNC) or len(data) > _MESSAGE_LIMIT:
@@ -85,6 +89,15 @@ def _receive(endpoint: socket.socket) -> tuple[dict[str, Any], tuple[int, ...]]:
         packed = array.array("i")
         packed.frombytes(payload[: len(payload) - (len(payload) % packed.itemsize)])
         descriptors.extend(packed)
+    try:
+        for descriptor in descriptors:
+            os.set_inheritable(descriptor, False)
+    except OSError as exc:
+        for descriptor in descriptors:
+            os.close(descriptor)
+        raise ProcessSupervisorError(
+            "lifecycle control descriptor could not be made close-on-exec"
+        ) from exc
     try:
         decoded = json.loads(data)
     except json.JSONDecodeError as exc:
@@ -133,6 +146,36 @@ def _wait_pidfd(descriptor: int, timeout: float = _DRAIN_TIMEOUT) -> None:
     readable, _writable, _exceptional = select.select([descriptor], [], [], timeout)
     if not readable:
         raise ProcessSupervisorError("PID-namespace init did not drain after SIGKILL")
+
+
+def _validate_namespace_init(descriptor: int, expected_pid: int) -> None:
+    """Bind the held pidfd to the host PID and namespace PID 1 identities."""
+
+    try:
+        rows = {
+            key: value.strip().split()
+            for key, value in (
+                line.split(":", 1)
+                for line in Path(f"/proc/self/fdinfo/{descriptor}").read_text(
+                    encoding="ascii"
+                ).splitlines()
+                if ":" in line
+            )
+        }
+        pid = rows.get("Pid", [])
+        namespace_pids = rows.get("NSpid", [])
+        valid = (
+            pid == [str(expected_pid)]
+            and len(namespace_pids) >= 2
+            and namespace_pids[0] == str(expected_pid)
+            and namespace_pids[-1] == "1"
+        )
+    except (OSError, UnicodeError, ValueError):
+        valid = False
+    if not valid:
+        raise ProcessSupervisorError(
+            "bubblewrap child identity is not the held PID-namespace init"
+        )
 
 
 def _close_except(allowed: set[int]) -> None:
@@ -414,6 +457,7 @@ def bubblewrap_arguments(
     *,
     block: int,
     status: int,
+    root: Path,
     cwd: Path,
     python: int,
     gate: int,
@@ -429,6 +473,9 @@ def bubblewrap_arguments(
         "--bind",
         "/",
         "/",
+        "--bind",
+        str(root),
+        str(root),
         "--dev-bind",
         "/dev",
         "/dev",
@@ -493,6 +540,7 @@ def _guardian_execute(
         argv = bubblewrap_arguments(
             block=block_read,
             status=status_write,
+            root=root,
             cwd=Path(cwd),
             python=python,
             gate=gate,
@@ -531,6 +579,7 @@ def _guardian_execute(
         if not isinstance(child_pid, int) or child_pid <= 0:
             raise ProcessSupervisorError("bubblewrap PID-1 identity has an invalid PID")
         pidfd = _pidfd_open(child_pid)
+        _validate_namespace_init(pidfd, child_pid)
         _send(
             endpoint,
             {"bwrap_pid": process.pid, "kind": "IDENTITY", "pid": child_pid},
@@ -684,9 +733,17 @@ def _guardian(
             kind = message.get("kind")
             if kind == "ALLOC" and root is None and not descriptors:
                 repository = message.get("repository")
-                if not isinstance(repository, str):
+                environment = message.get("environment")
+                if (
+                    not isinstance(repository, str)
+                    or not isinstance(environment, dict)
+                    or not all(
+                        isinstance(name, str) and isinstance(value, str)
+                        for name, value in environment.items()
+                    )
+                ):
                     raise ProcessSupervisorError("ALLOC repository is invalid")
-                root = _materialisation_root(Path(repository))
+                root = _materialisation_root(Path(repository), environment=environment)
                 _send(endpoint, {"kind": "ROOT", "path": str(root)})
             elif kind == "RUN" and root is not None:
                 if not _guardian_execute(
@@ -830,7 +887,19 @@ class KillSafeSupervisor:
     def allocate_root(self, repository_root: Path) -> Path:
         if self._control is None or repository_root.resolve() != self._repository:
             raise ProcessSupervisorError("guardian repository identity changed")
-        _send(self._control, {"kind": "ALLOC", "repository": str(self._repository)})
+        environment = {
+            name: value
+            for name in subject_module._NESTED_ENVIRONMENT_KEYS
+            if (value := os.environ.get(name)) is not None
+        }
+        _send(
+            self._control,
+            {
+                "environment": environment,
+                "kind": "ALLOC",
+                "repository": str(self._repository),
+            },
+        )
         response, descriptors = self._receive_or_fallback()
         for descriptor in descriptors:
             os.close(descriptor)

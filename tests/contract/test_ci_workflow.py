@@ -51,7 +51,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     assert job["permissions"] == {"contents": "read"}
 
     steps = job["steps"]
-    assert len(steps) == 6
+    assert len(steps) == 7
     action_steps = [step for step in steps if "uses" in step]
     assert len(action_steps) == 2
     for step in action_steps:
@@ -65,10 +65,19 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     checkout = next(step for step in action_steps if step["uses"].startswith("actions/checkout@"))
     assert checkout.get("with") == {"fetch-depth": 0}
 
+    assert steps[2] == {
+        "name": "Install kill-safe lifecycle owner",
+        "run": (
+            "sudo apt-get update\n"
+            "sudo apt-get install --yes --no-install-recommends bubblewrap\n"
+            "bwrap --version\n"
+        ),
+    }
+
     # Lint and type gates run before the suite so a style/type regression fails
     # fast. Both run via uvx with pinned versions; they do not touch uv.lock.
-    assert steps[2] == {"name": "Lint (ruff)", "run": "uvx ruff@0.16.2 check src tests"}
-    assert steps[3] == {
+    assert steps[3] == {"name": "Lint (ruff)", "run": "uvx ruff@0.16.2 check src tests"}
+    assert steps[4] == {
         "name": "Type check (pyrefly)",
         "run": (
             "uv run --frozen --with \"pyrefly==1.2.0\" pyrefly check src/ranex "

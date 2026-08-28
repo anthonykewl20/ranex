@@ -712,6 +712,7 @@ def test_deny_network_requests_a_fresh_network_namespace() -> None:
     arguments = bubblewrap_arguments(
         block=10,
         status=11,
+        root=Path("/tmp/subject"),
         cwd=Path("/tmp/subject"),
         python=12,
         gate=13,
@@ -721,11 +722,14 @@ def test_deny_network_requests_a_fresh_network_namespace() -> None:
         deny_network=True,
     )
 
-    assert arguments[:12] == [
+    assert arguments[:15] == [
         "bwrap",
         "--bind",
         "/",
         "/",
+        "--bind",
+        "/tmp/subject",
+        "/tmp/subject",
         "--dev-bind",
         "/dev",
         "/dev",

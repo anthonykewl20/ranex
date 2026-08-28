@@ -196,6 +196,36 @@ def _materialisation_from_cwd(cwd: Path | None) -> Path | None:
     return None
 
 
+def _scratch_identities() -> dict[Path, tuple[int, int]]:
+    """Snapshot real direct scratch roots without trusting their names alone."""
+
+    identities: dict[Path, tuple[int, int]] = {}
+    for parent in (Path("/tmp"), Path("/var/tmp")):
+        try:
+            candidates = tuple(parent.glob("ranex-subject-*"))
+        except OSError:
+            continue
+        for candidate in candidates:
+            try:
+                facts = candidate.lstat()
+            except OSError:
+                continue
+            identities[candidate] = (facts.st_dev, facts.st_ino)
+    return identities
+
+
+def _namespace_pids(pid: int) -> tuple[int, ...]:
+    try:
+        line = next(
+            row
+            for row in Path(f"/proc/{pid}/status").read_text(encoding="ascii").splitlines()
+            if row.startswith("NSpid:")
+        )
+        return tuple(int(value) for value in line.split()[1:])
+    except (FileNotFoundError, PermissionError, ProcessLookupError, StopIteration, ValueError):
+        return ()
+
+
 def golden_text(name: str) -> str:
     """Read a family golden, refusing its absence loudly.
 
@@ -699,6 +729,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     env = {name: value for name, value in os.environ.items() if name not in _STRIPPED_ENV}
     env.update({"PYTHONPATH": str(subject / "src"), "RANEX_SIGNING_KEY": str(key)})
     evidence = subject / "governance" / "evidence.json"
+    scratch_before = _scratch_identities()
     stdout_log = tmp_path / "kernel.stdout"
     stderr_log = tmp_path / "kernel.stderr"
     process: subprocess.Popen[str] | None = None
@@ -707,6 +738,8 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     survivors: set[int] = set()
     scratch_survived = False
     evidence_survived = False
+    namespace_init_pid: int | None = None
+    new_scratch: dict[Path, tuple[int, int]] = {}
     try:
         with stdout_log.open("w", encoding="utf-8") as stdout, stderr_log.open(
             "w", encoding="utf-8"
@@ -767,6 +800,16 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
                 f"stdout={stdout_log.read_text(encoding='utf-8')!r} "
                 f"stderr={stderr_log.read_text(encoding='utf-8')!r}"
             )
+            namespace_inits: set[int] = set()
+            for pid in observed_pids:
+                nested_pids = _namespace_pids(pid)
+                if len(nested_pids) >= 2 and nested_pids[-1] == 1:
+                    namespace_inits.add(pid)
+            assert len(namespace_inits) == 1, (
+                "the real landing is not owned by exactly one visible PID-namespace init: "
+                f"{sorted(namespace_inits)}"
+            )
+            namespace_init_pid = namespace_inits.pop()
 
             if kill_target == "kernel":
                 os.kill(process.pid, signal.SIGKILL)
@@ -794,6 +837,12 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
                     break
                 time.sleep(0.05)
             evidence_survived = evidence.exists()
+            scratch_after = _scratch_identities()
+            new_scratch = {
+                path: identity
+                for path, identity in scratch_after.items()
+                if scratch_before.get(path) != identity
+            }
     finally:
         if process is not None:
             try:
@@ -817,9 +866,16 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
 
             _remove_materialisation(materialisation)
 
-    assert not survivors and not scratch_survived and not evidence_survived, (
+    assert (
+        namespace_init_pid is not None
+        and not survivors
+        and not scratch_survived
+        and not evidence_survived
+        and not new_scratch
+    ), (
         f"SIGKILL of the {kill_target} violated lifecycle containment: "
+        f"namespace init={namespace_init_pid}, "
         f"surviving real landing descendants={sorted(survivors)}, "
         f"exact materialisation={materialisation} survived={scratch_survived}, "
-        f"evidence survived={evidence_survived}"
+        f"evidence survived={evidence_survived}, new scratch={new_scratch}"
     )

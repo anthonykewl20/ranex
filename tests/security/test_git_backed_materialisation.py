@@ -44,6 +44,74 @@ def repository(tmp_path: Path) -> Path:
     return repository
 
 
+def _nested_environment(root: Path) -> dict[str, str]:
+    return {
+        "HOME": str(root / "home"),
+        "TMPDIR": str(root / "tmp"),
+        "UV_PROJECT_ENVIRONMENT": str(root / "deps" / "env"),
+        "VIRTUAL_ENV": str(root / "deps" / "env"),
+    }
+
+
+def _nested_layout(tmp_path: Path) -> tuple[Path, Path]:
+    root = tmp_path / "ranex-subject-outer"
+    repository = root / "tree"
+    for path in (repository, root / "home", root / "tmp", root / "deps" / "env"):
+        path.mkdir(parents=True, exist_ok=True)
+    return root, repository
+
+
+def test_genuine_nested_materialisation_stays_below_the_outer_root(tmp_path: Path) -> None:
+    root, repository = _nested_layout(tmp_path)
+    nested = subject._materialisation_root(
+        repository,
+        environment=_nested_environment(root),
+    )
+    try:
+        assert nested.parent == root / "tmp"
+        assert nested.name.startswith("ranex-subject-")
+    finally:
+        subject._remove_materialisation(nested)
+
+
+@pytest.mark.parametrize("attack", ["missing", "wrong", "symlink"])
+def test_nested_materialisation_environment_mismatch_never_falls_back_to_host_tmp(
+    tmp_path: Path,
+    attack: str,
+) -> None:
+    root, repository = _nested_layout(tmp_path)
+    environment = _nested_environment(root)
+    if attack == "missing":
+        del environment["TMPDIR"]
+    elif attack == "wrong":
+        environment["TMPDIR"] = str(tmp_path)
+    else:
+        linked = tmp_path / "linked-tmp"
+        linked.symlink_to(root / "tmp", target_is_directory=True)
+        environment["TMPDIR"] = str(linked)
+
+    with pytest.raises(SubjectError, match="does not match its enclosing root"):
+        subject._materialisation_root(repository, environment=environment)
+
+
+def test_unrelated_ambient_tmpdir_cannot_choose_the_materialisation_root(
+    tmp_path: Path,
+) -> None:
+    repository = tmp_path / "ordinary-repository"
+    repository.mkdir()
+    forged = tmp_path / "forged-tmp"
+    forged.mkdir()
+    root = subject._materialisation_root(
+        repository,
+        environment={"TMPDIR": str(forged)},
+    )
+    try:
+        assert root.parent in {Path("/tmp"), Path("/var/tmp")}
+        assert root.parent != forged
+    finally:
+        subject._remove_materialisation(root)
+
+
 def test_update_ref_with_expected_old_value_publishes_an_unrelated_orphan(repository: Path) -> None:
     subprocess.run(
         ["git", "-C", str(repository), "update-ref", "refs/heads/main", "HEAD"], check=True

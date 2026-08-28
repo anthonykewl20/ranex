@@ -26,11 +26,13 @@ collection error takes the whole suite down with it.
 
 from __future__ import annotations
 
+import fcntl
 import json
 import os
 import shlex
 import shutil
 import signal
+import socket
 import stat
 import subprocess
 import sys
@@ -793,6 +795,31 @@ def test_remove_materialisation_removes_an_unsearchable_directory(tmp_path: Path
     assert not root.exists()
 
 
+def test_remove_materialisation_never_chmods_a_directory_symlink_target(
+    tmp_path: Path,
+) -> None:
+    """A subject-planted link cannot extend permission repair off-root."""
+
+    from ranex.cli import subject
+
+    outside = tmp_path / "outside"
+    outside.mkdir()
+    marker = outside / "must-survive"
+    marker.write_text("outside\n", encoding="utf-8")
+    outside.chmod(0o500)
+    root = tmp_path / "materialisation"
+    root.mkdir()
+    (root / "planted-directory-link").symlink_to(outside, target_is_directory=True)
+
+    try:
+        subject._remove_materialisation(root)
+        assert not root.exists()
+        assert stat.S_IMODE(outside.stat().st_mode) == 0o500
+        assert marker.read_text(encoding="utf-8") == "outside\n"
+    finally:
+        outside.chmod(0o700)
+
+
 def test_a_cleanup_failure_does_not_replace_the_refusal_that_caused_it(
     repo_failing_its_own_check: Path,
     keys: dict[str, str],
@@ -1273,3 +1300,88 @@ def test_real_supervisor_distinguishes_exit_143_from_sigterm(
         assert supervisor.last_raw_status == RawStatus(expected_kind, expected_code)
     finally:
         os.close(descriptor)
+
+
+def test_lifecycle_rights_are_close_on_exec_at_receipt() -> None:
+    """Every SCM_RIGHTS identity is non-inheritable in the receiving process."""
+
+    from ranex.cli.process_supervisor import _receive, _send
+
+    sender, receiver = socket.socketpair(socket.AF_UNIX, socket.SOCK_SEQPACKET)
+    read_end, write_end = os.pipe()
+    received: tuple[int, ...] = ()
+    try:
+        _send(sender, {"kind": "TEST"}, (read_end,))
+        message, received = _receive(receiver)
+        assert message == {"kind": "TEST"}
+        assert len(received) == 1
+        assert fcntl.fcntl(received[0], fcntl.F_GETFD) & fcntl.FD_CLOEXEC
+        assert not os.get_inheritable(received[0])
+    finally:
+        for descriptor in received:
+            os.close(descriptor)
+        os.close(read_end)
+        os.close(write_end)
+        sender.close()
+        receiver.close()
+
+
+def test_real_supervisor_exposes_only_its_exact_scratch_root_read_write() -> None:
+    """The subject can write host tmp and inside root but cannot rename root."""
+
+    from ranex.cli.process_supervisor import KillSafeSupervisor
+    from ranex.cli.repository import git
+    from ranex.cli.subject import _remove_materialisation, materialise_subject
+
+    repository = Path(__file__).resolve().parents[2]
+    started_at = subprocess.run(
+        ["git", "-C", str(repository), "rev-parse", "HEAD"],
+        capture_output=True,
+        text=True,
+        check=True,
+    ).stdout.strip()
+    interpreter = Path(sys.executable).resolve()
+    descriptor = os.open(interpreter, os.O_RDONLY | os.O_CLOEXEC)
+    outside = Path(f"/tmp/ranex-supervisor-outside-{os.getpid()}")
+    moved: Path | None = None
+    try:
+        with KillSafeSupervisor(repository) as supervisor:
+            with materialise_subject(
+                repository,
+                started_at,
+                git,
+                root_factory=supervisor.allocate_root,
+                cleanup=False,
+            ) as materialisation:
+                moved = materialisation.root.with_name(materialisation.root.name + "-moved")
+                script = (
+                    "import os, pathlib, sys; "
+                    "root, moved, outside = map(pathlib.Path, sys.argv[1:]); "
+                    "(root / 'tmp' / 'inside-root').write_text('ok'); "
+                    "outside.write_text('host tmp remains writable'); "
+                    "\ntry: os.rename(root, moved)\nexcept OSError: pass\nelse: raise SystemExit(92)"
+                )
+                completed = supervisor.run(
+                    [
+                        str(interpreter),
+                        "-c",
+                        script,
+                        str(materialisation.root),
+                        str(moved),
+                        str(outside),
+                    ],
+                    descriptor,
+                    cwd=materialisation.tree,
+                    environment={"LANG": "C.UTF-8", "PATH": "/usr/bin:/bin"},
+                    deny_network=False,
+                )
+                assert completed.returncode == 0
+                assert (materialisation.temporary / "inside-root").read_text() == "ok"
+        assert outside.read_text(encoding="utf-8") == "host tmp remains writable"
+        assert moved is not None and not moved.exists()
+    finally:
+        os.close(descriptor)
+        if outside.exists():
+            outside.unlink()
+        if moved is not None and moved.exists():
+            _remove_materialisation(moved)

@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import errno
 import hashlib
 import os
 import shutil
 import stat
 import subprocess
 import tempfile
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterator, Mapping
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
@@ -16,6 +17,14 @@ from pathlib import Path
 
 class SubjectError(Exception):
     """The subject commit cannot be materialised without guessing or substitution."""
+
+
+_NESTED_ENVIRONMENT_KEYS = (
+    "HOME",
+    "TMPDIR",
+    "UV_PROJECT_ENVIRONMENT",
+    "VIRTUAL_ENV",
+)
 
 
 GitRunner = Callable[..., subprocess.CompletedProcess]
@@ -160,11 +169,33 @@ def _remove_materialisation(root: Path) -> None:
         # top-down pass makes each child traversable and writable before
         # os.walk descends into it.  Plain rmtree then has no version-specific
         # onerror/onexc callback contract to depend on.
-        root.chmod(root.stat().st_mode | stat.S_IRWXU)
+        def make_directory_writable(path: Path, *, required: bool) -> None:
+            try:
+                descriptor = os.open(
+                    path,
+                    os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
+                )
+            except OSError as exc:
+                if not required and exc.errno in {errno.ELOOP, errno.ENOTDIR}:
+                    return
+                raise
+            try:
+                facts = os.fstat(descriptor)
+                # An O_PATH descriptor can anchor identity through mode 000 but
+                # cannot itself be passed to fchmod.  The procfs magic link
+                # names that already-open object, so a planted directory
+                # symlink is never followed during permission repair.
+                os.chmod(
+                    f"/proc/self/fd/{descriptor}",
+                    facts.st_mode | stat.S_IRWXU,
+                )
+            finally:
+                os.close(descriptor)
+
+        make_directory_writable(root, required=True)
         for parent, directories, _files in os.walk(root, topdown=True):
             for directory in directories:
-                path = Path(parent, directory)
-                path.chmod(path.stat().st_mode | stat.S_IRWXU)
+                make_directory_writable(Path(parent, directory), required=False)
         shutil.rmtree(root)
     # This function runs in a finally block, where anything that escapes
     # replaces the refusal already travelling to the operator — which is the
@@ -179,10 +210,48 @@ def _remove_materialisation(root: Path) -> None:
         raise SubjectError(f"cannot remove materialisation at {root}: {exc}") from exc
 
 
-def _materialisation_root(repository_root: Path) -> Path:
-    """Create scratch outside the subject without consulting ambient ``TMPDIR``."""
+def _materialisation_root(
+    repository_root: Path,
+    *,
+    environment: Mapping[str, str] | None = None,
+) -> Path:
+    """Create scratch outside the subject, nesting only under a proven outer root."""
 
-    for base in (Path("/tmp"), Path("/var/tmp")):
+    repository = repository_root.resolve()
+    supplied = os.environ if environment is None else environment
+    enclosing = next(
+        (
+            candidate
+            for candidate in repository.parents
+            if candidate.name.startswith("ranex-subject-") and candidate.is_dir()
+        ),
+        None,
+    )
+    if enclosing is not None:
+        expected = {
+            "HOME": enclosing / "home",
+            "TMPDIR": enclosing / "tmp",
+            "UV_PROJECT_ENVIRONMENT": enclosing / "deps" / "env",
+            "VIRTUAL_ENV": enclosing / "deps" / "env",
+        }
+        for name, path in expected.items():
+            raw = supplied.get(name)
+            try:
+                candidate = Path(raw).absolute() if raw is not None else None
+                resolved = candidate.resolve(strict=True) if candidate is not None else None
+                expected_resolved = path.resolve(strict=True)
+            except (OSError, RuntimeError):
+                resolved = expected_resolved = None
+            if candidate != resolved or resolved != expected_resolved or not path.is_dir():
+                raise SubjectError(
+                    "nested materialisation environment does not match its enclosing root"
+                )
+        bases = (expected["TMPDIR"],)
+    else:
+        # An operator-controlled TMPDIR must not choose the construction root.
+        bases = (Path("/tmp"), Path("/var/tmp"))
+
+    for base in bases:
         if not base.is_dir():
             continue
         try:
