@@ -202,7 +202,7 @@ def _open_regular(path: Path, *, root_owned: bool) -> int:
         facts = os.fstat(descriptor)
         if not stat.S_ISREG(facts.st_mode):
             raise ProcessSupervisorError(f"lifecycle executable is not regular: {path}")
-        if root_owned and facts.st_uid != 0:
+        if root_owned and facts.st_uid not in _visible_root_owner_ids():
             raise ProcessSupervisorError(f"bubblewrap is not owned by root: {path}")
         if root_owned and facts.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
             raise ProcessSupervisorError(f"lifecycle executable is group/other writable: {path}")
@@ -210,6 +210,38 @@ def _open_regular(path: Path, *, root_owned: bool) -> int:
     except BaseException:
         os.close(descriptor)
         raise
+
+
+def _visible_root_owner_ids() -> frozenset[int]:
+    """Return the only UIDs by which initial-namespace root may be visible.
+
+    A nested lifecycle runs inside bubblewrap's user namespace.  When that
+    namespace does not map UID 0 from its parent, a genuinely root-owned host
+    file is reported with the kernel's overflow UID instead of zero.  Accept
+    that value only when the live uid_map proves parent UID 0 is unmapped.
+    """
+
+    try:
+        mappings = tuple(
+            tuple(int(value) for value in line.split())
+            for line in Path("/proc/self/uid_map").read_text(encoding="ascii").splitlines()
+        )
+        if not mappings or any(len(mapping) != 3 for mapping in mappings):
+            return frozenset({0})
+        parent_root_mapped = any(
+            parent <= 0 < parent + length
+            for _namespace, parent, length in mappings
+        )
+        if parent_root_mapped:
+            return frozenset({0})
+        overflow = int(
+            Path("/proc/sys/kernel/overflowuid").read_text(encoding="ascii").strip()
+        )
+        if not 0 < overflow < 2**32 or overflow == os.geteuid():
+            return frozenset({0})
+        return frozenset({0, overflow})
+    except (OSError, UnicodeError, ValueError):
+        return frozenset({0})
 
 
 _PROBE = """

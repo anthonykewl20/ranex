@@ -1326,6 +1326,65 @@ def test_lifecycle_rights_are_close_on_exec_at_receipt() -> None:
         receiver.close()
 
 
+def test_nested_user_namespace_still_recognises_the_host_root_bubblewrap(
+    tmp_path: Path,
+) -> None:
+    """An unmapped host UID 0 appears as overflowuid, not as UID 0."""
+
+    bubblewrap = Path(shutil.which("bwrap") or "").resolve()
+    assert bubblewrap.is_file()
+    substitute = tmp_path / "bwrap"
+    substitute.write_bytes(b"not bubblewrap")
+    substitute.chmod(0o555)
+    script = (
+        "import os; from pathlib import Path; "
+        "from ranex.cli.process_supervisor import "
+        "ProcessSupervisorError, _open_regular; "
+        f"fd = _open_regular(Path({str(bubblewrap)!r}), root_owned=True); "
+        "os.close(fd); "
+        f"substitute = Path({str(substitute)!r}); "
+        "\ntry: _open_regular(substitute, root_owned=True)\n"
+        "except ProcessSupervisorError: pass\n"
+        "else: raise SystemExit(93)"
+    )
+    completed = subprocess.run(
+        [
+            str(bubblewrap),
+            "--bind", "/", "/",
+            "--dev-bind", "/dev", "/dev",
+            "--proc", "/proc",
+            "--unshare-pid",
+            "--unshare-net",
+            "--",
+            sys.executable,
+            "-c",
+            script,
+        ],
+        capture_output=True,
+        text=True,
+        env={
+            **os.environ,
+            "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src"),
+        },
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stderr
+
+
+def test_current_user_owned_bubblewrap_substitute_is_still_refused(
+    tmp_path: Path,
+) -> None:
+    """Overflow handling must not admit an ordinary same-UID replacement."""
+
+    from ranex.cli.process_supervisor import ProcessSupervisorError, _open_regular
+
+    substitute = tmp_path / "bwrap"
+    substitute.write_bytes(b"not bubblewrap")
+    substitute.chmod(0o555)
+    with pytest.raises(ProcessSupervisorError, match="not owned by root"):
+        _open_regular(substitute, root_owned=True)
+
+
 def test_real_supervisor_exposes_only_its_exact_scratch_root_read_write() -> None:
     """The subject can write host tmp and inside root but cannot rename root."""
 
