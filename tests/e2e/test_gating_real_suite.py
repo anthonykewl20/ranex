@@ -1030,6 +1030,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     declared_skips = live_manifest["expected_skips"]
     assert not any("OPENROUTER_API_KEY" in reason for reason in declared_skips.values())
     assert not any("first_delegation" in test_id for test_id in declared_skips)
+    declared_skip_ids = set(declared_skips)
 
     missing_id = "tests/contract/test_bom_is_honest.py::test_bom_is_honest"
     assert missing_id in live_manifest["suite"]
@@ -1058,7 +1059,7 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
         for test_id, kind in baseline_non_passed.items()
         if kind == "skipped"
     }
-    assert skipped_ids <= declared_skips
+    assert skipped_ids <= declared_skip_ids
     actual_failures = {
         test_id: kind
         for test_id, kind in baseline_non_passed.items()
