@@ -1036,7 +1036,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
   | tee .local/ranex-e2e/transcript.txt \
 && uv run --frozen python -m coverage combine --keep \
     .local/ranex-e2e/coverage | tee -a .local/ranex-e2e/transcript.txt \
-&& uv run --frozen python -m coverage report \
+&& uv run --frozen python -m coverage report --include="$PWD/src/ranex/*" \
     | tee .local/ranex-e2e/coverage-report.txt \
 && uv run --frozen python tests/e2e/_prereqs.py cross-check \
     governance/suite_manifest.json .local/ranex-e2e/results.xml \
@@ -1063,6 +1063,10 @@ What each piece is and why it is shaped this way:
   `source` is deliberate — a clone-judges-clone child resolves it against
   its own working directory and measures its own vendored copy of the
   kernel.
+- **Coverage report scope.** The aggregate report includes only the canonical
+  checkout's absolute `src/ranex/*` paths. Disposable clones remain measured
+  in their own data and focused contracts, but repeated copies cannot inflate
+  the aggregate denominator and dilute the release threshold.
 - **The pre-run artifact-home probe** (`_prereqs.probe_artifact_home_writable`)
   is the first command of the entrypoint: an artifact home that cannot be
   written fails loudly — a `RuntimeError` naming the home — before the

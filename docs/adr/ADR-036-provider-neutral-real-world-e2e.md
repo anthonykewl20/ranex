@@ -111,8 +111,7 @@ exact refusal. The canonical entrypoint and skip ledger remain the final gate.
 opaque executable invocation. Parser flags and emitted JSONL remain unchanged.
 The affected unit/integration/security tests freeze credential absence and
 bridge behavior. Real task, freeze, qualification, manifest, README, and state
-surfaces change only enough to remove ambient-provider and ambient-host claims;
-coverage aliases collapse identical disposable-clone source roots.
+surfaces change only enough to remove ambient-provider and ambient-host claims.
 
 ## Scope and threat delta
 
