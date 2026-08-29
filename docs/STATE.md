@@ -1,7 +1,7 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-08-29 (installed operator CLI closed, issue #63)
+**Updated:** 2026-08-30 (installed operator CLI closed, issue #63)
 **Active slice:** none
 
 ## Where we stopped
@@ -20,8 +20,8 @@ run, suite, deps, keygen, and task commands.
 ## Next
 
 Issue #67 (restore green CI — pyrefly is red on main), then issue #60
-(specification lifecycle registration). T4 of SLICE-075 (coverage-floor
-re-derivation) lands as its own pyproject commit.
+(specification lifecycle registration). T4 landed as its own pyproject commit
+(49ae20f): coverage floor re-derived at 67 (TOTAL 69%).
 
 ## Governance
 

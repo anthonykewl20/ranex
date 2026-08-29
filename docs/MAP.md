@@ -585,7 +585,7 @@ one-worktree-per-task behavior are useful prototype mechanics, not authorization
 The planned governed grammar is:
 
 ```text
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main task fanout \
+uv run --frozen ranex task fanout \
   --spec-packet A.json --artifact-manifest B.json \
   --approval-envelope C.json --tasks child-requests.jsonl \
   --target <repo> --journal <external> --outcome-dir <dir> --pool N
@@ -953,7 +953,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); manager issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 (ADR-014 predates the renumbering and cites the old numbers); nothing built. SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability production program closes. §0.15 |
 | Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — target harness behavior | **absent from this repository**. `ADR-015` and the former harness commits are historical external-repository provenance, not current Ranex kernel capability or a scheduled delivery. §0.16, §0.20 |
 | A/B/C specification authority | Normative A holds approved semantics without generated hashes; manifest B binds exact gauge artifacts/invocation; signed envelope C binds A+B, context, identities, anti-replay and capability request; grant binds C | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap. The installed harness-admission/concurrent-mutation composition is withdrawn from the kernel-only release, not completed by SLICE-044. |
-| Public operator surface | Source-run argparse CLI for verdict, evidence, journal, suite, dependencies, keys, serial tasks, delegation/fanout prototypes, and batch qualification | **`CONFIRMED` only with `PYTHONPATH=src`** in `src/ranex/cli/main.py:3508-3847`. The specification lifecycle parser is not registered, the package is disabled, and launcher build/install are hidden special argv paths rather than parser-listed commands. |
+| Public operator surface | Installed argparse CLI for verdict, evidence, journal, suite, dependencies, keys, serial tasks, delegation/fanout prototypes, and batch qualification | **`CONFIRMED`** — `uv sync --frozen` builds ranex editable and installs the `ranex` console script; no `PYTHONPATH` is needed. The specification lifecycle parser is not registered, and launcher build/install are hidden special argv paths rather than parser-listed commands. |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:24-26`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
 | Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:736-756`) |
@@ -976,7 +976,7 @@ mutation, and bounded escalation remain.
 | Constraint | Source |
 |---|---|
 | Python is the implementation language | repository |
-| `uv` is the toolchain manager; `[tool.uv] package = false`, so no console script is installed | `pyproject.toml` |
+| `uv` is the toolchain manager; hatchling `[build-system]` ships the `ranex` console script via the frozen checkout install; governed subcommands anchor to the CLI's checkout (ADR-009) | `pyproject.toml` |
 | One slice at a time; no slice without a researched ADR | `CLAUDE.md`, enforced by contract test |
 | Research must vendor pinned third-party source with origin and licence | ADR-003, enforced by contract test |
 | The docs layer is capped to a fixed set of allowed documents | `CLAUDE.md`, enforced by `tests/contract/test_docs_discipline.py` |
@@ -1536,9 +1536,9 @@ ranex gate evaluate HEAD --approver A
 
 ### 7.1 Today — `PROVISIONAL`
 
-There is no deployed Ranex service, daemon, installed package, UI, or deployment
-command. The CLI runs from the source tree through `PYTHONPATH=src uv`; it enforces only when
-an operator or automation actually invokes it. This repository's committed gate
+There is no deployed Ranex service, daemon, UI, or deployment command. `uv sync
+--frozen` installs Ranex editable from the checkout and its `ranex` console script;
+the CLI enforces only when an operator or automation actually invokes it. This repository's committed gate
 catalog and dependency inputs exercise that path, but the code cannot force an
 arbitrary Git push or external workflow to call it.
 

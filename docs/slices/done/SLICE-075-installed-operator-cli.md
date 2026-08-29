@@ -102,8 +102,8 @@ Tranche outcomes:
   arbitrary venv prints help but refuses governed subcommands (exit 2,
   checkout-anchored per ADR-009); fresh clones fail closed on governed
   subcommands (gitignored journal/evidence, fresh key ≠ committed keyring).
-- T4 (coverage-floor re-derivation) is pending and lands as its own
-  pyproject commit.
+- T4 (coverage-floor re-derivation) landed as its own pyproject commit
+  (49ae20f): coverage floor re-derived at 67 (TOTAL 69%).
 
 Full suite at `1394c24`: `uv run --frozen pytest -q` → 1526 passed,
 29 skipped; ruff green. Pyrefly remains red pre-existing (issue #67, not
