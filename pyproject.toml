@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "ranex"
 version = "0.0.0"
@@ -20,14 +24,12 @@ dependencies = [
 dev = [
     "coverage>=7.10,<8",
     "diff-cover>=9.7,<10",
+    "hatchling==1.31.0",
     # 3.6 renamed paths_to_mutate; keep the measured, repository-proven 3.5
     # configuration until that migration is made deliberately.
     "mutmut>=3.5,<3.6",
     "pytest>=9.0.2,<10",
 ]
-
-[tool.uv]
-package = false
 
 # SLICE-055 / ADR-032: subprocess coverage config, read through
 # COVERAGE_PROCESS_START by tests/e2e/coverage/sitecustomize.py in every

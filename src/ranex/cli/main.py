@@ -2729,6 +2729,9 @@ def _execute_hermetically(
                         "VIRTUAL_ENV": str(deps_environment),
                         "UV_NO_SYNC": "1",
                         "UV_OFFLINE": "1",
+                        # Network-denied cold-cache runs use the venv-provisioned
+                        # backend, never an isolated download.
+                        "UV_NO_BUILD_ISOLATION": "1",
                         "UV_NO_CONFIG": "1",
                         "UV_FROZEN": "1",
                         "UV_PYTHON_DOWNLOADS": "never",

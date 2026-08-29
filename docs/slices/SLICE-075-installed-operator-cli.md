@@ -42,7 +42,7 @@ sdist carries the VCS-tracked repo essentials.
 
 ## Tranche plan
 
-- T0 (this tranche, done): ADR-038 accepted with vendored prior art;
+- T0 (committed as `9eceda8`): ADR-038 accepted with vendored prior art;
   `tests/contract/test_packaging.py` frozen red — 3 failed / 2 passed, red
   for the right reasons (build-system, non-virtual lock + epoch, sdist).
 - T1: pyproject bytes + deliberate epoch-preserving re-lock. T1 evidence is
@@ -50,11 +50,33 @@ sdist carries the VCS-tracked repo essentials.
   floors + ignored-path absence, and the `.git`-present VCS-selection member
   set is verified in T1 from the real repo and attached to issue #63. A cold
   uv cache is preferred for at least one full `uv run --frozen` gate run.
+- T1b (executed after this slice file was written; staged to ride the T1
+  commit): offline cold-start hardening for the e2e journey. The journey runs
+  the full suite inside governed bwrap confinement with `UV_OFFLINE=1`, a
+  fresh cold `UV_CACHE_DIR`, and network denial (`--unshare-net`); packaging
+  tests' `uv build` could not download hatchling, so the inner suite went red
+  and journey stages 8/9/08b plus slice009 failed (probe-verified
+  2026-08-29). T1b pins `hatchling==1.31.0` in the pyproject dev dependency
+  group, pinning the build backend through `uv.lock` and resolving ADR-038's
+  “backend not lock-pinned” weakness for the venv/no-isolation path (isolated
+  builds still resolve from `requires`, epoch-bounded by `--exclude-newer` in
+  the frozen tests), and adds `UV_NO_BUILD_ISOLATION=1` to the provisioned
+  governed-run environment in `src/ranex/cli/main.py` (~2732–2734), so
+  governed builds use the venv-provisioned backend. Probe evidence: offline +
+  cold cache + no-build-isolation + hatchling-in-venv built both wheel and
+  sdist with exit 0; without the variable, offline builds failed (control).
+  The dev-group closure in `uv.lock` grows by hatchling, pathspec 1.1.1, and
+  trove-classifiers 2026.6.1.19; the byte-frozen golden
+  `tests/e2e/expected/deps-fetch-lock.out` moves from packages=26 to 29,
+  re-captured from a real run via `normalize_transcript`.
 - T2: installed-CLI real-data evidence.
 - T3: operator docs + slice close. T3 also lands the CLAUDE.md command-block
   and packaging paragraphs (CLAUDE.md lines ~138, ~150-152) as a separate
   owner-directed commit.
 - T4: coverage-floor re-derivation.
+
+**Where we are:** T0 is committed (`9eceda8`); T1 + T1b are staged pending
+commit.
 
 ## Not owned
 
