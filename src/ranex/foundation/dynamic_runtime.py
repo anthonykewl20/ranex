@@ -11,8 +11,10 @@ import os
 import re
 import stat
 import struct
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
+from typing import TypedDict
 
 from ranex.foundation.canonical import canonical_json_bytes
 
@@ -50,18 +52,77 @@ def _seal_names(execute_allowed: bool) -> list[str]:
     return [*names, "EXEC", "SEAL"]
 
 
+class RuntimeLoader(TypedDict):
+    path: str
+    self_id: str
+    version: str
+    sha256: str
+
+
+class RuntimeEntrypoint(TypedDict):
+    path: str
+    pt_interp: str
+    sha256: str
+
+
+class RuntimeElf(TypedDict):
+    elf_class: int
+    endian: str
+    machine: str
+    osabi: str
+    abi_version: int
+    type: str
+    pt_interp: str | None
+    soname: str | None
+    needed: list[str]
+    rpath: None
+    runpath: None
+    filter: None
+    auxiliary: None
+    audit: None
+    depaudit: None
+
+
+class RuntimeManifestFile(TypedDict):
+    path: str
+    mode: str
+    kind: str
+    sha256: str
+    elf: RuntimeElf | None
+
+
+class RuntimeManifestValue(TypedDict):
+    schema: str
+    architecture: dict[str, object]
+    loader: RuntimeLoader
+    entrypoint: RuntimeEntrypoint
+    library_paths: list[str]
+    files: list[RuntimeManifestFile]
+
+
+class RuntimeGraphRow(TypedDict):
+    path: str
+    needed: list[str]
+
+
+class LoaderReport(TypedDict):
+    loader: str
+    synthetic: list[str]
+    resolved: dict[str, str]
+
+
 @dataclass(frozen=True)
 class RuntimeFile:
     path: str
     mode: str
     kind: str
     sha256: str
-    elf: dict[str, object] | None
+    elf: RuntimeElf | None
 
 
 @dataclass(frozen=True)
 class RuntimeManifest:
-    value: dict[str, object]
+    value: RuntimeManifestValue
     files: tuple[RuntimeFile, ...]
 
 
@@ -97,7 +158,7 @@ def _path(path: object) -> str:
     return path
 
 
-def validate_runtime_rows(rows: list[dict[str, object]]) -> None:
+def validate_runtime_rows(rows: Sequence[Mapping[str, object]]) -> None:
     paths = []
     for row in rows:
         path = _path(row.get("path"))
@@ -122,7 +183,7 @@ def validate_runtime_rows(rows: list[dict[str, object]]) -> None:
 
 def parse_runtime_manifest(raw: bytes) -> RuntimeManifest:
     try:
-        value = json.loads(raw)
+        value: RuntimeManifestValue = json.loads(raw)
     except (json.JSONDecodeError, UnicodeDecodeError) as exc:
         raise ValueError("manifest is not JSON") from exc
     if not isinstance(value, dict):
@@ -417,11 +478,11 @@ def parsed_runtime_graph(
     root: Path,
     manifest: RuntimeManifest,
     descriptors: dict[str, int] | None = None,
-) -> list[dict[str, object]]:
+) -> list[RuntimeGraphRow]:
     """Derive the graph from sealed descriptors, or paths for test tooling."""
     if ELFFile is None:
         raise ValueError("pyelftools is unavailable")
-    result: list[dict[str, object]] = []
+    result: list[RuntimeGraphRow] = []
     for item in manifest.files:
         if item.elf is None:
             continue
@@ -478,7 +539,7 @@ def parsed_runtime_graph(
     return sorted(result, key=lambda row: str(row["path"]))
 
 
-def expected_realized_graph(manifest: RuntimeManifest) -> dict[str, dict[str, object]]:
+def expected_realized_graph(manifest: RuntimeManifest) -> dict[str, LoaderReport]:
     """Build the loader report expectation from the manifest's closed graph."""
     by_name: dict[str, str] = {}
     for item in manifest.files:
@@ -496,7 +557,7 @@ def expected_realized_graph(manifest: RuntimeManifest) -> dict[str, dict[str, ob
     roots = [manifest.value["entrypoint"]["path"]] + [
         item.path for item in manifest.files if item.kind == "native-extension"
     ]
-    expected: dict[str, dict[str, object]] = {}
+    expected: dict[str, LoaderReport] = {}
     for root in sorted(roots):
         resolved: dict[str, str] = {}
         pending = list(graph.get(root, []))
@@ -519,7 +580,7 @@ def expected_realized_graph(manifest: RuntimeManifest) -> dict[str, dict[str, ob
     return expected
 
 
-def parsed_runtime_graph_from_manifest(manifest: RuntimeManifest) -> list[dict[str, object]]:
+def parsed_runtime_graph_from_manifest(manifest: RuntimeManifest) -> list[RuntimeGraphRow]:
     """Return the manifest-declared graph when source bytes are unavailable."""
     return [
         {"path": item.path, "needed": sorted(item.elf["needed"])}
@@ -528,7 +589,7 @@ def parsed_runtime_graph_from_manifest(manifest: RuntimeManifest) -> list[dict[s
     ]
 
 
-def parsed_graph_digest(rows: list[dict[str, object]]) -> str:
+def parsed_graph_digest(rows: list[RuntimeGraphRow]) -> str:
     return hashlib.sha256(canonical_json_bytes(rows)).hexdigest()
 
 
@@ -597,7 +658,7 @@ def _descriptor_hash(fd: int) -> str:
     return digest.hexdigest()
 
 
-def normalize_loader_report(raw: bytes, root_entrypoint: str | None = None) -> dict[str, object]:
+def normalize_loader_report(raw: bytes, root_entrypoint: str | None = None) -> LoaderReport:
     if len(raw) == 0 or len(raw) > 65536: raise ValueError("malformed report")
     try:
         decoded = raw.decode("utf-8")

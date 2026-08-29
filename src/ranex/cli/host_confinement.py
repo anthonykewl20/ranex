@@ -22,7 +22,7 @@ from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, NoReturn
+from typing import TYPE_CHECKING, Any, NoReturn
 
 from ranex.cli.confinement import resolve_within_repository
 from ranex.foundation import atomic_writer
@@ -36,6 +36,9 @@ from ranex.foundation.confinement_result import (
 from ranex.foundation.static_executable import inspect_self_contained_static_executable
 from ranex.observability import stage_begin, stage_end
 from ranex.observability.emitter import set_governed_root
+
+if TYPE_CHECKING:
+    from ranex.foundation.dynamic_runtime import LoaderReport
 
 E_ARCH = "E-C17-ARCH-UNSUPPORTED"
 E_BUILD_INPUT = "E-C17-BUILD-INPUT-DRIFT"
@@ -539,17 +542,6 @@ def validate_confinement_result_v2(value: Mapping[str, Any], expected: Mapping[s
         "cgroup_removed": True,
     }:
         raise ValueError("teardown")
-
-
-def _release_runtime_worker(verifier_ack_write: int, reports: Mapping[str, bytes], expected: Mapping[str, Mapping[str, object]]) -> None:
-    expected_v2 = {"schema", "argv", "environment", "input", "subject", "runtime", "output", "scratch", "limits"}
-    _ = expected_v2
-    decision = runtime_verifier_decision(expected, reports)
-    if decision != b"GO":
-        os.write(verifier_ack_write, b"REFUSE")
-        return
-    os.write(verifier_ack_write, b"GO")
-    _read_launcher_readiness(verifier_ack_write)
 
 
 def _refuse(code: str, detail: str) -> NoReturn:
@@ -3267,14 +3259,14 @@ def _runtime_v3_verifier_isolation_probe() -> dict[str, Any]:
                 os.fork()
                 fork_result = "0"
             except OSError as exc:
-                fork_result = errno.errorcode.get(exc.errno, str(exc.errno))
+                fork_result = errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err)
             writes = []
             for path in ("/ranex/output/probe", "/ranex/scratch/probe"):
                 try:
                     Path(path).write_bytes(b"x")
                     writes.append("OK")
                 except OSError as exc:
-                    writes.append(errno.errorcode.get(exc.errno, str(exc.errno)))
+                    writes.append(errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err))
             os.write(pipe_write, json.dumps({"fork": fork_result, "writes": writes}).encode())
             signal.pause()
         finally:
@@ -3604,7 +3596,7 @@ def _current_session_host_state() -> dict[str, Any]:
     }
 
 
-def _session_runtime_profile(value: Mapping[str, Any]) -> bool:
+def _session_runtime_profile(value: Mapping[str, Any]) -> RuntimeProfile | bool:
     schema = value.get("schema")
     if schema == "ranex-strict-local-runtime-v3":
         expected = {
@@ -4232,7 +4224,7 @@ def confinement_session(
     session: ConfinementSession | None = None
     runtime_closure: Any | None = None
     runtime_manifest: dict[str, Any] | None = None
-    runtime_expected: dict[str, Mapping[str, object]] | None = None
+    runtime_expected: dict[str, LoaderReport] | None = None
     runtime_parsed_digest: str | None = None
     runtime_realized_digest: str | None = None
     runtime_observed_rows: list[dict[str, Any]] | None = None
@@ -4394,6 +4386,7 @@ def confinement_session(
         os.set_inheritable(readiness_write, True)
         os.set_inheritable(readiness_ack_read, True)
         if runtime_v3:
+            assert runtime_closure is not None
             os.set_inheritable(verifier_report_write, True)
             os.set_inheritable(verifier_ack_read, True)
             for held in (
@@ -4424,6 +4417,7 @@ def confinement_session(
                 f"--ranex-ready-ack-fd={readiness_ack_read}",
             ]
             if runtime_v2:
+                assert command is not None
                 for held in (*authority_fds.values(), command.descriptor):
                     os.set_inheritable(held, True)
                 launcher_arguments.extend(
@@ -4439,6 +4433,7 @@ def confinement_session(
                     ]
                 )
             elif runtime_v3:
+                assert runtime_closure is not None
                 descriptors = {path: sealed.descriptor for path, sealed in runtime_closure.files}
                 bundle = ",".join(
                     str(fd)
@@ -4463,6 +4458,7 @@ def confinement_session(
                     *descriptor["argv"],
                 ])
             else:
+                assert command is not None
                 launcher_arguments.extend(
                     [
                         str(descriptor["_resolved"]["subject"]),
@@ -4504,6 +4500,7 @@ def confinement_session(
         _close_descriptor(gate_write)
         gate_write = -1
         if runtime_v3:
+            assert runtime_closure is not None and session_deadline is not None
             _close_descriptor(verifier_report_write)
             verifier_report_write = -1
             _close_descriptor(verifier_ack_read)
@@ -4612,7 +4609,7 @@ def confinement_session(
         session.kill_drain_remove()
         outputs = collect_drained_output(output_fd, descriptor["limits"], {"populated": 0})
         result_path = _session_result_path(root, result_arg)
-        result = {
+        result: dict[str, object] = {
             "schema": "ranex-confinement-result-v1",
             "profile_digests": {
                 "runtime": _sha256_path(profile_path),
@@ -4636,6 +4633,7 @@ def confinement_session(
             "outputs": outputs,
         }
         if runtime_v3:
+            assert runtime_closure is not None and runtime_manifest is not None
             result["schema"] = "ranex-confinement-result-v2"
             result["outputs"] = outputs["files"]
             result["runtime_closure"] = {
