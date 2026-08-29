@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.6.1` |
+| Version | `3.6.2` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-29 — executable-code capability audit; see §0.35 |
+| Last revised | 2026-08-29 — real-data production acceptance; see §0.36 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -733,6 +733,18 @@ the current capability, container, runtime, deployment, and maturity views below
 separate public CLI behavior, internal Python APIs, prototypes, and
 host-dependent confinement.
 
+### 0.36 What changed in `3.6.2` — real-data production acceptance
+
+Issue #55 exercised the source CLI with real clones/worktrees/commits, fresh
+Ed25519 keys, live PyPI artifacts, SQLite tampering, a live OpenCode model, and
+host confinement. Core gating, provisioning, signed verdicts, real-model
+delegation/fanout, and delegated-service strict-local v2/v3 ran successfully.
+The product is not one production-ready human workflow: source startup needs
+`PYTHONPATH`, task publication needs an undocumented journal/evidence handoff,
+successful ref publication leaves a checked-out worktree stale, direct ordinary
+strict-local v1 did not pass, and delegation logs are not retained. README and
+STATE carry the release warning; issue #55 carries selected raw output.
+
 ---
 
 ## §1 Introduction and Goals
@@ -934,14 +946,14 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Claim↔command binding | The committed catalog declares the argv that satisfies a claim | **`CONFIRMED`** — SLICE-003; six independent audits failed to break it |
 | Hermetic observation | The bound command runs against a materialisation of the subject commit, in an environment built from empty, with a pinned toolchain | **`CONFIRMED`** — SLICE-004, closed twice |
 | Append-only journal | Hash-chained SQLite, serialised appends and operator chain verification | **`CONFIRMED`** for append and `ranex journal verify`; it does **not** detect replacement by a consistent earlier snapshot (`RISK-19`) |
-| Confinement of the measured party | A strict-local run attempts to keep the measured worker from the signing key and host state | **`CONFIRMED` only for the explicitly selected, qualified strict-local path** — namespace/Landlock/seccomp/cgroup execution and fail-closed result validation are implemented. Ordinary `run` is non-confined. The controller subprocess remains same-UID trusted infrastructure. |
+| Confinement of the measured party | A strict-local run attempts to keep the measured worker from the signing key and host state | **`CONFIRMED` for host-qualified v2/v3 mechanisms, conditional as an operator workflow** — all 13 real v2/v3 acceptance arms passed inside a delegated systemd service. Direct ordinary v1 use did not pass on the same host. Ordinary `run` is non-confined; the controller remains same-UID trusted infrastructure. |
 | Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
-| Worker dispatch | Create a Git worktree, validate an emitted commit, run checks, and publish a separately approved candidate | **`CONFIRMED`** for serial `task dispatch/judge/merge`. `task delegate` and `task fanout` are executable prototypes over an external harness: delegate records `suite_exit` but issues no verdict, while fanout accepts only free-prompt task rows and no A/B/C authority. `task batch qualify` separately validates approved inputs and emits a signed artifact whose `publication_allowed` field is always false. |
+| Worker dispatch | Create a Git worktree, validate an emitted commit, run checks, and publish a separately approved candidate | **Mechanics confirmed; public composition incomplete.** Dispatch/judge/merge checks ran, but merge could not see candidate evidence until an operator manually transferred it into governed `evidence.json`; using an external journal also hid the candidate from merge. `PUBLISHED` advanced the ref without updating the checkout. Delegate/fanout ran live model jobs but remain non-verdict, non-A/B/C prototypes. Batch qualification remains non-publishable. |
 | Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); manager issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 (ADR-014 predates the renumbering and cites the old numbers); nothing built. SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability production program closes. §0.15 |
 | Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — target harness behavior | **absent from this repository**. `ADR-015` and the former harness commits are historical external-repository provenance, not current Ranex kernel capability or a scheduled delivery. §0.16, §0.20 |
 | A/B/C specification authority | Normative A holds approved semantics without generated hashes; manifest B binds exact gauge artifacts/invocation; signed envelope C binds A+B, context, identities, anti-replay and capability request; grant binds C | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap. The installed harness-admission/concurrent-mutation composition is withdrawn from the kernel-only release, not completed by SLICE-044. |
-| Public operator surface | Source-run argparse CLI for verdict, evidence, journal, suite, dependencies, keys, serial tasks, delegation/fanout prototypes, and batch qualification | **`CONFIRMED`** in `src/ranex/cli/main.py:3508-3847`. The specification lifecycle parser in `src/ranex/cli/specification.py` is a tested internal surface but is not registered in the main CLI. There is no installed console script because the package is disabled in `pyproject.toml`. |
+| Public operator surface | Source-run argparse CLI for verdict, evidence, journal, suite, dependencies, keys, serial tasks, delegation/fanout prototypes, and batch qualification | **`CONFIRMED` only with `PYTHONPATH=src`** in `src/ranex/cli/main.py:3508-3847`. The specification lifecycle parser is not registered, the package is disabled, and launcher build/install are hidden special argv paths rather than parser-listed commands. |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:24-26`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
 | Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:736-756`) |
@@ -1405,7 +1417,7 @@ control, unverifiable evidence, or model-reported success.
 | `provisioning/` | Dependency provisioning behind `deps fetch`/`deps approve`: clean lock derivation under pinned inputs, the SHA-256-addressed wheel store, and approval recording | **`CONFIRMED`** — SLICE-006 |
 | **Harness core** | External executable consumed by `task delegate`; no harness implementation lives in this repository | **absent from this repository** — the CLI requires the caller to provide `--harness` and `--model` |
 | **Kernel bridge** | Historical process boundary between harness collection and kernel judgment | **out of scope for the kernel-only initial release** — no harness-dependency delivery is currently scheduled |
-| **Delegation** | External harness launch, emission validation, independent candidate-suite run, timeout kill, outcome file, and bounded free-prompt pool | **executable prototype** in `cli/delegation.py` and `cli/fanout.py`; it is not a verdict path, and fanout performs no A/B/C admission |
+| **Delegation** | External harness launch, emission validation, independent candidate-suite run, timeout kill, outcome file, and bounded free-prompt pool | **live-model executable prototype** in `cli/delegation.py` and `cli/fanout.py`; one delegate and two concurrent fanout jobs passed issue #55. It is not a verdict path, fanout performs no A/B/C admission, and scratch cleanup leaves no inspectable harness/session log |
 | **Specification authority** | A normative SpecPacket/scope; B exact generated/protected gauge manifest; signed anti-replay ApprovalEnvelope C; role-separated grant/revocation, lifecycle and evidence continuity | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, deterministic projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap; installed harness admission and concurrent mutation are withdrawn from the kernel-only release |
 | **Harness admission** | Shared enforcement at every tool, plugin, MCP, process, Git, hosted and subagent effect leaf; exact child-intersected grant | **withdrawn from the kernel-only release** — no claim of production harness admission |
 | **Agent-run manager** | Durable supervisor + capability-gated orchestrator over N worktrees/sessions | **absent/withdrawn** — the bounded fanout thread pool is not this manager |
@@ -1525,7 +1537,7 @@ ranex gate evaluate HEAD --approver A
 ### 7.1 Today — `PROVISIONAL`
 
 There is no deployed Ranex service, daemon, installed package, UI, or deployment
-command. The CLI runs from the source tree through `uv`; it enforces only when
+command. The CLI runs from the source tree through `PYTHONPATH=src uv`; it enforces only when
 an operator or automation actually invokes it. This repository's committed gate
 catalog and dependency inputs exercise that path, but the code cannot force an
 arbitrary Git push or external workflow to call it.
@@ -1812,6 +1824,8 @@ is best.
 | `RISK-23` | **The coverage table proves only the stated hole exists.** It does not validate the concern set, the mapping method, or the product reasoning |
 | `RISK-24` | **One complete thread is operator-selected and likely the easiest available.** Passing it proves the mechanism runs, not that it handles the cases behind `C-02`, `C-03` or `C-04` |
 | `RISK-25` | **Current free-prompt delegation dispatches prose without common harness effect admission.** The withdrawn SLICE-044 program grants nothing; implemented batch qualification is a separate non-publishable path and does not authorize governed mutation |
+| `RISK-26` | **Serial task publication is not one public workflow.** Merge reads the governed journal/evidence locations, while dispatch/judge accept caller-selected locations and do not transfer candidate evidence. Real acceptance required a manual evidence copy; publication then advanced the ref without updating the checked-out worktree |
+| `RISK-27` | **Prototype delegation is not human-auditable after completion.** Outcome JSON retains exit summaries, but the harness/session transcript lives under deleted scratch state; a successful model run cannot be reconstructed from Ranex artifacts |
 
 ### 11.6 Sequencing decisions — owner, 2026-08-03
 
@@ -2073,10 +2087,10 @@ that cannot name its evidence or its absence is not in the ledger.
 | A/B/C canonical authority, lifecycle and grants | SLICE-029/030/032; canonical schemas/vectors, lifecycle transitions, signed approval, revocation reduction and intersected grants have executed contract, unit, integration and security gauges | owner-facing intake and installed harness composition remain outside the kernel-only release |
 | Deterministic closed-DSL projections and manifest B | SLICE-031; generated flow/pseudocode/protected-gauge artifacts, mappings, controls and invocation metadata are digest-bound by manifest B | no owner-facing authoring product; today's suite freezes protected test IDs rather than complete test bodies |
 | Trace integrity and real-subject bootstrap | SLICE-033/035; authority/evidence continuity and bootstrap against the real subject are exercised by repository gauges | common harness admission and the real concurrent mutation exit remain unproven |
-| Host-qualified strict-local confinement of the bound command | ADR-006 accepted; SLICE-017/018/019/046 closed with qualification, lifecycle, host evidence and `cmd_run` attack gauges | applies only when `run --confinement strict-local` is explicitly selected on a qualified host; ordinary `run` is non-confined, and the controller subprocess remains same-uid trusted infrastructure (§11.5 standing limit) |
+| Host-qualified strict-local confinement of the bound command | ADR-006 accepted; 13/13 real v2/v3 acceptance arms passed inside a delegated systemd service on 2026-08-29 | operator must provide and retain delegated cgroup controllers; direct ordinary v1 use failed on that host, ordinary `run` is non-confined, and the controller remains same-UID trusted infrastructure |
 | Dependency provisioning for gated suites | ADR-007 accepted; SLICE-006 closed; the self-gate runs from the approved SHA-256-addressed wheel store and `RISK-08` is closed | does not prove dependency consumption across the full installed harness composition |
-| Serial task publication | `task dispatch/judge/merge`; real-flow integration/e2e tests cover worktree identity, candidate evidence, signed approval, ancestry, linear range and stale-ref CAS | ordinary gate approver identity remains weaker than signed merge approval; no composed A/B/C mutation path |
-| Prototype delegation and bounded fanout | `src/ranex/cli/delegation.py`, `fanout.py`; unit/integration/e2e tests cover external harness emission, timeout kill, candidate suite and ordered pool reporting | delegate records suite failure but issues no verdict; fanout has no A/B/C or approved child scope |
+| Serial task publication | Individual dispatch/judge/merge checks passed with real worktrees, commits, evidence and an independent approval | public commands require manual journal/evidence alignment; `PUBLISHED` can leave a checked-out worktree stale/dirty; no composed A/B/C mutation path |
+| Prototype delegation and bounded fanout | one live OpenCode delegate and two concurrent live fanout jobs emitted real commits and passed independent suites | delegate issues no verdict; fanout has no A/B/C scope; outcomes do not retain inspectable harness/session logs |
 | Approved-batch qualification | `task batch qualify`; `tests/integration/test_approved_batch_qualification_contract.py` and `tests/e2e/test_specification_batch_qualification.py` | qualification is structurally non-publishable and cannot authorize mutation |
 | Signed verdict artifact APIs | optional publication in `cmd_gate_evaluate`, atomic publisher, verified internal reader, and unit tests | no main-CLI verdict reader; publication requires explicitly configured signer and output directory |
 | Strict-local stable I/O and dynamic runtime closure | host-confinement implementation plus integration, security and host-gated e2e tests | requires user namespaces and delegated cgroup controllers; same-UID controller remains trusted |

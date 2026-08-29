@@ -14,12 +14,16 @@ verdict.
 
 [Website](https://ranex.dev) · [Field notes](https://ranex.dev/blog) ·
 [YouTube](https://www.youtube.com/@RanexDev) · [Architecture map](docs/MAP.md) ·
-[Current state](docs/STATE.md)
+[Current state](docs/STATE.md) ·
+[Production acceptance](https://github.com/anthonykewl20/ranex/issues/55)
 
 > [!IMPORTANT]
 > Ranex is pre-release and kernel-only. The [status section](#status) is the
 > code-backed capability list. Sections explicitly labeled **target
 > architecture** describe intent, not available product behavior.
+> A real-data acceptance run on 2026-08-29 found that the components are **not
+> yet one production-ready human workflow**; see the linked production
+> acceptance issue for raw outputs and blockers.
 
 ---
 
@@ -378,6 +382,8 @@ Host-dependent capability:
 
 Current limits visible in code:
 
+- the package is disabled in `uv`, so the documented source invocation requires
+  `PYTHONPATH=src`; there is no installed operator command;
 - this repository contains no installed agent harness, owner-facing intake,
   task board, deployment command, or built-in model provider;
 - the standalone specification parser is not wired into the main CLI;
@@ -387,6 +393,14 @@ Current limits visible in code:
   completed delegation even when that suite exit is nonzero; it does not issue
   a gate verdict;
 - free-prompt `task fanout` has no A/B/C or approved child-scope admission;
+- dispatch/judge and merge compose only when the operator selects the governed
+  journal and manually transfers candidate evidence into the governed evidence
+  file; no public command owns that handoff;
+- a successful `task merge` advances the governed ref but does not update a
+  checked-out worktree, which can leave the checkout dirty while printing
+  `PUBLISHED`;
+- delegation/fanout outcome files retain exit summaries but not inspectable
+  harness stdout or session logs;
 - batch qualification sets `publication_allowed` to false and both judge and
   merge refuse it before legacy publication writes;
 - `evidence.json` replaces the previous row for the same claim and producer;
@@ -396,6 +410,9 @@ Current limits visible in code:
   replacement by an internally consistent earlier database snapshot;
 - the strict-local controller remains same-UID trusted infrastructure and host
   qualification depends on user namespaces and delegated cgroup controllers;
+  on the 2026-08-29 acceptance host the v2/v3 paths passed only inside an
+  operator-created delegated systemd service, while direct ordinary v1 use did
+  not complete successfully;
   and
 - there is no installed end-to-end A/B/C-authorized mutation workflow.
 
