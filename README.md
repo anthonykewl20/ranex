@@ -5,18 +5,21 @@
 > Rules an agent can read are suggestions. Rules compiled into code are
 > constraints.
 
-Ranex is an open-source kernel and agent harness that judges software work by
-evidence and executable checks—not by an AI model's confidence. Removing every
-model credential from the machine must not change a single verdict.
+This repository contains the open-source Ranex kernel: Python code that judges
+software work by signed evidence and executable checks, not by an AI model's
+confidence. It can invoke an external agent harness through the prototype
+delegation commands, but it does not contain or install an agent harness.
+Removing every model credential from the machine must not change a kernel
+verdict.
 
 [Website](https://ranex.dev) · [Field notes](https://ranex.dev/blog) ·
 [YouTube](https://www.youtube.com/@RanexDev) · [Architecture map](docs/MAP.md) ·
 [Current state](docs/STATE.md)
 
 > [!IMPORTANT]
-> Ranex is pre-release. The kernel has a working governed verdict and task path;
-> the complete owner-facing product described below is still being built. The
-> [status section](#status) separates implemented mechanisms from intended ones.
+> Ranex is pre-release and kernel-only. The [status section](#status) is the
+> code-backed capability list. Sections explicitly labeled **target
+> architecture** describe intent, not available product behavior.
 
 ---
 
@@ -38,12 +41,18 @@ One actor writes the code, writes the test, and declares success. That is why
 "all tests pass" from an AI means so little — the target moved to wherever the
 dart went.
 
-## What Ranex is
+## What Ranex is today
 
-Ranex is building **its own harness** — a trimmed fork of opencode, molded so
-that every step is judged by a kernel that stays outside the loop (decided
-2026-08-03; the kernel described below is what exists today). The kernel never
-asks a model what to do next.
+Ranex is currently a source-run governance kernel. It records signed
+observations against exact Git trees, evaluates blocking gates, journals the
+result, and can publish a separately judged serial task candidate through a
+checked compare-and-swap ref update. The kernel never asks a model to decide a
+verdict.
+
+The repository also contains prototype adapters that can launch an external
+harness and run several such delegations concurrently. Those adapters are not
+an installed agent product and do not make the free-prompt fanout path approved
+mutation authority.
 
 > Ranex is `make` for a nondeterministic compiler. `make` invokes gcc; nobody
 > asks gcc what to build next.
@@ -63,11 +72,13 @@ apparatus: the code, the inspector, and the record.
 
 ---
 
-## How it works
+## Target architecture — not the current product
 
-The kernel is the foreman and judge, not the coder. It controls the task,
-observes what actually happened, evaluates evidence, records the decision, and
-owns the merge.
+The diagram and workflow in this section describe the intended complete system.
+The current code implements only the kernel mechanisms called out in
+[Status](#status); it does not implement the owner-facing intake, model roles,
+common harness admission, retry/escalation loop, concurrent governed mutation,
+or deployment shown here.
 
 ```mermaid
 flowchart LR
@@ -207,27 +218,20 @@ approval, exact child path+action scope, child-grant intersection or common
 harness admission. Production fanout and the harness lane are withdrawn from
 the current release; keep one mutation writer for kernel work.
 
-The following grammar remains historical design context, not a current release
-entrypoint or authorization claim:
-
-```text
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main task fanout \
-  --spec-packet A.json --artifact-manifest B.json \
-  --approval-envelope C.json --tasks child-requests.jsonl \
-  --target <repo> --journal <external> --outcome-dir <dir> --pool N
-```
-
-B/C own harness, model, timeout and suite; child rows name approved scope and
-capability-request IDs; `--pool` can only narrow the approved maximum. Children
-use isolated worktrees and cannot receive secrets or merge. Results are ordered
-canonically for one kernel-controlled stale-base CAS integrator. SLICE-071
-qualifies the kernel continuity shape only in disposable worktrees with
-publication blocked. The later harness effect-family and production-exit
-slices were withdrawn; no production mutation authority is claimed.
+The actual `task fanout` parser accepts a JSONL file whose rows contain exactly
+`task_id`, `prompt`, and `worktree`, plus caller-supplied harness, model, timeout,
+suite, and pool flags. It repeats `task delegate`; it accepts no A/B/C inputs and
+performs no approved-scope or child-grant admission. The separate `task batch
+qualify` command does validate A/B/C-bound child inputs, but its output is
+qualification-only and is deliberately rejected by both publication paths.
 
 ---
 
-## A complete run, end to end
+## Target owner workflow — not implemented end to end
+
+The following example is a product target. There is no current owner-facing
+intake, automatic retry/escalation, integrated A/B/C-to-harness mutation path,
+or deployment command.
 
 Maria owns a dog-grooming shop and wants online booking. She cannot read code.
 
@@ -260,26 +264,24 @@ at the ledger. Her acquirer's diligence team will.
 
 ## What makes a verdict trustworthy
 
-An agent that can edit its own tests can paint the target around its output. The
-complete A/B/C architecture is intended to prevent that with four controls:
+The current evaluator trusts only admitted signed evidence that matches all of
+these code-enforced facts:
 
-1. **Protected gauges are frozen before BUILD.** Every B-bound gauge and
-   generated artifact is digested. Changing one revokes authority and fails
-   admission; any enumerated exception must be declared in A/B and signed by C.
-2. **Red-then-green, enforced.** Every generated test must fail against the
-   pre-implementation tree. A test that passes before the code exists is not a
-   target — it is a circle painted around a dart.
-3. **Approved behavior coverage as a gate, not a metric.** Not "80% of lines"
-   but *"every required outcome and transition in A maps to a protected,
-   passing gauge bound by B and C."*
-4. **No self-approval.** Whoever produced the evidence cannot approve it, and the
-   task that implements a scenario never authors or judges its test.
+1. the exact subject-tree digest being judged;
+2. the required claim ID and the digest of its catalog-bound argv;
+3. a zero command exit, plus matching suite results when the claim requires a
+   frozen manifest; and
+4. a producer identity different from the `--approver` string.
 
-Ranex has proven the red-then-green control in its own history: the SLICE-001
-tests were committed red at `b495e3635`, before the implementation existed. The
-current suite manifest freezes test IDs, not test bodies, so the complete
-protected-gauge freeze line is **not** claimed as implemented end to end today.
-The [status section](#status) records that boundary explicitly.
+Missing evidence, stale evidence, command mismatches, observed failures,
+unexpected suite outcomes, and contradictory admitted records all block. The
+gate catalog, producer keyring, and any required suite manifest are read from
+the commit being evaluated.
+
+The code does **not** currently freeze test bodies, authenticate the ordinary
+`gate evaluate --approver` identity, enforce red-then-green, or prove that every
+approved A outcome maps to a protected gauge in an installed mutation path.
+Those remain target-architecture controls, not properties of a current PASS.
 
 ## The determinism ledger
 
@@ -298,23 +300,21 @@ single step whose output faces the left column.
 code.** Anyone claiming an LLM produces identical software twice is selling
 something.
 
-## What a passing build actually proves
+## What a current PASS proves
 
-> Every approved behavior and outcome in normative SpecPacket A is mapped to an
-> executable gauge bound by manifest B and approval envelope C. Every required
-> gauge ran and passed. Here is the evidence, pinned to this exact code digest.
+> Every claim required by the selected blocking gate has admitted evidence for
+> this exact subject tree and the command digest bound by the committed catalog.
+> The command exited zero. If the claim requires suite results, the frozen test
+> IDs are present and every non-passing expected ID is an explicitly declared
+> skip. The producer ID is not equal to the supplied approver ID.
 
-That is the claim. These are **not** claims Ranex makes:
+That is the current code-level claim. It does **not** prove:
 
-- **That the approved specification was right.** Only the person who owns the
-  target can judge that, and only by using the thing. Hence the preview gate.
-- **Anything outside normative A.** Unspecified behavior is unconstrained.
-  Absence of a requirement is absence of a guarantee.
-- **Non-functional properties** — performance, accessibility, security — unless
-  you add gates for them. Those are separate checkers, not free.
-
-"Conformant to an approved specification" is real, defensible, and deliverable.
-"Correct" is not a claim anybody can make.
+- that the tests or gate policy are semantically correct;
+- that test bodies were frozen before implementation;
+- that an A/B/C approval authorized the mutation;
+- that the approver string identifies a real person; or
+- anything not represented by a required claim.
 
 ## Follow the build
 
@@ -332,112 +332,83 @@ That is the claim. These are **not** claims Ranex makes:
 
 ## Status
 
-**Pre-release kernel-only initial release.** The kernel has a working verdict,
-serial task path, provisioning, confinement, and the A/B/C
-specification-authority substrate. The owner-facing harness, credential-broker
-qualification, task-family real-provider proof, and governed concurrent
-production composition are outside this release and are not claimed complete.
-The lists below state what the kernel actually provides and what remains open.
+**Pre-release, source-run kernel.** The public parser in `ranex.cli.main`
+currently exposes:
 
-**Works today**
+```text
+gate evaluate
+journal verify
+run
+suite freeze
+deps fetch | approve
+keygen
+task dispatch | judge | merge | delegate | fanout
+task batch qualify
+```
 
-- `evaluate()` — a pure function of (gate, evidence, subject, approver). Same
-  inputs, same verdict, always.
-- **Subject-bound evidence** — the same command run against a different *commit*
-  proves nothing about this one. Stale evidence stops counting automatically.
-  The runner materialises that committed tree from verified blobs before it runs
-  the command.
-- **Absence blocks** — a required claim with no satisfying evidence is FAIL,
-  never a default and never a skip.
-- **No self-approval** — whoever produced the evidence cannot approve it.
-- **Append-only hash-chained journal** — SQLite triggers prohibit ordinary updates
-  and deletes; the hash chain detects out-of-band row edits. `ranex journal
-  verify` recomputes that chain for an operator.
-- **`ranex run`** — after an operator-facing dirty-tree check, materialises HEAD
-  from verified blobs, executes the command there with an environment built from
-  empty and a pinned toolchain, then records its exit code and subject digest.
-  `run` then `gate evaluate` is a closed loop for self-contained commands.
-- **Strict-local v2 stable I/O** — the public host-confinement session API gives
-  self-contained static workers fixed held-object mounts at `/ranex/input`,
-  `/ranex/toolchain`, `/ranex/output`, `/ranex/scratch`, and no-exec
-  `/ranex/subject`; v1 remains available through its explicit session profile.
-- **Strict-local v3 dynamic runtime closure** — a canonical committed closure
-  selects exact loader, interpreter, library, native-extension, and runtime-data
-  bytes. Sealed and rehashed source descriptors populate one inaccessible
-  private runtime snapshot; structured ELF analysis and a confined held-loader
-  probe must agree before the worker is released. No host library, loader cache,
-  toolchain mount, or ambient loader environment is available.
-- **Signed evidence** — Ed25519, verified against a committed keyring before a
-  record is admitted. The verifier holds only public keys and cannot forge.
-- **Claim↔command binding** — the committed catalog declares the argv that
-  satisfies a claim, and the kernel compares its digest, so a record of `true`
-  no longer satisfies `tests-executed`. Read the next section for what it does
-  *not* buy.
-- **The A/B/C specification-authority substrate** — canonical schemas and
-  vectors for SpecPacket A, GeneratedArtifactManifest B, and ApprovalEnvelope C;
-  deterministic closed-DSL flow/pseudocode/scenario/gauge/mapping projections;
-  lifecycle, approval, revocation, intersected grants, trace integrity, and
-  real-subject bootstrap. These kernel mechanisms are built and tested
-  (SLICE-029–033 and SLICE-035), but the installed end-to-end mutation path is not yet
-  authorized.
-- **`ranex task dispatch|judge|merge`** — the serial kernel task path. The
-  kernel records task→worktree at dispatch; a separate keyless invocation
-  judges a CANDIDATE naming its missing claims, never a PASS; `merge` publishes
-  only through ordered journalled checks. The delegated first rung and bounded
-  `fanout` remain historical prototype mechanics, not release authority.
-- **Signed verdicts and a verdict read channel** — evaluation records carry
-  structured five-kind causes and self-approval; a dedicated
-  `kernel-verdict-signer` signs verdicts under the same Ed25519 keyring
-  discipline as evidence; publication is validated and atomic; and a total
-  closed-state reader projects refused and unattributable rejections
-  (SLICE-020).
-- `ranex gate evaluate`, `ranex keygen`, and repository path confinement.
+Code-backed capabilities:
 
-**Known gaps — stated plainly**
+- deterministic blocking-gate evaluation with exact subject, claim, command,
+  exit, optional suite-manifest, contradiction, and producer/approver checks;
+- Ed25519 evidence signing and admission against a committed public keyring;
+- committed-tree materialisation, dirty-tree refusal, constrained command
+  resolution, and evidence recording through `run`;
+- a SQLite append API with update/delete triggers, a hash chain, compare-and-swap
+  append, and operator verification;
+- JUnit-ID manifest freezing with explicit expected-skip declarations;
+- pinned dependency derivation, wheel verification/storage, and separate
+  dependency-set approval;
+- serial task worktree dispatch, candidate judging, and signed-approval merge
+  through policy, ancestry, linear-range, evidence, and stale-ref checks;
+- prototype external-harness delegation with emission validation, timeout
+  process-group kill, independent suite execution, and structured outcome files;
+- prototype bounded free-prompt fanout over that delegation path;
+- A/B/C validators, deterministic specification projections, lifecycle,
+  approval/revocation/grant, trace, and candidate-verification Python APIs;
+- A/B/C-bound batch qualification in disposable children whose signed output is
+  explicitly non-publishable; and
+- optional signed verdict-file publication plus an internal verified reader API.
 
-- **The confinement controller is same-uid trusted infrastructure.** The bound
-  command now runs inside the qualified strict-local session (Landlock, seccomp,
-  cgroup; environment allowlisted to LC_ALL/TZ; no inherited fds), and evidence
-  is signed only after fail-closed confinement-result validation — the measured
-  worker can no longer take the signing key (`RISK-06` closed by SLICE-046;
-  ADR-006 accepted 2026-08-15). The standing limit, stated plainly: the
-  controller subprocess that invokes the session still runs as the same user
-  (sudo-monitor model, ADR-023); controller env narrowing is a named follow-up.
-  The model credential still sits in a network-open loop — use a scoped,
-  spend-limited key.
-- **Approver identity is unauthenticated.** `--approver` is a plain string, so a
-  producer can name anyone as their approver. Evidence signing proves only that
-  the holder of the registered private key signed the record; it proves nothing
-  about who approved it. No-self-approval compares those unauthenticated strings.
-- **The journal does not detect rollback or truncation.** Concurrent appenders
-  are serialised before they read the previous link, and `ranex journal verify`
-  recomputes the chain, now naming the first chain-breaking row. But an
-  internally consistent earlier prefix still verifies after later rows are
-  removed — characterized and frozen as the documented outcome by SLICE-056;
-  the ADR-032 fold-in landed (8a5ed3837). Closing it remains a slice-governed
-  change.
-- **No owner-facing intake product or installed A/B/C → harness admission →
-  concurrent mutation composition.** Kernel-side A/B/C validation,
-  deterministic projections, lifecycle, grants, trace integrity, and
-  real-subject bootstrap exist; budget and plain-language escalation do not.
-  The harness lane, broker qualification, task-family real-provider proof, and
-  production fanout exit were withdrawn from this kernel-only release. No
-  production mutation authority is claimed.
-- **Review-consensus authenticity gaps remain unstarted in production.** Two
-  independent adversarial reviews (2026-08-06) confirmed the gaps above and
-  added: the suite manifest freezes test IDs, not test bodies; `evidence.json` is
-  overwritten, not appended; network is denied only during provisioning.
-  No prototype has been opened for these authenticity gaps; the green, digest-bound SLICE-011 prototype record covers ADR-015's durability claims only, not these authenticity defects, so production hardening for them remains unstarted. Every hardening idea must be proven
-  red-first in a scratch prototype before production code (milestone #1).
+Host-dependent capability:
 
-Roughly speaking: the hardest part to get conceptually right exists, and almost
-none of the surface around it does.
+- `run --confinement strict-local` implements Linux namespace, Landlock,
+  seccomp, cgroup, fixed-mount, static-worker, and dynamic-runtime-closure
+  paths. It refuses hosts that do not satisfy the qualification contract. It is
+  not available on every Linux installation.
 
-## Current work
+Current limits visible in code:
+
+- this repository contains no installed agent harness, owner-facing intake,
+  task board, deployment command, or built-in model provider;
+- the standalone specification parser is not wired into the main CLI;
+- ordinary `gate evaluate --approver` uses an unauthenticated string; signed
+  approver verification exists only in the task-merge approval path;
+- `task delegate` records `suite_exit` but returns orchestration success after a
+  completed delegation even when that suite exit is nonzero; it does not issue
+  a gate verdict;
+- free-prompt `task fanout` has no A/B/C or approved child-scope admission;
+- batch qualification sets `publication_allowed` to false and both judge and
+  merge refuse it before legacy publication writes;
+- `evidence.json` replaces the previous row for the same claim and producer;
+  it is not append-only;
+- the suite manifest freezes test IDs and allowed skip reasons, not test bodies;
+- journal verification detects changed rows and broken links but cannot detect
+  replacement by an internally consistent earlier database snapshot;
+- the strict-local controller remains same-UID trusted infrastructure and host
+  qualification depends on user namespaces and delegated cgroup controllers;
+  and
+- there is no installed end-to-end A/B/C-authorized mutation workflow.
+
+## Historical implementation record
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
 **Active slice:** none
+
+The entries below record prior slices and experiments. They are not the current
+capability contract and may describe withdrawn release claims, external harness
+work, host-qualified evidence, or behavior later narrowed. Use [Status](#status)
+for what the present code exposes.
 
 SLICE-074 (#53) is complete. Destructive real-repository runs first proved that
 SIGKILL of the kernel orphaned the governed uv, pytest, nested Ranex, strace,
@@ -629,6 +600,11 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+
+This list mirrors the archived slice filenames. A completed slice is historical
+implementation evidence, not an assertion that its behavior is a supported
+current release feature; withdrawn and prototype boundaries are governed by the
+code-backed [Status](#status) section above.
 
 - **SLICE-074-kill-safe-command-ownership** — completed 2026-08-29.
   An external guardian now owns each exact scratch root and fresh PID namespace,
@@ -962,7 +938,7 @@ chosen by the party being measured. Both are closed.
 ```sh
 uv run --frozen pytest -q
 
-PYTHONPATH=src uv run python -m ranex.cli.main gate evaluate HEAD \
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main gate evaluate HEAD \
     --approver reviewer_alice
 ```
 
@@ -983,7 +959,7 @@ repository, and `keygen` refuses to write it anywhere inside:
 
 ```sh
 export RANEX_SIGNING_KEY=~/.config/ranex/worker.key
-PYTHONPATH=src uv run python -m ranex.cli.main keygen --producer worker
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main keygen --producer worker
 ```
 
 This repository commits the **public** keyring, `governance/producers.yaml` —
@@ -1009,8 +985,8 @@ party chooses:
 ```sh
 sudo install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
 
-PYTHONPATH=src uv run python -m ranex.cli.main deps fetch
-PYTHONPATH=src uv run python -m ranex.cli.main deps approve --approver reviewer_alice
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main deps fetch
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main deps approve --approver reviewer_alice
 ```
 
 `deps fetch` is the only networked step: it re-derives the lock from the manifest
@@ -1023,7 +999,7 @@ Approval reduces hidden change; it cannot make third-party code truthful, and
 approved, hash-correct wheel forcing a passing verdict. Then:
 
 ```sh
-PYTHONPATH=src uv run python -m ranex.cli.main run \
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main run \
     --claim tests-executed --producer worker -- uv run pytest -q
 ```
 

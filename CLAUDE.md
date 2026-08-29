@@ -12,17 +12,20 @@ An AI writing software is a blindfolded dart thrower with a guide shouting
 coordinates. Three failures, and they are separate problems:
 
 1. **The thrower is blind.** It cannot see whether its own dart landed, so it
-   reports success either way. Ranex discards the self-report and reads the
-   diff on disk.
+   reports success either way. The serial `task dispatch` → `task judge` →
+   `task merge` path validates the emitted worktree/commit and judges admitted
+   evidence instead of accepting prose. The `task delegate`/`task fanout`
+   prototypes are not that verdict path.
 2. **The guide is bad.** The coordinates were wrong or vague before the throw.
-   Ranex fixes them first, approved by whoever owns the target.
+   The target architecture addresses this through owner-approved specification;
+   the current kernel does not provide an owner-facing intake product.
 3. **The bullseye moves.** Most tools let the thrower paint the target around
    the dart after it lands — one actor writes the code, writes the test, and
-   declares success. Ranex freezes tests before the throw, read-only to
-   implementers, red-then-green enforced.
+   declares success. The current suite manifest freezes test IDs and skip
+   reasons, not test bodies; product-level red-then-green is not enforced.
 
-Three misses stops the game and asks the target's owner. "Cannot hit this" is a
-legal outcome, not a failure to route around.
+Three-miss escalation is target behavior, not current kernel code. "Cannot hit
+this" remains a legal product outcome rather than a reason to weaken a gate.
 
 **Ranex does not improve aim.** Not by one degree. It makes misses visible and
 cheap, and hits provable. Never claim more than that — not in docs, not in
@@ -37,17 +40,15 @@ program output, not to a user.
 `docs/MAP.md` is the map — problem, thesis, parts, risks. Read it when the
 question is *why* or *what should exist at all*, not every session.
 
-## Two lanes — parallel by construction
+## Repository boundary
 
-Work runs in two lanes that may progress **in parallel**, because their trees
-and refs are disjoint:
+The current release is kernel-only:
 
 - **Kernel lane** — this repo. Python: the judge. Verdicts, evidence, journal,
   provisioning, CLI. State: `docs/STATE.md`.
-- **Harness lane** — `../ranex-harness`
-  (github.com/anthonykewl20/ranex-harness), out of tree on purpose.
-  TypeScript: the trimmed opencode fork, the loop, the TUI/board, the bridge.
-  State: its own repo — `specs/`, the BOARD issues, milestone #1.
+- **External harness repository** — `../ranex-harness` may exist as a separate
+  historical/experimental tree. This repository neither installs it nor treats
+  its features as Ranex-kernel release capabilities.
 
 Lane rules:
 
@@ -56,17 +57,14 @@ Lane rules:
   running harness is itself a writer — it auto-commits its tree on idle — so
   never edit or gate a tree a harness process is using.
 - **Within one repo nothing changes:** one open slice, finished before another
-  opens. Read-only research/review fanout is allowed anywhere; mutation fanout
-  stays unauthorized until SLICE-044's concurrent-attack exit passes.
-  (SLICE-036/044 are planned IDs from ADR-017 — no slice files exist yet. The
-  planned governed fanout grammar is recorded in README and ADR-017.)
-- **The cross-lane contract serializes.** The bridge emission and the verdict
-  read channel (ADR-019) are owned by kernel ADRs; the harness consumes them.
-  A contract change lands kernel-side first — ADR, implementation, contract
-  tests — and only then does the harness lane consume it. Parallel lanes are
-  for non-contract work.
-- Lane separation is a process rule, **not a security boundary**. The harness
-  runs unsandboxed as this uid (ADR-019 sad path 12; RISK-06).
+  opens. Read-only research/review fanout is allowed anywhere. Mutation-capable
+  free-prompt fanout is unauthorized; the withdrawn SLICE-044 path is not a
+  pending gate that will authorize it.
+- **Any future cross-repository contract serializes.** Kernel contracts land
+  here first — decision, implementation, contract tests — before an external
+  harness may consume them.
+- Repository separation is a process rule, **not a security boundary**. The
+  prototype delegate launches the supplied harness unsandboxed as this uid.
 
 ## The pipeline
 
@@ -141,7 +139,8 @@ PYTHONPATH=src uv run --frozen python -m ranex.cli.main --help
 ```
 
 CLI surface today: `gate evaluate · journal verify · run · suite freeze ·
-deps fetch|approve · keygen · task dispatch|judge|merge|delegate|fanout`
+deps fetch|approve · keygen · task dispatch|judge|merge|delegate|fanout ·
+task batch qualify`
 (`fanout` is the free-prompt JSONL prototype, not approved mutation authority).
 
 **Always `--frozen`.** Plain `uv run` re-locks and rewrites `uv.lock` —
@@ -216,27 +215,26 @@ one, stop and raise it.
 
 ## Decisions already made — do not relitigate
 
-- Ranex builds **its own harness**: a trimmed opencode fork (MIT), every
-  workflow step calling the kernel. Decided 2026-08-03. The wall stands:
-  harness and kernel are separate processes — hooks collect, the kernel
-  judges; the loop is confined from the keys and the journal.
+- The target architecture uses an owned trimmed opencode fork (MIT), decided
+  2026-08-03. It is not part of this kernel-only release. Current `task
+  delegate` accepts an external harness executable; hooks collect and the
+  kernel judges only when the separate gate/task paths are invoked.
 - Delegation is foreman → supervisors → workers, written clean-room.
   oh-my-openagent is pattern-quarry only; its SUL-1.0 code never enters this
   tree. Hermes and OpenClaw are feature quarry, never a base.
 - **Ranex never trusts worker output — including its own loop's.** Read the
   diff on disk, run the checks, discard the summary.
 - **The kernel merges; the harness never does.** One worktree per task.
-- Intake produces a **flow graph the non-technical owner approves**. Chain:
-  graph → paths → scenarios → contract tests → gates. The approved graph is
-  the root of trust.
-- Tests are **frozen before BUILD and read-only to implementers**;
-  red-then-green is enforced. Known open limit: the suite manifest freezes
-  test IDs, not bodies (README, review 2026-08-06).
+- Target intake is intended to produce a flow graph a non-technical owner
+  approves. No owner-facing intake or installed graph-to-mutation chain exists.
+- The current suite manifest freezes test IDs and skip reasons, not test bodies.
+  Product-level read-only gauges and red-then-green enforcement do not exist.
 - "Deterministic" describes the **process and the verdict**, never the
   generated code.
-- **Two lanes, one pipeline, automatic GO LIVE** (owner, 2026-08-11): kernel
-  and harness lanes run in parallel as bounded above; a green QA gate — never
-  a human trigger — pushes the tested commit to main.
+- **Kernel-only release, one pipeline, automatic GO LIVE**: the current
+  repository follows the six local skills; a green QA gate pushes the tested
+  commit to main. Work in an external harness repository is separate and makes
+  no kernel release claim.
 - License is MIT. Monetization comes from private features on top, never from
   restricting the kernel.
 
@@ -251,9 +249,9 @@ src/ranex/
                        pinned resolver, lock derivation, SHA-256 wheel store
   policy/              gate catalog + producer keyring loading
   cli/                 main.py (operator entry), confinement, delegation,
-                       fanout, repository/subject/toolchain;
-                       host_confinement.py: imported by no src/ module, run
-                       by the SLICE-017 suites via python -m
+                       fanout, repository/subject/toolchain, process supervision;
+                       host_confinement.py: qualified Linux launcher/session
+                       implementation used by strict-local execution
   bootstrap/           composition root — the only place concretes are wired
 native/                ranex-worker-launcher (C, SLICE-017 deliverable)
 governance/            gates.yaml, deps.yaml, bom.yaml, producers.yaml,
