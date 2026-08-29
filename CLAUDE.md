@@ -135,7 +135,7 @@ uv run --frozen pytest -q                                 # full suite, ~5 min
 uv run --frozen mutmut run                                # before slice close: kernel scope
                                                           # only ([tool.mutmut]); survivors are
                                                           # review input, never a blocker
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main --help
+uv run --frozen ranex --help
 ```
 
 CLI surface today: `gate evaluate · journal verify · run · suite freeze ·
@@ -147,9 +147,12 @@ task batch qualify`
 measured: it silently dropped the `[options]` epoch block, after which `ranex
 deps fetch` refused the lock. The committed lock is a trust root, not a cache.
 
-`pyproject.toml` sets `[tool.uv] package = false`, so the `ranex` console
-script is **not** installed (the `[project.scripts]` entry exists but nothing
-installs it). Always invoke through the module path; `uv run ranex` fails.
+`pyproject.toml` declares `[build-system]` hatchling; `uv sync --frozen` builds
+ranex editable and installs the `ranex` console script. Deliberate re-locks/
+builds ALWAYS pass `--exclude-newer 2026-08-04T00:00:00Z` (bare `uv lock`
+silently strips the epoch — contract-tested). Governed subcommands anchor to
+the checkout containing the CLI (ADR-009), so a wheel in an arbitrary venv
+prints help but refuses governed subcommands.
 
 ## Docs discipline — enforced by `tests/contract/test_docs_discipline.py`
 
