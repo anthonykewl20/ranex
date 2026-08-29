@@ -175,13 +175,30 @@ def test_controller_never_executes_the_closure_loader_on_the_host_root() -> None
     assert "--ranex-verifier-report-fd" in controller
     assert "--ranex-verifier-ack-fd" in controller
     assert "normalize_loader_report" in controller
-    assert "os.write(verifier_ack_write, b\"GO\")" in controller
+    # The dead duplicate `_release_runtime_worker` was removed in 56b0192
+    # (issue #67); the live inline path writes the validated decision.
+    assert "os.write(verifier_ack_write, decision)" in controller
 
 
 def test_command_v2_carries_runtime_source_only_and_no_destination() -> None:
     source = HOST_OWNER.read_text(encoding="utf-8")
     assert '"ranex-confinement-command-v2"' in source
-    assert 'expected_v2 = {"schema", "argv", "environment", "input", "subject", "runtime", "output", "scratch", "limits"}' in source
+    assert """expected_v2 = {
+            "cgroup",
+            "cwd",
+            "landlock",
+            "landlock_abi_minimum",
+            "mandatory_layers",
+            "mount_api",
+            "mounts",
+            "output_contract",
+            "output_resolution",
+            "profile",
+            "schema",
+            "seccomp",
+            "worker_executable",
+            "worker_io",
+        }""" in source
     for forbidden in (
         '"runtime_destination"',
         '"loader_destination"',
