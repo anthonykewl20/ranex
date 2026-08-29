@@ -1,7 +1,8 @@
 # SLICE-075 — installed operator CLI
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-29
+**Completed:** 2026-08-29
 **Priority:** P0 — milestone v0.1.0 installed operator command (issue #63)
 **Issue:** #63
 **ADR:** `docs/adr/ADR-038-installed-operator-cli.md`
@@ -75,8 +76,38 @@ sdist carries the VCS-tracked repo essentials.
   owner-directed commit.
 - T4: coverage-floor re-derivation.
 
-**Where we are:** T0 is committed (`9eceda8`); T1 + T1b are staged pending
-commit.
+**Where we are:** done — completion record below.
+
+## Completion record (2026-08-29)
+
+Tranche outcomes:
+
+- T0 committed as `9eceda8`: ADR-038 accepted with vendored prior art;
+  `tests/contract/test_packaging.py` frozen red — 3 failed / 2 passed, red
+  for the right reasons.
+- T1 + T1b committed as `95dc88d`: hatchling build system, `[tool.uv]
+  package = false` removed, deliberate epoch-preserving re-lock; hatchling
+  pinned as a dev dependency; `UV_NO_BUILD_ISOLATION=1` provisioned for
+  governed offline builds.
+- Goldens/hash/manifest/guard landed as `88489aa` / `85c34de` / `48a24e6` /
+  `487ae92` / `1394c24`: deps golden 26→29 packages; gate10 `main.py` hash
+  re-captured; manifest re-frozen (tests=1555, expected_skips=157,
+  run_exit=0; +5 packaging test IDs, +3 hermetic-freeze skip declarations);
+  freeze goldens re-captured; deps approve recorded approver=anthony.
+- T1c/T2 evidence: installed-CLI and wheel-boundary runs captured in
+  issue #63 — `uv sync --frozen` installs the `ranex` console script
+  (exit 0, ranex==0.0.0, 32 packages); `venv/bin/ranex --help` exits 0 from
+  outside the checkout; a real `ranex keygen --producer anthony` run wrote
+  `owner.key` mode 0600 with the public key line; a wheel installed into an
+  arbitrary venv prints help but refuses governed subcommands (exit 2,
+  checkout-anchored per ADR-009); fresh clones fail closed on governed
+  subcommands (gitignored journal/evidence, fresh key ≠ committed keyring).
+- T4 (coverage-floor re-derivation) is pending and lands as its own
+  pyproject commit.
+
+Full suite at `1394c24`: `uv run --frozen pytest -q` → 1526 passed,
+29 skipped; ruff green. Pyrefly remains red pre-existing (issue #67, not
+this slice). Evidence pointer: GitHub issue #63.
 
 ## Not owned
 

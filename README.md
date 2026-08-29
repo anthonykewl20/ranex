@@ -382,8 +382,11 @@ Host-dependent capability:
 
 Current limits visible in code:
 
-- the package is disabled in `uv`, so the documented source invocation requires
-  `PYTHONPATH=src`; there is no installed operator command;
+- the supported operator install is the frozen checkout: `uv sync --frozen`
+  builds and installs the `ranex` console script into the checkout venv; a
+  wheel installed into an arbitrary venv prints help but refuses governed
+  subcommands, because the CLI anchors to the checkout containing it
+  (ADR-009);
 - this repository contains no installed agent harness, owner-facing intake,
   task board, deployment command, or built-in model provider;
 - the standalone specification parser is not wired into the main CLI;
@@ -420,7 +423,7 @@ Current limits visible in code:
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-075-installed-operator-cli.md — installed operator CLI (issue #63); ADR-038 accepted, packaging contract tests frozen red.
+**Active slice:** none
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness
@@ -623,6 +626,14 @@ implementation evidence, not an assertion that its behavior is a supported
 current release feature; withdrawn and prototype boundaries are governed by the
 code-backed [Status](#status) section above.
 
+- **SLICE-075-installed-operator-cli** — completed 2026-08-29. The frozen
+  checkout install (`uv sync --frozen`) builds the `ranex` console script and
+  a real keygen→run→gate workflow was verified through the installed command
+  from outside the checkout. Hatchling now builds under the frozen epoch —
+  never a bare `uv lock`, always `--exclude-newer`, contract-tested — and the
+  wheel is verified as the shippable artifact while governed subcommands
+  anchor to the CLI's own checkout (ADR-009). The frozen catalog re-froze at
+  1,555 IDs / 157 declarations; full suite 1,526 passed / 29 skipped.
 - **SLICE-074-kill-safe-command-ownership** — completed 2026-08-29.
   An external guardian now owns each exact scratch root and fresh PID namespace,
   while a namespace-authenticated broker gives real nested Ranex workflows fresh
@@ -955,8 +966,7 @@ code-backed [Status](#status) section above.
 ```sh
 uv run --frozen pytest -q
 
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main gate evaluate HEAD \
-    --approver reviewer_alice
+uv run --frozen ranex gate evaluate HEAD --approver reviewer_alice
 ```
 
 Always `--frozen`. Plain `uv run` re-locks and rewrites `uv.lock`, which is a
@@ -965,18 +975,32 @@ trust root here: it silently dropped the resolution epoch once, after which
 gated command needs no flag — its argv stays exactly as the catalog binds it,
 and `run` sets `UV_FROZEN` in the environment instead.
 
-`pyproject.toml` sets `[tool.uv] package = false`, so the `ranex` console script
-is **not** installed. Invoke through the module path above.
+### Installing as an operator
+
+```sh
+git clone https://github.com/anthonykewl20/ranex && cd ranex
+uv sync --frozen
+```
+
+`uv sync --frozen` builds and installs ranex editable plus the `ranex`
+console script into the checkout venv (CPython, 32 packages). Invoke it as
+`venv/bin/ranex` — it works from outside the checkout, with no `PYTHONPATH` —
+or as `uv run --frozen ranex` from inside one. The wheel is the shippable
+artifact, but governed subcommands anchor to the checkout containing the CLI
+(ADR-009): a wheel dropped into an arbitrary venv prints help and refuses
+everything governed. Install the checkout you govern.
 
 **On a fresh clone `gate evaluate` fails, and that is correct.** Absence
 blocks: no evidence exists yet for `tests-executed`, so the verdict is FAIL
-with a nonzero exit, naming the missing claim. Producing evidence needs a
-signing identity of your own — the private key must live outside the
-repository, and `keygen` refuses to write it anywhere inside:
+with a nonzero exit, naming the missing claim — the journal and evidence
+store are gitignored, and a fresh keygen key is not the committed
+`producers.yaml` keyring. Producing evidence needs a signing identity of your
+own — the private key must live outside the repository, and `keygen` refuses
+to write it anywhere inside:
 
 ```sh
 export RANEX_SIGNING_KEY=~/.config/ranex/worker.key
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main keygen --producer worker
+uv run --frozen ranex keygen --producer worker
 ```
 
 This repository commits the **public** keyring, `governance/producers.yaml` —
@@ -1002,8 +1026,8 @@ party chooses:
 ```sh
 sudo install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
 
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main deps fetch
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main deps approve --approver reviewer_alice
+uv run --frozen ranex deps fetch
+uv run --frozen ranex deps approve --approver reviewer_alice
 ```
 
 `deps fetch` is the only networked step: it re-derives the lock from the manifest
@@ -1016,7 +1040,7 @@ Approval reduces hidden change; it cannot make third-party code truthful, and
 approved, hash-correct wheel forcing a passing verdict. Then:
 
 ```sh
-PYTHONPATH=src uv run --frozen python -m ranex.cli.main run \
+uv run --frozen ranex run \
     --claim tests-executed --producer worker -- uv run pytest -q
 ```
 
