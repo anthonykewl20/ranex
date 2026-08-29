@@ -967,6 +967,8 @@ code-backed [Status](#status) section above.
 uv run --frozen pytest -q
 
 uv run --frozen ranex gate evaluate HEAD --approver reviewer_alice
+# Equivalent module-path form from the source checkout:
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main gate evaluate HEAD --approver reviewer_alice
 ```
 
 Always `--frozen`. Plain `uv run` re-locks and rewrites `uv.lock`, which is a
@@ -1001,6 +1003,8 @@ to write it anywhere inside:
 ```sh
 export RANEX_SIGNING_KEY=~/.config/ranex/worker.key
 uv run --frozen ranex keygen --producer worker
+# Equivalent module-path form from the source checkout:
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main keygen --producer worker
 ```
 
 This repository commits the **public** keyring, `governance/producers.yaml` —
@@ -1028,6 +1032,9 @@ sudo install -m 0755 ~/.local/bin/uv /usr/local/bin/uv
 
 uv run --frozen ranex deps fetch
 uv run --frozen ranex deps approve --approver reviewer_alice
+# Equivalent module-path forms from the source checkout:
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main deps fetch
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main deps approve --approver reviewer_alice
 ```
 
 `deps fetch` is the only networked step: it re-derives the lock from the manifest
@@ -1042,6 +1049,8 @@ approved, hash-correct wheel forcing a passing verdict. Then:
 ```sh
 uv run --frozen ranex run \
     --claim tests-executed --producer worker -- uv run pytest -q
+# Equivalent module-path form from the source checkout:
+PYTHONPATH=src uv run --frozen python -m ranex.cli.main run --claim tests-executed --producer worker -- uv run pytest -q
 ```
 
 `gate evaluate` then judges that run for real. The observation is a fresh
