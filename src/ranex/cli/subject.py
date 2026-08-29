@@ -266,7 +266,9 @@ def _enclosing_subject_root(repository: Path) -> Path | None:
                 resolved = candidate.resolve(strict=True)
                 expected_resolved = path.resolve(strict=True)
             except (OSError, RuntimeError):
-                resolved = expected_resolved = None
+                raise SubjectError(
+                    "nested materialisation layout does not match its enclosing root"
+                ) from None
             if candidate != resolved or resolved != expected_resolved or not path.is_dir():
                 raise SubjectError(
                     "nested materialisation layout does not match its enclosing root"

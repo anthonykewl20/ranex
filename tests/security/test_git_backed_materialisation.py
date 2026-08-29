@@ -121,6 +121,24 @@ def test_unrelated_ambient_tmpdir_cannot_choose_the_materialisation_root(
         subject._remove_materialisation(root)
 
 
+def test_nested_materialisation_refuses_first_path_resolution_failure(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    _root, repository = _nested_layout(tmp_path)
+
+    def fail_absolute(_path: Path) -> Path:
+        raise OSError("intentional path-resolution failure")
+
+    monkeypatch.setattr(Path, "absolute", fail_absolute)
+
+    with pytest.raises(
+        SubjectError,
+        match="nested materialisation layout does not match its enclosing root",
+    ):
+        subject._enclosing_subject_root(repository)
+
+
 def test_update_ref_with_expected_old_value_publishes_an_unrelated_orphan(repository: Path) -> None:
     subprocess.run(
         ["git", "-C", str(repository), "update-ref", "refs/heads/main", "HEAD"], check=True

@@ -2198,7 +2198,6 @@ def _execute_confinement_session(
     if runtime_input is not None:
         descriptor["input"] = str(runtime_input.relative_to(session_directory))
     if runtime_v3:
-        descriptor["input"] = str(runtime_input.relative_to(session_directory))
         descriptor["output"] = str(temporary.relative_to(session_directory))
         descriptor["scratch"] = "scratch"
         descriptor["runtime"] = str(dynamic_runtime.relative_to(session_directory))
