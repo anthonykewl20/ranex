@@ -1,50 +1,43 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-08-29 (real-data production acceptance, issue #55)
-**Active slice:** none
+**Updated:** 2026-08-29 (installed operator CLI, issue #63)
+**Active slice:** docs/slices/SLICE-075-installed-operator-cli.md
 
 ## Where we stopped
 
-The repository is a pre-release, source-run Python kernel. Its public CLI covers
-gate, journal, run, suite, deps, keygen, serial/prototype tasks, and batch qualification.
+T0 of SLICE-075 is complete: ADR-038 (hatchling under the frozen epoch) is
+accepted with vendored prior art, and tests/contract/test_packaging.py is
+frozen red at 3 failed / 2 passed — red for the right reasons (build-system,
+non-virtual lock + epoch, sdist). No product bytes have changed yet.
 
-The code implements deterministic gates, signed subject/command-bound evidence,
-committed-tree execution, hash-chained SQLite, suite-ID freezing, dependencies,
-serial publication, external delegation/fanout prototypes, internal A/B/C APIs,
-non-publishable batch qualification, signed verdicts, and strict-local confinement.
-
-Real-data acceptance passed the core self-gate (1,441 passed, 109 declared
-skips), live PyPI provisioning, signed verdicts, real-model delegation/fanout,
-and delegated-service strict-local v2/v3. Ranex is not yet an end-to-end human
-production product; see GitHub issue #55.
-
-There is no installed harness, main-CLI specification lifecycle, owner intake,
-task board, deployment, built-in model, or end-to-end A/B/C mutation workflow.
+The repository remains a pre-release, source-run Python kernel (see issue #55
+for the real-data acceptance baseline); its public CLI covers gate, journal,
+run, suite, deps, keygen, and task commands.
 
 ## Next
+
 Framework closed: SLICE-055 closed 2026-08-19
-Next slice: none scheduled; the owner must choose any new product-code scope.
+Next slice: SLICE-075 T1 packaging enablement (hatchling bytes + deliberate
+epoch-preserving re-lock), then T2 installed-CLI evidence, T3 operator docs
+and slice close, T4 coverage-floor re-derivation.
 
 ## Governance
-Kernel-only initial release; no implementation slice is active.
+
+ADR-038 decides the installed operator CLI: hatchling build system, drop
+`package = false`, keep `[project.scripts]`. Never run bare `uv lock` or
+epoch-less `uv build` — a bare lock silently drops the `[options]`
+exclude-newer epoch (probe-verified; now contract-enforced in
+test_packaging.py). Build backends are not pinned by uv.lock; hatchling is
+bounded only by pyproject requires plus the epoch discipline.
 Historical note — Build order: milestone 4 → milestone 3 → milestone 2
 (superseded by the 2026-08-25 kernel-only scope reset).
-Documentation capability claims must cite current source and executable tests;
-archived slices and prior prose are history, not the source of truth.
 
 ## Known limits
 
-- `task delegate` records a nonzero suite exit but returns orchestration success
-  after a completed delegation; only a gate evaluation issues a verdict.
-- Free-prompt fanout has no A/B/C child admission; batch qualification cannot
-  publish.
-- The source CLI needs `PYTHONPATH=src`; no installed command is available.
-- Task publication needs a manual candidate-evidence handoff, and successful
-  ref publication can leave a checked-out worktree dirty.
-- Delegation outcomes do not retain inspectable harness/session logs.
-- `evidence.json` replaces same-claim/same-producer rows; it is not append-only.
-- The suite manifest freezes IDs and skip reasons, not test bodies.
+- The source CLI needs `PYTHONPATH=src`; no installed command is available
+  yet (SLICE-075 open; removed in T3).
+- `task delegate` records a nonzero suite exit but returns orchestration success.
+- Free-prompt fanout has no A/B/C child admission; batch qualification cannot publish.
 - Journal verification cannot detect an internally consistent older snapshot.
-- Strict-local requires an operator-retained delegated cgroup on this host and
-  trusts a same-UID controller; direct ordinary v1 use did not pass acceptance.
+- Strict-local requires an operator-retained delegated cgroup and trusts a same-UID controller.
