@@ -22,10 +22,21 @@ from packaging.utils import canonicalize_name
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 EXCLUDE_NEWER = "2026-08-04T00:00:00Z"
+_UV_ON_PATH_SKIP_REASON = (
+    "ranex-context:hermetic-freeze: uv-on-path prerequisite is absent; "
+    "packaging build assertions run where uv is provisioned"
+)
 
 
 def _pyproject() -> dict:
     return tomllib.loads((REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8"))
+
+
+def _require_uv_on_path() -> None:
+    """Skip build assertions only when this environment cannot resolve uv."""
+
+    if shutil.which("uv") is None:
+        pytest.skip(_UV_ON_PATH_SKIP_REASON)
 
 
 def _run_build(distribution_flag: str, output_dir: Path) -> subprocess.CompletedProcess[str]:
@@ -72,6 +83,7 @@ def _metadata_value(metadata: str, field: str) -> str:
 def wheel_build(
     tmp_path_factory: pytest.TempPathFactory,
 ) -> tuple[Path, subprocess.CompletedProcess[str]]:
+    _require_uv_on_path()
     output_dir = tmp_path_factory.mktemp("wheel-build")
     return output_dir, _run_build("--wheel", output_dir)
 
@@ -143,6 +155,7 @@ def test_wheel_contains_package_and_console_entry_point(
 
 
 def test_sdist_contains_required_sources(tmp_path: Path) -> None:
+    _require_uv_on_path()
     output_dir = tmp_path / "sdist-build"
     output_dir.mkdir()
     completed = _run_build("--sdist", output_dir)
