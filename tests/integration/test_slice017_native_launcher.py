@@ -91,7 +91,7 @@ RESPONSE_LIMIT = 65_536
 # SLICE-072 refreshes it for dynamic runtime closure while preserving the launcher boundary.
 # SLICE-074 refreshes it for kill-safe non-confined command ownership; the
 # strict-local launcher and controller branch remain unchanged.
-MAIN_PY_SHA256 = "3b37ae96ef7a6d1801dd072e5f58ee4c4d87863818e65a27cd99692cc6fe29fa"
+MAIN_PY_SHA256 = "6858e504380a92c6f220faa6d8fc338377e8ae563ef3067914bab00458dc0051"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
