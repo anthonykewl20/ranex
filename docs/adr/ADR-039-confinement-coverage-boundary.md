@@ -66,7 +66,7 @@ both tools' docs fetched pinned 2026-08-30.
   uncovered anyway (66%→72% total, 11 lines unchanged).
 - Rejected: https://github.com/Bachmann1234/diff_cover — an `exclude_also`
   config with a new custom tag (e.g. a ranex-specific marker) introduces a
-  second exclusion convention where the repo already has 12
+  second exclusion convention where the repo already has 10
   `# pragma: no cover - <reason>` usages; two conventions dilute
   greppability. Also rejected: driving the controllers from in-process
   tests — requires reconstructing launcher/cgroup/session contexts
@@ -76,7 +76,7 @@ both tools' docs fetched pinned 2026-08-30.
 ## Considered Options
 
 1. Add `# pragma: no cover - <reason>` to the eleven confinement-only lines
-   using the existing repo convention (12 precedent usages, e.g.
+   using the existing repo convention (10 precedent usages, e.g.
    `src/ranex/foundation/dynamic_runtime.py:24`).
 2. Wire subprocess coverage (`COVERAGE_PROCESS_START`, combine) through the
    governed confinement path so children get instrumented.
@@ -117,9 +117,9 @@ enforcing pipeline's `floor(TOTAL) − 2`.
 
 ### Confirmation
 
-- `git grep -n "pragma: no cover" src/ranex/cli/host_confinement.py
-  src/ranex/foundation/dynamic_runtime.py` returns exactly the eleven lines
-  named in this ADR.
+- `git grep -n "pragma: no cover" src/ranex/cli/host_confinement.py src/ranex/foundation/dynamic_runtime.py` (scoped to the two files) returns exactly 12 pragma lines:
+  11 ADR-039-tagged plus the pre-existing precedent at
+  `dynamic_runtime.py:24`.
 - `uv run --frozen pytest -q tests/contract/test_ci_workflow.py` stays green,
   proving the byte-pinned CI text is untouched.
 - `coverage run --source=src/ranex -m pytest -q && coverage xml &&
@@ -132,7 +132,7 @@ enforcing pipeline's `floor(TOTAL) − 2`.
 - Uses coveragepy's own default `pragma: no cover` pattern
   (`exclude_also`-preserved, per config.rst) rather than a bespoke regex —
   zero new tooling config.
-- Reuses the repo's own established idiom (12 prior usages) instead of
+- Reuses the repo's own established idiom (10 prior usages) instead of
   diff-cover's `--expand-coverage-report` workaround for moved statements,
   avoiding a second exclusion mechanism entirely.
 - Anchors `fail_under` to the pipeline that actually gates merges, which
@@ -224,7 +224,7 @@ data migration, no journal entry, no schema implicated.
   diff-cover --fail-under=100` — run locally against `origin/main` to
   confirm the eleven lines drop out of judgment and the gate passes.
 - `git grep -c "pragma: no cover" src/ranex` before and after — count must
-  grow by exactly 11 (12 prior usages → 23), scoped to the two named files.
+  grow by exactly 11 (10 prior usages → 21), scoped to the two named files.
 - No new test file is added; this is a coverage-bookkeeping change, not a
   behavior change, so behavior remains proven by existing suites in
   `tests/e2e/` and `tests/security/` that exercise the confinement

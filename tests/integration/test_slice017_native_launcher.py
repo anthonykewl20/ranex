@@ -91,6 +91,7 @@ RESPONSE_LIMIT = 65_536
 # SLICE-072 refreshes it for dynamic runtime closure while preserving the launcher boundary.
 # SLICE-074 refreshes it for kill-safe non-confined command ownership; the
 # strict-local launcher and controller branch remain unchanged.
+# Issue #67 (c46e6d5, 2026-08-30) refreshes it for deleting main.py's duplicate runtime_input assignment.
 MAIN_PY_SHA256 = "51f866c4fed7b24875e45dde0bd6748c53fdb4d05ab31735baf9e128e2b87c9b"
 
 PTRACE_TRACEME = 0
