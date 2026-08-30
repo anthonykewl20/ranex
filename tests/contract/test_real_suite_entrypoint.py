@@ -654,6 +654,7 @@ class _Subject:
             "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
             "HOME": os.environ.get("HOME", str(Path.home())),
             "PYTHONPATH": str(self.root / "src"),
+            "PYTHONDONTWRITEBYTECODE": "1",
             "RANEX_SIGNING_KEY": str(self.key),
         }
         for name in TRACE_VARIABLES:
