@@ -389,7 +389,6 @@ Current limits visible in code:
   (ADR-009);
 - this repository contains no installed agent harness, owner-facing intake,
   task board, deployment command, or built-in model provider;
-- the standalone specification parser is not wired into the main CLI;
 - ordinary `gate evaluate --approver` uses an unauthenticated string; signed
   approver verification exists only in the task-merge approval path;
 - `task delegate` records `suite_exit` but returns orchestration success after a

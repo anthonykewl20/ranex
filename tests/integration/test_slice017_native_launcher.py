@@ -92,7 +92,8 @@ RESPONSE_LIMIT = 65_536
 # SLICE-074 refreshes it for kill-safe non-confined command ownership; the
 # strict-local launcher and controller branch remain unchanged.
 # Issue #67 (c46e6d5, 2026-08-30) refreshes it for deleting main.py's duplicate runtime_input assignment.
-MAIN_PY_SHA256 = "51f866c4fed7b24875e45dde0bd6748c53fdb4d05ab31735baf9e128e2b87c9b"
+# Issue #60 (2026-08-30) refreshes it for specification group registration.
+MAIN_PY_SHA256 = "a51e13ddd41b01f10adb4a04fba98da46b29841541a26879c17f6da003e0a6e5"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

@@ -51,6 +51,10 @@ from ranex.cli.repository import (
     stat_fingerprint,
     uncommitted_paths,
 )
+from ranex.cli.specification import cmd_advance as cmd_specification_advance
+from ranex.cli.specification import cmd_draft as cmd_specification_draft
+from ranex.cli.specification import cmd_questions as cmd_specification_questions
+from ranex.cli.specification import cmd_status as cmd_specification_status
 from ranex.cli.subject import (
     Materialisation,
     SubjectError,
@@ -3670,6 +3674,37 @@ def build_parser() -> argparse.ArgumentParser:
     kg = sub.add_parser("keygen", help="generate a producer signing key")
     kg.add_argument("--producer", required=True, help="identity the key belongs to")
     kg.set_defaults(func=cmd_keygen)
+
+    specification = sub.add_parser(
+        "specification", help="specification lifecycle operations"
+    ).add_subparsers(dest="action", required=True)
+    draft = specification.add_parser(
+        "draft", help="draft a specification lifecycle session"
+    )
+    draft.add_argument(
+        "--input", required=True, help="specification lifecycle input path"
+    )
+    draft.set_defaults(func=cmd_specification_draft)
+    advance = specification.add_parser(
+        "advance", help="advance a specification lifecycle session"
+    )
+    advance.add_argument(
+        "--input", required=True, help="specification lifecycle input path"
+    )
+    advance.add_argument("--session", required=True, help="lifecycle session path")
+    advance.set_defaults(func=cmd_specification_advance)
+    questions = specification.add_parser(
+        "questions", help="render specification lifecycle questions"
+    )
+    questions.add_argument(
+        "--input", required=True, help="specification lifecycle input path"
+    )
+    questions.set_defaults(func=cmd_specification_questions)
+    status = specification.add_parser(
+        "status", help="show specification lifecycle session status"
+    )
+    status.add_argument("--session", required=True, help="lifecycle session path")
+    status.set_defaults(func=cmd_specification_status)
 
     task = sub.add_parser("task", help="dispatch and materialise task candidates")
     task_actions = task.add_subparsers(dest="action", required=True)

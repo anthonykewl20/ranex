@@ -15,7 +15,8 @@ from pathlib import Path
 
 # The schema number carried by every ``version`` event as ``evt``. Version 2
 # adds the ``task.batch.qualify`` CLI dispatch stage pair.
-SCHEMA_NUMBER = 2
+# Version 3 adds the specification CLI dispatch stage pair.
+SCHEMA_NUMBER = 3
 
 # The frozen eleven-field set, in canonical serialization order. Every event
 # carries all eleven; inapplicable members are null, never absent, because
@@ -75,10 +76,23 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "task.delegate",
     "task.fanout",
     "task.batch.qualify",
+    "specification",
 )
 
+_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status")
+
 STAGES: frozenset[str] = frozenset(
-    {f"cli.{name}.{half}" for name in CLI_DISPATCH_NAMES for half in ("start", "end")}
+    {
+        f"cli.{name}.{half}"
+        for name in CLI_DISPATCH_NAMES
+        if name != "specification"
+        for half in ("start", "end")
+    }
+    | {
+        f"cli.specification.{action}.{half}"
+        for action in _SPECIFICATION_ACTIONS
+        for half in ("start", "end")
+    }
 ) | {"observability.emission", "observability.note"}
 
 # Value grammars.
