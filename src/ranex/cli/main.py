@@ -1491,7 +1491,7 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         else:
             dispatch = _latest_task_dispatch(entries, args.task_id)
             evidence_root = (
-                Path(dispatch["worktree"]).resolve()
+                Path(str(dispatch["worktree"])).resolve()
                 if dispatch is not None
                 else repository_root
             )
