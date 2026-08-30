@@ -1,7 +1,7 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-08-30 (green CI restored, issue #67 closed)
+**Updated:** 2026-08-30 (specification lifecycle registered, issue #60 closing)
 **Active slice:** none
 
 ## Where we stopped
@@ -15,13 +15,12 @@ environment/fixture breakages: runner userns restriction lifted via sysctl;
 two governed-copy fixtures set `PYTHONDONTWRITEBYTECODE`; sigkill tests
 prereq-gate the pinned resolver; and git `%aI` is compared as parsed instants.
 ADR-039 and coverage floor 64 landed en route.
+Issue #60 implemented — `ranex specification` registered (ADR-040, schema evt
+3, manifest 1560), full suite 1531/29 green, acceptance evidence on the issue.
 
 ## Next
 
-Issue #60 — register the specification lifecycle in the CLI (`specification.py`
-commands into `build_parser`, with `observability/schema.py` `STAGES` and the
-frozen `CLI_DISPATCH_GROUPS` literal edited together), then #62, #56, #58,
-#64, #65; umbrella #66 last.
+Issue #62, #56, #58, #64, #65; umbrella #66 last.
 
 ## Governance
 
@@ -35,5 +34,4 @@ lines carry the pragma convention.
 
 ## Known limits
 
-- Specification lifecycle is unregistered in the main CLI (#60 — in progress).
 - Version stays 0.0.0 until the release-gate slice (#66).

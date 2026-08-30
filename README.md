@@ -368,7 +368,8 @@ Code-backed capabilities:
   process-group kill, independent suite execution, and structured outcome files;
 - prototype bounded free-prompt fanout over that delegation path;
 - A/B/C validators, deterministic specification projections, lifecycle,
-  approval/revocation/grant, trace, and candidate-verification Python APIs;
+  approval/revocation/grant, trace, and candidate-verification Python and CLI
+  APIs;
 - A/B/C-bound batch qualification in disposable children whose signed output is
   explicitly non-publishable; and
 - optional signed verdict-file publication plus an internal verified reader API.
