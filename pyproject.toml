@@ -41,21 +41,23 @@ dev = [
 # process a suffixed data file inside the one shared COVERAGE_FILE home
 # (.local/ranex-e2e/coverage/, ignored .local/* territory); combines run with
 # --keep (tests/e2e/_prereqs.py combine_coverage) because installed coverage
-# deletes inputs without it. fail_under is derived from a real wired entrypoint
-# run at this tree: measured TOTAL 69% (11075 statements, 3401 missed) at HEAD
-# 0c4b56c via the README real-e2e entrypoint (subprocess coverage, single-shell;
-# 1526 passed / 29 skipped); this host ran ~3.5× slower than the README
-# reference measurement (2308.59s vs 660s), but time does not affect the
-# percentage. Previous floor 14 came from 16.68% pre-SLICE-074/075 family
-# growth; convention unchanged (floor − 2), and the floor must be re-derived,
-# not guessed, whenever a family slice lands (ADR-032 Consequences).
-# floor(69) − 2 = 67.
+# deletes inputs without it. Enforcing pipeline (this floor's source):
+# CI-shaped in-process run `coverage run --source=src/ranex -m pytest -q` at
+# HEAD 928c0bf — 1527 passed / 29 skipped; TOTAL 66% (11107 statements, 3805
+# missed; 11 confinement-only lines excluded per ADR-039's pragma convention).
+# floor(66) − 2 = 64.
+# Informational pipeline: the README real-e2e entrypoint (subprocess-wired)
+# measured 69% at 0c4b56c — higher because governed-child coverage cannot
+# reach hermetic confinement regions; documented in ADR-039; never derive the
+# floor from it (the 67 it produced broke `coverage xml` in CI).
+# Convention unchanged: floor(TOTAL of the ENFORCING pipeline) − 2, re-derived
+# whenever a family slice lands.
 [tool.coverage.run]
 source = ["src/ranex"]
 parallel = true
 
 [tool.coverage.report]
-fail_under = 67
+fail_under = 64
 
 [tool.pytest.ini_options]
 addopts = ["--strict-config", "--strict-markers"]
