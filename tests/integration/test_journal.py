@@ -712,6 +712,11 @@ def test_sad_path_18_same_task_competing_merges_journal_one_winner_and_loser(
         pytest.skip("spawned merge subprocesses cannot run the mutmut-trampolined tree")
     scenario = MergeJournalScenario.create(tmp_path)
     attempt = scenario.dispatch_judge("same-task-race")
+    # This test exercises journal/CAS contention.  Leave main unchecked out so
+    # a winner cannot transiently make its candidate appear dirty while it
+    # synchronizes the target checkout; that is covered by the worktree
+    # coherence tests, not this race fixture.
+    git(scenario.repo, "checkout", "--detach", scenario.tip)
 
     for _ in range(10):
         git(scenario.repo, "update-ref", TARGET_REF, scenario.tip)

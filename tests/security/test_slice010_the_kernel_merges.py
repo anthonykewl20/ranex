@@ -166,6 +166,16 @@ class MergeScenario:
             candidate = git(repo, "rev-parse", "HEAD")
 
         git(repo, "update-ref", TARGET_REF, tip)
+        if history == "linear":
+            git(
+                repo,
+                "restore",
+                f"--source={TARGET_REF}",
+                "--staged",
+                "--worktree",
+                "--",
+                *(f"candidate-{number}.txt" for number in range(commits)),
+            )
         subject = subject_digest_for(repo, candidate)
         evidence_body: dict[str, object] = {
             "claim_id": "tests-executed",
