@@ -1314,6 +1314,76 @@ def _merge_blob_bytes(repository_root: Path, oid: str, path: str) -> bytes:
     return result.stdout
 
 
+def _checked_out_target_worktree(repository_root: Path, target_ref: str) -> Path | None:
+    """Return the worktree that has the local ``target_ref`` checked out.
+
+    A non-branch ref cannot be checked out as a branch.  Git permits each local
+    branch in one worktree, so the porcelain entry, when present, is the one
+    worktree publication must keep coherent.
+    """
+
+    if not target_ref.startswith("refs/heads/"):
+        return None
+    listed = git(repository_root, "worktree", "list", "--porcelain")
+    if listed.returncode != 0:
+        raise ValueError(f"cannot list worktrees: {listed.stderr.strip()}")
+    for entry in listed.stdout.split("\n\n"):
+        fields = {
+            key: value
+            for line in entry.splitlines()
+            if " " in line
+            for key, value in (line.split(" ", maxsplit=1),)
+        }
+        if fields.get("branch") == target_ref:
+            worktree = fields.get("worktree")
+            if worktree is None:
+                raise ValueError(f"worktree entry for {target_ref} has no path")
+            return Path(worktree)
+    return None
+
+
+def _worktree_dirty_paths(worktree: Path) -> tuple[str, ...]:
+    """Return paths changed on disk in ``worktree``, including untracked paths.
+
+    Porcelain v1 with ``-z`` keeps arbitrary path names unambiguous.  For a
+    rename or copy, its first pathname is the post-image; the second NUL field
+    is the pre-image and is consumed rather than treated as another dirty path.
+    """
+
+    status = git(worktree, "status", "--porcelain", "-z")
+    if status.returncode != 0:
+        detail = status.stderr.strip() or "git status failed"
+        raise ValueError(f"cannot read worktree status at {worktree}: {detail}")
+    records = status.stdout.split("\0")
+    paths: set[str] = set()
+    index = 0
+    while index < len(records):
+        record = records[index]
+        if not record:
+            index += 1
+            continue
+        if len(record) < 4 or record[2] != " ":
+            raise ValueError(f"cannot parse worktree status at {worktree}")
+        state, path = record[:2], record[3:]
+        paths.add(path)
+        if "R" in state or "C" in state:
+            index += 1
+            if index >= len(records) or not records[index]:
+                raise ValueError(f"cannot parse renamed path in worktree status at {worktree}")
+        index += 1
+    return tuple(sorted(paths))
+
+
+def _worktree_conflict_reason(paths: set[str]) -> str:
+    """Format the bounded set of candidate paths local changes would overwrite."""
+
+    displayed = sorted(paths)
+    maximum = 3
+    named = ", ".join(displayed[:maximum])
+    suffix = "" if len(displayed) <= maximum else f", ... (+{len(displayed) - maximum} more)"
+    return f"sad-path-23 worktree-conflict paths={named}{suffix}"
+
+
 def _recover_task_merges(
     repository_root: Path,
     journal: Journal,
@@ -1381,7 +1451,12 @@ def _merge_refuse(
 
 
 def cmd_task_merge(args: argparse.Namespace) -> int:
-    """Publish an already judged candidate through ordered, journalled checks."""
+    """Publish a candidate, preserving disjoint target-worktree changes.
+
+    If the ref moves but synchronization fails, repair the worktree explicitly;
+    retrying merge refuses its moved expected-old ref and never performs that
+    repair implicitly.
+    """
 
     if getattr(args, "batch_qualification", None) is not None:
         try:
@@ -1570,6 +1645,27 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         )
 
         current_check = "cas"
+        checked_out_worktree = _checked_out_target_worktree(repository_root, args.target_ref)
+        if checked_out_worktree is not None:
+            dirty_paths = _worktree_dirty_paths(checked_out_worktree)
+            changed = git(repository_root, "diff", "--name-only", observed_tip, candidate)
+            if changed.returncode != 0:
+                detail = changed.stderr.strip() or "git diff failed"
+                return _merge_refuse(
+                    journal,
+                    intent,
+                    "cas",
+                    f"worktree-candidate-diff-error {detail}",
+                )
+            conflicts = set(dirty_paths).intersection(changed.stdout.splitlines())
+            if conflicts:
+                return _merge_refuse(
+                    journal,
+                    intent,
+                    "cas",
+                    _worktree_conflict_reason(conflicts),
+                )
+
         updated = git(repository_root, "update-ref", args.target_ref, candidate, observed_tip)
         if updated.returncode != 0:
             return _merge_refuse(journal, intent, "cas", "sad-path-1 ref-moved")
@@ -1579,6 +1675,56 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
                 args.task_id, "cas", "passed", "expected-old ref update succeeded"
             )
         )
+        if checked_out_worktree is not None:
+            sync_detail: str | None = None
+            try:
+                # The CAS changes the symbolic branch before Git updates this
+                # checkout's index and files.  Detach at the observed tip first
+                # so merge sees the old tree as HEAD, then fast-forward it; a
+                # direct merge after CAS sees the new branch tip and reports
+                # "Already up to date" without touching the worktree.
+                for command in (
+                    ("checkout", "--detach", observed_tip),
+                    ("merge", "--ff-only", candidate),
+                    ("symbolic-ref", "HEAD", args.target_ref),
+                ):
+                    synchronized = git(checked_out_worktree, *command)
+                    if synchronized.returncode != 0:
+                        sync_detail = (
+                            synchronized.stderr.strip()
+                            or synchronized.stdout.strip()
+                            or f"git {' '.join(command)} exited {synchronized.returncode}"
+                        )
+                        break
+            except (OSError, ToolchainError) as exc:
+                sync_detail = str(exc)
+            if sync_detail is not None:
+                repair = (
+                    f"git -C {shlex.quote(str(checked_out_worktree))} "
+                    f"checkout --detach {observed_tip} && "
+                    f"git -C {shlex.quote(str(checked_out_worktree))} "
+                    f"merge --ff-only {candidate} && "
+                    f"git -C {shlex.quote(str(checked_out_worktree))} "
+                    f"symbolic-ref HEAD {shlex.quote(args.target_ref)}"
+                )
+                partial = (
+                    f"ref moved to {candidate} but worktree {checked_out_worktree} "
+                    f"sync failed: {sync_detail}; repair with {repair}"
+                )
+                journal.append(
+                    TaskMergeOutcome(
+                        args.task_id,
+                        candidate,
+                        args.target_ref,
+                        "ABORTED",
+                        partial,
+                    )
+                )
+                print(
+                    f"ERROR  task={args.task_id}  ref={args.target_ref}  {partial}",
+                    file=sys.stderr,
+                )
+                return EXIT_FAIL
         journal.append(
             TaskMergeOutcome(
                 args.task_id,

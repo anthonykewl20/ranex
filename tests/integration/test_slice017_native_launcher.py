@@ -95,7 +95,8 @@ RESPONSE_LIMIT = 65_536
 # Issue #60 (2026-08-30) refreshes it for specification group registration.
 # Issue #62 (1d98cd4, 2026-08-30) refreshes it for main.py's task authority defaults.
 # Issue #62 (2026-08-30) refreshes it for merge evidence-default coercion.
-MAIN_PY_SHA256 = "9a05c2ffb115ee00abfa7b4129cc146dbce0789c254abced43a5b57c7baa1bd3"
+# Issue #56 (2026-08-30) refreshes it for checked-out merge-worktree coherence.
+MAIN_PY_SHA256 = "e47a110cae365cf0ea138a63befdc6f1ab3b4d1d0acbbc0efb3b619bfdaf102f"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

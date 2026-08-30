@@ -293,6 +293,7 @@ def test_merge_legacy_candidate_without_dispatch_uses_governed_evidence(tmp_path
     git(scenario.repository, "commit", "-q", "-m", "candidate")
     candidate = git(scenario.repository, "rev-parse", "HEAD")
     git(scenario.repository, "update-ref", "refs/heads/main", tip, candidate)
+    git(scenario.repository, "restore", "--source=HEAD", "--staged", "--worktree", "candidate.txt")
     subject = subject_digest_for(scenario.repository, candidate)
     body: dict[str, object] = {
         "claim_id": "tests-executed",

@@ -114,6 +114,7 @@ class MergeJournalScenario:
         git(repo, "commit", "-q", "-m", "candidate")
         candidate = git(repo, "rev-parse", "HEAD")
         git(repo, "update-ref", TARGET_REF, tip, candidate)
+        git(repo, "restore", "--source=HEAD", "--staged", "--worktree", "candidate.txt")
         scenario = cls(
             repo,
             tip,
@@ -714,6 +715,7 @@ def test_sad_path_18_same_task_competing_merges_journal_one_winner_and_loser(
 
     for _ in range(10):
         git(scenario.repo, "update-ref", TARGET_REF, scenario.tip)
+        git(scenario.repo, "reset", "--hard", TARGET_REF)
         before = len(Journal(scenario.journal_path).entries())
         results = run_concurrent_merges(scenario.repo, (attempt, attempt))
         entries = Journal(scenario.journal_path).entries()[before:]

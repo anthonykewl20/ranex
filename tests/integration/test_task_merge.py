@@ -71,6 +71,7 @@ def prepare(repo: Path, *, orphan: bool = False) -> tuple[str, str, Path, dict[s
     if orphan:
         candidate = git(repo, "commit-tree", git(repo, "rev-parse", f"{linear_candidate}^{{tree}}"), "-m", "orphan")
     git(repo, "update-ref", "refs/heads/main", tip, linear_candidate)
+    git(repo, "restore", "--source=HEAD", "--staged", "--worktree", "candidate.txt")
     subject = subject_digest_for(repo, candidate)
     evidence_body = {
         "claim_id": "tests-executed",
