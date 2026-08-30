@@ -86,11 +86,9 @@ both tools' docs fetched pinned 2026-08-30.
 5. Derive `fail_under` from the higher-measuring README e2e (subprocess-wired)
    entrypoint instead of the enforcing CI pipeline.
 
-Option 1 was adopted. Option 2 requires stripping the same hermetic env the
-invariant depends on and was proven empirically not to reach the lines
-anyway. Option 3 duplicates an existing convention. Option 4 hides
-regressions repo-wide instead of at the eleven named lines. Option 5 bases
-the gate on a pipeline that does not enforce it.
+Option 1 was adopted. Option 2 requires stripping the invariant's hermetic env and empirically still missed the lines.
+Option 3 duplicates the existing convention. Option 4 hides repo-wide regressions rather than only the eleven named lines.
+Option 5 bases the gate on a non-enforcing pipeline.
 
 ## Decision Outcome
 
