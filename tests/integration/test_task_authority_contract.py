@@ -234,6 +234,29 @@ def test_merge_default_evidence_comes_from_dispatched_worktree(
     assert git(scenario.repository, "rev-parse", "refs/heads/main") == candidate
 
 
+def test_merge_refuses_deleted_worktree_evidence_as_sad_path_5(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    scenario = Scenario.create(tmp_path)
+    worktree = dispatch(scenario, "task-missing-evidence")
+    candidate, subject = make_candidate(scenario, worktree, "task-missing-evidence")
+    assert judge(scenario, "task-missing-evidence", worktree, candidate) == 0
+    signed_approval = approval(
+        scenario, "task-missing-evidence", candidate, subject, scenario.journal
+    )
+
+    (worktree / "governance" / "evidence.json").unlink()
+
+    assert (
+        invoke(
+            scenario.repository,
+            merge_arguments("task-missing-evidence", candidate, signed_approval),
+        )
+        == 1
+    )
+    assert "sad-path-5 satisfying-evidence-missing" in capsys.readouterr().err
+
+
 def test_merge_explicit_journal_and_evidence_override_defaults(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

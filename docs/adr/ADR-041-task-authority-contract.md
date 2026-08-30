@@ -1,6 +1,6 @@
 # ADR-041 — task authority contract
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-08-30
 **Decision-makers:** repo owner
 **Issue:** #62 (composed task flow; observed failure recorded in the #55 audit)
@@ -120,16 +120,13 @@ Adopt option 1; reject 2-4 (see below); 5 is issue #62's failure.
 
 ### Confirmation
 
-Verified now, by exploration: the parser shapes and hardcoded paths
-(main.py:3711-3716, 3718-3736, 3738-3747, 1368, 1450); judge's
-`resolve_within_repository` evidence handling (:1183-1185); the
-`task-dispatch` row already recording `worktree` (task.py:22-30); the
-e2e manual bridging (test_task_real.py:437-440, 551-576); merge's
-content-keyed refusals (:1428-1453). Implementation must still prove:
-the no-flag composed flow publishes; explicit-flag tests unmodified and
-green; judge's common-dir derivation lands on the dispatch target's
-journal in a linked worktree; a deleted worktree refuses as
-sad-path-5 rather than falling back silently.
+Verified on 2026-08-30: six integration contracts in
+`tests/integration/test_task_authority_contract.py` pin default resolution,
+explicit overrides, legacy governed-root fallback, and deleted-worktree
+sad-path-5 refusal. Issue #62's executed evidence run demonstrates the
+no-flag composed flow — dispatch → real `run` → judge → merge →
+`PUBLISHED` — with zero artifact movement and both refusal paths captured.
+The full suite was green: 1537 tests passed.
 
 ## Improvements on the prior art
 
@@ -217,17 +214,16 @@ journal, or golden depends on the defaults existing.
 
 ## Test strategy
 
-- `tests/integration/test_task_merge.py` — must pass UNMODIFIED: proof
-  the legacy fallback (hand-planted candidate row, no dispatch row) and
-  every refusal are untouched.
-- `tests/e2e/test_task_real.py` — the composed-flow arm gains a no-flag
-  variant (dispatch, run, judge, merge with no path flags) that
-  publishes; existing explicit-flag arms stay unmodified and green.
+- `tests/integration/test_task_authority_contract.py` — six integration
+  contracts pin defaults, explicit overrides, legacy fallback, and the
+  deleted-worktree sad-path-5 refusal.
+- Issue #62's executed evidence run is the end-to-end proof: no-flag
+  dispatch → real `run` → judge → merge → `PUBLISHED`, with zero artifact
+  movement and both refusal paths captured. It is evidence, not a new arm
+  in `tests/e2e/test_task_real.py`.
 - `tests/contract/test_docs_discipline.py` — governs this ADR itself
   (budgets, citations, vendored digests, NOTICE).
-- Implementation slice adds a deleted-worktree refusal check: merge with
-  a dispatch row whose worktree is gone exits non-zero with
-  sad-path-5 vocabulary.
+- Full suite: `uv run --frozen pytest -q` — 1537 tests passed.
 
 ## Code review checklist
 

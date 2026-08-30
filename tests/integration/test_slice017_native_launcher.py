@@ -93,6 +93,7 @@ RESPONSE_LIMIT = 65_536
 # strict-local launcher and controller branch remain unchanged.
 # Issue #67 (c46e6d5, 2026-08-30) refreshes it for deleting main.py's duplicate runtime_input assignment.
 # Issue #60 (2026-08-30) refreshes it for specification group registration.
+# Issue #62 (1d98cd4, 2026-08-30) refreshes it for main.py's task authority defaults.
 MAIN_PY_SHA256 = "4fadf0bf606122707c211d24b4a9917c938f91678d1b66041c6de94c21b8e88f"
 
 PTRACE_TRACEME = 0
