@@ -33,6 +33,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install --yes --no-install-recommends bubblewrap
           bwrap --version
+          # ubuntu-24.04 runners restrict unprivileged user namespaces via
+          # AppArmor, which breaks bwrap confinement (uid map: Permission
+          # denied) for the kill-safe lifecycle suite this step exists to
+          # serve. The runner is ephemeral and disposable: lift the
+          # restriction here. If the knob is absent the suite still runs —
+          # confinement tests then skip/fail per their own host probes.
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
       # Lint and type gates run first so a style or type regression fails fast
       # before the slower suite. Both run via uvx with pinned versions so they
       # do not touch uv.lock (a trust root) and stay reproducible.

@@ -14,6 +14,7 @@ does not restrict a production command to the Ranex repository or this commit.
 from __future__ import annotations
 
 import base64
+import datetime
 import hashlib
 import json
 import os
@@ -583,8 +584,12 @@ def materialize_governed_checkout(path: Path) -> Path:
     assert "sha256:" + canonical_sha256({"tree": tree}) == SUBJECT_DIGEST
     assert git(path, "show", "-s", "--format=%an", BASE_COMMIT) == FIXTURE_AUTHOR_NAME
     assert git(path, "show", "-s", "--format=%ae", BASE_COMMIT) == FIXTURE_AUTHOR_EMAIL
-    assert git(path, "show", "-s", "--format=%aI", BASE_COMMIT) == (
-        "2000-01-01T00:00:00+00:00"
+    author_date_raw = git(path, "show", "-s", "--format=%aI", BASE_COMMIT)
+    author_date = datetime.datetime.fromisoformat(author_date_raw)
+    expected_author_date = datetime.datetime(2000, 1, 1, tzinfo=datetime.UTC)
+    assert author_date == expected_author_date, (
+        "the fixture author date must represent the expected UTC instant: "
+        f"raw={author_date_raw!r}, parsed={author_date!r}, expected={expected_author_date!r}"
     )
     assert git(path, "show", "-s", "--format=%s", BASE_COMMIT) == (
         FIXTURE_COMMIT_MESSAGE

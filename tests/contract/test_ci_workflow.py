@@ -71,6 +71,13 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
             "sudo apt-get update\n"
             "sudo apt-get install --yes --no-install-recommends bubblewrap\n"
             "bwrap --version\n"
+            "# ubuntu-24.04 runners restrict unprivileged user namespaces via\n"
+            "# AppArmor, which breaks bwrap confinement (uid map: Permission\n"
+            "# denied) for the kill-safe lifecycle suite this step exists to\n"
+            "# serve. The runner is ephemeral and disposable: lift the\n"
+            "# restriction here. If the knob is absent the suite still runs —\n"
+            "# confinement tests then skip/fail per their own host probes.\n"
+            "sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true\n"
         ),
     }
 

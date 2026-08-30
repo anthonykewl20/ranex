@@ -654,7 +654,7 @@ def test_sabotage_control_mutated_golden_diffs_dirty(journey: RunJourney) -> Non
 @pytest.mark.skipif(sys.platform != "linux", reason="the lifecycle contract uses Linux /proc")
 @pytest.mark.parametrize("kill_target", ["kernel", "guardian"])
 def test_kernel_sigkill_cannot_orphan_real_landing_command(
-    tmp_path: Path, kill_target: str
+    tmp_path: Path, kill_target: str, prereq_pinned_resolver: None
 ) -> None:
     """ADR-037's primary destructive regression uses the real operator path.
 
