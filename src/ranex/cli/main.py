@@ -1074,11 +1074,38 @@ def _latest_task_dispatch(entries: list[dict[str, object]], task_id: str) -> dic
     )
 
 
+def _latest_task_candidate(entries: list[dict[str, object]], task_id: str) -> dict[str, object] | None:
+    """Return the latest candidate the kernel recorded for this task identifier."""
+
+    return next(
+        (
+            record
+            for record in reversed(entries)
+            if record.get("type") == "task-candidate"
+            and record.get("task_id") == task_id
+        ),
+        None,
+    )
+
+
+def _task_journal_from_worktree(worktree: Path) -> Path:
+    """Derive the target-owned task journal shared by ``worktree``."""
+
+    common = git(worktree, "rev-parse", "--git-common-dir")
+    common_dir_text = common.stdout.strip()
+    if common.returncode != 0 or not common_dir_text:
+        raise ValueError(f"cannot derive task journal from worktree: {worktree}")
+    common_dir = (worktree / common_dir_text).resolve()
+    if common_dir.name == ".git":
+        common_dir = common_dir.parent
+    return common_dir / DEFAULT_JOURNAL
+
+
 def _perform_task_dispatch(
     task_id: str,
     raw_target: str | Path,
     raw_worktree: str | Path,
-    raw_journal: str | Path,
+    raw_journal: str | Path | None,
 ) -> Path:
     if not task_id.strip():
         raise ValueError("--task-id must be non-blank")
@@ -1095,7 +1122,11 @@ def _perform_task_dispatch(
         character not in "0123456789abcdef" for character in base_commit
     ):
         raise ValueError(f"--target HEAD is not a 40-hex commit: {base_commit!r}")
-    journal_path = Path(raw_journal).resolve()
+    journal_path = (
+        Path(raw_journal).resolve()
+        if raw_journal is not None
+        else target / DEFAULT_JOURNAL
+    )
     if journal_path.is_file():
         for entry in Journal(journal_path).entries():
             if entry.get("type") == "task-dispatch" and entry.get("task_id") == task_id:
@@ -1142,7 +1173,11 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
             verify_publication_refusal(
                 Path(args.batch_qualification).resolve(),
                 governed=governed,
-                journal_path=Path(args.journal).resolve(),
+                journal_path=(
+                    Path(args.journal).resolve()
+                    if args.journal is not None
+                    else _task_journal_from_worktree(Path(args.emitted_worktree).resolve())
+                ),
                 candidate_repository=Path(args.emitted_worktree).resolve(),
                 candidate=args.emitted_commit,
             )
@@ -1151,7 +1186,12 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
             return EXIT_FAIL
 
     try:
-        journal_path = Path(args.journal).resolve()
+        emitted_worktree = Path(args.emitted_worktree).resolve()
+        journal_path = (
+            Path(args.journal).resolve()
+            if args.journal is not None
+            else _task_journal_from_worktree(emitted_worktree)
+        )
         if not journal_path.is_file():
             raise ValueError(f"no task dispatch recorded for {args.task_id!r}")
         journal = Journal(journal_path)
@@ -1164,7 +1204,7 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
         if not isinstance(recorded_worktree, str) or not recorded_worktree:
             raise ValueError(f"invalid dispatch record for task {args.task_id!r}")
         worktree = Path(recorded_worktree)
-        if Path(args.emitted_worktree).resolve() != worktree:
+        if emitted_worktree != worktree:
             raise ValueError(f"emitted worktree does not match dispatch for {args.task_id!r}")
         commit = head_commit(worktree)
         if args.emitted_commit != commit:
@@ -1180,7 +1220,10 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
         keyring_source = _task_committed_blob(
             worktree, base_commit, args.producers, "producer keyring"
         )
-        evidence_path = resolve_within_repository(worktree, args.evidence)
+        evidence_path = resolve_within_repository(
+            worktree,
+            args.evidence if args.evidence is not None else DEFAULT_EVIDENCE,
+        )
         keyring = load_keyring_text(keyring_source.decode("utf-8"), args.producers)
         admission = admit_records(evidence_path, keyring, worktree)
         definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
@@ -1365,7 +1408,11 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
     cas_succeeded = False
     try:
         repository_root = governed_repository_root()
-        journal_path = repository_root / DEFAULT_JOURNAL
+        journal_path = (
+            Path(args.journal).resolve()
+            if args.journal is not None
+            else repository_root / DEFAULT_JOURNAL
+        )
         if not journal_path.is_file():
             raise ValueError(f"task journal does not exist at {journal_path}")
         journal = Journal(journal_path)
@@ -1416,15 +1463,7 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
         keyring_source = _merge_blob_bytes(repository_root, keyring_c_oid, DEFAULT_PRODUCERS)
         keyring = load_keyring_text(keyring_source.decode("utf-8"), DEFAULT_PRODUCERS)
 
-        candidate_record = next(
-            (
-                record
-                for record in reversed(entries)
-                if record.get("type") == "task-candidate"
-                and record.get("task_id") == args.task_id
-            ),
-            None,
-        )
+        candidate_record = _latest_task_candidate(entries, args.task_id)
         if candidate_record is None:
             return _merge_refuse(journal, intent, "policy_approval", "sad-path-11 candidate-row-missing")
         if envelope.get("candidate_row_hash") != candidate_row_hash(candidate_record):
@@ -1447,7 +1486,16 @@ def cmd_task_merge(args: argparse.Namespace) -> int:
             if envelope.get(field) != expected:
                 return _merge_refuse(journal, intent, "policy_approval", reason)
 
-        evidence_path = resolve_within_repository(repository_root, DEFAULT_EVIDENCE)
+        if args.evidence is not None:
+            evidence_path = resolve_within_repository(repository_root, args.evidence)
+        else:
+            dispatch = _latest_task_dispatch(entries, args.task_id)
+            evidence_root = (
+                Path(dispatch["worktree"]).resolve()
+                if dispatch is not None
+                else repository_root
+            )
+            evidence_path = resolve_within_repository(evidence_root, DEFAULT_EVIDENCE)
         admission = admit_records(evidence_path, keyring, repository_root)
         if any(item.producer_id == approver_id for item in admission.evidence):
             return _merge_refuse(journal, intent, "policy_approval", "sad-path-14 self-approval")
@@ -3712,7 +3760,7 @@ def build_parser() -> argparse.ArgumentParser:
     dispatch.add_argument("--task-id", required=True, help="task identifier")
     dispatch.add_argument("--target", required=True, help="external git repository")
     dispatch.add_argument("--worktree", required=True, help="new external worktree")
-    dispatch.add_argument("--journal", required=True, help="external task journal")
+    dispatch.add_argument("--journal", help="external task journal")
     dispatch.set_defaults(func=cmd_task_dispatch)
 
     judge = task_actions.add_parser("judge", help="materialise a task candidate")
@@ -3721,14 +3769,14 @@ def build_parser() -> argparse.ArgumentParser:
     judge.add_argument("--emitted-commit", required=True, help="harness commit")
     judge.add_argument("--gate", required=True, help="gate identifier")
     judge.add_argument("--gate-catalog", required=True, help="committed gate catalog")
-    judge.add_argument("--evidence", required=True, help="worktree evidence path")
+    judge.add_argument("--evidence", help="worktree evidence path")
     judge.add_argument("--producers", required=True, help="committed producer keyring")
     judge.add_argument(
         "--suite-manifest",
         default=DEFAULT_SUITE_MANIFEST,
         help="suite manifest from the dispatch-time base tree",
     )
-    judge.add_argument("--journal", required=True, help="external task journal")
+    judge.add_argument("--journal", help="external task journal")
     judge.add_argument(
         "--batch-qualification",
         help="qualification artifact whose publication must be refused",
@@ -3740,6 +3788,8 @@ def build_parser() -> argparse.ArgumentParser:
     merge.add_argument("--target-ref", required=True, help="governed target ref")
     merge.add_argument("--candidate", required=True, help="candidate commit OID")
     merge.add_argument("--approval", required=True, help="signed approval JSON")
+    merge.add_argument("--journal", help="task journal")
+    merge.add_argument("--evidence", help="evidence records path")
     merge.add_argument(
         "--batch-qualification",
         help="qualification artifact whose publication must be refused",
