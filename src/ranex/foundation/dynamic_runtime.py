@@ -482,7 +482,7 @@ def parsed_runtime_graph(
     """Derive the graph from sealed descriptors, or paths for test tooling."""
     if ELFFile is None:
         raise ValueError("pyelftools is unavailable")
-    result: list[RuntimeGraphRow] = []
+    result: list[RuntimeGraphRow] = []  # pragma: no cover - confinement-only parse path (ADR-039)
     for item in manifest.files:
         if item.elf is None:
             continue

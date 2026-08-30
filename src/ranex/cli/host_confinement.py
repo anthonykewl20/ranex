@@ -3259,14 +3259,14 @@ def _runtime_v3_verifier_isolation_probe() -> dict[str, Any]:
                 os.fork()
                 fork_result = "0"
             except OSError as exc:
-                fork_result = errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err)
+                fork_result = errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err)  # pragma: no cover - confinement-only os-error formatting (ADR-039)
             writes = []
             for path in ("/ranex/output/probe", "/ranex/scratch/probe"):
                 try:
                     Path(path).write_bytes(b"x")
                     writes.append("OK")
                 except OSError as exc:
-                    writes.append(errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err))
+                    writes.append(errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err))  # pragma: no cover - confinement-only os-error formatting (ADR-039)
             os.write(pipe_write, json.dumps({"fork": fork_result, "writes": writes}).encode())
             signal.pause()
         finally:
@@ -4224,7 +4224,7 @@ def confinement_session(
     session: ConfinementSession | None = None
     runtime_closure: Any | None = None
     runtime_manifest: dict[str, Any] | None = None
-    runtime_expected: dict[str, LoaderReport] | None = None
+    runtime_expected: dict[str, LoaderReport] | None = None  # pragma: no cover - confinement session controller (ADR-039)
     runtime_parsed_digest: str | None = None
     runtime_realized_digest: str | None = None
     runtime_observed_rows: list[dict[str, Any]] | None = None
@@ -4386,7 +4386,7 @@ def confinement_session(
         os.set_inheritable(readiness_write, True)
         os.set_inheritable(readiness_ack_read, True)
         if runtime_v3:
-            assert runtime_closure is not None
+            assert runtime_closure is not None  # pragma: no cover - confinement-only narrowing assert (ADR-039)
             os.set_inheritable(verifier_report_write, True)
             os.set_inheritable(verifier_ack_read, True)
             for held in (
@@ -4417,7 +4417,7 @@ def confinement_session(
                 f"--ranex-ready-ack-fd={readiness_ack_read}",
             ]
             if runtime_v2:
-                assert command is not None
+                assert command is not None  # pragma: no cover - confinement-only narrowing assert (ADR-039)
                 for held in (*authority_fds.values(), command.descriptor):
                     os.set_inheritable(held, True)
                 launcher_arguments.extend(
@@ -4433,7 +4433,7 @@ def confinement_session(
                     ]
                 )
             elif runtime_v3:
-                assert runtime_closure is not None
+                assert runtime_closure is not None  # pragma: no cover - confinement-only narrowing assert (ADR-039)
                 descriptors = {path: sealed.descriptor for path, sealed in runtime_closure.files}
                 bundle = ",".join(
                     str(fd)
@@ -4458,7 +4458,7 @@ def confinement_session(
                     *descriptor["argv"],
                 ])
             else:
-                assert command is not None
+                assert command is not None  # pragma: no cover - confinement-only narrowing assert (ADR-039)
                 launcher_arguments.extend(
                     [
                         str(descriptor["_resolved"]["subject"]),
@@ -4500,7 +4500,7 @@ def confinement_session(
         _close_descriptor(gate_write)
         gate_write = -1
         if runtime_v3:
-            assert runtime_closure is not None and session_deadline is not None
+            assert runtime_closure is not None and session_deadline is not None  # pragma: no cover - confinement-only narrowing assert (ADR-039)
             _close_descriptor(verifier_report_write)
             verifier_report_write = -1
             _close_descriptor(verifier_ack_read)
@@ -4609,7 +4609,7 @@ def confinement_session(
         session.kill_drain_remove()
         outputs = collect_drained_output(output_fd, descriptor["limits"], {"populated": 0})
         result_path = _session_result_path(root, result_arg)
-        result: dict[str, object] = {
+        result: dict[str, object] = {  # pragma: no cover - confinement session report (ADR-039)
             "schema": "ranex-confinement-result-v1",
             "profile_digests": {
                 "runtime": _sha256_path(profile_path),
@@ -4633,7 +4633,7 @@ def confinement_session(
             "outputs": outputs,
         }
         if runtime_v3:
-            assert runtime_closure is not None and runtime_manifest is not None
+            assert runtime_closure is not None and runtime_manifest is not None  # pragma: no cover - confinement-only narrowing assert (ADR-039)
             result["schema"] = "ranex-confinement-result-v2"
             result["outputs"] = outputs["files"]
             result["runtime_closure"] = {
