@@ -1,34 +1,36 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-08-30 (task authority contract unified, issue #62 closing)
+**Updated:** 2026-08-31 (checked-out-worktree coherence enforced, issue #56 closing)
 **Active slice:** none
 
 ## Where we stopped
 
-Issue #62 implemented — ADR-041's single authority contract (dispatch/judge
-default journals, worktree-relative evidence, merge reads the dispatched
-worktree's evidence with governed fallback); the composed dispatch → run →
-judge → merge flow publishes with zero file movement; full suite 1538 passed /
-29 skipped (1567 IDs / 157 declared skips, run_exit=0); refusals sad-path-5/11
-pinned.
-Issues #63 and #67 are both closed. #63 installed the operator CLI (chain
-`9eceda8..2b8aae9`). #67 fixed all 33 pyrefly errors and restored fully green
-CI for the first time since 2026-08-25 (run 33306193214 at `fe09b53`: ruff,
-pyrefly 0 errors, pytest 1434 passed / 121 skipped on the runner,
-changed-lines coverage 100%). The fix also un-masked and repaired three
-environment/fixture breakages: runner userns restriction lifted via sysctl;
-two governed-copy fixtures set `PYTHONDONTWRITEBYTECODE`; sigkill tests
-prereq-gate the pinned resolver; and git `%aI` is compared as parsed instants.
-ADR-039 and coverage floor 64 landed en route.
-Issue #60 implemented — `ranex specification` registered (ADR-040, schema evt
-3, manifest 1560), full suite 1531/29 green, acceptance evidence on the issue.
+Issue #56 implemented — ADR-042's checked-out-worktree coherence. `task merge`
+into a checked-out branch refuses BEFORE the ref moves when the worktree's
+dirty set intersects the candidate diff (`sad-path-23 worktree-conflict`, max
+3 paths shown); the scan covers `--untracked-files=all`, rename/copy
+pre-images, and ignored files at candidate-changed paths (ff-merge silently
+replaces ignored files in the way). Disjoint operator changes are preserved.
+Otherwise the ref moves and the worktree is synchronized
+(`checkout --detach` → `merge --ff-only` → `symbolic-ref HEAD`; the detach
+avoids a post-CAS "Already up to date" no-op), and `PUBLISHED` prints only
+after sync succeeds. Sync failure after the ref moved journals an ABORTED
+outcome naming the exact state plus a shlex-quoted fast-forward repair
+command, exits nonzero, never prints PUBLISHED; retrying merge refuses as
+sad-path-9 tip-mismatch. Crash recovery stays honest: INFERRED when the
+candidate is at the ref, appending the stale-worktree fact and the same repair
+to the journaled detail when the checkout's HEAD is stale, degrading to the
+ref-only detail when inspection fails, never printing PUBLISHED. Documented
+residual: skip-worktree/assume-unchanged files are reported clean by git and
+are not detected. Suite 1579 tests, 157 expected skips (issue #56 closing
+evidence). Work landed across c433360f7, 541134538, 593a1cb5c plus further
+hardening uncommitted on disk at writing. ADR-042 recorded; ADR-012, README,
+and MAP synced.
 
 ## Next
 
-Issue #56 — publication must leave the checked-out worktree coherent (merge
-advances the ref without updating the worktree; same `cmd_task_merge` path just
-stabilized by #62); then #58, #64, #65; umbrella #66 last.
+Issue #58, then #64 and #65; umbrella #66 last.
 
 ## Governance
 

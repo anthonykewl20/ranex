@@ -225,6 +225,7 @@ Derived by a decision table over object/ref/envelope state, plus crash-state tra
 | 20 | target ref was deleted | snapshot/ref-resolution refuses; no recreation |
 | 21 | C is missing or pruned | commit/tree resolution refuses before intent can publish |
 | 22 | signature forged or any envelope field changed | domain-separated verification refuses |
+| 23 | dirty checked-out worktree intersects the candidate diff | refuses before CAS with sad-path-23 worktree-conflict (ADR-042) |
 
 ## Test strategy
 
@@ -270,17 +271,13 @@ coverage percentage: delta coverage on changed lines and every refusal branch.
 
 ## More Information
 
-[ADR-002](./ADR-002-committed-trust-root.md) fixes the trust root at committed
-paths; [ADR-005](./ADR-005-hermetic-observation.md) and
-[ADR-007](./ADR-007-dependency-provisioning-for-gated-suites.md) pin observation
-and toolchain; [ADR-009](./ADR-009-git-backed-materialisation.md) owns the
-submodule/LFS subject boundary; [ADR-010](./ADR-010-first-delegation.md) creates
-the CANDIDATE and defers the merge boundary completed here.
+[ADR-002](./ADR-002-committed-trust-root.md) fixes the trust root at committed paths;
+[ADR-005](./ADR-005-hermetic-observation.md) and [ADR-007](./ADR-007-dependency-provisioning-for-gated-suites.md) pin observation and toolchain;
+[ADR-009](./ADR-009-git-backed-materialisation.md) owns the submodule/LFS subject boundary;
+[ADR-010](./ADR-010-first-delegation.md) creates the CANDIDATE and defers this merge boundary;
+[ADR-042](./ADR-042-publication-leaves-a-checked-out-worktree-coherent.md) owns the checked-out-worktree postcondition merge now guarantees.
 
-Freshness limit, plainly: an approval at an unmoved T is immortal, and only a
-tip advance revokes it. Trust-domain limit, plainly: rollback or other writes by
-an actor bypassing the kernel are operator compromise, not detected here. There
-is no queue; a slow candidate may starve under contention.
+Freshness limit, plainly: an approval at an unmoved T is immortal, and only a tip advance revokes it. Trust-domain limit, plainly: rollback or other writes by an actor bypassing the kernel are operator compromise, not detected here. There is no queue; a slow candidate may starve under contention.
 
 Superseded ADRs: none. Open: separately authorized policy changes, authenticated
 approver identity (RISK-07), and the SLICE-010 implementation.

@@ -396,12 +396,15 @@ Current limits visible in code:
   completed delegation even when that suite exit is nonzero; it does not issue
   a gate verdict;
 - free-prompt `task fanout` has no A/B/C or approved child-scope admission;
-- dispatch/judge and merge compose only when the operator selects the governed
-  journal and manually transfers candidate evidence into the governed evidence
-  file; no public command owns that handoff;
-- a successful `task merge` advances the governed ref but does not update a
-  checked-out worktree, which can leave the checkout dirty while printing
-  `PUBLISHED`;
+- dispatch, judge, and merge derive their journal and evidence locations from
+  kernel-owned anchors (ADR-041), so the composed dispatch → judge → merge flow
+  needs no manual evidence transfer;
+- a successful `task merge` into a checked-out branch synchronizes that worktree
+  to the candidate (disjoint operator changes preserved) or refuses before the
+  ref moves; a sync failure after the ref moves journals an explicit
+  non-`PUBLISHED` ABORTED outcome with a repair command (ADR-042), and files
+  hidden by skip-worktree/assume-unchanged bits remain undetected by the dirty
+  scan;
 - delegation/fanout outcome files retain exit summaries but not inspectable
   harness stdout or session logs;
 - batch qualification sets `publication_allowed` to false and both judge and
