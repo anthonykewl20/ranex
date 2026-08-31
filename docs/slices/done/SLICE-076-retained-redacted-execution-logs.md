@@ -1,7 +1,8 @@
 # SLICE-076 — retained, redacted execution logs
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-08-31
+**Closed:** 2026-09-01
 **Priority:** P0 — production blocker (issue #58)
 **Issue:** #58
 **ADR:** docs/adr/ADR-043-retained-redacted-execution-logs.md
@@ -70,14 +71,35 @@ Issue #58 acceptance criteria (verbatim):
 
 ## Evidence
 
-- `tests/unit/test_execution_log_redaction.py`,
-  `tests/unit/test_retained_logs.py`,
-  `tests/integration/test_delegation_command.py`,
-  `tests/e2e/test_execution_log_retention_real.py`,
-  `tests/security/test_delegate_log_secret_scrubbing.py` (to be added/
-  extended by T1).
-- Acceptance transcript (real runs, real secret-injection challenge, and
-  attached retained artifacts) to be attached to issue #58 at T2.
+- `tests/unit/test_execution_log_redaction.py` (14 IDs) — env-grammar,
+  forced `--redact-env`, PEM-block, and credential-URL redaction; marker
+  forms; fixed pass order before truncation.
+- `tests/unit/test_retained_logs.py` (18 IDs) — log layout beside outcomes,
+  manifest, `keep|replace|off` retention semantics, collision and OSError
+  refusals, additive digest-bound outcome `logs` block.
+- `tests/integration/test_delegation_command.py` — CLI wiring of the four
+  flags and fanout forwarding.
+- `tests/e2e/test_execution_log_retention_real.py` (6 IDs) — real retained
+  transcripts on this host.
+- `tests/security/test_delegate_log_secret_scrubbing.py` (2 IDs) — injected
+  real secrets never appear outside their `[REDACTED:*]` markers.
+- Suite re-frozen at **1619 IDs** (was 1579; +40), 157 expected skips
+  unchanged, freeze golden byte-matched. Full suite: 1588 passed /
+  29 skipped; the only failures were the documented concurrent-CAS race
+  flake family (nested-journey wrappers, zero branch diff on those files,
+  green in isolation — gating file 17 passed, freeze file 6 passed).
+- Quality gates: ruff 0.16.2 clean; pyrefly 1.2.0 zero errors; diff-cover
+  100% on changed lines.
+- Real-host acceptance (transcript attached to issue #58 at
+  `/tmp/opencode/issue58-acceptance/acceptance-transcript.txt`): real
+  success run (digests verified, canonical outcomes, 0444); real failure +
+  truncation (`[ranex truncated: policy=tail dropped=958 retained=4096
+  original=5054]`, FINAL reason survives, byte-identical reruns); real
+  fanout (3 tasks, pool 2, one failing, parent + child transcripts
+  retained); real redaction challenge (Ed25519 PKCS8 PEM, nonce bearer
+  token, credential URL, hostile JSON injected into a real leaking harness
+  via env + `--redact-env`; `grep -rF PROOF` zero hits for every marker;
+  sentinel non-secret line survives; manifest redaction counts recorded).
 
 ## Non-goals
 

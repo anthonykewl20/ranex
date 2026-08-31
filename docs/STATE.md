@@ -1,28 +1,30 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-08-31 (issue #58 claimed, ADR-043 accepted, SLICE-076 open)
-**Active slice:** docs/slices/SLICE-076-retained-redacted-execution-logs.md
+**Updated:** 2026-09-01 (issue #58 closed, SLICE-076 archived)
+**Active slice:** none
 
 ## Where we stopped
 
-Issue #56 (checked-out-worktree coherence) closed via ADR-042. Issue #58 is
-now claimed: real `task delegate`/`task fanout` runs passed but deleted their
-scratch directories and harness stdout, leaving durable outcomes with only
-summary fields and no human-inspectable transcript for production diagnosis
-(#55 audit). ADR-043 is accepted: logs retain beside each outcome
-(`PATH.json.logs/` or fanout's per-task/parent layout), a new
-`src/ranex/execution/log_redaction.py` denylist-redacts ambient/forced
-secrets, PEM blocks, and credential-URL passwords before a bounded,
-tail-preserving truncation runs; outcomes gain an additive digest-bound
-`logs` block written via canonical JSON + atomic write. SLICE-076 is open
-with this docs tranche (T0) complete; the implementation tranche (T1) is
-owned by a separate concurrent agent working in `src/` and `tests/`. Suite
-was 1579 tests, 157 expected skips at issue #56's closing evidence.
+Issue #58 (retained redacted execution logs) is CLOSED via ADR-043 /
+SLICE-076: `task delegate`/`task fanout` runs now persist bounded, redacted,
+digest-bound per-stream logs beside each outcome (`<outcome>.logs/`, fanout
+parent `fanout.logs/`) with flags `--log-dir`, `--log-max-bytes` (default
+262144, bounds 4096–8388608), `--log-retention keep|replace|off`, and
+repeatable `--redact-env`; redaction (env grammar, forced env, PEM,
+credential URLs) runs before tail-preserving truncation, and outcomes carry
+an additive canonical `logs` block with per-stream sha256, truncation
+markers, and redaction counts. No auto-deletion — retention is
+operator-owned. Suite re-frozen at 1619 IDs (+40) with 157 expected skips
+byte-matched; full suite 1588 passed / 29 skipped, the only failures the
+documented concurrent-CAS race flake family (green in isolation). ruff,
+pyrefly, and diff-cover (100% on changed lines) all clean. Real-host
+acceptance passed: success, failure+truncation, fanout, and a live
+secret-injection redaction challenge (transcript on issue #58).
 
 ## Next
 
-Issue #58, then #64 and #65; umbrella #66 last.
+Issues #64 and #65; umbrella #66 last.
 
 ## Governance
 

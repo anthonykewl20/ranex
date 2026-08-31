@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.6.2` |
+| Version | `3.6.3` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-08-29 — real-data production acceptance; see §0.36 |
+| Last revised | 2026-09-01 — retained, redacted, digest-bound delegation logs; see §0.37 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -745,6 +745,19 @@ successful ref publication leaves a checked-out worktree stale (fixed by #56, wo
 strict-local v1 did not pass, and delegation logs are not retained. README and
 STATE carry the release warning; issue #55 carries selected raw output.
 
+### 0.37 What changed in `3.6.3` — delegation logs become retained, redacted, and digest-bound
+
+Issue #58 / SLICE-076 closed the auditability gap §0.36 recorded and
+`RISK-27` carried: `task delegate`/`task fanout` now persist bounded,
+redacted per-stream logs beside each outcome (ADR-043; `src/ranex/execution/`),
+with an additive canonical outcome `logs` block carrying per-stream sha256
+over retained bytes, tail-preserving truncation markers, and redaction
+counts. Real-host acceptance included a live secret-injection redaction
+challenge with zero marker leakage. The delegation path is still not a
+verdict path, fanout still performs no A/B/C admission, and residual limits
+remain: redaction is grammar-based, and logs are never deleted
+automatically. `RISK-27` closes with that residual recorded.
+
 ---
 
 ## §1 Introduction and Goals
@@ -949,7 +962,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Confinement of the measured party | A strict-local run attempts to keep the measured worker from the signing key and host state | **`CONFIRMED` for host-qualified v2/v3 mechanisms, conditional as an operator workflow** — all 13 real v2/v3 acceptance arms passed inside a delegated systemd service. Direct ordinary v1 use did not pass on the same host. Ordinary `run` is non-confined; the controller remains same-UID trusted infrastructure. |
 | Isolation profile | Read-only base, task-only writes, no secrets, isolated temp, denied-by-default network/egress, bounded resources/output, fresh namespaces and immutable argv | `PROVISIONAL` acceptance-test shape for ADR-006; test every denial (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:961-975`) |
 | Calibration of the gauges | Demonstrating that a gate detects a predeclared known defect; freeze controls and disclose sample limits | `PROVISIONAL` — `mutmut` and `diff-cover` run; no negative control or consuming gate (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:630-642) |
-| Worker dispatch | Create a Git worktree, validate an emitted commit, run checks, and publish a separately approved candidate | **Mechanics confirmed; serial composition complete.** Dispatch/judge/merge now derive journal/evidence locations from kernel-owned anchors (ADR-041), so merge sees the candidate evidence with no manual transfer. Publication into a checked-out branch either synchronizes the worktree (disjoint operator changes preserved) or refuses before the ref moves (#56, ADR-042; skip-worktree-hidden modifications remain undetected). Delegate/fanout ran live model jobs but remain non-verdict, non-A/B/C prototypes. Batch qualification remains non-publishable. |
+| Worker dispatch | Create a Git worktree, validate an emitted commit, run checks, and publish a separately approved candidate | **Mechanics confirmed; serial composition complete.** Dispatch/judge/merge now derive journal/evidence locations from kernel-owned anchors (ADR-041), so merge sees the candidate evidence with no manual transfer. Publication into a checked-out branch either synchronizes the worktree (disjoint operator changes preserved) or refuses before the ref moves (#56, ADR-042; skip-worktree-hidden modifications remain undetected). Delegate/fanout ran live model jobs but remain non-verdict, non-A/B/C prototypes, now with retained redacted logs (#58). Batch qualification remains non-publishable. |
 | Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); manager issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 (ADR-014 predates the renumbering and cites the old numbers); nothing built. SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability production program closes. §0.15 |
 | Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — target harness behavior | **absent from this repository**. `ADR-015` and the former harness commits are historical external-repository provenance, not current Ranex kernel capability or a scheduled delivery. §0.16, §0.20 |
 | A/B/C specification authority | Normative A holds approved semantics without generated hashes; manifest B binds exact gauge artifacts/invocation; signed envelope C binds A+B, context, identities, anti-replay and capability request; grant binds C | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap. The installed harness-admission/concurrent-mutation composition is withdrawn from the kernel-only release, not completed by SLICE-044. |
@@ -1417,7 +1430,7 @@ control, unverifiable evidence, or model-reported success.
 | `provisioning/` | Dependency provisioning behind `deps fetch`/`deps approve`: clean lock derivation under pinned inputs, the SHA-256-addressed wheel store, and approval recording | **`CONFIRMED`** — SLICE-006 |
 | **Harness core** | External executable consumed by `task delegate`; no harness implementation lives in this repository | **absent from this repository** — the CLI requires the caller to provide `--harness` and `--model` |
 | **Kernel bridge** | Historical process boundary between harness collection and kernel judgment | **out of scope for the kernel-only initial release** — no harness-dependency delivery is currently scheduled |
-| **Delegation** | External harness launch, emission validation, independent candidate-suite run, timeout kill, outcome file, and bounded free-prompt pool | **live-model executable prototype** in `cli/delegation.py` and `cli/fanout.py`; one delegate and two concurrent fanout jobs passed issue #55. It is not a verdict path, fanout performs no A/B/C admission, and scratch cleanup leaves no inspectable harness/session log |
+| **Delegation** | External harness launch, emission validation, independent candidate-suite run, timeout kill, outcome file, and bounded free-prompt pool | **live-model executable prototype** in `cli/delegation.py` and `cli/fanout.py`; one delegate and two concurrent fanout jobs passed issue #55. `src/ranex/execution/` now retains redacted (env-grammar, forced env, PEM, credential-URL), bounded tail-preserving-truncated per-stream logs beside each outcome with per-stream sha256 in an additive outcome `logs` block (#58, ADR-043); nothing is auto-deleted. It is still not a verdict path and fanout performs no A/B/C admission |
 | **Specification authority** | A normative SpecPacket/scope; B exact generated/protected gauge manifest; signed anti-replay ApprovalEnvelope C; role-separated grant/revocation, lifecycle and evidence continuity | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, deterministic projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap; installed harness admission and concurrent mutation are withdrawn from the kernel-only release |
 | **Harness admission** | Shared enforcement at every tool, plugin, MCP, process, Git, hosted and subagent effect leaf; exact child-intersected grant | **withdrawn from the kernel-only release** — no claim of production harness admission |
 | **Agent-run manager** | Durable supervisor + capability-gated orchestrator over N worktrees/sessions | **absent/withdrawn** — the bounded fanout thread pool is not this manager |
@@ -1825,7 +1838,7 @@ is best.
 | `RISK-24` | **One complete thread is operator-selected and likely the easiest available.** Passing it proves the mechanism runs, not that it handles the cases behind `C-02`, `C-03` or `C-04` |
 | `RISK-25` | **Current free-prompt delegation dispatches prose without common harness effect admission.** The withdrawn SLICE-044 program grants nothing; implemented batch qualification is a separate non-publishable path and does not authorize governed mutation |
 | `RISK-26` | **Serial task publication's gaps are closed except one residual.** The authority-contract half (manual evidence transfer between dispatch/judge and merge) was fixed by #62/ADR-041, which derives journal/evidence defaults from kernel-owned anchors. The worktree half (publication advancing the ref without updating a checked-out worktree) was fixed by #56/ADR-042, which synchronizes or refuses before the ref moves. Surviving residual: files hidden by skip-worktree/assume-unchanged bits are reported clean by git and escape the dirty scan |
-| `RISK-27` | **Prototype delegation is not human-auditable after completion.** Outcome JSON retains exit summaries, but the harness/session transcript lives under deleted scratch state; a successful model run cannot be reconstructed from Ranex artifacts |
+| `RISK-27` | **Closed with residual (2026-09-01, #58/ADR-043).** Delegation/fanout now retain redacted, digest-bound per-stream logs beside each outcome, so a completed model run is reconstructable from Ranex artifacts. Residual: redaction is grammar-based (env grammar, forced `--redact-env`, PEM, credential URLs), so a secret outside those grammars can survive a retained log, and nothing deletes logs automatically — retention/cleanup is operator-owned |
 
 ### 11.6 Sequencing decisions — owner, 2026-08-03
 
@@ -2090,7 +2103,7 @@ that cannot name its evidence or its absence is not in the ledger.
 | Host-qualified strict-local confinement of the bound command | ADR-006 accepted; 13/13 real v2/v3 acceptance arms passed inside a delegated systemd service on 2026-08-29 | operator must provide and retain delegated cgroup controllers; direct ordinary v1 use failed on that host, ordinary `run` is non-confined, and the controller remains same-UID trusted infrastructure |
 | Dependency provisioning for gated suites | ADR-007 accepted; SLICE-006 closed; the self-gate runs from the approved SHA-256-addressed wheel store and `RISK-08` is closed | does not prove dependency consumption across the full installed harness composition |
 | Serial task publication | dispatch, judge, and merge derive journal/evidence locations from kernel-owned anchors (ADR-041), so no manual alignment is required; a successful merge into a checked-out branch synchronizes the worktree or refuses before the ref moves (ADR-042); skip-worktree-hidden modifications escape the worktree dirty scan (ADR-042); no composed A/B/C mutation path |
-| Prototype delegation and bounded fanout | one live OpenCode delegate and two concurrent live fanout jobs emitted real commits and passed independent suites | delegate issues no verdict; fanout has no A/B/C scope; outcomes do not retain inspectable harness/session logs |
+| Prototype delegation and bounded fanout | one live OpenCode delegate and two concurrent live fanout jobs emitted real commits and passed independent suites; runs retain redacted, bounded, digest-bound per-stream logs beside each outcome (#58, ADR-043) | delegate issues no verdict; fanout has no A/B/C scope; log redaction is grammar-based and logs are never auto-deleted |
 | Approved-batch qualification | `task batch qualify`; `tests/integration/test_approved_batch_qualification_contract.py` and `tests/e2e/test_specification_batch_qualification.py` | qualification is structurally non-publishable and cannot authorize mutation |
 | Signed verdict artifact APIs | optional publication in `cmd_gate_evaluate`, atomic publisher, verified internal reader, and unit tests | no main-CLI verdict reader; publication requires explicitly configured signer and output directory |
 | Strict-local stable I/O and dynamic runtime closure | host-confinement implementation plus integration, security and host-gated e2e tests | requires user namespaces and delegated cgroup controllers; same-UID controller remains trusted |
