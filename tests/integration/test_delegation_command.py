@@ -86,6 +86,8 @@ def fanout_args(
         suite="/usr/bin/true",
         outcome_dir=str(tmp_path / "outcomes"),
         pool=pool,
+        log_max_bytes=262144,
+        log_retention="replace",
     )
 
 
@@ -654,7 +656,13 @@ def test_subject_with_new_tree_proceeds_to_materialisation(
 
     suite_calls: list[tuple[Path, str]] = []
 
-    def fake_run_suite(worktree: Path, commit: str, suite: str) -> tuple[int, str]:
+    def fake_run_suite(
+        worktree: Path,
+        commit: str,
+        suite: str,
+        *,
+        streams: dict[str, str] | None = None,
+    ) -> tuple[int, str]:
         suite_calls.append((worktree, commit))
         return 0, ""
 
@@ -713,7 +721,13 @@ def test_truthful_emission_uses_dispatched_worktree_and_commit_for_outcome(
 
     suite_calls: list[tuple[Path, str]] = []
 
-    def fake_run_suite(worktree: Path, commit: str, suite: str) -> tuple[int, str]:
+    def fake_run_suite(
+        worktree: Path,
+        commit: str,
+        suite: str,
+        *,
+        streams: dict[str, str] | None = None,
+    ) -> tuple[int, str]:
         suite_calls.append((worktree, commit))
         return 0, ""
 
@@ -1207,6 +1221,7 @@ def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
         "suite": "/usr/bin/true",
         "results_artifact": "artifacts/junit.xml",
         "manifest": manifest,
+        "streams": {"stdout": "", "stderr": ""},
     }
     assert json.loads(Path(args.outcome).read_text(encoding="utf-8"))[
         "suite_results"
@@ -1701,8 +1716,8 @@ def test_cmd_task_fanout_reports_results_in_input_order_and_refuses_on_any_nonpa
     assert result == EXIT_USAGE
     lines = [line for line in captured.out.splitlines() if line.startswith("FANOUT")]
     assert lines == [
-        "FANOUT  task=first  exit=0",
-        "FANOUT  task=second  exit=2",
+        f"FANOUT  task=first  exit=0  logs={tmp_path / 'outcomes' / 'fanout.logs'}",
+        f"FANOUT  task=second  exit=2  logs={tmp_path / 'outcomes' / 'fanout.logs'}",
     ]
     assert "second failed" in captured.err
 
