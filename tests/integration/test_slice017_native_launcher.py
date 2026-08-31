@@ -96,7 +96,9 @@ RESPONSE_LIMIT = 65_536
 # Issue #62 (1d98cd4, 2026-08-30) refreshes it for main.py's task authority defaults.
 # Issue #62 (2026-08-30) refreshes it for merge evidence-default coercion.
 # Issue #56 (2026-08-30) refreshes it for checked-out merge-worktree coherence.
-MAIN_PY_SHA256 = "e47a110cae365cf0ea138a63befdc6f1ab3b4d1d0acbbc0efb3b619bfdaf102f"
+# Issue #56 (2026-08-31) extends it for ignored-path conflict detection and
+# stale checked-out worktree recovery details.
+MAIN_PY_SHA256 = "86c5c7833db5cb558b04ad262c8897e31ee3b0820624a2a3627c36f3fd489179"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

@@ -640,6 +640,127 @@ def test_task_merge_recovers_post_cas_crash_as_inferred(tmp_path: Path) -> None:
     assert Journal(scenario.journal_path).verify() is True
 
 
+def test_task_merge_recovery_records_a_stale_checked_out_worktree(
+    tmp_path: Path,
+) -> None:
+    scenario = MergeJournalScenario.create(tmp_path)
+    attempt = scenario.dispatch_judge("recovery-stale-worktree")
+
+    assert invoke(scenario.repo, attempt.args()) == 0
+    delete_last_merge_outcome(scenario.journal_path, attempt.candidate, "PUBLISHED")
+    assert git(scenario.repo, "rev-parse", TARGET_REF) == attempt.candidate
+
+    # A real ref update advances a symbolic branch's HEAD atomically.  Keep the
+    # primary checkout and journal real, but inject the crash's old HEAD
+    # observation at the repository-query seam so recovery's stale branch is
+    # exercised without changing the production entry point.
+    from ranex.cli import main as main_module
+
+    real_git = main_module.git
+
+    def stale_head(
+        repository_root: Path, *arguments: str, **kwargs: object
+    ) -> subprocess.CompletedProcess[str]:
+        result = real_git(repository_root, *arguments, **kwargs)
+        if repository_root == scenario.repo and arguments == ("rev-parse", "HEAD"):
+            return subprocess.CompletedProcess(result.args, 0, scenario.tip, result.stderr)
+        return result
+
+    missing = scenario.repo / "missing-approval.json"
+    with pytest.MonkeyPatch.context() as monkeypatch:
+        monkeypatch.setattr("ranex.cli.main.git", stale_head)
+        assert invoke(
+            scenario.repo,
+            scenario.args(
+                task_id=attempt.task_id,
+                candidate=attempt.candidate,
+                approval=missing,
+            ),
+        ) != 0
+
+    outcomes = [
+        entry
+        for entry in Journal(scenario.journal_path).entries()
+        if entry.get("type") == "task-merge-outcome"
+        and entry.get("candidate") == attempt.candidate
+    ]
+    assert [entry["outcome"] for entry in outcomes] == ["INFERRED"]
+    detail = str(outcomes[0]["detail"])
+    assert "recovery observed candidate at target ref" in detail
+    assert "is stale at" in detail
+    assert "checkout --detach" in detail
+    assert "merge --ff-only" in detail
+    assert "symbolic-ref HEAD" in detail
+
+
+def test_task_merge_recovery_keeps_a_coherent_worktree_detail_unchanged(
+    tmp_path: Path,
+) -> None:
+    scenario = MergeJournalScenario.create(tmp_path)
+    attempt = scenario.dispatch_judge("recovery-coherent-worktree")
+
+    assert invoke(scenario.repo, attempt.args()) == 0
+    delete_last_merge_outcome(scenario.journal_path, attempt.candidate, "PUBLISHED")
+    assert git(scenario.repo, "rev-parse", TARGET_REF) == attempt.candidate
+    assert git(scenario.repo, "rev-parse", "HEAD") == attempt.candidate
+
+    missing = scenario.repo / "missing-approval.json"
+    assert invoke(
+        scenario.repo,
+        scenario.args(
+            task_id=attempt.task_id,
+            candidate=attempt.candidate,
+            approval=missing,
+        ),
+    ) != 0
+    outcomes = [
+        entry
+        for entry in Journal(scenario.journal_path).entries()
+        if entry.get("type") == "task-merge-outcome"
+        and entry.get("candidate") == attempt.candidate
+    ]
+    assert [entry["outcome"] for entry in outcomes] == ["INFERRED"]
+    detail = str(outcomes[0]["detail"])
+    assert "recovery observed candidate at target ref" in detail
+    assert "is stale at" not in detail
+    assert "repair with" not in detail
+
+
+def test_task_merge_recovery_degrades_when_checked_out_worktree_inspection_fails(
+    tmp_path: Path,
+) -> None:
+    scenario = MergeJournalScenario.create(tmp_path)
+    git(scenario.repo, "checkout", "--detach", scenario.tip)
+    target_worktree = tmp_path / "target-worktree"
+    git(scenario.repo, "worktree", "add", str(target_worktree), "main")
+    attempt = scenario.dispatch_judge("recovery-pruned-worktree")
+
+    assert invoke(scenario.repo, attempt.args()) == 0
+    delete_last_merge_outcome(scenario.journal_path, attempt.candidate, "PUBLISHED")
+    assert git(target_worktree, "rev-parse", "HEAD") == attempt.candidate
+    shutil.rmtree(target_worktree)
+    assert str(target_worktree) in git(scenario.repo, "worktree", "list", "--porcelain")
+
+    missing = scenario.repo / "missing-approval.json"
+    assert invoke(
+        scenario.repo,
+        scenario.args(
+            task_id=attempt.task_id,
+            candidate=attempt.candidate,
+            approval=missing,
+        ),
+    ) != 0
+    outcomes = [
+        entry
+        for entry in Journal(scenario.journal_path).entries()
+        if entry.get("type") == "task-merge-outcome"
+        and entry.get("candidate") == attempt.candidate
+    ]
+    assert [entry["outcome"] for entry in outcomes] == ["INFERRED"]
+    detail = str(outcomes[0]["detail"])
+    assert detail == "recovery observed candidate at target ref"
+
+
 def test_task_merge_recovers_pre_cas_crash_as_aborted(tmp_path: Path) -> None:
     scenario = MergeJournalScenario.create(tmp_path)
     attempt = scenario.dispatch_judge("recovery-aborted")
