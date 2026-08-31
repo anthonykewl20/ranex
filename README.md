@@ -366,6 +366,10 @@ Code-backed capabilities:
   through policy, ancestry, linear-range, evidence, and stale-ref checks;
 - prototype external-harness delegation with emission validation, timeout
   process-group kill, independent suite execution, and structured outcome files;
+- retained, redacted, digest-bound delegation/fanout logs beside each outcome
+  (`<outcome>.logs/`, fanout parent `fanout.logs/`) with bounded
+  tail-preserving truncation and an additive canonical `logs` block carrying
+  per-stream sha256, truncation markers, and redaction counts (ADR-043);
 - prototype bounded free-prompt fanout over that delegation path;
 - A/B/C validators, deterministic specification projections, lifecycle,
   approval/revocation/grant, trace, and candidate-verification Python and CLI
@@ -380,6 +384,21 @@ Host-dependent capability:
   seccomp, cgroup, fixed-mount, static-worker, and dynamic-runtime-closure
   paths. It refuses hosts that do not satisfy the qualification contract. It is
   not available on every Linux installation.
+
+**Operating retained delegation logs.** Each `task delegate` run writes
+`<outcome>.logs/{harness.stdout.log,harness.stderr.log,suite.stdout.log,suite.stderr.log,manifest.json}`
+beside its outcome file; `task fanout` adds a parent transcript under
+`<outcome-dir>/fanout.logs/`. Control them with `--log-dir`,
+`--log-max-bytes` (default 262144, bounds 4096–8388608), `--log-retention
+keep|replace|off` (default `replace`), and repeatable `--redact-env NAME`;
+fanout forwards the size and retention flags to every child. Verify a log
+against its outcome entry with `sha256sum` — the outcome's `logs` block
+carries each stream's digest over the retained bytes on disk. A log that
+exceeded the bound begins with a `[ranex truncated: …]` marker: the head was
+dropped, the tail (including the FINAL failure reason) was preserved.
+Secrets matching the redaction grammars appear only as
+`[REDACTED:env:NAME]`, `[REDACTED:pem]`, or `[REDACTED:credential]`.
+Ranex never deletes logs on its own — retention and cleanup are yours.
 
 Current limits visible in code:
 
@@ -405,8 +424,11 @@ Current limits visible in code:
   non-`PUBLISHED` ABORTED outcome with a repair command (ADR-042), and files
   hidden by skip-worktree/assume-unchanged bits remain undetected by the dirty
   scan;
-- delegation/fanout outcome files retain exit summaries but not inspectable
-  harness stdout or session logs;
+- delegation/fanout logs are retained, redacted, and digest-bound, but
+  redaction is grammar-based (env-grammar literals, forced `--redact-env`
+  names, PEM blocks, credential URLs), so a secret outside those grammars can
+  survive in a retained log, and nothing deletes logs automatically —
+  retention and cleanup are operator-owned;
 - batch qualification sets `publication_allowed` to false and both judge and
   merge refuse it before legacy publication writes;
 - `evidence.json` replaces the previous row for the same claim and producer;
@@ -426,7 +448,7 @@ Current limits visible in code:
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-076-retained-redacted-execution-logs.md
+**Active slice:** none
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness
@@ -629,6 +651,17 @@ implementation evidence, not an assertion that its behavior is a supported
 current release feature; withdrawn and prototype boundaries are governed by the
 code-backed [Status](#status) section above.
 
+- **SLICE-076-retained-redacted-execution-logs** — completed 2026-09-01.
+  Delegation/fanout runs now retain redacted, bounded, digest-bound
+  per-stream logs beside each outcome (ADR-043): `--log-dir`,
+  `--log-max-bytes` (default 262144, bounds 4096–8388608), `--log-retention
+  keep|replace|off`, repeatable `--redact-env`; outcomes gain an additive
+  canonical `logs` block (per-stream sha256 over retained bytes,
+  tail-preserving truncation marker that keeps the FINAL failure reason,
+  redaction counts, never secret bytes), with no auto-deletion. The suite
+  re-froze at 1,619 IDs / 157 declarations; the final governed run passed
+  1,588 / skipped 29. Real-host acceptance included a live
+  secret-injection redaction challenge with zero marker leakage.
 - **SLICE-075-installed-operator-cli** — completed 2026-08-29. The frozen
   checkout install (`uv sync --frozen`) builds the `ranex` console script and
   a real keygen→run→gate workflow was verified through the installed command
