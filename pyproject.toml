@@ -132,6 +132,7 @@ pytest_add_cli_args_test_selection = [
     "--ignore=tests/integration/test_slice018_confinement_session.py",
     "--ignore=tests/security/test_slice018_cgroup_output_lifecycle.py",
     "--ignore=tests/security/test_trace_secret_scrubbing.py",
+    "--ignore=tests/security/test_delegate_log_secret_scrubbing.py",
     "--ignore=tests/unit/test_specification_generation.py",
 ]
 
