@@ -986,9 +986,13 @@ def test_run_suite_respects_tail_and_command(tmp_path: Path, monkeypatch: pytest
         return subprocess.CompletedProcess(args, 3, stdout="out", stderr="err")
     monkeypatch.setattr("ranex.cli.delegation.subprocess.run", fake_run)
 
-    suite_exit, suite_output_tail = _run_suite(tmp_path / "repo", "a" * 40, "python -c 'print(1)'")
+    streams: dict[str, str] = {}
+    suite_exit, suite_output_tail = _run_suite(
+        tmp_path / "repo", "a" * 40, "python -c 'print(1)'", streams=streams
+    )
     assert suite_exit == 3
     assert suite_output_tail == "outerr"
+    assert streams == {"stdout": "out", "stderr": "err"}
     assert captured[0][0] == ["python", "-c", "print(1)"]
     assert captured[0][1] == tmp_path / "tree"
     assert captured[0][2]["TMPDIR"] == str(tmp_path / "tmp")
@@ -1049,12 +1053,14 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
     monkeypatch.setattr("ranex.cli.delegation.subprocess.run", fake_run)
     monkeypatch.setattr("ranex.cli.delegation.parse_results_artifact", fake_parse)
 
+    streams: dict[str, str] = {}
     suite_exit, output_tail, results = _run_suite_with_results(
         tmp_path / "repo",
         "a" * 40,
         "python -c 'print(1)'",
         results_artifact="artifacts/junit.xml",
         manifest=manifest,
+        streams=streams,
     )
 
     assert (suite_exit, output_tail, results) == (
@@ -1074,6 +1080,7 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
         "GIT_CONFIG_NOSYSTEM": "1",
         "GIT_ATTR_NOSYSTEM": "1",
     }
+    assert streams == {"stdout": "out", "stderr": "err"}
     assert active is False
 
 
@@ -1957,6 +1964,133 @@ def test_cmd_task_delegate_refuses_harness_timeout(tmp_path: Path, monkeypatch: 
     assert payload["timed_out"] is True
     assert payload["commit"] is None
     assert payload["suite_exit"] is None
+
+
+def test_cmd_task_delegate_timeout_retains_partial_harness_streams(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    task_id = "T-8-TIMEOUT-STREAMS"
+    worktree = tmp_path / "dispatch-worktree"
+    journal = tmp_path / "journal.sqlite3"
+    harness = tmp_path / "harness.sh"
+    harness.write_text(
+        "#!/usr/bin/env sh\nprintf 'partial stdout'\nprintf 'partial stderr' >&2\nsleep 1\n",
+        encoding="utf-8",
+    )
+    harness.chmod(0o755)
+    worktree.mkdir()
+    args = delegation_args(
+        tmp_path,
+        task_id=task_id,
+        worktree=worktree,
+        journal=journal,
+        harness=harness,
+    )
+    args.timeout = 0.01
+
+    monkeypatch.setattr(
+        "ranex.cli.delegation.exec_environment_holds_signing_key", lambda: False
+    )
+    monkeypatch.setattr(
+        "ranex.cli.main._perform_task_dispatch", lambda *_a, **_k: worktree
+    )
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+    assert Path(args.outcome).exists(), captured.err
+    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+    log_directory = Path(args.outcome + ".logs")
+
+    assert result == EXIT_USAGE
+    assert "refusing to delegate: timed out" in captured.err.lower()
+    assert (log_directory / "harness.stdout.log").read_text() == "partial stdout"
+    assert (log_directory / "harness.stderr.log").read_text() == "partial stderr"
+    assert payload["logs"]["streams"]["harness.stdout"]["bytes"] == len(
+        "partial stdout"
+    )
+    assert payload["logs"]["streams"]["harness.stderr"]["bytes"] == len(
+        "partial stderr"
+    )
+
+
+def test_cmd_task_delegate_off_retention_writes_disabled_logs_without_sidecar(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-8-LOGS-OFF"
+    )
+    args.log_retention = "off"
+    monkeypatch.setattr("ranex.cli.delegation._run_suite", lambda *_a, **_k: (0, ""))
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+    payload = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+
+    assert result == EXIT_PASS
+    assert "DELEGATED" in captured.out
+    assert payload["logs"] == {
+        "version": 1,
+        "retained": False,
+        "reason": "operator-disabled",
+    }
+    assert not Path(args.outcome + ".logs").exists()
+
+
+def test_cmd_task_delegate_refuses_keep_retention_over_existing_log_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    log_directory = tmp_path / "outcome.json.logs"
+    log_directory.mkdir()
+    args = delegation_args(
+        tmp_path,
+        task_id="T-8-KEEP-LOGS",
+        worktree=tmp_path / "dispatch-worktree",
+        journal=tmp_path / "journal.sqlite3",
+        harness=build_harness(tmp_path / "harness.sh"),
+    )
+    args.log_retention = "keep"
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+
+    assert result == EXIT_USAGE
+    assert captured.err == (
+        "ERROR  refusing to overwrite existing log directory "
+        f"{log_directory}: --log-retention is keep\n"
+    )
+
+
+def test_cmd_task_fanout_refuses_keep_retention_over_existing_log_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    target = tmp_path / "target"
+    journal = tmp_path / "journal.sqlite3"
+    harness = build_harness(tmp_path / "harness.sh")
+    tasks = tmp_path / "tasks.jsonl"
+    args = fanout_args(
+        tmp_path,
+        tasks=tasks,
+        target=target,
+        journal=journal,
+        harness=harness,
+        pool=1,
+    )
+    args.log_retention = "keep"
+    log_directory = Path(args.outcome_dir) / "fanout.logs"
+    log_directory.mkdir(parents=True)
+
+    result = cmd_task_fanout(args)
+    captured = capsys.readouterr()
+
+    assert result == EXIT_USAGE
+    assert captured.err == (
+        "ERROR  refusing to overwrite existing log directory "
+        f"{log_directory}: --log-retention is keep\n"
+    )
 
 
 def test_cmd_task_delegate_records_non_zero_harness_exit(
