@@ -19,6 +19,17 @@ from typing import cast
 from ranex.cli.repository import git
 from ranex.cli.subject import materialise_subject, verified_blob_at_path
 from ranex.cli.toolchain import ToolchainError, pinned_path_value
+from ranex.execution.log_redaction import collect_redaction_literals
+from ranex.execution.retained_logs import (
+    DEFAULT_LOG_MAX_BYTES,
+    decode_stream,
+    log_dir_for_outcome,
+    persist_stream,
+    validate_max_bytes,
+    write_log_manifest,
+)
+from ranex.foundation.atomic_writer import write_atomic
+from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.suite_results import load_manifest_bytes, parse_results_artifact
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
 
@@ -108,10 +119,16 @@ def _read_emission(path: Path) -> dict[str, str]:
 
 def _write_outcome(path: Path, outcome: dict[str, object]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(outcome) + "\n", encoding="utf-8")
+    write_atomic(path, canonical_json_bytes(outcome) + b"\n", root=path.parent)
 
 
-def _run_suite(worktree: Path, commit: str, suite: str) -> tuple[int, str]:
+def _run_suite(
+    worktree: Path,
+    commit: str,
+    suite: str,
+    *,
+    streams: dict[str, str] | None = None,
+) -> tuple[int, str]:
     command = shlex.split(suite)
     if not command:
         raise ValueError("refusing suite command: no arguments")
@@ -134,7 +151,12 @@ def _run_suite(worktree: Path, commit: str, suite: str) -> tuple[int, str]:
             text=True,
         )
 
-    combined = f"{completed.stdout or ''}{completed.stderr or ''}"
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    if streams is not None:
+        streams["stdout"] = stdout
+        streams["stderr"] = stderr
+    combined = f"{stdout}{stderr}"
     return completed.returncode, _tail_output(combined)
 
 
@@ -145,6 +167,7 @@ def _run_suite_with_results(
     *,
     results_artifact: str,
     manifest: dict[str, object],
+    streams: dict[str, str] | None = None,
 ) -> tuple[int, str, dict[str, object]]:
     """Run against the candidate, reading results before materialisation teardown."""
 
@@ -172,8 +195,54 @@ def _run_suite_with_results(
             materialisation.tree / results_artifact,
             manifest,
         )
-    combined = f"{completed.stdout or ''}{completed.stderr or ''}"
+    stdout = completed.stdout or ""
+    stderr = completed.stderr or ""
+    if streams is not None:
+        streams["stdout"] = stdout
+        streams["stderr"] = stderr
+    combined = f"{stdout}{stderr}"
     return completed.returncode, _tail_output(combined), suite_results
+
+
+def _retained_logs(
+    *,
+    retention: str,
+    directory: Path,
+    outcome_path: Path,
+    stream_text: Mapping[str, str],
+    literals: list[tuple[str, str]],
+    max_bytes: int,
+) -> dict[str, object]:
+    if retention == "off":
+        return {"version": 1, "retained": False, "reason": "operator-disabled"}
+
+    streams = {
+        name: persist_stream(
+            directory,
+            name,
+            stream_text[name],
+            literals=literals,
+            max_bytes=max_bytes,
+        )
+        for name in (
+            "harness.stdout",
+            "harness.stderr",
+            "suite.stdout",
+            "suite.stderr",
+        )
+    }
+    policy = {
+        "max_bytes_per_stream": max_bytes,
+        "retention": retention,
+        "redaction": "value+structure-v1",
+    }
+    write_log_manifest(directory, streams, policy)
+    return {
+        "version": 1,
+        "dir": os.path.relpath(directory, outcome_path.parent),
+        "streams": streams,
+        "policy": policy,
+    }
 
 
 def _run_harness(
@@ -232,6 +301,22 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
     from ranex.cli.main import EXIT_PASS, EXIT_USAGE  # avoid circular import at module import time
 
     try:
+        outcome_path = Path(args.outcome)
+        max_bytes = validate_max_bytes(
+            getattr(args, "log_max_bytes", DEFAULT_LOG_MAX_BYTES)
+        )
+        retention = getattr(args, "log_retention", "replace")
+        literals = collect_redaction_literals(
+            os.environ,
+            forced=getattr(args, "redact_env", None) or [],
+        )
+        log_dir_value = getattr(args, "log_dir", None)
+        log_dir = Path(log_dir_value) if log_dir_value is not None else log_dir_for_outcome(outcome_path)
+        if retention == "keep" and log_dir.exists():
+            raise ValueError(
+                f"refusing to overwrite existing log directory {log_dir}: "
+                "--log-retention is keep"
+            )
         if exec_environment_holds_signing_key():
             raise ValueError(
                 "refusing to delegate execution while a signing credential "
@@ -275,19 +360,33 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             )
         except subprocess.TimeoutExpired as exc:
             timed_out_exit = getattr(exc, "returncode", None)
-            _write_outcome(
-                Path(args.outcome),
-                {
-                    "task_id": args.task_id,
-                    # null, never 0: no suite ran, and a timeout that records a
-                    # zero exit is a pass by omission. Absence blocks.
-                    "commit": None,
-                    "harness_exit": timed_out_exit if timed_out_exit is not None else -1,
-                    "suite_exit": None,
-                    "suite_output_tail": "",
-                    "suite_results": None,
-                    "timed_out": True,
+            timeout_outcome = {
+                "task_id": args.task_id,
+                # null, never 0: no suite ran, and a timeout that records a
+                # zero exit is a pass by omission. Absence blocks.
+                "commit": None,
+                "harness_exit": timed_out_exit if timed_out_exit is not None else -1,
+                "suite_exit": None,
+                "suite_output_tail": "",
+                "suite_results": None,
+                "timed_out": True,
+            }
+            timeout_outcome["logs"] = _retained_logs(
+                retention=retention,
+                directory=log_dir,
+                outcome_path=outcome_path,
+                stream_text={
+                    "harness.stdout": decode_stream(exc.stdout),
+                    "harness.stderr": decode_stream(exc.stderr),
+                    "suite.stdout": "",
+                    "suite.stderr": "",
                 },
+                literals=literals,
+                max_bytes=max_bytes,
+            )
+            _write_outcome(
+                outcome_path,
+                timeout_outcome,
             )
             print(
                 f"ERROR  refusing to delegate: timed out after {args.timeout} seconds",
@@ -347,6 +446,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             raise ValueError("refusing emitted tree matches base tree; there is no subject to judge")
 
         suite_results: dict[str, object] | None = None
+        suite_streams = {"stdout": "", "stderr": ""}
         gate_catalog = getattr(args, "gate_catalog", None)
         catalog_source = (
             verified_blob_at_path(
@@ -402,24 +502,40 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 suite=args.suite,
                 results_artifact=selected_claim.results_artifact,
                 manifest=manifest,
+                streams=suite_streams,
             )
         else:
             suite_exit, suite_output_tail = _run_suite(
                 worktree=recorded_worktree,
                 commit=commit,
                 suite=args.suite,
+                streams=suite_streams,
             )
-        _write_outcome(
-            Path(args.outcome),
-            {
-                "task_id": args.task_id,
-                "commit": commit,
-                "harness_exit": completed.returncode,
-                "suite_exit": suite_exit,
-                "suite_output_tail": suite_output_tail,
-                "suite_results": suite_results,
-                "timed_out": False,
+        outcome = {
+            "task_id": args.task_id,
+            "commit": commit,
+            "harness_exit": completed.returncode,
+            "suite_exit": suite_exit,
+            "suite_output_tail": suite_output_tail,
+            "suite_results": suite_results,
+            "timed_out": False,
+        }
+        outcome["logs"] = _retained_logs(
+            retention=retention,
+            directory=log_dir,
+            outcome_path=outcome_path,
+            stream_text={
+                "harness.stdout": decode_stream(completed.stdout),
+                "harness.stderr": decode_stream(completed.stderr),
+                "suite.stdout": suite_streams["stdout"],
+                "suite.stderr": suite_streams["stderr"],
             },
+            literals=literals,
+            max_bytes=max_bytes,
+        )
+        _write_outcome(
+            outcome_path,
+            outcome,
         )
     except (
         ValueError,

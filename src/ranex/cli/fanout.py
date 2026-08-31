@@ -10,6 +10,14 @@ import sys
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+from ranex.execution.log_redaction import collect_redaction_literals
+from ranex.execution.retained_logs import (
+    decode_stream,
+    persist_stream,
+    validate_max_bytes,
+    write_log_manifest,
+)
+
 
 def _run_one_delegation(
     command: list[str],
@@ -106,6 +114,14 @@ def cmd_task_fanout(args: argparse.Namespace) -> int:
     try:
         if args.pool < 1:
             raise ValueError("--pool must be >= 1")
+        max_bytes = validate_max_bytes(args.log_max_bytes)
+        retention = args.log_retention
+        log_directory = Path(args.outcome_dir) / "fanout.logs"
+        if retention == "keep" and log_directory.exists():
+            raise ValueError(
+                f"refusing to overwrite existing log directory {log_directory}: "
+                "--log-retention is keep"
+            )
         tasks = _load_tasks(Path(args.tasks))
         task_specs = [
             (task["task_id"], task["prompt"], task["worktree"]) for task in tasks
@@ -144,6 +160,10 @@ def cmd_task_fanout(args: argparse.Namespace) -> int:
                 getattr(args, "gate_catalog", "governance/gates.yaml"),
                 "--suite-manifest",
                 getattr(args, "suite_manifest", "governance/suite_manifest.json"),
+                "--log-max-bytes",
+                str(max_bytes),
+                "--log-retention",
+                retention,
                 "--outcome",
                 str(Path(args.outcome_dir) / f"{task_id}.json"),
             ]
@@ -160,9 +180,41 @@ def cmd_task_fanout(args: argparse.Namespace) -> int:
             ]
             results = [future.result() for future in futures]
 
+        parent_logs_retained = retention != "off"
+        if parent_logs_retained:
+            literals = collect_redaction_literals(os.environ)
+            streams: dict[str, dict[str, object]] = {}
+            for (task_id, _prompt, _worktree), completed in zip(
+                task_specs, results, strict=True
+            ):
+                streams[f"{task_id}.stdout"] = persist_stream(
+                    log_directory,
+                    f"{task_id}.stdout",
+                    decode_stream(completed.stdout),
+                    literals=literals,
+                    max_bytes=max_bytes,
+                )
+                streams[f"{task_id}.stderr"] = persist_stream(
+                    log_directory,
+                    f"{task_id}.stderr",
+                    decode_stream(completed.stderr),
+                    literals=literals,
+                    max_bytes=max_bytes,
+                )
+            write_log_manifest(
+                log_directory,
+                streams,
+                policy={
+                    "max_bytes_per_stream": max_bytes,
+                    "retention": retention,
+                    "redaction": "value+structure-v1",
+                },
+            )
+
         exit_code = EXIT_PASS
         for task_id, completed in zip(task_specs, results, strict=True):
-            print(f"FANOUT  task={task_id[0]}  exit={completed.returncode}")
+            logs = f"  logs={log_directory}" if parent_logs_retained else ""
+            print(f"FANOUT  task={task_id[0]}  exit={completed.returncode}{logs}")
             if completed.returncode != EXIT_PASS:
                 print(completed.stderr, file=sys.stderr)
                 exit_code = EXIT_USAGE

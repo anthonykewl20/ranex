@@ -4009,6 +4009,8 @@ def build_parser() -> argparse.ArgumentParser:
     )
     merge.set_defaults(func=cmd_task_merge)
 
+    from ranex.execution.retained_logs import DEFAULT_LOG_MAX_BYTES
+
     delegate = task_actions.add_parser("delegate", help="execute and attest a task in a worktree")
     delegate.add_argument("--task-id", required=True, help="task identifier")
     delegate.add_argument("--target", required=True, help="external git repository")
@@ -4034,6 +4036,26 @@ def build_parser() -> argparse.ArgumentParser:
         help="suite manifest path in the dispatch base tree",
     )
     delegate.add_argument("--outcome", required=True, help="outcome file path")
+    delegate.add_argument("--log-dir", type=Path, default=None, help="retained execution-log directory")
+    delegate.add_argument(
+        "--log-max-bytes",
+        type=int,
+        default=DEFAULT_LOG_MAX_BYTES,
+        help="maximum retained bytes per stream",
+    )
+    delegate.add_argument(
+        "--log-retention",
+        choices=["keep", "replace", "off"],
+        default="replace",
+        help="retained execution-log policy",
+    )
+    delegate.add_argument(
+        "--redact-env",
+        action="append",
+        default=None,
+        metavar="NAME",
+        help="force-include an environment value in redaction literals",
+    )
     delegate.set_defaults(func=cmd_task_delegate)
 
     fanout = task_actions.add_parser(
@@ -4066,6 +4088,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="directory for per-task outcome files",
     )
     fanout.add_argument("--pool", required=True, type=int, help="max concurrent delegations")
+    fanout.add_argument(
+        "--log-max-bytes",
+        type=int,
+        default=DEFAULT_LOG_MAX_BYTES,
+        help="maximum retained bytes per stream",
+    )
+    fanout.add_argument(
+        "--log-retention",
+        choices=["keep", "replace", "off"],
+        default="replace",
+        help="retained execution-log policy",
+    )
     fanout.set_defaults(func=cmd_task_fanout)
 
     batch = task_actions.add_parser(
