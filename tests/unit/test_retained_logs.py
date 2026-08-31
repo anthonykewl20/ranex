@@ -13,6 +13,7 @@ from ranex.execution.retained_logs import (
     EMPTY_STREAM_SHA256,
     MAX_LOG_MAX_BYTES,
     MIN_LOG_MAX_BYTES,
+    _utf8_tail,
     decode_stream,
     log_dir_for_outcome,
     persist_stream,
@@ -104,6 +105,15 @@ def test_truncate_tail_returns_empty_when_cap_cannot_fit_a_marker() -> None:
     retained, truncated, retained_bytes, original_bytes = truncate_tail("long enough", 1)
 
     assert (retained, truncated, retained_bytes, original_bytes) == ("", True, 0, 11)
+
+
+@pytest.mark.parametrize("max_bytes", (0, -1))
+def test_truncate_tail_returns_empty_when_cap_is_not_positive(max_bytes: int) -> None:
+    assert truncate_tail("x", max_bytes) == ("", True, 0, 1)
+
+
+def test_utf8_tail_returns_empty_when_cap_is_not_positive() -> None:
+    assert _utf8_tail(b"x", 0) == b""
 
 
 def test_persist_stream_redacts_before_truncation_publishes_read_only_and_replaces(
