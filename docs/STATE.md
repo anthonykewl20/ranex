@@ -1,32 +1,24 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-08-31 (checked-out-worktree coherence enforced, issue #56 closing)
-**Active slice:** none
+**Updated:** 2026-08-31 (issue #58 claimed, ADR-043 accepted, SLICE-076 open)
+**Active slice:** docs/slices/SLICE-076-retained-redacted-execution-logs.md
 
 ## Where we stopped
 
-Issue #56 implemented — ADR-042's checked-out-worktree coherence. `task merge`
-into a checked-out branch refuses BEFORE the ref moves when the worktree's
-dirty set intersects the candidate diff (`sad-path-23 worktree-conflict`, max
-3 paths shown); the scan covers `--untracked-files=all`, rename/copy
-pre-images, and ignored files at candidate-changed paths (ff-merge silently
-replaces ignored files in the way). Disjoint operator changes are preserved.
-Otherwise the ref moves and the worktree is synchronized
-(`checkout --detach` → `merge --ff-only` → `symbolic-ref HEAD`; the detach
-avoids a post-CAS "Already up to date" no-op), and `PUBLISHED` prints only
-after sync succeeds. Sync failure after the ref moved journals an ABORTED
-outcome naming the exact state plus a shlex-quoted fast-forward repair
-command, exits nonzero, never prints PUBLISHED; retrying merge refuses as
-sad-path-9 tip-mismatch. Crash recovery stays honest: INFERRED when the
-candidate is at the ref, appending the stale-worktree fact and the same repair
-to the journaled detail when the checkout's HEAD is stale, degrading to the
-ref-only detail when inspection fails, never printing PUBLISHED. Documented
-residual: skip-worktree/assume-unchanged files are reported clean by git and
-are not detected. Suite 1579 tests, 157 expected skips (issue #56 closing
-evidence). Work landed across c433360f7, 541134538, 593a1cb5c plus further
-hardening uncommitted on disk at writing. ADR-042 recorded; ADR-012, README,
-and MAP synced.
+Issue #56 (checked-out-worktree coherence) closed via ADR-042. Issue #58 is
+now claimed: real `task delegate`/`task fanout` runs passed but deleted their
+scratch directories and harness stdout, leaving durable outcomes with only
+summary fields and no human-inspectable transcript for production diagnosis
+(#55 audit). ADR-043 is accepted: logs retain beside each outcome
+(`PATH.json.logs/` or fanout's per-task/parent layout), a new
+`src/ranex/execution/log_redaction.py` denylist-redacts ambient/forced
+secrets, PEM blocks, and credential-URL passwords before a bounded,
+tail-preserving truncation runs; outcomes gain an additive digest-bound
+`logs` block written via canonical JSON + atomic write. SLICE-076 is open
+with this docs tranche (T0) complete; the implementation tranche (T1) is
+owned by a separate concurrent agent working in `src/` and `tests/`. Suite
+was 1579 tests, 157 expected skips at issue #56's closing evidence.
 
 ## Next
 
