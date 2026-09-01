@@ -1,7 +1,8 @@
 # SLICE-077 — operable strict-local host workflow
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-09-01
+**Closed:** 2026-09-01
 **Priority:** P0 — production blocker (issue #64)
 **Issue:** #64
 **ADR:** docs/adr/ADR-044-delegated-host-workflow-operator-surface.md
@@ -79,14 +80,38 @@ Issue #64 acceptance criteria (verbatim):
 
 ## Evidence
 
-- `tests/contract/test_host_operator_surface.py` — public surface,
+- `tests/contract/test_host_operator_surface.py` (11 IDs) — public surface,
   frozen-command non-regression, corrective-action catalog coverage.
-- `tests/integration/test_host_workflow.py` — precheck branches,
-  sentinel recursion guard, pairing misuse, report outcomes (T1).
-- `tests/e2e/test_host_workflow_real.py` — real v1/v2/v3 end-to-end
-  runs asserting the report schema and the shared cgroup root (T1/T2).
-- Acceptance transcript + artifacts to be attached to issue #64 in T2 —
-  not produced yet; nothing here is claimed as run.
+- `tests/integration/test_host_workflow.py` (13 IDs) — precheck branches,
+  sentinel recursion guard, pairing misuse, report outcomes.
+- `tests/e2e/test_host_workflow_real.py` (5 IDs) — real v1/v2/v3 end-to-end
+  runs asserting the report schema and the shared cgroup root.
+- Suite re-frozen at **1675 IDs** (was 1644; +31: 11 contract + 13
+  integration + 2 later coverage integration tests + 5 e2e real arms),
+  **162 expected skips** (157 original declarations byte-identical + 5 new
+  context-tier `ranex-context:host-capability:` declarations for the
+  host-workflow arms). Two independent sealed ceremonies green at 1675/162
+  (`run_exit=0`; 1558 passed / 117 skipped), byte-identical manifests
+  (sha256 6d93b9a6…), freeze golden byte-matched. One transient full-suite
+  red where the surviving clone evidence.json named the inner red as
+  `tests/integration/test_journal.py::test_sad_path_19…` — the documented
+  concurrent-CAS journal race family; zero branch diff, green in isolation,
+  classification honest and documented.
+- Quality gates: ruff 0.16.2 clean; pyrefly 1.2.0 zero errors; diff-cover
+  vs origin/main 100% (344 changed lines, 0 missing; `host_workflow.py`,
+  `main.py`, `schema.py` all 100%); docs contract 65/65 green.
+- Real-host acceptance (transcript attached to issue #64 at
+  `/tmp/opencode/issue64-acceptance/acceptance-transcript2.txt`): in-scope
+  formal arms **5/5 passed** — v1 confined run with RECORDED
+  claim=host-workflow-v1 subject sha256:bdda6e6d…; v2 signed
+  committed-authority run; v3 digest-bound closure run; prereq-failure named
+  check + corrective; cross-scope drift refused with `E-C18-HOST-DRIFT`
+  exit 2 and evidence not written. Real delegated scope evidence:
+  cgroup2fs, scope under `user@1000.service/app.slice` with cpu/memory/pids
+  controllers; manager degraded-accepted per the pinned quirk. Launcher
+  identity sha256:f3e1e1e9… equals the manifest pin, protocol
+  `ranex-launcher-v1`, matches=true. Wrapper refusals retain full
+  `ranex-host-strict-local-run-v1` reports plus redacted bounded logs.
 
 ## Non-goals
 

@@ -1,20 +1,21 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-01 (issue #64 claimed, ADR-044 accepted, SLICE-077 open)
-**Active slice:** docs/slices/SLICE-077-operable-strict-local-host-workflow.md
+**Updated:** 2026-09-01 (issue #64 closed, SLICE-077 archived)
+**Active slice:** none
 
 ## Where we stopped
 
-T0 governed docs of the strict-local host-workflow slice (issue #64, P0):
-ADR-044 accepted with vendored prior art (systemd v257 systemd-run.xml;
-linux v6.12 cgroup-v2 delegation excerpt) and SLICE-077 opened; the
-implementation tranche (src/ranex/cli/host_workflow.py, `ranex host`
-parser wiring, contract/integration/e2e tests) is owned by concurrent
-agents. Truth fix over the previous STATE: the freeze golden
-(tests/e2e/expected/suite-freeze-manifest.out) says the suite is
-re-frozen at 1644 IDs with 157 expected skips byte-matched — the
-stale "1619" figure is retired.
+Issue #64 is CLOSED: the operable strict-local host workflow shipped
+(SLICE-077, ADR-044). The public `ranex host` group exposes six verbs
+(`launcher-build`, `launcher-install`, `host-probe`, `qualify`,
+`launcher-identity`, `strict-local`); `ranex host strict-local --version
+v1|v2|v3` prepares/enters the delegated cgroup and runs without manual
+systemd choreography. Suite re-frozen at 1675 IDs / 162 expected skips;
+two independent sealed ceremonies green (1558 passed / 117 skipped,
+byte-identical manifests, golden byte-matched). Real-host acceptance
+5/5 arms: v1/v2/v3 confined runs in the delegated scope, prereq-failure
+named check + corrective, cross-scope drift → E-C18-HOST-DRIFT exit 2.
 
 ## Next
 
@@ -33,6 +34,10 @@ lines carry the pragma convention.
 ## Known limits
 
 - Version stays 0.0.0 until the release-gate slice (#66).
-- Strict-local direct use outside the planned `ranex host strict-local`
-  wrapper remains unqualified on plain terminals until the wrapper ships
-  (ADR-044; truthful interim state, not a regression).
+- Strict-local requires a delegated cgroup scope; the `ranex host
+  strict-local` wrapper establishes it, and the controller remains
+  same-UID trusted infrastructure (ADR-044).
+- `mutmut` remains an UNVERIFIED residual: no negative control or
+  consuming gate (MAP §1.5).
+- The concurrent-CAS journal race family is documented, not fixed;
+  verification cannot detect snapshot replacement (RISK-19 adjacent).
