@@ -240,6 +240,85 @@ def test_launcher_identity_reports_manifest_mismatch_and_exec_drift_remedy(tmp_p
     assert "executable" in host_workflow.corrective_for(host_confinement.E_EXEC).lower()
 
 
+def test_matching_launcher_manifest_skips_build_in_workflow(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A matching launcher digest lets the in-process workflow skip its build."""
+    payload = b"matching launcher"
+    artifact = tmp_path / "launcher"
+    manifest = tmp_path / "manifest.json"
+    installed = tmp_path / "installed-launcher"
+    artifact.write_bytes(payload)
+    installed.write_bytes(b"stale launcher")
+    manifest.write_text(
+        json.dumps({"artifact": {"sha256": hashlib.sha256(payload).hexdigest()}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(host_workflow, "BUILD_ARTIFACT", str(artifact))
+    monkeypatch.setattr(host_workflow, "BUILD_MANIFEST", str(manifest))
+    monkeypatch.setattr(host_workflow, "INSTALLED_ARTIFACT", str(installed))
+    monkeypatch.setenv("RANEX_STRICT_LOCAL_IN_SCOPE", "1")
+    monkeypatch.setattr(host_workflow, "preflight_checks", lambda **_kwargs: _passing_checks())
+    monkeypatch.setattr(
+        host_workflow,
+        "delegated_controllers",
+        lambda: (Path("/sys/fs/cgroup"), "/", host_confinement.REQUIRED_CONTROLLERS),
+    )
+    steps: list[host_workflow.StepResult] = []
+
+    def run_step(name: str, argv: list[str]) -> host_workflow.StepResult:
+        step = _step(name, argv)
+        steps.append(step)
+        return step
+
+    monkeypatch.setattr(host_workflow, "_run_step", run_step)
+    assert host_workflow.run_workflow(
+        "v1",
+        runtime_input_path=None,
+        toolchain_root=None,
+        runtime_closure_root=None,
+        command=("/bin/true",),
+        result_dir=str(tmp_path / "result"),
+        skip_build=True,
+    ) == 0
+
+    assert [step.name for step in steps] == ["launcher-install", "qualify", "run"]
+
+
+def test_unchanged_managed_launcher_reprints_install_status(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """An identical managed launcher reports the install phase as unchanged."""
+    payload = b"unchanged launcher"
+    artifact = tmp_path / "launcher"
+    manifest = tmp_path / "manifest.json"
+    installed = tmp_path / "installed-launcher"
+    artifact.write_bytes(payload)
+    installed.write_bytes(payload)
+    manifest.write_text(
+        json.dumps({"artifact": {"sha256": hashlib.sha256(payload).hexdigest()}}),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(host_workflow, "BUILD_ARTIFACT", str(artifact))
+    monkeypatch.setattr(host_workflow, "BUILD_MANIFEST", str(manifest))
+    monkeypatch.setattr(host_workflow, "INSTALLED_ARTIFACT", str(installed))
+    _wire_in_place(monkeypatch)
+    monkeypatch.setattr(host_workflow, "_run_step", _step)
+
+    assert host_workflow.run_workflow(
+        "v1",
+        runtime_input_path=None,
+        toolchain_root=None,
+        runtime_closure_root=None,
+        command=("/bin/true",),
+        result_dir=str(tmp_path / "result"),
+        skip_build=True,
+    ) == 0
+
+    expected = f"INSTALLED  launcher={installed} (unchanged)"
+    assert expected in capsys.readouterr().out.splitlines()
+
+
 def test_v3_toolchain_pairing_refuses_before_scope_entry(
     monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
