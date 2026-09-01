@@ -2015,6 +2015,63 @@ def test_cmd_task_delegate_timeout_retains_partial_harness_streams(
     )
 
 
+def test_cmd_task_delegate_redacts_suite_output_tail_and_retained_streams(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-58-SUITE-TAIL-REDACTION"
+    )
+    secret = "ranex-suite-tail-secret-0123456789"
+    sentinel = "SUITE OPERATOR SENTINEL"
+    monkeypatch.setenv("RANEX_TEST_PLANT", secret)
+    args.redact_env = ["RANEX_TEST_PLANT"]
+    suite = tmp_path / "leaking-suite.sh"
+    suite.write_text(
+        "#!/bin/sh\n"
+        f"printf '%s\\n' '{secret}'\n"
+        f"printf '%s\\n' '{sentinel}'\n"
+        f"printf '%s\\n' '{secret}' >&2\n",
+        encoding="utf-8",
+    )
+    suite.chmod(0o755)
+    args.suite = str(suite)
+
+    class FakeMaterialisation:
+        def __init__(self) -> None:
+            self.tree = tmp_path / "suite-tree"
+            self.home = tmp_path / "suite-home"
+            self.temporary = tmp_path / "suite-tmp"
+
+        def __enter__(self) -> FakeMaterialisation:
+            self.tree.mkdir()
+            self.home.mkdir()
+            self.temporary.mkdir()
+            return self
+
+        def __exit__(self, _exc_type, _exc, _tb) -> bool | None:
+            return None
+
+    monkeypatch.setattr(
+        "ranex.cli.delegation.materialise_subject",
+        lambda *_args, **_kwargs: FakeMaterialisation(),
+    )
+
+    result = cmd_task_delegate(args)
+    captured = capsys.readouterr()
+    outcome = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+    log_directory = Path(args.outcome + ".logs")
+
+    assert result == EXIT_PASS
+    assert "DELEGATED" in captured.out
+    assert "[REDACTED:env:RANEX_TEST_PLANT]" in outcome["suite_output_tail"]
+    assert secret not in outcome["suite_output_tail"]
+    assert sentinel in outcome["suite_output_tail"]
+    for stream in ("suite.stdout.log", "suite.stderr.log"):
+        assert secret not in (log_directory / stream).read_text(encoding="utf-8")
+
+
 def test_cmd_task_delegate_off_retention_writes_disabled_logs_without_sidecar(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
