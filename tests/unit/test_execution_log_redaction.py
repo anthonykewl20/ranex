@@ -27,6 +27,46 @@ def test_redact_text_scrubs_multiple_pem_blocks() -> None:
     assert counts == {"pem": 2}
 
 
+def test_redact_text_scrubs_unpaired_pem_block_to_end_of_cut_stream() -> None:
+    block = "-----BEGIN RSA PRIVATE KEY-----\nfirst-key-line\nsecond-key-line"
+
+    redacted, counts = redact_text(block, ())
+
+    assert redacted == "[REDACTED:pem]"
+    assert "first-key-line" not in redacted
+    assert "second-key-line" not in redacted
+    assert counts == {"pem": 1}
+
+
+def test_redact_text_keeps_paired_pem_redaction_idempotent() -> None:
+    block = "-----BEGIN RSA PRIVATE KEY-----\nsecret-material\n-----END RSA PRIVATE KEY-----"
+
+    first = redact_text(block, ())
+    second = redact_text(first[0], ())
+
+    assert first == ("[REDACTED:pem]", {"pem": 1})
+    assert second == (first[0], {})
+
+
+def test_redact_text_combines_paired_and_unpaired_pem_counts() -> None:
+    paired = "-----BEGIN RSA PRIVATE KEY-----\npaired\n-----END RSA PRIVATE KEY-----"
+    unpaired = "-----BEGIN EC PRIVATE KEY-----\nunpaired"
+
+    redacted, counts = redact_text(f"{paired}\n{unpaired}", ())
+
+    assert redacted == "[REDACTED:pem]\n[REDACTED:pem]"
+    assert counts == {"pem": 2}
+
+
+def test_redact_text_scrubs_crlf_pem_blocks() -> None:
+    block = "-----BEGIN RSA PRIVATE KEY-----\r\nsecret-material\r\n-----END RSA PRIVATE KEY-----"
+
+    redacted, counts = redact_text(block, ())
+
+    assert redacted == "[REDACTED:pem]"
+    assert counts == {"pem": 1}
+
+
 def test_redact_text_scrubs_credential_url_passwords_only() -> None:
     text = "https://ci:pw123@registry.invalid/x git+https://bot:token@github.invalid/repo"
 
@@ -35,6 +75,50 @@ def test_redact_text_scrubs_credential_url_passwords_only() -> None:
     assert redacted == (
         "https://ci:[REDACTED:credential]@registry.invalid/x "
         "git+https://bot:[REDACTED:credential]@github.invalid/repo"
+    )
+    assert counts == {"credential": 2}
+
+
+def test_redact_text_scrubs_credential_url_passwords_containing_slashes() -> None:
+    password = "pa/ss"
+    text = f"https://user:{password}@registry.invalid/x"
+
+    redacted, counts = redact_text(text, ())
+
+    assert password not in redacted
+    assert redacted == "https://user:[REDACTED:credential]@registry.invalid/x"
+    assert counts == {"credential": 1}
+
+
+def test_redact_text_scrubs_credential_url_passwords_containing_at_signs() -> None:
+    password = "pa@ss"
+    text = f"https://user:{password}@registry.invalid/x"
+
+    first = redact_text(text, ())
+    second = redact_text(text, ())
+
+    assert all(fragment not in first[0] for fragment in ("pa", "ss"))
+    assert first == ("https://user:[REDACTED:credential]@registry.invalid/x", {"credential": 1})
+    assert second == first
+
+
+def test_redact_text_conservatively_over_redacts_at_bearing_url_paths() -> None:
+    text = "https://user:password@registry.invalid/path@segment"
+
+    redacted, counts = redact_text(text, ())
+
+    assert redacted == "https://user:[REDACTED:credential]@segment"
+    assert counts == {"credential": 1}
+
+
+def test_redact_text_scrubs_multiple_credential_urls_in_one_line() -> None:
+    text = "https://one:first@one.invalid/x https://two:second@two.invalid/y"
+
+    redacted, counts = redact_text(text, ())
+
+    assert redacted == (
+        "https://one:[REDACTED:credential]@one.invalid/x "
+        "https://two:[REDACTED:credential]@two.invalid/y"
     )
     assert counts == {"credential": 2}
 
