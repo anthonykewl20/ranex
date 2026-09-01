@@ -102,6 +102,25 @@ def test_redact_text_scrubs_credential_url_passwords_containing_at_signs() -> No
     assert second == first
 
 
+def test_redact_text_scrubs_credential_url_password_before_extra_at_sign() -> None:
+    password = "pass"
+    text = f"https://user:{password}@@host/x"
+
+    redacted, counts = redact_text(text, ())
+
+    assert password not in redacted
+    assert "[REDACTED:credential]" in redacted
+    assert counts == {"credential": 1}
+
+
+@pytest.mark.parametrize(
+    "text",
+    ("https://u:p@/x", "https://u:p@@/x"),
+)
+def test_redact_text_leaves_empty_credential_url_hosts_unchanged(text: str) -> None:
+    assert redact_text(text, ()) == (text, {})
+
+
 def test_redact_text_conservatively_over_redacts_at_bearing_url_paths() -> None:
     text = "https://user:password@registry.invalid/path@segment"
 

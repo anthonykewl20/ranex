@@ -2196,6 +2196,115 @@ def test_cmd_task_delegate_redacts_suite_output_tail_and_retained_streams(
         assert secret not in (log_directory / stream).read_text(encoding="utf-8")
 
 
+def test_cmd_task_delegate_redacts_pem_before_tailing_suite_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-58-PEM-TAIL-STRADDLE"
+    )
+    pem_body_lines = [
+        "MC4CAQAwBQYDK2VwBCIEIGvYql5P4mN3XwSXJkeNANvhbp9C74nqQXriydWYELAO",
+        *[f"{index:04d}{'A' * 60}" for index in range(80)],
+    ]
+    pem = "\n".join(
+        (
+            "-----BEGIN PRIVATE KEY-----",
+            *pem_body_lines,
+            "-----END PRIVATE KEY-----",
+        )
+    )
+    sentinel = "PEM TAIL SENTINEL"
+    suite = tmp_path / "straddling-pem-suite.sh"
+    suite.write_text(
+        "#!/bin/sh\n"
+        "cat <<'PEM'\n"
+        f"{pem}\n"
+        "PEM\n"
+        f"printf '%s\\n' '{sentinel}'\n",
+        encoding="utf-8",
+    )
+    suite.chmod(0o755)
+    args.suite = str(suite)
+
+    class FakeMaterialisation:
+        def __init__(self) -> None:
+            self.tree = tmp_path / "suite-tree"
+            self.home = tmp_path / "suite-home"
+            self.temporary = tmp_path / "suite-tmp"
+
+        def __enter__(self) -> FakeMaterialisation:
+            self.tree.mkdir()
+            self.home.mkdir()
+            self.temporary.mkdir()
+            return self
+
+        def __exit__(self, _exc_type, _exc, _tb) -> bool | None:
+            return None
+
+    monkeypatch.setattr(
+        "ranex.cli.delegation.materialise_subject",
+        lambda *_args, **_kwargs: FakeMaterialisation(),
+    )
+
+    assert cmd_task_delegate(args) == EXIT_PASS
+    outcome = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+
+    assert "[REDACTED:pem]" in outcome["suite_output_tail"]
+    assert all(line not in outcome["suite_output_tail"] for line in pem_body_lines)
+    assert sentinel in outcome["suite_output_tail"]
+
+
+def test_cmd_task_delegate_redacts_env_literal_before_tailing_suite_output(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    args, _worktree, _base_commit, _emitted_commit = configure_truthful_delegate(
+        tmp_path, monkeypatch, task_id="T-58-LITERAL-TAIL-STRADDLE"
+    )
+    secret = "ranex-suite-tail-straddle-secret-" + "s" * 64
+    sentinel = "LITERAL TAIL SENTINEL"
+    monkeypatch.setenv("RANEX_TEST_STRADDLE_SECRET", secret)
+    padding = "x" * (4000 - len(secret) + 5 - len(sentinel))
+    suite = tmp_path / "straddling-literal-suite.sh"
+    suite.write_text(
+        "#!/bin/sh\n"
+        f"printf '%s%s%s\\n' '{secret}' '{padding}' '{sentinel}'\n",
+        encoding="utf-8",
+    )
+    suite.chmod(0o755)
+    args.suite = str(suite)
+
+    class FakeMaterialisation:
+        def __init__(self) -> None:
+            self.tree = tmp_path / "suite-tree"
+            self.home = tmp_path / "suite-home"
+            self.temporary = tmp_path / "suite-tmp"
+
+        def __enter__(self) -> FakeMaterialisation:
+            self.tree.mkdir()
+            self.home.mkdir()
+            self.temporary.mkdir()
+            return self
+
+        def __exit__(self, _exc_type, _exc, _tb) -> bool | None:
+            return None
+
+    monkeypatch.setattr(
+        "ranex.cli.delegation.materialise_subject",
+        lambda *_args, **_kwargs: FakeMaterialisation(),
+    )
+
+    assert cmd_task_delegate(args) == EXIT_PASS
+    outcome = json.loads(Path(args.outcome).read_text(encoding="utf-8"))
+
+    assert secret not in outcome["suite_output_tail"]
+    assert "[REDACTED:env:RANEX_TEST_STRADDLE_SECRET]" in outcome["suite_output_tail"]
+    assert sentinel in outcome["suite_output_tail"]
+
+
 def test_cmd_task_delegate_off_retention_writes_disabled_logs_without_sidecar(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
