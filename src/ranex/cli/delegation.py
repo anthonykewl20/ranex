@@ -19,7 +19,7 @@ from typing import cast
 from ranex.cli.repository import git
 from ranex.cli.subject import materialise_subject, verified_blob_at_path
 from ranex.cli.toolchain import ToolchainError, pinned_path_value
-from ranex.execution.log_redaction import collect_redaction_literals
+from ranex.execution.log_redaction import collect_redaction_literals, redact_text
 from ranex.execution.retained_logs import (
     DEFAULT_LOG_MAX_BYTES,
     decode_stream,
@@ -367,7 +367,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 "commit": None,
                 "harness_exit": timed_out_exit if timed_out_exit is not None else -1,
                 "suite_exit": None,
-                "suite_output_tail": "",
+                "suite_output_tail": redact_text("", literals)[0],
                 "suite_results": None,
                 "timed_out": True,
             }
@@ -516,7 +516,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             "commit": commit,
             "harness_exit": completed.returncode,
             "suite_exit": suite_exit,
-            "suite_output_tail": suite_output_tail,
+            "suite_output_tail": redact_text(suite_output_tail, literals)[0],
             "suite_results": suite_results,
             "timed_out": False,
         }

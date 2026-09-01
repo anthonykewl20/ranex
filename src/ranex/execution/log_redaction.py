@@ -1,4 +1,10 @@
-"""Pure redaction of retained execution-log text."""
+"""Pure redaction of retained execution-log text.
+
+Passes redact literals, paired PEM blocks, unterminated PEM blocks, and
+credential URL passwords. Credential URL matching deliberately selects the
+last compatible ``@`` delimiter, so ``@``-bearing URL path data can be
+over-redacted rather than leave password bytes in retained text.
+"""
 
 from __future__ import annotations
 
@@ -19,8 +25,13 @@ _PEM_BLOCK_PATTERN: re.Pattern[str] = re.compile(
     r"-----BEGIN ((?:[A-Z0-9]+ )*)PRIVATE KEY-----.*?-----END \1PRIVATE KEY-----",
     re.DOTALL,
 )
+_UNPAIRED_PEM_BLOCK_PATTERN: re.Pattern[str] = re.compile(
+    r"-----BEGIN ((?:[A-Z0-9]+ )*)PRIVATE KEY-----(?:(?!-----END \1PRIVATE KEY-----).)*\Z",
+    re.DOTALL,
+)
 _CREDENTIAL_URL_PATTERN: re.Pattern[str] = re.compile(
-    r"(?P<prefix>[A-Za-z0-9+.-]+://[^:@/]*:)[^@/]+(?P<suffix>@)"
+    r"(?P<prefix>[A-Za-z0-9+.-]+://[^:@/]*:)(?:[^@\s]+@)*[^@\s]+"
+    r"(?P<suffix>@(?=[^@/\s]+(?:[/?#]|\s|$)))"
 )
 
 
@@ -53,7 +64,7 @@ def collect_redaction_literals(
 
 
 def redact_text(text: str, literals: Sequence[tuple[str, str]]) -> tuple[str, dict[str, int]]:
-    """Redact literal values, PEM blocks, and credential URL passwords from text."""
+    """Redact literals, PEM blocks, and credential URL passwords from text."""
 
     redacted = text
     counts: dict[str, int] = {}
@@ -64,8 +75,12 @@ def redact_text(text: str, literals: Sequence[tuple[str, str]]) -> tuple[str, di
             counts[kind] = counts.get(kind, 0) + replacements
 
     redacted, pem_replacements = _PEM_BLOCK_PATTERN.subn("[REDACTED:pem]", redacted)
+    redacted, unpaired_pem_replacements = _UNPAIRED_PEM_BLOCK_PATTERN.subn(
+        "[REDACTED:pem]", redacted
+    )
+    pem_replacements += unpaired_pem_replacements
     if pem_replacements > 0:
-        counts["pem"] = pem_replacements
+        counts["pem"] = counts.get("pem", 0) + pem_replacements
 
     redacted, credential_replacements = _CREDENTIAL_URL_PATTERN.subn(
         _redact_credential_url,
