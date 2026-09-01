@@ -449,7 +449,7 @@ Current limits visible in code:
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** docs/slices/SLICE-077-operable-strict-local-host-workflow.md
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness

@@ -1,30 +1,24 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-01 (issue #58 closed, SLICE-076 archived)
-**Active slice:** none
+**Updated:** 2026-09-01 (issue #64 claimed, ADR-044 accepted, SLICE-077 open)
+**Active slice:** docs/slices/SLICE-077-operable-strict-local-host-workflow.md
 
 ## Where we stopped
 
-Issue #58 (retained redacted execution logs) is CLOSED via ADR-043 /
-SLICE-076: `task delegate`/`task fanout` runs now persist bounded, redacted,
-digest-bound per-stream logs beside each outcome (`<outcome>.logs/`, fanout
-parent `fanout.logs/`) with flags `--log-dir`, `--log-max-bytes` (default
-262144, bounds 4096–8388608), `--log-retention keep|replace|off`, and
-repeatable `--redact-env`; redaction (env grammar, forced env, PEM,
-credential URLs) runs before tail-preserving truncation, and outcomes carry
-an additive canonical `logs` block with per-stream sha256, truncation
-markers, and redaction counts. No auto-deletion — retention is
-operator-owned. Suite re-frozen at 1619 IDs (+40) with 157 expected skips
-byte-matched; full suite 1588 passed / 29 skipped, the only failures the
-documented concurrent-CAS race flake family (green in isolation). ruff,
-pyrefly, and diff-cover (100% on changed lines) all clean. Real-host
-acceptance passed: success, failure+truncation, fanout, and a live
-secret-injection redaction challenge (transcript on issue #58).
+T0 governed docs of the strict-local host-workflow slice (issue #64, P0):
+ADR-044 accepted with vendored prior art (systemd v257 systemd-run.xml;
+linux v6.12 cgroup-v2 delegation excerpt) and SLICE-077 opened; the
+implementation tranche (src/ranex/cli/host_workflow.py, `ranex host`
+parser wiring, contract/integration/e2e tests) is owned by concurrent
+agents. Truth fix over the previous STATE: the freeze golden
+(tests/e2e/expected/suite-freeze-manifest.out) says the suite is
+re-frozen at 1644 IDs with 157 expected skips byte-matched — the
+stale "1619" figure is retired.
 
 ## Next
 
-Issues #64 and #65; umbrella #66 last.
+Issue #65; umbrella #66 last.
 
 ## Governance
 
@@ -39,3 +33,6 @@ lines carry the pragma convention.
 ## Known limits
 
 - Version stays 0.0.0 until the release-gate slice (#66).
+- Strict-local direct use outside the planned `ranex host strict-local`
+  wrapper remains unqualified on plain terminals until the wrapper ships
+  (ADR-044; truthful interim state, not a regression).
