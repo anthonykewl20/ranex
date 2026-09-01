@@ -53,7 +53,7 @@ EXPECTED_FIELDS = (
 # two members, admitted on `version` events only.
 EXPECTED_VERSION_ONLY_FIELDS = ("evt", "exe")
 
-# The 14 CLI dispatch groups enumerated from src/ranex/cli/main.py's argparse
+# The 20 CLI dispatch groups enumerated from src/ranex/cli/main.py's argparse
 # subcommands (run; gate evaluate; journal verify; suite freeze; deps fetch;
 # deps approve; keygen; task dispatch/judge/merge/delegate/fanout/batch qualify;
 # specification) — verified
@@ -74,6 +74,12 @@ CLI_DISPATCH_GROUPS = (
     "task.fanout",
     "task.batch.qualify",
     "specification",
+    "host.launcher-build",
+    "host.launcher-install",
+    "host.host-probe",
+    "host.qualify",
+    "host.launcher-identity",
+    "host.strict-local",
 )
 
 SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status")
@@ -145,7 +151,7 @@ def test_version_only_fields_are_frozen() -> None:
 
 
 def test_schema_constants_are_frozen() -> None:
-    assert trace_schema.SCHEMA_NUMBER == 3
+    assert trace_schema.SCHEMA_NUMBER == 4
     assert trace_schema.MAX_LINE_LENGTH == 16384
     assert trace_schema.TRACE_BYTE_CAP == 1_048_576
     assert trace_schema.IDENTIFIER_NAME_CAP == 256
