@@ -9,9 +9,7 @@ Usage: ``ranex host strict-local --version VERSION --claim CLAIM --producer PROD
 
 from __future__ import annotations
 
-import contextlib
 import hashlib
-import io
 import json
 import os
 import platform
@@ -23,7 +21,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, NoReturn
 
-from ranex.cli import host_confinement
 from ranex.execution.log_redaction import collect_redaction_literals
 from ranex.execution.retained_logs import (
     DEFAULT_LOG_MAX_BYTES,
@@ -40,20 +37,35 @@ INSTALLED_ARTIFACT = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher
 HOST_PROFILE = "governance/confinement/strict-local-host-v1.json"
 QUALIFICATION_REPORT = ".local/ranex/qualification/strict-local-v1.json"
 
-# The confinement kernel exposes C18 constants with names that are themselves
-# part of its public refusal surface.  Keep this ordered catalogue closed to
-# those names so a new kernel refusal cannot silently lack an operator remedy.
+# SLICE-047 permits only the confinement module to import itself. These copied
+# public protocol literals allow this operator wrapper to invoke it as a child,
+# rather than importing the confinement kernel into the parent process.
+E_EXEC = "E-C17-EXEC-OBJECT-DRIFT"
+E_C18_GATE = "E-C18-GATE"
+E_C18_READBACK = "E-C18-CGROUP-READBACK"
+E_C18_LIMIT = "E-C18-LIMIT"
+E_C18_DRAIN = "E-C18-DRAIN"
+E_C18_OUTPUT_UNSAFE = "E-C18-OUTPUT-UNSAFE"
+E_C18_OUTPUT_BOUND = "E-C18-OUTPUT-BOUND"
+E_C18_OUTPUT_RACE = "E-C18-OUTPUT-RACE"
+E_C18_RESULT = "E-C18-RESULT"
+E_C18_PATH_ALIAS = "E-C18-PATH-ALIAS"
+E_C18_HOST_DRIFT = "E-C18-HOST-DRIFT"
+REQUIRED_CONTROLLERS = frozenset({"cpu", "memory", "pids"})
+
+# Keep this ordered catalogue closed to the confinement protocol's C18 names
+# so a new kernel refusal cannot silently lack an operator remedy.
 PREFLIGHT_CHECKS = (
-    host_confinement.E_C18_GATE,
-    host_confinement.E_C18_READBACK,
-    host_confinement.E_C18_LIMIT,
-    host_confinement.E_C18_DRAIN,
-    host_confinement.E_C18_OUTPUT_UNSAFE,
-    host_confinement.E_C18_OUTPUT_BOUND,
-    host_confinement.E_C18_OUTPUT_RACE,
-    host_confinement.E_C18_RESULT,
-    host_confinement.E_C18_PATH_ALIAS,
-    host_confinement.E_C18_HOST_DRIFT,
+    E_C18_GATE,
+    E_C18_READBACK,
+    E_C18_LIMIT,
+    E_C18_DRAIN,
+    E_C18_OUTPUT_UNSAFE,
+    E_C18_OUTPUT_BOUND,
+    E_C18_OUTPUT_RACE,
+    E_C18_RESULT,
+    E_C18_PATH_ALIAS,
+    E_C18_HOST_DRIFT,
 )
 _PREFLIGHT_NAMES = (
     "pid1-systemd",
@@ -66,16 +78,16 @@ _PREFLIGHT_NAMES = (
 )
 
 CORRECTIVE_ACTIONS: dict[str, str] = {
-    host_confinement.E_C18_GATE: "gate admission failed; restore the pinned governed inputs and retry.",
-    host_confinement.E_C18_READBACK: "cgroup readback failed; inspect delegated controller state and retry.",
-    host_confinement.E_C18_LIMIT: "a confinement limit was not applied; repair the host systemd policy.",
-    host_confinement.E_C18_DRAIN: "cgroup drain failed; stop remaining workload processes before retrying.",
-    host_confinement.E_C18_OUTPUT_UNSAFE: "output safety check failed; use a fresh admitted result directory.",
-    host_confinement.E_C18_OUTPUT_BOUND: "output bounds check failed; reduce the output to its configured limit.",
-    host_confinement.E_C18_OUTPUT_RACE: "output changed during collection; retry with an exclusively owned directory.",
-    host_confinement.E_C18_RESULT: "result validation failed; remove the invalid result and rerun qualification.",
-    host_confinement.E_C18_PATH_ALIAS: "path aliasing was detected; provide canonical repository-relative paths.",
-    host_confinement.E_C18_HOST_DRIFT: "host facts drifted; requalify this host before running strict-local work.",
+    E_C18_GATE: "gate admission failed; restore the pinned governed inputs and retry.",
+    E_C18_READBACK: "cgroup readback failed; inspect delegated controller state and retry.",
+    E_C18_LIMIT: "a confinement limit was not applied; repair the host systemd policy.",
+    E_C18_DRAIN: "cgroup drain failed; stop remaining workload processes before retrying.",
+    E_C18_OUTPUT_UNSAFE: "output safety check failed; use a fresh admitted result directory.",
+    E_C18_OUTPUT_BOUND: "output bounds check failed; reduce the output to its configured limit.",
+    E_C18_OUTPUT_RACE: "output changed during collection; retry with an exclusively owned directory.",
+    E_C18_RESULT: "result validation failed; remove the invalid result and rerun qualification.",
+    E_C18_PATH_ALIAS: "path aliasing was detected; provide canonical repository-relative paths.",
+    E_C18_HOST_DRIFT: "host facts drifted; requalify this host before running strict-local work.",
 }
 
 
@@ -100,7 +112,7 @@ class StepResult:
 
 def corrective_for(code: str) -> str:
     """Return the durable corrective instruction for a kernel refusal."""
-    if code == host_confinement.E_EXEC:
+    if code == E_EXEC:
         return "the executable object drifted; rebuild the admitted launcher and requalify the host."
     return CORRECTIVE_ACTIONS.get(code, "inspect the failed host check, correct it, and retry the operation.")
 
@@ -116,8 +128,13 @@ def _check(name: str, ok: bool, detail: str) -> CheckResult:
 
 def delegated_controllers() -> tuple[Path, str, frozenset[str]]:
     """Read the current unified cgroup and its available controllers."""
-    root, relative = host_confinement._current_cgroup_root()
-    controllers = frozenset(host_confinement._cgroup_controllers(root))
+    lines = Path("/proc/self/cgroup").read_text(encoding="utf-8").splitlines()
+    unified = [line.split("::", 1)[1] for line in lines if "::" in line]
+    if len(unified) != 1 or not unified[0].startswith("/"):
+        raise ValueError("cannot resolve the unified cgroup from /proc/self/cgroup")
+    relative = unified[0]
+    root = Path("/sys/fs/cgroup") / relative.lstrip("/")
+    controllers = frozenset((root / "cgroup.controllers").read_text().split())
     return root, relative, controllers
 
 
@@ -161,9 +178,9 @@ def preflight_checks(*, build_needed: bool) -> list[CheckResult]:
     checks.append(_check(_PREFLIGHT_NAMES[5], closure_ok, closure_detail))
     try:
         _root, _relative, controllers = delegated_controllers()
-        delegated = host_confinement.REQUIRED_CONTROLLERS <= controllers
+        delegated = REQUIRED_CONTROLLERS <= controllers
         delegation_detail = f"available controllers: {', '.join(sorted(controllers))}"
-    except (OSError, ValueError, host_confinement.HostConfinementError) as exc:
+    except (OSError, ValueError) as exc:
         delegated = False
         delegation_detail = f"cannot inspect current cgroup delegation: {exc}"
     checks.append(_check(_PREFLIGHT_NAMES[6], delegated, delegation_detail))
@@ -188,6 +205,11 @@ def _run_step(name: str, argv: Sequence[str]) -> StepResult:
     completed = subprocess.run(list(argv), capture_output=True, check=False, text=True)
     code, detail = _refusal_from_streams(completed.stdout, completed.stderr)
     return StepResult(name, list(argv), completed.returncode, code, detail, completed.stdout, completed.stderr)
+
+
+def _confinement_argv(argv: Sequence[str]) -> list[str]:
+    """Build the module-child invocation for one confinement operation."""
+    return ["python", "-m", "ranex.cli.host_confinement", *argv]
 
 
 _ERROR_REFUSAL = re.compile(r"^ERROR\s+(E-C1[78][A-Z0-9-]*):\s*(.+)$", re.MULTILINE)
@@ -298,19 +320,18 @@ def _operator_report(result_dir: Path, *, outcome: str, step: StepResult, scope:
 
 def run_operator(args: Any, argv: list[str], lifecycle: str, artifact: str) -> int:
     """Forward a single host verb while retaining its operator report."""
-    buffer_out, buffer_err = io.StringIO(), io.StringIO()
-    with contextlib.redirect_stdout(buffer_out), contextlib.redirect_stderr(buffer_err):
-        exit_code = host_confinement.main(argv)
-    stdout, stderr = buffer_out.getvalue(), buffer_err.getvalue()
-    refusal_code, refusal_detail = _refusal_from_streams(stdout, stderr)
-    step = StepResult(argv[0], argv, exit_code, refusal_code, refusal_detail, stdout, stderr)
-    _operator_report(Path(args.result_dir), outcome="confined" if exit_code == 0 else "refused", step=step)
-    if exit_code == 0:
+    step = _run_step(argv[0], _confinement_argv(argv))
+    _operator_report(
+        Path(args.result_dir),
+        outcome="confined" if step.exit_code == 0 else "refused",
+        step=step,
+    )
+    if step.exit_code == 0:
         print(f"{lifecycle}  {artifact}")
-    elif refusal_code is not None and refusal_detail is not None:
-        print(f"ERROR  {refusal_code}: {refusal_detail}", file=os.sys.stderr)
-        print(f"HINT  {corrective_for(refusal_code)}", file=os.sys.stderr)
-    return exit_code
+    elif step.refusal_code is not None and step.refusal_detail is not None:
+        print(f"ERROR  {step.refusal_code}: {step.refusal_detail}", file=os.sys.stderr)
+        print(f"HINT  {corrective_for(step.refusal_code)}", file=os.sys.stderr)
+    return step.exit_code
 
 
 def _validate_pairing(version: str, runtime: str | None, toolchain: str | None, closure: str | None) -> str | None:
@@ -412,11 +433,11 @@ def run_workflow(
     checks = preflight_checks(build_needed=not skip_build or not launcher_matches)
     try:
         root, relative, controllers = delegated_controllers()
-    except (OSError, ValueError, host_confinement.HostConfinementError):
+    except (OSError, ValueError):
         root, relative, controllers = Path("/sys/fs/cgroup"), "/", frozenset()
     scope: dict[str, object] = {
         "entered": os.environ.get("RANEX_STRICT_LOCAL_IN_SCOPE") == "1",
-        "method": "in-place" if host_confinement.REQUIRED_CONTROLLERS <= controllers else "systemd-run",
+        "method": "in-place" if REQUIRED_CONTROLLERS <= controllers else "systemd-run",
         "cgroup_root": str(root),
         "cgroup_relative_path": relative,
         "controllers": sorted(controllers),
