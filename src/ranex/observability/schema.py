@@ -16,7 +16,8 @@ from pathlib import Path
 # The schema number carried by every ``version`` event as ``evt``. Version 2
 # adds the ``task.batch.qualify`` CLI dispatch stage pair.
 # Version 3 adds the specification CLI dispatch stage pair.
-SCHEMA_NUMBER = 3
+# Version 4 adds the strict-local host workflow CLI dispatch stage pairs.
+SCHEMA_NUMBER = 4
 
 # The frozen eleven-field set, in canonical serialization order. Every event
 # carries all eleven; inapplicable members are null, never absent, because
@@ -77,6 +78,12 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "task.fanout",
     "task.batch.qualify",
     "specification",
+    "host.launcher-build",
+    "host.launcher-install",
+    "host.host-probe",
+    "host.qualify",
+    "host.launcher-identity",
+    "host.strict-local",
 )
 
 _SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status")
