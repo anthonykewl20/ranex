@@ -391,7 +391,8 @@ beside its outcome file; `task fanout` adds a parent transcript under
 `<outcome-dir>/fanout.logs/`. Control them with `--log-dir`,
 `--log-max-bytes` (default 262144, bounds 4096–8388608), `--log-retention
 keep|replace|off` (default `replace`), and repeatable `--redact-env NAME`;
-fanout forwards the size and retention flags to every child. Verify a log
+fanout accepts the same flags and forwards them — including each
+`--redact-env NAME` — to every child. Verify a log
 against its outcome entry with `sha256sum` — the outcome's `logs` block
 carries each stream's digest over the retained bytes on disk. A log that
 exceeded the bound begins with a `[ranex truncated: …]` marker: the head was

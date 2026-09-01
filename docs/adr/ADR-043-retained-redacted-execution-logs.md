@@ -76,20 +76,20 @@ retention/redaction path.
 
 ## Decision Outcome
 
-Chosen option 3. Logs live beside each outcome: delegate's `--outcome
-PATH.json` gets a sibling `PATH.json.logs/` (or `--log-dir` override);
-fanout's per-task outcome gets `<task_id>.json.logs/`, its own parent
-transcript `fanout.logs/`. Fixed filenames: `harness.stdout.log`,
-`harness.stderr.log`, `suite.stdout.log`, `suite.stderr.log`, `manifest.json`.
-Redaction (`src/ranex/execution/log_redaction.py`) runs before truncation, in
-fixed order — ambient sensitive-name env values, forced `--redact-env`
-literals, PEM blocks, credential-URL passwords — marking each `[REDACTED:...]`.
-Truncation bounds each stream to `--log-max-bytes` (default 262144, bounds
-[4096, 8388608]), keeping the tail, prepending a deterministic marker.
-The outcome gains an additive `logs` block (per stream: file, bytes, sha256,
-original size, truncated, redaction kind→count) via `canonical_json_bytes`
-+ `write_atomic`. `--log-retention keep|replace|off` (default `replace`)
-governs collision/disablement; see Sad paths.
+Chosen option 3. Logs live beside each outcome: delegate `PATH.json` gets a sibling
+`PATH.json.logs/` (or `--log-dir` override); fanout gets `<task_id>.json.logs/` plus
+parent `fanout.logs/`. Fixed files are `harness.stdout.log`, `harness.stderr.log`,
+`suite.stdout.log`, `suite.stderr.log`, and `manifest.json`.
+Redaction runs before truncation in fixed order: ambient sensitive-name env values →
+forced `--redact-env` values → PEM blocks → credential-URL passwords, replacing each
+with `[REDACTED:...]` markers.
+Each stream uses `--log-max-bytes` (default 262144; bounds [4096, 8388608]), preserves
+the tail, and prepends a deterministic marker.
+Fanout accepts `--log-max-bytes`, `--log-retention`, and repeatable `--redact-env NAME`,
+with delegate-identical refusals, and forwards all three to every child delegate.
+The outcome gains an additive `logs` block per stream—file, bytes, sha256, original
+size, truncated, and redaction kind→count—via `canonical_json_bytes` + `write_atomic`.
+`--log-retention keep|replace|off` (default `replace`) governs collision/disablement; see Sad paths.
 
 ### Consequences
 
@@ -147,9 +147,10 @@ tranche (T1), frozen red before code lands, proven green after.
   passes), `retained_logs.py` (layout, truncation, manifest, outcome `logs`
   block construction).
 - Changed: `src/ranex/cli/delegation.py` (log-dir plumbing, refusal on
-  OSError), `src/ranex/cli/fanout.py` (forwarding + parent transcript),
-  `src/ranex/cli/main.py` (new flags: `--log-dir`, `--log-max-bytes`,
-  `--log-retention`, `--redact-env`).
+  OSError), `src/ranex/cli/fanout.py` (`--log-max-bytes`/`--log-retention`/
+  `--redact-env` forwarding + parent transcript), `src/ranex/cli/main.py`
+  (new flags: `--log-dir`, `--log-max-bytes`, `--log-retention`,
+  `--redact-env`).
 - No change to `ranex.observability.redaction` (ADR-031's frozen allowlist
   stays untouched) and no change to the hash-chained Journal.
 
