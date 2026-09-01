@@ -385,6 +385,19 @@ Host-dependent capability:
   paths. It refuses hosts that do not satisfy the qualification contract. It is
   not available on every Linux installation.
 
+**Operating the strict-local host workflow.** The `ranex host` command group
+exposes six verbs: `launcher-build`, `launcher-install`, `host-probe`,
+`qualify`, `launcher-identity`, and `strict-local`. The launcher lifecycle is
+explicit — build, install, qualify (fresh per run), then verify identity
+against the manifest pin (`ranex-launcher-v1`). `ranex host strict-local
+--version v1|v2|v3 --claim CLAIM --producer PRODUCER -- <command>` runs the
+prechecks, prepares and enters the delegated cgroup scope, and runs
+strict-local without manual systemd choreography. Each run — success or
+refusal — retains a canonical `host-run-report.json`
+(`ranex-host-strict-local-run-v1`) plus redacted, bounded logs under the
+result dir. The strict-local controller remains same-UID trusted
+infrastructure.
+
 **Operating retained delegation logs.** Each `task delegate` run writes
 `<outcome>.logs/{harness.stdout.log,harness.stderr.log,suite.stdout.log,suite.stderr.log,manifest.json}`
 beside its outcome file; `task fanout` adds a parent transcript under
@@ -439,9 +452,10 @@ Current limits visible in code:
   replacement by an internally consistent earlier database snapshot;
 - the strict-local controller remains same-UID trusted infrastructure and host
   qualification depends on user namespaces and delegated cgroup controllers;
-  on the 2026-08-29 acceptance host the v2/v3 paths passed only inside an
-  operator-created delegated systemd service, while direct ordinary v1 use did
-  not complete successfully;
+  the `ranex host strict-local` wrapper prepares and enters the delegated
+  cgroup scope itself (2026-09-01 acceptance: real v1, v2, and v3 runs all
+  passed inside it), closing the 2026-08-29 gap where direct ordinary v1 use
+  did not complete successfully;
   and
 - there is no installed end-to-end A/B/C-authorized mutation workflow.
 
@@ -449,7 +463,7 @@ Current limits visible in code:
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** docs/slices/SLICE-077-operable-strict-local-host-workflow.md
+**Active slice:** none
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness
@@ -652,6 +666,18 @@ implementation evidence, not an assertion that its behavior is a supported
 current release feature; withdrawn and prototype boundaries are governed by the
 code-backed [Status](#status) section above.
 
+- **SLICE-077-operable-strict-local-host-workflow** — completed 2026-09-01.
+  The public `ranex host` group now exposes six verbs (`launcher-build`,
+  `launcher-install`, `host-probe`, `qualify`, `launcher-identity`,
+  `strict-local`); `ranex host strict-local --version v1|v2|v3` runs the
+  prechecks, enters the delegated cgroup scope, and runs strict-local without
+  manual systemd choreography, retaining a canonical
+  `ranex-host-strict-local-run-v1` report plus redacted bounded logs for
+  success and refusal alike (ADR-044). The suite re-froze at 1,675 IDs /
+  162 declarations; two sealed ceremonies passed 1,558 / skipped 117.
+  Real-host acceptance: 5/5 formal arms, including real v1/v2/v3 confined
+  runs, prereq-failure correctives, and cross-scope drift refusal
+  (E-C18-HOST-DRIFT, exit 2).
 - **SLICE-076-retained-redacted-execution-logs** — completed 2026-09-01.
   Delegation/fanout runs now retain redacted, bounded, digest-bound
   per-stream logs beside each outcome (ADR-043): `--log-dir`,
