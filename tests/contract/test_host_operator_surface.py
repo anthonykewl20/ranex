@@ -148,19 +148,19 @@ def test_host_wrappers_forward_the_frozen_module_argv(
 ) -> None:
     """The friendly surface cannot reorder or reinterpret the kernel argv."""
 
-    _workflow()
-    confinement = importlib.import_module("ranex.cli.host_confinement")
-    forwarded: list[list[str]] = []
+    workflow = _workflow()
+    forwarded: list[tuple[str, list[str]]] = []
 
-    def spy(argv: list[str] | None = None) -> int:
-        assert argv is not None
-        forwarded.append(argv)
-        return 0
+    def spy(name: str, argv: list[str]) -> object:
+        forwarded.append((name, argv))
+        return workflow.StepResult(name, argv, 0, None, None, "", "")
 
-    monkeypatch.setattr(confinement, "main", spy)
+    monkeypatch.setattr(workflow, "_run_step", spy)
     args = _host_args(verb)
     assert args.func(args) == 0
-    assert forwarded == [expected]
+    assert forwarded == [
+        (verb, ["python", "-m", "ranex.cli.host_confinement", *expected])
+    ]
 
 
 def test_corrective_action_catalog_covers_exactly_confinement_refusals() -> None:
@@ -195,11 +195,18 @@ def test_host_refusal_is_humanized_with_a_corrective_hint(
     code = confinement.E_FACT
     detail = "delegated cgroup controller is unavailable"
 
-    def refused(_argv: list[str] | None = None) -> int:
-        print(json.dumps({"detail": detail, "refusal": code}, separators=(",", ":")))
-        return 1
+    def refused(name: str, argv: list[str]) -> object:
+        return workflow.StepResult(
+            name,
+            argv,
+            1,
+            code,
+            detail,
+            json.dumps({"detail": detail, "refusal": code}, separators=(",", ":")),
+            "",
+        )
 
-    monkeypatch.setattr(confinement, "main", refused)
+    monkeypatch.setattr(workflow, "_run_step", refused)
     args = _host_args("qualify", "--result-dir", str(tmp_path / "refused"))
     assert args.func(args) == 1
     captured = capsys.readouterr()
@@ -213,9 +220,12 @@ def test_host_success_prints_the_operation_lifecycle(
 ) -> None:
     """A successful operation says what completed and names its artifact."""
 
-    _workflow()
-    confinement = importlib.import_module("ranex.cli.host_confinement")
-    monkeypatch.setattr(confinement, "main", lambda _argv=None: 0)
+    workflow = _workflow()
+
+    def succeeded(name: str, argv: list[str]) -> object:
+        return workflow.StepResult(name, argv, 0, None, None, "", "")
+
+    monkeypatch.setattr(workflow, "_run_step", succeeded)
 
     args = _host_args("launcher-build", "--result-dir", str(tmp_path / "built"))
     assert args.func(args) == 0
@@ -270,18 +280,24 @@ def test_host_refusal_writes_its_report_without_touching_the_suite_artifact_home
 ) -> None:
     """A host-wrapper refusal owns its report, never a suite-home byproduct."""
 
-    _workflow()
-    confinement = importlib.import_module("ranex.cli.host_confinement")
+    workflow = _workflow()
     result_dir = tmp_path / "result"
     suite_home = tmp_path / "suite-artifact-home"
     suite_home.mkdir()
     monkeypatch.setenv("COVERAGE_FILE", str(suite_home / ".coverage"))
 
-    def refused(_argv: list[str] | None = None) -> int:
-        print('{"detail":"host prerequisites absent","refusal":"E-C17-HOST-FACT-MISSING"}')
-        return 1
+    def refused(name: str, argv: list[str]) -> object:
+        return workflow.StepResult(
+            name,
+            argv,
+            1,
+            "E-C17-HOST-FACT-MISSING",
+            "host prerequisites absent",
+            '{"detail":"host prerequisites absent","refusal":"E-C17-HOST-FACT-MISSING"}',
+            "",
+        )
 
-    monkeypatch.setattr(confinement, "main", refused)
+    monkeypatch.setattr(workflow, "_run_step", refused)
     before = sorted(path.relative_to(suite_home) for path in suite_home.rglob("*"))
     args = _host_args("host-probe", "--result-dir", str(result_dir))
     assert args.func(args) == 1
@@ -301,12 +317,15 @@ def test_host_run_reports_keep_the_fixed_retention_schema(
 ) -> None:
     """Success and refusal reports retain the same closed #58-shaped envelope."""
 
-    _workflow()
-    confinement = importlib.import_module("ranex.cli.host_confinement")
+    workflow = _workflow()
     from ranex.cli import main as cli_main
 
     success_dir = tmp_path / "success"
-    monkeypatch.setattr(confinement, "main", lambda _argv=None: 0)
+
+    def succeeded(name: str, argv: list[str]) -> object:
+        return workflow.StepResult(name, argv, 0, None, None, "", "")
+
+    monkeypatch.setattr(workflow, "_run_step", succeeded)
     assert cli_main.main(["host", "launcher-build", "--result-dir", str(success_dir)]) == 0
     success = _read_report(success_dir)
     _assert_report_shape(success)
@@ -314,11 +333,18 @@ def test_host_run_reports_keep_the_fixed_retention_schema(
 
     refusal_dir = tmp_path / "refusal"
 
-    def refused(_argv: list[str] | None = None) -> int:
-        print('{"detail":"host prerequisites absent","refusal":"E-C17-HOST-FACT-MISSING"}')
-        return 1
+    def refused(name: str, argv: list[str]) -> object:
+        return workflow.StepResult(
+            name,
+            argv,
+            1,
+            "E-C17-HOST-FACT-MISSING",
+            "host prerequisites absent",
+            '{"detail":"host prerequisites absent","refusal":"E-C17-HOST-FACT-MISSING"}',
+            "",
+        )
 
-    monkeypatch.setattr(confinement, "main", refused)
+    monkeypatch.setattr(workflow, "_run_step", refused)
     assert cli_main.main(["host", "launcher-build", "--result-dir", str(refusal_dir)]) == 1
     refusal = _read_report(refusal_dir)
     _assert_report_shape(refusal)
