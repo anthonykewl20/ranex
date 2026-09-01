@@ -116,6 +116,7 @@ def cmd_task_fanout(args: argparse.Namespace) -> int:
             raise ValueError("--pool must be >= 1")
         max_bytes = validate_max_bytes(args.log_max_bytes)
         retention = args.log_retention
+        literals = collect_redaction_literals(os.environ, forced=args.redact_env or [])
         log_directory = Path(args.outcome_dir) / "fanout.logs"
         if retention == "keep" and log_directory.exists():
             raise ValueError(
@@ -164,6 +165,11 @@ def cmd_task_fanout(args: argparse.Namespace) -> int:
                 str(max_bytes),
                 "--log-retention",
                 retention,
+                *[
+                    item
+                    for name in args.redact_env or []
+                    for item in ("--redact-env", name)
+                ],
                 "--outcome",
                 str(Path(args.outcome_dir) / f"{task_id}.json"),
             ]
@@ -182,7 +188,6 @@ def cmd_task_fanout(args: argparse.Namespace) -> int:
 
         parent_logs_retained = retention != "off"
         if parent_logs_retained:
-            literals = collect_redaction_literals(os.environ)
             streams: dict[str, dict[str, object]] = {}
             for (task_id, _prompt, _worktree), completed in zip(
                 task_specs, results, strict=True
