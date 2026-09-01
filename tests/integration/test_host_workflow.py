@@ -257,3 +257,263 @@ def test_v3_toolchain_pairing_refuses_before_scope_entry(
     report = _report(result_dir)
     assert report["outcome"] == "prereq-failed"
     _assert_logs(result_dir, report)
+
+
+def test_preflight_checks_record_success_and_host_probe_failures(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Every host prerequisite has both its normal and readable failure arm."""
+    original_read_text = host_workflow.Path.read_text
+    monkeypatch.setattr(host_workflow.Path, "is_file", lambda _path: True)
+    monkeypatch.setattr(host_workflow.os, "access", lambda *_args: True)
+    monkeypatch.setattr(host_workflow.os, "geteuid", lambda: 1000)
+    monkeypatch.setenv("DBUS_SESSION_BUS_ADDRESS", "unix:path=/run/user/1000/bus")
+    monkeypatch.setattr(
+        host_workflow.subprocess,
+        "run",
+        lambda *_args, **_kwargs: subprocess.CompletedProcess([], 0, "degraded\n", ""),
+    )
+    monkeypatch.setattr(
+        host_workflow,
+        "delegated_controllers",
+        lambda: (Path("/sys/fs/cgroup"), "/", frozenset()),
+    )
+
+    def systemd_pid1(path: Path, *args: object, **kwargs: object) -> str:
+        if path == Path("/proc/1/comm"):
+            return "systemd\n"
+        return original_read_text(path, *args, **kwargs)
+
+    monkeypatch.setattr(host_workflow.Path, "read_text", systemd_pid1)
+    checks = host_workflow.preflight_checks(build_needed=True)
+    assert [check.name for check in checks] == list(host_workflow._PREFLIGHT_NAMES)
+    assert checks[0].ok and checks[3].ok
+    assert checks[-1].ok is False
+    assert checks[3].detail == "desktop-unit failures do not block delegation"
+
+    monkeypatch.setattr(
+        host_workflow.Path,
+        "read_text",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("permission denied")),
+    )
+    monkeypatch.setattr(
+        host_workflow.subprocess,
+        "run",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("no user manager")),
+    )
+    monkeypatch.setattr(
+        host_workflow,
+        "delegated_controllers",
+        lambda: (_ for _ in ()).throw(ValueError("no unified cgroup")),
+    )
+    failed = host_workflow.preflight_checks(build_needed=False)
+    assert failed[0].detail.startswith("cannot read /proc/1/comm:")
+    assert failed[3].detail.startswith("cannot query user manager:")
+    assert failed[-1].detail.startswith("cannot inspect current cgroup delegation:")
+
+
+def test_host_probe_and_identity_helpers_fail_closed_on_unreadable_inputs(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """Malformed or unreadable local probe inputs never become admitted facts."""
+    monkeypatch.setattr(
+        host_workflow.Path,
+        "read_text",
+        lambda *_args, **_kwargs: "0::not-absolute\n",
+    )
+    with pytest.raises(ValueError, match="unified cgroup"):
+        host_workflow.delegated_controllers()
+
+    artifact = tmp_path / "launcher"
+    manifest = tmp_path / "manifest.json"
+    artifact.write_bytes(b"launcher")
+    manifest.write_text("{not json", encoding="utf-8")
+    identity = host_workflow.launcher_identity(artifact, manifest)
+    assert identity["matches"] is False
+    assert host_workflow._launcher_matches_manifest(artifact, manifest) is False
+    assert host_workflow.launcher_identity(tmp_path / "missing", tmp_path / "also-missing")["matches"] is False
+
+    monkeypatch.setattr(host_workflow, "BUILD_ARTIFACT", str(tmp_path / "missing-artifact"))
+    monkeypatch.setattr(host_workflow, "INSTALLED_ARTIFACT", str(tmp_path / "missing-installed"))
+    assert host_workflow._managed_launcher_is_unchanged() is False
+    monkeypatch.setattr(
+        host_workflow.Path,
+        "read_text",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("unreadable")),
+    )
+    monkeypatch.setattr(
+        host_workflow.subprocess,
+        "run",
+        lambda *_args, **_kwargs: (_ for _ in ()).throw(OSError("no manager")),
+    )
+    facts = host_workflow._host_facts()
+    assert facts["boot_id"] is None
+    assert facts["is_system_running"] is None
+
+
+def test_refusal_fallback_and_unreadable_qualification_are_retained(tmp_path: Path) -> None:
+    """Text refusals and an optional unreadable qualification remain auditable."""
+    assert host_workflow._refusal_from_streams("not json", "ERROR E-C18-GATE: gate closed") == (
+        "E-C18-GATE",
+        "gate closed",
+    )
+    result_dir = tmp_path / "result"
+    result_dir.mkdir()
+    report = {"qualification": {"path": str(tmp_path / "missing-qualification")}, "_stdout": "", "_stderr": ""}
+    assert host_workflow.write_run_report(result_dir, report) == result_dir / "host-run-report.json"
+    assert not (result_dir / "qualification.json").exists()
+
+
+def test_v2_selectors_forward_to_scope_and_run_with_launcher_build(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """A v2 workflow forwards both selector authorities through every child."""
+    monkeypatch.delenv("RANEX_STRICT_LOCAL_IN_SCOPE", raising=False)
+    monkeypatch.setattr(host_workflow, "preflight_checks", lambda **_kwargs: _passing_checks())
+    monkeypatch.setattr(host_workflow, "delegated_controllers", lambda: (Path("/sys/fs/cgroup"), "/", frozenset()))
+    monkeypatch.setattr(host_workflow, "_launcher_matches_manifest", lambda *_args: True)
+    monkeypatch.setattr(host_workflow, "_managed_launcher_is_unchanged", lambda: False)
+    entered: list[list[str]] = []
+    steps: list[host_workflow.StepResult] = []
+    monkeypatch.setattr(host_workflow, "enter_delegated_scope", lambda argv: entered.append(list(argv)))
+
+    def run_step(name: str, argv: list[str]) -> host_workflow.StepResult:
+        step = _step(name, argv)
+        steps.append(step)
+        return step
+
+    monkeypatch.setattr(host_workflow, "_run_step", run_step)
+    assert host_workflow.run_workflow(
+        "v2",
+        runtime_input_path="inputs/task",
+        toolchain_root="toolchain",
+        runtime_closure_root=None,
+        command=("/bin/true",),
+        result_dir=str(tmp_path / "result"),
+        skip_build=False,
+        claim="claim",
+        producer="producer",
+    ) == 0
+    assert [step.name for step in steps] == ["launcher-build", "launcher-install", "qualify", "run"]
+    for argv in (entered[0], steps[-1].argv):
+        assert "--runtime-input-path" in argv
+        assert "inputs/task" in argv
+        assert "--toolchain-root" in argv
+        assert "toolchain" in argv
+    assert "--runtime-closure-root" not in entered[0]
+
+    assert host_workflow.run_workflow(
+        "v3",
+        runtime_input_path="inputs/runtime",
+        toolchain_root=None,
+        runtime_closure_root="runtime-closure",
+        command=("/bin/true",),
+        result_dir=str(tmp_path / "v3-result"),
+        skip_build=False,
+        claim="claim",
+        producer="producer",
+    ) == 0
+    for argv in (entered[-1], steps[-1].argv):
+        assert "--runtime-closure-root" in argv
+        assert "runtime-closure" in argv
+
+
+def test_workflow_reports_phase_refusal_and_controller_probe_fallback(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A phase refusal and unavailable outer cgroup probe both retain reports."""
+    _wire_in_place(monkeypatch)
+    monkeypatch.setattr(host_workflow, "_managed_launcher_is_unchanged", lambda: False)
+    code, detail = host_confinement.E_C18_GATE, "qualification required"
+    monkeypatch.setattr(
+        host_workflow,
+        "_run_step",
+        lambda name, argv: host_workflow.StepResult(name, argv, 1, code, detail, "", ""),
+    )
+    assert host_workflow.run_workflow(
+        "v1", runtime_input_path=None, toolchain_root=None, runtime_closure_root=None,
+        command=("/bin/true",), result_dir=str(tmp_path / "refused"), skip_build=True,
+    ) == 1
+    assert f"ERROR  {code}: {detail}" in capsys.readouterr().err
+
+    monkeypatch.setattr(
+        host_workflow,
+        "delegated_controllers",
+        lambda: (_ for _ in ()).throw(ValueError("cgroup unavailable")),
+    )
+    monkeypatch.setattr(host_workflow, "_run_step", _step)
+    assert host_workflow.run_workflow(
+        "v1", runtime_input_path=None, toolchain_root=None, runtime_closure_root=None,
+        command=("/bin/true",), result_dir=str(tmp_path / "fallback"), skip_build=True,
+    ) == 0
+    assert _report(tmp_path / "fallback")["scope"]["cgroup_relative_path"] == "/"
+
+
+def test_v2_pairing_and_public_main_dispatch_cover_public_arms(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The public workflow rejects incomplete v2 selectors and prints identity."""
+    assert host_workflow.run_workflow(
+        "v2", runtime_input_path=None, toolchain_root=None, runtime_closure_root=None,
+        command=("/bin/true",), result_dir=str(tmp_path / "bad-v2"), skip_build=True,
+    ) == 2
+    assert "v2 requires" in capsys.readouterr().err
+    artifact = tmp_path / "launcher"
+    manifest = tmp_path / "manifest.json"
+    artifact.write_bytes(b"launcher")
+    manifest.write_text(json.dumps({"artifact": {"sha256": hashlib.sha256(b"launcher").hexdigest()}}), encoding="utf-8")
+    from ranex.cli.main import build_parser
+
+    args = build_parser().parse_args(
+        ["host", "launcher-identity", "--artifact", str(artifact), "--manifest", str(manifest)]
+    )
+    assert args.func(args) == 0
+    assert json.loads(capsys.readouterr().out)["matches"] is True
+
+    dispatched: list[tuple[object, dict[str, object]]] = []
+    monkeypatch.setattr(
+        host_workflow,
+        "run_workflow",
+        lambda version, **kwargs: dispatched.append((version, kwargs)) or 0,
+    )
+    strict_local = build_parser().parse_args(
+        [
+            "host",
+            "strict-local",
+            "--version",
+            "v3",
+            "--claim",
+            "claim",
+            "--producer",
+            "producer",
+            "--runtime-input-path",
+            "inputs/runtime",
+            "--runtime-closure-root",
+            "runtime-closure",
+            "--",
+            "/bin/true",
+        ]
+    )
+    assert strict_local.func(strict_local) == 0
+    assert dispatched == [
+        (
+            "v3",
+            {
+                "runtime_input_path": "inputs/runtime",
+                "toolchain_root": None,
+                "runtime_closure_root": "runtime-closure",
+                "command": ["/bin/true"],
+                "result_dir": ".local/ranex/host-results",
+                "skip_build": False,
+                "claim": "claim",
+                "producer": "producer",
+                "repository": None,
+                "evidence": None,
+                "producers": None,
+                "gate": None,
+                "gate_catalog": None,
+                "suite_manifest": None,
+                "store": None,
+            },
+        )
+    ]
