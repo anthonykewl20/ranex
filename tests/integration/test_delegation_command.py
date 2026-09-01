@@ -75,6 +75,7 @@ def fanout_args(
     journal: Path,
     harness: Path,
     pool: int,
+    redact_env: list[str] | None = None,
 ) -> argparse.Namespace:
     return argparse.Namespace(
         tasks=str(tasks),
@@ -88,6 +89,7 @@ def fanout_args(
         pool=pool,
         log_max_bytes=262144,
         log_retention="replace",
+        redact_env=redact_env,
     )
 
 
@@ -1791,6 +1793,127 @@ def test_fanout_pool_of_one_never_overlaps_and_embeds_the_bound(tmp_path: Path, 
     assert observed_task_ids == ["first", "second"]
 
 
+def test_cmd_task_fanout_forwards_forced_redaction_names(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    tasks = tmp_path / "tasks.jsonl"
+    tasks.write_text(
+        "\n".join(
+            json.dumps({"task_id": task_id, "prompt": "p", "worktree": task_id})
+            for task_id in ("first", "second")
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    forced_names = ["PLANT_ODD_NAME", "SECOND_ODD_NAME"]
+    args = fanout_args(
+        tmp_path,
+        tasks=tasks,
+        target=tmp_path / "target",
+        journal=tmp_path / "journal.sqlite3",
+        harness=build_harness(tmp_path / "harness.sh"),
+        pool=1,
+        redact_env=forced_names,
+    )
+    for name in forced_names:
+        monkeypatch.setenv(name, "a" * 16)
+    commands: list[list[str]] = []
+
+    def fake_run_one_delegation(
+        command: list[str], *, capture_output: bool, text: bool
+    ) -> subprocess.CompletedProcess[str]:
+        commands.append(command)
+        return subprocess.CompletedProcess(command, EXIT_PASS, "", "")
+
+    monkeypatch.setattr("ranex.cli.fanout._run_one_delegation", fake_run_one_delegation)
+
+    assert cmd_task_fanout(args) == EXIT_PASS
+    assert len(commands) == 2
+    expected_flags = [
+        "--redact-env",
+        "PLANT_ODD_NAME",
+        "--redact-env",
+        "SECOND_ODD_NAME",
+    ]
+    for command in commands:
+        assert command[command.index("--redact-env") : command.index("--outcome")] == expected_flags
+
+
+def test_cmd_task_fanout_refuses_missing_forced_redaction_name(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = fanout_args(
+        tmp_path,
+        tasks=tmp_path / "tasks.jsonl",
+        target=tmp_path / "target",
+        journal=tmp_path / "journal.sqlite3",
+        harness=build_harness(tmp_path / "harness.sh"),
+        pool=1,
+        redact_env=["PLANT_MISSING_NAME"],
+    )
+    monkeypatch.delenv("PLANT_MISSING_NAME", raising=False)
+
+    assert cmd_task_fanout(args) == EXIT_USAGE
+    assert capsys.readouterr().err == (
+        "ERROR  refusing --redact-env PLANT_MISSING_NAME: not set in the environment\n"
+    )
+
+
+def test_cmd_task_fanout_refuses_short_forced_redaction_value(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    args = fanout_args(
+        tmp_path,
+        tasks=tmp_path / "tasks.jsonl",
+        target=tmp_path / "target",
+        journal=tmp_path / "journal.sqlite3",
+        harness=build_harness(tmp_path / "harness.sh"),
+        pool=1,
+        redact_env=["PLANT_SHORT_NAME"],
+    )
+    monkeypatch.setenv("PLANT_SHORT_NAME", "x" * 15)
+
+    assert cmd_task_fanout(args) == EXIT_USAGE
+    assert capsys.readouterr().err == (
+        "ERROR  refusing --redact-env PLANT_SHORT_NAME: "
+        "value shorter than the 16-byte redaction floor\n"
+    )
+
+
+def test_cmd_task_fanout_redacts_forced_non_grammar_named_secret_in_parent_stderr_log(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    secret = "fanout-forced-secret-0123456789"
+    tasks = tmp_path / "tasks.jsonl"
+    tasks.write_text(
+        json.dumps({"task_id": "task", "prompt": "p", "worktree": "worktree"}) + "\n",
+        encoding="utf-8",
+    )
+    args = fanout_args(
+        tmp_path,
+        tasks=tasks,
+        target=tmp_path / "target",
+        journal=tmp_path / "journal.sqlite3",
+        harness=build_harness(tmp_path / "harness.sh"),
+        pool=1,
+        redact_env=["PLANT_ODD_NAME"],
+    )
+    monkeypatch.setenv("PLANT_ODD_NAME", secret)
+    monkeypatch.setattr(
+        "ranex.cli.fanout._run_one_delegation",
+        lambda command, **_kwargs: subprocess.CompletedProcess(
+            command, EXIT_PASS, "", f"child stderr: {secret}"
+        ),
+    )
+
+    assert cmd_task_fanout(args) == EXIT_PASS
+    stderr_log = (
+        Path(args.outcome_dir) / "fanout.logs" / "task.stderr.log"
+    ).read_text(encoding="utf-8")
+    assert "[REDACTED:env:PLANT_ODD_NAME]" in stderr_log
+    assert stderr_log.count(secret) == 0
+
+
 def test_main_parses_task_delegate_and_reaches_its_refusal(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]) -> None:
     monkeypatch.delenv("OPENROUTER_API_KEY", raising=False)
     monkeypatch.setattr("ranex.cli.delegation.exec_environment_holds_signing_key", lambda: False)
@@ -1838,6 +1961,7 @@ def test_main_parses_task_fanout_and_reaches_its_refusal(tmp_path: Path, capsys:
             "--suite", "/usr/bin/true",
             "--outcome-dir", str(tmp_path / "outcomes"),
             "--pool", "0",
+            "--redact-env", "PLANT_ODD_NAME",
         ]
     )
     captured = capsys.readouterr()

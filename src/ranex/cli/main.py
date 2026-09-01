@@ -4100,6 +4100,13 @@ def build_parser() -> argparse.ArgumentParser:
         default="replace",
         help="retained execution-log policy",
     )
+    fanout.add_argument(
+        "--redact-env",
+        action="append",
+        default=None,
+        metavar="NAME",
+        help="force-include an environment value in redaction literals",
+    )
     fanout.set_defaults(func=cmd_task_fanout)
 
     batch = task_actions.add_parser(
