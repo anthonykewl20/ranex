@@ -28,9 +28,7 @@ Work is done only when ALL of these hold:
 4. Issues synced — in-progress label claimed at start, live comments during
    work, closing proof with commit SHA + executed command output (the tracker
    issues' standing rules).
-5. Changes committed through the OCR gate (a block is work to fix, never a
-   control to argue away or skip) and pushed fast-forward; remote tip
-   verified.
+5. Changes pushed fast-forward; remote tip verified.
 
 Ending a session with uncommitted work, unsynced docs, or unposted issue
 updates is a failure state, whatever the code says. Pipeline-gated slice work

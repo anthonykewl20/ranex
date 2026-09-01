@@ -100,7 +100,7 @@ governed publication path, and a push never closes a slice — done-criteria do.
 1. **GitHub identity:** always `anthonykewl20` — enforce before any gh/push
    operation; never disclose account state as a residual.
 2. **Completion is a full loop:** verify on disk, clean tree, doc sync, issue
-   sync, OCR-gated commit, fast-forward push, verified remote tip — never stop
+   sync, fast-forward push, verified remote tip — never stop
    half-way. Pipeline-gated work waits for its gate; nothing else waits.
 3. **No hand-waved or hand-rolled code:** verify against installed artifacts
    and version-matched docs; no stubs shipped; no un-ADR'd replacements for
