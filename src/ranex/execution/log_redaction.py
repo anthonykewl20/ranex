@@ -2,8 +2,9 @@
 
 Passes redact literals, paired PEM blocks, unterminated PEM blocks, and
 credential URL passwords. Credential URL matching deliberately selects the
-last compatible ``@`` delimiter, so ``@``-bearing URL path data can be
-over-redacted rather than leave password bytes in retained text.
+last compatible ``@`` delimiter and permits one extra ``@`` before the host,
+so ``@``-bearing URL path data can be over-redacted rather than leave password
+bytes in retained text.
 """
 
 from __future__ import annotations
@@ -31,7 +32,7 @@ _UNPAIRED_PEM_BLOCK_PATTERN: re.Pattern[str] = re.compile(
 )
 _CREDENTIAL_URL_PATTERN: re.Pattern[str] = re.compile(
     r"(?P<prefix>[A-Za-z0-9+.-]+://[^:@/]*:)(?:[^@\s]+@)*[^@\s]+"
-    r"(?P<suffix>@(?=[^@/\s]+(?:[/?#]|\s|$)))"
+    r"(?P<suffix>@(?=[@]?[^@/\s]+(?:[/?#]|\s|$)))"
 )
 
 

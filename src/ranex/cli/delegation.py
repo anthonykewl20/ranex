@@ -367,7 +367,8 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 "commit": None,
                 "harness_exit": timed_out_exit if timed_out_exit is not None else -1,
                 "suite_exit": None,
-                "suite_output_tail": redact_text("", literals)[0],
+                # No suite ran, so the empty tail needs no redaction.
+                "suite_output_tail": "",
                 "suite_results": None,
                 "timed_out": True,
             }
@@ -496,7 +497,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                     f"refusing suite: dispatch base carries no manifest at {suite_manifest}"
                 )
             manifest = load_manifest_bytes(manifest_source)
-            suite_exit, suite_output_tail, suite_results = _run_suite_with_results(
+            suite_exit, _suite_output_tail, suite_results = _run_suite_with_results(
                 worktree=recorded_worktree,
                 commit=commit,
                 suite=args.suite,
@@ -505,7 +506,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 streams=suite_streams,
             )
         else:
-            suite_exit, suite_output_tail = _run_suite(
+            suite_exit, _suite_output_tail = _run_suite(
                 worktree=recorded_worktree,
                 commit=commit,
                 suite=args.suite,
@@ -516,7 +517,11 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             "commit": commit,
             "harness_exit": completed.returncode,
             "suite_exit": suite_exit,
-            "suite_output_tail": redact_text(suite_output_tail, literals)[0],
+            "suite_output_tail": _tail_output(
+                redact_text(
+                    f"{suite_streams['stdout']}{suite_streams['stderr']}", literals
+                )[0]
+            ),
             "suite_results": suite_results,
             "timed_out": False,
         }
