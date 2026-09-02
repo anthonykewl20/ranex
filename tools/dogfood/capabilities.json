@@ -1,0 +1,81 @@
+{
+  "schema": "ranex-dogfood-capabilities-v1",
+  "derived_from": "source code only (src/ranex/**, native/ranex-worker-launcher/launcher.c); verified 2026-09-03",
+  "areas": [
+    {
+      "id": "cli",
+      "capability": "ranex CLI: gate evaluate, journal verify, run, host, suite freeze, deps fetch/approve, keygen, specification, task dispatch/judge/merge/delegate/fanout/batch",
+      "anchors": ["src/ranex/cli/main.py:3801 (build_parser)", "pyproject.toml:139 ([project.scripts])"],
+      "commands": [
+        ["gate", "evaluate"], ["journal", "verify"], ["run"], ["host", "launcher-build"],
+        ["host", "launcher-install"], ["host", "host-probe"], ["host", "qualify"],
+        ["host", "launcher-identity"], ["host", "strict-local"], ["suite", "freeze"],
+        ["deps", "fetch"], ["deps", "approve"], ["keygen"], ["specification", "draft"],
+        ["specification", "advance"], ["specification", "questions"], ["specification", "status"],
+        ["specification", "approve"], ["task", "dispatch"], ["task", "judge"],
+        ["task", "merge"], ["task", "delegate"], ["task", "fanout"],
+        ["task", "batch", "qualify"], ["task", "batch", "verify"]
+      ]
+    },
+    {
+      "id": "journal",
+      "capability": "SQLite hash-chained append-only journal; UPDATE/DELETE refused by triggers; verify() recomputes the chain and detects out-of-band edits; append_if_head CAS",
+      "anchors": ["src/ranex/governed_execution/adapters/persistence/sqlite/journal.py:27 (triggers)", "journal.py:161 (verify)"]
+    },
+    {
+      "id": "signing",
+      "capability": "Ed25519 evidence signing over exactly ten canonical SIGNED_FIELDS, domain ranex-evidence-v4; verify returns False, never raises",
+      "anchors": ["src/ranex/foundation/signing.py:95 (SIGNED_FIELDS)", "signing.py:162 (sign_evidence)", "signing.py:170 (verify_evidence)"]
+    },
+    {
+      "id": "admission",
+      "capability": "admit() splits raw records into evidence + structured rejections (malformed/missing-signature/bad-signature/unknown-producer/stale-host-state); unknown producers are never trusted by default",
+      "anchors": ["src/ranex/governed_execution/domain/admission.py:388 (admit)", "admission.py:47 (RejectionReason)"]
+    },
+    {
+      "id": "verdict",
+      "capability": "Pure gate evaluation: absence blocks, contradiction blocks, self-approval refused before evidence is considered, stale subject digests prove nothing",
+      "anchors": ["src/ranex/governed_execution/domain/verdict.py:375 (evaluate)", "verdict.py:130 (satisfies)", "verdict.py:39 (Claim)"]
+    },
+    {
+      "id": "suite_results",
+      "capability": "Frozen suite manifests from observed junitxml IDs only; results summarised as counts/non_passed/missing/extra_count/outcome_digest against the manifest",
+      "anchors": ["src/ranex/foundation/suite_results.py:191 (freeze_manifest)", "suite_results.py:232 (suite_results_from_junitxml)"]
+    },
+    {
+      "id": "canonical",
+      "capability": "Canonical JSON (sorted keys, compact, no NaN) and command_digest over the argv list so argument order is structural",
+      "anchors": ["src/ranex/foundation/canonical.py:9 (canonical_json)", "canonical.py:30 (command_digest)"]
+    },
+    {
+      "id": "keygen",
+      "capability": "Producer keypair generation into $RANEX_SIGNING_KEY; refuses relative paths and paths committable into the repository; refuses overwriting an existing key",
+      "anchors": ["src/ranex/cli/main.py:3526 (cmd_keygen)"]
+    },
+    {
+      "id": "provisioning",
+      "capability": "Pinned resolver (O_NOFOLLOW, hashed fd, executed via /proc/self/fd), lock re-derivation with byte-equality refusal, strict TOML lock parse, content-addressed wheel store, sealed disposable root; deps fetch is the only networked step",
+      "anchors": ["src/ranex/provisioning/pins.py:96 (verified_pinned_binary)", "derivation.py:26 (derive_lock)", "store.py:25 (WheelStore)", "root.py:61 (assemble_root)"]
+    },
+    {
+      "id": "confinement",
+      "capability": "Native C launcher: two-stage exec fd protocol, Landlock >= 6, seccomp, mount namespaces, minimal /dev, capability drop, unprivileged userns, cgroup enroll/kill/wait-empty; v3 sealed-fd runtime (memfd F_ADD_SEALS); static-executable admission (ELF64 ET_EXEC, no PT_DYNAMIC/PT_INTERP)",
+      "anchors": ["native/ranex-worker-launcher/launcher.c:1975 (stage_one)", "launcher.c:863 (enforce_landlock)", "src/ranex/foundation/dynamic_runtime.py:288 (seal_runtime_file)", "src/ranex/foundation/static_executable.py:9"]
+    },
+    {
+      "id": "specification",
+      "capability": "Clarification lifecycle DRAFT -> SPEC_VALIDATED -> TESTS_MAPPED -> APPROVAL_PENDING binding spec packet (A), generated artifact manifest (B), approval envelope (C) by digest; closed ranex-scenario-v1 DSL compiled to deterministic gauges/projections with negative controls",
+      "anchors": ["src/ranex/governed_execution/domain/specification.py:34 (TRANSITION_TABLE)", "application/specification.py:145 (assert_abc_chain)", "src/ranex/specification_generation/scenario.py:148 (parse_scenario)"]
+    },
+    {
+      "id": "observability",
+      "capability": "Frozen 11-field trace schema with refusal-not-truncation caps; positive-allowlist redaction; git-trace2-style chained session IDs; redacted retained logs with PEM/credential-URL over-matching",
+      "anchors": ["src/ranex/observability/schema.py:42 (FIELDS)", "redaction.py:67 (screen_event)", "src/ranex/execution/log_redaction.py:67 (redact_text)"]
+    },
+    {
+      "id": "policy",
+      "capability": "Committed YAML trust root: producer -> Ed25519 public key with duplicate-key refusal and one-key-one-producer; verdict signer must not alias a producer; YAML gate catalog binding claim_id to exact digested argv",
+      "anchors": ["src/ranex/policy/adapters/configuration/yaml/producer_keyring.py:141 (TrustKeyring)", "slice_gate_loader.py:33"]
+    }
+  ]
+}
