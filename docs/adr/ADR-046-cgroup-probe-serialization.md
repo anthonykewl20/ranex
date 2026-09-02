@@ -1,9 +1,16 @@
 # ADR-046 — serializing the qualification cgroup-probe topology under the host-probe lock
 
-**Status:** proposed
+**Status:** accepted
 **Date:** 2026-09-02
 **Decision-makers:** repo owner
 **Issue:** #73 (parallel child qualification refuses E-C18-GATE in a freshly delegated scope)
+
+*Panel record: two adversarial seats returned CHANGES-REQUIRED on the T0
+package (partial-wrap red hole, session-race framing, false SIGKILL
+recovery claims, dpkg/latency wording); every finding was addressed —
+the drain-before-gate driver, the residual-risk rewording with #74, the
+at-fork fd guard, the pids-delegation gate — and a fresh confirmation
+seat returned ACCEPT.*
 
 ## Context and Problem Statement
 

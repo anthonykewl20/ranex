@@ -53,13 +53,32 @@ Issue #73 acceptance criteria (verbatim):
 ## Tranche plan
 
 - T0 (this tranche): governed docs — ADR-046 with vendored prior art,
-  this slice opened, STATE/README repointed; frozen red test committed.
-- T1: the one-function fix; red→green; full gates; manifest re-freeze.
+  this slice opened, STATE/README repointed; frozen red test committed
+  (8f7f59fa4 — the test file is read-only to the implementer from that
+  commit).
+- T1: the one-function fix (2322b6b0a: the wrap plus the at-fork fd
+  guard); red→green; full gates; manifest re-freeze — the re-freeze MUST
+  record the new IDs together with their `ranex-context:delegated-scope:`
+  expected-skip declarations, so a host without a creatable delegated
+  user scope reports the skips by name instead of vanishing silently.
 - T2: pool=2 delegated-scope acceptance re-run; evidence on issue #73.
 - T3: docs close-out — slice to `docs/slices/done/`, STATE/README/MAP
   updated; issue #73 closed with commit SHA and command output.
 
 ## Evidence
+
+- T0/T1 panel record: two adversarial seats (CHANGES-REQUIRED on the T0
+  package) + one fresh confirmation seat (ACCEPT) — see ADR-046's status
+  note. All findings addressed on disk before acceptance.
+- Red→green from git history: 8f7f59fa4 froze the tests red against
+  unmodified main (`UNSERIALIZED REFUSED … lacks the pids controller`
+  — the exact #73 refusal, reproduced deterministically three
+  consecutive runs); 2322b6b0a landed the fix with zero test edits
+  (`git diff 8f7f59fa4 HEAD -- tests/` is empty).
+- Post-fix: `tests/e2e/test_delegated_probe_serialization.py` 2/2 green
+  (19.0s); host-workflow + launcher + batch-verify families green
+  (27 passed, 5 declared context skips); the batch-qualification
+  journey green; ruff clean; pyrefly 1.2.0 zero errors (CI invocation).
 
 (to be recorded per tranche)
 
