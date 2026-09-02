@@ -254,3 +254,45 @@ journal shape records the lock's existence.
 - `src/ranex/cli/host_confinement.py` (`_host_probe_lock`,
   `_real_cgroup_probe`, `_runtime_v3_verifier_isolation_probe`,
   `qualify`).
+
+## Addendum (2026-09-03) — the session path joins the lock (issue #74)
+
+**Status of the addendum:** accepted (same decision, extended scope)
+
+The residual named above is now closed. `confinement_session` mutates the
+shared delegated-scope topology at exactly two call sites — the
+`_create_worker_cgroup` call at setup and the `_release_controller_leaf`
+call at teardown. Both now acquire `_host_probe_lock()` at the call
+sites; the shared helpers stay lock-free, exactly as this ADR's review
+checklist demands (the qualification v3 probe holds the lock and calls
+them, so locking inside the helpers self-deadlocks).
+
+Why the call sites and not a wider wrap: the session's pre-create
+admission reads (qualification drift binding, profile validation) do not
+mutate shared state, and wrapping them would hold the lock across
+launcher ELF validation and authority opens for no serialization
+benefit. The two mutations are the entire shared-state surface the
+session owns; they are short-held (create: mkdir + drain + enable;
+release: disable + restore + rmdir), so a concurrent qualification probe
+blocks a session for the probe's dance and vice versa, each for bounded
+time.
+
+Red-shape note (the deterministic proof): the interleaving refusal
+itself is a load race — the #73 panel already established that no
+sleep-free construction can pin a real session-vs-probe refusal
+deterministically, because the refusal window is internal to the
+concurrent dancer. The frozen red therefore pins the serialization
+contract directly: a real `host_confinement session` must not complete
+its cgroup mutations while another process holds the host-probe lock.
+On unmodified main the session runs to completion — create and release
+both included — under a held lock; with the fix it blocks at the create
+call site and completes only after release, green, with the scope root
+restored and no `ranex-*` residue. A second arm pins the steady state:
+one established qualification, then a fresh qualify and a real session
+concurrently in one fresh delegated scope — both succeed.
+
+Fork note: the session forks its confined worker and the sacrificial
+verifier AFTER the create call site's lock section ends, so the
+`os.register_at_fork` guard from the original decision is not on the
+session's critical path; teardown's release call re-acquires the lock
+sequentially (no nesting, no self-deadlock).

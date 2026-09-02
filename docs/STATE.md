@@ -2,7 +2,7 @@
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
 **Updated:** 2026-09-03 (rules simplification sealed; host loader-cache re-pinned)
-**Active slice:** none
+**Active slice:** docs/slices/SLICE-079-serialized-session-cgroup-mutations.md
 
 ## Where we stopped
 
