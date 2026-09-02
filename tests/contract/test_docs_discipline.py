@@ -460,50 +460,6 @@ def _notice_entry(body: str, name: str) -> str | None:
     return None
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 def test_vendored_prior_art_carries_its_notice() -> None:
     """Copying third-party source is a licensing act, not a filing decision.
 

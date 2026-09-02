@@ -1,7 +1,7 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-02 (issue #73 closed, SLICE-078 archived)
+**Updated:** 2026-09-03 (issue #73 closed, SLICE-078 archived)
 **Active slice:** none
 
 ## Where we stopped
@@ -11,7 +11,7 @@ whole cgroup topology dance (reads included) under `_host_probe_lock`
 (ADR-046, SLICE-078), and the lock's directory fd gained an at-fork
 guard so forked children cannot wedge it. The deterministic frozen red
 reproduced the exact `E-C18-GATE lacks the pids controller` refusal
-before the fix; the sealed freeze re-landed at 1681 IDs / 164 expected
+before the fix; the sealed freeze re-landed at 1653 IDs / 164 expected
 skips (run_exit=0); and the #65 owner authority re-qualified the batch
 `--pool 2` inside a fresh delegated scope — exit 0, verify PASS,
 journal chain=verified (transcript on #73).

@@ -10,7 +10,7 @@ run `gh auth switch -h github.com -u anthonykewl20` and proceed.
 
 ## One issue, one pass
 - Work one issue at a time to completion. Add the `in-progress` label
-  when you start; remove it when you stop.
+  when you start. Remove the label before ending a session unless the issue was closed in that session.
 - Do not post progress or status comments.
 - After 3 failed fix attempts: remove the label, post ONE comment naming
   the blocker and what you tried, move to the next issue.
@@ -20,8 +20,8 @@ run `gh auth switch -h github.com -u anthonykewl20` and proceed.
    `--frozen`.
 2. Rewrite `docs/STATE.md` (≤50 lines; active-slice line current). Slice
    work: move the slice file to `docs/slices/done/` and add it to
-   README "Completed slices" in the same change. Edit README otherwise
-   only when public status changed.
+   README "Completed slices" in the same change.
+   Edit README only when a slice moves to docs/slices/done/ or a shipped command, flag, or default changes.
 3. Post ONE closing issue comment: commit SHA + one line of evidence
    (command and result). Report anything not verified as UNVERIFIED,
    never PASS.
