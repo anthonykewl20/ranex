@@ -1343,6 +1343,54 @@ def _checked_out_target_worktree(repository_root: Path, target_ref: str) -> Path
     return None
 
 
+def _detached_stale_worktrees(
+    repository_root: Path, target_ref: str, candidate: str
+) -> list[tuple[Path, str]]:
+    """Worktrees left detached inside the publication sync crash window.
+
+    ``_worktree_sync_repair``'s sequence is ``checkout --detach`` → ff-merge →
+    ``symbolic-ref``; a crash between the first and last step leaves the
+    worktree detached at a commit the moved ref still contains.  The
+    branch-line matcher above cannot see it (issue #68): the porcelain entry
+    carries no branch.  A detached HEAD strictly behind the moved ref — an
+    ancestor of the candidate — is that split state; a detached HEAD at the
+    candidate itself only misses the symbolic-ref restore and is not
+    reported here.  The primary checkout is excluded: it is never operated
+    on by the publication sync, and a main checkout parked detached at an
+    old commit is an ordinary operator state, not a crash window.
+    """
+
+    listed = git(repository_root, "worktree", "list", "--porcelain")
+    if listed.returncode != 0:
+        raise ValueError(f"cannot list worktrees: {listed.stderr.strip()}")
+    stale: list[tuple[Path, str]] = []
+    for entry in listed.stdout.split("\n\n"):
+        fields = {
+            key: value
+            for line in entry.splitlines()
+            if " " in line
+            for key, value in (line.split(" ", maxsplit=1),)
+        }
+        worktree = fields.get("worktree")
+        if worktree is None or fields.get("branch") is not None:
+            continue
+        worktree_path = Path(worktree)
+        if worktree_path == repository_root:
+            continue
+        head = git(worktree_path, "rev-parse", "HEAD")
+        if head.returncode != 0:
+            continue
+        observed = head.stdout.strip()
+        if observed == candidate:
+            continue
+        behind = git(
+            repository_root, "merge-base", "--is-ancestor", observed, target_ref
+        )
+        if behind.returncode == 0:
+            stale.append((worktree_path, observed))
+    return stale
+
+
 def _worktree_dirty_paths(worktree: Path, candidate_paths: Sequence[str]) -> tuple[str, ...]:
     """Return paths whose on-disk state can conflict with ``candidate_paths``.
 
@@ -1485,6 +1533,16 @@ def _recover_task_merges(
                                 f"{detail}; worktree {checked_out_worktree} is stale at "
                                 f"{observed_worktree_head}; repair with {repair}"
                             )
+                for detached_worktree, observed_head in _detached_stale_worktrees(
+                    repository_root, target_ref, candidate
+                ):
+                    repair = _worktree_sync_repair(
+                        detached_worktree, observed_head, candidate, target_ref
+                    )
+                    detail = (
+                        f"{detail}; worktree {detached_worktree} is detached "
+                        f"mid-sync at {observed_head}; repair with {repair}"
+                    )
             except (OSError, ToolchainError, UnicodeDecodeError, ValueError):
                 # Recovery must preserve its ref-only outcome when inspection fails.
                 pass

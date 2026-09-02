@@ -98,7 +98,7 @@ RESPONSE_LIMIT = 65_536
 # Issue #56 (2026-08-30) refreshes it for checked-out merge-worktree coherence.
 # Issue #56 (2026-08-31) extends it for ignored-path conflict detection and
 # stale checked-out worktree recovery details.
-MAIN_PY_SHA256 = "e4bb0512439d7762eed35571b7381c58374a686b23ef750d8a773c4838f41811"
+MAIN_PY_SHA256 = "61602aa71962a3d2590162b004f14fdd4d4c968403cb8e848d971246880ae8f6"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

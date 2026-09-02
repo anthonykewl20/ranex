@@ -726,6 +726,58 @@ def test_task_merge_recovery_keeps_a_coherent_worktree_detail_unchanged(
     assert "repair with" not in detail
 
 
+def test_task_merge_recovery_names_a_detached_mid_sync_worktree(
+    tmp_path: Path,
+) -> None:
+    """Issue #68: the crash window between ``checkout --detach`` and the
+    ``symbolic-ref`` restore leaves the worktree detached at a commit the
+    moved ref still contains.  Branch-line matching on the porcelain output
+    cannot see that worktree at all, so recovery journaled a bare INFERRED
+    with no repair.  This arm reproduces the split state in a real repo —
+    no seam injection — and requires recovery to name it."""
+    scenario = MergeJournalScenario.create(tmp_path)
+    attempt = scenario.dispatch_judge("recovery-detached-midsync")
+
+    assert invoke(scenario.repo, attempt.args()) == 0
+    delete_last_merge_outcome(scenario.journal_path, attempt.candidate, "PUBLISHED")
+    assert git(scenario.repo, "rev-parse", TARGET_REF) == attempt.candidate
+
+    # The real crash state: publication's sync had detached the worktree at
+    # the pre-merge tip and died before the ff-merge and the symbolic-ref
+    # restore.  The ref holds the candidate; the worktree is detached at its
+    # ancestor — invisible to the branch-line matcher.
+    worktree = scenario.repo.parent / "worktrees" / "recovery-detached-midsync"
+    detached_at = scenario.tip
+    git(scenario.repo, "merge-base", "--is-ancestor", detached_at, attempt.candidate)
+    git(worktree, "checkout", "-q", "--detach", detached_at)
+
+    missing = scenario.repo / "missing-approval.json"
+    assert invoke(
+        scenario.repo,
+        scenario.args(
+            task_id=attempt.task_id,
+            candidate=attempt.candidate,
+            approval=missing,
+        ),
+    ) != 0
+
+    outcomes = [
+        entry
+        for entry in Journal(scenario.journal_path).entries()
+        if entry.get("type") == "task-merge-outcome"
+        and entry.get("candidate") == attempt.candidate
+    ]
+    assert [entry["outcome"] for entry in outcomes] == ["INFERRED"]
+    detail = str(outcomes[0]["detail"])
+    assert "recovery observed candidate at target ref" in detail
+    assert "detached mid-sync" in detail
+    assert detached_at in detail
+    assert str(worktree) in detail
+    assert "merge --ff-only" in detail
+    assert "symbolic-ref HEAD" in detail
+    assert Journal(scenario.journal_path).verify() is True
+
+
 def test_task_merge_recovery_degrades_when_checked_out_worktree_inspection_fails(
     tmp_path: Path,
 ) -> None:
