@@ -36,6 +36,7 @@ import copy
 import hashlib
 import json
 import os
+import re
 import shutil
 import socket
 import stat
@@ -302,6 +303,17 @@ def journal_entries(repo: Path) -> list[dict[str, object]]:
     return Journal(path).entries()
 
 
+# The designed-red canary signatures (issue #69): every security slice that
+# plants a genuinely-red suite in a throwaway repo uses one of these exact
+# texts — unittest's "the product is broken" assertEqual (test_slice003,
+# test_slice004), pytest's "2 + 2 == 5" (test_slice006), and the planted
+# module name itself. Matching lines are designed evidence, never the red a
+# failure message needs to name.
+_DESIGNED_CANARY = re.compile(
+    r"test_truth|the product is broken|2 \+ 2 == 5"
+)
+
+
 def suite_tail(out: str, err: str, lines: int = 30) -> str:
     """The end of a governed run's own output, for a failure message.
 
@@ -311,6 +323,14 @@ def suite_tail(out: str, err: str, lines: int = 30) -> str:
     tail names which tests are red in the tree under governance. Keep the
     pytest summary separately: intentional stderr can be longer than the
     ordinary combined tail.
+
+    Designed-red canary lines (issue #69) are dropped from the tail window
+    before the cut: the security slices plant genuinely-red suites
+    (``test_truth.py``) inside throwaway repos, and when a nested sibling
+    fails, pytest dumps its captured stdout — canary text included — into the
+    outer transcript, so the raw window shows designed evidence instead of
+    the victim. A window that would filter to nothing keeps its raw form: a
+    failure message must never render blank.
     """
 
     combined = (out + err).strip().splitlines()
@@ -340,14 +360,58 @@ def suite_tail(out: str, err: str, lines: int = 30) -> str:
                 unframed[:1].isdigit()
                 and any(word in pytest_outcomes for word in words)
             )
-        ):
+        ) and not _DESIGNED_CANARY.search(line):
             summary_lines.append(line)
 
-    tail = combined[-lines:]
+    raw_tail = combined[-lines:]
+    filtered = [line for line in raw_tail if not _DESIGNED_CANARY.search(line)]
+    tail = filtered if filtered else raw_tail
     for line in summary_lines:
         if line not in tail:
             tail.append(line)
     return "\n".join(tail)
+
+
+def test_suite_tail_drops_designed_red_canary_blocks_and_names_the_real_failure() -> None:
+    """Issue #69: canary text is designed evidence, not the red to name.
+
+    The nested governed suite recurses into subjects whose security slices
+    run designed-red canaries; when a sibling fails, pytest dumps captured
+    canary output into the outer transcript and the 30-line window showed
+    the canary instead of the victim — the order-sensitive flake this
+    issue records. The filtered tail keeps the real FAILED summary and
+    omits the canary lines; a window that would filter to nothing keeps
+    its raw form rather than rendering a blank failure message.
+    """
+    out = "\n".join(
+        [
+            "collected 1600 items",
+            "AssertionError: 1 != 2 : the product is broken",
+            "Ran 1 test in 0.000s",
+            "FAILED test_truth.py::test_two_plus_two - assert 2 + 2 == 5",
+            "=========== short test summary info ===========",
+            "FAILED tests/e2e/test_gating_real_suite.py::test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts",
+            "1 failed, 1599 passed in 100s",
+        ]
+    )
+    rendered = suite_tail(out, "")
+    assert "test_stage_08b" in rendered
+    assert "short test summary" in rendered
+    assert "test_truth" not in rendered
+    assert "the product is broken" not in rendered
+    assert "2 + 2 == 5" not in rendered
+
+    only_canary = "\n".join(
+        [
+            "AssertionError: 1 != 2 : the product is broken",
+            "FAILED test_truth.py::test_two_plus_two - assert 2 + 2 == 5",
+        ]
+    )
+    raw = suite_tail(only_canary, "")
+    assert "product is broken" in raw, (
+        "a window holding nothing but canary lines must keep its raw form — "
+        "a blank failure message names nothing"
+    )
 
 
 def fetch_argv(store: Path) -> list[str]:
