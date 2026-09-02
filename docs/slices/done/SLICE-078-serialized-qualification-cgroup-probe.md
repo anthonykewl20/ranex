@@ -1,7 +1,8 @@
 # SLICE-078 — serialized qualification cgroup-probe topology
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-09-02
+**Closed:** 2026-09-02
 **Priority:** P0 — production blocker (issue #73)
 **Issue:** #73
 **ADR:** docs/adr/ADR-046-cgroup-probe-serialization.md
@@ -79,8 +80,23 @@ Issue #73 acceptance criteria (verbatim):
   (19.0s); host-workflow + launcher + batch-verify families green
   (27 passed, 5 declared context skips); the batch-qualification
   journey green; ruff clean; pyrefly 1.2.0 zero errors (CI invocation).
-
-(to be recorded per tranche)
+- Manifest re-frozen at **1681 IDs / 164 expected skips** (sealed
+  ceremony at a196a9263: 1562 passed / 119 skipped, run_exit=0; the +2
+  IDs are the serialization arms, the +2 declarations are their
+  `ranex-context:delegated-scope:` skip records so the module never
+  vanishes silently on hosts without delegated scopes).
+- Governed self-gate (`ranex run --claim tests-executed --producer
+  anthony` + `gate evaluate`) was NOT re-run this slice: the private
+  key for the registered `anthony` producer is absent from this host
+  (verified by deriving every *.key under the workspace/config/backup
+  roots — none matches the committed keyring pin). Recorded honestly;
+  the sealed freeze ceremony is this slice's executed suite proof.
+- T2 acceptance (transcript on issue #73): the #65 owner authority
+  (descriptor/tasks reconstructed bit-exactly, digests re-verified
+  against B's protected rows) qualified the 3-child × 2-flow batch
+  `--pool 2` inside a fresh delegated scope — exit 0, correct flow
+  orderings, journal append, `residue: []`; `task batch verify` PASS;
+  `journal verify` chain=verified; single worktree before and after.
 
 ## Non-goals
 
