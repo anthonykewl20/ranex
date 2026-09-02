@@ -75,7 +75,8 @@ Issue #73 acceptance criteria (verbatim):
   unmodified main (`UNSERIALIZED REFUSED … lacks the pids controller`
   — the exact #73 refusal, reproduced deterministically three
   consecutive runs); 2322b6b0a landed the fix with zero test edits
-  (`git diff 8f7f59fa4 HEAD -- tests/` is empty).
+  (`git diff 8f7f59fa4 2322b6b0a -- tests/` is empty; the only later
+  tests/ edit is 57ed23d's living suite-freeze golden refresh).
 - Post-fix: `tests/e2e/test_delegated_probe_serialization.py` 2/2 green
   (19.0s); host-workflow + launcher + batch-verify families green
   (27 passed, 5 declared context skips); the batch-qualification
