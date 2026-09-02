@@ -347,7 +347,8 @@ suite freeze
 deps fetch | approve
 keygen
 task dispatch | judge | merge | delegate | fanout
-task batch qualify
+task batch qualify | verify
+specification draft | advance | questions | status | approve
 ```
 
 Code-backed capabilities:
@@ -374,6 +375,9 @@ Code-backed capabilities:
 - A/B/C validators, deterministic specification projections, lifecycle,
   approval/revocation/grant, trace, and candidate-verification Python and CLI
   APIs;
+- operator-reachable approval signing (`specification approve`) and
+  independent read-only rechecking of a completed qualification
+  (`task batch verify`), both composing existing kernel functions (#65);
 - A/B/C-bound batch qualification in disposable children whose signed output is
   explicitly non-publishable; and
 - optional signed verdict-file publication plus an internal verified reader API.
@@ -414,6 +418,18 @@ Secrets matching the redaction grammars appear only as
 `[REDACTED:env:NAME]`, `[REDACTED:pem]`, or `[REDACTED:credential]`.
 Ranex never deletes logs on its own — retention and cleanup are yours.
 
+**Operating specification approval and batch verification.** The owner
+authority lifecycle ends in a signature:
+`ranex specification approve --payload approval-payload.json --output approval-envelope.json`
+signs the canonical approval payload with the key `RANEX_SIGNING_KEY` names
+(mode 0600, outside the repository), writing the envelope exclusively and
+printing `APPROVED <output> key_id=<key>`. After a qualification completes,
+`ranex task batch verify --spec-packet spec-packet.json --artifact-manifest manifest.json --approval-envelope approval-envelope.json --qualification qualification.json --target /path/to/governed-repo --journal journal.db`
+independently rechecks it — A/B/C chain, protected digests, subject
+binding, journal continuity, attestation admission — printing the
+canonical facts and `PASS ... VERIFIED`, or refusing with `E-BATCH-*` and
+exit 1. Verification is read-only and authorizes nothing.
+
 Current limits visible in code:
 
 - the supported operator install is the frozen checkout: `uv sync --frozen`
@@ -444,7 +460,9 @@ Current limits visible in code:
   survive in a retained log, and nothing deletes logs automatically —
   retention and cleanup are operator-owned;
 - batch qualification sets `publication_allowed` to false and both judge and
-  merge refuse it before legacy publication writes;
+  merge refuse it before legacy publication writes; `task batch verify`
+  rechecks such a qualification read-only but proves the recorded surface,
+  not payload semantics, and authorizes nothing;
 - `evidence.json` replaces the previous row for the same claim and producer;
   it is not append-only;
 - the suite manifest freezes test IDs and allowed skip reasons, not test bodies;

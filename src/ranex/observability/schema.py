@@ -17,6 +17,9 @@ from pathlib import Path
 # adds the ``task.batch.qualify`` CLI dispatch stage pair.
 # Version 3 adds the specification CLI dispatch stage pair.
 # Version 4 adds the strict-local host workflow CLI dispatch stage pairs.
+# Later (ADR-045) the ``specification.approve`` action pair extended the
+# stage vocabulary in place under evt 4: action-derived pairs grow by
+# frozen-contract test edit; no new event shape or field shipped.
 SCHEMA_NUMBER = 4
 
 # The frozen eleven-field set, in canonical serialization order. Every event
@@ -86,7 +89,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "host.strict-local",
 )
 
-_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status")
+_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve")
 
 STAGES: frozenset[str] = frozenset(
     {

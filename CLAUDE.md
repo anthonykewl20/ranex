@@ -140,7 +140,8 @@ uv run --frozen ranex --help
 
 CLI surface today: `gate evaluate · journal verify · run · suite freeze ·
 deps fetch|approve · keygen · task dispatch|judge|merge|delegate|fanout ·
-task batch qualify`
+task batch qualify|verify · specification draft|advance|questions|status|approve ·
+host launcher-build|launcher-install|host-probe|qualify|launcher-identity|strict-local`
 (`fanout` is the free-prompt JSONL prototype, not approved mutation authority).
 
 **Always `--frozen`.** Plain `uv run` re-locks and rewrites `uv.lock` —

@@ -52,6 +52,7 @@ from ranex.cli.repository import (
     uncommitted_paths,
 )
 from ranex.cli.specification import cmd_advance as cmd_specification_advance
+from ranex.cli.specification import cmd_approve as cmd_specification_approve
 from ranex.cli.specification import cmd_draft as cmd_specification_draft
 from ranex.cli.specification import cmd_questions as cmd_specification_questions
 from ranex.cli.specification import cmd_status as cmd_specification_status
@@ -3692,6 +3693,31 @@ def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def cmd_task_batch_verify(args: argparse.Namespace) -> int:
+    """Independently verify a completed approved-batch qualification."""
+
+    try:
+        from ranex.governed_execution.application.specification_batch import (
+            verify_qualification,
+        )
+
+        facts = verify_qualification(
+            spec_packet=Path(args.spec_packet),
+            artifact_manifest=Path(args.artifact_manifest),
+            approval_envelope=Path(args.approval_envelope),
+            artifact_path=Path(args.qualification),
+            target=Path(args.target),
+            journal_path=Path(args.journal),
+        )
+    except (ValueError, TypeError, KeyError, OSError, sqlite3.Error, json.JSONDecodeError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_FAIL
+
+    print(canonical_json_bytes(facts).decode("utf-8"))
+    print(f"PASS  qualification={args.qualification}  VERIFIED")
+    return EXIT_PASS
+
+
 def cmd_launcher_build(args: argparse.Namespace) -> int:
     """Delegate the public launcher build command to host confinement."""
     from importlib import import_module
@@ -4014,6 +4040,12 @@ def build_parser() -> argparse.ArgumentParser:
     )
     status.add_argument("--session", required=True, help="lifecycle session path")
     status.set_defaults(func=cmd_specification_status)
+    approve = specification.add_parser(
+        "approve", help="sign a specification approval payload"
+    )
+    approve.add_argument("--payload", required=True, help="canonical approval payload path")
+    approve.add_argument("--output", required=True, help="new approval envelope path")
+    approve.set_defaults(func=cmd_specification_approve)
 
     task = sub.add_parser("task", help="dispatch and materialise task candidates")
     task_actions = task.add_subparsers(dest="action", required=True)
@@ -4175,6 +4207,19 @@ def build_parser() -> argparse.ArgumentParser:
     qualify.set_defaults(
         func=cmd_task_batch_qualify,
         trace_dispatch_group="task.batch.qualify",
+    )
+    verify = batch.add_parser(
+        "verify", help="independently verify a completed batch qualification"
+    )
+    verify.add_argument("--spec-packet", required=True)
+    verify.add_argument("--artifact-manifest", required=True)
+    verify.add_argument("--approval-envelope", required=True)
+    verify.add_argument("--qualification", required=True)
+    verify.add_argument("--target", required=True)
+    verify.add_argument("--journal", required=True)
+    verify.set_defaults(
+        func=cmd_task_batch_verify,
+        trace_dispatch_group="task.batch.verify",
     )
     return parser
 

@@ -845,7 +845,7 @@ def qualify_batch(
     return QualificationResult(tuple(lines))
 
 
-def verify_publication_refusal(
+def _verify_qualification_facts(
     artifact_path: Path,
     *,
     governed: Path,
@@ -853,12 +853,8 @@ def verify_publication_refusal(
     candidate_repository: Path,
     candidate: str,
     target_ref: str = _MAIN_REF,
-) -> NoReturn:
-    """Verify an actual qualification through base/candidate/tip, then refuse.
-
-    This function is intentionally read-only and is called before either
-    legacy publication path constructs an intent or candidate journal row.
-    """
+) -> dict[str, object]:
+    """Return the independently rechecked qualification artifact facts."""
 
     raw, artifact = _canonical_document(artifact_path, code="E-BATCH-PROTECTED-ARTIFACT")
     del raw
@@ -973,6 +969,142 @@ def verify_publication_refusal(
             or admitted.producer_id != payload["producer_id"]
         ):
             _refuse("E-BATCH-PROTECTED-ARTIFACT", "qualification attestation identity disagrees")
+    return {
+        "a_digest": payload["a_digest"],
+        "b_digest": payload["b_digest"],
+        "base_commit": base,
+        "base_digest": payload["base_digest"],
+        "batch_digest": payload["batch_digest"],
+        "c_digest": payload["c_digest"],
+        "child_results_digest": payload["child_results_digest"],
+        "journal": fact,
+    }
+
+
+def verify_qualification(
+    *,
+    spec_packet: Path,
+    artifact_manifest: Path,
+    approval_envelope: Path,
+    artifact_path: Path,
+    target: Path,
+    journal_path: Path,
+) -> dict[str, object]:
+    """Verify a qualification record without reusing publication-only controls."""
+
+    try:
+        a = validate_spec_packet_bytes(spec_packet.read_bytes())
+        b = validate_generated_artifact_manifest_bytes(
+            artifact_manifest.read_bytes(), spec_packet=a
+        )
+        c = validate_approval_envelope_bytes(approval_envelope.read_bytes())
+        assert_abc_chain(a, b, c)
+    except (OSError, ValueError, TypeError, KeyError) as exc:
+        _refuse("E-BATCH-SCHEMA", str(exc))
+
+    _verify_protected(b)
+    try:
+        _raw, artifact = _canonical_document(artifact_path, code="E-BATCH-SCHEMA")
+        payload = artifact["payload"]
+        base = payload["base_commit"]
+        approval_payload = c["payload"]
+        if not isinstance(payload, dict) or not isinstance(base, str) or not isinstance(
+            approval_payload, dict
+        ):
+            _refuse("E-BATCH-SCHEMA", "qualification or approval payload is malformed")
+    except BatchRefusal:
+        raise
+    except (KeyError, TypeError, ValueError) as exc:
+        _refuse("E-BATCH-SCHEMA", str(exc))
+
+    target = target.resolve()
+    journal_path = journal_path.resolve()
+    try:
+        from ranex.cli.main import subject_digest_for
+
+        subject = subject_digest_for(target, base)
+    except (OSError, ValueError) as exc:
+        _refuse("E-BATCH-STALE-BASE", str(exc))
+    if (
+        _git_text(target, "rev-parse", "--verify", _MAIN_REF, code="E-BATCH-STALE-BASE")
+        != base
+        or _git_text(target, "rev-parse", "--verify", "HEAD", code="E-BATCH-STALE-BASE")
+        != base
+        or approval_payload.get("subject_digest") != subject
+        or approval_payload.get("base_digest") != subject
+    ):
+        _refuse("E-BATCH-STALE-BASE", "signed base, subject, HEAD, or refs/heads/main moved")
+
+    approval_principal = approval_payload.get("principal")
+    approval_key = approval_payload.get("key")
+    keyring_raw = _git_blob(target, base, _KEYRING, code="E-BATCH-STALE-BASE")
+    keyring = load_keyring_text(keyring_raw.decode("utf-8"), f"{base}:{_KEYRING}")
+    if (
+        not isinstance(approval_principal, str)
+        or not isinstance(approval_key, str)
+        or keyring.get(approval_principal) != approval_key
+    ):
+        _refuse("E-BATCH-STALE-BASE", "committed producer trust does not match approval")
+
+    facts = _verify_qualification_facts(
+        artifact_path,
+        governed=target,
+        journal_path=journal_path,
+        candidate_repository=target,
+        candidate=base,
+    )
+    journal_fact = facts["journal"]
+    if not isinstance(journal_fact, dict) or (
+        (approval_payload.get("journal_predecessor") is None and journal_fact.get("seq") != 1)
+        or (
+            approval_payload.get("journal_predecessor") is not None
+            and journal_fact.get("previous_head") != approval_payload.get("journal_predecessor")
+        )
+    ):
+        _refuse("E-BATCH-STALE-BASE", "journal predecessor changed")
+    if (
+        facts["a_digest"] != payload_digest(a)
+        or facts["b_digest"] != payload_digest(b)
+        or facts["base_commit"] != base
+        or facts["base_digest"] != subject
+        or facts["c_digest"] != payload_digest(approval_payload)
+    ):
+        _refuse("E-BATCH-PROTECTED-ARTIFACT", "qualification identities disagree")
+    return {
+        "a_digest": payload_digest(a),
+        "b_digest": payload_digest(b),
+        "c_digest": payload_digest(approval_payload),
+        "base_commit": base,
+        "subject_digest": subject,
+        "batch_digest": facts["batch_digest"],
+        "child_results_digest": facts["child_results_digest"],
+        "journal": journal_fact,
+    }
+
+
+def verify_publication_refusal(
+    artifact_path: Path,
+    *,
+    governed: Path,
+    journal_path: Path,
+    candidate_repository: Path,
+    candidate: str,
+    target_ref: str = _MAIN_REF,
+) -> NoReturn:
+    """Verify an actual qualification through base/candidate/tip, then refuse.
+
+    This function is intentionally read-only and is called before either
+    legacy publication path constructs an intent or candidate journal row.
+    """
+
+    _verify_qualification_facts(
+        artifact_path,
+        governed=governed,
+        journal_path=journal_path,
+        candidate_repository=candidate_repository,
+        candidate=candidate,
+        target_ref=target_ref,
+    )
     _refuse(
         "E-BATCH-PUBLICATION-REFUSED",
         "approved-batch child results are qualification-only",

@@ -82,7 +82,7 @@ CLI_DISPATCH_GROUPS = (
     "host.strict-local",
 )
 
-SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status")
+SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve")
 
 EXPECTED_STAGES = (
     {
@@ -457,10 +457,15 @@ def test_cli_dispatch_groups_derived_from_the_parser_stay_inside_the_registry() 
         if stage.startswith("cli.") and stage.endswith(".start")
     }
     derived = dispatch_groups(build_parser())
-    assert derived <= registered, (
+    # `task.batch.verify` deliberately emits no stages: it independently
+    # checks an already-recorded qualification, and ADR-040 reserves frozen
+    # trace stage changes for commands that create an execution transition.
+    unregistered = {"task.batch.verify"}
+    assert derived - unregistered <= registered, (
         f"CLI dispatch groups missing from the frozen STAGES registry: "
-        f"{sorted(derived - registered)}"
+        f"{sorted(derived - unregistered - registered)}"
     )
+    assert derived & unregistered == unregistered
 
 
 def test_nested_batch_qualify_parser_resolves_its_registered_dispatch_stages() -> None:
