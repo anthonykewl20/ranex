@@ -57,6 +57,7 @@ The only documents that may exist:
 | `docs/slices/done/` | finished slices (archived) |
 | `.claude/skills/<name>/SKILL.md` | `idea-refine` only (closed set) |
 | `.claude/skills/LICENSE-agent-skills.txt` | upstream MIT notice |
+| `tools/dogfood/*.md` | the dogfood loop's interface docs (closed set: README, FINDINGS, AUTOFIX, site/INTEGRATION) |
 
 Do not create any other document. Future-session knowledge → STATE.md;
 current work → the slice file; change reasoning → the commit message;

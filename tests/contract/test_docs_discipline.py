@@ -77,6 +77,22 @@ _PIPELINE_SKILLS = (
     "idea-refine",
 )
 
+# --- dogfood loop documents: a named, closed set ------------------------------
+#
+# tools/dogfood is operator tooling, not reports; these four files are the
+# loop's interface (README: how to run it; FINDINGS/AUTOFIX: the finding and
+# self-fix protocols; site/INTEGRATION.md: how the rendered site is produced).
+# Named exactly, so nothing else under tools/ is admitted by the cap — the
+# same closed-set discipline as the skills shelf above.
+_DOGFOOD_DOCS = frozenset(
+    {
+        "tools/dogfood/README.md",
+        "tools/dogfood/FINDINGS.md",
+        "tools/dogfood/AUTOFIX.md",
+        "tools/dogfood/site/INTEGRATION.md",
+    }
+)
+
 # Two caps, because each closes a hole the other leaves. Lines, because a skill
 # is instructions and not a handbook; bytes, because a line cap alone admits
 # one enormous line.
@@ -105,6 +121,8 @@ def _tracked_markdown() -> list[Path]:
 def _is_allowed(relative: Path) -> bool:
     posix = relative.as_posix()
     if posix in _ALLOWED_EXACT:
+        return True
+    if posix in _DOGFOOD_DOCS:
         return True
     parent = relative.parent.as_posix()
     if parent in {"docs/slices", "docs/slices/done"}:
