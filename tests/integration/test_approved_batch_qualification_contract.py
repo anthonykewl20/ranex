@@ -97,9 +97,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-18"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-19"
     assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 16
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v18"
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v19"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
