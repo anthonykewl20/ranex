@@ -1,7 +1,8 @@
 # SLICE-079 — serialized strict-local session cgroup mutations
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-09-03
+**Closed:** 2026-09-03
 **Priority:** P1 — named residual risk (issue #74)
 **Issue:** #74
 **ADR:** docs/adr/ADR-046-cgroup-probe-serialization.md (2026-09-03 addendum)

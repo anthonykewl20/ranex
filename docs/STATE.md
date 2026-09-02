@@ -1,31 +1,30 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-03 (rules simplification sealed; host loader-cache re-pinned)
-**Active slice:** docs/slices/SLICE-079-serialized-session-cgroup-mutations.md
+**Updated:** 2026-09-03 (SLICE-079 archived; #74 fixed)
+**Active slice:** none
 
 ## Where we stopped
 
-Issue #73's fix is fully landed and evidenced on the issue (chain
-8f7f59fa4..f9482ff05 on main); the issue itself still awaits closing. The
-rules simplification (f932f9d09) took the frozen suite to **1653 IDs /
-164 expected skips**; golden and this file now say 1653. The dogfood loop
-(tools/dogfood) landed with its four interface docs admitted by the docs
-cap as a closed set.
-
-Host drift, handled: the 2026-09-03 01:00 +0800 unattended libc-bin
-upgrade regenerated /etc/ld.so.cache, breaking the pinned launcher build
-closure (E-C17-BUILD-INPUT-DRIFT). Only that input drifted; the rebuilt
-launcher is byte-identical to the pinned artifact digest (f3e1e1e9…), so
-the loader-cache sha256 was re-recorded deliberately (7489d8c0…) and
-launcher-build/install re-verified green.
+Issue #74 FIXED, closing evidence posting: the strict-local session's
+cgroup mutations (worker-cgroup create at setup, controller-leaf
+release at teardown) now acquire `_host_probe_lock()` at the call
+sites — never inside the shared helpers, which the qualified probe
+calls under the same lock (self-deadlock; ADR-046 addendum). Frozen
+red 720aca208 (a real session completed both mutations under a held
+lock, three consecutive reproductions), fix 9e9c0a701 (zero test-byte
+edits between), suite re-frozen and sealed green at **1655 IDs / 166
+expected skips** (run_exit=0). Earlier tonight: docs cap admitted the
+dogfood interface docs; the libc-bin loader-cache drift re-pinned with
+the host profile re-bound and the approved-batch vectors regenerated
+(v19); the freeze golden's byte format restored.
 
 ## Next
 
-Close #73 (evidence posted). Issue #74 (session-path cgroup mutations
-unlocked; serialization goes at the session call sites — never inside the
-shared helpers, which would self-deadlock); then umbrella #66 (release
-gate, v0.1.0); #68/#69 remain open follow-ups from #56.
+Issue #69 (recursion order-sensitivity: filter designed-red canary
+blocks from suite_tail; stability evidence from consecutive greens);
+#68 (recovery stale-worktree detection for the detached mid-sync
+window); then umbrella #66 (release gate, v0.1.0).
 
 ## Governance
 
@@ -39,11 +38,12 @@ producer key is absent from this host; the sealed freeze is the proof.
 ## Known limits
 
 - Version stays 0.0.0 until the release-gate slice (#66).
-- Strict-local sessions mutate cgroup topology without the host-probe
-  lock (#74); the supported batch flow never overlaps them.
 - Strict-local requires a delegated cgroup scope; the `ranex host
   strict-local` wrapper establishes it, and the controller remains
   same-UID trusted infrastructure (ADR-044).
+- Session cgroup mutations are serialized per-host-scope only against
+  probes taking the same lock; cross-batch locking remains journal
+  discipline (ADR-046 scope).
 - `mutmut` remains an UNVERIFIED residual: no negative control or
   consuming gate (MAP §1.5).
 - The concurrent-CAS journal race family is documented, not fixed;

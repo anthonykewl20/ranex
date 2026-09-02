@@ -481,7 +481,7 @@ Current limits visible in code:
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** SLICE-079-serialized-session-cgroup-mutations
+**Active slice:** none
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness
@@ -678,6 +678,7 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+- SLICE-079 — serialized strict-local session cgroup mutations (#74)
 - SLICE-078-serialized-qualification-cgroup-probe (#73, ADR-046): every qualification cgroup probe serialized under the host-probe lock; pool=2 delegated-scope batch qualification green
 
 This list mirrors the archived slice filenames. A completed slice is historical
