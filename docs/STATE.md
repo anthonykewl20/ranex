@@ -33,8 +33,8 @@ ADR-038: preserve epoch discipline—deliberate re-locks and builds pass
 `--exclude-newer 2026-08-04T00:00:00Z`; the CLI remains checkout-anchored per
 ADR-009 and refuses governed subcommands outside its containing checkout.
 ADR-039: coverage floor 64 comes from the enforcing pipeline; confinement-only
-lines carry the pragma convention. Governed self-gate note: the `anthony`
-producer key is absent from this host; the sealed freeze is the proof.
+lines carry the pragma convention. The `anthony` producer key is absent
+from this host; the sealed freeze is the proof.
 
 ## Known limits
 
