@@ -4373,9 +4373,14 @@ def confinement_session(
                 descriptor["_resolved"]["output"],
                 os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC,
             )
-        controller, worker, limit_readbacks, enrolled_controllers = _create_worker_cgroup(
-            parent, descriptor["limits"]
-        )
+        # ADR-046 addendum (#74): the session's shared-topology mutations join
+        # the host-probe lock AT THE CALL SITES only — the helpers themselves
+        # stay lock-free because the qualification v3 probe holds this lock
+        # and calls them (locking inside would self-deadlock).
+        with _host_probe_lock():
+            controller, worker, limit_readbacks, enrolled_controllers = _create_worker_cgroup(
+                parent, descriptor["limits"]
+            )
         gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
         readiness_read, readiness_write = os.pipe2(os.O_CLOEXEC)
         readiness_ack_read, readiness_ack_write = os.pipe2(os.O_CLOEXEC)
@@ -4740,10 +4745,13 @@ def confinement_session(
         # controller, which moves last — and remove the now-empty leaf.
         # The invoking tree ends where it started, so the next session's
         # delegation drift binding still holds, and no controller leaf
-        # outlives the session that created it.
+        # outlives the session that created it. The release takes the
+        # host-probe lock at the call site (ADR-046 addendum, #74), the
+        # same serialization the create above joined.
         if controller is not None:
             try:
-                _release_controller_leaf(parent, controller, enrolled_controllers)
+                with _host_probe_lock():
+                    _release_controller_leaf(parent, controller, enrolled_controllers)
             except (OSError, ValueError) as exc:
                 if primary_error is None:
                     _refuse(E_C18_DRAIN, f"cannot release the enrollment cgroup: {exc}")
