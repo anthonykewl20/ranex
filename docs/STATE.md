@@ -1,8 +1,8 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-02 (issue #65 closed, #73 filed)
-**Active slice:** none
+**Updated:** 2026-09-02 (issue #73 claimed, SLICE-078 opened)
+**Active slice:** docs/slices/SLICE-078-serialized-qualification-cgroup-probe.md
 
 ## Where we stopped
 
