@@ -278,6 +278,13 @@ def test_v3_verifier_probe_blocks_while_the_host_probe_lock_is_held(tmp_path: Pa
 
 
 def test_parallel_qualifies_in_one_fresh_delegated_scope_both_qualify(tmp_path: Path) -> None:
+    launcher_host = _prereqs._launcher_host()
+    closure_limitation = launcher_host.build_closure_limitation()
+    if closure_limitation is not None:
+        pytest.skip(
+            "ranex-context:host-capability: pinned launcher build closure does "
+            f"not match this host — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here ({closure_limitation})"
+        )
     environment = _child_environment()
     clones: list[Path] = []
     for name in ("first", "second"):
