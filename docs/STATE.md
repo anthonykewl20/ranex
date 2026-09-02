@@ -1,7 +1,7 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-03 (#74 and #69 fixed)
+**Updated:** 2026-09-03 (#74, #69, #68 fixed)
 **Active slice:** none
 
 ## Where we stopped
@@ -21,10 +21,11 @@ the host profile re-bound and the approved-batch vectors regenerated
 
 ## Next
 
-#68 (recovery stale-worktree detection, detached mid-sync window);
-then umbrella #66 (release gate, v0.1.0). #69 FIXED: suite_tail drops
-designed-red canary lines so a nested red names its victim; stability
-evidenced by consecutive full-suite greens at 1655 and 1656 IDs.
+Umbrella #66 (release gate, v0.1.0) is next. #69 FIXED: suite_tail
+drops canary lines so a nested red names its victim. #68 FIXED:
+recovery names a detached mid-sync worktree behind the moved ref with
+its repair; the primary checkout stays out of the crash window. Suite
+sealed at 1657/166, run_exit=0; full suite 1623 green.
 
 ## Governance
 
