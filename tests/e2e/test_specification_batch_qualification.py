@@ -38,6 +38,11 @@ from ranex.foundation.canonical import (
     canonical_sha256,
     command_digest,
 )
+from ranex.foundation.specification_abc import payload_digest
+from ranex.governed_execution.application.specification_batch import (
+    BatchRefusal,
+    verify_qualification,
+)
 from ranex.governed_execution.domain.admission import admit
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     load_keyring_text,
@@ -1707,7 +1712,7 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
     tmp_path: Path,
     loopback_sentinel: LoopbackSentinel,
 ) -> None:
-    """The decisive real journey: no application import and no trusted booleans."""
+    """The decisive real journey, plus in-process verifier coverage over its facts."""
 
     carried_parent = subprocess.run(
         ["git", "-C", str(ROOT), "cat-file", "-e", f"{FIXTURE_PARENT_COMMIT}^{{commit}}"],
@@ -1873,6 +1878,256 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
         journal=journal,
         evidence_events=evidence_events,
     )
+    batch_verify = [
+        shutil.which("uv") or "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "ranex.cli.main",
+        "task",
+        "batch",
+        "verify",
+        "--spec-packet",
+        str(authority[0]),
+        "--artifact-manifest",
+        str(authority[1]),
+        "--approval-envelope",
+        str(authority[2]),
+        "--qualification",
+        str(batch_artifact),
+        "--target",
+        str(governed),
+        "--journal",
+        str(journal),
+    ]
+    verified = invoke(batch_verify, checkout=governed, signing_key=signing_key)
+    assert verified.returncode == 0, verified.stderr
+    facts, summary = verified.stdout.splitlines()
+    assert json.loads(facts) == {
+        "a_digest": VECTORS["triple"]["a_digest"],
+        "b_digest": VECTORS["triple"]["b_digest"],
+        "c_digest": VECTORS["triple"]["c_digest"],
+        "base_commit": BASE_COMMIT,
+        "subject_digest": SUBJECT_DIGEST,
+        "batch_digest": qualification["payload"]["batch_digest"],
+        "child_results_digest": qualification["payload"]["child_results_digest"],
+        "journal": qualification["payload"]["qualification_journal"],
+    }
+    assert summary == f"PASS  qualification={batch_artifact}  VERIFIED"
+    assert verify_qualification(
+        spec_packet=authority[0],
+        artifact_manifest=authority[1],
+        approval_envelope=authority[2],
+        artifact_path=batch_artifact,
+        target=governed,
+        journal_path=journal,
+    ) == json.loads(facts)
+
+    tampered_manifest = sandbox / "tampered-artifact-manifest.json"
+    manifest_value = json.loads(authority[1].read_bytes())
+    manifest_value["a_digest"] = "sha256:" + "0" * 64
+    tampered_manifest.write_bytes(canonical_json_bytes(manifest_value))
+    manifest_command = [
+        str(tampered_manifest) if argument == str(authority[1]) else argument
+        for argument in batch_verify
+    ]
+    manifest_refusal = invoke(manifest_command, checkout=governed, signing_key=signing_key)
+    assert manifest_refusal.returncode == 1
+    assert manifest_refusal.stderr.startswith("ERROR  E-BATCH-SCHEMA: E-ABC-")
+    with pytest.raises(BatchRefusal, match=r"^E-BATCH-SCHEMA: E-ABC-"):
+        verify_qualification(
+            spec_packet=authority[0], artifact_manifest=tampered_manifest,
+            approval_envelope=authority[2], artifact_path=batch_artifact,
+            target=governed, journal_path=journal,
+        )
+
+    protected_manifest = json.loads(authority[1].read_bytes())
+    protected_manifest["artifacts"]["protected"][0]["digest"] = "sha256:" + "0" * 64
+    protected_manifest_path = sandbox / "protected-artifact-manifest.json"
+    protected_manifest_path.write_bytes(canonical_json_bytes(protected_manifest))
+    protected_payload = json.loads(authority[2].read_bytes())["payload"]
+    protected_payload["b_digest"] = payload_digest(protected_manifest)
+    protected_input = sandbox / "protected-artifact-payload.json"
+    protected_envelope = sandbox / "protected-artifact-envelope.json"
+    protected_input.write_bytes(canonical_json_bytes(protected_payload))
+    signed_protected = invoke(
+        [
+            shutil.which("uv") or "uv",
+            "run",
+            "--frozen",
+            "python",
+            "-m",
+            "ranex.cli.main",
+            "specification",
+            "approve",
+            "--payload",
+            str(protected_input),
+            "--output",
+            str(protected_envelope),
+        ],
+        checkout=governed,
+        signing_key=signing_key,
+    )
+    assert signed_protected.returncode == 0, signed_protected.stderr
+    protected_command = [
+        str(protected_manifest_path) if argument == str(authority[1]) else argument
+        for argument in batch_verify
+    ]
+    protected_command = [
+        str(protected_envelope) if argument == str(authority[2]) else argument
+        for argument in protected_command
+    ]
+    protected_refusal = invoke(protected_command, checkout=governed, signing_key=signing_key)
+    assert protected_refusal.returncode == 1
+    assert protected_refusal.stderr.startswith("ERROR  E-BATCH-PROTECTED-ARTIFACT:")
+    with pytest.raises(BatchRefusal, match=r"^E-BATCH-PROTECTED-ARTIFACT:"):
+        verify_qualification(
+            spec_packet=authority[0], artifact_manifest=protected_manifest_path,
+            approval_envelope=protected_envelope, artifact_path=batch_artifact,
+            target=governed, journal_path=journal,
+        )
+
+    tampered_envelope = sandbox / "tampered-approval-envelope.json"
+    envelope_value = json.loads(authority[2].read_bytes())
+    envelope_value["signature"] = "ed25519:" + "A" * 86
+    tampered_envelope.write_bytes(canonical_json_bytes(envelope_value))
+    envelope_command = [
+        str(tampered_envelope) if argument == str(authority[2]) else argument
+        for argument in batch_verify
+    ]
+    envelope_refusal = invoke(envelope_command, checkout=governed, signing_key=signing_key)
+    assert envelope_refusal.returncode == 1
+    assert envelope_refusal.stderr.startswith("ERROR  E-BATCH-SCHEMA: E-ABC-")
+    with pytest.raises(BatchRefusal, match=r"^E-BATCH-SCHEMA: E-ABC-"):
+        verify_qualification(
+            spec_packet=authority[0], artifact_manifest=authority[1],
+            approval_envelope=tampered_envelope, artifact_path=batch_artifact,
+            target=governed, journal_path=journal,
+        )
+
+    tampered_qualification = sandbox / "tampered-batch-qualification.json"
+    qualification_value = json.loads(batch_artifact.read_bytes())
+    qualification_value["payload"]["batch_digest"] = "sha256:" + "0" * 64
+    tampered_qualification.write_bytes(canonical_json_bytes(qualification_value))
+    qualification_command = [
+        str(tampered_qualification) if argument == str(batch_artifact) else argument
+        for argument in batch_verify
+    ]
+    qualification_refusal = invoke(
+        qualification_command, checkout=governed, signing_key=signing_key
+    )
+    assert qualification_refusal.returncode == 1
+    assert qualification_refusal.stderr.startswith("ERROR  E-BATCH-PROTECTED-ARTIFACT:")
+    with pytest.raises(BatchRefusal, match=r"^E-BATCH-PROTECTED-ARTIFACT:"):
+        verify_qualification(
+            spec_packet=authority[0], artifact_manifest=authority[1],
+            approval_envelope=authority[2], artifact_path=tampered_qualification,
+            target=governed, journal_path=journal,
+        )
+
+    predecessor_payload = json.loads(authority[2].read_bytes())["payload"]
+    predecessor_payload["journal_predecessor"] = "sha256:" + "0" * 64
+    predecessor_input = sandbox / "journal-predecessor-payload.json"
+    predecessor_envelope = sandbox / "journal-predecessor-envelope.json"
+    predecessor_input.write_bytes(canonical_json_bytes(predecessor_payload))
+    signed_predecessor = invoke(
+        [
+            shutil.which("uv") or "uv",
+            "run",
+            "--frozen",
+            "python",
+            "-m",
+            "ranex.cli.main",
+            "specification",
+            "approve",
+            "--payload",
+            str(predecessor_input),
+            "--output",
+            str(predecessor_envelope),
+        ],
+        checkout=governed,
+        signing_key=signing_key,
+    )
+    assert signed_predecessor.returncode == 0, signed_predecessor.stderr
+    predecessor_command = [
+        str(predecessor_envelope) if argument == str(authority[2]) else argument
+        for argument in batch_verify
+    ]
+    predecessor_refusal = invoke(
+        predecessor_command, checkout=governed, signing_key=signing_key
+    )
+    assert predecessor_refusal.returncode == 1
+    assert predecessor_refusal.stderr.startswith("ERROR  E-BATCH-STALE-BASE: journal predecessor changed")
+    with pytest.raises(BatchRefusal, match=r"^E-BATCH-STALE-BASE: journal predecessor changed"):
+        verify_qualification(
+            spec_packet=authority[0], artifact_manifest=authority[1],
+            approval_envelope=predecessor_envelope, artifact_path=batch_artifact,
+            target=governed, journal_path=journal,
+        )
+
+    intruder_key = sandbox / "keys" / "intruder.key"
+    intruder_environment = cli_environment()
+    intruder_environment["RANEX_SIGNING_KEY"] = str(intruder_key)
+    generated_intruder = run(
+        shutil.which("uv") or "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "ranex.cli.main",
+        "keygen",
+        "--producer",
+        "intruder",
+        cwd=governed,
+        env=intruder_environment,
+    )
+    assert generated_intruder.returncode == 0, generated_intruder.stderr
+    intruder_public_key = next(
+        line.removeprefix("    intruder: ")
+        for line in generated_intruder.stdout.splitlines()
+        if line.startswith("    intruder: ")
+    )
+    intruder_payload = json.loads(authority[2].read_bytes())["payload"]
+    intruder_payload["key"] = intruder_public_key
+    intruder_input = sandbox / "intruder-payload.json"
+    intruder_envelope = sandbox / "intruder-envelope.json"
+    intruder_input.write_bytes(canonical_json_bytes(intruder_payload))
+    signed_intruder = run(
+        shutil.which("uv") or "uv",
+        "run",
+        "--frozen",
+        "python",
+        "-m",
+        "ranex.cli.main",
+        "specification",
+        "approve",
+        "--payload",
+        str(intruder_input),
+        "--output",
+        str(intruder_envelope),
+        cwd=governed,
+        env=intruder_environment,
+    )
+    assert signed_intruder.returncode == 0, signed_intruder.stderr
+    intruder_command = [
+        str(intruder_envelope) if argument == str(authority[2]) else argument
+        for argument in batch_verify
+    ]
+    intruder_refusal = invoke(intruder_command, checkout=governed, signing_key=signing_key)
+    assert intruder_refusal.returncode == 1
+    assert intruder_refusal.stderr.startswith(
+        "ERROR  E-BATCH-STALE-BASE: committed producer trust does not match approval"
+    )
+    with pytest.raises(
+        BatchRefusal,
+        match=r"^E-BATCH-STALE-BASE: committed producer trust does not match approval",
+    ):
+        verify_qualification(
+            spec_packet=authority[0], artifact_manifest=authority[1],
+            approval_envelope=intruder_envelope, artifact_path=batch_artifact,
+            target=governed, journal_path=journal,
+        )
     assert qualification_event == {
         "digest": qualification_digest,
         "event": "batch.qualification",
@@ -2188,3 +2443,40 @@ def test_real_cli_qualifies_both_orders_and_independently_proves_no_publication(
         len(loopback_sentinel.accepted),
         survivor_pids(),
     ) == publication_before
+
+    stale_target = sandbox / "stale-target"
+    cloned = run("git", "clone", "--quiet", str(governed), str(stale_target))
+    assert cloned.returncode == 0, cloned.stderr
+    advanced = run(
+        "git",
+        "-C",
+        str(stale_target),
+        "-c",
+        "user.name=Ranex Test",
+        "-c",
+        "user.email=ranex-test@example.invalid",
+        "commit",
+        "--allow-empty",
+        "--quiet",
+        "-m",
+        "advance stale verification target",
+    )
+    assert advanced.returncode == 0, advanced.stderr
+    stale_command = [
+        str(stale_target) if argument == str(governed) else argument
+        for argument in batch_verify
+    ]
+    stale_refusal = invoke(stale_command, checkout=governed, signing_key=signing_key)
+    assert stale_refusal.returncode == 1
+    assert stale_refusal.stderr.startswith(
+        "ERROR  E-BATCH-STALE-BASE: signed base, subject, HEAD, or refs/heads/main moved"
+    )
+    with pytest.raises(
+        BatchRefusal,
+        match=r"^E-BATCH-STALE-BASE: signed base, subject, HEAD, or refs/heads/main moved",
+    ):
+        verify_qualification(
+            spec_packet=authority[0], artifact_manifest=authority[1],
+            approval_envelope=authority[2], artifact_path=batch_artifact,
+            target=stale_target, journal_path=journal,
+        )

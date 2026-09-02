@@ -1137,6 +1137,8 @@ def test_three_way_concurrent_cas_race_one_winner(tmp_path: Path) -> None:
         json.dumps([attempt.evidence_document for attempt in attempts]), encoding="utf-8"
     )
 
+    published_winners: list[dict[str, object]] = []
+    race_loser_task_ids: set[str] = set()
     for _ in range(10):
         git(scenario.repo, "update-ref", TARGET_MAIN, attempts[0].tip)
         before = len(Journal(scenario.journal).entries())
@@ -1149,6 +1151,9 @@ def test_three_way_concurrent_cas_race_one_winner(tmp_path: Path) -> None:
             entry for entry in outcomes if entry.get("outcome") == "PUBLISHED"
         ]
         assert len(published) <= 1
+        published_winners.extend(published)
+        if published:
+            assert git(scenario.repo, "rev-parse", TARGET_MAIN) == published[0]["candidate"]
         # Only the two race-specific refusals count as genuine losers — the CAS
         # check (sad-path-1 ref-moved) and the tip check (sad-path-9
         # tip-mismatch) both prove the ref moved under the loser. Other refused
@@ -1163,6 +1168,11 @@ def test_three_way_concurrent_cas_race_one_winner(tmp_path: Path) -> None:
             and entry.get("detail")
             in ("sad-path-1 ref-moved", "sad-path-9 tip-mismatch")
         ]
+        race_loser_task_ids.update(
+            entry["task_id"]
+            for entry in race_losers
+            if isinstance(entry.get("task_id"), str)
+        )
         if len({entry.get("task_id") for entry in race_losers}) >= 2:
             break
     else:
@@ -1171,8 +1181,9 @@ def test_three_way_concurrent_cas_race_one_winner(tmp_path: Path) -> None:
             f"{[(result.returncode, result.stderr) for result in results]}"
         )
 
-    assert len(published) == 1
-    assert sum(result.returncode == 0 for result in results) == 1
-    assert sum(result.returncode != 0 for result in results) == 2
-    assert git(scenario.repo, "rev-parse", TARGET_MAIN) == published[0]["candidate"]
+    # An all-lost window is legal; aggregate evidence proves at most one winner.
+    assert len(published_winners) <= 1
+    assert len(race_loser_task_ids) >= 2
+    assert sum(result.returncode == 0 for result in results) == len(published)
+    assert sum(result.returncode != 0 for result in results) == 3 - len(published)
     assert Journal(scenario.journal).verify() is True

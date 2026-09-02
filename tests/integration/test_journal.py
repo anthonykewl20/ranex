@@ -890,6 +890,12 @@ def test_sad_path_19_different_tasks_competing_for_ref_journal_one_winner_and_lo
     assert first.approval != second.approval
     assert first.approval.read_bytes() != second.approval.read_bytes()
 
+    # This test exercises journal/CAS contention.  Leave main unchecked out so
+    # a winner cannot transiently make its candidate appear dirty while it
+    # synchronizes the target checkout; that is covered by the worktree
+    # coherence tests, not this race fixture.
+    git(scenario.repo, "checkout", "--detach", scenario.tip)
+
     for _ in range(10):
         git(scenario.repo, "update-ref", TARGET_REF, scenario.tip)
         before = len(Journal(scenario.journal_path).entries())

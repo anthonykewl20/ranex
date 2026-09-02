@@ -11,7 +11,7 @@ Issue #64 is CLOSED: the operable strict-local host workflow shipped
 (`launcher-build`, `launcher-install`, `host-probe`, `qualify`,
 `launcher-identity`, `strict-local`); `ranex host strict-local --version
 v1|v2|v3` prepares/enters the delegated cgroup and runs without manual
-systemd choreography. Suite re-frozen at 1675 IDs / 162 expected skips;
+systemd choreography. Suite re-frozen at 1679 IDs / 162 expected skips;
 two independent sealed ceremonies green (1558 passed / 117 skipped,
 byte-identical manifests, golden byte-matched). Real-host acceptance
 5/5 arms: v1/v2/v3 confined runs in the delegated scope, prereq-failure

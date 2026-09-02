@@ -8,7 +8,14 @@ import sys
 from pathlib import Path
 from typing import cast
 
-from ranex.foundation.canonical import canonical_json
+from ranex.cli.repository import governed_repository_root
+from ranex.foundation.canonical import canonical_json, canonical_json_bytes
+from ranex.foundation.specification_abc import (
+    APPROVAL_PAYLOAD_TYPE,
+    SpecificationABCError,
+    parse_canonical_payload,
+    sign_approval_payload,
+)
 from ranex.governed_execution.application.specification import advance, draft, render_questions
 from ranex.governed_execution.domain.specification import (
     ClarificationAnswer,
@@ -98,6 +105,33 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_approve(args: argparse.Namespace) -> int:
+    """Sign one canonical approval payload with the operator's private key."""
+
+    try:
+        payload = cast(dict[str, object], parse_canonical_payload(Path(args.payload).read_bytes()))
+        # `main` imports this module to register its parser, so this must remain
+        # local rather than creating an import cycle at module initialization.
+        from ranex.cli.main import private_signing_key
+
+        signature = sign_approval_payload(payload, private_signing_key(governed_repository_root()))
+        envelope = {
+            "version": "approval-envelope-v1",
+            "payload_type": APPROVAL_PAYLOAD_TYPE,
+            "payload": payload,
+            "key_id": payload["key"],
+            "signature": signature,
+        }
+        envelope_bytes = canonical_json_bytes(envelope)
+        with Path(args.output).open("xb") as output:
+            output.write(envelope_bytes)
+    except (SpecificationABCError, OSError, ValueError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return 2
+    print(f"APPROVED  {args.output}  key_id={payload['key']}")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="ranex-specification")
     root = parser.add_subparsers(dest="command", required=True)
@@ -108,6 +142,7 @@ def build_parser() -> argparse.ArgumentParser:
         ("advance", cmd_advance, ("input", "session")),
         ("questions", cmd_questions, ("input",)),
         ("status", cmd_status, ("session",)),
+        ("approve", cmd_approve, ("payload", "output")),
     ):
         command = commands.add_parser(name)
         for option in options:
@@ -116,4 +151,4 @@ def build_parser() -> argparse.ArgumentParser:
     return parser
 
 
-__all__ = ["build_parser", "cmd_advance", "cmd_draft", "cmd_questions", "cmd_status"]
+__all__ = ["build_parser", "cmd_advance", "cmd_approve", "cmd_draft", "cmd_questions", "cmd_status"]

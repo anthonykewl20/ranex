@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.6.3` |
+| Version | `3.7.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-09-01 — operable strict-local host workflow (`ranex host`); see §0.38 |
+| Last revised | 2026-09-02 — operator-signed approval and independent batch verification (issue #65); see §0.39 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -774,6 +774,24 @@ real v1/v2/v3 runs inside the delegated scope and cross-scope drift refusal
 infrastructure, and a delegated cgroup scope is still required — the wrapper
 establishes it rather than removing the host prerequisite.
 
+### 0.39 What changed in `3.7.0` — operator-signed approval and independent batch verification
+
+Issue #65 closed the fixture-authority gap: an owner can now create fresh
+authority and recheck a completed qualification through supported workflows
+only. `ranex specification approve --payload --output` (ADR-045) signs the
+approval-envelope payload with the operator's private key
+(`RANEX_SIGNING_KEY`, mode 0600, outside the tree), composing the existing
+`sign_approval_payload`; output is canonical and exclusive-create. `ranex
+task batch verify --spec-packet --artifact-manifest --approval-envelope
+--qualification --target --journal` independently verifies a qualification
+artifact — A/B/C validation, protected digests, subject binding, journal
+continuity, attestation admission — printing canonical facts and `PASS`, or
+`E-BATCH-*` refusals with exit 1; judge/merge behavior is unchanged and the
+result authorizes nothing. No new crypto and no schema-number bump; the
+`approve` stage pair derives from the frozen action enumeration. Residual:
+the e2e journey keeps a known skip where fixture ancestry is absent, and
+verification proves the surface, not payload semantics.
+
 ---
 
 ## §1 Introduction and Goals
@@ -982,7 +1000,7 @@ least one requirement — the 42010 completeness criterion, met at this layer.
 | Background worktree agent manager | Durable supervisor + capability-gated orchestrator over N agents in one harness process, each in its own worktree: per-member bridge (`ADR-014`), durable run/task/member schema, leases and recovery, verification, kernel-governed merge handoff | `UNRESOLVED` — `ADR-014` `proposed` (the bridge); manager issues #1-#9 on this repository, renumbered SLICE-060-068 on 2026-08-17 (ADR-014 predates the renumbering and cites the old numbers); nothing built. SLICE-010 is satisfied, but the manager is parked until the ADR-015 durability production program closes. §0.15 |
 | Durable execution and recovery | Provider watchdog, post-crash reconciler, durable retry, durable blockers, Session-ID fencing — target harness behavior | **absent from this repository**. `ADR-015` and the former harness commits are historical external-repository provenance, not current Ranex kernel capability or a scheduled delivery. §0.16, §0.20 |
 | A/B/C specification authority | Normative A holds approved semantics without generated hashes; manifest B binds exact gauge artifacts/invocation; signed envelope C binds A+B, context, identities, anti-replay and capability request; grant binds C | **`CONFIRMED` kernel substrate** — SLICE-029–033 and SLICE-035 built canonical contracts/vectors, lifecycle, projections, approval/revocation/intersected grants, trace integrity and real-subject bootstrap. The installed harness-admission/concurrent-mutation composition is withdrawn from the kernel-only release, not completed by SLICE-044. |
-| Public operator surface | Installed argparse CLI for verdict, evidence, journal, suite, dependencies, keys, serial tasks, delegation/fanout prototypes, batch qualification, and the strict-local host workflow (`ranex host`: six parser-listed verbs, #64/SLICE-077) | **`CONFIRMED`** — `uv sync --frozen` builds ranex editable and installs the `ranex` console script; no `PYTHONPATH` is needed. The specification lifecycle parser is not registered. |
+| Public operator surface | Installed argparse CLI for verdict, evidence, journal, suite, dependencies, keys, serial tasks, delegation/fanout prototypes, batch qualification and verification, the specification lifecycle (registered since ADR-040, now including operator approval signing), and the strict-local host workflow (`ranex host`: six parser-listed verbs, #64/SLICE-077) | **`CONFIRMED`** — `uv sync --frozen` builds ranex editable and installs the `ranex` console script; no `PYTHONPATH` is needed. |
 | Canonical authority roles | Store only eight canonical role IDs; presentation aliases never carry authority | `UNRESOLVED` — only if authority or dispatch is added: `duty-orchestrator`, `project-supervisor`, `planner`, `implementation-worker`, `process-reviewer`, `outcome-reviewer`, `adversarial-reviewer`, `human-governor` (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:700-712`) |
 | Rich verdict vocabulary | `PASS`, registered `FAIL`, `UNKNOWN`, `CONFLICT`, `NOT_APPLICABLE`, `CHECKER_FAULT`; blocking work fails closed except proven inapplicability | `UNRESOLVED` — kernel has only `PASS`/`FAIL` (`src/ranex/governed_execution/domain/verdict.py:24-26`; outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/deterministic-run-graph-visualization-research-2026-07-30.md:353-378`) |
 | Independence record | Record distinct execution identity, no evaluator edit or maker rationale, exact commit/packet, and where needed model family plus locked test/hidden key | `UNRESOLVED` — fresh session is not independent evidence; only no-self-approval exists (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07-31/docs/research/cookbook-alignment-research-2026-07-27.md:736-756`) |
@@ -2121,6 +2139,7 @@ that cannot name its evidence or its absence is not in the ledger.
 | Serial task publication | dispatch, judge, and merge derive journal/evidence locations from kernel-owned anchors (ADR-041), so no manual alignment is required; a successful merge into a checked-out branch synchronizes the worktree or refuses before the ref moves (ADR-042); skip-worktree-hidden modifications escape the worktree dirty scan (ADR-042); no composed A/B/C mutation path |
 | Prototype delegation and bounded fanout | one live OpenCode delegate and two concurrent live fanout jobs emitted real commits and passed independent suites; runs retain redacted, bounded, digest-bound per-stream logs beside each outcome (#58, ADR-043) | delegate issues no verdict; fanout has no A/B/C scope; log redaction is grammar-based and logs are never auto-deleted |
 | Approved-batch qualification | `task batch qualify`; `tests/integration/test_approved_batch_qualification_contract.py` and `tests/e2e/test_specification_batch_qualification.py` | qualification is structurally non-publishable and cannot authorize mutation |
+| Independent batch verification | `task batch verify` rechecks a completed qualification read-only (A/B/C chain, protected digests, subject binding, journal continuity, attestation admission); `tests/integration/test_batch_verify_contract.py`; operator approval signing via `specification approve` (ADR-045, #65) | verification proves the recorded surface, not payload semantics, and authorizes nothing |
 | Signed verdict artifact APIs | optional publication in `cmd_gate_evaluate`, atomic publisher, verified internal reader, and unit tests | no main-CLI verdict reader; publication requires explicitly configured signer and output directory |
 | Strict-local stable I/O and dynamic runtime closure | host-confinement implementation plus integration, security and host-gated e2e tests | requires user namespaces and delegated cgroup controllers; same-UID controller remains trusted |
 | Structured observability and kill-safe supervision | trace schema/emitter/redaction/SID modules and external guardian/process-supervisor paths with unit, contract, security and e2e tests | trace target and crash/host residuals remain; observability is not an owner-facing product |
