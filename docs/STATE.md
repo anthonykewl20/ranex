@@ -1,7 +1,7 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-03 (SLICE-079 archived; #74 fixed)
+**Updated:** 2026-09-03 (#74 and #69 fixed)
 **Active slice:** none
 
 ## Where we stopped
@@ -21,10 +21,10 @@ the host profile re-bound and the approved-batch vectors regenerated
 
 ## Next
 
-Issue #69 (recursion order-sensitivity: filter designed-red canary
-blocks from suite_tail; stability evidence from consecutive greens);
-#68 (recovery stale-worktree detection for the detached mid-sync
-window); then umbrella #66 (release gate, v0.1.0).
+#68 (recovery stale-worktree detection, detached mid-sync window);
+then umbrella #66 (release gate, v0.1.0). #69 FIXED: suite_tail drops
+designed-red canary lines so a nested red names its victim; stability
+evidenced by consecutive full-suite greens at 1655 and 1656 IDs.
 
 ## Governance
 
