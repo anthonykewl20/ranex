@@ -86,6 +86,8 @@ def _make_target(tmp_path: Path, public_key: str) -> tuple[Path, str, str]:
     target = tmp_path / "governed"
     target.mkdir()
     _git(target, "init", "--quiet", "--initial-branch=main")
+    _git(target, "config", "user.email", "ranex-test@example.invalid")
+    _git(target, "config", "user.name", "Ranex Test")
     keyring = target / "governance/producers.yaml"
     keyring.parent.mkdir()
     keyring.write_text(f"producers:\n  owner: {public_key}\n", encoding="utf-8")
