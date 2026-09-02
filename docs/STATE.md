@@ -42,9 +42,7 @@ from this host; the sealed freeze is the proof.
 - Strict-local requires a delegated cgroup scope; the `ranex host
   strict-local` wrapper establishes it, and the controller remains
   same-UID trusted infrastructure (ADR-044).
-- Session cgroup mutations are serialized per-host-scope only against
-  probes taking the same lock; cross-batch locking remains journal
-  discipline (ADR-046 scope).
+- Cross-batch locking remains journal discipline (ADR-046 scope).
 - `mutmut` remains an UNVERIFIED residual: no negative control or
   consuming gate (MAP §1.5).
 - The concurrent-CAS journal race family is documented, not fixed;
