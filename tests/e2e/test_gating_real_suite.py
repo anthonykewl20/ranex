@@ -308,13 +308,46 @@ def suite_tail(out: str, err: str, lines: int = 30) -> str:
     `run` reports the bound command's exit code verbatim, and pytest writes its
     summary to stdout — so a message interpolating stderr alone renders as an
     empty string and the failure reads `assert 1 == 0`, naming nothing. The
-    tail names which tests are red in the tree under governance.
+    tail names which tests are red in the tree under governance. Keep the
+    pytest summary separately: intentional stderr can be longer than the
+    ordinary combined tail.
     """
 
     combined = (out + err).strip().splitlines()
     if not combined:
         return "(the governed command produced no output at all)"
-    return "\n".join(combined[-lines:])
+
+    pytest_outcomes = {
+        "passed",
+        "failed",
+        "skipped",
+        "error",
+        "errors",
+        "xfailed",
+        "xpassed",
+        "deselected",
+    }
+    summary_lines = []
+    for line in out.strip().splitlines():
+        stripped = line.strip()
+        unframed = stripped.strip("=").strip()
+        words = unframed.replace(",", "").split()
+        if (
+            "short test summary info" in stripped.lower()
+            or stripped.startswith(("FAILED ", "ERROR "))
+            or unframed.startswith("no tests ran")
+            or (
+                unframed[:1].isdigit()
+                and any(word in pytest_outcomes for word in words)
+            )
+        ):
+            summary_lines.append(line)
+
+    tail = combined[-lines:]
+    for line in summary_lines:
+        if line not in tail:
+            tail.append(line)
+    return "\n".join(tail)
 
 
 def fetch_argv(store: Path) -> list[str]:
@@ -978,7 +1011,7 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
     if not (default_store / "sha256").is_dir():
         pytest.skip("the operator store is empty; run `ranex deps fetch` first")
 
-    code, _, err = ranex(
+    code, out, err = ranex(
         REAL_REPO,
         [
             "run",
@@ -999,7 +1032,9 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
         ],
         Path(key),
     )
-    assert code == 0, f"the suite did not pass under governance: {err}"
+    assert code == 0, (
+        f"the suite did not pass under governance: {suite_tail(out, err)}"
+    )
     record_live_host_qualification(REAL_REPO, Path(key), producer_id="anthony")
     code, out, _ = ranex(REAL_REPO, evaluate_argv())
     assert code == 0
@@ -1079,10 +1114,10 @@ def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
     committed = git(repository, "commit", "-q", "-m", "remove one frozen test")
     assert committed.returncode == 0, committed.stderr
     try:
-        run_code, _, run_error = ranex(
+        run_code, run_output, run_error = ranex(
             repository, run_argv(session.store), session.key_path
         )
-        assert run_code == 0, run_error
+        assert run_code == 0, suite_tail(run_output, run_error)
         changed_record = next(
             record
             for record in json.loads(
