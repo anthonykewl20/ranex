@@ -2010,6 +2010,28 @@ def _real_cgroup_probe(root: Path) -> dict[str, Any]:
     return transcript
 
 
+_HOST_PROBE_LOCK_FDS: set[int] = set()
+
+
+def _drop_inherited_host_probe_lock_fds() -> None:
+    """A forked child must not keep the host-probe flock alive (ADR-046).
+
+    flock is held per open file description, so a fork duplicates the holder:
+    a paused sacrificial child outliving its killed parent would otherwise
+    wedge every later probe. O_CLOEXEC cannot help across a bare fork.
+    """
+
+    for descriptor in list(_HOST_PROBE_LOCK_FDS):
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+    _HOST_PROBE_LOCK_FDS.clear()
+
+
+os.register_at_fork(after_in_child=_drop_inherited_host_probe_lock_fds)
+
+
 @contextmanager
 def _host_probe_lock() -> Iterator[None]:
     """Serialize the per-user cgroup probe mutation across controller processes."""
@@ -2050,8 +2072,10 @@ def _host_probe_lock() -> Iterator[None]:
             raise HostConfinementError(
                 E_DELEGATION, f"cannot acquire host-probe lock: {exc}"
             ) from exc
+        _HOST_PROBE_LOCK_FDS.add(descriptor)
         yield
     finally:
+        _HOST_PROBE_LOCK_FDS.discard(descriptor)
         os.close(descriptor)
 
 
@@ -3219,107 +3243,114 @@ def _qualification_open_object(
 
 
 def _runtime_v3_verifier_isolation_probe() -> dict[str, Any]:
-    """Exercise the verifier-only fork and absent writable trees in a sacrificial child."""
-    class _Filter(ctypes.Structure):
-        _fields_ = [("code", ctypes.c_ushort), ("jt", ctypes.c_ubyte),
-                    ("jf", ctypes.c_ubyte), ("k", ctypes.c_uint32)]
-    class _Program(ctypes.Structure):
-        _fields_ = [("length", ctypes.c_ushort), ("filter", ctypes.POINTER(_Filter))]
-    parent, _relative = _current_cgroup_root()
-    if _statfs_type(parent) != CGROUP2_SUPER_MAGIC or not os.access(parent, os.W_OK):
-        _refuse(E_C18_GATE, "qualification verifier lacks writable cgroup-v2")
-    available = REQUIRED_CONTROLLERS & set(_cgroup_controllers(parent))
-    if "pids" not in available:
-        _refuse(E_C18_GATE, "qualification verifier lacks the pids controller")
-    controller, verifier, _readbacks, enrolled = _create_worker_cgroup(
-        parent,
-        {"memory_bytes": 67108864, "pids": 2},
-        required_controllers=available,
-    )
-    gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
-    pipe_read, pipe_write = os.pipe2(os.O_CLOEXEC)
-    child = os.fork()
-    if child == 0:
-        try:
-            os.close(gate_write)
-            os.close(pipe_read)
-            if os.read(gate_read, 1) != b"1":
-                os._exit(125)
-            libc = ctypes.CDLL(None, use_errno=True)
-            libc.prctl(38, 1, 0, 0, 0)  # PR_SET_NO_NEW_PRIVS
-            filters = (_Filter * 6)(
-                _Filter(0x20, 0, 0, 0), _Filter(0x15, 3, 0, 56),
-                _Filter(0x15, 2, 0, 57), _Filter(0x15, 1, 0, 58),
-                _Filter(0x06, 0, 0, 0x7fff0000),
-                _Filter(0x06, 0, 0, 0x00050000 | errno.EPERM),
-            )
-            program = _Program(6, filters)
-            libc.syscall(317, 1, 0, ctypes.byref(program))  # seccomp SET_MODE_FILTER
+    """Exercise the verifier-only fork and absent writable trees in a sacrificial child.
+
+    Runs under the host-probe lock: the drain/enable/restore topology dance
+    must serialize against sibling probes (issue #73, ADR-046).
+    """
+    # ADR-046: the whole dance — reads, drain/enable, fork/verify, teardown —
+    # is serialized against every other host-probe cgroup mutation.
+    with _host_probe_lock():
+        class _Filter(ctypes.Structure):
+            _fields_ = [("code", ctypes.c_ushort), ("jt", ctypes.c_ubyte),
+                        ("jf", ctypes.c_ubyte), ("k", ctypes.c_uint32)]
+        class _Program(ctypes.Structure):
+            _fields_ = [("length", ctypes.c_ushort), ("filter", ctypes.POINTER(_Filter))]
+        parent, _relative = _current_cgroup_root()
+        if _statfs_type(parent) != CGROUP2_SUPER_MAGIC or not os.access(parent, os.W_OK):
+            _refuse(E_C18_GATE, "qualification verifier lacks writable cgroup-v2")
+        available = REQUIRED_CONTROLLERS & set(_cgroup_controllers(parent))
+        if "pids" not in available:
+            _refuse(E_C18_GATE, "qualification verifier lacks the pids controller")
+        controller, verifier, _readbacks, enrolled = _create_worker_cgroup(
+            parent,
+            {"memory_bytes": 67108864, "pids": 2},
+            required_controllers=available,
+        )
+        gate_read, gate_write = os.pipe2(os.O_CLOEXEC)
+        pipe_read, pipe_write = os.pipe2(os.O_CLOEXEC)
+        child = os.fork()
+        if child == 0:
             try:
-                os.fork()
-                fork_result = "0"
-            except OSError as exc:
-                fork_result = errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err)  # pragma: no cover - confinement-only os-error formatting (ADR-039)
-            writes = []
-            for path in ("/ranex/output/probe", "/ranex/scratch/probe"):
+                os.close(gate_write)
+                os.close(pipe_read)
+                if os.read(gate_read, 1) != b"1":
+                    os._exit(125)
+                libc = ctypes.CDLL(None, use_errno=True)
+                libc.prctl(38, 1, 0, 0, 0)  # PR_SET_NO_NEW_PRIVS
+                filters = (_Filter * 6)(
+                    _Filter(0x20, 0, 0, 0), _Filter(0x15, 3, 0, 56),
+                    _Filter(0x15, 2, 0, 57), _Filter(0x15, 1, 0, 58),
+                    _Filter(0x06, 0, 0, 0x7fff0000),
+                    _Filter(0x06, 0, 0, 0x00050000 | errno.EPERM),
+                )
+                program = _Program(6, filters)
+                libc.syscall(317, 1, 0, ctypes.byref(program))  # seccomp SET_MODE_FILTER
                 try:
-                    Path(path).write_bytes(b"x")
-                    writes.append("OK")
+                    os.fork()
+                    fork_result = "0"
                 except OSError as exc:
-                    writes.append(errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err))  # pragma: no cover - confinement-only os-error formatting (ADR-039)
-            os.write(pipe_write, json.dumps({"fork": fork_result, "writes": writes}).encode())
-            signal.pause()
-        finally:
-            os._exit(0)
-    os.close(gate_read)
-    os.close(pipe_write)
-    try:
-        _write_control(verifier / "cgroup.procs", f"{child}\n")
-        members = [int(value) for value in (verifier / "cgroup.procs").read_text().split()]
-        if members != [child]:
-            _refuse(E_C18_READBACK, "qualification verifier cgroup enrollment differs")
-        if os.write(gate_write, b"1") != 1:
-            _refuse(E_C18_READBACK, "cannot release qualification verifier")
-        os.close(gate_write)
-        gate_write = -1
-        result = json.loads(os.read(pipe_read, 4096))
-        _write_control(verifier / "cgroup.kill", "1\n")
-        os.waitpid(child, 0)
-        child = -1
-        events = _parse_cgroup_events((verifier / "cgroup.events").read_text())
-        if events.get("populated") != 0 or (verifier / "cgroup.procs").read_text().split():
-            _refuse(E_C18_DRAIN, "qualification verifier cgroup did not drain")
-        verifier.rmdir()
-        return {
-            "fork": result.get("fork"),
-            "output_write": result.get("writes", [None, None])[0],
-            "scratch_write": result.get("writes", [None, None])[1],
-            "worker_released": False,
-            "verifier_cgroup_populated_after_drain": events["populated"],
-        }
-    finally:
-        os.close(pipe_read)
-        if gate_write >= 0:
-            os.close(gate_write)
-        if child > 0:
-            try:
-                os.kill(child, signal.SIGKILL)
-            except ProcessLookupError:
-                pass
-            try:
-                os.waitpid(child, 0)
-            except ChildProcessError:
-                pass
-        if verifier.exists():
-            try:
-                _write_control(verifier / "cgroup.kill", "1\n")
-                verifier.rmdir()
-            except OSError:
-                pass
+                    fork_result = errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err)  # pragma: no cover - confinement-only os-error formatting (ADR-039)
+                writes = []
+                for path in ("/ranex/output/probe", "/ranex/scratch/probe"):
+                    try:
+                        Path(path).write_bytes(b"x")
+                        writes.append("OK")
+                    except OSError as exc:
+                        writes.append(errno.errorcode.get(err, str(err)) if (err := exc.errno) is not None else str(err))  # pragma: no cover - confinement-only os-error formatting (ADR-039)
+                os.write(pipe_write, json.dumps({"fork": fork_result, "writes": writes}).encode())
+                signal.pause()
+            finally:
+                os._exit(0)
+        os.close(gate_read)
+        os.close(pipe_write)
         try:
-            _release_controller_leaf(parent, controller, enrolled)
-        except (OSError, ValueError):
-            pass
+            _write_control(verifier / "cgroup.procs", f"{child}\n")
+            members = [int(value) for value in (verifier / "cgroup.procs").read_text().split()]
+            if members != [child]:
+                _refuse(E_C18_READBACK, "qualification verifier cgroup enrollment differs")
+            if os.write(gate_write, b"1") != 1:
+                _refuse(E_C18_READBACK, "cannot release qualification verifier")
+            os.close(gate_write)
+            gate_write = -1
+            result = json.loads(os.read(pipe_read, 4096))
+            _write_control(verifier / "cgroup.kill", "1\n")
+            os.waitpid(child, 0)
+            child = -1
+            events = _parse_cgroup_events((verifier / "cgroup.events").read_text())
+            if events.get("populated") != 0 or (verifier / "cgroup.procs").read_text().split():
+                _refuse(E_C18_DRAIN, "qualification verifier cgroup did not drain")
+            verifier.rmdir()
+            return {
+                "fork": result.get("fork"),
+                "output_write": result.get("writes", [None, None])[0],
+                "scratch_write": result.get("writes", [None, None])[1],
+                "worker_released": False,
+                "verifier_cgroup_populated_after_drain": events["populated"],
+            }
+        finally:
+            os.close(pipe_read)
+            if gate_write >= 0:
+                os.close(gate_write)
+            if child > 0:
+                try:
+                    os.kill(child, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+                try:
+                    os.waitpid(child, 0)
+                except ChildProcessError:
+                    pass
+            if verifier.exists():
+                try:
+                    _write_control(verifier / "cgroup.kill", "1\n")
+                    verifier.rmdir()
+                except OSError:
+                    pass
+            try:
+                _release_controller_leaf(parent, controller, enrolled)
+            except (OSError, ValueError):
+                pass
 
 
 def qualify(
