@@ -1,31 +1,28 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-03 (#74, #69, #68 fixed)
+**Updated:** 2026-09-03 (v0.1.0 released; all tracked issues closed)
 **Active slice:** none
 
 ## Where we stopped
 
-Issue #74 FIXED, closing evidence posting: the strict-local session's
-cgroup mutations (worker-cgroup create at setup, controller-leaf
-release at teardown) now acquire `_host_probe_lock()` at the call
-sites — never inside the shared helpers, which the qualified probe
-calls under the same lock (self-deadlock; ADR-046 addendum). Frozen
-red 720aca208 (a real session completed both mutations under a held
-lock, three consecutive reproductions), fix 9e9c0a701 (zero test-byte
-edits between), suite re-frozen and sealed green at **1655 IDs / 166
-expected skips** (run_exit=0). Earlier tonight: docs cap admitted the
-dogfood interface docs; the libc-bin loader-cache drift re-pinned with
-the host profile re-bound and the approved-batch vectors regenerated
-(v19); the freeze golden's byte format restored.
+**v0.1.0 is released.** Every blocker on umbrella #66 closed with
+commit SHA + command evidence on its issue (#63, #67, #60, #62, #56,
+#64, #58, #65, #73); the late residuals #74 (session cgroup mutations
+under the host-probe lock), #69 (suite_tail canary filtering with
+consecutive-green stability), and #68 (detached mid-sync worktree
+recovery) are fixed and closed the same way. The release gate reran
+the public feature inventory from the installed operator CLI — the
+parser surface now listed in README matches it exactly (the host
+group was missing) — and the suite is sealed at **1657 IDs / 166
+expected skips, run_exit=0**, with the full suite green at 1623
+passed / 34 skipped on the release commit.
 
 ## Next
 
-Umbrella #66 (release gate, v0.1.0) is next. #69 FIXED: suite_tail
-drops canary lines so a nested red names its victim. #68 FIXED:
-recovery names a detached mid-sync worktree behind the moved ref with
-its repair; the primary checkout stays out of the crash window. Suite
-sealed at 1657/166, run_exit=0; full suite 1623 green.
+The 0.1.x line: whatever the field sends back. The dogfood loop
+(tools/dogfood) keeps watch — iteration 005: 33/33 scenarios pass, no
+findings, no drift.
 
 ## Governance
 
@@ -38,7 +35,8 @@ from this host; the sealed freeze is the proof.
 
 ## Known limits
 
-- Version stays 0.0.0 until the release-gate slice (#66).
+- Kernel-only, source-run: governed subcommands anchor to their
+  checkout (ADR-009); the wheel is not a deployed product.
 - Strict-local requires a delegated cgroup scope; the `ranex host
   strict-local` wrapper establishes it, and the controller remains
   same-UID trusted infrastructure (ADR-044).

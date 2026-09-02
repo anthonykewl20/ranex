@@ -346,6 +346,7 @@ run
 suite freeze
 deps fetch | approve
 keygen
+host launcher-build | launcher-install | host-probe | qualify | launcher-identity | strict-local
 task dispatch | judge | merge | delegate | fanout
 task batch qualify | verify
 specification draft | advance | questions | status | approve
