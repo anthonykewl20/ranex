@@ -308,14 +308,21 @@ def test_exe_resolves_from_this_repositories_static_version(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     """exe = importlib.metadata.version("ranex"), falling back to the pyproject
-    [project] version, last resort "unknown" — "0.0.0" here (package = false)."""
+    [project] version, last resort "unknown" — asserted against the
+    repository's own static version, never a hardcoded number: the release
+    commit that bumps the version must not re-freeze this contract."""
 
     target = tmp_path / "trace.jsonl"
     observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
     _emit_notes(observability, "emission_refused")
 
+    import tomllib
+
+    manifest = Path(__file__).resolve().parents[2] / "pyproject.toml"
+    with manifest.open("rb") as handle:
+        expected = tomllib.load(handle)["project"]["version"]
     first = _events(target)[0]
-    assert first["exe"] == "0.0.0"
+    assert first["exe"] == expected
 
 
 def test_refusal_shape_descriptor_is_length_plus_eight_hex(
