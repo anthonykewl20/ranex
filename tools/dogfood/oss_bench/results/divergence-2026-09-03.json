@@ -21,17 +21,17 @@
         "output_tail": "8 passed in 0.01s",
         "exit": 0,
         "verdict": "GREEN",
-        "elapsed_s": 0.1
+        "elapsed_s": 0.2
       },
       "ranex_gate": {
         "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
         "run_exit": 0,
         "run_error": "",
         "gate_verdict": "PASS",
-        "gate_output": "PASS  gate=landing  subject=sha256:fe11b39085e46e3eb9b412fc31cc37d63d9058998042a29bfec6ddbe78992b0a",
-        "journal_output": "PASS  journal=/tmp/oss-final/py-paginate-cursor-f6f77228/repo/governance/journal.sqlite3  chain=verified",
+        "gate_output": "PASS  gate=landing  subject=sha256:819d915deeeaa1f4b174f6745b9b5404779d1951cef794837c5c399a705eafe7",
+        "journal_output": "PASS  journal=/tmp/oss-page/py-paginate-cursor-f6f77228/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
-        "elapsed_s": 1.4
+        "elapsed_s": 1.3
       }
     },
     {
@@ -60,8 +60,8 @@
         "run_exit": 0,
         "run_error": "",
         "gate_verdict": "PASS",
-        "gate_output": "PASS  gate=landing  subject=sha256:12c6693f9d26eaf0e3d84f5fcd4d1c854c8a715b7e091af80be13a48b1bf9f8b",
-        "journal_output": "PASS  journal=/tmp/oss-final/py-txn-kvstore-0de7f835/repo/governance/journal.sqlite3  chain=verified",
+        "gate_output": "PASS  gate=landing  subject=sha256:ad1c938d62febf9ab27bbd2da81780c38ed9df4d00f6cae0433a1867301aa8eb",
+        "journal_output": "PASS  journal=/tmp/oss-page/py-txn-kvstore-0de7f835/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
         "elapsed_s": 1.2
       }
@@ -92,10 +92,10 @@
         "run_exit": 0,
         "run_error": "",
         "gate_verdict": "PASS",
-        "gate_output": "PASS  gate=landing  subject=sha256:64a045fd00a20a0f64406da410113aaae1224901febf4fbf35a7d38caf2026a7",
-        "journal_output": "PASS  journal=/tmp/oss-final/py-config-parse-37175a4c/repo/governance/journal.sqlite3  chain=verified",
+        "gate_output": "PASS  gate=landing  subject=sha256:381c27adc4ac5f484f004ddc30f21cac16f3320dc305ed3298eccf352f0dfbb3",
+        "journal_output": "PASS  journal=/tmp/oss-page/py-config-parse-37175a4c/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
-        "elapsed_s": 1.2
+        "elapsed_s": 1.3
       }
     },
     {
@@ -117,15 +117,15 @@
         "output_tail": "8 passed in 0.01s",
         "exit": 0,
         "verdict": "GREEN",
-        "elapsed_s": 0.1
+        "elapsed_s": 0.2
       },
       "ranex_gate": {
         "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
         "run_exit": 0,
         "run_error": "",
         "gate_verdict": "PASS",
-        "gate_output": "PASS  gate=landing  subject=sha256:c601d203f369fe38c5e1c9349ec3b8d08ec89bb8d64dfeb5440a8fa67bb48f19",
-        "journal_output": "PASS  journal=/tmp/oss-final/py-paginate-cursor-3b508274/repo/governance/journal.sqlite3  chain=verified",
+        "gate_output": "PASS  gate=landing  subject=sha256:71c231e12fee6f89dc04068ca61bb07d78fe6130d02c6f774f0a745f1b2b8d92",
+        "journal_output": "PASS  journal=/tmp/oss-page/py-paginate-cursor-3b508274/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
         "elapsed_s": 1.2
       }
@@ -149,17 +149,17 @@
         "output_tail": "10 passed in 0.01s",
         "exit": 0,
         "verdict": "GREEN",
-        "elapsed_s": 0.1
+        "elapsed_s": 0.2
       },
       "ranex_gate": {
         "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
         "run_exit": 0,
         "run_error": "",
         "gate_verdict": "PASS",
-        "gate_output": "PASS  gate=landing  subject=sha256:3141bd7771e32bc1959c06a09e8581b10876b97dd7545fcb55602249b644a647",
-        "journal_output": "PASS  journal=/tmp/oss-final/py-txn-kvstore-d63f257d/repo/governance/journal.sqlite3  chain=verified",
+        "gate_output": "PASS  gate=landing  subject=sha256:40a8008cf5c2e3524a5189e42be031a9713532945c7b83d260d175dcbcad28a4",
+        "journal_output": "PASS  journal=/tmp/oss-page/py-txn-kvstore-d63f257d/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
-        "elapsed_s": 1.3
+        "elapsed_s": 1.2
       }
     },
     {
@@ -188,8 +188,8 @@
         "run_exit": 4,
         "run_error": "ERROR: file or directory not found: pytest",
         "gate_verdict": "FAIL",
-        "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:31bf83bd399d7681560c14caff4ade74403b3d28de4ecc8285c9abc98659b5ad",
-        "journal_output": "PASS  journal=/tmp/oss-final/legacy-blendcore-binary-parity-6e7fa51f/repo/governance/journal.sqlite3  chain=verified",
+        "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:d3d5e7fa6bb5f0056fe0e29493bba8fecc46b37ab880f8b6e04bf62c03d58a1d",
+        "journal_output": "PASS  journal=/tmp/oss-page/legacy-blendcore-binary-parity-6e7fa51f/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
         "elapsed_s": 1.2
       }
@@ -206,10 +206,10 @@
     "ranex_gate": {
       "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
       "run_exit": 4,
-      "run_error": "e test_txnkv.py>])\n\nERROR: not found: /tmp/ranex-subject-ir58bckg/tree/test_txnkv.py::test_rollback_restores_deleted_key\n(no name '/tmp/ranex-subject-ir58bckg/tree/test_txnkv.py::test_rollback_restores_deleted_key' in any of [<Module test_txnkv.py>])",
+      "run_error": "e test_txnkv.py>])\n\nERROR: not found: /tmp/ranex-subject-xc55cb29/tree/test_txnkv.py::test_rollback_restores_deleted_key\n(no name '/tmp/ranex-subject-xc55cb29/tree/test_txnkv.py::test_rollback_restores_deleted_key' in any of [<Module test_txnkv.py>])",
       "gate_verdict": "FAIL",
-      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_txnkv.py::test_autocommit_without_transaction, test_txnkv.py::test_commit_keeps_changes, test_txnkv.py::test_commit_without_transaction_raises, test_txnkv.py::test_keys_reflects_transaction_state, test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything, test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact, test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse, test_txnkv.py::test_rollback_restores_deleted_key, test_txnkv.py::test_rollback_restores_prior_value_and_absence\n      subject=sha256:e703f68a3933a5640662ad84129b3aafde64c5771a59761eeec42c815aba2a53",
-      "journal_output": "PASS  journal=/tmp/oss-final/py-txn-kvstore-gamed/repo/governance/journal.sqlite3  chain=verified",
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_txnkv.py::test_autocommit_without_transaction, test_txnkv.py::test_commit_keeps_changes, test_txnkv.py::test_commit_without_transaction_raises, test_txnkv.py::test_keys_reflects_transaction_state, test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything, test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact, test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse, test_txnkv.py::test_rollback_restores_deleted_key, test_txnkv.py::test_rollback_restores_prior_value_and_absence\n      subject=sha256:34bf5b5389e5e5fffefb6e11aef844e6040eb9b27d712322aea729ea4c06dac7",
+      "journal_output": "PASS  journal=/tmp/oss-page/py-txn-kvstore-gamed/repo/governance/journal.sqlite3  chain=verified",
       "journal_verified": true,
       "elapsed_s": 1.2
     },
@@ -219,6 +219,27 @@
       "test_rollback_restores_prior_value_and_absence",
       "test_rollback_restores_deleted_key"
     ],
+    "fault_injected": true
+  },
+  "stale_demo": {
+    "before": {
+      "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
+      "run_exit": 0,
+      "run_error": "",
+      "gate_verdict": "PASS",
+      "gate_output": "PASS  gate=landing  subject=sha256:46cb5825bbfa266d9a50e061969ee02698ff86b706d9356ca47b9f2dadc0ac01",
+      "journal_output": "PASS  journal=/tmp/oss-page/py-txn-kvstore-stale/repo/governance/journal.sqlite3  chain=verified",
+      "journal_verified": true,
+      "elapsed_s": 1.2
+    },
+    "after": {
+      "gate_verdict": "FAIL",
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:36bdd85aaa74c00146a491ad6c8667c8506df3be15fa465a06de5096404eaa72",
+      "journal_output": "PASS  journal=/tmp/oss-page/py-txn-kvstore-stale/repo/governance/journal.sqlite3  chain=verified",
+      "journal_verified": true,
+      "elapsed_s": 0.0
+    },
+    "bare_world": "the earlier green output is indistinguishable from valid proof \u2014 nothing binds it to the code shipped",
     "fault_injected": true
   },
   "note": "four positions: pristine grader / bare CI on the patched tree / parsed self-report / manifest-bound gate"
