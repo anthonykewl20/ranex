@@ -1,0 +1,38 @@
+{
+  "agent_steps": 51,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q",
+    "elapsed_s": 0.2,
+    "exit": 5,
+    "output_tail": "1 warning in 0.03s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.750912,
+  "date": "2026-09-04",
+  "duration_s": 2135.161,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "9b21a3e07",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:181ab62ab6049f077b8d410e241b20c5f784f76eeab155361bcd69bc8fb4becd",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/tmp/nightly-batch/legacy-depotcore-binary-parity-753cc990/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest",
+    "run_error": "ERROR: file or directory not found: pytest",
+    "run_exit": 4
+  },
+  "run_id": "legacy-depotcore-binary-parity-753cc990",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Good, I can read the binary. Let me now dig into the ROUND handler's selection loop carefully.",
+    "heuristic": true
+  },
+  "task": "legacy-depotcore-binary-parity",
+  "tokens": 278036
+}

@@ -270,6 +270,24 @@
       "scenarios": 43,
       "sha": "2f938c229",
       "subject": "fix(page): evolution x-axis date labels could print on top o"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "e73c04a18",
+      "subject": "tools: evolution series settled at the audit-fix commit"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "9b21a3e07",
+      "subject": "tools: dogfood artifacts \u2014 iteration 9"
     }
   ]
 }

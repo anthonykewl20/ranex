@@ -1,0 +1,38 @@
+{
+  "agent_steps": 6,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q test_expiry.py",
+    "elapsed_s": 0.1,
+    "exit": 0,
+    "output_tail": "2 passed in 0.00s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.010421,
+  "date": "2026-09-04",
+  "duration_s": 39.961,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "9b21a3e07",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.1,
+    "gate_output": "PASS  gate=landing  subject=sha256:c75b9313fc50fb72d9e0e6ba9b5d237a440f915f3d7c712a0f0bac25d66c6843",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/tmp/nightly-batch/py-ttl-cache-expiry-50132b19/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_expiry.py::test_get_returns_none_after_expiry test_expiry.py::test_expired_entry_is_evicted",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-ttl-cache-expiry-50132b19",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "set. The repo has no test files of its own (`run_tests` reports \"no tests ran\"), which is expected since the issue states that tests patch the clock externally.",
+    "heuristic": true
+  },
+  "task": "py-ttl-cache-expiry",
+  "tokens": 5127
+}
