@@ -484,7 +484,7 @@ This repo runs its own proof loop nightly; the block below is rewritten by
 the tool from real runs (hand edits inside the markers are overwritten).
 
 <!-- dogfood-status:start -->
-**43/43 deterministic proofs pass** · iteration 9 · kernel v0.1.0 (e73c04a188ba) · last run 2026-09-03T20:11:28Z · open findings: F-005, F-004, F-003, F-002, F-001
+**43/43 deterministic proofs pass** · iteration 10 · kernel v0.1.0 (f983c964736c) · last run 2026-09-03T22:02:40Z · open findings: F-005, F-004, F-003, F-002, F-001
 
 - Live benchmark page: https://ranex.dev/dogfood
 - Raw data: `tools/dogfood/site/benchmarks.json` (its sha256 fingerprint is printed on the page)

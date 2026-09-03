@@ -288,6 +288,15 @@
       "scenarios": 43,
       "sha": "9b21a3e07",
       "subject": "tools: dogfood artifacts \u2014 iteration 9"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 16,
+      "scenarios": 43,
+      "sha": "f983c9647",
+      "subject": "tools: proof pile \u2014 2026-09-04 (2 runs)"
     }
   ]
 }
