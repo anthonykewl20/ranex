@@ -17,13 +17,23 @@ test are:
 
 ## Status — HONEST
 
-- DESIGNED, adapter NOT YET BUILT. Nothing here has been run; there are no
-  results yet, and none may be published until real runs exist.
-- Built and working today: `check_release.py` (release-trigger detection
-  consumed by the nightly loop) and the site data schema below.
-- To build the adapter: clone https://github.com/morganlinton/VulcanBench,
-  `make setup && make sandbox-image`, then validate the pipeline at $0 with
-  their `mock` provider on the hello task + 2-3 real `tasks/v1` tasks.
+- Adapter VALIDATED end-to-end on real task data at $0 (2026-09-03):
+  - plumbing: vendored kernel + signed evidence + gate verdicts both
+    directions on a real task repo (git-bound claims);
+  - real task tests: py-txn-kvstore's own 9 hidden tests under governance —
+    gold -> gate PASS, empty -> gate FAIL, journals verified;
+  - bare ground truth: gold 9/9, empty 0/9.
+- LIVE-FIRE PROVEN: `zai:glm-5.3` through the real VulcanBench harness on
+  the GLM Coding Plan endpoint (`ZAI_BASE_URL=https://api.z.ai/api/coding/
+  paas/v4`, key at ~/.secrets/GLM-API-KEY line 2): hello-world
+  functional=1.0 total=0.9949 at $0.003 metered-equivalent.
+- The plan bills USAGE WINDOWS (codes 1302/1308), not metered credits; the
+  $ cap is metered-equivalent. An alternative plan path exists as the
+  `zcode:<model>` harness mode (drives the ZCode CLI on the same plan) —
+  deliberately NOT used for the two-arm study: it measures model+product,
+  the raw `zai:` provider keeps both arms the same model.
+- Integration lessons are recorded as F-003 (vendoring pattern, evidence
+  gitignore, pinned toolchain prerequisite — now satisfied).
 
 ## Pipeline (when built)
 

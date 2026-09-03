@@ -5,5 +5,9 @@
   "api_key_env": "ZAI_API_KEY",
   "api_key_file": "/home/soultransit/.secrets/GLM-API-KEY",
   "api_key_file_line": 2,
-  "note": "budget 5.0 USD is a starter cap — adjust to taste; key verified valid 2026-09-03 but Z.ai balance is empty (code 1113): recharge required before any run"
+  "provider_env": {
+    "ZAI_BASE_URL": "https://api.z.ai/api/coding/paas/v4"
+  },
+  "vulcan_root": "/home/soultransit/devtony/VulcanBench",
+  "note": "plan endpoint (bills the GLM Coding Plan usage windows, not metered credits; codes 1302/1308 are the real limits). Live-fired 2026-09-03: hello-world zai:glm-5.3 functional=1.0 total=0.9949 at $0.003 metered-equivalent. Budget $5 is a metered-equivalent cap; adjust to taste."
 }

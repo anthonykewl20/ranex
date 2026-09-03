@@ -59,6 +59,10 @@ def main() -> int:
         return 4
     print(f"BENCH-READY current={version} benched={benched} "
           f"model={state['model']} cap=${state['budget_cap_usd']}")
+    for name, value in state.get("provider_env", {}).items():
+        print(f"  export {name}={value}")
+    print(f"  export {state.get('api_key_env', 'ZAI_API_KEY')}=<key from "
+          f"{state.get('api_key_file', '?')} line {state.get('api_key_file_line', '?')}>")
     return 3
 
 
