@@ -4569,6 +4569,1799 @@
       "run_exit": 0,
       "task": "coding-intelligence-index-v4/legacy-matchcore-order-book-parity",
       "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:363ebce5a2127ed6cc1851aa0d7c39520efeeb0a090db0c74729ebbd6c90b101",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-metercore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_account_casefold (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_meter_uplift (failed), oss_tests.py::test_month_wrap (failed), oss_tests.py::test_rounding_regime (failed), oss_tests.py::test_summer_tier2 (failed), oss_tests.py::test_winter_night_tier1 (failed), oss_tests.py::test_zero_kwh_skip (failed)\n      subject=sha256:f06d9ec5ddce0d3e0d7a72b1d49bf0960f7e135ed79206b0330913eabb4ce70b",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-metercore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_account_casefold, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_lenient_tokens, oss_tests.py::test_meter_uplift, oss_tests.py::test_month_wrap, oss_tests.py::test_rounding_regime, oss_tests.py::test_summer_tier2, oss_tests.py::test_winter_night_tier1, oss_tests.py::test_zero_kwh_skip\n      subject=sha256:26b2ea23ff08c1c311cd723ee10ab1f8a8824fa3f5a2c8a347c5e4b5e6620e5e",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_winter_night_tier1",
+        "test_meter_uplift"
+      ],
+      "run_error": "_uplift' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-q12kq2rp/tree/oss_tests.py::test_winter_night_tier1\n(no name '/tmp/ranex-subject-q12kq2rp/tree/oss_tests.py::test_winter_night_tier1' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-metercore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:a6f4eaf682865799e55afe3ec9264c2a2092a8068b52096849f54299b8f9a8ef",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-metercore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_account_casefold (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_meter_uplift (failed), oss_tests.py::test_month_wrap (failed), oss_tests.py::test_rounding_regime (failed), oss_tests.py::test_summer_tier2 (failed), oss_tests.py::test_winter_night_tier1 (failed), oss_tests.py::test_zero_kwh_skip (failed)\n      subject=sha256:9cbdfd53ebd967985d3587904c9bd3ce32287827eea0c2dc1f44f37e310169fc",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-metercore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:74767640e405d2bee3e30e764895f7c476f434f5dec434cb1a08732ea15127f3",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 1878c2af7db149ff73033ec944a45882792f4747 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_meter_uplift",
+        "oss_tests.py::test_month_wrap",
+        "oss_tests.py::test_rounding_regime",
+        "oss_tests.py::test_summer_tier2",
+        "oss_tests.py::test_winter_night_tier1",
+        "oss_tests.py::test_zero_kwh_skip"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-metercore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_meter_uplift",
+        "oss_tests.py::test_month_wrap",
+        "oss_tests.py::test_rounding_regime",
+        "oss_tests.py::test_summer_tier2",
+        "oss_tests.py::test_winter_night_tier1",
+        "oss_tests.py::test_zero_kwh_skip"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:7d91d8a49c774e086bf8d40018481178001578d197a17542b5f180dd269941d5",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-metercore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:cfd4a77d607246bee2f9e7d6013985a942f142eb3fc15fd944e81fb81cf7728e",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-pacecore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_audit_clamp (failed), oss_tests.py::test_case_fold (failed), oss_tests.py::test_exact_exhaustion (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_multiday_carry (failed), oss_tests.py::test_one_digit_hours (failed), oss_tests.py::test_overnight_damper (failed), oss_tests.py::test_rollover_debt (failed)\n      subject=sha256:a34ad919a59a755610bfc53a092b6d69c547594f43e9325fdc1bd0df8c90f646",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-pacecore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_audit_clamp, oss_tests.py::test_case_fold, oss_tests.py::test_exact_exhaustion, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_lenient_tokens, oss_tests.py::test_multiday_carry, oss_tests.py::test_one_digit_hours, oss_tests.py::test_overnight_damper, oss_tests.py::test_rollover_debt\n      subject=sha256:431651156ed039a3edff1de12d2565938ef4e376c5c35ed69ebcf4d7be0a74b0",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_audit_clamp",
+        "test_rollover_debt"
+      ],
+      "run_error": ":test_audit_clamp' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-ry3myafz/tree/oss_tests.py::test_rollover_debt\n(no name '/tmp/ranex-subject-ry3myafz/tree/oss_tests.py::test_rollover_debt' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-pacecore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:8f060d35db4c8de9d71f4fc21432978bc5a9179be8b13a68b590e5a42ecee924",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-pacecore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_audit_clamp (failed), oss_tests.py::test_case_fold (failed), oss_tests.py::test_exact_exhaustion (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_multiday_carry (failed), oss_tests.py::test_one_digit_hours (failed), oss_tests.py::test_overnight_damper (failed), oss_tests.py::test_rollover_debt (failed)\n      subject=sha256:e06595e0a625e86d7fe7323eb25c44a4bc0a1decf9ab94cd64f32b2b37d67a97",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-pacecore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:82db88c5c2de711491533ab05f6df5daf6ffdc9c8f8260d4138efa27741e4e26",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: e258a7d35af8d36ac2b3bcae90bee309f8b4c011 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_case_fold",
+        "oss_tests.py::test_exact_exhaustion",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_multiday_carry",
+        "oss_tests.py::test_one_digit_hours",
+        "oss_tests.py::test_overnight_damper",
+        "oss_tests.py::test_rollover_debt"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-pacecore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_case_fold",
+        "oss_tests.py::test_exact_exhaustion",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_multiday_carry",
+        "oss_tests.py::test_one_digit_hours",
+        "oss_tests.py::test_overnight_damper",
+        "oss_tests.py::test_rollover_debt"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:5b77141301f8fe5d1313670a7c25014aa585383068e7308b425b0f5cca2f628a",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-pacecore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:a3c2d0cbbe0b19c4ae443f134e933859f0667e04021c08667a70b45a50dc1771",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-paddockcore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_book (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_gate (failed), oss_tests.py::test_haul (failed), oss_tests.py::test_home (failed), oss_tests.py::test_leadbook (failed), oss_tests.py::test_levy (failed), oss_tests.py::test_muster (failed), oss_tests.py::test_restpick (failed), oss_tests.py::test_seat (failed), oss_tests.py::test_slot (failed), oss_tests.py::test_square (failed), oss_tests.py::test_stir (failed), oss_tests.py::test_true (failed), oss_tests.py::test_wake (failed)\n      subject=sha256:000a4bd93ed240f5cab13ed028dff4626cd36c6a29782ec4c3ee3a9049b1f440",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-paddockcore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_book, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_gate, oss_tests.py::test_haul, oss_tests.py::test_home, oss_tests.py::test_leadbook, oss_tests.py::test_levy, oss_tests.py::test_muster, oss_tests.py::test_restpick, oss_tests.py::test_seat, oss_tests.py::test_slot, oss_tests.py::test_square, oss_tests.py::test_stir, oss_tests.py::test_true, oss_tests.py::test_wake\n      subject=sha256:c7e862cae1687b9a4b34630365d4ffc2ec9cbde3da05c2148bc64bb9597f9637",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_stir",
+        "test_square"
+      ],
+      "run_error": "5dz0/tree/oss_tests.py::test_square' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-au0d5dz0/tree/oss_tests.py::test_stir\n(no name '/tmp/ranex-subject-au0d5dz0/tree/oss_tests.py::test_stir' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-paddockcore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:9a8b25c4fa10961d34061f5e21b672a419b6fe424631d5ad407270c4d8e44870",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-paddockcore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_book (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_gate (failed), oss_tests.py::test_haul (failed), oss_tests.py::test_home (failed), oss_tests.py::test_leadbook (failed), oss_tests.py::test_levy (failed), oss_tests.py::test_muster (failed), oss_tests.py::test_restpick (failed), oss_tests.py::test_seat (failed), oss_tests.py::test_slot (failed), oss_tests.py::test_square (failed), oss_tests.py::test_stir (failed), oss_tests.py::test_true (failed), oss_tests.py::test_wake (failed)\n      subject=sha256:e6f318127d84686afa5c044f1deb04183bd11f39bbb0fd2c13d9a8e5df892af2",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-paddockcore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:b315b8ec8c794c31026523554ea03569eb81f8c7ec40c2f7bac66e8826561d54",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 3792192599b54738a4610946e1eda03dddc6c64d carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_gate",
+        "oss_tests.py::test_haul",
+        "oss_tests.py::test_home",
+        "oss_tests.py::test_leadbook",
+        "oss_tests.py::test_levy",
+        "oss_tests.py::test_muster",
+        "oss_tests.py::test_restpick",
+        "oss_tests.py::test_seat",
+        "oss_tests.py::test_slot",
+        "oss_tests.py::test_square",
+        "oss_tests.py::test_stir",
+        "oss_tests.py::test_true",
+        "oss_tests.py::test_wake"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-paddockcore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_gate",
+        "oss_tests.py::test_haul",
+        "oss_tests.py::test_home",
+        "oss_tests.py::test_leadbook",
+        "oss_tests.py::test_levy",
+        "oss_tests.py::test_muster",
+        "oss_tests.py::test_restpick",
+        "oss_tests.py::test_seat",
+        "oss_tests.py::test_slot",
+        "oss_tests.py::test_square",
+        "oss_tests.py::test_stir",
+        "oss_tests.py::test_true",
+        "oss_tests.py::test_wake"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:ce11b4086fe200d77ea1ab922f86edd0039cb07ba42157e3342eb6a60368cc92",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-paddockcore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:a50970502b63284a60ec4da66ada979c772a9074fe45a177f7ce648ef2966a2f",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-payrollcore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_bonus_period (failed), oss_tests.py::test_flag_recapture (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_household_surtax (failed), oss_tests.py::test_id_case_fold (failed), oss_tests.py::test_levy_cap_crossing (failed), oss_tests.py::test_married_relief_order (failed), oss_tests.py::test_rounding_regime (failed), oss_tests.py::test_state_sd (failed), oss_tests.py::test_zero_gross (failed)\n      subject=sha256:14dadce366042cab2dfc8452b0b6c666b473ad1b4035c8f762f52d29b6723e6c",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-payrollcore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_bonus_period, oss_tests.py::test_flag_recapture, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_household_surtax, oss_tests.py::test_id_case_fold, oss_tests.py::test_levy_cap_crossing, oss_tests.py::test_married_relief_order, oss_tests.py::test_rounding_regime, oss_tests.py::test_state_sd, oss_tests.py::test_zero_gross\n      subject=sha256:d0abf492f1e9786ba428c1fe570be1b861a315650a1ee3daeb3be81924fade77",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_household_surtax",
+        "test_levy_cap_crossing"
+      ],
+      "run_error": "ld_surtax' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-f0qlhayt/tree/oss_tests.py::test_levy_cap_crossing\n(no name '/tmp/ranex-subject-f0qlhayt/tree/oss_tests.py::test_levy_cap_crossing' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-payrollcore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:e89e9362f5d5a5f935c349dba071a2961d87206d7ff7004a40813e01b8c1a2fe",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-payrollcore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_bonus_period (failed), oss_tests.py::test_flag_recapture (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_household_surtax (failed), oss_tests.py::test_id_case_fold (failed), oss_tests.py::test_levy_cap_crossing (failed), oss_tests.py::test_married_relief_order (failed), oss_tests.py::test_rounding_regime (failed), oss_tests.py::test_state_sd (failed), oss_tests.py::test_zero_gross (failed)\n      subject=sha256:aba0af2899d777398ebd4a6b8370eaed655b3be142b5495561413a7509237a8b",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-payrollcore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:5acbf5d07ce6ae557fa8c2b06034b6284eb74d42401db6b66163b1d3555d7125",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: a698265ab25a3e3eb284c9da317297d59b58f304 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_flag_recapture",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_household_surtax",
+        "oss_tests.py::test_id_case_fold",
+        "oss_tests.py::test_levy_cap_crossing",
+        "oss_tests.py::test_married_relief_order",
+        "oss_tests.py::test_rounding_regime",
+        "oss_tests.py::test_state_sd",
+        "oss_tests.py::test_zero_gross"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-payrollcore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_flag_recapture",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_household_surtax",
+        "oss_tests.py::test_id_case_fold",
+        "oss_tests.py::test_levy_cap_crossing",
+        "oss_tests.py::test_married_relief_order",
+        "oss_tests.py::test_rounding_regime",
+        "oss_tests.py::test_state_sd",
+        "oss_tests.py::test_zero_gross"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:fc2d52aa57f062796f3ac57b9ab0992ab3afce4da848ff38406a2ba10979f56a",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-payrollcore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:cda7c84e07365c9e297d0653c84855f73df36f6e458cc5826afacb5b328e2762",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-qlite-store-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_avg_truncation (failed), oss_tests.py::test_duplicate_insert_update (failed), oss_tests.py::test_find_case_rule (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_name_truncation (failed), oss_tests.py::test_range_bounds (failed), oss_tests.py::test_slot_reuse_ordering (failed), oss_tests.py::test_sum_wrap (failed), oss_tests.py::test_wildcard_semantics (failed)\n      subject=sha256:aee871862740120a3b606c3e1e5e8d13bc1f8b46595fbbda35bf1cbefecfed50",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-qlite-store-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_avg_truncation, oss_tests.py::test_duplicate_insert_update, oss_tests.py::test_find_case_rule, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_name_truncation, oss_tests.py::test_range_bounds, oss_tests.py::test_slot_reuse_ordering, oss_tests.py::test_sum_wrap, oss_tests.py::test_wildcard_semantics\n      subject=sha256:3bd1183a1d92bc5f3c3f5d0c3563ccd7f9d2311d7940dacf930a62a7f7cfb3ab",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_slot_reuse_ordering",
+        "test_find_case_rule"
+      ],
+      "run_error": "_rule' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-4p27wfpc/tree/oss_tests.py::test_slot_reuse_ordering\n(no name '/tmp/ranex-subject-4p27wfpc/tree/oss_tests.py::test_slot_reuse_ordering' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-qlite-store-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:4960368fbea169812984dd40c8d2504f5eef4552ed040894d5ad936566b52782",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-qlite-store-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_avg_truncation (failed), oss_tests.py::test_duplicate_insert_update (failed), oss_tests.py::test_find_case_rule (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_name_truncation (failed), oss_tests.py::test_range_bounds (failed), oss_tests.py::test_slot_reuse_ordering (failed), oss_tests.py::test_sum_wrap (failed), oss_tests.py::test_wildcard_semantics (failed)\n      subject=sha256:6edca2928207748e7dd80d45c9d52f6cc55230d6eafc2ded3501a864df0a6b72",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-qlite-store-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:2219186efde3c439c13470488de90e97ac8db269e9a543fd807aa4ad39cbcc58",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 3a849c729304087fa92759245c3a96f53df8f2b9 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_duplicate_insert_update",
+        "oss_tests.py::test_find_case_rule",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_name_truncation",
+        "oss_tests.py::test_range_bounds",
+        "oss_tests.py::test_slot_reuse_ordering",
+        "oss_tests.py::test_sum_wrap",
+        "oss_tests.py::test_wildcard_semantics"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-qlite-store-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_duplicate_insert_update",
+        "oss_tests.py::test_find_case_rule",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_name_truncation",
+        "oss_tests.py::test_range_bounds",
+        "oss_tests.py::test_slot_reuse_ordering",
+        "oss_tests.py::test_sum_wrap",
+        "oss_tests.py::test_wildcard_semantics"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:71e7d86ae634003ff60840d3e2371d8d67cc1ddb0d8ae8ee1a80bad94b9ba9c7",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-qlite-store-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:00aec78618e9e4bb66e89211eb00ac02c89300868b7a7fe9036241f80e198afa",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-queuecore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_cap999 (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_item_case (failed), oss_tests.py::test_requeue_penalty (failed), oss_tests.py::test_sentinel (failed), oss_tests.py::test_tie_aging (failed), oss_tests.py::test_trailing (failed), oss_tests.py::test_undo_two_deep (failed)\n      subject=sha256:7954da5876a42277bef80e70cb87c600271e80587acb24362c6b0e3e8858007e",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-queuecore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_cap999, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_item_case, oss_tests.py::test_requeue_penalty, oss_tests.py::test_sentinel, oss_tests.py::test_tie_aging, oss_tests.py::test_trailing, oss_tests.py::test_undo_two_deep\n      subject=sha256:2f549eb4e42b7c81833ebe4375094946b1586efe9403f194d49d39ce1fcf24e6",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_requeue_penalty",
+        "test_tie_aging"
+      ],
+      "run_error": ".py::test_requeue_penalty' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-c2qcg1jj/tree/oss_tests.py::test_tie_aging\n(no name '/tmp/ranex-subject-c2qcg1jj/tree/oss_tests.py::test_tie_aging' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-queuecore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:4b596b48b6dc47a50a08a5d76a409547236afb653aca2a0a534db1d7889a6b56",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-queuecore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_cap999 (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_item_case (failed), oss_tests.py::test_requeue_penalty (failed), oss_tests.py::test_sentinel (failed), oss_tests.py::test_tie_aging (failed), oss_tests.py::test_trailing (failed), oss_tests.py::test_undo_two_deep (failed)\n      subject=sha256:ce1dabec0b19bf82473c3835049a15212b31124566fa9b788b6b87883cdf78e2",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-queuecore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:670c06774912d45f523f792f3d8fa77a5ea19d6a3e3c64178a20ed3a7e52814e",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 08bdef998cc5656a66c8802f5f5d680bc17bcccd carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_item_case",
+        "oss_tests.py::test_requeue_penalty",
+        "oss_tests.py::test_sentinel",
+        "oss_tests.py::test_tie_aging",
+        "oss_tests.py::test_trailing",
+        "oss_tests.py::test_undo_two_deep"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-queuecore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_item_case",
+        "oss_tests.py::test_requeue_penalty",
+        "oss_tests.py::test_sentinel",
+        "oss_tests.py::test_tie_aging",
+        "oss_tests.py::test_trailing",
+        "oss_tests.py::test_undo_two_deep"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:9ec627544ab479395e3fc4e6e54f19ef9f932872d0e49affffe3a5616232c2d0",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-queuecore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:20d0b37cd0cb405fdf14fd9aff4b5f36395ed69354a8922312755947aae19ade",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-quotacore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_burst_bank (failed), oss_tests.py::test_crossing_rate (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_growth_rate (failed), oss_tests.py::test_key_case (failed), oss_tests.py::test_region_case (failed), oss_tests.py::test_round_fifty (failed), oss_tests.py::test_tier_upgrade (failed), oss_tests.py::test_trailing (failed), oss_tests.py::test_zero_calls (failed)\n      subject=sha256:ddc28550a9d4e8c7252be38e55fc70fd45a98b933e7f698ff075bc8a604348bd",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-quotacore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_burst_bank, oss_tests.py::test_crossing_rate, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_growth_rate, oss_tests.py::test_key_case, oss_tests.py::test_region_case, oss_tests.py::test_round_fifty, oss_tests.py::test_tier_upgrade, oss_tests.py::test_trailing, oss_tests.py::test_zero_calls\n      subject=sha256:ddb0605a3e21872daf0bb86154b66cdc5893dfac35ade611929f01cb61b68eac",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_burst_bank",
+        "test_crossing_rate"
+      ],
+      "run_error": "::test_burst_bank' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-qc27c0a0/tree/oss_tests.py::test_crossing_rate\n(no name '/tmp/ranex-subject-qc27c0a0/tree/oss_tests.py::test_crossing_rate' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-quotacore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:50d9797d1f5b701f6fde708dc960cd02fd0bbe126b97d7ead78cb82b9cf2d1fd",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-quotacore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_burst_bank (failed), oss_tests.py::test_crossing_rate (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_growth_rate (failed), oss_tests.py::test_key_case (failed), oss_tests.py::test_region_case (failed), oss_tests.py::test_round_fifty (failed), oss_tests.py::test_tier_upgrade (failed), oss_tests.py::test_trailing (failed), oss_tests.py::test_zero_calls (failed)\n      subject=sha256:3bf86b84cb182b3d2083a3811fc87e6af5bc9d37872721f78cca197ec7832c94",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-quotacore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:5ce32146621fbb8efde44bf50af6ddb5f80b7db0d7e37e46df9b58c72a5f07f4",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 6906a08310a8a83b6ef9297ce344cb5f88cfb0fd carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_crossing_rate",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_growth_rate",
+        "oss_tests.py::test_key_case",
+        "oss_tests.py::test_region_case",
+        "oss_tests.py::test_round_fifty",
+        "oss_tests.py::test_tier_upgrade",
+        "oss_tests.py::test_trailing",
+        "oss_tests.py::test_zero_calls"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-quotacore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_crossing_rate",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_growth_rate",
+        "oss_tests.py::test_key_case",
+        "oss_tests.py::test_region_case",
+        "oss_tests.py::test_round_fifty",
+        "oss_tests.py::test_tier_upgrade",
+        "oss_tests.py::test_trailing",
+        "oss_tests.py::test_zero_calls"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:bb483678a8ebc701071a2f627068f78d648a4e6742549daf9c1acb489da4b9db",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-quotacore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:e2fa184f4c7a92dd428fffeda93a148c0003061b01e6769007f8b1896ac98eab",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-reflowcore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_digest_spaces (failed), oss_tests.py::test_digit_widths (failed), oss_tests.py::test_empty_reflow (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_incremental_vs_reflow (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_overlong_words (failed), oss_tests.py::test_width_rewrap (failed)\n      subject=sha256:a6b93d2f64ad0e97698f6ba575cbafe4c7d2953ced4c6b363961bf6b50b4a8e4",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-reflowcore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_digest_spaces, oss_tests.py::test_digit_widths, oss_tests.py::test_empty_reflow, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_incremental_vs_reflow, oss_tests.py::test_lenient_tokens, oss_tests.py::test_overlong_words, oss_tests.py::test_width_rewrap\n      subject=sha256:4fd02c639ccfd5eeb763a1745c2bd9bdbef28541b581ed3676e05c7401228763",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_incremental_vs_reflow",
+        "test_width_rewrap"
+      ],
+      "run_error": "cremental_vs_reflow' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-6xrqgj4n/tree/oss_tests.py::test_width_rewrap\n(no name '/tmp/ranex-subject-6xrqgj4n/tree/oss_tests.py::test_width_rewrap' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-reflowcore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:273d3bb00e2d5d67788aec39db4a0d8f405eb4d74e1ca985db32a6a860c082f9",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-reflowcore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_digest_spaces (failed), oss_tests.py::test_digit_widths (failed), oss_tests.py::test_empty_reflow (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_incremental_vs_reflow (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_overlong_words (failed), oss_tests.py::test_width_rewrap (failed)\n      subject=sha256:8dadbd223fc622856c6a415718574e582ee332214a48a6cf23cb1d9cd7838db3",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-reflowcore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:82557995eb31598a552155bb10f78d8766d5417b2274932e2b8c72ed7517adfe",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 7b61e035e1bd6e0713f4cd3cb108512d8158b6b5 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_digit_widths",
+        "oss_tests.py::test_empty_reflow",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_incremental_vs_reflow",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_overlong_words",
+        "oss_tests.py::test_width_rewrap"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-reflowcore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_digit_widths",
+        "oss_tests.py::test_empty_reflow",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_incremental_vs_reflow",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_overlong_words",
+        "oss_tests.py::test_width_rewrap"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:586d4985efe6d2bcbe6803f8b18c80dff2db671c82b2fb29818bc9bc01000129",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-reflowcore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:3c6b65d598b37abf7bcaa78d6ee550259f1ace41bc3d9d5dd951754f607a277b",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-schedcore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_double_penalty (failed), oss_tests.py::test_dup_deps (failed), oss_tests.py::test_fanin_boost (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_job_case (failed), oss_tests.py::test_retry_tie (failed), oss_tests.py::test_stale_dep (failed), oss_tests.py::test_trailing (failed)\n      subject=sha256:202fd7b91c5d4f1c5f453874fb2998949954109643d952cca01a4f9f892a7ffe",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-schedcore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_double_penalty, oss_tests.py::test_dup_deps, oss_tests.py::test_fanin_boost, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_job_case, oss_tests.py::test_retry_tie, oss_tests.py::test_stale_dep, oss_tests.py::test_trailing\n      subject=sha256:7c8f348b8f4f9d984628208106d12612a05348c328c0dd28446dcec46a56ad93",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_retry_tie",
+        "test_double_penalty"
+      ],
+      "run_error": "s.py::test_double_penalty' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-1o_verbk/tree/oss_tests.py::test_retry_tie\n(no name '/tmp/ranex-subject-1o_verbk/tree/oss_tests.py::test_retry_tie' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-schedcore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:986ec1541ec325760470a66bf5b8190b5ce03e4186d2d453ef9950a041081018",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-schedcore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_double_penalty (failed), oss_tests.py::test_dup_deps (failed), oss_tests.py::test_fanin_boost (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_job_case (failed), oss_tests.py::test_retry_tie (failed), oss_tests.py::test_stale_dep (failed), oss_tests.py::test_trailing (failed)\n      subject=sha256:cb51cba1485e0140c2489aca312c55677e4e18272246ee1632170cbb4f248140",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-schedcore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:8ad3116d5a0699fb40f854cf7e7025a180f666e5dfd8f0d56ebc73228d5edea2",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 3cb22356b33539031a433b6c1807994d02d68f7c carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_dup_deps",
+        "oss_tests.py::test_fanin_boost",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_job_case",
+        "oss_tests.py::test_retry_tie",
+        "oss_tests.py::test_stale_dep",
+        "oss_tests.py::test_trailing"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-schedcore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_dup_deps",
+        "oss_tests.py::test_fanin_boost",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_job_case",
+        "oss_tests.py::test_retry_tie",
+        "oss_tests.py::test_stale_dep",
+        "oss_tests.py::test_trailing"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:d85f73956443991b646211c008c4cdaffa84b195f89a89b52612c1ebd26851a1",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-schedcore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:99c1ee4951edb4cc97d6eeb5358c3881738b08297309cbe2db33f881cd35761f",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-settlecore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_batch_ordering (failed), oss_tests.py::test_eur_levy_threshold (failed), oss_tests.py::test_fee_cap_exception (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_leap_year_rule (failed), oss_tests.py::test_lenient_amount_padding (failed), oss_tests.py::test_negative_refunds (failed), oss_tests.py::test_rounding_regimes (failed), oss_tests.py::test_tier_rate_table (failed), oss_tests.py::test_weekend_mcc_surcharge (failed)\n      subject=sha256:518548f7973e7c5fb2e401c46a32c15cfff163548c23a555053995e44cf64b96",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-settlecore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_batch_ordering, oss_tests.py::test_eur_levy_threshold, oss_tests.py::test_fee_cap_exception, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_leap_year_rule, oss_tests.py::test_lenient_amount_padding, oss_tests.py::test_negative_refunds, oss_tests.py::test_rounding_regimes, oss_tests.py::test_tier_rate_table, oss_tests.py::test_weekend_mcc_surcharge\n      subject=sha256:73fbcfd7ebbf101fa84229596351f95d79d99c3e22f79b1586c16226827c7161",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_rounding_regimes",
+        "test_tier_rate_table"
+      ],
+      "run_error": "nding_regimes' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-6cbydnfq/tree/oss_tests.py::test_tier_rate_table\n(no name '/tmp/ranex-subject-6cbydnfq/tree/oss_tests.py::test_tier_rate_table' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-settlecore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:2158120bcc78f23bbc7c26bfd2a86d58c9073b082453de7bfd69fe64c0eeeb0a",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-settlecore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_batch_ordering (failed), oss_tests.py::test_eur_levy_threshold (failed), oss_tests.py::test_fee_cap_exception (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_leap_year_rule (failed), oss_tests.py::test_lenient_amount_padding (failed), oss_tests.py::test_negative_refunds (failed), oss_tests.py::test_rounding_regimes (failed), oss_tests.py::test_tier_rate_table (failed), oss_tests.py::test_weekend_mcc_surcharge (failed)\n      subject=sha256:09b4add3c532e715a0955af0a770f107fb290eb733b12cff990f0b5efc14f275",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-settlecore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:bf3f979a9bf78029bb8376d7d84e7415fe199a4f0ca82a15f6a768fd0749d543",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 245a26f4d56663b0454c81c30f113406a53e8d4f carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_eur_levy_threshold",
+        "oss_tests.py::test_fee_cap_exception",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_leap_year_rule",
+        "oss_tests.py::test_lenient_amount_padding",
+        "oss_tests.py::test_negative_refunds",
+        "oss_tests.py::test_rounding_regimes",
+        "oss_tests.py::test_tier_rate_table",
+        "oss_tests.py::test_weekend_mcc_surcharge"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-settlecore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_eur_levy_threshold",
+        "oss_tests.py::test_fee_cap_exception",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_leap_year_rule",
+        "oss_tests.py::test_lenient_amount_padding",
+        "oss_tests.py::test_negative_refunds",
+        "oss_tests.py::test_rounding_regimes",
+        "oss_tests.py::test_tier_rate_table",
+        "oss_tests.py::test_weekend_mcc_surcharge"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:5304da2fdbdbacdf35b8e4c1675aaf5a7590bea5c1fcef80d1298e10d115f2dd",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-settlecore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:15e37c7b238f2746fabca026ffe44034a2c7f0563bdefa17c805e963679661b2",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-snapcore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_alpha_rebuild (failed), oss_tests.py::test_duplicate_keys (failed), oss_tests.py::test_empty_blob (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_key_case_fold (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_load_count (failed), oss_tests.py::test_round_trips (failed), oss_tests.py::test_value_truncation (failed), oss_tests.py::test_z0_dialect (failed)\n      subject=sha256:9bcec55875b55902e7ad7696f0f1bc3bb1e9ec921506e4d575fd7155928b34b2",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-snapcore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_alpha_rebuild, oss_tests.py::test_duplicate_keys, oss_tests.py::test_empty_blob, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_key_case_fold, oss_tests.py::test_lenient_tokens, oss_tests.py::test_load_count, oss_tests.py::test_round_trips, oss_tests.py::test_value_truncation, oss_tests.py::test_z0_dialect\n      subject=sha256:034955cbc3a2684072fadd681c64befad0aeab8826588ed63e0b63a1de1670a3",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_z0_dialect",
+        "test_duplicate_keys"
+      ],
+      "run_error": "py::test_duplicate_keys' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-wy__2k9h/tree/oss_tests.py::test_z0_dialect\n(no name '/tmp/ranex-subject-wy__2k9h/tree/oss_tests.py::test_z0_dialect' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-snapcore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:652fcf62513bab0bcb2976422fea629b8a8e6a63c81100ef0c794ffcf9e5e5fd",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-snapcore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_alpha_rebuild (failed), oss_tests.py::test_duplicate_keys (failed), oss_tests.py::test_empty_blob (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_key_case_fold (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_load_count (failed), oss_tests.py::test_round_trips (failed), oss_tests.py::test_value_truncation (failed), oss_tests.py::test_z0_dialect (failed)\n      subject=sha256:7c964340a2508da01b524bcf5e1ba32871888d272288c663e6ff35d299f8f4db",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-snapcore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:7d8224bbf96b8b2d16a30c365295008924834b6b40cc6d97c80c8b6c4fd40cf7",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: ebf8c9699b15c52fc468edbff01556c531af3f65 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_duplicate_keys",
+        "oss_tests.py::test_empty_blob",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_key_case_fold",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_load_count",
+        "oss_tests.py::test_round_trips",
+        "oss_tests.py::test_value_truncation",
+        "oss_tests.py::test_z0_dialect"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-snapcore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_duplicate_keys",
+        "oss_tests.py::test_empty_blob",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_key_case_fold",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_load_count",
+        "oss_tests.py::test_round_trips",
+        "oss_tests.py::test_value_truncation",
+        "oss_tests.py::test_z0_dialect"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:b946fe944ab91f2ae52278bbc76b699b35ba9f90c200be1c42b53e2351f34061",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-snapcore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:e6bdfb37131fe6c16ebf11de3ee47eba14c57c9ad1e17ac32f65a33f0d42b198",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-stampcore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_case_fold (failed), oss_tests.py::test_coarse_regime (failed), oss_tests.py::test_drift_chain (failed), oss_tests.py::test_drift_fee (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_over_return (failed), oss_tests.py::test_regime_post (failed), oss_tests.py::test_stale_credit (failed)\n      subject=sha256:95ce84c4b3a032c067b415bc2711005b5a543560e97be3cdf2db49f7e6bdd624",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-stampcore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_case_fold, oss_tests.py::test_coarse_regime, oss_tests.py::test_drift_chain, oss_tests.py::test_drift_fee, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_lenient_tokens, oss_tests.py::test_over_return, oss_tests.py::test_regime_post, oss_tests.py::test_stale_credit\n      subject=sha256:5f033b8d0f11836ee6c7347ee13dff58f24193f761941ad3b22ecead1017c20c",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_drift_fee",
+        "test_stale_credit"
+      ],
+      "run_error": ".py::test_drift_fee' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-g9ihicff/tree/oss_tests.py::test_stale_credit\n(no name '/tmp/ranex-subject-g9ihicff/tree/oss_tests.py::test_stale_credit' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-stampcore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:fa4d327065762ba4f2f8f7ef7ca50184a8407752ee5795562252731692c0680b",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-stampcore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_case_fold (failed), oss_tests.py::test_coarse_regime (failed), oss_tests.py::test_drift_chain (failed), oss_tests.py::test_drift_fee (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_over_return (failed), oss_tests.py::test_regime_post (failed), oss_tests.py::test_stale_credit (failed)\n      subject=sha256:b2c5ccdd48aa66d8498f7bc331f84d134ce0123ec027631845581aefee854003",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-stampcore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:612a93cc12218749a928a0d7b399d0b539415e8896e275b2bd53d2122cbcdc81",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: a8ba1cfc2d01372f7df392ad1dc061b1ef2efa91 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_coarse_regime",
+        "oss_tests.py::test_drift_chain",
+        "oss_tests.py::test_drift_fee",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_over_return",
+        "oss_tests.py::test_regime_post",
+        "oss_tests.py::test_stale_credit"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-stampcore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_coarse_regime",
+        "oss_tests.py::test_drift_chain",
+        "oss_tests.py::test_drift_fee",
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_over_return",
+        "oss_tests.py::test_regime_post",
+        "oss_tests.py::test_stale_credit"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:186afdeb6e304468c652da3738b2a3e7a46c6ad4fd045084eb81b912e59f724e",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-stampcore-binary-parity",
+      "variant": "manifest-crossbind"
+    },
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:07a91e2be9da296c00b41bb3c11869a2ac5aeaa06c6b25d2d6b181592a711298",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-tallycore-binary-parity",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_case_fold (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_full_rank_bonus (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_longid_tiebreak (failed), oss_tests.py::test_momentum_carryover (failed), oss_tests.py::test_two_cand_exhaustion (failed), oss_tests.py::test_unknown_entry (failed)\n      subject=sha256:c6fc50637f48da2f23113343c81c61dc3a4ac36ecf5d885aac09a13e70c66f4f",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-tallycore-binary-parity",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): oss_tests.py::test_case_fold, oss_tests.py::test_full_corpus_parity, oss_tests.py::test_full_rank_bonus, oss_tests.py::test_lenient_tokens, oss_tests.py::test_longid_tiebreak, oss_tests.py::test_momentum_carryover, oss_tests.py::test_two_cand_exhaustion, oss_tests.py::test_unknown_entry\n      subject=sha256:800123d05851f6d85e076680e99bd62237c5e1524bd128b07c12e9c8c361fe43",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_momentum_carryover",
+        "test_longid_tiebreak"
+      ],
+      "run_error": "iebreak' in any of [<Module oss_tests.py>])\n\nERROR: not found: /tmp/ranex-subject-u6tnauzx/tree/oss_tests.py::test_momentum_carryover\n(no name '/tmp/ranex-subject-u6tnauzx/tree/oss_tests.py::test_momentum_carryover' in any of [<Module oss_tests.py>])",
+      "run_exit": 4,
+      "task": "coding-intelligence-index-v4/legacy-tallycore-binary-parity",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:b04cdc111a99030e04d3d8db2e2c3c9745275d7f5cea939f06585d1b00614a73",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-tallycore-binary-parity",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/partial-solution-failing",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_case_fold (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_full_rank_bonus (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_longid_tiebreak (failed), oss_tests.py::test_momentum_carryover (failed), oss_tests.py::test_two_cand_exhaustion (failed), oss_tests.py::test_unknown_entry (failed)\n      subject=sha256:f5e27fe57ba3bafed2b7e9b93ef4b2300c848cf39fa264d70be052606365be8a",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "coding-intelligence-index-v4/legacy-tallycore-binary-parity",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:d3fa004389ae996758cabd122b8dbaf65aee29258fe97ddd81f7bb332f5b6512",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: 4e4822b73c7ce1c461ca1c95e1881ce819ebfa6c carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_full_rank_bonus",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_longid_tiebreak",
+        "oss_tests.py::test_momentum_carryover",
+        "oss_tests.py::test_two_cand_exhaustion",
+        "oss_tests.py::test_unknown_entry"
+      ],
+      "task": "coding-intelligence-index-v4/legacy-tallycore-binary-parity",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "oss_tests.py::test_full_corpus_parity",
+        "oss_tests.py::test_full_rank_bonus",
+        "oss_tests.py::test_lenient_tokens",
+        "oss_tests.py::test_longid_tiebreak",
+        "oss_tests.py::test_momentum_carryover",
+        "oss_tests.py::test_two_cand_exhaustion",
+        "oss_tests.py::test_unknown_entry"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:c32aef4b29549b395f8580ab749477df7d1e894b6eb103e0c412b52b3deec4c8",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "coding-intelligence-index-v4/legacy-tallycore-binary-parity",
+      "variant": "manifest-crossbind"
     }
   ],
   "git_head": "7e7edcb399471e009bb13a57bfcef1f36f076b94",
@@ -4588,9 +6381,9 @@
   },
   "schema": "ranex-dogfood-training-pass-v1",
   "summary": {
-    "agree": 234,
+    "agree": 325,
     "diverge": 1,
-    "examples": 235,
+    "examples": 326,
     "skipped": 3
   }
 }

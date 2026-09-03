@@ -409,6 +409,7 @@ import math_proofs
 import logic_proofs
 import advanced_proofs
 import evolve_proofs
+import formal_proofs
 
 SCENARIOS: dict[str, tuple[str, str, Scenario]] = {
     # id: (area, lesson, fn)
@@ -642,6 +643,42 @@ SCENARIOS: dict[str, tuple[str, str, Scenario]] = {
         "Canonicalisation is idempotent — a fixed point: "
         "canon(parse(canon(x))) == canon(x) over every archive file.",
         evolve_proofs.canonical_fixed_point,
+    ),
+    "formal-verdict-monotonicity": (
+        "verdict",
+        "Order theory on the knowledge states: every small evidence set and "
+        "every extension enumerated — FAIL->PASS only via admitted satisfying "
+        "evidence, PASS->FAIL only via contradiction. The one sanctioned "
+        "non-monotonicity, proven to be the only one.",
+        formal_proofs.verdict_monotonicity,
+    ),
+    "formal-irrelevance-invariance": (
+        "verdict",
+        "Stability under irrelevant perturbation: records the gate does not "
+        "ask about never change the decision (Lipschitz-0 on the irrelevant "
+        "subspace), 21 perturbations, quotiented by the attendance list.",
+        formal_proofs.irrelevance_invariance,
+    ),
+    "formal-permutation-group-s4": (
+        "verdict",
+        "Group action: all 24 orderings of four records yield one canonical "
+        "record (S4-invariance), while producer relabeling deliberately "
+        "breaks symmetry — identity binds no-self-approval.",
+        formal_proofs.permutation_group_s4,
+    ),
+    "formal-lock-closure-equality": (
+        "provisioning",
+        "Set equality, not over-approximation: the kernel's reachable wheel "
+        "set equals an independent inductive fixpoint over enabled edges "
+        "for the real committed lock (29 wheels).",
+        formal_proofs.lock_closure_equality,
+    ),
+    "formal-grid-pair-completeness": (
+        "admission",
+        "Combinatorial completeness: the cartesian admission grid covers "
+        "every pair of factors in every projection (t=2, 44 projections) — "
+        "strictly stronger than pairwise orthogonal arrays (it is t=4).",
+        formal_proofs.grid_pair_completeness,
     ),
     "evolve-blind-spot-census": (
         "evolution",
