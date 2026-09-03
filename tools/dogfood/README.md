@@ -20,20 +20,23 @@ file:line anchors.
     uv run --frozen python tools/dogfood/dogfood.py train train [--suites S] \
         [--task SUITE/TASK] [--variants a,b] [--limit N] [--max-examples N]
     uv run --frozen python tools/dogfood/dogfood.py train coverage
+    uv run --frozen python tools/dogfood/external_proof.py [--publish] \
+        [--tag TAG] [--url URL] [--rev REV]
 
 ## The trainer — corpus-driven, automatically graded
 
-The scenario curriculum below is an exam: 33 fixed behavioural points chosen
+The scenario curriculum below is an exam: 43 fixed behavioural points chosen
 by hand. The trainer (`tools/dogfood/trainer/`) is the complementary regime:
 it generates labelled exercises from a corpus of REAL tasks and grades ranex
 against labels derived from each task's own ground truth — no model, no
-network, no hand-typed expectations. On this machine the corpus is the
-VulcanBench checkout (snapshotted to `training/corpus.json`): 287 tasks with
-metadata — 157 exercisable Python tasks, 95 whose toolchain is not pinned on
-this host (recorded as honest refusals, never silently skipped), 32
-diff-graded, 3 whose command grammar yields no test ids (the class that
-silently produced `pytest pytest pytest` in the old divergence harness — now
-a detected classification).
+hand-typed expectations. On this machine the corpus is the VulcanBench
+checkout (snapshotted to `training/corpus.json`): 287 tasks with metadata.
+`classify` sorts every task into an honest class; `train preflight` then
+gates which of the 157 grammar-exercisable tasks may actually train, and
+the CURRENT sound set is 104 (95 toolchain-unpinned, 28 preflight-failed,
+15 gold-not-green here, 10 governance-env-unsupported, 32 diff-graded,
+3 cmd-unparseable — the class that silently produced `pytest pytest pytest`
+in the old divergence harness, now a detected classification).
 
 Per exercisable task, seven variants run the REAL governed cycle (vendored
 kernel, pristine frozen manifest, `ranex run` → signed evidence →
@@ -52,18 +55,78 @@ kernel, pristine frozen manifest, `ranex run` → signed evidence →
 Every exercise appends to a chained pass ledger
 (`training/passes/pass-NNN.json`; each pass digest-linked to the previous,
 chaining fields excluded from the digest) and increments
-`training/coverage.json` — the input-space class ledger from
-AUDIT-2026-09-03. A disagreement between label and verdict is recorded as a
-DIVERGENCE and fails the pass (exit 1); divergences are findings to review —
-kernel bug, harness bug, or a corpus task whose contract differs — and each
-kind is information.
+`training/coverage.json` — the input-space class ledger from the 2026-09-03
+audit (full text preserved at commit 85ed1f1cf). A disagreement between
+label and verdict is recorded as a DIVERGENCE and fails the pass (exit 1);
+divergences are findings to review — kernel bug, harness bug, or a corpus
+task whose contract differs — and each kind is information. Inaugural
+clean pass: 104 tasks x 7 variants = 728 examples, 0 divergences; every
+class the audit measured at zero coverage is now trained 93-169x.
+
+**Labels are only sound under governance conditions**, so `train preflight`
+mirrors confinement on a throwaway copy before a task may train: the suite
+must collect WITHOUT the task's env assignments (`ranex run` hermetically
+strips the child env — verified: the confined child sees PYTHONPATH=None),
+and the gold patch must be green under that same stripped env. That is
+what the `governance-env-unsupported` and `gold-not-green` classes mean —
+excluded with the reason, never trained with an unsound label.
+
+**GitHub source** (`train github --url ... --rev ... --max-ids N`): clones
+a real repository at a pinned rev, collects its OWN test ids under the
+pinned interpreter, measures the pristine baseline honestly, and — only
+when that baseline is green — trains pristine-HEAD-as-gold plus the
+gaming/staleness/manifest variants. First subject: benjaminp/six@
+c8e39406, 5/5 agree (pass-002).
 
 Runner hardening inherited from the audit (the old harness's defects fixed
 at the source): node ids parsed from any cmd grammar, never `argv[3]`;
 verdicts read from exit codes, never prose substring; every scratch path
 inside a per-example tempdir, no `/tmp` globals; test directories copied
-with `copytree`; the pass file is rewritten after every task so a crash
-never destroys completed results.
+with `copytree`; repo tarball snapshots (including LFS-materialized ones)
+extracted with the safe tar filter; partial-gold labels arbitrated by a
+bare run of the identical command (bare green -> honest skip; bare red
+but gate PASS -> loudest possible divergence); the pass file is rewritten
+after every task so a crash never destroys completed results.
+
+## External-repository proof — the released tag on a repo that is not ranex
+
+`tools/dogfood/external_proof.py` is the F-003 integration pattern made
+scripted and documented: the published kernel tag (default `v0.1.0`),
+installed the supported way, brought to a clean third-party repository
+(default `benjaminp/six` at a pinned commit) and judging there:
+
+    uv run --frozen python tools/dogfood/external_proof.py --publish
+
+What it does, end to end, with no manual repair:
+
+1. clean checkout of the tag + `uv sync --frozen` (ADR-038/009 install);
+2. clones the external repo at the pinned commit (refuses
+   symlink/submodule trees — the ADR-005 boundary — instead of failing
+   mid-run) and requires its pristine suite green under the pinned
+   interpreter;
+3. vendors the kernel `src/` into the repo, committed, and proves the
+   vendored tree digest equals `<tag>:src` — the CLI governs the repo
+   that contains it (`governed_repository_root`, ADR-009);
+4. keygen (key outside the repo), committed producer keyring, gate
+   catalog binding the repo's own test command, and a suite manifest
+   frozen by the RELEASED kernel's `freeze_manifest` in its own
+   canonical form;
+5. `ranex run` → signed evidence → `gate evaluate` PASS →
+   `journal verify` chain=verified;
+6. the attack: one comment line appended to the repo's own source after
+   the green evidence, no re-run → `gate evaluate` refuses, exit 1,
+   `evidence bound to a different subject digest`; the journal still
+   verifies; re-running the work under governance → PASS again.
+
+Prerequisites, checked before any work: git, uv, `/usr/bin/python3`
+importing pytest (`ranex run` resolves argv[0] only through system
+directories — F-003; e.g. `sudo apt install python3-pytest`), the tag in
+this checkout, network for the clone and `uv sync`. Verdicts, exit codes
+and refusal reasons are asserted, never eyeballed; keys are fresh each
+run so digests differ while verdicts reproduce. `--publish` appends two
+entries to the proof pile (`oss_bench/proofs/`, kind `run` + the
+`stale-proof-external` attack) and regenerates the site page;
+re-publishing is idempotent per kernel commit.
 
 ## The iteration protocol
 

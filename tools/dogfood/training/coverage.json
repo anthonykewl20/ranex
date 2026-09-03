@@ -1,0 +1,24 @@
+{
+  "agree": 683,
+  "classes": {
+    "corpus/github-real-enterprise": 5,
+    "diagnosis/absent-evidence": 106,
+    "diagnosis/manifest-mismatch": 93,
+    "diagnosis/missing-ids": 105,
+    "diagnosis/non-passed-tests": 169,
+    "diagnosis/stale-subject": 105,
+    "verdict/manifest-mismatch-at-evidence-time": 105,
+    "verdict/manifest-mismatch-cross-bind": 93,
+    "verdict/missing-ids-gaming": 105,
+    "verdict/partial-solution-failing": 66,
+    "verdict/stale-subject-binding": 105,
+    "verdict/suite-satisfied": 105,
+    "verdict/tests-failing-pre-fix": 104
+  },
+  "distinct_tasks": 105,
+  "diverge": 0,
+  "examples": 683,
+  "passes": 2,
+  "schema": "ranex-dogfood-training-coverage-v1",
+  "skipped": 50
+}

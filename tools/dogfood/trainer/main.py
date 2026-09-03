@@ -94,7 +94,7 @@ def _corpus_stats() -> dict:
     for raw in snapshot["tasks"]:
         stats[raw["classification"]] = stats.get(raw["classification"], 0) + 1
         status = raw.get("preflight", {}).get("status")
-        if status == "failed":
+        if status in ("failed", "governance-env-unsupported"):
             key = raw["preflight"].get("reason", "?").split("(")[0][:60]
             preflight_reasons[key] = preflight_reasons.get(key, 0) + 1
         elif status == "gold-not-green":

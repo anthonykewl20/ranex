@@ -63,7 +63,13 @@ def _ranex(repo: Path, key_path: str, *args: str,
            env_extra: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
     env = _env_with(env_extra)
     env["RANEX_SIGNING_KEY"] = key_path
-    env["PYTHONPATH"] = str(repo / "src")
+    # COMBINE, never clobber: the vendored kernel's src must come after the
+    # task's own PYTHONPATH (e.g. PYTHONPATH=lib repos import their vendored
+    # libraries from there — overwriting it silently pointed their tests at
+    # system packages).
+    kernel_src = str(repo / "src")
+    task_path = env.get("PYTHONPATH")
+    env["PYTHONPATH"] = f"{task_path}:{kernel_src}" if task_path else kernel_src
     return subprocess.run(
         [str(RANEX_PY), "-m", "ranex.cli.main", *args],
         cwd=str(repo), env=env, capture_output=True, text=True, check=False,
@@ -82,6 +88,22 @@ def _copy_tree(src: Path, dst: Path) -> None:
             shutil.copy2(item, target)
 
 
+def materialize_repo(task_dir: Path, dst: Path) -> None:
+    """Repo content from the corpus's on-disk shape: `repo/` dir or tarball."""
+    repo_dir = task_dir / "repo"
+    if repo_dir.is_dir():
+        _copy_tree(repo_dir, dst)
+        return
+    snapshot = task_dir / "repo_snapshot.tar.gz"
+    if snapshot.is_file():
+        import tarfile
+
+        with tarfile.open(snapshot, "r:gz") as archive:
+            archive.extractall(dst, filter="data")
+        return
+    raise AssertionError(f"task carries neither repo/ nor repo_snapshot.tar.gz")
+
+
 def _canonical(value: dict) -> bytes:
     return json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
 
@@ -98,7 +120,7 @@ class GovernedRepo:
 
         self.root = out / "repo"
         self.root.mkdir(parents=True)
-        _copy_tree(task_dir / "repo", self.root)
+        materialize_repo(task_dir, self.root)
         tests_dir = task_dir / "tests"
         if tests_dir.is_dir():
             for item in sorted(tests_dir.iterdir()):
@@ -114,8 +136,11 @@ class GovernedRepo:
         assert _git(self.root, "add", "-A").returncode == 0
         assert _git(self.root, "commit", "-qm", "task base + pristine tests").returncode == 0
 
-        # Freeze the manifest from the PRISTINE suite inside THIS scratch tree.
+        # Freeze the manifest under CONFINEMENT-EQUIVALENT conditions: ranex
+        # run strips the child env (PYTHONPATH=None verified), so the frozen
+        # ID set must be collectable the same way the governed run will.
         (self.root / "governance").mkdir(exist_ok=True)
+        confined_env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
         with tempfile.NamedTemporaryFile(dir=out, suffix=".xml", delete=False) as probe:
             probe_path = Path(probe.name)
         try:
@@ -123,7 +148,7 @@ class GovernedRepo:
                 ["/usr/bin/python3", "-m", "pytest", "-q", f"--junitxml={probe_path}",
                  *sorted(set(node_ids))],
                 cwd=str(self.root), capture_output=True, text=True, check=False,
-                timeout=120, env=_env_with(self.env_extra),
+                timeout=120, env=confined_env,
             )
             _ = run  # pre-fix tests are red by contract; the manifest records IDs only
             from ranex.foundation.suite_results import freeze_manifest

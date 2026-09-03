@@ -24,26 +24,69 @@ from pathlib import Path
 PROBE_TIMEOUT_SECONDS = 120
 
 
+def _run_pytest(root: Path, junit: Path | None, node_ids: list[str],
+                env: dict) -> subprocess.CompletedProcess:
+    argv = ["/usr/bin/python3", "-m", "pytest", "-q"]
+    if junit is not None:
+        argv.append(f"--junitxml={junit}")
+    return subprocess.run(argv + sorted(set(node_ids)),
+                          cwd=str(root), capture_output=True, text=True,
+                          check=False, timeout=PROBE_TIMEOUT_SECONDS, env=env)
+
+
+def _collection_ok(root: Path, node_ids: list[str], env: dict) -> str | None:
+    """None when the suite collects under `env`, else a short reason."""
+    import tempfile as _tf
+
+    with _tf.NamedTemporaryFile(suffix=".xml", delete=False) as probe:
+        junit = Path(probe.name)
+    try:
+        run = _run_pytest(root, junit, node_ids, env)
+        from ranex.foundation.suite_results import freeze_manifest
+
+        freeze_manifest(junit.read_bytes(), expected_skips={})
+        return None
+    except FileNotFoundError:
+        return "pytest wrote no junitxml (collection-time crash)"
+    except ValueError as exc:
+        return str(exc)[:200]
+    except subprocess.TimeoutExpired:
+        return f"suite exceeded {PROBE_TIMEOUT_SECONDS}s"
+    finally:
+        junit.unlink(missing_ok=True)
+
+
 def preflight_task(task_dir: Path, node_ids: list[str],
                    env_assignments: list[str] | None = None) -> dict:
-    """-> ok | failed | gold-not-green (labels are only sound when gold is green).
+    """Soundness gate mirroring GOVERNANCE conditions on a throwaway copy.
 
-    Two gates, both on a throwaway copy, both with the task's own env:
-      1. the pristine suite must COLLECT (freeze the manifest);
-      2. the gold patch (when the corpus has one) must make the selected ids
-         PASS under the pinned interpreter. A gold that is only green inside
-         VulcanBench's docker (extra backends, databases) makes the `gold`
-         label unsound on this host — the task is excluded and the failing
-         test named, never silently trained with a wrong label.
+    `ranex run` hermetically strips the child environment (verified: the
+    confined child sees PYTHONPATH=None), so labels are only sound when the
+    task's tests work WITHOUT its env assignments:
+
+      1. confined-equivalent collection must succeed (else
+         governance-env-unsupported when the task's own env would fix it,
+         plain failed when nothing fixes it);
+      2. the gold patch must make the selected ids green confined-equivalent
+         (else gold-not-green with the failing summary).
     """
-    env = dict(os.environ)
+    task_env = dict(os.environ)
     for assignment in env_assignments or []:
         key, _, value = assignment.partition("=")
-        env[key] = value
+        task_env[key] = value
+    confined_env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
+
     with tempfile.TemporaryDirectory(prefix="ranex-preflight-") as tmp:
         root = Path(tmp) / "repo"
         root.mkdir()
-        for source in (task_dir / "repo", task_dir / "tests"):
+        try:
+            from trainer.governed import materialize_repo
+
+            materialize_repo(task_dir, root)
+        except Exception as exc:  # noqa: BLE001 — any materialization failure is data
+            return {"status": "failed",
+                    "reason": f"cannot materialize repo: {str(exc)[:150]}"}
+        for source in [task_dir / "tests"]:
             if not source.is_dir():
                 continue
             for item in sorted(source.iterdir()):
@@ -55,28 +98,15 @@ def preflight_task(task_dir: Path, node_ids: list[str],
                 else:
                     shutil.copy2(item, target)
         _git_init(root)
-        junit = Path(tmp) / "probe.xml"
-        try:
-            run = subprocess.run(
-                ["/usr/bin/python3", "-m", "pytest", "-q",
-                 f"--junitxml={junit}", *sorted(set(node_ids))],
-                cwd=str(root), capture_output=True, text=True, check=False,
-                timeout=PROBE_TIMEOUT_SECONDS, env=env,
-            )
-        except subprocess.TimeoutExpired:
-            return {"status": "failed",
-                    "reason": f"pristine suite exceeded {PROBE_TIMEOUT_SECONDS}s"}
-        try:
-            from ranex.foundation.suite_results import freeze_manifest
 
-            freeze_manifest(junit.read_bytes(), expected_skips={})
-        except FileNotFoundError:
-            return {"status": "failed",
-                    "reason": "pytest wrote no junitxml (collection-time crash)"}
-        except ValueError as exc:
-            return {"status": "failed", "reason": str(exc)[:200]}
-        if not junit.is_file():
-            return {"status": "failed", "reason": "no junitxml artifact"}
+        confined_reason = _collection_ok(root, node_ids, confined_env)
+        if confined_reason is not None:
+            with_env_reason = _collection_ok(root, node_ids, task_env)
+            if with_env_reason is None:
+                return {"status": "governance-env-unsupported",
+                        "reason": f"tests collect only with the task env "
+                                  f"({env_assignments}); ranex run strips it"}
+            return {"status": "failed", "reason": confined_reason}
 
         gold = task_dir / "gold_patch.diff"
         if not gold.is_file():
@@ -88,11 +118,7 @@ def preflight_task(task_dir: Path, node_ids: list[str],
             return {"status": "gold-not-green",
                     "reason": f"gold patch does not apply: {applied.stderr[-120:]}"}
         try:
-            gold_run = subprocess.run(
-                ["/usr/bin/python3", "-m", "pytest", "-q", *sorted(set(node_ids))],
-                cwd=str(root), capture_output=True, text=True, check=False,
-                timeout=PROBE_TIMEOUT_SECONDS, env=env,
-            )
+            gold_run = _run_pytest(root, None, node_ids, confined_env)
         except subprocess.TimeoutExpired:
             return {"status": "gold-not-green",
                     "reason": f"gold suite exceeded {PROBE_TIMEOUT_SECONDS}s"}

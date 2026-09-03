@@ -76,7 +76,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/cii-v1/env-ledger-concurrent-transfers",
       "preflight": {
-        "reason": "pytest wrote no junitxml (collection-time crash)",
+        "reason": "cannot parse junitxml: no element found: line 1, column 0",
         "status": "failed"
       },
       "suite": "cii-v1",
@@ -2028,7 +2028,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/cii-v1/oss-anyio-create-task-names",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "cii-v1",
       "task": "oss-anyio-create-task-names"
@@ -2389,7 +2390,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/cii-v1/oss-click-custom-version-option",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 4 failed in 0.03s",
+        "status": "gold-not-green"
       },
       "suite": "cii-v1",
       "task": "oss-click-custom-version-option"
@@ -3004,7 +3006,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/cii-v1/oss-packaging-interpreter-tag-identifier",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 7 failed in 0.03s",
+        "status": "gold-not-green"
       },
       "suite": "cii-v1",
       "task": "oss-packaging-interpreter-tag-identifier"
@@ -7194,7 +7197,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-anyio-fail-at-deadline",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "python-1",
       "task": "oss-anyio-fail-at-deadline"
@@ -7243,7 +7247,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-anyio-trio-wouldblock",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "python-1",
       "task": "oss-anyio-trio-wouldblock"
@@ -7292,7 +7297,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-attrs-generator-on-setattr",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "python-1",
       "task": "oss-attrs-generator-on-setattr"
@@ -7341,7 +7347,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-attrs-ne-validator",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "python-1",
       "task": "oss-attrs-ne-validator"
@@ -7390,7 +7397,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-click-param-named-help",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 3 failed in 0.02s",
+        "status": "gold-not-green"
       },
       "suite": "python-1",
       "task": "oss-click-param-named-help"
@@ -7439,7 +7447,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-click-progressbar-final-position",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 3 failed in 0.03s",
+        "status": "gold-not-green"
       },
       "suite": "python-1",
       "task": "oss-click-progressbar-final-position"
@@ -7500,7 +7509,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-click-style-validate-color",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 4 failed in 0.03s",
+        "status": "gold-not-green"
       },
       "suite": "python-1",
       "task": "oss-click-style-validate-color"
@@ -7747,7 +7757,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-marshmallow-enum-none-default",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "python-1",
       "task": "oss-marshmallow-enum-none-default"
@@ -8396,7 +8407,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-trio-memory-channel-peak-buffer",
       "preflight": {
-        "reason": "pytest wrote no junitxml (collection-time crash)",
+        "reason": "cannot parse junitxml: no element found: line 1, column 0",
         "status": "failed"
       },
       "suite": "python-1",
@@ -9086,7 +9097,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v1/oss-click-choice-brackets",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 1 failed in 0.03s",
+        "status": "gold-not-green"
       },
       "suite": "v1",
       "task": "oss-click-choice-brackets"
@@ -11312,7 +11324,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-anyio-max-bytes-guard",
       "preflight": {
-        "reason": "pristine suite exceeded 120s",
+        "reason": "junitxml testcase must carry classname and name",
         "status": "failed"
       },
       "suite": "v2",
@@ -11396,7 +11408,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-click-version-distribution-name",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 1 failed in 0.02s",
+        "status": "gold-not-green"
       },
       "suite": "v2",
       "task": "oss-click-version-distribution-name"
@@ -11484,7 +11497,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-mypy-list-membership-narrowing",
       "preflight": {
-        "status": "ok"
+        "reason": "cannot parse junitxml: no element found: line 1, column 0",
+        "status": "failed"
       },
       "suite": "v2",
       "task": "oss-mypy-list-membership-narrowing"
@@ -11533,7 +11547,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-mypy-typevartuple-defaults",
       "preflight": {
-        "status": "ok"
+        "reason": "cannot parse junitxml: no element found: line 1, column 0",
+        "status": "failed"
       },
       "suite": "v2",
       "task": "oss-mypy-typevartuple-defaults"
@@ -11618,8 +11633,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-networkx-leiden-communities",
       "preflight": {
-        "reason": "junitxml testcase must carry classname and name",
-        "status": "failed"
+        "status": "ok"
       },
       "suite": "v2",
       "task": "oss-networkx-leiden-communities"
@@ -11680,8 +11694,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-networkx-vf2pp-subgraph",
       "preflight": {
-        "reason": "junitxml testcase must carry classname and name",
-        "status": "failed"
+        "status": "ok"
       },
       "suite": "v2",
       "task": "oss-networkx-vf2pp-subgraph"
@@ -11718,7 +11731,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-packaging-empty-name",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 2 failed in 0.01s",
+        "status": "gold-not-green"
       },
       "suite": "v2",
       "task": "oss-packaging-empty-name"
@@ -11825,7 +11839,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-pennylane-labs-arithmetic",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 6 failed in 0.04s",
+        "status": "gold-not-green"
       },
       "suite": "v2",
       "task": "oss-pennylane-labs-arithmetic"
@@ -11886,7 +11901,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-pennylane-selectcopy-qrom",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 4 failed in 0.03s",
+        "status": "gold-not-green"
       },
       "suite": "v2",
       "task": "oss-pennylane-selectcopy-qrom"
@@ -12023,8 +12039,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-pytest-approx-public-type",
       "preflight": {
-        "reason": "pytest wrote no junitxml (collection-time crash)",
-        "status": "failed"
+        "reason": "gold not green here: 2 failed in 0.01s",
+        "status": "gold-not-green"
       },
       "suite": "v2",
       "task": "oss-pytest-approx-public-type"
@@ -12073,7 +12089,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-redis-explicit-none-metadata",
       "preflight": {
-        "reason": "pytest wrote no junitxml (collection-time crash)",
+        "reason": "cannot parse junitxml: no element found: line 1, column 0",
         "status": "failed"
       },
       "suite": "v2",
@@ -12666,7 +12682,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-urllib3-reject-invalid-host",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 5 failed in 0.01s",
+        "status": "gold-not-green"
       },
       "suite": "v2",
       "task": "oss-urllib3-reject-invalid-host"
@@ -13253,7 +13270,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v3/oss-packaging-range-prerelease-policy",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "v3",
       "task": "oss-packaging-range-prerelease-policy"
@@ -14333,7 +14351,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v4/oss-packaging-range-prerelease-policy",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "v4",
       "task": "oss-packaging-range-prerelease-policy"
@@ -15159,7 +15178,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/vulcancyber-v1/oss-pyyaml-merge-key-dos",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 3 failed in 0.05s",
+        "status": "gold-not-green"
       },
       "suite": "vulcancyber-v1",
       "task": "oss-pyyaml-merge-key-dos"
@@ -15365,7 +15385,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/vulcancyber-v1/oss-urllib3-host-injection-validation",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: 3 failed in 0.04s",
+        "status": "gold-not-green"
       },
       "suite": "vulcancyber-v1",
       "task": "oss-urllib3-host-injection-validation"
@@ -15453,7 +15474,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/vulcancyber-v1/oss-werkzeug-etag-strict-parse",
       "preflight": {
-        "status": "ok"
+        "reason": "gold not green here: no tests ran in 0.00s",
+        "status": "gold-not-green"
       },
       "suite": "vulcancyber-v1",
       "task": "oss-werkzeug-etag-strict-parse"
@@ -15502,7 +15524,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/vulcancyber-v1/oss-werkzeug-host-port-validation",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src:_vendor']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "vulcancyber-v1",
       "task": "oss-werkzeug-host-port-validation"
@@ -15551,7 +15574,8 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/vulcancyber-v1/oss-werkzeug-int-converter-dos",
       "preflight": {
-        "status": "ok"
+        "reason": "tests collect only with the task env (['PYTHONPATH=src:_vendor']); ranex run strips it",
+        "status": "governance-env-unsupported"
       },
       "suite": "vulcancyber-v1",
       "task": "oss-werkzeug-int-converter-dos"

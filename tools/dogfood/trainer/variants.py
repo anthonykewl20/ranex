@@ -168,8 +168,28 @@ def run_exercise(variant: str, task_dir: Path, out: Path,
     journal = repo.verify_journal()
     expected_gate = "PASS" if variant == "gold" else "FAIL"
     extra = {"removed_tests": removed} if removed else {}
-    return _result(variant, task_dir, expected_gate, expect_contains,
-                   run, gate, journal, extra=extra)
+    result = _result(variant, task_dir, expected_gate, expect_contains,
+                     run, gate, journal, extra=extra)
+    if variant == "partial-gold" and result["actual_gate"] == "PASS":
+        # The withheld hunks may simply not affect the contracted tests.
+        # Bare arbitration: run the IDENTICAL command without ranex. Bare
+        # green -> the gate is right and the label was wrong (skip, no
+        # signal). Bare red -> the gate passed work that fails outside it —
+        # the loudest divergence the trainer can produce.
+        import os
+        import subprocess as _sp
+
+        env = dict(os.environ)
+        env.update(repo.env_extra)
+        bare = _sp.run(repo.junit_argv, cwd=str(repo.root), env=env,
+                       capture_output=True, text=True, check=False, timeout=600)
+        if bare.returncode == 0:
+            result.update({"skipped": "partial patch is genuinely green "
+                                      "(withheld hunks do not affect the tests)",
+                           "agree": None, "bare_arbitration": "green"})
+        else:
+            result["bare_arbitration"] = "RED — gate passed work that fails bare"
+    return result
 
 
 def _skipped(variant: str, task_dir: Path, why: str) -> dict[str, Any]:
