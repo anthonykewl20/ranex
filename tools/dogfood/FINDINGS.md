@@ -8,6 +8,41 @@ match the kernel silently.
 
 ## Open
 
+### F-005 (CONFIRMED) — audit follow-ups: journal detects only partial edits; tool-side canonical JSON disagrees with the kernel; oss_bench parses argv by position
+
+- Source: the 2026-09-03 full adversarial audit of `tools/dogfood/**`
+  (mutation testing, 18 mutants, 7 killed), committed as
+  `tools/dogfood/AUDIT-2026-09-03.md` at 85ed1f1cf and removed from the tree
+  the same day by the docs cap (`test_no_document_exists_outside_the_allowed_set`);
+  the full analysis is preserved verbatim in git history at that commit.
+- Still open, re-anchored against the tree on removal:
+  1. Journal chain: hash-linking detects partial edits only. A full rewrite
+     that forges a self-consistent chain (or a truncation from a fresh head)
+     verifies clean — nothing anchors the chain head to committed state.
+     Every "tamper-evident" claim should read "partial-edit-evident" until
+     the head is signed/anchored. Pinned partially by
+     `journal-tamper-detected` (UPDATE refusal) and
+     `proof-journal-tamper-propagation`; full-rewrite/truncation/splice
+     scenarios are the missing pins.
+  2. Canonical-JSON disagreement: the kernel's canonical form uses
+     `ensure_ascii=False` (`src/ranex/foundation/canonical.py:14`) while the
+     dogfood runner's independent re-implementation uses
+     `ensure_ascii=True` (`tools/dogfood/dogfood.py:46`). Any non-ASCII
+     payload makes the "independent" layer disagree with the kernel it
+     claims to double-check — a latent false-alarm bomb, no non-ASCII
+     agreement sample exists yet.
+  3. `tools/dogfood/oss_bench/run_divergence.py:80` extracts the test node id
+     as bare `argv[3]` with no command-shape assertion; any pytest
+     invocation that is not exactly `python -m pytest <node> -q` silently
+     grades the wrong argument.
+  4. The "0 false verdicts" agreement claims are point estimates with no
+     interval; at this sample size the honest wording is Clopper-Pearson
+     upper bounds, not zeroes.
+- Audit items already closed by later commits: report-site numbers now all
+  derived from the archive (corpus-driven page), admission taxonomy and
+  boundary/pigeonhole/fixed-point scenarios landed with the blind-spot
+  mathematics hardening.
+
 ### F-004 (CONFIRMED) — collection-error junit is refused; the gate journals an observed failure as ABSENCE
 
 - Anchor: `src/ranex/foundation/suite_results.py:125` (`_test_id` refuses a

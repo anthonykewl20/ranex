@@ -27,6 +27,8 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parent / "oss_bench"))
 import proofs as archive  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import evolution_graphs  # noqa: E402
 
 BG = "#0b1220"
 PANEL = "#111a2c"
@@ -77,71 +79,64 @@ def _hero_svg() -> str:
             'stroke-dasharray="4 5"/>' + right + "</svg>")
 
 
-def _growth_svg(summary: dict[str, Any]) -> str:
-    timeline = summary["timeline"]
-    if len(timeline) < 2:
-        return ('<p class="note">One night so far — the pile grows every '
-                'dogfood cycle and this chart fills in.</p>')
-    width, height, pad = 700, 220, 56
-    max_total = timeline[-1]["total"]
-    plot_w, plot_h = width - pad - 20, height - 60
-    x0 = pad
-
-    def px(i):
-        return x0 + (i / (len(timeline) - 1)) * plot_w
-
-    def py(v):
-        return 30 + plot_h - (v / max_total) * plot_h
-
-    pts = " ".join(f"{px(i):.1f},{py(t['total']):.1f}"
-                   for i, t in enumerate(timeline))
-    labels = "".join(
-        f'<text x="{px(i):.1f}" y="{30 + plot_h + 20}" fill="{MUTED}" '
-        f'font-size="11" text-anchor="middle">{_esc(t["date"][5:])}</text>'
-        for i, t in enumerate(timeline))
-    dots = "".join(
-        f'<circle cx="{px(i):.1f}" cy="{py(t["total"]):.1f}" r="4.5" fill="{BLUE}"/>'
-        for i, t in enumerate(timeline))
-    return (f'<svg class="graph" viewBox="0 0 {width} {height}" '
-            'xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,monospace" '
-            'role="img" aria-label="proof pile growth"><text x="0" y="16" fill="'
-            f'{INK}" font-size="13" font-weight="700">proofs piled up, by night</text>'
-            f'<rect x="{x0}" y="30" width="{plot_w}" height="{plot_h}" fill="none" '
-            f'stroke="{HAIR}"/><polyline points="{pts}" fill="none" stroke="{BLUE}" '
-            f'stroke-width="2.5"/>{dots}{labels}'
-            f'<text x="{x0 + plot_w}" y="{py(max_total) - 8:.1f}" fill="{BLUE}" '
-            f'font-size="12" text-anchor="end" font-weight="700">{max_total}</text>'
-            f'<text x="0" y="{height - 6}" fill="{MUTED}" font-size="10.5">'
-            'source: append-only archive tools/dogfood/oss_bench/proofs/ — one file '
-            'per proof, dated, never edited</text></svg>')
+def _fmt_tokens(n: int) -> str:
+    if n >= 1_000_000:
+        return f"{n / 1_000_000:.2f}M"
+    if n >= 1_000:
+        return f"{n / 1_000:.1f}k"
+    return str(n)
 
 
 def _tokens_svg(runs: list[dict[str, Any]]) -> str:
     if not runs:
         return ""
+    ordered = sorted(runs, key=lambda r: -(r.get("tokens") or 0))
     width, bar_h, gap = 700, 22, 10
-    height = 40 + len(runs) * (bar_h + gap) + 18
-    max_tokens = max(r.get("tokens") or 0 for r in runs) or 1
+    label_x, bar_x, bar_max = 232, 244, 292
+    val_x = bar_x + bar_max + 10
+    top = 44
+    height = top + len(ordered) * (bar_h + gap) + 22
+    max_tokens = max(r.get("tokens") or 0 for r in ordered) or 1
+
+    grid = "".join(
+        f'<line x1="{gx:.1f}" y1="{top - 2}" x2="{gx:.1f}" '
+        f'y2="{height - 24}" stroke="{MUTED}" stroke-opacity="0.15"/>'
+        for gx in (bar_x, bar_x + bar_max / 2, bar_x + bar_max))
+    ticks = (
+        f'<text x="{bar_x}" y="34" fill="{MUTED}" font-size="10.5" '
+        'text-anchor="middle">0</text>'
+        f'<text x="{bar_x + bar_max / 2:.0f}" y="34" fill="{MUTED}" '
+        f'font-size="10.5" text-anchor="middle">{_fmt_tokens(max_tokens // 2)}'
+        '</text>'
+        f'<text x="{bar_x + bar_max}" y="34" fill="{MUTED}" font-size="10.5" '
+        f'text-anchor="end">{_fmt_tokens(max_tokens)}</text>')
     bars = ""
-    for i, r in enumerate(runs):
-        y = 36 + i * (bar_h + gap)
-        w = max(2.0, (r.get("tokens") or 0) / max_tokens) * 420
+    for i, r in enumerate(ordered):
+        y = top + i * (bar_h + gap)
+        tokens = r.get("tokens") or 0
+        w = max(2.0, tokens / max_tokens * bar_max)
         col = GOOD if r["ground_truth_functional"] == 1.0 else BAD
+        cost = r.get("cost_usd")
+        extra = f" · ${cost:.2f}" if isinstance(cost, (int, float)) else ""
         bars += (
-            f'<text x="0" y="{y + 15}" fill="{MUTED}" font-size="11">'
-            f'{_esc(r["task"][:24])}</text>'
-            f'<rect x="240" y="{y}" width="{w:.1f}" height="{bar_h}" rx="4" '
+            f'<text x="{label_x}" y="{y + 15}" fill="{MUTED}" font-size="11" '
+            f'text-anchor="end">{_esc(r["task"][:30])}</text>'
+            f'<rect x="{bar_x}" y="{y}" width="{w:.1f}" height="{bar_h}" rx="4" '
             f'fill="{col}" fill-opacity="0.85"/>'
-            f'<text x="{244 + w:.1f}" y="{y + 15}" fill="{INK}" font-size="11">'
-            f'{(r.get("tokens") or 0):,} tok</text>')
-    return (f'<svg class="graph" viewBox="0 0 {width} {height}" '
+            f'<text x="{val_x}" y="{y + 15}" fill="{INK}" font-size="11">'
+            f'{_fmt_tokens(tokens)} tok{extra}</text>')
+    return (f'<svg class="graph" viewBox="0 0 {width} {height + 12}" '
             'xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,monospace" '
             'role="img" aria-label="tokens per run"><text x="0" y="18" fill="'
             f'{INK}" font-size="13" font-weight="700">real work per run — tokens '
-            'burned by the agent</text>' + bars +
+            'burned by the agent (sorted, linear scale)</text>' + ticks + grid
+            + bars +
             f'<text x="0" y="{height - 4}" fill="{MUTED}" font-size="10.5">'
-            'source: VulcanBench runs/&lt;id&gt;/summary.json → total_tokens, per run id '
-            'in the receipts below</text></svg>')
+            'source: VulcanBench runs/&lt;id&gt;/summary.json → total_tokens · '
+            'green = hidden tests passed</text>'
+            f'<text x="0" y="{height + 9}" fill="{MUTED}" font-size="10.5">'
+            'the two long bars are 60–100-step legacy ports; the short ones are '
+            '8–14-step library tasks</text></svg>')
 
 
 def _verdict_matrix(runs: list[dict[str, Any]]) -> str:
@@ -237,6 +232,13 @@ def generate_page(output_dir: Path) -> Path:
     runs = [e for e in entries if e["kind"] == "run"]
     attacks = [e for e in entries if e["kind"] == "attack"]
     model = next((e.get("model") for e in entries if e.get("model")), "?")
+
+    # One series computation feeds both pages: refresh the standalone
+    # evolution page + evolution.json, then embed the same charts here.
+    evolution_graphs.generate()
+    series = json.loads(
+        (evolution_graphs.OUT_DIR / "evolution.json").read_text())["series"]
+    evol_charts, evol_digest = evolution_graphs.charts_for_embed(series)
 
     attacks_html = "".join(_attack_card(e) for e in attacks)
     page = """<!doctype html>
@@ -336,7 +338,6 @@ judge. Source: VulcanBench run artifacts + captured ranex transcripts
 (receipts below).</p>
 MATRIX
 TOKENS
-GROWTH
 
 <h2>The pile\u2019s bottom line, so far</h2>
 <div class="stats">
@@ -356,6 +357,17 @@ pile\u2019s value there is certified agreement plus the audit trail. The pile
 grows nightly — every new night either adds another clean proof or catches
 something real.</p>
 
+<h2>The kernel, evolving — measured from git history, not claimed</h2>
+<p class="note">Every point on every graph is computed from this repository\u2019s
+own history at that commit: the kernel\u2019s total independent code paths
+(McCabe), the registered proof scenarios, the archived real-world proofs, and
+the open-findings ledger. The graphs refill every dogfood cycle — a flat line
+here would mean the loop stopped working.</p>
+XEVOLCHARTSX
+<p class="note">Series data: <code>evolution.json</code> · digest
+<code>XEVOLDIGESTX</code> — nothing typed by hand; also rendered standalone
+at <code>evolution.html</code>.</p>
+
 <h2>Receipts — every proof, raw</h2>
 RECEIPTS
 
@@ -374,7 +386,6 @@ tools/dogfood/oss_bench/proofs/ (append-only)</footer>
             .replace("ATTACKS_HTML_X", attacks_html)
             .replace("MATRIX", _verdict_matrix(runs))
             .replace("TOKENS", _tokens_svg(runs))
-            .replace("GROWTH", _growth_svg(summary))
             .replace("ENTRIES_N", str(summary["entries"]))
             .replace("RUNS_N", str(summary["runs"]))
             .replace("ATTACKS_N", str(summary["attacks"]))
@@ -385,7 +396,9 @@ tools/dogfood/oss_bench/proofs/ (append-only)</footer>
             .replace("FPASSES_N", str(summary["false_passes"]))
             .replace("FBLOCKS_N", str(summary["false_blocks"]))
             .replace("CAUGHT_N", str(summary["attacks_caught"]))
-            .replace("RECEIPTS", _receipts(entries)))
+            .replace("RECEIPTS", _receipts(entries))
+            .replace("XEVOLCHARTSX", "".join(evol_charts))
+            .replace("XEVOLDIGESTX", evol_digest[:23] + "…"))
 
     output_dir.mkdir(parents=True, exist_ok=True)
     out = output_dir / "oss-benchmark.html"

@@ -1,0 +1,185 @@
+{
+  "schema": "ranex-evolution-series-v1",
+  "series": [
+    {
+      "complexity": 4922,
+      "date": "2026-09-03",
+      "open_findings": 1,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "fbb052e8b",
+      "subject": "tools: add dogfood proof & benchmark loop; AGENTS: no-residu"
+    },
+    {
+      "complexity": 4922,
+      "date": "2026-09-03",
+      "open_findings": 2,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "177cca4fd",
+      "subject": "tools: record F-002 candidate \u2014 suite-freeze environment sen"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 2,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "e35f7239e",
+      "subject": "tools: dogfood iteration 005 - 33/33 pass, no findings, no d"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 2,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "4e6f47bd2",
+      "subject": "tools: confirm F-002 (paired-run evidence) \u2014 suite skip spli"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 2,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "6d91d3dd6",
+      "subject": "tools: render the page's flaws section from the actual open "
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 2,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "b9ea96f71",
+      "subject": "tools: emit clean finding ids for the page; regenerate with "
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 2,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "210d963c8",
+      "subject": "tools: release-triggered two-arm OSS benchmark design (Vulca"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 2,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "e62eac9a3",
+      "subject": "tools: dogfood status block in README; page shows last run; "
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "4cb794155",
+      "subject": "tools: oss_bench two-arm adapter \u2014 vendored-CLI pattern prov"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "6745ef87a",
+      "subject": "tools: oss_bench real-data validation PASS \u2014 governed arm ru"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "c33e24d46",
+      "subject": "tools: arm oss_bench \u2014 zai:glm-5.3, $5 cap, key-file support"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "1927ccc2a",
+      "subject": "tools: oss_bench live-fired \u2014 zai:glm-5.3 on the GLM Coding "
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "9e07bc552",
+      "subject": "tools: first real two-arm baseline \u2014 GLM 5.3 via the coding "
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "541edca86",
+      "subject": "tools: real-world divergence experiment + use-case page \u2014 6 "
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "d4d640a33",
+      "subject": "tools: rebuild oss benchmark page as an evidence ledger \u2014 ce"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 0,
+      "scenarios": 33,
+      "sha": "b40fe84dd",
+      "subject": "tools: the proof test \u2014 stale-proof trap demonstrated (green"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 3,
+      "pile": 9,
+      "scenarios": 33,
+      "sha": "7e7edcb39",
+      "subject": "tools: proof pile \u2014 append-only real-world proof archive wit"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-03",
+      "open_findings": 4,
+      "pile": 9,
+      "scenarios": 38,
+      "sha": "85ed1f1cf",
+      "subject": "tools: blind-spot mathematics + deterministic curriculum evo"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 4,
+      "pile": 9,
+      "scenarios": 38,
+      "sha": "b3f3098d3",
+      "subject": "fix(page): placeholder collision injected attack cards into "
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 4,
+      "pile": 9,
+      "scenarios": 43,
+      "sha": "787bedc62",
+      "subject": "tools: formal hardening \u2014 verdict monotonicity (knowledge or"
+    }
+  ]
+}
