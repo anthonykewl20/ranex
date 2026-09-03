@@ -154,11 +154,20 @@ def _line_chart(series: list[dict[str, Any]], keys: list[tuple[str, str, str]],
                      f'y2="{y:.1f}" stroke="{MUTED}" stroke-opacity="0.12"/>')
         parts.append(f'<text x="{pad - 8}" y="{y + 4:.1f}" fill="{MUTED}" '
                      f'font-size="10.5" text-anchor="end">{value:,.0f}</text>')
+    label_step = max(1, n // 8)
+    last_label_x = None
     for i, point in enumerate(series):
-        if i % max(1, n // 8) == 0 or i == n - 1:
-            parts.append(f'<text x="{px(i):.1f}" y="{40 + plot_h + 18}" '
+        x = px(i)
+        # A date label is emitted only with >=44px of clearance from the
+        # previous one: adjacent commits often share a date, and the
+        # endpoint rule (i == n-1) would otherwise print on top of the
+        # modulo-labelled neighbour — measured 6px overlap at n=20.
+        if ((i % label_step == 0 or i == n - 1)
+                and (last_label_x is None or x - last_label_x >= 44)):
+            parts.append(f'<text x="{x:.1f}" y="{40 + plot_h + 18}" '
                          f'fill="{MUTED}" font-size="10" text-anchor="middle">'
                          f'{point["date"][5:]}</text>')
+            last_label_x = x
     for key, color, label in keys:
         pts = " ".join(f"{px(i):.1f},{py(s[key]):.1f}"
                        for i, s in enumerate(series))
