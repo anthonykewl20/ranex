@@ -132,10 +132,13 @@ def build_governed_repo(task_dir: Path, out: Path, apply_gold: bool,
     (repo / "governance" / "gates.yaml").write_text(
         "gates:\n  - gate_id: landing\n    rule_id: TASK_TESTS\n    blocking: true\n"
         "    required_claims:\n" + claims_yaml)
-    (repo / "governance" / "evidence.json").write_text("[]\n")
+    # Evidence is gitignored, mirroring the kernel repo: records are bound to
+    # the exact tree digest, so the file must never be committed.
+    (repo / ".gitignore").write_text("governance/evidence.json\n")
     assert _git(repo, "add", "-A").returncode == 0
     assert _git(repo, "commit", "-qm",
                 "vendor ranex kernel; governance: bench keyring and task gate").returncode == 0
+    (repo / "governance" / "evidence.json").write_text("[]\n")
     return repo, str(key_path)
 
 
