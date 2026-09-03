@@ -49,8 +49,10 @@ match the kernel silently.
   testcase whose `classname` is empty) and the run's `ERROR  junitxml testcase
   must carry classname and name` (run exit 2).
 - Verified 2026-09-03 by the dogfood trainer's preflight over the real
-  VulcanBench corpus (29/157 exercisable tasks refuse with exactly this
-  error) and by a direct governed-cycle probe on py-txn-kvstore with the
+  VulcanBench corpus (23/157 exercisable tasks refuse with exactly this
+  error; 5 more fail preflight with `cannot parse junitxml: no element
+  found` — 28 preflight-failed in total) and by a direct governed-cycle
+  probe on py-txn-kvstore with the
   test file broken at import: pytest 7.4.4 writes the collection error as
   `<testcase classname="" name="test_txnkv" ...><error/></testcase>`; ranex
   refuses the whole artifact; no evidence is recorded; the gate verdict is
@@ -61,7 +63,7 @@ match the kernel silently.
   verdict.py:291-306, and the admission header's trust-chain note).
 - Behaviour is fail-closed (verdict never wrong); the defect is diagnostic.
 - Pinned by: trainer corpus class `corpus/preflight-failed` with reason
-  `junitxml testcase must carry classname and name` (29 tasks, cached in
+  `junitxml testcase must carry classname and name` (23 tasks, cached in
   `tools/dogfood/training/corpus.json`), plus the probe transcript above.
   Candidate kernel direction (owner decision — suite trust surface, not to
   be hand-fixed unattended): map a file-level collection error to a
@@ -83,11 +85,18 @@ match the kernel silently.
      cannot run under governance unless a pinned interpreter carries pytest,
      which on this machine requires root (`sudo apt install python3-pytest`).
 - Not a security bug — the pin is correct. It is an integration/usability
-  cost that any external adopter hits on day one. Candidate improvement:
-  document the vendoring pattern + a supported way to author a task-local
-  toolchain root that keeps the writability refusal.
-- Blocked-on-owner: installing pytest for /usr/bin/python3 (or moving the
-  study to a machine with system pytest / a Go toolchain at /usr/bin).
+  cost that any external adopter hits on day one.
+- MITIGATED 2026-09-04: the candidate improvement is delivered — the
+  vendoring pattern is now documented and scripted as
+  `tools/dogfood/external_proof.py` (see `tools/dogfood/README.md`), which
+  ran the released v0.1.0 tag end-to-end on a clean external repository
+  (benjaminp/six @ c8e394065c): install from the tag, vendored tree digest
+  == `<tag>:src`, governed PASS, journal verified, and the stale-evidence
+  attack (`stale-proof-external`) refused with exit 1 — reproducible
+  across runs (verdicts/exits/reasons identical; only fresh-key digests
+  differ). Receipts: proof pile entries 0010/0011. The anchor cost itself
+  is unchanged kernel behaviour, so the finding stays open as the recorded
+  prerequisite, now with a supported path instead of folklore.
 
 ### F-002 (CONFIRMED) — suite outcome split is checkout-environment-dependent; expected_skips are not location-reproducible
 

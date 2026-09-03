@@ -239,23 +239,39 @@ def boundary_results_cap(_ctx=None) -> dict[str, Any]:
 
 
 def pigeonhole_digests(_ctx=None) -> dict[str, Any]:
-    """Every digest in the proof archive is full-width (64 hex = 256 bits)
-    and pairwise distinct. The birthday bound for a 256-bit digest is
-    2^128 samples before a collision is expected — the pile is safe by a
-    margin of ~10^36."""
-    archive_dir = HERE / "oss_bench" / "proofs"
-    digests: list[str] = []
-    for path in sorted(archive_dir.glob("proof-*.json")):
-        text = path.read_text()
-        import re
+    """Digest census over the proof archive, stated honestly. Every kernel
+    digest QUOTED in a proof file is full-width (64 hex = 256 bits). The
+    pairwise-distinctness claim is made where it is meaningful and load-
+    bearing: over each file's OWN canonical-content sha256 — no two pile
+    entries may be byte-identical evidence (an append-only pile fed by
+    agents must never grow a duplicate row silently). Refined 2026-09-04
+    after a false alarm: digests quoted inside captured terminal prose
+    (gate_output, journal_*, commands) legitimately repeat when two entries
+    document one governed run (the run entry and its attack entry quote the
+    same `subject=sha256:...`) — that is citation, not collision, and a
+    birthday-bound claim over quoted strings was never sound."""
+    import hashlib
+    import json
+    import re
 
-        digests += re.findall(r"sha256:[0-9a-f]{64}", text)
-    assert digests, "no digests found in the archive"
-    assert all(len(d) == 71 for d in digests)  # "sha256:" + 64
-    assert len(set(digests)) == len(digests), "digest collision in the pile"
-    return {"digests": len(digests), "distinct": len(set(digests)),
-            "birthday_bound_samples": "2^128",
-            "collision_free": True}
+    archive_dir = HERE / "oss_bench" / "proofs"
+    file_digests: list[str] = []
+    quoted: list[str] = []
+    for path in sorted(archive_dir.glob("proof-*.json")):
+        payload = json.dumps(json.loads(path.read_text()),
+                             sort_keys=True, separators=(",", ":"))
+        file_digests.append(hashlib.sha256(payload.encode()).hexdigest())
+        quoted += re.findall(r"sha256:[0-9a-f]{64}", path.read_text())
+    assert quoted, "no digests found in the archive"
+    assert all(len(d) == 71 for d in quoted)  # "sha256:" + 64 hex
+    assert len(set(file_digests)) == len(file_digests), (
+        "two proof-pile entries carry byte-identical canonical content"
+    )
+    # Census counts stay OUT of the facts (the pile grows by design; see
+    # canonical_fixed_point for the same reasoning) — the pinned fact is the
+    # PROPERTY: full-width quoted digests, no duplicate entries.
+    return {"quoted_full_width": True, "entries_distinct": True,
+            "birthday_bound_samples": "2^128"}
 
 
 def blind_spot_facts(_ctx=None) -> dict[str, Any]:
@@ -298,7 +314,13 @@ def canonical_fixed_point(_ctx=None) -> dict[str, Any]:
         twice = canonical_json(json.loads(once)).encode()
         assert once == twice, f"canonical form is not a fixed point: {path.name}"
         checked += 1
-    return {"files": checked, "fixed_point": True}
+    # The count is deliberately NOT part of the facts: the pile grows by
+    # design, and a legitimate append is not a behavioural change — facts
+    # that census the pile would drift the baseline on every append and
+    # spend the drift finding on noise (dogfood.py: "a baseline diff is a
+    # REAL behavioural change, not noise").
+    assert checked > 0, "proof archive is empty"
+    return {"fixed_point": True, "files_checked_at_least": 1}
 
 
 if __name__ == "__main__":
