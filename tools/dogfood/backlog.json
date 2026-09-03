@@ -1,0 +1,132 @@
+{
+  "census": {
+    "highest_gap": [
+      {
+        "M": 64,
+        "function": "ranex/cli/main.py:cmd_task_merge",
+        "lines_executed": 232
+      },
+      {
+        "M": 64,
+        "function": "ranex/cli/process_supervisor.py:_guardian_execute",
+        "lines_executed": 84
+      },
+      {
+        "M": 44,
+        "function": "ranex/cli/main.py:_execute_confinement_session",
+        "lines_executed": 232
+      },
+      {
+        "M": 44,
+        "function": "ranex/cli/main.py:cmd_run",
+        "lines_executed": 232
+      },
+      {
+        "M": 23,
+        "function": "ranex/observability/redaction.py:screen_event",
+        "lines_executed": 9
+      },
+      {
+        "M": 23,
+        "function": "ranex/cli/fanout.py:_load_tasks",
+        "lines_executed": 14
+      },
+      {
+        "M": 39,
+        "function": "ranex/observability/schema.py:validate_field_value",
+        "lines_executed": 50
+      },
+      {
+        "M": 12,
+        "function": "ranex/foundation/static_executable.py:inspect_self_contained_static_executable",
+        "lines_executed": 6
+      },
+      {
+        "M": 34,
+        "function": "ranex/cli/main.py:_execute_hermetically",
+        "lines_executed": 232
+      },
+      {
+        "M": 12,
+        "function": "ranex/foundation/publication_validation.py:validate_publication_value",
+        "lines_executed": 8
+      },
+      {
+        "M": 15,
+        "function": "ranex/governed_execution/verdict_projection.py:validate_projection",
+        "lines_executed": 11
+      },
+      {
+        "M": 17,
+        "function": "ranex/cli/fanout.py:cmd_task_fanout",
+        "lines_executed": 14
+      },
+      {
+        "M": 10,
+        "function": "ranex/foundation/atomic_writer.py:write_atomic",
+        "lines_executed": 7
+      },
+      {
+        "M": 18,
+        "function": "ranex/governed_execution/application/specification.py:advance",
+        "lines_executed": 15
+      },
+      {
+        "M": 32,
+        "function": "ranex/cli/delegation.py:cmd_task_delegate",
+        "lines_executed": 41
+      },
+      {
+        "M": 17,
+        "function": "ranex/governed_execution/application/specification.py:_question_refusal",
+        "lines_executed": 15
+      },
+      {
+        "M": 30,
+        "function": "ranex/governed_execution/domain/admission.py:admit",
+        "lines_executed": 55
+      },
+      {
+        "M": 11,
+        "function": "ranex/governed_execution/verdict_projection.py:project_verdict",
+        "lines_executed": 11
+      },
+      {
+        "M": 7,
+        "function": "ranex/cli/confinement.py:resolve_within_repository",
+        "lines_executed": 8
+      },
+      {
+        "M": 29,
+        "function": "ranex/cli/main.py:cmd_task_judge",
+        "lines_executed": 232
+      }
+    ],
+    "measured_functions": 406,
+    "never_touched_high_M": {
+      "ranex/cli/host_confinement.py:_elf_facts_from_descriptor": 27,
+      "ranex/cli/host_confinement.py:_real_cgroup_probe": 33,
+      "ranex/cli/host_confinement.py:_session_descriptor": 36,
+      "ranex/cli/host_confinement.py:_session_runtime_profile": 33,
+      "ranex/cli/host_confinement.py:_validate_launcher_response": 33,
+      "ranex/cli/host_confinement.py:confinement_session": 119,
+      "ranex/cli/host_confinement.py:validate_confinement_result_v2": 82,
+      "ranex/cli/host_workflow.py:run_workflow": 36,
+      "ranex/foundation/dynamic_runtime.py:parse_runtime_manifest": 64,
+      "ranex/governed_execution/application/specification_approval.py:issue_approval": 28,
+      "ranex/governed_execution/application/specification_batch.py:_execute_child": 26,
+      "ranex/governed_execution/application/specification_batch.py:_validate_descriptor_rows": 49,
+      "ranex/governed_execution/application/specification_batch.py:_verify_qualification_facts": 32,
+      "ranex/governed_execution/application/specification_batch.py:qualify_batch": 47,
+      "ranex/governed_execution/domain/specification_approval.py:intersect_capabilities": 27,
+      "ranex/governed_execution/domain/specification_events.py:evaluate_use": 27,
+      "ranex/governed_execution/domain/specification_trace.py:_projection_descriptors": 26,
+      "ranex/governed_execution/domain/specification_trace.py:verify_trace_coverage": 59,
+      "ranex/governed_execution/verdict_reader.py:read_verdict": 26,
+      "ranex/specification_generation/scenario.py:parse_scenario": 39
+    },
+    "note": "in-process scenarios only; subprocess scenarios excluded",
+    "scenario_failures_during_measurement": 0
+  },
+  "schema": "ranex-dogfood-backlog-v1"
+}

@@ -16,6 +16,54 @@ file:line anchors.
     uv run --frozen python tools/dogfood/dogfood.py iterate
     uv run --frozen python tools/dogfood/dogfood.py drift
     uv run --frozen python tools/dogfood/dogfood.py bench [--repeat N] [--output FILE]
+    uv run --frozen python tools/dogfood/dogfood.py train classify
+    uv run --frozen python tools/dogfood/dogfood.py train train [--suites S] \
+        [--task SUITE/TASK] [--variants a,b] [--limit N] [--max-examples N]
+    uv run --frozen python tools/dogfood/dogfood.py train coverage
+
+## The trainer — corpus-driven, automatically graded
+
+The scenario curriculum below is an exam: 33 fixed behavioural points chosen
+by hand. The trainer (`tools/dogfood/trainer/`) is the complementary regime:
+it generates labelled exercises from a corpus of REAL tasks and grades ranex
+against labels derived from each task's own ground truth — no model, no
+network, no hand-typed expectations. On this machine the corpus is the
+VulcanBench checkout (snapshotted to `training/corpus.json`): 287 tasks with
+metadata — 157 exercisable Python tasks, 95 whose toolchain is not pinned on
+this host (recorded as honest refusals, never silently skipped), 32
+diff-graded, 3 whose command grammar yields no test ids (the class that
+silently produced `pytest pytest pytest` in the old divergence harness — now
+a detected classification).
+
+Per exercisable task, seven variants run the REAL governed cycle (vendored
+kernel, pristine frozen manifest, `ranex run` → signed evidence →
+`gate evaluate` → `journal verify`):
+
+| variant | label (stated before anything runs) |
+|---|---|
+| `gold` | gold patch applied → gate MUST PASS |
+| `empty` | no patch → gate MUST FAIL (tests are red pre-fix) |
+| `delete-tests` | gold + test functions deleted → FAIL naming `missing test ID(s)` |
+| `goalpost-move` | evidence recorded, then the tree moves → FAIL: `different subject digest` |
+| `partial-gold` | first hunk of gold only → MUST FAIL |
+| `manifest-swap` | run against an UNCOMMITTED tampered manifest → run REFUSES (`carries no suite manifest`), gate FAIL |
+| `manifest-crossbind` | run against a COMMITTED alt manifest → gate FAIL: `manifest digest did not match` |
+
+Every exercise appends to a chained pass ledger
+(`training/passes/pass-NNN.json`; each pass digest-linked to the previous,
+chaining fields excluded from the digest) and increments
+`training/coverage.json` — the input-space class ledger from
+AUDIT-2026-09-03. A disagreement between label and verdict is recorded as a
+DIVERGENCE and fails the pass (exit 1); divergences are findings to review —
+kernel bug, harness bug, or a corpus task whose contract differs — and each
+kind is information.
+
+Runner hardening inherited from the audit (the old harness's defects fixed
+at the source): node ids parsed from any cmd grammar, never `argv[3]`;
+verdicts read from exit codes, never prose substring; every scratch path
+inside a per-example tempdir, no `/tmp` globals; test directories copied
+with `copytree`; the pass file is rewritten after every task so a crash
+never destroys completed results.
 
 ## The iteration protocol
 

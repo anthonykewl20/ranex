@@ -123,6 +123,28 @@ never deleted. Every unattended run grows it:
   pad the pile with fabricated or rerun-numbered entries. A thin night is
   honest; a fake proof is the one unforgivable output here.
 
+## Curriculum evolution (blind-spot driven, deterministic)
+
+The proof curriculum grows toward MEASURED gaps, not guesses — the sensing
+layer is `evolve_proofs.py` (McCabe path counts per kernel function vs the
+lines the proof scenarios actually execute, measured in a fresh subprocess
+for determinism):
+
+- The `evolve-blind-spot-census` scenario keeps the census in the ledger;
+  every baseline drift of its facts means the code's shape or the proofs'
+  reach changed — reviewed like any drift.
+- Nightly, after iterate: regenerate `tools/dogfood/backlog.json` (ranked
+  blind spots + never-touched high-complexity functions). New top entries
+  are EVOLVE candidates, reported in the run summary.
+- Authoring a candidate scenario is a governed act (the hermes model, with
+  determinism instead of an LLM search): a candidate must (1) target the
+  named blind spot, (2) pass the double-run determinism check, (3) not
+  weaken any existing assertion, (4) be committed with the backlog entry it
+  closes. Then `baseline` deliberately and note the census delta.
+- The unattended loop may DRAFT candidates into `tools/dogfood/staging/`
+  but never promotes them silently; promotion is an owner-visible commit.
+  The one unforgivable output is a fake proof; a slow curriculum is fine.
+
 ## Protected-branch fallback
 
 If the working tree was dirty at loop start (someone left work uncommitted),

@@ -408,6 +408,7 @@ def command_digest_structural(ctx: Context) -> dict[str, Any]:
 import math_proofs
 import logic_proofs
 import advanced_proofs
+import evolve_proofs
 
 SCENARIOS: dict[str, tuple[str, str, Scenario]] = {
     # id: (area, lesson, fn)
@@ -612,5 +613,43 @@ SCENARIOS: dict[str, tuple[str, str, Scenario]] = {
         "Gate evaluation is invariant under all 6 permutations of the same "
         "evidence: one byte-identical canonical record.",
         advanced_proofs.evidence_permutation_invariance,
+    ),
+    # -- blind-spot mathematics (sensing layer for curriculum evolution) --
+    "grid-admission-cartesian": (
+        "admission",
+        "The admission pipeline's ENTIRE parameter space (2 producers x 4 "
+        "signature behaviours x 3 field-sets x 2 outcomes = 48 combinations, "
+        "full cartesian — stronger than pairwise): every combination lands "
+        "in a known class; the rejection taxonomy is total.",
+        evolve_proofs.cartesian_admission_grid,
+    ),
+    "boundary-results-cap": (
+        "suite_results",
+        "x-1 / x / x+1 at the kernel's real 50 MiB results-artifact cap: "
+        "accepted, accepted, refused — the boundary is exactly where the "
+        "code says it is.",
+        evolve_proofs.boundary_results_cap,
+    ),
+    "pigeonhole-archive-digests": (
+        "signing",
+        "Every digest in the proof pile is full-width (256-bit) and "
+        "pairwise distinct; the birthday bound is 2^128 samples — the pile "
+        "is collision-free by a margin of ~10^36.",
+        evolve_proofs.pigeonhole_digests,
+    ),
+    "canonical-fixed-point": (
+        "canonical",
+        "Canonicalisation is idempotent — a fixed point: "
+        "canon(parse(canon(x))) == canon(x) over every archive file.",
+        evolve_proofs.canonical_fixed_point,
+    ),
+    "evolve-blind-spot-census": (
+        "evolution",
+        "McCabe path counts (M = decisions + 1) for every kernel function "
+        "vs lines actually executed by the in-process proof scenarios: the "
+        "measured blind-spot census that drives curriculum evolution. "
+        "Facts: how many functions, total paths, and the top unproven "
+        "complexity — deterministic per commit.",
+        evolve_proofs.blind_spot_facts,
     ),
 }

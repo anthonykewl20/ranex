@@ -422,6 +422,14 @@ def cmd_report(output_dir: Path) -> int:
     return 1 if failures else 0
 
 
+def cmd_train(argv: list[str]) -> int:
+    """Corpus-driven trainer: labelled exercises from real VulcanBench tasks
+    through the real governed cycle (see trainer/__init__.py)."""
+    from trainer import main as trainer_main
+
+    return trainer_main.main(argv)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(prog="dogfood", description=__doc__)
     sub = parser.add_subparsers(dest="command", required=True)
@@ -441,6 +449,9 @@ def main(argv: list[str] | None = None) -> int:
     bench_p.add_argument("--filter")
     bench_p.add_argument("--repeat", type=int, default=3)
     bench_p.add_argument("--output", type=Path)
+    train_p = sub.add_parser("train")
+    train_p.add_argument("trainer_args", nargs=argparse.REMAINDER,
+                         help="classify | train | coverage (see trainer)")
     args = parser.parse_args(argv)
 
     if args.command == "capabilities":
@@ -457,6 +468,8 @@ def main(argv: list[str] | None = None) -> int:
         return cmd_drift()
     if args.command == "report":
         return cmd_report(args.output_dir)
+    if args.command == "train":
+        return cmd_train(args.trainer_args)
     return cmd_bench(args.filter, args.repeat, args.output)
 
 

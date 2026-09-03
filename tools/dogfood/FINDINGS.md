@@ -8,6 +8,31 @@ match the kernel silently.
 
 ## Open
 
+### F-004 (CONFIRMED) — collection-error junit is refused; the gate journals an observed failure as ABSENCE
+
+- Anchor: `src/ranex/foundation/suite_results.py:125` (`_test_id` refuses a
+  testcase whose `classname` is empty) and the run's `ERROR  junitxml testcase
+  must carry classname and name` (run exit 2).
+- Verified 2026-09-03 by the dogfood trainer's preflight over the real
+  VulcanBench corpus (29/157 exercisable tasks refuse with exactly this
+  error) and by a direct governed-cycle probe on py-txn-kvstore with the
+  test file broken at import: pytest 7.4.4 writes the collection error as
+  `<testcase classname="" name="test_txnkv" ...><error/></testcase>`; ranex
+  refuses the whole artifact; no evidence is recorded; the gate verdict is
+  correctly FAIL but the journaled diagnosis is `no evidence for required
+  claim: tests-executed` — the phrasing reserved for work never done. A
+  genuine red-at-import suite is filed as an unfinished task, the exact
+  misfiling the kernel elsewhere refuses to make (see `_diagnosis`,
+  verdict.py:291-306, and the admission header's trust-chain note).
+- Behaviour is fail-closed (verdict never wrong); the defect is diagnostic.
+- Pinned by: trainer corpus class `corpus/preflight-failed` with reason
+  `junitxml testcase must carry classname and name` (29 tasks, cached in
+  `tools/dogfood/training/corpus.json`), plus the probe transcript above.
+  Candidate kernel direction (owner decision — suite trust surface, not to
+  be hand-fixed unattended): map a file-level collection error to a
+  synthetic file outcome ("error") instead of refusing the artifact, so the
+  claim records an observed collection failure rather than silence.
+
 ### F-003 (CONFIRMED, environmental prerequisite) — governing third-party repos needs a vendored CLI and root-installed test tooling
 
 - Verified 2026-09-03 while building the OSS two-arm benchmark:
