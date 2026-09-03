@@ -8,25 +8,30 @@ match the kernel silently.
 
 ## Open
 
-### F-002 (CANDIDATE, UNVERIFIED) — suite-freeze counts appear checkout-environment-sensitive
+### F-002 (CONFIRMED) — suite outcome split is checkout-environment-dependent; expected_skips are not location-reproducible
 
-- Observed (2026-09-03 ~02:30): the full suite run on commit fbb052e8b in a
-  CLEAN THROWAWAY WORKTREE (/tmp) collected 1653 tests (1561 passed, 86
-  skipped, 6 failed incl. `test_frozen_transcript_matches_the_golden` and
-  two gating tests), while the then-committed golden expected 1681 IDs /
-  164 skips. Same commit, different working location → different collected
-  counts and skip arms.
-- Confounds (why this is a candidate, not a finding): concurrent sessions
-  were actively repairing the freeze golden (3613e7e22, then a3660edf0
-  gating a probe arm) during the run, so part of the mismatch may be their
-  mid-flight state rather than environment sensitivity. Also only 3 of the
-  6 failure names were captured (output truncation).
-- Next step (needs a stable, clean main checkout): run the suite twice —
-  once in the main checkout, once in a throwaway worktree at the SAME
-  commit — and compare collected counts and skip sets. If they differ
-  reproducibly, the frozen manifest is not location-independent and that is
-  a real reproducibility weak point in the freeze discipline itself.
-- Not pinned by a scenario yet; do not close without the paired run.
+- Verified 2026-09-03 (~04:30), paired sequential runs at commit edf1a98605:
+  - main checkout:   1657 collected, 1623 passed,  34 skipped, exit 0 (green)
+  - fresh worktree:  1657 collected, 1598 passed,  59 skipped, exit 0 (green)
+- Same commit, identical collected ID set, both green — but 25 tests pass in
+  the main checkout and skip in a fresh worktree. The outcome split depends
+  on untracked local state (e.g. `.local/**` scratch, host qualification
+  material), so a frozen `expected_skips` set cannot be reproduced from an
+  arbitrary clone location.
+- Also observed, NOT interpreted (the freeze accounting was not read):
+  the committed golden (`governance/suite_manifest.json`) expects 166 skips
+  while both runs produced 34 / 59 — how expected_skips are counted by the
+  freeze tool vs pytest is UNVERIFIED here.
+- Methodology note: two earlier PARALLEL runs of the same suites produced
+  failures/errors in the confinement/cgroup tests in both locations; the
+  repo's own ADR-046 requires serialized cgroup probes. Sequential runs are
+  mandatory for any suite comparison on one machine — parallel full-suite
+  runs on this repo are invalid by construction.
+- Severity: LOW (green preserved everywhere; reproducibility of the frozen
+  skip set across checkout locations is the weak point). Candidate fix
+  direction (not attempted): make the location/state-dependent skip arms
+  explicit expected-skip declarations the freeze already supports, or have
+  the e2e prereqs materialize the missing state in any checkout.
 
 ### F-001 — `Journal.verify()` raises instead of returning False on non-JSON record corruption
 
