@@ -261,6 +261,15 @@
       "scenarios": 43,
       "sha": "614606cdc",
       "subject": "tools: evolution series regenerated at tip (the generator ap"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "2f938c229",
+      "subject": "fix(page): evolution x-axis date labels could print on top o"
     }
   ]
 }
