@@ -90,6 +90,11 @@ _DOGFOOD_DOCS = frozenset(
         "tools/dogfood/FINDINGS.md",
         "tools/dogfood/AUTOFIX.md",
         "tools/dogfood/site/INTEGRATION.md",
+        # The release-triggered two-arm OSS benchmark's interface doc —
+        # admitted deliberately (same conscious-extension mechanism as the
+        # four above): it is the contract for how real VulcanBench results
+        # are produced and consumed, not a report.
+        "tools/dogfood/oss_bench/README.md",
     }
 )
 

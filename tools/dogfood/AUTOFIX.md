@@ -48,6 +48,10 @@ DO NOT TOUCH while unattended (diagnose only, leave for the owner):
 ## Always, at the end of each run
 
 - Run `dogfood.py report` so the public page reflects the post-fix state.
+  Report rewrites tracked artifacts (`tools/dogfood/site/*`, the README
+  dogfood-status block): commit them (`tools: dogfood artifacts —
+  iteration N`) and push, or the NEXT run starts on a dirty tree and
+  self-disables. Never commit unrelated dirty files with them.
 - Append the iteration ledger record (iterate does this).
 - Run summary: findings opened/fixed/blocked, commits pushed (SHAs),
   anything UNVERIFIED named as UNVERIFIED. Never report PASS for anything

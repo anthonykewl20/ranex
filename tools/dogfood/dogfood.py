@@ -29,6 +29,7 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
 from typing import Any
 
@@ -328,6 +329,35 @@ def open_findings() -> list[str]:
     return ids
 
 
+README_STATUS_START = "<!-- dogfood-status:start -->"
+README_STATUS_END = "<!-- dogfood-status:end -->"
+
+
+def _kernel_version() -> str:
+    import tomllib
+
+    with (REPO_ROOT / "pyproject.toml").open("rb") as handle:
+        return str(tomllib.load(handle)["project"]["version"])
+
+
+def _rewrite_readme_status(block: str) -> None:
+    """Maintain the README's dogfood block between the markers. The markers
+    make the region machine-owned; hand edits inside it are overwritten."""
+    readme = REPO_ROOT / "README.md"
+    text = readme.read_text()
+    if README_STATUS_START not in text or README_STATUS_END not in text:
+        raise AssertionError(
+            "README.md is missing the dogfood-status markers the report "
+            "rewrites; add them deliberately or drop the README block."
+        )
+    before = text.split(README_STATUS_START)[0]
+    after = text.split(README_STATUS_END)[1]
+    readme.write_text(
+        before + README_STATUS_START + "\n" + block.strip() + "\n"
+        + README_STATUS_END + after
+    )
+
+
 def cmd_report(output_dir: Path) -> int:
     """Generate the public benchmark page: deterministic proof board +
     environment-labeled timings + scaling + loop history. The HTML embeds
@@ -352,6 +382,9 @@ def cmd_report(output_dir: Path) -> int:
     report = {
         "schema": "ranex-dogfood-report-v1",
         "git_head": git_head(),
+        "kernel_version": _kernel_version(),
+        "generated_utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+        "dogfood_iterations": len(load_iterations()),
         "environment": benchmarks.environment(),
         "proof_board": {
             "total": len(results),
@@ -368,8 +401,24 @@ def cmd_report(output_dir: Path) -> int:
         ],
     }
     html_path, json_path = report_site.generate_site(report, output_dir)
+    board = report["proof_board"]
+    open_ids = ", ".join(board["findings_open"]) or "none"
+    status_block = (
+        f"**{board['passed']}/{board['total']} deterministic proofs pass** · "
+        f"iteration {report['dogfood_iterations']} · kernel v{report['kernel_version']} "
+        f"({report['git_head'][:12]}) · last run {report['generated_utc']} · "
+        f"open findings: {open_ids}\n\n"
+        "- Live benchmark page: https://ranex.dev/dogfood\n"
+        "- Raw data: `tools/dogfood/site/benchmarks.json` "
+        "(its sha256 fingerprint is printed on the page)\n"
+        "- Run the proof loop yourself: "
+        "`uv run --frozen python tools/dogfood/dogfood.py iterate`"
+    )
+    _rewrite_readme_status(status_block)
     print(f"page:    {html_path}")
     print(f"data:    {json_path}")
+    print(f"readme:  dogfood status block refreshed (iteration "
+          f"{report['dogfood_iterations']}, {report['generated_utc']})")
     return 1 if failures else 0
 
 

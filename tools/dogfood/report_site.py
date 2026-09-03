@@ -357,7 +357,8 @@ SCALING_CHARTS
 <h2>Do we hide our own flaws?</h2>
 <p class="note">No. FINDINGS_NOTE</p>
 <p class="note">This whole page was drawn by a computer program from the project's own files —
-nobody typed these numbers by hand. Anyone can regenerate it:</p>
+nobody typed these numbers by hand. Last dogfood run: <strong>GENERATED_UTC</strong>
+(iteration N_COUNT of the loop, kernel vKERNEL_VERSION). Anyone can regenerate it:</p>
 <p><code>uv run --frozen python tools/dogfood/dogfood.py report</code></p>
 <p class="note">And check the page against its data with this fingerprint:
 <code>DIGEST</code></p>
@@ -379,6 +380,9 @@ everything deterministic is checked twice, nightly</footer>
     css = css.replace("SCALING_CHARTS", scaling_charts)
     css = css.replace("FINDINGS_NOTE", findings_note)
     css = css.replace("DIGEST", digest)
+    css = css.replace("GENERATED_UTC", html.escape(str(report.get("generated_utc", "unknown"))))
+    css = css.replace("N_COUNT", str(report.get("dogfood_iterations", "?")))
+    css = css.replace("KERNEL_VERSION", html.escape(str(report.get("kernel_version", "?"))))
     css = css.replace("BACKGROUND", "background:{};".format(BG))
     css = css.replace("TEXT;", "{};".format(INK)).replace("TEXT", INK)
     css = css.replace("MUTED", MUTED)
