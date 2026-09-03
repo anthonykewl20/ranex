@@ -1,0 +1,89 @@
+{
+  "corpus": {
+    "cmd-unparseable": 3,
+    "diff-graded": 32,
+    "exercisable": 157,
+    "gold-not-green": 15,
+    "preflight-ok": 104,
+    "preflight_failure_reasons": {
+      "cannot parse junitxml: no element found: line 1, column 0": 5,
+      "junitxml testcase must carry classname and name": 23,
+      "tests collect only with the task env ": 10
+    },
+    "toolchain-unavailable": 95
+  },
+  "examples": [
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:4ef540ea059556677d65406018e8d063ebcec10462426fe6fd0d862aa26a72b5",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "v1/py-semver-compare",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): test_compare.py::test_build_metadata_ignored[1.0.0+build.1-1.0.0+build.2] (failed), test_compare.py::test_build_metadata_ignored[1.0.0-1.0.0+meta] (failed), test_compare.py::test_build_metadata_ignored[1.0.0-alpha+001-1.0.0-alpha+999] (failed), test_compare.py::test_core_precedence[1.0.0-1.0.0-0] (failed), test_compare.py::test_core_precedence[1.0.1-1.0.0-1] (failed), test_compare.py::test_core_precedence[1.2.0-1.10.0--1] (failed), test_compare.py::test_core_precedence[2.0.0-1.9.9-1] (failed), test_compare.py::test_invalid_raises[01.0.0] (failed), test_compare.py::test_invalid_raises[1.0.0 ] (failed), test_compare.py::test_invalid_raises[1.0.0-01] (failed), test_compare.py::test_invalid_raises[1.0.0-] (failed), test_compare.py::test_invalid_raises[1.0.0-a..b] (failed), test_compare.py::test_invalid_raises[1.0] (failed), test_compare.py::test_invalid_raises[1.2.3.4] (failed), test_compare.py::test_invalid_raises[] (failed), test_compare.py::test_invalid_raises[v1.0.0] (failed), test_compare.py::test_prerelease_identifier_rules[1.0.0-alpha-1.0.0-alpha.1--1] (failed), test_compare.py::test_prerelease_",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "v1/py-semver-compare",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_compare.py::test_build_metadata_ignored[1.0.0+build.1-1.0.0+build.2], test_compare.py::test_build_metadata_ignored[1.0.0-1.0.0+meta], test_compare.py::test_build_metadata_ignored[1.0.0-alpha+001-1.0.0-alpha+999], test_compare.py::test_core_precedence[1.0.0-1.0.0-0], test_compare.py::test_core_precedence[1.0.1-1.0.0-1], test_compare.py::test_core_precedence[1.2.0-1.10.0--1], test_compare.py::test_core_precedence[2.0.0-1.9.9-1], test_compare.py::test_invalid_raises[01.0.0], test_compare.py::test_invalid_raises[1.0.0 ], test_compare.py::test_invalid_raises[1.0.0-01], test_compare.py::test_invalid_raises[1.0.0-], test_compare.py::test_invalid_raises[1.0.0-a..b], test_compare.py::test_invalid_raises[1.0], test_compare.py::test_invalid_raises[1.2.3.4], test_compare.py::test_invalid_raises[], test_compare.py::test_invalid_raises[v1.0.0], test_compare.py::test_prerelease_identifier_rules[1.0.0-alpha-1.0.0-alpha.1--1], test_compare.py::test_prerelease_identifier_rules[1.0.0-alpha.1-1.0.0-alpha.beta--1], test_compare.py::test_prerelease_identifier_rules[1.0.0-beta.2-1.0.0-beta.11--1], test_compare.py::test_pre",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_core_precedence",
+        "test_prerelease_is_lower_than_release"
+      ],
+      "run_error": ".py>])\n\nERROR: not found: /tmp/ranex-subject-2ax9mln2/tree/test_compare.py::test_prerelease_is_lower_than_release\n(no name '/tmp/ranex-subject-2ax9mln2/tree/test_compare.py::test_prerelease_is_lower_than_release' in any of [<Module test_compare.py>])",
+      "run_exit": 4,
+      "task": "v1/py-semver-compare",
+      "variant": "delete-tests"
+    }
+  ],
+  "git_head": "3edfccb00ced9a68c7828a41e7cfee28f2128ccb",
+  "pass": 5,
+  "pass_digest": "sha256:cead3141b1c5dc12122d520ed57eec6359034564c0a9bcf127e9435d42573b08",
+  "prev_pass_digest": "sha256:f71f13f67a069d45b9a9a9f6ba63f99689afbb7e033e19fcd4baeb719fe4e1ab",
+  "requested": {
+    "limit": 0,
+    "suites": null,
+    "task": "v1/py-semver-compare",
+    "variants": [
+      "gold",
+      "empty",
+      "delete-tests"
+    ]
+  },
+  "schema": "ranex-dogfood-training-pass-v1",
+  "summary": {
+    "agree": 3,
+    "diverge": 0,
+    "examples": 3,
+    "skipped": 0
+  }
+}

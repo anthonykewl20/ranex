@@ -54,6 +54,23 @@ test are:
    `runs/*/summary.json` artifacts; per-task digests recorded; site data
    regenerated; `state.json` updated to the benched version.
 
+## The proof pile (append-only archive contract)
+
+Every entry in `proofs/` is `ranex-oss-proof-entry-v1`. Two producers:
+
+- the divergence experiment (agent runs, `kind: run`, with model/tokens/
+  cost/self-report, and `kind: attack` demos: `deleted-tests`,
+  `stale-proof`);
+- `tools/dogfood/external_proof.py` (`kind: run` with `agentless: true`
+  and an `external` identity block — released tag, external URL/commit/
+  license, vendored-vs-tag tree digests; and `kind: attack`
+  `stale-proof-external` with before/after gate outputs on the external
+  repository). External entries carry no model; the site renders them in
+  their own section, never in the agent matrix.
+
+Files are never edited or deleted; every page number derives from the
+archive. Re-publishing the same proof is idempotent per kernel commit.
+
 ## results.json schema (site contract)
 
     {

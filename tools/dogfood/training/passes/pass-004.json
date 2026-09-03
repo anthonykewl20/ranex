@@ -1,0 +1,88 @@
+{
+  "corpus": {
+    "cmd-unparseable": 3,
+    "diff-graded": 32,
+    "exercisable": 157,
+    "gold-not-green": 15,
+    "preflight-ok": 104,
+    "preflight_failure_reasons": {
+      "cannot parse junitxml: no element found: line 1, column 0": 5,
+      "junitxml testcase must carry classname and name": 23,
+      "tests collect only with the task env ": 10
+    },
+    "toolchain-unavailable": 95
+  },
+  "examples": [
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:dff4a0522d010a6d977c548c36edee7049e6e5f1e0b6c9c2179bd5c8af81acec",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "v1/py-csv-export-feature",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:2cbc28d1f5323058879ab714853664b884423555a89fcbd5574834ad4554323b",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "v1/py-csv-export-feature",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_csv.py::test_carriage_return_in_field_is_quoted, test_csv.py::test_columns_follow_first_row_order, test_csv.py::test_double_quote_is_doubled_and_quoted, test_csv.py::test_empty_rows_is_empty_string, test_csv.py::test_field_with_comma_is_quoted, test_csv.py::test_header_and_simple_rows, test_csv.py::test_integer_value_is_stringified, test_csv.py::test_newline_in_field_is_quoted, test_csv.py::test_none_is_empty_field\n      subject=sha256:e1c7ecd41748a0abce294bfcef40d34abd65617f3980722dc316e8ab31960a27",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_header_and_simple_rows",
+        "test_empty_rows_is_empty_string"
+      ],
+      "run_error": "ing' in any of [<Module test_csv.py>])\n\nERROR: not found: /tmp/ranex-subject-e1wqhd_q/tree/test_csv.py::test_header_and_simple_rows\n(no name '/tmp/ranex-subject-e1wqhd_q/tree/test_csv.py::test_header_and_simple_rows' in any of [<Module test_csv.py>])",
+      "run_exit": 4,
+      "task": "v1/py-csv-export-feature",
+      "variant": "delete-tests"
+    }
+  ],
+  "git_head": "3edfccb00ced9a68c7828a41e7cfee28f2128ccb",
+  "pass": 4,
+  "pass_digest": "sha256:f71f13f67a069d45b9a9a9f6ba63f99689afbb7e033e19fcd4baeb719fe4e1ab",
+  "prev_pass_digest": "sha256:8770faba2a13d8703fe458bbbaf5aab53336e026e030367d5bf6d23e95a4473f",
+  "requested": {
+    "limit": 0,
+    "suites": null,
+    "task": "v1/py-csv-export-feature",
+    "variants": [
+      "gold",
+      "empty",
+      "delete-tests"
+    ]
+  },
+  "schema": "ranex-dogfood-training-pass-v1",
+  "summary": {
+    "agree": 3,
+    "diverge": 0,
+    "examples": 3,
+    "skipped": 0
+  }
+}

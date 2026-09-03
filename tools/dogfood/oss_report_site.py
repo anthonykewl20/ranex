@@ -161,15 +161,20 @@ def _verdict_matrix(runs: list[dict[str, Any]]) -> str:
 
 
 def _attack_card(entry: dict[str, Any]) -> str:
-    if entry["attack"] == "stale-proof":
+    if entry["attack"] in ("stale-proof", "stale-proof-external"):
         before, after = entry["before"], entry["after"]
-        return ('<div class="card"><h3>The stale-proof trap ({})</h3>'
+        where = (" on the external repository <code>{}</code> @ <code>{}</code>"
+                 .format(_esc(entry["external"]["url"].split("/")[-1]),
+                         _esc(entry["external"]["commit"][:8]))
+                 if entry.get("external") else "")
+        return ('<div class="card"><h3>The stale-proof trap ({}){}</h3>'
                 '<div class="x2"><div><div class="k">proof right after the green '
                 'run:</div><div class="term"><pre class="ok">{}</pre></div></div>'
                 '<div><div class="k">same proof after ONE comment-line edit '
                 '(no re-run):</div><div class="term"><pre class="err">{}</pre>'
                 "</div></div></div></div>").format(
-                    _esc(entry["date"]), _esc(before["gate_output"]),
+                    _esc(entry["date"]), where,
+                    _esc(before["gate_output"]),
                     _esc(after["gate_output"]))
     removed = ", ".join(entry.get("removed_tests", []))
     return ('<div class="card"><h3>The deleted-tests attack ({})</h3>'
@@ -187,6 +192,36 @@ def _receipts(entries: list[dict[str, Any]]) -> str:
     for e in entries:
         if e["kind"] == "run":
             gov, ci = e["ranex_gate"], e["bare_ci"]
+            if e.get("external"):
+                ext = e["external"]
+                out.append(
+                    '<details class="ev"><summary>{} · external run {} · kernel '
+                    "v{} · gate {} · NO AGENT (kernel-only)</summary>"
+                    '<div class="prov">released kernel {} · {} @ {} · vendored '
+                    "src tree {} == {} tag tree · {} bound ids</div>"
+                    '<div class="k">the external repository\'s own suite, bare:</div>'
+                    '<div class="term"><div class="cmd">$ {}</div><pre class="ok">'
+                    "{}</pre></div>"
+                    '<div class="k">what ranex executed (released kernel only):</div>'
+                    '<div class="term"><div class="cmd">$ {}</div><pre class="ok">'
+                    "evidence recorded, exit {}</pre></div>"
+                    '<div class="k">the gate\'s verdict, verbatim:</div>'
+                    '<div class="term"><pre class="ok">{}</pre></div>'
+                    '<div class="k">the journal chain check:</div>'
+                    '<div class="term"><pre class="ok">{}</pre></div></details>'
+                    .format(_esc(e["date"]), _esc(e["run_id"]),
+                            _esc(e.get("kernel_version", "?")),
+                            gov["gate_verdict"],
+                            _esc(e["kernel_head"][:12]),
+                            _esc(ext["url"]), _esc(ext["commit"][:12]),
+                            _esc(ext.get("vendored_src_tree", "?")[:12]),
+                            _esc(ext.get("tag_src_tree", "?")[:12]),
+                            ext.get("selected_ids", "?"),
+                            _esc(ci["command"]), _esc(ci["output_tail"]),
+                            _esc(gov["run_command"]), gov["run_exit"],
+                            _esc(gov["gate_output"]),
+                            _esc(gov["journal_output"])))
+                continue
             out.append(
                 '<details class="ev"><summary>{} · run {} · gate {} · {}'
                 " tokens · ${}</summary>"
@@ -226,10 +261,60 @@ def _receipts(entries: list[dict[str, Any]]) -> str:
     return "".join(out)
 
 
+def _external_section(external_runs: list[dict[str, Any]],
+                      entries: list[dict[str, Any]]) -> str:
+    """The released-kernel external-repository proofs: no agent, no model —
+    the v0.1.0 tag itself governing a clean third-party repository."""
+    if not external_runs:
+        return ""
+    # Keyed by kernel AND task so a second external repository on the same
+    # kernel never borrows another repository's refusal transcript.
+    stale_by_run = {(e.get("kernel_head"), e.get("task")): e for e in entries
+                    if e.get("attack") == "stale-proof-external"}
+    cards = []
+    for e in external_runs:
+        gov, ext = e["ranex_gate"], e["external"]
+        stale = stale_by_run.get((e["kernel_head"], e["task"]))
+        cards.append(
+            '<div class="card"><h3>{} @ {} — kernel v{}, no agent</h3>'
+            '<div class="x2"><div><div class="k">install + identity:</div>'
+            '<div class="term"><pre class="ok">git checkout {tag} + uv sync --frozen\n'
+            'kernel commit {commit}\nvendored src tree {v} == tag tree {t}</pre></div>'
+            '<div class="k">the governed cycle:</div><div class="term">'
+            '<pre class="ok">run exit {rexit} → evidence signed\ngate: PASS\n'
+            'journal: chain=verified</pre></div></div>'
+            '<div><div class="k">then ONE comment-line edit, no re-run:</div>'
+            '<div class="term"><pre class="err">{stale}</pre></div>'
+            '<div class="k">re-run the work honestly:</div>'
+            '<div class="term"><pre class="ok">gate: PASS again</pre></div></div>'
+            "</div></div>"
+            .format(
+                _esc(e["task"]), _esc(ext["commit"][:8]),
+                _esc(e.get("kernel_version", "?")),
+                tag=_esc(ext.get("kernel_tag", "?")),
+                commit=_esc(e["kernel_head"]),
+                v=_esc(ext.get("vendored_src_tree", "?")[:12]),
+                t=_esc(ext.get("tag_src_tree", "?")[:12]),
+                rexit=gov["run_exit"],
+                stale=_esc(stale["after"]["gate_output"]) if stale
+                else "stale-evidence attack receipt pending"))
+    return ('<h2>The released kernel on a clean external repository</h2>'
+            '<p class="note">Not the working tree, not an agent: the published '
+            'tag, installed the documented way, brought to a real third-party '
+            'repository and judged there. Green evidence survives exactly '
+            "until the subject changes — then it is refused by name until the "
+            "work is redone. Raw receipts below.</p>" + "".join(cards))
+
+
 def generate_page(output_dir: Path) -> Path:
     entries = archive.corpus()
     summary = archive.summary()
     runs = [e for e in entries if e["kind"] == "run"]
+    # Agent runs have a model, tokens and a self-report; external-repo proofs
+    # are kernel-only (no agent) and render in their own section, never in
+    # the agent matrix or the tokens chart.
+    agent_runs = [e for e in runs if not e.get("external")]
+    external_runs = [e for e in runs if e.get("external")]
     attacks = [e for e in entries if e["kind"] == "attack"]
     model = next((e.get("model") for e in entries if e.get("model")), "?")
 
@@ -328,8 +413,10 @@ only grows.</p>
 <em>backs it up</em>.</p>
 HERO_SVG_X
 
-<h2>What the gate caught — the two classic attacks</h2>
-<p class="note">Both are fault-injected on a real solved run and labeled: they demonstrate the mechanism on real code, cheaply, every release.</p>
+<h2>What the gate caught — the classic attacks</h2>
+<p class="note">Fault-injected on real code and labeled as such: the two classic
+gaming attacks on a real solved run, and the external-repository variant — a
+changed subject refused with yesterday's green evidence still on disk.</p>
 ATTACKS_HTML_X
 
 <h2>Every run in the pile — the verdict matrix</h2>
@@ -338,6 +425,7 @@ judge. Source: VulcanBench run artifacts + captured ranex transcripts
 (receipts below).</p>
 MATRIX
 TOKENS
+EXTERNAL_X
 
 <h2>The pile\u2019s bottom line, so far</h2>
 <div class="stats">
@@ -384,8 +472,9 @@ tools/dogfood/oss_bench/proofs/ (append-only)</footer>
             .replace("MODEL_S", _esc(model))
             .replace("HERO_SVG_X", _hero_svg())
             .replace("ATTACKS_HTML_X", attacks_html)
-            .replace("MATRIX", _verdict_matrix(runs))
-            .replace("TOKENS", _tokens_svg(runs))
+            .replace("MATRIX", _verdict_matrix(agent_runs))
+            .replace("TOKENS", _tokens_svg(agent_runs))
+            .replace("EXTERNAL_X", _external_section(external_runs, entries))
             .replace("ENTRIES_N", str(summary["entries"]))
             .replace("RUNS_N", str(summary["runs"]))
             .replace("ATTACKS_N", str(summary["attacks"]))

@@ -1,0 +1,88 @@
+{
+  "corpus": {
+    "cmd-unparseable": 3,
+    "diff-graded": 32,
+    "exercisable": 157,
+    "gold-not-green": 15,
+    "preflight-ok": 104,
+    "preflight_failure_reasons": {
+      "cannot parse junitxml: no element found: line 1, column 0": 5,
+      "junitxml testcase must carry classname and name": 23,
+      "tests collect only with the task env ": 10
+    },
+    "toolchain-unavailable": 95
+  },
+  "examples": [
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:d1410a791cda914b686e11935c82605c90b5060d79962d95b683db2b59d3804e",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "v1/py-semver-compare",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:5c48512fc6213792a5294c93396a900bac08fe41f8a98d1d9bfc2a91d899bafe",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "v1/py-semver-compare",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_compare.py::test_build_metadata_ignored[1.0.0+build.1-1.0.0+build.2], test_compare.py::test_build_metadata_ignored[1.0.0-1.0.0+meta], test_compare.py::test_build_metadata_ignored[1.0.0-alpha+001-1.0.0-alpha+999], test_compare.py::test_core_precedence[1.0.0-1.0.0-0], test_compare.py::test_core_precedence[1.0.1-1.0.0-1], test_compare.py::test_core_precedence[1.2.0-1.10.0--1], test_compare.py::test_core_precedence[2.0.0-1.9.9-1], test_compare.py::test_invalid_raises[01.0.0], test_compare.py::test_invalid_raises[1.0.0 ], test_compare.py::test_invalid_raises[1.0.0-01], test_compare.py::test_invalid_raises[1.0.0-], test_compare.py::test_invalid_raises[1.0.0-a..b], test_compare.py::test_invalid_raises[1.0], test_compare.py::test_invalid_raises[1.2.3.4], test_compare.py::test_invalid_raises[], test_compare.py::test_invalid_raises[v1.0.0], test_compare.py::test_prerelease_identifier_rules[1.0.0-alpha-1.0.0-alpha.1--1], test_compare.py::test_prerelease_identifier_rules[1.0.0-alpha.1-1.0.0-alpha.beta--1], test_compare.py::test_prerelease_identifier_rules[1.0.0-beta.2-1.0.0-beta.11--1], test_compare.py::test_pre",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_core_precedence",
+        "test_prerelease_is_lower_than_release"
+      ],
+      "run_error": ".py>])\n\nERROR: not found: /tmp/ranex-subject-zq1o2g2b/tree/test_compare.py::test_prerelease_is_lower_than_release\n(no name '/tmp/ranex-subject-zq1o2g2b/tree/test_compare.py::test_prerelease_is_lower_than_release' in any of [<Module test_compare.py>])",
+      "run_exit": 4,
+      "task": "v1/py-semver-compare",
+      "variant": "delete-tests"
+    }
+  ],
+  "git_head": "3edfccb00ced9a68c7828a41e7cfee28f2128ccb",
+  "pass": 3,
+  "pass_digest": "sha256:8770faba2a13d8703fe458bbbaf5aab53336e026e030367d5bf6d23e95a4473f",
+  "prev_pass_digest": "sha256:14f9bd05c6930cacb5f0ae3f4ab590b4523e7060eba6f106b8549e94c6742397",
+  "requested": {
+    "limit": 0,
+    "suites": null,
+    "task": "v1/py-semver-compare",
+    "variants": [
+      "gold",
+      "empty",
+      "delete-tests"
+    ]
+  },
+  "schema": "ranex-dogfood-training-pass-v1",
+  "summary": {
+    "agree": 3,
+    "diverge": 0,
+    "examples": 3,
+    "skipped": 0
+  }
+}

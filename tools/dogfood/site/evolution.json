@@ -189,6 +189,33 @@
       "scenarios": 43,
       "sha": "22edb86aa",
       "subject": "tools: real evolution graphs embedded in the proof page \u2014 gi"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "d2209374f",
+      "subject": "tools: pile at 14 \u2014 three more honest veryhard failures unde"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "3edfccb00",
+      "subject": "tools: dogfood trainer \u2014 corpus-driven labelled training; cl"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "07398d74d",
+      "subject": "tools: review-round fixes \u2014 pigeonhole invariant repaired (q"
     }
   ]
 }

@@ -31,12 +31,20 @@ def _write(entry: dict[str, Any]) -> Path:
     ARCHIVE.mkdir(parents=True, exist_ok=True)
     number = len(list(ARCHIVE.glob("proof-*.json"))) + 1
     name = "proof-{}-{}-{}.json".format(
-        _entry_id(number - 1), entry["date"], entry["task"].replace("/", "-"))
+        _entry_id(number - 1), entry["date"], entry["task"].replace("/", "-").replace(":", "-"))
     path = ARCHIVE / name
     if path.exists():
         raise AssertionError(f"proof entry collision (archive is append-only): {path}")
     path.write_text(json.dumps(entry, indent=2, sort_keys=True) + "\n")
     return path
+
+
+def append_external(entry: dict[str, Any]) -> Path:
+    """Append one entry produced by the external-repository proof driver
+    (tools/dogfood/external_proof.py — released-kernel governance of a clean
+    third-party repo). Same append-only collision guard as every entry; the
+    caller owns idempotence by (run_id / attack, kernel commit)."""
+    return _write(entry)
 
 
 def append_from_divergence(divergence_path: Path, date: str,
