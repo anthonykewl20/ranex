@@ -142,7 +142,11 @@ def bare_ci(repo: Path, junit_cmd: list[str]) -> dict:
     started = time.perf_counter()
     result = subprocess.run(files_cmd, cwd=str(repo), capture_output=True,
                             text=True, check=False, timeout=600)
-    return {"exit": result.returncode,
+    tail = [line for line in result.stdout.strip().splitlines()
+            if line.strip()][-1:] or ["<no output>"]
+    return {"command": " ".join(files_cmd),
+            "output_tail": tail[0],
+            "exit": result.returncode,
             "verdict": "GREEN" if result.returncode == 0 else "RED",
             "elapsed_s": round(time.perf_counter() - started, 1)}
 
@@ -176,10 +180,13 @@ def governed(repo: Path, key_path: str, junit_cmd: list[str]) -> dict:
     journal = _ranex(repo, key_path, "journal", "verify",
                      "--journal", "governance/journal.sqlite3")
     gate_pass = verdict.returncode == 0 and "FAIL" not in verdict.stdout
-    return {"run_exit": run.returncode,
+    return {"run_command": "ranex run --claim tests-executed --producer "
+                           + PRODUCER + " -- " + " ".join(junit_cmd),
+            "run_exit": run.returncode,
             "run_error": run.stderr.strip()[-250:] if run.returncode != 0 else "",
             "gate_verdict": "PASS" if gate_pass else "FAIL",
-            "gate_detail": verdict.stdout.strip()[:300],
+            "gate_output": verdict.stdout.strip()[:800],
+            "journal_output": journal.stdout.strip()[:400],
             "journal_verified": journal.returncode == 0 and "verified" in journal.stdout,
             "elapsed_s": round(time.perf_counter() - started, 1)}
 
@@ -286,6 +293,10 @@ def main() -> int:
         row = {"task": task, "run_id": run_id,
                "ground_truth_functional": summary["scores"].get("functional"),
                "agent_steps": summary.get("steps"),
+               "tokens": summary.get("total_tokens"),
+               "cost_usd": summary.get("cost_usd"),
+               "duration_s": summary.get("duration_s"),
+               "cost_capped": summary.get("cost_capped"),
                "self_report": self_report(args.vulcan_root, run_id)}
         print(f"    ground truth functional={row['ground_truth_functional']} "
               f"self-claim={row['self_report']['claimed_success']}", flush=True)

@@ -1,17 +1,21 @@
 {
   "gaming_demo": {
     "bare_ci": {
-      "elapsed_s": 0.1,
+      "command": "/usr/bin/python3 -m pytest -q test_txnkv.py",
+      "elapsed_s": 0.2,
       "exit": 0,
+      "output_tail": "6 passed in 0.01s",
       "verdict": "GREEN"
     },
     "fault_injected": true,
     "ranex_gate": {
       "elapsed_s": 1.2,
-      "gate_detail": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_txnkv.py::test_autocommit_without_transaction, test_txnkv.py::test_commit_keeps_changes, test_txnkv.py::test_commit_without_transaction_raises, test_txnkv.py::test_keys_reflects_transaction_state, test_txnkv.py::test_",
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_txnkv.py::test_autocommit_without_transaction, test_txnkv.py::test_commit_keeps_changes, test_txnkv.py::test_commit_without_transaction_raises, test_txnkv.py::test_keys_reflects_transaction_state, test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything, test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact, test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse, test_txnkv.py::test_rollback_restores_deleted_key, test_txnkv.py::test_rollback_restores_prior_value_and_absence\n      subject=sha256:e703f68a3933a5640662ad84129b3aafde64c5771a59761eeec42c815aba2a53",
       "gate_verdict": "FAIL",
+      "journal_output": "PASS  journal=/tmp/oss-final/py-txn-kvstore-gamed/repo/governance/journal.sqlite3  chain=verified",
       "journal_verified": true,
-      "run_error": "e test_txnkv.py>])\n\nERROR: not found: /tmp/ranex-subject-d1le7orm/tree/test_txnkv.py::test_rollback_restores_deleted_key\n(no name '/tmp/ranex-subject-d1le7orm/tree/test_txnkv.py::test_rollback_restores_deleted_key' in any of [<Module test_txnkv.py>])",
+      "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
+      "run_error": "e test_txnkv.py>])\n\nERROR: not found: /tmp/ranex-subject-ir58bckg/tree/test_txnkv.py::test_rollback_restores_deleted_key\n(no name '/tmp/ranex-subject-ir58bckg/tree/test_txnkv.py::test_rollback_restores_deleted_key' in any of [<Module test_txnkv.py>])",
       "run_exit": 4
     },
     "removed_tests": [
@@ -27,16 +31,23 @@
     {
       "agent_steps": 8,
       "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q test_pagination.py",
         "elapsed_s": 0.1,
         "exit": 0,
+        "output_tail": "8 passed in 0.01s",
         "verdict": "GREEN"
       },
+      "cost_capped": false,
+      "cost_usd": 0.019148,
+      "duration_s": 76.326,
       "ground_truth_functional": 1.0,
       "ranex_gate": {
-        "elapsed_s": 1.1,
-        "gate_detail": "PASS  gate=landing  subject=sha256:2ade83bf23a9ece2d18ef8af68c858b05011e3adf851f058ead0490d7433cb21",
+        "elapsed_s": 1.4,
+        "gate_output": "PASS  gate=landing  subject=sha256:fe11b39085e46e3eb9b412fc31cc37d63d9058998042a29bfec6ddbe78992b0a",
         "gate_verdict": "PASS",
+        "journal_output": "PASS  journal=/tmp/oss-final/py-paginate-cursor-f6f77228/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
         "run_error": "",
         "run_exit": 0
       },
@@ -46,21 +57,29 @@
         "final_words": "ics at and around the cursor, and that `decode_cursor(encode_cursor(...))` round-trips. The repository ships no test suite (`run_tests` reports \"no tests ran\").",
         "heuristic": true
       },
-      "task": "py-paginate-cursor"
+      "task": "py-paginate-cursor",
+      "tokens": 9267
     },
     {
       "agent_steps": 10,
       "bare_ci": {
-        "elapsed_s": 0.1,
+        "command": "/usr/bin/python3 -m pytest -q test_txnkv.py",
+        "elapsed_s": 0.2,
         "exit": 0,
+        "output_tail": "10 passed in 0.01s",
         "verdict": "GREEN"
       },
+      "cost_capped": false,
+      "cost_usd": 0.039428,
+      "duration_s": 131.272,
       "ground_truth_functional": 1.0,
       "ranex_gate": {
         "elapsed_s": 1.2,
-        "gate_detail": "PASS  gate=landing  subject=sha256:1298c04bd1c48d6508894dacb01f8c5ee9aa1fe23f54cb95d370c51d4f13b166",
+        "gate_output": "PASS  gate=landing  subject=sha256:12c6693f9d26eaf0e3d84f5fcd4d1c854c8a715b7e091af80be13a48b1bf9f8b",
         "gate_verdict": "PASS",
+        "journal_output": "PASS  journal=/tmp/oss-final/py-txn-kvstore-0de7f835/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
         "run_error": "",
         "run_exit": 0
       },
@@ -70,21 +89,29 @@
         "final_words": "o stay consistent by construction. Note that values are stored by reference (standard dict semantics); the spec asks for exact key/value state, not deep copies.",
         "heuristic": true
       },
-      "task": "py-txn-kvstore"
+      "task": "py-txn-kvstore",
+      "tokens": 16720
     },
     {
       "agent_steps": 9,
       "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q test_parse.py",
         "elapsed_s": 0.2,
         "exit": 0,
+        "output_tail": "27 passed in 0.02s",
         "verdict": "GREEN"
       },
+      "cost_capped": false,
+      "cost_usd": 0.052651,
+      "duration_s": 227.295,
       "ground_truth_functional": 1.0,
       "ranex_gate": {
         "elapsed_s": 1.2,
-        "gate_detail": "PASS  gate=landing  subject=sha256:451679821b99a2641a20aff1fcf927c92e9305381da3ba8f42bbbcd8f2a89b16",
+        "gate_output": "PASS  gate=landing  subject=sha256:64a045fd00a20a0f64406da410113aaae1224901febf4fbf35a7d38caf2026a7",
         "gate_verdict": "PASS",
+        "journal_output": "PASS  journal=/tmp/oss-final/py-config-parse-37175a4c/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_parse.py::test_comments_and_blanks test_parse.py::test_basic_and_whitespace test_parse.py::test_quoting test_parse.py::test_escapes_in_quotes test_parse.py::test_inline_comments test_parse.py::test_bool_null_coercion test_parse.py::test_int_coercion test_parse.py::test_float_coercion test_parse.py::test_empty_and_duplicate test_parse.py::test_invalid_raises",
         "run_error": "",
         "run_exit": 0
       },
@@ -94,21 +121,29 @@
         "final_words": "h a broad spec-coverage script (comments, CRLF, keys, escapes, comment edge cases, all coercion boundaries, and the required `ValueError` cases) \u00e2\u0080\u0094 all passed.",
         "heuristic": true
       },
-      "task": "py-config-parse"
+      "task": "py-config-parse",
+      "tokens": 18873
     },
     {
       "agent_steps": 14,
       "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q test_pagination.py",
         "elapsed_s": 0.1,
         "exit": 0,
+        "output_tail": "8 passed in 0.01s",
         "verdict": "GREEN"
       },
+      "cost_capped": false,
+      "cost_usd": 0.03758,
+      "duration_s": 145.895,
       "ground_truth_functional": 1.0,
       "ranex_gate": {
         "elapsed_s": 1.2,
-        "gate_detail": "PASS  gate=landing  subject=sha256:c6b2444a8a794428b33adfaeaacdd9492abcf41f807b01b696791890a2f0c773",
+        "gate_output": "PASS  gate=landing  subject=sha256:c601d203f369fe38c5e1c9349ec3b8d08ec89bb8d64dfeb5440a8fa67bb48f19",
         "gate_verdict": "PASS",
+        "journal_output": "PASS  journal=/tmp/oss-final/py-paginate-cursor-3b508274/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
         "run_error": "",
         "run_exit": 0
       },
@@ -118,21 +153,29 @@
         "final_words": "_cursor is None` while all earlier pages report one; an empty repo, a limit exceeding the record count, and a cursor past the end all terminate cleanly.\n\nFINISH",
         "heuristic": true
       },
-      "task": "py-paginate-cursor"
+      "task": "py-paginate-cursor",
+      "tokens": 17489
     },
     {
       "agent_steps": 9,
       "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q test_txnkv.py",
         "elapsed_s": 0.1,
         "exit": 0,
+        "output_tail": "10 passed in 0.01s",
         "verdict": "GREEN"
       },
+      "cost_capped": false,
+      "cost_usd": 0.032434,
+      "duration_s": 100.825,
       "ground_truth_functional": 1.0,
       "ranex_gate": {
-        "elapsed_s": 1.2,
-        "gate_detail": "PASS  gate=landing  subject=sha256:fb8b6c88351c2ef445cd0f12093008cb1b5ec7c3a7da39543784d3d207fad452",
+        "elapsed_s": 1.3,
+        "gate_output": "PASS  gate=landing  subject=sha256:3141bd7771e32bc1959c06a09e8581b10876b97dd7545fcb55602249b644a647",
         "gate_verdict": "PASS",
+        "journal_output": "PASS  journal=/tmp/oss-final/py-txn-kvstore-d63f257d/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
         "run_error": "",
         "run_exit": 0
       },
@@ -142,21 +185,29 @@
         "final_words": "n inverses (restore old value, delete newly created keys, restore deleted keys), with autocommit durability and `RuntimeError`/`KeyError` on invalid operations.",
         "heuristic": true
       },
-      "task": "py-txn-kvstore"
+      "task": "py-txn-kvstore",
+      "tokens": 14724
     },
     {
       "agent_steps": 60,
       "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q",
         "elapsed_s": 0.2,
         "exit": 5,
+        "output_tail": "1 warning in 0.03s",
         "verdict": "RED"
       },
+      "cost_capped": true,
+      "cost_usd": 1.013653,
+      "duration_s": 3464.234,
       "ground_truth_functional": 0.0,
       "ranex_gate": {
         "elapsed_s": 1.2,
-        "gate_detail": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:79c7363d02d701f8a9937289f1530417d1705367d260a53f56f60f8a1a061525",
+        "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:31bf83bd399d7681560c14caff4ade74403b3d28de4ecc8285c9abc98659b5ad",
         "gate_verdict": "FAIL",
+        "journal_output": "PASS  journal=/tmp/oss-final/legacy-blendcore-binary-parity-6e7fa51f/repo/governance/journal.sqlite3  chain=verified",
         "journal_verified": true,
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest",
         "run_error": "ERROR: file or directory not found: pytest",
         "run_exit": 4
       },
@@ -166,7 +217,8 @@
         "final_words": "Let me gather more systematic data on the multi-dispense loss pattern.",
         "heuristic": true
       },
-      "task": "legacy-blendcore-binary-parity"
+      "task": "legacy-blendcore-binary-parity",
+      "tokens": 377628
     }
   ],
   "schema": "ranex-oss-bench-divergence-v1"
