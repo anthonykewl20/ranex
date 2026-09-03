@@ -1,0 +1,81 @@
+{
+  "schema": "ranex-oss-bench-baseline-v1",
+  "model": "zai:glm-5.3",
+  "suite": "v1",
+  "per_run_cap_usd": 1.0,
+  "note": "same model solution judged twice: hidden-test grader (WITHOUT ranex) vs signed-evidence gate (WITH ranex)",
+  "tasks": [
+    {
+      "task": "py-paginate-cursor",
+      "agent_run": {
+        "ok": true,
+        "run_id": "py-paginate-cursor-f6f77228",
+        "elapsed_s": 77.7,
+        "tail": [
+          "run complete py-paginate-cursor-f6f77228",
+          "functional=1.0 quality=0.9294 security=None human_like=None total=0.9654 ",
+          "marginal_cash=$0.019148 api_equivalent=$0.019148",
+          "replay: runs/py-paginate-cursor-f6f77228/replay.html"
+        ],
+        "stderr": "[vulcanbench] WARNING: security score is None (no security scanner available for changed languages)"
+      },
+      "grader_functional": 1.0,
+      "grader_total": 0.9654,
+      "agent_steps": 8,
+      "governed": {
+        "gate_verdict": "PASS",
+        "journal_verified": true,
+        "commands_passing": "6/6",
+        "overhead_s": 7.1
+      }
+    },
+    {
+      "task": "py-txn-kvstore",
+      "agent_run": {
+        "ok": true,
+        "run_id": "py-txn-kvstore-0de7f835",
+        "elapsed_s": 131.8,
+        "tail": [
+          "run complete py-txn-kvstore-0de7f835",
+          "functional=1.0 quality=0.9429 security=None human_like=None total=0.9534 ",
+          "marginal_cash=$0.039428 api_equivalent=$0.039428",
+          "replay: runs/py-txn-kvstore-0de7f835/replay.html"
+        ],
+        "stderr": "[vulcanbench] WARNING: security score is None (no security scanner available for changed languages)"
+      },
+      "grader_functional": 1.0,
+      "grader_total": 0.9534,
+      "agent_steps": 10,
+      "governed": {
+        "gate_verdict": "PASS",
+        "journal_verified": true,
+        "commands_passing": "9/9",
+        "overhead_s": 10.4
+      }
+    },
+    {
+      "task": "py-config-parse",
+      "agent_run": {
+        "ok": true,
+        "run_id": "py-config-parse-37175a4c",
+        "elapsed_s": 227.8,
+        "tail": [
+          "run complete py-config-parse-37175a4c",
+          "functional=1.0 quality=0.7541 security=None human_like=None total=0.912 ",
+          "marginal_cash=$0.052651 api_equivalent=$0.052651",
+          "replay: runs/py-config-parse-37175a4c/replay.html"
+        ],
+        "stderr": "[vulcanbench] WARNING: security score is None (no security scanner available for changed languages)"
+      },
+      "grader_functional": 1.0,
+      "grader_total": 0.912,
+      "agent_steps": 9,
+      "governed": {
+        "gate_verdict": "PASS",
+        "journal_verified": true,
+        "commands_passing": "10/10",
+        "overhead_s": 11.8
+      }
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 {
-  "last_benched_version": null,
+  "last_benched_version": "0.1.0",
   "model": "zai:glm-5.3",
   "budget_cap_usd": 5.0,
   "api_key_env": "ZAI_API_KEY",

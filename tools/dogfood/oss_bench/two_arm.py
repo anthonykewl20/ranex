@@ -80,9 +80,13 @@ def pinned_python_has_pytest() -> tuple[bool, str]:
     return False, "no pinned python found in /usr/bin or /bin"
 
 
-def build_governed_repo(task_dir: Path, out: Path, apply_gold: bool,
+def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
                         claim_commands: list[tuple[str, list[str]]]) -> tuple[Path, str]:
-    """Task repo + hidden tests (+gold) + VENDORED ranex + governance, committed."""
+    """Task repo + hidden tests (+patch) + VENDORED ranex + governance, committed.
+
+    patch: "gold" applies the task's gold_patch.diff; None applies nothing;
+    a Path applies that (agent-produced) diff.
+    """
     repo = out / "repo"
     repo.mkdir(parents=True)
     for item in (task_dir / "repo").iterdir():
@@ -93,22 +97,28 @@ def build_governed_repo(task_dir: Path, out: Path, apply_gold: bool,
     tests_dir = task_dir / "tests"
     if tests_dir.is_dir():
         for item in tests_dir.iterdir():
+            if item.name == "__pycache__":
+                continue  # verifier debris, never part of the task contract
             if (repo / item.name).exists():
                 raise AssertionError(f"hidden test collides with repo file: {item.name}")
-            shutil.copy2(item, repo / item.name)
+            if item.is_dir():
+                shutil.copytree(item, repo / item.name)
+            else:
+                shutil.copy2(item, repo / item.name)
 
-    if apply_gold:
+    if patch is not None:
+        patch_path = task_dir / "gold_patch.diff" if patch == "gold" else Path(patch)
         result = subprocess.run(
-            ["git", "-C", str(repo), "apply", str(task_dir / "gold_patch.diff")],
+            ["git", "-C", str(repo), "apply", str(patch_path)],
             capture_output=True, text=True, check=False,
         )
         if result.returncode != 0:
-            raise AssertionError(f"gold patch failed to apply: {result.stderr}")
+            raise AssertionError(f"patch failed to apply: {result.stderr[:300]}")
 
     assert _git(repo, "init", "-q").returncode == 0
     assert _git(repo, "add", "-A").returncode == 0
-    assert _git(repo, "commit", "-qm",
-                "task base (+gold)" if apply_gold else "task base").returncode == 0
+    label = "gold" if patch == "gold" else ("agent solution" if patch else "no patch")
+    assert _git(repo, "commit", "-qm", f"task base (+{label})").returncode == 0
 
     # Vendor the kernel source: the CLI governs the repo that CONTAINS it.
     shutil.copytree(RANEX_REPO / "src", repo / "src", dirs_exist_ok=True)
@@ -184,11 +194,11 @@ def mode_plumbing(task_dir: Path, out: Path) -> dict[str, Any]:
                                           "definitely-missing-ref-0000000"])]
 
     repo_pos, key_pos = build_governed_repo(task_dir, out / "positive",
-                                            apply_gold=False,
+                                            patch=None,
                                             claim_commands=positive_claims)
     pos = governed_cycle(repo_pos, key_pos, positive_claims)
     repo_neg, key_neg = build_governed_repo(task_dir, out / "negative",
-                                            apply_gold=False,
+                                            patch=None,
                                             claim_commands=negative_claims)
     neg = governed_cycle(repo_neg, key_neg, negative_claims)
 
@@ -269,9 +279,9 @@ def mode_tasks(task_dir: Path, out: Path) -> int:
         argv[0] = "/usr/bin/python3" if argv[0] == "python" else argv[0]
         claim_commands.append((entry["name"], argv))
     arms = []
-    for arm, apply_gold in (("gold", True), ("empty", False)):
+    for arm, patch in (("gold", "gold"), ("empty", None)):
         started = time.perf_counter()
-        repo, key_path = build_governed_repo(task_dir, out / arm, apply_gold,
+        repo, key_path = build_governed_repo(task_dir, out / arm, patch,
                                              claim_commands)
         cycle = governed_cycle(repo, key_path, claim_commands)
         arms.append({"arm": arm, "gate_verdict": cycle["gate_verdict"],
