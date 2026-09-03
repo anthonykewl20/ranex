@@ -216,6 +216,24 @@
       "scenarios": 43,
       "sha": "07398d74d",
       "subject": "tools: review-round fixes \u2014 pigeonhole invariant repaired (q"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "747510fdb",
+      "subject": "tools: trainer hardening from adversarial review \u2014 label sou"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "41d447f41",
+      "subject": "tools: external-proof unit landed (parallel session, verifie"
     }
   ]
 }
