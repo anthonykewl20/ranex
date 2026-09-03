@@ -97,6 +97,32 @@ record SKIPPED with the reason — never fabricate or reuse stale results as
 new. The ranex.dev section for these results renders only when real data
 exists; an empty placeholder section is a bug.
 
+## Nightly real-world proof accumulation (the proof pile)
+
+The public proof page renders from the append-only archive
+`tools/dogfood/oss_bench/proofs/` — one dated JSON per proof, never edited,
+never deleted. Every unattended run grows it:
+
+- Run the nightly COMPARISON BATCH: up to `nightly_batch` (default 3) fresh
+  real agent runs per night — one from each pool in `state.json`'s
+  `task_rotation` (control / medium / veryhard), all at `--effort minimal`,
+  together bounded by `nightly_proof_budget_usd` (default $1.50
+  metered-equivalent). Multiple runs per night is the point: the page's
+  graphs (verdict matrix, tokens, growth line) fill with real points every
+  cycle, and iteration-over-iteration comparison becomes visible. Process
+  the whole batch through one `run_divergence.py` invocation and append
+  with `proofs.py append <divergence.json> <date> <git head>`.
+- After a RELEASE, re-run the two fault demonstrations (deleted-tests,
+  stale-proof) against the new kernel and append them — a new kernel
+  re-catching every attack is a new proof, and the archive dedupes per
+  (attack, kernel_head), never per night.
+- Regenerate the page (`oss_report_site.py`), commit proofs + page +
+  ledger as `tools: proof pile — <date>`, push fast-forward.
+- Skip rules: no key, no budget, harness missing, or plan-window errors
+  (1302/1308) → record SKIPPED with the reason in the run summary; never
+  pad the pile with fabricated or rerun-numbered entries. A thin night is
+  honest; a fake proof is the one unforgivable output here.
+
 ## Protected-branch fallback
 
 If the working tree was dirty at loop start (someone left work uncommitted),

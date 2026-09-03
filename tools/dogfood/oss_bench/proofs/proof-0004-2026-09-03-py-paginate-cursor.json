@@ -1,0 +1,38 @@
+{
+  "agent_steps": 14,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q test_pagination.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "8 passed in 0.01s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.03758,
+  "date": "2026-09-03",
+  "duration_s": 145.895,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "b40fe84dd",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "PASS  gate=landing  subject=sha256:71c231e12fee6f89dc04068ca61bb07d78fe6130d02c6f774f0a745f1b2b8d92",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/tmp/oss-page/py-paginate-cursor-3b508274/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-paginate-cursor-3b508274",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "_cursor is None` while all earlier pages report one; an empty repo, a limit exceeding the record count, and a cursor past the end all terminate cleanly.\n\nFINISH",
+    "heuristic": true
+  },
+  "task": "py-paginate-cursor",
+  "tokens": 17489
+}

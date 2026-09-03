@@ -1,16 +1,18 @@
-"""Story page: the difference between WITH and WITHOUT ranex, told simply.
+"""Corpus-driven proof page: every visual is computed from REAL run data.
 
-Layered design (no dumbing down, no jargon wall):
-  LAYER 1 — the story anyone can follow: the problem, the one-sentence
-  difference, the attack demo as a visual checklist, and the three-part
-  "how it works" — all in everyday words (checklist, signed proof,
-  record book) with inline SVG diagrams, no decorative fluff.
-  LAYER 2 — the receipts: one collapsed section holds the audit ledger
-  (per-run table + raw terminal transcripts + fingerprint + reproduce
-  commands) for anyone who wants proof, not story.
+Data sources (never typed by hand):
+  tools/dogfood/oss_bench/proofs/*.json   the append-only proof archive
+    -> each entry derived from VulcanBench run artifacts
+       (runs/<id>/summary.json) and captured ranex CLI transcripts.
 
-Every number in layer 1 is the same number layer 2 proves. Nothing is
-decorative data. Self-contained HTML; inline SVG/CSS only.
+Graphs rendered from that data:
+  - verdict matrix: every run × four positions, colored by real verdicts
+  - proof-pile growth: cumulative entries per night (step line)
+  - per-run economics: tokens per run (bars), from summary.json fields
+  - the two attack transcripts, verbatim
+
+Provenance is stamped on every chart (source line with run ids / archive
+digest). Story sections stay for humans; receipts hold the raw transcripts.
 """
 
 from __future__ import annotations
@@ -20,6 +22,11 @@ import html
 import json
 from pathlib import Path
 from typing import Any
+
+import sys
+
+sys.path.insert(0, str(Path(__file__).resolve().parent / "oss_bench"))
+import proofs as archive  # noqa: E402
 
 BG = "#0b1220"
 PANEL = "#111a2c"
@@ -32,33 +39,13 @@ BLUE = "#58a6ff"
 AMBER = "#f0b429"
 TERM = "#060a12"
 
-DELETED_TESTS = ("test_construct", "test_autocommit_without_transaction",
-                 "test_rollback_restores_prior_value_and_absence",
-                 "test_rollback_restores_deleted_key")
-KEPT_TESTS = ("test_commit_keeps_changes", "test_nested_commit",
-              "test_rollback_reverse_order", "test_commit_without_txn",
-              "test_keys_reflects_txn")
 
-
-def _esc(value: any) -> str:
+def _esc(value: Any) -> str:
     return html.escape(str(value))
 
 
 def _hero_svg() -> str:
-    """The one-sentence difference, drawn: same claim, two worlds."""
-    def bubble(x, y, w, text, fill, stroke, tcol):
-        lines = text.split("\n")
-        tspans = "".join(
-            '<tspan x="{}" dy="{}">{}</tspan>'.format(x + 14, 22 + i * 17, _esc(line))
-            for i, line in enumerate(lines))
-        h = 26 + 17 * len(lines)
-        return ('<rect x="{}" y="{}" width="{}" height="{}" rx="10" fill="{}" '
-                'stroke="{}"/>' .format(x, y, w, h, fill, stroke)
-                + '<text x="{}" y="{}" fill="{}" font-size="12.5">{}</text>'
-                .format(x, y, tcol and 0 or 0, tcol, "")  # placeholder
-                + '<text fill="{}" font-size="12.5">{}</text>'.format(tcol, tspans))
-    # simpler explicit layout
-    left = """
+    left = f"""
     <text x="20" y="34" fill="{MUTED}" font-size="13" font-weight="700">WITHOUT RANEX</text>
     <rect x="20" y="52" width="300" height="62" rx="12" fill="{PANEL}" stroke="{HAIR}"/>
     <text x="40" y="78" fill="{INK}" font-size="13.5">🤖 “Done! All tests pass.”</text>
@@ -68,8 +55,8 @@ def _hero_svg() -> str:
     <text x="40" y="192" fill="{INK}" font-size="13.5">😃 “Great — merging it.”</text>
     <text x="40" y="214" fill="{MUTED}" font-size="12">if the agent was wrong or gamed</text>
     <text x="40" y="230" fill="{MUTED}" font-size="12">the tests, you find out in production.</text>
-    """.replace("{MUTED}", MUTED).replace("{INK}", INK).replace("{PANEL}", PANEL).replace("{HAIR}", HAIR)
-    right = """
+    """
+    right = f"""
     <text x="460" y="34" fill="{GOOD}" font-size="13" font-weight="700">WITH RANEX</text>
     <rect x="460" y="52" width="300" height="62" rx="12" fill="{PANEL}" stroke="{HAIR}"/>
     <text x="480" y="78" fill="{INK}" font-size="13.5">🤖 “Done! All tests pass.”</text>
@@ -80,246 +67,201 @@ def _hero_svg() -> str:
     <text x="480" y="210" fill="{INK}" font-size="13.5">checklist with signed proof —</text>
     <text x="480" y="228" fill="{GOOD}" font-size="12.5">verified ✓ or blocked ✗, in writing.</text>
     """
-    right = right.replace("{GOOD}", GOOD).replace("{MUTED}", MUTED).replace("{INK}", INK) \
-                 .replace("{PANEL}", PANEL).replace("{HAIR}", HAIR)
-    return ('<svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg" '
+    return ('<svg class="hero-svg" viewBox="0 0 780 260" '
+            'xmlns="http://www.w3.org/2000/svg" '
             'font-family="ui-sans-serif,system-ui,sans-serif" role="img" '
             'aria-label="same claim, two worlds">'
             '<defs><marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" '
-            'orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="' + MUTED + '"/></marker></defs>'
-            + left
-            + '<line x1="410" y1="30" x2="410" y2="230" stroke="' + HAIR + '" stroke-dasharray="4 5"/>'
-            + right + "</svg>")
+            f'orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="{MUTED}"/></marker></defs>'
+            + left + f'<line x1="410" y1="30" x2="410" y2="230" stroke="{HAIR}" '
+            'stroke-dasharray="4 5"/>' + right + "</svg>")
 
 
-def _checklist_svg() -> str:
-    """The attack story: one checklist, two readers."""
-    def slot(y, name, state):
-        if state == "gone":
-            return (f'<rect x="40" y="{y}" width="440" height="34" rx="6" fill="none" '
-                    f'stroke="{HAIR}" stroke-dasharray="5 5"/>'
-                    f'<text x="58" y="{y + 22}" fill="{MUTED}" font-size="12.5" '
-                    f'text-decoration="line-through">{_esc(name)}</text>')
-        icon, col, label = {
-            "ok": ("✓", GOOD, ""), "missing": ("✗", BAD, "  ← MISSING"),
-        }[state]
-        return (f'<text x="58" y="{y + 23}" fill="{col}" font-size="15" '
-                f'font-weight="700">{icon}</text>'
-                f'<text x="84" y="{y + 22}" fill="{BAD if state == "missing" else INK}" '
-                f'font-size="12.5">{_esc(name)}</text>'
-                f'<text x="330" y="{y + 22}" fill="{col}" font-size="12" '
-                f'font-weight="700">{label}</text>')
-    states = {"gone": ("test_construct", "gone"),
-              "missing": ("test_autocommit_without_transaction", "missing"),
-              "missing2": ("test_rollback_restores_prior_value_and_absence", "missing"),
-              "missing3": ("test_rollback_restores_deleted_key", "missing"),
-              "ok1": ("test_commit_keeps_changes", "ok"),
-              "ok2": ("test_keys_reflects_txn", "ok")}
-    rows_svg = ""
-    y = 96
-    for key in ("gone", "missing", "missing2", "missing3", "ok1", "ok2"):
-        name, state = states[key]
-        rows_svg += slot(y, name, state) + "\n"
-        y += 44
-    return ('<svg viewBox="0 0 780 420" xmlns="http://www.w3.org/2000/svg" '
-            'font-family="ui-monospace,monospace" role="img" aria-label="the deleted '
-            'test checklist seen two ways">'
-            f'<text x="20" y="30" fill="{INK}" font-size="15" font-weight="700" '
-            'font-family="ui-sans-serif,system-ui">The same repository, after the agent '
-            '\u201ccleaned up\u201d some tests</text>'
-            f'<text x="20" y="52" fill="{MUTED}" font-size="12.5" '
-            'font-family="ui-sans-serif,system-ui">A genuinely solved task — then 4 of its '
-            '9 tests were deleted. Both worlds look at the result:</text>'
-            f'<text x="40" y="84" fill="{GOOD}" font-size="12.5" font-weight="700">'
-            'YOUR CI (without ranex) sees:</text>'
-            + rows_svg +
-            f'<text x="520" y="84" fill="{BAD}" font-size="12.5" font-weight="700">'
-            'RANEX sees:</text>'
-            f'<rect x="510" y="96" width="250" height="128" rx="8" fill="{BAD}" '
-            'fill-opacity="0.08" stroke="{BAD}" stroke-opacity="0.5"/>'
-            f'<text x="528" y="124" fill="{BAD}" font-size="26" font-weight="800">BLOCKED</text>'
-            f'<text x="528" y="150" fill="{INK}" font-size="12.5">the checklist frozen BEFORE the'
-            '</text>'
-            f'<text x="528" y="168" fill="{INK}" font-size="12.5">agent started names all 4</text>'
-            f'<text x="528" y="186" fill="{INK}" font-size="12.5">missing tests.</text>'
-            f'<text x="528" y="210" fill="{MUTED}" font-size="11.5">CI said: green ✓</text>'
-            f'<text x="40" y="{y + 8}" fill="{MUTED}" font-size="12" '
-            'font-family="ui-sans-serif,system-ui">CI runs whatever tests are still in the '
-            'tree — the ones that vanished can\u2019t fail. Ranex compares against the frozen '
-            'list, so they can\u2019t hide.</text>'
-            "</svg>")
+def _growth_svg(summary: dict[str, Any]) -> str:
+    timeline = summary["timeline"]
+    if len(timeline) < 2:
+        return ('<p class="note">One night so far — the pile grows every '
+                'dogfood cycle and this chart fills in.</p>')
+    width, height, pad = 700, 220, 56
+    max_total = timeline[-1]["total"]
+    plot_w, plot_h = width - pad - 20, height - 60
+    x0 = pad
+
+    def px(i):
+        return x0 + (i / (len(timeline) - 1)) * plot_w
+
+    def py(v):
+        return 30 + plot_h - (v / max_total) * plot_h
+
+    pts = " ".join(f"{px(i):.1f},{py(t['total']):.1f}"
+                   for i, t in enumerate(timeline))
+    labels = "".join(
+        f'<text x="{px(i):.1f}" y="{30 + plot_h + 20}" fill="{MUTED}" '
+        f'font-size="11" text-anchor="middle">{_esc(t["date"][5:])}</text>'
+        for i, t in enumerate(timeline))
+    dots = "".join(
+        f'<circle cx="{px(i):.1f}" cy="{py(t["total"]):.1f}" r="4.5" fill="{BLUE}"/>'
+        for i, t in enumerate(timeline))
+    return (f'<svg class="graph" viewBox="0 0 {width} {height}" '
+            'xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,monospace" '
+            'role="img" aria-label="proof pile growth"><text x="0" y="16" fill="'
+            f'{INK}" font-size="13" font-weight="700">proofs piled up, by night</text>'
+            f'<rect x="{x0}" y="30" width="{plot_w}" height="{plot_h}" fill="none" '
+            f'stroke="{HAIR}"/><polyline points="{pts}" fill="none" stroke="{BLUE}" '
+            f'stroke-width="2.5"/>{dots}{labels}'
+            f'<text x="{x0 + plot_w}" y="{py(max_total) - 8:.1f}" fill="{BLUE}" '
+            f'font-size="12" text-anchor="end" font-weight="700">{max_total}</text>'
+            f'<text x="0" y="{height - 6}" fill="{MUTED}" font-size="10.5">'
+            'source: append-only archive tools/dogfood/oss_bench/proofs/ — one file '
+            'per proof, dated, never edited</text></svg>')
 
 
-def _how_cards() -> str:
-    steps = [
-        ("1", "The checklist is frozen first",
-         "Before the agent touches anything, the owner commits the exact list of "
-         "checks that will count as done. The goalposts are in the record book "
-         "before the game starts — the agent cannot move them."),
-        ("2", "\u201cDone\u201d must arrive signed",
-         "A completion isn\u2019t a sentence, it\u2019s a signed test run: the exact "
-         "commands, bound to the exact version of the code, with results that "
-         "must match the frozen checklist. Faked or stale runs don\u2019t count."),
-        ("3", "The record book is chained",
-         "Every decision is appended to a hash chain — each entry seals the "
-         "previous one. Editing history leaves visible damage, and anyone can "
-         "re-verify the whole chain in milliseconds."),
-    ]
-    cards = []
-    for number, title, body in steps:
-        cards.append(
-            '<div class="how"><div class="how-n">{}</div><div class="how-t">{}</div>'
-            '<div class="how-b">{}</div></div>'.format(
-                number, _esc(title), _esc(body)))
-    return "".join(cards)
-
-
-def _stale_exhibit(report: dict[str, Any]) -> str:
-    stale = report.get("stale_demo")
-    if not stale:
+def _tokens_svg(runs: list[dict[str, Any]]) -> str:
+    if not runs:
         return ""
-    before, after = stale["before"], stale["after"]
-    return """
-<h2>The proof test: \u201ctests pass\u201d is a sentence. This is a machine.</h2>
-<p class="note">The trap every agent falls into eventually: it runs the tests
-(green), pastes the happy output, then makes <strong>one more small fix</strong>
-and says done — without re-running. The old green output still looks perfectly
-valid. Nothing in the bare world can tell it stopped being evidence. The gate
-can: proof is digest-bound to the exact code.</p>
-<div class="x2">
- <div>
-  <div class="k">the proof, right after the green run:</div>
-  <div class="term"><pre class="ok">{b_out}</pre></div>
- </div>
- <div>
-  <div class="k">the same proof, after ONE comment-line edit (no re-run):</div>
-  <div class="term"><pre class="err">{a_out}</pre></div>
- </div>
-</div>
-<p class="note">The agent\u2019s screenshot still says green. The gate says the
-truth: that evidence describes a tree that no longer exists. Re-run the tests
-and it passes again — the point isn’t to block work, it\u2019s to refuse proof
-that stopped being proof.</p>""".format(
-        b_out=_esc(before["gate_output"]),
-        a_out=_esc(after["gate_output"]))
+    width, bar_h, gap = 700, 22, 10
+    height = 40 + len(runs) * (bar_h + gap) + 18
+    max_tokens = max(r.get("tokens") or 0 for r in runs) or 1
+    bars = ""
+    for i, r in enumerate(runs):
+        y = 36 + i * (bar_h + gap)
+        w = max(2.0, (r.get("tokens") or 0) / max_tokens) * 420
+        col = GOOD if r["ground_truth_functional"] == 1.0 else BAD
+        bars += (
+            f'<text x="0" y="{y + 15}" fill="{MUTED}" font-size="11">'
+            f'{_esc(r["task"][:24])}</text>'
+            f'<rect x="240" y="{y}" width="{w:.1f}" height="{bar_h}" rx="4" '
+            f'fill="{col}" fill-opacity="0.85"/>'
+            f'<text x="{244 + w:.1f}" y="{y + 15}" fill="{INK}" font-size="11">'
+            f'{(r.get("tokens") or 0):,} tok</text>')
+    return (f'<svg class="graph" viewBox="0 0 {width} {height}" '
+            'xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace,monospace" '
+            'role="img" aria-label="tokens per run"><text x="0" y="18" fill="'
+            f'{INK}" font-size="13" font-weight="700">real work per run — tokens '
+            'burned by the agent</text>' + bars +
+            f'<text x="0" y="{height - 4}" fill="{MUTED}" font-size="10.5">'
+            'source: VulcanBench runs/&lt;id&gt;/summary.json → total_tokens, per run id '
+            'in the receipts below</text></svg>')
 
 
-def _ledger(report: dict[str, Any], digest: str) -> str:
-    rows = [r for r in report["rows"] if "ranex_gate" in r]
-    head = ("<tr><th>task</th><th>run</th><th>hidden tests</th><th>bare CI</th>"
-            "<th>agent claims</th><th>ranex gate</th><th>tokens</th><th>$</th></tr>")
-    body = ""
-    for r in rows:
+def _verdict_matrix(runs: list[dict[str, Any]]) -> str:
+    def badge(v, good_when=True):
+        good = (str(v) in ("1.0", "GREEN", "PASS", "done")) == good_when
+        cls = "bg" if good else "bb"
+        return f'<span class="bd {cls}">{_esc(v)}</span>'
+
+    rows = ""
+    for r in runs:
         claim = "done" if r["self_report"]["claimed_success"] else "—"
-        def badge(v):
-            good = str(v) in ("PASS", "GREEN", "1.0", "done")
-            cls = "bg" if good else ("bb" if str(v) in ("FAIL", "RED") else "bm")
-            return f'<span class="bd {cls}">{_esc(v)}</span>'
-        body += ('<tr><td>{}</td><td class="dim">{}</td><td>{}</td><td>{}</td>'
-                 "<td>{}</td><td>{}</td><td class=\"dim\">{}</td>"
-                 '<td class="dim">{}</td></tr>').format(
+        rows += ('<tr><td>{}</td><td class="dim">{}</td><td>{}</td><td>{}</td>'
+                 "<td>{}</td><td>{}</td></tr>").format(
                      _esc(r["task"]), _esc(r["run_id"][-8:]),
-                     badge(r["ground_truth_functional"]), badge(r["bare_ci"]["verdict"]),
-                     badge(claim), badge(r["ranex_gate"]["gate_verdict"]),
-                     r.get("tokens", "?"), r.get("cost_usd", "?"))
-    details = ""
-    for r in rows:
-        gov, ci = r["ranex_gate"], r["bare_ci"]
-        details += (
-            '<details class="ev"><summary>evidence · {} · gate {}</summary>'
-            '<div class="prov">run {} · {} steps · {} tokens · ${} · {:.0f}s</div>'
-            '<div class="k">the agent\u2019s last words (parsed, heuristic):</div>'
-            '<pre class="quote">{}</pre>'
-            '<div class="k">what a normal CI ran, and printed:</div>'
-            '<div class="term"><div class="cmd">$ {}</div><pre class="{}">{}</pre></div>'
-            '<div class="k">what ranex executed:</div>'
-            '<div class="term"><div class="cmd">$ {}</div><pre class="ok">evidence recorded, exit {}</pre></div>'
-            '<div class="k">the gate\u2019s verdict, verbatim:</div>'
-            '<div class="term"><pre class="{}">{}</pre></div>'
-            '<div class="k">the journal chain check:</div>'
-            '<div class="term"><pre class="ok">{}</pre></div>'
-            "</details>").format(
-                _esc(r["task"]), gov["gate_verdict"], _esc(r["run_id"]),
-                r.get("agent_steps", "?"), r.get("tokens", "?"),
-                r.get("cost_usd", "?"), r.get("duration_s") or 0,
-                _esc(r["self_report"].get("final_words", "")),
-                _esc(ci["command"]),
-                "ok" if ci["verdict"] == "GREEN" else "err",
-                _esc(ci["output_tail"]),
-                _esc(gov["run_command"]), gov["run_exit"],
-                "ok" if gov["gate_verdict"] == "PASS" else "err",
-                _esc(gov["gate_output"]),
-                _esc(gov["journal_output"]))
-    demo = report.get("gaming_demo") or {}
-    demo_gate = _esc(demo.get("ranex_gate", {}).get("gate_output", ""))
-    return (
-        f'<details class="receipts"><summary>Show me the receipts — every run, '
-        f'raw transcripts, and how to reproduce</summary>'
-        f'<p class="note">Data fingerprint <code>{digest}</code> — the page is '
-        f'rendered from one JSON file whose exact bytes hash to this. Re-run the '
-        f'experiment yourself: <code>uv run --frozen python '
-        f'tools/dogfood/oss_bench/run_divergence.py ...</code></p>'
-        f'<table>{head}{body}</table>'
-        f'<p class="note">The attack\u2019s gate verdict, verbatim:</p>'
-        f'<div class="term"><pre class="err">{demo_gate}</pre></div>'
-        + details + "</details>")
+                     badge(r["ground_truth_functional"]),
+                     badge(r["bare_ci"]["verdict"]),
+                     badge(claim),
+                     badge(r["ranex_gate"]["gate_verdict"]))
+    return ('<table><tr><th>task</th><th>run</th><th>hidden tests</th>'
+            '<th>bare CI</th><th>agent says</th><th>ranex gate</th></tr>'
+            + rows + "</table>")
 
 
-def generate_page(report: dict[str, Any], output_dir: Path) -> Path:
-    output_dir.mkdir(parents=True, exist_ok=True)
-    json_path = output_dir / "oss-divergence.json"
-    payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
-    json_path.write_text(payload)
-    digest = "sha256:" + hashlib.sha256(payload.encode()).hexdigest()
+def _attack_card(entry: dict[str, Any]) -> str:
+    if entry["attack"] == "stale-proof":
+        before, after = entry["before"], entry["after"]
+        return ('<div class="card"><h3>The stale-proof trap ({})</h3>'
+                '<div class="x2"><div><div class="k">proof right after the green '
+                'run:</div><div class="term"><pre class="ok">{}</pre></div></div>'
+                '<div><div class="k">same proof after ONE comment-line edit '
+                '(no re-run):</div><div class="term"><pre class="err">{}</pre>'
+                "</div></div></div></div>").format(
+                    _esc(entry["date"]), _esc(before["gate_output"]),
+                    _esc(after["gate_output"]))
+    removed = ", ".join(entry.get("removed_tests", []))
+    return ('<div class="card"><h3>The deleted-tests attack ({})</h3>'
+            '<div class="x2"><div><div class="k">your CI:</div><div class="term">'
+            '<pre class="ok">{}</pre></div></div><div><div class="k">the gate:</div>'
+            '<div class="term"><pre class="err">{}</pre></div></div></div>'
+            '<div class="removed">deleted: <code>{}</code></div></div>').format(
+                _esc(entry["date"]),
+                _esc(entry["bare_ci"]["output_tail"]),
+                _esc(entry["ranex_gate"]["gate_output"]), _esc(removed))
 
-    rows = [r for r in report["rows"] if "ranex_gate" in r]
-    solved = sum(1 for r in rows if r["ground_truth_functional"] == 1.0)
-    overhead = sorted(r["ranex_gate"]["elapsed_s"] for r in rows)
-    tokens = sum(r.get("tokens") or 0 for r in rows)
-    cost = sum(r.get("cost_usd") or 0 for r in rows)
 
+def _receipts(entries: list[dict[str, Any]]) -> str:
+    out = []
+    for e in entries:
+        if e["kind"] == "run":
+            gov, ci = e["ranex_gate"], e["bare_ci"]
+            out.append(
+                '<details class="ev"><summary>{} · run {} · gate {} · {}'
+                " tokens · ${}</summary>"
+                '<div class="prov">run {} · {} steps · {} tokens · ${} · '
+                "{:.0f}s agent time</div>"
+                '<div class="k">the agent\u2019s last words (parsed, heuristic):</div>'
+                '<pre class="quote">{}</pre>'
+                '<div class="k">what a normal CI ran, and printed:</div>'
+                '<div class="term"><div class="cmd">$ {}</div><pre class="{}">{}</pre></div>'
+                '<div class="k">what ranex executed:</div>'
+                '<div class="term"><div class="cmd">$ {}</div><pre class="ok">evidence '
+                "recorded, exit {}</pre></div>"
+                '<div class="k">the gate\u2019s verdict, verbatim:</div>'
+                '<div class="term"><pre class="{}">{}</pre></div>'
+                '<div class="k">the journal chain check:</div>'
+                '<div class="term"><pre class="ok">{}</pre></div></details>'.format(
+                    _esc(e["date"]), _esc(e["run_id"][-8:]), gov["gate_verdict"],
+                    e.get("tokens", "?"), e.get("cost_usd", "?"),
+                    _esc(e["run_id"]), e.get("agent_steps", "?"),
+                    e.get("tokens", "?"), e.get("cost_usd", "?"),
+                    e.get("duration_s") or 0,
+                    _esc(e["self_report"].get("final_words", "")),
+                    _esc(ci["command"]),
+                    "ok" if ci["verdict"] == "GREEN" else "err",
+                    _esc(ci["output_tail"]),
+                    _esc(gov["run_command"]), gov["run_exit"],
+                    "ok" if gov["gate_verdict"] == "PASS" else "err",
+                    _esc(gov["gate_output"]),
+                    _esc(gov["journal_output"])))
+        else:
+            out.append(
+                '<details class="ev"><summary>{} · attack {} · caught: {} · '
+                "FAULT-INJECTED (labeled)</summary>{}</details>".format(
+                    _esc(e["date"]), _esc(e["attack"]),
+                    "yes" if e.get("caught") else "NO",
+                    _attack_card(e)))
+    return "".join(out)
+
+
+def generate_page(output_dir: Path) -> Path:
+    entries = archive.corpus()
+    summary = archive.summary()
+    runs = [e for e in entries if e["kind"] == "run"]
+    attacks = [e for e in entries if e["kind"] == "attack"]
+    model = next((e.get("model") for e in entries if e.get("model")), "?")
+
+    attacks_html = "".join(_attack_card(e) for e in attacks)
     page = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ranex — what changes when your AI agent's "done" has to be proven</title>
+<title>ranex — the proof pile: real runs, real verdicts, piling up nightly</title>
 <style>
   :root { color-scheme: dark; }
   body { margin:0; background:BGX; color:INKX;
          font:16.5px/1.65 ui-sans-serif,system-ui,-apple-system,sans-serif; }
-  main { max-width:820px; margin:0 auto; padding:48px 22px 90px; }
-  h1 { font-size:30px; line-height:1.22; margin:0 0 12px; letter-spacing:-.01em; }
-  h2 { font-size:21px; margin:54px 0 4px; }
-  .lede { color:MUTX; font-size:17.5px; margin:0 0 10px; }
+  main { max-width:840px; margin:0 auto; padding:48px 22px 90px; }
+  h1 { font-size:29px; line-height:1.22; margin:0 0 10px; letter-spacing:-.01em; }
+  h2 { font-size:21px; margin:52px 0 4px; }
+  h3 { font-size:15px; margin:0 0 10px; color:MUTX; font-weight:600; }
+  .lede { color:MUTX; font-size:17px; }
   .note { color:MUTX; font-size:14px; margin:6px 0 16px; }
-  .x2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
-  @media (max-width:760px) { .x2 { grid-template-columns:1fr; } }
-  .hero-svg, .check-svg { width:100%; height:auto; display:block;
-                          margin:18px 0 6px; }
-  .how { display:grid; grid-template-columns:52px 1fr; gap:4px 14px;
-         background:PANX; border:1px solid HAIX; border-radius:14px;
-         padding:18px 20px; margin:12px 0; }
-  .how-n { grid-row:span 2; font-size:26px; font-weight:800; color:BLUX;
-           font-family:ui-monospace,monospace; }
-  .how-t { font-weight:700; font-size:16px; }
-  .how-b { color:MUTX; font-size:14.5px; }
-  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-           gap:12px; margin:16px 0; }
-  .stat { background:PANX; border:1px solid HAIX; border-radius:14px;
-          padding:16px 18px; }
-  .stat .n { font-size:26px; font-weight:800;
-             font-family:ui-monospace,monospace; }
-  .stat .t { color:MUTX; font-size:13px; margin-top:4px; }
-  code { background:PANX; border:1px solid HAIX; border-radius:6px;
-         padding:2px 8px; font-size:13px; }
-  details.receipts { border:1px solid HAIX; background:PANX; border-radius:14px;
-                     margin:20px 0; }
-  details.receipts summary { cursor:pointer; padding:16px 20px; font-weight:600;
-                             color:BLUX; }
-  details.receipts[open] summary { border-bottom:1px solid HAIX; }
-  details.receipts > *:not(summary) { padding:2px 18px 14px; }
+  .cert { border:1px solid HAX; background:PANX; padding:12px 16px; margin:16px 0;
+          display:flex; flex-wrap:wrap; gap:8px 26px; }
+  .cert div { font-size:12px; }
+  .cert b { color:INKX; font-weight:600; display:block; }
+  .cert span { color:MUTX; }
+  svg.graph, svg.hero-svg { width:100%; height:auto; display:block; margin:14px 0 4px; }
   table { border-collapse:collapse; width:100%; font-size:12.5px;
-          font-family:ui-monospace,monospace; margin:8px 0; }
-  th { text-align:left; color:MUTX; font-weight:500; border-bottom:1px solid HAIX;
+          font-family:ui-monospace,monospace; margin:10px 0; }
+  th { text-align:left; color:MUTX; font-weight:500; border-bottom:1px solid HAX;
        padding:5px 7px; }
   td { padding:5px 7px; border-bottom:1px solid #131c2e; }
   .dim { color:MUTX; }
@@ -329,91 +271,120 @@ def generate_page(report: dict[str, Any], output_dir: Path) -> Path:
         border:1px solid rgba(76,195,138,.35); }
   .bb { color:BADX; background:rgba(240,97,109,.12);
         border:1px solid rgba(240,97,109,.35); }
-  .bm { color:MUTX; border:1px solid HAIX; }
-  details.ev { border:1px solid HAIX; border-radius:8px; margin:8px 0; }
-  details.ev summary { cursor:pointer; padding:8px 14px; color:MUTX; font-size:12px;
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+           gap:12px; margin:16px 0; }
+  .stat { background:PANX; border:1px solid HAX; border-radius:14px;
+          padding:16px 18px; }
+  .stat .n { font-size:26px; font-weight:800; font-family:ui-monospace,monospace; }
+  .stat .t { color:MUTX; font-size:13px; margin-top:4px; }
+  .card { background:PANX; border:1px solid HAX; border-radius:14px;
+          padding:18px 20px; margin:14px 0; }
+  .x2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  @media (max-width:760px) { .x2 { grid-template-columns:1fr; } }
+  .removed { margin-top:12px; border:1px dashed rgba(240,97,109,.4); border-radius:4px;
+             padding:8px 14px; font-size:12.5px; color:BADX; }
+  code { background:PANX; border:1px solid HAX; border-radius:6px; padding:2px 8px;
+         font-size:13px; }
+  details.ev { border:1px solid HAX; border-radius:10px; margin:8px 0;
+               background:PANX; }
+  details.ev summary { cursor:pointer; padding:10px 14px; color:MUTX; font-size:12px;
                        font-family:ui-monospace,monospace; }
+  details.ev[open] summary { border-bottom:1px solid HAX; color:INKX; }
   .prov { color:AMBX; font-size:12px; padding:8px 14px 0;
           font-family:ui-monospace,monospace; }
   .k { color:MUTX; font-size:11px; text-transform:uppercase; letter-spacing:.06em;
        padding:8px 14px 0; font-family:ui-monospace,monospace; }
   .term { margin:4px 14px 8px; font-family:ui-monospace,monospace; }
   .term .cmd { color:GOODX; font-size:11.5px; word-break:break-all; }
-  .term pre, pre.quote { margin:4px 0; background:TERMX; border:1px solid HAIX;
+  .term pre, pre.quote { margin:4px 0; background:TERMX; border:1px solid HAX;
        border-radius:4px; padding:8px 10px; font-size:11.5px; white-space:pre-wrap;
        word-break:break-word; color:INKX; }
   pre.quote { color:MUTX; border-style:dashed; margin:4px 14px 8px; }
   .term pre.err { border-left:3px solid BADX; }
   .term pre.ok { border-left:3px solid GOODX; }
-  footer { margin-top:56px; border-top:1px solid HAIX; padding-top:18px;
+  footer { margin-top:56px; border-top:1px solid HAX; padding-top:18px;
            color:MUTX; font-size:12.5px; }
 </style></head><body><main>
 
-<h1>Your AI agent says \u201cdone, tests pass.\u201d<br>What if that had to be <em>proven</em>?</h1>
-<p class="lede">We ran a real AI coder (GLM&nbsp;5.3) on real open-source tasks
-twice — once the normal way, and once where \u201cdone\u201d only counts with
-signed proof. Same model, same tasks. This is the difference.</p>
-HEROSVG
+<h1>The proof pile — real agent runs, real verdicts,<br>accumulating every night</h1>
+<p class="lede">A real AI coder (MODEL) does real open-source work. Every run
+is judged four ways: independent hidden tests, a normal CI, the agent\u2019s own
+final message, and the ranex gate (signed proof against a checklist frozen
+before the agent started). Dogfooding appends new proofs nightly; the pile
+only grows.</p>
+
+<div class="cert">
+ <div><span>proofs piled</span><b>ENTRIES (RUNS runs · ATTACKS attacks)</b></div>
+ <div><span>nights accumulating</span><b>NIGHTS</b></div>
+ <div><span>real agent work</span><b>TOK tokens · $COST</b></div>
+ <div><span>archive digest</span><b>DIGEST</b></div>
+</div>
 
 <h2>The difference, in one picture</h2>
 <p class="note">The claim never changes. What changes is whether anything
 <em>backs it up</em>.</p>
-HEROSVG2
+HEROSVG
 
-STALEEXHIBIT
+ATTACKS
 
-<h2>The problem it solved: \u201cbut the tests were green!\u201d</h2>
-<p class="note">The scariest failure in AI-assisted coding isn\u2019t a crash —
-it\u2019s a <strong>green checkmark on broken work</strong>. Here\u2019s that
-exact scenario, built from our runs: a solved task where the agent then
-\u201ccleans up\u201d four inconvenient tests.</p>
-CHECKSVG
+<h2>Every run in the pile — the verdict matrix</h2>
+<p class="note">Real data: each row is one agent run; each column is one
+judge. Source: VulcanBench run artifacts + captured ranex transcripts
+(receipts below).</p>
+MATRIX
+TOKENS
+GROWTH
 
-<h2>How it works — three moves, no magic</h2>
-HOWCARDS
-
-<h2>The numbers, plainly</h2>
+<h2>The pile\u2019s bottom line, so far</h2>
 <div class="stats">
-  <div class="stat"><div class="n" style="color:GOODX">0</div><div class="t">times
-  the gate certified work that hidden tests refuted — across NRUNS real runs
-  plus the attack above</div></div>
-  <div class="stat"><div class="n" style="color:GOODX">0</div><div class="t">times
-  it blocked work the hidden tests confirmed (NSOLVED solved tasks, all
-  verified)</div></div>
-  <div class="stat"><div class="n">7–12s</div><div class="t">what the proving
-  cost per task — the price of not trusting, measured</div></div>
-  <div class="stat"><div class="n">ms</div><div class="t">to re-verify any past
-  completion from its chained record — the audit your CI can\u2019t do at
-  any price</div></div>
+ <div class="stat"><div class="n" style="color:GOODX">FPASSES</div><div class="t">times
+ the gate certified work the hidden tests refuted — across RUNS real runs and
+ ATTACKS attacks, ever</div></div>
+ <div class="stat"><div class="n" style="color:GOODX">FBLOCKS</div><div class="t">times
+ it blocked work the hidden tests confirmed</div></div>
+ <div class="stat"><div class="n">CAUGHT/ATTACKS</div><div class="t">attacks caught:
+ deleted tests, stale proofs — each named, each verifiable</div></div>
+ <div class="stat"><div class="n">ms</div><div class="t">to re-verify any past
+ completion from its chained record — the audit a scrollback can\u2019t do</div></div>
 </div>
-<p class="note">Honest scope: in our runs the agent didn\u2019t lie on its own
-— it solved 5 tasks and kept honestly working on the hard one. The deleted-tests
-scenario above is staged on a real run to show the mechanism, and it\u2019s
-labeled as staged. Real runs: NRUNS · TOK tokens · $COST.</p>
+<p class="note">Honest scope: attacks are fault-injected on real solved runs
+and labeled as such; in the natural runs so far the agent was honest, so the
+pile\u2019s value there is certified agreement plus the audit trail. The pile
+grows nightly — every new night either adds another clean proof or catches
+something real.</p>
 
-LEDGER
+<h2>Receipts — every proof, raw</h2>
+RECEIPTS
 
 <footer>ranex — deterministic governance for AI agents that build software ·
-every number above comes from the receipts section\u2019s captured outputs ·
-the staged attack is labeled · nothing here was typed by hand</footer>
+tasks and grader scores are VulcanBench run artifacts · every verdict line is
+a captured command output · fault-injected rows are labeled · archive:
+tools/dogfood/oss_bench/proofs/ (append-only)</footer>
 </main></body></html>
 """
     page = (page
             .replace("BGX", BG).replace("INKX", INK).replace("MUTX", MUTED)
-            .replace("PANX", PANEL).replace("HAIX", HAIR).replace("GOODX", GOOD)
-            .replace("BADX", BAD).replace("BLUX", BLUE).replace("AMBX", AMBER)
-            .replace("TERMX", TERM)
-            .replace("HEROSVG2", _hero_svg())
-            .replace("HEROSVG", "")
-            .replace("STALEEXHIBIT", _stale_exhibit(report))
-            .replace("CHECKSVG", _checklist_svg())
-            .replace("HOWCARDS", _how_cards())
-            .replace("LEDGER", _ledger(report, digest))
-            .replace("NRUNS", str(len(rows)))
-            .replace("NSOLVED", str(solved))
-            .replace("TOK", "{:,}".format(tokens))
-            .replace("COST", "{:.2f}".format(cost)))
+            .replace("HAX", HAIR).replace("PANX", PANEL).replace("GOODX", GOOD)
+            .replace("BADX", BAD).replace("AMBX", AMBER).replace("TERMX", TERM)
+            .replace("MODEL", _esc(model))
+            .replace("HEROSVG", _hero_svg())
+            .replace("ATTACKS", attacks_html)
+            .replace("MATRIX", _verdict_matrix(runs))
+            .replace("TOKENS", _tokens_svg(runs))
+            .replace("GROWTH", _growth_svg(summary))
+            .replace("ENTRIES", str(summary["entries"]))
+            .replace("RUNS", str(summary["runs"]))
+            .replace("ATTACKS", str(summary["attacks"]))
+            .replace("NIGHTS", str(summary["nights"]))
+            .replace("TOK", "{:,}".format(summary["tokens"]))
+            .replace("COST", "{:.2f}".format(summary["cost_usd"]))
+            .replace("DIGEST", summary["archive_digest"][:23] + "…")
+            .replace("FPASSES", str(summary["false_passes"]))
+            .replace("FBLOCKS", str(summary["false_blocks"]))
+            .replace("CAUGHT", str(summary["attacks_caught"]))
+            .replace("RECEIPTS", _receipts(entries)))
 
+    output_dir.mkdir(parents=True, exist_ok=True)
     out = output_dir / "oss-benchmark.html"
     out.write_text(page)
     return out
@@ -422,5 +393,4 @@ the staged attack is labeled · nothing here was typed by hand</footer>
 if __name__ == "__main__":
     import sys
 
-    report = json.loads(Path(sys.argv[1]).read_text())
-    print("page:", generate_page(report, Path(sys.argv[2])))
+    print("page:", generate_page(Path(sys.argv[1] if len(sys.argv) > 1 else "site")))

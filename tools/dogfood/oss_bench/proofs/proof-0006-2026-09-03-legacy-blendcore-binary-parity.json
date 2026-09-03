@@ -1,0 +1,38 @@
+{
+  "agent_steps": 60,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q",
+    "elapsed_s": 0.2,
+    "exit": 5,
+    "output_tail": "1 warning in 0.03s",
+    "verdict": "RED"
+  },
+  "cost_usd": 1.013653,
+  "date": "2026-09-03",
+  "duration_s": 3464.234,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "b40fe84dd",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:d3d5e7fa6bb5f0056fe0e29493bba8fecc46b37ab880f8b6e04bf62c03d58a1d",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/tmp/oss-page/legacy-blendcore-binary-parity-6e7fa51f/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest",
+    "run_error": "ERROR: file or directory not found: pytest",
+    "run_exit": 4
+  },
+  "run_id": "legacy-blendcore-binary-parity-6e7fa51f",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Let me gather more systematic data on the multi-dispense loss pattern.",
+    "heuristic": true
+  },
+  "task": "legacy-blendcore-binary-parity",
+  "tokens": 377628
+}
