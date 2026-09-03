@@ -275,14 +275,30 @@ def generate_site(report: dict[str, Any], output_dir: Path) -> list[Path]:
         scaling_charts += '<div class="chart">' + svg + "</div>"
 
     open_findings = board.get("findings_open", [])
-    findings_note = (
-        "Right now there is <strong>1 known imperfection</strong> we found in ourselves and "
-        "published (in one rare kind of damage, the checker raises a loud alarm instead of "
-        "writing its usual tidy report - it still never accepts damaged records; we are "
-        "polishing that rough edge)."
-        if open_findings else
-        "Right now there are <strong>no known imperfections</strong> open."
-    )
+    PLAIN_FINDINGS = {
+        "F-001": "In one rare kind of damage, the checker raises a loud alarm "
+                 "instead of writing its usual tidy report. It still never "
+                 "accepts damaged records — we're polishing that rough edge.",
+        "F-002": "Where the tests run from can change which checks get "
+                 "skipped — same code, slightly different skip list. "
+                 "Everything still passes; we're making the skip list explicit.",
+    }
+    if open_findings:
+        items = "".join(
+            "<li><strong>{}</strong> — {}</li>".format(
+                fid, html.escape(PLAIN_FINDINGS.get(
+                    fid, "published in the project's findings log.")))
+            for fid in open_findings
+        )
+        findings_note = (
+            "Right now there <strong>{} known imperfection{} we found in "
+            "ourselves and published:</strong><ul>{}</ul>".format(
+                len(open_findings), "" if len(open_findings) == 1 else "s", items)
+        )
+    else:
+        findings_note = (
+            "Right now there are <strong>no known imperfections</strong> open."
+        )
 
     page = """<!doctype html>
 <html lang="en"><head><meta charset="utf-8">
