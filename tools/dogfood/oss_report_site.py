@@ -160,9 +160,9 @@ def _verdict_matrix(runs: list[dict[str, Any]]) -> str:
                      badge(r["bare_ci"]["verdict"]),
                      badge(claim),
                      badge(r["ranex_gate"]["gate_verdict"]))
-    return ('<table><tr><th>task</th><th>run</th><th>hidden tests</th>'
+    return ('<div class="tablewrap"><table><tr><th>task</th><th>run</th><th>hidden tests</th>'
             '<th>bare CI</th><th>agent says</th><th>ranex gate</th></tr>'
-            + rows + "</table>")
+            + rows + "</table></div>")
 
 
 def _attack_card(entry: dict[str, Any]) -> str:
@@ -259,6 +259,7 @@ def generate_page(output_dir: Path) -> Path:
   .cert b { color:INKX; font-weight:600; display:block; }
   .cert span { color:MUTX; }
   svg.graph, svg.hero-svg { width:100%; height:auto; display:block; margin:14px 0 4px; }
+  .tablewrap { overflow-x:auto; }
   table { border-collapse:collapse; width:100%; font-size:12.5px;
           font-family:ui-monospace,monospace; margin:10px 0; }
   th { text-align:left; color:MUTX; font-weight:500; border-bottom:1px solid HAX;
@@ -307,25 +308,27 @@ def generate_page(output_dir: Path) -> Path:
 </style></head><body><main>
 
 <h1>The proof pile — real agent runs, real verdicts,<br>accumulating every night</h1>
-<p class="lede">A real AI coder (MODEL) does real open-source work. Every run
+<p class="lede">A real AI coder (MODEL_S) does real open-source work. Every run
 is judged four ways: independent hidden tests, a normal CI, the agent\u2019s own
 final message, and the ranex gate (signed proof against a checklist frozen
 before the agent started). Dogfooding appends new proofs nightly; the pile
 only grows.</p>
 
 <div class="cert">
- <div><span>proofs piled</span><b>ENTRIES (RUNS runs · ATTACKS attacks)</b></div>
- <div><span>nights accumulating</span><b>NIGHTS</b></div>
- <div><span>real agent work</span><b>TOK tokens · $COST</b></div>
- <div><span>archive digest</span><b>DIGEST</b></div>
+ <div><span>proofs piled</span><b>ENTRIES_N (RUNS_N runs · ATTACKS_N attacks)</b></div>
+ <div><span>nights accumulating</span><b>NIGHTS_N</b></div>
+ <div><span>real agent work</span><b>TOK_N tokens · $COST_N</b></div>
+ <div><span>archive digest</span><b>DIGEST_S</b></div>
 </div>
 
 <h2>The difference, in one picture</h2>
 <p class="note">The claim never changes. What changes is whether anything
 <em>backs it up</em>.</p>
-HEROSVG
+HERO_SVG_X
 
-ATTACKS
+<h2>What the gate caught — the two classic attacks</h2>
+<p class="note">Both are fault-injected on a real solved run and labeled: they demonstrate the mechanism on real code, cheaply, every release.</p>
+ATTACKS_HTML_X
 
 <h2>Every run in the pile — the verdict matrix</h2>
 <p class="note">Real data: each row is one agent run; each column is one
@@ -337,12 +340,12 @@ GROWTH
 
 <h2>The pile\u2019s bottom line, so far</h2>
 <div class="stats">
- <div class="stat"><div class="n" style="color:GOODX">FPASSES</div><div class="t">times
- the gate certified work the hidden tests refuted — across RUNS real runs and
- ATTACKS attacks, ever</div></div>
- <div class="stat"><div class="n" style="color:GOODX">FBLOCKS</div><div class="t">times
+ <div class="stat"><div class="n" style="color:GOODX">FPASSES_N</div><div class="t">times
+ the gate certified work the hidden tests refuted — across RUNS_N real runs and
+ ATTACKS_N attacks, ever</div></div>
+ <div class="stat"><div class="n" style="color:GOODX">FBLOCKS_N</div><div class="t">times
  it blocked work the hidden tests confirmed</div></div>
- <div class="stat"><div class="n">CAUGHT/ATTACKS</div><div class="t">attacks caught:
+ <div class="stat"><div class="n">CAUGHT_N/ATTACKS_N</div><div class="t">attacks caught:
  deleted tests, stale proofs — each named, each verifiable</div></div>
  <div class="stat"><div class="n">ms</div><div class="t">to re-verify any past
  completion from its chained record — the audit a scrollback can\u2019t do</div></div>
@@ -366,22 +369,22 @@ tools/dogfood/oss_bench/proofs/ (append-only)</footer>
             .replace("BGX", BG).replace("INKX", INK).replace("MUTX", MUTED)
             .replace("HAX", HAIR).replace("PANX", PANEL).replace("GOODX", GOOD)
             .replace("BADX", BAD).replace("AMBX", AMBER).replace("TERMX", TERM)
-            .replace("MODEL", _esc(model))
-            .replace("HEROSVG", _hero_svg())
-            .replace("ATTACKS", attacks_html)
+            .replace("MODEL_S", _esc(model))
+            .replace("HERO_SVG_X", _hero_svg())
+            .replace("ATTACKS_HTML_X", attacks_html)
             .replace("MATRIX", _verdict_matrix(runs))
             .replace("TOKENS", _tokens_svg(runs))
             .replace("GROWTH", _growth_svg(summary))
-            .replace("ENTRIES", str(summary["entries"]))
-            .replace("RUNS", str(summary["runs"]))
-            .replace("ATTACKS", str(summary["attacks"]))
-            .replace("NIGHTS", str(summary["nights"]))
-            .replace("TOK", "{:,}".format(summary["tokens"]))
-            .replace("COST", "{:.2f}".format(summary["cost_usd"]))
-            .replace("DIGEST", summary["archive_digest"][:23] + "…")
-            .replace("FPASSES", str(summary["false_passes"]))
-            .replace("FBLOCKS", str(summary["false_blocks"]))
-            .replace("CAUGHT", str(summary["attacks_caught"]))
+            .replace("ENTRIES_N", str(summary["entries"]))
+            .replace("RUNS_N", str(summary["runs"]))
+            .replace("ATTACKS_N", str(summary["attacks"]))
+            .replace("NIGHTS_N", str(summary["nights"]))
+            .replace("TOK_N", "{:,}".format(summary["tokens"]))
+            .replace("COST_N", "{:.2f}".format(summary["cost_usd"]))
+            .replace("DIGEST_S", summary["archive_digest"][:23] + "…")
+            .replace("FPASSES_N", str(summary["false_passes"]))
+            .replace("FBLOCKS_N", str(summary["false_blocks"]))
+            .replace("CAUGHT_N", str(summary["attacks_caught"]))
             .replace("RECEIPTS", _receipts(entries)))
 
     output_dir.mkdir(parents=True, exist_ok=True)
