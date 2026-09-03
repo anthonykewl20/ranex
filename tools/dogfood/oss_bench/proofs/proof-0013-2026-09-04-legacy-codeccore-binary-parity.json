@@ -1,0 +1,38 @@
+{
+  "agent_steps": 92,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q",
+    "elapsed_s": 0.2,
+    "exit": 5,
+    "output_tail": "1 warning in 0.03s",
+    "verdict": "RED"
+  },
+  "cost_usd": 1.005571,
+  "date": "2026-09-04",
+  "duration_s": 2803.246,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "22edb86aa",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.3,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:9d640ae53fcefdb1a25cfe036cf88eceedf8c97da6da793e8bfb96efb80bbe55",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/tmp/oss-hunt/legacy-codeccore-binary-parity-6b3bc6cd/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest",
+    "run_error": "ERROR: file or directory not found: pytest",
+    "run_exit": 4
+  },
+  "run_id": "legacy-codeccore-binary-parity-6b3bc6cd",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Let me carefully re-test memo truncation with correct field slicing, and test multi-byte input handling.",
+    "heuristic": true
+  },
+  "task": "legacy-codeccore-binary-parity",
+  "tokens": 442355
+}

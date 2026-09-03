@@ -1,0 +1,39 @@
+{
+  "after": {
+    "exit": 1,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:aa4de921e0e3439c6a9af238ecd7bb4a1086fd23d2f86b54ac4c011a689dbb76"
+  },
+  "attack": "stale-proof-external",
+  "before": {
+    "exit": 0,
+    "gate_output": "PASS  gate=landing  subject=sha256:a7815002e403f2f521d2b496792a7148ea17c635117e013137eb3f4f0b1a16ec"
+  },
+  "caught": true,
+  "date": "2026-09-03",
+  "edit": {
+    "file": "six.py",
+    "kind": "one comment line appended after green evidence, no re-run"
+  },
+  "external": {
+    "commit": "c8e394065cd541a16c040515dc0afb85cf22a7c3",
+    "elapsed_s": 1.4,
+    "kernel_install": "git checkout <tag> + uv sync --frozen (frozen-checkout operator install, ADR-038/009)",
+    "kernel_tag": "v0.1.0",
+    "license": "Copyright (c) 2010-2024 Benjamin Peterson\n\nPermission is hereby granted, free of",
+    "rev": "c8e394065cd541a16c040515dc0afb85cf22a7c3",
+    "selected_ids": 185,
+    "tag_src_tree": "eacefa3146b2233ba06ac9341324c119d743c379",
+    "url": "https://github.com/benjaminp/six",
+    "vendored_identical_to_tag": true,
+    "vendored_src_tree": "eacefa3146b2233ba06ac9341324c119d743c379"
+  },
+  "fault_injected": true,
+  "journal_after_refusal": "PASS  journal=/tmp/ranex-external-proof-_152360y/run/external/governance/journal.sqlite3  chain=verified",
+  "kernel_head": "edf1a98605beb7b351b31ada3877f5ec510da1f7",
+  "kernel_version": "0.1.0",
+  "kind": "attack",
+  "model": null,
+  "run_id": "external-stale",
+  "schema": "ranex-oss-proof-entry-v1",
+  "task": "external:six"
+}

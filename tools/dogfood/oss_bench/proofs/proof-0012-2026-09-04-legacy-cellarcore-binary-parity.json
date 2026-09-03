@@ -1,0 +1,38 @@
+{
+  "agent_steps": 118,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q",
+    "elapsed_s": 0.2,
+    "exit": 5,
+    "output_tail": "1 warning in 0.03s",
+    "verdict": "RED"
+  },
+  "cost_usd": 1.003405,
+  "date": "2026-09-04",
+  "duration_s": 2466.263,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "22edb86aa",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:f95dcf9f39328540e20c60a729e3535734ef70cce1cca21a6b1693a0ce231bd3",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/tmp/oss-hunt/legacy-cellarcore-binary-parity-f9e0243d/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest pytest",
+    "run_error": "ERROR: file or directory not found: pytest",
+    "run_exit": 4
+  },
+  "run_id": "legacy-cellarcore-binary-parity-f9e0243d",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Now let me build a differential test harness.",
+    "heuristic": true
+  },
+  "task": "legacy-cellarcore-binary-parity",
+  "tokens": 542073
+}

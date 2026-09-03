@@ -180,6 +180,15 @@
       "scenarios": 43,
       "sha": "787bedc62",
       "subject": "tools: formal hardening \u2014 verdict monotonicity (knowledge or"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 9,
+      "scenarios": 43,
+      "sha": "22edb86aa",
+      "subject": "tools: real evolution graphs embedded in the proof page \u2014 gi"
     }
   ]
 }

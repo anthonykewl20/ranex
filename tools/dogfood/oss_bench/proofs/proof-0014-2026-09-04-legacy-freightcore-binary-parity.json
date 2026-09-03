@@ -1,0 +1,38 @@
+{
+  "agent_steps": 76,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q",
+    "elapsed_s": 0.2,
+    "exit": 5,
+    "output_tail": "1 warning in 0.03s",
+    "verdict": "RED"
+  },
+  "cost_usd": 1.000708,
+  "date": "2026-09-04",
+  "duration_s": 3415.076,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "22edb86aa",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.4,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      the bound command was observed failing: tests-executed\n      subject=sha256:61bcdbf00b0c7dc0a609755b16186363e32fae2f64af3dce9f27f56aa8100b1e",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/tmp/oss-hunt/legacy-freightcore-binary-parity-89d182d2/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest",
+    "run_error": "ERROR: file or directory not found: pytest",
+    "run_exit": 4
+  },
+  "run_id": "legacy-freightcore-binary-parity-89d182d2",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Found key facts. Let me systematically probe zone 99 and the express rule.",
+    "heuristic": true
+  },
+  "task": "legacy-freightcore-binary-parity",
+  "tokens": 452450
+}
