@@ -8,6 +8,27 @@ match the kernel silently.
 
 ## Open
 
+### F-003 (CONFIRMED, environmental prerequisite) — governing third-party repos needs a vendored CLI and root-installed test tooling
+
+- Verified 2026-09-03 while building the OSS two-arm benchmark:
+  1. `governed_repository_root()` (cli/repository.py:331) resolves the
+     governed repo from the CLI's own location, NOT caller cwd — so the CLI
+     governs the repo that contains it. Governing a third-party task repo
+     requires vendoring `src/ranex` into that repo and running with
+     `PYTHONPATH` pointing there (the kernel's own clone-judges-clone model;
+     consistent with ADR-009, but undocumented for external integrators).
+  2. `ranex run` resolves argv[0] only through the pinned toolchain
+     (`/usr/bin`, `/bin`, `/usr/sbin`, `/sbin`), refusing user-writable
+     routes — by design. Consequence: task commands like `python -m pytest`
+     cannot run under governance unless a pinned interpreter carries pytest,
+     which on this machine requires root (`sudo apt install python3-pytest`).
+- Not a security bug — the pin is correct. It is an integration/usability
+  cost that any external adopter hits on day one. Candidate improvement:
+  document the vendoring pattern + a supported way to author a task-local
+  toolchain root that keeps the writability refusal.
+- Blocked-on-owner: installing pytest for /usr/bin/python3 (or moving the
+  study to a machine with system pytest / a Go toolchain at /usr/bin).
+
 ### F-002 (CONFIRMED) — suite outcome split is checkout-environment-dependent; expected_skips are not location-reproducible
 
 - Verified 2026-09-03 (~04:30), paired sequential runs at commit edf1a98605:
