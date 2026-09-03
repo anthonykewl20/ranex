@@ -77,6 +77,19 @@ Alternative (zero-drift, lower effort): copy `benchmark.html` into
 `web/public/` during sync and iframe it. Acceptable interim step; the page is
 fully self-contained and makes no network requests.
 
+## OSS benchmark results (two-arm VulcanBench) — future section
+
+When a REAL `tools/dogfood/oss_bench/results.json` exists (schema
+`ranex-oss-bench-v1`, see `tools/dogfood/oss_bench/README.md`), the sync
+script should carry it into the site and the /dogfood page gains a section:
+"Does governing the agent cost accuracy?" — rendering per-arm false-claim
+counts, governed false-verifications (must be 0 — else it's a kernel bug,
+not a data point), overhead median, tasks/model/budget, kernel version and
+git head, and the results-file sha256. Until that file exists, NO section
+renders — a placeholder is a bug (AUTOFIX.md rule). Numbers come only from
+the JSON; the web agent never computes derived stats not present in its
+`summary` block.
+
 ## Update flow
 
 Nightly: kernel automation runs the proof loop, then regenerates both files

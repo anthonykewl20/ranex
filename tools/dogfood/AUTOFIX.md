@@ -55,6 +55,44 @@ DO NOT TOUCH while unattended (diagnose only, leave for the owner):
 - If push is rejected (non-fast-forward — e.g. another agent pushed first),
   STOP pushing: report the divergence and finish the run locally.
 
+## Automated versioning (after successful fixes)
+
+A fix that lands through the cycle above is a release-worthy change. The
+loop cuts it following the repo's OWN release convention (see the v0.1.0
+commit 02b637815 for the reference shape):
+
+- Bump `pyproject.toml` version: PATCH for fixes (`0.1.0 -> 0.1.1`), MINOR
+  for added capability (`0.1.x -> 0.2.0`). Never jump MAJOR unattended.
+- Re-derive the lock surgically and epoch-preserving:
+  `uv lock --exclude-newer <governance/deps.yaml exclude_newer>` — the only
+  acceptable delta is the ranex version entry.
+- Update `docs/STATE.md` (rewrite, <=50 lines) to record the release.
+- Commit format: `release: vX.Y.Z — close the #N gate` when a release-gate
+  issue is open, else `release: vX.Y.Z` with a one-line summary of what the
+  release fixes/adds. Push fast-forward; verify remote tip.
+- A release is only cut when the final commit has `uv run --frozen pytest
+  -q` green AND no frozen-suite test-ID changes are pending owner action.
+  If either fails, ship the fix without a version bump and note why.
+
+## Release-triggered OSS benchmark (two-arm VulcanBench)
+
+After any release (and only then), the loop checks
+`tools/dogfood/oss_bench/state.json` (`last_benched_version`) against the
+current pyproject version. On advance, and ONLY if the provider API key is
+present in the environment and a budget cap is configured:
+
+- run the two-arm study (bare vs ranex-governed) per
+  `tools/dogfood/oss_bench/README.md`, with `--no-judges` and `--max-cost`
+  hard-enforced; never exceed the configured cap;
+- write results ONLY from real run artifacts (runs/*/summary.json); no
+  number is ever typed, interpolated, or estimated;
+- commit results + refreshed site data, push, and report.
+
+If the key is absent, the cap is unset, or the harness is not installed,
+record SKIPPED with the reason — never fabricate or reuse stale results as
+new. The ranex.dev section for these results renders only when real data
+exists; an empty placeholder section is a bug.
+
 ## Protected-branch fallback
 
 If the working tree was dirty at loop start (someone left work uncommitted),

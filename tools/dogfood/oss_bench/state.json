@@ -1,0 +1,7 @@
+{
+  "last_benched_version": null,
+  "model": null,
+  "budget_cap_usd": null,
+  "api_key_env": "VULCAN_MODEL_API_KEY",
+  "note": "last_benched_version null = never benched; model/budget set by the owner before the first real run"
+}
