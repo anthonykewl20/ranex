@@ -1,5 +1,5 @@
 {
-  "dogfood_iterations": 7,
+  "dogfood_iterations": 9,
   "environment": {
     "cpu_count": "16",
     "implementation": "CPython",
@@ -8,8 +8,8 @@
     "python": "3.14.6",
     "system": "Linux 7.0.0-30-generic"
   },
-  "generated_utc": "2026-09-03T11:58:27Z",
-  "git_head": "e62eac9a3b6803f075d06a513a9af49f099fbf29",
+  "generated_utc": "2026-09-03T20:11:28Z",
+  "git_head": "e73c04a188bac0df2498373bafb682cf694214f9",
   "kernel_version": "0.1.0",
   "ledger": [
     {
@@ -53,54 +53,69 @@
       "git_head": "e62eac9a3b6803f075d06a513a9af49f099fbf29",
       "iteration": 7,
       "scenarios": 33
+    },
+    {
+      "findings": 2,
+      "git_head": "3edfccb00ced9a68c7828a41e7cfee28f2128ccb",
+      "iteration": 8,
+      "scenarios": 43
+    },
+    {
+      "findings": 0,
+      "git_head": "e73c04a188bac0df2498373bafb682cf694214f9",
+      "iteration": 9,
+      "scenarios": 43
     }
   ],
   "proof_board": {
     "by_area": {
-      "admission": 3,
-      "canonical": 5,
+      "admission": 5,
+      "canonical": 6,
       "cli": 1,
+      "evolution": 1,
       "journal": 6,
       "keygen": 2,
-      "provisioning": 2,
-      "signing": 2,
-      "suite_results": 2,
-      "verdict": 10
+      "provisioning": 3,
+      "signing": 3,
+      "suite_results": 3,
+      "verdict": 13
     },
     "findings_open": [
+      "F-005",
+      "F-004",
       "F-003",
       "F-002",
       "F-001"
     ],
-    "passed": 33,
-    "total": 33
+    "passed": 43,
+    "total": 43
   },
   "scaling": {
     "journal-append": [
       {
-        "median_ms": 233.80906804231927,
+        "median_ms": 235.71997397812083,
         "rows": 100
       },
       {
-        "median_ms": 1136.2035479978658,
+        "median_ms": 1148.9208349958062,
         "rows": 500
       },
       {
-        "median_ms": 4642.012157011777,
+        "median_ms": 4529.124271997716,
         "rows": 2000
       }
     ],
     "journal-verify": [
       {
-        "median_ms": 1.066327968146652,
+        "median_ms": 1.1142530129291117,
         "rows": 100
       },
       {
-        "median_ms": 6.393987976480275,
+        "median_ms": 5.475657002534717,
         "rows": 500
       },
       {
-        "median_ms": 16.343740979209542,
+        "median_ms": 18.749377049971372,
         "rows": 2000
       }
     ]
@@ -111,14 +126,14 @@
       "area": "journal",
       "id": "journal-append-100",
       "label": "append 100 chained evaluation rows",
-      "max": 257.924,
-      "median": 233.809,
-      "min": 226.075,
+      "max": 244.425,
+      "median": 235.72,
+      "min": 235.177,
       "repeats": 3,
       "samples": [
-        226.075,
-        233.809,
-        257.924
+        235.72,
+        244.425,
+        235.177
       ],
       "unit": "ms total"
     },
@@ -126,14 +141,14 @@
       "area": "journal",
       "id": "journal-append-500",
       "label": "append 500 chained evaluation rows",
-      "max": 1157.299,
-      "median": 1136.204,
-      "min": 1089.382,
+      "max": 1154.035,
+      "median": 1148.921,
+      "min": 1069.686,
       "repeats": 3,
       "samples": [
-        1157.299,
-        1089.382,
-        1136.204
+        1069.686,
+        1154.035,
+        1148.921
       ],
       "unit": "ms total"
     },
@@ -141,14 +156,14 @@
       "area": "journal",
       "id": "journal-append-2000",
       "label": "append 2000 chained evaluation rows",
-      "max": 4705.992,
-      "median": 4642.012,
-      "min": 4601.659,
+      "max": 4578.757,
+      "median": 4529.124,
+      "min": 4523.817,
       "repeats": 3,
       "samples": [
-        4642.012,
-        4601.659,
-        4705.992
+        4529.124,
+        4523.817,
+        4578.757
       ],
       "unit": "ms total"
     },
@@ -157,13 +172,13 @@
       "id": "journal-verify-100",
       "label": "verify chain of 100 rows (recompute all links)",
       "max": 1.161,
-      "median": 1.066,
-      "min": 1.048,
+      "median": 1.114,
+      "min": 1.093,
       "repeats": 3,
       "samples": [
         1.161,
-        1.066,
-        1.048
+        1.114,
+        1.093
       ],
       "unit": "ms"
     },
@@ -171,14 +186,14 @@
       "area": "journal",
       "id": "journal-verify-500",
       "label": "verify chain of 500 rows (recompute all links)",
-      "max": 6.476,
-      "median": 6.394,
-      "min": 4.818,
+      "max": 7.115,
+      "median": 5.476,
+      "min": 4.009,
       "repeats": 3,
       "samples": [
-        6.394,
-        4.818,
-        6.476
+        7.115,
+        4.009,
+        5.476
       ],
       "unit": "ms"
     },
@@ -186,14 +201,14 @@
       "area": "journal",
       "id": "journal-verify-2000",
       "label": "verify chain of 2000 rows (recompute all links)",
-      "max": 19.602,
-      "median": 16.344,
-      "min": 15.462,
+      "max": 20.136,
+      "median": 18.749,
+      "min": 17.722,
       "repeats": 3,
       "samples": [
-        19.602,
-        16.344,
-        15.462
+        18.749,
+        20.136,
+        17.722
       ],
       "unit": "ms"
     },
@@ -201,14 +216,14 @@
       "area": "admission",
       "id": "admission-200",
       "label": "admit 200 signed records (Ed25519 verify each)",
-      "max": 26.077,
-      "median": 22.484,
-      "min": 20.844,
+      "max": 25.574,
+      "median": 21.87,
+      "min": 21.029,
       "repeats": 3,
       "samples": [
-        20.844,
-        26.077,
-        22.484
+        21.029,
+        21.87,
+        25.574
       ],
       "unit": "ms"
     },
@@ -216,14 +231,14 @@
       "area": "signing",
       "id": "sign-200",
       "label": "Ed25519-sign 200 evidence payloads",
-      "max": 13.848,
-      "median": 11.347,
-      "min": 11.216,
+      "max": 12.901,
+      "median": 11.166,
+      "min": 11.137,
       "repeats": 3,
       "samples": [
-        13.848,
-        11.347,
-        11.216
+        12.901,
+        11.166,
+        11.137
       ],
       "unit": "ms"
     },
@@ -231,14 +246,14 @@
       "area": "signing",
       "id": "verify-200",
       "label": "Ed25519-verify 200 evidence payloads",
-      "max": 21.962,
-      "median": 18.886,
-      "min": 18.881,
+      "max": 19.445,
+      "median": 17.904,
+      "min": 17.812,
       "repeats": 3,
       "samples": [
-        18.886,
-        21.962,
-        18.881
+        17.904,
+        17.812,
+        19.445
       ],
       "unit": "ms"
     },
@@ -246,14 +261,14 @@
       "area": "verdict",
       "id": "evaluate-20claims-100calls",
       "label": "100 pure evaluations of a 20-claim gate",
-      "max": 4.731,
-      "median": 4.461,
-      "min": 4.085,
+      "max": 6.573,
+      "median": 6.524,
+      "min": 4.164,
       "repeats": 3,
       "samples": [
-        4.731,
-        4.461,
-        4.085
+        4.164,
+        6.524,
+        6.573
       ],
       "unit": "ms"
     },
@@ -261,14 +276,14 @@
       "area": "provisioning",
       "id": "select-wheels-real-lock",
       "label": "select wheels over the real committed uv.lock",
-      "max": 5.622,
-      "median": 5.372,
-      "min": 4.419,
+      "max": 5.61,
+      "median": 4.393,
+      "min": 4.316,
       "repeats": 3,
       "samples": [
-        5.622,
-        4.419,
-        5.372
+        5.61,
+        4.316,
+        4.393
       ],
       "unit": "ms"
     },
@@ -276,14 +291,14 @@
       "area": "canonical",
       "id": "canonical-json-1000",
       "label": "canonicalise 1000 medium documents",
-      "max": 7.022,
-      "median": 6.903,
-      "min": 6.752,
+      "max": 6.793,
+      "median": 6.704,
+      "min": 6.551,
       "repeats": 3,
       "samples": [
-        6.903,
-        7.022,
-        6.752
+        6.793,
+        6.704,
+        6.551
       ],
       "unit": "ms"
     },
@@ -291,14 +306,14 @@
       "area": "cli",
       "id": "cli-cold-start",
       "label": "ranex --help cold start (interpreter + imports)",
-      "max": 149.834,
-      "median": 146.997,
-      "min": 136.91,
+      "max": 144.536,
+      "median": 141.575,
+      "min": 135.734,
       "repeats": 3,
       "samples": [
-        146.997,
-        149.834,
-        136.91
+        141.575,
+        144.536,
+        135.734
       ],
       "unit": "ms"
     }
