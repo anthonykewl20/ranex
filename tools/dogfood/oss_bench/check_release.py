@@ -41,8 +41,19 @@ def main() -> int:
     if not state.get("budget_cap_usd"):
         missing.append("state.json budget_cap_usd is unset")
     key_env = state.get("api_key_env", "VULCAN_MODEL_API_KEY")
-    if not os.environ.get(key_env):
-        missing.append(f"${key_env} is not set")
+    if os.environ.get(key_env):
+        pass  # env wins; nothing missing
+    else:
+        key_file = state.get("api_key_file")
+        if key_file and Path(key_file).is_file():
+            lines = Path(key_file).read_text().splitlines()
+            line_no = state.get("api_key_file_line")
+            value = lines[line_no - 1] if isinstance(line_no, int) and 0 < line_no <= len(lines) \
+                else next((ln for ln in lines if ln.strip() and " " not in ln), "")
+            if not value.strip():
+                missing.append(f"{key_env} unset and {key_file} has no key line")
+        else:
+            missing.append(f"${key_env} is not set and no api_key_file exists")
     if missing:
         print(f"SKIPPED current={version} benched={benched} reasons={missing}")
         return 4

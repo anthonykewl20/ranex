@@ -1,7 +1,9 @@
 {
   "last_benched_version": null,
-  "model": null,
-  "budget_cap_usd": null,
-  "api_key_env": "VULCAN_MODEL_API_KEY",
-  "note": "last_benched_version null = never benched; model/budget set by the owner before the first real run"
+  "model": "zai:glm-5.3",
+  "budget_cap_usd": 5.0,
+  "api_key_env": "ZAI_API_KEY",
+  "api_key_file": "/home/soultransit/.secrets/GLM-API-KEY",
+  "api_key_file_line": 2,
+  "note": "budget 5.0 USD is a starter cap — adjust to taste; key verified valid 2026-09-03 but Z.ai balance is empty (code 1113): recharge required before any run"
 }
