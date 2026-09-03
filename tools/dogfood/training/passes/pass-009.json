@@ -1,0 +1,206 @@
+{
+  "corpus": {
+    "source": "github"
+  },
+  "examples": [
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied",
+        "corpus/github-real-enterprise"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:a73adb1df42a482d451a22f9ca2606046788c9e477fae47dc902aff2229993f9",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "github:six.git@c8e39406",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids",
+        "corpus/github-real-enterprise"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_six.py::test_BytesIO, test_six.py::test_MAXSIZE, test_six.py::test_StringIO, test_six.py::test_add_doc, test_six.py::test_add_metaclass, test_six.py::test_add_metaclass_nested, test_six.py::test_advance_iterator, test_six.py::test_assertCountEqual, test_six.py::test_assertNotRegex, test_six.py::test_assertRaisesRegex, test_six.py::test_assertRegex, test_six.py::test_b, test_six.py::test_binary_type, test_six.py::test_byte2int, test_six.py::test_bytesindex, test_six.py::test_bytesiter, test_six.py::test_callable, test_six.py::test_class_types, test_six.py::test_create_bound_method, test_six.py::test_create_unbound_method, test_six/TestCustomizedMoves.py::test_custom_move_attribute, test_six/TestCustomizedMoves.py::test_custom_move_module, test_six/TestCustomizedMoves.py::test_empty_remove, test_six/TestCustomizedMoves.py::test_moved_attribute, test_six/TestCustomizedMoves.py::test_moved_module\n      subject=sha256:86f49d62f4852e90e982440697d1723dbb9be9c923c8c15877703a6fdf086d5d",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_MAXSIZE",
+        "test_BytesIO"
+      ],
+      "run_error": "sz/tree/test_six.py::test_BytesIO' in any of [<Module test_six.py>])\n\nERROR: not found: /tmp/ranex-subject-kpglu7sz/tree/test_six.py::test_MAXSIZE\n(no name '/tmp/ranex-subject-kpglu7sz/tree/test_six.py::test_MAXSIZE' in any of [<Module test_six.py>])",
+      "run_exit": 4,
+      "task": "github:six.git@c8e39406",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject",
+        "corpus/github-real-enterprise"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:61a82fff3fd33cd806892dd3fc361c21c41263649f4c9189411fa62cb1bf0c92",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "github:six.git@c8e39406",
+      "variant": "goalpost-move"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence",
+        "corpus/github-real-enterprise"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:d9cd142b33e45a4e3d1c765b6a3e3b69a2d1e10fbf175cf388afc407768020f1",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: ed06643d0d149f360e7725200ed7b2eafdc210b8 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "test_six.py::TestCustomizedMoves::test_custom_move_module",
+        "test_six.py::TestCustomizedMoves::test_empty_remove",
+        "test_six.py::TestCustomizedMoves::test_moved_attribute",
+        "test_six.py::TestCustomizedMoves::test_moved_module",
+        "test_six.py::test_BytesIO",
+        "test_six.py::test_MAXSIZE",
+        "test_six.py::test_StringIO",
+        "test_six.py::test_add_doc",
+        "test_six.py::test_add_metaclass",
+        "test_six.py::test_add_metaclass_nested",
+        "test_six.py::test_advance_iterator",
+        "test_six.py::test_assertCountEqual",
+        "test_six.py::test_assertNotRegex",
+        "test_six.py::test_assertRaisesRegex",
+        "test_six.py::test_assertRegex",
+        "test_six.py::test_b",
+        "test_six.py::test_binary_type",
+        "test_six.py::test_byte2int",
+        "test_six.py::test_bytesindex",
+        "test_six.py::test_bytesiter",
+        "test_six.py::test_callable",
+        "test_six.py::test_class_types",
+        "test_six.py::test_create_bound_method",
+        "test_six.py::test_create_unbound_method"
+      ],
+      "task": "github:six.git@c8e39406",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "test_six.py::TestCustomizedMoves::test_custom_move_module",
+        "test_six.py::TestCustomizedMoves::test_empty_remove",
+        "test_six.py::TestCustomizedMoves::test_moved_attribute",
+        "test_six.py::TestCustomizedMoves::test_moved_module",
+        "test_six.py::test_BytesIO",
+        "test_six.py::test_MAXSIZE",
+        "test_six.py::test_StringIO",
+        "test_six.py::test_add_doc",
+        "test_six.py::test_add_metaclass",
+        "test_six.py::test_add_metaclass_nested",
+        "test_six.py::test_advance_iterator",
+        "test_six.py::test_assertCountEqual",
+        "test_six.py::test_assertNotRegex",
+        "test_six.py::test_assertRaisesRegex",
+        "test_six.py::test_assertRegex",
+        "test_six.py::test_b",
+        "test_six.py::test_binary_type",
+        "test_six.py::test_byte2int",
+        "test_six.py::test_bytesindex",
+        "test_six.py::test_bytesiter",
+        "test_six.py::test_callable",
+        "test_six.py::test_class_types",
+        "test_six.py::test_create_bound_method",
+        "test_six.py::test_create_unbound_method"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch",
+        "corpus/github-real-enterprise"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:024be83dbef3af601117c755e5b2e7c954c2851014284ce0f47c61a616b2b4da",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "github:six.git@c8e39406",
+      "variant": "manifest-crossbind"
+    }
+  ],
+  "git_head": "07398d74d485870906739852864933b5fe40639e",
+  "github": {
+    "baseline_green": true,
+    "baseline_tail": "25 passed in 0.05s",
+    "commit": "c8e394065cd541a16c040515dc0afb85cf22a7c3",
+    "max_ids": 25,
+    "node_ids": [
+      "test_six.py::TestCustomizedMoves::test_custom_move_attribute",
+      "test_six.py::TestCustomizedMoves::test_custom_move_module",
+      "test_six.py::TestCustomizedMoves::test_empty_remove",
+      "test_six.py::TestCustomizedMoves::test_moved_attribute",
+      "test_six.py::TestCustomizedMoves::test_moved_module",
+      "test_six.py::test_BytesIO",
+      "test_six.py::test_MAXSIZE",
+      "test_six.py::test_StringIO",
+      "test_six.py::test_add_doc",
+      "test_six.py::test_add_metaclass",
+      "test_six.py::test_add_metaclass_nested",
+      "test_six.py::test_advance_iterator",
+      "test_six.py::test_assertCountEqual",
+      "test_six.py::test_assertNotRegex",
+      "test_six.py::test_assertRaisesRegex",
+      "test_six.py::test_assertRegex",
+      "test_six.py::test_b",
+      "test_six.py::test_binary_type",
+      "test_six.py::test_byte2int",
+      "test_six.py::test_bytesindex",
+      "test_six.py::test_bytesiter",
+      "test_six.py::test_callable",
+      "test_six.py::test_class_types",
+      "test_six.py::test_create_bound_method",
+      "test_six.py::test_create_unbound_method"
+    ],
+    "rev": "HEAD",
+    "url": "https://github.com/benjaminp/six.git"
+  },
+  "pass": 9,
+  "pass_digest": "sha256:97e63c816e0d8fb119c33485c905e547e5ef14bbf73143b85e38986d29ae2382",
+  "prev_pass_digest": "sha256:7c4020fc17f26c76d61084fa8adbad5cb17ccc6d297ba1061532dfb5bbbd8f15",
+  "requested": {
+    "rev": "HEAD",
+    "url": "https://github.com/benjaminp/six.git",
+    "variants": [
+      "gold",
+      "delete-tests",
+      "goalpost-move",
+      "manifest-swap",
+      "manifest-crossbind"
+    ]
+  },
+  "schema": "ranex-dogfood-training-pass-v1",
+  "summary": {
+    "agree": 5,
+    "diverge": 0,
+    "examples": 5,
+    "skipped": 0
+  }
+}

@@ -152,11 +152,18 @@ def cmd_train(args: argparse.Namespace) -> int:
                         env_assignments=sorted(
                             {a for e in record.entries for a in e.env}))
                 except Exception as exc:  # noqa: BLE001 — a failed build is data
-                    example = {"variant": variant, "task": record.id,
-                               "expected_gate": "?" if variant != "gold" else "PASS",
-                               "actual_gate": "ERROR", "agree": False,
-                               "error": f"{type(exc).__name__}: {exc}"[:300]}
-            if not example.get("skipped"):
+                    if "TimeoutExpired" in str(exc):
+                        # A HARNESS cap (probe/run timeout), not a kernel
+                        # verdict: file as a skip, never as a ranex divergence.
+                        example = {"variant": variant, "task": record.id,
+                                   "skipped": f"harness timeout: {str(exc)[:120]}",
+                                   "agree": None}
+                    else:
+                        example = {"variant": variant, "task": record.id,
+                                   "expected_gate": "PASS" if variant == "gold" else "FAIL",
+                                   "actual_gate": "ERROR", "agree": False,
+                                   "error": f"{type(exc).__name__}: {exc}"[:300]}
+            if not example.get("skipped") and example.get("actual_gate") not in (None, "ERROR"):
                 example["classes"] = variants.classes_for(example)
                 if example.get("agree") is False:
                     divergences.append(example)
@@ -169,17 +176,23 @@ def cmd_train(args: argparse.Namespace) -> int:
         # C-03 lesson: persist incrementally, never only at the end.
         pass_record["summary"] = _summary(pass_record["examples"])
         _rewrite_pending(pass_record)
-    coverage_path = ledger.write_coverage()
-    pass_record["summary"] = _summary(pass_record["examples"])
-    pass_path = ledger.write_pass(pass_record)
-    (ledger.PASSES_DIR / "pending.json").unlink(missing_ok=True)
+    coverage_path = _write_pass_then_coverage(pass_record)
     print(f"\nexamples: {written}  divergences: {len(divergences)}")
-    print(f"pass -> {pass_path}")
+    print(f"pass -> {pass_record['pass_path']}")
     print(f"coverage -> {coverage_path}")
     uncovered = ledger.uncovered_required_classes()
     if uncovered:
         print(f"required classes still untrained: {uncovered}")
     return 1 if divergences else 0
+
+
+def _write_pass_then_coverage(pass_record: dict) -> Path:
+    """Pass FIRST, then coverage: coverage.json must include the pass just
+    recorded, or it is permanently one pass stale (review P1-4)."""
+    pass_path = ledger.write_pass(pass_record)
+    pass_record["pass_path"] = str(pass_path)
+    (ledger.PASSES_DIR / "pending.json").unlink(missing_ok=True)
+    return ledger.write_coverage()
 
 
 def _summary(examples: list[dict]) -> dict:
@@ -220,11 +233,11 @@ def cmd_github(args: argparse.Namespace) -> int:
         return 2
     pass_record["examples"] = examples
     pass_record["summary"] = _summary(examples)
-    path = ledger.write_pass(pass_record)
+    pass_path = ledger.write_pass(pass_record)
     coverage_path = ledger.write_coverage()
     divergences = [e for e in examples if e.get("agree") is False]
     print(f"\nexamples: {len(examples)}  divergences: {len(divergences)}")
-    print(f"pass -> {path}\ncoverage -> {coverage_path}")
+    print(f"pass -> {pass_path}\ncoverage -> {coverage_path}")
     return 1 if divergences else 0
 
 

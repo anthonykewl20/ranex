@@ -1,0 +1,169 @@
+{
+  "corpus": {
+    "cmd-unparseable": 3,
+    "diff-graded": 32,
+    "exercisable": 157,
+    "gold-not-green": 15,
+    "preflight-ok": 104,
+    "preflight_failure_reasons": {
+      "cannot parse junitxml: no element found: line 1, column 0": 5,
+      "junitxml testcase must carry classname and name": 23,
+      "tests collect only with the task env ": 10
+    },
+    "toolchain-unavailable": 95
+  },
+  "examples": [
+    {
+      "actual_gate": "PASS",
+      "agree": true,
+      "classes": [
+        "verdict/suite-satisfied"
+      ],
+      "expected_gate": "PASS",
+      "gate_exit": 0,
+      "gate_output": "PASS  gate=landing  subject=sha256:71bdc0b9a2aadecb21a25d669c30cb6fb3778a3f308dccc3f83f697e45825cd5",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "v1/py-txn-kvstore",
+      "variant": "gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/tests-failing-pre-fix",
+        "diagnosis/non-passed-tests"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): test_txnkv.py::test_autocommit_without_transaction (failed), test_txnkv.py::test_commit_keeps_changes (failed), test_txnkv.py::test_commit_without_transaction_raises (failed), test_txnkv.py::test_keys_reflects_transaction_state (failed), test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything (failed), test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact (failed), test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse (failed), test_txnkv.py::test_rollback_restores_deleted_key (failed), test_txnkv.py::test_rollback_restores_prior_value_and_absence (failed)\n      subject=sha256:17a6b7f99d17ca58a6b0db3ddb509725a8f3851d62a75561399673282d2e848c",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 1,
+      "task": "v1/py-txn-kvstore",
+      "variant": "empty"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/missing-ids-gaming",
+        "diagnosis/missing-ids"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): test_txnkv.py::test_autocommit_without_transaction, test_txnkv.py::test_commit_keeps_changes, test_txnkv.py::test_commit_without_transaction_raises, test_txnkv.py::test_keys_reflects_transaction_state, test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything, test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact, test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse, test_txnkv.py::test_rollback_restores_deleted_key, test_txnkv.py::test_rollback_restores_prior_value_and_absence\n      subject=sha256:702e8fff0909eceddb2cd695da90a9e000513bf781b5a1cc7c83d255cf919ecd",
+      "journal_verified": true,
+      "removed_tests": [
+        "test_autocommit_without_transaction",
+        "test_commit_keeps_changes"
+      ],
+      "run_error": " in any of [<Module test_txnkv.py>])\n\nERROR: not found: /tmp/ranex-subject-f48urhek/tree/test_txnkv.py::test_commit_keeps_changes\n(no name '/tmp/ranex-subject-f48urhek/tree/test_txnkv.py::test_commit_keeps_changes' in any of [<Module test_txnkv.py>])",
+      "run_exit": 4,
+      "task": "v1/py-txn-kvstore",
+      "variant": "delete-tests"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/stale-subject-binding",
+        "diagnosis/stale-subject"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:23434d9951845e1ab5c3e34cb5acf79f05cf774c99a0882932f6c64a7f28ed74",
+      "journal_verified": true,
+      "moved_by": "post-evidence commit",
+      "run_error": "",
+      "run_exit": 0,
+      "task": "v1/py-txn-kvstore",
+      "variant": "goalpost-move"
+    },
+    {
+      "agree": null,
+      "skipped": "gold patch is single-hunk",
+      "task": "v1/py-txn-kvstore",
+      "variant": "partial-gold"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "classes": [
+        "verdict/manifest-mismatch-at-evidence-time",
+        "diagnosis/absent-evidence"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      no evidence for required claim: tests-executed\n      subject=sha256:96e071048432e88a4defe7fde258909f811c71629d0c528fe3cf243861c76c09",
+      "journal_verified": true,
+      "refused_at": "run",
+      "run_error": "sing to evaluate: b7a3d22ffc75a439ccfed3d09e9fe191e1ee4290 carries no suite manifest at governance/tampered-manifest.json, and it decides this verdict. A file no commit carries is a file review never saw \u2014 commit it, or name the one that is committed",
+      "run_exit": 2,
+      "tampered_suite": [
+        "test_txnkv.py::test_commit_keeps_changes",
+        "test_txnkv.py::test_commit_without_transaction_raises",
+        "test_txnkv.py::test_keys_reflects_transaction_state",
+        "test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything",
+        "test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact",
+        "test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse",
+        "test_txnkv.py::test_rollback_restores_deleted_key",
+        "test_txnkv.py::test_rollback_restores_prior_value_and_absence"
+      ],
+      "task": "v1/py-txn-kvstore",
+      "variant": "manifest-swap"
+    },
+    {
+      "actual_gate": "FAIL",
+      "agree": true,
+      "alt_suite": [
+        "test_txnkv.py::test_commit_keeps_changes",
+        "test_txnkv.py::test_commit_without_transaction_raises",
+        "test_txnkv.py::test_keys_reflects_transaction_state",
+        "test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything",
+        "test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact",
+        "test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse",
+        "test_txnkv.py::test_rollback_restores_deleted_key",
+        "test_txnkv.py::test_rollback_restores_prior_value_and_absence"
+      ],
+      "classes": [
+        "verdict/manifest-mismatch-cross-bind",
+        "diagnosis/manifest-mismatch"
+      ],
+      "expected_gate": "FAIL",
+      "gate_exit": 1,
+      "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: suite manifest digest did not match the claim\n      subject=sha256:eb9857bb2461184e713aefcc96bf71f5ecbb8af7fe9c011351b90294577eb46d",
+      "journal_verified": true,
+      "run_error": "",
+      "run_exit": 0,
+      "task": "v1/py-txn-kvstore",
+      "variant": "manifest-crossbind"
+    }
+  ],
+  "git_head": "07398d74d485870906739852864933b5fe40639e",
+  "pass": 8,
+  "pass_digest": "sha256:7c4020fc17f26c76d61084fa8adbad5cb17ccc6d297ba1061532dfb5bbbd8f15",
+  "prev_pass_digest": "sha256:abbee35cb4a38d71ee577b6b83b6ed1dcad6f039ab8572db690124a9a0f49638",
+  "requested": {
+    "limit": 0,
+    "suites": null,
+    "task": "v1/py-txn-kvstore",
+    "variants": [
+      "gold",
+      "empty",
+      "delete-tests",
+      "goalpost-move",
+      "partial-gold",
+      "manifest-swap",
+      "manifest-crossbind"
+    ]
+  },
+  "schema": "ranex-dogfood-training-pass-v1",
+  "summary": {
+    "agree": 6,
+    "diverge": 0,
+    "examples": 6,
+    "skipped": 1
+  }
+}

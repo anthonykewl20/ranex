@@ -34,6 +34,28 @@ APPROVER = "dogfood-trainer-approver"
 GATE_PASS, GATE_FAIL, GATE_ERROR = "PASS", "FAIL", "ERROR"
 
 
+def governed_equivalent_env(scratch: Path) -> dict[str, str]:
+    """The EXACT environment a confined child sees under `ranex run`
+    (cli/main.py: `PATH` pinned dirs, scratch `HOME`/`TMPDIR`, `LANG`,
+    git system-config opt-outs). Probes and labels are only sound when
+    they run under this env — anything weaker (e.g. merely dropping
+    PYTHONPATH) lets env-dependent tests pass preflight and then
+    false-diverge under governance.
+    """
+    home = scratch / "governed-home"
+    tmp = scratch / "governed-tmp"
+    home.mkdir(parents=True, exist_ok=True)
+    tmp.mkdir(parents=True, exist_ok=True)
+    return {
+        "PATH": "/usr/bin:/bin:/usr/sbin:/sbin",
+        "HOME": str(home),
+        "TMPDIR": str(tmp),
+        "LANG": "C.UTF-8",
+        "GIT_CONFIG_NOSYSTEM": "1",
+        "GIT_ATTRS_NOSYSTEM": "1",
+    }
+
+
 def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         ["git", "-C", str(repo), "-c", "user.email=trainer@ranex.invalid",
@@ -136,11 +158,9 @@ class GovernedRepo:
         assert _git(self.root, "add", "-A").returncode == 0
         assert _git(self.root, "commit", "-qm", "task base + pristine tests").returncode == 0
 
-        # Freeze the manifest under CONFINEMENT-EQUIVALENT conditions: ranex
-        # run strips the child env (PYTHONPATH=None verified), so the frozen
+        # Freeze the manifest under CONFINEMENT-EQUIVALENT conditions (the
+        # exact governed child env, not a weaker approximation): the frozen
         # ID set must be collectable the same way the governed run will.
-        (self.root / "governance").mkdir(exist_ok=True)
-        confined_env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
         with tempfile.NamedTemporaryFile(dir=out, suffix=".xml", delete=False) as probe:
             probe_path = Path(probe.name)
         try:
@@ -148,7 +168,7 @@ class GovernedRepo:
                 ["/usr/bin/python3", "-m", "pytest", "-q", f"--junitxml={probe_path}",
                  *sorted(set(node_ids))],
                 cwd=str(self.root), capture_output=True, text=True, check=False,
-                timeout=120, env=confined_env,
+                timeout=120, env=governed_equivalent_env(out),
             )
             _ = run  # pre-fix tests are red by contract; the manifest records IDs only
             from ranex.foundation.suite_results import freeze_manifest
@@ -156,6 +176,32 @@ class GovernedRepo:
             manifest = freeze_manifest(probe_path.read_bytes(), expected_skips={})
         finally:
             probe_path.unlink(missing_ok=True)
+        # The manifest must cover the contracted tests. A probe that
+        # collected nothing (pytest usage error, crashed collection) still
+        # yields a VALID empty manifest — which the gate would satisfy
+        # vacuously. Spelling subtlety: the kernel synthesizes junit ids as
+        # `classname.py::name`, so a class-nested pytest id (file.py::Cls::
+        # test) freezes as `file/Cls.py::test` — a different spelling of
+        # the same test. Exact set equality is demanded only when every
+        # contracted id is plain top-level shape; otherwise coverage is
+        # asserted at the test-name level.
+        manifest_ids = set(manifest["suite"])
+        assert manifest_ids, "frozen manifest is empty (probe collected nothing)"
+        plain = [nid for nid in set(node_ids) if nid.count("::") == 1]
+        if len(plain) == len(set(node_ids)):
+            assert manifest_ids == set(node_ids), (
+                f"frozen manifest does not match the contracted ids: "
+                f"missing={sorted(set(node_ids) - manifest_ids)[:3]} "
+                f"extra={sorted(manifest_ids - set(node_ids))[:3]}"
+            )
+        else:
+            manifest_names = {mid.rsplit("::", 1)[-1] for mid in manifest_ids}
+            contracted_names = {nid.rsplit("::", 1)[-1] for nid in node_ids}
+            missing = sorted(contracted_names - manifest_names)
+            assert not missing, (
+                f"frozen manifest misses contracted test names: {missing[:3]}"
+            )
+        (self.root / "governance").mkdir(exist_ok=True)
         (self.root / "governance" / "suite_manifest.json").write_bytes(_canonical(manifest))
         if alt_manifest_suite is not None:
             # A second COMMITTED manifest with a different suite: legal input
@@ -243,10 +289,14 @@ class GovernedRepo:
 
 
 def verdict_of(gate_result: dict[str, Any]) -> str:
-    """Exit-code semantics: 0 PASS, 1 FAIL, anything else is an error, never a guess."""
-    if gate_result["exit"] == 0:
+    """Exit-code semantics PLUS the verdict line: 0→PASS, 1→FAIL only when
+    the output actually carries `PASS  gate=`/`FAIL  gate=` (an uncaught
+    crash also exits 1 and must never be graded as a judged FAIL), anything
+    else is an error, never a guess."""
+    output = gate_result["stdout"]
+    if gate_result["exit"] == 0 and "PASS  gate=" in output:
         return GATE_PASS
-    if gate_result["exit"] == 1:
+    if gate_result["exit"] == 1 and "FAIL  gate=" in output:
         return GATE_FAIL
     return GATE_ERROR
 

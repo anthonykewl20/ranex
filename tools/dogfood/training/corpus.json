@@ -7397,7 +7397,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/python-1/oss-click-param-named-help",
       "preflight": {
-        "reason": "gold not green here: 3 failed in 0.02s",
+        "reason": "gold not green here: 3 failed in 0.03s",
         "status": "gold-not-green"
       },
       "suite": "python-1",
@@ -9097,7 +9097,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v1/oss-click-choice-brackets",
       "preflight": {
-        "reason": "gold not green here: 1 failed in 0.03s",
+        "reason": "gold not green here: 1 failed in 0.02s",
         "status": "gold-not-green"
       },
       "suite": "v1",
@@ -11408,7 +11408,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-click-version-distribution-name",
       "preflight": {
-        "reason": "gold not green here: 1 failed in 0.02s",
+        "reason": "gold not green here: 1 failed in 0.03s",
         "status": "gold-not-green"
       },
       "suite": "v2",
@@ -12039,7 +12039,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-pytest-approx-public-type",
       "preflight": {
-        "reason": "gold not green here: 2 failed in 0.01s",
+        "reason": "gold not green here: 2 failed in 0.02s",
         "status": "gold-not-green"
       },
       "suite": "v2",
@@ -12682,7 +12682,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/v2/oss-urllib3-reject-invalid-host",
       "preflight": {
-        "reason": "gold not green here: 5 failed in 0.01s",
+        "reason": "gold not green here: 5 failed in 0.02s",
         "status": "gold-not-green"
       },
       "suite": "v2",
@@ -15178,7 +15178,7 @@
       "notes": [],
       "path": "/home/soultransit/devtony/VulcanBench/tasks/vulcancyber-v1/oss-pyyaml-merge-key-dos",
       "preflight": {
-        "reason": "gold not green here: 3 failed in 0.05s",
+        "reason": "gold not green here: 3 failed in 0.06s",
         "status": "gold-not-green"
       },
       "suite": "vulcancyber-v1",

@@ -34,11 +34,13 @@ def _run_pytest(root: Path, junit: Path | None, node_ids: list[str],
                           check=False, timeout=PROBE_TIMEOUT_SECONDS, env=env)
 
 
-def _collection_ok(root: Path, node_ids: list[str], env: dict) -> str | None:
+def _collection_ok(root: Path, node_ids: list[str], env: dict,
+                   scratch: Path | None = None) -> str | None:
     """None when the suite collects under `env`, else a short reason."""
     import tempfile as _tf
 
-    with _tf.NamedTemporaryFile(suffix=".xml", delete=False) as probe:
+    with _tf.NamedTemporaryFile(suffix=".xml", delete=False,
+                                dir=scratch if scratch else None) as probe:
         junit = Path(probe.name)
     try:
         run = _run_pytest(root, junit, node_ids, env)
@@ -74,14 +76,15 @@ def preflight_task(task_dir: Path, node_ids: list[str],
     for assignment in env_assignments or []:
         key, _, value = assignment.partition("=")
         task_env[key] = value
-    confined_env = {k: v for k, v in os.environ.items() if k != "PYTHONPATH"}
 
     with tempfile.TemporaryDirectory(prefix="ranex-preflight-") as tmp:
-        root = Path(tmp) / "repo"
+        scratch = Path(tmp)
+        root = scratch / "repo"
         root.mkdir()
         try:
-            from trainer.governed import materialize_repo
+            from trainer.governed import governed_equivalent_env, materialize_repo
 
+            governed_env = governed_equivalent_env(scratch)
             materialize_repo(task_dir, root)
         except Exception as exc:  # noqa: BLE001 — any materialization failure is data
             return {"status": "failed",
@@ -93,13 +96,17 @@ def preflight_task(task_dir: Path, node_ids: list[str],
                 if item.name == "__pycache__":
                     continue
                 target = root / item.name
+                if target.exists():
+                    # GovernedRepo refuses collisions; preflight must agree.
+                    return {"status": "failed",
+                            "reason": f"hidden test collides with repo file: {item.name}"}
                 if item.is_dir():
-                    shutil.copytree(item, target, dirs_exist_ok=True)
+                    shutil.copytree(item, target)
                 else:
                     shutil.copy2(item, target)
         _git_init(root)
 
-        confined_reason = _collection_ok(root, node_ids, confined_env)
+        confined_reason = _collection_ok(root, node_ids, governed_env)
         if confined_reason is not None:
             with_env_reason = _collection_ok(root, node_ids, task_env)
             if with_env_reason is None:
@@ -110,7 +117,23 @@ def preflight_task(task_dir: Path, node_ids: list[str],
 
         gold = task_dir / "gold_patch.diff"
         if not gold.is_file():
-            return {"status": "ok"}
+            return {"status": "no-gold-patch",
+                    "reason": "corpus task carries no gold_patch.diff; the "
+                              "gold variant has no solution to apply"}
+
+        # Pristine-red gate: the empty variant's FAIL label is only sound
+        # when the contracted tests actually fail BEFORE the fix. A task
+        # whose f2p ids already pass on this interpreter (VulcanBench graded
+        # them red inside docker, not here) would false-diverge.
+        try:
+            pristine = _run_pytest(root, None, node_ids, governed_env)
+        except subprocess.TimeoutExpired:
+            return {"status": "failed", "reason": "pristine suite timeout"}
+        if pristine.returncode == 0:
+            return {"status": "pristine-green-here",
+                    "reason": "contracted tests pass BEFORE the fix on this "
+                              "host; the empty/partial labels are unsound"}
+
         applied = subprocess.run(
             ["git", "-C", str(root), "apply", str(gold)],
             capture_output=True, text=True, check=False)
@@ -118,7 +141,7 @@ def preflight_task(task_dir: Path, node_ids: list[str],
             return {"status": "gold-not-green",
                     "reason": f"gold patch does not apply: {applied.stderr[-120:]}"}
         try:
-            gold_run = _run_pytest(root, None, node_ids, confined_env)
+            gold_run = _run_pytest(root, None, node_ids, governed_env)
         except subprocess.TimeoutExpired:
             return {"status": "gold-not-green",
                     "reason": f"gold suite exceeded {PROBE_TIMEOUT_SECONDS}s"}

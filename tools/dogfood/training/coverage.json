@@ -1,24 +1,24 @@
 {
-  "agree": 695,
+  "agree": 708,
   "classes": {
-    "corpus/github-real-enterprise": 5,
-    "diagnosis/absent-evidence": 106,
-    "diagnosis/manifest-mismatch": 93,
-    "diagnosis/missing-ids": 109,
-    "diagnosis/non-passed-tests": 171,
-    "diagnosis/stale-subject": 105,
-    "verdict/manifest-mismatch-at-evidence-time": 105,
-    "verdict/manifest-mismatch-cross-bind": 93,
-    "verdict/missing-ids-gaming": 109,
+    "corpus/github-real-enterprise": 10,
+    "diagnosis/absent-evidence": 108,
+    "diagnosis/manifest-mismatch": 95,
+    "diagnosis/missing-ids": 112,
+    "diagnosis/non-passed-tests": 172,
+    "diagnosis/stale-subject": 107,
+    "verdict/manifest-mismatch-at-evidence-time": 107,
+    "verdict/manifest-mismatch-cross-bind": 95,
+    "verdict/missing-ids-gaming": 112,
     "verdict/partial-solution-failing": 66,
-    "verdict/stale-subject-binding": 105,
-    "verdict/suite-satisfied": 109,
-    "verdict/tests-failing-pre-fix": 108
+    "verdict/stale-subject-binding": 107,
+    "verdict/suite-satisfied": 112,
+    "verdict/tests-failing-pre-fix": 109
   },
   "distinct_tasks": 105,
   "diverge": 0,
-  "examples": 695,
-  "passes": 6,
+  "examples": 708,
+  "passes": 9,
   "schema": "ranex-dogfood-training-coverage-v1",
-  "skipped": 50
+  "skipped": 51
 }

@@ -57,13 +57,36 @@ def load_passes() -> list[dict[str, Any]]:
 
 def write_pass(pass_record: dict[str, Any]) -> Path:
     PASSES_DIR.mkdir(parents=True, exist_ok=True)
-    number = len(load_passes()) + 1
     previous = load_passes()
+    number = len(previous) + 1
     pass_record["pass"] = number
     pass_record["prev_pass_digest"] = previous[-1]["pass_digest"] if previous else None
     pass_record["pass_digest"] = _digest_of(pass_record)
     path = PASSES_DIR / f"pass-{number:03d}.json"
-    path.write_text(json.dumps(pass_record, indent=2, sort_keys=True) + "\n")
+    # Exclusive create: two concurrent runs must never silently overwrite
+    # the same pass number (both chains would stay "valid" while one pass
+    # is lost). Atomic replace so a crash never leaves truncated JSON that
+    # bricks load_passes().
+    import os
+    import tempfile
+
+    fd, tmp_name = tempfile.mkstemp(dir=PASSES_DIR, suffix=".json.tmp")
+    try:
+        with os.fdopen(fd, "w") as handle:
+            handle.write(json.dumps(pass_record, indent=2, sort_keys=True) + "\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        try:
+            os.link(tmp_name, path)      # fails with FileExistsError on collision
+        except FileExistsError:
+            raise ValueError(
+                f"training pass {path.name} already exists — another trainer "
+                "run is writing concurrently; re-run after it finishes")
+        finally:
+            os.unlink(tmp_name)
+    except BaseException:
+        Path(tmp_name).unlink(missing_ok=True)
+        raise
     return path
 
 

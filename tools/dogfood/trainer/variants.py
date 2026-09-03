@@ -35,46 +35,77 @@ def first_hunk_patch(patch: Path, out_dir: Path) -> Path | None:
     """The gold diff restricted to the first file's first hunk.
 
     None when the patch is single-hunk (partial == whole, no signal).
-    Byte-deterministic: text slicing on the diff grammar only.
+    BYTE-preserving: the diff is sliced as bytes — CR characters are diff
+    CONTENT for CRLF files, and universal-newline decoding would corrupt
+    the partial patch so `git apply` fails against the very files the gold
+    patch handles fine.
     """
-    text = patch.read_text()
-    blocks = text.split("diff --git ")
+    raw = patch.read_bytes()
+    marker = b"diff --git "
+    blocks = raw.split(marker)
     if len(blocks) < 2:
         return None
     first = blocks[1]
-    at = first.find("\n@@")
+    at = first.find(b"\n@@")
     if at == -1:
         return None
     header_end = at + 1
-    next_hunk = first.find("\n@@", header_end)
+    next_hunk = first.find(b"\n@@", header_end)
     if next_hunk == -1:
         return None  # single hunk: withholding it would test the empty patch
     truncated = first[: next_hunk + 1]
     partial = out_dir / "partial-gold.diff"
-    partial.write_text(blocks[0] + "diff --git " + truncated)
-    if partial.read_text() == text:
+    payload = blocks[0] + marker + truncated
+    if payload == raw:
         return None
+    partial.write_bytes(payload)
     return partial
 
 
 def delete_test_functions(repo: governed.GovernedRepo, node_ids: list[str],
                           how_many: int = 2) -> list[str]:
-    """Delete the first `how_many` manifest-bound test functions; return names."""
-    files = sorted({nid.split("::")[0] for nid in node_ids})
-    removed: list[str] = []
-    for filename in files:
-        if how_many <= 0:
+    """Delete EXACTLY the functions the manifest ids name (not whatever
+    test function happens to sit first in the file).
+
+    Victims are chosen from ids of the plain top-level shape `file::name`
+    (no class segment, no parametrize brackets) so the deletion provably
+    removes manifest-bound tests; class-nested, parametrized and async
+    shapes are left alone rather than approximated. Returns the deleted
+    names — an empty list means "no deletable shape" and the caller must
+    skip, never grade.
+    """
+    victims: dict[str, list[str]] = {}
+    for nid in sorted(set(node_ids)):
+        parts = nid.split("::")
+        if len(parts) != 2:          # class-nested or deeper: skip the shape
+            continue
+        name = parts[1]
+        if "[" in name or not name.startswith("test"):
+            continue                 # parametrized or not a test function
+        victims.setdefault(parts[0], []).append(name)
+    chosen: dict[str, list[str]] = {}
+    total = 0
+    for filename, names in sorted(victims.items()):
+        take = min(len(names), how_many - total)
+        if take <= 0:
             break
+        chosen[filename] = names[:take]
+        total += take
+    if total == 0:
+        return []
+    removed: list[str] = []
+    for filename, names in chosen.items():
         victim = repo.root / filename
         if not victim.is_file():
             continue
         tree = ast.parse(victim.read_text())
-        kept, dropped = [], []
+        wanted = set(names)
+        kept: list[ast.stmt] = []
+        dropped: list[str] = []
         for node in tree.body:
-            if (isinstance(node, ast.FunctionDef) and node.name.startswith("test")
-                    and how_many > 0):
+            if (isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef))
+                    and node.name in wanted):
                 dropped.append(node.name)
-                how_many -= 1
                 continue
             kept.append(node)
         if dropped:
@@ -104,6 +135,10 @@ def run_exercise(variant: str, task_dir: Path, out: Path,
     elif variant == "delete-tests":
         repo.apply_patch(gold_patch, "gold solution")
         removed = delete_test_functions(repo, node_ids)
+        if not removed:
+            return _skipped(variant, task_dir,
+                            "no plain top-level test functions in the "
+                            "manifest ids (class-nested/parametrized only)")
         repo.commit_working_tree("agent solution (tests 'cleaned up')")
         expect_contains = ("missing test ID(s):",)
     elif variant == "goalpost-move":

@@ -51,11 +51,12 @@ def clone_pinned(url: str, rev: str, out: Path) -> tuple[Path, str]:
     return out, sha
 
 
-def collect_node_ids(repo: Path, max_ids: int) -> list[str]:
+def collect_node_ids(repo: Path, max_ids: int, env: dict) -> list[str]:
     """The repo's own test ids, via real collection under the pinned toolchain."""
     run = subprocess.run(
         ["/usr/bin/python3", "-m", "pytest", "--collect-only", "-q", "--no-header"],
         cwd=str(repo), capture_output=True, text=True, check=False, timeout=300,
+        env=env,
     )
     ids = sorted({line.strip() for line in run.stdout.splitlines()
                   if _NODE_ID.match(line.strip())})
@@ -66,15 +67,17 @@ def collect_node_ids(repo: Path, max_ids: int) -> list[str]:
     return ids[:max_ids]
 
 
-def baseline_green(repo: Path, node_ids: list[str]) -> tuple[bool, str]:
+def baseline_green(repo: Path, node_ids: list[str], env: dict) -> tuple[bool, str]:
     """Run the pristine suite honestly; -> (all selected ids pass?, tail)."""
-    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False) as probe:
+    with tempfile.NamedTemporaryFile(suffix=".xml", delete=False,
+                                     dir=repo.parent) as probe:
         junit = Path(probe.name)
     try:
         run = subprocess.run(
             ["/usr/bin/python3", "-m", "pytest", "-q", f"--junitxml={junit}",
              *node_ids],
             cwd=str(repo), capture_output=True, text=True, check=False, timeout=600,
+            env=env,
         )
         tail = run.stdout.strip().splitlines()[-1] if run.stdout.strip() else ""
         return run.returncode == 0, tail[:120]
@@ -93,9 +96,17 @@ def train_github(url: str, rev: str, max_ids: int, wanted: list[str],
         repo_dir, sha = clone_pinned(url, rev, scratch / "repo")
         record["github"] = {"url": url, "rev": rev, "commit": sha,
                             "max_ids": max_ids}
-        node_ids = collect_node_ids(repo_dir, max_ids)
+        # Labels must be measured under the GOVERNED-equivalent env, not the
+        # trainer's inherited shell env: `ranex run` confines the child
+        # (pinned PATH, scratch HOME/TMPDIR, LANG=C.UTF-8), and a baseline
+        # that is only green under our shell would false-diverge the gold
+        # variant under governance (review P1-6).
+        from trainer.governed import governed_equivalent_env
+
+        env = governed_equivalent_env(scratch)
+        node_ids = collect_node_ids(repo_dir, max_ids, env)
         record["github"]["node_ids"] = node_ids
-        green, tail = baseline_green(repo_dir, node_ids)
+        green, tail = baseline_green(repo_dir, node_ids, env)
         record["github"]["baseline_green"] = green
         record["github"]["baseline_tail"] = tail
         if not green:
