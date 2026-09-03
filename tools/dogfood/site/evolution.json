@@ -234,6 +234,15 @@
       "scenarios": 43,
       "sha": "41d447f41",
       "subject": "tools: external-proof unit landed (parallel session, verifie"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 14,
+      "scenarios": 43,
+      "sha": "942e6b8b1",
+      "subject": "docs: STATE condensed to the 50-line cap (49 lines, substanc"
     }
   ]
 }
