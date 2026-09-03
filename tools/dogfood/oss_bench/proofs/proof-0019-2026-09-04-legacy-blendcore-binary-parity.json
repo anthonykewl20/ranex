@@ -1,0 +1,38 @@
+{
+  "agent_steps": 87,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q",
+    "elapsed_s": 0.2,
+    "exit": 5,
+    "output_tail": "1 warning in 0.04s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.500929,
+  "date": "2026-09-04",
+  "duration_s": 892.405,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "f983c964736cdd71d0d532fcb24ac0cb03440303",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 0.6,
+    "gate_output": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      evidence bound to a different subject digest: host-qualification, tests-executed\n      subject=sha256:c21443a50945b075879cc13ea84de5082b2eca02fec3e2f771daee905a843249",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest",
+    "run_error": " /home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/legacy-blendcore-binary-parity-5a57dc3d/repo/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/legacy-blendcore-binary-parity-5a57dc3d/keys/bench.key",
+    "run_exit": 2
+  },
+  "run_id": "legacy-blendcore-binary-parity-5a57dc3d",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "I'll start by exploring the repository structure.",
+    "heuristic": true
+  },
+  "task": "legacy-blendcore-binary-parity",
+  "tokens": 267549
+}

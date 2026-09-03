@@ -1,0 +1,38 @@
+{
+  "agent_steps": 8,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q test_sliding.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "12 passed in 0.11s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.015191,
+  "date": "2026-09-04",
+  "duration_s": 60.801,
+  "false_block": true,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "f983c964736cdd71d0d532fcb24ac0cb03440303",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 0.6,
+    "gate_output": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      evidence bound to a different subject digest: host-qualification, tests-executed\n      subject=sha256:c21443a50945b075879cc13ea84de5082b2eca02fec3e2f771daee905a843249",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_sliding.py::test_correctness test_sliding.py::test_invalid_k_raises test_sliding.py::test_large_input_is_efficient",
+    "run_error": "points at no file: /home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-sliding-window-max-5615f606/repo/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-sliding-window-max-5615f606/keys/bench.key",
+    "run_exit": 2
+  },
+  "run_id": "py-sliding-window-max-5615f606",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "`nums = []`).\n- Adversarial large inputs (sorted 200k, all-equal 200k) and random 200k elements with `k = 5000` complete in ~0.04s, well within any time budget.",
+    "heuristic": true
+  },
+  "task": "py-sliding-window-max",
+  "tokens": 7154
+}

@@ -1,0 +1,38 @@
+{
+  "agent_steps": 11,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q test_pagination.py",
+    "elapsed_s": 0.1,
+    "exit": 0,
+    "output_tail": "8 passed in 0.01s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.021445,
+  "date": "2026-09-04",
+  "duration_s": 71.432,
+  "false_block": true,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "f983c964736cdd71d0d532fcb24ac0cb03440303",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 0.6,
+    "gate_output": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      evidence bound to a different subject digest: host-qualification, tests-executed\n      subject=sha256:c21443a50945b075879cc13ea84de5082b2eca02fec3e2f771daee905a843249",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
+    "run_error": "G_KEY points at no file: /home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-paginate-cursor-ccb21105/repo/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-paginate-cursor-ccb21105/keys/bench.key",
+    "run_exit": 2
+  },
+  "run_id": "py-paginate-cursor-ccb21105",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "ositories and cursors past the last record yield an empty page with `next_cursor is None`; the cursor round-trip (`encode_cursor`/`decode_cursor`) is unchanged.",
+    "heuristic": true
+  },
+  "task": "py-paginate-cursor",
+  "tokens": 11011
+}

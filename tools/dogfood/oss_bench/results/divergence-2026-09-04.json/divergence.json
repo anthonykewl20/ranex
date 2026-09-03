@@ -1,0 +1,105 @@
+{
+  "schema": "ranex-oss-bench-divergence-v1",
+  "model": "zai:glm-5.3",
+  "rows": [
+    {
+      "task": "py-paginate-cursor",
+      "run_id": "py-paginate-cursor-ccb21105",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 11,
+      "tokens": 11011,
+      "cost_usd": 0.021445,
+      "duration_s": 71.432,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "ositories and cursors past the last record yield an empty page with `next_cursor is None`; the cursor round-trip (`encode_cursor`/`decode_cursor`) is unchanged.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q test_pagination.py",
+        "output_tail": "8 passed in 0.01s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.1
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
+        "run_exit": 2,
+        "run_error": "G_KEY points at no file: /home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-paginate-cursor-ccb21105/repo/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-paginate-cursor-ccb21105/keys/bench.key",
+        "gate_verdict": "FAIL",
+        "gate_output": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      evidence bound to a different subject digest: host-qualification, tests-executed\n      subject=sha256:c21443a50945b075879cc13ea84de5082b2eca02fec3e2f771daee905a843249",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/governance/journal.sqlite3  chain=verified",
+        "journal_verified": true,
+        "elapsed_s": 0.6
+      }
+    },
+    {
+      "task": "py-sliding-window-max",
+      "run_id": "py-sliding-window-max-5615f606",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 8,
+      "tokens": 7154,
+      "cost_usd": 0.015191,
+      "duration_s": 60.801,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "`nums = []`).\n- Adversarial large inputs (sorted 200k, all-equal 200k) and random 200k elements with `k = 5000` complete in ~0.04s, well within any time budget.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q test_sliding.py",
+        "output_tail": "12 passed in 0.11s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.2
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_sliding.py::test_correctness test_sliding.py::test_invalid_k_raises test_sliding.py::test_large_input_is_efficient",
+        "run_exit": 2,
+        "run_error": "points at no file: /home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-sliding-window-max-5615f606/repo/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/py-sliding-window-max-5615f606/keys/bench.key",
+        "gate_verdict": "FAIL",
+        "gate_output": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      evidence bound to a different subject digest: host-qualification, tests-executed\n      subject=sha256:c21443a50945b075879cc13ea84de5082b2eca02fec3e2f771daee905a843249",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/governance/journal.sqlite3  chain=verified",
+        "journal_verified": true,
+        "elapsed_s": 0.6
+      }
+    },
+    {
+      "task": "legacy-blendcore-binary-parity",
+      "run_id": "legacy-blendcore-binary-parity-5a57dc3d",
+      "ground_truth_functional": 0.0,
+      "agent_steps": 87,
+      "tokens": 267549,
+      "cost_usd": 0.500929,
+      "duration_s": 892.405,
+      "cost_capped": true,
+      "self_report": {
+        "claimed_success": false,
+        "final_words": "I'll start by exploring the repository structure.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q",
+        "output_tail": "1 warning in 0.04s",
+        "exit": 5,
+        "verdict": "RED",
+        "elapsed_s": 0.2
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml pytest pytest pytest pytest pytest pytest pytest pytest pytest",
+        "run_exit": 2,
+        "run_error": " /home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/legacy-blendcore-binary-parity-5a57dc3d/repo/tools/dogfood/oss_bench/results/divergence-2026-09-04.json/legacy-blendcore-binary-parity-5a57dc3d/keys/bench.key",
+        "gate_verdict": "FAIL",
+        "gate_output": "FAIL  gate=landing  rule=TESTS_EXECUTED\n      evidence bound to a different subject digest: host-qualification, tests-executed\n      subject=sha256:c21443a50945b075879cc13ea84de5082b2eca02fec3e2f771daee905a843249",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/governance/journal.sqlite3  chain=verified",
+        "journal_verified": true,
+        "elapsed_s": 0.6
+      }
+    }
+  ],
+  "gaming_demo": null,
+  "stale_demo": null,
+  "note": "four positions: pristine grader / bare CI on the patched tree / parsed self-report / manifest-bound gate"
+}
