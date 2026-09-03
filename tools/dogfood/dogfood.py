@@ -322,7 +322,9 @@ def open_findings() -> list[str]:
         if line.startswith("## "):
             in_open = line.strip() == "## Open"
         elif in_open and line.startswith("### "):
-            ids.append(line[4:].split("—")[0].strip())
+            finding_id = line[4:].split("—")[0].strip()
+            finding_id = finding_id.split("(")[0].strip() or finding_id
+            ids.append(finding_id)
     return ids
 
 
