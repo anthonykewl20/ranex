@@ -531,6 +531,7 @@ suite freeze
 deps fetch | approve
 keygen
 github bind
+github check publish
 host launcher-build | launcher-install | host-probe | qualify | launcher-identity | strict-local
 task dispatch | judge | merge | delegate | fanout
 task batch qualify | verify
@@ -681,7 +682,7 @@ What the loop is and what it has proven: [Benchmarks and proofs](#benchmarks-and
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** SLICE-083-github-check-publisher-v1 (#79)
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness

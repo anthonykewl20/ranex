@@ -25,6 +25,7 @@ import stat
 import subprocess
 import sys
 import tempfile
+import time
 import tomllib
 from collections.abc import Callable, Iterable, Mapping, Sequence
 from contextlib import ExitStack
@@ -3837,6 +3838,87 @@ def cmd_github_bind(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def cmd_github_check_publish(args: argparse.Namespace) -> int:
+    """Publish the `ranex/acceptance` check for one PR head, or refuse.
+
+    The only road to a green check is a verdict publication that verifies
+    under the committed verdict signer against this head's exact tree
+    (ADR-050). The App publishes; it never judges. Credentials come from
+    the environment, the key from outside the repository, and every refusal
+    names its code — a GitHub outage is a refusal, not a missing check.
+    """
+
+    from ranex.github_app.acceptance import resolve_acceptance
+    from ranex.github_app.binding import BindingRefusal, bind_pr_head
+    from ranex.github_app.client import (
+        AppCredentials,
+        ClientRefusal,
+        GitHubClient,
+        api_root_from_environment,
+    )
+    from ranex.github_app.publisher import (
+        CONCLUSION_SUCCESS,
+        publish_check,
+    )
+
+    try:
+        root = Path(args.repository).resolve()
+        client = GitHubClient(
+            AppCredentials.from_environment(root),
+            api_root=api_root_from_environment(),
+        )
+        binding = bind_pr_head(root, args.head_sha)
+        # The outward keyring is the committed verdict signer alone: a
+        # producer key may satisfy a claim, but only the reviewed verdict
+        # signer may green-light what the world sees on a pull request.
+        # Committed bytes at HEAD — an unedited trust root is the control.
+        producers = resolve_within_repository(root, args.producers)
+        trust_keyring = load_trust_keyring_text(
+            committed_trust_root(
+                root, "HEAD", args.producers, producers, "producer keyring"
+            ).decode("utf-8"),
+            producers,
+        )
+        gate_catalog = resolve_within_repository(root, args.gate_catalog)
+        catalog_digest = catalog_digest_for(
+            committed_trust_root(
+                root, "HEAD", args.gate_catalog, gate_catalog, "gate catalog"
+            )
+        )
+        acceptance = resolve_acceptance(
+            resolve_within_repository(root, args.verdicts_dir),
+            binding,
+            {trust_keyring.verdict_signer_id: trust_keyring.verdict_signer_public_key},
+            gate_id=args.gate,
+            catalog_digest=catalog_digest,
+            approver_id=args.approver,
+        )
+        moment = time.time()
+        decision, _ = publish_check(
+            client,
+            args.installation,
+            args.repo,
+            binding,
+            acceptance,
+            started_at=moment,
+            completed_at=moment,
+        )
+    except (BindingRefusal, ClientRefusal, ValueError, TypeError, OSError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    print(
+        f"PUBLISHED  ranex/acceptance  head={binding.head_sha}  "
+        f"conclusion={decision.conclusion}"
+    )
+    print(f"           subject={binding.subject_digest}")
+    if decision.conclusion == CONCLUSION_SUCCESS:
+        return EXIT_PASS
+    # A published failure or action-required check is the command working:
+    # the verdict's answer, not the publisher's, is what the check carries.
+    return EXIT_FAIL
+
+
 def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
     """Qualify one closed signed batch; never dispatch or publish children."""
 
@@ -4234,6 +4316,23 @@ def build_parser() -> argparse.ArgumentParser:
     gbind.add_argument("--head-sha", required=True, help="the PR head commit id")
     gbind.add_argument("--repository", default=".", help="operator clone root")
     gbind.set_defaults(func=cmd_github_bind)
+
+    gcheck = github.add_parser(
+        "check", help="the ranex/acceptance check on a PR head (networked)"
+    ).add_subparsers(dest="check_action", required=True)
+    gpublish = gcheck.add_parser(
+        "publish", help="publish ranex/acceptance from the verified verdict"
+    )
+    gpublish.add_argument("--head-sha", required=True, help="the PR head commit id")
+    gpublish.add_argument("--installation", required=True, type=int, help="installation id")
+    gpublish.add_argument("--repo", required=True, help="owner/name of the repository")
+    gpublish.add_argument("--repository", default=".", help="operator clone root")
+    gpublish.add_argument("--verdicts-dir", default=DEFAULT_VERDICT_DIR, help="verdict publications")
+    gpublish.add_argument("--gate", default="landing", help="gate the verdict judged")
+    gpublish.add_argument("--gate-catalog", default=DEFAULT_GATE_CATALOG, help="committed gate catalog")
+    gpublish.add_argument("--producers", default=DEFAULT_PRODUCERS, help="committed producer keyring")
+    gpublish.add_argument("--approver", required=True, help="approver identity the verdict names")
+    gpublish.set_defaults(func=cmd_github_check_publish)
 
     specification = sub.add_parser(
         "specification", help="specification lifecycle operations"

@@ -81,6 +81,7 @@ CLI_DISPATCH_GROUPS = (
     "host.launcher-identity",
     "host.strict-local",
     "github.bind",
+    "github.check.publish",
 )
 
 SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve")

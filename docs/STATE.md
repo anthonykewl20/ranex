@@ -1,8 +1,8 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (SLICE-082 closed, pushed; no open slice)
-**Active slice:** none
+**Updated:** 2026-09-05 (SLICE-082 closed, pushed; SLICE-083 open)
+**Active slice:** docs/slices/SLICE-083-github-check-publisher-v1.md
 
 ## Where we stopped
 
