@@ -1,7 +1,8 @@
 # SLICE-084 — GitHub Webhook Receiver v1
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-09-04
+**Closed:** 2026-09-05
 **Priority:** P1 — third of three slices: bind, publish, receive
 **ADR:** docs/adr/ADR-051-github-webhook-receiver-v1.md
 **Issue:** #80
