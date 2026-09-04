@@ -3914,9 +3914,74 @@ def cmd_github_check_publish(args: argparse.Namespace) -> int:
     print(f"           subject={binding.subject_digest}")
     if decision.conclusion == CONCLUSION_SUCCESS:
         return EXIT_PASS
-    # A published failure or action-required check is the command working:
+    # A published failure or action_required check is the command working:
     # the verdict's answer, not the publisher's, is what the check carries.
     return EXIT_FAIL
+
+
+def cmd_github_listen(args: argparse.Namespace) -> int:
+    """Receive pull-request events; answer each with its own check.
+
+    The repo's first long-running process (ADR-051), bounded on purpose:
+    one POST endpoint on localhost — TLS is the terminator's job — one
+    event type, one delivery at a time. Every delivery proves its HMAC
+    signature before a byte of it is parsed, replays are no-ops, and the
+    pipeline is the same bind → resolve → publish path the one-shot walks.
+    """
+
+    from ranex.github_app.client import (
+        AppCredentials,
+        ClientRefusal,
+        GitHubClient,
+        api_root_from_environment,
+    )
+    from ranex.github_app.receiver import ReceiverConfig, serve
+
+    try:
+        root = Path(args.repository).resolve()
+        client = GitHubClient(
+            AppCredentials.from_environment(root),
+            api_root=api_root_from_environment(),
+        )
+        producers = resolve_within_repository(root, args.producers)
+        trust_keyring = load_trust_keyring_text(
+            committed_trust_root(
+                root, "HEAD", args.producers, producers, "producer keyring"
+            ).decode("utf-8"),
+            producers,
+        )
+        gate_catalog = resolve_within_repository(root, args.gate_catalog)
+        catalog_digest = catalog_digest_for(
+            committed_trust_root(
+                root, "HEAD", args.gate_catalog, gate_catalog, "gate catalog"
+            )
+        )
+        host, _, port = args.bind.partition(":")
+        if not host or not port or not port.isdigit():
+            raise ValueError(f"--bind expects host:port: {args.bind!r}")
+        config = ReceiverConfig(
+            repo_root=root,
+            remote=args.remote,
+            verdicts_dir=resolve_within_repository(root, args.verdicts_dir),
+            keyring={
+                trust_keyring.verdict_signer_id: trust_keyring.verdict_signer_public_key
+            },
+            gate_id=args.gate,
+            catalog_digest=catalog_digest,
+            approver_id=args.approver,
+            webhook_secret=client.credentials.webhook_secret,
+            allowlist=frozenset({(args.installation, args.repo)}),
+            client=client,
+            state_dir=resolve_within_repository(root, args.state_dir),
+        )
+    except (ClientRefusal, ValueError, TypeError, OSError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    print(f"LISTENING  {host}:{port}  repository={args.repo}  gate={args.gate}")
+    print("           TLS is the terminator's job; this binds as given.")
+    serve(config, (host, int(port)))
+    return EXIT_PASS
 
 
 def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
@@ -4333,6 +4398,26 @@ def build_parser() -> argparse.ArgumentParser:
     gpublish.add_argument("--producers", default=DEFAULT_PRODUCERS, help="committed producer keyring")
     gpublish.add_argument("--approver", required=True, help="approver identity the verdict names")
     gpublish.set_defaults(func=cmd_github_check_publish)
+
+    glisten = github.add_parser(
+        "listen", help="receive pull-request events and publish their checks"
+    )
+    glisten.add_argument(
+        "--bind", default="127.0.0.1:8080", help="host:port; localhost by default"
+    )
+    glisten.add_argument("--installation", required=True, type=int, help="installation id")
+    glisten.add_argument("--repo", required=True, help="owner/name of the repository")
+    glisten.add_argument("--repository", default=".", help="operator clone root")
+    glisten.add_argument("--remote", default="origin", help="remote to fetch heads from")
+    glisten.add_argument("--verdicts-dir", default=DEFAULT_VERDICT_DIR, help="verdict publications")
+    glisten.add_argument("--gate", default="landing", help="gate the verdict judged")
+    glisten.add_argument("--gate-catalog", default=DEFAULT_GATE_CATALOG, help="committed gate catalog")
+    glisten.add_argument("--producers", default=DEFAULT_PRODUCERS, help="committed producer keyring")
+    glisten.add_argument("--approver", required=True, help="approver identity the verdict names")
+    glisten.add_argument(
+        "--state-dir", default=".local/ranex/github", help="delivery journal directory"
+    )
+    glisten.set_defaults(func=cmd_github_listen)
 
     specification = sub.add_parser(
         "specification", help="specification lifecycle operations"

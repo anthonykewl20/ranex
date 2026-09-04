@@ -105,7 +105,7 @@ RESPONSE_LIMIT = 65_536
 # SLICE-081 step 2 (#77) extends it for `refuse_foreign_policy_context` beside
 # `refuse_executables_inside`, and for `cmd_gate_evaluate` passing the gate and
 # catalog digest into `admit_records`. Same boundary, untouched.
-MAIN_PY_SHA256 = "e49e9d85eaa98f09722959fc41d79fdca2bb4da7eb992f36a3fb1d270298450f"
+MAIN_PY_SHA256 = "fceb3f9e6ec8a63526c71e6d937bd4293c1b9fd1327dd959c5451fc8fc43c17f"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

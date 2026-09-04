@@ -153,6 +153,12 @@ class GitHubClient:
         self._timeout = timeout_seconds
         self._tokens: dict[int, _Token] = {}
 
+    @property
+    def credentials(self) -> AppCredentials:
+        """Read-only: the receiver reads the webhook secret from here."""
+
+        return self._credentials
+
     def _request(self, method: str, path: str, *, token: str, body: Any = None):
         payload = None if body is None else json.dumps(body).encode("utf-8")
         request = urllib.request.Request(

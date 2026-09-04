@@ -1,8 +1,8 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (SLICE-083 closed, pushed; no open slice)
-**Active slice:** none
+**Updated:** 2026-09-05 (SLICE-083 closed, pushed; SLICE-084 open)
+**Active slice:** docs/slices/SLICE-084-github-webhook-receiver-v1.md
 
 ## Where we stopped
 

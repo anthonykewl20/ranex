@@ -89,6 +89,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "host.strict-local",
     "github.bind",
     "github.check.publish",
+    "github.listen",
 )
 
 _SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve")

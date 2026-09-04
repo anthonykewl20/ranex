@@ -532,6 +532,7 @@ deps fetch | approve
 keygen
 github bind
 github check publish
+github listen
 host launcher-build | launcher-install | host-probe | qualify | launcher-identity | strict-local
 task dispatch | judge | merge | delegate | fanout
 task batch qualify | verify
@@ -682,7 +683,7 @@ What the loop is and what it has proven: [Benchmarks and proofs](#benchmarks-and
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** SLICE-084-github-webhook-receiver-v1 (#80)
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness
@@ -1352,6 +1353,107 @@ Once the tree moves past the digest the evidence was bound to, `tests-executed`
 stops counting too. A record that fails verification is reported as *refused*,
 with a reason — never as "no evidence", because an attack and an unfinished task
 are not the same event.
+
+## The GitHub acceptance loop (Ranex GitHub App)
+
+Ranex can answer pull requests the way GitHub natively understands: a check
+named `ranex/acceptance`, published by the Ranex GitHub App, required by a
+repository ruleset. The App is a publisher, never a judge — it reads the
+signed verdict a `gate evaluate` run already produced for the PR head's
+exact git tree and turns it into a check. No verdict, no green.
+
+### What the check says
+
+- `success` — a verdict publication verified against the committed verdict
+  signer names this PR head's tree and says PASS.
+- `failure` — a verified verdict says FAIL (the failing rule and missing
+  claims are in the check's output), or a verdict exists but was rejected
+  (bad signature, wrong context, unknown signer — the reader state is named).
+- `action_required` — no verdict publication exists for the PR head's tree
+  yet. Run the gate; the App publishes on the next event.
+
+The binding is content, not names: the receiver derives the subject digest
+from the PR head SHA's git tree (`git fetch` into the operator clone, then
+the same tree digest every Ranex subject uses), so a check can only ever be
+about the exact bytes a merge would land.
+
+### Creating the App (one time)
+
+1. GitHub → Settings → Developer settings → GitHub Apps → New GitHub App.
+   Name it (e.g. `ranex`), set a webhook URL (HTTPS; for local development
+   a smee.io tunnel forwards to the receiver's localhost bind), content
+   type `application/json`, and generate a webhook secret.
+2. Permissions: **Checks: Read & write**, **Contents: Read-only**,
+   **Pull requests: Read-only**. Subscribe to events: **Pull request**.
+   Generate and download the App private key (PEM); keep it outside the
+   repository, like every Ranex key.
+3. Install the App on the repository. Note the installation ID (visible in
+   the installation's URL) and the App ID (the App settings page).
+4. On the operator host, export `RANEX_GITHUB_APP_ID`,
+   `RANEX_GITHUB_APP_PRIVATE_KEY` (path to the PEM, outside the repo) and
+   `RANEX_GITHUB_WEBHOOK_SECRET`. A GitHub Enterprise host can be named
+   with `RANEX_GITHUB_API_ROOT`.
+5. Run the receiver beside a clone of the repository:
+
+   ```console
+   uv run --frozen ranex github listen --bind 127.0.0.1:8080 \
+     --installation <installation-id> --repo owner/name --approver <id>
+   ```
+
+   TLS is the terminator's job — a reverse proxy in front, or the smee.io
+   tunnel in development; the listener deliberately binds localhost and
+   processes one delivery at a time. Every delivery proves its
+   `X-Hub-Signature-256` HMAC before a byte of it is parsed; replays are
+   no-ops; the delivery journal is `deliveries.jsonl` under the state dir
+   (`.local/ranex/github` by default).
+
+Producing verdicts is unchanged: a `gate evaluate` run against the PR head
+(wired with `RANEX_VERDICT_SIGNING_KEY` and `RANEX_VERDICT_DIR`) writes the
+signed publication the App reads. The one-shot
+`ranex github check publish --head-sha <sha> --installation <id> --repo
+owner/name` exercises the same path without a webhook, for debugging.
+
+### Requiring the check (ruleset)
+
+Repository Settings → Rules → Rulesets → New ruleset (target: the default
+branch), add rule **Require status checks to pass**, and add the check
+`ranex/acceptance`. Pin the source App so only the Ranex App's check
+satisfies the rule — equivalently, via REST:
+
+```json
+POST /repos/<owner>/<repo>/rulesets
+{
+  "name": "ranex-acceptance",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {"ref_name": {"include": ["refs/heads/main"], "exclude": []}},
+  "rules": [{
+    "type": "required_status_checks",
+    "parameters": {
+      "strict_required_status_checks_policy": true,
+      "required_status_checks": [
+        {"context": "ranex/acceptance", "integration_id": <the Ranex App ID>}
+      ]
+    }
+  }]
+}
+```
+
+The `integration_id` entry is what makes the Ranex App the expected source
+of the check: a same-named check from any other App or token does not
+satisfy the rule. With the ruleset active, a merge is blocked unless the
+Ranex App published `ranex/acceptance` as `success` on the PR head — and
+the App only says `success` when a verified, signed verdict for that exact
+tree says PASS.
+
+### Limits, stated plainly
+
+The App publishes; it never evaluates. A compromised receiver host can
+suppress checks (visible: merges stay blocked) but cannot forge a green
+one. Webhook delivery replay is handled by delivery-ID dedup; stronger
+anti-replay (nonces, journal anchoring) is the deferred anti-replay slice.
+The receiver is the repository's first long-running process and is bounded:
+one endpoint, one event type, one delivery at a time, localhost by default.
 
 ## The real-e2e suite entrypoint
 

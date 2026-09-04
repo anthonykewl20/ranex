@@ -17,6 +17,7 @@ import subprocess
 import sys
 import threading
 import time
+from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -243,3 +244,83 @@ def seeded_governed_clone(path: Path) -> tuple[Path, str]:
         encoding="utf-8",
     )
     return path, head
+
+
+WEBHOOK_SECRET = "webhook-secret-value"
+
+
+def pull_request_event_body(
+    head: str, *, action: str = "opened", repository: str = "owner/name"
+) -> bytes:
+    """A pull_request delivery body in the shape GitHub sends."""
+
+    return json.dumps(
+        {
+            "action": action,
+            "pull_request": {"number": 7, "head": {"sha": head}},
+            "repository": {"full_name": repository},
+            "installation": {"id": 1},
+        }
+    ).encode("utf-8")
+
+
+@contextmanager
+def receiver_environment(tmp_path, *, with_verdict: bool = True):
+    """A receiver wired end to end: real git stores, fake GitHub API.
+
+    Yields a config with its own per-call state, the live fake, the
+    operator clone, and the PR head SHA everything is bound to.
+    """
+
+    from dataclasses import dataclass
+
+    import yaml
+
+    from ranex.bootstrap.composition import catalog_digest_for
+    from ranex.github_app.client import AppCredentials, GitHubClient
+    from ranex.github_app.receiver import ReceiverConfig, _ReceiverState
+
+    key_path, public = write_app_key(tmp_path / "keys")
+    with FakeGitHub(public) as fake:
+        source, head = seeded_governed_clone(tmp_path / "source")
+        clone = tmp_path / "clone"
+        subprocess.run(
+            ["git", "clone", "-q", str(source), str(clone)],
+            check=True,
+            env={"PATH": os.environ["PATH"], "LC_ALL": "C"},
+        )
+        if with_verdict:
+            verdicts = clone / "governance" / "verdicts"
+            verdicts.mkdir(parents=True)
+            for publication in (source / "governance" / "verdicts").iterdir():
+                (verdicts / publication.name).write_bytes(publication.read_bytes())
+        document = yaml.safe_load((clone / "governance" / "producers.yaml").read_text())
+        config = ReceiverConfig(
+            repo_root=clone,
+            remote=str(source),
+            verdicts_dir=clone / "governance" / "verdicts",
+            keyring={"kernel-verdict-signer": document["verdict_signer"]["public_key"]},
+            gate_id="landing",
+            catalog_digest=catalog_digest_for(
+                (clone / "governance" / "gates.yaml").read_bytes()
+            ),
+            approver_id="operator",
+            webhook_secret=WEBHOOK_SECRET,
+            allowlist=frozenset({(1, "owner/name")}),
+            client=GitHubClient(
+                AppCredentials(APP_ID, key_path, WEBHOOK_SECRET), api_root=fake.url
+            ),
+            state_dir=tmp_path / "state",
+        )
+
+        @dataclass
+        class _Environment:
+            config: object
+            state: object
+            fake: object
+            clone: Path
+            head: str
+
+        yield _Environment(
+            config=config, state=_ReceiverState(), fake=fake, clone=clone, head=head
+        )
