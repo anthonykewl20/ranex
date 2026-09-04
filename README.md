@@ -669,7 +669,7 @@ the tool from real runs (hand edits inside the markers are overwritten).
 What the loop is and what it has proven: [Benchmarks and proofs](#benchmarks-and-proofs).
 
 <!-- dogfood-status:start -->
-**43/43 deterministic proofs pass** · iteration 10 · kernel v0.1.0 (6ee93d65c77c) · last run 2026-09-04T10:38:23Z · open findings: F-005, F-004, F-003, F-002, F-001
+**43/43 deterministic proofs pass** · iteration 10 · kernel v0.1.0 (2f220e622005) · last run 2026-09-04T11:11:10Z · open findings: F-005, F-004, F-003, F-002, F-001
 
 - Live benchmark page: https://ranex.dev/dogfood
 - Raw data: `tools/dogfood/site/benchmarks.json` (its sha256 fingerprint is printed on the page)

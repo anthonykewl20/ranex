@@ -278,10 +278,12 @@ def generate_site(report: dict[str, Any], output_dir: Path) -> list[Path]:
     PLAIN_FINDINGS = {
         "F-001": "In one rare kind of damage, the checker raises a loud alarm "
                  "instead of writing its usual tidy report. It still never "
-                 "accepts damaged records — we're polishing that rough edge.",
+                 "accepts damaged records — the candidate fix is written "
+                 "down, not yet started.",
         "F-002": "Where the tests run from can change which checks get "
                  "skipped — same code, slightly different skip list. "
-                 "Everything still passes; we're making the skip list explicit.",
+                 "Everything still passes; the candidate fix (an explicit "
+                 "skip list) is written down, not yet started.",
     }
     if open_findings:
         items = "".join(
