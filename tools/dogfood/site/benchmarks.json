@@ -1,5 +1,5 @@
 {
-  "dogfood_iterations": 10,
+  "dogfood_iterations": 12,
   "environment": {
     "cpu_count": "16",
     "implementation": "CPython",
@@ -8,8 +8,8 @@
     "python": "3.14.6",
     "system": "Linux 7.0.0-30-generic"
   },
-  "generated_utc": "2026-09-04T19:24:32Z",
-  "git_head": "e6d7fb857ae5edca09af2526e5599a9a077724f3",
+  "generated_utc": "2026-09-04T23:00:02Z",
+  "git_head": "688ee9063f15ec4c193239267098e0f985d121d4",
   "kernel_version": "0.1.0",
   "ledger": [
     {
@@ -71,6 +71,18 @@
       "git_head": "f983c964736cdd71d0d532fcb24ac0cb03440303",
       "iteration": 10,
       "scenarios": 43
+    },
+    {
+      "findings": 1,
+      "git_head": "3683d4ccc30302f07a14d9d23235c5fd38039f54",
+      "iteration": 11,
+      "scenarios": 43
+    },
+    {
+      "findings": 0,
+      "git_head": "9d6327f832e51eb0ab72f5ccb540e2e454f60882",
+      "iteration": 12,
+      "scenarios": 43
     }
   ],
   "proof_board": {
@@ -99,29 +111,29 @@
   "scaling": {
     "journal-append": [
       {
-        "median_ms": 252.5838739820756,
+        "median_ms": 233.74397703446448,
         "rows": 100
       },
       {
-        "median_ms": 1230.651895981282,
+        "median_ms": 1068.0949589586817,
         "rows": 500
       },
       {
-        "median_ms": 5263.522483990528,
+        "median_ms": 4462.953198002651,
         "rows": 2000
       }
     ],
     "journal-verify": [
       {
-        "median_ms": 1.2116570142097771,
+        "median_ms": 1.1786470422521234,
         "rows": 100
       },
       {
-        "median_ms": 4.694812989328057,
+        "median_ms": 4.0433829999528825,
         "rows": 500
       },
       {
-        "median_ms": 20.940289949066937,
+        "median_ms": 15.720655035693198,
         "rows": 2000
       }
     ]
@@ -132,14 +144,14 @@
       "area": "journal",
       "id": "journal-append-100",
       "label": "append 100 chained evaluation rows",
-      "max": 316.774,
-      "median": 252.584,
-      "min": 245.631,
+      "max": 234.972,
+      "median": 233.744,
+      "min": 232.932,
       "repeats": 3,
       "samples": [
-        316.774,
-        252.584,
-        245.631
+        232.932,
+        234.972,
+        233.744
       ],
       "unit": "ms total"
     },
@@ -147,14 +159,14 @@
       "area": "journal",
       "id": "journal-append-500",
       "label": "append 500 chained evaluation rows",
-      "max": 1284.432,
-      "median": 1230.652,
-      "min": 1194.982,
+      "max": 1118.789,
+      "median": 1068.095,
+      "min": 1066.036,
       "repeats": 3,
       "samples": [
-        1284.432,
-        1194.982,
-        1230.652
+        1068.095,
+        1066.036,
+        1118.789
       ],
       "unit": "ms total"
     },
@@ -162,14 +174,14 @@
       "area": "journal",
       "id": "journal-append-2000",
       "label": "append 2000 chained evaluation rows",
-      "max": 6003.935,
-      "median": 5263.522,
-      "min": 5092.301,
+      "max": 4512.696,
+      "median": 4462.953,
+      "min": 4455.554,
       "repeats": 3,
       "samples": [
-        5092.301,
-        6003.935,
-        5263.522
+        4462.953,
+        4455.554,
+        4512.696
       ],
       "unit": "ms total"
     },
@@ -177,14 +189,14 @@
       "area": "journal",
       "id": "journal-verify-100",
       "label": "verify chain of 100 rows (recompute all links)",
-      "max": 1.469,
-      "median": 1.212,
-      "min": 0.884,
+      "max": 1.642,
+      "median": 1.179,
+      "min": 1.042,
       "repeats": 3,
       "samples": [
-        1.469,
-        1.212,
-        0.884
+        1.642,
+        1.179,
+        1.042
       ],
       "unit": "ms"
     },
@@ -192,14 +204,14 @@
       "area": "journal",
       "id": "journal-verify-500",
       "label": "verify chain of 500 rows (recompute all links)",
-      "max": 6.469,
-      "median": 4.695,
-      "min": 4.51,
+      "max": 7.009,
+      "median": 4.043,
+      "min": 3.986,
       "repeats": 3,
       "samples": [
-        6.469,
-        4.695,
-        4.51
+        7.009,
+        4.043,
+        3.986
       ],
       "unit": "ms"
     },
@@ -207,14 +219,14 @@
       "area": "journal",
       "id": "journal-verify-2000",
       "label": "verify chain of 2000 rows (recompute all links)",
-      "max": 21.324,
-      "median": 20.94,
-      "min": 19.592,
+      "max": 16.192,
+      "median": 15.721,
+      "min": 15.607,
       "repeats": 3,
       "samples": [
-        20.94,
-        19.592,
-        21.324
+        16.192,
+        15.721,
+        15.607
       ],
       "unit": "ms"
     },
@@ -222,14 +234,14 @@
       "area": "admission",
       "id": "admission-200",
       "label": "admit 200 signed records (Ed25519 verify each)",
-      "max": 26.365,
-      "median": 22.758,
-      "min": 21.677,
+      "max": 23.243,
+      "median": 21.669,
+      "min": 21.662,
       "repeats": 3,
       "samples": [
-        22.758,
-        21.677,
-        26.365
+        21.662,
+        23.243,
+        21.669
       ],
       "unit": "ms"
     },
@@ -237,14 +249,14 @@
       "area": "signing",
       "id": "sign-200",
       "label": "Ed25519-sign 200 evidence payloads",
-      "max": 13.24,
-      "median": 12.614,
-      "min": 12.543,
+      "max": 11.678,
+      "median": 11.377,
+      "min": 11.352,
       "repeats": 3,
       "samples": [
-        13.24,
-        12.543,
-        12.614
+        11.678,
+        11.377,
+        11.352
       ],
       "unit": "ms"
     },
@@ -252,14 +264,14 @@
       "area": "signing",
       "id": "verify-200",
       "label": "Ed25519-verify 200 evidence payloads",
-      "max": 19.58,
-      "median": 19.09,
-      "min": 18.626,
+      "max": 21.642,
+      "median": 20.605,
+      "min": 19.945,
       "repeats": 3,
       "samples": [
-        19.09,
-        18.626,
-        19.58
+        19.945,
+        20.605,
+        21.642
       ],
       "unit": "ms"
     },
@@ -267,14 +279,14 @@
       "area": "verdict",
       "id": "evaluate-20claims-100calls",
       "label": "100 pure evaluations of a 20-claim gate",
-      "max": 4.683,
-      "median": 4.332,
-      "min": 4.132,
+      "max": 4.106,
+      "median": 4.014,
+      "min": 3.974,
       "repeats": 3,
       "samples": [
-        4.332,
-        4.132,
-        4.683
+        4.106,
+        4.014,
+        3.974
       ],
       "unit": "ms"
     },
@@ -282,14 +294,14 @@
       "area": "provisioning",
       "id": "select-wheels-real-lock",
       "label": "select wheels over the real committed uv.lock",
-      "max": 6.287,
-      "median": 5.82,
-      "min": 5.284,
+      "max": 6.798,
+      "median": 4.873,
+      "min": 4.555,
       "repeats": 3,
       "samples": [
-        5.82,
-        5.284,
-        6.287
+        6.798,
+        4.873,
+        4.555
       ],
       "unit": "ms"
     },
@@ -297,14 +309,14 @@
       "area": "canonical",
       "id": "canonical-json-1000",
       "label": "canonicalise 1000 medium documents",
-      "max": 8.032,
-      "median": 7.964,
-      "min": 7.313,
+      "max": 7.616,
+      "median": 6.807,
+      "min": 6.802,
       "repeats": 3,
       "samples": [
-        7.964,
-        8.032,
-        7.313
+        7.616,
+        6.802,
+        6.807
       ],
       "unit": "ms"
     },
@@ -312,14 +324,14 @@
       "area": "cli",
       "id": "cli-cold-start",
       "label": "ranex --help cold start (interpreter + imports)",
-      "max": 167.093,
-      "median": 157.992,
-      "min": 156.057,
+      "max": 140.487,
+      "median": 136.56,
+      "min": 136.412,
       "repeats": 3,
       "samples": [
-        156.057,
-        167.093,
-        157.992
+        136.56,
+        136.412,
+        140.487
       ],
       "unit": "ms"
     }
