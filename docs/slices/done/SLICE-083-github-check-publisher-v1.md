@@ -1,7 +1,8 @@
 # SLICE-083 — GitHub Check Publisher v1
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-09-04
+**Closed:** 2026-09-05
 **Priority:** P1 — second of three slices: bind, publish, receive
 **ADR:** docs/adr/ADR-050-github-check-publisher-v1.md
 **Issue:** #79

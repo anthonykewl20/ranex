@@ -1,43 +1,47 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (SLICE-082 closed, pushed; SLICE-083 open)
-**Active slice:** docs/slices/SLICE-083-github-check-publisher-v1.md
+**Updated:** 2026-09-05 (SLICE-083 closed, pushed; no open slice)
+**Active slice:** none
 
 ## Where we stopped
 
-SLICE-082 / ADR-049 done — first slice of the GitHub acceptance loop. A
-pull-request head SHA, resolved through the local git object store, derives
-the exact subject every signed verdict already names (`github bind`, pure
-derivation, no network), and `resolve_acceptance` maps every verdict-reader
-state onto a closed outward outcome: only `VERIFIED` is publishable,
-absence is named as absence, every rejection names its state. No new
-signed surface; the kernel did not move. Sealed green at 1754/166.
+SLICE-083 / ADR-050 done — second slice of the GitHub acceptance loop.
+The Ranex GitHub App's publisher exists: `ranex github check publish`
+binds a PR head (SLICE-082), reads the committed verdict signer at HEAD,
+and publishes the `ranex/acceptance` check whose conclusion is reachable
+from exactly one place — a VERIFIED+PASS record. Everything else is
+louder: FAIL → failure, absent → action_required, rejected → failure
+naming the reader state, API error → `E-GITHUB-API-REFUSED` (one POST,
+no retry). RS256 JWT on the pinned `cryptography` primitive, stdlib
+transport, no new dependency; arms verify the JWT with the test's own
+key and grep every emitted line for secrets. Sealed green at 1774/166.
 
-One operational note: a dogfood iteration-011 dirt (modified
-`tools/dogfood/backlog.json`, untracked `iterations/iteration-011.json`)
-was left in the tree by another lane mid-close-out; it is preserved in a
-labelled stash (`git stash list`) and is not part of any slice here.
+One operational note carried from SLICE-082's close: a dogfood
+iteration-011 dirt left by another lane was preserved in labelled
+stashes; that lane has since committed its own artifacts.
 
 ## Next
 
-The loop continues, two slices: publish (the `ranex/acceptance` check from
-the Ranex GitHub App — JWT on the pinned `cryptography` primitive, stdlib
-transport, fail-closed conclusion mapping), then receive (the webhook
-listener, localhost-bound, HMAC-validated, and the App + ruleset
-documentation in README). Then the deferred slices: anti-replay (nonce,
-journal head anchor, F-005 item 1) and the approver signature SLICE-080
-made possible.
+The loop's last slice: receive. `ranex github listen` — stdlib
+`http.server` on localhost, HMAC-SHA256 delivery validation (the docs'
+own test vector pinned), delivery-ID dedupe, installation/repository
+allowlist, event grammar closed to `pull_request`
+opened/synchronize/reopened; pipeline = fetch → bind → resolve →
+publish. The App creation and ruleset documentation lands in README with
+it (docs set stays closed). Then the deferred slices: anti-replay
+(nonce, journal head anchor, F-005 item 1) and the approver signature
+SLICE-080 made possible.
 
 Still open: F-004; interval-honest wording; nightly divergence with an
 absolute `--out`; more permissive external repos.
 
 ## Governance
 
-ADR-047/048/049 accepted. Manifest re-frozen at 1754 IDs, `expected_skips`
-byte-identical at 166 (the SLICE-082 arms skip nothing). The frozen
-approved-batch fixture set remains re-keyed (ADR-048), key beside the
-vectors.
+ADR-047/048/049/050 accepted. Manifest re-frozen at 1774 IDs,
+`expected_skips` byte-identical at 166 (the publisher arms skip
+nothing). The live one-shot against the real API is UNVERIFIED until
+the App exists — the receiver slice wires that journey.
 
 ## Known limits
 
