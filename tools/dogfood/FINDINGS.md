@@ -142,6 +142,22 @@ match the kernel silently.
 
 ## Closed
 
+### F-006 — census baseline drift from the SLICE-084 receiver landing (closed same run, 2026-09-05)
+
+- Anchor: `ranex/cli/main.py:cmd_run` (McCabe M 44 → 45) and the receiver
+  module added by `14341b3f6` (SLICE-084); census `measured_functions`
+  405 → 409, `never_touched_high_M` unchanged.
+- Behaviour (verified): the 2026-09-05 unattended iterate flagged
+  baseline-drift on `evolve-blind-spot-census` alone; the scenario's property
+  assertions passed — the drift was the kernel-shape facts moving with the
+  owner's landed, slice-closed feature, which post-dated the baseline
+  re-record in the rewritten history line.
+- How closed: drift reviewed against the intended change (backlog delta was
+  exactly `cmd_run` M+1 and four newly-measured functions); baseline
+  deliberately re-recorded — only the census digest changed
+  (`a0c042dd…` → `602e986d…`); re-iterate 0 findings (iteration-012).
+  No assertion weakened, no kernel file touched.
+
 ### F-000 — construction-time capability drift between the catalog and the parser (tool-side, closed same session)
 
 While wiring the CLI scenarios, three catalog assumptions failed against the

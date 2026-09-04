@@ -8,7 +8,7 @@
   "canonical-fixed-point": "sha256:84d0474edadb96a39856d26f3e1b0834a1c846c410bb7c674654e5cafb9a83ed",
   "cli-surface": "sha256:a070a27be46fe7e5808fe464c1a842a2ce99aad4c23150325df2755ee6c93da5",
   "command-digest-structural": "sha256:44e1ec3dc47a0e6d07e1973659f27c2733ac3f4e8fad9702dec2ac01879a316d",
-  "evolve-blind-spot-census": "sha256:a0c042dd5f8c5e6448a2c418182f142c75831a20b3dcf214f869e011131514cd",
+  "evolve-blind-spot-census": "sha256:602e986d120547b0eed113bdb57daf96e0d9829325e2f650ebbf6528da681538",
   "formal-grid-pair-completeness": "sha256:6aa85b691137b9216ceeebeb89ea3d86a2a0b33cd0498252f2ca76c5bdcee6dc",
   "formal-irrelevance-invariance": "sha256:0d94ebc254cfc9d1e06422b0b6731aec371fde4b26d2e68f37787f243a9692e2",
   "formal-lock-closure-equality": "sha256:e81d1ffaeb830495387bfc0e82aabab9b28a5794fbb7bf054563661d94d15f0c",
