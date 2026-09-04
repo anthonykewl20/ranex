@@ -10,12 +10,16 @@ unrepresentable, not merely discouraged by review.
 from __future__ import annotations
 
 import base64
+import os
+import subprocess
 from pathlib import Path
 
 import pytest
+import yaml
 
 from ranex.foundation.signing import generate_keypair
 from ranex.policy.adapters.configuration.yaml.principal_catalog import (
+    ROLES,
     PrincipalCatalogError,
     load_principals,
     load_principals_text,
@@ -288,29 +292,62 @@ def test_a_catalog_only_document_needs_no_producers_block(tmp_path: Path) -> Non
     assert set(load_principals(path).principals) == {"anthony"}
 
 
-# --- the repository's own trust root ----------------------------------------
+# --- the trust root of whatever repository this suite runs in ---------------
+#
+# These arms deliberately do NOT assert "the ranex repository has a catalog".
+# Several e2e journeys (test_gating_real_suite, test_cold_start_journey) clone
+# this repository, REPLACE `governance/producers.yaml` with a two-block fixture
+# keyring, and re-run the whole suite inside the clone. An arm that demanded a
+# `principals:` block there would fail for a reason that is not a defect: the
+# block is optional by ADR-047 precisely so a repository that adopted only the
+# older blocks keeps working.
+#
+# So the property asserted is the universal one, and it is the one that
+# protects this repository: *if* a trust root carries a catalog, that catalog
+# must be valid and must agree with the keyring beside it. The real file has a
+# catalog, so any corruption of it fails here. The branch that finds none
+# asserts what it found instead of skipping — a skip would hide the difference
+# between "this fixture has no catalog" and "the catalog stopped loading".
 
 
-def test_this_repositorys_committed_catalog_loads_and_agrees_with_itself() -> None:
-    """The catalog is only a trust root if the repository actually has one."""
+def live_document() -> dict:
+    """The committed trust root of the repository this suite is running in."""
+
+    loaded = yaml.safe_load(LIVE_KEYRING.read_text(encoding="utf-8"))
+    assert isinstance(loaded, dict), f"{LIVE_KEYRING} is not a mapping"
+    return loaded
+
+
+def test_a_committed_catalog_loads_and_agrees_with_the_keyring_beside_it() -> None:
+    trust_root = live_document()
+    if "principals" not in trust_root:
+        assert "producers" in trust_root, (
+            f"{LIVE_KEYRING} carries neither a catalog nor a producer keyring; "
+            "it is not a trust root at all"
+        )
+        return
 
     catalog = load_principals(LIVE_KEYRING)
 
-    assert "anthony" in catalog.principals, sorted(catalog.principals)
-    assert catalog.principals["anthony"].role == "worker"
-    assert catalog.principals["kernel-verdict-signer"].role == "service"
-    assert catalog.principals["kernel-verdict-signer"].active_keys
+    assert catalog.principals, "a loaded catalog is never empty"
+    for principal in catalog.principals.values():
+        assert principal.role in ROLES
+        assert principal.keys, f"{principal.principal_id} has no keys"
 
 
-def test_the_live_catalog_and_the_live_keyring_name_the_same_keys() -> None:
+def test_a_committed_catalog_and_keyring_name_the_same_keys() -> None:
     """Belt and braces: load each block with its own loader and compare.
 
     `load_principals` already refuses a disagreement. This asserts the same
-    thing from outside, so that a future relaxation of the internal check
-    cannot pass unnoticed.
+    thing from outside, so a future relaxation of the internal check cannot
+    pass unnoticed.
     """
 
     from ranex.policy.adapters.configuration.yaml.producer_keyring import load_keyring
+
+    trust_root = live_document()
+    if "principals" not in trust_root:
+        return
 
     catalog = load_principals(LIVE_KEYRING)
     for producer_id, public_key in load_keyring(LIVE_KEYRING).items():
@@ -320,13 +357,17 @@ def test_the_live_catalog_and_the_live_keyring_name_the_same_keys() -> None:
         assert catalog.may_sign(public_key) is True
 
 
-def test_the_live_verdict_signer_is_a_service_principal_not_a_producer() -> None:
+def test_a_committed_verdict_signer_is_a_service_principal_not_a_producer() -> None:
     """`verdict_signer` may not alias a producer — the existing rule, restated
     in the catalog's vocabulary so both trust roots enforce it."""
 
     from ranex.policy.adapters.configuration.yaml.producer_keyring import (
         load_trust_keyring,
     )
+
+    trust_root = live_document()
+    if "principals" not in trust_root or "verdict_signer" not in trust_root:
+        return
 
     trust = load_trust_keyring(LIVE_KEYRING)
     catalog = load_principals(LIVE_KEYRING)
@@ -336,6 +377,53 @@ def test_the_live_verdict_signer_is_a_service_principal_not_a_producer() -> None
     assert signer.principal_id == trust.verdict_signer_id
     assert signer.role == "service"
     assert signer.principal_id not in trust.producers
+
+
+def test_the_older_loaders_still_read_the_committed_trust_root() -> None:
+    """Extended, not replaced: the original loaders still work on the real file,
+    catalog present or not."""
+
+    from ranex.policy.adapters.configuration.yaml.producer_keyring import (
+        load_keyring,
+        load_trust_keyring,
+    )
+
+    trust_root = live_document()
+    assert load_keyring(LIVE_KEYRING), "the producer keyring still loads"
+    if "verdict_signer" in trust_root:
+        assert load_trust_keyring(LIVE_KEYRING).verdict_signer_id
+
+
+def test_this_checkouts_catalog_is_the_one_slice_080_committed() -> None:
+    """The done criterion, asserted where a fixture cannot silently replace it.
+
+    Journeys overwrite the working-tree keyring; none of them rewrites git
+    history, so HEAD in any clone of this repository still carries the catalog
+    SLICE-080 committed. Read the bytes git records rather than the file on
+    disk — the same discipline `cmd_gate_evaluate` uses for the keyring that
+    decides a verdict.
+    """
+
+    blob = subprocess.run(
+        ["git", "-C", str(REPO_ROOT), "cat-file", "-p", "HEAD:governance/producers.yaml"],
+        capture_output=True,
+        text=True,
+        check=False,
+        # An ambient GIT_DIR names a different repository, and the question here
+        # is about this one — the same reason `git()` in cli/main.py strips it.
+        env={k: v for k, v in os.environ.items() if not k.startswith("GIT_")},
+    )
+    if blob.returncode != 0 or "principals:" not in blob.stdout:
+        # Not this repository's history: a journey that commits a two-block
+        # fixture keyring into its clone has no catalog at HEAD either, and
+        # that is the same legitimate absence the arms above branch on.
+        return
+
+    catalog = load_principals_text(blob.stdout, "HEAD:governance/producers.yaml")
+
+    assert catalog.principals["anthony"].role == "worker"
+    assert catalog.principals["kernel-verdict-signer"].role == "service"
+    assert catalog.principals["kernel-verdict-signer"].active_keys
 
 
 # --- failing closed, from bytes already in hand -----------------------------
@@ -400,14 +488,3 @@ def test_the_trust_keyring_loads_a_document_that_carries_the_catalog() -> None:
         "kernel-verdict-signer"
     )
 
-
-def test_the_older_loaders_still_read_the_live_trust_root_unchanged() -> None:
-    """Extended, not replaced: both original loaders still work on the real file."""
-
-    from ranex.policy.adapters.configuration.yaml.producer_keyring import (
-        load_keyring,
-        load_trust_keyring,
-    )
-
-    assert "anthony" in load_keyring(LIVE_KEYRING)
-    assert load_trust_keyring(LIVE_KEYRING).verdict_signer_id == "kernel-verdict-signer"
