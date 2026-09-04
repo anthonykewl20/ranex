@@ -3814,6 +3814,29 @@ def cmd_keygen(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def cmd_github_bind(args: argparse.Namespace) -> int:
+    """Print the subject a PR head SHA names, derived from the local clone.
+
+    Pure derivation (ADR-049): the SHA must already be in the local object
+    store — fetch it first — and the tree it resolves to becomes the exact
+    subject digest every Ranex verdict already carries. Nothing here talks
+    to GitHub; the refusal codes say which link broke.
+    """
+
+    from ranex.github_app.binding import BindingRefusal, bind_pr_head
+
+    try:
+        root = Path(args.repository).resolve()
+        binding = bind_pr_head(root, args.head_sha)
+    except (BindingRefusal, ValueError, OSError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+    print(f"BIND  head={binding.head_sha}  tree={binding.tree}")
+    print(f"      subject={binding.subject_digest}")
+    return EXIT_PASS
+
+
 def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
     """Qualify one closed signed batch; never dispatch or publish children."""
 
@@ -4201,6 +4224,16 @@ def build_parser() -> argparse.ArgumentParser:
     kg = sub.add_parser("keygen", help="generate a producer signing key")
     kg.add_argument("--producer", required=True, help="identity the key belongs to")
     kg.set_defaults(func=cmd_keygen)
+
+    github = sub.add_parser(
+        "github", help="the GitHub acceptance loop (host-side; no network here)"
+    ).add_subparsers(dest="action", required=True)
+    gbind = github.add_parser(
+        "bind", help="derive the subject a PR head SHA names, from the local clone"
+    )
+    gbind.add_argument("--head-sha", required=True, help="the PR head commit id")
+    gbind.add_argument("--repository", default=".", help="operator clone root")
+    gbind.set_defaults(func=cmd_github_bind)
 
     specification = sub.add_parser(
         "specification", help="specification lifecycle operations"

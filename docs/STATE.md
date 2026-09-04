@@ -1,50 +1,45 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (SLICE-080 and SLICE-081 closed)
-**Active slice:** none
+**Updated:** 2026-09-05 (SLICE-081 closed, pushed; SLICE-082 open)
+**Active slice:** docs/slices/SLICE-082-pr-head-binding-v1.md
 
 ## Where we stopped
 
-Week 2 identity and evidence work, two slices done.
+Week 2 identity and evidence work landed. SLICE-080 / ADR-047: the trust
+root says what a principal is permitted to be (`principals:` block, roles,
+active/retired keys). SLICE-081 / ADR-048: evidence binds the rulebook it
+ran under — domain v5, `envelope_type`/`gate_id`/`catalog_digest` inside
+the exact signed set, a foreign rulebook refused as
+`policy-context-mismatch`. Kernel unmoved for either; sealed 1730/166.
 
-SLICE-080 / ADR-047 — the trust root says what a principal is permitted
-to be. `governance/producers.yaml` carries an additive `principals:`
-block: identity, one role, rotating keys with active/retired status.
-Nothing consumes it yet; SLICE-082 is where an approver proves identity
-by signature instead of by a typed name.
-
-SLICE-081 / ADR-048 — evidence binds the rulebook it ran under. Domain
-v4 to v5; `envelope_type`, `gate_id` and `catalog_digest` are inside the
-exact signed set. Editing `governance/gates.yaml` after a green run now
-refuses that run's evidence as `policy-context-mismatch` — its own
-reason, never forgery and never absence. Absence is recorded, not
-refused: a run with no committed catalog says `catalog-absent`, which
-blocks at the verdict (ADR-011), because `run` is not only the gating
-path.
-
-The kernel did not move for either. `KERNEL_DIGEST` unchanged.
+Now open, by owner decision: the GitHub acceptance loop, three slices —
+SLICE-082 (bind: a PR head SHA derives the verdict subject through the
+local object store; ADR-049), then publish (the `ranex/acceptance` check
+from the Ranex GitHub App), then receive (webhook listener; the ruleset
+documentation lands in README with it). Host-side only; the kernel and the
+signed surface do not move.
 
 ## Next
 
-SLICE-082 — anti-replay: a nonce and a journal head anchor, which needs
-`--journal` on `run` and also closes F-005 item 1. Until it lands, old
-evidence is refused when the code or the rules changed, but a straight
-replay under unchanged rules is not yet detected. ADR-048 records that.
+Finish the loop (publish, receive). Then the deferred slices in order:
+anti-replay (nonce, journal head anchor, F-005 item 1 — ADR-048 records
+that a straight replay under unchanged rules is not yet detected), and the
+approver signature SLICE-080 made possible (key material the owner
+generates; none is committed).
 
-Then the approver signature that SLICE-080 made possible. An approver
-principal needs key material the owner generates; none is committed.
+Still open: F-004; interval-honest wording; nightly divergence with an
+absolute `--out`; more permissive external repos.
 
 ## Governance
 
-ADR-047 and ADR-048 accepted. Manifest re-frozen at 1730 IDs,
-`expected_skips` byte-identical at 166. The frozen approved-batch fixture
-set was re-keyed (ADR-048): it was sealed with a key absent from this
-repository and hard-coded the v4 evidence shape, so it blocked any
-envelope change. Its new private key is stored beside the vectors.
+ADR-047/048 accepted; ADR-049 accepted with SLICE-082. Manifest frozen at
+1730 IDs / 166 skips; the loop's slices re-freeze as their arms land. The
+frozen approved-batch fixture set is re-keyed (ADR-048); its new private
+key lives beside the vectors.
 
 ## Known limits
 
-The catalog binds keys to principals, never principals to humans. No
-replay detection yet. Otherwise as before: trainer labels host-relative,
-no journal head anchor, mutmut UNVERIFIED.
+The catalog binds keys to principals, never principals to humans. No replay
+detection yet. Trainer labels host-relative, no journal head anchor, mutmut
+UNVERIFIED.

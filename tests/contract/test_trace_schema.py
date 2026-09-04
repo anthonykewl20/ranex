@@ -80,6 +80,7 @@ CLI_DISPATCH_GROUPS = (
     "host.qualify",
     "host.launcher-identity",
     "host.strict-local",
+    "github.bind",
 )
 
 SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve")
