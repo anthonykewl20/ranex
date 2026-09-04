@@ -1,7 +1,8 @@
 # SLICE-081 — Evidence Envelope v1
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-09-04
+**Closed:** 2026-09-05
 **Priority:** P1 — Week 2 objective, second of three slices
 **ADR:** docs/adr/ADR-048-evidence-envelope-v1.md
 **Follows:** SLICE-080 (authenticated principals)

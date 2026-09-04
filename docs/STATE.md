@@ -1,50 +1,50 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-04 (SLICE-080 closed, pushed; SLICE-081 open)
-**Active slice:** docs/slices/SLICE-081-evidence-envelope-v1.md
+**Updated:** 2026-09-05 (SLICE-080 and SLICE-081 closed)
+**Active slice:** none
 
 ## Where we stopped
 
-SLICE-080 / ADR-047 done. The committed trust root now says *what a
-principal is permitted to be*, not only *is this key ours*.
-`governance/producers.yaml` carries an additive `principals:` block —
-identity, one role (ADR-030's vocabulary plus `service`), and an ordered
-key list with `active`/`retired` status. `principal_catalog.py` resolves
-a key to its principal and refuses: one key under two principals, a
-respelled key, two roles, a retired key as signer, and the two blocks
-disagreeing about who owns a key. Nothing consumes it yet — that is
-SLICE-081/082. The kernel did not move; `KERNEL_DIGEST` untouched.
+Week 2 identity and evidence work, two slices done.
 
-Two defects the full suite caught that targeted runs could not: the
-trust root must be committed before it decides a verdict (the tool
-refused its own author), and four arms asserting "this repository has a
-catalog" failed inside journeys that clone the repo and replace its
-keyring. Both fixed; sealed 1715/166, `pytest -q` 1681 passed.
+SLICE-080 / ADR-047 — the trust root says what a principal is permitted
+to be. `governance/producers.yaml` carries an additive `principals:`
+block: identity, one role, rotating keys with active/retired status.
+Nothing consumes it yet; SLICE-082 is where an approver proves identity
+by signature instead of by a typed name.
+
+SLICE-081 / ADR-048 — evidence binds the rulebook it ran under. Domain
+v4 to v5; `envelope_type`, `gate_id` and `catalog_digest` are inside the
+exact signed set. Editing `governance/gates.yaml` after a green run now
+refuses that run's evidence as `policy-context-mismatch` — its own
+reason, never forgery and never absence. Absence is recorded, not
+refused: a run with no committed catalog says `catalog-absent`, which
+blocks at the verdict (ADR-011), because `run` is not only the gating
+path.
+
+The kernel did not move for either. `KERNEL_DIGEST` unchanged.
 
 ## Next
 
-Week 2 continues. SLICE-081 — Evidence Envelope v1: bump the signing
-domain v4 to v5, add `payload_type`, and bind the policy context
-(`catalog_digest`, `gate_id`) evidence does not carry today, so a changed
-gate catalog can no longer reuse old evidence. `run` already knows both.
-Admission resolves `producer_id` through the catalog. `SIGNED_FIELDS` is
-exact, so ~27 test files that build evidence by hand move with it.
+SLICE-082 — anti-replay: a nonce and a journal head anchor, which needs
+`--journal` on `run` and also closes F-005 item 1. Until it lands, old
+evidence is refused when the code or the rules changed, but a straight
+replay under unchanged rules is not yet detected. ADR-048 records that.
 
-Then SLICE-082 — anti-replay: nonce plus a journal head anchor (needs
-`--journal` on `run`), which also closes F-005 item 1.
-
-Still open: F-004; interval-honest wording; nightly divergence with an
-absolute `--out`; more permissive external repos.
+Then the approver signature that SLICE-080 made possible. An approver
+principal needs key material the owner generates; none is committed.
 
 ## Governance
 
-ADR-047 accepted; ADR-038/009/030/025 unchanged. Manifest re-frozen at
-1715 IDs, `expected_skips` byte-identical at 166.
+ADR-047 and ADR-048 accepted. Manifest re-frozen at 1730 IDs,
+`expected_skips` byte-identical at 166. The frozen approved-batch fixture
+set was re-keyed (ADR-048): it was sealed with a key absent from this
+repository and hard-coded the v4 evidence shape, so it blocked any
+envelope change. Its new private key is stored beside the vectors.
 
 ## Known limits
 
-The catalog binds keys to principals, never principals to humans: one
-operator can add a second principal and approve their own work. ADR-047
-records it; review of the committed diff is the control. Otherwise as before:
-trainer labels host-relative, no journal head anchor, mutmut UNVERIFIED.
+The catalog binds keys to principals, never principals to humans. No
+replay detection yet. Otherwise as before: trainer labels host-relative,
+no journal head anchor, mutmut UNVERIFIED.
