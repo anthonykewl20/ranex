@@ -149,6 +149,9 @@ def raw_record(
         "suite_results": report,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     return {**content, "signature": signing.sign_evidence(content, private)}
 
@@ -428,7 +431,7 @@ def test_existing_evidence_domain_exact_fields_and_identity_bindings(identity) -
     private, public = identity
     record = raw_record(private)
     content = {k: v for k, v in record.items() if k != "signature"}
-    assert signing.EVIDENCE_DOMAIN == b"ranex-evidence-v4\n"
+    assert signing.EVIDENCE_DOMAIN == b"ranex-evidence-v5\n"
     assert tuple(content) == (
         "claim_id",
         "command",
@@ -440,6 +443,9 @@ def test_existing_evidence_domain_exact_fields_and_identity_bindings(identity) -
         "suite_results",
         "confinement_result_digest",
         "confinement_profile_digest",
+        "envelope_type",
+        "gate_id",
+        "catalog_digest",
     )
     assert signing.verify_evidence(content, record["signature"], public)
     for field in ("subject_digest", "producer_id"):

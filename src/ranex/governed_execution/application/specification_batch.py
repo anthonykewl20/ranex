@@ -22,7 +22,13 @@ from typing import Any, NoReturn, cast
 
 from ranex.cli.repository import git, uncommitted_paths
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
-from ranex.foundation.signing import public_key_for, sign_evidence
+from ranex.foundation.signing import (
+    CATALOG_ABSENT,
+    ENVELOPE_TYPE,
+    GATE_ABSENT,
+    public_key_for,
+    sign_evidence,
+)
 from ranex.foundation.specification_abc import (
     assert_abc_chain,
     payload_digest,
@@ -257,7 +263,7 @@ def _validate_descriptor_rows(descriptor: dict[str, Any], rows: tuple[dict[str, 
         }
         or output.get("claim_id") != "approved-batch-qualified"
         or output.get("publication_allowed") is not False
-        or output.get("signature_primitive") != "ranex-evidence-v4"
+        or output.get("signature_primitive") != "ranex-evidence-v5"
         or not isinstance(output.get("path"), str)
         or not isinstance(output.get("producer_id"), str)
         or not isinstance(output.get("schema"), dict)
@@ -782,6 +788,13 @@ def qualify_batch(
     result_digests = sorted(record["confinement_result_digest"] for record in admitted_records)
     profile_digests = sorted(record["confinement_profile_digest"] for record in admitted_records)
     content = {
+        # SLICE-081 policy context. This attestation is signed with the evidence
+        # primitive and is admitted through `admit`, so it carries the v5 field
+        # set — but it was never produced for a gate, and the sentinels say so
+        # rather than borrowing a gate id and catalog digest it does not have.
+        "envelope_type": ENVELOPE_TYPE,
+        "gate_id": GATE_ABSENT,
+        "catalog_digest": CATALOG_ABSENT,
         "claim_id": descriptor["qualification_output"]["claim_id"],
         "command": shlex.join(signed_command),
         "command_digest": command_digest(signed_command),

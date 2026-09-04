@@ -366,6 +366,9 @@ def test_real_strict_local_session_is_host_gated_and_binds_its_result(
         "suite_results": None,
         "confinement_result_digest": hashlib.sha256(raw_result).hexdigest(),
         "confinement_profile_digest": runtime_digest,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     private_key = key.read_text(encoding="utf-8").strip()
     cli.record_evidence(

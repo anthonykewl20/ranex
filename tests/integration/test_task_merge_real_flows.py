@@ -268,6 +268,9 @@ def dispatch_judge(
             "suite_results": None,
             "confinement_result_digest": "sha256:" + "c" * 64,
             "confinement_profile_digest": "sha256:" + "d" * 64,
+            "envelope_type": "ranex-evidence-envelope-v1",
+            "gate_id": "landing",
+            "catalog_digest": "sha256:" + "e" * 64,
         }
         evidence_document = {
             **evidence_body,
@@ -392,6 +395,9 @@ def signed_evidence_record(
         "suite_results": None,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     return {**body, "signature": sign_evidence(body, scenario.producer_private)}
 
@@ -963,6 +969,9 @@ def test_evidence_suite_results_present_vs_absent_irrelevant_to_merge(
                 "suite_results": _results,
                 "confinement_result_digest": "sha256:" + "c" * 64,
                 "confinement_profile_digest": "sha256:" + "d" * 64,
+                "envelope_type": "ranex-evidence-envelope-v1",
+                "gate_id": "landing",
+                "catalog_digest": "sha256:" + "e" * 64,
             }
             return [{**body, "signature": sign_evidence(body, _scenario.producer_private)}]
 

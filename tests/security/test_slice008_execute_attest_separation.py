@@ -107,6 +107,9 @@ def conftest_source(*, key_snippet: str = PLANTED_KEY_SNIPPET) -> str:
             "suite_results": None,
             "confinement_result_digest": "sha256:" + "a" * 64,
             "confinement_profile_digest": "sha256:" + "b" * 64,
+            "envelope_type": "ranex-evidence-envelope-v1",
+            "gate_id": "landing",
+            "catalog_digest": "sha256:" + "e" * 64,
             "signature": FORGED_SIGNATURE,
         }
 

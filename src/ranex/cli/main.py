@@ -71,6 +71,8 @@ from ranex.foundation.approval import candidate_row_hash, verify_approval
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
 from ranex.foundation.confinement_result import validate_confinement_result
 from ranex.foundation.signing import (
+    CATALOG_ABSENT,
+    ENVELOPE_TYPE,
     generate_keypair,
     public_key_for,
     sign_evidence,
@@ -3295,6 +3297,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         results_artifact: str | None = None
         qualification_report: str | None = None
         suite_manifest: dict[str, object] | None = None
+        catalog_source: bytes | None = None
         catalog_name = named_within_repository(root, args.gate_catalog)
         if committed_bytes(root, started_at, catalog_name) is not None:
             catalog_path = resolve_within_repository(root, args.gate_catalog)
@@ -3444,6 +3447,18 @@ def cmd_run(args: argparse.Namespace) -> int:
 
         # Cleanup completed before evidence becomes durable. A scratch tree we
         # cannot remove is an operational refusal, not a gate verdict.
+        # SLICE-081: the record binds the rules it was produced under, not only
+        # the code it was produced against.
+        #
+        # With no committed catalog there is no rulebook to name, and the record
+        # says so — `CATALOG_ABSENT`, never a placeholder digest and never a
+        # refusal here. `run` is not only the gating path: the observability and
+        # confinement suites exercise it with no catalog at all, and refusing
+        # would break recording for reasons that have nothing to do with
+        # policy. Blocking belongs at the verdict, which is where absence has
+        # always blocked in this repository: `CATALOG_ABSENT` never equals a
+        # live catalog digest, so such a record is refused at `gate evaluate`
+        # with a reason that names what is missing.
         content = {
             "claim_id": args.claim,
             "subject_digest": subject,
@@ -3455,6 +3470,13 @@ def cmd_run(args: argparse.Namespace) -> int:
             "suite_results": observed_suite_results,
             "confinement_result_digest": observation.confinement_result_digest,
             "confinement_profile_digest": observation.confinement_profile_digest,
+            "envelope_type": ENVELOPE_TYPE,
+            "gate_id": args.gate,
+            "catalog_digest": (
+                CATALOG_ABSENT
+                if catalog_source is None
+                else catalog_digest_for(catalog_source)
+            ),
         }
         signed_record = {**content, "signature": sign_evidence(content, private_key)}
         if strict_local_sources is None:

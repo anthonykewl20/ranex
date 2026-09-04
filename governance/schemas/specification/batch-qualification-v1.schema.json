@@ -9,6 +9,10 @@
     "evidence": {
       "additionalProperties": false,
       "properties": {
+        "catalog_digest": {
+          "minLength": 1,
+          "type": "string"
+        },
         "claim_id": {
           "const": "approved-batch-qualified"
         },
@@ -25,12 +29,19 @@
         "confinement_result_digest": {
           "$ref": "#/$defs/digest"
         },
+        "envelope_type": {
+          "const": "ranex-evidence-envelope-v1"
+        },
         "executable_path": {
           "minLength": 1,
           "type": "string"
         },
         "exit_code": {
           "const": 0
+        },
+        "gate_id": {
+          "minLength": 1,
+          "type": "string"
         },
         "producer_id": {
           "minLength": 1,
@@ -109,13 +120,16 @@
         }
       },
       "required": [
+        "catalog_digest",
         "claim_id",
         "command",
         "command_digest",
         "confinement_profile_digest",
         "confinement_result_digest",
+        "envelope_type",
         "executable_path",
         "exit_code",
+        "gate_id",
         "producer_id",
         "signature",
         "subject_digest",

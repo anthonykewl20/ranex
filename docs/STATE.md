@@ -1,8 +1,8 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-04 (SLICE-080 closed; Week 2 identity work started)
-**Active slice:** none
+**Updated:** 2026-09-04 (SLICE-080 closed, pushed; SLICE-081 open)
+**Active slice:** docs/slices/SLICE-081-evidence-envelope-v1.md
 
 ## Where we stopped
 

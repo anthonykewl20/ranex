@@ -60,6 +60,9 @@ CONTENT = {
     "suite_results": None,
     "confinement_result_digest": "sha256:" + "c" * 64,
     "confinement_profile_digest": "sha256:" + "d" * 64,
+    "envelope_type": "ranex-evidence-envelope-v1",
+    "gate_id": "landing",
+    "catalog_digest": "sha256:" + "e" * 64,
 }
 
 
@@ -71,7 +74,7 @@ def keypair(sg) -> tuple[str, str]:
 # --- the payload is pinned --------------------------------------------------
 
 
-def test_signed_fields_are_exactly_the_eight_content_fields(sg) -> None:
+def test_signed_fields_are_exactly_the_declared_content_fields(sg) -> None:
     """Not "everything except signature". The two differ the moment a record
     carries an extra field, and then `run` and `load` disagree about what was
     signed.
@@ -81,10 +84,15 @@ def test_signed_fields_are_exactly_the_eight_content_fields(sg) -> None:
     signed alongside it so the legible field cannot be swapped under a matching
     digest; and `executable_path` is signed because the containment rule is
     re-checked from it at evaluation, which an unsigned field could not carry.
+
+    SLICE-081 made it thirteen and moved the domain to v5. The three additions
+    are the policy context: without them a record bound the code it ran against
+    but not the rulebook it ran under, so green evidence plus one edit to the
+    gate catalog satisfied rules the run had never seen.
     """
 
     assert (sg.EVIDENCE_DOMAIN, set(sg.SIGNED_FIELDS)) == (
-        b"ranex-evidence-v4\n",
+        b"ranex-evidence-v5\n",
         {
             "claim_id",
             "command",
@@ -96,9 +104,12 @@ def test_signed_fields_are_exactly_the_eight_content_fields(sg) -> None:
             "suite_results",
             "confinement_result_digest",
             "confinement_profile_digest",
+            "envelope_type",
+            "gate_id",
+            "catalog_digest",
         },
     )
-    assert len(sg.SIGNED_FIELDS) == 10
+    assert len(sg.SIGNED_FIELDS) == 13
 
 
 def test_payload_carries_the_domain_prefix(sg) -> None:

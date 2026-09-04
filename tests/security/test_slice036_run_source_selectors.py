@@ -161,7 +161,7 @@ def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
 
     governance = root / "governance"
     (governance / "producers.yaml").write_text(
-        "producers:\n  owner: ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg=\n",
+        "producers:\n  owner: ed25519:CiDh4vZcR9Np+EVlrMo4AEyddVqfaC+vXlunlDUvv8Y=\n",
         encoding="utf-8",
     )
     (governance / "gates.yaml").write_text("gates: []\n", encoding="utf-8")

@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from ranex.foundation.signing import generate_keypair, sign_evidence
+from ranex.foundation.signing import ENVELOPE_TYPE, generate_keypair, sign_evidence
 
 # Every producer identity any e2e test uses. Registered up front so the keyring
 # is committed with the rest of the tree and `run` sees a clean working tree.
@@ -80,6 +80,12 @@ class Signing:
         body.setdefault("suite_results", None)
         body.setdefault("confinement_result_digest", "sha256:" + "c" * 64)
         body.setdefault("confinement_profile_digest", "sha256:" + "d" * 64)
+        # SLICE-081: the policy context a record binds. Defaulted so hand-built
+        # evidence stays terse, overridable by any test that must name the real
+        # catalog its gate will be evaluated under.
+        body.setdefault("envelope_type", ENVELOPE_TYPE)
+        body.setdefault("gate_id", "landing")
+        body.setdefault("catalog_digest", "sha256:" + "e" * 64)
         return {**body, "signature": sign_evidence(body, self.private[producer])}
 
 

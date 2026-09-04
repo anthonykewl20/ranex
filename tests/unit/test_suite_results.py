@@ -12,10 +12,10 @@ This file pins three surfaces:
        parse_results_artifact(path, manifest) -> dict
        suite_results_from_junitxml(junitxml_bytes, manifest) -> dict
 
-2. `ranex.foundation.signing` / admission v4:
+2. `ranex.foundation.signing` / admission v5:
 
-        EVIDENCE_DOMAIN == b"ranex-evidence-v4\\n"
-       SIGNED_FIELDS == the previous seven fields plus "suite_results"
+        EVIDENCE_DOMAIN == b"ranex-evidence-v5\\n"
+       SIGNED_FIELDS == the v4 ten plus SLICE-081's policy context
        admit(...) refuses old v2 rows and malformed v3 `suite_results`
 
 3. The verdict rule in `ranex.governed_execution.domain.verdict`:
@@ -162,6 +162,9 @@ def content(*, suite_results_value: dict[str, object] | None) -> dict[str, objec
         "suite_results": suite_results_value,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
 
 
@@ -196,10 +199,10 @@ def signed_for_domain(
     ).decode("ascii")
 
 
-def raw_signed_v4(private_key: str, body: dict[str, object]) -> dict[str, object]:
+def raw_signed_v5(private_key: str, body: dict[str, object]) -> dict[str, object]:
     return {
         **body,
-        "signature": signed_for_domain(private_key, b"ranex-evidence-v4\n", body),
+        "signature": signed_for_domain(private_key, b"ranex-evidence-v5\n", body),
     }
 
 
@@ -273,7 +276,7 @@ def run_real_pytest_tree(
 
 
 def test_signing_moves_to_v3_and_adds_suite_results(domain) -> None:
-    assert domain.signing.EVIDENCE_DOMAIN == b"ranex-evidence-v4\n"
+    assert domain.signing.EVIDENCE_DOMAIN == b"ranex-evidence-v5\n"
     assert domain.signing.SIGNED_FIELDS == (
         "claim_id",
         "command",
@@ -285,6 +288,9 @@ def test_signing_moves_to_v3_and_adds_suite_results(domain) -> None:
         "suite_results",
         "confinement_result_digest",
         "confinement_profile_digest",
+        "envelope_type",
+        "gate_id",
+        "catalog_digest",
     )
 
 
@@ -339,7 +345,7 @@ def test_admission_refuses_any_content_key_set_other_than_the_eight(
         body["timestamp"] = "2026-08-05T00:00:00Z"
 
     result = domain.admission.admit(
-        [raw_signed_v4(private, body)],
+        [raw_signed_v5(private, body)],
         {"worker": public},
     )
 
@@ -391,7 +397,7 @@ def test_admission_refuses_suite_results_with_missing_or_extra_inner_keys(
     private, public = keypair
     result = domain.admission.admit(
         [
-            raw_signed_v4(
+            raw_signed_v5(
                 private,
                 content(suite_results_value=suite_results_value),
             )
@@ -423,7 +429,7 @@ def test_admission_refuses_counts_with_missing_or_extra_keys(
     result_value["counts"] = counts
 
     result = domain.admission.admit(
-        [raw_signed_v4(private, content(suite_results_value=result_value))],
+        [raw_signed_v5(private, content(suite_results_value=result_value))],
         {"worker": public},
     )
 
@@ -480,7 +486,7 @@ def test_admission_refuses_non_canonical_suite_results_content(
         )
 
     result = domain.admission.admit(
-        [raw_signed_v4(private, content(suite_results_value=result_value))],
+        [raw_signed_v5(private, content(suite_results_value=result_value))],
         {"worker": public},
     )
 

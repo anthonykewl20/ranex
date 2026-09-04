@@ -680,7 +680,7 @@ What the loop is and what it has proven: [Benchmarks and proofs](#benchmarks-and
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** none
+**Active slice:** docs/slices/SLICE-081-evidence-envelope-v1.md
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness

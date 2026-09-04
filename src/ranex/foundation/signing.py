@@ -16,9 +16,9 @@ loader must compute identical bytes on different machines:
    other structure whose canonical form happens to collide. It also carries the
    format version: SLICE-003 moved it to `v2`, which is what makes a v1
    signature fail against v2 content instead of being accepted as a downgrade.
-2. **The signed field set is exactly seven**, not "every key except signature".
-   The two differ the moment a record carries an extra field, and then the
-   producer and the verifier disagree about what was covered.
+2. **The signed field set is exactly `SIGNED_FIELDS`**, not "every key except
+   signature". The two differ the moment a record carries an extra field, and
+   then the producer and the verifier disagree about what was covered.
 3. **Encoding is base64 throughout.** A record written on one machine must
    verify on another; that is the whole point of the slice.
 4. **That base64 must be the canonical spelling.** Callers key identities by the
@@ -41,7 +41,23 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import (
 
 from ranex.foundation.canonical import canonical_json_bytes
 
-EVIDENCE_DOMAIN = b"ranex-evidence-v4\n"
+EVIDENCE_DOMAIN = b"ranex-evidence-v5\n"
+
+ENVELOPE_TYPE = "ranex-evidence-envelope-v1"
+
+# What `catalog_digest` carries when the run had no committed gate catalog to
+# name. A sentinel rather than a placeholder digest, because a well-formed
+# `sha256:` that names nothing is a lie a verifier cannot detect, and rather
+# than a refusal inside `run`, because `run` is not only the gating path.
+# It never equals a live catalog digest, so a record carrying it is refused at
+# the verdict — which is where absence has always blocked here.
+CATALOG_ABSENT = "catalog-absent"
+
+# The same honesty for `gate_id`, used by attestations that are signed with this
+# primitive but were never produced for a gate — the batch qualification
+# artifact (SLICE-071) is one. A real gate id would make such a record look
+# like gate evidence to anything that reads it.
+GATE_ABSENT = "gate-absent"
 
 # SLICE-009 added suite_results, and the version above moved with it.
 # `command_digest` is what the kernel compares, so an unsigned digest would be a
@@ -49,6 +65,17 @@ EVIDENCE_DOMAIN = b"ranex-evidence-v4\n"
 # field cannot be swapped under a matching digest; `executable_path` is signed
 # because the containment rule is re-checked from it at evaluation, which an
 # unsigned field could not carry.
+#
+# SLICE-081 added the policy context, and the version above moved to v5 with it.
+# Until then a record bound what ran, what it ran against, who ran it and how it
+# was confined — but not the rules it was produced under. Green evidence plus one
+# edit to `governance/gates.yaml` therefore satisfied a rulebook the run had
+# never seen: no forged signature, no changed subject. `gate_id` and
+# `catalog_digest` close that, and they are inside the exact signed set rather
+# than optional beside it, because a field an attacker may omit is a check that
+# never runs. `envelope_type` makes the record self-describing on disk, so a
+# consumer reads what it is holding instead of inferring it from a signature it
+# cannot verify.
 SIGNED_FIELDS: tuple[str, ...] = (
     "claim_id",
     "command",
@@ -60,6 +87,9 @@ SIGNED_FIELDS: tuple[str, ...] = (
     "suite_results",
     "confinement_result_digest",
     "confinement_profile_digest",
+    "envelope_type",
+    "gate_id",
+    "catalog_digest",
 )
 
 _PREFIX = "ed25519:"
@@ -106,10 +136,12 @@ def _decode(value: object, *, expected: int | None, field: str) -> bytes:
 def signed_payload(content: Mapping[str, Any]) -> bytes:
     """The exact bytes a signature covers.
 
-    Refuses a record that is not exactly the eight content fields. Silently
-    signing an extra field would let the producer cover something the verifier
-    does not check; silently dropping it would let an attacker append a field
-    the signature never protected.
+    Refuses a record that is not exactly `SIGNED_FIELDS`. Silently signing an
+    extra field would let the producer cover something the verifier does not
+    check; silently dropping it would let an attacker append a field the
+    signature never protected. It is also what makes a downgrade unspellable:
+    a v4 record cannot be presented as v5 content, because the field set does
+    not match and the domain prefix differs besides.
     """
 
     present = set(content)
@@ -160,7 +192,7 @@ def public_key_for(private_key: str) -> str:
 
 
 def sign_evidence(content: Mapping[str, Any], private_key: str) -> str:
-    """Sign the eight content fields. Deterministic per RFC 8032."""
+    """Sign exactly `SIGNED_FIELDS`. Deterministic per RFC 8032."""
 
     raw = _decode(private_key, expected=32, field="private key")
     key = Ed25519PrivateKey.from_private_bytes(raw)

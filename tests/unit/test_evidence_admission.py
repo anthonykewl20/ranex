@@ -78,6 +78,9 @@ def content(**overrides: object) -> dict[str, object]:
         "suite_results": None,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     record.update(overrides)
     return record

@@ -556,6 +556,9 @@ def record_live_host_qualification(
         "suite_results": report,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     private_key = key_path.read_text(encoding="utf-8").strip()
     record_evidence(
@@ -1266,6 +1269,9 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
         "suite_results": report,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     raw_record = {**raw_content, "signature": signing.sign_evidence(raw_content, producer_private)}
     original_reader = admission._read_live_durable_host_state

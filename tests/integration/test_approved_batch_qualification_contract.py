@@ -63,7 +63,7 @@ NEGATIVE_CONTROLS = json.loads(
 FIXTURE_PARENT_COMMIT = "6d8e690f959305922c3a65d93216c46143a3232d"
 BASE_COMMIT = "59924e2689e8025bafeed998bd7725fe50bb9a95"
 SUBJECT_DIGEST = "sha256:7340607090dddf9cf1faf96a110d20da41157532396cc324661fe829eea3921d"
-OWNER_PUBLIC_KEY = "ed25519:A6EHv/POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg="
+OWNER_PUBLIC_KEY = "ed25519:CiDh4vZcR9Np+EVlrMo4AEyddVqfaC+vXlunlDUvv8Y="
 
 
 def envelope() -> dict[str, object]:
@@ -97,9 +97,9 @@ def journal_snapshot(path: Path) -> tuple[int, str | None]:
 
 def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fixture() -> None:
     triple = VECTORS["triple"]
-    assert VECTORS["version"] == "approved-batch-v1-vectors-19"
+    assert VECTORS["version"] == "approved-batch-v1-vectors-20"
     assert triple["a"]["revision"] == triple["c_payload"]["revision"] == 16
-    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v19"
+    assert triple["c_payload"]["nonce"] == "slice036-approved-batch-v20"
     assert_abc_chain(triple["a"], triple["b"], envelope())
     assert payload_digest(triple["a"]) == triple["a_digest"]
     assert payload_digest(triple["b"]) == triple["b_digest"]
@@ -171,7 +171,7 @@ def test_signed_authority_closes_schema_descriptor_children_and_every_oracle_fix
             "path": VECTORS["paths"]["qualification_schema"],
             "digest": VECTORS["digests"]["qualification_schema"],
         },
-        "signature_primitive": "ranex-evidence-v4",
+        "signature_primitive": "ranex-evidence-v5",
     }
     assert QUALIFICATION_SCHEMA["properties"]["payload"]["properties"][
         "publication_allowed"

@@ -119,6 +119,9 @@ def make_candidate(scenario: Scenario, worktree: Path, task_id: str) -> tuple[st
         "suite_results": None,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     (worktree / "governance" / "evidence.json").write_text(
         json.dumps([{**body, "signature": sign_evidence(body, scenario.worker_private)}]),
@@ -306,6 +309,9 @@ def test_merge_legacy_candidate_without_dispatch_uses_governed_evidence(tmp_path
         "suite_results": None,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     (scenario.repository / "governance" / "evidence.json").write_text(
         json.dumps([{**body, "signature": sign_evidence(body, scenario.worker_private)}]),

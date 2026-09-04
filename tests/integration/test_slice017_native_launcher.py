@@ -98,7 +98,11 @@ RESPONSE_LIMIT = 65_536
 # Issue #56 (2026-08-30) refreshes it for checked-out merge-worktree coherence.
 # Issue #56 (2026-08-31) extends it for ignored-path conflict detection and
 # stale checked-out worktree recovery details.
-MAIN_PY_SHA256 = "61602aa71962a3d2590162b004f14fdd4d4c968403cb8e848d971246880ae8f6"
+# SLICE-081 (#77, 2026-09-04) refreshes it for the Evidence Envelope v1 policy
+# context: `cmd_run` hoists `catalog_source` and records `envelope_type`,
+# `gate_id` and `catalog_digest`. The launcher boundary, the strict-local
+# controller branch and the confinement call sites are untouched.
+MAIN_PY_SHA256 = "05d6a4812d1b4802796e963d97f5a8a92f223164521ff0db75288cb026c01fd7"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

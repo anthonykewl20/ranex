@@ -316,6 +316,9 @@ def record_live_host_qualification(repo: Path, key_path: Path) -> None:
         "suite_results": report,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     private_key = key_path.read_text(encoding="utf-8").strip()
     record_evidence(

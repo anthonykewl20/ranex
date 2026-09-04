@@ -84,6 +84,9 @@ def prepare(repo: Path, *, orphan: bool = False) -> tuple[str, str, Path, dict[s
         "suite_results": None,
         "confinement_result_digest": "sha256:" + "c" * 64,
         "confinement_profile_digest": "sha256:" + "d" * 64,
+        "envelope_type": "ranex-evidence-envelope-v1",
+        "gate_id": "landing",
+        "catalog_digest": "sha256:" + "e" * 64,
     }
     (governance / "evidence.json").write_text(
         json.dumps([{**evidence_body, "signature": sign_evidence(evidence_body, worker_private)}]),
