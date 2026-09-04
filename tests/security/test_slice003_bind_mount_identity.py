@@ -254,6 +254,7 @@ def run_argv(*command: str, claim: str = "tests-executed") -> list[str]:
         "--repository", ".",
         "--evidence", "evidence.json",
         "--producers", "producers.yaml",
+        "--gate-catalog", "gates.yaml",
         "--", *command,
     ]
 

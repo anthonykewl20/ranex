@@ -690,7 +690,7 @@ class _Subject:
             [
                 "run", "--claim", "tests-executed", "--producer", "worker",
                 "--repository", ".", "--evidence", "evidence.json",
-                "--producers", "producers.yaml", "--", "sh", "check.sh",
+                "--producers", "producers.yaml", "--gate-catalog", "gates.yaml", "--", "sh", "check.sh",
             ],
             env=env,
         )
@@ -765,7 +765,7 @@ def test_joint_trace_and_coverage_case(
         [
             "run", "--claim", "tests-executed", "--producer", "worker",
             "--repository", ".", "--evidence", "evidence.json",
-            "--producers", "producers.yaml", "--", "sh", "-c", probe,
+            "--producers", "producers.yaml", "--gate-catalog", "gates.yaml", "--", "sh", "-c", probe,
         ],
         env=traced_env,
     )

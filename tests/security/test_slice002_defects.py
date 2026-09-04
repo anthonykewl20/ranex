@@ -160,6 +160,24 @@ def signed(content: dict[str, object], private_key: str) -> dict[str, object]:
     return {**content, "signature": sign_evidence(content, private_key)}
 
 
+def catalog_digest_of(repo: Path, name: str = "gates.yaml") -> str:
+    """The digest of the catalog this repository carries.
+
+    A SLICE-081 record binds the rulebook it was produced under, so a hand-built
+    record must name the catalog the gate will actually be judged by. The
+    placeholder it used to carry is refused now — correctly, as
+    policy-context-mismatch, but for a reason these tests do not mean to test.
+    """
+
+    from ranex.bootstrap.composition import catalog_digest_for
+    from ranex.foundation.signing import CATALOG_ABSENT
+
+    candidate = repo / name
+    if not candidate.is_file():
+        return CATALOG_ABSENT
+    return catalog_digest_for(candidate.read_bytes())
+
+
 def record(
     *,
     claim: str,
@@ -167,6 +185,7 @@ def record(
     producer: str,
     exit_code: int = 0,
     argv: list[str] | None = None,
+    catalog: str | None = None,
 ) -> dict[str, object]:
     """A record body for `claim`, describing the command that claim names.
 
@@ -192,7 +211,10 @@ def record(
         "confinement_profile_digest": "sha256:" + "d" * 64,
         "envelope_type": "ranex-evidence-envelope-v1",
         "gate_id": "landing",
-        "catalog_digest": "sha256:" + "e" * 64,
+        # A record that will face a gate must name that gate's catalog; one
+        # that only exercises admission never gets that far, so the placeholder
+        # stays the default rather than forcing every call site to care.
+        "catalog_digest": catalog if catalog is not None else "sha256:" + "e" * 64,
     }
 
 
@@ -221,6 +243,7 @@ def run_cmd(
             "--repository", ".",
             "--evidence", "evidence.json",
             "--producers", "producers.yaml",
+            "--gate-catalog", "gates.yaml",
             "--", *command,
         ],
         key_path,
@@ -508,7 +531,12 @@ def test_pass_still_reports_refused_records(
 
     digest = subject_digest(repo)
     honest = signed(
-        record(claim="tests-executed", digest=digest, producer="worker"),
+        record(
+            claim="tests-executed",
+            digest=digest,
+            producer="worker",
+            catalog=catalog_digest_of(repo),
+        ),
         keys.private["worker"],
     )
     forged = signed(
@@ -658,8 +686,16 @@ def test_stale_subject_diagnosis_survives_a_refusal(
     write_keyring(repo, worker=keys.public["worker"], alice=keys.public["alice"])
     commit_all(repo)
 
+    # Both name the real catalog: this test is about a stale subject surviving
+    # beside a forgery, and a record refused for policy context would never
+    # reach either diagnosis.
     stale = signed(
-        record(claim="tests-executed", digest=STALE_DIGEST, producer="worker"),
+        record(
+            claim="tests-executed",
+            digest=STALE_DIGEST,
+            producer="worker",
+            catalog=catalog_digest_of(repo),
+        ),
         keys.private["worker"],
     )
     forged = signed(
@@ -668,6 +704,7 @@ def test_stale_subject_diagnosis_survives_a_refusal(
             digest=subject_digest(repo),
             producer="alice",
             exit_code=1,
+            catalog=catalog_digest_of(repo),
         ),
         keys.private["alice"],
     )

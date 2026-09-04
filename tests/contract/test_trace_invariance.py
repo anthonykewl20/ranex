@@ -139,7 +139,7 @@ class _Subject:
             [
                 "run", "--claim", "tests-executed", "--producer", "worker",
                 "--repository", ".", "--evidence", "evidence.json",
-                "--producers", "producers.yaml", "--", "sh", "check.sh",
+                "--producers", "producers.yaml", "--gate-catalog", "gates.yaml", "--", "sh", "check.sh",
             ],
             extra_env=extra_env,
             pass_fds=pass_fds,
@@ -390,7 +390,7 @@ def test_observed_command_environments_never_see_trace_variables(
             [
                 "run", "--claim", "tests-executed", "--producer", "worker",
                 "--repository", ".", "--evidence", "evidence.json",
-                "--producers", "producers.yaml", "--", "sh", "-c", probe,
+                "--producers", "producers.yaml", "--gate-catalog", "gates.yaml", "--", "sh", "-c", probe,
             ],
             extra_env=extra_env,
         )

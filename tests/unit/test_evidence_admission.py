@@ -232,11 +232,20 @@ def test_every_rejection_reason_is_distinct(adm) -> None:
     assert "no evidence for required claim" not in values
 
 
-def test_rejection_reason_set_has_all_seven_closed_values(adm) -> None:
+def test_rejection_reason_set_is_closed(adm) -> None:
+    """The vocabulary is a closed set, and growing it is a deliberate edit here.
+
+    Two of these are decided outside the admission module — containment needs a
+    repository, and policy context needs a live gate — but every reason is named
+    here so that a refusal for any of them is reported as structured data, and
+    none of them can be mistaken for the kernel's phrasing for honest absence.
+    """
+
     assert {str(reason) for reason in adm.RejectionReason} == {
         "malformed-record", "missing-signature", "malformed-signature",
         "unknown-producer", "bad-signature", "stale-host-state",
-        "executable-inside-subject",
+        "executable-inside-subject", "policy-context-mismatch",
+        "unsupported-envelope",
     }
 
 

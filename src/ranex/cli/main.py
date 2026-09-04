@@ -31,7 +31,7 @@ from contextlib import ExitStack
 from dataclasses import dataclass
 from importlib import import_module
 from pathlib import Path
-from typing import TypeVar, cast, overload
+from typing import Any, TypeVar, cast, overload
 
 from ranex.bootstrap.composition import (
     build_gate_evaluator,
@@ -328,19 +328,122 @@ def admit_records(
     path: Path,
     keyring: Mapping[str, str],
     repository_root: Path | None = None,
+    *,
+    gate_id: str | None = None,
+    catalog_digest: str | None = None,
 ) -> Admission:
     """The same, from a keyring already in hand rather than a path to one.
 
     This is what the CLI calls. The keyring it passes came out of the commit,
     and re-deriving it from a path here would reopen the trust root by name
     after it was checked — the whole hole `committed_trust_root` exists to close.
+
+    `gate_id` and `catalog_digest`, when given, also re-check the policy context
+    the record was produced under. Omitting them verifies signatures and
+    containment only, the same way omitting `repository_root` verifies
+    signatures only: a caller asking "did this record verify" is asking a
+    narrower question than a gate is.
     """
 
     records = load_records(path)
     admission = admit(records, keyring)
-    if repository_root is None:
+    if repository_root is not None:
+        admission = refuse_executables_inside(admission, len(records), repository_root)
+    if gate_id is None or catalog_digest is None:
         return admission
-    return refuse_executables_inside(admission, len(records), repository_root)
+    return refuse_foreign_policy_context(admission, records, gate_id, catalog_digest)
+
+
+def refuse_foreign_policy_context(
+    admission: Admission,
+    records: Sequence[Any],
+    gate_id: str,
+    catalog_digest: str,
+) -> Admission:
+    """Refuse records produced under a different rulebook than the one in force.
+
+    A record binds `gate_id` and `catalog_digest` (SLICE-081/ADR-048), and this
+    is where they are compared. Without the comparison the binding would be
+    decoration — the same reasoning that put `refuse_executables_inside` here,
+    and the same reason in-toto's advisory `expected_command` was refused.
+
+    The attack it closes needs no forged signature and no changed subject: run
+    the suite honestly, take the green evidence, edit `governance/gates.yaml`,
+    evaluate. Before this, the old evidence still verified and satisfied a
+    rulebook the run had never seen.
+
+    Read from the raw records rather than from admitted `Evidence`, because the
+    kernel dataclass carries no policy fields and adding them would move the
+    kernel for a check that does not need it. `admit` produces exactly one
+    outcome per record, so the admitted evidence lines up in order with the
+    record positions no rejection claimed — the same alignment
+    `refuse_executables_inside` relies on.
+
+    Refused rather than dropped. The record exists and is signed; reporting it
+    as absence would file "work done under other rules" as work never done.
+    """
+
+    already_refused = {rejection.index for rejection in admission.rejections}
+    positions = [i for i in range(len(records)) if i not in already_refused]
+
+    kept: list[Evidence] = []
+    added: list[Rejection] = []
+    for index, item in zip(positions, admission.evidence, strict=True):
+        record = records[index]
+        record_gate = record.get("gate_id") if isinstance(record, Mapping) else None
+        record_catalog = record.get("catalog_digest") if isinstance(record, Mapping) else None
+        if record_gate is None or record_catalog is None:
+            # Admission already refuses a record whose field set is not exactly
+            # SIGNED_FIELDS, so this is unreachable through `admit`. It is kept
+            # because the alternative is comparing None to a digest and calling
+            # the result a mismatch, which would report an envelope from before
+            # the policy context existed as evidence for another gate.
+            reason = RejectionReason.UNSUPPORTED_ENVELOPE
+            detail = (
+                "record carries no policy context; it predates the evidence "
+                "envelope that binds the gate and catalog a run was performed "
+                "under, and cannot be checked against either"
+            )
+        elif record_catalog == CATALOG_ABSENT:
+            reason = RejectionReason.POLICY_CONTEXT_MISMATCH
+            detail = (
+                "record was produced with no committed gate catalog, so it "
+                "names no rulebook; evidence that names none could satisfy any "
+                f"of them, and this gate is defined by {catalog_digest}"
+            )
+        elif record_gate != gate_id:
+            reason = RejectionReason.POLICY_CONTEXT_MISMATCH
+            detail = (
+                f"record was produced for gate {record_gate!r}, not {gate_id!r}; "
+                "one catalog defines many gates and evidence for one does not "
+                "satisfy another"
+            )
+        elif record_catalog != catalog_digest:
+            reason = RejectionReason.POLICY_CONTEXT_MISMATCH
+            detail = (
+                f"record was produced under catalog {record_catalog}, and this "
+                f"gate is defined by {catalog_digest}; the rulebook changed "
+                "after the work was done, so the work must be done again"
+            )
+        else:
+            kept.append(item)
+            continue
+        added.append(
+            Rejection(
+                index=index,
+                reason=reason,
+                detail=detail,
+                producer_id=item.producer_id,
+                claim_id=item.claim_id,
+            )
+        )
+
+    return Admission(
+        evidence=tuple(kept),
+        rejections=tuple(
+            sorted(admission.rejections + tuple(added), key=lambda r: r.index)
+        ),
+    )
 
 
 def refuse_executables_inside(
@@ -797,8 +900,17 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             load_manifest_bytes(suite_manifest_source)
         keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
         # The root is passed so the containment decision `run` made about
-        # argv[0] is taken again here, from the signed path in the record.
-        admission = admit_records(evidence_path, keyring, root)
+        # argv[0] is taken again here, from the signed path in the record. The
+        # gate and catalog digest are passed for the same reason: a record binds
+        # the rulebook it was produced under, and a bound field nothing re-checks
+        # is decoration.
+        admission = admit_records(
+            evidence_path,
+            keyring,
+            root,
+            gate_id=args.gate,
+            catalog_digest=catalog_digest_for(catalog_source),
+        )
         evaluator = build_gate_evaluator(
             catalog_source,
             journal_path,

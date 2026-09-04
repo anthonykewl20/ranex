@@ -78,7 +78,7 @@ def run(repository: Path, key_path: str) -> int:
         [
             "run", "--claim", "tests-executed", "--producer", "worker",
             "--repository", ".", "--evidence", "evidence.json",
-            "--producers", "producers.yaml", "--", "sh", "run-tests.sh",
+            "--producers", "producers.yaml", "--gate-catalog", "gates.yaml", "--", "sh", "run-tests.sh",
         ],
         key_path,
     )

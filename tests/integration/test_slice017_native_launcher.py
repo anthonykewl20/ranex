@@ -102,7 +102,10 @@ RESPONSE_LIMIT = 65_536
 # context: `cmd_run` hoists `catalog_source` and records `envelope_type`,
 # `gate_id` and `catalog_digest`. The launcher boundary, the strict-local
 # controller branch and the confinement call sites are untouched.
-MAIN_PY_SHA256 = "05d6a4812d1b4802796e963d97f5a8a92f223164521ff0db75288cb026c01fd7"
+# SLICE-081 step 2 (#77) extends it for `refuse_foreign_policy_context` beside
+# `refuse_executables_inside`, and for `cmd_gate_evaluate` passing the gate and
+# catalog digest into `admit_records`. Same boundary, untouched.
+MAIN_PY_SHA256 = "36c70aff869ddcf702a751e5353f9cc7f78bcb20fa7005f2f36df93afbbe677b"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

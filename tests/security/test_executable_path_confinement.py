@@ -130,6 +130,7 @@ def run_cmd(repo: Path, keys: dict[str, str], *command: str) -> int:
             "--repository", ".",
             "--evidence", "evidence.json",
             "--producers", "producers.yaml",
+            "--gate-catalog", "gates.yaml",
             "--", *command,
         ],
         keys["path"],

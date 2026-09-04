@@ -127,6 +127,7 @@ def run_cmd(
             "--repository", ".",
             "--evidence", "evidence.json",
             "--producers", "producers.yaml",
+            "--gate-catalog", "gates.yaml",
             "--", *command,
         ],
         key_path,

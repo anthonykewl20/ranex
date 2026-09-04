@@ -62,6 +62,22 @@ class RejectionReason(StrEnum):
     # about a repository and the domain does not reach for one; named here so a
     # refusal for it is reported as structured data like every other.
     EXECUTABLE_INSIDE_SUBJECT = "executable-inside-subject"
+    # SLICE-081, decided outside this module for the same reason: which gate is
+    # being evaluated, and which catalog bytes define it, are questions about a
+    # repository at a ref.
+    #
+    # The record names a different gate or a different catalog than the one
+    # being evaluated. Distinct from every reason above because nothing is wrong
+    # with the record: it verifies, it is well formed, its producer is known. It
+    # is simply evidence of work done under other rules, and saying
+    # "bad-signature" about it would send an operator hunting a forgery that did
+    # not happen.
+    POLICY_CONTEXT_MISMATCH = "policy-context-mismatch"
+    # A record from before the envelope carried policy context at all. Distinct
+    # from MALFORMED_RECORD because "this is evidence from an older envelope"
+    # and "this is not a record" are different events, and an operator
+    # investigating the first should not be told the second.
+    UNSUPPORTED_ENVELOPE = "unsupported-envelope"
 
 
 @dataclass(frozen=True, slots=True)

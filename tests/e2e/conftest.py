@@ -42,6 +42,12 @@ class Signing:
     root: Path
     private: dict[str, str] = field(default_factory=dict)
     public: dict[str, str] = field(default_factory=dict)
+    #: The repository these keys sign for, set by `attach`. Needed because a
+    #: SLICE-081 record binds the gate catalog it was produced under, and a
+    #: hand-built record must name the same catalog the gate will be judged by
+    #: or it is refused as policy-context-mismatch — correctly, but for a
+    #: reason the test did not intend to exercise.
+    repo: Path | None = None
 
     def register(self, *producers: str) -> Signing:
         for producer in producers:
@@ -54,6 +60,25 @@ class Signing:
             path.write_text(private_key + "\n", encoding="utf-8")
             path.chmod(0o600)
         return self
+
+    def catalog_digest(self) -> str:
+        """The digest of the catalog the attached repository actually carries.
+
+        Falls back to `catalog-absent` when there is none, which is exactly what
+        `run` records in that case — so a hand-built record and a real one agree
+        about a repository with no rulebook.
+        """
+
+        from ranex.bootstrap.composition import catalog_digest_for
+        from ranex.foundation.signing import CATALOG_ABSENT
+
+        if self.repo is None:
+            return CATALOG_ABSENT
+        for name in ("gates.yaml", "governance/gates.yaml"):
+            candidate = self.repo / name
+            if candidate.is_file():
+                return catalog_digest_for(candidate.read_bytes())
+        return CATALOG_ABSENT
 
     def key_path(self, producer: str) -> Path:
         """The private key file for a producer, for $RANEX_SIGNING_KEY.
@@ -85,7 +110,7 @@ class Signing:
         # catalog its gate will be evaluated under.
         body.setdefault("envelope_type", ENVELOPE_TYPE)
         body.setdefault("gate_id", "landing")
-        body.setdefault("catalog_digest", "sha256:" + "e" * 64)
+        body.setdefault("catalog_digest", self.catalog_digest())
         return {**body, "signature": sign_evidence(body, self.private[producer])}
 
 
@@ -96,6 +121,7 @@ _REGISTRY: dict[Path, Signing] = {}
 
 def attach(repo: Path, signing: Signing) -> Signing:
     _REGISTRY[repo.resolve()] = signing
+    signing.repo = repo
     return signing
 
 
