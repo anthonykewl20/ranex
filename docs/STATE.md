@@ -1,45 +1,46 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (SLICE-081 closed, pushed; SLICE-082 open)
-**Active slice:** docs/slices/SLICE-082-pr-head-binding-v1.md
+**Updated:** 2026-09-05 (SLICE-082 closed, pushed; no open slice)
+**Active slice:** none
 
 ## Where we stopped
 
-Week 2 identity and evidence work landed. SLICE-080 / ADR-047: the trust
-root says what a principal is permitted to be (`principals:` block, roles,
-active/retired keys). SLICE-081 / ADR-048: evidence binds the rulebook it
-ran under — domain v5, `envelope_type`/`gate_id`/`catalog_digest` inside
-the exact signed set, a foreign rulebook refused as
-`policy-context-mismatch`. Kernel unmoved for either; sealed 1730/166.
+SLICE-082 / ADR-049 done — first slice of the GitHub acceptance loop. A
+pull-request head SHA, resolved through the local git object store, derives
+the exact subject every signed verdict already names (`github bind`, pure
+derivation, no network), and `resolve_acceptance` maps every verdict-reader
+state onto a closed outward outcome: only `VERIFIED` is publishable,
+absence is named as absence, every rejection names its state. No new
+signed surface; the kernel did not move. Sealed green at 1754/166.
 
-Now open, by owner decision: the GitHub acceptance loop, three slices —
-SLICE-082 (bind: a PR head SHA derives the verdict subject through the
-local object store; ADR-049), then publish (the `ranex/acceptance` check
-from the Ranex GitHub App), then receive (webhook listener; the ruleset
-documentation lands in README with it). Host-side only; the kernel and the
-signed surface do not move.
+One operational note: a dogfood iteration-011 dirt (modified
+`tools/dogfood/backlog.json`, untracked `iterations/iteration-011.json`)
+was left in the tree by another lane mid-close-out; it is preserved in a
+labelled stash (`git stash list`) and is not part of any slice here.
 
 ## Next
 
-Finish the loop (publish, receive). Then the deferred slices in order:
-anti-replay (nonce, journal head anchor, F-005 item 1 — ADR-048 records
-that a straight replay under unchanged rules is not yet detected), and the
-approver signature SLICE-080 made possible (key material the owner
-generates; none is committed).
+The loop continues, two slices: publish (the `ranex/acceptance` check from
+the Ranex GitHub App — JWT on the pinned `cryptography` primitive, stdlib
+transport, fail-closed conclusion mapping), then receive (the webhook
+listener, localhost-bound, HMAC-validated, and the App + ruleset
+documentation in README). Then the deferred slices: anti-replay (nonce,
+journal head anchor, F-005 item 1) and the approver signature SLICE-080
+made possible.
 
 Still open: F-004; interval-honest wording; nightly divergence with an
 absolute `--out`; more permissive external repos.
 
 ## Governance
 
-ADR-047/048 accepted; ADR-049 accepted with SLICE-082. Manifest frozen at
-1730 IDs / 166 skips; the loop's slices re-freeze as their arms land. The
-frozen approved-batch fixture set is re-keyed (ADR-048); its new private
-key lives beside the vectors.
+ADR-047/048/049 accepted. Manifest re-frozen at 1754 IDs, `expected_skips`
+byte-identical at 166 (the SLICE-082 arms skip nothing). The frozen
+approved-batch fixture set remains re-keyed (ADR-048), key beside the
+vectors.
 
 ## Known limits
 
-The catalog binds keys to principals, never principals to humans. No replay
-detection yet. Trainer labels host-relative, no journal head anchor, mutmut
-UNVERIFIED.
+The catalog binds keys to principals, never principals to humans. No
+replay detection yet. Trainer labels host-relative, no journal head
+anchor, mutmut UNVERIFIED.

@@ -681,7 +681,7 @@ What the loop is and what it has proven: [Benchmarks and proofs](#benchmarks-and
 
 <!-- Active-slice and completed-slice markers are checked against docs/STATE.md by tests/contract/test_docs_discipline.py. -->
 
-**Active slice:** SLICE-082-pr-head-binding-v1 (#78)
+**Active slice:** none
 
 The entries below record prior slices and experiments. They are not the current
 capability contract and may describe withdrawn release claims, external harness
@@ -878,6 +878,7 @@ tree observed was not the tree HEAD names, and the toolchain and its inputs were
 chosen by the party being measured. Both are closed.
 
 ## Completed slices
+- SLICE-082-pr-head-binding-v1 (#78, ADR-049): a pull-request head SHA, resolved through the local git object store, derives the exact subject every signed verdict already names — the same tree digest, byte for byte — or refuses (`E-GITHUB-BAD-SHA` / `E-GITHUB-UNFETCHABLE-HEAD` / `E-GITHUB-HEAD-MOVED`); `resolve_acceptance` maps every verdict-reader state to a closed outward outcome where only `VERIFIED` is publishable, absence is named as absence, and every rejection names its state. First slice of the GitHub acceptance loop (`github bind`, pure derivation, no network); kernel unmoved, sealed green at 1754/166
 - SLICE-081-evidence-envelope-v1 (#77, ADR-048): evidence binds the rulebook it was produced under — domain v4 to v5, `envelope_type`/`gate_id`/`catalog_digest` inside the exact signed set — so editing `governance/gates.yaml` after a green run no longer lets that run's evidence satisfy rules it never saw; refused as `policy-context-mismatch`, never as forgery and never as absence. The frozen approved-batch fixture set, sealed with a key absent from this repository and hard-coding the v4 shape, was re-keyed to unblock it. Kernel unmoved, sealed green at 1730/166
 - SLICE-080-authenticated-principals (#76, ADR-047): the committed trust root gained an additive `principals:` block — identity, one role, and rotating keys with active/retired status — so an approver can later be proved by signature instead of by a typed name; one key may serve only one principal, a retired key attributes past work and authorises none, and the two blocks may not disagree about who owns a key; kernel unmoved, sealed green at 1715/166
 - SLICE-079-serialized-session-cgroup-mutations (#74, ADR-046 addendum): the session path's worker-cgroup create and controller-leaf release acquire the host-probe lock at the call sites; frozen red proved the unserialized session, sealed green at 1655/166
