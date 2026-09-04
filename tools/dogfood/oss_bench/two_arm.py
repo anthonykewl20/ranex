@@ -41,11 +41,21 @@ import time
 from pathlib import Path
 from typing import Any
 
-RANEX_REPO = Path("/home/soultransit/devtony/ranex")
+HERE = Path(__file__).resolve().parent
+RANEX_REPO = HERE.parents[2]
 RANEX_PY = RANEX_REPO / ".venv" / "bin" / "python"
 DEFAULT_VULCAN = Path("/home/soultransit/devtony/VulcanBench")
+_state = HERE / "state.json"
+if _state.is_file():
+    try:
+        DEFAULT_VULCAN = Path(json.loads(_state.read_text()).get(
+            "vulcan_root", DEFAULT_VULCAN))
+    except (OSError, json.JSONDecodeError, TypeError):
+        pass
 
 sys.path.insert(0, str(RANEX_REPO / "src"))
+sys.path.insert(0, str(HERE.parent))
+from cmdparse import PINNED_PYTHON, parse_cmd, pinned_argv  # noqa: E402
 from ranex.foundation.signing import generate_keypair  # noqa: E402
 
 APPROVER = "oss-bench-approver"
@@ -63,6 +73,7 @@ def _git(repo: Path, *args: str) -> subprocess.CompletedProcess[str]:
 def pinned_python_has_pytest() -> tuple[bool, str]:
     """The real prerequisite, checked against the real pin."""
     candidates = [Path("/usr/bin/python3"), Path("/bin/python3")]
+    last_miss = "no pinned python found in /usr/bin or /bin"
     for candidate in candidates:
         if not candidate.exists():
             continue
@@ -72,12 +83,42 @@ def pinned_python_has_pytest() -> tuple[bool, str]:
         )
         if probe.returncode == 0:
             return True, str(candidate)
-        return False, (
+        last_miss = (
             f"{candidate} (the pinned interpreter) cannot import pytest — "
             "install it system-wide (e.g. `sudo apt install python3-pytest`) "
             "or run this study on a machine where the pinned python has pytest"
         )
-    return False, "no pinned python found in /usr/bin or /bin"
+    return False, last_miss
+
+
+def copy_hidden_tests(tests_dir: Path, dest: Path) -> None:
+    """Copy the task's hidden tests into dest. Directories included."""
+    if not tests_dir.is_dir():
+        return
+    for item in sorted(tests_dir.iterdir()):
+        if item.name == "__pycache__":
+            continue
+        target = dest / item.name
+        if target.exists():
+            raise AssertionError(f"hidden test collides with repo file: {item.name}")
+        if item.is_dir():
+            shutil.copytree(item, target)
+        else:
+            shutil.copy2(item, target)
+
+
+def gate_verdict_of(result: subprocess.CompletedProcess[str]) -> str:
+    """Exit-code semantics plus the verdict line — never a substring hunt."""
+    output = result.stdout
+    if result.returncode == 0 and "PASS  gate=" in output:
+        return "PASS"
+    if result.returncode == 1 and "FAIL  gate=" in output:
+        return "FAIL"
+    return "ERROR"
+
+
+def journal_verified(result: subprocess.CompletedProcess[str]) -> bool:
+    return result.returncode == 0 and "chain=verified" in result.stdout
 
 
 def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
@@ -94,17 +135,7 @@ def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
             shutil.copytree(item, repo / item.name, dirs_exist_ok=True)
         else:
             shutil.copy2(item, repo / item.name)
-    tests_dir = task_dir / "tests"
-    if tests_dir.is_dir():
-        for item in tests_dir.iterdir():
-            if item.name == "__pycache__":
-                continue  # verifier debris, never part of the task contract
-            if (repo / item.name).exists():
-                raise AssertionError(f"hidden test collides with repo file: {item.name}")
-            if item.is_dir():
-                shutil.copytree(item, repo / item.name)
-            else:
-                shutil.copy2(item, repo / item.name)
+    copy_hidden_tests(task_dir / "tests", repo)
 
     if patch is not None:
         patch_path = task_dir / "gold_patch.diff" if patch == "gold" else Path(patch)
@@ -153,8 +184,10 @@ def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
 
 
 def _ranex(repo: Path, key_path: str, *args: str) -> subprocess.CompletedProcess[str]:
+    repo = Path(repo).resolve()
+    key = Path(key_path).resolve()
     env = dict(os.environ)
-    env["RANEX_SIGNING_KEY"] = key_path
+    env["RANEX_SIGNING_KEY"] = str(key)
     env["PYTHONPATH"] = str(repo / "src")
     return subprocess.run(
         [str(RANEX_PY), "-m", "ranex.cli.main", *args],
@@ -176,11 +209,9 @@ def governed_cycle(repo: Path, key_path: str,
                      "--approver", APPROVER, "--journal", "governance/journal.sqlite3")
     journal = _ranex(repo, key_path, "journal", "verify",
                      "--journal", "governance/journal.sqlite3")
-    gate_pass = verdict.returncode == 0 and "FAIL" not in verdict.stdout
-    journal_ok = journal.returncode == 0 and "verified" in journal.stdout
-    return {"runs": runs, "gate_verdict": "PASS" if gate_pass else "FAIL",
+    return {"runs": runs, "gate_verdict": gate_verdict_of(verdict),
             "gate_output": verdict.stdout.strip()[:400] + verdict.stderr.strip()[-200:],
-            "journal_verified": journal_ok}
+            "journal_verified": journal_verified(journal)}
 
 
 def mode_plumbing(task_dir: Path, out: Path) -> dict[str, Any]:
@@ -239,8 +270,7 @@ def mode_tasks(task_dir: Path, out: Path) -> int:
     with tempfile.TemporaryDirectory() as tmp:
         bare_repo = Path(tmp) / "repo"
         shutil.copytree(task_dir / "repo", bare_repo)
-        for item in (task_dir / "tests").iterdir():
-            shutil.copy2(item, bare_repo / item.name)
+        copy_hidden_tests(task_dir / "tests", bare_repo)
         gold = subprocess.run(
             ["git", "-C", str(bare_repo), "apply", str(task_dir / "gold_patch.diff")],
             capture_output=True, text=True, check=False)
@@ -258,8 +288,7 @@ def mode_tasks(task_dir: Path, out: Path) -> int:
                                    capture_output=True, check=False)
                     shutil.rmtree(bare_repo)
                     shutil.copytree(task_dir / "repo", bare_repo)
-                    for item in (task_dir / "tests").iterdir():
-                        shutil.copy2(item, bare_repo / item.name)
+                    copy_hidden_tests(task_dir / "tests", bare_repo)
                 result = subprocess.run(shlex.split(entry["cmd"]), cwd=str(bare_repo),
                                         capture_output=True, text=True, check=False,
                                         timeout=300, env=env)
@@ -275,9 +304,11 @@ def mode_tasks(task_dir: Path, out: Path) -> int:
 
     claim_commands = []
     for entry in entries:
-        argv = shlex.split(entry["cmd"])
-        argv[0] = "/usr/bin/python3" if argv[0] == "python" else argv[0]
-        claim_commands.append((entry["name"], argv))
+        _env, argv, node_ids = parse_cmd(entry["cmd"])
+        if not node_ids:
+            print(f"cmd yields no test node ids, refusing: {entry['cmd']!r}")
+            return 2
+        claim_commands.append((entry["name"], pinned_argv(argv, PINNED_PYTHON)))
     arms = []
     for arm, patch in (("gold", "gold"), ("empty", None)):
         started = time.perf_counter()
@@ -314,6 +345,7 @@ def main() -> int:
     if not task_dir.is_dir():
         print(f"no such task: {task_dir}", file=sys.stderr)
         return 2
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
     if args.mode == "plumbing":
         report = mode_plumbing(task_dir, args.out)

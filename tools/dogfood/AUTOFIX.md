@@ -1,6 +1,9 @@
 # Self-fix protocol for unattended runs
 
-Unattended scheduled runs (02:00, 06:00, 10:00) may fix what they find, under this protocol. The 13:30 run is read-only (digest before the owner returns). It follows the
+This is the protocol for an operator-owned unattended runner, not a
+scheduler that ships in the repository (no cron, no workflow). When those
+runs exist (02:00, 06:00, 10:00) they may fix what they find, under this
+protocol. The 13:30 run is read-only (digest before the owner returns). It follows the
 repo's standing owner rules (AGENTS.md): one issue at a time, green suite,
 one comment, fast-forward push, stop after 3 failed attempts.
 
@@ -136,14 +139,12 @@ for determinism):
 - Nightly, after iterate: regenerate `tools/dogfood/backlog.json` (ranked
   blind spots + never-touched high-complexity functions). New top entries
   are EVOLVE candidates, reported in the run summary.
-- Authoring a candidate scenario is a governed act (the hermes model, with
-  determinism instead of an LLM search): a candidate must (1) target the
-  named blind spot, (2) pass the double-run determinism check, (3) not
-  weaken any existing assertion, (4) be committed with the backlog entry it
-  closes. Then `baseline` deliberately and note the census delta.
-- The unattended loop may DRAFT candidates into `tools/dogfood/staging/`
-  but never promotes them silently; promotion is an owner-visible commit.
-  The one unforgivable output is a fake proof; a slow curriculum is fine.
+- Authoring a candidate scenario is a governed act: a candidate must
+  (1) target the named blind spot, (2) pass the double-run determinism
+  check, (3) not weaken any existing assertion, (4) be committed with the
+  backlog entry it closes. Then `baseline` deliberately and note the census
+  delta. There is no in-repo drafter that writes `tools/dogfood/staging/`;
+  a slow curriculum is fine. The one unforgivable output is a fake proof.
 
 ## Protected-branch fallback
 

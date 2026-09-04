@@ -28,43 +28,103 @@ facts, not hidden.
 from __future__ import annotations
 
 import ast
-import io
 import json
+import os
 import sys
 import tempfile
 from pathlib import Path
 from typing import Any
 
-RANEX_SRC = Path("/home/soultransit/devtony/ranex/src/ranex")
 HERE = Path(__file__).resolve().parent
-REPO_ROOT = HERE.parents[2]
+REPO_ROOT = HERE.parents[1]  # tools/dogfood -> tools -> ranex
+RANEX_SRC = REPO_ROOT / "src" / "ranex"
 
 sys.path.insert(0, str(REPO_ROOT / "src"))
 
+_DECISION_NODES = (ast.If, ast.For, ast.While, ast.IfExp, ast.ExceptHandler,
+                   ast.Assert)
+if hasattr(ast, "Match"):
+    _DECISION_NODES = (*_DECISION_NODES, ast.Match)  # type: ignore[misc]
+
+
+def _own_lines(node: ast.AST) -> set[int]:
+    start = getattr(node, "lineno", None)
+    end = getattr(node, "end_lineno", None) or start
+    if start is None or end is None:
+        return set()
+    lines = set(range(start, end + 1))
+    for child in ast.iter_child_nodes(node):
+        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            nested_start = child.lineno
+            nested_end = child.end_lineno or child.lineno
+            lines -= set(range(nested_start, nested_end + 1))
+    return lines
+
+
+def _decisions(node: ast.AST) -> int:
+    """Decision points in this node, excluding nested functions/classes."""
+    count = 0
+    for child in ast.iter_child_nodes(node):
+        if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            continue
+        if isinstance(child, _DECISION_NODES):
+            count += 1
+            if hasattr(ast, "Match") and isinstance(child, ast.Match):
+                count += max(0, len(child.cases) - 1)
+        elif isinstance(child, ast.BoolOp):
+            count += len(child.values) - 1
+        elif isinstance(child, ast.comprehension):
+            count += 1 + len(child.ifs)
+        count += _decisions(child)
+    return count
+
 
 def cyclomatic_map() -> dict[str, int]:
-    """McCabe M = decisions + 1 per function, computed from the real AST."""
-    result: dict[str, int] = {}
+    """McCabe M = decisions + 1 per qualified function, from the real AST."""
+    return {shape["function"]: shape["M"] for shape in function_shapes()}
+
+
+def function_shapes() -> list[dict[str, Any]]:
+    """Per-function complexity plus the function's own line numbers."""
+    shapes: list[dict[str, Any]] = []
     for path in sorted(RANEX_SRC.rglob("*.py")):
         try:
             tree = ast.parse(path.read_text())
         except SyntaxError:
             continue
         rel = str(path.relative_to(RANEX_SRC.parent))
-        for node in ast.walk(tree):
-            if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                decisions = 0
-                for child in ast.walk(node):
-                    if isinstance(child, (ast.If, ast.For, ast.While,
-                                          ast.IfExp, ast.ExceptHandler,
-                                          ast.Assert)):
-                        decisions += 1
-                    elif isinstance(child, ast.BoolOp):
-                        decisions += len(child.values) - 1
-                    elif isinstance(child, (ast.comprehension,)):
-                        decisions += 1 + len(child.ifs)
-                result[f"{rel}:{node.name}"] = decisions + 1
-    return result
+
+        class Collector(ast.NodeVisitor):
+            def __init__(self) -> None:
+                self.stack: list[str] = []
+
+            def visit_ClassDef(self, node: ast.ClassDef) -> None:
+                self.stack.append(node.name)
+                self.generic_visit(node)
+                self.stack.pop()
+
+            def visit_FunctionDef(self, node: ast.FunctionDef) -> None:
+                self._record(node)
+                self.stack.append(node.name)
+                for child in ast.iter_child_nodes(node):
+                    if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef,
+                                          ast.ClassDef)):
+                        self.visit(child)
+                self.stack.pop()
+
+            visit_AsyncFunctionDef = visit_FunctionDef  # type: ignore[assignment]
+
+            def _record(self, node: ast.FunctionDef | ast.AsyncFunctionDef) -> None:
+                qualified = ".".join([*self.stack, node.name])
+                shapes.append({
+                    "function": f"{rel}:{qualified}",
+                    "path": rel,
+                    "M": _decisions(node) + 1,
+                    "own_lines": sorted(_own_lines(node)),
+                })
+
+        Collector().visit(tree)
+    return shapes
 
 
 def _measure_main(outfile: str) -> None:
@@ -85,7 +145,10 @@ def _measure_main(outfile: str) -> None:
                 "canonical-fixed-point")
     in_process = [fn for sid, (_a, _l, fn) in scenario_module.SCENARIOS.items()
                   if sid not in excluded]
-    cov = coverage_module.Coverage(data_file=tempfile.mktemp(prefix="evolve-"))
+    cov_file = tempfile.NamedTemporaryFile(prefix="evolve-", suffix=".coverage",
+                                           delete=False)
+    cov_file.close()
+    cov = coverage_module.Coverage(data_file=cov_file.name)
     cov.start()
     failures = 0
     for fn in in_process:
@@ -106,25 +169,34 @@ def blind_spots(limit: int = 15) -> dict[str, Any]:
     proof scenarios (measured in a FRESH subprocess for determinism)."""
     import subprocess
 
-    outfile = tempfile.mktemp(suffix=".json")
-    result = subprocess.run(
-        [sys.executable, str(Path(__file__).resolve()), "_measure", outfile],
-        capture_output=True, text=True, check=False, timeout=1800)
-    assert result.returncode == 0, f"measurement child failed: {result.stderr[-300:]}"
-    payload = json.loads(Path(outfile).read_text())
+    handle, outfile = tempfile.mkstemp(suffix=".json", prefix="evolve-bs-")
+    os.close(handle)
+    try:
+        result = subprocess.run(
+            [sys.executable, str(Path(__file__).resolve()), "_measure", outfile],
+            capture_output=True, text=True, check=False, timeout=1800)
+        assert result.returncode == 0, f"measurement child failed: {result.stderr[-300:]}"
+        payload = json.loads(Path(outfile).read_text())
+    finally:
+        Path(outfile).unlink(missing_ok=True)
     failures = payload["failures"]
     measured = {name: set(lines) for name, lines in payload["measured"].items()}
-    complexity = cyclomatic_map()
     rows = []
-    for func, mcc in complexity.items():
-        rel = func.split(":")[0]
+    complexity: dict[str, int] = {}
+    for shape in function_shapes():
+        func = shape["function"]
+        mcc = shape["M"]
+        complexity[func] = mcc
+        rel = shape["path"]
+        own = set(shape["own_lines"])
+        executed = 0
         for path, lines in measured.items():
             if path.endswith(rel):
-                m = min(len(lines), 10_000)
-                if m >= 3:  # functions the proofs touched at all
-                    rows.append({"function": func, "M": mcc,
-                                 "lines_executed": m})
+                executed = len(own & lines)
                 break
+        if executed >= 1:
+            rows.append({"function": func, "M": mcc,
+                         "lines_executed": executed})
     touched = {r["function"] for r in rows}
     never_touched = {f: m for f, m in sorted(complexity.items())
                      if f not in touched and m >= 8}
@@ -141,10 +213,11 @@ def blind_spots(limit: int = 15) -> dict[str, Any]:
 
 
 def cartesian_admission_grid(_ctx=None) -> dict[str, Any]:
-    """The admission pipeline's ENTIRE parameter space (4 x 4 x 3 x 2 = 96
-    combinations — full cartesian, stronger than pairwise). Every
-    combination must land in a known class: evidence or a named rejection.
-    An unknown outcome would be a taxonomy hole, i.e. a real finding."""
+    """The admission pipeline's ENTIRE parameter space (2 producers x 4
+    signature behaviours x 3 field-sets x 2 outcomes = 48 combinations —
+    full cartesian, stronger than pairwise). Every combination must land
+    in a known class: evidence or a named rejection. An unknown outcome
+    would be a taxonomy hole, i.e. a real finding."""
     from ranex.foundation.signing import SIGNED_FIELDS, generate_keypair, sign_evidence
     from ranex.governed_execution.domain import admission
 
@@ -209,7 +282,7 @@ def cartesian_admission_grid(_ctx=None) -> dict[str, Any]:
                     if not expected_known:
                         unknown.append((producer, sname, fname, exit_code, klass))
     assert not unknown, f"taxonomy holes: {unknown}"
-    assert combos == 2 * 4 * 3 * 2 == 48 or combos == 96, combos
+    assert combos == 48, combos
     return {"combinations": combos,
             "outcomes": dict(sorted(outcome_counts.items())),
             "taxonomy_total": True}

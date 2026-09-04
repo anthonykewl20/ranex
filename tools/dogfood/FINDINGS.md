@@ -8,14 +8,14 @@ match the kernel silently.
 
 ## Open
 
-### F-005 (CONFIRMED) — audit follow-ups: journal detects only partial edits; tool-side canonical JSON disagrees with the kernel; oss_bench parses argv by position
+### F-005 (CONFIRMED, partially closed) — journal detects only partial edits; interval-honest wording for small samples
 
 - Source: the 2026-09-03 full adversarial audit of `tools/dogfood/**`
   (mutation testing, 18 mutants, 7 killed), committed as
   `tools/dogfood/AUDIT-2026-09-03.md` at 85ed1f1cf and removed from the tree
   the same day by the docs cap (`test_no_document_exists_outside_the_allowed_set`);
   the full analysis is preserved verbatim in git history at that commit.
-- Still open, re-anchored against the tree on removal:
+- Still open, re-anchored against the tree:
   1. Journal chain: hash-linking detects partial edits only. A full rewrite
      that forges a self-consistent chain (or a truncation from a fresh head)
      verifies clean — nothing anchors the chain head to committed state.
@@ -24,21 +24,22 @@ match the kernel silently.
      `journal-tamper-detected` (UPDATE refusal) and
      `proof-journal-tamper-propagation`; full-rewrite/truncation/splice
      scenarios are the missing pins.
-  2. Canonical-JSON disagreement: the kernel's canonical form uses
-     `ensure_ascii=False` (`src/ranex/foundation/canonical.py:14`) while the
-     dogfood runner's independent re-implementation uses
-     `ensure_ascii=True` (`tools/dogfood/dogfood.py:46`). Any non-ASCII
-     payload makes the "independent" layer disagree with the kernel it
-     claims to double-check — a latent false-alarm bomb, no non-ASCII
-     agreement sample exists yet.
-  3. `tools/dogfood/oss_bench/run_divergence.py:80` extracts the test node id
-     as bare `argv[3]` with no command-shape assertion; any pytest
-     invocation that is not exactly `python -m pytest <node> -q` silently
-     grades the wrong argument.
-  4. The "0 false verdicts" agreement claims are point estimates with no
+  2. The "0 false verdicts" agreement claims are point estimates with no
      interval; at this sample size the honest wording is Clopper-Pearson
      upper bounds, not zeroes.
-- Audit items already closed by later commits: report-site numbers now all
+- Closed in the harness-audit fix:
+  - Canonical-JSON disagreement (was item 2): dogfood's independent layer
+    and `math_proofs._independent_canonical` now use `ensure_ascii=False`
+    with the kernel; `proof-canonical-agreement` includes a non-ASCII
+    sample (`café`).
+  - `argv[3]` misparse (was item 3): oss_bench now uses `cmdparse.parse_cmd`
+    (same node-id grammar as the trainer) and refuses a cmd with no node
+    ids. Relative `--out` paths are resolved before the child cwd is set.
+    Existing pile rows that judged the kernel journal or ran
+    `pytest pytest pytest` are still in the append-only archive but are
+    classified `harness_fault` by `proofs.summary()` and excluded from
+    kernel false-block / false-pass counts.
+- Audit items already closed by earlier commits: report-site numbers now all
   derived from the archive (corpus-driven page), admission taxonomy and
   boundary/pigeonhole/fixed-point scenarios landed with the blind-spot
   mathematics hardening.

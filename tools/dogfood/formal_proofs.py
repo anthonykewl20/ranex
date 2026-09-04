@@ -31,7 +31,7 @@ import itertools
 from pathlib import Path
 from typing import Any
 
-RANEX_REPO = Path("/home/soultransit/devtony/ranex")
+RANEX_REPO = Path(__file__).resolve().parents[2]
 
 
 def _gate_setup():
@@ -219,26 +219,18 @@ def lock_closure_equality(_ctx=None) -> dict[str, Any]:
 
 
 def grid_pair_completeness(_ctx=None) -> dict[str, Any]:
-    """The cartesian admission grid is t=2 COMPLETE: every pair of factors
-    appears in every combination of the other factors' levels — stronger
-    than an orthogonal array; counted, not asserted."""
-    factors = {"producer": 2, "behaviour": 4, "fieldset": 3, "outcome": 2}
-    names = list(factors)
-    cells = list(itertools.product(*(range(factors[n]) for n in names)))
-    total_pairs_checked = 0
-    for a, b in itertools.combinations(names, 2):
-        others = [n for n in names if n not in (a, b)]
-        for va in range(factors[a]):
-            for vb in range(factors[b]):
-                covered = any(cell[names.index(a)] == va
-                              and cell[names.index(b)] == vb for cell in cells)
-                assert covered, (a, va, b, vb)
-                total_pairs_checked += 1
-    full_cells = 1
-    for count in factors.values():
-        full_cells *= count
-    return {"factors": factors, "cells": full_cells,
-            "pair_projections_all_covered": total_pairs_checked,
-            "t_way_completeness": "t=2 (every pair in every projection)",
-            "note": "full cartesian is strictly stronger than pairwise "
-                    "orthogonal arrays — it is the t=4 case"}
+    """The live admission grid covers its stated 48 cells and a total
+    taxonomy — not a synthetic product of integers, which is tautological."""
+    import sys
+    from pathlib import Path as _Path
+
+    sys.path.insert(0, str(_Path(__file__).resolve().parent))
+    import evolve_proofs
+
+    grid = evolve_proofs.cartesian_admission_grid()
+    assert grid["combinations"] == 48, grid
+    assert grid["taxonomy_total"] is True
+    return {"cells": grid["combinations"],
+            "taxonomy_total": True,
+            "outcomes": grid["outcomes"],
+            "source": "evolve_proofs.cartesian_admission_grid"}

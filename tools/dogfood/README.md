@@ -20,6 +20,7 @@ file:line anchors.
     uv run --frozen python tools/dogfood/dogfood.py train train [--suites S] \
         [--task SUITE/TASK] [--variants a,b] [--limit N] [--max-examples N]
     uv run --frozen python tools/dogfood/dogfood.py train coverage
+    uv run --frozen pytest -q tools/dogfood/test_harness_guards.py
     uv run --frozen python tools/dogfood/external_proof.py [--publish] \
         [--tag TAG] [--url URL] [--rev REV]
 
@@ -151,7 +152,7 @@ re-publishing is idempotent per kernel commit.
 (median/min/max over `--repeat` runs). Timings are deliberately
 NON-deterministic and never enter baselines or the ledger.
 
-## Curriculum (32 scenarios)
+## Curriculum (43 scenarios)
 
 - **CLI surface** (3): every catalogued command path parses; keygen
   round-trip, overwrite refusal, and refusal of repository-committable key

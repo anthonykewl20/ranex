@@ -6,9 +6,8 @@ experiment measures the four positions that actually diverge when an agent's
 work goes wrong:
 
   ground truth   VulcanBench's hidden-test grader (pristine tests, docker).
-  bare CI        the repo's own test command after the agent patch — trusts
-                 whatever tests are now in the tree (fooled by weakened
-                 tests; green on luck).
+  bare CI        pytest over the hidden-test files copied into the tree
+                 (not the repo's native suite — v1 tasks often ship none).
   self-report    the agent's final claim, parsed from the run trace
                  (heuristic keyword match, labeled as such).
   ranex gate     a claim bound to a manifest frozen from the PRISTINE tests
@@ -26,22 +25,44 @@ import argparse
 import json
 import os
 import re
-import shlex
 import shutil
 import subprocess
 import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
-sys.path.insert(0, "/home/soultransit/devtony/ranex/src")
-from two_arm import PRODUCER, APPROVER, _git, _ranex, pinned_python_has_pytest  # noqa: E402
+HERE = Path(__file__).resolve().parent
+RANEX_REPO = HERE.parents[2]
+DEFAULT_VULCAN = Path("/home/soultransit/devtony/VulcanBench")
+_state = HERE / "state.json"
+if _state.is_file():
+    try:
+        DEFAULT_VULCAN = Path(json.loads(_state.read_text()).get(
+            "vulcan_root", DEFAULT_VULCAN))
+    except (OSError, json.JSONDecodeError, TypeError):
+        pass
+
+sys.path.insert(0, str(HERE))
+sys.path.insert(0, str(HERE.parent))
+sys.path.insert(0, str(RANEX_REPO / "src"))
+from cmdparse import (  # noqa: E402
+    PINNED_PYTHON,
+    node_ids_from_entries,
+)
+from two_arm import (  # noqa: E402
+    APPROVER,
+    PRODUCER,
+    _git,
+    _ranex,
+    copy_hidden_tests,
+    gate_verdict_of,
+    journal_verified,
+    pinned_python_has_pytest,
+)
 from ranex.foundation.signing import generate_keypair  # noqa: E402
 from ranex.foundation.suite_results import freeze_manifest  # noqa: E402
 
-RANEX_REPO = Path("/home/soultransit/devtony/ranex")
-DEFAULT_VULCAN = Path("/home/soultransit/devtony/VulcanBench")
-PY = "/usr/bin/python3"
+PY = PINNED_PYTHON
 
 
 def _canonical(value: dict) -> bytes:
@@ -49,7 +70,10 @@ def _canonical(value: dict) -> bytes:
 
 
 def test_files_for(task_dir: Path) -> list[str]:
-    return sorted(p.name for p in (task_dir / "tests").iterdir()
+    tests = task_dir / "tests"
+    if not tests.is_dir():
+        return []
+    return sorted(p.name for p in tests.iterdir()
                   if p.name.endswith(".py"))
 
 
@@ -64,10 +88,7 @@ def build_manifest_governed_repo(task_dir: Path, out: Path, patch: Path | None
             shutil.copytree(item, repo / item.name, dirs_exist_ok=True)
         else:
             shutil.copy2(item, repo / item.name)
-    for item in (task_dir / "tests").iterdir():
-        if item.name == "__pycache__":
-            continue
-        shutil.copy2(item, repo / item.name)
+    copy_hidden_tests(task_dir / "tests", repo)
     test_files = test_files_for(task_dir)
     assert _git(repo, "init", "-q").returncode == 0
     assert _git(repo, "add", "-A").returncode == 0
@@ -77,18 +98,14 @@ def build_manifest_governed_repo(task_dir: Path, out: Path, patch: Path | None
     # red pre-fix; freeze records IDs only, never outcomes).
     metadata = json.loads((task_dir / "metadata.json").read_text())
     selected = [entry for entry in metadata["tests"]["fail_to_pass"]]
-    # cmd shape: python -m pytest <test node id> -q  -> node id is argv[3]
+    node_ids = node_ids_from_entries(selected)
     junit_cmd = [PY, "-m", "pytest", "-q",
-                 "--junitxml=governance/suite_results.xml",
-                 *[shlex.split(entry["cmd"])[3] for entry in selected]]
-    # Freeze the manifest over EXACTLY the task's contracted test set (the
-    # fail_to_pass IDs). They are red pre-fix; the manifest records IDs only,
-    # never outcomes — the same freeze discipline the kernel repo uses.
-    probe_cmd = [PY, "-m", "pytest", "-q", "--junitxml=/tmp/freeze-probe.xml",
-                 *[shlex.split(entry["cmd"])[3] for entry in selected]]
+                 "--junitxml=governance/suite_results.xml", *node_ids]
+    probe_xml = out / "freeze-probe.xml"
+    probe_cmd = [PY, "-m", "pytest", "-q", f"--junitxml={probe_xml}", *node_ids]
     subprocess.run(probe_cmd, cwd=str(repo), capture_output=True, check=False)
-    manifest = freeze_manifest(Path("/tmp/freeze-probe.xml").read_bytes(),
-                               expected_skips={})
+    manifest = freeze_manifest(probe_xml.read_bytes(), expected_skips={})
+    probe_xml.unlink(missing_ok=True)
     (repo / "governance").mkdir(exist_ok=True)
     (repo / "governance" / "suite_manifest.json").write_bytes(_canonical(manifest))
 
@@ -179,15 +196,14 @@ def governed(repo: Path, key_path: str, junit_cmd: list[str]) -> dict:
                      "--approver", APPROVER, "--journal", "governance/journal.sqlite3")
     journal = _ranex(repo, key_path, "journal", "verify",
                      "--journal", "governance/journal.sqlite3")
-    gate_pass = verdict.returncode == 0 and "FAIL" not in verdict.stdout
     return {"run_command": "ranex run --claim tests-executed --producer "
                            + PRODUCER + " -- " + " ".join(junit_cmd),
             "run_exit": run.returncode,
             "run_error": run.stderr.strip()[-250:] if run.returncode != 0 else "",
-            "gate_verdict": "PASS" if gate_pass else "FAIL",
+            "gate_verdict": gate_verdict_of(verdict),
             "gate_output": verdict.stdout.strip()[:800],
             "journal_output": journal.stdout.strip()[:400],
-            "journal_verified": journal.returncode == 0 and "verified" in journal.stdout,
+            "journal_verified": journal_verified(journal),
             "elapsed_s": round(time.perf_counter() - started, 1)}
 
 
@@ -234,7 +250,15 @@ def demo_stale(task_dir: Path, out: Path, patch: Path) -> dict:
     before = governed(repo, key_path, junit_cmd)
 
     # The one extra tweak after the green: a one-line comment in a source file.
-    source = next((repo / "txnkv").glob("*.py"))
+    sources = sorted(
+        path for path in repo.rglob("*.py")
+        if "governance" not in path.parts
+        and path.name not in {"conftest.py"}
+        and "/src/ranex/" not in path.as_posix()
+    )
+    if not sources:
+        raise AssertionError("no task source file to edit for the stale-proof demo")
+    source = sources[0]
     source.write_text(source.read_text() + "\n# post-green tweak: tiny fix, no re-run\n")
     assert _git(repo, "add", "-A").returncode == 0
     assert _git(repo, "commit", "-qm", "small cleanup after the green run").returncode == 0
@@ -244,11 +268,10 @@ def demo_stale(task_dir: Path, out: Path, patch: Path) -> dict:
                      "--approver", APPROVER, "--journal", "governance/journal.sqlite3")
     journal = _ranex(repo, key_path, "journal", "verify",
                      "--journal", "governance/journal.sqlite3")
-    gate_pass = verdict.returncode == 0 and "FAIL" not in verdict.stdout
-    after = {"gate_verdict": "PASS" if gate_pass else "FAIL",
+    after = {"gate_verdict": gate_verdict_of(verdict),
              "gate_output": verdict.stdout.strip()[:800],
              "journal_output": journal.stdout.strip()[:400],
-             "journal_verified": journal.returncode == 0 and "verified" in journal.stdout,
+             "journal_verified": journal_verified(journal),
              "elapsed_s": 0.0}
 
     return {"before": before, "after": after,
@@ -282,6 +305,7 @@ def main() -> int:
     env[state["api_key_env"]] = lines[state["api_key_file_line"] - 1].strip()
     for name, value in state.get("provider_env", {}).items():
         env[name] = value
+    args.out = args.out.resolve()
     args.out.mkdir(parents=True, exist_ok=True)
 
     rows = []

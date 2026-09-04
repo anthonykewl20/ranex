@@ -218,9 +218,9 @@ def journal_nonjson_corruption_fails_closed(ctx: Context) -> dict[str, Any]:
 def admission_unknown_producer(ctx: Context) -> dict[str, Any]:
     """An unknown producer is never trusted by default: its record is a
     structured rejection, not evidence, and admit() never raises."""
-    _, stranger = generate_keypair()
+    stranger_private, _ = generate_keypair()
     record = _record("stranger", "tests-executed", "sha256:" + "a" * 64,
-                     command_digest(["pytest", "-q"]), 0, stranger)
+                     command_digest(["pytest", "-q"]), 0, stranger_private)
     admitted = admission.admit([record], keyring={"someone-else": "ed25519:" + "b" * 64})
     assert admitted.evidence == (), "unknown producer was admitted as evidence"
     assert len(admitted.rejections) == 1
@@ -231,9 +231,9 @@ def admission_unknown_producer(ctx: Context) -> dict[str, Any]:
 def admission_bad_signature(ctx: Context) -> dict[str, Any]:
     """A signature from the wrong key is a distinct accusation (bad-signature)
     from no signature at all."""
-    _, wrong_key = generate_keypair()
+    wrong_private, _ = generate_keypair()
     record = _record("dogfood-producer", "tests-executed", "sha256:" + "a" * 64,
-                     command_digest(["pytest", "-q"]), 0, wrong_key)
+                     command_digest(["pytest", "-q"]), 0, wrong_private)
     _, real_public = generate_keypair()
     admitted = admission.admit([record], keyring={"dogfood-producer": real_public})
     assert admitted.evidence == ()
@@ -633,9 +633,9 @@ SCENARIOS: dict[str, tuple[str, str, Scenario]] = {
     ),
     "pigeonhole-archive-digests": (
         "signing",
-        "Every digest in the proof pile is full-width (256-bit) and "
-        "pairwise distinct; the birthday bound is 2^128 samples — the pile "
-        "is collision-free by a margin of ~10^36.",
+        "Every digest quoted in the proof pile is full-width (256-bit); "
+        "pile entries themselves are pairwise distinct by canonical content "
+        "(quoted subject strings may repeat across a run and its attack).",
         evolve_proofs.pigeonhole_digests,
     ),
     "canonical-fixed-point": (

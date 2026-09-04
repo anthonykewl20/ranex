@@ -51,9 +51,10 @@ def first_hunk_patch(patch: Path, out_dir: Path) -> Path | None:
         return None
     header_end = at + 1
     next_hunk = first.find(b"\n@@", header_end)
-    if next_hunk == -1:
-        return None  # single hunk: withholding it would test the empty patch
-    truncated = first[: next_hunk + 1]
+    more_files = len(blocks) > 2
+    if next_hunk == -1 and not more_files:
+        return None  # single hunk overall: withholding it is the empty patch
+    truncated = first if next_hunk == -1 else first[: next_hunk + 1]
     partial = out_dir / "partial-gold.diff"
     payload = blocks[0] + marker + truncated
     if payload == raw:

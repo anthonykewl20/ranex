@@ -105,6 +105,22 @@ def _corpus_stats() -> dict:
     return stats
 
 
+def _is_timeout(exc: BaseException) -> bool:
+    """True for subprocess.TimeoutExpired, including when wrapped."""
+    import subprocess
+
+    seen: set[int] = set()
+    current: BaseException | None = exc
+    while current is not None and id(current) not in seen:
+        seen.add(id(current))
+        if isinstance(current, subprocess.TimeoutExpired):
+            return True
+        if type(current).__name__ == "TimeoutExpired":
+            return True
+        current = current.__cause__ or current.__context__
+    return False
+
+
 def cmd_train(args: argparse.Namespace) -> int:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "oss_bench"))
     from two_arm import pinned_python_has_pytest
@@ -152,7 +168,7 @@ def cmd_train(args: argparse.Namespace) -> int:
                         env_assignments=sorted(
                             {a for e in record.entries for a in e.env}))
                 except Exception as exc:  # noqa: BLE001 — a failed build is data
-                    if "TimeoutExpired" in str(exc):
+                    if _is_timeout(exc):
                         # A HARNESS cap (probe/run timeout), not a kernel
                         # verdict: file as a skip, never as a ranex divergence.
                         example = {"variant": variant, "task": record.id,

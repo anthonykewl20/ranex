@@ -23,7 +23,8 @@ def _independent_canonical(value: Any) -> bytes:
     """Canonical JSON re-derived WITHOUT the kernel's canonical module, so
     agreement between the two implementations is evidence, not tautology."""
     return json.dumps(
-        value, sort_keys=True, separators=(",", ":"), allow_nan=False
+        value, sort_keys=True, separators=(",", ":"), allow_nan=False,
+        ensure_ascii=False,
     ).encode("utf-8")
 
 
@@ -101,9 +102,12 @@ def journal_tamper_propagation(ctx) -> dict[str, Any]:
         expected = _independent_link(prev, record)
         if record_row["link"] != expected:
             diverged.append(record_row["seq"])
-        prev = record_row["link"]  # follow STORED links: divergence is sticky
+        prev = expected  # follow RECOMPUTED links: tamper avalanche is sticky
     assert diverged and diverged == sorted(diverged), "chain did not diverge monotonically"
     assert min(diverged) == 2, f"divergence did not start at the tampered row: {diverged}"
+    assert diverged == list(range(2, len(rows) + 1)), (
+        f"tamper did not avalanche through later rows: {diverged}"
+    )
     assert not Journal(path).verify(), "Journal.verify() accepted the forged chain"
     return {"tampered_row": 2, "diverged_rows": diverged}
 
@@ -116,6 +120,7 @@ def canonical_agreement(ctx) -> dict[str, Any]:
         {"z": 1, "a": {"nested": [1, 2, {"k": "v"}]}, "m": None},
         {"unicode": "ranex-evidence-v4", "empty": {}, "list": []},
         {"n": 0, "neg": -1, "big": 2**53 - 1},
+        {"unicode": "café"},
     ]
     for original in samples:
         reordered = dict(reversed(list(original.items())))

@@ -42,8 +42,10 @@ LEDGER_DIR = TOOL_DIR / "iterations"
 
 
 def canonical_bytes(value: Any) -> bytes:
+    # Match the kernel's canonical_json (ensure_ascii=False). A True here
+    # made the "independent" layer disagree on any non-ASCII payload (F-005.2).
     return json.dumps(value, sort_keys=True, separators=(",", ":"),
-                      ensure_ascii=True, allow_nan=False).encode("utf-8")
+                      ensure_ascii=False, allow_nan=False).encode("utf-8")
 
 
 def sha256_hex(data: bytes) -> str:
@@ -145,8 +147,13 @@ def diff_against_baseline(results: list[dict[str, Any]]) -> list[dict[str, Any]]
 
 def write_iteration(results: list[dict[str, Any]], findings: list[dict[str, Any]]) -> Path:
     LEDGER_DIR.mkdir(parents=True, exist_ok=True)
-    existing = sorted(LEDGER_DIR.glob("iteration-*.json"))
-    number = len(existing) + 1
+    numbers = []
+    for path in LEDGER_DIR.glob("iteration-*.json"):
+        try:
+            numbers.append(int(path.stem.split("-")[1]))
+        except (IndexError, ValueError):
+            continue
+    number = (max(numbers) + 1) if numbers else 1
     record = {
         "schema": "ranex-dogfood-iteration-v1",
         "iteration": number,
@@ -160,7 +167,13 @@ def write_iteration(results: list[dict[str, Any]], findings: list[dict[str, Any]
         "findings": findings,
     }
     path = LEDGER_DIR / f"iteration-{number:03d}.json"
-    path.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
+    payload = json.dumps(record, indent=2, sort_keys=True) + "\n"
+    import os
+    fd = os.open(path, os.O_CREAT | os.O_EXCL | os.O_WRONLY, 0o644)
+    try:
+        os.write(fd, payload.encode())
+    finally:
+        os.close(fd)
     return path
 
 
@@ -223,6 +236,10 @@ def cmd_run(filter_: str | None) -> int:
 
 
 def cmd_baseline(filter_: str | None) -> int:
+    if filter_ is not None:
+        print("refusing to patch a subset of baselines.json; omit --filter "
+              "to re-record the full golden set")
+        return 2
     results = run_all(filter_)
     failures = [r for r in results if r["status"] != "pass" or not r["deterministic"]]
     if failures:
@@ -240,7 +257,23 @@ def cmd_iterate(filter_: str | None) -> int:
     print(f"dogfood iteration at {git_head()[:12]}\n")
     results = run_all(filter_)
     findings = diff_against_baseline(results)
+    if filter_ is not None:
+        print("refusing to write a partial iteration ledger for --filter "
+              f"{filter_!r}; use `run --filter` to inspect, or iterate "
+              "without a filter to record a full pass")
+        exited = 1 if any(f["kind"] in ("failure", "baseline-drift") for f in findings) else 0
+        print(f"findings this pass: {len(findings)}")
+        for finding in findings:
+            print(f"  - {finding['kind']}: {finding['scenario']}")
+        print(f"\nexited {exited}")
+        return exited
     path = write_iteration(results, findings)
+    try:
+        import evolve_proofs
+        backlog = evolve_proofs.write_backlog()
+        print(f"evolution backlog: {backlog}")
+    except Exception as exc:  # noqa: BLE001 — backlog is sensing, not the gate
+        print(f"evolution backlog write failed: {exc}")
     iterations = load_iterations()
     print(f"\niteration record: {path}")
     print(f"findings this pass: {len(findings)}")
@@ -281,30 +314,27 @@ def cmd_bench(filter_: str | None, repeat: int, output: Path | None) -> int:
         "scenarios": [],
     }
     failures = 0
-    with tempfile.TemporaryDirectory(prefix="ranex-dogfood-") as tmp:
-        scratch = Path(tmp)
-        for sid in selected:
-            timings = []
-            failed = False
-            for _ in range(repeat):
-                import time
-
-                started = time.perf_counter()
-                outcome = execute(sid, scratch)
-                timings.append(round((time.perf_counter() - started) * 1000, 3))
-                failed = failed or outcome["status"] != "pass"
-            if failed:
-                failures += 1
-            report["scenarios"].append({
-                "id": sid,
-                "status": "fail" if failed else "pass",
-                "timings_ms": timings,
-                "median_ms": round(statistics.median(timings), 3),
-                "min_ms": min(timings),
-                "max_ms": max(timings),
-            })
-            print(f"{sid}: median {statistics.median(timings):.1f} ms "
-                  f"(min {min(timings):.1f} / max {max(timings):.1f})")
+    for sid in selected:
+        timings = []
+        failed = False
+        for _ in range(repeat):
+            started = time.perf_counter()
+            with tempfile.TemporaryDirectory(prefix="ranex-dogfood-bench-") as tmp:
+                outcome = execute(sid, Path(tmp))
+            timings.append(round((time.perf_counter() - started) * 1000, 3))
+            failed = failed or outcome["status"] != "pass"
+        if failed:
+            failures += 1
+        report["scenarios"].append({
+            "id": sid,
+            "status": "fail" if failed else "pass",
+            "timings_ms": timings,
+            "median_ms": round(statistics.median(timings), 3),
+            "min_ms": min(timings),
+            "max_ms": max(timings),
+        })
+        print(f"{sid}: median {statistics.median(timings):.1f} ms "
+              f"(min {min(timings):.1f} / max {max(timings):.1f})")
     payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
     if output:
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -368,8 +398,8 @@ def cmd_report(output_dir: Path) -> int:
     print(f"collecting proof board at {git_head()[:12]} ...")
     with tempfile.TemporaryDirectory(prefix="ranex-dogfood-") as tmp:
         scratch = Path(tmp)
-        results = [execute(sid, scratch) for sid in SCENARIOS]
-        failures = [r for r in results if r["status"] != "pass"]
+        results = [execute_with_determinism_check(sid, scratch) for sid in SCENARIOS]
+        failures = [r for r in results if r["status"] != "pass" or not r.get("deterministic")]
         for failure in failures:
             print(f"FAIL {failure['id']}: {failure['error']}")
         print(f"proof board: {len(results) - len(failures)}/{len(results)} passed")

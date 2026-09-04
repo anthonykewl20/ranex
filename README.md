@@ -465,13 +465,14 @@ real VulcanBench tasks: 19 entries — 15 live-model runs, 1 agentless
 external run, and 3 attacks — across 2 nights, ~3.0M tokens, $6.51 total
 metered cost.
 
-- **0 false passes in 16 runs.** The gate never verified work that failed
-  the hidden tests.
-- **2 honest false blocks.** Twice the agent claimed success and the work
-  was in fact correct, but the recorded evidence was stale relative to the
-  agent's final tree, so the gate refused it (`evidence bound to a different
-  subject digest`). That is governance costing what it costs: correct but
-  unproven work is refused, never waved through.
+- **0 false passes in the graded runs.** The gate never verified work that
+  failed the hidden tests.
+- **0 kernel false blocks after harness-fault exclusion.** Two 2026-09-04
+  rows stored `false_block: true` (0017/0018) after a relative `--out`
+  made the adapter evaluate this kernel's journal instead of the task;
+  several CII/legacy rows bound `pytest pytest pytest` via `argv[3]`.
+  Those entries stay in the append-only pile and are classified
+  `harness_fault` by `proofs.summary()`, not counted as kernel verdicts.
 - **3/3 attacks caught.** Deleted tests — bare CI read GREEN with "6
   passed" while the manifest-bound gate FAILed naming all 9 deleted test
   IDs; stale proof — green evidence plus one edited source line, refused on

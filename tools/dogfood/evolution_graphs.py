@@ -26,7 +26,7 @@ import subprocess
 from pathlib import Path
 from typing import Any
 
-REPO = Path("/home/soultransit/devtony/ranex")
+REPO = Path(__file__).resolve().parents[2]
 OUT_DIR = REPO / "tools/dogfood/site"
 
 BG = "#0b1220"; PANEL = "#111a2c"; HAIR = "#1f2a3d"; INK = "#e8eef5"

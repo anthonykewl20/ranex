@@ -1,6 +1,6 @@
 """Corpus-driven trainer: ranex exercised like an athlete, not quizzed.
 
-The scenario curriculum (dogfood.py) is an exam: 33 fixed behavioural points.
+The scenario curriculum (dogfood.py) is an exam: 43 fixed behavioural points.
 The trainer is the complementary regime: it generates labelled exercises from
 a CORPUS of real tasks (VulcanBench suites on disk), runs each through the
 real governed cycle (`ranex run` -> signed evidence -> `gate evaluate` ->

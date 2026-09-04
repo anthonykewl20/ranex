@@ -1,48 +1,35 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-04 (v0.1.0 release-documentation pass; suite green)
+**Updated:** 2026-09-04 (dogfood/oss_bench harness-audit fix)
 **Active slice:** none
 
 ## Where we stopped
 
-Docs-only pass for the v0.1.0 tag: README restructured (what Ranex is,
-who it is for, use cases) plus a Benchmarks-and-proofs section sourced
-entirely from committed artifacts — proof board 43/43 (5 open findings
-published), trainer 733 examples / 683 graded / 50 skips / 0 divergences,
-external v0.1.0-on-six proof (PASS, stale attack refused exit 1, twice),
-pile 19 entries / 0 false passes / 3-of-3 attacks caught, and the
-six-id timing table. GitHub repo description updated to v0.1.0 wording.
-No kernel, contract, or artifact numbers changed.
-
-Both proof regimes remain green: TRAINER (104 VulcanBench tasks x 7
-variants + six@c8e39406 5/5, 0 divergences; 183 exclusions classified;
-passes digest-chained) and EXTERNAL PROOF (released tag on clean six,
-tree-digest equality, run -> PASS -> journal verified; stale-evidence
-attack refused, reproduced twice).
+Harness-audit fix on the dogfood/oss_bench loop, not the kernel. oss_bench
+now parses test node ids (no argv[3]), resolves RANEX_SIGNING_KEY and
+PYTHONPATH absolutely before the child cwd, and classifies pile rows that
+judged this kernel's journal or ran `pytest pytest pytest` as
+`harness_fault`. `proofs.summary()` reports 0 false passes, 0 kernel false
+blocks, 9 harness faults on the existing append-only pile (files not
+edited). Independent canonical JSON matches the kernel (`ensure_ascii=False`,
+non-ASCII sample). Evolution census is per-function coverage; iterate
+refuses a filtered ledger write; bench uses a fresh scratch per repeat.
 
 ## Next
 
-More permissively-licensed external repos (non-Python once a toolchain
-pins at /usr/bin); governed env-file design (the 10 env-unsupported
-tasks are its acceptance test); close F-004 (owner decision); anchor
-the journal head; promote audit survivors (M01/M04/M06/M08/M17/M18)
-into scenario pins; keep claims interval-honest.
+Re-run a nightly divergence with an absolute `--out` so new pile rows are
+task-local. Close F-005 remaining items (journal head anchor; interval-
+honest wording). Owner decision on F-004. More permissively-licensed
+external repos.
 
 ## Governance
 
-ADR-038: deliberate re-locks pass `--exclude-newer
-2026-08-04T00:00:00Z`; CLI stays checkout-anchored (ADR-009). ADR-039:
-coverage floor 64 comes from the enforcing pipeline. The `anthony`
-producer key is absent from this host; the freeze is the proof.
+ADR-038/009 unchanged. No kernel, contract, or suite-manifest ID changes.
+New tests live at `tools/dogfood/test_harness_guards.py` (not the frozen
+suite).
 
 ## Known limits
 
-- Trainer labels are host-relative (gold-not-green excluded, not
-  failed). Trainer trains the WORKING TREE kernel; external_proof
-  trains the released tag (needs system pytest, F-003; network).
-- Kernel-only, source-run (ADR-009); strict-local needs a delegated
-  cgroup scope (ADR-044); cross-batch locking is journal discipline.
-- `mutmut` UNVERIFIED; the 18-mutant battery is the control (survivors
-  M01/M06/M09/M14/M17 need pins; M16 equivalent). No journal head
-  anchor yet: full-chain rewrite or tail truncation undetectable.
+Same as before: trainer labels are host-relative; no journal head anchor;
+mutmut UNVERIFIED; the 18-mutant battery is the control.

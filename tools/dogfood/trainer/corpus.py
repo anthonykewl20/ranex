@@ -12,14 +12,18 @@ classes, never silently skipped.
 from __future__ import annotations
 
 import json
-import re
+import sys
 from dataclasses import dataclass, field
 from pathlib import Path
 
-# argv[0] tokens the pinned toolchain can provide on this class of machine.
-PINNED_PYTHON = "/usr/bin/python3"
-_NODE_ID = re.compile(r"^[^\s:]+::.+$")
-_ENV_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+from cmdparse import (  # noqa: E402
+    NODE_ID as _NODE_ID,
+    PINNED_PYTHON,
+    parse_cmd,
+)
+
+_parse_cmd = parse_cmd
 
 
 @dataclass(frozen=True)
@@ -61,22 +65,6 @@ class TaskRecord:
             ],
             "notes": list(self.notes),
         }
-
-
-def _parse_cmd(cmd: str) -> tuple[list[str], list[str], list[str]]:
-    """-> (env assignments, argv tokens, node ids). shlex, no guessing."""
-    import shlex
-
-    tokens = shlex.split(cmd)
-    env: list[str] = []
-    argv: list[str] = []
-    for token in tokens:
-        if _ENV_ASSIGN.match(token) and not argv:
-            env.append(token)
-        else:
-            argv.append(token)
-    node_ids = [t for t in argv if _NODE_ID.match(t)]
-    return env, argv, node_ids
 
 
 def _grammar_family(argv: list[str], node_ids: list[str]) -> str:

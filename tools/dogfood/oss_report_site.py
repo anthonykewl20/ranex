@@ -433,7 +433,7 @@ EXTERNAL_X
  the gate certified work the hidden tests refuted — across RUNS_N real runs and
  ATTACKS_N attacks, ever</div></div>
  <div class="stat"><div class="n" style="color:GOODX">FBLOCKS_N</div><div class="t">times
- it blocked work the hidden tests confirmed</div></div>
+ it blocked work the hidden tests confirmed (HFAULTS_N harness faults excluded)</div></div>
  <div class="stat"><div class="n">CAUGHT_N/ATTACKS_N</div><div class="t">attacks caught:
  deleted tests, stale proofs — each named, each verifiable</div></div>
  <div class="stat"><div class="n">ms</div><div class="t">to re-verify any past
@@ -484,6 +484,7 @@ tools/dogfood/oss_bench/proofs/ (append-only)</footer>
             .replace("DIGEST_S", summary["archive_digest"][:23] + "…")
             .replace("FPASSES_N", str(summary["false_passes"]))
             .replace("FBLOCKS_N", str(summary["false_blocks"]))
+            .replace("HFAULTS_N", str(summary.get("harness_faults", 0)))
             .replace("CAUGHT_N", str(summary["attacks_caught"]))
             .replace("RECEIPTS", _receipts(entries))
             .replace("XEVOLCHARTSX", "".join(evol_charts))
