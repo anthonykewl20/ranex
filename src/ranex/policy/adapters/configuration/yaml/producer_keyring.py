@@ -162,7 +162,17 @@ def load_trust_keyring_text(text: str, source: object) -> TrustKeyring:
         document = yaml.load(text, Loader=_NoDuplicateKeys)
     except (KeyringError, yaml.YAMLError) as exc:
         raise KeyringError(f"cannot load keyring at {source}: {exc}") from exc
-    if not isinstance(document, dict) or set(document) != {"producers", "verdict_signer"}:
+    # The block set is closed, and grows only by a deliberate edit here in the
+    # same change that admits the block — the conscious-extension mechanism, not
+    # an open document. SLICE-080/ADR-047 admits `principals`, which this loader
+    # deliberately does not read: the catalog is `principal_catalog`'s to parse,
+    # and `load_principals` refuses the file outright if the two blocks ever
+    # disagree about who owns a key. Optional, because a repository that has
+    # adopted only the older blocks must keep loading.
+    if not isinstance(document, dict) or set(document) - {"principals"} != {
+        "producers",
+        "verdict_signer",
+    }:
         raise KeyringError("keyring must contain producers and verdict_signer")
     producers = load_keyring_text(yaml.safe_dump({"producers": document["producers"]}), source)
     signer = document["verdict_signer"]

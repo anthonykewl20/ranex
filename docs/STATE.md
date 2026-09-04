@@ -1,39 +1,50 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-04 (dogfood page copy honesty fix, #75)
-**Active slice:** none
+**Updated:** 2026-09-04 (SLICE-080 authenticated principals, in progress)
+**Active slice:** docs/slices/SLICE-080-authenticated-principals.md
 
 ## Where we stopped
 
-Benchmark-page copy fix (#75): PLAIN_FINDINGS for F-001/F-002 said
-"we're polishing" / "we're making the skip list explicit" — present-tense
-claims of work in progress. FINDINGS.md records both fixes as candidate
-directions, not attempted. The page now says the candidate fixes are
-written down, not yet started; site regenerated via `dogfood.py report`
-(43/43, fingerprint verified, git_head 2f220e622 stamped per
-site/INTEGRATION.md freshness rule); README status block refreshed by
-the tool. No kernel, contract, or artifact numbers changed.
+SLICE-080 / ADR-047 — the committed trust root learns to say *what a
+principal is permitted to be*, so a later slice can prove an approver by
+signature instead of accepting `--approver <name>` as a bare string.
 
-Before that (0d2bd655e): harness-audit fix on the dogfood/oss_bench loop
-(node-id parsing, absolute key/PYTHONPATH resolution, harness_fault
-classification, per-function coverage, isolated bench/iterate scratch).
+`governance/producers.yaml` gains an additive `principals:` block:
+identity, exactly one role (ADR-030's vocabulary plus `service`), and an
+ordered key list with `active`/`retired` status. New loader
+`principal_catalog.py` resolves a key to its principal, refuses one key
+under two principals, refuses a retired key as a signer, and refuses the
+file if `producers:` and `principals:` disagree about who owns a key.
+The kernel does not move: the catalog is an admission-layer input.
+
+One unplanned edit: `load_trust_keyring_text` pinned the document to
+exactly two blocks, so no additive block was possible until its closed
+set admitted `principals`. Widened by one name, still closed, pinned.
 
 ## Next
 
-Re-run a nightly divergence with an absolute `--out` so new pile rows are
-task-local. Close F-005 remaining items (journal head anchor; interval-
-honest wording). Owner decision on F-004. Attempt the F-001/F-002
-candidate fixes (then update the page wording to match). More
-permissively-licensed external repos.
+Full suite green, then close SLICE-080 (file to `done/`, README row,
+this file rewritten). Then SLICE-081 — Evidence Envelope v1: bump the
+signing domain to v5 and bind policy context (`catalog_digest`,
+`gate_id`) and anti-replay context (nonce, journal head anchor), which
+also closes F-005 item 1. Then SLICE-082 — the approver signs, and
+no-self-approval compares resolved principals.
+
+Still open from before: F-004; interval-honest wording; an absolute
+`--out` nightly divergence; more permissive external repos.
 
 ## Governance
 
-ADR-038/009 unchanged. No kernel, contract, or suite-manifest ID changes.
-Dogfood harness guards live at `tools/dogfood/test_harness_guards.py`
-(not the frozen suite).
+ADR-047 added (accepted). ADR-038/009/030/025 unchanged. No kernel,
+contract, or suite-manifest ID changes yet — SLICE-080 adds test IDs, so
+`governance/suite_manifest.json` needs a re-freeze before the gate runs
+against this tree.
 
 ## Known limits
 
-Same as before: trainer labels are host-relative; no journal head anchor;
-mutmut UNVERIFIED; the 18-mutant battery is the control.
+The catalog binds keys to principals, never principals to humans: one
+operator can add a second principal and approve their own work. ADR-047
+records it; review of the committed diff is the control. Otherwise as
+before: trainer labels host-relative, no journal head anchor, mutmut
+UNVERIFIED.

@@ -3,3 +3,22 @@ producers:
 verdict_signer:
   id: kernel-verdict-signer
   public_key: ed25519:/YsKLlvH+yQJmfmOUWy7y8ZH0e4kbp8eLRwepNioMIs=
+# SLICE-080 / ADR-047 — the principal catalog. Additive: the two blocks above
+# are unchanged and their loaders do not read this one. A key may appear under
+# exactly one principal, a principal holds exactly one role, and a retired key
+# attributes past work while authorising none. `load_principals` refuses this
+# file if the blocks ever disagree about who owns a key.
+#
+# No approver principal is declared. Adding one requires generating key
+# material, which is the owner's act and not a slice's.
+principals:
+  anthony:
+    role: worker
+    keys:
+      - key: ed25519:cT08b8ut4tLoZqjJN6fCnHUb0kMv7R++1+nDqGnfyQQ=
+        status: active
+  kernel-verdict-signer:
+    role: service
+    keys:
+      - key: ed25519:/YsKLlvH+yQJmfmOUWy7y8ZH0e4kbp8eLRwepNioMIs=
+        status: active
