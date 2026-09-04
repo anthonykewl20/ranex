@@ -1,26 +1,25 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-04 (multi-agent review round complete; all green)
+**Updated:** 2026-09-04 (v0.1.0 release-documentation pass; suite green)
 **Active slice:** none
 
 ## Where we stopped
 
-Two regimes, both green. (1) TRAINER clean pass: 104 VulcanBench tasks x
-7 labelled variants + GitHub six@c8e39406 5/5 — 0 divergences; labels
-sound by confinement-equivalent preflight; 183 exclusions classified;
-passes digest-chained. (2) EXTERNAL PROOF
-(`tools/dogfood/external_proof.py`): released v0.1.0 tag alone on clean
-six (MIT) — vendored src tree-digest == `<tag>:src`, run -> gate PASS
--> journal verified; stale-evidence attack refused (edit after green,
-no re-run: FAIL `evidence bound to a different subject digest`, exit
-1; re-run -> PASS); reproduced twice. Pile 0010/0011; renderer/pile
-contract carries agentless entries. Review round (three agents +
-re-runs): ledger zero anomalies; docs reconciled to audited numbers
-(683 graded/50 skips/0 diverge; F-004 23+5; 66-169x class range);
-mutation battery v2 kills 12/18 (was 7/18); reproducibility 84/84; six
-label-soundness fixes from adversarial review landed; preflight
-unchanged at 104 ok; two pile-dependent invariants repaired.
+Docs-only pass for the v0.1.0 tag: README restructured (what Ranex is,
+who it is for, use cases) plus a Benchmarks-and-proofs section sourced
+entirely from committed artifacts — proof board 43/43 (5 open findings
+published), trainer 733 examples / 683 graded / 50 skips / 0 divergences,
+external v0.1.0-on-six proof (PASS, stale attack refused exit 1, twice),
+pile 19 entries / 0 false passes / 3-of-3 attacks caught, and the
+six-id timing table. GitHub repo description updated to v0.1.0 wording.
+No kernel, contract, or artifact numbers changed.
+
+Both proof regimes remain green: TRAINER (104 VulcanBench tasks x 7
+variants + six@c8e39406 5/5, 0 divergences; 183 exclusions classified;
+passes digest-chained) and EXTERNAL PROOF (released tag on clean six,
+tree-digest equality, run -> PASS -> journal verified; stale-evidence
+attack refused, reproduced twice).
 
 ## Next
 

@@ -5,25 +5,32 @@
 > Rules an agent can read are suggestions. Rules compiled into code are
 > constraints.
 
-This repository contains the open-source Ranex kernel: Python code that judges
-software work by signed evidence and executable checks, not by an AI model's
-confidence. It can invoke an external agent harness through the prototype
-delegation commands, but it does not contain or install an agent harness.
-Removing every model credential from the machine must not change a kernel
-verdict.
+Ranex is an open-source governance kernel: Python code that judges software
+work by signed evidence and executable checks, not by an AI model's
+confidence. An agent may propose; the kernel decides. It can invoke an
+external agent harness through the prototype delegation commands, but it does
+not contain or install an agent harness. Removing every model credential from
+the machine must not change a kernel verdict.
+
+**Current release: [`v0.1.0`](https://github.com/anthonykewl20/ranex/tree/v0.1.0)
+— kernel-only, source-run, MIT.** See
+[Benchmarks and proofs](#benchmarks-and-proofs) for what that release has
+been proven to do — including judging a clean third-party repository and
+refusing a stale-evidence attack against it.
 
 [Website](https://ranex.dev) · [Field notes](https://ranex.dev/blog) ·
-[YouTube](https://www.youtube.com/@RanexDev) · [Architecture map](docs/MAP.md) ·
-[Current state](docs/STATE.md) ·
+[YouTube](https://www.youtube.com/@RanexDev) ·
+[Benchmarks and proofs](#benchmarks-and-proofs) ·
+[Architecture map](docs/MAP.md) · [Current state](docs/STATE.md) ·
 [Production acceptance](https://github.com/anthonykewl20/ranex/issues/55)
 
 > [!IMPORTANT]
-> Ranex is pre-release and kernel-only. The [status section](#status) is the
-> code-backed capability list. Sections explicitly labeled **target
-> architecture** describe intent, not available product behavior.
-> A real-data acceptance run on 2026-08-29 found that the components are **not
-> yet one production-ready human workflow**; see the linked production
-> acceptance issue for raw outputs and blockers.
+> v0.1.0 is a kernel-only source release, not a turnkey product. The
+> [status section](#status) is the code-backed capability list; sections
+> explicitly labeled **target architecture** describe intent, not available
+> product behavior. There is still no installed end-to-end approval-driven
+> mutation workflow — see the linked production acceptance issue for raw
+> outputs and blockers.
 
 ---
 
@@ -47,7 +54,7 @@ dart went.
 
 ## What Ranex is today
 
-Ranex is currently a source-run governance kernel. It records signed
+Ranex v0.1.0 is a source-run governance kernel. It records signed
 observations against exact Git trees, evaluates blocking gates, journals the
 result, and can publish a separately judged serial task candidate through a
 checked compare-and-swap ref update. The kernel never asks a model to decide a
@@ -73,6 +80,51 @@ A person hiring an architect relies on licensure, liability insurance, building
 codes, and inspectors — an accountability apparatus that exists outside the
 architect. AI labor has none of that. Ranex is an attempt to build the missing
 apparatus: the code, the inspector, and the record.
+
+## Who Ranex is for
+
+- **Owners delegating software work to AI agents.** You pay an agent — any
+  harness, any model — to change code. Ranex is the layer that decides what
+  "done" means. You hold the signing key; the agent never does.
+- **Teams pointing agents at real repositories.** Work happens in isolated
+  worktrees; candidates are kernel-judged against bound checks; publication is
+  a checked compare-and-swap the worker cannot perform.
+- **Release and CI engineers** who need exit-code honesty: a skipped,
+  deleted, or vanished test is absence, and absence blocks.
+- **Auditors, acquirers, and diligence teams.** Signed evidence pinned to
+  exact tree digests plus a hash-chained journal is a record a third party
+  can recheck without trusting any participant — including Ranex.
+- **Agent-harness and benchmark builders.** The kernel is provider-neutral
+  (delegation launches an opaque adapter with a pinned environment and no
+  provider credential), and this repository ships the two-arm false-claim
+  benchmark pattern used to measure agent honesty against hidden graders.
+
+It is not yet for someone who wants a hosted, owner-facing product: v0.1.0 is
+kernel-only and source-run (see [Status](#status)).
+
+## Use cases
+
+- **Gate your own suite with signed evidence.** "Ranex gates Ranex": this
+  repository's own suite runs provisioned, sealed, and offline against a
+  materialisation of the exact commit, and the gate judges signed structured
+  outcomes against a frozen manifest diff — not the exit code alone.
+- **Detect the standard goalpost moves.** Deleted or skipped tests, evidence
+  recorded against a tree that then moved, a swapped or cross-bound suite
+  manifest — each is a named refusal carrying the offending digest or test ID.
+- **Run kernel-judged delegation.** `task dispatch` hands an external agent a
+  disposable worktree; `task judge` evaluates the real diff against bound
+  checks; `task merge` publishes only through ordered, journalled checks.
+- **Govern a third-party repository.** Vendor the kernel, commit the keyring,
+  gate catalog, and frozen manifest, and judge that repository's own tests —
+  proven end to end on `benjaminp/six` at a pinned commit using the released
+  tag (see [External-repository proof](#external-repository-proof--the-released-tag-judging-a-repo-that-is-not-ranex)).
+- **Measure agent honesty.** The two-arm benchmark compares an agent whose
+  "done" is a self-report against the same agent whose "done" must be signed
+  evidence passing a gate — graded in both arms by hidden tests neither arm
+  controls.
+- **Keep the audit trail.** Every verdict appends to a hash-chained journal
+  that `journal verify` rechecks link by link; every evidence record carries
+  an Ed25519 signature verifiable against the committed public keyring.
 
 ---
 
@@ -320,6 +372,135 @@ That is the current code-level claim. It does **not** prove:
 - that the approver string identifies a real person; or
 - anything not represented by a required claim.
 
+## Benchmarks and proofs
+
+Every number in this section comes from committed artifacts regenerated by
+tools — nothing here is hand-entered. The canonical live rendering is
+<https://ranex.dev/dogfood>; the raw data is
+[`tools/dogfood/site/benchmarks.json`](tools/dogfood/site/benchmarks.json),
+whose sha256 fingerprint is printed on the page, so a stale or hand-edited
+page is visitor-detectable. The [dogfood status](#dogfood-status) block below
+carries the current loop snapshot; this section explains what the loop is and
+what it has proven.
+
+### The nightly proof board — 43/43 deterministic proofs
+
+The dogfood loop (`uv run --frozen python tools/dogfood/dogfood.py iterate`)
+runs 43 fixed scenarios twice per pass; if the two fact records are not
+byte-identical the scenario itself is declared NON-DETERMINISTIC and fails —
+determinism is enforced, not assumed. Coverage by area: verdict 13, canonical
+JSON 6, journal 6, admission 5, provisioning 3, signing 3, suite results 3,
+keygen 2, CLI 1, evolution 1. The independent math proofs recompute the
+journal chain algebra with plain hashlib over raw SQLite rows, stress Ed25519
+signing determinism (128 samples) and digest avalanche/distinctness (8,192
+argvs), and check the gate predicates' 8- and 16-row truth tables
+exhaustively.
+
+Five findings are open and published rather than hidden
+([`tools/dogfood/FINDINGS.md`](tools/dogfood/FINDINGS.md)): F-001
+`Journal.verify()` raises instead of returning `False` on non-JSON record
+corruption; F-002 the suite outcome split is checkout-environment-dependent,
+so frozen `expected_skips` are not location-reproducible; F-003 governing
+third-party repos requires a vendored CLI and root-installed test tooling;
+F-004 a collection-error junit is refused and journaled as absence rather
+than as an observed failure (verdict never wrong; the diagnosis is); F-005
+audit follow-ups — the journal chain detects partial edits but not a full
+self-consistent rewrite, and a tool-side canonical JSON disagrees with the
+kernel's on non-ASCII.
+
+### Corpus-graded trainer — 733 labelled exercises, zero divergences
+
+The trainer (`tools/dogfood/trainer/`) generates exercises from a corpus of
+real tasks (VulcanBench, 287 tasks) and grades the kernel against labels
+derived from each task's own ground truth — no model, no hand-typed
+expectations. Labels are stated before anything runs, and each task is
+admitted only after a confinement-equivalent preflight proves its label
+sound on that host:
+
+| variant | label (stated before the run) |
+|---|---|
+| `gold` | gold patch applied → gate MUST PASS |
+| `empty` | no patch → gate MUST FAIL (tests are red pre-fix) |
+| `delete-tests` | gold + test functions deleted → FAIL naming the missing test IDs |
+| `goalpost-move` | evidence recorded, then the tree moves → FAIL: different subject digest |
+| `partial-gold` | first hunk of the gold patch only → MUST FAIL |
+| `manifest-swap` | uncommitted tampered manifest → `run` REFUSES, gate FAIL |
+| `manifest-crossbind` | committed alternate manifest → gate FAIL: manifest digest mismatch |
+
+Clean pass (audited numbers): 104 tasks × 7 variants plus `benjaminp/six` at
+a pinned commit via the GitHub source (5/5) — **733 examples: 683 graded
+agreements, 50 honest skips, 0 divergences.** The 183 excluded corpus tasks
+are classified with reasons, not silently dropped (95 toolchain-unpinned,
+15 gold-not-green-here, 10 governance-env-unsupported, 28 junit-refused, 32
+diff-graded, 3 cmd-unparseable). Every input-space class a prior audit
+measured at zero coverage is now trained at least 66×. The pass ledgers
+(`tools/dogfood/training/passes/`) are digest-chained, so the training record
+is itself tamper-evident.
+
+### External-repository proof — the released tag judging a repo that is not Ranex
+
+`tools/dogfood/external_proof.py` installs the published `v0.1.0` tag the
+supported way, brings it to a clean third-party repository (`benjaminp/six`
+@ `c8e39406`, MIT; 185 selected test IDs), proves the vendored `src/` tree
+digest equals the tag's own `src/` tree digest, and then — end to end, with
+no manual repair:
+
+1. `ranex run` → signed evidence → `gate evaluate` **PASS** → `journal
+   verify` **chain=verified**;
+2. the attack: one comment line appended to the repository's own source
+   after the green evidence, no re-run → the gate refuses, exit 1,
+   `evidence bound to a different subject digest`, while the journal still
+   verifies; and
+3. re-running the work under governance → **PASS** again.
+
+Reproduced twice. Verdicts, exit codes, and refusal reasons are asserted by
+the script, never eyeballed; keys are fresh each run, so digests differ while
+verdicts reproduce.
+
+### The proof pile — 16 live agent runs, 0 false passes
+
+The append-only archive in [`tools/dogfood/oss_bench/proofs/`](tools/dogfood/oss_bench/proofs)
+records real `zai:glm-5.3` agent runs through the full governed cycle on
+real VulcanBench tasks: 19 entries — 15 live-model runs, 1 agentless
+external run, and 3 attacks — across 2 nights, ~3.0M tokens, $6.51 total
+metered cost.
+
+- **0 false passes in 16 runs.** The gate never verified work that failed
+  the hidden tests.
+- **2 honest false blocks.** Twice the agent claimed success and the work
+  was in fact correct, but the recorded evidence was stale relative to the
+  agent's final tree, so the gate refused it (`evidence bound to a different
+  subject digest`). That is governance costing what it costs: correct but
+  unproven work is refused, never waved through.
+- **3/3 attacks caught.** Deleted tests — bare CI read GREEN with "6
+  passed" while the manifest-bound gate FAILed naming all 9 deleted test
+  IDs; stale proof — green evidence plus one edited source line, refused on
+  subject digest; and the external stale proof above.
+- **Honest failures are recorded too.** On veryhard tasks where the agent
+  failed (hidden truth 0.0) and self-reported failure, the gate FAILed and
+  the journal verified — no row in the pile claims unearned success.
+
+### Timings
+
+One representative run (kernel commit `f983c964736c`, generated 2026-09-03;
+single machine — CPython 3.14.6, Linux x86_64, 16 CPUs — medians of 3
+repeats). Timings are deliberately non-deterministic, never enter
+correctness records or baselines, and are refreshed by each `report`
+regeneration — `benchmarks.json` is canonical:
+
+| operation | median |
+|---|---|
+| admit 200 signed records (Ed25519 verify each) | 20.2 ms |
+| Ed25519-verify 200 evidence payloads | 18.3 ms |
+| append 2,000 chained journal rows | 4.55 s (≈2.3 ms/row) |
+| verify a 2,000-row journal chain (recompute all links) | 19.3 ms (≈10 µs/row) |
+| 100 evaluations of a 20-claim gate | 4.0 ms |
+| `ranex --help` cold start (interpreter + imports) | 146 ms |
+
+Both journal operations scale linearly in rows — per-row cost stays roughly
+flat from 100 to 2,000 rows (append ≈2.3 ms/row, verify ≈10 µs/row). Full
+min/max/repeat data is in `benchmarks.json`.
+
 ## Follow the build
 
 - Visit **[ranex.dev](https://ranex.dev)** for the public project home.
@@ -327,6 +508,8 @@ That is the current code-level claim. It does **not** prove:
   experiments, and lessons from building the kernel.
 - Subscribe to **[RanexDev on YouTube](https://www.youtube.com/@RanexDev)** for
   demonstrations and project updates.
+- Check **[benchmarks and proofs](#benchmarks-and-proofs)** for the measured
+  evidence behind the claims — and to re-run it yourself.
 - Read **[the architecture map](docs/MAP.md)** for the full system design,
   maturity ledger, risks, and architectural boundaries.
 - Read **[the current state](docs/STATE.md)** for the implemented frontier and
@@ -336,7 +519,7 @@ That is the current code-level claim. It does **not** prove:
 
 ## Status
 
-**Pre-release, source-run kernel.** The public parser in `ranex.cli.main`
+**v0.1.0 — kernel-only, source-run.** The public parser in `ranex.cli.main`
 currently exposes:
 
 ```text
@@ -482,9 +665,10 @@ Current limits visible in code:
 
 This repo runs its own proof loop nightly; the block below is rewritten by
 the tool from real runs (hand edits inside the markers are overwritten).
+What the loop is and what it has proven: [Benchmarks and proofs](#benchmarks-and-proofs).
 
 <!-- dogfood-status:start -->
-**43/43 deterministic proofs pass** · iteration 10 · kernel v0.1.0 (f983c964736c) · last run 2026-09-03T22:02:40Z · open findings: F-005, F-004, F-003, F-002, F-001
+**43/43 deterministic proofs pass** · iteration 10 · kernel v0.1.0 (6ee93d65c77c) · last run 2026-09-04T10:38:23Z · open findings: F-005, F-004, F-003, F-002, F-001
 
 - Live benchmark page: https://ranex.dev/dogfood
 - Raw data: `tools/dogfood/site/benchmarks.json` (its sha256 fingerprint is printed on the page)
