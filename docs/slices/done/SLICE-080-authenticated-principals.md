@@ -1,7 +1,8 @@
 # SLICE-080 — authenticated principals at the trust root
 
-**Status:** open
+**Status:** done
 **Opened:** 2026-09-04
+**Closed:** 2026-09-04
 **Priority:** P1 — Week 2 objective, prerequisite for the evidence envelope
 **ADR:** docs/adr/ADR-047-authenticated-principals-at-the-trust-root.md
 
