@@ -1,0 +1,38 @@
+{
+  "agent_steps": 13,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q test_parse.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "27 passed in 0.02s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.05278,
+  "date": "2026-09-05",
+  "duration_s": 132.347,
+  "false_block": true,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "7d413af48df2ec209617dfb8d38d4e6543f79800",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-config-parse-ba79feaa/repo/test_parse.py::test_basic_and_whitespace[  a   =   hello world  -want1], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-config-parse-ba79feaa/repo/test_parse.py::test_basic_and_whitespace[a = x  y-want2], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-config-parse-ba79feaa/repo/test_parse.py::test_basic_and_whitespace[a=hello-want0], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-config-parse-ba79feaa/repo/test_parse.py::test_bool_null_coercion[a = null\\nb = None-want1], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-config-parse-ba79feaa/repo/test_parse.py::test_boo",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-05.json/py-config-parse-ba79feaa/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_parse.py::test_comments_and_blanks test_parse.py::test_basic_and_whitespace test_parse.py::test_quoting test_parse.py::test_escapes_in_quotes test_parse.py::test_inline_comments test_parse.py::test_bool_null_coercion test_parse.py::test_int_coercion test_parse.py::test_float_coercion test_parse.py::test_empty_and_duplicate test_parse.py::test_invalid_raises",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-config-parse-ba79feaa",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "e handling, quoting/escapes, inline comments, and ordered type coercion), with a quick test-suite run confirming all specified behaviors and `ValueError` cases.",
+    "heuristic": true
+  },
+  "task": "py-config-parse",
+  "tokens": 20881
+}

@@ -1,0 +1,38 @@
+{
+  "agent_steps": 31,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q test_compare.py",
+    "elapsed_s": 0.1,
+    "exit": 0,
+    "output_tail": "28 passed in 0.02s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.144441,
+  "date": "2026-09-05",
+  "duration_s": 209.664,
+  "false_block": true,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "7d413af48df2ec209617dfb8d38d4e6543f79800",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-semver-compare-bf46c069/repo/test_compare.py::test_build_metadata_ignored[1.0.0+build.1-1.0.0+build.2], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-semver-compare-bf46c069/repo/test_compare.py::test_build_metadata_ignored[1.0.0-1.0.0+meta], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-semver-compare-bf46c069/repo/test_compare.py::test_build_metadata_ignored[1.0.0-alpha+001-1.0.0-alpha+999], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-semver-compare-bf46c069/repo/test_compare.py::test_core_precedence[1.0.0-1.0.0-0], tools/dogfood/oss_bench/results/divergence-2026-09-05/json/py-semver-compare-bf46c069/",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-05.json/py-semver-compare-bf46c069/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml test_compare.py::test_core_precedence test_compare.py::test_prerelease_is_lower_than_release test_compare.py::test_prerelease_precedence_chain test_compare.py::test_prerelease_identifier_rules test_compare.py::test_build_metadata_ignored test_compare.py::test_invalid_raises",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-semver-compare-bf46c069",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "inst an independent reference key over ~100k version pairs: zero mismatches, and `sorted(versions, key=cmp_to_key(compare))` matches the reference sort exactly.",
+    "heuristic": true
+  },
+  "task": "py-semver-compare",
+  "tokens": 68218
+}

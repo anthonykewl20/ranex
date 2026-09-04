@@ -1,0 +1,38 @@
+{
+  "agent_steps": 75,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q oss_tests.py",
+    "elapsed_s": 0.4,
+    "exit": 1,
+    "output_tail": "14 failed in 0.23s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.514427,
+  "date": "2026-09-05",
+  "duration_s": 761.804,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "7d413af48df2ec209617dfb8d38d4e6543f79800",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.5,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: missing test ID(s): tools/dogfood/oss_bench/results/divergence-2026-09-05/json/legacy-cellarcore-binary-parity-b0f8e634/repo/oss_tests.py::test_brand, tools/dogfood/oss_bench/results/divergence-2026-09-05/json/legacy-cellarcore-binary-parity-b0f8e634/repo/oss_tests.py::test_creel, tools/dogfood/oss_bench/results/divergence-2026-09-05/json/legacy-cellarcore-binary-parity-b0f8e634/repo/oss_tests.py::test_full_corpus_parity, tools/dogfood/oss_bench/results/divergence-2026-09-05/json/legacy-cellarcore-binary-parity-b0f8e634/repo/oss_tests.py::test_grain, tools/dogfood/oss_bench/results/divergence-2026-09-05/json/legacy-cellarcore-binary-parity-b0f8e634/repo/oss_tests.py::test_hale, tools/dogfood/oss_bench/results/divergence-2026-09-05/j",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-05.json/legacy-cellarcore-binary-parity-b0f8e634/repo/governance/journal.sqlite3  chain=verified",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --junitxml=governance/suite_results.xml oss_tests.py::test_mull oss_tests.py::test_creel oss_tests.py::test_haul oss_tests.py::test_grain oss_tests.py::test_stale oss_tests.py::test_pip oss_tests.py::test_quell oss_tests.py::test_swale oss_tests.py::test_brand oss_tests.py::test_keel oss_tests.py::test_wake oss_tests.py::test_hale oss_tests.py::test_revenant oss_tests.py::test_full_corpus_parity",
+    "run_error": "",
+    "run_exit": 1
+  },
+  "run_id": "legacy-cellarcore-binary-parity-b0f8e634",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Let me carefully re-measure the turn behavior with explicit controls.",
+    "heuristic": true
+  },
+  "task": "legacy-cellarcore-binary-parity",
+  "tokens": 253017
+}

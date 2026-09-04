@@ -342,6 +342,42 @@
       "scenarios": 43,
       "sha": "c6baae89e",
       "subject": "tools: dogfood artifacts \u2014 iteration 11"
+    },
+    {
+      "complexity": 5021,
+      "date": "2026-09-05",
+      "open_findings": 5,
+      "pile": 20,
+      "scenarios": 43,
+      "sha": "dd9738d1f",
+      "subject": "tools: proof pile \u2014 2026-09-05 (1 run)"
+    },
+    {
+      "complexity": 5105,
+      "date": "2026-09-05",
+      "open_findings": 5,
+      "pile": 20,
+      "scenarios": 43,
+      "sha": "9d6327f83",
+      "subject": "tools: dogfood artifacts - iteration 11 (census drift findin"
+    },
+    {
+      "complexity": 5105,
+      "date": "2026-09-05",
+      "open_findings": 5,
+      "pile": 20,
+      "scenarios": 43,
+      "sha": "688ee9063",
+      "subject": "fix: F-006 - re-baseline census drift from the SLICE-084 rec"
+    },
+    {
+      "complexity": 5105,
+      "date": "2026-09-05",
+      "open_findings": 5,
+      "pile": 20,
+      "scenarios": 43,
+      "sha": "7d413af48",
+      "subject": "tools: dogfood artifacts - iteration 12"
     }
   ]
 }
