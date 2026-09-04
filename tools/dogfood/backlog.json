@@ -12,7 +12,7 @@
         "lines_executed": 1
       },
       {
-        "M": 44,
+        "M": 45,
         "function": "ranex/cli/main.py:cmd_run",
         "lines_executed": 1
       },
@@ -102,7 +102,7 @@
         "lines_executed": 1
       }
     ],
-    "measured_functions": 405,
+    "measured_functions": 409,
     "never_touched_high_M": {
       "ranex/cli/host_confinement.py:_elf_facts_from_descriptor": 27,
       "ranex/cli/host_confinement.py:_real_cgroup_probe": 33,
