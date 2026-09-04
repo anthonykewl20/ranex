@@ -297,6 +297,51 @@
       "scenarios": 43,
       "sha": "f983c9647",
       "subject": "tools: proof pile \u2014 2026-09-04 (2 runs)"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 16,
+      "scenarios": 43,
+      "sha": "ae926bbaf",
+      "subject": "tools: dogfood artifacts - iteration 10"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 19,
+      "scenarios": 43,
+      "sha": "6ee93d65c",
+      "subject": "tools: proof pile - 2026-09-04 (3 runs)"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 19,
+      "scenarios": 43,
+      "sha": "0d2bd655e",
+      "subject": "fix: dogfood/oss_bench harness faults no longer count as ker"
+    },
+    {
+      "complexity": 4935,
+      "date": "2026-09-04",
+      "open_findings": 5,
+      "pile": 19,
+      "scenarios": 43,
+      "sha": "c0d6e0eb2",
+      "subject": "tools: honest dogfood page copy for F-001/F-002 \u2014 candidate "
+    },
+    {
+      "complexity": 5021,
+      "date": "2026-09-05",
+      "open_findings": 5,
+      "pile": 19,
+      "scenarios": 43,
+      "sha": "c6baae89e",
+      "subject": "tools: dogfood artifacts \u2014 iteration 11"
     }
   ]
 }
