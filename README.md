@@ -480,13 +480,14 @@ Reproduced twice. Verdicts, exit codes, and refusal reasons are asserted by
 the script, never eyeballed; keys are fresh each run, so digests differ while
 verdicts reproduce.
 
-### The proof pile — 16 live agent runs, 0 false passes
+### The proof pile — 23 archived entries, with exclusions recorded
 
 The append-only archive in [`tools/dogfood/oss_bench/proofs/`](tools/dogfood/oss_bench/proofs)
 records real `zai:glm-5.3` agent runs through the full governed cycle on
-real VulcanBench tasks: 19 entries — 15 live-model runs, 1 agentless
-external run, and 3 attacks — across 2 nights, ~3.0M tokens, $6.51 total
-metered cost.
+real VulcanBench tasks: 23 entries — 19 live-model runs, 1 agentless
+external run, and 3 attacks — across 3 dates, 3,410,795 tokens, $7.294714 total
+metered cost. Eleven runs have diagnosed harness faults and are excluded
+from kernel verdict statistics; nine runs remain after that exclusion.
 
 - **0 false passes in the graded runs.** The gate never verified work that
   failed the hidden tests.

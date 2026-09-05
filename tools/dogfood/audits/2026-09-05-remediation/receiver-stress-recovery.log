@@ -1,0 +1,40 @@
+real-git-remote-recovery True [{'delivery': 'real-pr-recovery', 'event': 'pull_request', 'outcome': 'E-GITHUB-UNFETCHABLE-HEAD', 'head_sha': '8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42'}, {'delivery': 'real-pr-recovery', 'event': 'pull_request', 'outcome': 'E-GITHUB-API-REFUSED', 'head_sha': '8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42'}]
+1000-concurrent-real-pr-replays True {'requests': 1000, 'completed_ids': 100, 'busy_redeliveries': 2663}
+same-id-different-authenticated-body True 409
+sigkill-restart-retains-100-completions True 100
+restart-retains-body-binding True 409
+sigkill-restart-retries-api-failure True 500
+saturation-0 True {'opened': 32, 'threads': 33, 'descriptors': 22, 'recovered': 200}
+saturation-1 True {'opened': 32, 'threads': 33, 'descriptors': 22, 'recovered': 200}
+saturation-2 True {'opened': 32, 'threads': 33, 'descriptors': 22, 'recovered': 200}
+saturation-3 True {'opened': 32, 'threads': 33, 'descriptors': 22, 'recovered': 200}
+saturation-4 True {'opened': 32, 'threads': 33, 'descriptors': 22, 'recovered': 200}
+trickle-client-wall-deadline True {'disconnected': True, 'seconds': 5.116449819994159}
+healthy-after-trickle True HTTP 200
+damaged-receipt-recovery True {'damaged_bytes': '', 'refused': 500, 'recovered': 200}
+damaged-receipt-recovery True {'damaged_bytes': '[]', 'refused': 500, 'recovered': 200}
+damaged-receipt-recovery True {'damaged_bytes': '{}', 'refused': 500, 'recovered': 200}
+damaged-receipt-recovery True {'damaged_bytes': '{"fingerprint":42}', 'refused': 500, 'recovered': 200}
+wrong-endpoint True {'expected': 404, 'actual': 404}
+negative-length True {'expected': 400, 'actual': 400}
+oversized-length True {'expected': 413, 'actual': 413}
+ambiguous-transfer True {'expected': 400, 'actual': 400}
+wrong-signature True {'expected': 401, 'actual': 401}
+non-ascii-signature True {'expected': 401, 'actual': 401}
+malformed-delivery-id True HTTP 400
+damaged-real-pr-payload True {'status': 200, 'receipt': {'delivery': 'damaged-pr-0', 'outcome': 'E-GITHUB-BAD-EVENT'}}
+damaged-real-pr-payload True {'status': 200, 'receipt': {'delivery': 'damaged-pr-1', 'outcome': 'E-GITHUB-BAD-EVENT'}}
+incomplete-real-pr-action True {'status': 200, 'receipt': {'delivery': 'incomplete-pr-action', 'outcome': 'E-GITHUB-BAD-EVENT'}}
+incomplete-real-pr-head True {'status': 200, 'receipt': {'delivery': 'incomplete-pr-head', 'outcome': 'E-GITHUB-BAD-EVENT'}}
+interrupted-real-pr-upload True {'status': 400}
+legacy-spool-damage-recovery True {'refused': 500, 'recovered': 200}
+two-receivers-share-durable-state False {'requests': 200, 'accepted': 158}
+Traceback (most recent call last):
+  File "/home/soultransit/devtony/ranex/tools/dogfood/receiver_stress.py", line 266, in <module>
+    record('two-receivers-share-durable-state', all(s == 200 for s in statuses),
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           dict(requests=len(statuses), accepted=statuses.count(200)))
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/tools/dogfood/receiver_stress.py", line 56, in record
+    raise RuntimeError(name)
+RuntimeError: two-receivers-share-durable-state

@@ -16,7 +16,8 @@ Storage: two 20,000-append stress runs; all chains verified and tamper controls 
 Receiver: real PR replay, 1,000 concurrent requests, repeated saturation,
 SIGKILL restart, two-process shared state, damaged receipts and thread exhaustion.
 External six: collection errors and retired keys now refuse correctly.
-Cold start: 9 passed. Direct qualified host: 29 passed, zero skipped.
+Cold start at fd13edbc0: 9 passed; governed child 1657 passed, 138 skipped.
+Direct qualified host: 29 passed, zero skipped.
 Live historical Ranex bootstrap: 1 passed in 2161.84s, including full child suite.
 Original config/semver patches: bare GREEN, gate PASS. OSV: 34 packages, zero findings.
 Real installed wheel: ranex v0.1.001, normalized metadata 0.1.1.
@@ -26,7 +27,9 @@ Evidence: tools/dogfood/audits/2026-09-05-remediation/.
 
 Final qualified regression: 1783 passed, 9 skipped, 3 failures. Corrections
 preserve the onboarding catalog, revalidate existing launchers, and remove
-shared Git-config writes from the concurrent harness. Final rerun is pending.
+shared Git-config writes from the concurrent harness. Cold rerun is green.
+Relative journal verification now accepts actual archive paths; full rerun pending.
+Expanded receiver stress retained one incomplete shared-state pass; attribution open.
 Automatic releases use vMAJOR.MINOR.PPP after explicit dogfood-fix trailers.
 The GitHub workflow needs the owner's RANEX_RELEASE_TOKEN secret.
 Live installed-App publication and Kogg qualification remain UNVERIFIED.

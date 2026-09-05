@@ -1,0 +1,22 @@
+producers:
+  anthony: ed25519:cT08b8ut4tLoZqjJN6fCnHUb0kMv7R++1+nDqGnfyQQ=
+  worker: ed25519:y8fBCxM7SsPPIUG7pMydV8Nckl2ag+k6f8QXQFRl/qQ=
+verdict_signer:
+  id: kernel-verdict-signer
+  public_key: ed25519:/YsKLlvH+yQJmfmOUWy7y8ZH0e4kbp8eLRwepNioMIs=
+principals:
+  anthony:
+    role: worker
+    keys:
+    - key: ed25519:cT08b8ut4tLoZqjJN6fCnHUb0kMv7R++1+nDqGnfyQQ=
+      status: active
+  kernel-verdict-signer:
+    role: service
+    keys:
+    - key: ed25519:/YsKLlvH+yQJmfmOUWy7y8ZH0e4kbp8eLRwepNioMIs=
+      status: active
+  worker:
+    role: worker
+    keys:
+    - key: ed25519:y8fBCxM7SsPPIUG7pMydV8Nckl2ag+k6f8QXQFRl/qQ=
+      status: active

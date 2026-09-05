@@ -92,7 +92,7 @@ class Journal:
         # one asked whether the record was tampered with. A verifier that may
         # return an incorrect result under a concurrent append is worse than no
         # verifier, because it answers confidently.
-        conn = sqlite3.connect(f"{self._path.as_uri()}?mode=ro", uri=True)
+        conn = sqlite3.connect(f"{self._path.absolute().as_uri()}?mode=ro", uri=True)
         conn.row_factory = sqlite3.Row
         return conn
 

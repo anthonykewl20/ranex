@@ -88,6 +88,18 @@ declared expected-skips — is the frozen list the kernel diffs against; every
 manifest ID must appear passed, except a declared expected-skip, which may
 still pass.
 
+### Release audit correction — 2026-09-05
+
+F-010 measured ordinary non-strict XPASS on the real pinned six suite:
+pytest reports 184 passed and 1 xpassed, but its JUnit artifact represents
+that XPASS as an ordinary passing testcase. Ranex consequently accepts it.
+The XPASS-refusal statements below apply only when the outcome is present
+in the structured report (as it is for strict XPASS). The original
+unqualified requirement is not fulfilled by this reporter; do not cite the
+slice as proof of universal XPASS detection. Evidence and the open gap are
+in `tools/dogfood/FINDINGS.md`, F-010. No stdout heuristic or fabricated
+outcome was added to conceal the missing information.
+
 ### Consequences
 
 - Good: a skip cannot pass as a proxy for "ran and succeeded" — an undeclared skip, xfail, xpass, error, or missing ID all read as FAIL.

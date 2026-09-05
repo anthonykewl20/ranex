@@ -53,11 +53,13 @@ def record(name, ok, facts):
         rows=rows), indent=2) + '\n')
     print(name, ok, facts, flush=True)
     if not ok:
+        if journal.exists():
+            (OUT / 'deliveries.jsonl').write_bytes(journal.read_bytes())
         raise RuntimeError(name)
 
 
-def request(port, delivery, body=IGNORED, *, path='/webhook', **headers):
-    conn = http.client.HTTPConnection('127.0.0.1', port, timeout=5)
+def request(port, delivery, body=IGNORED, *, path='/webhook', timeout=5, **headers):
+    conn = http.client.HTTPConnection('127.0.0.1', port, timeout=timeout)
     try:
         conn.request('POST', path, body, headers={
             'X-GitHub-Delivery': delivery, 'X-GitHub-Event': 'pull_request',
@@ -95,14 +97,14 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                        RANEX_GITHUB_API_ROOT=f'http://127.0.0.1:{api.getsockname()[1]}')
 
     @contextmanager
-    def server(*, force_kill=False):
+    def server(*, force_kill=False, remote_url=None, repository_root=repo):
         with socket.socket() as selector:
             selector.bind(('127.0.0.1', 0))
             port = selector.getsockname()[1]
         with (OUT / 'server.log').open('a') as log:
             command = [sys.executable, '-m', 'ranex.cli.main', 'github', 'listen',
-                       '--repository', str(repo), '--bind', f'127.0.0.1:{port}',
-                       '--remote', str(remote), '--installation', '1',
+                       '--repository', str(repository_root), '--bind', f'127.0.0.1:{port}',
+                       '--remote', remote_url or str(remote), '--installation', '1',
                        '--repo', PR['base']['repo']['full_name'], '--approver', 'audit']
             process = subprocess.Popen(command, env=environment, stdout=log, stderr=log)
             try:
@@ -221,6 +223,24 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
             observed = json.loads(journal.read_text().splitlines()[-1])
             record('damaged-real-pr-payload', status == 200 and observed['outcome'] == 'E-GITHUB-BAD-EVENT',
                    dict(status=status, receipt=observed))
+        for field in ('action', 'head'):
+            damaged = json.loads(BODY)
+            if field == 'action':
+                damaged['action'] = None
+            else:
+                damaged['pull_request']['head']['sha'] = PR['head']['sha'][:-1]
+            status = request(port, f'incomplete-pr-{field}', json.dumps(damaged).encode())
+            observed = json.loads(journal.read_text().splitlines()[-1])
+            record(f'incomplete-real-pr-{field}', status == 200 and observed['outcome'] == 'E-GITHUB-BAD-EVENT',
+                   dict(status=status, receipt=observed))
+        with socket.create_connection(('127.0.0.1', port), timeout=5) as client:
+            # Interrupt the actual PR upload while leaving the response readable.
+            client.sendall((f'POST /webhook HTTP/1.0\r\nContent-Length: {len(BODY)}\r\n\r\n').encode() + BODY[:-1])
+            client.shutdown(socket.SHUT_WR)
+            response = http.client.HTTPResponse(client)
+            response.begin()
+            response.read()
+            record('interrupted-real-pr-upload', response.status == 400, dict(status=response.status))
         saved_journal = journal.read_bytes()
         marker = journal.parent / 'spool-v2.json'
         saved_marker = marker.read_bytes()
@@ -246,7 +266,56 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
             with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
                 statuses = list(pool.map(multi_process_delivery, range(200)))
             record('two-receivers-share-durable-state', all(s == 200 for s in statuses),
-                   dict(requests=len(statuses), accepted=statuses.count(200)))
+                   dict(requests=len(statuses), accepted=statuses.count(200),
+                        statuses=statuses))
+    # Pause a real Git server, then resume it. The same actual PR fetch must
+    # time out by its own deadline and reach the API again after recovery.
+    with socket.socket() as selector:
+        selector.bind(('127.0.0.1', 0))
+        git_port = selector.getsockname()[1]
+    git_url = f'git://127.0.0.1:{git_port}{ROOT}'
+    paused_repo = root / 'paused-git-repo'
+    # A transport clone copies the committed governance but omits the earlier
+    # unreferenced fetched PR objects. Git can satisfy an exact SHA fetch from
+    # objects already present without contacting the paused server.
+    subprocess.run(['git', 'clone', '--quiet', '--no-local', str(repo), str(paused_repo)], check=True)
+    absent = subprocess.run(['git', '-C', str(paused_repo), 'cat-file', '-e', PR['head']['sha']],
+                            capture_output=True, check=False)
+    if absent.returncode == 0:
+        raise RuntimeError('paused-server control requires the actual PR objects to be absent')
+    paused_journal = paused_repo / '.local/ranex/github/deliveries.jsonl'
+    with (OUT / 'git-daemon.log').open('w') as log:
+        daemon = subprocess.Popen(['git', 'daemon', '--export-all', '--listen=127.0.0.1',
+                                   f'--port={git_port}', str(ROOT)], stdout=log, stderr=log)
+        try:
+            for _ in range(100):
+                if daemon.poll() is not None:
+                    raise RuntimeError('real Git daemon exited')
+                try:
+                    with socket.create_connection(('127.0.0.1', git_port), timeout=.1):
+                        break
+                except OSError:
+                    time.sleep(.05)
+            daemon.send_signal(signal.SIGSTOP)
+            with server(remote_url=git_url, repository_root=paused_repo) as (port, process):
+                started = time.monotonic()
+                status = request(port, 'paused-real-git-server', BODY, timeout=40)
+                elapsed = time.monotonic() - started
+                observed = json.loads(paused_journal.read_text().splitlines()[-1])
+                (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
+                record('paused-real-git-fetch-deadline', status == 500
+                       and observed['outcome'] == 'E-GITHUB-UNFETCHABLE-HEAD'
+                       and 29 <= elapsed < 38, dict(status=status, seconds=elapsed, receipt=observed))
+                daemon.send_signal(signal.SIGCONT)
+                status = request(port, 'paused-real-git-server', BODY, timeout=40)
+                observed = json.loads(paused_journal.read_text().splitlines()[-1])
+                (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
+                record('resumed-real-git-server', status == 500
+                       and observed['outcome'] == 'E-GITHUB-API-REFUSED', dict(status=status, receipt=observed))
+        finally:
+            daemon.send_signal(signal.SIGCONT)
+            daemon.terminate()
+            daemon.wait(timeout=10)
     with server() as (port, process):
         # Linux limits apply only to this receiver; no parent/other process limit changes.
         original_limit = resource.prlimit(process.pid, resource.RLIMIT_NPROC)

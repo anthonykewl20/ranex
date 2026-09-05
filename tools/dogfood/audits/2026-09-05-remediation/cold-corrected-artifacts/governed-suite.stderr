@@ -1,0 +1,39 @@
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-it2x0nda/tmp/ranex-subject-o16jd24e/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-it2x0nda/tmp/ranex-subject-3bri3e3u/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-it2x0nda/tmp/ranex-subject-iakzuxkb/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)

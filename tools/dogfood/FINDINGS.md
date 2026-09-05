@@ -8,6 +8,29 @@ match the kernel silently.
 
 ## Open
 
+### F-024 — relative journal API paths failed during real receipt verification
+
+Verification of the actual cold-start journal at fd13edbc0 raised
+`ValueError: relative paths can't be expressed as file URIs` with its relative
+archive path; the same database verified by absolute path and yielded head
+`sha256:8fc91de7eaf7fb80d4b80a646e0777a2907f2fb6dfa8d5277094e6c6f259e5b4`.
+The read-only SQLite URI now absolutizes the path before encoding it, preserving
+read-only access and the append API's relative-path behavior. The actual database
+then verified through both spellings. Storage stress now checks relative paths
+and head equality on every completed 4,000-append round; final rerun pending.
+
+### F-025 — a shared receiver stress pass did not complete every request
+
+The expanded real PR replay at fd13edbc0 accepted 158/200 concurrent requests
+across two receiver processes. That attempt retained the count but not each
+status, so its attribution is UNVERIFIED. A diagnostic repeat retained all
+responses and accepted 200/200 without production changes. The earlier failure
+is not erased or called fixed; final stress must retain individual statuses.
+The separate paused-Git setup initially reused locally cached PR objects and
+therefore did not exercise the network deadline. Its replacement uses an actual
+transport clone verified to lack those objects before stopping the real server.
+
+
 ### F-023 — shared Git identity writes race in the existing fanout harness
 
 The complete qualified regression at af9f403 recorded a nested bounded-pool
@@ -22,7 +45,10 @@ The exact attribution of the original nested failure remains UNVERIFIED pending
 fresh complete regression. The first repair introduced an indentation error in
 the generated worker script: the retained cold diagnostic shows all five workers
 without emissions. The indentation is corrected and generated Python syntax
-checked; acceptance rerun is pending. This is not a live-agent fanout correctness proof.
+checked. The corrected cold-start journey at fd13edbc0 passed all 9 stages;
+its actual governed suite reported 1657 passed and 138 skipped, then the gate
+accepted freshly qualified host evidence. Full regression is still pending.
+This is not a live-agent fanout correctness proof.
 Receipt: `audits/2026-09-05-remediation/git-identity-race.json`.
 
 ### F-022 — live Kogg subject qualification is unavailable in the measured runtime

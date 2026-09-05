@@ -70,12 +70,15 @@ def main():
             workers = list(pool.map(append_batch, [(str(path), records[i % len(records)]) for i in range(8)]))
         journal = Journal(path)
         count, verified = len(journal.entries()), journal.verify()
+        relative = Journal(path.relative_to(Path.cwd()))
+        relative_verified = relative.verify(expected_head=journal.head())
         row = dict(round=index, executor=executor.__name__, appends=count, verified=verified,
+                   relative_path_verified=relative_verified, relative_head=relative.head(),
                    seconds=time.monotonic()-start, workers=workers, head=journal.head())
         receipt['rounds'].append(row)
         save()
         print(row, flush=True)
-        if count != 4000 or not verified:
+        if count != 4000 or not verified or not relative_verified or relative.head() != journal.head():
             raise RuntimeError('storage round failed')
     head = Journal(path).head()
     receipt['independent_head_before_mutation'] = head

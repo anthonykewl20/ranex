@@ -13,11 +13,12 @@ The loop is ITERATIVE and EVIDENCE-BASED:
   bench         repeat scenarios and time them (NON-deterministic: timings are
                 excluded from baselines and ledgers on purpose)
 
-Nothing here mutates the working tree, the committed governance state, or the
-network. Every recorded fact is canonical JSON with no clocks, no randomness,
-no environment — a baseline diff is therefore a REAL behavioural change, not
-noise. Assumptions are not entertained: a scenario that cannot prove its
-lesson against the installed kernel fails.
+Scenarios use isolated scratch state. Baseline, iterate, and report write
+their own repository artifacts; external training can access the network.
+Canonical deterministic facts exclude timing data. A baseline difference
+requires diagnosis against the measured source and environment. This synthetic
+curriculum is a regression aid; real repository journeys and independently
+checked outcomes provide release acceptance evidence.
 """
 
 from __future__ import annotations
