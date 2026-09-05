@@ -125,6 +125,28 @@ def main():
     save()
     if result.returncode != 2:
         raise RuntimeError('an incomplete retained head must be a named usage refusal')
+    # Corrupt a copy of an actual gate journal at the file header, then retry
+    # through the persistent API. Failure during schema initialization must
+    # close each connection before returning, without waiting for GC.
+    damaged = out / 'damaged-header.sqlite3'
+    damaged.write_bytes(args.journal[0].read_bytes()[8:])
+    before = len(os.listdir('/proc/self/fd'))
+    peak = before
+    errors = {}
+    for _ in range(1000):
+        try:
+            Journal(damaged).entries()
+        except sqlite3.DatabaseError as error:
+            errors[str(error)] = errors.get(str(error), 0) + 1
+        peak = max(peak, len(os.listdir('/proc/self/fd')))
+    after = len(os.listdir('/proc/self/fd'))
+    receipt['controls'].append(dict(mode='damaged-header-repeated-open', attempts=1000,
+        damage='first eight bytes lost from a copy of the first actual input journal',
+        database_sha256=hashlib.sha256(damaged.read_bytes()).hexdigest(), errors=errors,
+        fd_before=before, fd_peak=peak, fd_after=after))
+    save()
+    if sum(errors.values()) != 1000 or peak != before or after != before:
+        raise RuntimeError('failed journal opens must close their descriptors before returning')
 
 
 if __name__ == '__main__':

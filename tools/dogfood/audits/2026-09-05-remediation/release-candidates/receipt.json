@@ -1,0 +1,18 @@
+{
+  "kernel": "15a5af5becdc332b6deaf8e7d7634a82d4032e37",
+  "scope": "Actual candidate wheel builds and installed CLI; measured source CLI imports byte-identical kernel source with the installed candidate metadata",
+  "results": [
+    {
+      "candidate": "0.1.1rc1",
+      "installed_version": "ranex 0.1.1rc1",
+      "release_refusal": "RELEASE-REFUSED: release requires a three-part final package version",
+      "wheel_sha256": "ffd00900f818e3746102c8165a9af4a6c802a58f01b7a1398e24447262a2b7af"
+    },
+    {
+      "candidate": "0.1.1000",
+      "installed_version": "ranex 0.1.1000",
+      "release_refusal": "RELEASE-REFUSED: patch field exceeds three digits; choose a new minor release",
+      "wheel_sha256": "5e7b1dda76f1da69a3406c510a4f74565c975e32cb28ef3c062643254a0456d3"
+    }
+  ]
+}

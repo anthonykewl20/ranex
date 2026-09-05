@@ -16,6 +16,7 @@ import socket
 import threading
 import time
 from collections.abc import Mapping
+from contextlib import suppress
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -260,10 +261,8 @@ def build_handler(config: ReceiverConfig, state: _ReceiverState):
                 self._deadline.join()
 
         def _expire(self) -> None:
-            try:
+            with suppress(OSError):
                 self.connection.shutdown(socket.SHUT_RDWR)
-            except OSError:
-                pass
 
         def do_POST(self) -> None:  # noqa: N802 — stdlib naming
             if self.path != "/webhook":
@@ -293,9 +292,6 @@ def build_handler(config: ReceiverConfig, state: _ReceiverState):
                 self._answer(401, "delivery did not prove itself")
                 return
             delivery_id = self.headers.get(webhook.DELIVERY_HEADER, "")
-            if not _DELIVERY_ID_PATTERN.fullmatch(delivery_id) or len(delivery_id) > 128:
-                self._answer(400, "malformed delivery id")
-                return
             self._deadline.cancel()
             self._deadline.join()
             try:
@@ -306,7 +302,8 @@ def build_handler(config: ReceiverConfig, state: _ReceiverState):
             except (OSError, ValueError):
                 self._answer(500, "delivery state unavailable")
                 return
-            self._answer(status, "accepted" if status == 200 else "retry later")
+            self._answer(status, "accepted" if status == 200 else
+                         "malformed delivery id" if status == 400 else "retry later")
 
         def _answer(self, status: int, message: str) -> None:
             self.close_connection = True

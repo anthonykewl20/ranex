@@ -69,7 +69,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
         "name": "Install kill-safe lifecycle owner",
         "run": (
             "sudo apt-get update\n"
-            "sudo apt-get install --yes --no-install-recommends bubblewrap\n"
+            "sudo apt-get install --yes --no-install-recommends bubblewrap python3-pytest\n"
             "bwrap --version\n"
             "# ubuntu-24.04 runners restrict unprivileged user namespaces via\n"
             "# AppArmor, which breaks bwrap confinement (uid map: Permission\n"
@@ -121,6 +121,8 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
             '  --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-config-parse-ba79feaa.sqlite3 \\\n'
             '  --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-semver-compare-bf46c069.sqlite3 \\\n'
             '  --out .local/ci-storage-stress\n'
+            'uv run --frozen python tools/dogfood/release_check.py --out .local/ci-release-check\n'
+            'uv run --frozen python tools/dogfood/collection_journey.py --out .local/ci-collection-journey\n'
             'unset COVERAGE_PROCESS_START\n'
             'uv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage\n'
             'uv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml\n'

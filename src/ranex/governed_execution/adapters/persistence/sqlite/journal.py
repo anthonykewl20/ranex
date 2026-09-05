@@ -69,8 +69,12 @@ class Journal:
             isolation_level=None,
             timeout=_WRITE_LOCK_TIMEOUT_SECONDS,
         )
-        conn.row_factory = sqlite3.Row
-        conn.executescript(_SCHEMA)
+        try:
+            conn.row_factory = sqlite3.Row
+            conn.executescript(_SCHEMA)
+        except BaseException:
+            conn.close()
+            raise
         return conn
 
     def _connect_for_verification(self) -> sqlite3.Connection:

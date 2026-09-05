@@ -1,0 +1,107 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4741, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4728, in main
+    code = int(args.func(args))
+               ~~~~~~~~~^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 3997, in cmd_github_listen
+    serve(config, (host, int(port)))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 361, in serve
+    server.serve_forever()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt
+LISTENING  127.0.0.1:30845  repository=anthonykewl20/ranex  gate=landing
+           TLS is the terminator's job; this binds as given.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4741, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4728, in main
+    code = int(args.func(args))
+               ~~~~~~~~~^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 3997, in cmd_github_listen
+    serve(config, (host, int(port)))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 361, in serve
+    server.serve_forever()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt
+LISTENING  127.0.0.1:30865  repository=anthonykewl20/ranex  gate=landing
+           TLS is the terminator's job; this binds as given.
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4741, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4728, in main
+    code = int(args.func(args))
+               ~~~~~~~~~^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 3997, in cmd_github_listen
+    serve(config, (host, int(port)))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 361, in serve
+    server.serve_forever()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt
+LISTENING  127.0.0.1:63635  repository=anthonykewl20/ranex  gate=landing
+           TLS is the terminator's job; this binds as given.
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 62438)
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 343, in process_request
+    super().process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 711, in process_request
+    t.start()
+    ~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/threading.py", line 1005, in start
+    _start_joinable_thread(self._bootstrap, handle=self._os_thread_handle,
+    ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                           daemon=self.daemon)
+                           ^^^^^^^^^^^^^^^^^^^
+RuntimeError: can't start new thread
+----------------------------------------
+Traceback (most recent call last):
+  File "<frozen runpy>", line 203, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4741, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 4728, in main
+    code = int(args.func(args))
+               ~~~~~~~~~^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/cli/main.py", line 3997, in cmd_github_listen
+    serve(config, (host, int(port)))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 361, in serve
+    server.serve_forever()
+    ~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 235, in serve_forever
+    ready = selector.select(poll_interval)
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/selectors.py", line 398, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt
+LISTENING  127.0.0.1:43235  repository=anthonykewl20/ranex  gate=landing
+           TLS is the terminator's job; this binds as given.

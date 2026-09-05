@@ -1,0 +1,32 @@
+{
+  "source": "tools/dogfood/audits/2026-09-05-remediation/cold-corrected-artifacts/journal.sqlite3",
+  "source_sha256": "94694b99074594a2a1b1c28fe57381d00e1aa6c113e10e930879a491cb055922",
+  "damage": "First eight bytes lost from a copy of the actual cold-start journal",
+  "damaged_sha256": "0a95de350bfc5cab888fd52d8ec3d506c0cb942b34a4fe8d4bea712a39a3e8b7",
+  "initial_descriptors": 4,
+  "errors": {
+    "file is not a database": 1000
+  },
+  "rows": [
+    {
+      "attempts": 1,
+      "descriptors": 5
+    },
+    {
+      "attempts": 10,
+      "descriptors": 14
+    },
+    {
+      "attempts": 100,
+      "descriptors": 16
+    },
+    {
+      "attempts": 500,
+      "descriptors": 213
+    },
+    {
+      "attempts": 1000,
+      "descriptors": 69
+    }
+  ]
+}

@@ -57,6 +57,8 @@ The repeatable stress tools consume actual upstream pull requests and journals:
 gh api repos/anthonykewl20/ranex/pulls/72 > /tmp/ranex-pr-72.json
 uv run --frozen python tools/dogfood/receiver_stress.py --pull-request /tmp/ranex-pr-72.json --out .local/receiver-stress
 uv run --frozen python tools/dogfood/storage_stress.py --journal /path/to/actual-gate.sqlite3 --out .local/storage-stress
+uv run --frozen python tools/dogfood/release_check.py --out .local/release-check
+uv run --frozen python tools/dogfood/collection_journey.py --out .local/collection-journey
 ```
 
 Use the owner's active GitHub account for the read above. Each output directory
@@ -67,6 +69,14 @@ copies of the resulting databases and checks an independently retained head via
 the CLI. Repeated records measure storage, not new code correctness observations.
 Preserved remediation receipts are in `audits/2026-09-05-remediation/`; earlier
 failed attempts remain there alongside successful reruns.
+
+The release check builds and installs actual candidate wheels. The collection
+journey onboards the pinned six repository, observes its real passing tests,
+breaks the actual test module's import, requires a named collection failure and
+all absent manifest IDs, then restores the module and requires gate recovery.
+Run that governed journey sequentially with other confinement work. CI retains
+coverage from its vendored kernel only after comparing every Python source file
+with this checkout; historical or modified source cannot supply its line hits.
 
 ## Commands
 

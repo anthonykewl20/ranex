@@ -48,6 +48,11 @@ class PrHeadBinding:
     subject_digest: str
 
 
+def _require_head_sha(head_sha: str, detail: str) -> None:
+    if not isinstance(head_sha, str) or not _SHA_PATTERN.fullmatch(head_sha):
+        raise BindingRefusal("E-GITHUB-BAD-SHA", detail)
+
+
 def fetch_pr_head(repository_root: Path, remote: str, head_sha: str) -> None:
     """Bring the head commit's objects into the local store, or refuse.
 
@@ -56,8 +61,7 @@ def fetch_pr_head(repository_root: Path, remote: str, head_sha: str) -> None:
     point a name at — only by the object GitHub's event named.
     """
 
-    if not isinstance(head_sha, str) or not _SHA_PATTERN.fullmatch(head_sha):
-        raise BindingRefusal("E-GITHUB-BAD-SHA", "head must be a 40-hex commit id")
+    _require_head_sha(head_sha, "head must be a 40-hex commit id")
     try:
         fetched = git(repository_root, "fetch", "--no-tags", remote, head_sha, timeout=30)
     except subprocess.TimeoutExpired as exc:
@@ -72,10 +76,7 @@ def fetch_pr_head(repository_root: Path, remote: str, head_sha: str) -> None:
 def bind_pr_head(repository_root: Path, head_sha: str) -> PrHeadBinding:
     """Derive the binding for `head_sha` from the local object store."""
 
-    if not isinstance(head_sha, str) or not _SHA_PATTERN.fullmatch(head_sha):
-        raise BindingRefusal(
-            "E-GITHUB-BAD-SHA", f"not a 40-hex commit id: {head_sha!r}"
-        )
+    _require_head_sha(head_sha, f"not a 40-hex commit id: {head_sha!r}")
     resolved = git(repository_root, "rev-parse", f"{head_sha}^{{tree}}")
     if resolved.returncode != 0:
         raise BindingRefusal(

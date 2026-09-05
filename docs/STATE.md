@@ -25,11 +25,13 @@ Evidence: tools/dogfood/audits/2026-09-05-remediation/.
 
 ## Completion gates still running
 
-Final qualified regression: 1783 passed, 9 skipped, 3 failures. Corrections
+Qualified regression: 1782 passed, 9 skipped, 4 setup errors. In-session tool
+edits made the freeze journey correctly refuse a dirty tree. Corrections
 preserve the onboarding catalog, revalidate existing launchers, and remove
 shared Git-config writes from the concurrent harness. Cold rerun is green.
 Relative journal verification now accepts actual archive paths; full rerun pending.
-Expanded receiver stress retained one incomplete shared-state pass; attribution open.
+Expanded receiver admission: 38 controls passed; earlier incomplete burst retained.
+Failed database initialization now closes connections; 1,000 corrupt opens held 4 FDs.
 Automatic releases use vMAJOR.MINOR.PPP after explicit dogfood-fix trailers.
 The GitHub workflow needs the owner's RANEX_RELEASE_TOKEN secret.
 Live installed-App publication and Kogg qualification remain UNVERIFIED.

@@ -1,0 +1,13 @@
+real-git-remote-recovery True [{'delivery': 'real-pr-recovery', 'event': 'pull_request', 'outcome': 'E-GITHUB-UNFETCHABLE-HEAD', 'head_sha': '8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42'}, {'delivery': 'real-pr-recovery', 'event': 'pull_request', 'outcome': 'E-GITHUB-API-REFUSED', 'head_sha': '8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42'}]
+1000-concurrent-real-pr-replays False {'requests': 1000, 'completed_ids': 100, 'busy_redeliveries': 4083}
+Traceback (most recent call last):
+  File "/home/soultransit/devtony/ranex/tools/dogfood/receiver_stress.py", line 158, in <module>
+    record('1000-concurrent-real-pr-replays', all(s == 200 for _, s in outcomes)
+    ~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+           and len(ignored) == 100, dict(requests=1000, completed_ids=len(ignored),
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                        busy_redeliveries=sum(a for a, _ in outcomes)))
+                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/tools/dogfood/receiver_stress.py", line 58, in record
+    raise RuntimeError(name)
+RuntimeError: 1000-concurrent-real-pr-replays

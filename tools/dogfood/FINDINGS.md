@@ -8,6 +8,19 @@ match the kernel silently.
 
 ## Open
 
+### F-026 — failed journal initialization deferred connection cleanup to GC
+
+Repeated reads of a damaged copy of the actual cold-start database reproduced
+1,000 SQLite refusals. Open descriptors grew from 4 to 213 at attempt 500,
+then varied as GC ran. `_connect` had not returned when `executescript(_SCHEMA)`
+failed, so its caller's closing context never owned the connection. It now
+closes initialization failures before re-raising. Repeating the identical
+1,000 opens held the descriptor count at 4 at every sampled checkpoint.
+Before/after receipts: `damaged-journal-open/receipt.json` and
+`damaged-journal-open-fixed/receipt.json` in the remediation archive.
+The storage stress driver now measures all 1,000 failed opens; final run pending.
+
+
 ### F-024 — relative journal API paths failed during real receipt verification
 
 Verification of the actual cold-start journal at fd13edbc0 raised
@@ -17,7 +30,8 @@ archive path; the same database verified by absolute path and yielded head
 The read-only SQLite URI now absolutizes the path before encoding it, preserving
 read-only access and the append API's relative-path behavior. The actual database
 then verified through both spellings. Storage stress now checks relative paths
-and head equality on every completed 4,000-append round; final rerun pending.
+and head equality on every completed 4,000-append round. All five rounds
+(20,000 appends) passed at 15a5af5be; receipt: `storage-relative/receipt.json`.
 
 ### F-025 — a shared receiver stress pass did not complete every request
 
@@ -26,9 +40,15 @@ across two receiver processes. That attempt retained the count but not each
 status, so its attribution is UNVERIFIED. A diagnostic repeat retained all
 responses and accepted 200/200 without production changes. The earlier failure
 is not erased or called fixed; final stress must retain individual statuses.
-The separate paused-Git setup initially reused locally cached PR objects and
-therefore did not exercise the network deadline. Its replacement uses an actual
-transport clone verified to lack those objects before stopping the real server.
+The burst driver now records every status and explicitly redelivers 503s after
+contention drains; unexpected statuses still fail. The subsequent 38-control
+admission run passed, including 200/200 shared-state requests. That run needed
+no post-burst retry, so the earlier incomplete run is not retrospectively PASS.
+The paused-Git setup initially stopped only the waiting Git wrapper, leaving its
+server child running. The corrected driver stops its own isolated process group
+and uses a fresh transport clone; real fetches then time out at 30.04/30.05 seconds
+and recover after the server resumes. These are harness corrections, not changed
+production deadlines. All failed setup receipts remain in the archive.
 
 
 ### F-023 — shared Git identity writes race in the existing fanout harness

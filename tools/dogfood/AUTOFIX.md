@@ -64,6 +64,12 @@ DO NOT TOUCH while unattended (diagnose only, leave for the owner):
 
 ## Automated versioning (after successful fixes)
 
+CI also builds actual prerelease and oversized-patch candidates with
+`uv run --frozen python tools/dogfood/release_check.py --out <new-output-directory>`.
+Their installed CLIs retain the package version while the release command
+refuses unsupported tag spellings. Source coverage is used only after comparing
+every measured Python file with the actual candidate wheel.
+
 A completed dogfood fix commit carries two explicit trailers, for example:
 
 ```text

@@ -24,6 +24,7 @@ import time
 from contextlib import contextmanager
 from pathlib import Path
 
+import yaml
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa
 
@@ -153,11 +154,19 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
 
         with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
             outcomes = list(pool.map(deliver, range(1000)))
+        # A bounded listener explicitly returns 503 under contention. Retain
+        # every burst response, then perform the operator's redelivery after
+        # the burst drains. A 503 is not completion; other errors never retry
+        # through this control and cannot be concealed by a later success.
+        recovery = [(index, status, request(port, f'real-pr-{index % 100}'))
+                    for index, (_attempt, status) in enumerate(outcomes) if status == 503]
         entries = [json.loads(line) for line in journal.read_text().splitlines()]
         ignored = [e for e in entries if e['outcome'] == 'ignored']
-        record('1000-concurrent-real-pr-replays', all(s == 200 for _, s in outcomes)
+        record('1000-concurrent-real-pr-replays', all(s in (200, 503) for _, s in outcomes)
+               and any(s == 200 for _, s in outcomes) and all(s == 200 for _, _, s in recovery)
                and len(ignored) == 100, dict(requests=1000, completed_ids=len(ignored),
-                                            busy_redeliveries=sum(a for a, _ in outcomes)))
+                                            busy_redeliveries=sum(a for a, _ in outcomes),
+                                            burst_outcomes=outcomes, quiescent_redeliveries=recovery))
         conflict = request(port, 'real-pr-0', BODY)
         record('same-id-different-authenticated-body', conflict == 409, conflict)
 
@@ -265,9 +274,12 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                 return answer
             with concurrent.futures.ThreadPoolExecutor(max_workers=8) as pool:
                 statuses = list(pool.map(multi_process_delivery, range(200)))
-            record('two-receivers-share-durable-state', all(s == 200 for s in statuses),
+            recovery = [(index, request(port if index % 2 else other_port, f'real-pr-{index % 100}'))
+                        for index, status in enumerate(statuses) if status == 503]
+            record('two-receivers-share-durable-state', all(s in (200, 503) for s in statuses)
+                   and any(s == 200 for s in statuses) and all(s == 200 for _, s in recovery),
                    dict(requests=len(statuses), accepted=statuses.count(200),
-                        statuses=statuses))
+                        statuses=statuses, quiescent_redeliveries=recovery))
     # Pause a real Git server, then resume it. The same actual PR fetch must
     # time out by its own deadline and reach the API again after recovery.
     with socket.socket() as selector:
@@ -276,8 +288,7 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
     git_url = f'git://127.0.0.1:{git_port}{ROOT}'
     paused_repo = root / 'paused-git-repo'
     # A transport clone copies the committed governance but omits the earlier
-    # unreferenced fetched PR objects. Git can satisfy an exact SHA fetch from
-    # objects already present without contacting the paused server.
+    # unreferenced fetched PR objects, so this control needs the network.
     subprocess.run(['git', 'clone', '--quiet', '--no-local', str(repo), str(paused_repo)], check=True)
     absent = subprocess.run(['git', '-C', str(paused_repo), 'cat-file', '-e', PR['head']['sha']],
                             capture_output=True, check=False)
@@ -286,7 +297,8 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
     paused_journal = paused_repo / '.local/ranex/github/deliveries.jsonl'
     with (OUT / 'git-daemon.log').open('w') as log:
         daemon = subprocess.Popen(['git', 'daemon', '--export-all', '--listen=127.0.0.1',
-                                   f'--port={git_port}', str(ROOT)], stdout=log, stderr=log)
+                                   f'--port={git_port}', str(ROOT)], stdout=log, stderr=log,
+                                  start_new_session=True)
         try:
             for _ in range(100):
                 if daemon.poll() is not None:
@@ -296,7 +308,9 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                         break
                 except OSError:
                     time.sleep(.05)
-            daemon.send_signal(signal.SIGSTOP)
+            # `git` may launch git-daemon as a child. Stop the new private
+            # process group, not just its waiting wrapper process.
+            os.killpg(daemon.pid, signal.SIGSTOP)
             with server(remote_url=git_url, repository_root=paused_repo) as (port, process):
                 started = time.monotonic()
                 status = request(port, 'paused-real-git-server', BODY, timeout=40)
@@ -306,15 +320,15 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                 record('paused-real-git-fetch-deadline', status == 500
                        and observed['outcome'] == 'E-GITHUB-UNFETCHABLE-HEAD'
                        and 29 <= elapsed < 38, dict(status=status, seconds=elapsed, receipt=observed))
-                daemon.send_signal(signal.SIGCONT)
+                os.killpg(daemon.pid, signal.SIGCONT)
                 status = request(port, 'paused-real-git-server', BODY, timeout=40)
                 observed = json.loads(paused_journal.read_text().splitlines()[-1])
                 (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
                 record('resumed-real-git-server', status == 500
                        and observed['outcome'] == 'E-GITHUB-API-REFUSED', dict(status=status, receipt=observed))
         finally:
-            daemon.send_signal(signal.SIGCONT)
-            daemon.terminate()
+            os.killpg(daemon.pid, signal.SIGCONT)
+            os.killpg(daemon.pid, signal.SIGTERM)
             daemon.wait(timeout=10)
     with server() as (port, process):
         # Linux limits apply only to this receiver; no parent/other process limit changes.
@@ -332,4 +346,45 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
         recovered = request(port, 'after-thread-exhaustion')
         record('real-thread-exhaustion-recovery', refused and recovered == 200,
                dict(refused=refused, recovered=recovered))
+    catalog = repo / 'governance/producers.yaml'
+    original_catalog = catalog.read_text()
+    variants = [('broken-yaml', original_catalog.replace('producers:', 'producers: [', 1),
+                 'cannot load keyring')]
+    changed = yaml.safe_load(original_catalog)
+    principal = changed['principals']['kernel-verdict-signer']
+    principal[True] = principal.pop('role')
+    variants.append(('non-string-principal-field', yaml.safe_dump(changed), 'field names must be strings'))
+    changed = yaml.safe_load(original_catalog)
+    changed['principals']['kernel-verdict-signer-renamed'] = changed['principals'].pop('kernel-verdict-signer')
+    variants.append(('disagreeing-signer-identity', yaml.safe_dump(changed),
+                     'verdict_signer and principal disagree about identity'))
+    for name, changed_catalog, expected in variants:
+        catalog.write_text(changed_catalog)
+        subprocess.run(['git', '-C', str(repo), 'add', 'governance/producers.yaml'], check=True)
+        subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Ranex receiver replay',
+                        '-c', 'user.email=ranex-replay@example.invalid', 'commit', '-qm', name], check=True)
+        command = [sys.executable, '-m', 'ranex.cli.main', 'github', 'listen',
+                   '--repository', str(repo), '--bind', '127.0.0.1:0', '--remote', str(remote),
+                   '--installation', '1', '--repo', PR['base']['repo']['full_name'], '--approver', 'audit']
+        result = subprocess.run(command, env=environment, capture_output=True, text=True,
+                                timeout=10, check=False)
+        record(name, result.returncode == 2 and expected in result.stderr + result.stdout,
+               dict(command=command, exit=result.returncode, stdout=result.stdout, stderr=result.stderr,
+                    catalog_sha256=hashlib.sha256(catalog.read_bytes()).hexdigest()))
+    catalog.write_text(original_catalog)
+    subprocess.run(['git', '-C', str(repo), 'add', 'governance/producers.yaml'], check=True)
+    subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Ranex receiver replay',
+                    '-c', 'user.email=ranex-replay@example.invalid',
+                    'commit', '-qm', 'Restore the actual reviewed catalog'], check=True)
+    with server() as (port, _process):
+        status = request(port, 'restored-reviewed-catalog')
+        record('restored-reviewed-catalog', status == 200, dict(status=status))
+    for head, expected in ((PR['head']['sha'], 0), (PR['head']['sha'][:-1], 2)):
+        command = [sys.executable, '-m', 'ranex.cli.main', 'github', 'bind',
+                   '--repository', str(repo), '--head-sha', head]
+        result = subprocess.run(command, env=environment, capture_output=True, text=True,
+                                timeout=10, check=False)
+        record('real-pr-head-binding' if expected == 0 else 'incomplete-pasted-pr-head',
+               result.returncode == expected and (expected == 0 or 'E-GITHUB-BAD-SHA' in result.stderr),
+               dict(command=command, exit=result.returncode, stdout=result.stdout, stderr=result.stderr))
     (OUT / 'deliveries.jsonl').write_bytes(journal.read_bytes())
