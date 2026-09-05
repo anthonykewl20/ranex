@@ -13,6 +13,7 @@ import os
 import shutil
 import sqlite3
 import subprocess
+import sys
 import time
 from contextlib import closing
 from pathlib import Path
@@ -63,7 +64,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--journal", type=Path, action="append", required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--rounds", type=int, default=5,
+                        help="4000 actual-record appends per round, alternating threads/processes")
     args = parser.parse_args()
+    if args.rounds < 1:
+        parser.error('--rounds must be positive')
     out = args.out.resolve()
     out.relative_to(ROOT)
     out.mkdir(parents=True, exist_ok=False)
@@ -72,17 +77,17 @@ def main():
         with closing(sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True)) as connection:
             records.append(connection.execute('select record from evaluations limit 1').fetchone()[0])
     receipt = dict(kernel=subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip(),
+                   runtime=dict(python=sys.version, sqlite=sqlite3.sqlite_version,
+                                cpu_affinity=sorted(os.sched_getaffinity(0))),
                    source_journals=[dict(path=str(p.resolve()), sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in args.journal],
                    scope='Storage load replays actual CLI gate evaluations; repeated rows are not new correctness observations',
                    source_records=[json.loads(r) for r in records], rounds=[], controls=[])
     def save():
         (out/'receipt.json').write_text(json.dumps(receipt, indent=2)+'\n')
     save()
-    for index, executor in enumerate([concurrent.futures.ThreadPoolExecutor,
-                                      concurrent.futures.ProcessPoolExecutor,
-                                      concurrent.futures.ThreadPoolExecutor,
-                                      concurrent.futures.ProcessPoolExecutor,
-                                      concurrent.futures.ThreadPoolExecutor]):
+    for index in range(args.rounds):
+        executor = (concurrent.futures.ThreadPoolExecutor if index % 2 == 0
+                    else concurrent.futures.ProcessPoolExecutor)
         path = out / f'round-{index}.sqlite3'
         start = time.monotonic()
         with executor(max_workers=8) as pool:
@@ -166,6 +171,28 @@ def main():
     save()
     if sum(errors.values()) != 1000 or peak != before or after != before:
         raise RuntimeError('failed journal opens must close their descriptors before returning')
+    for trigger, attack in (
+        ('evaluations_no_update', 'UPDATE evaluations SET record = record'),
+        ('evaluations_no_delete', 'DELETE FROM evaluations'),
+    ):
+        restored = out / f'restored-{trigger}.sqlite3'
+        shutil.copyfile(args.journal[0], restored)
+        expected_head = Journal(restored).head()
+        with closing(sqlite3.connect(restored)) as connection, connection:
+            connection.execute(f'DROP TRIGGER {trigger}')
+        entries = Journal(restored).entries()
+        refusal = None
+        with closing(sqlite3.connect(restored)) as connection, connection:
+            try:
+                connection.execute(attack)
+            except sqlite3.IntegrityError as error:
+                refusal = str(error)
+        verified = Journal(restored).verify(expected_head=expected_head)
+        receipt['controls'].append(dict(mode='restore-missing-trigger', trigger=trigger,
+            attack=attack, records=len(entries), refusal=refusal, verified=verified))
+        save()
+        if not entries or refusal != 'evaluations is append-only' or not verified:
+            raise RuntimeError('existing journals must restore missing append-only triggers')
     cas = out / 'compare-and-append.sqlite3'
     shutil.copyfile(path, cas)
     for index in range(10):

@@ -1,0 +1,6 @@
+{
+  "base_commit": "6582acff9be6c7ce6dd957c769de1b02289a18ed",
+  "uncommitted_journal_override": "b3fe9e7d8b81eef87add7f1ea7aa4900dd7753ecf531e4fde5bcb0b1f6e03257",
+  "scope": "Diagnostic of the current journal patch before its commit; not a result for unmodified v0.1.001",
+  "driver": "tools/dogfood/storage_stress.py at v0.1.001, before adding missing-trigger controls"
+}

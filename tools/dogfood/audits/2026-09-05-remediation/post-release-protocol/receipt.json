@@ -1,0 +1,15 @@
+{
+  "release": "6582acff9be6c7ce6dd957c769de1b02289a18ed",
+  "source": "f8c73b35bec52b91c5f4c116588891d5c94e746c",
+  "repeat_release": "NO-RELEASE: commit has no Dogfood-Fixes and Fixes #issue trailers",
+  "existing_tag": "RELEASE-REFUSED: tag already exists or cannot be checked: v0.1.001",
+  "stale_source": "NO-RELEASE: main has advanced; its newer CI run owns publication",
+  "metadata_unchanged": true,
+  "installed_cli": "ranex v0.1.001",
+  "installed_metadata": "0.1.1",
+  "artifacts": {
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "ranex-0.1.1-py3-none-any.whl": "9d219fbeb76c83c3391f6122a01bfdf541661aa9f4820a695f707b26cc0c71aa",
+    "ranex-0.1.1.tar.gz": "3b86b087a135dbdcc6dcaf506e0aec97d465b4acc2cacb2e15fc2d0ccd55cd0c"
+  }
+}

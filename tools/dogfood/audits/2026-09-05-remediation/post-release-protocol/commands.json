@@ -1,0 +1,188 @@
+[
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/home/soultransit/devtony/ranex",
+    "exit": 0,
+    "stdout": "6582acff9be6c7ce6dd957c769de1b02289a18ed\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD^"
+    ],
+    "cwd": "/home/soultransit/devtony/ranex",
+    "exit": 0,
+    "stdout": "f8c73b35bec52b91c5f4c116588891d5c94e746c\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "clone",
+      "--quiet",
+      "https://github.com/anthonykewl20/ranex.git",
+      "/tmp/ranex-published-protocol-n_q0be8_/repo"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "6582acff9be6c7ce6dd957c769de1b02289a18ed\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "sync",
+      "--frozen"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Using CPython 3.14.6\nCreating virtual environment at: .venv\n   Building ranex @ file:///tmp/ranex-published-protocol-n_q0be8_/repo\n      Built ranex @ file:///tmp/ranex-published-protocol-n_q0be8_/repo\nPrepared 1 package in 307ms\nInstalled 32 packages in 8ms\n + cffi==2.1.1\n + chardet==7.4.3\n + click==8.4.2\n + coverage==7.15.3\n + cryptography==50.0.0\n + diff-cover==9.7.2\n + hatchling==1.31.0\n + iniconfig==2.3.0\n + jinja2==3.1.6\n + libcst==1.9.0\n + linkify-it-py==2.1.0\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + mdit-py-plugins==0.6.1\n + mdurl==0.1.2\n + mutmut==3.5.0\n + packaging==26.2\n + pathspec==1.1.1\n + platformdirs==4.11.0\n + pluggy==1.6.0\n + pycparser==3.0\n + pyelftools==0.32\n + pygments==2.20.0\n + pytest==9.1.1\n + pyyaml==6.0.3\n + ranex==0.1.1 (from file:///tmp/ranex-published-protocol-n_q0be8_/repo)\n + rich==15.0.0\n + setproctitle==1.3.7\n + textual==8.2.8\n + trove-classifiers==2026.6.1.19\n + typing-extensions==4.16.0\n + uc-micro-py==2.0.0\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--frozen",
+      "python",
+      "tools/dogfood/release.py",
+      "auto",
+      "--expected-head",
+      "6582acff9be6c7ce6dd957c769de1b02289a18ed"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "NO-RELEASE: commit has no Dogfood-Fixes and Fixes #issue trailers\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "checkout",
+      "--quiet",
+      "--detach",
+      "f8c73b35bec52b91c5f4c116588891d5c94e746c"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--frozen",
+      "python",
+      "tools/dogfood/release.py",
+      "prepare"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 1,
+    "stdout": "RELEASE-REFUSED: tag already exists or cannot be checked: v0.1.001\n",
+    "stderr": "   Building ranex @ file:///tmp/ranex-published-protocol-n_q0be8_/repo\n      Built ranex @ file:///tmp/ranex-published-protocol-n_q0be8_/repo\nUninstalled 1 package in 0.40ms\nInstalled 1 package in 0.82ms\n"
+  },
+  {
+    "argv": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--frozen",
+      "python",
+      "tools/dogfood/release.py",
+      "auto",
+      "--expected-head",
+      "f8c73b35bec52b91c5f4c116588891d5c94e746c"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "NO-RELEASE: main has advanced; its newer CI run owns publication\n",
+    "stderr": "From https://github.com/anthonykewl20/ranex\n * branch                main       -> FETCH_HEAD\n"
+  },
+  {
+    "argv": [
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      "/tmp/ranex-published-protocol-n_q0be8_/repo/.venv/bin/python",
+      "--no-deps",
+      "--reinstall",
+      "/home/soultransit/devtony/ranex/.local/release/dist/ranex-0.1.1-py3-none-any.whl"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Resolved 1 package in 1ms\nPrepared 1 package in 8ms\nUninstalled 1 package in 0.36ms\nInstalled 1 package in 3ms\n - ranex==0.1.0 (from file:///tmp/ranex-published-protocol-n_q0be8_/repo)\n + ranex==0.1.1 (from file:///home/soultransit/devtony/ranex/.local/release/dist/ranex-0.1.1-py3-none-any.whl)\n"
+  },
+  {
+    "argv": [
+      "/tmp/ranex-published-protocol-n_q0be8_/repo/.venv/bin/ranex",
+      "--version"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_",
+    "exit": 0,
+    "stdout": "ranex v0.1.001\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-published-protocol-n_q0be8_/repo/.venv/bin/python",
+      "-c",
+      "import importlib.metadata; print(importlib.metadata.version(\"ranex\"))"
+    ],
+    "cwd": "/tmp/ranex-published-protocol-n_q0be8_",
+    "exit": 0,
+    "stdout": "0.1.1\n",
+    "stderr": ""
+  }
+]

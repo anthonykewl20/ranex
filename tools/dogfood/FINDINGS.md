@@ -8,6 +8,18 @@ match the kernel silently.
 
 ## Open
 
+### F-028 — the paused-fetch driver raced its own ignored probe
+
+The immutable v0.1.001 tag's hosted CI completed its instrumented regression,
+then the receiver journey failed before observing its paused Git fetch. The
+thread-pool submission and immediate ignored-delivery probe race for the real
+receiver's one pipeline lock; a submitted future does not prove Git has begun.
+The driver now observes the actual child `git ... fetch` process before probing
+for 503. It preserves named failures and the production 30-second fetch deadline.
+Fresh repeated real-PR validation is pending. Original hosted failure:
+`audits/2026-09-05-remediation/ci-release-tag-failed.log`.
+
+
 
 
 ### F-025 — a shared receiver stress pass did not complete every request
@@ -76,7 +88,25 @@ The matching optional-peer symptom is also documented in the
 [npm issue tracker](https://github.com/npm/cli/issues/8489); attribution beyond
 the measured install behavior remains unverified.
 
-### F-018 (OBSERVED, mitigated; attribution unverified) — sustained journal writers can exhaust SQLite's wait
+### F-018 (RECURRED after release) — journal schema initialization contends with writers
+
+The v0.1.001 main CI instrumented run failed in `_connect` at
+`conn.executescript(_SCHEMA)` during the existing eight-writer burst. Its bare
+suite passed; the failed instrumented run reported 1665 passed and 129 skipped.
+The separate tag run passed that regression but failed F-028 afterward. Both
+failures are retained; the earlier successful stress runs are not a closure.
+
+The follow-up reads the existing three schema objects instead of issuing DDL
+on every connection, and creates missing objects inside BEGIN IMMEDIATE/COMMIT.
+The 60-second budget, append transactions and compare-and-append semantics are
+unchanged. The first 20,000-append diagnostic passed; its uncommitted source is
+retained explicitly in `storage-after-release-fixed/`. Matching hosted-runtime
+stress, missing-trigger recovery and final CI are pending. SQLite documents
+[write intent and lock upgrades](https://www.sqlite.org/lang_transaction.html)
+and [busy-handler limits](https://www.sqlite.org/c3ref/busy_handler.html).
+The exact scheduling cause of the old intermittent failure remains unverified.
+
+#### Earlier evidence (retained)
 
 **Remediation 2026-09-05:** SQLite connections now close deterministically.
 Two real storage runs replayed original gate evaluations for 20,000 appends

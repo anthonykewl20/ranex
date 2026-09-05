@@ -51,6 +51,7 @@ def record(name, ok, facts):
         head_sha=PR['head']['sha'],
         scope='Real public PR replay through actual CLI; local HMAC and installation 1; live GitHub App publication UNVERIFIED',
         kernel=subprocess.check_output(['git', 'rev-parse', 'HEAD'], text=True).strip(),
+        runtime=dict(python=sys.version, cpu_affinity=sorted(os.sched_getaffinity(0))),
         rows=rows), indent=2) + '\n')
     print(name, ok, facts, flush=True)
     if not ok:
@@ -315,6 +316,22 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                 started = time.monotonic()
                 with concurrent.futures.ThreadPoolExecutor(max_workers=1) as fetcher:
                     pending = fetcher.submit(request, port, 'paused-real-git-server', BODY, timeout=40)
+                    # Do not let the ignored probe win the receiver lock before
+                    # the submitted PR starts. Observe the actual Git child;
+                    # an arbitrary sleep or a submitted Future proves no fetch.
+                    for _ in range(100):
+                        child = subprocess.run(
+                            ['pgrep', '-P', str(process.pid), '-f', 'git .*fetch'],
+                            capture_output=True, text=True, check=False,
+                        )
+                        if child.returncode == 0:
+                            break
+                        if child.returncode != 1 or pending.done():
+                            outcome = pending.result() if pending.done() else 'still pending'
+                            raise RuntimeError(f'no actual Git fetch child: {outcome}; {child.stderr}')
+                        time.sleep(.01)
+                    else:
+                        raise RuntimeError('actual Git fetch child was not observed')
                     busy_id = None
                     for attempt in range(100):
                         delivery = f'busy-during-git-fetch-{attempt}'

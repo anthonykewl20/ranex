@@ -1,0 +1,126 @@
+test	Require coverage for changed lines	﻿2026-09-05T14:27:26.2978748Z ##[group]Run # The documented subprocess hook includes the real CLI journeys.
+test	Require coverage for changed lines	2026-09-05T14:27:26.2979252Z ^[[36;1m# The documented subprocess hook includes the real CLI journeys.^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2979643Z ^[[36;1mexport COVERAGE_PROCESS_START="$PWD/pyproject.toml"^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2979964Z ^[[36;1mexport COVERAGE_FILE="$PWD/.coverage"^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2980305Z ^[[36;1mexport PYTHONPATH="$PWD/src:$PWD/tests/e2e/coverage"^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2980621Z ^[[36;1muv run --frozen pytest -q^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2980927Z ^[[36;1m# Exercise the actual receiver CLI with an archived upstream PR,^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2981292Z ^[[36;1m# real TCP/process failure, Git recovery and shared durable state.^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2981655Z ^[[36;1mCOVERAGE_PROCESS_START="$PWD/pyproject.toml" \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2981954Z ^[[36;1mCOVERAGE_FILE="$PWD/.coverage" \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2982240Z ^[[36;1mPYTHONPATH="$PWD/tests/e2e/coverage" \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2982581Z ^[[36;1m  uv run --frozen python tools/dogfood/receiver_stress.py \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2983052Z ^[[36;1m    --pull-request tools/dogfood/audits/2026-09-05-remediation/pr-72.json \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2983422Z ^[[36;1m    --out .local/ci-receiver-stress^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2983735Z ^[[36;1muv run --frozen python tools/dogfood/storage_stress.py \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2984200Z ^[[36;1m  --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-config-parse-ba79feaa.sqlite3 \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2984757Z ^[[36;1m  --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-semver-compare-bf46c069.sqlite3 \^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2985205Z ^[[36;1m  --out .local/ci-storage-stress^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2985577Z ^[[36;1muv run --frozen python tools/dogfood/release_check.py --out .local/ci-release-check^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2986079Z ^[[36;1muv run --frozen python tools/dogfood/collection_journey.py --out .local/ci-collection-journey^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2986584Z ^[[36;1muv run --frozen python tools/dogfood/executable_journey.py --out .local/ci-executable-journey^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2986975Z ^[[36;1munset COVERAGE_PROCESS_START^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2987472Z ^[[36;1muv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2987897Z ^[[36;1muv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.2988545Z ^[[36;1muv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100^[[0m
+test	Require coverage for changed lines	2026-09-05T14:27:26.3009030Z shell: /usr/bin/bash -e {0}
+test	Require coverage for changed lines	2026-09-05T14:27:26.3009377Z env:
+test	Require coverage for changed lines	2026-09-05T14:27:26.3009643Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	Require coverage for changed lines	2026-09-05T14:27:26.3009940Z   UV_PYTHON: 3.14
+test	Require coverage for changed lines	2026-09-05T14:27:26.3010204Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	Require coverage for changed lines	2026-09-05T14:27:26.3010550Z   DIFF_COVER_COMPARE_BRANCH: f8c73b35bec52b91c5f4c116588891d5c94e746c
+test	Require coverage for changed lines	2026-09-05T14:27:26.3010882Z ##[endgroup]
+test	Require coverage for changed lines	2026-09-05T14:27:27.0393408Z ........................................................................ [  4%]
+test	Require coverage for changed lines	2026-09-05T14:27:31.9285396Z ..........................sssssss....................................... [  8%]
+test	Require coverage for changed lines	2026-09-05T14:27:32.1644068Z ........................................................................ [ 12%]
+test	Require coverage for changed lines	2026-09-05T14:27:35.9227219Z ........................................................................ [ 16%]
+test	Require coverage for changed lines	2026-09-05T14:28:11.3824979Z ........s.............................sssssssss..sssss.sss...ssssssssss. [ 20%]
+test	Require coverage for changed lines	2026-09-05T14:28:31.8981823Z ssssssssss................................ssssssssssssssss.ssssss....... [ 24%]
+test	Require coverage for changed lines	2026-09-05T14:28:58.5255042Z ................s..................ss..................ss............... [ 28%]
+test	Require coverage for changed lines	2026-09-05T14:29:04.1350797Z ..ss...s..ssss.........s................................................ [ 32%]
+test	Require coverage for changed lines	2026-09-05T14:29:10.8293931Z ......................................................sssssssssssssssss. [ 36%]
+test	Require coverage for changed lines	2026-09-05T14:30:43.5225254Z ............................................F........................... [ 40%]
+test	Require coverage for changed lines	2026-09-05T14:30:49.6637803Z ....ssssssssssssssssss....................sss........................... [ 44%]
+test	Require coverage for changed lines	2026-09-05T14:30:50.4000188Z ........................................................................ [ 48%]
+test	Require coverage for changed lines	2026-09-05T14:31:25.4453233Z ........................................................................ [ 52%]
+test	Require coverage for changed lines	2026-09-05T14:31:32.5812484Z ........................................................................ [ 56%]
+test	Require coverage for changed lines	2026-09-05T14:31:45.6270050Z ........................................................................ [ 60%]
+test	Require coverage for changed lines	2026-09-05T14:32:50.0071365Z ........................................................................ [ 64%]
+test	Require coverage for changed lines	2026-09-05T14:33:10.3156742Z .........................ssss..............sss...........s.....ss....... [ 68%]
+test	Require coverage for changed lines	2026-09-05T14:33:13.4539776Z ..........s............................................................. [ 72%]
+test	Require coverage for changed lines	2026-09-05T14:33:13.8403360Z ........................................................................ [ 76%]
+test	Require coverage for changed lines	2026-09-05T14:33:13.8834841Z ........................................................................ [ 80%]
+test	Require coverage for changed lines	2026-09-05T14:33:14.6881843Z ........................................................................ [ 84%]
+test	Require coverage for changed lines	2026-09-05T14:33:15.5076664Z ........................................................................ [ 88%]
+test	Require coverage for changed lines	2026-09-05T14:33:15.9033183Z ........................................................................ [ 92%]
+test	Require coverage for changed lines	2026-09-05T14:33:16.1629219Z ........................................................................ [ 96%]
+test	Require coverage for changed lines	2026-09-05T14:33:17.6466127Z ...................................................................      [100%]
+test	Require coverage for changed lines	2026-09-05T14:33:17.6466527Z =================================== FAILURES ===================================
+test	Require coverage for changed lines	2026-09-05T14:33:17.6466823Z ________ test_eight_writer_burst_completes_without_exposing_sqlite_busy ________
+test	Require coverage for changed lines	2026-09-05T14:33:17.6467029Z 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6467206Z tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-4/test_eight_writer_burst_comple0')
+test	Require coverage for changed lines	2026-09-05T14:33:17.6467421Z 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6467581Z     def test_eight_writer_burst_completes_without_exposing_sqlite_busy(
+test	Require coverage for changed lines	2026-09-05T14:33:17.6468337Z         tmp_path: Path,
+test	Require coverage for changed lines	2026-09-05T14:33:17.6468537Z     ) -> None:
+test	Require coverage for changed lines	2026-09-05T14:33:17.6468764Z         """An honest sustained writer burst waits for the journal, then commits."""
+test	Require coverage for changed lines	2026-09-05T14:33:17.6469011Z     
+test	Require coverage for changed lines	2026-09-05T14:33:17.6469162Z         path = tmp_path / "burst.sqlite3"
+test	Require coverage for changed lines	2026-09-05T14:33:17.6469361Z         journal = Journal(path)
+test	Require coverage for changed lines	2026-09-05T14:33:17.6469533Z         workers = 8
+test	Require coverage for changed lines	2026-09-05T14:33:17.6469693Z         appends_per_worker = 500
+test	Require coverage for changed lines	2026-09-05T14:33:17.6469866Z     
+test	Require coverage for changed lines	2026-09-05T14:33:17.6470015Z         def append_batch(worker: int) -> None:
+test	Require coverage for changed lines	2026-09-05T14:33:17.6470233Z             for number in range(appends_per_worker):
+test	Require coverage for changed lines	2026-09-05T14:33:17.6470509Z                 journal.append(make_evaluation(f"worker-{worker}-append-{number}"))
+test	Require coverage for changed lines	2026-09-05T14:33:17.6470753Z     
+test	Require coverage for changed lines	2026-09-05T14:33:17.6470930Z         with ThreadPoolExecutor(max_workers=workers) as pool:
+test	Require coverage for changed lines	2026-09-05T14:33:17.6471185Z >           list(pool.map(append_batch, range(workers)))
+test	Require coverage for changed lines	2026-09-05T14:33:17.6471328Z 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6471409Z tests/integration/test_journal.py:536: 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6471630Z _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6472035Z ../../_temp/uv-python-dir/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:645: in result_iterator
+test	Require coverage for changed lines	2026-09-05T14:33:17.6472400Z     yield _result_or_cancel(fs.pop())
+test	Require coverage for changed lines	2026-09-05T14:33:17.6472583Z           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+test	Require coverage for changed lines	2026-09-05T14:33:17.6472926Z ../../_temp/uv-python-dir/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:312: in _result_or_cancel
+test	Require coverage for changed lines	2026-09-05T14:33:17.6473287Z     return fut.result(timeout)
+test	Require coverage for changed lines	2026-09-05T14:33:17.6473451Z            ^^^^^^^^^^^^^^^^^^^
+test	Require coverage for changed lines	2026-09-05T14:33:17.6473752Z ../../_temp/uv-python-dir/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:447: in result
+test	Require coverage for changed lines	2026-09-05T14:33:17.6474078Z     return self.__get_result()
+test	Require coverage for changed lines	2026-09-05T14:33:17.6474394Z            ^^^^^^^^^^^^^^^^^^^
+test	Require coverage for changed lines	2026-09-05T14:33:17.6474726Z ../../_temp/uv-python-dir/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:396: in __get_result
+test	Require coverage for changed lines	2026-09-05T14:33:17.6475071Z     raise self._exception
+test	Require coverage for changed lines	2026-09-05T14:33:17.6475377Z ../../_temp/uv-python-dir/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py:86: in run
+test	Require coverage for changed lines	2026-09-05T14:33:17.6475709Z     result = ctx.run(self.task)
+test	Require coverage for changed lines	2026-09-05T14:33:17.6475879Z              ^^^^^^^^^^^^^^^^^^
+test	Require coverage for changed lines	2026-09-05T14:33:17.6476171Z ../../_temp/uv-python-dir/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py:73: in run
+test	Require coverage for changed lines	2026-09-05T14:33:17.6476486Z     return fn(*args, **kwargs)
+test	Require coverage for changed lines	2026-09-05T14:33:17.6476654Z            ^^^^^^^^^^^^^^^^^^^
+test	Require coverage for changed lines	2026-09-05T14:33:17.6476849Z tests/integration/test_journal.py:533: in append_batch
+test	Require coverage for changed lines	2026-09-05T14:33:17.6477122Z     journal.append(make_evaluation(f"worker-{worker}-append-{number}"))
+test	Require coverage for changed lines	2026-09-05T14:33:17.6477464Z src/ranex/governed_execution/adapters/persistence/sqlite/journal.py:108: in append
+test	Require coverage for changed lines	2026-09-05T14:33:17.6477758Z     with closing(self._connect()) as conn, conn:
+test	Require coverage for changed lines	2026-09-05T14:33:17.6478052Z                  ^^^^^^^^^^^^^^^
+test	Require coverage for changed lines	2026-09-05T14:33:17.6478263Z _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6478423Z 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6478648Z self = <ranex.governed_execution.adapters.persistence.sqlite.journal.Journal object at 0x7efe257d5770>
+test	Require coverage for changed lines	2026-09-05T14:33:17.6478925Z 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6479019Z     def _connect(self) -> sqlite3.Connection:
+test	Require coverage for changed lines	2026-09-05T14:33:17.6479260Z         self._path.parent.mkdir(parents=True, exist_ok=True)
+test	Require coverage for changed lines	2026-09-05T14:33:17.6479543Z         # Let honest concurrent gate evaluations serialize on SQLite's single
+test	Require coverage for changed lines	2026-09-05T14:33:17.6479849Z         # writer instead of exposing a transient lock as a journal failure.
+test	Require coverage for changed lines	2026-09-05T14:33:17.6480091Z         conn = sqlite3.connect(
+test	Require coverage for changed lines	2026-09-05T14:33:17.6480255Z             self._path,
+test	Require coverage for changed lines	2026-09-05T14:33:17.6480422Z             isolation_level=None,
+test	Require coverage for changed lines	2026-09-05T14:33:17.6480604Z             timeout=_WRITE_LOCK_TIMEOUT_SECONDS,
+test	Require coverage for changed lines	2026-09-05T14:33:17.6480857Z         )
+test	Require coverage for changed lines	2026-09-05T14:33:17.6480997Z         try:
+test	Require coverage for changed lines	2026-09-05T14:33:17.6481148Z             conn.row_factory = sqlite3.Row
+test	Require coverage for changed lines	2026-09-05T14:33:17.6481353Z >           conn.executescript(_SCHEMA)
+test	Require coverage for changed lines	2026-09-05T14:33:17.6481573Z E           sqlite3.OperationalError: database is locked
+test	Require coverage for changed lines	2026-09-05T14:33:17.6481716Z 
+test	Require coverage for changed lines	2026-09-05T14:33:17.6481888Z src/ranex/governed_execution/adapters/persistence/sqlite/journal.py:74: OperationalError
+test	Require coverage for changed lines	2026-09-05T14:33:17.6482215Z =========================== short test summary info ============================
+test	Require coverage for changed lines	2026-09-05T14:33:17.6482733Z FAILED tests/integration/test_journal.py::test_eight_writer_burst_completes_without_exposing_sqlite_busy - sqlite3.OperationalError: database is locked
+test	Require coverage for changed lines	2026-09-05T14:33:17.6483187Z 1 failed, 1665 passed, 129 skipped in 351.11s (0:05:51)
+test	Require coverage for changed lines	2026-09-05T14:33:17.7861182Z ##[error]Process completed with exit code 1.

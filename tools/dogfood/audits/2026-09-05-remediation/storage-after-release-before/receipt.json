@@ -1,0 +1,1128 @@
+{
+  "kernel": "6582acff9be6c7ce6dd957c769de1b02289a18ed",
+  "source_journals": [
+    {
+      "path": "/home/soultransit/devtony/ranex/tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-config-parse-ba79feaa.sqlite3",
+      "sha256": "580d63d813822d4ad7dea1edb8343e717e1902a569f53b4d64e873405a84d716"
+    },
+    {
+      "path": "/home/soultransit/devtony/ranex/tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-semver-compare-bf46c069.sqlite3",
+      "sha256": "69fa20e002a582a2140d6f09499ee9c2bd9884bda62e9abd4461998894052be3"
+    }
+  ],
+  "scope": "Storage load replays actual CLI gate evaluations; repeated rows are not new correctness observations",
+  "source_records": [
+    {
+      "approver_id": "oss-bench-approver",
+      "catalog_digest": "sha256:90d399153d24d713d25cf587e321e834a871b6472e7d79c93aa22e1453d0a178",
+      "causes": [],
+      "considered": [
+        "tests-executed@sha256:8a9c5f1cc85d96b1537178da693e5c410474238cd393c06270c425dad01c09bf:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "landing",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:8a9c5f1cc85d96b1537178da693e5c410474238cd393c06270c425dad01c09bf",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    },
+    {
+      "approver_id": "oss-bench-approver",
+      "catalog_digest": "sha256:cabd87dc077c0d4df81fc726876adf30b3d586c995c2a63431a7fe2ed346efdd",
+      "causes": [],
+      "considered": [
+        "tests-executed@sha256:21eb59266da56c3e76123797fe9ad8d5e4a0e1eeab251538714ea4bbe0aa5f9f:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "landing",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:21eb59266da56c3e76123797fe9ad8d5e4a0e1eeab251538714ea4bbe0aa5f9f",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    }
+  ],
+  "rounds": [
+    {
+      "round": 0,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:54a5915f154f8bcf2022080482a7a4147c739edd354c53295f4d1e722b83698a",
+      "seconds": 8.988020547025371,
+      "workers": [
+        {
+          "seconds": 8.470718328026123,
+          "fd_before": 5,
+          "fd_after": 7
+        },
+        {
+          "seconds": 8.84322748001432,
+          "fd_before": 6,
+          "fd_after": 6
+        },
+        {
+          "seconds": 1.504358843958471,
+          "fd_before": 6,
+          "fd_after": 12
+        },
+        {
+          "seconds": 3.088223477010615,
+          "fd_before": 8,
+          "fd_after": 11
+        },
+        {
+          "seconds": 6.048936283041257,
+          "fd_before": 9,
+          "fd_after": 10
+        },
+        {
+          "seconds": 7.620027440949343,
+          "fd_before": 10,
+          "fd_after": 8
+        },
+        {
+          "seconds": 8.895844486018177,
+          "fd_before": 11,
+          "fd_after": 5
+        },
+        {
+          "seconds": 7.247556680988055,
+          "fd_before": 13,
+          "fd_after": 9
+        }
+      ],
+      "head": "sha256:54a5915f154f8bcf2022080482a7a4147c739edd354c53295f4d1e722b83698a"
+    },
+    {
+      "round": 1,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:dd721854847c7471da876806b067944bf27ae09fa9b022ed48047458a33c135a",
+      "seconds": 8.543492525990587,
+      "workers": [
+        {
+          "seconds": 8.046011794998776,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.31612849800149,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.350988244987093,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 6.642755159002263,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 4.2164934710017405,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 4.632352982996963,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.496630615962204,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.74391162203392,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "head": "sha256:dd721854847c7471da876806b067944bf27ae09fa9b022ed48047458a33c135a"
+    },
+    {
+      "round": 2,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:001ae01da840f7a8f57473264fde6bfd49cae7ebce2cbdfe5c8ce89c67f035f2",
+      "seconds": 8.444435839017387,
+      "workers": [
+        {
+          "seconds": 2.012929118005559,
+          "fd_before": 7,
+          "fd_after": 14
+        },
+        {
+          "seconds": 6.0689926510094665,
+          "fd_before": 8,
+          "fd_after": 11
+        },
+        {
+          "seconds": 3.9986453390447423,
+          "fd_before": 8,
+          "fd_after": 12
+        },
+        {
+          "seconds": 8.355224976025056,
+          "fd_before": 10,
+          "fd_after": 7
+        },
+        {
+          "seconds": 6.188579935987946,
+          "fd_before": 11,
+          "fd_after": 10
+        },
+        {
+          "seconds": 2.7358792789746076,
+          "fd_before": 12,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.211525093007367,
+          "fd_before": 13,
+          "fd_after": 8
+        },
+        {
+          "seconds": 7.212978016003035,
+          "fd_before": 14,
+          "fd_after": 9
+        }
+      ],
+      "head": "sha256:001ae01da840f7a8f57473264fde6bfd49cae7ebce2cbdfe5c8ce89c67f035f2"
+    },
+    {
+      "round": 3,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:be75843ec8bfe7cc21cbde9ddd643add4a74ab66638fd62e4faf9e375dc8cff0",
+      "seconds": 8.371777485008352,
+      "workers": [
+        {
+          "seconds": 3.748157637019176,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.485530913982075,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.051262508961372,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 4.8636040079873055,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 4.3448351609986275,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.262886359996628,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.27383965003537,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 6.6297737680142745,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "head": "sha256:be75843ec8bfe7cc21cbde9ddd643add4a74ab66638fd62e4faf9e375dc8cff0"
+    },
+    {
+      "round": 4,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6",
+      "seconds": 35.567357352992985,
+      "workers": [
+        {
+          "seconds": 33.731566129019484,
+          "fd_before": 7,
+          "fd_after": 11
+        },
+        {
+          "seconds": 35.47866681800224,
+          "fd_before": 7,
+          "fd_after": 7
+        },
+        {
+          "seconds": 33.982228375039995,
+          "fd_before": 9,
+          "fd_after": 10
+        },
+        {
+          "seconds": 32.82802365301177,
+          "fd_before": 10,
+          "fd_after": 12
+        },
+        {
+          "seconds": 29.125991120992694,
+          "fd_before": 12,
+          "fd_after": 14
+        },
+        {
+          "seconds": 31.72284095804207,
+          "fd_before": 12,
+          "fd_after": 13
+        },
+        {
+          "seconds": 34.26018164103152,
+          "fd_before": 13,
+          "fd_after": 9
+        },
+        {
+          "seconds": 34.83112536900444,
+          "fd_before": 14,
+          "fd_after": 8
+        }
+      ],
+      "head": "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6"
+    }
+  ],
+  "controls": [
+    {
+      "mode": "unchanged",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-after-release-before/unchanged.sqlite3",
+        "--expected-head",
+        "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6"
+      ],
+      "exit": 0,
+      "stdout": "PASS  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-after-release-before/unchanged.sqlite3  chain=verified  external-anchor=matched\n",
+      "stderr": "",
+      "database_sha256": "db50b17d64f20b7dd8b634565da2db8e2d3aa1e2a63758f40114a8da2af8bb78"
+    },
+    {
+      "mode": "nonjson",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-after-release-before/nonjson.sqlite3",
+        "--expected-head",
+        "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-after-release-before/nonjson.sqlite3  chain=invalid  row=seq 1 (row 1 of 4000)\n",
+      "stderr": "",
+      "database_sha256": "8c11849be5203c4471d51d25d52d6b2527db549d07c466839ac5b63956ff5568"
+    },
+    {
+      "mode": "truncated",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-after-release-before/truncated.sqlite3",
+        "--expected-head",
+        "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-after-release-before/truncated.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "5a25957e4a0dda041761f9b7a27b36362f3f70afd8390af7be0adff87a3daca1"
+    },
+    {
+      "mode": "empty",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-after-release-before/empty.sqlite3",
+        "--expected-head",
+        "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-after-release-before/empty.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "45b6c1a57afd0d1fede191576c8a83c6a259b8d48609a2911c18e755a9b8bac3"
+    },
+    {
+      "mode": "rewritten",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-after-release-before/rewritten.sqlite3",
+        "--expected-head",
+        "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-after-release-before/rewritten.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "a63b6f4035cd5a2a02f94bb262202e83427c1ede6eb649869d1c0c1227e9e9fd"
+    },
+    {
+      "mode": "incomplete-pasted-head",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-after-release-before/round-4.sqlite3",
+        "--expected-head",
+        "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f"
+      ],
+      "exit": 2,
+      "stdout": "",
+      "stderr": "ERROR  --expected-head must be a canonical sha256 digest\n"
+    },
+    {
+      "mode": "damaged-header-repeated-open",
+      "attempts": 1000,
+      "damage": "first eight bytes lost from a copy of the first actual input journal",
+      "database_sha256": "76670164dc78f51fcab1e4b60e2501ac6509059f9a2b0659901fd274dae6051f",
+      "errors": {
+        "file is not a database": 1000
+      },
+      "fd_before": 7,
+      "fd_peak": 7,
+      "fd_after": 7
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 0,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4001,
+          "head": "sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb",
+          "pid": 2435379,
+          "fd_before": 8,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6', observed 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb')",
+          "pid": 2435379,
+          "fd_before": 9,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6', observed 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb')",
+          "pid": 2435379,
+          "fd_before": 9,
+          "fd_after": 9
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6', observed 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb')",
+          "pid": 2435379,
+          "fd_before": 9,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6', observed 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb')",
+          "pid": 2435379,
+          "fd_before": 10,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6', observed 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb')",
+          "pid": 2435379,
+          "fd_before": 11,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6', observed 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb')",
+          "pid": 2435379,
+          "fd_before": 13,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6', observed 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb')",
+          "pid": 2435379,
+          "fd_before": 12,
+          "fd_after": 8
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb",
+      "records_before": 4000,
+      "records_after": 4001
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 1,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4002,
+          "head": "sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5",
+          "pid": 2448889,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb', observed 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5')",
+          "pid": 2448894,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb', observed 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5')",
+          "pid": 2448901,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb', observed 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5')",
+          "pid": 2448900,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb', observed 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5')",
+          "pid": 2448902,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb', observed 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5')",
+          "pid": 2448903,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb', observed 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5')",
+          "pid": 2448904,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2dabce9a8496c947bb596ac9ceee20fa83e88d4cfa860f1b3a49f36420b096cb', observed 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5')",
+          "pid": 2448905,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5",
+      "records_before": 4001,
+      "records_after": 4002
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 2,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4003,
+          "head": "sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f",
+          "pid": 2435379,
+          "fd_before": 7,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5', observed 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f')",
+          "pid": 2435379,
+          "fd_before": 7,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5', observed 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f')",
+          "pid": 2435379,
+          "fd_before": 9,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5', observed 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f')",
+          "pid": 2435379,
+          "fd_before": 11,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5', observed 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f')",
+          "pid": 2435379,
+          "fd_before": 11,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5', observed 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f')",
+          "pid": 2435379,
+          "fd_before": 12,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5', observed 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f')",
+          "pid": 2435379,
+          "fd_before": 13,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:6d7dc18def92e9d5f3ce5e5f23a7bcbd5883e40d25809e7a1dd52c1b98a095a5', observed 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f')",
+          "pid": 2435379,
+          "fd_before": 13,
+          "fd_after": 7
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f",
+      "records_before": 4002,
+      "records_after": 4003
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 3,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4004,
+          "head": "sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21",
+          "pid": 2448934,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f', observed 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21')",
+          "pid": 2448937,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f', observed 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21')",
+          "pid": 2448938,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f', observed 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21')",
+          "pid": 2448939,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f', observed 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21')",
+          "pid": 2448940,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f', observed 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21')",
+          "pid": 2448941,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f', observed 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21')",
+          "pid": 2448942,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8d3182dec77499bec42a208355dd2bb21c715fdda0f3e8383cbcf672a094f84f', observed 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21')",
+          "pid": 2448943,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21",
+      "records_before": 4003,
+      "records_after": 4004
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 4,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4005,
+          "head": "sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43",
+          "pid": 2435379,
+          "fd_before": 7,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21', observed 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43')",
+          "pid": 2435379,
+          "fd_before": 8,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21', observed 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43')",
+          "pid": 2435379,
+          "fd_before": 8,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21', observed 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43')",
+          "pid": 2435379,
+          "fd_before": 9,
+          "fd_after": 9
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21', observed 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43')",
+          "pid": 2435379,
+          "fd_before": 10,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21', observed 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43')",
+          "pid": 2435379,
+          "fd_before": 12,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21', observed 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43')",
+          "pid": 2435379,
+          "fd_before": 14,
+          "fd_after": 8
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:676955ce51b5a7559f8e0a2cc08aff42af1b4472f284eecd1c6745260378bf21', observed 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43')",
+          "pid": 2435379,
+          "fd_before": 14,
+          "fd_after": 10
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43",
+      "records_before": 4004,
+      "records_after": 4005
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 5,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4006,
+          "head": "sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067",
+          "pid": 2448997,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43', observed 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067')",
+          "pid": 2449000,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43', observed 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067')",
+          "pid": 2449001,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43', observed 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067')",
+          "pid": 2449002,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43', observed 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067')",
+          "pid": 2449003,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43', observed 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067')",
+          "pid": 2449004,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43', observed 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067')",
+          "pid": 2449005,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:a417ad8ded0b9f0cd38985801631675a9367d427d945625aca5a03c86797ce43', observed 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067')",
+          "pid": 2449007,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067",
+      "records_before": 4005,
+      "records_after": 4006
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 6,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067', observed 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943')",
+          "pid": 2435379,
+          "fd_before": 7,
+          "fd_after": 8
+        },
+        {
+          "committed": true,
+          "position": 4007,
+          "head": "sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943",
+          "pid": 2435379,
+          "fd_before": 7,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067', observed 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943')",
+          "pid": 2435379,
+          "fd_before": 7,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067', observed 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943')",
+          "pid": 2435379,
+          "fd_before": 10,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067', observed 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943')",
+          "pid": 2435379,
+          "fd_before": 10,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067', observed 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943')",
+          "pid": 2435379,
+          "fd_before": 11,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067', observed 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943')",
+          "pid": 2435379,
+          "fd_before": 12,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:d5e413e63fab7d105717a3744879d4aaa2e7dc8a335736d36377839cb29e1067', observed 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943')",
+          "pid": 2435379,
+          "fd_before": 13,
+          "fd_after": 9
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943",
+      "records_before": 4006,
+      "records_after": 4007
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 7,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4008,
+          "head": "sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6",
+          "pid": 2449071,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943', observed 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6')",
+          "pid": 2449074,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943', observed 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6')",
+          "pid": 2449075,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943', observed 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6')",
+          "pid": 2449076,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943', observed 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6')",
+          "pid": 2449077,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943', observed 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6')",
+          "pid": 2449078,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943', observed 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6')",
+          "pid": 2449079,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84d8d6ec69ae7db113fd516dba64a7addefc498fe39c106b934aa50308809943', observed 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6')",
+          "pid": 2449080,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6",
+      "records_before": 4007,
+      "records_after": 4008
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 8,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4009,
+          "head": "sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2",
+          "pid": 2435379,
+          "fd_before": 8,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6', observed 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2')",
+          "pid": 2435379,
+          "fd_before": 8,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6', observed 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2')",
+          "pid": 2435379,
+          "fd_before": 8,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6', observed 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2')",
+          "pid": 2435379,
+          "fd_before": 11,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6', observed 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2')",
+          "pid": 2435379,
+          "fd_before": 10,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6', observed 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2')",
+          "pid": 2435379,
+          "fd_before": 12,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6', observed 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2')",
+          "pid": 2435379,
+          "fd_before": 12,
+          "fd_after": 8
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:4e06d4a532f611477d1cdc423928830811f18980bc191331825a06332caa1bc6', observed 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2')",
+          "pid": 2435379,
+          "fd_before": 13,
+          "fd_after": 9
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2",
+      "records_before": 4008,
+      "records_after": 4009
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 9,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4010,
+          "head": "sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955",
+          "pid": 2449464,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2', observed 'sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955')",
+          "pid": 2449472,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2', observed 'sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955')",
+          "pid": 2449475,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2', observed 'sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955')",
+          "pid": 2449481,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2', observed 'sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955')",
+          "pid": 2449482,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2', observed 'sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955')",
+          "pid": 2449484,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2', observed 'sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955')",
+          "pid": 2449485,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:8f2d8b30f45a6976ea99f9cf7af615cd35fdcf61773d645f605fa8c728a3a6a2', observed 'sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955')",
+          "pid": 2449491,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:226ad619d90de09725bc6a18fa613ae5a08fcdb3fd7148858a7b176ed26e5955",
+      "records_before": 4009,
+      "records_after": 4010
+    }
+  ],
+  "independent_head_before_mutation": "sha256:fe1d0b7e28c776e6c9e25d4352a1727062f07736b914800c317da7f3894ca8f6"
+}
