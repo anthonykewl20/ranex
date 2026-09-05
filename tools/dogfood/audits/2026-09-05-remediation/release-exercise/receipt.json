@@ -1,0 +1,15 @@
+{
+  "head": "5d921504d806d5554f948992cd89eedac2a415a1",
+  "tag": "v0.1.001",
+  "package_version": "0.1.1",
+  "installed": "0.1.1",
+  "wheel_version": "Version: 0.1.1",
+  "before_lock_sha256": "ed9a11d830942f082565f3028e958d8f6c7025e5391396999a1f6ea76e04e3e7",
+  "after_lock_sha256": "9a6ac697fee8d690bdd0164656f8926255cbc67df0c4ada0d4298f28c2adf771",
+  "cli_help": "usage: ranex [-h]\n             {gate,journal,run,host,suite,deps,keygen,github,specification,task} ...\n\nDeterministic governance for AI agents that build software\n\npositional arguments:\n  {gate,journal,run,host,suite,deps,keygen,github,specification,task}\n    gate                gate operations\n    journal             journal operations\n    run                 run a command and record evidence of it\n    host                strict-local host operator workflow\n    suite               frozen suite operations\n    deps                dependency provisioning\n    keygen              generate a producer signing key\n    github              the GitHub acceptance loop (host-side; no network\n                        here)\n    specification       specification lifecycle operations\n    task                dispatch and materialise task candidates\n\noptions:\n  -h, --help            show this help message and exit",
+  "artifacts": {
+    ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+    "ranex-0.1.1-py3-none-any.whl": "5a91a850fd01db0a789dd819f8f6dad51e8335aad9cf3f8cd1adeac2ad37be4d",
+    "ranex-0.1.1.tar.gz": "85c0ef4cc30e843174963c94ce280829376844f89d20b7673b532fa3d95878aa"
+  }
+}

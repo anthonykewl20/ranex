@@ -1,0 +1,21 @@
+{
+  "argv": [
+    "run",
+    "--claim",
+    "nested-host-diagnosis",
+    "--producer",
+    "worker",
+    "--store",
+    "/tmp/pytest-of-soultransit/pytest-1348/cold-start0/store",
+    "--",
+    "uv",
+    "run",
+    "pytest",
+    "-q",
+    "tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap",
+    "tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden",
+    "tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record",
+    "tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes"
+  ],
+  "exit": 1
+}

@@ -51,6 +51,23 @@ hallucinated behaviour, no timing data in correctness records. The source of
 truth is the code; `capabilities.json` holds the verified inventory with
 file:line anchors.
 
+The repeatable stress tools consume actual upstream pull requests and journals:
+
+```sh
+gh api repos/anthonykewl20/ranex/pulls/72 > /tmp/ranex-pr-72.json
+uv run --frozen python tools/dogfood/receiver_stress.py --pull-request /tmp/ranex-pr-72.json --out .local/receiver-stress
+uv run --frozen python tools/dogfood/storage_stress.py --journal /path/to/actual-gate.sqlite3 --out .local/storage-stress
+```
+
+Use the owner's active GitHub account for the read above. Each output directory
+must be new. Receiver replay uses real CLI processes, TCP, Git and durable
+receipts; its generated local App credentials do not prove live publication.
+Storage load repeats actual gate records across threads/processes, then attacks
+copies of the resulting databases and checks an independently retained head via
+the CLI. Repeated records measure storage, not new code correctness observations.
+Preserved remediation receipts are in `audits/2026-09-05-remediation/`; earlier
+failed attempts remain there alongside successful reruns.
+
 ## Commands
 
     uv run --frozen python tools/dogfood/dogfood.py capabilities
@@ -256,10 +273,9 @@ the pinning scenario re-runs the REAL thing, so a fix that only satisfies a
 mock cannot pass, and drift on the pinning scenario is proof the real
 behavior changed.
 
-One honest limit: a full end-to-end `ranex run` scenario would exercise the
-real governed-execution CLI on a real clone, but it requires wheel
-provisioning (`deps fetch`), which is networked — deferred rather than
-faked. When it lands, it lands real or not at all.
+The networked `release_audit.py` and `external_proof.py` now exercise real
+`ranex run` and gate evaluation on pinned upstream clones, including actual
+frozen dependency provisioning. They complement the deterministic curriculum.
 - Exit codes: `run`/`iterate` exit 1 on failures or baseline drift, 0 when
   the loop is clean — usable as a gate.
 

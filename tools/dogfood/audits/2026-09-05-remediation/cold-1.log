@@ -1,0 +1,27 @@
+........F                                                                [100%]
+=================================== FAILURES ===================================
+__________________ test_stage_9_the_gate_accepts_the_evidence __________________
+
+operator = <test_cold_start_journey.Operator object at 0x7eb29af45e80>
+
+    def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
+        operator.require("resolver", "clone", "fetch", "evidence")
+        record_live_host_qualification(operator.clone, operator.key)
+        code, out, err = ranex(
+            operator.clone,
+            ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
+        )
+>       assert code == 0, (
+            "the gate did not accept the evidence stage 8 recorded; it exited "
+            f"{code}. The verdict, verbatim:\n{(out + err).strip() or '(no output)'}"
+        )
+E       AssertionError: the gate did not accept the evidence stage 8 recorded; it exited 1. The verdict, verbatim:
+E         FAIL  gate=landing  rule=TESTS_EXECUTED
+E               tests-executed: blocking suite outcome(s): tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material (error), tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty (error), tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned (error), tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden (error), tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain (error), tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope (failed), tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained (failed), tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record (failed), tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors (failed), tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published (failed), tests/e2e/test_journal_verify_real.py::test_clean_transcript_matches_the_golden (failed), tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state (failed), tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes (failed), tests/integration/test_slice017_native_launcher.py::test_gate10_production_entrypoint_adr_and_risk_remain_frozen (failed), tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response] (failed), tests/security/test_slice080_principal_trust_root.py::test_the_trust_keyring_loads_a_document_that_carries_the_catalog (failed)
+E               subject=sha256:9ac9d30f1247ca2fffc105dbb8261682ec37a5ce9e9da71a5ae6466198aae60d
+E       assert 1 == 0
+
+tests/e2e/test_cold_start_journey.py:599: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_cold_start_journey.py::test_stage_9_the_gate_accepts_the_evidence
+1 failed, 8 passed in 276.77s (0:04:36)

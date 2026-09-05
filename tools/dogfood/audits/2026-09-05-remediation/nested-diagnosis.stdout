@@ -1,0 +1,528 @@
+FEFF                                                                     [100%]
+==================================== ERRORS ====================================
+________ ERROR at setup of test_strict_local_journey_matches_the_golden ________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x72cc87d1e540>, _basetemp=PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+prereq_qualified_host = None
+
+    @pytest.fixture(scope="module")
+    def journey(
+        tmp_path_factory: pytest.TempPathFactory, prereq_qualified_host: None
+    ) -> ConfinementJourney:
+        """The one real journey: build, install, qualify, confine — on a
+        host the frame's ``qualified_host`` probe has declared capable."""
+    
+        base = tmp_path_factory.mktemp("execution-family-confinement")
+        subject = base / "subject"
+        key = base / f"{FAMILY_PRODUCER}.key"
+        _clone_real(subject, "execution-family-confinement")
+    
+        generated = ranex(subject, ["keygen", "--producer", FAMILY_PRODUCER], key=key)
+        assert generated.returncode == 0, generated.stderr
+        match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+        assert match, f"keygen printed no public key: {generated.stdout!r}"
+        public = match.group(1)
+        _register_producer(subject, public)
+    
+        # --- the subject's own build, then two clean builds in different ------
+        # --- absolute roots: all three byte-equal (issue #37's "two clean ----
+        # --- builds byte-equal check reused from SLICE-017 gates"; a ---------
+        # --- differing pair is the frozen red of sad path 2) ------------------
+        built = controller(
+            subject,
+            ["launcher-build", "--manifest", LAUNCHER_MANIFEST,
+             "--source", LAUNCHER_SOURCE, "--output", BUILD_OUTPUT],
+        )
+        assert built.returncode == 0, built.stdout + built.stderr
+        digests = [(subject / BUILD_OUTPUT).read_bytes()]
+        for name in ("repro-first", "repro-second"):
+            root = base / name / "repository"
+            _clone_real(root, f"execution-family-{name}")
+            repro = controller(
+                root,
+                ["launcher-build", "--manifest", LAUNCHER_MANIFEST,
+                 "--source", LAUNCHER_SOURCE, "--output", BUILD_OUTPUT],
+            )
+            assert repro.returncode == 0, repro.stdout + repro.stderr
+            digests.append((root / BUILD_OUTPUT).read_bytes())
+        assert digests[0] == digests[1] == digests[2], (
+            "clean launcher builds in different absolute roots produced "
+            "different bytes — the pinned build is not reproducible "
+            "(issue #37 sad path 2)"
+        )
+        manifest = json.loads((subject / LAUNCHER_MANIFEST).read_text(encoding="utf-8"))
+        assert hashlib.sha256(digests[0]).hexdigest() == manifest["artifact"]["sha256"], (
+            "the reproducible builds disagree with the manifest's artifact pin"
+        )
+    
+        # --- install + qualify in the subject --------------------------------
+        for arguments in (
+            ["launcher-install", "--manifest", LAUNCHER_MANIFEST,
+             "--artifact", BUILD_OUTPUT, "--destination", INSTALLED_LAUNCHER],
+            ["qualify", "--profile", HOST_PROFILE, "--artifact", INSTALLED_LAUNCHER,
+             "--manifest", LAUNCHER_MANIFEST, "--report", QUALIFICATION_REPORT],
+        ):
+            step = controller(subject, arguments)
+>           assert step.returncode == 0, step.stdout + step.stderr
+E           AssertionError: {"detail":"mount namespace probe was unavailable (map-user:13)","refusal":"E-C17-HOST-FACT-MISSING"}
+E             
+E           assert 1 == 0
+E            +  where 1 = CompletedProcess(args=['/tmp/ranex-subject-40rh4oxp/deps/env/bin/python', '-m', 'ranex.cli.host_confinement', 'qualify...ut='{"detail":"mount namespace probe was unavailable (map-user:13)","refusal":"E-C17-HOST-FACT-MISSING"}\n', stderr='').returncode
+
+tests/e2e/test_confinement_real.py:464: AssertionError
+=================================== FAILURES ===================================
+_________ test_gate4_controller_execveat_survives_a_real_pathname_swap _________
+
+tmp_path = PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/test_gate4_controller_execveat0')
+built_repository = PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/slice017-built0/repository')
+
+    def test_gate4_controller_execveat_survives_a_real_pathname_swap(
+        tmp_path: Path,
+        built_repository: Path,
+    ) -> None:
+        if _confined_no_delegation():
+            completed = _run_controller(REPOSITORY, "qualify", *_qualify_arguments())
+            _refusal(completed, EXEC_OBJECT_DRIFT)
+            return
+        root = _installed_case(tmp_path, built_repository)
+        installed = root / INSTALLED_ARTIFACT
+        impostor = installed.with_name("pathname-swap-impostor")
+        shutil.copy2("/usr/bin/false", impostor)
+        impostor.chmod(0o555)
+        impostor_stat = impostor.stat()
+    
+>       _trace_controller_swap(root, installed, impostor)
+
+tests/integration/test_slice017_native_launcher.py:935: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+root = PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/test_gate4_controller_execveat0/repository')
+original = PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/test_gate4_controller_execveat0/repository/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher')
+impostor = PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/test_gate4_controller_execveat0/repository/.local/ranex/libexec/strict-local-v1/pathname-swap-impostor')
+
+    def _trace_controller_swap(root: Path, original: Path, impostor: Path) -> None:
+        original_stat = original.stat()
+        stdout_path = root / ".local/slice017-trace-stdout"
+        stderr_path = root / ".local/slice017-trace-stderr"
+        stdout_path.parent.mkdir(parents=True, exist_ok=True)
+        stdout_fd = os.open(stdout_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        stderr_fd = os.open(stderr_path, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    
+        pid = os.fork()
+        if pid == 0:
+            os.dup2(stdout_fd, 1)
+            os.dup2(stderr_fd, 2)
+            os.close(stdout_fd)
+            os.close(stderr_fd)
+            os.chdir(root)
+            if _ptrace(PTRACE_TRACEME, 0) != 0:
+                os._exit(125)
+            os.kill(os.getpid(), signal.SIGSTOP)
+            os.execve(CONTROLLER[0], _controller_qualify_argv(), _controller_environment())
+            os._exit(126)
+    
+        os.close(stdout_fd)
+        os.close(stderr_fd)
+        tracees = {pid}
+        entering: dict[int, bool] = {pid: True}
+        swapped_pid: int | None = None
+        executed_original = False
+        deadline = time.monotonic() + 180.0
+        try:
+            waited_pid, status = os.waitpid(pid, 0)
+            assert waited_pid == pid and os.WIFSTOPPED(status)
+            options = (
+                PTRACE_O_TRACESYSGOOD
+                | PTRACE_O_TRACEFORK
+                | PTRACE_O_TRACEVFORK
+                | PTRACE_O_TRACECLONE
+                | PTRACE_O_TRACEEXEC
+            )
+            _ptrace(PTRACE_SETOPTIONS, pid, 0, options)
+            _ptrace(PTRACE_SYSCALL, pid)
+    
+            while tracees and time.monotonic() < deadline and not executed_original:
+                waited_pid, status = os.waitpid(-1, WAIT_ALL)
+                if os.WIFEXITED(status) or os.WIFSIGNALED(status):
+                    tracees.discard(waited_pid)
+                    entering.pop(waited_pid, None)
+                    continue
+                if not os.WIFSTOPPED(status):
+                    continue
+    
+                stop_signal = os.WSTOPSIG(status)
+                event = status >> 16
+                if event in {PTRACE_EVENT_FORK, PTRACE_EVENT_VFORK, PTRACE_EVENT_CLONE}:
+                    child = ctypes.c_ulonglong()
+                    _ptrace(PTRACE_GETEVENTMSG, waited_pid, 0, child)
+                    tracees.add(int(child.value))
+                    entering[int(child.value)] = True
+                elif event == PTRACE_EVENT_EXEC:
+                    entering[waited_pid] = True
+                    if waited_pid == swapped_pid:
+                        executed_original = _same_object(
+                            os.stat(f"/proc/{waited_pid}/exe"), original_stat
+                        )
+                elif stop_signal == signal.SIGTRAP | 0x80:
+                    at_entry = entering.get(waited_pid, True)
+                    entering[waited_pid] = not at_entry
+                    if at_entry:
+                        registers = UserRegsStruct()
+                        _ptrace(PTRACE_GETREGS, waited_pid, 0, registers)
+                        syscall_number = ctypes.c_longlong(registers.orig_rax).value
+                        if syscall_number == 59:
+                            executable = _tracee_string(waited_pid, registers.rdi)
+                            reopened = _proc_fd_path_stat(waited_pid, executable)
+                            if reopened is not None and _same_object(reopened, original_stat):
+                                raise AssertionError(
+                                    "controller used a procfs pathname re-open instead of execveat"
+                                )
+                        elif syscall_number == SYS_EXECVEAT:
+                            descriptor = ctypes.c_longlong(registers.rdi).value
+                            target = _fd_stat(waited_pid, descriptor)
+                            if target is not None and _same_object(target, original_stat):
+                                assert _tracee_string(waited_pid, registers.rsi) == b""
+                                assert registers.r8 == AT_EMPTY_PATH
+                                assert swapped_pid is None
+                                os.replace(impostor, original)
+                                swapped_pid = waited_pid
+    
+                delivered_signal = 0
+                if event == 0 and stop_signal not in {
+                    signal.SIGSTOP,
+                    signal.SIGTRAP,
+                    signal.SIGTRAP | 0x80,
+                }:
+                    delivered_signal = stop_signal
+                _ptrace(PTRACE_SYSCALL, waited_pid, 0, delivered_signal)
+    
+>           assert swapped_pid is not None, (
+                f"no execveat of the verified launcher observed; "
+                f"stderr={stderr_path.read_text(errors='replace')!r}"
+            )
+E           AssertionError: no execveat of the verified launcher observed; stderr=''
+E           assert None is not None
+
+tests/integration/test_slice017_native_launcher.py:911: AssertionError
+________ test_v1_real_workflow_records_delegated_cgroup_and_run_record _________
+
+tmp_path = PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/test_v1_real_workflow_records_0')
+v2_repository = GovernedRepository(path=PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/host-workflow-v20/repository'), key=PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/host-workflow-v20/owner.key'))
+
+    def test_v1_real_workflow_records_delegated_cgroup_and_run_record(
+        tmp_path: Path, v2_repository: GovernedRepository
+    ) -> None:
+        """The documented v1 command enters (or reuses) a delegated user scope."""
+        result_dir = tmp_path / "v1"
+        probe = _v1_identity_probe(tmp_path)
+        completed = _module(
+            v2_repository.path,
+            "ranex.cli.main",
+            "host",
+            "strict-local",
+            "--version",
+            "v1",
+            "--claim",
+            "host-workflow-v1",
+            "--producer",
+            "owner",
+            "--repository",
+            ".",
+            "--evidence",
+            ".local/ranex-e2e/v1-evidence.json",
+            "--result-dir",
+            str(result_dir),
+            "--",
+            str(probe),
+            key=v2_repository.key,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: ERROR  pid1-systemd: pid 1 is '5'
+E         HINT  pid1-systemd failed; correct the host prerequisite and retry strict-local delegation.
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/tmp/ranex-subject-40rh4oxp/deps/env/bin/python', '-m', 'ranex.cli.main', 'host', 'strict-loca...-systemd: pid 1 is '5'\nHINT  pid1-systemd failed; correct the host prerequisite and retry strict-local delegation.\n").returncode
+
+tests/e2e/test_host_workflow_real.py:278: AssertionError
+______ test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes _______
+
+tmp_path = PosixPath('/tmp/ranex-subject-40rh4oxp/tmp/pytest-of-soultransit/pytest-0/test_arbitrary_real_code_match0')
+
+    @pytest.mark.usefixtures("prereq_qualified_host")
+    def test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes(
+        tmp_path: Path,
+    ) -> None:
+        """One delegated identity qualifies and runs through public commands."""
+    
+        subject = tmp_path / "subject"
+        cloned = subprocess.run(
+            ["git", "clone", "-q", str(ROOT), str(subject)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert cloned.returncode == 0, cloned.stderr
+    
+        worker = tmp_path / "slice070-worker"
+        built = subprocess.run(
+            [
+                "/usr/bin/x86_64-linux-gnu-gcc-13",
+                "-std=gnu17",
+                "-O2",
+                "-static",
+                "-fno-pie",
+                "-no-pie",
+                "-Wl,-z,relro,-z,now",
+                "-Wl,-z,noexecstack",
+                "-Wl,--build-id=none",
+                "-o",
+                str(worker),
+                str(FIXTURES / "slice070-worker.c"),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert built.returncode == 0, built.stderr
+    
+        static_manifest = json.loads(STATIC_WORKER_MANIFEST.read_bytes())
+        noexec_worker = tmp_path / "slice036-worker"
+        static_flags = [
+            token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
+            .replace("<output>", str(noexec_worker))
+            .replace("<source>", str(STATIC_WORKER_SOURCE))
+            for token in static_manifest["build"]["flags"]
+        ]
+        noexec_built = subprocess.run(
+            [static_manifest["build"]["compiler"]["path"], *static_flags],
+            cwd=ROOT,
+            env=static_manifest["build"]["environment"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert noexec_built.returncode == 0, noexec_built.stderr
+        assert hashlib.sha256(noexec_worker.read_bytes()).hexdigest() == static_manifest[
+            "artifact"
+        ]["sha256"]
+    
+        case = subject / ".local" / "ranex" / "slice070"
+        case.mkdir(parents=True)
+        input_checkout = case / "input"
+        worktree = subprocess.run(
+            ["git", "-C", str(subject), "worktree", "add", "--detach", str(input_checkout), "HEAD"],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert worktree.returncode == 0, worktree.stderr
+        subject_authority = case / "subject"
+        _git(
+            subject,
+            "worktree",
+            "add",
+            "--detach",
+            str(subject_authority),
+            "HEAD",
+        )
+        paths = {
+            name: case / name
+            for name in ("toolchain", "output", "scratch")
+        }
+        ordinary_output = case / "ordinary-output"
+        for directory in (*paths.values(), ordinary_output):
+            directory.mkdir(parents=True)
+        authority_paths = {"input": input_checkout, "subject": subject_authority, **paths}
+        resolved_authorities = {
+            name: path.resolve(strict=True) for name, path in authority_paths.items()
+        }
+        authorities = tuple(resolved_authorities.values())
+        for index, left in enumerate(authorities):
+            for right in authorities[index + 1 :]:
+                assert not left.is_relative_to(right)
+                assert not right.is_relative_to(left)
+        confined_worker = paths["toolchain"] / "bin" / "slice070-worker"
+        confined_worker.parent.mkdir()
+        confined_worker.write_bytes(worker.read_bytes())
+        confined_worker.chmod(0o555)
+        noexec_confined_worker = paths["toolchain"] / "bin" / "slice036-worker"
+        noexec_confined_worker.write_bytes(noexec_worker.read_bytes())
+        noexec_confined_worker.chmod(0o555)
+        subject_anchor = (
+            subject_authority
+            / "tests"
+            / "e2e"
+            / "fixtures"
+            / "slice070-subject"
+            / "anchor.txt"
+        )
+        anchor_relative = str(subject_anchor.relative_to(subject_authority))
+        assert _git(
+            subject_authority,
+            "ls-files",
+            "--error-unmatch",
+            "--",
+            anchor_relative,
+        ).strip() == anchor_relative
+        observed_worker = subject_authority / ".local" / "subject-worker"
+        observed_worker.parent.mkdir()
+        observed_worker.write_bytes(worker.read_bytes())
+        observed_worker.chmod(0o555)
+        _git(
+            subject_authority,
+            "check-ignore",
+            "--quiet",
+            "--",
+            str(observed_worker.relative_to(subject_authority)),
+        )
+        subject_fingerprint = _clean_tracked_tree_fingerprint(subject_authority)
+    
+        committed_input = input_checkout / "tests" / "e2e" / "fixtures" / "slice070-input.txt"
+        expected = committed_input.read_bytes()
+        tracked = subprocess.run(
+            [
+                "git", "-C", str(input_checkout), "ls-files", "--error-unmatch", "--",
+                str(committed_input.relative_to(input_checkout)),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert tracked.returncode == 0, tracked.stderr
+        noexec_input = (
+            input_checkout / "tests" / "e2e" / "fixtures" / "slice070-noexec"
+        )
+        noexec_input_relative = str(noexec_input.relative_to(input_checkout))
+        assert _git(
+            input_checkout,
+            "ls-files",
+            "--error-unmatch",
+            "--",
+            f"{noexec_input_relative}/task.json",
+        ).strip() == f"{noexec_input_relative}/task.json"
+    
+        ordinary_input = case / "ordinary-input.txt"
+        ordinary_input.write_bytes(expected)
+        ordinary_input.chmod(0o444)
+        ordinary_result = ordinary_output / "result.txt"
+        ordinary = subprocess.run(
+            [
+                str(worker),
+                "--require-input-read-only",
+                str(ordinary_input),
+                str(ordinary_result),
+            ],
+            cwd=subject,
+            env={"LC_ALL": "C", "TZ": "UTC"},
+            capture_output=True,
+            check=False,
+        )
+        assert ordinary.returncode == 0, ordinary.stderr
+    
+        descriptor = {
+            "argv": [
+                "/ranex/toolchain/bin/slice070-worker",
+                "--require-authority-read-only",
+                "/ranex/input/tests/e2e/fixtures/slice070-input.txt",
+                "/ranex/toolchain/bin/slice070-worker",
+                "/ranex/output/result.txt",
+            ],
+            "environment": {"LC_ALL": "C", "TZ": "UTC"},
+            "limits": {
+                "cpu_usage_usec": 1_000_000,
+                "memory_bytes": 134_217_728,
+                "output_bytes": 65_536,
+                "output_depth": 8,
+                "output_inodes": 32,
+                "pids": 16,
+                "wall_time_ms": 5_000,
+            },
+            "input": str(input_checkout.relative_to(subject)),
+            "output": str(paths["output"].relative_to(subject)),
+            "schema": "ranex-confinement-command-v1",
+            "scratch": str(paths["scratch"].relative_to(subject)),
+            "subject": str(subject_authority.relative_to(subject)),
+            "toolchain": str(paths["toolchain"].relative_to(subject)),
+        }
+        descriptor_path = case / "descriptor.json"
+        result_path = case / "result.json"
+        descriptor_path.write_bytes(canonical_json_bytes(descriptor))
+        subject_exec_descriptor = {
+            **descriptor,
+            "argv": [
+                "/ranex/toolchain/bin/slice036-worker",
+                "--task",
+            ],
+            "input": str(noexec_input.relative_to(subject)),
+        }
+        subject_exec_descriptor_path = case / "subject-exec-descriptor.json"
+        subject_exec_result_path = case / "subject-exec-result.json"
+        subject_exec_descriptor_path.write_bytes(canonical_json_bytes(subject_exec_descriptor))
+    
+        development_python = Path(sys.executable).resolve()
+        steps = [
+            _controller(
+                development_python, "launcher-build", "--manifest", MANIFEST,
+                "--source", LAUNCHER_SOURCE, "--output", BUILD_OUTPUT,
+            ),
+            _controller(
+                development_python, "launcher-install", "--manifest", MANIFEST,
+                "--artifact", BUILD_OUTPUT, "--destination", INSTALLED_LAUNCHER,
+            ),
+            _controller(
+                development_python, "qualify", "--profile", HOST_PROFILE,
+                "--artifact", INSTALLED_LAUNCHER, "--manifest", MANIFEST,
+                "--report", QUALIFICATION,
+            ),
+            _controller(
+                development_python, "session", "--profile", PROFILE,
+                "--host-profile", HOST_PROFILE, "--artifact", INSTALLED_LAUNCHER,
+                "--manifest", MANIFEST, "--qualification", QUALIFICATION,
+                "--descriptor", str(subject_exec_descriptor_path.relative_to(subject)),
+                "--result", str(subject_exec_result_path.relative_to(subject)),
+            ),
+            _controller(
+                development_python, "session", "--profile", PROFILE,
+                "--host-profile", HOST_PROFILE, "--artifact", INSTALLED_LAUNCHER,
+                "--manifest", MANIFEST, "--qualification", QUALIFICATION,
+                "--descriptor", str(descriptor_path.relative_to(subject)),
+                "--result", str(result_path.relative_to(subject)),
+            ),
+        ]
+        shell_program = "set -eu; " + "; ".join(shlex.join(step) for step in steps)
+        completed = subprocess.run(
+            [
+                *BROKER_PREFIX,
+                f"--working-directory={subject}",
+                f"--setenv=PYTHONPATH={subject / 'src'}",
+                "--setenv=PATH=/usr/bin:/bin",
+                "--setenv=LC_ALL=C",
+                "--setenv=TZ=UTC",
+                "/bin/sh", "-c", shell_program,
+            ],
+            cwd=subject,
+            env={
+                name: value
+                for name, value in os.environ.items()
+                if name != "RANEX_SIGNING_KEY"
+            },
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=240,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: Failed to connect to bus: No medium found
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--no-ask-password', '--quiet', '--collect', '--wait', '--pip...ult .local/ranex/slice070/result.json'], returncode=1, stdout='', stderr='Failed to connect to bus: No medium found\n').returncode
+
+tests/e2e/test_strict_local_io_real.py:346: AssertionError
+=========================== short test summary info ============================
+FAILED tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap
+FAILED tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record
+FAILED tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes
+ERROR tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden
+3 failed, 1 error in 10.37s
+RECORDED  claim=nested-host-diagnosis  producer=worker  exit=1
+          subject=sha256:9ac9d30f1247ca2fffc105dbb8261682ec37a5ce9e9da71a5ae6466198aae60d

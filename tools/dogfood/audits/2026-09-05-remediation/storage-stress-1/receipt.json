@@ -1,0 +1,387 @@
+{
+  "scope": "Storage load replays actual CLI gate evaluations; repeated rows are not new correctness observations",
+  "source_records": [
+    {
+      "approver_id": "oss-bench-approver",
+      "catalog_digest": "sha256:90d399153d24d713d25cf587e321e834a871b6472e7d79c93aa22e1453d0a178",
+      "causes": [],
+      "considered": [
+        "tests-executed@sha256:8a9c5f1cc85d96b1537178da693e5c410474238cd393c06270c425dad01c09bf:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "landing",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:8a9c5f1cc85d96b1537178da693e5c410474238cd393c06270c425dad01c09bf",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    },
+    {
+      "approver_id": "oss-bench-approver",
+      "catalog_digest": "sha256:cabd87dc077c0d4df81fc726876adf30b3d586c995c2a63431a7fe2ed346efdd",
+      "causes": [],
+      "considered": [
+        "tests-executed@sha256:21eb59266da56c3e76123797fe9ad8d5e4a0e1eeab251538714ea4bbe0aa5f9f:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "landing",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:21eb59266da56c3e76123797fe9ad8d5e4a0e1eeab251538714ea4bbe0aa5f9f",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    }
+  ],
+  "rounds": [
+    {
+      "round": 0,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "seconds": 9.69964796496788,
+      "workers": [
+        {
+          "seconds": 8.465168606024235,
+          "fd_before": 5,
+          "fd_after": 6
+        },
+        {
+          "seconds": 8.417895128019154,
+          "fd_before": 6,
+          "fd_after": 7
+        },
+        {
+          "seconds": 9.629257182008587,
+          "fd_before": 7,
+          "fd_after": 5
+        },
+        {
+          "seconds": 3.8748068709974177,
+          "fd_before": 9,
+          "fd_after": 12
+        },
+        {
+          "seconds": 4.924574048025534,
+          "fd_before": 10,
+          "fd_after": 11
+        },
+        {
+          "seconds": 7.5168556469725445,
+          "fd_before": 11,
+          "fd_after": 8
+        },
+        {
+          "seconds": 5.753297160030343,
+          "fd_before": 12,
+          "fd_after": 9
+        },
+        {
+          "seconds": 4.935685515985824,
+          "fd_before": 13,
+          "fd_after": 10
+        }
+      ],
+      "head": "sha256:efa232b4e39c43794f38def2dfdf90a7db9b65930857c777430020684e5cc317"
+    },
+    {
+      "round": 1,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "seconds": 9.619834704964887,
+      "workers": [
+        {
+          "seconds": 9.488234610005748,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.491745870967861,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.670604821003508,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 6.597570068959612,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.9186930430005305,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.250332916970365,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.452446556999348,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 4.4953763600206,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "head": "sha256:36ea4c1b5c48017cbad8a24248e6de6eb5434461074d8d81398194e4fc242d96"
+    },
+    {
+      "round": 2,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "seconds": 8.947185951052234,
+      "workers": [
+        {
+          "seconds": 3.803541182016488,
+          "fd_before": 7,
+          "fd_after": 14
+        },
+        {
+          "seconds": 5.74492431798717,
+          "fd_before": 7,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.673332047997974,
+          "fd_before": 8,
+          "fd_after": 9
+        },
+        {
+          "seconds": 8.891093014040962,
+          "fd_before": 10,
+          "fd_after": 7
+        },
+        {
+          "seconds": 6.164193321950734,
+          "fd_before": 12,
+          "fd_after": 11
+        },
+        {
+          "seconds": 6.86684835399501,
+          "fd_before": 12,
+          "fd_after": 10
+        },
+        {
+          "seconds": 8.57752015197184,
+          "fd_before": 15,
+          "fd_after": 8
+        },
+        {
+          "seconds": 5.769513460982125,
+          "fd_before": 14,
+          "fd_after": 12
+        }
+      ],
+      "head": "sha256:777ea63b664da17a02fcb82469b8b54a5946c832ca2f98a1ec5302b10245a19b"
+    },
+    {
+      "round": 3,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "seconds": 8.650175423012115,
+      "workers": [
+        {
+          "seconds": 8.315868031000718,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.179656426014844,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 7.307930570968892,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 6.422511347976979,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 4.955495538015384,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.580016002990305,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 5.9805705030448735,
+          "fd_before": 14,
+          "fd_after": 14
+        },
+        {
+          "seconds": 8.05077980097849,
+          "fd_before": 14,
+          "fd_after": 14
+        }
+      ],
+      "head": "sha256:d1b0687e79aec8fa615188e3e1e4903a19e4101f6677e7e857ee106c266d9d2b"
+    },
+    {
+      "round": 4,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "seconds": 34.31354443199234,
+      "workers": [
+        {
+          "seconds": 4.754975621995982,
+          "fd_before": 7,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.287040399969555,
+          "fd_before": 7,
+          "fd_after": 11
+        },
+        {
+          "seconds": 7.319779050012585,
+          "fd_before": 9,
+          "fd_after": 10
+        },
+        {
+          "seconds": 5.983306626032572,
+          "fd_before": 11,
+          "fd_after": 12
+        },
+        {
+          "seconds": 34.2578006220283,
+          "fd_before": 11,
+          "fd_after": 7
+        },
+        {
+          "seconds": 16.56970300601097,
+          "fd_before": 12,
+          "fd_after": 9
+        },
+        {
+          "seconds": 34.02070882398402,
+          "fd_before": 14,
+          "fd_after": 8
+        },
+        {
+          "seconds": 3.5095304810092784,
+          "fd_before": 15,
+          "fd_after": 14
+        }
+      ],
+      "head": "sha256:f6339940321d56b781830556ed39482036712d6871c7abee27bc47dd0dce037f"
+    }
+  ],
+  "controls": [
+    {
+      "mode": "unchanged",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-stress-1/unchanged.sqlite3",
+        "--expected-head",
+        "sha256:f6339940321d56b781830556ed39482036712d6871c7abee27bc47dd0dce037f"
+      ],
+      "exit": 0,
+      "stdout": "PASS  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-stress-1/unchanged.sqlite3  chain=verified  external-anchor=matched\n",
+      "stderr": "",
+      "database_sha256": "78e08e8f02916e86417252c34566afd5402de86c74de7b7093425f8e1dd5396c"
+    },
+    {
+      "mode": "nonjson",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-stress-1/nonjson.sqlite3",
+        "--expected-head",
+        "sha256:f6339940321d56b781830556ed39482036712d6871c7abee27bc47dd0dce037f"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-stress-1/nonjson.sqlite3  chain=invalid  row=seq 1 (row 1 of 4000)\n",
+      "stderr": "",
+      "database_sha256": "ebed2ae1542347fab5f676d46393655f91b24454ab2fb37daf53c0ea533df6db"
+    },
+    {
+      "mode": "truncated",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-stress-1/truncated.sqlite3",
+        "--expected-head",
+        "sha256:f6339940321d56b781830556ed39482036712d6871c7abee27bc47dd0dce037f"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-stress-1/truncated.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "adc32546abdfd08b930fa297f981f629249205786119f752b83236741a3953e3"
+    },
+    {
+      "mode": "empty",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-stress-1/empty.sqlite3",
+        "--expected-head",
+        "sha256:f6339940321d56b781830556ed39482036712d6871c7abee27bc47dd0dce037f"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-stress-1/empty.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "aaceaf1337ea6a6a9b07e2d6823f9ad84c464e2d060e60eabd24b3a708afbdf9"
+    },
+    {
+      "mode": "rewritten",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-stress-1/rewritten.sqlite3",
+        "--expected-head",
+        "sha256:f6339940321d56b781830556ed39482036712d6871c7abee27bc47dd0dce037f"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-stress-1/rewritten.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "4453b6c935f50a0683949ef9b16d59598214f593c2f884a3f1ca088af50f95fc"
+    }
+  ],
+  "independent_head_before_mutation": "sha256:f6339940321d56b781830556ed39482036712d6871c7abee27bc47dd0dce037f"
+}

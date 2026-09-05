@@ -1,0 +1,20 @@
+F..............................................                          [100%]
+=================================== FAILURES ===================================
+_______________ test_no_document_exists_outside_the_allowed_set ________________
+
+    def test_no_document_exists_outside_the_allowed_set() -> None:
+        """Session reports, summaries, handoffs, and plans are how bloat starts."""
+    
+        unexpected = [p.as_posix() for p in _tracked_markdown() if not _is_allowed(p)]
+>       assert not unexpected, (
+            "these documents are not allowed by the docs cap in CLAUDE.md: "
+            f"{unexpected}. Put the content in docs/STATE.md, the active slice, or "
+            "the commit message instead of creating a new file."
+        )
+E       AssertionError: these documents are not allowed by the docs cap in CLAUDE.md: ['.local/release-audit/closing-comment.md']. Put the content in docs/STATE.md, the active slice, or the commit message instead of creating a new file.
+E       assert not ['.local/release-audit/closing-comment.md']
+
+tests/contract/test_docs_discipline.py:199: AssertionError
+=========================== short test summary info ============================
+FAILED tests/contract/test_docs_discipline.py::test_no_document_exists_outside_the_allowed_set
+1 failed, 46 passed in 1.04s

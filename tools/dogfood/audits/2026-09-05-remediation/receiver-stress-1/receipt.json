@@ -1,0 +1,27 @@
+{
+  "source": "gh api repos/anthonykewl20/ranex/pulls/72",
+  "pull_request_sha256": "47b59e89102c2f30f842d4cbb47bcea7158fefcebbf3ee0f49603d643c5c4cc1",
+  "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42",
+  "scope": "Real public PR replay through actual CLI; local HMAC and installation 1; live GitHub App publication UNVERIFIED",
+  "kernel": "5d921504d806d5554f948992cd89eedac2a415a1",
+  "rows": [
+    {
+      "case": "real-git-remote-recovery",
+      "verified": false,
+      "facts": [
+        {
+          "delivery": "real-pr-recovery",
+          "event": "pull_request",
+          "outcome": "E-GITHUB-API-REFUSED",
+          "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42"
+        },
+        {
+          "delivery": "real-pr-recovery",
+          "event": "pull_request",
+          "outcome": "E-GITHUB-API-REFUSED",
+          "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42"
+        }
+      ]
+    }
+  ]
+}

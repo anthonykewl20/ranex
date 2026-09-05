@@ -1,0 +1,15 @@
+{"delivery": "ping-1", "event": "ping", "outcome": "ignored"}
+{"delivery": "ping-1", "outcome": "replayed"}
+{"delivery": "foreign-installation", "event": "pull_request", "outcome": "not-allowlisted", "repository": "audit/local"}
+{"delivery": "malformed-shape", "outcome": "E-GITHUB-BAD-EVENT"}
+{"delivery": "fetch-retry", "event": "pull_request", "outcome": "E-GITHUB-UNFETCHABLE-HEAD", "head_sha": "9999999999999999999999999999999999999999"}
+{"delivery": "fetch-retry", "event": "pull_request", "outcome": "E-GITHUB-UNFETCHABLE-HEAD", "head_sha": "9999999999999999999999999999999999999999"}
+{"delivery": "malformed-json", "outcome": "E-GITHUB-BAD-EVENT"}
+{"delivery": "malformed-number", "outcome": "E-GITHUB-BAD-EVENT"}
+{"delivery": "ping-1", "outcome": "replayed"}
+{"delivery": "negative-content-length-control", "event": "ping", "outcome": "ignored"}
+{"delivery": "negative-content-length-recovery", "event": "ping", "outcome": "ignored"}
+{"delivery": "incomplete-body-control", "event": "ping", "outcome": "ignored"}
+{"delivery": "incomplete-body-recovery", "event": "ping", "outcome": "ignored"}
+{"delivery": "idle-client-control", "event": "ping", "outcome": "ignored"}
+{"delivery": "idle-client-recovery", "event": "ping", "outcome": "ignored"}

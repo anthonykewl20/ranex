@@ -1,0 +1,478 @@
+...........F.FFFFFFF..FFF.F..                                            [100%]
+=================================== FAILURES ===================================
+________ test_public_dynamic_run_binds_output_result_and_evidence_twice ________
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+
+    def test_public_dynamic_run_binds_output_result_and_evidence_twice(
+        journey: Journey,
+    ) -> None:
+        observations = []
+        for index in (1, 2):
+            evidence = f".local/ranex-e2e/slice072-{index}.json"
+            completed = _run(journey, evidence)
+>           assert completed.returncode == 0, completed.stdout + completed.stderr
+E           AssertionError: ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository/governance/producers.yaml holds a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other
+E             
+E           assert 2 == 0
+E            +  where 2 = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").returncode
+
+tests/e2e/test_dynamic_runtime_closure_real.py:356: AssertionError
+_________ test_each_runtime_class_tamper_refuses_before_output[loader] _________
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+kind = 'loader'
+
+    @pytest.mark.parametrize(
+        "kind", ["loader", "entrypoint", "shared-library", "native-extension", "runtime-data"]
+    )
+    def test_each_runtime_class_tamper_refuses_before_output(
+        journey: Journey,
+        kind: str,
+    ) -> None:
+        manifest_path = journey.repository / RUNTIME / "closure.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        row = next(item for item in manifest["files"] if item["kind"] == kind)
+        target = journey.repository / RUNTIME / row["path"]
+        original = target.read_bytes()
+        target.write_bytes(original + b"tamper")
+        _git(journey.repository, "add", str(target.relative_to(journey.repository)))
+        _git(journey.repository, "commit", "-qm", f"test: tamper {kind}")
+        try:
+            completed = _run(journey, f".local/ranex-e2e/tamper-{kind}.json")
+            assert completed.returncode != 0
+            assert RESULT_PREFIX not in completed.stderr
+>           assert "digest" in (completed.stdout + completed.stderr).lower()
+E           assert 'digest' in "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+E            +  where "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = <built-in method lower of str object at 0x7e97ba9b20b0>()
+E            +    where <built-in method lower of str object at 0x7e97ba9b20b0> = ('' + "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").lower
+E            +      where '' = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stdout
+E            +      and   "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stderr
+
+tests/e2e/test_dynamic_runtime_closure_real.py:477: AssertionError
+_______ test_each_runtime_class_tamper_refuses_before_output[entrypoint] _______
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+kind = 'entrypoint'
+
+    @pytest.mark.parametrize(
+        "kind", ["loader", "entrypoint", "shared-library", "native-extension", "runtime-data"]
+    )
+    def test_each_runtime_class_tamper_refuses_before_output(
+        journey: Journey,
+        kind: str,
+    ) -> None:
+        manifest_path = journey.repository / RUNTIME / "closure.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        row = next(item for item in manifest["files"] if item["kind"] == kind)
+        target = journey.repository / RUNTIME / row["path"]
+        original = target.read_bytes()
+        target.write_bytes(original + b"tamper")
+        _git(journey.repository, "add", str(target.relative_to(journey.repository)))
+        _git(journey.repository, "commit", "-qm", f"test: tamper {kind}")
+        try:
+            completed = _run(journey, f".local/ranex-e2e/tamper-{kind}.json")
+            assert completed.returncode != 0
+            assert RESULT_PREFIX not in completed.stderr
+>           assert "digest" in (completed.stdout + completed.stderr).lower()
+E           assert 'digest' in "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+E            +  where "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = <built-in method lower of str object at 0x7e97ba9b2d30>()
+E            +    where <built-in method lower of str object at 0x7e97ba9b2d30> = ('' + "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").lower
+E            +      where '' = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stdout
+E            +      and   "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stderr
+
+tests/e2e/test_dynamic_runtime_closure_real.py:477: AssertionError
+_____ test_each_runtime_class_tamper_refuses_before_output[shared-library] _____
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+kind = 'shared-library'
+
+    @pytest.mark.parametrize(
+        "kind", ["loader", "entrypoint", "shared-library", "native-extension", "runtime-data"]
+    )
+    def test_each_runtime_class_tamper_refuses_before_output(
+        journey: Journey,
+        kind: str,
+    ) -> None:
+        manifest_path = journey.repository / RUNTIME / "closure.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        row = next(item for item in manifest["files"] if item["kind"] == kind)
+        target = journey.repository / RUNTIME / row["path"]
+        original = target.read_bytes()
+        target.write_bytes(original + b"tamper")
+        _git(journey.repository, "add", str(target.relative_to(journey.repository)))
+        _git(journey.repository, "commit", "-qm", f"test: tamper {kind}")
+        try:
+            completed = _run(journey, f".local/ranex-e2e/tamper-{kind}.json")
+            assert completed.returncode != 0
+            assert RESULT_PREFIX not in completed.stderr
+>           assert "digest" in (completed.stdout + completed.stderr).lower()
+E           assert 'digest' in "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+E            +  where "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = <built-in method lower of str object at 0x7e97ba9b3870>()
+E            +    where <built-in method lower of str object at 0x7e97ba9b3870> = ('' + "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").lower
+E            +      where '' = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stdout
+E            +      and   "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stderr
+
+tests/e2e/test_dynamic_runtime_closure_real.py:477: AssertionError
+____ test_each_runtime_class_tamper_refuses_before_output[native-extension] ____
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+kind = 'native-extension'
+
+    @pytest.mark.parametrize(
+        "kind", ["loader", "entrypoint", "shared-library", "native-extension", "runtime-data"]
+    )
+    def test_each_runtime_class_tamper_refuses_before_output(
+        journey: Journey,
+        kind: str,
+    ) -> None:
+        manifest_path = journey.repository / RUNTIME / "closure.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        row = next(item for item in manifest["files"] if item["kind"] == kind)
+        target = journey.repository / RUNTIME / row["path"]
+        original = target.read_bytes()
+        target.write_bytes(original + b"tamper")
+        _git(journey.repository, "add", str(target.relative_to(journey.repository)))
+        _git(journey.repository, "commit", "-qm", f"test: tamper {kind}")
+        try:
+            completed = _run(journey, f".local/ranex-e2e/tamper-{kind}.json")
+            assert completed.returncode != 0
+            assert RESULT_PREFIX not in completed.stderr
+>           assert "digest" in (completed.stdout + completed.stderr).lower()
+E           assert 'digest' in "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+E            +  where "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = <built-in method lower of str object at 0x7e97baa88030>()
+E            +    where <built-in method lower of str object at 0x7e97baa88030> = ('' + "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").lower
+E            +      where '' = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stdout
+E            +      and   "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stderr
+
+tests/e2e/test_dynamic_runtime_closure_real.py:477: AssertionError
+______ test_each_runtime_class_tamper_refuses_before_output[runtime-data] ______
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+kind = 'runtime-data'
+
+    @pytest.mark.parametrize(
+        "kind", ["loader", "entrypoint", "shared-library", "native-extension", "runtime-data"]
+    )
+    def test_each_runtime_class_tamper_refuses_before_output(
+        journey: Journey,
+        kind: str,
+    ) -> None:
+        manifest_path = journey.repository / RUNTIME / "closure.json"
+        manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        row = next(item for item in manifest["files"] if item["kind"] == kind)
+        target = journey.repository / RUNTIME / row["path"]
+        original = target.read_bytes()
+        target.write_bytes(original + b"tamper")
+        _git(journey.repository, "add", str(target.relative_to(journey.repository)))
+        _git(journey.repository, "commit", "-qm", f"test: tamper {kind}")
+        try:
+            completed = _run(journey, f".local/ranex-e2e/tamper-{kind}.json")
+            assert completed.returncode != 0
+            assert RESULT_PREFIX not in completed.stderr
+>           assert "digest" in (completed.stdout + completed.stderr).lower()
+E           assert 'digest' in "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+E            +  where "error  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = <built-in method lower of str object at 0x7e97baa88670>()
+E            +    where <built-in method lower of str object at 0x7e97baa88670> = ('' + "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").lower
+E            +      where '' = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stdout
+E            +      and   "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'run', '--claim', '... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stderr
+
+tests/e2e/test_dynamic_runtime_closure_real.py:477: AssertionError
+_ test_host_only_computed_dependency_refuses_without_survivor[host-only-module] _
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+mode = 'host-only-module'
+
+    @pytest.mark.parametrize("mode", ["host-only-module", "absolute-old-root"])
+    def test_host_only_computed_dependency_refuses_without_survivor(
+        journey: Journey,
+        mode: str,
+    ) -> None:
+        input_path = journey.repository / INPUT / "mode.json"
+        original = input_path.read_bytes()
+        input_path.write_text(json.dumps({"mode": mode}) + "\n", encoding="utf-8")
+        _git(journey.repository, "add", str(input_path.relative_to(journey.repository)))
+        _git(journey.repository, "commit", "-qm", f"test: select {mode}")
+        try:
+            completed = _run(journey, f".local/ranex-e2e/{mode}.json")
+            assert completed.returncode != 0
+>           result, _raw = _runtime_result(completed.stderr)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_dynamic_runtime_closure_real.py:497: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+stderr = "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+
+    def _runtime_result(stderr: str) -> tuple[dict[str, object], bytes]:
+        lines = [line for line in stderr.splitlines() if line.startswith(RESULT_PREFIX)]
+>       assert len(lines) == 1, stderr
+E       AssertionError: ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository/governance/producers.yaml holds a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other
+E         
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/e2e/test_dynamic_runtime_closure_real.py:192: AssertionError
+_ test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root] _
+
+journey = Journey(repository=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/owner.key'))
+mode = 'absolute-old-root'
+
+    @pytest.mark.parametrize("mode", ["host-only-module", "absolute-old-root"])
+    def test_host_only_computed_dependency_refuses_without_survivor(
+        journey: Journey,
+        mode: str,
+    ) -> None:
+        input_path = journey.repository / INPUT / "mode.json"
+        original = input_path.read_bytes()
+        input_path.write_text(json.dumps({"mode": mode}) + "\n", encoding="utf-8")
+        _git(journey.repository, "add", str(input_path.relative_to(journey.repository)))
+        _git(journey.repository, "commit", "-qm", f"test: select {mode}")
+        try:
+            completed = _run(journey, f".local/ranex-e2e/{mode}.json")
+            assert completed.returncode != 0
+>           result, _raw = _runtime_result(completed.stderr)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests/e2e/test_dynamic_runtime_closure_real.py:497: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+stderr = "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repo...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+
+    def _runtime_result(stderr: str) -> tuple[dict[str, object], bytes]:
+        lines = [line for line in stderr.splitlines() if line.startswith(RESULT_PREFIX)]
+>       assert len(lines) == 1, stderr
+E       AssertionError: ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/slice0720/repository/governance/producers.yaml holds a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other
+E         
+E       assert 0 == 1
+E        +  where 0 = len([])
+
+tests/e2e/test_dynamic_runtime_closure_real.py:192: AssertionError
+________ test_v1_real_workflow_records_delegated_cgroup_and_run_record _________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/test_v1_real_workflow_records_0')
+v2_repository = GovernedRepository(path=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-v2...ory'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-v20/owner.key'))
+
+    def test_v1_real_workflow_records_delegated_cgroup_and_run_record(
+        tmp_path: Path, v2_repository: GovernedRepository
+    ) -> None:
+        """The documented v1 command enters (or reuses) a delegated user scope."""
+        result_dir = tmp_path / "v1"
+        probe = _v1_identity_probe(tmp_path)
+        completed = _module(
+            v2_repository.path,
+            "ranex.cli.main",
+            "host",
+            "strict-local",
+            "--version",
+            "v1",
+            "--claim",
+            "host-workflow-v1",
+            "--producer",
+            "owner",
+            "--repository",
+            ".",
+            "--evidence",
+            ".local/ranex-e2e/v1-evidence.json",
+            "--result-dir",
+            str(result_dir),
+            "--",
+            str(probe),
+            key=v2_repository.key,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher
+E         INSTALLED  .local/ranex/libexec/strict-local-v1/ranex-worker-launcher
+E         QUALIFIED  .local/ranex/qualification/strict-local-v1.json
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'host', 'strict-loc...ibexec/strict-local-v1/ranex-worker-launcher\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\n', stderr='').returncode
+
+tests/e2e/test_host_workflow_real.py:278: AssertionError
+_______ test_v2_real_workflow_uses_paired_input_and_toolchain_selectors ________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/test_v2_real_workflow_uses_pai0')
+v2_repository = GovernedRepository(path=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-v2...ory'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-v20/owner.key'))
+
+    def test_v2_real_workflow_uses_paired_input_and_toolchain_selectors(
+        tmp_path: Path, v2_repository: GovernedRepository
+    ) -> None:
+        """The wrapper runs the committed public-v2 source authorities for real."""
+        result_dir = tmp_path / "v2"
+        completed = _module(
+            v2_repository.path,
+            "ranex.cli.main",
+            "host",
+            "strict-local",
+            "--version",
+            "v2",
+            "--claim",
+            "slice036-child-check",
+            "--producer",
+            "owner",
+            "--repository",
+            ".",
+            "--evidence",
+            "governance/qualification/evidence.json",
+            "--producers",
+            "governance/producers.yaml",
+            "--gate",
+            "landing",
+            "--gate-catalog",
+            "governance/gates.yaml",
+            "--suite-manifest",
+            "governance/suite_manifest.json",
+            "--store",
+            str(tmp_path / "store"),
+            "--runtime-input-path",
+            "governance/qualification/inputs/SLICE-036-child-A/a-before-b/attempt-0",
+            "--toolchain-root",
+            "governance/qualification/worker",
+            "--result-dir",
+            str(result_dir),
+            "--",
+            "/ranex/toolchain/bin/slice036-worker",
+            "--task",
+            key=v2_repository.key,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher
+E         INSTALLED  launcher=.local/ranex/libexec/strict-local-v1/ranex-worker-launcher (unchanged)
+E         QUALIFIED  .local/ranex/qualification/strict-local-v1.json
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'host', 'strict-loc...t-local-v1/ranex-worker-launcher (unchanged)\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\n', stderr='').returncode
+
+tests/e2e/test_host_workflow_real.py:350: AssertionError
+_____ test_v3_real_workflow_records_runtime_result_binding_when_published ______
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/test_v3_real_workflow_records_0')
+v3_repository = GovernedRepository(path=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-v3...ory'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-v30/owner.key'))
+
+    def test_v3_real_workflow_records_runtime_result_binding_when_published(
+        tmp_path: Path, v3_repository: GovernedRepository
+    ) -> None:
+        """The wrapper runs the committed v3 runtime closure with real signing."""
+        result_dir = tmp_path / "v3"
+        completed = _module(
+            v3_repository.path,
+            "ranex.cli.main",
+            "host",
+            "strict-local",
+            "--version",
+            "v3",
+            "--claim",
+            "dynamic-runtime-qualified",
+            "--producer",
+            "slice072-owner",
+            "--repository",
+            ".",
+            "--evidence",
+            ".local/ranex-e2e/v3-evidence.json",
+            "--runtime-input-path",
+            "tests/e2e/fixtures/slice072-input",
+            "--runtime-closure-root",
+            "tests/e2e/fixtures/slice072-runtime",
+            "--result-dir",
+            str(result_dir),
+            "--",
+            "/ranex/runtime/bin/python3.12",
+            "/ranex/runtime/data/worker.py",
+            key=v3_repository.key,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher
+E         INSTALLED  .local/ranex/libexec/strict-local-v1/ranex-worker-launcher
+E         QUALIFIED  .local/ranex/qualification/strict-local-v1.json
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'host', 'strict-loc...ibexec/strict-local-v1/ranex-worker-launcher\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\n', stderr='').returncode
+
+tests/e2e/test_host_workflow_real.py:388: AssertionError
+________ test_named_host_drift_refuses_from_a_different_delegated_scope ________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/test_named_host_drift_refuses_0')
+drift_repository = GovernedRepository(path=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-dr...'), key=PosixPath('/tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-drift0/owner.key'))
+
+    def test_named_host_drift_refuses_from_a_different_delegated_scope(
+        tmp_path: Path, drift_repository: GovernedRepository
+    ) -> None:
+        """A qualification from scope A is fail-closed when used from scope B."""
+        provisioning = (
+            ("launcher-build", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--source", "native/ranex-worker-launcher/launcher.c", "--output", ".local/ranex/build/strict-local-v1/ranex-worker-launcher"),
+            ("launcher-install", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--artifact", ".local/ranex/build/strict-local-v1/ranex-worker-launcher", "--destination", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"),
+            ("qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report", ".local/ranex/qualification/strict-local-v1.json"),
+        )
+        for arguments in provisioning:
+            completed = _module(drift_repository.path, "ranex.cli.host_confinement", *arguments)
+            assert completed.returncode == 0, completed.stdout + completed.stderr
+    
+        evidence = ".local/ranex-e2e/drift-evidence.json"
+        run_argv = [
+            sys.executable,
+            "-m",
+            "ranex.cli.main",
+            "run",
+            "--claim",
+            "dynamic-runtime-qualified",
+            "--producer",
+            "slice072-owner",
+            "--repository",
+            ".",
+            "--evidence",
+            evidence,
+            "--confinement",
+            "strict-local",
+            "--runtime-input-path",
+            "tests/e2e/fixtures/slice072-input",
+            "--runtime-closure-root",
+            "tests/e2e/fixtures/slice072-runtime",
+            "--",
+            "/ranex/runtime/bin/python3.12",
+            "/ranex/runtime/data/worker.py",
+        ]
+        command = f"cd {shlex.quote(str(drift_repository.path))} && exec {shlex.join(run_argv)}"
+        nested = subprocess.run(
+            [
+                "/usr/bin/systemd-run",
+                "--user",
+                "--scope",
+                "--quiet",
+                "--property=Delegate=yes",
+                f"--setenv=PYTHONPATH={drift_repository.path / 'src'}",
+                f"--setenv=RANEX_SIGNING_KEY={drift_repository.key}",
+                f"--setenv=PATH={os.environ['PATH']}",
+                f"--setenv=HOME={os.environ['HOME']}",
+                "--",
+                "/bin/sh",
+                "-c",
+                command,
+            ],
+            cwd=drift_repository.path,
+            env=_environment(drift_repository.key),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=240,
+        )
+        assert nested.returncode != 0
+>       assert "E-C18-HOST-DRIFT" in nested.stdout + nested.stderr
+E       assert 'E-C18-HOST-DRIFT' in ('' + "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n")
+E        +  where '' = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stdout
+E        +  and   "ERROR  producer 'slice072-owner' in /tmp/ranex-remediation-82-test-root/pytest-of-soultransit/pytest-1/host-workflow-...a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n" = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY... key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n").stderr
+
+tests/e2e/test_host_workflow_real.py:486: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader]
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint]
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library]
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension]
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data]
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module]
+FAILED tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root]
+FAILED tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record
+FAILED tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors
+FAILED tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published
+FAILED tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope
+12 failed, 17 passed in 42.53s
