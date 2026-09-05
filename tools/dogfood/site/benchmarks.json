@@ -1,5 +1,5 @@
 {
-  "dogfood_iterations": 14,
+  "dogfood_iterations": 15,
   "environment": {
     "cpu_count": "16",
     "implementation": "CPython",
@@ -8,8 +8,8 @@
     "python": "3.14.7",
     "system": "Linux 7.0.0-30-generic"
   },
-  "generated_utc": "2026-09-05T18:33:41Z",
-  "git_head": "2dad4096166a207d01f5805c2308fa62a71d4ba9",
+  "generated_utc": "2026-09-05T22:01:42Z",
+  "git_head": "fc873c04c87481590ef1bb0dd3127ac07c69c891",
   "kernel_version": "0.1.2",
   "ledger": [
     {
@@ -95,6 +95,12 @@
       "git_head": "9a7b6ca3d84e0b90a2c5d9b2af33c12c00c32337",
       "iteration": 14,
       "scenarios": 43
+    },
+    {
+      "findings": 0,
+      "git_head": "fc873c04c87481590ef1bb0dd3127ac07c69c891",
+      "iteration": 15,
+      "scenarios": 43
     }
   ],
   "proof_board": {
@@ -128,29 +134,29 @@
   "scaling": {
     "journal-append": [
       {
-        "median_ms": 215.85657401010394,
+        "median_ms": 221.8948479858227,
         "rows": 100
       },
       {
-        "median_ms": 1113.973770989105,
+        "median_ms": 1087.2713779681362,
         "rows": 500
       },
       {
-        "median_ms": 4432.504747994244,
+        "median_ms": 4505.450992030092,
         "rows": 2000
       }
     ],
     "journal-verify": [
       {
-        "median_ms": 1.1616629781201482,
+        "median_ms": 1.1645900085568428,
         "rows": 100
       },
       {
-        "median_ms": 4.847683012485504,
+        "median_ms": 3.9569499786011875,
         "rows": 500
       },
       {
-        "median_ms": 17.216355947311968,
+        "median_ms": 18.911120016127825,
         "rows": 2000
       }
     ]
@@ -161,14 +167,14 @@
       "area": "journal",
       "id": "journal-append-100",
       "label": "append 100 chained evaluation rows",
-      "max": 232.984,
-      "median": 215.857,
-      "min": 214.05,
+      "max": 228.142,
+      "median": 221.895,
+      "min": 219.642,
       "repeats": 3,
       "samples": [
-        215.857,
-        214.05,
-        232.984
+        221.895,
+        228.142,
+        219.642
       ],
       "unit": "ms total"
     },
@@ -176,14 +182,14 @@
       "area": "journal",
       "id": "journal-append-500",
       "label": "append 500 chained evaluation rows",
-      "max": 1159.421,
-      "median": 1113.974,
-      "min": 1111.144,
+      "max": 1155.713,
+      "median": 1087.271,
+      "min": 1077.182,
       "repeats": 3,
       "samples": [
-        1159.421,
-        1111.144,
-        1113.974
+        1155.713,
+        1087.271,
+        1077.182
       ],
       "unit": "ms total"
     },
@@ -191,14 +197,14 @@
       "area": "journal",
       "id": "journal-append-2000",
       "label": "append 2000 chained evaluation rows",
-      "max": 4536.89,
-      "median": 4432.505,
-      "min": 4378.508,
+      "max": 4597.25,
+      "median": 4505.451,
+      "min": 4458.185,
       "repeats": 3,
       "samples": [
-        4536.89,
-        4432.505,
-        4378.508
+        4597.25,
+        4505.451,
+        4458.185
       ],
       "unit": "ms total"
     },
@@ -206,14 +212,14 @@
       "area": "journal",
       "id": "journal-verify-100",
       "label": "verify chain of 100 rows (recompute all links)",
-      "max": 1.261,
-      "median": 1.162,
-      "min": 1.138,
+      "max": 1.274,
+      "median": 1.165,
+      "min": 1.02,
       "repeats": 3,
       "samples": [
-        1.261,
-        1.162,
-        1.138
+        1.274,
+        1.02,
+        1.165
       ],
       "unit": "ms"
     },
@@ -221,14 +227,14 @@
       "area": "journal",
       "id": "journal-verify-500",
       "label": "verify chain of 500 rows (recompute all links)",
-      "max": 4.928,
-      "median": 4.848,
-      "min": 3.867,
+      "max": 4.213,
+      "median": 3.957,
+      "min": 3.939,
       "repeats": 3,
       "samples": [
-        4.928,
-        4.848,
-        3.867
+        4.213,
+        3.939,
+        3.957
       ],
       "unit": "ms"
     },
@@ -236,14 +242,14 @@
       "area": "journal",
       "id": "journal-verify-2000",
       "label": "verify chain of 2000 rows (recompute all links)",
-      "max": 17.362,
-      "median": 17.216,
-      "min": 16.246,
+      "max": 23.774,
+      "median": 18.911,
+      "min": 16.046,
       "repeats": 3,
       "samples": [
-        17.362,
-        16.246,
-        17.216
+        23.774,
+        16.046,
+        18.911
       ],
       "unit": "ms"
     },
@@ -251,14 +257,14 @@
       "area": "admission",
       "id": "admission-200",
       "label": "admit 200 signed records (Ed25519 verify each)",
-      "max": 22.031,
-      "median": 21.82,
-      "min": 20.454,
+      "max": 24.12,
+      "median": 23.726,
+      "min": 21.811,
       "repeats": 3,
       "samples": [
-        21.82,
-        20.454,
-        22.031
+        23.726,
+        24.12,
+        21.811
       ],
       "unit": "ms"
     },
@@ -266,14 +272,14 @@
       "area": "signing",
       "id": "sign-200",
       "label": "Ed25519-sign 200 evidence payloads",
-      "max": 13.773,
-      "median": 12.567,
-      "min": 12.105,
+      "max": 11.851,
+      "median": 11.791,
+      "min": 11.454,
       "repeats": 3,
       "samples": [
-        13.773,
-        12.567,
-        12.105
+        11.454,
+        11.791,
+        11.851
       ],
       "unit": "ms"
     },
@@ -281,14 +287,14 @@
       "area": "signing",
       "id": "verify-200",
       "label": "Ed25519-verify 200 evidence payloads",
-      "max": 20.19,
-      "median": 19.932,
-      "min": 19.373,
+      "max": 20.256,
+      "median": 20.236,
+      "min": 20.159,
       "repeats": 3,
       "samples": [
-        19.373,
-        20.19,
-        19.932
+        20.256,
+        20.236,
+        20.159
       ],
       "unit": "ms"
     },
@@ -296,14 +302,14 @@
       "area": "verdict",
       "id": "evaluate-20claims-100calls",
       "label": "100 pure evaluations of a 20-claim gate",
-      "max": 7.836,
-      "median": 4.926,
-      "min": 4.612,
+      "max": 5.905,
+      "median": 5.398,
+      "min": 5.178,
       "repeats": 3,
       "samples": [
-        4.926,
-        7.836,
-        4.612
+        5.905,
+        5.398,
+        5.178
       ],
       "unit": "ms"
     },
@@ -311,14 +317,14 @@
       "area": "provisioning",
       "id": "select-wheels-real-lock",
       "label": "select wheels over the real committed uv.lock",
-      "max": 7.052,
-      "median": 5.09,
-      "min": 4.526,
+      "max": 5.665,
+      "median": 4.531,
+      "min": 4.361,
       "repeats": 3,
       "samples": [
-        7.052,
-        5.09,
-        4.526
+        5.665,
+        4.531,
+        4.361
       ],
       "unit": "ms"
     },
@@ -326,14 +332,14 @@
       "area": "canonical",
       "id": "canonical-json-1000",
       "label": "canonicalise 1000 medium documents",
-      "max": 8.552,
-      "median": 6.611,
-      "min": 6.481,
+      "max": 8.083,
+      "median": 7.517,
+      "min": 7.112,
       "repeats": 3,
       "samples": [
-        8.552,
-        6.611,
-        6.481
+        7.517,
+        8.083,
+        7.112
       ],
       "unit": "ms"
     },
@@ -341,14 +347,14 @@
       "area": "cli",
       "id": "cli-cold-start",
       "label": "ranex --help cold start (interpreter + imports)",
-      "max": 154.802,
-      "median": 150.72,
-      "min": 144.916,
+      "max": 157.469,
+      "median": 147.186,
+      "min": 144.061,
       "repeats": 3,
       "samples": [
-        150.72,
-        144.916,
-        154.802
+        144.061,
+        157.469,
+        147.186
       ],
       "unit": "ms"
     }
