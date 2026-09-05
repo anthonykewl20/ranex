@@ -1,0 +1,37 @@
+{
+  "commit": "701258fbc56af690d98a3d8cd08a7648e8bc5f89",
+  "command": "PYTEST_DEBUG_TEMPROOT=/tmp/ranex-remediation-82-final-6-root COVERAGE_PROCESS_START=$PWD/pyproject.toml COVERAGE_FILE=$PWD/.local/remediation-82/final-6-coverage/.coverage PYTHONPATH=$PWD/src:$PWD/tests/e2e/coverage systemd-run --user --scope --quiet --collect --same-dir --property=Delegate=yes --property=CPUAccounting=yes --property=MemoryAccounting=yes --property=TasksAccounting=yes uv run --frozen pytest -q --junitxml=.local/remediation-82/final-6.xml",
+  "exit": 0,
+  "passed": 1786,
+  "skipped": 9,
+  "seconds": 2125.39,
+  "checkout_clean_before_and_after": true,
+  "skips": [
+    "SLICE-054 real confinement unavailable: no delegated writable cgroup-v2 root",
+    "ranex-prereq:signing_key: RANEX_SIGNING_KEY is not set; the operator runs this stage",
+    "ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path",
+    "ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path",
+    "SLICE-035 Ranex real bootstrap: set RANEX_SLICE035_REAL=1",
+    "SLICE-035 kogg real bootstrap: set RANEX_SLICE035_REAL=1",
+    "ranex-context:fanout-gated: SLICE-036 (#19) has not closed; the fanout qualification assertions authored in this file stay skipped-with-name until a follow-up governed change enables them after #19 closes",
+    "SLICE-018 host qualification unavailable: no delegated writable cgroup-v2 root",
+    "CAP_MKNOD unavailable \u2014 device-node output-tamper refusal is host-unverified"
+  ],
+  "coverage": {
+    "source": "only current-source full regression plus actual receiver/storage/package and byte-verified external collection journeys",
+    "covered": 9544,
+    "statements": 12684,
+    "line_rate": 0.7524,
+    "existing_floor": 64,
+    "changed_lines": 207,
+    "changed_missing": 0,
+    "changed_coverage_percent": 100
+  },
+  "unverified": [
+    "live installed-App positive publication",
+    "GitHub unattended release activation without RANEX_RELEASE_TOKEN",
+    "Kogg qualification under its specified npm pin",
+    "original intermittent SQLite/burst failure attribution",
+    "general reporter truth and JUnit-lost non-strict XPASS"
+  ]
+}

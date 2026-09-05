@@ -1,0 +1,19 @@
+-------------
+Diff Coverage
+Diff: origin/main...HEAD, staged and unstaged changes
+-------------
+src/ranex/cli/main.py (100%)
+src/ranex/foundation/release_version.py (100%)
+src/ranex/foundation/suite_results.py (100%)
+src/ranex/github_app/binding.py (100%)
+src/ranex/github_app/receiver.py (100%)
+src/ranex/github_app/webhook.py (100%)
+src/ranex/governed_execution/adapters/persistence/sqlite/journal.py (100%)
+src/ranex/policy/adapters/configuration/yaml/principal_catalog.py (100%)
+src/ranex/policy/adapters/configuration/yaml/producer_keyring.py (100%)
+-------------
+Total:   207 lines
+Missing: 0 lines
+Coverage: 100%
+-------------
+

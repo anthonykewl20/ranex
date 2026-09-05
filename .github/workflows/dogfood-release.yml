@@ -54,7 +54,7 @@ jobs:
         if: steps.fix.outputs.eligible == 'true'
         run: |
           sudo apt-get update
-          sudo apt-get install --yes --no-install-recommends bubblewrap
+          sudo apt-get install --yes --no-install-recommends bubblewrap python3-pytest
           sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
       - name: Release a declared dogfood fix after testing its release commit
         if: steps.fix.outputs.eligible == 'true'

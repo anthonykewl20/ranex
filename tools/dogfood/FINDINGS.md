@@ -47,7 +47,10 @@ the generated worker script: the retained cold diagnostic shows all five workers
 without emissions. The indentation is corrected and generated Python syntax
 checked. The corrected cold-start journey at fd13edbc0 passed all 9 stages;
 its actual governed suite reported 1657 passed and 138 skipped, then the gate
-accepted freshly qualified host evidence. Full regression is still pending.
+accepted freshly qualified host evidence. The clean complete regression at
+701258fbc then passed 1786 tests with 9 named skips (2125.39 seconds).
+This verifies the corrected harness; the original abbreviated failure still
+does not establish a unique cause.
 This is not a live-agent fanout correctness proof.
 Receipt: `audits/2026-09-05-remediation/git-identity-race.json`.
 
