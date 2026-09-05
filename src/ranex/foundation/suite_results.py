@@ -121,6 +121,11 @@ def validate_suite_results(value: object) -> dict[str, object]:
 def _test_id(testcase: ET.Element) -> str:
     classname = testcase.get("classname")
     name = testcase.get("name")
+    if not classname and name and _outcome(testcase) == "error":
+        # Pytest's real CollectReport names the module in `name` and leaves
+        # `classname` empty. Retain that observed collection failure as its
+        # own ID; never manufacture outcomes for tests that did not execute.
+        return name
     if not classname or not name:
         raise ValueError("junitxml testcase must carry classname and name")
     parts = classname.split(".")

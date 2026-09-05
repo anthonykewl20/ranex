@@ -1,44 +1,39 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (owner-requested release audit, issue #81)
+**Updated:** 2026-09-05 (owner-requested remediation, issue #82)
 **Active slice:** none
 
-## Where we stopped
+## Work in progress
 
-Release audit and real reproducers retained in tools/dogfood/audits/2026-09-05/.
-Start at audit.json; FINDINGS.md explains F-001 through F-018.
-53 external-repository controls cover v0.1.0 and corrected source separately;
-16 real receiver controls reproduce nine defenses and seven gaps.
-52 independently refetched prior-art sources match their vendored bytes.
+Issue #82 follows the preserved release audit in tools/dogfood/audits/2026-09-05/.
+Owner requests remediation of all findings, real-data end-to-end stress runs,
+and automated padded patch releases. No finding is closed by this checkpoint.
 
-## Corrections
+Receiver now bounds connections and request reads, durably records completion,
+and permits retry after failed fetch/API attempts; signed malformed events refuse.
+Principal catalog retirement/conflicts are checked by admission loaders.
+Collection-error records retain actual observed module IDs.
+Journal connections close deterministically; corrupt JSON verifies false.
+Optional journal --expected-head compares against an independently retained head.
+Benchmark collection fixes rootdir; old fault receipts remain unchanged.
+Real bootstrap pin advances to the clean audited be228ca revision and its lock.
 
-Guardian argv[0] names its resolved interpreter; execution still uses the
-verified fd. The Python 3.11 real execution-family check passes all seven tests.
-Host-workflow acceptance now invokes each provisioned clone's CLI. Its same
-seven real checks pass with no skips; 22 other direct host checks also pass.
-Suite manifest, dependency lock, signing domain, and verdict kernel unchanged.
+## Evidence so far
 
-## Validation
+Both receiver probe reruns: 16 verified receiving-boundary controls each.
+Original config-parse and semver agent patches: real bare suites GREEN and
+governed gates PASS after the rootdir correction. Receipts currently in
+.local/remediation-82/; archive final evidence before completing this issue.
+These runs do not establish live GitHub App publication or exhaustive correctness.
 
-The single closing comment on #81 records the final clean commit's exact SHA
-and `uv run --frozen pytest -q` result. Detailed pre-commit results are in the
-audit archive; failures and named skips are preserved alongside successes.
-The released full-run aggregate is exploratory; isolated cold start confirms
-8 passed, 1 failed. Live historical bootstrap and an extra tooling guard fail.
-An observed journal contention timeout did not recur in its isolated rerun.
+## Remaining
 
-## Next
-
-Fix receiver bounded reads and durable delivery/retry state (F-007/008/009).
-Wire principal retirement into admission; reconcile XPASS/collection claims.
-Repair bootstrap, benchmark attribution, and nested host integration.
-Independent reporter truth and anchored replay/history remain explicit limits.
-
-## Known limits
-
-UNVERIFIED: live GitHub App/PR/ruleset and credentialed provider journeys,
-unexecuted host/platform branches, and complete nested-host failure causes.
-A hostile pytest reporter can receive authentic signed PASS for broken code.
-Journal truncation/rewrite and ordinary evidence replay remain accepted.
+Stress real sockets, Git recovery, storage concurrency, signed external execution;
+run sequential qualified-host/nested journeys and the updated real bootstrap.
+Validate release preparation/build/publication and complete frozen regression CI.
+Reconcile every finding with its actual evidence; keep residual limits explicit.
+Release workflow requires the owner's RANEX_RELEASE_TOKEN repository secret.
+Live installed App target/credentials have been requested from the owner.
+Reporter truth, non-strict XPASS lost by JUnit, and replay of unchanged evidence
+remain limitations; external-head verification requires a separately trusted anchor.

@@ -1,0 +1,61 @@
+name: Dogfood release
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dogfood-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'push' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      GH_TOKEN: ${{ secrets.RANEX_RELEASE_TOKEN }}
+      RELEASE_HEAD: ${{ github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          fetch-depth: 0
+          token: ${{ secrets.RANEX_RELEASE_TOKEN || github.token }}
+      - name: Identify an explicit dogfood fix
+        id: fix
+        run: |
+          if git log -1 --format=%B | grep -Eq '^Dogfood-Fixes: F-[0-9]{3}(, F-[0-9]{3})*$' &&
+             git log -1 --format=%B | grep -Eq '^Fixes #[0-9]+$'; then
+            echo 'eligible=true' >> "$GITHUB_OUTPUT"
+          fi
+      - name: Require the owner's release identity
+        if: steps.fix.outputs.eligible == 'true'
+        run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo '::error::UNVERIFIED: configure RANEX_RELEASE_TOKEN for anthonykewl20; no release was attempted'
+            exit 1
+          fi
+          gh auth status --active --hostname github.com
+          test "$(gh api user --jq .login)" = anthonykewl20
+      - uses: astral-sh/setup-uv@c771a70e6277c0a99b617c7a806ffedaca235ff9 # v9.0.0
+        if: steps.fix.outputs.eligible == 'true'
+        with:
+          python-version: '3.14'
+      - name: Install the existing real confinement prerequisites
+        if: steps.fix.outputs.eligible == 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends bubblewrap
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+      - name: Release a declared dogfood fix after testing its release commit
+        if: steps.fix.outputs.eligible == 'true'
+        run: uv run --frozen python tools/dogfood/release.py auto --expected-head "$RELEASE_HEAD"

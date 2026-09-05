@@ -52,6 +52,10 @@ def harness_fault_reason(entry: dict[str, Any]) -> str | None:
         return "signing key path did not resolve"
     if exit_code not in (0, 1, None) and "file or directory not found: pytest" in error:
         return "bound command invoked pytest as a test path"
+    if exit_code == 0 and "missing test ID(s): tools/dogfood/oss_bench/results/" in (
+        gate.get("gate_output") or ""
+    ):
+        return "pristine manifest inherited the enclosing benchmark checkout's pytest root"
     return None
 
 

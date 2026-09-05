@@ -9,6 +9,7 @@ own hashes. No GitHub API response is ever asked what a commit contains.
 from __future__ import annotations
 
 import re
+import subprocess
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -55,7 +56,12 @@ def fetch_pr_head(repository_root: Path, remote: str, head_sha: str) -> None:
     point a name at — only by the object GitHub's event named.
     """
 
-    fetched = git(repository_root, "fetch", "--no-tags", remote, head_sha)
+    if not isinstance(head_sha, str) or not _SHA_PATTERN.fullmatch(head_sha):
+        raise BindingRefusal("E-GITHUB-BAD-SHA", "head must be a 40-hex commit id")
+    try:
+        fetched = git(repository_root, "fetch", "--no-tags", remote, head_sha, timeout=30)
+    except subprocess.TimeoutExpired as exc:
+        raise BindingRefusal("E-GITHUB-UNFETCHABLE-HEAD", "git fetch exceeded 30 seconds") from exc
     if fetched.returncode != 0:
         raise BindingRefusal(
             "E-GITHUB-UNFETCHABLE-HEAD",

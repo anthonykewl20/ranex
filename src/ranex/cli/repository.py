@@ -33,6 +33,7 @@ def git(
     *arguments: str,
     text: bool = True,
     overrides: Mapping[str, str] | None = None,
+    timeout: float | None = None,
 ) -> subprocess.CompletedProcess:
     """Ask git a question about this repository, refusing local substitutions.
 
@@ -74,6 +75,7 @@ def git(
         text=text,
         check=False,
         env=environment,
+        timeout=timeout,
     )
 
 

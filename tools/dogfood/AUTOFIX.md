@@ -64,22 +64,40 @@ DO NOT TOUCH while unattended (diagnose only, leave for the owner):
 
 ## Automated versioning (after successful fixes)
 
-A fix that lands through the cycle above is a release-worthy change. The
-loop cuts it following the repo's OWN release convention (see the v0.1.0
-commit 02b637815 for the reference shape):
+A completed dogfood fix commit carries two explicit trailers, for example:
 
-- Bump `pyproject.toml` version: PATCH for fixes (`0.1.0 -> 0.1.1`), MINOR
-  for added capability (`0.1.x -> 0.2.0`). Never jump MAJOR unattended.
-- Re-derive the lock surgically and epoch-preserving:
-  `uv lock --exclude-newer <governance/deps.yaml exclude_newer>` — the only
-  acceptable delta is the ranex version entry.
-- Update `docs/STATE.md` (rewrite, <=50 lines) to record the release.
-- Commit format: `release: vX.Y.Z — close the #N gate` when a release-gate
-  issue is open, else `release: vX.Y.Z` with a one-line summary of what the
-  release fixes/adds. Push fast-forward; verify remote tip.
-- A release is only cut when the final commit has `uv run --frozen pytest
-  -q` green AND no frozen-suite test-ID changes are pending owner action.
-  If either fails, ship the fix without a version bump and note why.
+```text
+Dogfood-Fixes: F-007, F-008, F-009
+Fixes #82
+```
+
+`.github/workflows/dogfood-release.yml` runs after successful push CI on
+upstream main. It ignores PRs and commits without those trailers. Configure
+`RANEX_RELEASE_TOKEN` as a repository secret for `anthonykewl20`; the workflow
+refuses a missing or different identity. The token needs permission to push
+main and release tags; branch protection still applies.
+
+The workflow calls `uv run --frozen python tools/dogfood/release.py auto
+--expected-head <successful-CI-SHA>`. The same command works on the operator
+host with its existing gh login. It refuses dirty or stale checkouts, checks
+the issue exists, creates the release commit, then runs the exact frozen
+suite on that commit and builds real wheel/sdist artifacts before publishing.
+Real end-to-end acceptance receipts belong to the fix; the regression suite
+does not substitute for them. Failed validation publishes nothing.
+
+Tags use `vMAJOR.MINOR.PPP`, starting at `v0.1.001` after the immutable
+`v0.1.0`. Package metadata is normalized by Python packaging (`0.1.1`). Patch
+999 rolls to the next minor's 000; major versions never advance automatically.
+The epoch-preserving re-lock is parsed and compared: only Ranex's version may
+change. Publication atomically pushes main fast-forward and a fresh annotated
+tag, then verifies both remote tips. Existing tags are never moved. A release
+commit has no fix trailers, so its CI completion cannot cause a release loop.
+
+`release.py version` prints the padded spelling of the current package
+version; `release.py prepare` prepares the next version and lock without
+committing or publishing. Do not call `prepare` before `auto`, which owns
+the entire bump. An unsuccessful local `auto` may leave its unpublished
+candidate commit for diagnosis; inspect it before attempting another release.
 
 ## Release-triggered OSS benchmark (two-arm VulcanBench)
 

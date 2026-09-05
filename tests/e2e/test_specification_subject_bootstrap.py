@@ -21,7 +21,7 @@ _spec.loader.exec_module(subjects)
 def test_subject_manifests_bind_real_subject_facts() -> None:
     ranex = subjects.load_subject(SPECIFICATION / "ranex-subject-v1.json")
     kogg = subjects.load_subject(SPECIFICATION / "kogg-subject-v1.json")
-    assert ranex["commit"] == "3d0924c9c8f8f0c5483c0dc62558fdd23c51e9ce"
+    assert ranex["commit"] == "be228cacea5789adbfdac71ab34ea469f5504b44"
     assert ranex["issue"] == 10
     assert kogg["commit"] == subjects.KOGG_PIN
     assert kogg["issue"] == 40

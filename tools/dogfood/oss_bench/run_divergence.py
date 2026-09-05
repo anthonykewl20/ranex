@@ -59,6 +59,7 @@ from two_arm import (  # noqa: E402
     journal_verified,
     pinned_python_has_pytest,
 )
+
 from ranex.foundation.signing import generate_keypair  # noqa: E402
 from ranex.foundation.suite_results import freeze_manifest  # noqa: E402
 
@@ -89,7 +90,6 @@ def build_manifest_governed_repo(task_dir: Path, out: Path, patch: Path | None
         else:
             shutil.copy2(item, repo / item.name)
     copy_hidden_tests(task_dir / "tests", repo)
-    test_files = test_files_for(task_dir)
     assert _git(repo, "init", "-q").returncode == 0
     assert _git(repo, "add", "-A").returncode == 0
     assert _git(repo, "commit", "-qm", "task base + pristine tests").returncode == 0
@@ -100,9 +100,9 @@ def build_manifest_governed_repo(task_dir: Path, out: Path, patch: Path | None
     selected = [entry for entry in metadata["tests"]["fail_to_pass"]]
     node_ids = node_ids_from_entries(selected)
     junit_cmd = [PY, "-m", "pytest", "-q",
-                 "--junitxml=governance/suite_results.xml", *node_ids]
+                 "--rootdir=.", "--junitxml=governance/suite_results.xml", *node_ids]
     probe_xml = out / "freeze-probe.xml"
-    probe_cmd = [PY, "-m", "pytest", "-q", f"--junitxml={probe_xml}", *node_ids]
+    probe_cmd = [PY, "-m", "pytest", "-q", "--rootdir=.", f"--junitxml={probe_xml}", *node_ids]
     subprocess.run(probe_cmd, cwd=str(repo), capture_output=True, check=False)
     manifest = freeze_manifest(probe_xml.read_bytes(), expected_skips={})
     probe_xml.unlink(missing_ok=True)
@@ -121,7 +121,7 @@ def build_manifest_governed_repo(task_dir: Path, out: Path, patch: Path | None
     key_path.write_text(private)
     key_path.chmod(0o600)
     (repo / "governance" / "producers.yaml").write_text(
-        "producers:\n  {}: {}\n".format(PRODUCER, public))
+        f"producers:\n  {PRODUCER}: {public}\n")
     (repo / "governance" / "gates.yaml").write_text(
         "gates:\n  - gate_id: landing\n    rule_id: TASK_TESTS\n    blocking: true\n"
         "    required_claims:\n      - claim_id: tests-executed\n"
@@ -153,7 +153,7 @@ def build_manifest_governed_repo(task_dir: Path, out: Path, patch: Path | None
 def bare_ci(repo: Path, junit_cmd: list[str]) -> dict:
     """What a normal CI does: run the test FILES in the tree, whatever they
     now contain. Deleted or weakened tests are invisible to it."""
-    files_cmd = [PY, "-m", "pytest", "-q",
+    files_cmd = [PY, "-m", "pytest", "-q", "--rootdir=.",
                  *sorted({part.split("::")[0] for part in junit_cmd[4:]
                           if "::" in part})]
     started = time.perf_counter()
@@ -316,7 +316,6 @@ def main() -> int:
         plan.append((task, None, effort or None))
 
     for task, run_id, effort in plan:
-        run_id_given = run_id is not None
         task_dir = None
         task_suite = "v1"
         for suite in ("v1", "coding-intelligence-index-v4"):

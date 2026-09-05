@@ -95,6 +95,12 @@ def load_keyring_text(text: str, source: object) -> dict[str, str]:
 
     if not isinstance(document, dict):
         raise KeyringError(f"keyring at {path} must be a mapping")
+    if "principals" in document:
+        # The principal parser reuses this module's YAML loader and validates
+        # the legacy producers block independently, without this optional block.
+        from ranex.policy.adapters.configuration.yaml.principal_catalog import load_principals_text
+
+        load_principals_text(text, source)
     if "producers" not in document:
         raise KeyringError(f"keyring at {path} has no 'producers' mapping")
 
@@ -163,11 +169,9 @@ def load_trust_keyring_text(text: str, source: object) -> TrustKeyring:
     except (KeyringError, yaml.YAMLError) as exc:
         raise KeyringError(f"cannot load keyring at {source}: {exc}") from exc
     # The block set is closed, and grows only by a deliberate edit here in the
-    # same change that admits the block — the conscious-extension mechanism, not
-    # an open document. SLICE-080/ADR-047 admits `principals`, which this loader
-    # deliberately does not read: the catalog is `principal_catalog`'s to parse,
-    # and `load_principals` refuses the file outright if the two blocks ever
-    # disagree about who owns a key. Optional, because a repository that has
+    # same change that admits the block. The optional principal catalog is
+    # parsed before admission so retirement and identity conflicts cannot be
+    # bypassed through the legacy loader. A repository that has
     # adopted only the older blocks must keep loading.
     if not isinstance(document, dict) or set(document) - {"principals"} != {
         "producers",
@@ -182,4 +186,13 @@ def load_trust_keyring_text(text: str, source: object) -> TrustKeyring:
         raise KeyringError("verdict_signer is malformed")
     if signer["id"] in producers or signer["public_key"] in producers.values():
         raise KeyringError("verdict_signer may not alias a producer")
+    if "principals" in document:
+        from ranex.policy.adapters.configuration.yaml.principal_catalog import load_principals_text
+
+        principals = load_principals_text(text, source)
+        principal = principals.resolve(signer["public_key"])
+        if principal is not None:
+            principals.require(signer["public_key"], role="service")
+            if principal.principal_id != signer["id"]:
+                raise KeyringError("verdict_signer and principal disagree about identity")
     return TrustKeyring(producers, signer["id"], signer["public_key"])

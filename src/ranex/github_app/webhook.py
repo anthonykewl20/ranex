@@ -14,6 +14,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 import json
+import re
 from dataclasses import dataclass
 from typing import Any
 
@@ -58,7 +59,7 @@ def validate_delivery(secret: str, body: bytes, signature_header: str | None) ->
         raise WebhookRefusal(
             "E-GITHUB-UNSIGNED-DELIVERY", f"{SIGNATURE_HEADER} is absent"
         )
-    if not hmac.compare_digest(
+    if not signature_header.isascii() or not hmac.compare_digest(
         delivery_signature(secret, body), signature_header.strip()
     ):
         raise WebhookRefusal("E-GITHUB-BAD-SIGNATURE", "signature does not match body")
@@ -83,10 +84,16 @@ def parse_pull_request_event(body: bytes) -> PullRequestEvent | None:
     grammar moved — an operator must hear about it, not watch it scroll past.
     """
 
-    value: Any = json.loads(body)
+    try:
+        value: Any = json.loads(body)
+    except (ValueError, UnicodeError, RecursionError) as exc:
+        raise WebhookRefusal("E-GITHUB-BAD-EVENT", "body is not valid JSON") from exc
     if not isinstance(value, dict):
         raise WebhookRefusal("E-GITHUB-BAD-EVENT", "body is not an object")
-    if value.get("action") not in HANDLED_ACTIONS:
+    action = value.get("action")
+    if not isinstance(action, str):
+        raise WebhookRefusal("E-GITHUB-BAD-EVENT", "action is not a string")
+    if action not in HANDLED_ACTIONS:
         return None
     try:
         pull_request = value["pull_request"]
@@ -98,10 +105,10 @@ def parse_pull_request_event(body: bytes) -> PullRequestEvent | None:
         raise WebhookRefusal(
             "E-GITHUB-BAD-EVENT", f"pull_request event lacks {exc}"
         ) from exc
-    return PullRequestEvent(
-        action=str(value["action"]),
-        head_sha=str(head),
-        repository=str(repository),
-        installation_id=int(installation),
-        number=int(number),
-    )
+    if (not isinstance(head, str) or not re.fullmatch(r"[0-9a-f]{40}", head)
+            or not isinstance(repository, str)
+            or not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository)
+            or type(installation) is not int or installation <= 0
+            or type(number) is not int or number <= 0):
+        raise WebhookRefusal("E-GITHUB-BAD-EVENT", "invalid head, repository, or identifier")
+    return PullRequestEvent(action, head, repository, installation, number)

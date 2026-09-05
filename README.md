@@ -126,6 +126,26 @@ kernel-only and source-run (see [Status](#status)).
   that `journal verify` rechecks link by link; every evidence record carries
   an Ed25519 signature verifiable against the committed public keyring.
 
+`journal verify --expected-head sha256:<digest>` also checks the chain against
+a head retained by an independent operator or service. Keep that head outside
+the writer's storage and update it only after reviewing new entries. Without
+it, verification proves internal consistency; truncation and a complete
+self-consistent rewrite remain undetectable. The command prints
+`external-anchor=UNVERIFIED` when no independent head was supplied.
+
+General `run` authenticates a command's observed report. It does not establish
+that worker-controlled tests or pytest plugins tell the truth, and unchanged
+valid evidence can be evaluated more than once. JUnit loses non-strict XPASS
+information in pytest: only XPASS outcomes actually present in the report can
+be blocked. Use independently controlled acceptance checks for a correctness
+claim; authentic signatures alone cannot establish one.
+
+Fix releases use tags `vMAJOR.MINOR.PPP`: `v0.1.001`, `v0.1.002`, and so on.
+Python package metadata uses the equivalent normalized `0.1.1`, `0.1.2`.
+The published `v0.1.0` stays unchanged. Dogfood fixes with explicit issue and
+finding trailers trigger the release workflow after CI succeeds; see
+[the release protocol](tools/dogfood/AUTOFIX.md#automated-versioning-after-successful-fixes).
+
 ---
 
 ## Target architecture — not the current product
@@ -1173,7 +1193,7 @@ code-backed [Status](#status) section above.
   vanished test read as success; the measured failure destroyed 27 tests while
   the remainder stayed green. Junitxml is bound in the digest-bound argv;
   signed structured outcomes use evidence v3; an outcome-blind manifest is
-  frozen from the suite; and its diff blocks undeclared skip, xfail, xpass,
+  frozen from the suite; and its diff blocks reported undeclared skip, xfail, xpass,
   error, or missing IDs. Delegated judging reads trust roots from the base tree.
   A hostile tree can forge the artifact; criterion 10's passing test states
   that boundary. Ranex's own gate now PASSes honestly and flips to FAIL when a
@@ -1403,10 +1423,16 @@ about the exact bytes a merge would land.
 
    TLS is the terminator's job — a reverse proxy in front, or the smee.io
    tunnel in development; the listener deliberately binds localhost and
-   processes one delivery at a time. Every delivery proves its
+   processes one delivery at a time, with at most 16 connections and a
+   five-second total request-read deadline. Excess connections are closed;
+   a busy delivery pipeline answers 503. Every delivery proves its
    `X-Hub-Signature-256` HMAC before a byte of it is parsed; replays are
-   no-ops; the delivery journal is `deliveries.jsonl` under the state dir
-   (`.local/ranex/github` by default).
+   no-ops after durable completion; failures remain retryable after restart.
+   The diagnostic journal is `deliveries.jsonl`; atomic completion receipts
+   live in `completed/` under the state dir (`.local/ranex/github` by default).
+   Preserve both on upgrades. GitHub does not automatically retry failed
+   deliveries: request redelivery in GitHub or through its API. A crash after
+   remote publication but before local completion can still duplicate a check.
 
 Producing verdicts is unchanged: a `gate evaluate` run against the PR head
 (wired with `RANEX_VERDICT_SIGNING_KEY` and `RANEX_VERDICT_DIR`) writes the

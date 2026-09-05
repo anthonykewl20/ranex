@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from contextlib import closing
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -100,7 +101,7 @@ class Journal:
 
         record = evaluation.as_record()
         payload = canonical_json(record)
-        with self._connect() as conn:
+        with closing(self._connect()) as conn, conn:
             conn.execute("BEGIN IMMEDIATE")
             row = conn.execute("SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1").fetchone()
             prev_link = row["link"] if row is not None else _GENESIS
@@ -122,7 +123,7 @@ class Journal:
 
         record = evaluation.as_record()
         payload = canonical_json(record)
-        with self._connect() as conn:
+        with closing(self._connect()) as conn, conn:
             conn.execute("BEGIN IMMEDIATE")
             row = conn.execute(
                 "SELECT seq, link FROM evaluations ORDER BY seq DESC LIMIT 1"
@@ -145,23 +146,27 @@ class Journal:
         return JournalAppend(position, prev_link, link)
 
     def entries(self) -> list[dict[str, Any]]:
-        with self._connect() as conn:
+        with closing(self._connect()) as conn, conn:
             rows = conn.execute("SELECT record FROM evaluations ORDER BY seq ASC").fetchall()
         return [json.loads(row["record"]) for row in rows]
 
     def head(self) -> str | None:
         """Return the current durable chain head without creating storage."""
 
-        with self._connect_for_verification() as conn:
+        with closing(self._connect_for_verification()) as conn, conn:
             row = conn.execute(
                 "SELECT link FROM evaluations ORDER BY seq DESC LIMIT 1"
             ).fetchone()
         return None if row is None else str(row["link"])
 
-    def verify(self) -> bool:
-        """Recompute the chain. False means a row changed outside `append`."""
+    def verify(self, *, expected_head: str | None = None) -> bool:
+        """Verify internal links and, optionally, an independently retained head.
 
-        with self._connect_for_verification() as conn:
+        Without an external head this detects inconsistent edits, not a
+        complete replacement or truncation of a self-consistent chain.
+        """
+
+        with closing(self._connect_for_verification()) as conn, conn:
             rows = conn.execute(
                 "SELECT record, prev_link, link FROM evaluations ORDER BY seq ASC"
             ).fetchall()
@@ -169,10 +174,13 @@ class Journal:
         for row in rows:
             if row["prev_link"] != prev_link:
                 return False
-            expected = "sha256:" + canonical_sha256(
-                {"prev_link": prev_link, "record": json.loads(row["record"])}
-            )
+            try:
+                expected = "sha256:" + canonical_sha256(
+                    {"prev_link": prev_link, "record": json.loads(row["record"])}
+                )
+            except (ValueError, TypeError, RecursionError):
+                return False
             if expected != row["link"]:
                 return False
             prev_link = row["link"]
-        return True
+        return expected_head is None or prev_link == expected_head

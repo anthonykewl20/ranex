@@ -33,10 +33,10 @@ LAST_KOGG_RUN: dict[str, object] = {}
 _EXPECTED: dict[str, dict[str, object]] = {
     "ranex": {
         "repository": RANEX_REPOSITORY,
-        "commit": "3d0924c9c8f8f0c5483c0dc62558fdd23c51e9ce",
+        "commit": "be228cacea5789adbfdac71ab34ea469f5504b44",
         "issue": 10,
         "license": "MIT",
-        "lockfile": ("uv.lock", "dadf979ec0c984e2ee0aa2f1f46804c63ea8c4eebf9519cfb423d4b66be3b5c2"),
+        "lockfile": ("uv.lock", "ed9a11d830942f082565f3028e958d8f6c7025e5391396999a1f6ea76e04e3e7"),
         "package_manager": ("uv", "sync", "--frozen"),
         "process_commands": (
             ("uv", "run", "--frozen", "pytest", "-q", "tests/contract/test_docs_discipline.py"),

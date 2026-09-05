@@ -1091,9 +1091,12 @@ def _journal_first_broken_row(journal_path: Path) -> tuple[int, int, int] | None
     for ordinal, (seq, record, prev_link, link) in enumerate(rows, start=1):
         if prev_link != previous:
             return seq, ordinal, len(rows)
-        expected = "sha256:" + canonical_sha256(
-            {"prev_link": previous, "record": json.loads(record)}
-        )
+        try:
+            expected = "sha256:" + canonical_sha256(
+                {"prev_link": previous, "record": json.loads(record)}
+            )
+        except (ValueError, TypeError, RecursionError):
+            return seq, ordinal, len(rows)
         if expected != link:
             return seq, ordinal, len(rows)
         previous = link
@@ -1123,7 +1126,10 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         # verifier's immutable read-only connection separately prevents writes.
         if not journal_path.is_file():
             raise ValueError(f"journal does not exist: {journal_path}")
-        verified = Journal(journal_path).verify()
+        expected_head = getattr(args, "expected_head", None)
+        if expected_head is not None and re.fullmatch(r"sha256:[0-9a-f]{64}", expected_head) is None:
+            raise ValueError("--expected-head must be a canonical sha256 digest")
+        verified = Journal(journal_path).verify(expected_head=expected_head)
         # The naming walk reads the same database verify just read, so it
         # belongs inside the same refusal surface: a SQLite failure here is
         # an operational refusal (exit 2), never a mangled verdict print.
@@ -1139,7 +1145,8 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         return EXIT_USAGE
 
     if verified:
-        print(f"PASS  journal={journal_path}  chain=verified")
+        anchor = "matched" if expected_head is not None else "UNVERIFIED"
+        print(f"PASS  journal={journal_path}  chain=verified  external-anchor={anchor}")
         return EXIT_PASS
     # Sad path 3's demand (issue #36): the refusal names WHICH row broke the
     # chain — seq plus ordinal — so the operator inspects the edited row, not
@@ -4204,6 +4211,7 @@ def build_parser() -> argparse.ArgumentParser:
     verify = journal.add_parser("verify", help="verify the journal hash chain")
     verify.add_argument("--repository", default=".", help="repository root")
     verify.add_argument("--journal", default=DEFAULT_JOURNAL, help="journal path")
+    verify.add_argument("--expected-head", help="chain head retained outside this journal's trust boundary")
     verify.set_defaults(func=cmd_journal_verify)
 
     rn = sub.add_parser("run", help="run a command and record evidence of it")

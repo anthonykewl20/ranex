@@ -2,12 +2,12 @@
   "schema": "ranex-provider-subject-v1",
   "name": "ranex",
   "repository": "https://github.com/anthonykewl20/ranex.git",
-  "commit": "3d0924c9c8f8f0c5483c0dc62558fdd23c51e9ce",
+  "commit": "be228cacea5789adbfdac71ab34ea469f5504b44",
   "issue": 10,
   "license": "MIT",
   "lockfile": {
     "path": "uv.lock",
-    "sha256": "dadf979ec0c984e2ee0aa2f1f46804c63ea8c4eebf9519cfb423d4b66be3b5c2"
+    "sha256": "ed9a11d830942f082565f3028e958d8f6c7025e5391396999a1f6ea76e04e3e7"
   },
   "package_manager": {"command": ["uv", "sync", "--frozen"]},
   "process_commands": [
