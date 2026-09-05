@@ -139,6 +139,13 @@ def _outcome(testcase: ET.Element) -> str:
         child for child in testcase if child.tag.rsplit("}", 1)[-1] in {"skipped", "failure", "error"}
     ]
     if len(outcome_children) > 1:
+        if not testcase.get("classname") and all(
+            child.tag.rsplit("}", 1)[-1] == "error" for child in outcome_children
+        ):
+            # Repeated node selections can produce many collection errors in
+            # one module's real pytest testcase. They are one failed collector,
+            # not contradictory executed-test outcomes and never a pass.
+            return "error"
         raise ValueError("junitxml testcase carries multiple outcome children")
     if not outcome_children:
         return "passed"
