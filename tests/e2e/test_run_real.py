@@ -252,11 +252,7 @@ def _register_family_gate(subject: Path, producer: str, public: str) -> None:
     """Register the journey's producer and gate in the committed tree."""
 
     keyring = subject / "governance" / "producers.yaml"
-    lines = keyring.read_text(encoding="utf-8").splitlines(keepends=True)
-    header = next((i for i, line in enumerate(lines) if line.rstrip() == "producers:"), None)
-    assert header is not None, "the committed keyring carries no producers: mapping"
-    lines.insert(header + 1, f"  {producer}: {public}\n")
-    keyring.write_text("".join(lines), encoding="utf-8")
+    _prereqs.register_worker_key(keyring, producer, public)
 
     with (subject / "governance" / "gates.yaml").open("a", encoding="utf-8") as file:
         file.write(
@@ -699,11 +695,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     public = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
     assert public, f"keygen printed no public key: {generated.stdout!r}"
     keyring = subject / "governance" / "producers.yaml"
-    keyring_text = keyring.read_text(encoding="utf-8")
-    keyring.write_text(
-        keyring_text.replace("producers:\n", f"producers:\n  {producer}: {public.group(1)}\n", 1),
-        encoding="utf-8",
-    )
+    _prereqs.register_worker_key(keyring, producer, public.group(1))
     committed = git(subject, "add", "governance/producers.yaml")
     assert committed.returncode == 0, committed.stderr
     committed = git(subject, "commit", "-q", "-m", "register lifecycle RED producer")

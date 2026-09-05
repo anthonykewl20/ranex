@@ -15,8 +15,11 @@ Kogg clone. With its specified npm 11.6.0 on Node 24.18.0, `npm ci` fails loadin
 `lightningcss-linux-x64-gnu`. A retained diagnostic checkout with npm 11.16.0
 builds from the unchanged lock, then `npm test` exits 1 with 17 failing tests
 (UI navigation plus workspace/AST runtime tests). Kogg's own CI and `.nvmrc`
-select Node 22; that environment remains UNVERIFIED. These observations do not
-establish a current Ranex kernel failure or universal upstream failure.
+select Node 22. A fresh live controller run on checksum-verified Node 22.23.2
+and pinned npm 11.6.0 also fails during `npm ci` in the lightningcss load path.
+Receipts: `kogg-node22-2.json` and `node22-SHASUMS256.txt` in the remediation
+archive. Node 22 with a changed npm pin remains unqualified. These observations
+do not establish a current Ranex kernel failure or universal upstream failure.
 
 The bootstrap now checks the actual npm version before execution and refuses
 a mismatch; it does not call a real build failure credential-BLOCKED or PASS.

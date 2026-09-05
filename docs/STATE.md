@@ -24,11 +24,12 @@ Evidence: tools/dogfood/audits/2026-09-05-remediation/.
 
 ## Completion gates still running
 
-Final frozen regression/coverage and actual versioned publication remain pending.
+Final regression/coverage and versioned publication remain pending. Real clone
+onboarding helpers now register generated keys in both current trust roots.
 Automatic releases use vMAJOR.MINOR.PPP after explicit dogfood-fix trailers.
 The GitHub workflow needs the owner's RANEX_RELEASE_TOKEN secret.
 Live installed-App publication and Kogg qualification remain UNVERIFIED.
-Kogg's pinned npm build failed; a newer npm diagnostic reached 17 failing tests.
+Kogg's pinned npm build failed on Node 22 and 24; newer npm reached 17 failing tests.
 Reporter truth, JUnit's lost non-strict XPASS and unchanged-evidence reuse remain
 explicit boundaries. The GitHub publisher host/App credentials are trusted.
 Chock's real onboarding comparison is archived; MAP names Ranex's adoption gaps.

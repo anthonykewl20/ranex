@@ -1,0 +1,3 @@
+{"event":"version","sid":"20260905T095308.807956Z-desk-tony-1939575","time":1788601988.968,"level":null,"module":null,"stage":null,"subject_digest":null,"duration_us":null,"hierarchy":null,"child_id":null,"code":null,"evt":4,"exe":"0.1.0"}
+{"event":"stage","sid":"20260905T095308.807956Z-desk-tony-1939575","time":1788601988.968,"level":"info","module":"cli","stage":"cli.journal.verify.start","subject_digest":null,"duration_us":null,"hierarchy":null,"child_id":null,"code":null}
+{"event":"stage","sid":"20260905T095308.807956Z-desk-tony-1939575","time":1788601988.972,"level":"info","module":"cli","stage":"cli.journal.verify.end","subject_digest":null,"duration_us":84530,"hierarchy":null,"child_id":null,"code":"exit:0"}

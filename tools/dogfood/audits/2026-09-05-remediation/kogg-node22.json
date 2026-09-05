@@ -1,0 +1,9 @@
+{
+  "kernel": "5163a3d4b5648cd71262eb886029945c5c8790ba",
+  "node": "v22.23.2",
+  "npm": "10.9.8",
+  "subject": "dc3763d9517eda5919dfce8bac7f251517b82c7d",
+  "outcome": "FAILED",
+  "error": "SLICE-035 subject drift: subject-package-manager-drift",
+  "seconds": 11.025670089991763
+}

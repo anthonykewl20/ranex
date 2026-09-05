@@ -1,0 +1,108 @@
+[
+  {
+    "command": [
+      "git",
+      "clone",
+      "-q",
+      "/home/soultransit/devtony/ranex",
+      "/tmp/ranex-remediation-82-principal-onboarding/repo"
+    ],
+    "cwd": "/home/soultransit/devtony/ranex",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "config",
+      "user.name",
+      "Ranex real onboarding"
+    ],
+    "cwd": "/tmp/ranex-remediation-82-principal-onboarding/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "config",
+      "user.email",
+      "ranex-onboarding@example.invalid"
+    ],
+    "cwd": "/tmp/ranex-remediation-82-principal-onboarding/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/home/soultransit/devtony/ranex/.venv/bin/python",
+      "-m",
+      "ranex.cli.main",
+      "keygen",
+      "--producer",
+      "execution-family"
+    ],
+    "cwd": "/tmp/ranex-remediation-82-principal-onboarding/repo",
+    "exit": 0,
+    "stdout": "WROTE  /tmp/ranex-remediation-82-principal-onboarding/worker.key  mode 0600\n       register the producer in the committed keyring (governance/producers.yaml). It is one `producers` mapping \u2014 create the file with exactly this, or if it already exists add only the indented line:\n  producers:\n    execution-family: ed25519:hTgMOK6dOli4rzQpKpH2duGEAf13THqEFpqMH3J58r0=\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "rm",
+      "-q",
+      "governance/deps.yaml"
+    ],
+    "cwd": "/tmp/ranex-remediation-82-principal-onboarding/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "add",
+      "governance/producers.yaml"
+    ],
+    "cwd": "/tmp/ranex-remediation-82-principal-onboarding/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "git",
+      "commit",
+      "-qm",
+      "register a real keygen producer"
+    ],
+    "cwd": "/tmp/ranex-remediation-82-principal-onboarding/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/home/soultransit/devtony/ranex/.venv/bin/python",
+      "-m",
+      "ranex.cli.main",
+      "run",
+      "--claim",
+      "tree-clean",
+      "--producer",
+      "execution-family",
+      "--",
+      "git",
+      "status",
+      "--porcelain"
+    ],
+    "cwd": "/tmp/ranex-remediation-82-principal-onboarding/repo",
+    "exit": 2,
+    "stdout": "",
+    "stderr": "ERROR  producer 'execution-family' in /tmp/ranex-remediation-82-principal-onboarding/repo/governance/producers.yaml holds a key the principal catalog does not carry; evidence admitted by one trust root would be unattributable in the other\n"
+  }
+]

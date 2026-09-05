@@ -227,11 +227,7 @@ def _clone_real(destination: Path, identity: str) -> None:
 
 def _register_producer(subject: Path, public: str) -> None:
     keyring = subject / "governance" / "producers.yaml"
-    lines = keyring.read_text(encoding="utf-8").splitlines(keepends=True)
-    header = next((i for i, line in enumerate(lines) if line.rstrip() == "producers:"), None)
-    assert header is not None, "the committed keyring carries no producers: mapping"
-    lines.insert(header + 1, f"  {FAMILY_PRODUCER}: {public}\n")
-    keyring.write_text("".join(lines), encoding="utf-8")
+    _prereqs.register_worker_key(keyring, FAMILY_PRODUCER, public)
     subprocess.run(["git", "-C", str(subject), "rm", "-q", "governance/deps.yaml"], check=True)
     subprocess.run(["git", "-C", str(subject), "add", "governance/producers.yaml"], check=True)
     subprocess.run(

@@ -61,6 +61,26 @@ from collections.abc import Mapping
 from pathlib import Path
 from xml.etree import ElementTree
 
+
+def register_worker_key(keyring: Path, producer: str, public: str) -> None:
+    """Register a real keygen key in every trust root present in a clone.
+
+    Historical producer-only catalogs remain supported. Current catalogs also
+    require attribution to an active worker principal before evidence admission.
+    """
+    lines = keyring.read_text(encoding="utf-8").splitlines(keepends=True)
+    header = next(i for i, line in enumerate(lines) if line.rstrip() == "producers:")
+    lines.insert(header + 1, f"  {producer}: {public}\n")
+    if any(line.rstrip() == "principals:" for line in lines):
+        header = next(i for i, line in enumerate(lines) if line.rstrip() == "principals:")
+        lines.insert(
+            header + 1,
+            f"  {producer}:\n    role: worker\n    keys:\n"
+            f"      - key: {public}\n        status: active\n",
+        )
+    keyring.write_text("".join(lines), encoding="utf-8")
+
+
 E2E_DIR = Path(__file__).resolve().parent
 REPO_ROOT = E2E_DIR.parents[1]
 

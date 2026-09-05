@@ -1,0 +1,253 @@
+............F........................................................... [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........s........FFFFFFF.....................
+=================================== FAILURES ===================================
+_____ test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request ______
+
+    def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> None:
+        """CI must be a real, minimal gate rather than an aspirational YAML file."""
+    
+        workflow_text = WORKFLOW.read_text(encoding="utf-8")
+        workflow = yaml.safe_load(workflow_text)
+    
+        assert isinstance(workflow, dict)
+        # PyYAML follows YAML 1.1, under which the unquoted GitHub Actions key
+        # ``on`` becomes True. Accept only that parser normalization or the literal.
+        triggers = workflow.get("on", workflow.get(True))
+        assert isinstance(triggers, dict)
+        assert set(triggers) == {"push", "pull_request", "schedule"}
+        assert triggers["schedule"] == [{"cron": "0 9 * * 1"}]
+    
+        jobs = workflow.get("jobs")
+        assert isinstance(jobs, dict)
+        assert set(jobs) == {"test", "osv-scan"}
+        job = jobs["test"]
+        assert set(job) == {"runs-on", "timeout-minutes", "permissions", "steps"}
+>       assert job["timeout-minutes"] == 10
+E       assert 120 == 10
+
+tests/contract/test_ci_workflow.py:50: AssertionError
+____________ test_time_is_an_epoch_float_truncated_to_milliseconds _____________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_time_is_an_epoch_float_tr0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7dd30ce87850>
+
+    def test_time_is_an_epoch_float_truncated_to_milliseconds(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """time = time.time(), UTC, millisecond-truncated: int(now*1000)/1000.0.
+    
+        ADR-031's text governs over issue #34's review-comment "RFC 3339" reading;
+        git trace2's event target — the ADR's named precedent — also renders time
+        as an epoch float.
+        """
+    
+        target = tmp_path / "trace.jsonl"
+        observability = _fresh_observability(
+            monkeypatch, {"RANEX_TRACE": str(target)}
+        )
+        before = time.time()
+        _emit_notes(observability, "cap_exceeded")
+        after = time.time()
+    
+        events = _events(target)
+>       assert events, "an admitted target must receive events"
+E       AssertionError: an admitted target must receive events
+E       assert []
+
+tests/contract/test_trace_schema.py:205: AssertionError
+----------------------------- Captured stderr call -----------------------------
+ranex-trace: RANEX_TRACE: trace target /tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_time_is_an_epoch_float_tr0/trace.jsonl: the governed tree /home/soultransit/devtony/ranex is too large to prove non-aliasing; refused fail-closed; tracing stays off for this variable
+________________ test_code_grammar_accepts_the_frozen_examples _________________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_code_grammar_accepts_the_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7dd30d0f75b0>
+
+    def test_code_grammar_accepts_the_frozen_examples(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """code = kind[:arg], arg matching [A-Za-z0-9_.=+,:-]{1,200}."""
+    
+        target = tmp_path / "trace.jsonl"
+        observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+        accepted = (
+            "exit:0",
+            "exit:-1",
+            "undeclared_field:len=33,sha256_8=29a80d62",
+            "malformed_parent_sid:af_unix",
+            "cap_exceeded",
+            "target_admission_failed",
+            "oversized_event:len=16385",
+            "emission_refused",
+        )
+        _emit_notes(observability, *accepted)
+    
+        notes = {
+            event["code"]
+            for event in _events(target)
+            if event["event"] == "note"
+        }
+>       assert set(accepted) <= notes
+E       AssertionError: assert {'cap_exceede...n=16385', ...} <= set()
+E         
+E         Extra items in the left set:
+E         'oversized_event:len=16385'
+E         'exit:-1'
+E         'malformed_parent_sid:af_unix'
+E         'cap_exceeded'
+E         'exit:0'...
+E         
+E         ...Full output truncated (3 lines hidden), use '-vv' to show
+
+tests/contract/test_trace_schema.py:240: AssertionError
+----------------------------- Captured stderr call -----------------------------
+ranex-trace: RANEX_TRACE: trace target /tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_code_grammar_accepts_the_0/trace.jsonl: the governed tree /home/soultransit/devtony/ranex is too large to prove non-aliasing; refused fail-closed; tracing stays off for this variable
+________________ test_code_grammar_refuses_oversized_arguments _________________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_code_grammar_refuses_over0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7dd30ce96f90>
+
+    def test_code_grammar_refuses_oversized_arguments(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        target = tmp_path / "trace.jsonl"
+        observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+        oversized = "exit:" + "0" * 201
+        _emit_notes(observability, oversized)
+    
+        text = target.read_text(encoding="utf-8")
+        assert "0" * 201 not in text, "a refused argument must never reach the stream"
+        refusals = [
+            event["code"] for event in _events(target) if event["event"] == "refusal"
+        ]
+>       assert any(code.startswith("out_of_form:code:") for code in refusals), refusals
+E       AssertionError: []
+E       assert False
+E        +  where False = any(<generator object test_code_grammar_refuses_oversized_arguments.<locals>.<genexpr> at 0x7dd30ddcf220>)
+
+tests/contract/test_trace_schema.py:256: AssertionError
+----------------------------- Captured stderr call -----------------------------
+ranex-trace: RANEX_TRACE: trace target /tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_code_grammar_refuses_over0/trace.jsonl: the governed tree /home/soultransit/devtony/ranex is too large to prove non-aliasing; refused fail-closed; tracing stays off for this variable
+_______________ test_version_event_is_the_discriminated_variant ________________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_version_event_is_the_disc0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7dd30ce474d0>
+
+    def test_version_event_is_the_discriminated_variant(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """The internal first write is a literal-built version event; screened
+        version emissions follow variant discipline (evt/exe only on version;
+        non-null stage fields on version are out-of-form)."""
+    
+        target = tmp_path / "trace.jsonl"
+        observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+        observability.emit_raw(
+            {"event": "note", "level": "warn", "module": "observability",
+             "stage": "observability.note"}
+        )
+    
+        events = _events(target)
+>       first = events[0]
+                ^^^^^^^^^
+E       IndexError: list index out of range
+
+tests/contract/test_trace_schema.py:274: IndexError
+----------------------------- Captured stderr call -----------------------------
+ranex-trace: RANEX_TRACE: trace target /tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_version_event_is_the_disc0/trace.jsonl: the governed tree /home/soultransit/devtony/ranex is too large to prove non-aliasing; refused fail-closed; tracing stays off for this variable
+___________ test_exe_resolves_from_this_repositories_static_version ____________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_exe_resolves_from_this_re0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7dd30ce2e0b0>
+
+    def test_exe_resolves_from_this_repositories_static_version(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """exe = importlib.metadata.version("ranex"), falling back to the pyproject
+        [project] version, last resort "unknown" — asserted against the
+        repository's own static version, never a hardcoded number: the release
+        commit that bumps the version must not re-freeze this contract."""
+    
+        target = tmp_path / "trace.jsonl"
+        observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+        _emit_notes(observability, "emission_refused")
+    
+        import tomllib
+    
+        manifest = Path(__file__).resolve().parents[2] / "pyproject.toml"
+        with manifest.open("rb") as handle:
+            expected = tomllib.load(handle)["project"]["version"]
+>       first = _events(target)[0]
+                ^^^^^^^^^^^^^^^^^^
+E       IndexError: list index out of range
+
+tests/contract/test_trace_schema.py:327: IndexError
+----------------------------- Captured stderr call -----------------------------
+ranex-trace: RANEX_TRACE: trace target /tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_exe_resolves_from_this_re0/trace.jsonl: the governed tree /home/soultransit/devtony/ranex is too large to prove non-aliasing; refused fail-closed; tracing stays off for this variable
+____________ test_refusal_shape_descriptor_is_length_plus_eight_hex ____________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_refusal_shape_descriptor_0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7dd30ce2ef90>
+
+    def test_refusal_shape_descriptor_is_length_plus_eight_hex(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        """Shape descriptors are len=N plus the first 8 hex of SHA-256 over UTF-8."""
+    
+        target = tmp_path / "trace.jsonl"
+        observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+        hostile_name = "Bearer Token!"
+        observability.emit_raw(
+            {"event": "note", "level": "info", "module": "observability",
+             "stage": "observability.note", hostile_name: "irrelevant"}
+        )
+    
+        refusals = [
+            event["code"] for event in _events(target) if event["event"] == "refusal"
+        ]
+        expected = (
+            "undeclared_field:len="
+            f"{len(hostile_name)},sha256_8="
+            f"{hashlib.sha256(hostile_name.encode('utf-8')).hexdigest()[:8]}"
+        )
+>       assert expected in refusals, refusals
+E       AssertionError: []
+E       assert 'undeclared_field:len=13,sha256_8=58d7b26e' in []
+
+tests/contract/test_trace_schema.py:352: AssertionError
+----------------------------- Captured stderr call -----------------------------
+ranex-trace: RANEX_TRACE: trace target /tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_refusal_shape_descriptor_0/trace.jsonl: the governed tree /home/soultransit/devtony/ranex is too large to prove non-aliasing; refused fail-closed; tracing stays off for this variable
+____________ test_sid_on_every_event_and_identifier_shape_when_root ____________
+
+tmp_path = PosixPath('/tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_sid_on_every_event_and_id0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7dd30c863540>
+
+    def test_sid_on_every_event_and_identifier_shape_when_root(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        target = tmp_path / "trace.jsonl"
+        observability = _fresh_observability(monkeypatch, {"RANEX_TRACE": str(target)})
+        _emit_notes(observability, "exit:0")
+    
+        events = _events(target)
+>       assert events and all(SID_COMPONENT.match(event["sid"]) for event in events)
+E       assert ([])
+
+tests/contract/test_trace_schema.py:363: AssertionError
+----------------------------- Captured stderr call -----------------------------
+ranex-trace: RANEX_TRACE: trace target /tmp/ranex-remediation-82-final-root/pytest-of-soultransit/pytest-0/test_sid_on_every_event_and_id0/trace.jsonl: the governed tree /home/soultransit/devtony/ranex is too large to prove non-aliasing; refused fail-closed; tracing stays off for this variable
+=========================== short test summary info ============================
+FAILED tests/contract/test_ci_workflow.py::test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request
+FAILED tests/contract/test_trace_schema.py::test_time_is_an_epoch_float_truncated_to_milliseconds
+FAILED tests/contract/test_trace_schema.py::test_code_grammar_accepts_the_frozen_examples
+FAILED tests/contract/test_trace_schema.py::test_code_grammar_refuses_oversized_arguments
+FAILED tests/contract/test_trace_schema.py::test_version_event_is_the_discriminated_variant
+FAILED tests/contract/test_trace_schema.py::test_exe_resolves_from_this_repositories_static_version
+FAILED tests/contract/test_trace_schema.py::test_refusal_shape_descriptor_is_length_plus_eight_hex
+FAILED tests/contract/test_trace_schema.py::test_sid_on_every_event_and_identifier_shape_when_root
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/selectors.py:398: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+8 failed, 324 passed, 1 skipped in 126.64s (0:02:06)

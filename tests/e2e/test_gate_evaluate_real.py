@@ -230,11 +230,7 @@ def journey(tmp_path_factory: pytest.TempPathFactory) -> GateJourney:
     public = match.group(1)
 
     keyring = subject / "governance" / "producers.yaml"
-    lines = keyring.read_text(encoding="utf-8").splitlines(keepends=True)
-    header = next((i for i, line in enumerate(lines) if line.rstrip() == "producers:"), None)
-    assert header is not None, "the committed keyring carries no producers: mapping"
-    lines.insert(header + 1, f"  {FAMILY_PRODUCER}: {public}\n")
-    keyring.write_text("".join(lines), encoding="utf-8")
+    _prereqs.register_worker_key(keyring, FAMILY_PRODUCER, public)
 
     catalog = subject / "governance" / "gates.yaml"
     with catalog.open("a", encoding="utf-8") as file:

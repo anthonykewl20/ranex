@@ -208,11 +208,7 @@ def _register_family_gate(subject: Path, producer: str, public: str) -> None:
     """Register the journey's producer and gate in the committed tree."""
 
     keyring = subject / "governance" / "producers.yaml"
-    lines = keyring.read_text(encoding="utf-8").splitlines(keepends=True)
-    header = next((i for i, line in enumerate(lines) if line.rstrip() == "producers:"), None)
-    assert header is not None, "the committed keyring carries no producers: mapping"
-    lines.insert(header + 1, f"  {producer}: {public}\n")
-    keyring.write_text("".join(lines), encoding="utf-8")
+    _prereqs.register_worker_key(keyring, producer, public)
 
     with (subject / "governance" / "gates.yaml").open("a", encoding="utf-8") as file:
         file.write(
