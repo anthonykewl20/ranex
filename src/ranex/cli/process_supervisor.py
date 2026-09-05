@@ -1025,7 +1025,8 @@ class KillSafeSupervisor:
                 "bubblewrap is required for kill-safe non-confined execution"
             )
         bwrap = _open_regular(Path(resolved_bwrap).resolve(), root_owned=True)
-        python = _open_regular(Path(sys.executable).resolve(), root_owned=False)
+        interpreter = Path(sys.executable).resolve()
+        python = _open_regular(interpreter, root_owned=False)
         subject_source = seal_runtime_bytes(
             Path(subject_module.__file__).resolve().read_bytes(), kind="data", mode=0o400
         ).descriptor
@@ -1044,7 +1045,11 @@ class KillSafeSupervisor:
             lifeline_read, lifeline_write = os.pipe2(os.O_CLOEXEC)
             guardian = subprocess.Popen(
                 [
-                    "python",
+                    # CPython also uses argv[0] to locate its runtime. A bare
+                    # name can select another installation on the sealed PATH
+                    # and contaminate JSON stderr with startup warnings.
+                    # Execution remains bound to the verified fd below.
+                    str(interpreter),
                     "-I",
                     "-S",
                     "-c",

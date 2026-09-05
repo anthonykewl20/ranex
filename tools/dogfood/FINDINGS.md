@@ -8,6 +8,91 @@ match the kernel silently.
 
 ## Open
 
+### F-007 (CONFIRMED, receiver reliability) — failed deliveries are deduped; restart forgets the spool
+
+- Reproduced at `48f3a98e48cf10bc0a4ce24fae7862726b82b1c7` over real TCP,
+  a real failing `git fetch`, and a receiver process restart. The first fetch
+  failure returns 500; the identical redelivery returns 200 without retrying.
+  A previously handled delivery is processed again after restart.
+- Anchor: `github_app/receiver.py:process_delivery` adds the ID to `seen`
+  before processing; `serve` starts a new empty set without reading the spool.
+  ADR-051 promises spooled delivery-ID deduplication. This is separate from
+  the deliberately deferred cryptographic anti-replay feature.
+- Pins: `tools/dogfood/receiver_audit.py`, cases
+  `retry-after-real-fetch-failure` and `dedupe-after-restart`.
+- Another incorrect premise in `process_delivery`: GitHub does **not**
+  automatically redeliver failed webhooks. Explicit redelivery automation or
+  an operator is needed ([GitHub documentation, checked 2026-09-05](https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries)).
+
+### F-008 (CONFIRMED, receiver availability) — an unauthenticated connection monopolizes the listener
+
+- Real socket probes: idle connection, incomplete body, and negative
+  `Content-Length` each make a second healthy client time out after two
+  seconds; releasing the first socket restores successful delivery.
+- Anchor: `github_app/receiver.py:build_handler` accepts negative lengths,
+  reads the body before authentication without a deadline, and runs on a
+  single-threaded `HTTPServer`. `read(-1)` waits for EOF; accepted sockets
+  have no timeout. The two-second observation is bounded; the missing
+  deadline is also established from source. No claim of a timed infinite run.
+- Pin: `receiver_audit.py`, `negative-content-length`, `incomplete-body`,
+  `idle-client`. Reachability depends on the operator's proxy configuration;
+  the default endpoint is localhost. No internet attack was attempted.
+
+### F-009 (CONFIRMED, receiver diagnostics) — malformed signed payloads escape named refusals
+
+- A correctly HMAC-signed invalid JSON body and a PR number of `"oops"`
+  both produce `RemoteDisconnected`; the receiver logs tracebacks instead
+  of a named permanent refusal in the delivery journal.
+- Anchors: `github_app/webhook.py:parse_pull_request_event` leaves
+  `json.loads` and integer conversion exceptions unwrapped;
+  `receiver.py:process_delivery` only catches `WebhookRefusal` there.
+- Pin: `receiver_audit.py`, `malformed-json` and `malformed-number`.
+  These probes use local audit credentials, not a GitHub installation.
+
+### F-010 (CONFIRMED, specification mismatch) — ordinary non-strict XPASS receives gate PASS
+
+- Reproduced with released v0.1.0 (`edf1a98605`) and HEAD (`48f3a98e48`)
+  on the pinned external `benjaminp/six` repository: the actual pytest run
+  reports **184 passed, 1 xpassed**, then Ranex records exit 0 and gate PASS.
+  Strict XPASS, XFAIL, undeclared skip, and deselection controls all block.
+- Anchor: `foundation/suite_results.py:_outcome` treats a testcase without
+  outcome children as passed. Installed pytest 7.4.4's JUnit reporter emits
+  this shape for non-strict XPASS; the kernel's pinned pytest 9.1.1 reporter
+  has the same pass branch. No malicious XML writer is required.
+- Contradicts ADR-011's unqualified XPASS-refusal claim and README's
+  completed SLICE-009 description. This is a policy/diagnosis mismatch;
+  the XPASS test did execute and its assertion passed.
+- Pin: `release_audit.py`, `nonstrict-xpass` versus `strict-xpass`.
+
+### F-011 (CONFIRMED, policy integration) — principal retirement is not enforced by run/gate
+
+- On HEAD, mark the real producer key retired in the committed `principals`
+  block while retaining it in `producers`. `ranex run` still signs a fresh
+  successful 185-test external run; `gate evaluate` returns PASS.
+- Anchors: `principal_catalog.py` implements retirement and cross-block
+  validation, but `producer_keyring.py` does not invoke it and execution
+  loads the legacy producer keyring. The new metadata is not enforcement.
+- ADR-047 explicitly says the new loader is not yet wired. README's
+  completed SLICE-080 wording nevertheless says a retired key authorizes
+  none and the two blocks cannot disagree. Those properties currently hold
+  only for direct callers of the standalone catalog loader.
+- Pin: `release_audit.py`, `retired-principal-key`. Absent from v0.1.0;
+  this is a HEAD integration gap, not a released cryptographic break.
+
+### F-012 (RECONFIRMED boundary) — authenticated test reports are not an independent correctness oracle
+
+- With real `six.integer_types` broken, an independent Python assertion
+  fails and the ordinary governed test run blocks. Add a committed pytest
+  reporting hook that changes failed reports to passed: the same broken
+  code receives signed evidence and gate PASS on both v0.1.0 and HEAD.
+  The attack never constructs an evidence record or a signature itself.
+- This is ADR-007/011's disclosed hostile-reporter limit, not a newly found
+  cryptographic bypass. It prevents claiming that current general-purpose
+  `run` independently proves arbitrary worker-controlled code/tests correct.
+- Pin: `release_audit.py`, `broken-source`, `hostile-result-producer`, and
+  the independent Python assertion captured in the receipt. The protected
+  A/B/C qualification path is a different scope and is not disproved by it.
+
 ### F-005 (CONFIRMED, partially closed) — journal detects only partial edits; interval-honest wording for small samples
 
 - Source: the 2026-09-03 full adversarial audit of `tools/dogfood/**`
@@ -24,6 +109,11 @@ match the kernel silently.
      `journal-tamper-detected` (UPDATE refusal) and
      `proof-journal-tamper-propagation`; full-rewrite/truncation/splice
      scenarios are the missing pins.
+     **2026-09-05:** those missing pins now exist in `release_audit.py`:
+     suffix truncation of a multi-row real gate journal, deletion of all
+     rows, and a complete independently rehashed replacement history all
+     return `chain=verified` on v0.1.0 and HEAD. An isolated partial edit
+     refuses. The anti-replay probe also accepts old evidence unchanged.
   2. The "0 false verdicts" agreement claims are point estimates with no
      interval; at this sample size the honest wording is Clopper-Pearson
      upper bounds, not zeroes.
@@ -139,8 +229,26 @@ match the kernel silently.
   broken row, unlike the chain-mismatch path which names seq + ordinal.
 - Pinned by: `journal-nonjson-corruption` scenario (facts record the raising
   behaviour; any kernel fix will surface as baseline drift).
+- **2026-09-05 correction:** the real CLI probe on v0.1.0 and HEAD exits
+  2 with `ERROR  Expecting value: line 1 column 1 (char 0)`, without a
+  traceback. The API still raises rather than returning False; the earlier
+  CLI traceback claim above is superseded by this executed observation.
 
 ## Closed
+
+### F-013 — Python 3.11 guardian startup contaminated JSON traces (fixed in release audit)
+
+- Clean Python 3.11.15 install: the real execution-family journey produced
+  five setup errors because stderr contained `Could not find platform
+  dependent libraries <exec_prefix>` before the JSON trace events.
+- A real fd-exec control reproduced the warning with argv[0] `python` and
+  removed it with the resolved interpreter path, using the same opened
+  executable and the supervisor's sealed environment in both cases.
+- `process_supervisor.py` now uses the resolved interpreter as argv[0].
+  The actual executable remains the already-verified `/proc/self/fd/...`;
+  no environment inheritance, signature surface, or trust root is widened.
+- Regression evidence is the existing `tests/e2e/test_run_real.py` journey
+  run under Python 3.11; final audit receipts record the post-fix result.
 
 ### F-006 — census baseline drift from the SLICE-084 receiver landing (closed same run, 2026-09-05)
 

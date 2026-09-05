@@ -1,5 +1,45 @@
 # Ranex dogfood — training and benchmarking loop
 
+## Release audit probes
+
+The owner-requested 2026-09-05 audit adds real subprocess and socket probes.
+Run with a **new** output directory each time:
+
+```sh
+uv run --frozen python tools/dogfood/release_audit.py --out /tmp/ranex-release-audit
+uv run --frozen python tools/dogfood/receiver_audit.py --out /tmp/ranex-receiver-audit
+```
+
+`release_audit.py` checks the released `v0.1.0` tag and current HEAD separately.
+It reuses `external_proof.py` to install each frozen checkout, vendor its
+byte-verified kernel into pinned `benjaminp/six`, and freeze that repository's
+185 passing tests (the full bare run collects 200, with 15 genuine skips).
+It then runs positive, broken-code, signature, command, policy, absence,
+skip/xfail/xpass, hostile-reporter, and journal-tampering controls. OpenSSL
+independently verifies the real observation's Ed25519 signature. These are
+process executions on actual files and Git/SQLite state; no kernel seam is
+mocked. The hostile hook is an explicit attack on real failed assertions.
+
+`receiver_audit.py` starts the production receiver in another process, sends
+real HTTP requests, restarts it, and probes a real unavailable Git remote.
+It uses locally generated audit credentials and publishes no GitHub checks.
+Live GitHub App authentication, ruleset enforcement, and PR delivery remain
+UNVERIFIED by this probe.
+
+Each program writes machine-readable receipts and exits 0 only when its
+expectations all hold, 1 for reproduced gaps, or 2 for incomplete execution.
+**GAP is not PASS.** Some expectations deliberately test documented residual
+boundaries, including hostile reporters and unanchored history. The receipt
+names these separately from claimed defenses. Neither program is evidence of
+general software correctness, exhaustive input-space coverage, or strict-local
+confinement; the separate real host suites own those checks. Private keys and
+scratch repositories are removed after the run; public verification material
+and captured commands/results remain in the output directory.
+
+Run host-dependent suite comparisons sequentially, as F-002 requires. The
+existing full frozen pytest suite is still mandatory in addition to these
+probes. Findings and scope limits are recorded in [FINDINGS.md](FINDINGS.md).
+
 Dogfooding ranex with ranex's own deterministic outputs. The loop's only
 inputs are the installed kernel, the committed artifacts (`uv.lock`,
 `governance/deps.yaml`), and byte-stable facts — no assumptions, no

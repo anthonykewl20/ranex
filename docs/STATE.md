@@ -1,45 +1,34 @@
 # State
 
 <!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (SLICE-084 closed, pushed; the loop is complete)
+**Updated:** 2026-09-05 (owner-requested release audit, issue #81)
 **Active slice:** none
 
 ## Where we stopped
 
-The GitHub acceptance loop is complete, three slices in three days of
-commits: bind (SLICE-082 — a PR head SHA derives the verdict subject
-through the local object store), publish (SLICE-083 — the
-`ranex/acceptance` check from the Ranex GitHub App, fail-closed
-conclusion mapping), receive (SLICE-084 — `ranex github listen`, the
-bounded localhost listener with HMAC-proven deliveries). The kernel
-never moved; no signed surface changed; no dependency was added.
-
-What an operator can do now: run the receiver beside a clone, let a
-`gate evaluate` run produce signed verdicts, and require the
-`ranex/acceptance` check from the Ranex App in a repository ruleset
-(the recipe, including `integration_id` pinning, is in README).
+Auditing v0.1.0 and HEAD with real external tests and TCP/process probes.
+Reproducers: tools/dogfood/release_audit.py and receiver_audit.py.
+Findings: tools/dogfood/FINDINGS.md, F-007 through F-013.
+The audit is in progress; a final clean-commit full-suite run is pending.
 
 ## Next
 
-Deferred by owner decision, in order: anti-replay (nonce, journal head
-anchor, F-005 item 1 — a straight replay under unchanged rules is still
-undetected, and webhook anti-replay beyond delivery-ID dedupe belongs
-there), then the approver signature SLICE-080 made possible (key
-material the owner generates; none is committed).
-
-Still open: F-004; interval-honest wording; nightly divergence with an
-absolute `--out`; more permissive external repos.
+Finish clean-checkout validation and retain results before closing #81.
+Remediation priorities: receiver liveness/durable delivery state, principal
+enforcement, XPASS/collection diagnostics, and honest verifier boundaries.
+Anti-replay and trusted journal-head anchoring remain deferred owner work.
 
 ## Governance
 
-ADR-047/048/049/050/051 accepted. Manifest re-frozen at 1795 IDs,
-`expected_skips` byte-identical at 166 (the receiver arms skip
-nothing). UNVERIFIED: the live journey — App creation, installation, a
-real PR receiving its check — needs GitHub-side credentials that do not
-exist yet; the arms cover the full pipeline against the fake.
+No frozen suite, dependency lock, signing domain, or verdict kernel change.
+One runtime correction: guardian argv[0] names its resolved interpreter;
+execution still uses the verified fd. Python 3.11 regression check pending.
+Initial full run: 1757 passed, 34 skipped, 4 setup errors caused by the
+audit's dirty tree; those errors are not reported as a product regression.
 
 ## Known limits
 
-The catalog binds keys to principals, never principals to humans. No
-replay detection yet. Trainer labels host-relative, no journal head
-anchor, mutmut UNVERIFIED.
+UNVERIFIED: live GitHub App/PR/ruleset journey and unexecuted host branches.
+A hostile pytest reporter can receive signed PASS for broken code.
+Journal truncation/full rewrite still verifies; retired principal metadata
+does not govern producer admission; non-strict XPASS still receives PASS.
