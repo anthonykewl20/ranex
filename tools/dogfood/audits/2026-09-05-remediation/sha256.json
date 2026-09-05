@@ -84,6 +84,8 @@
   "release-exercise-2/commands.json": "f70297c144662d3dc36213c46cbf0a17e76f5199394be294a76e04323e021ae9",
   "release-exercise-2/receipt.json": "334029db7d4caa30d82cb4cde6a7ec07c266c8b817f32cc44e643d3b77bd613e",
   "release-exercise-2/version.diff": "b3cca636393fcc7acf7c7885639152a3a070e5aa26147b227eaa94d155ff30fc",
+  "storage-inputs/py-config-parse-ba79feaa.sqlite3": "580d63d813822d4ad7dea1edb8343e717e1902a569f53b4d64e873405a84d716",
+  "storage-inputs/py-semver-compare-bf46c069.sqlite3": "69fa20e002a582a2140d6f09499ee9c2bd9884bda62e9abd4461998894052be3",
   "storage-stress-1/receipt.json": "d9ce71d3e22f9d4357bdde0745d5bca9009b287dc5a1417b2e87563041bffa94",
   "storage-stress-2/receipt.json": "2f2f97fb09093e802de45ece626dce44cfe051377b3524b5e2f32fe248d2f357",
   "tooling-check-2.log": "d20006559aeeb1afbfbe71e503a0735ed0954e0385004d66c1cb66e516693056",

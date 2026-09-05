@@ -61,7 +61,11 @@ jobs:
           # from the state immediately before that push.
           DIFF_COVER_COMPARE_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before != '0000000000000000000000000000000000000000' && github.event.before || format('origin/{0}', github.event.repository.default_branch) }}
         run: |
-          uv run --frozen python -m coverage run --source=src/ranex -m pytest -q
+          # The documented subprocess hook includes the real CLI journeys.
+          export COVERAGE_PROCESS_START="$PWD/pyproject.toml"
+          export COVERAGE_FILE="$PWD/.coverage"
+          export PYTHONPATH="$PWD/src:$PWD/tests/e2e/coverage"
+          uv run --frozen pytest -q
           # Exercise the actual receiver CLI with an archived upstream PR,
           # real TCP/process failure, Git recovery and shared durable state.
           COVERAGE_PROCESS_START="$PWD/pyproject.toml" \
@@ -70,6 +74,11 @@ jobs:
             uv run --frozen python tools/dogfood/receiver_stress.py \
               --pull-request tools/dogfood/audits/2026-09-05-remediation/pr-72.json \
               --out .local/ci-receiver-stress
+          uv run --frozen python tools/dogfood/storage_stress.py \
+            --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-config-parse-ba79feaa.sqlite3 \
+            --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-semver-compare-bf46c069.sqlite3 \
+            --out .local/ci-storage-stress
+          unset COVERAGE_PROCESS_START
           uv run --frozen python -m coverage combine --keep
           uv run --frozen python -m coverage xml -o coverage.xml
           uv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100

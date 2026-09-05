@@ -50,7 +50,7 @@ def main():
     out.mkdir(parents=True, exist_ok=False)
     records = []
     for source in args.journal:
-        with closing(sqlite3.connect(source)) as connection:
+        with closing(sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True)) as connection:
             records.append(connection.execute('select record from evaluations limit 1').fetchone()[0])
     receipt = dict(kernel=subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip(),
                    source_journals=[dict(path=str(p.resolve()), sha256=hashlib.sha256(p.read_bytes()).hexdigest()) for p in args.journal],
@@ -113,6 +113,15 @@ def main():
             raise RuntimeError('anchor control failed: '+mode)
         if mode == 'nonjson' and Journal(attacked).verify() is not False:
             raise RuntimeError('non-JSON API must return false')
+    # Reproduce an operator pasting an incomplete actual retained head.
+    command = ['uv', 'run', '--frozen', 'ranex', 'journal', 'verify', '--journal',
+               str(path.relative_to(ROOT)), '--expected-head', head[:-1]]
+    result = subprocess.run(command, capture_output=True, text=True, check=False)
+    receipt['controls'].append(dict(mode='incomplete-pasted-head', command=command,
+                                    exit=result.returncode, stdout=result.stdout, stderr=result.stderr))
+    save()
+    if result.returncode != 2:
+        raise RuntimeError('an incomplete retained head must be a named usage refusal')
 
 
 if __name__ == '__main__':
