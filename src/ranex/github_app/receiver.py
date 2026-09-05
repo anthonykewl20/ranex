@@ -81,7 +81,9 @@ def _migrate_legacy_spool(config: ReceiverConfig) -> None:
         with legacy.open(encoding="utf-8") as handle:
             for line in handle:
                 entry = json.loads(line)
-                delivery, outcome = entry.get("delivery"), entry.get("outcome", "")
+                if not isinstance(entry, dict) or not isinstance(entry.get("outcome"), str):
+                    raise ValueError("invalid legacy delivery receipt")
+                delivery, outcome = entry.get("delivery"), entry["outcome"]
                 terminal = (outcome in {"ignored", "not-allowlisted", "E-GITHUB-BAD-EVENT"}
                             or outcome.startswith("published:"))
                 if terminal and isinstance(delivery, str) and _DELIVERY_ID_PATTERN.fullmatch(delivery):
@@ -129,7 +131,15 @@ def process_delivery(
             fingerprint = canonical_sha256({"body": body.hex(), "event": event_name})
             if target.exists():
                 stored = json.loads(target.read_bytes())
-                if stored["fingerprint"] is not None and stored["fingerprint"] != fingerprint:
+                if not isinstance(stored, dict) or set(stored) != {"fingerprint"}:
+                    raise ValueError("invalid completion receipt")
+                previous = stored["fingerprint"]
+                if previous is not None and (
+                    not isinstance(previous, str)
+                    or re.fullmatch(r"[0-9a-f]{64}", previous) is None
+                ):
+                    raise ValueError("invalid completion fingerprint")
+                if previous is not None and previous != fingerprint:
                     _journal(config, {"delivery": delivery_id, "outcome": "delivery-conflict"})
                     return 409
                 _journal(config, {"delivery": delivery_id, "outcome": "replayed"})

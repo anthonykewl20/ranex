@@ -330,11 +330,14 @@ def run_kogg_subject(subject: Mapping[str, object], destination: Path, *, outcom
         verified = validate_kogg_metadata(subject, root)
         environment = broker_environment()
         assert_credential_free((root / ".git" / "config",), environment)
+        runtime = _run_lifecycle(runner, ("npm", "--version"), cwd=root).stdout.strip()
+        if runtime != _EXPECTED["kogg"]["package_manager"][1]:
+            _drift("subject-package-manager-drift")
         lifecycle_commands = (("npm", "ci"), ("npm", "test"))
         for command in lifecycle_commands:
             _run_lifecycle(runner, command, cwd=root)
         LAST_KOGG_RUN.clear()
-        LAST_KOGG_RUN.update(checkout_head=KOGG_PIN, metadata=verified, commands=lifecycle_commands,
+        LAST_KOGG_RUN.update(checkout_head=KOGG_PIN, metadata=verified, package_manager_version=runtime, commands=lifecycle_commands,
                              environment=environment, config_content=(root / ".git" / "config").read_text(encoding="utf-8"))
         return "AVAILABLE"
     finally:
