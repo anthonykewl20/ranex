@@ -4168,10 +4168,19 @@ class RanexArgumentParser(argparse.ArgumentParser):
 
 
 def build_parser() -> argparse.ArgumentParser:
+    from ranex.foundation.release_version import release_tag
+    from ranex.observability.schema import ranex_version
+
+    version = ranex_version()
+    try:
+        display_version = release_tag(version)
+    except ValueError:
+        display_version = version
     parser = RanexArgumentParser(
         prog="ranex",
         description="Deterministic governance for AI agents that build software",
     )
+    parser.add_argument("--version", action="version", version=f"ranex {display_version}")
     sub = parser.add_subparsers(dest="group", required=True)
 
     gate = sub.add_parser("gate", help="gate operations").add_subparsers(

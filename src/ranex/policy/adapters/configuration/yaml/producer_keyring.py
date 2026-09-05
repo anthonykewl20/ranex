@@ -90,7 +90,7 @@ def load_keyring_text(text: str, source: object) -> dict[str, str]:
         document = yaml.load(text, Loader=_NoDuplicateKeys)
     except KeyringError:
         raise
-    except yaml.YAMLError as exc:
+    except (yaml.YAMLError, RecursionError) as exc:
         raise KeyringError(f"keyring at {path} is not valid YAML: {exc}") from exc
 
     if not isinstance(document, dict):
@@ -166,7 +166,7 @@ def load_trust_keyring(path: Path | str) -> TrustKeyring:
 def load_trust_keyring_text(text: str, source: object) -> TrustKeyring:
     try:
         document = yaml.load(text, Loader=_NoDuplicateKeys)
-    except (KeyringError, yaml.YAMLError) as exc:
+    except (KeyringError, yaml.YAMLError, RecursionError) as exc:
         raise KeyringError(f"cannot load keyring at {source}: {exc}") from exc
     # The block set is closed, and grows only by a deliberate edit here in the
     # same change that admits the block. The optional principal catalog is

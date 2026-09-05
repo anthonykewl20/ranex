@@ -34,7 +34,11 @@ from pathlib import Path
 from typing import Any
 
 import pytest
-from launcher_host import build_closure_limitation, require_pinned_build_closure
+from launcher_host import (
+    build_closure_limitation,
+    require_pinned_build_closure,
+    userns_limitation,
+)
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 MANIFEST = Path("governance/confinement/native-launcher-build-v1.json")
@@ -105,7 +109,9 @@ RESPONSE_LIMIT = 65_536
 # SLICE-081 step 2 (#77) extends it for `refuse_foreign_policy_context` beside
 # `refuse_executables_inside`, and for `cmd_gate_evaluate` passing the gate and
 # catalog digest into `admit_records`. Same boundary, untouched.
-MAIN_PY_SHA256 = "fceb3f9e6ec8a63526c71e6d937bd4293c1b9fd1327dd959c5451fc8fc43c17f"
+# Issue #82 adds external journal-head comparison, malformed-row diagnostics,
+# and the padded --version display. Launcher and confinement branches are unchanged.
+MAIN_PY_SHA256 = "348e6b95fec4c5571d2ebf5c96f9922a5245168d442a5d2181d8d1f948bfe5fc"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
@@ -928,6 +934,9 @@ def test_gate4_controller_execveat_survives_a_real_pathname_swap(
     root = _installed_case(tmp_path, built_repository)
     installed = root / INSTALLED_ARTIFACT
     impostor = installed.with_name("pathname-swap-impostor")
+    if userns_limitation() is not None:
+        _refusal(_qualify(root), "E-C17-HOST-FACT-MISSING")
+        return
     shutil.copy2("/usr/bin/false", impostor)
     impostor.chmod(0o555)
     impostor_stat = impostor.stat()
@@ -1510,6 +1519,10 @@ def test_gate8_controller_refuses_invalid_launcher_output_without_report(
     if _confined_no_delegation():
         completed = _run_controller(REPOSITORY, "qualify", *_qualify_arguments())
         _refusal(completed, EXEC_OBJECT_DRIFT)
+        return
+    if userns_limitation() is not None:
+        root = _installed_case(tmp_path, built_repository)
+        _refusal(_qualify(root), "E-C17-HOST-FACT-MISSING")
         return
     root = _case_from_built(tmp_path, built_repository)
     artifact = root / INSTALLED_ARTIFACT

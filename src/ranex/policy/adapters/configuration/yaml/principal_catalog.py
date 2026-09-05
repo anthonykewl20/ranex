@@ -90,6 +90,8 @@ def _closed_shape(value: object, fields: tuple[str, ...], subject: str) -> dict[
 
     if not isinstance(value, dict):
         raise PrincipalCatalogError(f"{subject} must be a mapping of {', '.join(fields)}")
+    if any(not isinstance(key, str) for key in value):
+        raise PrincipalCatalogError(f"{subject} field names must be strings")
     present = set(value)
     expected = set(fields)
     if present != expected:
@@ -234,7 +236,7 @@ def load_principals_text(text: str, source: object) -> PrincipalCatalog:
         # so a caller narrowing on PrincipalCatalogError still sees a trust-root
         # replacement that arrived disguised as an addition.
         raise PrincipalCatalogError(f"catalog at {source}: {exc}") from exc
-    except yaml.YAMLError as exc:
+    except (yaml.YAMLError, RecursionError) as exc:
         raise PrincipalCatalogError(f"catalog at {source} is not valid YAML: {exc}") from exc
 
     if not isinstance(document, dict):

@@ -475,16 +475,14 @@ def test_the_trust_keyring_still_refuses_a_block_it_does_not_name() -> None:
 
 
 def test_the_trust_keyring_loads_a_document_that_carries_the_catalog() -> None:
-    """The block is admitted, not parsed here — `principal_catalog` owns it."""
+    """The real committed mixed catalog is parsed before legacy admission."""
 
     from ranex.policy.adapters.configuration.yaml.producer_keyring import (
         load_trust_keyring_text,
     )
 
-    _, other = generate_keypair()
-    text = _trust_document(document(entry("reviewer", "approver", (other, "active"))))
+    text = LIVE_KEYRING.read_text(encoding="utf-8")
 
-    assert load_trust_keyring_text(text, "fixture").verdict_signer_id == (
+    assert load_trust_keyring_text(text, LIVE_KEYRING).verdict_signer_id == (
         "kernel-verdict-signer"
     )
-

@@ -2,18 +2,15 @@
 
 from __future__ import annotations
 
-import ctypes
-import errno
 import hashlib
 import json
-import os
+import re
 from pathlib import Path
 
 import pytest
 
 REPOSITORY = Path(__file__).resolve().parents[1]
 MANIFEST = REPOSITORY / "governance/confinement/native-launcher-build-v1.json"
-CLONE_NEWUSER = 0x10000000
 
 
 def _sha256_file(path: Path) -> str:
@@ -75,43 +72,20 @@ def require_pinned_build_closure() -> None:
 
 
 def userns_limitation() -> str | None:
-    """Return why this host cannot create an unprivileged user namespace."""
+    """Run the controller's real namespace and uid/gid mapping probes.
 
-    read_fd, write_fd = os.pipe()
-    child = os.fork()
-    if child == 0:
-        os.close(read_fd)
-        try:
-            libc = ctypes.CDLL(None, use_errno=True)
-            libc.unshare.argtypes = [ctypes.c_int]
-            libc.unshare.restype = ctypes.c_int
-            if libc.unshare(CLONE_NEWUSER) == 0:
-                os._exit(0)
-            os.write(write_fd, str(ctypes.get_errno()).encode())
-        finally:
-            os.close(write_fd)
-        os._exit(1)
+    A successful user-namespace unshare alone does not establish that mapping
+    it or creating the other required namespaces is permitted in this process.
+    Unknown failures remain failures; only actual kernel denials qualify absence.
+    """
+    from ranex.cli.host_confinement import E_FACT, HostConfinementError, _probe_namespaces
 
-    os.close(write_fd)
     try:
-        reported_errno = os.read(read_fd, 32)
-    finally:
-        os.close(read_fd)
-    _waited, status = os.waitpid(child, 0)
-    if reported_errno in {
-        str(errno.EPERM).encode(),
-        str(errno.EACCES).encode(),
-        str(errno.EINVAL).encode(),
-    }:
-        value = reported_errno.decode()
-        return (
-            f"unshare(CLONE_NEWUSER) denied (errno {value}) — "
-            "confinement-session gates run on the qualified host"
-        )
-    assert os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0, (
-        "unshare(CLONE_NEWUSER) failed without a recognized host-qualification "
-        f"errno: status={status}, reported_errno={reported_errno!r}"
-    )
+        _probe_namespaces()
+    except HostConfinementError as error:
+        if error.code == E_FACT and re.search(r"\((?:unshare-user|unshare|map-user):(1|13|22)\)", error.detail):
+            return error.detail
+        raise AssertionError(f"unexpected namespace qualification failure: {error.detail}") from error
     return None
 
 

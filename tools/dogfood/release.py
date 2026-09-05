@@ -20,6 +20,8 @@ from pathlib import Path
 import yaml
 from packaging.version import Version
 
+from ranex.foundation.release_version import release_tag as tag_for
+
 ROOT = Path(__file__).resolve().parents[2]
 OWNER = "anthonykewl20"
 REPOSITORY = f"{OWNER}/ranex"
@@ -33,15 +35,6 @@ def command(*argv: str, capture: bool = True) -> str:
 
 def package_version() -> str:
     return tomllib.loads((ROOT / "pyproject.toml").read_text())["project"]["version"]
-
-
-def tag_for(version: str) -> str:
-    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
-        raise ValueError("release requires a three-part final package version")
-    major, minor, patch = Version(version).release
-    if patch > 999:
-        raise ValueError("patch field exceeds three digits; choose a new minor release")
-    return f"v{major}.{minor}.{patch:03d}"
 
 
 def prepare() -> str:
