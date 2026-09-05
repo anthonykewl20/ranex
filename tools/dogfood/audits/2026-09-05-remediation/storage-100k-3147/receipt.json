@@ -1,0 +1,2191 @@
+{
+  "kernel": "7e559bfbc0e4852665ec3611d4dcdb4ac94119f7",
+  "runtime": {
+    "python": "3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]",
+    "sqlite": "3.53.1",
+    "cpu_affinity": [
+      0
+    ]
+  },
+  "source_journals": [
+    {
+      "path": "/home/soultransit/devtony/ranex/tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-config-parse-ba79feaa.sqlite3",
+      "sha256": "580d63d813822d4ad7dea1edb8343e717e1902a569f53b4d64e873405a84d716"
+    },
+    {
+      "path": "/home/soultransit/devtony/ranex/tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-semver-compare-bf46c069.sqlite3",
+      "sha256": "69fa20e002a582a2140d6f09499ee9c2bd9884bda62e9abd4461998894052be3"
+    }
+  ],
+  "scope": "Storage load replays actual CLI gate evaluations; repeated rows are not new correctness observations",
+  "source_records": [
+    {
+      "approver_id": "oss-bench-approver",
+      "catalog_digest": "sha256:90d399153d24d713d25cf587e321e834a871b6472e7d79c93aa22e1453d0a178",
+      "causes": [],
+      "considered": [
+        "tests-executed@sha256:8a9c5f1cc85d96b1537178da693e5c410474238cd393c06270c425dad01c09bf:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "landing",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:8a9c5f1cc85d96b1537178da693e5c410474238cd393c06270c425dad01c09bf",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    },
+    {
+      "approver_id": "oss-bench-approver",
+      "catalog_digest": "sha256:cabd87dc077c0d4df81fc726876adf30b3d586c995c2a63431a7fe2ed346efdd",
+      "causes": [],
+      "considered": [
+        "tests-executed@sha256:21eb59266da56c3e76123797fe9ad8d5e4a0e1eeab251538714ea4bbe0aa5f9f:0"
+      ],
+      "failing_rule": null,
+      "gate_id": "landing",
+      "missing_claims": [],
+      "reason": null,
+      "self_approval": false,
+      "subject_digest": "sha256:21eb59266da56c3e76123797fe9ad8d5e4a0e1eeab251538714ea4bbe0aa5f9f",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "PASS"
+    }
+  ],
+  "rounds": [
+    {
+      "round": 0,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:3cadb48f299b65e6ede522b7a5deef01487f49d618ebfaa448c66e26e370d827",
+      "seconds": 9.860512587998528,
+      "workers": [
+        {
+          "seconds": 8.51559714396717,
+          "fd_before": 4,
+          "fd_after": 6
+        },
+        {
+          "seconds": 1.9479153249994852,
+          "fd_before": 6,
+          "fd_after": 11
+        },
+        {
+          "seconds": 7.350740140012931,
+          "fd_before": 7,
+          "fd_after": 7
+        },
+        {
+          "seconds": 3.1239267910132185,
+          "fd_before": 8,
+          "fd_after": 10
+        },
+        {
+          "seconds": 5.062699937960133,
+          "fd_before": 11,
+          "fd_after": 9
+        },
+        {
+          "seconds": 6.172409551974852,
+          "fd_before": 12,
+          "fd_after": 8
+        },
+        {
+          "seconds": 9.760977300000377,
+          "fd_before": 11,
+          "fd_after": 4
+        },
+        {
+          "seconds": 9.01746538002044,
+          "fd_before": 12,
+          "fd_after": 5
+        }
+      ],
+      "head": "sha256:3cadb48f299b65e6ede522b7a5deef01487f49d618ebfaa448c66e26e370d827"
+    },
+    {
+      "round": 1,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:9c20a312436b62878b4bc0b4868a44a34979a67432451bcb3cd6f4a6b4be157c",
+      "seconds": 10.493462407030165,
+      "workers": [
+        {
+          "seconds": 10.147213655989617,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.766594993008766,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.007366703997832,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 1.872507841035258,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.610337788995821,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.042544986994471,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.482580331969075,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.829939537972677,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:9c20a312436b62878b4bc0b4868a44a34979a67432451bcb3cd6f4a6b4be157c"
+    },
+    {
+      "round": 2,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:684609f28dcfd2a2c8f93c9914440b6d6cdc5b992a0cdd444812396c0e65c34b",
+      "seconds": 9.729791087971535,
+      "workers": [
+        {
+          "seconds": 8.959397968952544,
+          "fd_before": 6,
+          "fd_after": 8
+        },
+        {
+          "seconds": 8.518053101026453,
+          "fd_before": 8,
+          "fd_after": 9
+        },
+        {
+          "seconds": 9.021657098957803,
+          "fd_before": 9,
+          "fd_after": 7
+        },
+        {
+          "seconds": 1.8018706100410782,
+          "fd_before": 10,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.302634955034591,
+          "fd_before": 11,
+          "fd_after": 10
+        },
+        {
+          "seconds": 9.637355422019027,
+          "fd_before": 12,
+          "fd_after": 6
+        },
+        {
+          "seconds": 6.882411011960357,
+          "fd_before": 13,
+          "fd_after": 12
+        },
+        {
+          "seconds": 7.229067090025637,
+          "fd_before": 14,
+          "fd_after": 11
+        }
+      ],
+      "head": "sha256:684609f28dcfd2a2c8f93c9914440b6d6cdc5b992a0cdd444812396c0e65c34b"
+    },
+    {
+      "round": 3,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:be227d3e1a955ffa288fcd8f926ea26f019cd04345042d5db609235937a1816f",
+      "seconds": 9.17045535001671,
+      "workers": [
+        {
+          "seconds": 4.341904906032141,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.74500407197047,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.580886689014733,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 1.4187578110140748,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.485263729002327,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.942659578984603,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 5.388930564047769,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.001513002964202,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:be227d3e1a955ffa288fcd8f926ea26f019cd04345042d5db609235937a1816f"
+    },
+    {
+      "round": 4,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:4884ded36e6b995ac5e884e9fbe7df018c2cd0bad39774be983734784694044e",
+      "seconds": 8.69461320299888,
+      "workers": [
+        {
+          "seconds": 7.505954464955721,
+          "fd_before": 6,
+          "fd_after": 7
+        },
+        {
+          "seconds": 3.564829474024009,
+          "fd_before": 8,
+          "fd_after": 11
+        },
+        {
+          "seconds": 1.1065194029943086,
+          "fd_before": 9,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.5213788590044715,
+          "fd_before": 10,
+          "fd_after": 8
+        },
+        {
+          "seconds": 2.159739942988381,
+          "fd_before": 11,
+          "fd_after": 12
+        },
+        {
+          "seconds": 5.7827108619967476,
+          "fd_before": 12,
+          "fd_after": 9
+        },
+        {
+          "seconds": 8.599333317019045,
+          "fd_before": 13,
+          "fd_after": 6
+        },
+        {
+          "seconds": 5.664349712023977,
+          "fd_before": 14,
+          "fd_after": 10
+        }
+      ],
+      "head": "sha256:4884ded36e6b995ac5e884e9fbe7df018c2cd0bad39774be983734784694044e"
+    },
+    {
+      "round": 5,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:0f239949c851ef66037e8d3b7d13f99c2aaf44924f08c4e181d6f3e6e8fc8341",
+      "seconds": 34.79528906196356,
+      "workers": [
+        {
+          "seconds": 22.506475960020907,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 4.4061029709992,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 34.650202104006894,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.57550604804419,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.956629174994305,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.271011152013671,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.561724936007522,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.6899656080058776,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:0f239949c851ef66037e8d3b7d13f99c2aaf44924f08c4e181d6f3e6e8fc8341"
+    },
+    {
+      "round": 6,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:e42df32eb854e5105dc140df48aa35757758f0f01eb8048b66f160b117ddefa0",
+      "seconds": 10.290875697974116,
+      "workers": [
+        {
+          "seconds": 8.195630372967571,
+          "fd_before": 6,
+          "fd_after": 8
+        },
+        {
+          "seconds": 2.4597024290123954,
+          "fd_before": 8,
+          "fd_after": 13
+        },
+        {
+          "seconds": 10.201858831977006,
+          "fd_before": 11,
+          "fd_after": 6
+        },
+        {
+          "seconds": 4.991896770952735,
+          "fd_before": 10,
+          "fd_after": 11
+        },
+        {
+          "seconds": 7.201890310971066,
+          "fd_before": 11,
+          "fd_after": 9
+        },
+        {
+          "seconds": 4.051424979057629,
+          "fd_before": 12,
+          "fd_after": 12
+        },
+        {
+          "seconds": 9.239963678992353,
+          "fd_before": 13,
+          "fd_after": 7
+        },
+        {
+          "seconds": 6.895681881986093,
+          "fd_before": 14,
+          "fd_after": 10
+        }
+      ],
+      "head": "sha256:e42df32eb854e5105dc140df48aa35757758f0f01eb8048b66f160b117ddefa0"
+    },
+    {
+      "round": 7,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:7b29972fd6bbd5c4d3c99c212e4d73b32adfd4bc88b2c9708db3ad239de7a632",
+      "seconds": 9.187497749982867,
+      "workers": [
+        {
+          "seconds": 4.381806158984546,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 1.2380614280118607,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.65585421799915,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 4.01333197997883,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.025229419989046,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.563395486038644,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.841459190007299,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 5.4103607349679805,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:7b29972fd6bbd5c4d3c99c212e4d73b32adfd4bc88b2c9708db3ad239de7a632"
+    },
+    {
+      "round": 8,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:5c5b642bfb6e8c028b11b73f60997d3b64082de47890d0c0ee98151c0b8ed1cf",
+      "seconds": 18.808745137008373,
+      "workers": [
+        {
+          "seconds": 18.724179015960544,
+          "fd_before": 6,
+          "fd_after": 6
+        },
+        {
+          "seconds": 17.531067856994923,
+          "fd_before": 8,
+          "fd_after": 8
+        },
+        {
+          "seconds": 14.51710306800669,
+          "fd_before": 11,
+          "fd_after": 10
+        },
+        {
+          "seconds": 5.8328220039838925,
+          "fd_before": 10,
+          "fd_after": 13
+        },
+        {
+          "seconds": 17.857030187966302,
+          "fd_before": 11,
+          "fd_after": 7
+        },
+        {
+          "seconds": 9.552096555999015,
+          "fd_before": 12,
+          "fd_after": 12
+        },
+        {
+          "seconds": 11.692103591980413,
+          "fd_before": 13,
+          "fd_after": 11
+        },
+        {
+          "seconds": 16.785238561977167,
+          "fd_before": 14,
+          "fd_after": 9
+        }
+      ],
+      "head": "sha256:5c5b642bfb6e8c028b11b73f60997d3b64082de47890d0c0ee98151c0b8ed1cf"
+    },
+    {
+      "round": 9,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:0e3d9c73b9aac982da44097f6048404361f76e081e9e52141deeb33992279bbe",
+      "seconds": 12.44014832295943,
+      "workers": [
+        {
+          "seconds": 6.30997814697912,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.8666090709739365,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 12.295047527004499,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.874748116009869,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.70726559101604,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 10.035159567021765,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 11.14706828101771,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.2903370480053127,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:0e3d9c73b9aac982da44097f6048404361f76e081e9e52141deeb33992279bbe"
+    },
+    {
+      "round": 10,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:7a82a8e2b8ed94ac309a2c5cc552b75f0116283c8a60d831ed2ac421ffefb3b7",
+      "seconds": 9.239859846013132,
+      "workers": [
+        {
+          "seconds": 1.2410820889635943,
+          "fd_before": 6,
+          "fd_after": 13
+        },
+        {
+          "seconds": 5.172006385982968,
+          "fd_before": 8,
+          "fd_after": 10
+        },
+        {
+          "seconds": 9.14196252997499,
+          "fd_before": 10,
+          "fd_after": 6
+        },
+        {
+          "seconds": 7.1459617969812825,
+          "fd_before": 10,
+          "fd_after": 9
+        },
+        {
+          "seconds": 7.917588384996634,
+          "fd_before": 11,
+          "fd_after": 8
+        },
+        {
+          "seconds": 4.407587510999292,
+          "fd_before": 12,
+          "fd_after": 11
+        },
+        {
+          "seconds": 3.3587264210218564,
+          "fd_before": 13,
+          "fd_after": 12
+        },
+        {
+          "seconds": 8.28936244599754,
+          "fd_before": 14,
+          "fd_after": 7
+        }
+      ],
+      "head": "sha256:7a82a8e2b8ed94ac309a2c5cc552b75f0116283c8a60d831ed2ac421ffefb3b7"
+    },
+    {
+      "round": 11,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:a531f326149f411ef631f1db4ea8a76499ca09b3fb0a1d6fab39e8cfd9111c02",
+      "seconds": 11.134817259036936,
+      "workers": [
+        {
+          "seconds": 6.568345890031196,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 4.677406656963285,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.3623341000056826,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 10.853163152001798,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 10.958151256025303,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.19929385499563,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.106176449044142,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 1.6141712029930204,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:a531f326149f411ef631f1db4ea8a76499ca09b3fb0a1d6fab39e8cfd9111c02"
+    },
+    {
+      "round": 12,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:20e8de679a7434045f6616f6635d3159c4edf994e2babfc126894371b456b554",
+      "seconds": 17.96168934594607,
+      "workers": [
+        {
+          "seconds": 5.815168795001227,
+          "fd_before": 6,
+          "fd_after": 12
+        },
+        {
+          "seconds": 16.60328733298229,
+          "fd_before": 8,
+          "fd_after": 8
+        },
+        {
+          "seconds": 7.603364621987566,
+          "fd_before": 9,
+          "fd_after": 11
+        },
+        {
+          "seconds": 17.056974392966367,
+          "fd_before": 10,
+          "fd_after": 7
+        },
+        {
+          "seconds": 14.4832738560508,
+          "fd_before": 13,
+          "fd_after": 9
+        },
+        {
+          "seconds": 10.777422952000052,
+          "fd_before": 12,
+          "fd_after": 10
+        },
+        {
+          "seconds": 17.86531443503918,
+          "fd_before": 13,
+          "fd_after": 6
+        },
+        {
+          "seconds": 5.400559292989783,
+          "fd_before": 14,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:20e8de679a7434045f6616f6635d3159c4edf994e2babfc126894371b456b554"
+    },
+    {
+      "round": 13,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:a634963b6eac8a58290c68e4a9bec586ac6012fd5f965381ba28f5445feca39b",
+      "seconds": 16.98802897002315,
+      "workers": [
+        {
+          "seconds": 5.894944985979237,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 11.98988637299044,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.863261046004482,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 15.3709386769915,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.98313450498972,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 16.820124932040926,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.668404684984125,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 15.609985066985246,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:a634963b6eac8a58290c68e4a9bec586ac6012fd5f965381ba28f5445feca39b"
+    },
+    {
+      "round": 14,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:f8517199278110b074b87a2bff0847134047876caf2cdb5ea8d646dda4eec4d1",
+      "seconds": 10.40020676702261,
+      "workers": [
+        {
+          "seconds": 2.3747209060238674,
+          "fd_before": 6,
+          "fd_after": 13
+        },
+        {
+          "seconds": 10.30676821799716,
+          "fd_before": 7,
+          "fd_after": 6
+        },
+        {
+          "seconds": 10.221641770971473,
+          "fd_before": 9,
+          "fd_after": 7
+        },
+        {
+          "seconds": 8.408296732988674,
+          "fd_before": 10,
+          "fd_after": 9
+        },
+        {
+          "seconds": 6.937048021005467,
+          "fd_before": 11,
+          "fd_after": 10
+        },
+        {
+          "seconds": 4.785873117973097,
+          "fd_before": 12,
+          "fd_after": 11
+        },
+        {
+          "seconds": 8.75580236496171,
+          "fd_before": 13,
+          "fd_after": 8
+        },
+        {
+          "seconds": 3.4762851530103944,
+          "fd_before": 14,
+          "fd_after": 12
+        }
+      ],
+      "head": "sha256:f8517199278110b074b87a2bff0847134047876caf2cdb5ea8d646dda4eec4d1"
+    },
+    {
+      "round": 15,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:659e8928d384364a31d06d44a5397b0e3c0938a40348349d6a9306749dc2e939",
+      "seconds": 10.039756409998517,
+      "workers": [
+        {
+          "seconds": 9.285666984971613,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.248372166999616,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.903562869993038,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 5.03602524503367,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.4337104479782283,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 1.2688314790138975,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.633191151020583,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.699753576016519,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:659e8928d384364a31d06d44a5397b0e3c0938a40348349d6a9306749dc2e939"
+    },
+    {
+      "round": 16,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:09f99bd2f72302095ab56cc075f336b7d7c977997bee56a620111771b2130697",
+      "seconds": 10.020845798018854,
+      "workers": [
+        {
+          "seconds": 3.1408587240148336,
+          "fd_before": 6,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.695852141012438,
+          "fd_before": 8,
+          "fd_after": 7
+        },
+        {
+          "seconds": 6.270553977985401,
+          "fd_before": 11,
+          "fd_after": 10
+        },
+        {
+          "seconds": 4.311454601993319,
+          "fd_before": 10,
+          "fd_after": 12
+        },
+        {
+          "seconds": 7.618347546027508,
+          "fd_before": 11,
+          "fd_after": 8
+        },
+        {
+          "seconds": 9.910374541999772,
+          "fd_before": 12,
+          "fd_after": 6
+        },
+        {
+          "seconds": 7.178622990031727,
+          "fd_before": 13,
+          "fd_after": 9
+        },
+        {
+          "seconds": 4.858679533004761,
+          "fd_before": 14,
+          "fd_after": 11
+        }
+      ],
+      "head": "sha256:09f99bd2f72302095ab56cc075f336b7d7c977997bee56a620111771b2130697"
+    },
+    {
+      "round": 17,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:559d1ef123bd82be2086145f9097c96ed035821b2f302ab4f4087fe82cd8f321",
+      "seconds": 10.353221426019445,
+      "workers": [
+        {
+          "seconds": 6.116480413998943,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 4.243781469995156,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.147228990972508,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 10.192141797975637,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.594264290994033,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.418884604994673,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.221455967985094,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.355329051031731,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:559d1ef123bd82be2086145f9097c96ed035821b2f302ab4f4087fe82cd8f321"
+    },
+    {
+      "round": 18,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:643c4876e8b5158be18ff86943aa89bf942699e30484d303dbf063670cc30778",
+      "seconds": 10.626989972952288,
+      "workers": [
+        {
+          "seconds": 9.369169973011594,
+          "fd_before": 6,
+          "fd_after": 8
+        },
+        {
+          "seconds": 8.803289756993763,
+          "fd_before": 11,
+          "fd_after": 9
+        },
+        {
+          "seconds": 10.536777892964892,
+          "fd_before": 12,
+          "fd_after": 6
+        },
+        {
+          "seconds": 2.7752810600213706,
+          "fd_before": 11,
+          "fd_after": 13
+        },
+        {
+          "seconds": 10.27351973298937,
+          "fd_before": 10,
+          "fd_after": 7
+        },
+        {
+          "seconds": 3.976576571993064,
+          "fd_before": 12,
+          "fd_after": 12
+        },
+        {
+          "seconds": 8.587736448971555,
+          "fd_before": 13,
+          "fd_after": 10
+        },
+        {
+          "seconds": 5.885412783012725,
+          "fd_before": 14,
+          "fd_after": 11
+        }
+      ],
+      "head": "sha256:643c4876e8b5158be18ff86943aa89bf942699e30484d303dbf063670cc30778"
+    },
+    {
+      "round": 19,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:6966e1397960392d564f6015c8ea5000b0e94dd309d91719058487283ffdd848",
+      "seconds": 9.405988137994427,
+      "workers": [
+        {
+          "seconds": 9.28093926695874,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.6530694300308824,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.326893588993698,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.197859907988459,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.7264026940101758,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 5.00360085000284,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.004662961990107,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.377034361998085,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:6966e1397960392d564f6015c8ea5000b0e94dd309d91719058487283ffdd848"
+    },
+    {
+      "round": 20,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:5d3a5eabf05adbe961ee2c5a476dc38c0462e3191851e2b9f0e747c3f1079b88",
+      "seconds": 9.053247664007358,
+      "workers": [
+        {
+          "seconds": 7.863189255003817,
+          "fd_before": 6,
+          "fd_after": 8
+        },
+        {
+          "seconds": 3.842547433974687,
+          "fd_before": 8,
+          "fd_after": 12
+        },
+        {
+          "seconds": 7.550480718025938,
+          "fd_before": 12,
+          "fd_after": 10
+        },
+        {
+          "seconds": 8.437905364960898,
+          "fd_before": 11,
+          "fd_after": 7
+        },
+        {
+          "seconds": 8.965338087000418,
+          "fd_before": 10,
+          "fd_after": 6
+        },
+        {
+          "seconds": 1.2558316380018368,
+          "fd_before": 12,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.588190921000205,
+          "fd_before": 13,
+          "fd_after": 9
+        },
+        {
+          "seconds": 6.77119668998057,
+          "fd_before": 14,
+          "fd_after": 11
+        }
+      ],
+      "head": "sha256:5d3a5eabf05adbe961ee2c5a476dc38c0462e3191851e2b9f0e747c3f1079b88"
+    },
+    {
+      "round": 21,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:0436143f91d4fa8cf5ff45dfd541f7d099d5d4c0bcef84a8cacdb3523a6617fd",
+      "seconds": 9.366403988969978,
+      "workers": [
+        {
+          "seconds": 6.686500732030254,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 4.168497834994923,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 5.918964365962893,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.21400903200265,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.5376186670036986,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.9580279510119,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 2.2170363070326857,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 6.342443868983537,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:0436143f91d4fa8cf5ff45dfd541f7d099d5d4c0bcef84a8cacdb3523a6617fd"
+    },
+    {
+      "round": 22,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:62eed6ef44ed911fee7ecdf7a50c7c77ab85a5a62e27767726216fb2f3b4d2e3",
+      "seconds": 31.73404272197513,
+      "workers": [
+        {
+          "seconds": 22.399804380023852,
+          "fd_before": 6,
+          "fd_after": 12
+        },
+        {
+          "seconds": 31.638443408010062,
+          "fd_before": 8,
+          "fd_after": 6
+        },
+        {
+          "seconds": 29.643356448039412,
+          "fd_before": 11,
+          "fd_after": 9
+        },
+        {
+          "seconds": 21.331868352019228,
+          "fd_before": 10,
+          "fd_after": 13
+        },
+        {
+          "seconds": 30.215336634020787,
+          "fd_before": 11,
+          "fd_after": 8
+        },
+        {
+          "seconds": 24.389727684028912,
+          "fd_before": 12,
+          "fd_after": 11
+        },
+        {
+          "seconds": 31.046082161017694,
+          "fd_before": 13,
+          "fd_after": 7
+        },
+        {
+          "seconds": 26.97484987799544,
+          "fd_before": 14,
+          "fd_after": 10
+        }
+      ],
+      "head": "sha256:62eed6ef44ed911fee7ecdf7a50c7c77ab85a5a62e27767726216fb2f3b4d2e3"
+    },
+    {
+      "round": 23,
+      "executor": "ProcessPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:8cc5b55456c6a506097891106b7d725cba8dff243be18a08b2ac6d507f678ecd",
+      "seconds": 9.204381168994587,
+      "workers": [
+        {
+          "seconds": 1.6228734930045903,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 5.1029081890010275,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 9.069282516022213,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.737231064005755,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 3.541423442948144,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 8.139686749957036,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 4.655995766981505,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "seconds": 7.534840941021685,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "head": "sha256:8cc5b55456c6a506097891106b7d725cba8dff243be18a08b2ac6d507f678ecd"
+    },
+    {
+      "round": 24,
+      "executor": "ThreadPoolExecutor",
+      "appends": 4000,
+      "verified": true,
+      "relative_path_verified": true,
+      "relative_head": "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08",
+      "seconds": 9.487342924985569,
+      "workers": [
+        {
+          "seconds": 6.410002581018489,
+          "fd_before": 6,
+          "fd_after": 10
+        },
+        {
+          "seconds": 9.012119029997848,
+          "fd_before": 8,
+          "fd_after": 7
+        },
+        {
+          "seconds": 9.394088542030659,
+          "fd_before": 11,
+          "fd_after": 6
+        },
+        {
+          "seconds": 8.256682733015623,
+          "fd_before": 10,
+          "fd_after": 8
+        },
+        {
+          "seconds": 7.01621884200722,
+          "fd_before": 11,
+          "fd_after": 9
+        },
+        {
+          "seconds": 4.085555643017869,
+          "fd_before": 12,
+          "fd_after": 13
+        },
+        {
+          "seconds": 4.149916566966567,
+          "fd_before": 13,
+          "fd_after": 12
+        },
+        {
+          "seconds": 6.1883288330282085,
+          "fd_before": 14,
+          "fd_after": 11
+        }
+      ],
+      "head": "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08"
+    }
+  ],
+  "controls": [
+    {
+      "mode": "unchanged",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-100k-3147/unchanged.sqlite3",
+        "--expected-head",
+        "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08"
+      ],
+      "exit": 0,
+      "stdout": "PASS  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-100k-3147/unchanged.sqlite3  chain=verified  external-anchor=matched\n",
+      "stderr": "",
+      "database_sha256": "c465c6788dd0de27c067bacd9a251b3c2a4fa17af0f21446f47af8d3536d11fb"
+    },
+    {
+      "mode": "nonjson",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-100k-3147/nonjson.sqlite3",
+        "--expected-head",
+        "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-100k-3147/nonjson.sqlite3  chain=invalid  row=seq 1 (row 1 of 4000)\n",
+      "stderr": "",
+      "database_sha256": "8813dfcff0e00b6b964c9cfce6c03e1cc63a21808be8813b932d72d9db17511f"
+    },
+    {
+      "mode": "truncated",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-100k-3147/truncated.sqlite3",
+        "--expected-head",
+        "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-100k-3147/truncated.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "13babe761fbf1f69c0580e68476303edece053f21d565031af2b1ab9abdded7d"
+    },
+    {
+      "mode": "empty",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-100k-3147/empty.sqlite3",
+        "--expected-head",
+        "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-100k-3147/empty.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "8d2d0eeb584400ee990da399b9010bb7f2948121f4e8f33a0beb30e3ab362667"
+    },
+    {
+      "mode": "rewritten",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-100k-3147/rewritten.sqlite3",
+        "--expected-head",
+        "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  journal=/home/soultransit/devtony/ranex/.local/remediation-82/storage-100k-3147/rewritten.sqlite3  chain=invalid\n",
+      "stderr": "",
+      "database_sha256": "f1248ad1b5f0c2094fe72539c057f400262a8de8ec7c4d99d181e5f0bb835817"
+    },
+    {
+      "mode": "incomplete-pasted-head",
+      "command": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "journal",
+        "verify",
+        "--journal",
+        ".local/remediation-82/storage-100k-3147/round-24.sqlite3",
+        "--expected-head",
+        "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b0"
+      ],
+      "exit": 2,
+      "stdout": "",
+      "stderr": "ERROR  --expected-head must be a canonical sha256 digest\n"
+    },
+    {
+      "mode": "damaged-header-repeated-open",
+      "attempts": 1000,
+      "damage": "first eight bytes lost from a copy of the first actual input journal",
+      "database_sha256": "76670164dc78f51fcab1e4b60e2501ac6509059f9a2b0659901fd274dae6051f",
+      "errors": {
+        "file is not a database": 1000
+      },
+      "fd_before": 6,
+      "fd_peak": 6,
+      "fd_after": 6
+    },
+    {
+      "mode": "restore-missing-trigger",
+      "trigger": "evaluations_no_update",
+      "attack": "UPDATE evaluations SET record = record",
+      "records": 1,
+      "refusal": "evaluations is append-only",
+      "verified": true
+    },
+    {
+      "mode": "restore-missing-trigger",
+      "trigger": "evaluations_no_delete",
+      "attack": "DELETE FROM evaluations",
+      "records": 1,
+      "refusal": "evaluations is append-only",
+      "verified": true
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 0,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4001,
+          "head": "sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f",
+          "pid": 2661912,
+          "fd_before": 6,
+          "fd_after": 9
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08', observed 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f')",
+          "pid": 2661912,
+          "fd_before": 8,
+          "fd_after": 8
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08', observed 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f')",
+          "pid": 2661912,
+          "fd_before": 9,
+          "fd_after": 6
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08', observed 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f')",
+          "pid": 2661912,
+          "fd_before": 10,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08', observed 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f')",
+          "pid": 2661912,
+          "fd_before": 14,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08', observed 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08', observed 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f')",
+          "pid": 2661912,
+          "fd_before": 12,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08', observed 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f')",
+          "pid": 2661912,
+          "fd_before": 14,
+          "fd_after": 9
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f",
+      "records_before": 4000,
+      "records_after": 4001
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 1,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4002,
+          "head": "sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86",
+          "pid": 2724418,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f', observed 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86')",
+          "pid": 2724421,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f', observed 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86')",
+          "pid": 2724422,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f', observed 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86')",
+          "pid": 2724423,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f', observed 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86')",
+          "pid": 2724424,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f', observed 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86')",
+          "pid": 2724418,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f', observed 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86')",
+          "pid": 2724418,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:868c264a0b67f971c0285320811344bbc91df4b499bb1af97003e0bfd6919c8f', observed 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86')",
+          "pid": 2724418,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86",
+      "records_before": 4001,
+      "records_after": 4002
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 2,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4003,
+          "head": "sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4",
+          "pid": 2661912,
+          "fd_before": 6,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86', observed 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4')",
+          "pid": 2661912,
+          "fd_before": 8,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86', observed 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4')",
+          "pid": 2661912,
+          "fd_before": 9,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86', observed 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4')",
+          "pid": 2661912,
+          "fd_before": 10,
+          "fd_after": 9
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86', observed 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 6
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86', observed 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4')",
+          "pid": 2661912,
+          "fd_before": 12,
+          "fd_after": 8
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86', observed 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:92df5d98371f360f0247a3d083abf574c6fac7fdebcfebef8442d087c19d3d86', observed 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4')",
+          "pid": 2661912,
+          "fd_before": 14,
+          "fd_after": 12
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4",
+      "records_before": 4002,
+      "records_after": 4003
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 3,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4004,
+          "head": "sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733",
+          "pid": 2724438,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4', observed 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733')",
+          "pid": 2724441,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4', observed 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733')",
+          "pid": 2724442,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4', observed 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733')",
+          "pid": 2724438,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4', observed 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733')",
+          "pid": 2724438,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4', observed 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733')",
+          "pid": 2724438,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4', observed 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733')",
+          "pid": 2724438,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:2c8e22c3b32ee425c5f7836c5690653b139efc2d03d4939b7b1d037d7cdf3cc4', observed 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733')",
+          "pid": 2724438,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733",
+      "records_before": 4003,
+      "records_after": 4004
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 4,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733', observed 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec')",
+          "pid": 2661912,
+          "fd_before": 8,
+          "fd_after": 12
+        },
+        {
+          "committed": true,
+          "position": 4005,
+          "head": "sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec",
+          "pid": 2661912,
+          "fd_before": 6,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733', observed 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec')",
+          "pid": 2661912,
+          "fd_before": 9,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733', observed 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec')",
+          "pid": 2661912,
+          "fd_before": 10,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733', observed 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec')",
+          "pid": 2661912,
+          "fd_before": 12,
+          "fd_after": 8
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733', observed 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec')",
+          "pid": 2661912,
+          "fd_before": 11,
+          "fd_after": 9
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733', observed 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 6
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:fa9f914c343909105000bd7eab25b23b37bc0010e20d5fc28b53ab636f8c9733', observed 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec')",
+          "pid": 2661912,
+          "fd_before": 14,
+          "fd_after": 7
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec",
+      "records_before": 4004,
+      "records_after": 4005
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 5,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4006,
+          "head": "sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc",
+          "pid": 2724558,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec', observed 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc')",
+          "pid": 2724561,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec', observed 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc')",
+          "pid": 2724558,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec', observed 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc')",
+          "pid": 2724558,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec', observed 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc')",
+          "pid": 2724558,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec', observed 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc')",
+          "pid": 2724561,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec', observed 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc')",
+          "pid": 2724562,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:0f3ef06b1657de8466c31287e168148ad5447dcc3a5f1cd5ea05870908256cec', observed 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc')",
+          "pid": 2724561,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc",
+      "records_before": 4005,
+      "records_after": 4006
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 6,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4007,
+          "head": "sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75",
+          "pid": 2661912,
+          "fd_before": 6,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc', observed 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75')",
+          "pid": 2661912,
+          "fd_before": 8,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc', observed 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75')",
+          "pid": 2661912,
+          "fd_before": 9,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc', observed 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75')",
+          "pid": 2661912,
+          "fd_before": 10,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc', observed 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 6
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc', observed 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75')",
+          "pid": 2661912,
+          "fd_before": 12,
+          "fd_after": 9
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc', observed 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 8
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:f4f7b6ab325f5bbf9f859736f1c1362b194732bf9682a1a47b21f1e7b42036cc', observed 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75')",
+          "pid": 2661912,
+          "fd_before": 14,
+          "fd_after": 6
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75",
+      "records_before": 4006,
+      "records_after": 4007
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 7,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4008,
+          "head": "sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2",
+          "pid": 2724626,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75', observed 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2')",
+          "pid": 2724629,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75', observed 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2')",
+          "pid": 2724630,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75', observed 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2')",
+          "pid": 2724626,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75', observed 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2')",
+          "pid": 2724631,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75', observed 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2')",
+          "pid": 2724629,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75', observed 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2')",
+          "pid": 2724629,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:be532197ccb3feebba208acdd73301728eb807996f078d8da44396a403bb4b75', observed 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2')",
+          "pid": 2724632,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2",
+      "records_before": 4007,
+      "records_after": 4008
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 8,
+      "executor": "ThreadPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4009,
+          "head": "sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866",
+          "pid": 2661912,
+          "fd_before": 6,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2', observed 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866')",
+          "pid": 2661912,
+          "fd_before": 8,
+          "fd_after": 12
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2', observed 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866')",
+          "pid": 2661912,
+          "fd_before": 9,
+          "fd_after": 11
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2', observed 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866')",
+          "pid": 2661912,
+          "fd_before": 10,
+          "fd_after": 10
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2', observed 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 7
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2', observed 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866')",
+          "pid": 2661912,
+          "fd_before": 12,
+          "fd_after": 9
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2', observed 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866')",
+          "pid": 2661912,
+          "fd_before": 13,
+          "fd_after": 8
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:5c22ad420e8290c9f4a450e54cb22b7a35a7539c4e1e6029fe58202e32e90bb2', observed 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866')",
+          "pid": 2661912,
+          "fd_before": 14,
+          "fd_after": 6
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866",
+      "records_before": 4008,
+      "records_after": 4009
+    },
+    {
+      "mode": "concurrent-compare-and-append",
+      "round": 9,
+      "executor": "ProcessPoolExecutor",
+      "attempts": [
+        {
+          "committed": true,
+          "position": 4010,
+          "head": "sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1",
+          "pid": 2724704,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866', observed 'sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1')",
+          "pid": 2724707,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866', observed 'sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1')",
+          "pid": 2724708,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866', observed 'sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1')",
+          "pid": 2724709,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866', observed 'sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1')",
+          "pid": 2724710,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866', observed 'sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1')",
+          "pid": 2724704,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866', observed 'sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1')",
+          "pid": 2724704,
+          "fd_before": 13,
+          "fd_after": 13
+        },
+        {
+          "committed": false,
+          "refusal": "E-BATCH-STALE-BASE: journal head changed (expected 'sha256:190253660fa6e29b1ece1f82016f213114f3e2052098ff38e6cfd1c34860b866', observed 'sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1')",
+          "pid": 2724707,
+          "fd_before": 13,
+          "fd_after": 13
+        }
+      ],
+      "committed": 1,
+      "verified": true,
+      "final_head": "sha256:993961f49b39a0c149b7dfafca4e00933e8cf8af62e77f648f86350d6a3ad5a1",
+      "records_before": 4009,
+      "records_after": 4010
+    }
+  ],
+  "independent_head_before_mutation": "sha256:84af2b89967ea47dfa0db842abac83365ce87ac4706ba642821c4d597e9e7b08"
+}

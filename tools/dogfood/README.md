@@ -67,6 +67,10 @@ receipts; its generated local App credentials do not prove live publication.
 Storage load repeats actual gate records across threads/processes, then attacks
 copies of the resulting databases and checks an independently retained head via
 the CLI. Repeated records measure storage, not new code correctness observations.
+Storage defaults to five rounds of 4000 appends; `--rounds 25` increases the
+same alternating eight-thread/eight-process workload to 100,000 appends.
+Its receipts record the actual Python/SQLite runtime and CPU affinity, missing
+append-only trigger recovery, damaged-header descriptor use and CAS results.
 Preserved remediation receipts are in `audits/2026-09-05-remediation/`; earlier
 failed attempts remain there alongside successful reruns.
 

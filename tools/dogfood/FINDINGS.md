@@ -16,7 +16,12 @@ thread-pool submission and immediate ignored-delivery probe race for the real
 receiver's one pipeline lock; a submitted future does not prove Git has begun.
 The driver now observes the actual child `git ... fetch` process before probing
 for 503. It preserves named failures and the production 30-second fetch deadline.
-Fresh repeated real-PR validation is pending. Original hosted failure:
+Two real-PR repeats at 7e559bfbc0e4852665ec3611d4dcdb4ac94119f7 passed
+all 41 controls on Python 3.14.7, with two-CPU and one-CPU affinity. Both
+observed actual fetch admission, 503 backpressure, the unchanged fetch timeout
+and successful redelivery after recovery. Receipts: `receiver-f028-1/receipt.json`
+and `receiver-f028-2/receipt.json` in the remediation archive. Fresh hosted CI
+and release-commit validation remain pending. Original hosted failure:
 `audits/2026-09-05-remediation/ci-release-tag-failed.log`.
 
 
@@ -101,7 +106,17 @@ on every connection, and creates missing objects inside BEGIN IMMEDIATE/COMMIT.
 The 60-second budget, append transactions and compare-and-append semantics are
 unchanged. The first 20,000-append diagnostic passed; its uncommitted source is
 retained explicitly in `storage-after-release-fixed/`. Matching hosted-runtime
-stress, missing-trigger recovery and final CI are pending. SQLite documents
+stress at committed 7e559bfbc0e4852665ec3611d4dcdb4ac94119f7 then passed
+100,000 appends across 25 alternating eight-thread/eight-process rounds on
+Python 3.14.7 and SQLite 3.53.1, restricted to one CPU. All 25 chains verified;
+1000 failed damaged-header opens held the descriptor count at six. Both missing
+append-only triggers were restored on copies of the original real journals,
+then blocked actual SQL mutation without changing their anchored chains. Ten
+CAS races produced exactly ten winners and 70 named stale refusals. Receipt:
+`audits/2026-09-05-remediation/storage-100k-3147/receipt.json`. The existing
+journal regression also passed 22 checks on that runtime. Repeated appends
+measure storage contention, not independent code correctness observations.
+Fresh hosted CI and release-commit validation remain pending. SQLite documents
 [write intent and lock upgrades](https://www.sqlite.org/lang_transaction.html)
 and [busy-handler limits](https://www.sqlite.org/c3ref/busy_handler.html).
 The exact scheduling cause of the old intermittent failure remains unverified.
