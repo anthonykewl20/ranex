@@ -1,0 +1,105 @@
+{
+  "schema": "ranex-oss-bench-divergence-v1",
+  "model": "zai:glm-5.3",
+  "rows": [
+    {
+      "task": "py-txn-kvstore",
+      "run_id": "py-txn-kvstore-a71f6d37",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 11,
+      "tokens": 17176,
+      "cost_usd": 0.037825,
+      "duration_s": 78.838,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "r-rollback isolation, 3-level nesting, and journal-level frame semantics. All passed; the repo has no committed test suite (`run_tests` reports \"no tests ran\").",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_txnkv.py",
+        "output_tail": "10 passed in 0.01s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.1
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
+        "run_exit": 0,
+        "run_error": "",
+        "gate_verdict": "PASS",
+        "gate_output": "PASS  gate=landing  subject=sha256:e3a3c1a6a617e18a404fb06b12a4a2138e61ebecdaad13e8a9e4d5dd60b5e190",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-06.json/py-txn-kvstore-a71f6d37/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.2
+      }
+    },
+    {
+      "task": "py-textdiff",
+      "run_id": "py-textdiff-3a452d41",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 14,
+      "tokens": 26991,
+      "cost_usd": 0.059651,
+      "duration_s": 119.647,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "ating applier with `PatchError`); the invariant `apply(diff(a, b), a) == b` holds and mismatched sources raise `PatchError`, verified exhaustively and randomly.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_textdiff.py",
+        "output_tail": "24 passed in 0.02s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.2
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_textdiff.py::test_round_trip test_textdiff.py::test_kept_lines_are_a_longest_common_subsequence test_textdiff.py::test_ops_use_only_known_kinds test_textdiff.py::test_insert_only_diff test_textdiff.py::test_delete_only_diff test_textdiff.py::test_apply_rejects_wrong_source test_textdiff.py::test_apply_requires_consuming_all_of_source",
+        "run_exit": 0,
+        "run_error": "",
+        "gate_verdict": "PASS",
+        "gate_output": "PASS  gate=landing  subject=sha256:6be6ed9e6422f18dacb9016499adf7144c86922f716fb609b10638fd794f99ed",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-06.json/py-textdiff-3a452d41/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.4
+      }
+    },
+    {
+      "task": "legacy-codeccore-binary-parity",
+      "run_id": "legacy-codeccore-binary-parity-812ce8ba",
+      "ground_truth_functional": 0.0,
+      "agent_steps": 69,
+      "tokens": 228122,
+      "cost_usd": 0.513774,
+      "duration_s": 837.138,
+      "cost_capped": true,
+      "self_report": {
+        "claimed_success": false,
+        "final_words": "Let me nail down the remaining rules: check-char acceptance, dispatch, flag rule, and memo truncation.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+        "output_tail": "10 failed in 0.18s",
+        "exit": 1,
+        "verdict": "RED",
+        "elapsed_s": 0.3
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_memo_squeeze oss_tests.py::test_january_audit_flag oss_tests.py::test_prefix_case_leniency oss_tests.py::test_acct_padding_leniency oss_tests.py::test_null_date_decode oss_tests.py::test_comma_memo_padding oss_tests.py::test_check_override oss_tests.py::test_lenient_tokens oss_tests.py::test_round_trips oss_tests.py::test_full_corpus_parity",
+        "run_exit": 1,
+        "run_error": "",
+        "gate_verdict": "FAIL",
+        "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_acct_padding_leniency (failed), oss_tests.py::test_check_override (failed), oss_tests.py::test_comma_memo_padding (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_january_audit_flag (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_memo_squeeze (failed), oss_tests.py::test_null_date_decode (failed), oss_tests.py::test_prefix_case_leniency (failed), oss_tests.py::test_round_trips (failed)\n      subject=sha256:7e891c742acc5653c15fd796ef7b0f831046da45d152ae868b18e9c547654f03",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-06.json/legacy-codeccore-binary-parity-812ce8ba/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.4
+      }
+    }
+  ],
+  "gaming_demo": null,
+  "stale_demo": null,
+  "note": "four positions: pristine grader / bare CI on the patched tree / parsed self-report / manifest-bound gate"
+}

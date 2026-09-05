@@ -1,0 +1,38 @@
+{
+  "agent_steps": 14,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_textdiff.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "24 passed in 0.02s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.059651,
+  "date": "2026-09-06",
+  "duration_s": 119.647,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "c2c744cec1abd02a523328d34530a750ec2f4d1a",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.4,
+    "gate_output": "PASS  gate=landing  subject=sha256:6be6ed9e6422f18dacb9016499adf7144c86922f716fb609b10638fd794f99ed",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-06.json/py-textdiff-3a452d41/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_textdiff.py::test_round_trip test_textdiff.py::test_kept_lines_are_a_longest_common_subsequence test_textdiff.py::test_ops_use_only_known_kinds test_textdiff.py::test_insert_only_diff test_textdiff.py::test_delete_only_diff test_textdiff.py::test_apply_rejects_wrong_source test_textdiff.py::test_apply_requires_consuming_all_of_source",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-textdiff-3a452d41",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "ating applier with `PatchError`); the invariant `apply(diff(a, b), a) == b` holds and mismatched sources raise `PatchError`, verified exhaustively and randomly.",
+    "heuristic": true
+  },
+  "task": "py-textdiff",
+  "tokens": 26991
+}

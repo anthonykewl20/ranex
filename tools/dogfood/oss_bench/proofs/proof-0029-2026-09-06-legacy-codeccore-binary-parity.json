@@ -1,0 +1,38 @@
+{
+  "agent_steps": 69,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+    "elapsed_s": 0.3,
+    "exit": 1,
+    "output_tail": "10 failed in 0.18s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.513774,
+  "date": "2026-09-06",
+  "duration_s": 837.138,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "c2c744cec1abd02a523328d34530a750ec2f4d1a",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.4,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_acct_padding_leniency (failed), oss_tests.py::test_check_override (failed), oss_tests.py::test_comma_memo_padding (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_january_audit_flag (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_memo_squeeze (failed), oss_tests.py::test_null_date_decode (failed), oss_tests.py::test_prefix_case_leniency (failed), oss_tests.py::test_round_trips (failed)\n      subject=sha256:7e891c742acc5653c15fd796ef7b0f831046da45d152ae868b18e9c547654f03",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-06.json/legacy-codeccore-binary-parity-812ce8ba/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_memo_squeeze oss_tests.py::test_january_audit_flag oss_tests.py::test_prefix_case_leniency oss_tests.py::test_acct_padding_leniency oss_tests.py::test_null_date_decode oss_tests.py::test_comma_memo_padding oss_tests.py::test_check_override oss_tests.py::test_lenient_tokens oss_tests.py::test_round_trips oss_tests.py::test_full_corpus_parity",
+    "run_error": "",
+    "run_exit": 1
+  },
+  "run_id": "legacy-codeccore-binary-parity-812ce8ba",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Let me nail down the remaining rules: check-char acceptance, dispatch, flag rule, and memo truncation.",
+    "heuristic": true
+  },
+  "task": "legacy-codeccore-binary-parity",
+  "tokens": 228122
+}

@@ -666,6 +666,24 @@
       "scenarios": 43,
       "sha": "c4d4744e5",
       "subject": "tools: dogfood artifacts \u2014 iteration 14"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 10,
+      "pile": 26,
+      "scenarios": 43,
+      "sha": "fc873c04c",
+      "subject": "bench: v0.1.002 two-arm study \u2014 3/3 gold-FAIL validation gat"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 10,
+      "pile": 26,
+      "scenarios": 43,
+      "sha": "c2c744cec",
+      "subject": "tools: dogfood artifacts - iteration 15"
     }
   ]
 }

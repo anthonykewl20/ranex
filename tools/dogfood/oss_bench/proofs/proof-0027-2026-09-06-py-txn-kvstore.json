@@ -1,0 +1,38 @@
+{
+  "agent_steps": 11,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_txnkv.py",
+    "elapsed_s": 0.1,
+    "exit": 0,
+    "output_tail": "10 passed in 0.01s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.037825,
+  "date": "2026-09-06",
+  "duration_s": 78.838,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "c2c744cec1abd02a523328d34530a750ec2f4d1a",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "PASS  gate=landing  subject=sha256:e3a3c1a6a617e18a404fb06b12a4a2138e61ebecdaad13e8a9e4d5dd60b5e190",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-06.json/py-txn-kvstore-a71f6d37/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_txnkv.py::test_autocommit_without_transaction test_txnkv.py::test_rollback_restores_prior_value_and_absence test_txnkv.py::test_rollback_restores_deleted_key test_txnkv.py::test_commit_keeps_changes test_txnkv.py::test_nested_commit_then_outer_rollback_undoes_everything test_txnkv.py::test_nested_inner_rollback_leaves_outer_intact test_txnkv.py::test_rollback_replays_multiple_writes_in_reverse test_txnkv.py::test_commit_without_transaction_raises test_txnkv.py::test_keys_reflects_transaction_state",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-txn-kvstore-a71f6d37",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "r-rollback isolation, 3-level nesting, and journal-level frame semantics. All passed; the repo has no committed test suite (`run_tests` reports \"no tests ran\").",
+    "heuristic": true
+  },
+  "task": "py-txn-kvstore",
+  "tokens": 17176
+}
