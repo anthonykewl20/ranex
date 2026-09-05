@@ -79,8 +79,8 @@ jobs:
             --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-semver-compare-bf46c069.sqlite3 \
             --out .local/ci-storage-stress
           unset COVERAGE_PROCESS_START
-          uv run --frozen python -m coverage combine --keep
-          uv run --frozen python -m coverage xml -o coverage.xml
+          uv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage
+          uv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml
           uv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100
 
   osv-scan:
