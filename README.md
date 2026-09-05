@@ -1436,6 +1436,8 @@ about the exact bytes a merge would land.
    Preserve both on upgrades. GitHub does not automatically retry failed
    deliveries: request redelivery in GitHub or through its API. A crash after
    remote publication but before local completion can still duplicate a check.
+   Credentials, trusted keys and the allowlist are loaded at startup; restart
+   the listener after changing them.
 
 Producing verdicts is unchanged: a `gate evaluate` run against the PR head
 (wired with `RANEX_VERDICT_SIGNING_KEY` and `RANEX_VERDICT_DIR`) writes the
@@ -1478,10 +1480,14 @@ tree says PASS.
 
 ### Limits, stated plainly
 
-The App publishes; it never evaluates. A compromised receiver host can
-suppress checks (visible: merges stay blocked) but cannot forge a green
-one. Webhook delivery replay is handled by delivery-ID dedup; stronger
-anti-replay (nonces, journal anchoring) is the deferred anti-replay slice.
+The App publishes; it never evaluates. The receiver host and App credentials
+are part of the trust boundary: control of them permits publishing a green
+GitHub check directly. GitHub authenticates the publishing App; it does not
+verify Ranex's verdict signature. An independent reader can verify the signed
+Ranex record separately. This corrects ADR-051's historical claim that a
+compromised receiver cannot forge a green check; the ADR is retained unchanged.
+Webhook delivery replay is handled by delivery-ID dedup; nonces remain deferred.
+Journal history verification requires an independently retained head.
 The receiver is the repository's first long-running process and is bounded:
 one endpoint, one event type, one delivery at a time, localhost by default.
 

@@ -122,33 +122,6 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   boundary/pigeonhole/fixed-point scenarios landed with the blind-spot
   mathematics hardening.
 
-### F-004 (CONFIRMED) — collection-error junit is refused; the gate journals an observed failure as ABSENCE
-
-- Anchor: `src/ranex/foundation/suite_results.py:125` (`_test_id` refuses a
-  testcase whose `classname` is empty) and the run's `ERROR  junitxml testcase
-  must carry classname and name` (run exit 2).
-- Verified 2026-09-03 by the dogfood trainer's preflight over the real
-  VulcanBench corpus (23/157 exercisable tasks refuse with exactly this
-  error; 5 more fail preflight with `cannot parse junitxml: no element
-  found` — 28 preflight-failed in total) and by a direct governed-cycle
-  probe on py-txn-kvstore with the
-  test file broken at import: pytest 7.4.4 writes the collection error as
-  `<testcase classname="" name="test_txnkv" ...><error/></testcase>`; ranex
-  refuses the whole artifact; no evidence is recorded; the gate verdict is
-  correctly FAIL but the journaled diagnosis is `no evidence for required
-  claim: tests-executed` — the phrasing reserved for work never done. A
-  genuine red-at-import suite is filed as an unfinished task, the exact
-  misfiling the kernel elsewhere refuses to make (see `_diagnosis`,
-  verdict.py:291-306, and the admission header's trust-chain note).
-- Behaviour is fail-closed (verdict never wrong); the defect is diagnostic.
-- Pinned by: trainer corpus class `corpus/preflight-failed` with reason
-  `junitxml testcase must carry classname and name` (23 tasks, cached in
-  `tools/dogfood/training/corpus.json`), plus the probe transcript above.
-  Candidate kernel direction (owner decision — suite trust surface, not to
-  be hand-fixed unattended): map a file-level collection error to a
-  synthetic file outcome ("error") instead of refusing the artifact, so the
-  claim records an observed collection failure rather than silence.
-
 ### F-003 (CONFIRMED, environmental prerequisite) — governing third-party repos needs a vendored CLI and root-installed test tooling
 
 - Verified 2026-09-03 while building the OSS two-arm benchmark:
@@ -203,6 +176,58 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   the e2e prereqs materialize the missing state in any checkout.
 
 ## Closed
+
+### F-021 — GitHub check publication trusts the receiver host
+
+**Documentation corrected 2026-09-05; live compromise test UNVERIFIED.**
+ADR-051 and README claimed a compromised receiver could not forge a green
+check. `GitHubClient.create_check_run` authenticates arbitrary check bodies
+with the installation token; `check_run_body` sends a conclusion and record
+digest, not a signature GitHub verifies. The receiver holds App credentials.
+The [version-matched GitHub API](https://docs.github.com/en/rest/checks/runs?apiVersion=2026-03-10#create-a-check-run)
+authorizes check creation with Checks write permission. Therefore host/App
+credential integrity is required for the GitHub check's authenticity as a
+Ranex decision. It is distinct from forging an independently verified signed
+Ranex verdict. README now states this boundary and startup-only trust loading;
+historical ADRs remain immutable. No live App compromise was attempted.
+
+### F-004 — collection-error junit is refused; the gate journals an observed failure as ABSENCE
+
+**Remediation 2026-09-05:** Actual pytest collection-error XML now retains
+its module name and accepts repeated error children belonging to that one
+failed collector. The kernel signs the observed failed execution; missing
+expected IDs block. The repeated external audit verifies both collection
+controls. Failures before pytest produces any report remain named missing
+artifact refusals; no unobserved test outcomes are invented. Evidence:
+`audits/2026-09-05-remediation/external-2/0/receipt.json`.
+
+Historical observation retained:
+
+- Anchor: `src/ranex/foundation/suite_results.py:125` (`_test_id` refuses a
+  testcase whose `classname` is empty) and the run's `ERROR  junitxml testcase
+  must carry classname and name` (run exit 2).
+- Verified 2026-09-03 by the dogfood trainer's preflight over the real
+  VulcanBench corpus (23/157 exercisable tasks refuse with exactly this
+  error; 5 more fail preflight with `cannot parse junitxml: no element
+  found` — 28 preflight-failed in total) and by a direct governed-cycle
+  probe on py-txn-kvstore with the
+  test file broken at import: pytest 7.4.4 writes the collection error as
+  `<testcase classname="" name="test_txnkv" ...><error/></testcase>`; ranex
+  refuses the whole artifact; no evidence is recorded; the gate verdict is
+  correctly FAIL but the journaled diagnosis is `no evidence for required
+  claim: tests-executed` — the phrasing reserved for work never done. A
+  genuine red-at-import suite is filed as an unfinished task, the exact
+  misfiling the kernel elsewhere refuses to make (see `_diagnosis`,
+  verdict.py:291-306, and the admission header's trust-chain note).
+- Behaviour is fail-closed (verdict never wrong); the defect is diagnostic.
+- Pinned by: trainer corpus class `corpus/preflight-failed` with reason
+  `junitxml testcase must carry classname and name` (23 tasks, cached in
+  `tools/dogfood/training/corpus.json`), plus the probe transcript above.
+  Candidate kernel direction (owner decision — suite trust surface, not to
+  be hand-fixed unattended): map a file-level collection error to a
+  synthetic file outcome ("error") instead of refusing the artifact, so the
+  claim records an observed collection failure rather than silence.
+
 
 ### F-019 — positive host acceptance helpers fabricated qualification reports
 

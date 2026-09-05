@@ -1,0 +1,17 @@
+{
+  "reason": "Controller opt-in flag propagated to subject suite; prevent recursively invoking live bootstrap before retrying",
+  "root_pid": 690735,
+  "owned_descendants": [
+    690735,
+    690747,
+    708314,
+    708319,
+    927061,
+    927214,
+    928889,
+    928890,
+    928892,
+    928893,
+    928904
+  ]
+}

@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="1" failures="0" skipped="0" tests="1" time="0.067" timestamp="2026-09-05T16:54:24.897492+08:00" hostname="desk-tony"><testcase classname="tests.e2e.test_specification_subject_bootstrap" name="test_real_kogg_bootstrap_or_blocked" time="0.001"><error message="failed on setup with &quot;FileNotFoundError: [Errno 2] No such file or directory: '/tmp/ranex-remediation-82-kogg-root/pytest-of-unknown'&quot;">self = PosixPath('/tmp/ranex-remediation-82-kogg-root/pytest-of-soultransit')
+mode = 448, parents = False, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+&gt;           os.mkdir(self, mode)
+E           FileNotFoundError: [Errno 2] No such file or directory: '/tmp/ranex-remediation-82-kogg-root/pytest-of-soultransit'
+
+../../.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:1011: FileNotFoundError
+
+During handling of the above exception, another exception occurred:
+
+self = PosixPath('/tmp/ranex-remediation-82-kogg-root/pytest-of-unknown')
+mode = 448, parents = False, exist_ok = True
+
+    def mkdir(self, mode=0o777, parents=False, exist_ok=False):
+        """
+        Create a new directory at this given path.
+        """
+        try:
+&gt;           os.mkdir(self, mode)
+E           FileNotFoundError: [Errno 2] No such file or directory: '/tmp/ranex-remediation-82-kogg-root/pytest-of-unknown'
+
+../../.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/pathlib/__init__.py:1011: FileNotFoundError</error></testcase></testsuite></testsuites>

@@ -1,0 +1,166 @@
+{
+  "source": "gh api repos/anthonykewl20/ranex/pulls/72",
+  "pull_request_sha256": "47b59e89102c2f30f842d4cbb47bcea7158fefcebbf3ee0f49603d643c5c4cc1",
+  "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42",
+  "scope": "Real public PR replay through actual CLI; local HMAC and installation 1; live GitHub App publication UNVERIFIED",
+  "kernel": "5f3feec75dc531e970f7f97e70980225e8732320",
+  "rows": [
+    {
+      "case": "real-git-remote-recovery",
+      "verified": true,
+      "facts": [
+        {
+          "delivery": "real-pr-recovery",
+          "event": "pull_request",
+          "outcome": "E-GITHUB-UNFETCHABLE-HEAD",
+          "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42"
+        },
+        {
+          "delivery": "real-pr-recovery",
+          "event": "pull_request",
+          "outcome": "E-GITHUB-API-REFUSED",
+          "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42"
+        }
+      ]
+    },
+    {
+      "case": "1000-concurrent-real-pr-replays",
+      "verified": true,
+      "facts": {
+        "requests": 1000,
+        "completed_ids": 100,
+        "busy_redeliveries": 2401
+      }
+    },
+    {
+      "case": "same-id-different-authenticated-body",
+      "verified": true,
+      "facts": 409
+    },
+    {
+      "case": "sigkill-restart-retains-100-completions",
+      "verified": true,
+      "facts": 100
+    },
+    {
+      "case": "sigkill-restart-retries-api-failure",
+      "verified": true,
+      "facts": 500
+    },
+    {
+      "case": "saturation-0",
+      "verified": true,
+      "facts": {
+        "opened": 32,
+        "threads": 33,
+        "descriptors": 22,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "saturation-1",
+      "verified": true,
+      "facts": {
+        "opened": 32,
+        "threads": 33,
+        "descriptors": 22,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "saturation-2",
+      "verified": true,
+      "facts": {
+        "opened": 32,
+        "threads": 33,
+        "descriptors": 22,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "saturation-3",
+      "verified": true,
+      "facts": {
+        "opened": 32,
+        "threads": 33,
+        "descriptors": 22,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "saturation-4",
+      "verified": true,
+      "facts": {
+        "opened": 32,
+        "threads": 33,
+        "descriptors": 22,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "trickle-client-wall-deadline",
+      "verified": true,
+      "facts": {
+        "disconnected": true,
+        "seconds": 5.105885948985815
+      }
+    },
+    {
+      "case": "healthy-after-trickle",
+      "verified": true,
+      "facts": "HTTP 200"
+    },
+    {
+      "case": "damaged-receipt-recovery",
+      "verified": true,
+      "facts": {
+        "damaged_bytes": "",
+        "refused": 500,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "damaged-receipt-recovery",
+      "verified": true,
+      "facts": {
+        "damaged_bytes": "[]",
+        "refused": 500,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "damaged-receipt-recovery",
+      "verified": true,
+      "facts": {
+        "damaged_bytes": "{}",
+        "refused": 500,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "damaged-receipt-recovery",
+      "verified": true,
+      "facts": {
+        "damaged_bytes": "{\"fingerprint\":42}",
+        "refused": 500,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "legacy-spool-damage-recovery",
+      "verified": true,
+      "facts": {
+        "refused": 500,
+        "recovered": 200
+      }
+    },
+    {
+      "case": "two-receivers-share-durable-state",
+      "verified": true,
+      "facts": {
+        "requests": 200,
+        "accepted": 200
+      }
+    }
+  ]
+}

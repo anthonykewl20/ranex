@@ -78,7 +78,9 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
     archive = subprocess.check_output(['git', '-C', str(ROOT), 'archive', 'HEAD', 'governance'])
     subprocess.run(['tar', '-x', '-C', str(repo)], input=archive, check=True)
     subprocess.run(['git', '-C', str(repo), 'add', 'governance'], check=True)
-    subprocess.run(['git', '-C', str(repo), 'commit', '-qm', 'Actual Ranex governance for PR replay'], check=True)
+    subprocess.run(['git', '-C', str(repo), '-c', 'user.name=Ranex receiver replay',
+                    '-c', 'user.email=ranex-replay@example.invalid',
+                    'commit', '-qm', 'Actual Ranex governance for PR replay'], check=True)
     key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
     private = root / 'app.pem'
     private.write_bytes(key.private_bytes(serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8,
@@ -162,6 +164,8 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
         entries = [json.loads(line) for line in journal.read_text().splitlines()]
         record('sigkill-restart-retains-100-completions', all(s == 200 for s in statuses)
                and all(e['outcome'] == 'replayed' for e in entries[-100:]), len(statuses))
+        conflict = request(port, 'real-pr-0', BODY)
+        record('restart-retains-body-binding', conflict == 409, conflict)
         status = request(port, 'real-pr-recovery', BODY)
         record('sigkill-restart-retries-api-failure', status == 500
                and json.loads(journal.read_text().splitlines()[-1])['outcome'] == 'E-GITHUB-API-REFUSED', status)

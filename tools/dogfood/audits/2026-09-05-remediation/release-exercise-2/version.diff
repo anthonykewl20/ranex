@@ -1,0 +1,26 @@
+diff --git a/pyproject.toml b/pyproject.toml
+index d04a1965e..a4a57def5 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
+ 
+ [project]
+ name = "ranex"
+-version = "0.1.0"
++version = "0.1.1"
+ description = "Deterministic governance for AI agents that build software"
+ requires-python = ">=3.11,<3.15"
+ dependencies = [
+diff --git a/uv.lock b/uv.lock
+index 8dc73644c..9b93d1b0b 100644
+--- a/uv.lock
++++ b/uv.lock
+@@ -681,7 +681,7 @@ wheels = [
+ 
+ [[package]]
+ name = "ranex"
+-version = "0.1.0"
++version = "0.1.1"
+ source = { editable = "." }
+ dependencies = [
+     { name = "cryptography" },

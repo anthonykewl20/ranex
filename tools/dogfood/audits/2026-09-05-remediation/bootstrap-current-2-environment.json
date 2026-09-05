@@ -1,0 +1,11 @@
+{
+  "pid": 1018076,
+  "cmdline": [
+    "/tmp/ranex-remediation-82-bootstrap-2-root/pytest-of-soultransit/pytest-0/test_real_ranex_bootstrap_or_h0/repo/.venv/bin/python",
+    "/tmp/ranex-remediation-82-bootstrap-2-root/pytest-of-soultransit/pytest-0/test_real_ranex_bootstrap_or_h0/repo/.venv/bin/pytest",
+    "-q",
+    ""
+  ],
+  "bootstrap_opt_in_in_subject_environment": false,
+  "scope": "Read only one named controller opt-in flag from the actual live subject environment; other environment values are not retained"
+}

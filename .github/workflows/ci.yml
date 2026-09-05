@@ -62,6 +62,15 @@ jobs:
           DIFF_COVER_COMPARE_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before != '0000000000000000000000000000000000000000' && github.event.before || format('origin/{0}', github.event.repository.default_branch) }}
         run: |
           uv run --frozen python -m coverage run --source=src/ranex -m pytest -q
+          # Exercise the actual receiver CLI with an archived upstream PR,
+          # real TCP/process failure, Git recovery and shared durable state.
+          COVERAGE_PROCESS_START="$PWD/pyproject.toml" \
+          COVERAGE_FILE="$PWD/.coverage" \
+          PYTHONPATH="$PWD/tests/e2e/coverage" \
+            uv run --frozen python tools/dogfood/receiver_stress.py \
+              --pull-request tools/dogfood/audits/2026-09-05-remediation/pr-72.json \
+              --out .local/ci-receiver-stress
+          uv run --frozen python -m coverage combine --keep
           uv run --frozen python -m coverage xml -o coverage.xml
           uv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100
 
