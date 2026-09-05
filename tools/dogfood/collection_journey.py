@@ -39,6 +39,8 @@ def main() -> int:
         baseline = proof.measure_baseline(repo, scratch)
         setup = proof.onboard_governance(scratch / 'kernel', repo, scratch, 'HEAD', baseline['passing'], 0)
         shutil.copyfile(scratch / 'baseline.xml', out / 'baseline.xml')
+        for name in ('producers.yaml', 'gates.yaml', 'suite_manifest.json'):
+            shutil.copyfile(repo / 'governance' / name, out / name)
         env = {'PATH': '/usr/bin:/bin', 'HOME': str(scratch), 'LANG': 'C.UTF-8',
                'PYTHONPATH': str(repo / 'src'), 'RANEX_SIGNING_KEY': str(setup['key'])}
         measured = bool(os.environ.get('COVERAGE_PROCESS_START'))
@@ -107,6 +109,15 @@ def main() -> int:
         if journal.returncode:
             raise RuntimeError(journal.stdout + journal.stderr)
         shutil.copyfile(repo / 'governance/journal.sqlite3', out / 'journal.sqlite3')
+        # Keep the actual governed trees, including the failed import commit,
+        # so the signed subject digests can be independently recomputed later.
+        bundle = proof._git(repo, 'bundle', 'create', str(out / 'subject.bundle'), 'HEAD')
+        if bundle.returncode:
+            raise RuntimeError(bundle.stderr)
+        checked = proof._git(repo, 'bundle', 'verify', str(out / 'subject.bundle'))
+        if checked.returncode:
+            raise RuntimeError(checked.stderr)
+        (out / 'bundle-verification.txt').write_text(checked.stdout + checked.stderr)
         if measured:
             # Use coverage.py's own path mapping only after proving this
             # vendored tree is byte-identical. Historical or modified kernels
