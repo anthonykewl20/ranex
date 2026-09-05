@@ -109,6 +109,13 @@ def _register_owner(repository: Path, key: Path) -> None:
         index for index, line in enumerate(lines) if line.rstrip() == "producers:"
     )
     lines.insert(header + 1, f"  {PRODUCER}: {public.group(0)}\n")
+    if any(line.rstrip() == "principals:" for line in lines):
+        principal_header = next(i for i, line in enumerate(lines) if line.rstrip() == "principals:")
+        lines.insert(
+            principal_header + 1,
+            f"  {PRODUCER}:\n    role: worker\n    keys:\n"
+            f"      - key: {public.group(0)}\n        status: active\n",
+        )
     producers.write_text("".join(lines), encoding="utf-8")
     _git(repository, "rm", "-q", "governance/deps.yaml")
     _git(repository, "add", "governance/producers.yaml")

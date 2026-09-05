@@ -133,7 +133,9 @@ def auto(expected_head: str) -> None:
     revision = command("git", "rev-parse", "HEAD")
     # Run only after committing: metadata-only changes do not waive the owner gate.
     command("uv", "run", "--frozen", "pytest", "-q", capture=False)
-    command("uv", "build", "--no-build-isolation", "--out-dir", ".local/release/dist", capture=False)
+    epoch = yaml.safe_load((ROOT / "governance/deps.yaml").read_text())["exclude_newer"]
+    command("uv", "build", "--no-build-isolation", "--exclude-newer", str(epoch),
+            "--out-dir", ".local/release/dist", capture=False)
     if command("git", "status", "--porcelain") or command("git", "rev-parse", "HEAD") != revision:
         raise ValueError("validation changed the release checkout")
     require_owner()

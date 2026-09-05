@@ -94,6 +94,13 @@ def _clone_governed_repository(path: Path, key: Path, producer: str) -> None:
     lines = producers.read_text(encoding="utf-8").splitlines(keepends=True)
     header = next(index for index, line in enumerate(lines) if line.rstrip() == "producers:")
     lines.insert(header + 1, f"  {producer}: {public.group(0)}\n")
+    if any(line.rstrip() == "principals:" for line in lines):
+        principal_header = next(i for i, line in enumerate(lines) if line.rstrip() == "principals:")
+        lines.insert(
+            principal_header + 1,
+            f"  {producer}:\n    role: worker\n    keys:\n"
+            f"      - key: {public.group(0)}\n        status: active\n",
+        )
     producers.write_text("".join(lines), encoding="utf-8")
     _require_git(path, "rm", "-q", "governance/deps.yaml")
     _require_git(path, "add", "governance/producers.yaml")
