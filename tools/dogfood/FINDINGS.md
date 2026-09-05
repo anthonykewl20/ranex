@@ -8,6 +8,25 @@ match the kernel silently.
 
 ## Open
 
+### F-022 — live Kogg subject qualification is unavailable in the measured runtime
+
+After fixing active-account selection, the actual controller reaches the pinned
+Kogg clone. With its specified npm 11.6.0 on Node 24.18.0, `npm ci` fails loading
+`lightningcss-linux-x64-gnu`. A retained diagnostic checkout with npm 11.16.0
+builds from the unchanged lock, then `npm test` exits 1 with 17 failing tests
+(UI navigation plus workspace/AST runtime tests). Kogg's own CI and `.nvmrc`
+select Node 22; that environment remains UNVERIFIED. These observations do not
+establish a current Ranex kernel failure or universal upstream failure.
+
+The bootstrap now checks the actual npm version before execution and refuses
+a mismatch; it does not call a real build failure credential-BLOCKED or PASS.
+The historical subject pin and lock were not silently updated to conceal this.
+Receipts: `audits/2026-09-05-remediation/kogg-current-2.xml` and
+`kogg-diagnostic/receipt.json`, with compressed original diagnostic logs.
+The matching optional-peer symptom is also documented in the
+[npm issue tracker](https://github.com/npm/cli/issues/8489); attribution beyond
+the measured install behavior remains unverified.
+
 ### F-018 (OBSERVED, mitigated; attribution unverified) — sustained journal writers can exhaust SQLite's wait
 
 **Remediation 2026-09-05:** SQLite connections now close deterministically.
@@ -176,6 +195,17 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   the e2e prereqs materialize the missing state in any checkout.
 
 ## Closed
+
+### F-020 — live bootstrap opt-in leaked into the subject environment
+
+The controller's `RANEX_SLICE035_REAL=1` reached the full subject suite, where
+it could opt into another bootstrap. The first updated historical run was
+cancelled rather than counted as acceptance. The broker now removes that
+controller-only flag. Reading the actual replacement subject process's
+environment confirmed the flag was absent; no other environment values were
+retained. Evidence: `audits/2026-09-05-remediation/bootstrap-current-cancelled.json`
+and `bootstrap-current-2-environment.json`. This records a recursion risk and
+its boundary fix, not a claim that an unbounded recursive run was observed.
 
 ### F-021 — GitHub check publication trusts the receiver host
 

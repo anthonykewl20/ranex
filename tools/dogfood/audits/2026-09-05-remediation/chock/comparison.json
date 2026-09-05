@@ -1,0 +1,33 @@
+{
+  "scope": "Pinned source review plus real local onboarding; dimension-specific evidence, not an overall product ranking",
+  "marketplace": "https://github.com/marketplace/actions/chock-governance-check",
+  "source_tag": "v0.7.0",
+  "source_commit": "a1fb5bb803b4cfcf1ed61c62b236ba46a4620a4e",
+  "installed_version": "0.7.0",
+  "action_default_package_version": "0.1.0",
+  "action_sha256": "0c8b0859d93bce491bff6511b1772af26cfe16d4edb68d996902fa6d911c39d6",
+  "generated_ci_sha256": "61c031a11d5005c7cafe9096cb2ca28f11f91478721e59b464894b24e7e50de4",
+  "observed": [
+    "init/add/sync --ci completed on pinned upstream six",
+    "main commit refused; same staged onboarding changes committed on feature branch",
+    "sync --check and check succeeded",
+    "generated workflow installs unpinned GitHub default branch",
+    "Marketplace v0.7.0 action defaults to PyPI package 0.1.0"
+  ],
+  "unverified": [
+    "live GitHub CI execution",
+    "real agent native hooks",
+    "MCP gateway enforcement",
+    "cross-platform behavior"
+  ],
+  "ranex_gaps": [
+    "one-command external-repository onboarding and policy-to-CI installation",
+    "live installed App publication proof"
+  ],
+  "shared_acceptance_bar": [
+    "Pin installed source and dependencies to the reviewed release",
+    "Explicit enforcement/advice and capability reporting",
+    "Exact-source and independently controlled policy binding",
+    "Repeat stale-source, missing-test, forged-evidence and failed-delivery recovery on real upstream repositories"
+  ]
+}

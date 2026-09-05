@@ -1,0 +1,131 @@
+{
+  "chock_tag": "v0.7.0",
+  "chock_commit": "a1fb5bb803b4cfcf1ed61c62b236ba46a4620a4e",
+  "catalog_commit": "d776e550869be53672780329d2891faf944eb498",
+  "subject_commit": "c8e394065cd541a16c040515dc0afb85cf22a7c3",
+  "scope": "Actual released Chock on pinned upstream six; local Git and generated configuration; live agent integrations/GitHub CI unverified",
+  "commands": [
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "add",
+        "protect-main-branch",
+        "--from",
+        "/home/soultransit/devtony/ranex/.local/remediation-82/.worktrees/chock-catalog"
+      ],
+      "exit": 0,
+      "seconds": 0.22235441399971023,
+      "stdout": "Added protect-main-branch to .agents/policies/protect-main-branch\n  sha256 316bd80a2fdbeb098f8477503af8c9e0977cf11be4e32572d87014ef062e055d\nINDEX.md: ~307 tokens (chars/4, max 2000)\nCompiled. Run `chock sync --repo .` to activate commit-time enforcement.\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "sync",
+        "--repo",
+        ".",
+        "--ci"
+      ],
+      "exit": 0,
+      "seconds": 0.22261794604128227,
+      "stdout": "Installed pre-commit dispatcher to /home/soultransit/devtony/ranex/.local/remediation-82/.worktrees/chock-six/.git/hooks/pre-commit\nRegistered 1 pre-commit policy implementation(s)\nInstalled pre-merge-commit dispatcher to /home/soultransit/devtony/ranex/.local/remediation-82/.worktrees/chock-six/.git/hooks/pre-merge-commit\nRegistered 1 pre-merge-commit policy implementation(s)\nInstalled pre-push dispatcher to /home/soultransit/devtony/ranex/.local/remediation-82/.worktrees/chock-six/.git/hooks/pre-push\nRegistered 1 pre-push policy implementation(s)\nINDEX.md: ~307 tokens (chars/4, max 2000)\nRecompiled 1 policies\nprotect-main-branch:\n  claude: enforced-at-commit\n  copilot: enforced-at-commit\n  gemini: enforced-at-commit\n== install ci workflow\nInstalled CI workflow at /home/soultransit/devtony/ranex/.local/remediation-82/.worktrees/chock-six/.github/workflows/chock.yml\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "status",
+        "--repo",
+        "."
+      ],
+      "exit": 0,
+      "seconds": 0.08158905804157257,
+      "stdout": "id                   state    coverage            mandatory\nprotect-main-branch  enabled  enforced-at-commit  yes\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "check",
+        "--repo",
+        "."
+      ],
+      "exit": 0,
+      "seconds": 0.5615325029939413,
+      "stdout": "== validate\n[PASS] All checks passed.\n== verify lockfile\nverify: all packs match lockfile\n== policy evals\n\nprotect-main-branch  [deterministic]\n  PASS  tc-001                             authored  Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  tc-002                             authored  Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  tc-003                             authored  gate exit 0\n  PASS  tc-004                             authored  gate exit 0\n  PASS  derived-ref-commit-main            derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-push-main              derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-commit-master          derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-push-master            derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-commit-unprotected     derived   gate exit 0\n  score 1.00\n\n5 policies: 9 pass, 41 skipped\n41 case(s) have no executable form; they are agent-mode material (tier 3).\n== enforcement matrix (skipped: no spec/enforcement-matrix.md in this repo)\n== index freshness\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "add",
+        "."
+      ],
+      "exit": 0,
+      "seconds": 0.016482336970511824,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "Adopt Chock governance on the upstream six checkout"
+      ],
+      "exit": 1,
+      "seconds": 0.09419023001100868,
+      "stdout": "",
+      "stderr": "Direct commits/pushes to a protected branch (main|master) are blocked. Create a feature branch and open a pull request.\n  - main\n"
+    },
+    {
+      "argv": [
+        "git",
+        "switch",
+        "-c",
+        "adopt-governance"
+      ],
+      "exit": 0,
+      "seconds": 0.0025605440023355186,
+      "stdout": "",
+      "stderr": "Switched to a new branch 'adopt-governance'\n"
+    },
+    {
+      "argv": [
+        "git",
+        "commit",
+        "-m",
+        "Adopt Chock governance on the upstream six checkout"
+      ],
+      "exit": 0,
+      "seconds": 0.4784609019989148,
+      "stdout": "[adopt-governance 8c99930] Adopt Chock governance on the upstream six checkout\n 76 files changed, 3955 insertions(+)\n create mode 100644 .agents/policies/AGENTS.md\n create mode 100644 .agents/policies/CLAUDE.md\n create mode 100644 .agents/policies/INDEX.md\n create mode 100644 .agents/policies/protect-main-branch/evals/suite.yaml\n create mode 100644 .agents/policies/protect-main-branch/manifest.yaml\n create mode 100644 .agents/policies/protect-main-branch/plugin.json\n create mode 100644 .agents/policies/protect-main-branch/skills/protect-main-branch/SKILL.md\n create mode 100644 .agents/skills/AGENTS.md\n create mode 100644 .agents/skills/CLAUDE.md\n create mode 100644 .agents/skills/eval/SKILL.md\n create mode 100644 .agents/skills/eval/evals/suite.yaml\n create mode 100644 .agents/skills/eval/interface.yaml\n create mode 100644 .agents/skills/optimize/SKILL.md\n create mode 100644 .agents/skills/optimize/evals/suite.yaml\n create mode 100644 .agents/skills/optimize/interface.yaml\n create mode 100644 .agents/skills/optimize/references/skillopt.md\n create mode 100644 .agents/skills/policy-init/SKILL.md\n create mode 100644 .agents/skills/policy-init/assets/templates/SKILL.md.tmpl\n create mode 100644 .agents/skills/policy-init/assets/templates/assets-gitkeep.md\n create mode 100644 .agents/skills/policy-init/assets/templates/eval-suite.md\n create mode 100644 .agents/skills/policy-init/assets/templates/eval-suite.yaml.tmpl\n create mode 100644 .agents/skills/policy-init/assets/templates/examples-readme.md\n create mode 100644 .agents/skills/policy-init/assets/templates/hook-gate.md\n create mode 100644 .agents/skills/policy-init/assets/templates/implementations-stub.sh\n create mode 100644 .agents/skills/policy-init/assets/templates/manifest-yaml.md\n create mode 100644 .agents/skills/policy-init/assets/templates/manifest.yaml.tmpl\n create mode 100644 .agents/skills/policy-init/assets/templates/scripts-readme.md\n create mode 100644 .agents/skills/policy-init/assets/templates/scripts-stub.py\n create mode 100644 .agents/skills/policy-init/assets/templates/skill-md.md\n create mode 100644 .agents/skills/policy-init/assets/templates/subagent-yaml.md\n create mode 100644 .agents/skills/policy-init/assets/templates/subagent.yaml.tmpl\n create mode 100644 .agents/skills/policy-init/evals/suite.yaml\n create mode 100644 .agents/skills/policy-init/interface.yaml\n create mode 100644 .agents/skills/policy-init/references/agentic-optimization.md\n create mode 100644 .agents/skills/policy-init/references/authoring-techniques.md\n create mode 100644 .agents/skills/policy-init/references/interview.md\n create mode 100644 .agents/skills/policy-init/references/multi-agent-scaffold.md\n create mode 100644 .agents/skills/policy-init/references/orchestration-patterns.md\n create mode 100644 .agents/skills/policy-init/references/scaffold-layout.md\n create mode 100644 .agents/skills/policy-init/references/standards.md\n create mode 100644 .agents/skills/policy-init/references/taxonomy.md\n create mode 100644 .agents/skills/validate/SKILL.md\n create mode 100644 .agents/skills/validate/assets/manifest.artifact-conditionals.json\n create mode 100644 .agents/skills/validate/assets/manifest.common.json\n create mode 100644 .agents/skills/validate/assets/manifest.hook.json\n create mode 100644 .agents/skills/validate/assets/manifest.provenance.json\n create mode 100644 .agents/skills/validate/assets/manifest.rule.json\n create mode 100644 .agents/skills/validate/assets/manifest.schema.json\n create mode 100644 .agents/skills/validate/assets/manifest.skill.json\n create mode 100644 .agents/skills/validate/assets/manifest.workflow.json\n create mode 100644 .agents/skills/validate/evals/suite.yaml\n create mode 100644 .agents/skills/validate/interface.yaml\n create mode 100644 .agents/skills/validate/references/checklist.md\n create mode 100755 .chock/bin/gate.py\n create mode 100644 .chock/compiled/protect-main-branch/ambient-rule/ambient.md\n create mode 100644 .chock/compiled/protect-main-branch/ci-gate/gate.json\n create mode 100644 .chock/compiled/protect-main-branch/ci-gate/step.yaml\n create mode 100644 .chock/compiled/protect-main-branch/git-hook/gate.json\n create mode 100755 .chock/compiled/protect-main-branch/git-hook/git-pre-commit.sh\n create mode 100755 .chock/compiled/protect-main-branch/git-hook/git-pre-push.sh\n create mode 100644 .chock/compiled/protect-main-branch/managed-setting/managed-settings.json\n create mode 100644 .chock/config.yaml\n create mode 100644 .chock/coverage.json\n create mode 100644 .chock/dependency-allowlist.txt\n create mode 100644 .chock/registry.json\n create mode 100644 .claude/settings.json\n create mode 120000 .claude/skills/eval\n create mode 120000 .claude/skills/optimize\n create mode 120000 .claude/skills/policy-init\n create mode 120000 .claude/skills/validate\n create mode 100644 .gitattributes\n create mode 100644 .github/workflows/chock.yml\n create mode 100644 AGENTS.md\n create mode 100644 CLAUDE.md\n create mode 100644 chock.lock\n create mode 100644 docs/README.md\n",
+      "stderr": "== validate\n[PASS] All checks passed.\n"
+    },
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "sync",
+        "--repo",
+        ".",
+        "--check"
+      ],
+      "exit": 0,
+      "seconds": 0.10867803200380877,
+      "stdout": "Compiled artifacts match their manifests.\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "check",
+        "--repo",
+        "."
+      ],
+      "exit": 0,
+      "seconds": 0.543501673033461,
+      "stdout": "== validate\n[PASS] All checks passed.\n== verify lockfile\nverify: all packs match lockfile\n== policy evals\n\nprotect-main-branch  [deterministic]\n  PASS  tc-001                             authored  Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  tc-002                             authored  Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  tc-003                             authored  gate exit 0\n  PASS  tc-004                             authored  gate exit 0\n  PASS  derived-ref-commit-main            derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-push-main              derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-commit-master          derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-push-master            derived   Direct commits/pushes to a protected branch (main|master) are block\u2026\n  PASS  derived-ref-commit-unprotected     derived   gate exit 0\n  score 1.00\n\n5 policies: 9 pass, 41 skipped\n41 case(s) have no executable form; they are agent-mode material (tier 3).\n== enforcement matrix (skipped: no spec/enforcement-matrix.md in this repo)\n== index freshness\n",
+      "stderr": ""
+    }
+  ]
+}

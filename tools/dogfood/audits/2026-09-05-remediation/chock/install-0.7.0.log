@@ -1,0 +1,12 @@
+Using Python 3.14.6 environment at: .local/remediation-82/chock/env-0.7.0
+Resolved 8 packages in 1.29s
+Prepared 2 packages in 296ms
+Installed 8 packages in 7ms
+ + agentseam==0.1.1
+ + attrs==26.1.0
+ + chock==0.7.0
+ + jsonschema==4.26.0
+ + jsonschema-specifications==2025.9.1
+ + pyyaml==6.0.3
+ + referencing==0.37.0
+ + rpds-py==2026.6.3

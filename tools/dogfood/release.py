@@ -121,7 +121,7 @@ def auto(expected_head: str) -> None:
     date = datetime.now(UTC).date().isoformat()
     (ROOT / "docs/STATE.md").write_text(
         f"# State\n\n**Updated:** {date}\n**Active slice:** none\n\n"
-        f"Release candidate {tag} follows dogfood fix {expected_head}.\n"
+        f"Version {tag} follows dogfood fix {expected_head}.\n"
         f"Issues: {', '.join('#' + i for i in issues)}. Findings: {', '.join(findings)}.\n\n"
         "Publication requires the frozen suite on this commit and a real wheel/sdist build.\n"
         "The release workflow retains the validation logs. Source findings and their\n"

@@ -2498,3 +2498,26 @@ number (outside repository: `/home/soultransit/devtony/ranex-FULL-BACKUP-2026-07
 
 **The bill of materials is `governance/bom.yaml`; keep it aligned with executable
 evidence rather than expanding this map.**
+
+
+## Competitive acceptance baseline — owner direction, 2026-09-05
+
+Chock Governance Check is an adjacent governance product to measure against.
+Its released `v0.7.0` (`a1fb5bb803b4cfcf1ed61c62b236ba46a4620a4e`) was
+installed and used on the same pinned upstream six revision as Ranex's proof.
+Real Git rejected a direct main commit and accepted the same staged onboarding
+changes on a feature branch; policy installation and CI generation completed.
+Receipts and the generated workflow:
+`tools/dogfood/audits/2026-09-05-remediation/chock/comparison.json`.
+Live Chock GitHub CI, native agent hooks and MCP enforcement are UNVERIFIED.
+Its released [Action](https://github.com/open-coder-ai/chock/blob/a1fb5bb803b4cfcf1ed61c62b236ba46a4620a4e/action.yml)
+defaults to package 0.1.0; its generated CI installs the unpinned default branch.
+Those observations establish release-consistency requirements, not a product ranking.
+
+Ranex already has measured source-bound signatures, gate refusal controls and
+qualified execution isolation; general report truth still needs independent
+acceptance checks. The product gaps are straightforward external-repository
+onboarding, a pinned CI integration and a witnessed live installed-App journey.
+The competitive acceptance bar is reproducible setup plus explicit enforcement
+scope, followed by real stale-source, missing-test, forged-evidence and recovery
+journeys. Adapter count or green unit totals do not establish that bar.

@@ -1,0 +1,14 @@
+{
+  "lockfile_version": "1",
+  "engine": ">=0.1,<0.2",
+  "packs": [
+    {
+      "id": "protect-main-branch",
+      "version": "0.0.1",
+      "managed": false,
+      "sha256": "316bd80a2fdbeb098f8477503af8c9e0977cf11be4e32572d87014ef062e055d",
+      "source": "local",
+      "artifacts_sha256": "18bb4772936ece0e374fb48e1a09fdbf946fb82381ed30687c0bcc8a10d4643c"
+    }
+  ]
+}

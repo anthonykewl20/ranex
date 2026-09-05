@@ -1,0 +1,88 @@
+{
+  "scope": "Actual Chock 0.7.0 onboarding of pinned upstream six; local Git and generated configuration; live agent integrations/GitHub CI unverified",
+  "commands": [
+    {
+      "argv": [
+        "git",
+        "clone",
+        "--quiet",
+        "https://github.com/benjaminp/six.git",
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/six"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex",
+      "exit": 0,
+      "seconds": 1.298617466003634,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "checkout",
+        "--quiet",
+        "-B",
+        "main",
+        "c8e394065cd541a16c040515dc0afb85cf22a7c3"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex/.local/remediation-82/chock/six",
+      "exit": 0,
+      "seconds": 0.0033642229973338544,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "config",
+        "user.name",
+        "Ranex comparison"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex/.local/remediation-82/chock/six",
+      "exit": 0,
+      "seconds": 0.0022807280183769763,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "git",
+        "config",
+        "user.email",
+        "ranex-comparison@example.invalid"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex/.local/remediation-82/chock/six",
+      "exit": 0,
+      "seconds": 0.0018542009638622403,
+      "stdout": "",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "init",
+        "."
+      ],
+      "cwd": "/home/soultransit/devtony/ranex/.local/remediation-82/chock/six",
+      "exit": 0,
+      "seconds": 0.4257724080234766,
+      "stdout": "Installed pre-commit dispatcher to /home/soultransit/devtony/ranex/.local/remediation-82/chock/six/.git/hooks/pre-commit\nNo git-pre-commit.sh policies found; pre-commit dispatcher unchanged\nInstalled pre-merge-commit dispatcher to /home/soultransit/devtony/ranex/.local/remediation-82/chock/six/.git/hooks/pre-merge-commit\nNo git-pre-commit.sh policies found; pre-merge-commit dispatcher unchanged\nInstalled pre-push dispatcher to /home/soultransit/devtony/ranex/.local/remediation-82/chock/six/.git/hooks/pre-push\nNo git-pre-push.sh policies found; pre-push dispatcher unchanged\nRegistered SessionStart arm hook in .claude/settings.json\nINDEX.md: ~257 tokens (chars/4, max 2000)\nINDEX.md: ~257 tokens (chars/4, max 2000)\nImplementation registered at /home/soultransit/devtony/ranex/.local/remediation-82/chock/six/.git/hooks/pre-commit.d/99-chock-validate\n[PASS] All checks passed.\nInitialized Chock in /home/soultransit/devtony/ranex/.local/remediation-82/chock/six\nAgents: AGENTS.md + claude, copilot, gemini\nSkills: eval, optimize, policy-init, validate (refresh with `chock install-skills .`)\nPolicies: none. This repo enforces nothing yet.\n  1. copy a policy folder from https://github.com/open-coder-ai/chock-catalog (base/<id>/) into .agents/policies/<id>/\n  2. chock sync --repo .\nVerify anytime with:  chock check --only verify\n",
+      "stderr": ""
+    },
+    {
+      "argv": [
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/env-0.7.0/bin/chock",
+        "add",
+        "protect-main-branch",
+        "--from",
+        "/home/soultransit/devtony/ranex/.local/remediation-82/chock/repo",
+        "--ref",
+        "v0.7.0"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex/.local/remediation-82/chock/six",
+      "exit": 1,
+      "seconds": 0.0814932489884086,
+      "stdout": "",
+      "stderr": "chock add: 'protect-main-branch' is not in this catalog (checked registry.yaml and base/, policies/, skills/)\n"
+    }
+  ]
+}
