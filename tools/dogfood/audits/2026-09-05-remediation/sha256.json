@@ -1,6 +1,8 @@
 {
   "benchmark-rerun/divergence.json": "1b769ebf301b26a940fa61f200455abee8e41e7d68a521ba6c55149aa0baf4f6",
   "bootstrap-current-2-environment.json": "48f4f92f18abfdce96f855f4b581d3dfff528e5b6ac406c2035a643496367858",
+  "bootstrap-current-2.log": "5668ae3d668ae09bef9259d030b7e8dee675cb16efe0daac58ff3358da34d694",
+  "bootstrap-current-2.xml": "e72d33c0cf05a95dabcb20f60a576b86d895da1b83c745daba683f1e4d57b562",
   "bootstrap-current-cancelled.json": "c479bbca5728627add536ec8b1cff2c1cf3861a7c97bcab314d1516348cbfef0",
   "chock/chock.lock": "e148b5d8da95dfeb4063d433e211590ba6f6673069a5143970cc5f2597cda22e",
   "chock/chock.yml": "61c031a11d5005c7cafe9096cb2ca28f11f91478721e59b464894b24e7e50de4",

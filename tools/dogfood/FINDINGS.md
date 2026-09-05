@@ -47,22 +47,6 @@ writer fairness or establish its original root cause. Evidence:
   precise load attribution remain UNVERIFIED. No timeout or assertion was
   changed to conceal the observation.
 
-### F-015 (CONFIRMED, historical subject) — the opt-in live Ranex bootstrap is red
-
-- `RANEX_SLICE035_REAL=1 uv run --frozen pytest -q
-  tests/e2e/test_specification_subject_bootstrap.py::test_real_ranex_bootstrap_or_host_skip`
-  really clones the configured upstream subject, installs its frozen lock,
-  and runs its suite. The child produces 812 passed, 27 skipped, 1 failed;
-  the outer bootstrap test fails instead of claiming availability.
-- The configured subject is historical commit
-  `3d0924c9c8f8f0c5483c0dc62558fdd23c51e9ce`. Its bind-mount identity
-  security test observes an in-tree executable accepted through a second
-  pathname (`RECORDED exit=5`, expected refusal exit 2).
-- This does not establish a current or v0.1.0 identity bypass: current
-  `main.py:same_file_inside` explicitly removes the faulty link-count
-  shortcut, and the current real bind-mount control passes. The stale subject pin makes this claimed live bootstrap red on
-  a host that can exercise the attack. No pin or frozen test was changed.
-
 ### F-010 (CONFIRMED, specification mismatch) — ordinary non-strict XPASS receives gate PASS
 
 - Reproduced with released v0.1.0 (`edf1a98605`) and HEAD (`48f3a98e48`)
@@ -195,6 +179,35 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   the e2e prereqs materialize the missing state in any checkout.
 
 ## Closed
+
+### F-015 (historical subject) — the opt-in live Ranex bootstrap is red
+
+**Remediation 2026-09-05:** The subject now pins the previously audited clean
+`be228cacea5789adbfdac71ab34ea469f5504b44` revision and its actual lock digest.
+After making the live opt-in controller-only (F-020), the real bootstrap passed:
+`RANEX_SLICE035_REAL=1 uv run --frozen pytest -q tests/e2e/test_specification_subject_bootstrap.py::test_real_ranex_bootstrap_or_host_skip`
+reported **1 passed in 2161.84 seconds**. Its controller really cloned GitHub,
+validated commit/license/lock/issue, ran frozen installation, docs checks and
+the full child suite. This compatibility journey does not substitute for the
+current remediation's direct host and final regression runs. Evidence:
+`audits/2026-09-05-remediation/bootstrap-current-2.xml` and `.log`.
+
+Historical observation retained:
+
+- `RANEX_SLICE035_REAL=1 uv run --frozen pytest -q
+  tests/e2e/test_specification_subject_bootstrap.py::test_real_ranex_bootstrap_or_host_skip`
+  really clones the configured upstream subject, installs its frozen lock,
+  and runs its suite. The child produces 812 passed, 27 skipped, 1 failed;
+  the outer bootstrap test fails instead of claiming availability.
+- The configured subject is historical commit
+  `3d0924c9c8f8f0c5483c0dc62558fdd23c51e9ce`. Its bind-mount identity
+  security test observes an in-tree executable accepted through a second
+  pathname (`RECORDED exit=5`, expected refusal exit 2).
+- This does not establish a current or v0.1.0 identity bypass: current
+  `main.py:same_file_inside` explicitly removes the faulty link-count
+  shortcut, and the current real bind-mount control passes. The stale subject pin makes this claimed live bootstrap red on
+  a host that can exercise the attack. No pin or frozen test was changed.
+
 
 ### F-020 — live bootstrap opt-in leaked into the subject environment
 
