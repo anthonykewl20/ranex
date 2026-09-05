@@ -8,6 +8,20 @@ match the kernel silently.
 
 ## Open
 
+### F-023 — shared Git identity writes race in the existing fanout harness
+
+The complete qualified regression at af9f403 recorded a nested bounded-pool
+failure; its abbreviated report did not retain the inner assertion details.
+Inspection found each worker writing user.name/user.email to the linked
+worktrees' shared Git config. On five real Ranex worktrees, those same concurrent
+operations failed 48/100 times with a config-lock refusal. Per-command identity
+then committed the actual Ranex source patch in all five worktrees and preserved
+the shared config. The existing harness now uses that per-command Git identity;
+pool bounds and timeouts are unchanged, and failures retain CLI diagnostics.
+The exact attribution of the original nested failure remains UNVERIFIED pending
+fresh complete regression. This is not a live-agent fanout correctness proof.
+Receipt: `audits/2026-09-05-remediation/git-identity-race.json`.
+
 ### F-022 — live Kogg subject qualification is unavailable in the measured runtime
 
 After fixing active-account selection, the actual controller reaches the pinned

@@ -265,13 +265,12 @@ def harness_script(
         if conftest_source is not None:
             (worktree / "conftest.py").write_text(conftest_source, encoding="utf-8")
 
-        subprocess.run(["/usr/bin/git", "-C", str(worktree), "config", "user.email", "harness@example.invalid"], check=True)
-        subprocess.run(["/usr/bin/git", "-C", str(worktree), "config", "user.name", "Harness"], check=True)
 
         if __EMPTY_COMMIT__:
             # A commit whose SHA differs from base over a byte-identical tree.
             subprocess.run(
-                ["/usr/bin/git", "-C", str(worktree), "commit", "-q", "--allow-empty",
+                ["/usr/bin/git", "-C", str(worktree), "-c", "user.email=harness@example.invalid",
+                 "-c", "user.name=Harness", "commit", "-q", "--allow-empty",
                  "-m", "agent work"],
                 check=True,
             )
@@ -282,7 +281,8 @@ def harness_script(
             # the kernel materialises. Untracked state never enters the subject.
             subprocess.run(["/usr/bin/git", "-C", str(worktree), "add", "-A"], check=True)
             subprocess.run(
-                ["/usr/bin/git", "-C", str(worktree), "commit", "-q", "-m", "agent work"],
+                ["/usr/bin/git", "-C", str(worktree), "-c", "user.email=harness@example.invalid",
+                 "-c", "user.name=Harness", "commit", "-q", "-m", "agent work"],
                 check=True,
             )
 
@@ -608,12 +608,11 @@ def build_queued_harness(
                 time.sleep(0.05)
 
         try:
-            subprocess.run(["/usr/bin/git", "-C", str(worktree), "config", "user.email", "harness@example.invalid"], check=True)
-            subprocess.run(["/usr/bin/git", "-C", str(worktree), "config", "user.name", "Harness"], check=True)
-            (worktree / "agent.txt").write_text("work from harness\\n", encoding="utf-8")
+                    (worktree / "agent.txt").write_text("work from harness\\n", encoding="utf-8")
             subprocess.run(["/usr/bin/git", "-C", str(worktree), "add", "-A"], check=True)
             subprocess.run(
-                ["/usr/bin/git", "-C", str(worktree), "commit", "-q", "-m", "agent work"],
+                ["/usr/bin/git", "-C", str(worktree), "-c", "user.email=harness@example.invalid",
+                 "-c", "user.name=Harness", "commit", "-q", "-m", "agent work"],
                 check=True,
             )
             time.sleep(__SLEEP_SECONDS__)
@@ -1314,6 +1313,8 @@ def test_fanout_respects_bounded_pool_and_does_not_tick_queue_time(
     # The "queued time does not tick" proof no longer rests on this timeout
     # being tight: test_fanout_pool_of_one_never_overlaps_and_embeds_the_bound
     # (tests/integration/test_delegation_command.py) pins it structurally.
+    # Linked worktrees share Git config: each worker uses per-command identity
+    # so concurrent commits cannot race over that unrelated shared file.
     harness = build_queued_harness(
         tmp_path / "queued-harness.py",
         counter_dir=counter_dir,
@@ -1331,7 +1332,7 @@ def test_fanout_respects_bounded_pool_and_does_not_tick_queue_time(
         outcome_dir=outcome_dir,
         pool=2,
     )
-    assert result.returncode == EXIT_PASS
+    assert result.returncode == EXIT_PASS, result.stdout + result.stderr
     peak = int((counter_dir / "peak").read_text(encoding="utf-8").strip())
     assert peak <= 2
     assert peak > 1

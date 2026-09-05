@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -30,6 +31,19 @@ def record_host_qualification(repo: Path, key_path: Path, *, producer_id: str = 
          "--report=.local/ranex/qualification/strict-local-v1.json"],
     )
     for command in commands:
+        if command[1] == "launcher-install" and (repo / artifact).exists():
+            # The installer intentionally refuses replacement. Reuse only an
+            # actual manifest-matching launcher; the qualification below still
+            # rechecks its ownership, mode and current host capabilities.
+            identity = subprocess.run(
+                [sys.executable, "-m", "ranex.cli.main", "host", "launcher-identity",
+                 "--artifact", artifact, "--manifest", manifest],
+                cwd=repo, env=environment, capture_output=True, text=True,
+                check=False, timeout=30,
+            )
+            assert identity.returncode == 0, identity.stdout + identity.stderr
+            assert json.loads(identity.stdout)["matches"] is True, identity.stdout
+            continue
         scoped = dict(environment)
         if command[0] == "ranex.cli.main":
             scoped["RANEX_SIGNING_KEY"] = str(key_path)

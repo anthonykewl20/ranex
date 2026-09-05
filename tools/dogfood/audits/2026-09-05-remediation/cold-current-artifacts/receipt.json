@@ -1,0 +1,135 @@
+{
+  "kernel": "af9f403231d67713b1d152888300bb5378bcac05",
+  "clone": "/tmp/ranex-remediation-82-final-3-root/pytest-of-soultransit/pytest-0/cold-start0/clone",
+  "clone_head": "6b5c8c044f1e59abe64057e621ee5d79ff3232d9",
+  "evaluations": [
+    {
+      "approver_id": "reviewer_alice",
+      "catalog_digest": "sha256:b17a52d6b913e297edd7da4d64fb574a1c200a64a7b8984fdc9343b76a9586bf",
+      "causes": [
+        {
+          "cause": "absent",
+          "claim_id": "host-qualification"
+        },
+        {
+          "cause": "absent",
+          "claim_id": "tests-executed"
+        }
+      ],
+      "considered": [],
+      "failing_rule": "TESTS_EXECUTED",
+      "gate_id": "landing",
+      "missing_claims": [
+        "host-qualification",
+        "tests-executed"
+      ],
+      "reason": "no evidence for required claim: host-qualification, tests-executed",
+      "self_approval": false,
+      "subject_digest": "sha256:9fb5d763b266ffb52432315751789947bb922bce79717e29ceb155ceef040f01",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "FAIL"
+    },
+    {
+      "depset_digest": "sha256:99a2fc96782eaabb4f6c9d5fda4e8159afdf1b55870938797784007a8cc3a354",
+      "lock_sha256": "ed9a11d830942f082565f3028e958d8f6c7025e5391396999a1f6ea76e04e3e7",
+      "packages": {
+        "cffi": "2.1.1",
+        "chardet": "7.4.3",
+        "click": "8.4.2",
+        "coverage": "7.15.3",
+        "cryptography": "50.0.0",
+        "diff-cover": "9.7.2",
+        "hatchling": "1.31.0",
+        "iniconfig": "2.3.0",
+        "jinja2": "3.1.6",
+        "libcst": "1.9.0",
+        "markdown-it-py": "4.2.0",
+        "markupsafe": "3.0.3",
+        "mdit-py-plugins": "0.6.1",
+        "mdurl": "0.1.2",
+        "mutmut": "3.5.0",
+        "packaging": "26.2",
+        "pathspec": "1.1.1",
+        "platformdirs": "4.11.0",
+        "pluggy": "1.6.0",
+        "pycparser": "3.0",
+        "pyelftools": "0.32",
+        "pygments": "2.20.0",
+        "pytest": "9.1.1",
+        "pyyaml": "6.0.3",
+        "rich": "15.0.0",
+        "setproctitle": "1.3.7",
+        "textual": "8.2.8",
+        "trove-classifiers": "2026.6.1.19",
+        "typing-extensions": "4.16.0"
+      },
+      "type": "deps-derivation"
+    },
+    {
+      "approver_id": "reviewer_alice",
+      "depset_digest": "sha256:99a2fc96782eaabb4f6c9d5fda4e8159afdf1b55870938797784007a8cc3a354",
+      "packages": {
+        "cffi": "2.1.1",
+        "chardet": "7.4.3",
+        "click": "8.4.2",
+        "coverage": "7.15.3",
+        "cryptography": "50.0.0",
+        "diff-cover": "9.7.2",
+        "hatchling": "1.31.0",
+        "iniconfig": "2.3.0",
+        "jinja2": "3.1.6",
+        "libcst": "1.9.0",
+        "markdown-it-py": "4.2.0",
+        "markupsafe": "3.0.3",
+        "mdit-py-plugins": "0.6.1",
+        "mdurl": "0.1.2",
+        "mutmut": "3.5.0",
+        "packaging": "26.2",
+        "pathspec": "1.1.1",
+        "platformdirs": "4.11.0",
+        "pluggy": "1.6.0",
+        "pycparser": "3.0",
+        "pyelftools": "0.32",
+        "pygments": "2.20.0",
+        "pytest": "9.1.1",
+        "pyyaml": "6.0.3",
+        "rich": "15.0.0",
+        "setproctitle": "1.3.7",
+        "textual": "8.2.8",
+        "trove-classifiers": "2026.6.1.19",
+        "typing-extensions": "4.16.0"
+      },
+      "type": "deps-approval"
+    },
+    {
+      "approver_id": "reviewer_alice",
+      "catalog_digest": "sha256:b17a52d6b913e297edd7da4d64fb574a1c200a64a7b8984fdc9343b76a9586bf",
+      "causes": [
+        {
+          "cause": "failed",
+          "claim_id": "tests-executed",
+          "detail": "blocking suite outcome(s): tests/security/test_slice080_principal_trust_root.py::test_this_checkouts_catalog_is_the_one_slice_080_committed (failed)"
+        }
+      ],
+      "considered": [
+        "host-qualification@sha256:fb2040ab0a4e18c1b8f90eb49e0be5188a8fbe235dd1f34e9f84ac77aea01f74:0",
+        "tests-executed@sha256:fb2040ab0a4e18c1b8f90eb49e0be5188a8fbe235dd1f34e9f84ac77aea01f74:1"
+      ],
+      "failing_rule": "TESTS_EXECUTED",
+      "gate_id": "landing",
+      "missing_claims": [
+        "tests-executed"
+      ],
+      "reason": "tests-executed: blocking suite outcome(s): tests/security/test_slice080_principal_trust_root.py::test_this_checkouts_catalog_is_the_one_slice_080_committed (failed)",
+      "self_approval": false,
+      "subject_digest": "sha256:fb2040ab0a4e18c1b8f90eb49e0be5188a8fbe235dd1f34e9f84ac77aea01f74",
+      "subject_lane": "PRE_READINESS_PRODUCT_SLICE",
+      "verdict": "FAIL"
+    }
+  ],
+  "files": {
+    "journal.sqlite3": "fe2403cefcc4efb5b5d669128c5ad984c82683529d284bf93d4ba06ac6fbf08f",
+    "evidence.json": "fb91b48a1e22d58468838e4893ebcdd83132ee361bc5da5b74858a76d4921fe0",
+    "producers.yaml": "edf759e8c1d2d5efe9ffc1d3f4dede41783f1d92d67ea0bd9f83665b5d8ad81d"
+  }
+}

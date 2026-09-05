@@ -1,0 +1,8 @@
+producers:
+  worker: ed25519:CUYrR32ATeN2DPoTxnM1kfhkqI4MFAQiRIHLebizUVQ=
+principals:
+  worker:
+    role: worker
+    keys:
+    - key: ed25519:CUYrR32ATeN2DPoTxnM1kfhkqI4MFAQiRIHLebizUVQ=
+      status: active

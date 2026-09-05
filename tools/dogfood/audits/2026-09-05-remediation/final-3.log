@@ -1,0 +1,238 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........s.....................................F......................... [ 20%]
+....................................................F...sF.............. [ 24%]
+.......................................................ss............... [ 28%]
+..ss...................s................................................ [ 32%]
+........................................................................ [ 36%]
+........................................................................ [ 40%]
+..........................................s............................. [ 44%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+........................................................................ [ 56%]
+........................................................................ [ 60%]
+........................................................................ [ 64%]
+.........................................................s.............. [ 68%]
+........................................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 80%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+...................................................................      [100%]
+=================================== FAILURES ===================================
+__________________ test_stage_9_the_gate_accepts_the_evidence __________________
+
+operator = <test_cold_start_journey.Operator object at 0x7296f7bb81a0>
+
+    def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
+        operator.require("resolver", "clone", "fetch", "evidence")
+        record_live_host_qualification(operator.clone, operator.key)
+        code, out, err = ranex(
+            operator.clone,
+            ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
+        )
+>       assert code == 0, (
+            "the gate did not accept the evidence stage 8 recorded; it exited "
+            f"{code}. The verdict, verbatim:\n{(out + err).strip() or '(no output)'}"
+        )
+E       AssertionError: the gate did not accept the evidence stage 8 recorded; it exited 1. The verdict, verbatim:
+E         FAIL  gate=landing  rule=TESTS_EXECUTED
+E               tests-executed: blocking suite outcome(s): tests/security/test_slice080_principal_trust_root.py::test_this_checkouts_catalog_is_the_one_slice_080_committed (failed)
+E               subject=sha256:fb2040ab0a4e18c1b8f90eb49e0be5188a8fbe235dd1f34e9f84ac77aea01f74
+E       assert 1 == 0
+
+tests/e2e/test_cold_start_journey.py:466: AssertionError
+______ test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts _______
+
+session = <test_gating_real_suite.Session object at 0x7296f7bb8ad0>
+
+    def test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts(
+        session: Session,
+    ) -> None:
+        if nested_hermetic_self_gate():
+            return
+        session.require("resolver", "clone", "fetch", "approval")
+        code, out, err = ranex(session.clone, run_argv(session.store), session.key_path)
+>       assert code == 0, (
+            "the real suite did not pass under governance: the bound command "
+            f"exited {code} against the cloned HEAD. This stage's claim is that "
+            "the committed tree is green, so a red suite at HEAD fails it "
+            "honestly — the tail of the suite's own output says which tests:\n"
+            f"{suite_tail(out, err)}"
+        )
+E       AssertionError: the real suite did not pass under governance: the bound command exited 1 against the cloned HEAD. This stage's claim is that the committed tree is green, so a red suite at HEAD fails it honestly — the tail of the suite's own output says which tests:
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         F
+E         ======================================================================
+E         ----------------------------------------------------------------------
+E         Traceback (most recent call last):
+E         
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.001s
+E         
+E         FAILED (failures=1)
+E         F
+E         ======================================================================
+E         ----------------------------------------------------------------------
+E         Traceback (most recent call last):
+E         
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         no tests ran in 0.00s
+E         =========================== short test summary info ============================
+E         FAILED tests/security/test_slice008_execute_attest_separation.py::test_fanout_respects_bounded_pool_and_does_not_tick_queue_time
+E         1 failed, 1656 passed, 138 skipped in 236.99s (0:03:56)
+E       assert 1 == 0
+
+tests/e2e/test_gating_real_suite.py:831: AssertionError
+_____ test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted ______
+
+session = <test_gating_real_suite.Session object at 0x7296f7bb8ad0>
+
+    def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
+        session: Session,
+    ) -> None:
+        """Delete a real frozen test in the clean live clone and observe FAIL."""
+    
+        if nested_hermetic_self_gate():
+            return
+        session.require("resolver", "clone", "fetch", "approval")
+        assert session.clone is not None
+        assert session.store is not None
+        assert session.key_path is not None
+        repository = session.clone
+    
+        live_gate = load_gate(repository / "governance" / "gates.yaml", "landing")
+        live_manifest = load_manifest(repository / "governance" / "suite_manifest.json")
+        live_claim = next(
+            claim for claim in live_gate.required_claims if claim.claim_id == "tests-executed"
+        )
+        assert live_claim.results_artifact is not None
+        assert f"--junitxml={live_claim.results_artifact}" in live_claim.command
+        assert len(live_manifest["suite"]) >= 687
+        declared_skips = live_manifest["expected_skips"]
+        assert not any("OPENROUTER_API_KEY" in reason for reason in declared_skips.values())
+        assert not any("first_delegation" in test_id for test_id in declared_skips)
+        declared_skip_ids = set(declared_skips)
+    
+        missing_id = "tests/contract/test_bom_is_honest.py::test_bom_is_honest"
+        assert missing_id in live_manifest["suite"]
+    
+        baseline_code, baseline_output, baseline_error = ranex(
+            repository, run_argv(session.store), session.key_path
+        )
+        assert baseline_code == 0, (
+            "this test deletes one frozen test from a GREEN clone and asserts the "
+            "gate then reports it missing; it cannot establish that baseline "
+            f"because the clean clone's own suite exited {baseline_code}. The "
+            "tail of the suite's own output says which tests are red:\n"
+            f"{suite_tail(baseline_output, baseline_error)}"
+        )
+        baseline_record = next(
+            record
+            for record in json.loads(
+                (repository / "governance" / "evidence.json").read_text()
+            )
+            if record["claim_id"] == "tests-executed"
+        )
+        baseline_results = baseline_record["suite_results"]
+        baseline_non_passed = dict(baseline_results["non_passed"])
+        skipped_ids = {
+            test_id
+            for test_id, kind in baseline_non_passed.items()
+            if kind == "skipped"
+        }
+        assert skipped_ids <= declared_skip_ids
+        actual_failures = {
+            test_id: kind
+            for test_id, kind in baseline_non_passed.items()
+            if kind != "skipped"
+        }
+        assert actual_failures == {}
+        assert baseline_results["missing"] == []
+    
+        record_live_host_qualification(repository, session.key_path)
+        baseline_verdict, baseline_output, _ = ranex(repository, evaluate_argv())
+        assert baseline_verdict == 0
+        assert baseline_output.startswith("PASS")
+    
+        removed_path = repository / missing_id.partition("::")[0]
+        removed_path.unlink()
+        git(repository, "add", "-u", removed_path.relative_to(repository).as_posix())
+        committed = git(repository, "commit", "-q", "-m", "remove one frozen test")
+        assert committed.returncode == 0, committed.stderr
+        try:
+            run_code, run_output, run_error = ranex(
+                repository, run_argv(session.store), session.key_path
+            )
+            assert run_code == 0, suite_tail(run_output, run_error)
+            changed_record = next(
+                record
+                for record in json.loads(
+                    (repository / "governance" / "evidence.json").read_text()
+                )
+                if record["claim_id"] == "tests-executed"
+            )
+            changed_results = changed_record["suite_results"]
+            assert changed_results["non_passed"] == baseline_results["non_passed"]
+            assert changed_results["missing"] == sorted(
+                {*baseline_results["missing"], missing_id}
+            )
+    
+>           record_live_host_qualification(repository, session.key_path)
+
+tests/e2e/test_gating_real_suite.py:1154: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+repo = PosixPath('/tmp/ranex-remediation-82-final-3-root/pytest-of-soultransit/pytest-0/real-world0/clone')
+key_path = PosixPath('/tmp/ranex-remediation-82-final-3-root/pytest-of-soultransit/pytest-0/real-world0/worker.key')
+producer_id = 'worker'
+
+    def record_host_qualification(repo: Path, key_path: Path, *, producer_id: str = "worker") -> None:
+        _prereqs.prereq_or_skip("qualified_host")
+        profile = "governance/confinement/strict-local-host-v1.json"
+        manifest = "governance/confinement/native-launcher-build-v1.json"
+        source = "native/ranex-worker-launcher/launcher.c"
+        build = ".local/ranex/build/strict-local-v1/ranex-worker-launcher"
+        artifact = ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"
+        environment = {**os.environ, "PYTHONPATH": str(repo / "src")}
+        environment.pop("RANEX_SIGNING_KEY", None)
+        commands = (
+            ["ranex.cli.host_confinement", "launcher-build", "--manifest", manifest,
+             "--source", source, "--output", build],
+            ["ranex.cli.host_confinement", "launcher-install", "--manifest", manifest,
+             "--artifact", build, "--destination", artifact],
+            ["ranex.cli.main", "run", "--claim", "host-qualification", "--producer", producer_id,
+             "--", "python", "-m", "ranex.cli.host_confinement", "qualify", "--profile", profile,
+             "--artifact", artifact, "--manifest", manifest,
+             "--report=.local/ranex/qualification/strict-local-v1.json"],
+        )
+        for command in commands:
+            scoped = dict(environment)
+            if command[0] == "ranex.cli.main":
+                scoped["RANEX_SIGNING_KEY"] = str(key_path)
+            completed = subprocess.run([sys.executable, "-m", *command], cwd=repo, env=scoped,
+                                       capture_output=True, text=True, check=False, timeout=240)
+>           assert completed.returncode == 0, (
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+                f"real host qualification command failed: {command!r}\n"
+                f"{completed.stdout}\n{completed.stderr}"
+            )
+E           AssertionError: real host qualification command failed: ['ranex.cli.host_confinement', 'launcher-install', '--manifest', 'governance/confinement/native-launcher-build-v1.json', '--artifact', '.local/ranex/build/strict-local-v1/ranex-worker-launcher', '--destination', '.local/ranex/libexec/strict-local-v1/ranex-worker-launcher']
+E           {"detail":"atomic install refused: [Errno 17] File exists: 'ranex-worker-launcher'","refusal":"E-C17-INSTALL-REFUSED"}
+
+tests/e2e/_host_evidence.py:38: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_cold_start_journey.py::test_stage_9_the_gate_accepts_the_evidence
+FAILED tests/e2e/test_gating_real_suite.py::test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts
+FAILED tests/e2e/test_gating_real_suite.py::test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted
+3 failed, 1783 passed, 9 skipped in 1954.31s (0:32:34)

@@ -24,8 +24,9 @@ Evidence: tools/dogfood/audits/2026-09-05-remediation/.
 
 ## Completion gates still running
 
-Final regression/coverage and versioned publication remain pending. Real clone
-onboarding helpers now register generated keys in both current trust roots.
+Final qualified regression: 1783 passed, 9 skipped, 3 failures. Corrections
+preserve the onboarding catalog, revalidate existing launchers, and remove
+shared Git-config writes from the concurrent harness. Final rerun is pending.
 Automatic releases use vMAJOR.MINOR.PPP after explicit dogfood-fix trailers.
 The GitHub workflow needs the owner's RANEX_RELEASE_TOKEN secret.
 Live installed-App publication and Kogg qualification remain UNVERIFIED.

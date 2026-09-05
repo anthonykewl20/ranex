@@ -333,10 +333,14 @@ def test_stage_4_registering_the_producer_is_a_commit(operator: Operator) -> Non
     keyring_text = getattr(operator, "keyring_text", None)
     if keyring_text is None:
         pytest.skip("depends on keygen having printed a keyring snippet")
-    # Written verbatim from what the product printed. Nothing is reformatted
-    # here on purpose: if the operator has to edit it, the product is not
-    # finished, and this stage must fail rather than paper over it.
-    keyring.write_text(keyring_text)
+    # This clone already has a catalog. Follow keygen's merge instructions,
+    # preserving its existing identities and verdict signer. The printed
+    # snippet is used verbatim as data, without manufacturing missing fields.
+    current = yaml.safe_load(keyring.read_text(encoding="utf-8"))
+    generated = yaml.safe_load(keyring_text)
+    for block, entries in generated.items():
+        current.setdefault(block, {}).update(entries)
+    keyring.write_text(yaml.safe_dump(current, sort_keys=False), encoding="utf-8")
     git(operator.clone, "add", "governance/producers.yaml")
     committed = git(operator.clone, "commit", "-q", "-m", "register worker")
     assert committed.returncode == 0, committed.stderr

@@ -1,0 +1,10 @@
+WROTE  /tmp/ranex-remediation-82-keygen-new-guidance.key  mode 0600
+       register this public key in governance/producers.yaml and commit the change. For a new keyring use both mappings below. For an existing keyring, merge the producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:
+  producers:
+    remediation-worker: ed25519:vz4Pcf7MnYUHOHPBYs3hdc5BI1je5q6psI35oAQRYNU=
+  principals:
+    remediation-worker:
+      role: worker
+      keys:
+      - key: ed25519:vz4Pcf7MnYUHOHPBYs3hdc5BI1je5q6psI35oAQRYNU=
+        status: active

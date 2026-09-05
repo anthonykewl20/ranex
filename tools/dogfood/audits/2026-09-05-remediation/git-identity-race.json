@@ -1,0 +1,1296 @@
+{
+  "scope": "Actual Git worktree identity contention and commits of the real Ranex source patch; not a live-agent fanout proof",
+  "base": "be228cacea5789adbfdac71ab34ea469f5504b44",
+  "source": "af9f403231d67713b1d152888300bb5378bcac05",
+  "patch_sha256": "bb783f180ddaa7d54f1cf7aaa70727ac58b96ad881416a3913b23dbba93d70b7",
+  "shared_config_writes": [
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 0,
+      "stderr": ""
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "config",
+        "user.name",
+        "Ranex identity audit"
+      ],
+      "exit": 255,
+      "stderr": "error: could not lock config file /tmp/ranex-remediation-82-git-identity/repo/.git/config: File exists\n"
+    }
+  ],
+  "per_command_commits": [
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-0",
+        "-c",
+        "user.name=Ranex identity audit",
+        "-c",
+        "user.email=ranex-audit@example.invalid",
+        "commit",
+        "-qm",
+        "apply actual audited Ranex source fixes"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "head": "0d1b6af6060ead735ac1731ed3441cf0d933985b"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-1",
+        "-c",
+        "user.name=Ranex identity audit",
+        "-c",
+        "user.email=ranex-audit@example.invalid",
+        "commit",
+        "-qm",
+        "apply actual audited Ranex source fixes"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "head": "0d1b6af6060ead735ac1731ed3441cf0d933985b"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-2",
+        "-c",
+        "user.name=Ranex identity audit",
+        "-c",
+        "user.email=ranex-audit@example.invalid",
+        "commit",
+        "-qm",
+        "apply actual audited Ranex source fixes"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "head": "0d1b6af6060ead735ac1731ed3441cf0d933985b"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-3",
+        "-c",
+        "user.name=Ranex identity audit",
+        "-c",
+        "user.email=ranex-audit@example.invalid",
+        "commit",
+        "-qm",
+        "apply actual audited Ranex source fixes"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "head": "0d1b6af6060ead735ac1731ed3441cf0d933985b"
+    },
+    {
+      "command": [
+        "git",
+        "-C",
+        "/tmp/ranex-remediation-82-git-identity/worker-4",
+        "-c",
+        "user.name=Ranex identity audit",
+        "-c",
+        "user.email=ranex-audit@example.invalid",
+        "commit",
+        "-qm",
+        "apply actual audited Ranex source fixes"
+      ],
+      "exit": 0,
+      "stderr": "",
+      "head": "0d1b6af6060ead735ac1731ed3441cf0d933985b"
+    }
+  ],
+  "config_unchanged_after_commits": true
+}

@@ -1,0 +1,74 @@
+[
+  {
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-inkey",
+      ".local/remediation-82/cold-current-artifacts/openssl/tests-executed.pem",
+      "-rawin",
+      "-in",
+      ".local/remediation-82/cold-current-artifacts/openssl/tests-executed.payload",
+      "-sigfile",
+      ".local/remediation-82/cold-current-artifacts/openssl/tests-executed.sig"
+    ],
+    "exit": 0,
+    "stdout": "Signature Verified Successfully\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-inkey",
+      ".local/remediation-82/cold-current-artifacts/openssl/tests-executed.pem",
+      "-rawin",
+      "-in",
+      ".local/remediation-82/cold-current-artifacts/openssl/tests-executed.altered",
+      "-sigfile",
+      ".local/remediation-82/cold-current-artifacts/openssl/tests-executed.sig"
+    ],
+    "exit": 1,
+    "stdout": "Signature Verification Failure\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-inkey",
+      ".local/remediation-82/cold-current-artifacts/openssl/host-qualification.pem",
+      "-rawin",
+      "-in",
+      ".local/remediation-82/cold-current-artifacts/openssl/host-qualification.payload",
+      "-sigfile",
+      ".local/remediation-82/cold-current-artifacts/openssl/host-qualification.sig"
+    ],
+    "exit": 0,
+    "stdout": "Signature Verified Successfully\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-inkey",
+      ".local/remediation-82/cold-current-artifacts/openssl/host-qualification.pem",
+      "-rawin",
+      "-in",
+      ".local/remediation-82/cold-current-artifacts/openssl/host-qualification.altered",
+      "-sigfile",
+      ".local/remediation-82/cold-current-artifacts/openssl/host-qualification.sig"
+    ],
+    "exit": 1,
+    "stdout": "Signature Verification Failure\n",
+    "stderr": ""
+  }
+]
