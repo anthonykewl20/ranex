@@ -1,0 +1,23 @@
+pristine True
+collection-failure True
+recovered True
+Traceback (most recent call last):
+  File "/home/soultransit/devtony/ranex/tools/dogfood/collection_journey.py", line 133, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/soultransit/devtony/ranex/tools/dogfood/collection_journey.py", line 124, in main
+    cov.combine(data_paths=[str(out / 'coverage')], strict=True, keep=True)
+    ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/.venv/lib/python3.14/site-packages/coverage/control.py", line 912, in combine
+    combine_parallel_data(
+    ~~~~~~~~~~~~~~~~~~~~~^
+        self._data,
+        ^^^^^^^^^^^
+    ...<4 lines>...
+        message=self._message,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/soultransit/devtony/ranex/.venv/lib/python3.14/site-packages/coverage/data.py", line 170, in combine_parallel_data
+    raise NoDataError("No data to combine")
+coverage.exceptions.NoDataError: No data to combine

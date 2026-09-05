@@ -8,30 +8,7 @@ match the kernel silently.
 
 ## Open
 
-### F-026 — failed journal initialization deferred connection cleanup to GC
 
-Repeated reads of a damaged copy of the actual cold-start database reproduced
-1,000 SQLite refusals. Open descriptors grew from 4 to 213 at attempt 500,
-then varied as GC ran. `_connect` had not returned when `executescript(_SCHEMA)`
-failed, so its caller's closing context never owned the connection. It now
-closes initialization failures before re-raising. Repeating the identical
-1,000 opens held the descriptor count at 4 at every sampled checkpoint.
-Before/after receipts: `damaged-journal-open/receipt.json` and
-`damaged-journal-open-fixed/receipt.json` in the remediation archive.
-The storage stress driver now measures all 1,000 failed opens; final run pending.
-
-
-### F-024 — relative journal API paths failed during real receipt verification
-
-Verification of the actual cold-start journal at fd13edbc0 raised
-`ValueError: relative paths can't be expressed as file URIs` with its relative
-archive path; the same database verified by absolute path and yielded head
-`sha256:8fc91de7eaf7fb80d4b80a646e0777a2907f2fb6dfa8d5277094e6c6f259e5b4`.
-The read-only SQLite URI now absolutizes the path before encoding it, preserving
-read-only access and the append API's relative-path behavior. The actual database
-then verified through both spellings. Storage stress now checks relative paths
-and head equality on every completed 4,000-append round. All five rounds
-(20,000 appends) passed at 15a5af5be; receipt: `storage-relative/receipt.json`.
 
 ### F-025 — a shared receiver stress pass did not complete every request
 
@@ -42,7 +19,10 @@ responses and accepted 200/200 without production changes. The earlier failure
 is not erased or called fixed; final stress must retain individual statuses.
 The burst driver now records every status and explicitly redelivers 503s after
 contention drains; unexpected statuses still fail. The subsequent 38-control
-admission run passed, including 200/200 shared-state requests. That run needed
+admission run passed, including 200/200 shared-state requests. The later
+41-control run additionally observed a real 503 while Git held the pipeline,
+then a successful redelivery after recovery (`receiver-final-6b/receipt.json`).
+The earlier admission run needed
 no post-burst retry, so the earlier incomplete run is not retrospectively PASS.
 The paused-Git setup initially stopped only the waiting Git wrapper, leaving its
 server child running. The corrected driver stops its own isolated process group
@@ -245,6 +225,35 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   the e2e prereqs materialize the missing state in any checkout.
 
 ## Closed
+
+### F-024 — relative journal API paths failed during real receipt verification
+
+Verification of the actual cold-start journal at fd13edbc0 raised
+`ValueError: relative paths can't be expressed as file URIs` with its relative
+archive path; the same database verified by absolute path and yielded head
+`sha256:8fc91de7eaf7fb80d4b80a646e0777a2907f2fb6dfa8d5277094e6c6f259e5b4`.
+The read-only SQLite URI now absolutizes the path before encoding it, preserving
+read-only access and the append API's relative-path behavior. The actual database
+then verified through both spellings. Storage stress now checks relative paths
+and head equality on every completed 4,000-append round. All five rounds
+(20,000 appends) passed at 15a5af5be; receipt: `storage-relative/receipt.json`.
+
+
+### F-026 — failed journal initialization deferred connection cleanup to GC
+
+Repeated reads of a damaged copy of the actual cold-start database reproduced
+1,000 SQLite refusals. Open descriptors grew from 4 to 213 at attempt 500,
+then varied as GC ran. `_connect` had not returned when `executescript(_SCHEMA)`
+failed, so its caller's closing context never owned the connection. It now
+closes initialization failures before re-raising. Repeating the identical
+1,000 opens held the descriptor count at 4 at every sampled checkpoint.
+Before/after receipts: `damaged-journal-open/receipt.json` and
+`damaged-journal-open-fixed/receipt.json` in the remediation archive.
+The full storage rerun held FDs at 7 for all 1,000 failed opens, verified another
+20,000 appends, and admitted exactly one writer in each of ten eight-way
+compare-and-append rounds (70 named stale refusals). Receipt: `storage-final-6b/receipt.json`.
+
+
 
 ### F-015 (historical subject) — the opt-in live Ranex bootstrap is red
 

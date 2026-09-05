@@ -1,0 +1,28 @@
+{
+  "kernel": "1cd2111336b38ea3b2fb4ad7f0444a4605b73508",
+  "scope": "Real candidate builds and installed CLI, with byte-verified source coverage",
+  "results": [
+    {
+      "candidate": "0.1.1rc1",
+      "installed_version": "ranex 0.1.1rc1",
+      "source_matches": true,
+      "release_refusal": "RELEASE-REFUSED: release requires a three-part final package version",
+      "artifacts": {
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "ranex-0.1.1rc1-py3-none-any.whl": "a90c68df114070b100fa663535788db3f0d3756f43958bd51008b8ce2f8ef7ce",
+        "ranex-0.1.1rc1.tar.gz": "c18c698c83e9c9351d220ecce5263670f632b7e15a2c12749415cba247eadf9d"
+      }
+    },
+    {
+      "candidate": "0.1.1000",
+      "installed_version": "ranex 0.1.1000",
+      "source_matches": true,
+      "release_refusal": "RELEASE-REFUSED: patch field exceeds three digits; choose a new minor release",
+      "artifacts": {
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "ranex-0.1.1000-py3-none-any.whl": "51e6ac086628dbb0ad67ed8ee2c3d03f969327d9f290ceaab178cf4073470218",
+        "ranex-0.1.1000.tar.gz": "31d3bfefacc94012fe4111e6bda758127f0706869c999ce037e045f3e0a60621"
+      }
+    }
+  ]
+}

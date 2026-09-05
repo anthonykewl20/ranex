@@ -1,0 +1,127 @@
+[
+  {
+    "argv": [
+      "git",
+      "clone",
+      "--quiet",
+      "--no-hardlinks",
+      "/home/soultransit/devtony/ranex",
+      "/tmp/ranex-release-build-zpvh56cb/repo"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "exit": 0,
+    "stdout": "10864ecd7d7e2bd584bb28ab0f7b6217a97b0ba3\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "sync",
+      "--frozen"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "warning: `VIRTUAL_ENV=/home/soultransit/devtony/ranex/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.6\nCreating virtual environment at: .venv\n   Building ranex @ file:///tmp/ranex-release-build-zpvh56cb/repo\n      Built ranex @ file:///tmp/ranex-release-build-zpvh56cb/repo\nPrepared 1 package in 251ms\nInstalled 32 packages in 8ms\n + cffi==2.1.1\n + chardet==7.4.3\n + click==8.4.2\n + coverage==7.15.3\n + cryptography==50.0.0\n + diff-cover==9.7.2\n + hatchling==1.31.0\n + iniconfig==2.3.0\n + jinja2==3.1.6\n + libcst==1.9.0\n + linkify-it-py==2.1.0\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + mdit-py-plugins==0.6.1\n + mdurl==0.1.2\n + mutmut==3.5.0\n + packaging==26.2\n + pathspec==1.1.1\n + platformdirs==4.11.0\n + pluggy==1.6.0\n + pycparser==3.0\n + pyelftools==0.32\n + pygments==2.20.0\n + pytest==9.1.1\n + pyyaml==6.0.3\n + ranex==0.1.0 (from file:///tmp/ranex-release-build-zpvh56cb/repo)\n + rich==15.0.0\n + setproctitle==1.3.7\n + textual==8.2.8\n + trove-classifiers==2026.6.1.19\n + typing-extensions==4.16.0\n + uc-micro-py==2.0.0\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "run",
+      "--frozen",
+      "python",
+      "tools/dogfood/release.py",
+      "prepare"
+    ],
+    "exit": 0,
+    "stdout": "v0.1.001\n",
+    "stderr": "warning: `VIRTUAL_ENV=/home/soultransit/devtony/ranex/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nResolved 34 packages in 970ms\nUpdated ranex v0.1.0 -> v0.1.1\n"
+  },
+  {
+    "argv": [
+      "git",
+      "diff",
+      "--",
+      "pyproject.toml",
+      "uv.lock"
+    ],
+    "exit": 0,
+    "stdout": "diff --git a/pyproject.toml b/pyproject.toml\nindex d04a1965e..a4a57def5 100644\n--- a/pyproject.toml\n+++ b/pyproject.toml\n@@ -4,7 +4,7 @@ build-backend = \"hatchling.build\"\n \n [project]\n name = \"ranex\"\n-version = \"0.1.0\"\n+version = \"0.1.1\"\n description = \"Deterministic governance for AI agents that build software\"\n requires-python = \">=3.11,<3.15\"\n dependencies = [\ndiff --git a/uv.lock b/uv.lock\nindex 8dc73644c..9b93d1b0b 100644\n--- a/uv.lock\n+++ b/uv.lock\n@@ -681,7 +681,7 @@ wheels = [\n \n [[package]]\n name = \"ranex\"\n-version = \"0.1.0\"\n+version = \"0.1.1\"\n source = { editable = \".\" }\n dependencies = [\n     { name = \"cryptography\" },\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "sync",
+      "--frozen"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "warning: `VIRTUAL_ENV=/home/soultransit/devtony/ranex/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n   Building ranex @ file:///tmp/ranex-release-build-zpvh56cb/repo\n      Built ranex @ file:///tmp/ranex-release-build-zpvh56cb/repo\nPrepared 1 package in 247ms\nUninstalled 1 package in 0.35ms\nInstalled 1 package in 0.96ms\n - ranex==0.1.0 (from file:///tmp/ranex-release-build-zpvh56cb/repo)\n + ranex==0.1.1 (from file:///tmp/ranex-release-build-zpvh56cb/repo)\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "build",
+      "--no-build-isolation",
+      "--exclude-newer",
+      "2026-08-04T00:00:00Z",
+      "--out-dir",
+      "/home/soultransit/devtony/ranex/.local/remediation-82/release-prepare-final-6/dist"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Building source distribution...\nBuilding wheel from source distribution...\nSuccessfully built /home/soultransit/devtony/ranex/.local/remediation-82/release-prepare-final-6/dist/ranex-0.1.1.tar.gz\nSuccessfully built /home/soultransit/devtony/ranex/.local/remediation-82/release-prepare-final-6/dist/ranex-0.1.1-py3-none-any.whl\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      "/tmp/ranex-release-build-zpvh56cb/repo/.venv/bin/python",
+      "--no-deps",
+      "--reinstall",
+      "/home/soultransit/devtony/ranex/.local/remediation-82/release-prepare-final-6/dist/ranex-0.1.1-py3-none-any.whl"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Resolved 1 package in 1ms\nPrepared 1 package in 7ms\nUninstalled 1 package in 0.36ms\nInstalled 1 package in 3ms\n - ranex==0.1.1 (from file:///tmp/ranex-release-build-zpvh56cb/repo)\n + ranex==0.1.1 (from file:///home/soultransit/devtony/ranex/.local/remediation-82/release-prepare-final-6/dist/ranex-0.1.1-py3-none-any.whl)\n"
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-build-zpvh56cb/repo/.venv/bin/python",
+      "-c",
+      "from importlib.metadata import version; print(version(\"ranex\"))"
+    ],
+    "exit": 0,
+    "stdout": "0.1.1\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-build-zpvh56cb/repo/.venv/bin/ranex",
+      "--help"
+    ],
+    "exit": 0,
+    "stdout": "usage: ranex [-h] [--version]\n             {gate,journal,run,host,suite,deps,keygen,github,specification,task} ...\n\nDeterministic governance for AI agents that build software\n\npositional arguments:\n  {gate,journal,run,host,suite,deps,keygen,github,specification,task}\n    gate                gate operations\n    journal             journal operations\n    run                 run a command and record evidence of it\n    host                strict-local host operator workflow\n    suite               frozen suite operations\n    deps                dependency provisioning\n    keygen              generate a producer signing key\n    github              the GitHub acceptance loop (host-side; no network\n                        here)\n    specification       specification lifecycle operations\n    task                dispatch and materialise task candidates\n\noptions:\n  -h, --help            show this help message and exit\n  --version             show program's version number and exit\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-build-zpvh56cb/repo/.venv/bin/ranex",
+      "--version"
+    ],
+    "exit": 0,
+    "stdout": "ranex v0.1.001\n",
+    "stderr": ""
+  }
+]

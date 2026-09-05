@@ -1,0 +1,5 @@
+The bundle contains this ref:
+9f31ef765b59bdb87555d01a8b4391a970c75488 HEAD
+The bundle records a complete history.
+The bundle uses this hash algorithm: sha1
+/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/subject.bundle is okay

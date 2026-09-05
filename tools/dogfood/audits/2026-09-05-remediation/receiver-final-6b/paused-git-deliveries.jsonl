@@ -1,0 +1,3 @@
+{"delivery": "paused-real-git-server", "event": "pull_request", "outcome": "E-GITHUB-UNFETCHABLE-HEAD", "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42"}
+{"delivery": "paused-real-git-server", "event": "pull_request", "outcome": "E-GITHUB-API-REFUSED", "head_sha": "8ccb490bf5c6d523fc12731efc6b8ab2aa0eeb42"}
+{"delivery": "busy-during-git-fetch-0", "event": "pull_request", "outcome": "ignored"}

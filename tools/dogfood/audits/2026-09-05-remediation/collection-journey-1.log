@@ -1,0 +1,9 @@
+pristine True
+collection-failure False
+Traceback (most recent call last):
+  File "/home/soultransit/devtony/ranex/tools/dogfood/collection_journey.py", line 116, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/soultransit/devtony/ranex/tools/dogfood/collection_journey.py", line 88, in main
+    raise RuntimeError(f'{phase} failed; see the actual commands and evidence')
+RuntimeError: collection-failure failed; see the actual commands and evidence

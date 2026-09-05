@@ -1,0 +1,151 @@
+{
+  "scope": "Real Git bundle objects bound to actual evidence; OpenSSL signature verification and altered-payload refusal",
+  "rows": [
+    {
+      "phase": "pristine",
+      "subject_digest": "sha256:7ae22b48c258be6fbc3d6a6f95df7f76e829b1b85454ff6debcc73ce43a8334d",
+      "matching_git_objects": [
+        {
+          "commit": "9f31ef765b59bdb87555d01a8b4391a970c75488",
+          "tree": "f5ef77acc452a165fa01552ea254c1f7f735966a"
+        },
+        {
+          "commit": "2edb9520d7003a82281d174ad1bd737b204e1d59",
+          "tree": "f5ef77acc452a165fa01552ea254c1f7f735966a"
+        }
+      ],
+      "signature": {
+        "command": [
+          "openssl",
+          "pkeyutl",
+          "-verify",
+          "-pubin",
+          "-inkey",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/pristine.pem",
+          "-rawin",
+          "-in",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/pristine.payload",
+          "-sigfile",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/pristine.sig"
+        ],
+        "exit": 0,
+        "stdout": "Signature Verified Successfully\n",
+        "stderr": ""
+      },
+      "altered": {
+        "command": [
+          "openssl",
+          "pkeyutl",
+          "-verify",
+          "-pubin",
+          "-inkey",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/pristine.pem",
+          "-rawin",
+          "-in",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/pristine.altered",
+          "-sigfile",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/pristine.sig"
+        ],
+        "exit": 1,
+        "stdout": "Signature Verification Failure\n",
+        "stderr": ""
+      }
+    },
+    {
+      "phase": "collection-failure",
+      "subject_digest": "sha256:acb90594b010bb2c1229218377361f870fadd6b10ea4c5540ddee2d64183e915",
+      "matching_git_objects": [
+        {
+          "commit": "b4788af1fb2f8a013fac70153bf671516f3c05dd",
+          "tree": "5c9be7f8963838f942f2b518f3bb665493dcbcd3"
+        }
+      ],
+      "signature": {
+        "command": [
+          "openssl",
+          "pkeyutl",
+          "-verify",
+          "-pubin",
+          "-inkey",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/collection-failure.pem",
+          "-rawin",
+          "-in",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/collection-failure.payload",
+          "-sigfile",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/collection-failure.sig"
+        ],
+        "exit": 0,
+        "stdout": "Signature Verified Successfully\n",
+        "stderr": ""
+      },
+      "altered": {
+        "command": [
+          "openssl",
+          "pkeyutl",
+          "-verify",
+          "-pubin",
+          "-inkey",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/collection-failure.pem",
+          "-rawin",
+          "-in",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/collection-failure.altered",
+          "-sigfile",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/collection-failure.sig"
+        ],
+        "exit": 1,
+        "stdout": "Signature Verification Failure\n",
+        "stderr": ""
+      }
+    },
+    {
+      "phase": "recovered",
+      "subject_digest": "sha256:7ae22b48c258be6fbc3d6a6f95df7f76e829b1b85454ff6debcc73ce43a8334d",
+      "matching_git_objects": [
+        {
+          "commit": "9f31ef765b59bdb87555d01a8b4391a970c75488",
+          "tree": "f5ef77acc452a165fa01552ea254c1f7f735966a"
+        },
+        {
+          "commit": "2edb9520d7003a82281d174ad1bd737b204e1d59",
+          "tree": "f5ef77acc452a165fa01552ea254c1f7f735966a"
+        }
+      ],
+      "signature": {
+        "command": [
+          "openssl",
+          "pkeyutl",
+          "-verify",
+          "-pubin",
+          "-inkey",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/recovered.pem",
+          "-rawin",
+          "-in",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/recovered.payload",
+          "-sigfile",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/recovered.sig"
+        ],
+        "exit": 0,
+        "stdout": "Signature Verified Successfully\n",
+        "stderr": ""
+      },
+      "altered": {
+        "command": [
+          "openssl",
+          "pkeyutl",
+          "-verify",
+          "-pubin",
+          "-inkey",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/recovered.pem",
+          "-rawin",
+          "-in",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/recovered.altered",
+          "-sigfile",
+          "/home/soultransit/devtony/ranex/.local/remediation-82/collection-final-6/independent/recovered.sig"
+        ],
+        "exit": 1,
+        "stdout": "Signature Verification Failure\n",
+        "stderr": ""
+      }
+    }
+  ]
+}
