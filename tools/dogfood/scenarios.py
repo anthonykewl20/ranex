@@ -189,12 +189,11 @@ def journal_tamper_detected(ctx: Context) -> dict[str, Any]:
 
 
 def journal_nonjson_corruption_fails_closed(ctx: Context) -> dict[str, Any]:
-    """FINDING F-001: verify()'s docstring says "False means a row changed
-    outside append", but a record corrupted to non-JSON raises
-    JSONDecodeError instead of returning False (journal.py:176 json.loads).
-    It fails CLOSED — the corruption is never accepted — so this is an API
-    contract weak point, not a security hole. This scenario pins the ACTUAL
-    behaviour so a future fix is noticed as drift."""
+    """F-001 CLOSED 2026-09-05 (owner remediation, FINDINGS.md): verify()
+    honours its documented bool contract — a record corrupted to non-JSON
+    returns False (journal.py catches ValueError/TypeError/RecursionError
+    around json.loads) instead of raising JSONDecodeError. Pinned so a
+    regression to raising, or to accepting the corruption, is drift."""
     path = ctx.scratch / "nonjson.sqlite3"
     journal = Journal(path)
     journal.append(_evaluation())
@@ -205,14 +204,14 @@ def journal_nonjson_corruption_fails_closed(ctx: Context) -> dict[str, Any]:
         conn.commit()
     finally:
         conn.close()
-    try:
-        journal.verify()
-    except ValueError:  # JSONDecodeError is a ValueError
-        return {"verdict": "raises ValueError (fails closed, not False)",
-                "finding": "F-001"}
-    raise AssertionError(
-        "verify() accepted non-JSON corruption: neither False nor an exception"
+    verdict = journal.verify()
+    assert verdict is False, (
+        f"verify() must return False for non-JSON corruption (F-001 "
+        f"remediation), got {verdict!r}"
     )
+    return {"verdict": "False (documented bool contract; F-001 remediated "
+                       "2026-09-05)",
+            "finding": "F-001 closed"}
 
 
 def admission_unknown_producer(ctx: Context) -> dict[str, Any]:
@@ -444,9 +443,10 @@ SCENARIOS: dict[str, tuple[str, str, Scenario]] = {
     ),
     "journal-nonjson-corruption": (
         "journal",
-        "FINDING F-001 pinned: non-JSON record corruption makes verify() "
-        "RAISE (fail closed) instead of returning False — contract weak "
-        "point, recorded as drift-sensitive behaviour.",
+        "F-001 CLOSED 2026-09-05 (owner remediation): non-JSON record "
+        "corruption makes verify() return False — the documented bool "
+        "contract — instead of raising; regression to raising or accepting "
+        "is drift.",
         journal_nonjson_corruption_fails_closed,
     ),
     "admission-unknown-producer": (

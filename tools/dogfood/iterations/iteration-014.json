@@ -1,0 +1,266 @@
+{
+  "findings": [],
+  "git_head": "9a7b6ca3d84e0b90a2c5d9b2af33c12c00c32337",
+  "iteration": 14,
+  "scenarios": [
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:a070a27be46fe7e5808fe464c1a842a2ce99aad4c23150325df2755ee6c93da5",
+      "id": "cli-surface",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:c3c8b2f97ba68fe88e54ae6dab3293bf6e54b96ff57daab40e04b674026d2683",
+      "id": "keygen-roundtrip",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:68f9674a424ac7c83b6974c26559bd328393d2c5677516d8b517330f3f630eba",
+      "id": "keygen-refuses-repo-paths",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:e617f16c7ba08b5deac35ee681aa4cd4124e995fe479d8d7f0eaf2786e10c21f",
+      "id": "journal-chain",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:745eca7dffc468da031d3edc5448451a37257b579fdc2066c2ee8abe9e5a9e3b",
+      "id": "journal-tamper-detected",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:8c3001082c2b3278507767c85500e5b2ec088f175895bfad46586af2fa50b96b",
+      "id": "journal-nonjson-corruption",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:6a6dd339f86b6a0637a88d337c30237ed55774549d414591ec09447a1ac3685f",
+      "id": "admission-unknown-producer",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:0170b4888d1ef76deca3a86ba0f39bfb35661daff5e861c9ef4954447c09702c",
+      "id": "admission-bad-signature",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:9cb182983ddc975a1a808ef702aa137115e2208e75d3bbc40da933c9f3832469",
+      "id": "admission-good-record",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:2110d655c2b8bc46657428e66b7da60f65666debe36f2c2b93edb51142d8d48b",
+      "id": "verdict-self-approval-blocks",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:4d9296849bac3e28e5d16fe7fc774ceeb5950fb47923305b5917ab16b86df575",
+      "id": "verdict-contradiction-blocks",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:0ccbc9f6ff6bdc29ac5fae6bc92ac462113fa662c7ea6a10236b51fa74c4e88d",
+      "id": "verdict-absence-blocks",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:3866374a8a01a3b9ec26f25949585b1f694e369ca1924ef9a625786ab741a8d4",
+      "id": "signing-roundtrip",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:26877b75fa12de22e7ea77f07910ee462bd516c8e721e0d1a35ce5be893d74eb",
+      "id": "suite-freeze-drift",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:5ae11c363c22f497d16be3fded941a0840fbfc13dfc0a604e78bb3512567191b",
+      "id": "real-subject-digest-binding",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:44e1ec3dc47a0e6d07e1973659f27c2733ac3f4e8fad9702dec2ac01879a316d",
+      "id": "command-digest-structural",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:b25d8183c5fd87d374d7f32b87242f534944973d55803ef5fdd0037dc70ce74f",
+      "id": "proof-journal-chain-algebra",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:cfc55993966cd6b55e243dd357ad46130f62435a054176ff79022cfc0e86ee30",
+      "id": "proof-journal-tamper-propagation",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:de76bc570bfd98797091d201437048a2465920d14396f56c0539846d12fbf332",
+      "id": "proof-canonical-agreement",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:60c572d1ab0403f9fd03e7737f7cf47eb48d0508478f22f4cb2e1e26b453cef6",
+      "id": "proof-signature-determinism-stress",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:14f1fbe8237c1023d744667a13e20c80727dd65ed22757d725b030b11dc2ef26",
+      "id": "proof-digest-avalanche",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:a2782b8c0093061bdf00c61cc165d92fda8b56ac285cc3483ab06e22a8d301b9",
+      "id": "proof-manifest-digest",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:de77d154ea0b42bcd32e9cc0088818f7b676641776ecfd80ce2351dbcf299920",
+      "id": "logic-truth-table-addresses",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:25d27d1b3d0a72b44035e25c37549a253082b78595cc356318ddb54b7c089f85",
+      "id": "logic-truth-table-satisfies",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:109ef5bde504b7aaf88c5f8a8f8c606bb1f14f3397ea10da4bf71283df269d32",
+      "id": "logic-demorgan-kernel-predicates",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:d9b4cf87609ab2a749cf3a59b921f18caa37c8f278aebc44dc97a9cdccf271aa",
+      "id": "logic-preconditions-refuse",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:91791cf1c2548daf141f419c0dfd827d9d5a4717214bcff17be09c8dafaf3f6d",
+      "id": "logic-evaluate-postconditions",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:c261462c9c9cbbb3238a5a0eeb3a82d2c27b956f37479165c9ac62f86e0fe1cd",
+      "id": "graph-lock-dag",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:158bd7ba93318728c88a912d558bb6af8d2f4959740bdd1f8f9bcf2287de9a9b",
+      "id": "graph-selection-closure",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:fe901aa5cfc463eabdbd6081886015c6d1d7ec2f38138b5f12431d4a0dd4bd7f",
+      "id": "numerics-publication-boundaries",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:56c75975eb96b79f3f7fc80c245290690760e0c3036995d687a26cf0dc926143",
+      "id": "numerics-canonical-refuses-nan",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:df8eaba29d6180bee25f02abb99bba02dce727a175f9ef44cd8c62a3af4eaf49",
+      "id": "asymptotics-append-nondestructive",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:4160191bf350e484955ed934339c13c5666e3aebc019dd0ec3a2cc6ac0067b6b",
+      "id": "asymptotics-permutation-invariance",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:fd675654fbf969365cd6fab596c0177035cf5eeb382d2f78530f2e32bafa143d",
+      "id": "grid-admission-cartesian",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:9007795ab67b83764b4a7a6a44b5b4c8cd56dbbd3c158139842a0e617c859dfb",
+      "id": "boundary-results-cap",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:a42e6fc857eea7d8ac87a7b4d34eba4285030613ed1054b527967a831d1bd1ce",
+      "id": "pigeonhole-archive-digests",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:84d0474edadb96a39856d26f3e1b0834a1c846c410bb7c674654e5cafb9a83ed",
+      "id": "canonical-fixed-point",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:1894dc09d9492d0b2572e77570d69dbd1029264ae0d5f91929e963386947ac98",
+      "id": "formal-verdict-monotonicity",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:0d94ebc254cfc9d1e06422b0b6731aec371fde4b26d2e68f37787f243a9692e2",
+      "id": "formal-irrelevance-invariance",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:5b29ff6879307da810f536fd6f27053eb3c8ac2a9d0295e608cdc2d0ce14aae7",
+      "id": "formal-permutation-group-s4",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:e81d1ffaeb830495387bfc0e82aabab9b28a5794fbb7bf054563661d94d15f0c",
+      "id": "formal-lock-closure-equality",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:6aa85b691137b9216ceeebeb89ea3d86a2a0b33cd0498252f2ca76c5bdcee6dc",
+      "id": "formal-grid-pair-completeness",
+      "status": "pass"
+    },
+    {
+      "deterministic": true,
+      "facts_digest": "sha256:e17c39f0066d694f883361a6bf6dc444fd114b58ed088b5f721eca3f5f25caf7",
+      "id": "evolve-blind-spot-census",
+      "status": "pass"
+    }
+  ],
+  "schema": "ranex-dogfood-iteration-v1"
+}
