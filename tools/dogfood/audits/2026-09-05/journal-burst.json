@@ -1,0 +1,14 @@
+{
+  "head": "274a62de163a8c3db4cc6a3e83ae1300d1ca3c4d",
+  "command": [
+    "uv",
+    "run",
+    "--frozen",
+    "pytest",
+    "-q",
+    "tests/integration/test_journal.py::test_eight_writer_burst_completes_without_exposing_sqlite_busy",
+    "--junitxml=/home/soultransit/devtony/ranex/.local/release-audit/journal-burst.xml"
+  ],
+  "exit": 0,
+  "method": "Sequential isolated rerun; journal source unchanged between released tag and this HEAD."
+}

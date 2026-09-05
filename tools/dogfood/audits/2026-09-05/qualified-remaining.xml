@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="2" skipped="0" tests="7" time="31.195" timestamp="2026-09-05T14:16:20.591864+08:00" hostname="desk-tony"><testcase classname="tests.e2e.test_host_workflow_real" name="test_v1_real_workflow_records_delegated_cgroup_and_run_record" time="6.350" /><testcase classname="tests.e2e.test_host_workflow_real" name="test_v2_real_workflow_uses_paired_input_and_toolchain_selectors" time="4.877" /><testcase classname="tests.e2e.test_host_workflow_real" name="test_v3_real_workflow_records_runtime_result_binding_when_published" time="8.294"><failure message="AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher&#10;  INSTALLED  .local/ranex/libexec/strict-local-v1/ranex-worker-launcher&#10;  QUALIFIED  .local/ranex/qualification/strict-local-v1.json&#10;  &#10;assert 2 == 0&#10; +  where 2 = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'host', 'strict-loc...ibexec/strict-local-v1/ranex-worker-launcher\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\n', stderr='').returncode">tmp_path = PosixPath('/tmp/pytest-of-soultransit/pytest-1223/test_v3_real_workflow_records_0')
+v3_repository = GovernedRepository(path=PosixPath('/tmp/pytest-of-soultransit/pytest-1223/host-workflow-v30/repository'), key=PosixPath('/tmp/pytest-of-soultransit/pytest-1223/host-workflow-v30/owner.key'))
+
+    def test_v3_real_workflow_records_runtime_result_binding_when_published(
+        tmp_path: Path, v3_repository: GovernedRepository
+    ) -&gt; None:
+        """The wrapper runs the committed v3 runtime closure with real signing."""
+        result_dir = tmp_path / "v3"
+        completed = _module(
+            v3_repository.path,
+            "ranex.cli.main",
+            "host",
+            "strict-local",
+            "--version",
+            "v3",
+            "--claim",
+            "dynamic-runtime-qualified",
+            "--producer",
+            "slice072-owner",
+            "--repository",
+            ".",
+            "--evidence",
+            ".local/ranex-e2e/v3-evidence.json",
+            "--runtime-input-path",
+            "tests/e2e/fixtures/slice072-input",
+            "--runtime-closure-root",
+            "tests/e2e/fixtures/slice072-runtime",
+            "--result-dir",
+            str(result_dir),
+            "--",
+            "/ranex/runtime/bin/python3.12",
+            "/ranex/runtime/data/worker.py",
+            key=v3_repository.key,
+        )
+&gt;       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher
+E         INSTALLED  .local/ranex/libexec/strict-local-v1/ranex-worker-launcher
+E         QUALIFIED  .local/ranex/qualification/strict-local-v1.json
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'host', 'strict-loc...ibexec/strict-local-v1/ranex-worker-launcher\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\n', stderr='').returncode
+
+tests/e2e/test_host_workflow_real.py:385: AssertionError</failure></testcase><testcase classname="tests.e2e.test_host_workflow_real" name="test_real_missing_session_bus_is_named_and_retained" time="0.369" /><testcase classname="tests.e2e.test_host_workflow_real" name="test_named_host_drift_refuses_from_a_different_delegated_scope" time="7.882"><failure message="assert 'E-C18-HOST-DRIFT' in ('' + &quot;ERROR  cannot materialise 'e80781d6a4ea9e748c15753241c6eece45cbeda2': [Errno 2] No such file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n&quot;)&#10; +  where '' = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...uch file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n&quot;).stdout&#10; +  and   &quot;ERROR  cannot materialise 'e80781d6a4ea9e748c15753241c6eece45cbeda2': [Errno 2] No such file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n&quot; = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...uch file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n&quot;).stderr">tmp_path = PosixPath('/tmp/pytest-of-soultransit/pytest-1223/test_named_host_drift_refuses_0')
+drift_repository = GovernedRepository(path=PosixPath('/tmp/pytest-of-soultransit/pytest-1223/host-workflow-drift0/repository'), key=PosixPath('/tmp/pytest-of-soultransit/pytest-1223/host-workflow-drift0/owner.key'))
+
+    def test_named_host_drift_refuses_from_a_different_delegated_scope(
+        tmp_path: Path, drift_repository: GovernedRepository
+    ) -&gt; None:
+        """A qualification from scope A is fail-closed when used from scope B."""
+        provisioning = (
+            ("launcher-build", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--source", "native/ranex-worker-launcher/launcher.c", "--output", ".local/ranex/build/strict-local-v1/ranex-worker-launcher"),
+            ("launcher-install", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--artifact", ".local/ranex/build/strict-local-v1/ranex-worker-launcher", "--destination", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"),
+            ("qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report", ".local/ranex/qualification/strict-local-v1.json"),
+        )
+        for arguments in provisioning:
+            completed = _module(drift_repository.path, "ranex.cli.host_confinement", *arguments)
+            assert completed.returncode == 0, completed.stdout + completed.stderr
+    
+        evidence = ".local/ranex-e2e/drift-evidence.json"
+        run_argv = [
+            sys.executable,
+            "-m",
+            "ranex.cli.main",
+            "run",
+            "--claim",
+            "dynamic-runtime-qualified",
+            "--producer",
+            "slice072-owner",
+            "--repository",
+            ".",
+            "--evidence",
+            evidence,
+            "--confinement",
+            "strict-local",
+            "--runtime-input-path",
+            "tests/e2e/fixtures/slice072-input",
+            "--runtime-closure-root",
+            "tests/e2e/fixtures/slice072-runtime",
+            "--",
+            "/ranex/runtime/bin/python3.12",
+            "/ranex/runtime/data/worker.py",
+        ]
+        command = f"cd {shlex.quote(str(drift_repository.path))} &amp;&amp; exec {shlex.join(run_argv)}"
+        nested = subprocess.run(
+            [
+                "/usr/bin/systemd-run",
+                "--user",
+                "--scope",
+                "--quiet",
+                "--property=Delegate=yes",
+                f"--setenv=PYTHONPATH={ROOT / 'src'}",
+                f"--setenv=RANEX_SIGNING_KEY={drift_repository.key}",
+                f"--setenv=PATH={os.environ['PATH']}",
+                f"--setenv=HOME={os.environ['HOME']}",
+                "--",
+                "/bin/sh",
+                "-c",
+                command,
+            ],
+            cwd=drift_repository.path,
+            env=_environment(drift_repository.key),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=240,
+        )
+        assert nested.returncode != 0
+&gt;       assert "E-C18-HOST-DRIFT" in nested.stdout + nested.stderr
+E       assert 'E-C18-HOST-DRIFT' in ('' + "ERROR  cannot materialise 'e80781d6a4ea9e748c15753241c6eece45cbeda2': [Errno 2] No such file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n")
+E        +  where '' = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...uch file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n").stdout
+E        +  and   "ERROR  cannot materialise 'e80781d6a4ea9e748c15753241c6eece45cbeda2': [Errno 2] No such file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n" = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...uch file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n").stderr
+
+tests/e2e/test_host_workflow_real.py:483: AssertionError</failure></testcase><testcase classname="tests.e2e.test_run_produces_evidence" name="test_real_catalog_qualification_runs_on_host_and_gates_live_state" time="2.419" /><testcase classname="tests.security.test_slice003_bind_mount_identity" name="test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file" time="0.749" /></testsuite></testsuites>

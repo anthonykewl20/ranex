@@ -3,6 +3,10 @@
 ## Release audit probes
 
 The owner-requested 2026-09-05 audit adds real subprocess and socket probes.
+The retained [audit summary](audits/2026-09-05/audit.json) links the measured
+revisions, outcomes, scope limits, and artifact inventory; [FINDINGS.md](FINDINGS.md)
+explains the reproduced gaps. Public signature material is retained; private
+keys are discarded with the disposable repositories.
 Run with a **new** output directory each time:
 
 ```sh
@@ -261,6 +265,6 @@ faked. When it lands, it lands real or not at all.
 
 ## Findings so far
 
-See `FINDINGS.md`. F-001 (open): `Journal.verify()` raises on non-JSON record
-corruption instead of returning its documented `False`. F-000 (closed):
-catalog-vs-parser drift caught at construction time.
+See [FINDINGS.md](FINDINGS.md) for current open and closed findings. The release
+audit records receiver, principal-policy, suite-outcome, journal, bootstrap,
+and host-integration gaps, plus the corrected Python 3.11 guardian startup.

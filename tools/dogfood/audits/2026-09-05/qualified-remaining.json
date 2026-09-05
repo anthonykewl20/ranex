@@ -1,0 +1,26 @@
+{
+  "head": "274a62de163a8c3db4cc6a3e83ae1300d1ca3c4d",
+  "command": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "--quiet",
+    "--collect",
+    "--same-dir",
+    "--property=Delegate=yes",
+    "--property=CPUAccounting=yes",
+    "--property=MemoryAccounting=yes",
+    "--property=TasksAccounting=yes",
+    "uv",
+    "run",
+    "--frozen",
+    "pytest",
+    "-q",
+    "tests/e2e/test_host_workflow_real.py",
+    "tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state",
+    "tests/security/test_slice003_bind_mount_identity.py::test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file",
+    "--junitxml=/home/soultransit/devtony/ranex/.local/release-audit/qualified-remaining.xml"
+  ],
+  "exit": 1,
+  "tree_note": "Only audit documentation/artifacts are uncommitted; src tree is unchanged from this SHA."
+}

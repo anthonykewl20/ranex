@@ -1,0 +1,2149 @@
+{
+  "schema": "ranex-audit-inventory-v1",
+  "head": "48f3a98e48cf10bc0a4ce24fae7862726b82b1c7",
+  "scope": "Complete ADR/prior-art inventory, grouped behavioral review; no claim that passing referenced tests proves every historical ADR sentence. Vendored bytes are not current upstream release assertions.",
+  "adrs": [
+    {
+      "id": "ADR-000",
+      "path": "docs/adr/ADR-000-how-we-write-adrs.md",
+      "title": "ADR-000 \u2014 how we write ADRs",
+      "sha256": "11b8621947c25fddd00bd3abdfeb82b69ff31d57202a924b6c30b04db4735d9e",
+      "status_line": "**Status:** accepted",
+      "audit_group": "process and source provenance",
+      "scope_limit": "Documentation checks; independent refetch of all vendored sources is UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-001",
+      "path": "docs/adr/ADR-001-claim-command-binding.md",
+      "title": "ADR-001 \u2014 bind a claim to the command that satisfies it",
+      "sha256": "d504e60fd184840a66717f6486c3d953c8621e6a826f1e525f693e9f247b2f0a",
+      "status_line": "**Status:** accepted",
+      "audit_group": "command, trust root, materialisation, suite outcomes",
+      "scope_limit": "Real external commands and adversarial controls; F-010/F-012 limit correctness claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_gate_catalog_claim_commands.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_claim_command_binding_cli.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_signed_evidence_cli.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_executable_path_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice003_audit_defects.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice003_bind_mount_identity.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice003_command_binding.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_claim_command_binding.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-002",
+      "path": "docs/adr/ADR-002-committed-trust-root.md",
+      "title": "ADR-002 \u2014 the trust root is the committed path, and absence blocks",
+      "sha256": "9f88377fd8154f655e55d8b1d5b38387ae2b449bd3258d327d66fa80ba1fa3d0",
+      "status_line": "**Status:** accepted",
+      "audit_group": "command, trust root, materialisation, suite outcomes",
+      "scope_limit": "Real external commands and adversarial controls; F-010/F-012 limit correctness claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/e2e/test_gate_evaluate_cli.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_evidence_trust_root.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice002_trust_root_reopened.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice003_audit_defects.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-003",
+      "path": "docs/adr/ADR-003-research-is-fetched-evidence.md",
+      "title": "ADR-003 \u2014 research is evidence, and evidence must be fetched",
+      "sha256": "77ece0234053b4022b5a7c0a8caf4e386d664ec6efe94b680a24158dd74f7956",
+      "status_line": "**Status:** accepted",
+      "audit_group": "process and source provenance",
+      "scope_limit": "Documentation checks; independent refetch of all vendored sources is UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-004",
+      "path": "docs/adr/ADR-004-environment-boundary-for-git-queries.md",
+      "title": "ADR-004 \u2014 the environment must not choose the repository being judged",
+      "sha256": "113ef208768f13f0e756b756638363964d95142d47ff9b3f4d2720bd5a694989",
+      "status_line": "**Status:** accepted",
+      "audit_group": "command, trust root, materialisation, suite outcomes",
+      "scope_limit": "Real external commands and adversarial controls; F-010/F-012 limit correctness claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_ambient_git_environment.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice003_audit_defects.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-005",
+      "path": "docs/adr/ADR-005-hermetic-observation.md",
+      "title": "ADR-005 \u2014 observe a materialised commit, not the tree the worker is standing in",
+      "sha256": "5c4d663b2caf20087c13119c93106332ca80e5dad330938a71ddb943bbe4b4c8",
+      "status_line": "**Status:** accepted",
+      "audit_group": "command, trust root, materialisation, suite outcomes",
+      "scope_limit": "Real external commands and adversarial controls; F-010/F-012 limit correctness claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/e2e/test_run_produces_evidence.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_ambient_git_environment.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice003_audit_defects.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-006",
+      "path": "docs/adr/ADR-006-landlock-confinement-of-the-bound-command.md",
+      "title": "ADR-006 \u2014 isolate the bound command from the authority that signs it",
+      "sha256": "10bffea39caa3b892900129ac6b2e8c8590ee8e87468ab6066aff7c52443d69d",
+      "status_line": "**Status:** accepted",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/e2e/test_run_produces_evidence.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_executable_path_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_repository_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-007",
+      "path": "docs/adr/ADR-007-dependency-provisioning-for-gated-suites.md",
+      "title": "ADR-007 \u2014 provision dependencies without pretending they are evidence",
+      "sha256": "8b3358ac0dd9d81c05a6ee952caf5c9de6ad125a587f057b2ed9a5feaf3d24e6",
+      "status_line": "**Status:** accepted",
+      "audit_group": "command, trust root, materialisation, suite outcomes",
+      "scope_limit": "Real external commands and adversarial controls; F-010/F-012 limit correctness claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_gate_catalog_claim_commands.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_run_produces_evidence.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_executable_path_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_repository_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-008",
+      "path": "docs/adr/ADR-008-fork-opencode-and-bridge-to-the-kernel.md",
+      "title": "ADR-008 \u2014 fork opencode at a pinned commit; bridge it to the kernel through hooks",
+      "sha256": "1d260c665a43700518bc1a063ce34af28d92111da5b3e7b962839d0c5b981f0c",
+      "status_line": "**Status:** accepted",
+      "audit_group": "separate harness and UI",
+      "scope_limit": "Outside kernel-only release; sibling fork checks are not a release proof for that product.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_run_produces_evidence.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_evidence_trust_root.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_gate_verdict.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-009",
+      "path": "docs/adr/ADR-009-git-backed-materialisation.md",
+      "title": "ADR-009 \u2014 give the observation a repository, not just its files",
+      "sha256": "961f8ace3fae7450d0455569aece7d8c607fdce60bb50d4132b61bee8ff60387",
+      "status_line": "**Status:** accepted",
+      "audit_group": "command, trust root, materialisation, suite outcomes",
+      "scope_limit": "Real external commands and adversarial controls; F-010/F-012 limit correctness claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/e2e/test_gating_real_suite.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_kernel_materialise_reference.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-010",
+      "path": "docs/adr/ADR-010-first-delegation.md",
+      "title": "ADR-010 \u2014 first delegation: one operator request becomes governed work",
+      "sha256": "902ee3a139bf9abd09bab2188465821c1e5d2530ddd80d28e222f39a1c4a9625",
+      "status_line": "**Status:** accepted",
+      "audit_group": "delegation and serial publication",
+      "scope_limit": "Real adapter/dispatch/judge/merge tests; no live model or concurrent approved mutation product claimed.",
+      "explicit_test_references": [
+        {
+          "path": "tests/e2e/test_cold_start_journey.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_gear_mesh_candidate_verdict.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_fork_startup_bridge.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_keygen_key_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-011",
+      "path": "docs/adr/ADR-011-a-skip-is-absence.md",
+      "title": "ADR-011 \u2014 a skip is absence, not success: suite verdicts from structured results, not exit codes",
+      "sha256": "66da1eb8c902a1c0eae3f2dded20a00195d3b056472a6b464aaf40980cff43d7",
+      "status_line": "**Status:** accepted",
+      "audit_group": "command, trust root, materialisation, suite outcomes",
+      "scope_limit": "Real external commands and adversarial controls; F-010/F-012 limit correctness claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_first_delegation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice006_approved_wheel_can_lie.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-012",
+      "path": "docs/adr/ADR-012-the-kernel-merges.md",
+      "title": "ADR-012 \u2014 the kernel merges",
+      "sha256": "4fe5bf948584a662951b5ea73c661010c7a13d712a5b2e0d2f5dab25279a5b08",
+      "status_line": "**Status:** accepted",
+      "audit_group": "delegation and serial publication",
+      "scope_limit": "Real adapter/dispatch/judge/merge tests; no live model or concurrent approved mutation product claimed.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_first_delegation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_journal.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_git_backed_materialisation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_gate_verdict.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-013",
+      "path": "docs/adr/ADR-013-prototype-before-production.md",
+      "title": "ADR-013 \u2014 prototype before production",
+      "sha256": "08696a85c7ea3a1e73e478dc40d00b2bfb99ff3df07f20992bbd45b28615da27",
+      "status_line": "**Status:** accepted",
+      "audit_group": "process and source provenance",
+      "scope_limit": "Documentation checks; independent refetch of all vendored sources is UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_first_delegation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_journal.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_git_backed_materialisation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_gate_verdict.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-014",
+      "path": "docs/adr/ADR-014-one-process-many-tasks-the-bridge-becomes-a-per-member-protocol.md",
+      "title": "ADR-014 \u2014 one process, many tasks: the bridge becomes a per-member protocol",
+      "sha256": "2e7cffc7ed1ae3a304ad60c4e6e7a9250c57db25ec37aca785fdbb611f776c44",
+      "status_line": "**Status:** proposed",
+      "audit_group": "separate harness and UI",
+      "scope_limit": "Outside kernel-only release; sibling fork checks are not a release proof for that product.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_delegation_command.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_fork_startup_bridge.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_refusal_coverage.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_delegation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-015",
+      "path": "docs/adr/ADR-015-durable-execution-watchdog-first.md",
+      "title": "ADR-015 \u2014 durable execution, watchdog first: at-most-once recovery for the harness",
+      "sha256": "26204e3b8d2debb81d64609cbec1583a8ec9df64fe760c521a67becdc454f2a0",
+      "status_line": "**Status:** accepted",
+      "audit_group": "separate harness and UI",
+      "scope_limit": "Outside kernel-only release; sibling fork checks are not a release proof for that product.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_kernel_unchanged.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_refusal_coverage.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-016",
+      "path": "docs/adr/ADR-016-measure-before-learning.md",
+      "title": "ADR-016 \u2014 measure before learning",
+      "sha256": "219a501b1e5d25260bfd2832733c55af1886ce0d4a84fa9635fd47415b414a29",
+      "status_line": "**Status:** accepted",
+      "audit_group": "experimental measurement",
+      "scope_limit": "43 deterministic dogfood scenarios; no universal correctness or population false-verification rate inferred.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/test_contingency_tables.py",
+          "exists": false
+        },
+        {
+          "path": "tests/test_morestats.py",
+          "exists": false
+        },
+        {
+          "path": "tests/test_trusted_metadata_set.py",
+          "exists": false
+        }
+      ]
+    },
+    {
+      "id": "ADR-017",
+      "path": "docs/adr/ADR-017-approved-specification-before-implementation-authority.md",
+      "title": "ADR-017 \u2014 approved specification before implementation authority",
+      "sha256": "8697f5428a4617038f49c46dc38cd9ad470a879a192c62fd13aa8748c5b5802d",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_first_delegation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_gating_real_suite.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_delegation_command.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_journal.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-018",
+      "path": "docs/adr/ADR-018-the-board-is-the-front-door.md",
+      "title": "ADR-018 \u2014 the board is the front door",
+      "sha256": "07a2117b4682b4c12cae88d9278d23d36247f8b4af75f65411c99a28ac73b3bd",
+      "status_line": "**Status:** accepted",
+      "audit_group": "separate harness and UI",
+      "scope_limit": "Outside kernel-only release; sibling fork checks are not a release proof for that product.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_verdict_presentation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-019",
+      "path": "docs/adr/ADR-019-the-verdict-read-channel.md",
+      "title": "ADR-019 \u2014 the verdict read channel",
+      "sha256": "b5b73065a79a5612713223ff17ef84291d77cb94ba5e41b2648cb43818091f7e",
+      "status_line": "**Status:** accepted",
+      "audit_group": "verdict reading, diagnosis and observability",
+      "scope_limit": "Real signed records, log tests, and journal attacks; F-004/F-005 constrain claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_producer_keyring.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_verdict_presentation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_delegation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_evidence_signing.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_gate_verdict.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-020",
+      "path": "docs/adr/ADR-020-cause-is-structure-not-prose.md",
+      "title": "ADR-020 \u2014 cause is structure, not prose",
+      "sha256": "d64bed4c64a69b1cd8bb066b092b80982393ed00899c07042e843e3baa39b5ac",
+      "status_line": "**Status:** accepted",
+      "audit_group": "verdict reading, diagnosis and observability",
+      "scope_limit": "Real signed records, log tests, and journal attacks; F-004/F-005 constrain claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_kernel_unchanged.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_verdict_presentation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_evidence_admission.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_gate_verdict.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-021",
+      "path": "docs/adr/ADR-021-host-qualification-is-evidence-not-a-gated-test.md",
+      "title": "ADR-021 \u2014 host qualification is evidence, not a test the gate runs",
+      "sha256": "cc82b07a5af07578b6d943cdfff8bc9e70ab01afe509777fc1ac93292873e719",
+      "status_line": "**Status:** accepted",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_kernel_unchanged.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_gating_real_suite.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice017_host_qualification.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-022",
+      "path": "docs/adr/ADR-022-the-transcript-is-the-main-view.md",
+      "title": "ADR-022 \u2014 the transcript is the main view, rendered through slots in the session route",
+      "sha256": "3bf647583199a35c84b57a3006fabfa28126754ef7538318f90419e2382c2027",
+      "status_line": "**Status:** proposed",
+      "audit_group": "separate harness and UI",
+      "scope_limit": "Outside kernel-only release; sibling fork checks are not a release proof for that product.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_kernel_unchanged.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_verdict_presentation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-023",
+      "path": "docs/adr/ADR-023-the-confinement-session-is-invoked-as-a-subprocess.md",
+      "title": "ADR-023 \u2014 invoke the confinement session as a subprocess",
+      "sha256": "4ab29032f503c9c439eb6d92b9c1e9116087655b9a49362d5afa6af8bc4f0bbb",
+      "status_line": "**Status:** proposed",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_qualification_admission.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_slice018_confinement_session.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice003_command_binding.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice017_host_qualification.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice046_cmd_run_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_evidence_signing.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_suite_results.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_verdict_publication.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-024",
+      "path": "docs/adr/ADR-024-single-source-confinement-validation-and-least-authority-invocation.md",
+      "title": "ADR-024 \u2014 single-source confinement validation and least-authority invocation",
+      "sha256": "b4d03bd1df3bb2180fd17372c40e65a5a8101399ad1f57db38e8d51e327881f3",
+      "status_line": "**Status:** proposed",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/integration/test_slice017_native_launcher.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_slice018_confinement_session.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice046_cmd_run_confinement.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice047_confinement_hardening.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_confinement_result.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-025",
+      "path": "docs/adr/ADR-025-abc-contract-freeze.md",
+      "title": "ADR-025 \u2014 A/B/C contract freeze",
+      "sha256": "6a4d3e26eb96660e0213ceb0c778238a60765f0c519c805429f2289969072b75",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_specification_abc_v1.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-026",
+      "path": "docs/adr/ADR-026-real-subject-bootstrap.md",
+      "title": "ADR-026 \u2014 real subject bootstrap",
+      "sha256": "f41bb898993238719e19ec0880862533fdee35e5b5932bae1c1d7aa97fae9880",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/e2e/specification/subjects.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_specification_subject_bootstrap.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-027",
+      "path": "docs/adr/ADR-027-specification-lifecycle.md",
+      "title": "ADR-027 \u2014 specification lifecycle",
+      "sha256": "16558fc61c9724703287deb7631fac3c252845953924da5edc10d87cf5bce440",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/integration/test_specification_cli.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_specification_lifecycle.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-028",
+      "path": "docs/adr/ADR-028-closed-dsl-projections.md",
+      "title": "ADR-028 \u2014 closed DSL projections",
+      "sha256": "4b0f6c4295bb54896cfadf6a47634fc18ffc871f2f0068cc5d73146f12a2fc2f",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/unit/test_specification_generation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-029",
+      "path": "docs/adr/ADR-029-trace-integrity.md",
+      "title": "ADR-029 \u2014 trace-reference integrity and independent verifier ports",
+      "sha256": "eae3037db80c437133b9054416128b4731b5b955420a9fe402cba69cf8d34a50",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/integration/test_specification_verification.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_specification_trace.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-030",
+      "path": "docs/adr/ADR-030-approval-and-intersected-grants.md",
+      "title": "ADR-030 \u2014 approval, revocation and intersected child grants",
+      "sha256": "37a7bcc745c52075dfb98193749dc3277f27dff9b94a9b05823688b65bc91b00",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/integration/test_specification_revocation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_specification_approval.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_specification_child_grants.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-031",
+      "path": "docs/adr/ADR-031-kernel-observability-framework.md",
+      "title": "ADR-031 \u2014 kernel observability framework",
+      "sha256": "9d91f084fe8d16319102a053afb1f87638a8c681ab2873b84ae54d826623e4e5",
+      "status_line": "**Status:** accepted",
+      "audit_group": "verdict reading, diagnosis and observability",
+      "scope_limit": "Real signed records, log tests, and journal attacks; F-004/F-005 constrain claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_run_produces_evidence.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_slice017_native_launcher.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice047_confinement_hardening.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-032",
+      "path": "docs/adr/ADR-032-real-e2e-suite-framework.md",
+      "title": "ADR-032 \u2014 real-e2e suite framework: prereqs, goldens, subprocess coverage, one proof entrypoint",
+      "sha256": "655c87a3b7e2bbdc42a102767a17651c310dac59a39230f5d1699950c9a8130c",
+      "status_line": "**Status:** accepted",
+      "audit_group": "real-e2e framework",
+      "scope_limit": "Full suite and skip ledger; naming a test e2e is not evidence that it avoided simulation.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_prereq_gates.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_real_suite_entrypoint.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_trace_invariance.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_trace_schema.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/_prereqs.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/conftest.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/coverage/sitecustomize.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_gating_real_suite.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_journal_verify_real.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_run_produces_evidence.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_slice017_native_launcher.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-033",
+      "path": "docs/adr/ADR-033-kernel-owned-delegated-provider-credential-broker.md",
+      "title": "ADR-033 \u2014 kernel-owned delegated-provider credential broker",
+      "sha256": "11e69bd8005b488ec656dfd31ae8b5b65796719e5b2f77fd06b3cf0f9d199577",
+      "status_line": "**Status:** proposed",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_delegated_provider_protocol.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_delegation_command.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_credential_broker.py",
+          "exists": false
+        },
+        {
+          "path": "tests/unit/test_credential_broker.py",
+          "exists": false
+        },
+        {
+          "path": "tests/unit/test_delegation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-034",
+      "path": "docs/adr/ADR-034-stable-strict-local-io-namespace.md",
+      "title": "ADR-034 \u2014 stable strict-local I/O namespace",
+      "sha256": "656236429ffb544d23529db1afb04a2ac5d2f364d964b291722e9407eada964e",
+      "status_line": "**Status:** proposed",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_strict_local_io_real.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_slice070_strict_local_io_contract.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice070_strict_local_io_security.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-035",
+      "path": "docs/adr/ADR-035-digest-bound-dynamic-runtime-closure.md",
+      "title": "ADR-035 \u2014 digest-bound dynamic runtime closure",
+      "sha256": "5c80aad2721bfd42d0d08496991d67fc8879398970384cd6edef97dad394ae55",
+      "status_line": "**Status:** accepted",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_dynamic_runtime_closure_real.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_slice072_dynamic_runtime_contract.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice072_dynamic_runtime_security.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-036",
+      "path": "docs/adr/ADR-036-provider-neutral-real-world-e2e.md",
+      "title": "ADR-036 \u2014 provider-neutral real-world e2e portability",
+      "sha256": "a247ba162eda96d45ae88ad31fcde63be5ddbec94e49339024be0e60e9531eb1",
+      "status_line": "**Status:** accepted",
+      "audit_group": "delegation and serial publication",
+      "scope_limit": "Real adapter/dispatch/judge/merge tests; no live model or concurrent approved mutation product claimed.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_delegation_real.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_first_delegation.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_specification_batch_qualification.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_suite_freeze_real.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_delegation_command.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_delegation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-037",
+      "path": "docs/adr/ADR-037-kill-safe-command-ownership.md",
+      "title": "ADR-037 \u2014 kill-safe command ownership",
+      "sha256": "f306ef1999347d60966557928d365af3e2922ae60c7547d84d49881dd1e23e1d",
+      "status_line": "**Status:** accepted",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_run_real.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_deps_commands.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice004_hermetic_observation.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-038",
+      "path": "docs/adr/ADR-038-installed-operator-cli.md",
+      "title": "ADR-038 \u2014 installed operator CLI",
+      "sha256": "362972023d23d2cf350f31c88eebfaf9b70d8a4c54bfaf56e447ec2663685487",
+      "status_line": "**Status:** accepted",
+      "audit_group": "installation and packaging",
+      "scope_limit": "Frozen clean installs and runtime checks; source-run anchoring remains a prerequisite for external repositories.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_ci_workflow.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_packaging.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_real_suite_entrypoint.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_trace_schema.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-039",
+      "path": "docs/adr/ADR-039-confinement-coverage-boundary.md",
+      "title": "ADR-039 \u2014 confinement coverage boundary",
+      "sha256": "9841f65533cd64f1179827a16e5af2970420e5c81b86babed83ca92cd042a2b3",
+      "status_line": "**Status:** accepted",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_ci_workflow.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-040",
+      "path": "docs/adr/ADR-040-specification-lifecycle-cli-registration.md",
+      "title": "ADR-040 \u2014 specification lifecycle CLI registration",
+      "sha256": "f0f4d74fc89ccd3ec93e3d2fa295dae849dc7894c051537f9a0733c334459c14",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_trace_schema.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_specification_cli.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-041",
+      "path": "docs/adr/ADR-041-task-authority-contract.md",
+      "title": "ADR-041 \u2014 task authority contract",
+      "sha256": "26f3309140b635a867e89f95d51fb91632717de0c18a56c01128013a8f5bbaa6",
+      "status_line": "**Status:** accepted",
+      "audit_group": "delegation and serial publication",
+      "scope_limit": "Real adapter/dispatch/judge/merge tests; no live model or concurrent approved mutation product claimed.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_task_real.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_task_authority_contract.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_task_merge.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-042",
+      "path": "docs/adr/ADR-042-publication-leaves-a-checked-out-worktree-coherent.md",
+      "title": "ADR-042 \u2014 publication leaves a checked-out worktree coherent",
+      "sha256": "b77dc77b9a2662b2574bdc38614f5274b8e9947b933a6a65b0d6e3c62c62af87",
+      "status_line": "**Status:** accepted",
+      "audit_group": "delegation and serial publication",
+      "scope_limit": "Real adapter/dispatch/judge/merge tests; no live model or concurrent approved mutation product claimed.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_journal.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_task_merge_worktree_coherence.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-043",
+      "path": "docs/adr/ADR-043-retained-redacted-execution-logs.md",
+      "title": "ADR-043 \u2014 retained, redacted execution logs",
+      "sha256": "ed659ff42cc236636c2da8458227b2e25d75d95a700e39188d2918b0ad0f5d33",
+      "status_line": "**Status:** accepted",
+      "audit_group": "verdict reading, diagnosis and observability",
+      "scope_limit": "Real signed records, log tests, and journal attacks; F-004/F-005 constrain claims.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-044",
+      "path": "docs/adr/ADR-044-delegated-host-workflow-operator-surface.md",
+      "title": "ADR-044 \u2014 delegated host workflow operator surface",
+      "sha256": "d1d298fb36b4c21ac0ab9e35f6030c0f52fab0069aabd3b17542803ebe2ff9c4",
+      "status_line": "**Status:** accepted",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_host_operator_surface.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_real_suite_entrypoint.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-045",
+      "path": "docs/adr/ADR-045-approval-signing-and-batch-verification-cli.md",
+      "title": "ADR-045 \u2014 approval signing and batch verification CLI",
+      "sha256": "05a7a072c1cf3339f894aaeac1a518ddc8b4aa2db29038e6076b111f6ff34856",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_trace_schema.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_specification_batch_qualification.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_batch_verify_contract.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_specification_cli.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-046",
+      "path": "docs/adr/ADR-046-cgroup-probe-serialization.md",
+      "title": "ADR-046 \u2014 serializing the qualification cgroup-probe topology under the host-probe lock",
+      "sha256": "aa1e812576011fba585e19d1a8fd49d3bc7875675983d22616b16ff94714b042",
+      "status_line": "**Status:** accepted",
+      "audit_group": "confinement and lifecycle",
+      "scope_limit": "Read host-suite results and named skips; no unexecuted host branch is proven by a green skip.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_docs_discipline.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_delegated_probe_serialization.py",
+          "exists": true
+        },
+        {
+          "path": "tests/e2e/test_specification_batch_qualification.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-047",
+      "path": "docs/adr/ADR-047-authenticated-principals-at-the-trust-root.md",
+      "title": "ADR-047 \u2014 authenticated principals at the trust root",
+      "sha256": "140acdb85f2c252cecfcba652242e1d22efed662fc2d10905a1c00b81144fb27",
+      "status_line": "**Status:** accepted",
+      "audit_group": "specification and approval",
+      "scope_limit": "Fixture contracts plus real CLI lifecycle/qualification tests; principal enforcement gap F-011; full approval-driven mutation workflow remains UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_principal_catalog.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice080_principal_trust_root.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-048",
+      "path": "docs/adr/ADR-048-evidence-envelope-v1.md",
+      "title": "ADR-048 \u2014 Evidence Envelope v1: evidence binds the policy it was produced under",
+      "sha256": "c6b5f1765c76d8e8e61acec0ccf9920212cfd30da72becaaf3622cc898b73222",
+      "status_line": "**Status:** accepted",
+      "audit_group": "evidence policy and GitHub acceptance",
+      "scope_limit": "Cross-gate control measured before/after envelope change; receiver TCP/restart gaps F-007/008/009; live GitHub App journey UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_kernel_unchanged.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_slice081_evidence_envelope.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-049",
+      "path": "docs/adr/ADR-049-pr-head-binding-v1.md",
+      "title": "ADR-049 \u2014 PR head binding is a projection, not a new signed surface",
+      "sha256": "ec1b0847f39ca352b7d2ab1069a771395e1b2c8b95ed2daf6640d5ee1cd6e424",
+      "status_line": "**Status:** accepted",
+      "audit_group": "evidence policy and GitHub acceptance",
+      "scope_limit": "Cross-gate control measured before/after envelope change; receiver TCP/restart gaps F-007/008/009; live GitHub App journey UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_acceptance_mapping.py",
+          "exists": true
+        },
+        {
+          "path": "tests/contract/test_kernel_unchanged.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_github_bind_command.py",
+          "exists": true
+        },
+        {
+          "path": "tests/unit/test_pr_head_binding.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-050",
+      "path": "docs/adr/ADR-050-github-check-publisher-v1.md",
+      "title": "ADR-050 \u2014 The outward record: a GitHub check published by the Ranex App",
+      "sha256": "7325a6694916fa058ecd66c783913355dac90c59046c75f7c9a80982bf0a1fe8",
+      "status_line": "**Status:** accepted",
+      "audit_group": "evidence policy and GitHub acceptance",
+      "scope_limit": "Cross-gate control measured before/after envelope change; receiver TCP/restart gaps F-007/008/009; live GitHub App journey UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_check_payload.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_github_client.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_github_publisher_fail_closed.py",
+          "exists": true
+        }
+      ]
+    },
+    {
+      "id": "ADR-051",
+      "path": "docs/adr/ADR-051-github-webhook-receiver-v1.md",
+      "title": "ADR-051 \u2014 The first listener: a bounded webhook receiver",
+      "sha256": "f300daed7341c275e79e32fed2e65e64e34e658e75e6461cde47d58b4ede7c66",
+      "status_line": "**Status:** accepted",
+      "audit_group": "evidence policy and GitHub acceptance",
+      "scope_limit": "Cross-gate control measured before/after envelope change; receiver TCP/restart gaps F-007/008/009; live GitHub App journey UNVERIFIED.",
+      "explicit_test_references": [
+        {
+          "path": "tests/contract/test_readme_github_section.py",
+          "exists": true
+        },
+        {
+          "path": "tests/integration/test_github_webhook.py",
+          "exists": true
+        },
+        {
+          "path": "tests/security/test_github_receiver_refusals.py",
+          "exists": true
+        }
+      ]
+    }
+  ],
+  "prior_art": [
+    {
+      "path": "docs/adr/prior-art/ADR-001/NOTICE.md",
+      "sha256": "f2dcbfadf710c8ba96cc8c3dd31856ee4d1b91830e03b4d5e720a723eae08ced"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-001/dsse-background.md",
+      "sha256": "c594f53832cad9475bf2c91e4e956f33acaacb16c46cc2283d5f308f710b3bd2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-001/in-toto-golang-verifylib.go",
+      "sha256": "f85092a1ed63d3f0648760638215c1a1f2d5ba1338be94a464b47f4ae17daed6"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-001/in-toto-verifylib.py",
+      "sha256": "8ea5153f06a54d34b4362d6b87f7127f3758f2bd932f6b09e1a7ba7a7b722f69"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-002/NOTICE.md",
+      "sha256": "4c4e73dddad1614be169925f4a42e0ba9537c079068da68af7f5e49298fcd5bb"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-002/go-tuf-trustedmetadata.go",
+      "sha256": "2adcfa54cb1a578930393849b478bbb4a158e2f4eefe93bf8e0582edff5343b4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-002/python-tuf-trusted-metadata-set.py",
+      "sha256": "cf9dca8e8fbaacdc60cf13a745513d3f7eb18193edb5a1ea636021e5c2df08c0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-003/NOTICE.md",
+      "sha256": "a08d14fdd87386eeb1b848f81e147818f421eb60e6fc258cf4b7be86917bcb0b"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-003/go-modfetch-fetch.go",
+      "sha256": "8a7c984953dc52ad19dfc5c0c9838903d0a767186b25f92360a615ef391c4b04"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-003/pip-hashes.py",
+      "sha256": "5c618b2f4006f3e4615a7cb3f3bc45e8c159fbe04a69d1d4df90f8ede02908a2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-004/NOTICE.md",
+      "sha256": "2acd41d46e3e1360008eb4ab5a27aedecabe3a1afa27da81e70e94f86e3e76e5"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-004/openssh-session.c",
+      "sha256": "05113a9413336600d055f19190c1a057bc164f57e215df240016478db1c4944e"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-004/sudo-env.c",
+      "sha256": "64d72a552affac54430db8aa25d4aa59f05c429a84e4ecce9d7e90d940f1d5b5"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-005/NOTICE.md",
+      "sha256": "1425dac9de877e0879af02aaf664f1795fcee4954bcbbc45a1f8acc4f8bfa3fd"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-005/bazel-SymlinkedSandboxedSpawn.java",
+      "sha256": "672402b0c9884d62e3dab5ec3049d739f0f7423a1711ac9ad2382eadfa01e252"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-005/containerd-content-writer.go",
+      "sha256": "38c4e3ccd8064ad46d865fb0e5266c561bd919ca2ed6ed0d22997f4663dd44da"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/LICENSE-CONTAINERD-APACHE-2.0.txt",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/LICENSE-GO-LANDLOCK-MIT.txt",
+      "sha256": "611f2b892bfaa050cd3ceee982c32687b194ef8ce32295a22943da780d329650"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/LICENSE-LANDRUN-MIT.txt",
+      "sha256": "f613c30920743111429f7c1cb801f49ccaafe8ae3319b3b0a5f8aca94e5fc082"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/LICENSE-LINUX-BSD-3-Clause.txt",
+      "sha256": "7a83b1aeb460458db9a4bd521d7f237c45b1650f6e60ea5ffc71e49472454de3"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/LICENSE-PY-LANDLOCK-MIT.txt",
+      "sha256": "1126322e2cc8d165adc4c792eeb195717de2bcc7b39be1ce77959d78e87ef685"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/NOTICE.md",
+      "sha256": "8d47e78f06ce9355f09c77c167b7ac789a88eb127d8dce7cd593b4cc38e0ca8e"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/containerd-cgroup2-manager-test.go",
+      "sha256": "fe20e64f855860776f5bd270638a02e041c5fc727152491eaf9ebb333cabe6bb"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/containerd-cgroup2-manager.go",
+      "sha256": "ffeefc6c101ac78a4daf81a5cd8aada1af7a72ea5c75b31a7056e72b204ed058"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/go-landlock-restrict.go",
+      "sha256": "b50df91ec7eef592215081fd90bd7afcb0277cfbd1b6e0fafb3a4b878ae2aab2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/landrun-sandbox.go",
+      "sha256": "a6ee5899479d44fc3fdd0011dfb7586716df00235cddb59997c115f5a4f430cc"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/linux-landlock-sandboxer.c",
+      "sha256": "c55b9c744657b5e062e2d94795ccef6d75852850ae399676707fc1eec0b390cd"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-006/py-landlock-landlock.py",
+      "sha256": "a784bc785c2b7fc6f19d3c9b684976fed063d06570e0546a7bb701aaea2bf508"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-007/NOTICE.md",
+      "sha256": "319c539c638e427fdf8bc5fa659e858890485d62db8e2d266f164c3b06630fea"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-007/bazel-DownloadCache.java",
+      "sha256": "395d0c454985743cbda1943f66495e946634e23be23d86af94a368b5f547deb3"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-007/uv-configuration-hash.rs",
+      "sha256": "55d4e24243314b75f363051a74f33fd2af00fdea09a809c806b4a2bdaa633c30"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-008/NOTICE.md",
+      "sha256": "eddeb2df2b42b77a356404333da22717cdc13a95800b0a78bdead722a1b94595"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-008/opencode-plugin-hooks.ts",
+      "sha256": "7ce98ddab759903e6618b40a1c8beb1b621f0691f8f508ad2c07dba2041744e1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-008/pre-commit-run.py",
+      "sha256": "65a67f03048e3dfbe864d30acd2e0c2ebfec07cd80b442dbf399a6b1247b5693"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-009/NOTICE.md",
+      "sha256": "18503db0a3dbd071cc14fdd119d8dd00b0c052545118c3b52647286e14ecd806"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-009/actions-checkout-git-directory-helper.ts",
+      "sha256": "59f1605f2b283534c15ef9839d390474e986c9a51b514a5c8753e83f3f87f8df"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-009/nixpkgs-nix-prefetch-git.sh",
+      "sha256": "36305ace5e322f8eb4f705f5cb9128c2af37272f82f7c20253ec8776c34a2374"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/NOTICE.md",
+      "sha256": "d430382a00a9f38d9ef746359d99febf052ddb31c0b5e1764cf509deb7873c2c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/bors-ng-batcher.ex",
+      "sha256": "7161f1d70f2199db5026ce7d1e6d6ad8dc1f0be479337ff96dca9281045dd7e2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/in-toto-sign.py",
+      "sha256": "a69c716c795a466fe731c7888848510a7e3305f96647fc999f2f2bac008e6a4c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/opencode-run-headless.ts",
+      "sha256": "11ebfd7a301282459ab1ffd6e3eae28e47344c9782273c7966efa4a9850b3a83"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/openhands-headless-main.py",
+      "sha256": "afeeb2305d52b290ac1f2037602459c387a05ea5b6531660dadc04de29cb5e77"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/slsa-builder-go-two-job-split.yml",
+      "sha256": "3857d7fd671502fd6f6aa736d711fd0bd6e886f186eac152eb3af1d63ea9aded"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/swe-agent-run-single.py",
+      "sha256": "7db94488fd8c4cf0c0d1e959247ba9da0969c6c488c6bb9515a5cd06e1769137"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/tekton-chains-taskrun-observe-then-sign.go",
+      "sha256": "180554bee69fb02ee2c23c4eef8ff36cd77d9dda3bcaaaa6b9b407806f72702c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/zuul-dependent-pipeline-manager.py",
+      "sha256": "c65bb26a74123dd532caeb30e2d5b385950412ad62850372716125dbb8f44943"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/NOTICE.md",
+      "sha256": "f0149d3f75cc58db40a92a4d132fe839032c4c8b13a3c142e259c1591cbf80f5"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/SkippedThreshold.java",
+      "sha256": "44890b09ec6d3c1200a62f2fecd9ceea45ca1eae4be6ff5c8925054e4af1b3a1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/cpython_results.py",
+      "sha256": "adaccc13e519552652b3d6af3256b373ec8d74e95d83da61ef920c6dd410a376"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/mtest.py",
+      "sha256": "d00d5e0b9b32040155c8ac552ea8d0f38763e303f11b63a220d92831a62eb17c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/pytest_error_for_skips.py",
+      "sha256": "15fb66513d3946cd02652fabe2d0a9a945e5f525bcf79c55c9decfcbd51f2a9c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/NOTICE.md",
+      "sha256": "9f20243d119695bf3a79c771e29a692b792d464774120c35c932f361df73131b"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/gerrit-merge-op.java",
+      "sha256": "2a8b6333dc72724fe69284845e0441c14222aa2a7a94b5a0202dc55377550763"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/git-merge-tree.c",
+      "sha256": "2ceeabe2d7898ce3871dd295d6fdf94e4d944ac33c2d449bacad600528127ba9"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/git-refs-files-backend.c",
+      "sha256": "902742eacf1b7fa8146aee34ebc1c2163a4d4c1c8da3dd2e4d756113651d7353"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/in-toto-verifylib.py",
+      "sha256": "2ea9a84c1f2cd44cfd16106f8c9139db216d035e7852ba2f92cac018689cd585"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/prow-tide.go",
+      "sha256": "313ab591dc3e245a10d4a38eccad66a31d53195640cfcbc1404f12523162db9f"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/zuul-merger.py",
+      "sha256": "3581c51eecbbf0c6d1223be0bf7dfb399beb0b67d875695583dae5a920dbf42e"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-013/NOTICE.md",
+      "sha256": "30cbc63bd7f1e511e71c0754816e3307728ec35303ba68fd64e61fa1ce77baaf"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-013/bubblewrap.c",
+      "sha256": "6a89bc9b7a794d19e2bdb1e139ab9d5bba84e807b330336f363f88f130cfeab6"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-013/cosign-remote.go",
+      "sha256": "33c67bb532a7ea956cb6ac0a40cf2adc777a65e3dc3f4ca78947527a7b6fcef8"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-013/in-toto-runlib.py",
+      "sha256": "56e29d7b09df33bbc756fa3f08d8e410d90db4dbadfc3cc1fd5658fe16959e10"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-014/NOTICE.md",
+      "sha256": "ab81c99e24b8a92ce42b8f799d25ba6d34ccd3bb22730093e7e073fa4c326c23"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-014/aider-repo.py",
+      "sha256": "a49343d63d3faa684003f9e59306215e6f3d77b7b944a71b88b132e0c78c5df0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-014/codex-agent-graph-store-local.rs",
+      "sha256": "61f8f2b4f142f19e9e5fc4854fe6c2ada51019c9c27c9620b5916495fd59cd1f"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-014/dbos-system-database.ts",
+      "sha256": "0405251604c39c3a43e33788e8dca0fdb9fa407f79e8dc4f25ec00ce01ff8e16"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-015/NOTICE.md",
+      "sha256": "25ddac2c21d6565d775dfe37f941a278bf00ab4721f089db7f915e07e01d77c5"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-015/bullmq-lock-manager.ts",
+      "sha256": "4fefb841027894b9dbabab8e580229a2c6802bb3ffc60dd7b4393cecddcd62f0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-015/langgraph-checkpoint-sqlite.ts",
+      "sha256": "bf1c17a98ae55c4d0d513a660311602c9908537f281ae1f7bcc9bd9e9db0b58d"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/NOTICE.md",
+      "sha256": "3311b8f0017eeb8ee82a1d6b84d79dcb0af51ad55008094ccdf31e463d4765ec"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/argo-analysis-types.go",
+      "sha256": "c785e8921103049c150022e47376be80f98d79421f873ad6fa93acaba14672fe"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/in-toto-provenance.go",
+      "sha256": "911f9ef58f1177e7623fa35d6f2cc6dac146dcccf9d1ad85706adf93ca63edc1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/optuna-trial-state.py",
+      "sha256": "2041915f4fc1796a74d1c79c37b3418aa753baa7a59ccb4ae6dfb2ef22081cf1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/scipy-binomtest.py",
+      "sha256": "696ea9faf464bf7a5207cff49d37d3de4340855f08a78e00dfd1043f297d5a57"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/statsmodels-contingency-tables.py",
+      "sha256": "af2e5455df459abc9ced79186e16fecf38344cc630aeec1ade9e6e65b488090f"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/tuf-trusted-metadata-set.py",
+      "sha256": "cf9dca8e8fbaacdc60cf13a745513d3f7eb18193edb5a1ea636021e5c2df08c0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-017/NOTICE.md",
+      "sha256": "39590ab48a9020a7e9625051d66dfbba26bda953cd41bcc25fb350a7684af531"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-017/arxic-evidence-ref.ts",
+      "sha256": "610d946324694d22b3da21501a194a9882035d0117a4406c28e9a4d42e28c6c8"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-017/openspec-artifact-state.ts",
+      "sha256": "f59f748b94cd94ca2fe022ec5aa66b3251dd1b2c00bddb9a17cbd9273a04d0f2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-017/spec-kit-workflow.yml",
+      "sha256": "b9a2a3c3d1e5f022d0369be7c83802a656c64e2d95306a7870a1f59b90c0e307"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-017/xstate-adjacency.ts",
+      "sha256": "f8363be151b745f9a3bcae866f4359a45a2f4e935fe65a31486a4892b5f01d19"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/LICENSE-K9S-APACHE-2.0.txt",
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/LICENSE-TRIVY-APACHE-2.0.txt",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/NOTICE.md",
+      "sha256": "e5c91ba9a015207d9fa18aef6d165943804b8e467adb2b624ed3024ed34128bf"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/k9s-view-table.go",
+      "sha256": "68caddc3529a218dc36ae8d33610cfddfeb10fad63d333d09171dffb0d7495f3"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/lazygit-layout.go",
+      "sha256": "087161c5f945c7eba6f3b0ca1732ed6427f0945927b25f1be09c8ece5b052edb"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/lipgloss-color.go",
+      "sha256": "9e07bbfffa95275c1e301d895f4006e10446365eae1a8e3a8e54de46cb0fd649"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/textual-design.py",
+      "sha256": "ecbbe128cec76d9fa2a71a931551ce936cc73c281eb854aafbdb8cc52d1dcece"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-018/trivy-report-table.go",
+      "sha256": "36baff2dfc3cc582759bf50a02ae223b4b6b81fbd763c1bfeda109bb59c52449"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/LICENSE-APACHE-2.0.txt",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/NOTICE.md",
+      "sha256": "dd9df7fbe70d318e2c3b02fb39558820f04f7189b3c3e4c2e39a982de06a86e0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/cosign-exit-code-lookup.go",
+      "sha256": "a0d0051028b22261592bd562e7c7dedad5d53c024d280bfa2853f02fc48663d6"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/kubelet-filestore.go",
+      "sha256": "88abbfc058e170c1067ab6a58f1cb195c12873334c1fd20df741f29d3e249fe1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/securesystemslib-dsse.py",
+      "sha256": "167c72e8fd9fe6cf62ad877e58447b609f248cecd98f5e54ee32387dae7db911"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/tuf-trusted-metadata-set.py",
+      "sha256": "cf9dca8e8fbaacdc60cf13a745513d3f7eb18193edb5a1ea636021e5c2df08c0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/LICENSE-APACHE-2.0.txt",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/NOTICE.md",
+      "sha256": "ab4b91727597b542b772c37c87cb800ac2fcc8efb6d1a94f1ca2b6a7a92ab2ef"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/k8s-apimachinery-errors.go",
+      "sha256": "32d6b0c08720c34b6f9d471b108994bb7b4cfe677d96ad4c56916fade2fb0a01"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/knative-condition-set.go",
+      "sha256": "668c1ea63597ee7cbfdf363f4d8ed2353b6c44a586e07ed1850d7eb8f9c6e791"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/kyverno-cli-result.go",
+      "sha256": "c5a33d088448eb9d2a008c988d3d06734ad01b88bef8caedf76a3567f1641720"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/kyverno-rulestatus.go",
+      "sha256": "b00b6d20476cec6555b8db7f07c208c9234e5741858e1a6671fd80557a5091bf"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-021/LICENSE-NFD-APACHE-2.0.txt",
+      "sha256": "a6cba85bc92e0cff7a450b1d873c0eaa2e9fc96bf472df0247a26bec77bf3ff9"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-021/LICENSE-SLSA-VERIFIER-APACHE-2.0.txt",
+      "sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-021/NOTICE.md",
+      "sha256": "de48eb69e8c690dc1b86a4afdde76dae8b625054c9dd74d20e7cf0b150820ba1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-021/nfd-kernel-source.go",
+      "sha256": "dffabde0897a5570159693cb28d98fefe74fae8ca103447e262d175864827884"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-021/slsa-verifier-verifier.go",
+      "sha256": "8186f26105c5a4b96dc6ae76ed8263defb4deb2b48a125904bcd93667c9fd9b4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-022/NOTICE.md",
+      "sha256": "b6f12a378c79316d18e685ea60ba52a13fe01f1a69a7974e95fdd35067adcf88"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-022/cliui-table.ts",
+      "sha256": "99d0152a5b5f77697ff62607ba188cdf094e256e56875983d52f2893ee5737b0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-022/glamour-codeblock.go",
+      "sha256": "db10454779d0126d121fe3029565808dfe08aaeff3fa1ccfe608a44f254f965b"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-023/NOTICE.md",
+      "sha256": "a7ad72c6499fc570af88937d8310ed874290d11145cad5c37e698006835b39ac"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-023/age-format.go",
+      "sha256": "8027c2e409bb010af70e36e1bf310e17c89cbd972444dbea7b2684168405f281"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-023/bubblewrap.c",
+      "sha256": "7e972f6193fe48ff046033be85c5d8988102978ac6176ba19ff9e02e0594f741"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-023/sudo-exec_monitor.c",
+      "sha256": "9f814dd167569bfa9af1d580cedb5f1a9e3126fb332bb9b026ea28191c964ed3"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-024/NOTICE.md",
+      "sha256": "d910d8a99805264230c59e87be6e8754811e9ccedd2c5064ae4932af966e2ca4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-024/go-exec.go",
+      "sha256": "8fdc3c8ccf8376d9bea6b997fb74da3b4afad89358358719d69d453ca806e65c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-024/sudo-env.c",
+      "sha256": "64d72a552affac54430db8aa25d4aa59f05c429a84e4ecce9d7e90d940f1d5b5"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-025/NOTICE.md",
+      "sha256": "758a001a58c5088111d1dd68dbb92cae8e84499e58d1f553022b6d3f6eba6558"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-025/dsse-signing_spec.py",
+      "sha256": "80d89fc66f8a9267ea30a7fedec4c277d9bf7570066c62e716af5a6ce09bec3c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-025/jcs-Canonicalize.py",
+      "sha256": "9f367255e079f79f2aaf3ade6c90c57237f03d45a171579a1b644c1dda32b9ea"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-026/NOTICE.md",
+      "sha256": "836d21c94cae62df5fbb9b6218c9f16e187316815c740a1ab5e71916c0cb66c1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-026/actions-checkout-git-auth-helper.ts",
+      "sha256": "5cd92240cd3e51b4e2be5b14d1df84ac314c427c5d0980b13b45d622998db430"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-026/gh-gitcredential-helper.go",
+      "sha256": "263f2c1f71442c6bde2fe60d2fcaeca58035981c68983db2800f7af601765d0f"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-027/NOTICE.md",
+      "sha256": "01dba1fbdd748b8016d43bf0ed373f1c6ceb058149c149ef2efe13c4ba8487cd"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-027/temporal-exceptions.py",
+      "sha256": "411b0d5932c25746b0f659a7e3f97687902641212dffa452295da541f220f682"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-027/xstate-adjacency.ts",
+      "sha256": "f8363be151b745f9a3bcae866f4359a45a2f4e935fe65a31486a4892b5f01d19"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-028/NOTICE.md",
+      "sha256": "883803a0933aa4a974cc8a98e1d27b0cc2cb90bf4564379c66dc963c9efd3d98"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-028/gherkin-token-matcher.ts",
+      "sha256": "fd445c65e8f167c2aff297d14fb709acbae746874d8ded885ff314c45dd4162d"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-028/xstate-adjacency.ts",
+      "sha256": "578b27b706015ac4814bbf1274b887ca2dae01a246c5067d0c66f52b74160b71"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-029/NOTICE.md",
+      "sha256": "d430aed53cc09a5d0c5c5e155a2a6ca1272eafd95509b113bc61b3dd43b84da5"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-029/coverage-report_core.py",
+      "sha256": "c543ddd2086245b0e0f2a309986329abc6c0a42a654b0efe2ef1a60430b616c2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-029/in-toto-rulelib.py",
+      "sha256": "cb7c6660442b792790b60ce477f976759c2667beab51ba1a73ba43c5b5fe49dc"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-030/NOTICE.md",
+      "sha256": "3bcacb7ebae56cd50ae236724f0e559e9c19cbaea27bdb0c0ead13838333d626"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-030/macaroon.go",
+      "sha256": "916fa513e48ce181b4ae58bf849f82fc4900939514614bdd0acf7f29b04974d6"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-030/spire-catalog.go",
+      "sha256": "54c8868e6591e71e5278a8f28aaa8826664ed0249600d3963969d54d2103bffe"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/NOTICE.md",
+      "sha256": "f7d127b23e07be54644c81ea3fbd46b214b22394fc37c85e75a0efd1a875ed12"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/git-tr2_dst.c",
+      "sha256": "379a6c554bf7ee86c70b445c57ee3aafcad66a81d7c0b86051beb1a3ba800b9c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/git-tr2_sid.c",
+      "sha256": "b1f1179f4464a6b22e81aa5e585c7c293681329acd63ee98148134024b36ddf5"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/git-tr2_tgt_event.c",
+      "sha256": "038ac90919962b862170ba8eab9441e6928084f6e269a1aa62056fdb0369df73"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/pino-redaction.js",
+      "sha256": "35126406320c98554ce69c350858a01a061c9a37db363cd7b57156bbf7305821"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/structlog-native.py",
+      "sha256": "a1b4d02af0951373b75e8d018e28245765907e586d60d79b4fc09f889d0df6e4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/NOTICE.md",
+      "sha256": "36e9d70ae402d751217d4dff06311462c04e8316d5bc8f73922a1b4500390a30"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/coveragepy-control.py",
+      "sha256": "6c8c80e63457bc322210d10a1eb644418c3917213dd47dfd7cd36652b1cb316c"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/curl-sws.c",
+      "sha256": "bc2f6507ddb80f08fa118031958c99d7565baa0f5155910681889ba1a08ede17"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/git-test-lib-functions.sh",
+      "sha256": "851876a0a4c3ca91aa45a2bfd7fe2287938d1d8ba1c801a3c06781e06cba7b56"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/git-test-lib.sh",
+      "sha256": "b9ee679a928de07b32679d637ca42151fecb90bab3daece8901c55e07e056efd"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/moby-requirement.go",
+      "sha256": "8e600aadb53ce0d2645a3ddc1fc170bbfc327c9faa1db40e9ab9a3742446f005"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/postgres-pg_regress.c",
+      "sha256": "9e997ed29fddb5a7f74c9a6c606d32fad8516573ed743c1bb4219d31b9664266"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-033/NOTICE.md",
+      "sha256": "ceb8cd1c2c4305ecbe9621258dba0cb454c67077d4c575d7d1ee0b4666fb4c2e"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-033/envoy-ext-authz.h",
+      "sha256": "b8de1f415cb3841aa2f637f66498d960d69ce05377db22bf02837d3b51819a2a"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-033/kubernetes-plugin-config.go",
+      "sha256": "3f276bd43d90c287e0fa988e6e33ebae8cf0a4b85eda3f31ffdfc42dfaa516d3"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-034/NOTICE.md",
+      "sha256": "e2e516104d136a8d2e240d30b4a8de28fdc69f8e79e5e1451945e62624b956de"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-034/bubblewrap.c",
+      "sha256": "f2d54347aa4949ec3a399fd362a6f271df70a6622c8338c9404601e694d518a9"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-034/util-linux-hook_mount.c",
+      "sha256": "fff2a46f22c7470b32c045fb2de8077e8152170b7c299fa49f15d75ab7297586"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-035/NOTICE.md",
+      "sha256": "216216a23d6ba7c8a216f587e3c7ddd8a31b1d18ce06a4d667add2d19e64b89b"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-035/glibc-dl-load.c",
+      "sha256": "26345f234ef918c866e40bb86524bdfd4c3beac487af81b3f51668379e671ae0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-035/nixpkgs-auto-patchelf.sh",
+      "sha256": "f0dc20078e0ca15fa9b059763c719c773c9eace5731b783fffc213541c32a886"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-035/patchelf.cc",
+      "sha256": "d0215767b60b8290a2b271a2313dd919b011ac1c985950c5310116a03242065e"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-035/pyelftools-elffile.py",
+      "sha256": "cf4a36400f2249f9ae5bf820a8cda318ae26b1ba2e58ed62c99105b8400ac46a"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-036/NOTICE.md",
+      "sha256": "e652afbeab84878b223cd59c848f9c805b3c790c7d1067a59f669981a3da1d22"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-036/pre-commit-system.py",
+      "sha256": "70c791fb25d113e76c3dac9b2185a30f5fd90516bb7937725099ecc862ffb6ae"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-036/swebench-grading.py",
+      "sha256": "a095273010175001a6779e365b3b77abb8657c7ac2e4f80b4bc360faa6f09483"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-037/NOTICE.md",
+      "sha256": "29f4939620f647ece40de5285f1a93cfcdc272cfa917d0278f702a42c070c8e1"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-037/bazel-process-wrapper-legacy.cc",
+      "sha256": "393d9535b7a7bafa2d0b3daf40be064db797d5a8a2e7e9256eebb7a21d246ce3"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-037/bubblewrap.c",
+      "sha256": "6a89bc9b7a794d19e2bdb1e139ab9d5bba84e807b330336f363f88f130cfeab6"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-037/sudo-exec_monitor.c",
+      "sha256": "9f814dd167569bfa9af1d580cedb5f1a9e3126fb332bb9b026ea28191c964ed3"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-038/NOTICE.md",
+      "sha256": "657f0533af3c955496cf49b873b105a5f69bbee2a28f68e7d90b82abf6504686"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-038/hatch-wheel-builder.md",
+      "sha256": "e3eaa4d6ffc619f2cd3f5db28a6aa83fe81308c3a79a28e2b22428b7488fecd8"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-038/uv-projects-config.md",
+      "sha256": "8f85ce6656423fd47b925f7a6197a364f1310dccc1d5d362edf0f4d14d2a42cb"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-039/NOTICE.md",
+      "sha256": "ba0561be91be2541ad1219077b03875c60dd1871f732064ea7a66c31620e65f7"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-039/coverage-config-exclusions.md",
+      "sha256": "707028c8d05cecf705ac8d8a38cdff598d91a5d0890991db3b77a71f15279c92"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-039/diff-cover-readme.md",
+      "sha256": "265eb8efcc5c2de4170da2e4e3d7241eca0de52183c9d0ac2a159eeae60dbb92"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-040/NOTICE.md",
+      "sha256": "f9d32349e5df4b67fd26b5b5bb353204917718e7bcb197282e00fbab2f162692"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-040/pip-25.2-cli-main.py",
+      "sha256": "8fa23ba458517ce9914efc55f90e93921b3b273614db0c6f315adaeaa57964be"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-040/pip-25.2-pyproject.toml",
+      "sha256": "512fbb6be617821d19e2ec30bc2f3f312d105e56028e8d5e6ef69b5aa261ddf7"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-041/NOTICE.md",
+      "sha256": "623301d249fa39a3544a2b613071aded49e2b6a5fa6443dae3a793103bf64dd2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-041/cpython-3.14.0-argparse-default.rst",
+      "sha256": "eacb4fe96394a59e737d415c39f136949639a231fba9307e0b604aa9b7b95a5b"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-041/git-2.43.0-git-worktree.txt",
+      "sha256": "09f684c12604b692cc41027a2721033e0c2eb3c8f0d17f8a80fbee69bc508588"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-042/NOTICE.md",
+      "sha256": "fb6c047668546d700aa2848d25a66c783df77175ac6eb923bf9b0450ef466600"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-042/git-2.43.0-git-merge.txt",
+      "sha256": "c615092ac211c18b14c2a49334567f0fcca95c25c1bf1f9cac5e9f5345e62111"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-042/git-2.43.0-git-status.txt",
+      "sha256": "1da52d3cd76f2529bdb34a2dcdeb6a9abf80fd0ff1f46ce905de830fcbc06df9"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-043/NOTICE.md",
+      "sha256": "1661963a93d55bdaec7ca073a410f4607a39aaa35d11b9419f22274a05fcb8b2"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-043/cpython-3.14.0-hashlib.py",
+      "sha256": "88fa624821fbdee7eb2ef87c2437b207afe328cf117c7463367e2db5eb1af492"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-043/cpython-3.14.0-subprocess.py",
+      "sha256": "45652e748cd1ca11e22b378ba3f58aa228039dd729a935f365e2d7231807c6f4"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-044/NOTICE.md",
+      "sha256": "ffdd77bc182410536dc9b58672636eb8b87ebac82eea9e965f505d500732e058"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-044/linux-v6.12-cgroup-v2-delegation-excerpt.rst",
+      "sha256": "b7ef2b842811055775492b7077d50efa0d7a03669496e564e92bf23491c68493"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-044/systemd-v257-systemd-run.xml",
+      "sha256": "b7f242911bdfaea46aecc8b8a39f83f24ac296c9f91eb91e4903828eb3885eba"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-045/NOTICE.md",
+      "sha256": "f72338fc6e861a415ab6d6ff62d0103ba48f0499cb9ba9ab5c248cb48d4188f0"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-045/in-toto-v2.3.0-in_toto_run.py",
+      "sha256": "796bcf12bb604ea7bc146cc9b34cb915645a84ba6ad5fb277260e16b9a4bdd53"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-045/in-toto-v2.3.0-in_toto_verify.py",
+      "sha256": "4e92c8bde20b0434ce25f23337a4e291cc578a31127bba30526505471ecc2332"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-046/NOTICE.md",
+      "sha256": "28a215043cf0049a4de251c552615ae2566bed57a964accb65e6be2f2f829037"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-046/dpkg-1.23.7-lib-dpkg-dbmodify.c",
+      "sha256": "55a2d0a111bec1722e4cf6a3c7aee922a7171f98251a7bf1be2ac71d550d6b09"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-046/opencontainers-cgroups-v0.1.0-fs2-create.go",
+      "sha256": "68ffaa3956f72b36b6e2518447dcf7df29a378f410cf10fb10652f9385fc8ee9"
+    }
+  ]
+}

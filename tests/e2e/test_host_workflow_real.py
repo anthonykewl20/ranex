@@ -47,10 +47,13 @@ def _module(
     key: Path | None = None,
     env: dict[str, str] | None = None,
 ) -> subprocess.CompletedProcess[str]:
+    # Source-run governance follows the CLI's checkout (ADR-009), so cwd
+    # alone cannot select the provisioned clone's launcher and trust roots.
+    environment = {**_environment(key), "PYTHONPATH": str(repository / "src")} if env is None else env
     return subprocess.run(
         [sys.executable, "-m", module, *arguments],
         cwd=repository,
-        env=_environment(key) if env is None else env,
+        env=environment,
         capture_output=True,
         text=True,
         check=False,
@@ -463,7 +466,7 @@ def test_named_host_drift_refuses_from_a_different_delegated_scope(
             "--scope",
             "--quiet",
             "--property=Delegate=yes",
-            f"--setenv=PYTHONPATH={ROOT / 'src'}",
+            f"--setenv=PYTHONPATH={drift_repository.path / 'src'}",
             f"--setenv=RANEX_SIGNING_KEY={drift_repository.key}",
             f"--setenv=PATH={os.environ['PATH']}",
             f"--setenv=HOME={os.environ['HOME']}",

@@ -1,0 +1,891 @@
+warning: `VIRTUAL_ENV=/home/soultransit/devtony/ranex/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+Using CPython 3.11.15
+Creating virtual environment at: .venv
+   Building ranex @ file:///tmp/ranex-python-matrix-ga2py42f/repo
+Downloading libcst (2.2MiB)
+ Downloaded libcst
+      Built ranex @ file:///tmp/ranex-python-matrix-ga2py42f/repo
+Prepared 6 packages in 321ms
+Installed 32 packages in 12ms
+ + cffi==2.1.1
+ + chardet==7.4.3
+ + click==8.4.2
+ + coverage==7.15.3
+ + cryptography==50.0.0
+ + diff-cover==9.7.2
+ + hatchling==1.31.0
+ + iniconfig==2.3.0
+ + jinja2==3.1.6
+ + libcst==1.9.0
+ + linkify-it-py==2.1.0
+ + markdown-it-py==4.2.0
+ + markupsafe==3.0.3
+ + mdit-py-plugins==0.6.1
+ + mdurl==0.1.2
+ + mutmut==3.5.0
+ + packaging==26.2
+ + pathspec==1.1.1
+ + platformdirs==4.11.0
+ + pluggy==1.6.0
+ + pycparser==3.0
+ + pyelftools==0.32
+ + pygments==2.20.0
+ + pytest==9.1.1
+ + pyyaml==6.0.3
+ + ranex==0.1.0 (from file:///tmp/ranex-python-matrix-ga2py42f/repo)
+ + rich==15.0.0
+ + setproctitle==1.3.7
+ + textual==8.2.8
+ + trove-classifiers==2026.6.1.19
+ + typing-extensions==4.16.0
+ + uc-micro-py==2.0.0
+warning: `VIRTUAL_ENV=/home/soultransit/devtony/ranex/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead
+EEEEE.............................s                                      [100%]
+==================================== ERRORS ====================================
+___________ ERROR at setup of test_run_transcript_matches_the_golden ___________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x73c390d6cd50>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1203'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
+        """The one real journey: real subject, real keys, real sabotage.
+    
+        Ordered, spine-style: every stage's refusal is loud and names the
+        stage, so a journey that cannot complete fails here with the CLI's
+        own words instead of a dereference error in a test below.
+        """
+    
+        base = tmp_path_factory.mktemp("execution-family-run")
+        subject = base / "subject"
+        key = base / f"{FAMILY_PRODUCER}.key"
+        cloned = subprocess.run(
+            ["git", "clone", "-q", str(REAL_REPO), str(subject)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
+        for name, value in (
+            ("user.email", "execution-family@example.com"),
+            ("user.name", "execution-family journey"),
+        ):
+            assert git(subject, "config", name, value).returncode == 0
+    
+        # --- the journey's own producer, via the real keygen CLI ------------
+        generated = ranex(subject, ["keygen", "--producer", FAMILY_PRODUCER], key=key)
+        assert generated.returncode == 0, generated.stderr
+        match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+        assert match, f"keygen printed no public key: {generated.stdout!r}"
+        public = match.group(1)
+    
+        _register_family_gate(subject, FAMILY_PRODUCER, public)
+    
+        # The self-contained subject: no committed pins file, no dependency
+        # provisioning demanded — the kernel's own documented activation rule.
+        removed = git(subject, "rm", "-q", "governance/deps.yaml")
+        assert removed.returncode == 0, removed.stderr
+        staged = git(subject, "add", "governance/producers.yaml", "governance/gates.yaml")
+        assert staged.returncode == 0, staged.stderr
+        committed = git(subject, "commit", "-q", "-m", "register the execution-family producer and gate")
+        assert committed.returncode == 0, committed.stderr
+    
+        run_argv = [
+            "run",
+            "--claim",
+            FAMILY_CLAIM,
+            "--producer",
+            FAMILY_PRODUCER,
+            "--gate",
+            FAMILY_GATE,
+            "--repository",
+            ".",
+            "--",
+            *FAMILY_COMMAND,
+        ]
+    
+        def spine(extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+            return ranex(subject, run_argv, key=key, extra_env=extra_env)
+    
+        # --- the untraced baseline: stdout + evidence bytes ------------------
+        baseline = spine()
+        assert baseline.returncode == 0, (
+            f"the bound command's governed run must exit 0: {baseline.stderr}"
+        )
+        assert baseline.stdout.startswith("RECORDED"), baseline.stdout
+        baseline_evidence = (subject / "governance" / "evidence.json").read_bytes()
+        record = json.loads(baseline_evidence)[0]
+        assert record["claim_id"] == FAMILY_CLAIM
+        assert record["exit_code"] == 0
+    
+        # --- sabotage arm 1: evidence REMOVED post-run ----------------------
+        evidence_path = subject / "governance" / "evidence.json"
+        evidence_path.unlink()
+        removed_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert removed_eval.returncode == 1, (
+            f"the no-evidence evaluation must FAIL (exit 1): "
+            f"{removed_eval.stdout}{removed_eval.stderr}"
+        )
+        assert removed_eval.stdout.startswith("FAIL"), removed_eval.stdout
+        assert "no evidence for required claim" in removed_eval.stdout, removed_eval.stdout
+    
+        # --- sabotage arm 2: evidence SWAPPED between two real subjects -----
+        other = base / "other-subject"
+        subprocess.run(["git", "clone", "-q", str(REAL_REPO), str(other)], check=True)
+        for name, value in (
+            ("user.email", "other-subject@example.com"),
+            ("user.name", "execution-family other subject"),
+        ):
+            subprocess.run(["git", "-C", str(other), "config", name, value], check=True)
+        _register_family_gate(other, FAMILY_PRODUCER, public)
+        subprocess.run(["git", "-C", str(other), "rm", "-q", "governance/deps.yaml"], check=True)
+        (other / "a-different-tree.txt").write_text(
+            "the other subject's tree differs from the first\n", encoding="utf-8"
+        )
+        subprocess.run(["git", "-C", str(other), "add", "-A"], check=True)
+        subprocess.run(
+            ["git", "-C", str(other), "commit", "-q", "-m", "the other subject"],
+            check=True,
+        )
+        other_run = ranex(other, run_argv, key=key)
+        assert other_run.returncode == 0, (
+            f"the other subject's governed run must exit 0: {other_run.stderr}"
+        )
+        shutil.copy(other / "governance" / "evidence.json", evidence_path)
+        swapped_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert swapped_eval.returncode == 1, (
+            "swapped evidence must FAIL the evaluation (exit 1): "
+            f"{swapped_eval.stdout}{swapped_eval.stderr}"
+        )
+        assert "evidence bound to a different subject digest" in swapped_eval.stdout, (
+            "the subject-digest binding must keep its stable refusal reason: "
+            f"{swapped_eval.stdout}"
+        )
+    
+        # --- traced arm 1: RANEX_TRACE_EVENT=1, the stderr event stream -----
+        traced = spine({"RANEX_TRACE_EVENT": "1"})
+        assert traced.returncode == baseline.returncode, traced.stderr
+        assert traced.stdout == baseline.stdout, "tracing changed the run's stdout"
+>       trace_events = [
+            json.loads(line)
+            for line in traced.stderr.splitlines()
+            if line.strip()
+        ]
+
+tests/e2e/test_run_real.py:431: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_run_real.py:432: in <listcomp>
+    json.loads(line)
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x73c3912e92d0>
+s = 'Could not find platform dependent libraries <exec_prefix>', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:355: JSONDecodeError
+___________ ERROR at setup of test_post_run_sabotage_controls_refuse ___________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x73c390d6cd50>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1203'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
+        """The one real journey: real subject, real keys, real sabotage.
+    
+        Ordered, spine-style: every stage's refusal is loud and names the
+        stage, so a journey that cannot complete fails here with the CLI's
+        own words instead of a dereference error in a test below.
+        """
+    
+        base = tmp_path_factory.mktemp("execution-family-run")
+        subject = base / "subject"
+        key = base / f"{FAMILY_PRODUCER}.key"
+        cloned = subprocess.run(
+            ["git", "clone", "-q", str(REAL_REPO), str(subject)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
+        for name, value in (
+            ("user.email", "execution-family@example.com"),
+            ("user.name", "execution-family journey"),
+        ):
+            assert git(subject, "config", name, value).returncode == 0
+    
+        # --- the journey's own producer, via the real keygen CLI ------------
+        generated = ranex(subject, ["keygen", "--producer", FAMILY_PRODUCER], key=key)
+        assert generated.returncode == 0, generated.stderr
+        match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+        assert match, f"keygen printed no public key: {generated.stdout!r}"
+        public = match.group(1)
+    
+        _register_family_gate(subject, FAMILY_PRODUCER, public)
+    
+        # The self-contained subject: no committed pins file, no dependency
+        # provisioning demanded — the kernel's own documented activation rule.
+        removed = git(subject, "rm", "-q", "governance/deps.yaml")
+        assert removed.returncode == 0, removed.stderr
+        staged = git(subject, "add", "governance/producers.yaml", "governance/gates.yaml")
+        assert staged.returncode == 0, staged.stderr
+        committed = git(subject, "commit", "-q", "-m", "register the execution-family producer and gate")
+        assert committed.returncode == 0, committed.stderr
+    
+        run_argv = [
+            "run",
+            "--claim",
+            FAMILY_CLAIM,
+            "--producer",
+            FAMILY_PRODUCER,
+            "--gate",
+            FAMILY_GATE,
+            "--repository",
+            ".",
+            "--",
+            *FAMILY_COMMAND,
+        ]
+    
+        def spine(extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+            return ranex(subject, run_argv, key=key, extra_env=extra_env)
+    
+        # --- the untraced baseline: stdout + evidence bytes ------------------
+        baseline = spine()
+        assert baseline.returncode == 0, (
+            f"the bound command's governed run must exit 0: {baseline.stderr}"
+        )
+        assert baseline.stdout.startswith("RECORDED"), baseline.stdout
+        baseline_evidence = (subject / "governance" / "evidence.json").read_bytes()
+        record = json.loads(baseline_evidence)[0]
+        assert record["claim_id"] == FAMILY_CLAIM
+        assert record["exit_code"] == 0
+    
+        # --- sabotage arm 1: evidence REMOVED post-run ----------------------
+        evidence_path = subject / "governance" / "evidence.json"
+        evidence_path.unlink()
+        removed_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert removed_eval.returncode == 1, (
+            f"the no-evidence evaluation must FAIL (exit 1): "
+            f"{removed_eval.stdout}{removed_eval.stderr}"
+        )
+        assert removed_eval.stdout.startswith("FAIL"), removed_eval.stdout
+        assert "no evidence for required claim" in removed_eval.stdout, removed_eval.stdout
+    
+        # --- sabotage arm 2: evidence SWAPPED between two real subjects -----
+        other = base / "other-subject"
+        subprocess.run(["git", "clone", "-q", str(REAL_REPO), str(other)], check=True)
+        for name, value in (
+            ("user.email", "other-subject@example.com"),
+            ("user.name", "execution-family other subject"),
+        ):
+            subprocess.run(["git", "-C", str(other), "config", name, value], check=True)
+        _register_family_gate(other, FAMILY_PRODUCER, public)
+        subprocess.run(["git", "-C", str(other), "rm", "-q", "governance/deps.yaml"], check=True)
+        (other / "a-different-tree.txt").write_text(
+            "the other subject's tree differs from the first\n", encoding="utf-8"
+        )
+        subprocess.run(["git", "-C", str(other), "add", "-A"], check=True)
+        subprocess.run(
+            ["git", "-C", str(other), "commit", "-q", "-m", "the other subject"],
+            check=True,
+        )
+        other_run = ranex(other, run_argv, key=key)
+        assert other_run.returncode == 0, (
+            f"the other subject's governed run must exit 0: {other_run.stderr}"
+        )
+        shutil.copy(other / "governance" / "evidence.json", evidence_path)
+        swapped_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert swapped_eval.returncode == 1, (
+            "swapped evidence must FAIL the evaluation (exit 1): "
+            f"{swapped_eval.stdout}{swapped_eval.stderr}"
+        )
+        assert "evidence bound to a different subject digest" in swapped_eval.stdout, (
+            "the subject-digest binding must keep its stable refusal reason: "
+            f"{swapped_eval.stdout}"
+        )
+    
+        # --- traced arm 1: RANEX_TRACE_EVENT=1, the stderr event stream -----
+        traced = spine({"RANEX_TRACE_EVENT": "1"})
+        assert traced.returncode == baseline.returncode, traced.stderr
+        assert traced.stdout == baseline.stdout, "tracing changed the run's stdout"
+>       trace_events = [
+            json.loads(line)
+            for line in traced.stderr.splitlines()
+            if line.strip()
+        ]
+
+tests/e2e/test_run_real.py:431: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_run_real.py:432: in <listcomp>
+    json.loads(line)
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x73c3912e92d0>
+s = 'Could not find platform dependent libraries <exec_prefix>', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:355: JSONDecodeError
+_____ ERROR at setup of test_traced_run_is_an_artifact_and_verdict_neutral _____
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x73c390d6cd50>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1203'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
+        """The one real journey: real subject, real keys, real sabotage.
+    
+        Ordered, spine-style: every stage's refusal is loud and names the
+        stage, so a journey that cannot complete fails here with the CLI's
+        own words instead of a dereference error in a test below.
+        """
+    
+        base = tmp_path_factory.mktemp("execution-family-run")
+        subject = base / "subject"
+        key = base / f"{FAMILY_PRODUCER}.key"
+        cloned = subprocess.run(
+            ["git", "clone", "-q", str(REAL_REPO), str(subject)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
+        for name, value in (
+            ("user.email", "execution-family@example.com"),
+            ("user.name", "execution-family journey"),
+        ):
+            assert git(subject, "config", name, value).returncode == 0
+    
+        # --- the journey's own producer, via the real keygen CLI ------------
+        generated = ranex(subject, ["keygen", "--producer", FAMILY_PRODUCER], key=key)
+        assert generated.returncode == 0, generated.stderr
+        match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+        assert match, f"keygen printed no public key: {generated.stdout!r}"
+        public = match.group(1)
+    
+        _register_family_gate(subject, FAMILY_PRODUCER, public)
+    
+        # The self-contained subject: no committed pins file, no dependency
+        # provisioning demanded — the kernel's own documented activation rule.
+        removed = git(subject, "rm", "-q", "governance/deps.yaml")
+        assert removed.returncode == 0, removed.stderr
+        staged = git(subject, "add", "governance/producers.yaml", "governance/gates.yaml")
+        assert staged.returncode == 0, staged.stderr
+        committed = git(subject, "commit", "-q", "-m", "register the execution-family producer and gate")
+        assert committed.returncode == 0, committed.stderr
+    
+        run_argv = [
+            "run",
+            "--claim",
+            FAMILY_CLAIM,
+            "--producer",
+            FAMILY_PRODUCER,
+            "--gate",
+            FAMILY_GATE,
+            "--repository",
+            ".",
+            "--",
+            *FAMILY_COMMAND,
+        ]
+    
+        def spine(extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+            return ranex(subject, run_argv, key=key, extra_env=extra_env)
+    
+        # --- the untraced baseline: stdout + evidence bytes ------------------
+        baseline = spine()
+        assert baseline.returncode == 0, (
+            f"the bound command's governed run must exit 0: {baseline.stderr}"
+        )
+        assert baseline.stdout.startswith("RECORDED"), baseline.stdout
+        baseline_evidence = (subject / "governance" / "evidence.json").read_bytes()
+        record = json.loads(baseline_evidence)[0]
+        assert record["claim_id"] == FAMILY_CLAIM
+        assert record["exit_code"] == 0
+    
+        # --- sabotage arm 1: evidence REMOVED post-run ----------------------
+        evidence_path = subject / "governance" / "evidence.json"
+        evidence_path.unlink()
+        removed_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert removed_eval.returncode == 1, (
+            f"the no-evidence evaluation must FAIL (exit 1): "
+            f"{removed_eval.stdout}{removed_eval.stderr}"
+        )
+        assert removed_eval.stdout.startswith("FAIL"), removed_eval.stdout
+        assert "no evidence for required claim" in removed_eval.stdout, removed_eval.stdout
+    
+        # --- sabotage arm 2: evidence SWAPPED between two real subjects -----
+        other = base / "other-subject"
+        subprocess.run(["git", "clone", "-q", str(REAL_REPO), str(other)], check=True)
+        for name, value in (
+            ("user.email", "other-subject@example.com"),
+            ("user.name", "execution-family other subject"),
+        ):
+            subprocess.run(["git", "-C", str(other), "config", name, value], check=True)
+        _register_family_gate(other, FAMILY_PRODUCER, public)
+        subprocess.run(["git", "-C", str(other), "rm", "-q", "governance/deps.yaml"], check=True)
+        (other / "a-different-tree.txt").write_text(
+            "the other subject's tree differs from the first\n", encoding="utf-8"
+        )
+        subprocess.run(["git", "-C", str(other), "add", "-A"], check=True)
+        subprocess.run(
+            ["git", "-C", str(other), "commit", "-q", "-m", "the other subject"],
+            check=True,
+        )
+        other_run = ranex(other, run_argv, key=key)
+        assert other_run.returncode == 0, (
+            f"the other subject's governed run must exit 0: {other_run.stderr}"
+        )
+        shutil.copy(other / "governance" / "evidence.json", evidence_path)
+        swapped_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert swapped_eval.returncode == 1, (
+            "swapped evidence must FAIL the evaluation (exit 1): "
+            f"{swapped_eval.stdout}{swapped_eval.stderr}"
+        )
+        assert "evidence bound to a different subject digest" in swapped_eval.stdout, (
+            "the subject-digest binding must keep its stable refusal reason: "
+            f"{swapped_eval.stdout}"
+        )
+    
+        # --- traced arm 1: RANEX_TRACE_EVENT=1, the stderr event stream -----
+        traced = spine({"RANEX_TRACE_EVENT": "1"})
+        assert traced.returncode == baseline.returncode, traced.stderr
+        assert traced.stdout == baseline.stdout, "tracing changed the run's stdout"
+>       trace_events = [
+            json.loads(line)
+            for line in traced.stderr.splitlines()
+            if line.strip()
+        ]
+
+tests/e2e/test_run_real.py:431: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_run_real.py:432: in <listcomp>
+    json.loads(line)
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x73c3912e92d0>
+s = 'Could not find platform dependent libraries <exec_prefix>', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:355: JSONDecodeError
+_________ ERROR at setup of test_goldens_carry_real_volatile_material __________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x73c390d6cd50>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1203'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
+        """The one real journey: real subject, real keys, real sabotage.
+    
+        Ordered, spine-style: every stage's refusal is loud and names the
+        stage, so a journey that cannot complete fails here with the CLI's
+        own words instead of a dereference error in a test below.
+        """
+    
+        base = tmp_path_factory.mktemp("execution-family-run")
+        subject = base / "subject"
+        key = base / f"{FAMILY_PRODUCER}.key"
+        cloned = subprocess.run(
+            ["git", "clone", "-q", str(REAL_REPO), str(subject)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
+        for name, value in (
+            ("user.email", "execution-family@example.com"),
+            ("user.name", "execution-family journey"),
+        ):
+            assert git(subject, "config", name, value).returncode == 0
+    
+        # --- the journey's own producer, via the real keygen CLI ------------
+        generated = ranex(subject, ["keygen", "--producer", FAMILY_PRODUCER], key=key)
+        assert generated.returncode == 0, generated.stderr
+        match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+        assert match, f"keygen printed no public key: {generated.stdout!r}"
+        public = match.group(1)
+    
+        _register_family_gate(subject, FAMILY_PRODUCER, public)
+    
+        # The self-contained subject: no committed pins file, no dependency
+        # provisioning demanded — the kernel's own documented activation rule.
+        removed = git(subject, "rm", "-q", "governance/deps.yaml")
+        assert removed.returncode == 0, removed.stderr
+        staged = git(subject, "add", "governance/producers.yaml", "governance/gates.yaml")
+        assert staged.returncode == 0, staged.stderr
+        committed = git(subject, "commit", "-q", "-m", "register the execution-family producer and gate")
+        assert committed.returncode == 0, committed.stderr
+    
+        run_argv = [
+            "run",
+            "--claim",
+            FAMILY_CLAIM,
+            "--producer",
+            FAMILY_PRODUCER,
+            "--gate",
+            FAMILY_GATE,
+            "--repository",
+            ".",
+            "--",
+            *FAMILY_COMMAND,
+        ]
+    
+        def spine(extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+            return ranex(subject, run_argv, key=key, extra_env=extra_env)
+    
+        # --- the untraced baseline: stdout + evidence bytes ------------------
+        baseline = spine()
+        assert baseline.returncode == 0, (
+            f"the bound command's governed run must exit 0: {baseline.stderr}"
+        )
+        assert baseline.stdout.startswith("RECORDED"), baseline.stdout
+        baseline_evidence = (subject / "governance" / "evidence.json").read_bytes()
+        record = json.loads(baseline_evidence)[0]
+        assert record["claim_id"] == FAMILY_CLAIM
+        assert record["exit_code"] == 0
+    
+        # --- sabotage arm 1: evidence REMOVED post-run ----------------------
+        evidence_path = subject / "governance" / "evidence.json"
+        evidence_path.unlink()
+        removed_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert removed_eval.returncode == 1, (
+            f"the no-evidence evaluation must FAIL (exit 1): "
+            f"{removed_eval.stdout}{removed_eval.stderr}"
+        )
+        assert removed_eval.stdout.startswith("FAIL"), removed_eval.stdout
+        assert "no evidence for required claim" in removed_eval.stdout, removed_eval.stdout
+    
+        # --- sabotage arm 2: evidence SWAPPED between two real subjects -----
+        other = base / "other-subject"
+        subprocess.run(["git", "clone", "-q", str(REAL_REPO), str(other)], check=True)
+        for name, value in (
+            ("user.email", "other-subject@example.com"),
+            ("user.name", "execution-family other subject"),
+        ):
+            subprocess.run(["git", "-C", str(other), "config", name, value], check=True)
+        _register_family_gate(other, FAMILY_PRODUCER, public)
+        subprocess.run(["git", "-C", str(other), "rm", "-q", "governance/deps.yaml"], check=True)
+        (other / "a-different-tree.txt").write_text(
+            "the other subject's tree differs from the first\n", encoding="utf-8"
+        )
+        subprocess.run(["git", "-C", str(other), "add", "-A"], check=True)
+        subprocess.run(
+            ["git", "-C", str(other), "commit", "-q", "-m", "the other subject"],
+            check=True,
+        )
+        other_run = ranex(other, run_argv, key=key)
+        assert other_run.returncode == 0, (
+            f"the other subject's governed run must exit 0: {other_run.stderr}"
+        )
+        shutil.copy(other / "governance" / "evidence.json", evidence_path)
+        swapped_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert swapped_eval.returncode == 1, (
+            "swapped evidence must FAIL the evaluation (exit 1): "
+            f"{swapped_eval.stdout}{swapped_eval.stderr}"
+        )
+        assert "evidence bound to a different subject digest" in swapped_eval.stdout, (
+            "the subject-digest binding must keep its stable refusal reason: "
+            f"{swapped_eval.stdout}"
+        )
+    
+        # --- traced arm 1: RANEX_TRACE_EVENT=1, the stderr event stream -----
+        traced = spine({"RANEX_TRACE_EVENT": "1"})
+        assert traced.returncode == baseline.returncode, traced.stderr
+        assert traced.stdout == baseline.stdout, "tracing changed the run's stdout"
+>       trace_events = [
+            json.loads(line)
+            for line in traced.stderr.splitlines()
+            if line.strip()
+        ]
+
+tests/e2e/test_run_real.py:431: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_run_real.py:432: in <listcomp>
+    json.loads(line)
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x73c3912e92d0>
+s = 'Could not find platform dependent libraries <exec_prefix>', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:355: JSONDecodeError
+______ ERROR at setup of test_sabotage_control_mutated_golden_diffs_dirty ______
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x73c390d6cd50>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1203'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def journey(tmp_path_factory: pytest.TempPathFactory) -> RunJourney:
+        """The one real journey: real subject, real keys, real sabotage.
+    
+        Ordered, spine-style: every stage's refusal is loud and names the
+        stage, so a journey that cannot complete fails here with the CLI's
+        own words instead of a dereference error in a test below.
+        """
+    
+        base = tmp_path_factory.mktemp("execution-family-run")
+        subject = base / "subject"
+        key = base / f"{FAMILY_PRODUCER}.key"
+        cloned = subprocess.run(
+            ["git", "clone", "-q", str(REAL_REPO), str(subject)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        assert cloned.returncode == 0, f"cannot clone the real subject: {cloned.stderr}"
+        for name, value in (
+            ("user.email", "execution-family@example.com"),
+            ("user.name", "execution-family journey"),
+        ):
+            assert git(subject, "config", name, value).returncode == 0
+    
+        # --- the journey's own producer, via the real keygen CLI ------------
+        generated = ranex(subject, ["keygen", "--producer", FAMILY_PRODUCER], key=key)
+        assert generated.returncode == 0, generated.stderr
+        match = re.search(r"(ed25519:[A-Za-z0-9+/=]+)", generated.stdout)
+        assert match, f"keygen printed no public key: {generated.stdout!r}"
+        public = match.group(1)
+    
+        _register_family_gate(subject, FAMILY_PRODUCER, public)
+    
+        # The self-contained subject: no committed pins file, no dependency
+        # provisioning demanded — the kernel's own documented activation rule.
+        removed = git(subject, "rm", "-q", "governance/deps.yaml")
+        assert removed.returncode == 0, removed.stderr
+        staged = git(subject, "add", "governance/producers.yaml", "governance/gates.yaml")
+        assert staged.returncode == 0, staged.stderr
+        committed = git(subject, "commit", "-q", "-m", "register the execution-family producer and gate")
+        assert committed.returncode == 0, committed.stderr
+    
+        run_argv = [
+            "run",
+            "--claim",
+            FAMILY_CLAIM,
+            "--producer",
+            FAMILY_PRODUCER,
+            "--gate",
+            FAMILY_GATE,
+            "--repository",
+            ".",
+            "--",
+            *FAMILY_COMMAND,
+        ]
+    
+        def spine(extra_env: dict[str, str] | None = None) -> subprocess.CompletedProcess[str]:
+            return ranex(subject, run_argv, key=key, extra_env=extra_env)
+    
+        # --- the untraced baseline: stdout + evidence bytes ------------------
+        baseline = spine()
+        assert baseline.returncode == 0, (
+            f"the bound command's governed run must exit 0: {baseline.stderr}"
+        )
+        assert baseline.stdout.startswith("RECORDED"), baseline.stdout
+        baseline_evidence = (subject / "governance" / "evidence.json").read_bytes()
+        record = json.loads(baseline_evidence)[0]
+        assert record["claim_id"] == FAMILY_CLAIM
+        assert record["exit_code"] == 0
+    
+        # --- sabotage arm 1: evidence REMOVED post-run ----------------------
+        evidence_path = subject / "governance" / "evidence.json"
+        evidence_path.unlink()
+        removed_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert removed_eval.returncode == 1, (
+            f"the no-evidence evaluation must FAIL (exit 1): "
+            f"{removed_eval.stdout}{removed_eval.stderr}"
+        )
+        assert removed_eval.stdout.startswith("FAIL"), removed_eval.stdout
+        assert "no evidence for required claim" in removed_eval.stdout, removed_eval.stdout
+    
+        # --- sabotage arm 2: evidence SWAPPED between two real subjects -----
+        other = base / "other-subject"
+        subprocess.run(["git", "clone", "-q", str(REAL_REPO), str(other)], check=True)
+        for name, value in (
+            ("user.email", "other-subject@example.com"),
+            ("user.name", "execution-family other subject"),
+        ):
+            subprocess.run(["git", "-C", str(other), "config", name, value], check=True)
+        _register_family_gate(other, FAMILY_PRODUCER, public)
+        subprocess.run(["git", "-C", str(other), "rm", "-q", "governance/deps.yaml"], check=True)
+        (other / "a-different-tree.txt").write_text(
+            "the other subject's tree differs from the first\n", encoding="utf-8"
+        )
+        subprocess.run(["git", "-C", str(other), "add", "-A"], check=True)
+        subprocess.run(
+            ["git", "-C", str(other), "commit", "-q", "-m", "the other subject"],
+            check=True,
+        )
+        other_run = ranex(other, run_argv, key=key)
+        assert other_run.returncode == 0, (
+            f"the other subject's governed run must exit 0: {other_run.stderr}"
+        )
+        shutil.copy(other / "governance" / "evidence.json", evidence_path)
+        swapped_eval = ranex(
+            subject,
+            ["gate", "evaluate", "HEAD", "--repository", ".", "--gate", FAMILY_GATE,
+             "--approver", "reviewer"],
+        )
+        assert swapped_eval.returncode == 1, (
+            "swapped evidence must FAIL the evaluation (exit 1): "
+            f"{swapped_eval.stdout}{swapped_eval.stderr}"
+        )
+        assert "evidence bound to a different subject digest" in swapped_eval.stdout, (
+            "the subject-digest binding must keep its stable refusal reason: "
+            f"{swapped_eval.stdout}"
+        )
+    
+        # --- traced arm 1: RANEX_TRACE_EVENT=1, the stderr event stream -----
+        traced = spine({"RANEX_TRACE_EVENT": "1"})
+        assert traced.returncode == baseline.returncode, traced.stderr
+        assert traced.stdout == baseline.stdout, "tracing changed the run's stdout"
+>       trace_events = [
+            json.loads(line)
+            for line in traced.stderr.splitlines()
+            if line.strip()
+        ]
+
+tests/e2e/test_run_real.py:431: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_run_real.py:432: in <listcomp>
+    json.loads(line)
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/__init__.py:346: in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:337: in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <json.decoder.JSONDecoder object at 0x73c3912e92d0>
+s = 'Could not find platform dependent libraries <exec_prefix>', idx = 0
+
+    def raw_decode(self, s, idx=0):
+        """Decode a JSON document from ``s`` (a ``str`` beginning with
+        a JSON document) and return a 2-tuple of the Python
+        representation and the index in ``s`` where the document ended.
+    
+        This can be used to decode a JSON document from a string that may
+        have extraneous data at the end.
+    
+        """
+        try:
+            obj, end = self.scan_once(s, idx)
+        except StopIteration as err:
+>           raise JSONDecodeError("Expecting value", s, err.value) from None
+E           json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+
+/home/soultransit/.local/share/uv/python/cpython-3.11.15-linux-x86_64-gnu/lib/python3.11/json/decoder.py:355: JSONDecodeError
+=========================== short test summary info ============================
+ERROR tests/e2e/test_run_real.py::test_run_transcript_matches_the_golden - js...
+ERROR tests/e2e/test_run_real.py::test_post_run_sabotage_controls_refuse - js...
+ERROR tests/e2e/test_run_real.py::test_traced_run_is_an_artifact_and_verdict_neutral
+ERROR tests/e2e/test_run_real.py::test_goldens_carry_real_volatile_material
+ERROR tests/e2e/test_run_real.py::test_sabotage_control_mutated_golden_diffs_dirty
+29 passed, 1 skipped, 5 errors in 357.45s (0:05:57)

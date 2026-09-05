@@ -1,0 +1,15 @@
+.....F....                                                               [100%]
+=================================== FAILURES ===================================
+________________ test_summary_excludes_committed_harness_faults ________________
+
+    def test_summary_excludes_committed_harness_faults() -> None:
+        report = summary()
+        assert report["false_passes"] == 0
+        # 0017 and 0018 stored false_block=true; they judged the kernel journal.
+>       assert report["false_blocks"] == 0
+E       assert 2 == 0
+
+tools/dogfood/test_harness_guards.py:86: AssertionError
+=========================== short test summary info ============================
+FAILED tools/dogfood/test_harness_guards.py::test_summary_excludes_committed_harness_faults
+1 failed, 9 passed in 1.30s

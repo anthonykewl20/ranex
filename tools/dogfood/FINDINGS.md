@@ -8,6 +8,71 @@ match the kernel silently.
 
 ## Open
 
+### F-018 (OBSERVED, intermittent) — sustained journal writers can exhaust SQLite's wait
+
+- The exploratory released full suite raised `sqlite3.OperationalError:
+  database is locked` at `Journal.append`'s `BEGIN IMMEDIATE` during the
+  eight-writer, 4000-append integration test. The implementation sets a
+  finite 60-second SQLite lock timeout; it does not guarantee writer fairness.
+- The unchanged journal implementation passed the same real contention test
+  in isolation in 10.97 seconds. A repeatable standalone failure trigger and
+  precise load attribution remain UNVERIFIED. No timeout or assertion was
+  changed to conceal the observation.
+
+### F-015 (CONFIRMED, historical subject) — the opt-in live Ranex bootstrap is red
+
+- `RANEX_SLICE035_REAL=1 uv run --frozen pytest -q
+  tests/e2e/test_specification_subject_bootstrap.py::test_real_ranex_bootstrap_or_host_skip`
+  really clones the configured upstream subject, installs its frozen lock,
+  and runs its suite. The child produces 812 passed, 27 skipped, 1 failed;
+  the outer bootstrap test fails instead of claiming availability.
+- The configured subject is historical commit
+  `3d0924c9c8f8f0c5483c0dc62558fdd23c51e9ce`. Its bind-mount identity
+  security test observes an in-tree executable accepted through a second
+  pathname (`RECORDED exit=5`, expected refusal exit 2).
+- This does not establish a current or v0.1.0 identity bypass: current
+  `main.py:same_file_inside` explicitly removes the faulty link-count
+  shortcut, and the current real bind-mount control passes. The stale subject pin makes this claimed live bootstrap red on
+  a host that can exercise the attack. No pin or frozen test was changed.
+
+### F-016 (CONFIRMED, release host integration) — delegated-host cold start does not reach PASS
+
+- In a clean v0.1.0 checkout under a real systemd user scope with delegated
+  `cpu`, `memory`, and `pids`, the cold-start walkthrough's stage 9 fails.
+  Its real governed child records 1534 passed, 97 skipped, 11 failed, and
+  15 errors; the gate correctly blocks those outcomes.
+- The failing child IDs include native-launcher, host-workflow, strict-local
+  I/O, and dynamic-runtime journeys. Running selected host journeys directly
+  at the corrected HEAD produces 22 passed with no skips. These are distinct
+  execution contexts, not contradictory verdicts about identical evidence.
+- The released full-run aggregate (1616 passed, 34 skipped, 7 failed) is
+  exploratory: its early phase overlapped the historical live bootstrap's
+  nested suite. A subsequent **isolated, sequential** cold-start module run
+  still produces 8 passed, 1 failed at stage 9. That rerun confirms the
+  cold-start failure independently of the overlap.
+- Two separate host-workflow failures were traced to test invocation routing
+  and fixed as F-017; they must not be counted as established kernel bugs.
+- This pins a self-hosting/environment integration failure, not a false
+  acceptance. Its complete root cause and portability to other delegated
+  hosts remain UNVERIFIED. The audit retains the released full-suite output
+  and the gate's exact diagnosis; it does not weaken the prerequisite checks.
+
+### F-014 (CONFIRMED, benchmark validation) — an extra tooling test fails outside the default suite
+
+- `uv run --frozen pytest -q tools/dogfood/test_harness_guards.py` produces
+  9 passed, 1 failed. `test_summary_excludes_committed_harness_faults`
+  assumes the entire growing archive has zero false blocks; the current
+  summary reports two. The default pytest testpaths exclude this module.
+- The two archived 2026-09-05 runs (`py-config-parse-ba79feaa` and
+  `py-semver-compare-bf46c069`) report green bare tests and governed exit 0,
+  but the gate refuses manifest IDs prefixed with the enclosing Ranex
+  checkout's `tools/dogfood/...` path. This is consistent with the existing
+  F-005 output/root-directory problem; attribution as a kernel false block
+  is not established by those receipts.
+- No archived evidence or expectations were rewritten to obtain green.
+  The failing tooling guard and archive-derived summary are retained as
+  audit evidence; this is separate from the kernel's frozen full suite.
+
 ### F-007 (CONFIRMED, receiver reliability) — failed deliveries are deduped; restart forgets the spool
 
 - Reproduced at `48f3a98e48cf10bc0a4ce24fae7862726b82b1c7` over real TCP,
@@ -235,6 +300,20 @@ match the kernel silently.
   CLI traceback claim above is superseded by this executed observation.
 
 ## Closed
+
+### F-017 — capable-host acceptance tests invoked the wrong checkout (fixed in release audit)
+
+- Sequential execution of the current host-workflow, live qualification,
+  and bind-mount checks: 5 passed, 2 failed. The v3 workflow and host-drift
+  tests provisioned a disposable clone but set `PYTHONPATH` to the parent
+  checkout. ADR-009 source-run anchoring then looked for the parent's
+  launcher; the drift check reported that missing artifact instead of drift.
+- `tests/e2e/test_host_workflow_real.py:_module` now selects the requested
+  repository's `src` directory. The nested drift command likewise selects
+  the provisioned clone. Explicit test environments remain explicit.
+- The same seven real checks then produce **7 passed, no skips**, under a
+  fresh delegated systemd scope. No acceptance assertion or manifest ID was
+  changed. Receipts retain both the failing and corrected invocations.
 
 ### F-013 — Python 3.11 guardian startup contaminated JSON traces (fixed in release audit)
 

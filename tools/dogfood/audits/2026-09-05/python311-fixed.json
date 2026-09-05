@@ -1,0 +1,16 @@
+{
+  "head": "274a62de163a8c3db4cc6a3e83ae1300d1ca3c4d",
+  "python": "Python 3.11.15",
+  "command": [
+    "uv",
+    "run",
+    "--frozen",
+    "--python",
+    "3.11",
+    "pytest",
+    "-q",
+    "tests/e2e/test_run_real.py",
+    "--junitxml=/home/soultransit/devtony/ranex/.local/release-audit/python311-fixed.xml"
+  ],
+  "exit": 0
+}

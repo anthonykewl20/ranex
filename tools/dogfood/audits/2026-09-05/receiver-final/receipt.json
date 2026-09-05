@@ -1,0 +1,206 @@
+[
+  {
+    "case": "signed-http",
+    "status": "VERIFIED",
+    "expected": "signed ping returns 200",
+    "observed": {
+      "status": 200,
+      "body": "accepted"
+    }
+  },
+  {
+    "case": "unsigned-http",
+    "status": "VERIFIED",
+    "expected": "unsigned body returns 401",
+    "observed": {
+      "status": 401,
+      "body": "delivery did not prove itself"
+    }
+  },
+  {
+    "case": "tampered-signature",
+    "status": "VERIFIED",
+    "expected": "invalid request returns 401 without processing",
+    "observed": {
+      "status": 401,
+      "body": "delivery did not prove itself"
+    }
+  },
+  {
+    "case": "malformed-length",
+    "status": "VERIFIED",
+    "expected": "invalid request returns 400 without processing",
+    "observed": {
+      "status": 400,
+      "body": "malformed Content-Length"
+    }
+  },
+  {
+    "case": "oversized-length",
+    "status": "VERIFIED",
+    "expected": "invalid request returns 413 without processing",
+    "observed": {
+      "status": 413,
+      "body": "delivery too large"
+    }
+  },
+  {
+    "case": "malformed-delivery-id",
+    "status": "VERIFIED",
+    "expected": "invalid request returns 400 without processing",
+    "observed": {
+      "status": 400,
+      "body": "malformed delivery id"
+    }
+  },
+  {
+    "case": "dedupe-in-process",
+    "status": "VERIFIED",
+    "expected": "same delivery is a no-op",
+    "observed": {
+      "delivery": "ping-1",
+      "outcome": "replayed"
+    }
+  },
+  {
+    "case": "foreign-installation",
+    "status": "VERIFIED",
+    "expected": "authenticated foreign installation is journaled without Git fetch",
+    "observed": {
+      "response": {
+        "status": 200,
+        "body": "accepted"
+      },
+      "entry": {
+        "delivery": "foreign-installation",
+        "event": "pull_request",
+        "outcome": "not-allowlisted",
+        "repository": "audit/local"
+      }
+    }
+  },
+  {
+    "case": "malformed-shape",
+    "status": "VERIFIED",
+    "expected": "authenticated wrong top-level shape receives a named permanent refusal",
+    "observed": {
+      "response": {
+        "status": 200,
+        "body": "accepted"
+      },
+      "entry": {
+        "delivery": "malformed-shape",
+        "outcome": "E-GITHUB-BAD-EVENT"
+      }
+    }
+  },
+  {
+    "case": "retry-after-real-fetch-failure",
+    "status": "GAP",
+    "expected": "unchanged unavailable Git remote remains retryable on redelivery",
+    "observed": [
+      {
+        "status": 500,
+        "body": "retry later"
+      },
+      {
+        "status": 200,
+        "body": "accepted"
+      }
+    ]
+  },
+  {
+    "case": "malformed-json",
+    "status": "GAP",
+    "expected": "authenticated malformed event is a journaled, named permanent refusal",
+    "observed": {
+      "response": {
+        "error": "RemoteDisconnected",
+        "detail": "Remote end closed connection without response"
+      },
+      "last_journal_entry": {
+        "delivery": "fetch-retry",
+        "outcome": "replayed"
+      }
+    }
+  },
+  {
+    "case": "malformed-number",
+    "status": "GAP",
+    "expected": "authenticated malformed event is a journaled, named permanent refusal",
+    "observed": {
+      "response": {
+        "error": "RemoteDisconnected",
+        "detail": "Remote end closed connection without response"
+      },
+      "last_journal_entry": {
+        "delivery": "fetch-retry",
+        "outcome": "replayed"
+      }
+    }
+  },
+  {
+    "case": "dedupe-after-restart",
+    "status": "GAP",
+    "expected": "delivery spool survives process restart",
+    "observed": {
+      "response": {
+        "status": 200,
+        "body": "accepted"
+      },
+      "entry": {
+        "delivery": "ping-1",
+        "event": "ping",
+        "outcome": "ignored"
+      }
+    }
+  },
+  {
+    "case": "negative-content-length",
+    "status": "GAP",
+    "expected": "one unproven client does not monopolize the single listener",
+    "observed": {
+      "concurrent_healthy": {
+        "error": "TimeoutError",
+        "detail": "timed out"
+      },
+      "after_release": {
+        "status": 200,
+        "body": "accepted"
+      },
+      "raw_request": "POST /webhook HTTP/1.1\r\nHost: localhost\r\nContent-Length: -1\r\n\r\n"
+    }
+  },
+  {
+    "case": "incomplete-body",
+    "status": "GAP",
+    "expected": "one unproven client does not monopolize the single listener",
+    "observed": {
+      "concurrent_healthy": {
+        "error": "TimeoutError",
+        "detail": "timed out"
+      },
+      "after_release": {
+        "status": 200,
+        "body": "accepted"
+      },
+      "raw_request": "POST /webhook HTTP/1.1\r\nHost: localhost\r\nContent-Length: 20\r\n\r\n{"
+    }
+  },
+  {
+    "case": "idle-client",
+    "status": "GAP",
+    "expected": "one unproven client does not monopolize the single listener",
+    "observed": {
+      "concurrent_healthy": {
+        "error": "TimeoutError",
+        "detail": "timed out"
+      },
+      "after_release": {
+        "status": 200,
+        "body": "accepted"
+      },
+      "raw_request": ""
+    }
+  }
+]

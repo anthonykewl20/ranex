@@ -1,0 +1,188 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........s........................................sssss.................. [ 20%]
+ssssssssss..............................................s...sssss....... [ 24%]
+................s......................................ss............... [ 28%]
+..ss...s..EEEE.........s................................................ [ 32%]
+........................................................................ [ 36%]
+........................................................................ [ 40%]
+..........................................s............................. [ 44%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+........................................................................ [ 56%]
+........................................................................ [ 60%]
+........................................................................ [ 64%]
+.........................................................s.....ss....... [ 68%]
+..........s............................................................. [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 80%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+...................................................................      [100%]
+==================================== ERRORS ====================================
+__________ ERROR at setup of test_manifest_round_trip_is_byte_stable ___________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x72d0121e76f0>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1198'), _retention_count=3, _retention_policy='all')
+prereq_pinned_resolver = None
+
+    @pytest.fixture(scope="module")
+    def journey(
+        tmp_path_factory: pytest.TempPathFactory, prereq_pinned_resolver: None
+    ) -> FreezeJourney:
+        """The one real freeze cycle on the committed tree (or the boundary)."""
+    
+        if _nested_hermetic_freeze_boundary():
+            # The recursion boundary: this suite is running INSIDE the sealed
+            # materialisation of a freeze cycle. Proving the boundary is this
+            # module's honest pass; provisioning a nested cycle is neither
+            # possible nor meaningful here.
+            return FreezeJourney(
+                boundary=True, frozen_line=None, produced_bytes=None, committed_bytes=None
+            )
+    
+        dirty = subprocess.run(
+            ["git", "-C", str(REAL_REPO), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+>       assert not dirty, (
+            "the real-tree freeze journey needs a clean working tree — the "
+            f"kernel's own freeze would refuse it: {dirty}. Commit or clean "
+            "the tree and re-run; the refusal itself is frozen by "
+            "test_dirty_tree_freeze_refuses_with_stable_reason below."
+        )
+E       AssertionError: the real-tree freeze journey needs a clean working tree — the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md
+E          M tools/dogfood/README.md
+E         ?? tools/dogfood/receiver_audit.py
+E         ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.
+E       assert not 'M tools/dogfood/FINDINGS.md\n M tools/dogfood/README.md\n?? tools/dogfood/receiver_audit.py\n?? tools/dogfood/release_audit.py'
+
+tests/e2e/test_suite_freeze_real.py:194: AssertionError
+_________ ERROR at setup of test_frozen_transcript_matches_the_golden __________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x72d0121e76f0>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1198'), _retention_count=3, _retention_policy='all')
+prereq_pinned_resolver = None
+
+    @pytest.fixture(scope="module")
+    def journey(
+        tmp_path_factory: pytest.TempPathFactory, prereq_pinned_resolver: None
+    ) -> FreezeJourney:
+        """The one real freeze cycle on the committed tree (or the boundary)."""
+    
+        if _nested_hermetic_freeze_boundary():
+            # The recursion boundary: this suite is running INSIDE the sealed
+            # materialisation of a freeze cycle. Proving the boundary is this
+            # module's honest pass; provisioning a nested cycle is neither
+            # possible nor meaningful here.
+            return FreezeJourney(
+                boundary=True, frozen_line=None, produced_bytes=None, committed_bytes=None
+            )
+    
+        dirty = subprocess.run(
+            ["git", "-C", str(REAL_REPO), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+>       assert not dirty, (
+            "the real-tree freeze journey needs a clean working tree — the "
+            f"kernel's own freeze would refuse it: {dirty}. Commit or clean "
+            "the tree and re-run; the refusal itself is frozen by "
+            "test_dirty_tree_freeze_refuses_with_stable_reason below."
+        )
+E       AssertionError: the real-tree freeze journey needs a clean working tree — the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md
+E          M tools/dogfood/README.md
+E         ?? tools/dogfood/receiver_audit.py
+E         ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.
+E       assert not 'M tools/dogfood/FINDINGS.md\n M tools/dogfood/README.md\n?? tools/dogfood/receiver_audit.py\n?? tools/dogfood/release_audit.py'
+
+tests/e2e/test_suite_freeze_real.py:194: AssertionError
+_________ ERROR at setup of test_goldens_carry_real_volatile_material __________
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x72d0121e76f0>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1198'), _retention_count=3, _retention_policy='all')
+prereq_pinned_resolver = None
+
+    @pytest.fixture(scope="module")
+    def journey(
+        tmp_path_factory: pytest.TempPathFactory, prereq_pinned_resolver: None
+    ) -> FreezeJourney:
+        """The one real freeze cycle on the committed tree (or the boundary)."""
+    
+        if _nested_hermetic_freeze_boundary():
+            # The recursion boundary: this suite is running INSIDE the sealed
+            # materialisation of a freeze cycle. Proving the boundary is this
+            # module's honest pass; provisioning a nested cycle is neither
+            # possible nor meaningful here.
+            return FreezeJourney(
+                boundary=True, frozen_line=None, produced_bytes=None, committed_bytes=None
+            )
+    
+        dirty = subprocess.run(
+            ["git", "-C", str(REAL_REPO), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+>       assert not dirty, (
+            "the real-tree freeze journey needs a clean working tree — the "
+            f"kernel's own freeze would refuse it: {dirty}. Commit or clean "
+            "the tree and re-run; the refusal itself is frozen by "
+            "test_dirty_tree_freeze_refuses_with_stable_reason below."
+        )
+E       AssertionError: the real-tree freeze journey needs a clean working tree — the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md
+E          M tools/dogfood/README.md
+E         ?? tools/dogfood/receiver_audit.py
+E         ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.
+E       assert not 'M tools/dogfood/FINDINGS.md\n M tools/dogfood/README.md\n?? tools/dogfood/receiver_audit.py\n?? tools/dogfood/release_audit.py'
+
+tests/e2e/test_suite_freeze_real.py:194: AssertionError
+______ ERROR at setup of test_sabotage_control_mutated_golden_diffs_dirty ______
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x72d0121e76f0>, _basetemp=PosixPath('/tmp/pytest-of-soultransit/pytest-1198'), _retention_count=3, _retention_policy='all')
+prereq_pinned_resolver = None
+
+    @pytest.fixture(scope="module")
+    def journey(
+        tmp_path_factory: pytest.TempPathFactory, prereq_pinned_resolver: None
+    ) -> FreezeJourney:
+        """The one real freeze cycle on the committed tree (or the boundary)."""
+    
+        if _nested_hermetic_freeze_boundary():
+            # The recursion boundary: this suite is running INSIDE the sealed
+            # materialisation of a freeze cycle. Proving the boundary is this
+            # module's honest pass; provisioning a nested cycle is neither
+            # possible nor meaningful here.
+            return FreezeJourney(
+                boundary=True, frozen_line=None, produced_bytes=None, committed_bytes=None
+            )
+    
+        dirty = subprocess.run(
+            ["git", "-C", str(REAL_REPO), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout.strip()
+>       assert not dirty, (
+            "the real-tree freeze journey needs a clean working tree — the "
+            f"kernel's own freeze would refuse it: {dirty}. Commit or clean "
+            "the tree and re-run; the refusal itself is frozen by "
+            "test_dirty_tree_freeze_refuses_with_stable_reason below."
+        )
+E       AssertionError: the real-tree freeze journey needs a clean working tree — the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md
+E          M tools/dogfood/README.md
+E         ?? tools/dogfood/receiver_audit.py
+E         ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.
+E       assert not 'M tools/dogfood/FINDINGS.md\n M tools/dogfood/README.md\n?? tools/dogfood/receiver_audit.py\n?? tools/dogfood/release_audit.py'
+
+tests/e2e/test_suite_freeze_real.py:194: AssertionError
+=========================== short test summary info ============================
+ERROR tests/e2e/test_suite_freeze_real.py::test_manifest_round_trip_is_byte_stable
+ERROR tests/e2e/test_suite_freeze_real.py::test_frozen_transcript_matches_the_golden
+ERROR tests/e2e/test_suite_freeze_real.py::test_goldens_carry_real_volatile_material
+ERROR tests/e2e/test_suite_freeze_real.py::test_sabotage_control_mutated_golden_diffs_dirty
+1757 passed, 34 skipped, 4 errors in 1661.45s (0:27:41)

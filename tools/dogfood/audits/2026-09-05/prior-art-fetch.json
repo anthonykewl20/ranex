@@ -1,0 +1,527 @@
+{
+  "schema": "ranex-prior-art-origin-check-v1",
+  "date": "2026-09-05",
+  "method": "Refetch every unambiguous filename plus raw.githubusercontent.com URL on one NOTICE line. Compare complete bytes over verified HTTPS. Other provenance formats are outside this automated subset. A difference is not automatically a defect (excerpt/adaptation may be documented).",
+  "results": [
+    {
+      "path": "docs/adr/prior-art/ADR-010/opencode-run-headless.ts",
+      "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.12/packages/opencode/src/cli/cmd/run.ts",
+      "local_sha256": "11ebfd7a301282459ab1ffd6e3eae28e47344c9782273c7966efa4a9850b3a83",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.12/packages/opencode/src/cli/cmd/run.ts",
+      "remote_bytes": 32115,
+      "remote_sha256": "11ebfd7a301282459ab1ffd6e3eae28e47344c9782273c7966efa4a9850b3a83",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/bors-ng-batcher.ex",
+      "url": "https://raw.githubusercontent.com/bors-ng/bors-ng/ca725797e53a88e954998de0bbb14a8a5acb13ab/lib/worker/batcher.ex",
+      "local_sha256": "7161f1d70f2199db5026ce7d1e6d6ad8dc1f0be479337ff96dca9281045dd7e2",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/bors-ng/bors-ng/ca725797e53a88e954998de0bbb14a8a5acb13ab/lib/worker/batcher.ex",
+      "remote_bytes": 35588,
+      "remote_sha256": "7161f1d70f2199db5026ce7d1e6d6ad8dc1f0be479337ff96dca9281045dd7e2",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/swe-agent-run-single.py",
+      "url": "https://raw.githubusercontent.com/SWE-agent/SWE-agent/v1.1.0/sweagent/run/run_single.py",
+      "local_sha256": "7db94488fd8c4cf0c0d1e959247ba9da0969c6c488c6bb9515a5cd06e1769137",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/SWE-agent/SWE-agent/v1.1.0/sweagent/run/run_single.py",
+      "remote_bytes": 9012,
+      "remote_sha256": "7db94488fd8c4cf0c0d1e959247ba9da0969c6c488c6bb9515a5cd06e1769137",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/openhands-headless-main.py",
+      "url": "https://raw.githubusercontent.com/OpenHands/OpenHands/0.59.0/openhands/core/main.py",
+      "local_sha256": "afeeb2305d52b290ac1f2037602459c387a05ea5b6531660dadc04de29cb5e77",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/OpenHands/OpenHands/0.59.0/openhands/core/main.py",
+      "remote_bytes": 11725,
+      "remote_sha256": "afeeb2305d52b290ac1f2037602459c387a05ea5b6531660dadc04de29cb5e77",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/slsa-builder-go-two-job-split.yml",
+      "url": "https://raw.githubusercontent.com/slsa-framework/slsa-github-generator/4d014fae4dbd39eb09e8d40348b73db095e6ba9a/.github/workflows/builder_go_slsa3.yml",
+      "local_sha256": "3857d7fd671502fd6f6aa736d711fd0bd6e886f186eac152eb3af1d63ea9aded",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/slsa-framework/slsa-github-generator/4d014fae4dbd39eb09e8d40348b73db095e6ba9a/.github/workflows/builder_go_slsa3.yml",
+      "remote_bytes": 17251,
+      "remote_sha256": "3857d7fd671502fd6f6aa736d711fd0bd6e886f186eac152eb3af1d63ea9aded",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/in-toto-sign.py",
+      "url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/in_toto_sign.py",
+      "local_sha256": "a69c716c795a466fe731c7888848510a7e3305f96647fc999f2f2bac008e6a4c",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/in_toto_sign.py",
+      "remote_bytes": 13081,
+      "remote_sha256": "a69c716c795a466fe731c7888848510a7e3305f96647fc999f2f2bac008e6a4c",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-010/tekton-chains-taskrun-observe-then-sign.go",
+      "url": "https://raw.githubusercontent.com/tektoncd/chains/01d9ebfdae7a02247b1b00f48e44dd63d8a611ec/pkg/reconciler/taskrun/taskrun.go",
+      "local_sha256": "180554bee69fb02ee2c23c4eef8ff36cd77d9dda3bcaaaa6b9b407806f72702c",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/tektoncd/chains/01d9ebfdae7a02247b1b00f48e44dd63d8a611ec/pkg/reconciler/taskrun/taskrun.go",
+      "remote_bytes": 6265,
+      "remote_sha256": "180554bee69fb02ee2c23c4eef8ff36cd77d9dda3bcaaaa6b9b407806f72702c",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/cpython_results.py",
+      "url": "https://raw.githubusercontent.com/python/cpython/37e98da7c19a9e5892ee756d6dee08225422cd49/Lib/test/libregrtest/results.py",
+      "local_sha256": "adaccc13e519552652b3d6af3256b373ec8d74e95d83da61ef920c6dd410a376",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/python/cpython/37e98da7c19a9e5892ee756d6dee08225422cd49/Lib/test/libregrtest/results.py",
+      "remote_bytes": 10857,
+      "remote_sha256": "adaccc13e519552652b3d6af3256b373ec8d74e95d83da61ef920c6dd410a376",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/SkippedThreshold.java",
+      "url": "https://raw.githubusercontent.com/jenkinsci/xunit-plugin/xunit-3.1.7/src/main/java/org/jenkinsci/plugins/xunit/threshold/SkippedThreshold.java",
+      "local_sha256": "44890b09ec6d3c1200a62f2fecd9ceea45ca1eae4be6ff5c8925054e4af1b3a1",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/jenkinsci/xunit-plugin/xunit-3.1.7/src/main/java/org/jenkinsci/plugins/xunit/threshold/SkippedThreshold.java",
+      "remote_bytes": 2997,
+      "remote_sha256": "44890b09ec6d3c1200a62f2fecd9ceea45ca1eae4be6ff5c8925054e4af1b3a1",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/mtest.py",
+      "url": "https://raw.githubusercontent.com/mesonbuild/meson/1.5.1/mesonbuild/mtest.py",
+      "local_sha256": "d00d5e0b9b32040155c8ac552ea8d0f38763e303f11b63a220d92831a62eb17c",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/mesonbuild/meson/1.5.1/mesonbuild/mtest.py",
+      "remote_bytes": 90018,
+      "remote_sha256": "d00d5e0b9b32040155c8ac552ea8d0f38763e303f11b63a220d92831a62eb17c",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-011/pytest_error_for_skips.py",
+      "url": "https://raw.githubusercontent.com/jankatins/pytest-error-for-skips/4c3eaae64e09dc077a52e219c3cf375e3e5dbdc0/pytest_error_for_skips.py",
+      "local_sha256": "15fb66513d3946cd02652fabe2d0a9a945e5f525bcf79c55c9decfcbd51f2a9c",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/jankatins/pytest-error-for-skips/4c3eaae64e09dc077a52e219c3cf375e3e5dbdc0/pytest_error_for_skips.py",
+      "remote_bytes": 655,
+      "remote_sha256": "15fb66513d3946cd02652fabe2d0a9a945e5f525bcf79c55c9decfcbd51f2a9c",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/prow-tide.go",
+      "url": "https://raw.githubusercontent.com/kubernetes-sigs/prow/7f8580d8da573bcb9e4fe716358d4c0ee1d24b38/pkg/tide/tide.go",
+      "local_sha256": "313ab591dc3e245a10d4a38eccad66a31d53195640cfcbc1404f12523162db9f",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/kubernetes-sigs/prow/7f8580d8da573bcb9e4fe716358d4c0ee1d24b38/pkg/tide/tide.go",
+      "remote_bytes": 79664,
+      "remote_sha256": "313ab591dc3e245a10d4a38eccad66a31d53195640cfcbc1404f12523162db9f",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/gerrit-merge-op.java",
+      "url": "https://raw.githubusercontent.com/GerritCodeReview/gerrit/017823543c322cd1b3500bdc91d8b5a62baf5caf/java/com/google/gerrit/server/submit/MergeOp.java",
+      "local_sha256": "2a8b6333dc72724fe69284845e0441c14222aa2a7a94b5a0202dc55377550763",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/GerritCodeReview/gerrit/017823543c322cd1b3500bdc91d8b5a62baf5caf/java/com/google/gerrit/server/submit/MergeOp.java",
+      "remote_bytes": 69217,
+      "remote_sha256": "2a8b6333dc72724fe69284845e0441c14222aa2a7a94b5a0202dc55377550763",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/zuul-merger.py",
+      "url": "https://raw.githubusercontent.com/openstack-infra/zuul/dc9347c1223e3c7eb0399889d03c5de9e854a836/zuul/merger/merger.py",
+      "local_sha256": "3581c51eecbbf0c6d1223be0bf7dfb399beb0b67d875695583dae5a920dbf42e",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/openstack-infra/zuul/dc9347c1223e3c7eb0399889d03c5de9e854a836/zuul/merger/merger.py",
+      "remote_bytes": 30829,
+      "remote_sha256": "3581c51eecbbf0c6d1223be0bf7dfb399beb0b67d875695583dae5a920dbf42e",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/git-merge-tree.c",
+      "url": "https://raw.githubusercontent.com/git/git/c44beea485f0f2feaf460e2ac87fdd5608d63cf0/builtin/merge-tree.c",
+      "local_sha256": "2ceeabe2d7898ce3871dd295d6fdf94e4d944ac33c2d449bacad600528127ba9",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/git/git/c44beea485f0f2feaf460e2ac87fdd5608d63cf0/builtin/merge-tree.c",
+      "remote_bytes": 18456,
+      "remote_sha256": "2ceeabe2d7898ce3871dd295d6fdf94e4d944ac33c2d449bacad600528127ba9",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/git-refs-files-backend.c",
+      "url": "https://raw.githubusercontent.com/git/git/c44beea485f0f2feaf460e2ac87fdd5608d63cf0/refs/files-backend.c",
+      "local_sha256": "902742eacf1b7fa8146aee34ebc1c2163a4d4c1c8da3dd2e4d756113651d7353",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/git/git/c44beea485f0f2feaf460e2ac87fdd5608d63cf0/refs/files-backend.c",
+      "remote_bytes": 108985,
+      "remote_sha256": "902742eacf1b7fa8146aee34ebc1c2163a4d4c1c8da3dd2e4d756113651d7353",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-012/in-toto-verifylib.py",
+      "url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/verifylib.py",
+      "local_sha256": "2ea9a84c1f2cd44cfd16106f8c9139db216d035e7852ba2f92cac018689cd585",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/verifylib.py",
+      "remote_bytes": 56136,
+      "remote_sha256": "2ea9a84c1f2cd44cfd16106f8c9139db216d035e7852ba2f92cac018689cd585",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-013/in-toto-runlib.py",
+      "url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/runlib.py",
+      "local_sha256": "56e29d7b09df33bbc756fa3f08d8e410d90db4dbadfc3cc1fd5658fe16959e10",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/runlib.py",
+      "remote_bytes": 38533,
+      "remote_sha256": "56e29d7b09df33bbc756fa3f08d8e410d90db4dbadfc3cc1fd5658fe16959e10",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-013/cosign-remote.go",
+      "url": "https://raw.githubusercontent.com/sigstore/cosign/9a4cfe1aae777984c07ce373d97a65428bbff734/pkg/oci/remote/remote.go",
+      "local_sha256": "33c67bb532a7ea956cb6ac0a40cf2adc777a65e3dc3f4ca78947527a7b6fcef8",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/sigstore/cosign/9a4cfe1aae777984c07ce373d97a65428bbff734/pkg/oci/remote/remote.go",
+      "remote_bytes": 9144,
+      "remote_sha256": "33c67bb532a7ea956cb6ac0a40cf2adc777a65e3dc3f4ca78947527a7b6fcef8",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-013/bubblewrap.c",
+      "url": "https://raw.githubusercontent.com/containers/bubblewrap/8e51677abd7e3338e4952370bf7d902e37d8cbb6/bubblewrap.c",
+      "local_sha256": "6a89bc9b7a794d19e2bdb1e139ab9d5bba84e807b330336f363f88f130cfeab6",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/containers/bubblewrap/8e51677abd7e3338e4952370bf7d902e37d8cbb6/bubblewrap.c",
+      "remote_bytes": 107265,
+      "remote_sha256": "6a89bc9b7a794d19e2bdb1e139ab9d5bba84e807b330336f363f88f130cfeab6",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-014/dbos-system-database.ts",
+      "url": "https://raw.githubusercontent.com/dbos-inc/dbos-transact/dfd600cc48537a69f3d57d28108a781bfb82c988/src/system_database.ts",
+      "local_sha256": "0405251604c39c3a43e33788e8dca0fdb9fa407f79e8dc4f25ec00ce01ff8e16",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/dbos-inc/dbos-transact/dfd600cc48537a69f3d57d28108a781bfb82c988/src/system_database.ts",
+      "remote_bytes": 180432,
+      "remote_sha256": "0405251604c39c3a43e33788e8dca0fdb9fa407f79e8dc4f25ec00ce01ff8e16",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-014/codex-agent-graph-store-local.rs",
+      "url": "https://raw.githubusercontent.com/openai/codex/1151b23f01accb19e55c090a3349a32fdf2b4685/codex-rs/agent-graph-store/src/local.rs",
+      "local_sha256": "61f8f2b4f142f19e9e5fc4854fe6c2ada51019c9c27c9620b5916495fd59cd1f",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/openai/codex/1151b23f01accb19e55c090a3349a32fdf2b4685/codex-rs/agent-graph-store/src/local.rs",
+      "remote_bytes": 11741,
+      "remote_sha256": "61f8f2b4f142f19e9e5fc4854fe6c2ada51019c9c27c9620b5916495fd59cd1f",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-014/aider-repo.py",
+      "url": "https://raw.githubusercontent.com/Aider-AI/aider/5dc9490bb35f9729ef2c95d00a19ccd30c26339c/aider/repo.py",
+      "local_sha256": "a49343d63d3faa684003f9e59306215e6f3d77b7b944a71b88b132e0c78c5df0",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/Aider-AI/aider/5dc9490bb35f9729ef2c95d00a19ccd30c26339c/aider/repo.py",
+      "remote_bytes": 22954,
+      "remote_sha256": "a49343d63d3faa684003f9e59306215e6f3d77b7b944a71b88b132e0c78c5df0",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-015/bullmq-lock-manager.ts",
+      "url": "https://raw.githubusercontent.com/taskforcesh/bullmq/46880af9629e9aee9abbc2782074a3e76d17b924/src/classes/lock-manager.ts",
+      "local_sha256": "4fefb841027894b9dbabab8e580229a2c6802bb3ffc60dd7b4393cecddcd62f0",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/taskforcesh/bullmq/46880af9629e9aee9abbc2782074a3e76d17b924/src/classes/lock-manager.ts",
+      "remote_bytes": 5889,
+      "remote_sha256": "4fefb841027894b9dbabab8e580229a2c6802bb3ffc60dd7b4393cecddcd62f0",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-015/langgraph-checkpoint-sqlite.ts",
+      "url": "https://raw.githubusercontent.com/langchain-ai/langgraphjs/f6a6d26b7e69003c4fa052f3cd3319f3e72f0f8f/libs/checkpoint-sqlite/src/index.ts",
+      "local_sha256": "bf1c17a98ae55c4d0d513a660311602c9908537f281ae1f7bcc9bd9e9db0b58d",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/langchain-ai/langgraphjs/f6a6d26b7e69003c4fa052f3cd3319f3e72f0f8f/libs/checkpoint-sqlite/src/index.ts",
+      "remote_bytes": 15376,
+      "remote_sha256": "bf1c17a98ae55c4d0d513a660311602c9908537f281ae1f7bcc9bd9e9db0b58d",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/in-toto-provenance.go",
+      "url": "https://raw.githubusercontent.com/in-toto/attestation/df02077bf97218a8860a5c534eff1f1381f56984/go/predicates/provenance/v1/provenance.go",
+      "local_sha256": "911f9ef58f1177e7623fa35d6f2cc6dac146dcccf9d1ad85706adf93ca63edc1",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/in-toto/attestation/df02077bf97218a8860a5c534eff1f1381f56984/go/predicates/provenance/v1/provenance.go",
+      "remote_bytes": 3683,
+      "remote_sha256": "911f9ef58f1177e7623fa35d6f2cc6dac146dcccf9d1ad85706adf93ca63edc1",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/scipy-binomtest.py",
+      "url": "https://raw.githubusercontent.com/scipy/scipy/44e4ebaac992fde33f04638b99629d23973cb9b2/scipy/stats/_binomtest.py",
+      "local_sha256": "696ea9faf464bf7a5207cff49d37d3de4340855f08a78e00dfd1043f297d5a57",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/scipy/scipy/44e4ebaac992fde33f04638b99629d23973cb9b2/scipy/stats/_binomtest.py",
+      "remote_bytes": 13118,
+      "remote_sha256": "696ea9faf464bf7a5207cff49d37d3de4340855f08a78e00dfd1043f297d5a57",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/statsmodels-contingency-tables.py",
+      "url": "https://raw.githubusercontent.com/statsmodels/statsmodels/40e6a84d26ac74623c6b94b718f0987ef0351c53/statsmodels/stats/contingency_tables.py",
+      "local_sha256": "af2e5455df459abc9ced79186e16fecf38344cc630aeec1ade9e6e65b488090f",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/statsmodels/statsmodels/40e6a84d26ac74623c6b94b718f0987ef0351c53/statsmodels/stats/contingency_tables.py",
+      "remote_bytes": 44229,
+      "remote_sha256": "af2e5455df459abc9ced79186e16fecf38344cc630aeec1ade9e6e65b488090f",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/argo-analysis-types.go",
+      "url": "https://raw.githubusercontent.com/argoproj/argo-rollouts/b6bd3bcf8f60d717a98763d26acc983db7f97cb0/pkg/apis/rollouts/v1alpha1/analysis_types.go",
+      "local_sha256": "c785e8921103049c150022e47376be80f98d79421f873ad6fa93acaba14672fe",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/argoproj/argo-rollouts/b6bd3bcf8f60d717a98763d26acc983db7f97cb0/pkg/apis/rollouts/v1alpha1/analysis_types.go",
+      "remote_bytes": 35157,
+      "remote_sha256": "c785e8921103049c150022e47376be80f98d79421f873ad6fa93acaba14672fe",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/optuna-trial-state.py",
+      "url": "https://raw.githubusercontent.com/optuna/optuna/4db42e31c24b200e52595df9d4c00e2cdeefea2b/optuna/trial/_state.py",
+      "local_sha256": "2041915f4fc1796a74d1c79c37b3418aa753baa7a59ccb4ae6dfb2ef22081cf1",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/optuna/optuna/4db42e31c24b200e52595df9d4c00e2cdeefea2b/optuna/trial/_state.py",
+      "remote_bytes": 1038,
+      "remote_sha256": "2041915f4fc1796a74d1c79c37b3418aa753baa7a59ccb4ae6dfb2ef22081cf1",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-016/tuf-trusted-metadata-set.py",
+      "url": "https://raw.githubusercontent.com/theupdateframework/python-tuf/353bdb767db56fd4667c9bcf56b710d50fdc2ac0/tuf/ngclient/_internal/trusted_metadata_set.py",
+      "local_sha256": "cf9dca8e8fbaacdc60cf13a745513d3f7eb18193edb5a1ea636021e5c2df08c0",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/theupdateframework/python-tuf/353bdb767db56fd4667c9bcf56b710d50fdc2ac0/tuf/ngclient/_internal/trusted_metadata_set.py",
+      "remote_bytes": 20126,
+      "remote_sha256": "cf9dca8e8fbaacdc60cf13a745513d3f7eb18193edb5a1ea636021e5c2df08c0",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/securesystemslib-dsse.py",
+      "url": "https://raw.githubusercontent.com/secure-systems-lab/securesystemslib/47b0f4512fe974d6df75dbd4ad62c2642d4e5806/securesystemslib/dsse.py",
+      "local_sha256": "167c72e8fd9fe6cf62ad877e58447b609f248cecd98f5e54ee32387dae7db911",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/secure-systems-lab/securesystemslib/47b0f4512fe974d6df75dbd4ad62c2642d4e5806/securesystemslib/dsse.py",
+      "remote_bytes": 5528,
+      "remote_sha256": "167c72e8fd9fe6cf62ad877e58447b609f248cecd98f5e54ee32387dae7db911",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/tuf-trusted-metadata-set.py",
+      "url": "https://raw.githubusercontent.com/theupdateframework/python-tuf/353bdb767db56fd4667c9bcf56b710d50fdc2ac0/tuf/ngclient/_internal/trusted_metadata_set.py",
+      "local_sha256": "cf9dca8e8fbaacdc60cf13a745513d3f7eb18193edb5a1ea636021e5c2df08c0",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/theupdateframework/python-tuf/353bdb767db56fd4667c9bcf56b710d50fdc2ac0/tuf/ngclient/_internal/trusted_metadata_set.py",
+      "remote_bytes": 20126,
+      "remote_sha256": "cf9dca8e8fbaacdc60cf13a745513d3f7eb18193edb5a1ea636021e5c2df08c0",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/kubelet-filestore.go",
+      "url": "https://raw.githubusercontent.com/kubernetes/kubernetes/a57b6f7709f6c2722b92f07b8b4c48210a51fc40/pkg/kubelet/util/store/filestore.go",
+      "local_sha256": "88abbfc058e170c1067ab6a58f1cb195c12873334c1fd20df741f29d3e249fe1",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/kubernetes/kubernetes/a57b6f7709f6c2722b92f07b8b4c48210a51fc40/pkg/kubelet/util/store/filestore.go",
+      "remote_bytes": 3962,
+      "remote_sha256": "88abbfc058e170c1067ab6a58f1cb195c12873334c1fd20df741f29d3e249fe1",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/cosign-exit-code-lookup.go",
+      "url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/cmd/cosign/errors/exit_code_lookup.go",
+      "local_sha256": "a0d0051028b22261592bd562e7c7dedad5d53c024d280bfa2853f02fc48663d6",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/cmd/cosign/errors/exit_code_lookup.go",
+      "remote_bytes": 1917,
+      "remote_sha256": "a0d0051028b22261592bd562e7c7dedad5d53c024d280bfa2853f02fc48663d6",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-019/LICENSE-APACHE-2.0.txt",
+      "url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/LICENSE",
+      "local_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/LICENSE",
+      "remote_bytes": 11357,
+      "remote_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/kyverno-rulestatus.go",
+      "url": "https://raw.githubusercontent.com/kyverno/kyverno/945ac9ce8546ea6cd51370f24b615148c577da5e/pkg/engine/api/rulestatus.go",
+      "local_sha256": "b00b6d20476cec6555b8db7f07c208c9234e5741858e1a6671fd80557a5091bf",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/kyverno/kyverno/945ac9ce8546ea6cd51370f24b615148c577da5e/pkg/engine/api/rulestatus.go",
+      "remote_bytes": 1101,
+      "remote_sha256": "b00b6d20476cec6555b8db7f07c208c9234e5741858e1a6671fd80557a5091bf",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/kyverno-cli-result.go",
+      "url": "https://raw.githubusercontent.com/kyverno/kyverno/945ac9ce8546ea6cd51370f24b615148c577da5e/cmd/cli/kubectl-kyverno/processor/result.go",
+      "local_sha256": "c5a33d088448eb9d2a008c988d3d06734ad01b88bef8caedf76a3567f1641720",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/kyverno/kyverno/945ac9ce8546ea6cd51370f24b615148c577da5e/cmd/cli/kubectl-kyverno/processor/result.go",
+      "remote_bytes": 5375,
+      "remote_sha256": "c5a33d088448eb9d2a008c988d3d06734ad01b88bef8caedf76a3567f1641720",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/k8s-apimachinery-errors.go",
+      "url": "https://raw.githubusercontent.com/kubernetes/kubernetes/0f29094e5b73085e3802ecc1298ecae13866bfe6/staging/src/k8s.io/apimachinery/pkg/api/errors/errors.go",
+      "local_sha256": "32d6b0c08720c34b6f9d471b108994bb7b4cfe677d96ad4c56916fade2fb0a01",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/kubernetes/kubernetes/0f29094e5b73085e3802ecc1298ecae13866bfe6/staging/src/k8s.io/apimachinery/pkg/api/errors/errors.go",
+      "remote_bytes": 31581,
+      "remote_sha256": "32d6b0c08720c34b6f9d471b108994bb7b4cfe677d96ad4c56916fade2fb0a01",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/knative-condition-set.go",
+      "url": "https://raw.githubusercontent.com/knative/pkg/39ebae2ee2dc245299eb6a3b12034fb624b86156/apis/condition_set.go",
+      "local_sha256": "668c1ea63597ee7cbfdf363f4d8ed2353b6c44a586e07ed1850d7eb8f9c6e791",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/knative/pkg/39ebae2ee2dc245299eb6a3b12034fb624b86156/apis/condition_set.go",
+      "remote_bytes": 13509,
+      "remote_sha256": "668c1ea63597ee7cbfdf363f4d8ed2353b6c44a586e07ed1850d7eb8f9c6e791",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-020/LICENSE-APACHE-2.0.txt",
+      "url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/LICENSE",
+      "local_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/LICENSE",
+      "remote_bytes": 11357,
+      "remote_sha256": "c71d239df91726fc519c6eb72d318ec65820627232b2f796219e87dcf35d0ab4",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/git-tr2_dst.c",
+      "url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_dst.c",
+      "local_sha256": "379a6c554bf7ee86c70b445c57ee3aafcad66a81d7c0b86051beb1a3ba800b9c",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_dst.c",
+      "remote_bytes": 10196,
+      "remote_sha256": "379a6c554bf7ee86c70b445c57ee3aafcad66a81d7c0b86051beb1a3ba800b9c",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/git-tr2_tgt_event.c",
+      "url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_tgt_event.c",
+      "local_sha256": "038ac90919962b862170ba8eab9441e6928084f6e269a1aa62056fdb0369df73",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_tgt_event.c",
+      "remote_bytes": 20569,
+      "remote_sha256": "038ac90919962b862170ba8eab9441e6928084f6e269a1aa62056fdb0369df73",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/git-tr2_sid.c",
+      "url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_sid.c",
+      "local_sha256": "b1f1179f4464a6b22e81aa5e585c7c293681329acd63ee98148134024b36ddf5",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_sid.c",
+      "remote_bytes": 3018,
+      "remote_sha256": "b1f1179f4464a6b22e81aa5e585c7c293681329acd63ee98148134024b36ddf5",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/pino-redaction.js",
+      "url": "https://raw.githubusercontent.com/pinojs/pino/v9.4.0/lib/redaction.js",
+      "local_sha256": "35126406320c98554ce69c350858a01a061c9a37db363cd7b57156bbf7305821",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/pinojs/pino/v9.4.0/lib/redaction.js",
+      "remote_bytes": 3338,
+      "remote_sha256": "35126406320c98554ce69c350858a01a061c9a37db363cd7b57156bbf7305821",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-031/structlog-native.py",
+      "url": "https://raw.githubusercontent.com/hynek/structlog/24.4.0/src/structlog/_native.py",
+      "local_sha256": "a1b4d02af0951373b75e8d018e28245765907e586d60d79b4fc09f889d0df6e4",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/hynek/structlog/24.4.0/src/structlog/_native.py",
+      "remote_bytes": 7633,
+      "remote_sha256": "a1b4d02af0951373b75e8d018e28245765907e586d60d79b4fc09f889d0df6e4",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/git-test-lib.sh",
+      "url": "https://raw.githubusercontent.com/git/git/v2.45.2/t/test-lib.sh",
+      "local_sha256": "b9ee679a928de07b32679d637ca42151fecb90bab3daece8901c55e07e056efd",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/git/git/v2.45.2/t/test-lib.sh",
+      "remote_bytes": 49757,
+      "remote_sha256": "b9ee679a928de07b32679d637ca42151fecb90bab3daece8901c55e07e056efd",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/git-test-lib-functions.sh",
+      "url": "https://raw.githubusercontent.com/git/git/v2.45.2/t/test-lib-functions.sh",
+      "local_sha256": "851876a0a4c3ca91aa45a2bfd7fe2287938d1d8ba1c801a3c06781e06cba7b56",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/git/git/v2.45.2/t/test-lib-functions.sh",
+      "remote_bytes": 44703,
+      "remote_sha256": "851876a0a4c3ca91aa45a2bfd7fe2287938d1d8ba1c801a3c06781e06cba7b56",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/postgres-pg_regress.c",
+      "url": "https://raw.githubusercontent.com/postgres/postgres/REL_16_2/src/test/regress/pg_regress.c",
+      "local_sha256": "9e997ed29fddb5a7f74c9a6c606d32fad8516573ed743c1bb4219d31b9664266",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/postgres/postgres/REL_16_2/src/test/regress/pg_regress.c",
+      "remote_bytes": 66831,
+      "remote_sha256": "9e997ed29fddb5a7f74c9a6c606d32fad8516573ed743c1bb4219d31b9664266",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/curl-sws.c",
+      "url": "https://raw.githubusercontent.com/curl/curl/curl-8_8_0/tests/server/sws.c",
+      "local_sha256": "bc2f6507ddb80f08fa118031958c99d7565baa0f5155910681889ba1a08ede17",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/curl/curl/curl-8_8_0/tests/server/sws.c",
+      "remote_bytes": 73784,
+      "remote_sha256": "bc2f6507ddb80f08fa118031958c99d7565baa0f5155910681889ba1a08ede17",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/moby-requirement.go",
+      "url": "https://raw.githubusercontent.com/moby/moby/v26.1.4/integration/internal/requirement/requirement.go",
+      "local_sha256": "8e600aadb53ce0d2645a3ddc1fc170bbfc327c9faa1db40e9ab9a3742446f005",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/moby/moby/v26.1.4/integration/internal/requirement/requirement.go",
+      "remote_bytes": 680,
+      "remote_sha256": "8e600aadb53ce0d2645a3ddc1fc170bbfc327c9faa1db40e9ab9a3742446f005",
+      "status": "MATCH"
+    },
+    {
+      "path": "docs/adr/prior-art/ADR-032/coveragepy-control.py",
+      "url": "https://raw.githubusercontent.com/nedbat/coveragepy/7.6.1/coverage/control.py",
+      "local_sha256": "6c8c80e63457bc322210d10a1eb644418c3917213dd47dfd7cd36652b1cb316c",
+      "http_status": 200,
+      "final_url": "https://raw.githubusercontent.com/nedbat/coveragepy/7.6.1/coverage/control.py",
+      "remote_bytes": 51945,
+      "remote_sha256": "6c8c80e63457bc322210d10a1eb644418c3917213dd47dfd7cd36652b1cb316c",
+      "status": "MATCH"
+    }
+  ]
+}

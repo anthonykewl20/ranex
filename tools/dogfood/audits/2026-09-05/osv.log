@@ -1,0 +1,4 @@
+Warning: --output has been deprecated in favor of --output-file
+Starting filesystem walk for root: /
+Scanned /home/soultransit/devtony/ranex/uv.lock file and found 34 packages
+End status: 0 dirs visited, 1 inodes visited, 1 Extract calls, 4.988756ms elapsed, 4.988816ms wall time

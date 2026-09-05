@@ -6,29 +6,39 @@
 
 ## Where we stopped
 
-Auditing v0.1.0 and HEAD with real external tests and TCP/process probes.
-Reproducers: tools/dogfood/release_audit.py and receiver_audit.py.
-Findings: tools/dogfood/FINDINGS.md, F-007 through F-013.
-The audit is in progress; a final clean-commit full-suite run is pending.
+Release audit and real reproducers retained in tools/dogfood/audits/2026-09-05/.
+Start at audit.json; FINDINGS.md explains F-001 through F-018.
+53 external-repository controls cover v0.1.0 and corrected source separately;
+16 real receiver controls reproduce nine defenses and seven gaps.
+52 independently refetched prior-art sources match their vendored bytes.
+
+## Corrections
+
+Guardian argv[0] names its resolved interpreter; execution still uses the
+verified fd. The Python 3.11 real execution-family check passes all seven tests.
+Host-workflow acceptance now invokes each provisioned clone's CLI. Its same
+seven real checks pass with no skips; 22 other direct host checks also pass.
+Suite manifest, dependency lock, signing domain, and verdict kernel unchanged.
+
+## Validation
+
+The single closing comment on #81 records the final clean commit's exact SHA
+and `uv run --frozen pytest -q` result. Detailed pre-commit results are in the
+audit archive; failures and named skips are preserved alongside successes.
+The released full-run aggregate is exploratory; isolated cold start confirms
+8 passed, 1 failed. Live historical bootstrap and an extra tooling guard fail.
+An observed journal contention timeout did not recur in its isolated rerun.
 
 ## Next
 
-Finish clean-checkout validation and retain results before closing #81.
-Remediation priorities: receiver liveness/durable delivery state, principal
-enforcement, XPASS/collection diagnostics, and honest verifier boundaries.
-Anti-replay and trusted journal-head anchoring remain deferred owner work.
-
-## Governance
-
-No frozen suite, dependency lock, signing domain, or verdict kernel change.
-One runtime correction: guardian argv[0] names its resolved interpreter;
-execution still uses the verified fd. Python 3.11 regression check pending.
-Initial full run: 1757 passed, 34 skipped, 4 setup errors caused by the
-audit's dirty tree; those errors are not reported as a product regression.
+Fix receiver bounded reads and durable delivery/retry state (F-007/008/009).
+Wire principal retirement into admission; reconcile XPASS/collection claims.
+Repair bootstrap, benchmark attribution, and nested host integration.
+Independent reporter truth and anchored replay/history remain explicit limits.
 
 ## Known limits
 
-UNVERIFIED: live GitHub App/PR/ruleset journey and unexecuted host branches.
-A hostile pytest reporter can receive signed PASS for broken code.
-Journal truncation/full rewrite still verifies; retired principal metadata
-does not govern producer admission; non-strict XPASS still receives PASS.
+UNVERIFIED: live GitHub App/PR/ruleset and credentialed provider journeys,
+unexecuted host/platform branches, and complete nested-host failure causes.
+A hostile pytest reporter can receive authentic signed PASS for broken code.
+Journal truncation/rewrite and ordinary evidence replay remain accepted.

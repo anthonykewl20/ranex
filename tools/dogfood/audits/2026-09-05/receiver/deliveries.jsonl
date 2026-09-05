@@ -1,0 +1,11 @@
+{"delivery": "ping-1", "event": "ping", "outcome": "ignored"}
+{"delivery": "ping-1", "outcome": "replayed"}
+{"delivery": "fetch-retry", "event": "pull_request", "outcome": "E-GITHUB-UNFETCHABLE-HEAD", "head_sha": "9999999999999999999999999999999999999999"}
+{"delivery": "fetch-retry", "outcome": "replayed"}
+{"delivery": "ping-1", "event": "ping", "outcome": "ignored"}
+{"delivery": "negative-content-length-control", "event": "ping", "outcome": "ignored"}
+{"delivery": "negative-content-length-recovery", "event": "ping", "outcome": "ignored"}
+{"delivery": "incomplete-body-control", "event": "ping", "outcome": "ignored"}
+{"delivery": "incomplete-body-recovery", "event": "ping", "outcome": "ignored"}
+{"delivery": "idle-client-control", "event": "ping", "outcome": "ignored"}
+{"delivery": "idle-client-recovery", "event": "ping", "outcome": "ignored"}

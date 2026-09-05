@@ -1,0 +1,42 @@
+[
+  {
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-keyform",
+      "DER",
+      "-inkey",
+      "tools/dogfood/audits/2026-09-05/external-final/0/public-key.der",
+      "-rawin",
+      "-in",
+      "tools/dogfood/audits/2026-09-05/external-final/0/payload.bin",
+      "-sigfile",
+      "tools/dogfood/audits/2026-09-05/external-final/0/signature.bin"
+    ],
+    "exit": 0,
+    "stdout": "Signature Verified Successfully\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-keyform",
+      "DER",
+      "-inkey",
+      "tools/dogfood/audits/2026-09-05/external-final/1/public-key.der",
+      "-rawin",
+      "-in",
+      "tools/dogfood/audits/2026-09-05/external-final/1/payload.bin",
+      "-sigfile",
+      "tools/dogfood/audits/2026-09-05/external-final/1/signature.bin"
+    ],
+    "exit": 0,
+    "stdout": "Signature Verified Successfully\n",
+    "stderr": ""
+  }
+]

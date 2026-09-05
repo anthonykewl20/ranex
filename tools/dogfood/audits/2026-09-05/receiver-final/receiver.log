@@ -1,0 +1,277 @@
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 45400)
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 192, in do_POST
+    status = process_delivery(
+        config,
+    ...<3 lines>...
+        self.headers.get(webhook.EVENT_HEADER, ""),
+    )
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 87, in process_delivery
+    event = webhook.parse_pull_request_event(body)
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/webhook.py", line 86, in parse_pull_request_event
+    value: Any = json.loads(body)
+                 ~~~~~~~~~~^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/json/__init__.py", line 352, in loads
+    return _default_decoder.decode(s)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/json/decoder.py", line 345, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/json/decoder.py", line 361, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ~~~~~~~~~~~~~~^^^^^^^^
+json.decoder.JSONDecodeError: Expecting property name enclosed in double quotes: line 1 column 2 (char 1)
+----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 45414)
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 192, in do_POST
+    status = process_delivery(
+        config,
+    ...<3 lines>...
+        self.headers.get(webhook.EVENT_HEADER, ""),
+    )
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 87, in process_delivery
+    event = webhook.parse_pull_request_event(body)
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/webhook.py", line 106, in parse_pull_request_event
+    number=int(number),
+           ~~~^^^^^^^^
+ValueError: invalid literal for int() with base 10: 'oops'
+----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 58362)
+Traceback (most recent call last):
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 179, in do_POST
+    webhook.validate_delivery(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        config.webhook_secret,
+        ^^^^^^^^^^^^^^^^^^^^^^
+        body,
+        ^^^^^
+        self.headers.get(webhook.SIGNATURE_HEADER),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/webhook.py", line 58, in validate_delivery
+    raise WebhookRefusal(
+        "E-GITHUB-UNSIGNED-DELIVERY", f"{SIGNATURE_HEADER} is absent"
+    )
+ranex.github_app.webhook.WebhookRefusal: E-GITHUB-UNSIGNED-DELIVERY X-Hub-Signature-256 is absent
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 186, in do_POST
+    self._answer(401, "delivery did not prove itself")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 207, in _answer
+    self.wfile.write(payload)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 58378)
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 199, in do_POST
+    self._answer(status, "accepted" if status == 200 else "retry later")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 207, in _answer
+    self.wfile.write(payload)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 32112)
+Traceback (most recent call last):
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 179, in do_POST
+    webhook.validate_delivery(
+    ~~~~~~~~~~~~~~~~~~~~~~~~~^
+        config.webhook_secret,
+        ^^^^^^^^^^^^^^^^^^^^^^
+        body,
+        ^^^^^
+        self.headers.get(webhook.SIGNATURE_HEADER),
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/webhook.py", line 58, in validate_delivery
+    raise WebhookRefusal(
+        "E-GITHUB-UNSIGNED-DELIVERY", f"{SIGNATURE_HEADER} is absent"
+    )
+ranex.github_app.webhook.WebhookRefusal: E-GITHUB-UNSIGNED-DELIVERY X-Hub-Signature-256 is absent
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 186, in do_POST
+    self._answer(401, "delivery did not prove itself")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 207, in _answer
+    self.wfile.write(payload)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 32114)
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 199, in do_POST
+    self._answer(status, "accepted" if status == 200 else "retry later")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 207, in _answer
+    self.wfile.write(payload)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------
+----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 38856)
+Traceback (most recent call last):
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 318, in _handle_request_noblock
+    self.process_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 349, in process_request
+    self.finish_request(request, client_address)
+    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 766, in __init__
+    self.handle()
+    ~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 496, in handle
+    self.handle_one_request()
+    ~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/http/server.py", line 484, in handle_one_request
+    method()
+    ~~~~~~^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 199, in do_POST
+    self._answer(status, "accepted" if status == 200 else "retry later")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/devtony/ranex/src/ranex/github_app/receiver.py", line 207, in _answer
+    self.wfile.write(payload)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/socketserver.py", line 845, in write
+    self._sock.sendall(b)
+    ~~~~~~~~~~~~~~~~~~^^^
+BrokenPipeError: [Errno 32] Broken pipe
+----------------------------------------

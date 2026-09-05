@@ -1,0 +1,24 @@
+{
+  "head": "edf1a98605beb7b351b31ada3877f5ec510da1f7",
+  "command": [
+    "systemd-run",
+    "--user",
+    "--scope",
+    "--quiet",
+    "--collect",
+    "--same-dir",
+    "--property=Delegate=yes",
+    "--property=CPUAccounting=yes",
+    "--property=MemoryAccounting=yes",
+    "--property=TasksAccounting=yes",
+    "uv",
+    "run",
+    "--frozen",
+    "pytest",
+    "-q",
+    "tests/e2e/test_cold_start_journey.py",
+    "--junitxml=/home/soultransit/devtony/ranex/.local/release-audit/released-cold-sequential.xml"
+  ],
+  "exit": 1,
+  "method": "Serialized after released-full and qualified-remaining; no other full or confinement suite is running."
+}

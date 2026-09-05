@@ -1,0 +1,20 @@
+{
+  "head": "48f3a98e48cf10bc0a4ce24fae7862726b82b1c7",
+  "release": "edf1a98605beb7b351b31ada3877f5ec510da1f7",
+  "platform": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "python": "3.14.6",
+  "packages": {
+    "pytest": "9.1.1",
+    "coverage": "7.15.3",
+    "cryptography": "50.0.0",
+    "PyYAML": "6.0.3",
+    "pyelftools": "0.32",
+    "packaging": "26.2"
+  },
+  "inputs": {
+    "uv.lock": "ed9a11d830942f082565f3028e958d8f6c7025e5391396999a1f6ea76e04e3e7",
+    "governance/suite_manifest.json": "c2894e7d41b959f5c68ef265c7d20e7c7feadc1524f5bd03b4662ec0600c40d7",
+    "governance/confinement/native-launcher-build-v1.json": "99aa6f6ff11d5fedc319ff93e2efe3024110e5363232d99ea8248c3ed060d1f5",
+    "src/ranex/governed_execution/domain/verdict.py": "2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6"
+  }
+}

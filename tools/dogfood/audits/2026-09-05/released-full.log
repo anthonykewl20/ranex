@@ -1,0 +1,422 @@
+........................................................................ [  4%]
+...............sssssss.................................................. [  8%]
+........................................................................ [ 13%]
+...........................s.....................................F...... [ 17%]
+.......................................................................F [ 21%]
+...sF.s..F.F............................................................ [ 26%]
+..ss.................ss.......F...........s............................. [ 30%]
+........................................................................ [ 34%]
+.sssssssssssssssss.....................F................................ [ 39%]
+.....................................s.................................. [ 43%]
+........................................................................ [ 47%]
+........................................................................ [ 52%]
+........................................................................ [ 56%]
+........................................................................ [ 60%]
+........................................................................ [ 65%]
+.....................................s.................................. [ 69%]
+........................................................................ [ 73%]
+........................................................................ [ 78%]
+........................................................................ [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 91%]
+........................................................................ [ 95%]
+........................................................................ [ 99%]
+.                                                                        [100%]
+=================================== FAILURES ===================================
+__________________ test_stage_9_the_gate_accepts_the_evidence __________________
+
+operator = <test_cold_start_journey.Operator object at 0x71cac7292a50>
+
+    def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
+        operator.require("resolver", "clone", "fetch", "evidence")
+        record_live_host_qualification(operator.clone, operator.key)
+        code, out, err = ranex(
+            operator.clone,
+            ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
+        )
+>       assert code == 0, (
+            "the gate did not accept the evidence stage 8 recorded; it exited "
+            f"{code}. The verdict, verbatim:\n{(out + err).strip() or '(no output)'}"
+        )
+E       AssertionError: the gate did not accept the evidence stage 8 recorded; it exited 1. The verdict, verbatim:
+E         FAIL  gate=landing  rule=TESTS_EXECUTED
+E               tests-executed: blocking suite outcome(s): tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material (error), tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty (error), tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned (error), tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden (error), tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain (error), tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope (failed), tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained (failed), tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record (failed), tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors (failed), tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published (failed), tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state (failed), tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes (failed), tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response] (failed)
+E               subject=sha256:538af0b6d80efface866edfd5a557f26b3eb3c7cbba7ccf546e350194055da56
+E       assert 1 == 0
+
+tests/e2e/test_cold_start_journey.py:574: AssertionError
+______ test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts _______
+
+session = <test_gating_real_suite.Session object at 0x71cac7292900>
+
+    def test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts(
+        session: Session,
+    ) -> None:
+        if nested_hermetic_self_gate():
+            return
+        session.require("resolver", "clone", "fetch", "approval")
+        code, out, err = ranex(session.clone, run_argv(session.store), session.key_path)
+>       assert code == 0, (
+            "the real suite did not pass under governance: the bound command "
+            f"exited {code} against the cloned HEAD. This stage's claim is that "
+            "the committed tree is green, so a red suite at HEAD fails it "
+            "honestly — the tail of the suite's own output says which tests:\n"
+            f"{suite_tail(out, err)}"
+        )
+E       AssertionError: the real suite did not pass under governance: the bound command exited 1 against the cloned HEAD. This stage's claim is that the committed tree is green, so a red suite at HEAD fails it honestly — the tail of the suite's own output says which tests:
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         F
+E         ======================================================================
+E         ----------------------------------------------------------------------
+E         Traceback (most recent call last):
+E         
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         F
+E         ======================================================================
+E         ----------------------------------------------------------------------
+E         Traceback (most recent call last):
+E         
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         no tests ran in 0.00s
+E         =========================== short test summary info ============================
+E         FAILED tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record
+E         FAILED tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors
+E         FAILED tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published
+E         FAILED tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained
+E         FAILED tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope
+E         FAILED tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state
+E         FAILED tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response]
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field]
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response]
+E         ERROR tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden
+E         ERROR tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned
+E         ERROR tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code
+E         ERROR tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material
+E         ERROR tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root]
+E         11 failed, 1534 passed, 97 skipped, 15 errors in 231.80s (0:03:51)
+E       assert 1 == 0
+
+tests/e2e/test_gating_real_suite.py:875: AssertionError
+_____ test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted ______
+
+session = <test_gating_real_suite.Session object at 0x71cac7292900>
+
+    def test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted(
+        session: Session,
+    ) -> None:
+        """Delete a real frozen test in the clean live clone and observe FAIL."""
+    
+        if nested_hermetic_self_gate():
+            return
+        session.require("resolver", "clone", "fetch", "approval")
+        assert session.clone is not None
+        assert session.store is not None
+        assert session.key_path is not None
+        repository = session.clone
+    
+        live_gate = load_gate(repository / "governance" / "gates.yaml", "landing")
+        live_manifest = load_manifest(repository / "governance" / "suite_manifest.json")
+        live_claim = next(
+            claim for claim in live_gate.required_claims if claim.claim_id == "tests-executed"
+        )
+        assert live_claim.results_artifact is not None
+        assert f"--junitxml={live_claim.results_artifact}" in live_claim.command
+        assert len(live_manifest["suite"]) >= 687
+        declared_skips = live_manifest["expected_skips"]
+        assert not any("OPENROUTER_API_KEY" in reason for reason in declared_skips.values())
+        assert not any("first_delegation" in test_id for test_id in declared_skips)
+        declared_skip_ids = set(declared_skips)
+    
+        missing_id = "tests/contract/test_bom_is_honest.py::test_bom_is_honest"
+        assert missing_id in live_manifest["suite"]
+    
+        baseline_code, baseline_output, baseline_error = ranex(
+            repository, run_argv(session.store), session.key_path
+        )
+>       assert baseline_code == 0, (
+            "this test deletes one frozen test from a GREEN clone and asserts the "
+            "gate then reports it missing; it cannot establish that baseline "
+            f"because the clean clone's own suite exited {baseline_code}. The "
+            "tail of the suite's own output says which tests are red:\n"
+            f"{suite_tail(baseline_output, baseline_error)}"
+        )
+E       AssertionError: this test deletes one frozen test from a GREEN clone and asserts the gate then reports it missing; it cannot establish that baseline because the clean clone's own suite exited 1. The tail of the suite's own output says which tests are red:
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         F
+E         ======================================================================
+E         ----------------------------------------------------------------------
+E         Traceback (most recent call last):
+E         
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         F
+E         ======================================================================
+E         ----------------------------------------------------------------------
+E         Traceback (most recent call last):
+E         
+E         ----------------------------------------------------------------------
+E         Ran 1 test in 0.000s
+E         
+E         FAILED (failures=1)
+E         no tests ran in 0.00s
+E         =========================== short test summary info ============================
+E         FAILED tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record
+E         FAILED tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors
+E         FAILED tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published
+E         FAILED tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained
+E         FAILED tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope
+E         FAILED tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state
+E         FAILED tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response]
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field]
+E         FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response]
+E         ERROR tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden
+E         ERROR tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned
+E         ERROR tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code
+E         ERROR tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material
+E         ERROR tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module]
+E         ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root]
+E         11 failed, 1534 passed, 97 skipped, 15 errors in 257.49s (0:04:17)
+E       assert 1 == 0
+
+tests/e2e/test_gating_real_suite.py:1140: AssertionError
+_____ test_v3_real_workflow_records_runtime_result_binding_when_published ______
+
+tmp_path = PosixPath('/tmp/pytest-of-soultransit/pytest-1210/test_v3_real_workflow_records_0')
+v3_repository = GovernedRepository(path=PosixPath('/tmp/pytest-of-soultransit/pytest-1210/host-workflow-v30/repository'), key=PosixPath('/tmp/pytest-of-soultransit/pytest-1210/host-workflow-v30/owner.key'))
+
+    def test_v3_real_workflow_records_runtime_result_binding_when_published(
+        tmp_path: Path, v3_repository: GovernedRepository
+    ) -> None:
+        """The wrapper runs the committed v3 runtime closure with real signing."""
+        result_dir = tmp_path / "v3"
+        completed = _module(
+            v3_repository.path,
+            "ranex.cli.main",
+            "host",
+            "strict-local",
+            "--version",
+            "v3",
+            "--claim",
+            "dynamic-runtime-qualified",
+            "--producer",
+            "slice072-owner",
+            "--repository",
+            ".",
+            "--evidence",
+            ".local/ranex-e2e/v3-evidence.json",
+            "--runtime-input-path",
+            "tests/e2e/fixtures/slice072-input",
+            "--runtime-closure-root",
+            "tests/e2e/fixtures/slice072-runtime",
+            "--result-dir",
+            str(result_dir),
+            "--",
+            "/ranex/runtime/bin/python3.12",
+            "/ranex/runtime/data/worker.py",
+            key=v3_repository.key,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher
+E         INSTALLED  .local/ranex/libexec/strict-local-v1/ranex-worker-launcher
+E         QUALIFIED  .local/ranex/qualification/strict-local-v1.json
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/tmp/ranex-release-qualification-1wq0nrj2/repo/.venv/bin/python', '-m', 'ranex.cli.main', 'hos...ibexec/strict-local-v1/ranex-worker-launcher\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\n', stderr='').returncode
+
+tests/e2e/test_host_workflow_real.py:385: AssertionError
+________ test_named_host_drift_refuses_from_a_different_delegated_scope ________
+
+tmp_path = PosixPath('/tmp/pytest-of-soultransit/pytest-1210/test_named_host_drift_refuses_0')
+drift_repository = GovernedRepository(path=PosixPath('/tmp/pytest-of-soultransit/pytest-1210/host-workflow-drift0/repository'), key=PosixPath('/tmp/pytest-of-soultransit/pytest-1210/host-workflow-drift0/owner.key'))
+
+    def test_named_host_drift_refuses_from_a_different_delegated_scope(
+        tmp_path: Path, drift_repository: GovernedRepository
+    ) -> None:
+        """A qualification from scope A is fail-closed when used from scope B."""
+        provisioning = (
+            ("launcher-build", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--source", "native/ranex-worker-launcher/launcher.c", "--output", ".local/ranex/build/strict-local-v1/ranex-worker-launcher"),
+            ("launcher-install", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--artifact", ".local/ranex/build/strict-local-v1/ranex-worker-launcher", "--destination", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher"),
+            ("qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report", ".local/ranex/qualification/strict-local-v1.json"),
+        )
+        for arguments in provisioning:
+            completed = _module(drift_repository.path, "ranex.cli.host_confinement", *arguments)
+            assert completed.returncode == 0, completed.stdout + completed.stderr
+    
+        evidence = ".local/ranex-e2e/drift-evidence.json"
+        run_argv = [
+            sys.executable,
+            "-m",
+            "ranex.cli.main",
+            "run",
+            "--claim",
+            "dynamic-runtime-qualified",
+            "--producer",
+            "slice072-owner",
+            "--repository",
+            ".",
+            "--evidence",
+            evidence,
+            "--confinement",
+            "strict-local",
+            "--runtime-input-path",
+            "tests/e2e/fixtures/slice072-input",
+            "--runtime-closure-root",
+            "tests/e2e/fixtures/slice072-runtime",
+            "--",
+            "/ranex/runtime/bin/python3.12",
+            "/ranex/runtime/data/worker.py",
+        ]
+        command = f"cd {shlex.quote(str(drift_repository.path))} && exec {shlex.join(run_argv)}"
+        nested = subprocess.run(
+            [
+                "/usr/bin/systemd-run",
+                "--user",
+                "--scope",
+                "--quiet",
+                "--property=Delegate=yes",
+                f"--setenv=PYTHONPATH={ROOT / 'src'}",
+                f"--setenv=RANEX_SIGNING_KEY={drift_repository.key}",
+                f"--setenv=PATH={os.environ['PATH']}",
+                f"--setenv=HOME={os.environ['HOME']}",
+                "--",
+                "/bin/sh",
+                "-c",
+                command,
+            ],
+            cwd=drift_repository.path,
+            env=_environment(drift_repository.key),
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=240,
+        )
+        assert nested.returncode != 0
+>       assert "E-C18-HOST-DRIFT" in nested.stdout + nested.stderr
+E       assert 'E-C18-HOST-DRIFT' in ('' + "ERROR  cannot materialise 'b62472a667cb97c0b06670210e6e4f5c1cdec131': [Errno 2] No such file or directory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n")
+E        +  where '' = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...ectory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n").stdout
+E        +  and   "ERROR  cannot materialise 'b62472a667cb97c0b06670210e6e4f5c1cdec131': [Errno 2] No such file or directory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n" = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...ectory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\n").stderr
+
+tests/e2e/test_host_workflow_real.py:483: AssertionError
+__________________ test_frozen_transcript_matches_the_golden ___________________
+
+journey = FreezeJourney(boundary=False, frozen_line='FROZEN  tests=1657  expected_skips=166  run_exit=1  output=/tmp/pytest-of-s...eld_set","tests/unit/test_verdict_signing.py::test_verdict_signature_is_domain_separated_and_payload_type_asserted"]}')
+
+    def test_frozen_transcript_matches_the_golden(journey: FreezeJourney) -> None:
+        """The FROZEN line of the real cycle, byte-frozen against its golden."""
+    
+        _assert_not_nested(journey)
+        if journey.boundary:
+            return
+        frozen_line = journey.frozen_line
+        assert frozen_line is not None
+        assert frozen_line.startswith("FROZEN"), frozen_line
+>       assert "run_exit=0" in frozen_line, (
+            f"the ceremony's own suite run must be green sealed: {frozen_line}"
+        )
+E       AssertionError: the ceremony's own suite run must be green sealed: FROZEN  tests=1657  expected_skips=166  run_exit=1  output=/tmp/pytest-of-soultransit/pytest-1210/suite-freeze-disposable0/ranex-subject/.local/ranex-e2e/suite-freeze-roundtrip-1719558.json
+E       assert 'run_exit=0' in 'FROZEN  tests=1657  expected_skips=166  run_exit=1  output=/tmp/pytest-of-soultransit/pytest-1210/suite-freeze-disposable0/ranex-subject/.local/ranex-e2e/suite-freeze-roundtrip-1719558.json'
+
+tests/e2e/test_suite_freeze_real.py:470: AssertionError
+________ test_eight_writer_burst_completes_without_exposing_sqlite_busy ________
+
+tmp_path = PosixPath('/tmp/pytest-of-soultransit/pytest-1210/test_eight_writer_burst_comple0')
+
+    def test_eight_writer_burst_completes_without_exposing_sqlite_busy(
+        tmp_path: Path,
+    ) -> None:
+        """An honest sustained writer burst waits for the journal, then commits."""
+    
+        path = tmp_path / "burst.sqlite3"
+        journal = Journal(path)
+        workers = 8
+        appends_per_worker = 500
+    
+        def append_batch(worker: int) -> None:
+            for number in range(appends_per_worker):
+                journal.append(make_evaluation(f"worker-{worker}-append-{number}"))
+    
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+>           list(pool.map(append_batch, range(workers)))
+
+tests/integration/test_journal.py:530: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:645: in result_iterator
+    yield _result_or_cancel(fs.pop())
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:312: in _result_or_cancel
+    return fut.result(timeout)
+           ^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:447: in result
+    return self.__get_result()
+           ^^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/concurrent/futures/_base.py:396: in __get_result
+    raise self._exception
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py:86: in run
+    result = ctx.run(self.task)
+             ^^^^^^^^^^^^^^^^^^
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/concurrent/futures/thread.py:73: in run
+    return fn(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^
+tests/integration/test_journal.py:527: in append_batch
+    journal.append(make_evaluation(f"worker-{worker}-append-{number}"))
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+self = <ranex.governed_execution.adapters.persistence.sqlite.journal.Journal object at 0x71cac6cd6800>
+evaluation = Evaluation(verdict=<Verdict.PASS: 'PASS'>, gate_id='landing', failing_rule=None, missing_claims=(), reason=None, subje...append-24@sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc:0',), causes=(), self_approval=False)
+
+    def append(self, evaluation: Any) -> str:
+        """Append one evaluation and return its chain link."""
+    
+        record = evaluation.as_record()
+        payload = canonical_json(record)
+        with self._connect() as conn:
+>           conn.execute("BEGIN IMMEDIATE")
+E           sqlite3.OperationalError: database is locked
+
+src/ranex/governed_execution/adapters/persistence/sqlite/journal.py:104: OperationalError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_cold_start_journey.py::test_stage_9_the_gate_accepts_the_evidence
+FAILED tests/e2e/test_gating_real_suite.py::test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts
+FAILED tests/e2e/test_gating_real_suite.py::test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted
+FAILED tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published
+FAILED tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope
+FAILED tests/e2e/test_suite_freeze_real.py::test_frozen_transcript_matches_the_golden
+FAILED tests/integration/test_journal.py::test_eight_writer_burst_completes_without_exposing_sqlite_busy
+7 failed, 1616 passed, 34 skipped in 2022.42s (0:33:42)

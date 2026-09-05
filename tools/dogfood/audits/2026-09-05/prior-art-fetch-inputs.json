@@ -1,0 +1,210 @@
+[
+  {
+    "path": "docs/adr/prior-art/ADR-010/opencode-run-headless.ts",
+    "url": "https://raw.githubusercontent.com/anomalyco/opencode/v1.18.12/packages/opencode/src/cli/cmd/run.ts"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-010/bors-ng-batcher.ex",
+    "url": "https://raw.githubusercontent.com/bors-ng/bors-ng/ca725797e53a88e954998de0bbb14a8a5acb13ab/lib/worker/batcher.ex"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-010/swe-agent-run-single.py",
+    "url": "https://raw.githubusercontent.com/SWE-agent/SWE-agent/v1.1.0/sweagent/run/run_single.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-010/openhands-headless-main.py",
+    "url": "https://raw.githubusercontent.com/OpenHands/OpenHands/0.59.0/openhands/core/main.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-010/slsa-builder-go-two-job-split.yml",
+    "url": "https://raw.githubusercontent.com/slsa-framework/slsa-github-generator/4d014fae4dbd39eb09e8d40348b73db095e6ba9a/.github/workflows/builder_go_slsa3.yml"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-010/in-toto-sign.py",
+    "url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/in_toto_sign.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-010/tekton-chains-taskrun-observe-then-sign.go",
+    "url": "https://raw.githubusercontent.com/tektoncd/chains/01d9ebfdae7a02247b1b00f48e44dd63d8a611ec/pkg/reconciler/taskrun/taskrun.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-011/cpython_results.py",
+    "url": "https://raw.githubusercontent.com/python/cpython/37e98da7c19a9e5892ee756d6dee08225422cd49/Lib/test/libregrtest/results.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-011/SkippedThreshold.java",
+    "url": "https://raw.githubusercontent.com/jenkinsci/xunit-plugin/xunit-3.1.7/src/main/java/org/jenkinsci/plugins/xunit/threshold/SkippedThreshold.java"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-011/mtest.py",
+    "url": "https://raw.githubusercontent.com/mesonbuild/meson/1.5.1/mesonbuild/mtest.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-011/pytest_error_for_skips.py",
+    "url": "https://raw.githubusercontent.com/jankatins/pytest-error-for-skips/4c3eaae64e09dc077a52e219c3cf375e3e5dbdc0/pytest_error_for_skips.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-012/prow-tide.go",
+    "url": "https://raw.githubusercontent.com/kubernetes-sigs/prow/7f8580d8da573bcb9e4fe716358d4c0ee1d24b38/pkg/tide/tide.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-012/gerrit-merge-op.java",
+    "url": "https://raw.githubusercontent.com/GerritCodeReview/gerrit/017823543c322cd1b3500bdc91d8b5a62baf5caf/java/com/google/gerrit/server/submit/MergeOp.java"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-012/zuul-merger.py",
+    "url": "https://raw.githubusercontent.com/openstack-infra/zuul/dc9347c1223e3c7eb0399889d03c5de9e854a836/zuul/merger/merger.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-012/git-merge-tree.c",
+    "url": "https://raw.githubusercontent.com/git/git/c44beea485f0f2feaf460e2ac87fdd5608d63cf0/builtin/merge-tree.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-012/git-refs-files-backend.c",
+    "url": "https://raw.githubusercontent.com/git/git/c44beea485f0f2feaf460e2ac87fdd5608d63cf0/refs/files-backend.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-012/in-toto-verifylib.py",
+    "url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/verifylib.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-013/in-toto-runlib.py",
+    "url": "https://raw.githubusercontent.com/in-toto/in-toto/c82fe5d21aaa61c7f1a213db20a46f10bb3f411a/in_toto/runlib.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-013/cosign-remote.go",
+    "url": "https://raw.githubusercontent.com/sigstore/cosign/9a4cfe1aae777984c07ce373d97a65428bbff734/pkg/oci/remote/remote.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-013/bubblewrap.c",
+    "url": "https://raw.githubusercontent.com/containers/bubblewrap/8e51677abd7e3338e4952370bf7d902e37d8cbb6/bubblewrap.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-014/dbos-system-database.ts",
+    "url": "https://raw.githubusercontent.com/dbos-inc/dbos-transact/dfd600cc48537a69f3d57d28108a781bfb82c988/src/system_database.ts"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-014/codex-agent-graph-store-local.rs",
+    "url": "https://raw.githubusercontent.com/openai/codex/1151b23f01accb19e55c090a3349a32fdf2b4685/codex-rs/agent-graph-store/src/local.rs"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-014/aider-repo.py",
+    "url": "https://raw.githubusercontent.com/Aider-AI/aider/5dc9490bb35f9729ef2c95d00a19ccd30c26339c/aider/repo.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-015/bullmq-lock-manager.ts",
+    "url": "https://raw.githubusercontent.com/taskforcesh/bullmq/46880af9629e9aee9abbc2782074a3e76d17b924/src/classes/lock-manager.ts"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-015/langgraph-checkpoint-sqlite.ts",
+    "url": "https://raw.githubusercontent.com/langchain-ai/langgraphjs/f6a6d26b7e69003c4fa052f3cd3319f3e72f0f8f/libs/checkpoint-sqlite/src/index.ts"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-016/in-toto-provenance.go",
+    "url": "https://raw.githubusercontent.com/in-toto/attestation/df02077bf97218a8860a5c534eff1f1381f56984/go/predicates/provenance/v1/provenance.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-016/scipy-binomtest.py",
+    "url": "https://raw.githubusercontent.com/scipy/scipy/44e4ebaac992fde33f04638b99629d23973cb9b2/scipy/stats/_binomtest.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-016/statsmodels-contingency-tables.py",
+    "url": "https://raw.githubusercontent.com/statsmodels/statsmodels/40e6a84d26ac74623c6b94b718f0987ef0351c53/statsmodels/stats/contingency_tables.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-016/argo-analysis-types.go",
+    "url": "https://raw.githubusercontent.com/argoproj/argo-rollouts/b6bd3bcf8f60d717a98763d26acc983db7f97cb0/pkg/apis/rollouts/v1alpha1/analysis_types.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-016/optuna-trial-state.py",
+    "url": "https://raw.githubusercontent.com/optuna/optuna/4db42e31c24b200e52595df9d4c00e2cdeefea2b/optuna/trial/_state.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-016/tuf-trusted-metadata-set.py",
+    "url": "https://raw.githubusercontent.com/theupdateframework/python-tuf/353bdb767db56fd4667c9bcf56b710d50fdc2ac0/tuf/ngclient/_internal/trusted_metadata_set.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-019/securesystemslib-dsse.py",
+    "url": "https://raw.githubusercontent.com/secure-systems-lab/securesystemslib/47b0f4512fe974d6df75dbd4ad62c2642d4e5806/securesystemslib/dsse.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-019/tuf-trusted-metadata-set.py",
+    "url": "https://raw.githubusercontent.com/theupdateframework/python-tuf/353bdb767db56fd4667c9bcf56b710d50fdc2ac0/tuf/ngclient/_internal/trusted_metadata_set.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-019/kubelet-filestore.go",
+    "url": "https://raw.githubusercontent.com/kubernetes/kubernetes/a57b6f7709f6c2722b92f07b8b4c48210a51fc40/pkg/kubelet/util/store/filestore.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-019/cosign-exit-code-lookup.go",
+    "url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/cmd/cosign/errors/exit_code_lookup.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-019/LICENSE-APACHE-2.0.txt",
+    "url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/LICENSE"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-020/kyverno-rulestatus.go",
+    "url": "https://raw.githubusercontent.com/kyverno/kyverno/945ac9ce8546ea6cd51370f24b615148c577da5e/pkg/engine/api/rulestatus.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-020/kyverno-cli-result.go",
+    "url": "https://raw.githubusercontent.com/kyverno/kyverno/945ac9ce8546ea6cd51370f24b615148c577da5e/cmd/cli/kubectl-kyverno/processor/result.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-020/k8s-apimachinery-errors.go",
+    "url": "https://raw.githubusercontent.com/kubernetes/kubernetes/0f29094e5b73085e3802ecc1298ecae13866bfe6/staging/src/k8s.io/apimachinery/pkg/api/errors/errors.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-020/knative-condition-set.go",
+    "url": "https://raw.githubusercontent.com/knative/pkg/39ebae2ee2dc245299eb6a3b12034fb624b86156/apis/condition_set.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-020/LICENSE-APACHE-2.0.txt",
+    "url": "https://raw.githubusercontent.com/sigstore/cosign/11926fa5bbbbde47e88fc006b625a17769b743b2/LICENSE"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-031/git-tr2_dst.c",
+    "url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_dst.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-031/git-tr2_tgt_event.c",
+    "url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_tgt_event.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-031/git-tr2_sid.c",
+    "url": "https://raw.githubusercontent.com/git/git/v2.45.2/trace2/tr2_sid.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-031/pino-redaction.js",
+    "url": "https://raw.githubusercontent.com/pinojs/pino/v9.4.0/lib/redaction.js"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-031/structlog-native.py",
+    "url": "https://raw.githubusercontent.com/hynek/structlog/24.4.0/src/structlog/_native.py"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-032/git-test-lib.sh",
+    "url": "https://raw.githubusercontent.com/git/git/v2.45.2/t/test-lib.sh"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-032/git-test-lib-functions.sh",
+    "url": "https://raw.githubusercontent.com/git/git/v2.45.2/t/test-lib-functions.sh"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-032/postgres-pg_regress.c",
+    "url": "https://raw.githubusercontent.com/postgres/postgres/REL_16_2/src/test/regress/pg_regress.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-032/curl-sws.c",
+    "url": "https://raw.githubusercontent.com/curl/curl/curl-8_8_0/tests/server/sws.c"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-032/moby-requirement.go",
+    "url": "https://raw.githubusercontent.com/moby/moby/v26.1.4/integration/internal/requirement/requirement.go"
+  },
+  {
+    "path": "docs/adr/prior-art/ADR-032/coveragepy-control.py",
+    "url": "https://raw.githubusercontent.com/nedbat/coveragepy/7.6.1/coverage/control.py"
+  }
+]

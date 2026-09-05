@@ -1,0 +1,68 @@
+[
+  {
+    "python_requested": "3.11",
+    "setup_exit": 0,
+    "python_observed": "Python 3.11.15",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "--python",
+      "3.11",
+      "pytest",
+      "-q",
+      "tests/e2e/test_run_real.py",
+      "tests/e2e/test_gate_evaluate_real.py",
+      "tests/e2e/test_keygen_real.py",
+      "tests/e2e/test_journal_verify_real.py",
+      "tests/e2e/test_suite_freeze_real.py",
+      "tests/e2e/test_task_real.py",
+      "--junitxml=/home/soultransit/devtony/ranex/.local/release-audit/runtime-matrix/3.11.xml"
+    ],
+    "exit": 1
+  },
+  {
+    "python_requested": "3.12",
+    "setup_exit": 0,
+    "python_observed": "Python 3.12.3",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "--python",
+      "3.12",
+      "pytest",
+      "-q",
+      "tests/e2e/test_run_real.py",
+      "tests/e2e/test_gate_evaluate_real.py",
+      "tests/e2e/test_keygen_real.py",
+      "tests/e2e/test_journal_verify_real.py",
+      "tests/e2e/test_suite_freeze_real.py",
+      "tests/e2e/test_task_real.py",
+      "--junitxml=/home/soultransit/devtony/ranex/.local/release-audit/runtime-matrix/3.12.xml"
+    ],
+    "exit": 0
+  },
+  {
+    "python_requested": "3.13",
+    "setup_exit": 0,
+    "python_observed": "Python 3.13.14",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "--python",
+      "3.13",
+      "pytest",
+      "-q",
+      "tests/e2e/test_run_real.py",
+      "tests/e2e/test_gate_evaluate_real.py",
+      "tests/e2e/test_keygen_real.py",
+      "tests/e2e/test_journal_verify_real.py",
+      "tests/e2e/test_suite_freeze_real.py",
+      "tests/e2e/test_task_real.py",
+      "--junitxml=/home/soultransit/devtony/ranex/.local/release-audit/runtime-matrix/3.13.xml"
+    ],
+    "exit": 0
+  }
+]

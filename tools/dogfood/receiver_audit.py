@@ -45,11 +45,12 @@ serve(config, ('127.0.0.1', int(sys.argv[2])))
 
 
 def request(port: int, delivery: str, body: bytes = b"{}", *, event: str = "ping",
-            signed: bool = True) -> dict:
+            signed: bool = True, overrides: dict[str, str] | None = None) -> dict:
     headers = {"X-GitHub-Delivery": delivery, "X-GitHub-Event": event}
     if signed:
         headers["X-Hub-Signature-256"] = "sha256=" + hmac.new(
             SECRET.encode(), body, hashlib.sha256).hexdigest()
+    headers.update(overrides or {})
     connection = http.client.HTTPConnection("127.0.0.1", port, timeout=2)
     try:
         connection.request("POST", "/webhook", body, headers)
@@ -116,6 +117,15 @@ def execute(out: Path) -> list[dict]:
             record("signed-http", healthy.get("status") == 200, healthy, "signed ping returns 200")
             unsigned = request(port, "unsigned", signed=False)
             record("unsigned-http", unsigned.get("status") == 401, unsigned, "unsigned body returns 401")
+            for name, headers, expected in (
+                ("tampered-signature", {"X-Hub-Signature-256": "sha256=" + "0" * 64}, 401),
+                ("malformed-length", {"Content-Length": "oops"}, 400),
+                ("oversized-length", {"Content-Length": "1048577"}, 413),
+                ("malformed-delivery-id", {"X-GitHub-Delivery": "../outside"}, 400),
+            ):
+                result = request(port, name, b"", overrides=headers)
+                record(name, result.get("status") == expected, result,
+                       f"invalid request returns {expected} without processing")
             request(port, "ping-1")
             journal = root / "state/deliveries.jsonl"
             rows = [json.loads(line) for line in journal.read_text().splitlines()]
@@ -124,6 +134,17 @@ def execute(out: Path) -> list[dict]:
             body = json.dumps({"action": "opened", "installation": {"id": 1},
                                "repository": {"full_name": "audit/local"},
                                "pull_request": {"number": 1, "head": {"sha": "9" * 40}}}).encode()
+            denied = request(port, "foreign-installation", body.replace(b'"id": 1', b'"id": 2'),
+                             event="pull_request")
+            entry = json.loads(journal.read_text().splitlines()[-1])
+            record("foreign-installation", denied.get("status") == 200
+                   and entry["outcome"] == "not-allowlisted", {"response": denied, "entry": entry},
+                   "authenticated foreign installation is journaled without Git fetch")
+            bad_shape = request(port, "malformed-shape", b"[]", event="pull_request")
+            entry = json.loads(journal.read_text().splitlines()[-1])
+            record("malformed-shape", bad_shape.get("status") == 200
+                   and entry["outcome"] == "E-GITHUB-BAD-EVENT", {"response": bad_shape, "entry": entry},
+                   "authenticated wrong top-level shape receives a named permanent refusal")
             first = request(port, "fetch-retry", body, event="pull_request")
             second = request(port, "fetch-retry", body, event="pull_request")
             record("retry-after-real-fetch-failure", first.get("status") == second.get("status") == 500,
@@ -131,7 +152,10 @@ def execute(out: Path) -> list[dict]:
             for name, payload in (("malformed-json", b"{"),
                                   ("malformed-number", body.replace(b'"number": 1', b'"number": "oops"'))):
                 result = request(port, name, payload, event="pull_request")
-                record(name, result.get("status") == 200, result,
+                entry = json.loads(journal.read_text().splitlines()[-1])
+                record(name, result.get("status") == 200
+                       and entry.get("delivery") == name and entry.get("outcome") == "E-GITHUB-BAD-EVENT",
+                       {"response": result, "last_journal_entry": entry},
                        "authenticated malformed event is a journaled, named permanent refusal")
 
         with server(root, log) as port:

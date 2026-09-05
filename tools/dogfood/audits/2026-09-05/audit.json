@@ -1,0 +1,641 @@
+{
+  "schema": "ranex-release-audit-summary-v1",
+  "date": "2026-09-05",
+  "issue": "https://github.com/anthonykewl20/ranex/issues/81",
+  "verdict": "Material spec and integration gaps reproduced. General run authenticates observations; it does not independently prove arbitrary worker-controlled tests truthful.",
+  "revisions": {
+    "v0.1.0": "edf1a98605beb7b351b31ada3877f5ec510da1f7",
+    "audit_start": "48f3a98e48cf10bc0a4ce24fae7862726b82b1c7",
+    "source_fix": "274a62de163a8c3db4cc6a3e83ae1300d1ca3c4d"
+  },
+  "method": [
+    "Inventory all 52 ADRs and 192 tracked prior-art artifacts, with content hashes and grouped claim/scope review. Historical vendored sources and ADRs remain unchanged.",
+    "Clone and frozen-install the release and corrected HEAD; vendor each exact src tree into pinned benjaminp/six c8e394065cd541a16c040515dc0afb85cf22a7c3.",
+    "Measure the real external suite (200 collected, 185 passed, 15 skipped), then explicitly freeze and run its 185 passing IDs. The baseline skip set is not a claim of universal platform coverage.",
+    "Use real CLI subprocesses, fresh external keys, actual signed observations, real Git mutations and SQLite corruption. Independently verify Ed25519 with OpenSSL and broken-code behavior with an ordinary Python assertion.",
+    "Probe the production receiver with actual HTTP sockets, signed local fixture deliveries, an unavailable local Git remote, and process restarts. No mocked GitHub response stands in for a live App journey.",
+    "Independently refetch all 52 unambiguous raw-source NOTICE mappings over HTTPS: all 52 match the complete local bytes.",
+    "Run real native confinement, strict-local I/O, dynamic-runtime tampering, timeout/descendant cleanup, and independent approved-batch qualification under an explicitly delegated systemd scope.",
+    "Run the broad repository suite and extra tooling/opt-in checks; retain failures and named skips, including exploratory setup errors caused by our own dirty tree."
+  ],
+  "executions": {
+    "baseline.xml": {
+      "tests": 1795,
+      "failures": 0,
+      "errors": 4,
+      "skipped": 34,
+      "passed": 1757,
+      "failures_and_errors": [
+        {
+          "id": "tests.e2e.test_suite_freeze_real::test_manifest_round_trip_is_byte_stable",
+          "message": "failed on setup with \"AssertionError: the real-tree freeze journey needs a clean working tree \u2014 the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md\n   M tools/dogfood/README.md\n  ?? tools/dogfood/receiver_audit.py\n  ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.\nassert not 'M tools/dogfood/FINDINGS.md\\n M tools/dogfood/README.md\\n?? tools/dogfood/receiver_audit.py\\n?? tools/dogfood/release_audit.py'\""
+        },
+        {
+          "id": "tests.e2e.test_suite_freeze_real::test_frozen_transcript_matches_the_golden",
+          "message": "failed on setup with \"AssertionError: the real-tree freeze journey needs a clean working tree \u2014 the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md\n   M tools/dogfood/README.md\n  ?? tools/dogfood/receiver_audit.py\n  ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.\nassert not 'M tools/dogfood/FINDINGS.md\\n M tools/dogfood/README.md\\n?? tools/dogfood/receiver_audit.py\\n?? tools/dogfood/release_audit.py'\""
+        },
+        {
+          "id": "tests.e2e.test_suite_freeze_real::test_goldens_carry_real_volatile_material",
+          "message": "failed on setup with \"AssertionError: the real-tree freeze journey needs a clean working tree \u2014 the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md\n   M tools/dogfood/README.md\n  ?? tools/dogfood/receiver_audit.py\n  ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.\nassert not 'M tools/dogfood/FINDINGS.md\\n M tools/dogfood/README.md\\n?? tools/dogfood/receiver_audit.py\\n?? tools/dogfood/release_audit.py'\""
+        },
+        {
+          "id": "tests.e2e.test_suite_freeze_real::test_sabotage_control_mutated_golden_diffs_dirty",
+          "message": "failed on setup with \"AssertionError: the real-tree freeze journey needs a clean working tree \u2014 the kernel's own freeze would refuse it: M tools/dogfood/FINDINGS.md\n   M tools/dogfood/README.md\n  ?? tools/dogfood/receiver_audit.py\n  ?? tools/dogfood/release_audit.py. Commit or clean the tree and re-run; the refusal itself is frozen by test_dirty_tree_freeze_refuses_with_stable_reason below.\nassert not 'M tools/dogfood/FINDINGS.md\\n M tools/dogfood/README.md\\n?? tools/dogfood/receiver_audit.py\\n?? tools/dogfood/release_audit.py'\""
+        }
+      ],
+      "skips": [
+        {
+          "id": "tests.contract.test_trace_invariance::test_traced_strict_local_run_chains_the_controller_and_keeps_the_descriptor_clean",
+          "reason": "SLICE-054 real confinement unavailable: no delegated writable cgroup-v2 root"
+        },
+        {
+          "id": "tests.e2e.test_confinement_real::test_strict_local_journey_matches_the_golden",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_confinement_real::test_shell_constructed_descendants_die_and_the_layers_are_pinned",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_confinement_real::test_timeout_refusal_is_distinct_from_the_exit_code",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_confinement_real::test_goldens_carry_real_volatile_material",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_confinement_real::test_sabotage_control_mutated_golden_diffs_dirty",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_qualification_behaviorally_proves_verifier_isolation_and_drain",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_public_dynamic_run_binds_output_result_and_evidence_twice",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_ordinary_runtime_semantics_match_governed_output",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_each_runtime_class_tamper_refuses_before_output[loader]",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_each_runtime_class_tamper_refuses_before_output[entrypoint]",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_each_runtime_class_tamper_refuses_before_output[shared-library]",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_each_runtime_class_tamper_refuses_before_output[native-extension]",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_each_runtime_class_tamper_refuses_before_output[runtime-data]",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_host_only_computed_dependency_refuses_without_survivor[host-only-module]",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_dynamic_runtime_closure_real::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root]",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_gating_real_suite::test_stage_12_ranex_gates_its_own_repository",
+          "reason": "ranex-prereq:signing_key: RANEX_SIGNING_KEY is not set; the operator runs this stage"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_v1_real_workflow_records_delegated_cgroup_and_run_record",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_v3_real_workflow_records_runtime_result_binding_when_published",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_real_missing_session_bus_is_named_and_retained",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_named_host_drift_refuses_from_a_different_delegated_scope",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_run_produces_evidence::test_real_catalog_qualification_runs_on_host_and_gates_live_state",
+          "reason": "SLICE-017 host qualification unavailable: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_slice055_fixture_consumption_a::test_module_a_consumes_the_signing_key_prereq_fixture",
+          "reason": "ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path"
+        },
+        {
+          "id": "tests.e2e.test_slice055_fixture_consumption_b::test_module_b_re_evaluates_the_signing_key_prereq_for_this_module",
+          "reason": "ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path"
+        },
+        {
+          "id": "tests.e2e.test_specification_subject_bootstrap::test_real_ranex_bootstrap_or_host_skip",
+          "reason": "SLICE-035 Ranex real bootstrap: set RANEX_SLICE035_REAL=1"
+        },
+        {
+          "id": "tests.e2e.test_specification_subject_bootstrap::test_real_kogg_bootstrap_or_blocked",
+          "reason": "SLICE-035 kogg real bootstrap: set RANEX_SLICE035_REAL=1"
+        },
+        {
+          "id": "tests.e2e.test_strict_local_io_real::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes",
+          "reason": "ranex-prereq:qualified_host: the delegated cgroup is missing required controllers: cpu"
+        },
+        {
+          "id": "tests.e2e.test_task_real::test_fanout_qualification_arms_wait_for_slice036",
+          "reason": "ranex-context:fanout-gated: SLICE-036 (#19) has not closed; the fanout qualification assertions authored in this file stay skipped-with-name until a follow-up governed change enables them after #19 closes"
+        },
+        {
+          "id": "tests.integration.test_slice018_confinement_session::test_gate1_real_process_session_observes_namespaces_landlock_and_seccomp",
+          "reason": "SLICE-018 host qualification unavailable: no delegated writable cgroup-v2 root"
+        },
+        {
+          "id": "tests.security.test_slice018_cgroup_output_lifecycle::test_gate6_constructed_output_attacks_are_refused[device-node]",
+          "reason": "CAP_MKNOD unavailable \u2014 device-node output-tamper refusal is host-unverified"
+        },
+        {
+          "id": "tests.security.test_slice018_cgroup_output_lifecycle::test_gate3_fork_double_fork_and_setsid_cannot_escape_session_cgroup",
+          "reason": "SLICE-018 host qualification unavailable: delegated cgroup lacks controllers: cpu"
+        },
+        {
+          "id": "tests.security.test_slice018_cgroup_output_lifecycle::test_gate3_kill_drain_remove_is_total_under_worker_exit_race",
+          "reason": "SLICE-018 host qualification unavailable: delegated cgroup lacks controllers: cpu"
+        },
+        {
+          "id": "tests.security.test_slice046_cmd_run_confinement::test_real_strict_local_session_is_host_gated_and_binds_its_result",
+          "reason": "SLICE-046 real session unavailable: {\"detail\":\"cgroup delegation is missing controllers: cpu\",\"refusal\":\"E-C17-HOST-FACT-MISSING\"}"
+        }
+      ],
+      "classification": "Exploratory dirty-tree run: our uncommitted audit work caused four setup errors. Not final acceptance."
+    },
+    "qualified-targeted.xml": {
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 22,
+      "failures_and_errors": [],
+      "skips": []
+    },
+    "python311-fixed.xml": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 7,
+      "failures_and_errors": [],
+      "skips": []
+    },
+    "harness-guards.xml": {
+      "tests": 10,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 9,
+      "failures_and_errors": [
+        {
+          "id": "tools.dogfood.test_harness_guards::test_summary_excludes_committed_harness_faults",
+          "message": "assert 2 == 0"
+        }
+      ],
+      "skips": []
+    },
+    "live-bootstrap.xml": {
+      "tests": 1,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 0,
+      "failures_and_errors": [
+        {
+          "id": "tests.e2e.test_specification_subject_bootstrap::test_real_ranex_bootstrap_or_host_skip",
+          "message": "RuntimeError: lifecycle command failed: argv=('uv', 'run', '--frozen', 'pytest', '-q') returncode=1 stdout_tail=' line for line in completed.stdout.splitlines()\\n            if line.startswith(IDENTITY_PREFIX)\\n        ]\\n        assert len(seen) == 2 and seen[0] == seen[1], (\\n            \"the bind mount did not give the outside path the in-repo file\\'s \"\\n            f\"identity, so this test proves nothing: {seen} / {completed.stderr}\"\\n        )\\n        assert seen[0].split()[3] == \"1\", (\\n            \"the whole point is a second name the link count does not report; if it \"\\n            f\"reports one here, this reproduction is not D9: {seen[0]}\"\\n        )\\n    \\n>       assert completed.returncode == EXIT_USAGE, (\\n            \"a bind-mounted second name for a file inside the worktree was accepted \"\\n            \"as an outside binary. Identity was decided on the link count, and a \"\\n            f\"bind mount does not move it: exit={completed.returncode} \"\\n            f\"stdout={completed.stdout!r} stderr={completed.stderr!r}\"\\n        )\\nE       AssertionError: a bind-mounted second name for a file inside the worktree was accepted as an outside binary. Identity was decided on the link count, and a bind mount does not move it: exit=5 stdout=\\'IDENTITY 64512 18633467 1\\\\nIDENTITY 64512 18633467 1\\\\n\\\\nno tests ran in 0.02s\\\\nRECORDED  claim=tests-executed  producer=worker  exit=5\\\\n          subject=sha256:151dab4b61436f410170bd1028f5b8653fa25a6fe74f1f44a526991dfd344b96\\\\n\\' stderr=\\'\\'\\nE       assert 5 == 2\\nE        +  where 5 = CompletedProcess(args=[\\'bwrap\\', \\'--dev-bind\\', \\'/\\', \\'/\\', \\'--bind\\', \\'/tmp/pytest-of-soultransit/pytest-1214/test_run_ref...orker  exit=5\\\\n          subject=sha256:151dab4b61436f410170bd1028f5b8653fa25a6fe74f1f44a526991dfd344b96\\\\n\\', stderr=\\'\\').returncode\\n\\ntests/security/test_slice003_bind_mount_identity.py:358: AssertionError\\n=========================== short test summary info ============================\\nFAILED tests/security/test_slice003_bind_mount_identity.py::test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file\\n1 failed, 812 passed, 27 skipped in 407.40s (0:06:47)\\n' stderr_tail='warning: `VIRTUAL_ENV=/home/soultransit/devtony/ranex/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\\n'"
+        }
+      ],
+      "skips": []
+    },
+    "released-full.xml": {
+      "tests": 1657,
+      "failures": 7,
+      "errors": 0,
+      "skipped": 34,
+      "passed": 1616,
+      "failures_and_errors": [
+        {
+          "id": "tests.e2e.test_cold_start_journey::test_stage_9_the_gate_accepts_the_evidence",
+          "message": "AssertionError: the gate did not accept the evidence stage 8 recorded; it exited 1. The verdict, verbatim:\n  FAIL  gate=landing  rule=TESTS_EXECUTED\n        tests-executed: blocking suite outcome(s): tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material (error), tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty (error), tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned (error), tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden (error), tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain (error), tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope (failed), tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained (failed), tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record (failed), tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors (failed), tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published (failed), tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state (failed), tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes (failed), tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response] (failed)\n        subject=sha256:538af0b6d80efface866edfd5a557f26b3eb3c7cbba7ccf546e350194055da56\nassert 1 == 0"
+        },
+        {
+          "id": "tests.e2e.test_gating_real_suite::test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts",
+          "message": "AssertionError: the real suite did not pass under governance: the bound command exited 1 against the cloned HEAD. This stage's claim is that the committed tree is green, so a red suite at HEAD fails it honestly \u2014 the tail of the suite's own output says which tests:\n  ----------------------------------------------------------------------\n  Ran 1 test in 0.000s\n  \n  FAILED (failures=1)\n  F\n  ======================================================================\n  ----------------------------------------------------------------------\n  Traceback (most recent call last):\n  \n  ----------------------------------------------------------------------\n  Ran 1 test in 0.000s\n  \n  FAILED (failures=1)\n  F\n  ======================================================================\n  ----------------------------------------------------------------------\n  Traceback (most recent call last):\n  \n  ----------------------------------------------------------------------\n  Ran 1 test in 0.000s\n  \n  FAILED (failures=1)\n  no tests ran in 0.00s\n  =========================== short test summary info ============================\n  FAILED tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record\n  FAILED tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors\n  FAILED tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published\n  FAILED tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained\n  FAILED tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope\n  FAILED tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state\n  FAILED tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response]\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field]\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response]\n  ERROR tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden\n  ERROR tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned\n  ERROR tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code\n  ERROR tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material\n  ERROR tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root]\n  11 failed, 1534 passed, 97 skipped, 15 errors in 231.80s (0:03:51)\nassert 1 == 0"
+        },
+        {
+          "id": "tests.e2e.test_gating_real_suite::test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted",
+          "message": "AssertionError: this test deletes one frozen test from a GREEN clone and asserts the gate then reports it missing; it cannot establish that baseline because the clean clone's own suite exited 1. The tail of the suite's own output says which tests are red:\n  ----------------------------------------------------------------------\n  Ran 1 test in 0.000s\n  \n  FAILED (failures=1)\n  F\n  ======================================================================\n  ----------------------------------------------------------------------\n  Traceback (most recent call last):\n  \n  ----------------------------------------------------------------------\n  Ran 1 test in 0.000s\n  \n  FAILED (failures=1)\n  F\n  ======================================================================\n  ----------------------------------------------------------------------\n  Traceback (most recent call last):\n  \n  ----------------------------------------------------------------------\n  Ran 1 test in 0.000s\n  \n  FAILED (failures=1)\n  no tests ran in 0.00s\n  =========================== short test summary info ============================\n  FAILED tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record\n  FAILED tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors\n  FAILED tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published\n  FAILED tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained\n  FAILED tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope\n  FAILED tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state\n  FAILED tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response]\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field]\n  FAILED tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response]\n  ERROR tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden\n  ERROR tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned\n  ERROR tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code\n  ERROR tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material\n  ERROR tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module]\n  ERROR tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root]\n  11 failed, 1534 passed, 97 skipped, 15 errors in 257.49s (0:04:17)\nassert 1 == 0"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_v3_real_workflow_records_runtime_result_binding_when_published",
+          "message": "AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher\n  INSTALLED  .local/ranex/libexec/strict-local-v1/ranex-worker-launcher\n  QUALIFIED  .local/ranex/qualification/strict-local-v1.json\n  \nassert 2 == 0\n +  where 2 = CompletedProcess(args=['/tmp/ranex-release-qualification-1wq0nrj2/repo/.venv/bin/python', '-m', 'ranex.cli.main', 'hos...ibexec/strict-local-v1/ranex-worker-launcher\\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\\n', stderr='').returncode"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_named_host_drift_refuses_from_a_different_delegated_scope",
+          "message": "assert 'E-C18-HOST-DRIFT' in ('' + \"ERROR  cannot materialise 'b62472a667cb97c0b06670210e6e4f5c1cdec131': [Errno 2] No such file or directory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\")\n +  where '' = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...ectory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\").stdout\n +  and   \"ERROR  cannot materialise 'b62472a667cb97c0b06670210e6e4f5c1cdec131': [Errno 2] No such file or directory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\" = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...ectory: '/tmp/ranex-release-qualification-1wq0nrj2/repo/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\").stderr"
+        },
+        {
+          "id": "tests.e2e.test_suite_freeze_real::test_frozen_transcript_matches_the_golden",
+          "message": "AssertionError: the ceremony's own suite run must be green sealed: FROZEN  tests=1657  expected_skips=166  run_exit=1  output=/tmp/pytest-of-soultransit/pytest-1210/suite-freeze-disposable0/ranex-subject/.local/ranex-e2e/suite-freeze-roundtrip-1719558.json\nassert 'run_exit=0' in 'FROZEN  tests=1657  expected_skips=166  run_exit=1  output=/tmp/pytest-of-soultransit/pytest-1210/suite-freeze-disposable0/ranex-subject/.local/ranex-e2e/suite-freeze-roundtrip-1719558.json'"
+        },
+        {
+          "id": "tests.integration.test_journal::test_eight_writer_burst_completes_without_exposing_sqlite_busy",
+          "message": "sqlite3.OperationalError: database is locked"
+        }
+      ],
+      "skips": [
+        {
+          "id": "tests.contract.test_plugin_lock::test_config_plugin_closes_filesystem_discovery_door",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.contract.test_plugin_lock::test_plugin_index_closes_config_plugin_origins_door",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.contract.test_plugin_lock::test_tui_runtime_closes_external_loading_door",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.contract.test_plugin_lock::test_v2_external_plugin_loader_is_absent",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.contract.test_plugin_lock::test_plugin_install_and_config_patch_door_is_closed",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.contract.test_plugin_lock::test_npm_resolved_plugin_specifiers_are_absent",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.contract.test_plugin_lock::test_no_external_plugin_load_call_sites_remain",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.contract.test_trace_invariance::test_traced_strict_local_run_chains_the_controller_and_keeps_the_descriptor_clean",
+          "reason": "SLICE-054 real confinement unavailable: no delegated writable cgroup-v2 root"
+        },
+        {
+          "id": "tests.e2e.test_gating_real_suite::test_stage_12_ranex_gates_its_own_repository",
+          "reason": "ranex-prereq:signing_key: RANEX_SIGNING_KEY is not set; the operator runs this stage"
+        },
+        {
+          "id": "tests.e2e.test_gear_mesh_candidate_verdict::test_gear_mesh_ends_in_candidate_without_auto_approval",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.e2e.test_slice055_fixture_consumption_a::test_module_a_consumes_the_signing_key_prereq_fixture",
+          "reason": "ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path"
+        },
+        {
+          "id": "tests.e2e.test_slice055_fixture_consumption_b::test_module_b_re_evaluates_the_signing_key_prereq_for_this_module",
+          "reason": "ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path"
+        },
+        {
+          "id": "tests.e2e.test_specification_subject_bootstrap::test_real_ranex_bootstrap_or_host_skip",
+          "reason": "SLICE-035 Ranex real bootstrap: set RANEX_SLICE035_REAL=1"
+        },
+        {
+          "id": "tests.e2e.test_specification_subject_bootstrap::test_real_kogg_bootstrap_or_blocked",
+          "reason": "SLICE-035 kogg real bootstrap: set RANEX_SLICE035_REAL=1"
+        },
+        {
+          "id": "tests.e2e.test_task_real::test_fanout_qualification_arms_wait_for_slice036",
+          "reason": "ranex-context:fanout-gated: SLICE-036 (#19) has not closed; the fanout qualification assertions authored in this file stay skipped-with-name until a follow-up governed change enables them after #19 closes"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_version_refuses_without_binding",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_run_help_refuses_without_binding",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_blank_task_id_refuses_startup",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_relative_emit_path_refuses_startup",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_bridged_version_starts",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_bridged_version_does_not_emit",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_launcher_help_names_ranex",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_launcher_version_names_no_opencode",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_launcher_reaches_the_bridge_gate",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_startup_bridge::test_mit_attribution_is_retained",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_trim_keep_set::test_fork_history_contains_the_pin",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_trim_keep_set::test_cut_packages_are_absent",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_trim_keep_set::test_cut_top_level_items_are_absent",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_trim_keep_set::test_keep_set_is_present",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_trim_keep_set::test_root_manifest_drops_husky_and_cut_scripts",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_trim_keep_set::test_no_kept_manifest_depends_on_a_cut_package",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_fork_trim_keep_set::test_keep_set_builds_at_the_pin",
+          "reason": "harness fork not present at /tmp/ranex-release-qualification-1wq0nrj2/ranex-harness (set RANEX_HARNESS_DIR)"
+        },
+        {
+          "id": "tests.integration.test_slice018_confinement_session::test_gate1_real_process_session_observes_namespaces_landlock_and_seccomp",
+          "reason": "SLICE-018 host qualification unavailable: no delegated writable cgroup-v2 root"
+        },
+        {
+          "id": "tests.security.test_slice018_cgroup_output_lifecycle::test_gate6_constructed_output_attacks_are_refused[device-node]",
+          "reason": "CAP_MKNOD unavailable \u2014 device-node output-tamper refusal is host-unverified"
+        }
+      ],
+      "classification": "Exploratory aggregate: early phase overlapped historical bootstrap nested suite. Isolated cold-start rerun is the independent confirmation; aggregate is not an isolated release acceptance result."
+    },
+    "qualified-remaining.xml": {
+      "tests": 7,
+      "failures": 2,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 5,
+      "failures_and_errors": [
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_v3_real_workflow_records_runtime_result_binding_when_published",
+          "message": "AssertionError: BUILT  .local/ranex/build/strict-local-v1/ranex-worker-launcher\n  INSTALLED  .local/ranex/libexec/strict-local-v1/ranex-worker-launcher\n  QUALIFIED  .local/ranex/qualification/strict-local-v1.json\n  \nassert 2 == 0\n +  where 2 = CompletedProcess(args=['/home/soultransit/devtony/ranex/.venv/bin/python', '-m', 'ranex.cli.main', 'host', 'strict-loc...ibexec/strict-local-v1/ranex-worker-launcher\\nQUALIFIED  .local/ranex/qualification/strict-local-v1.json\\n', stderr='').returncode"
+        },
+        {
+          "id": "tests.e2e.test_host_workflow_real::test_named_host_drift_refuses_from_a_different_delegated_scope",
+          "message": "assert 'E-C18-HOST-DRIFT' in ('' + \"ERROR  cannot materialise 'e80781d6a4ea9e748c15753241c6eece45cbeda2': [Errno 2] No such file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\")\n +  where '' = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...uch file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\").stdout\n +  and   \"ERROR  cannot materialise 'e80781d6a4ea9e748c15753241c6eece45cbeda2': [Errno 2] No such file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\" = CompletedProcess(args=['/usr/bin/systemd-run', '--user', '--scope', '--quiet', '--property=Delegate=yes', '--setenv=PY...uch file or directory: '/home/soultransit/devtony/ranex/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher'\\n\").stderr"
+        }
+      ],
+      "skips": []
+    },
+    "released-cold-sequential.xml": {
+      "tests": 9,
+      "failures": 1,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 8,
+      "failures_and_errors": [
+        {
+          "id": "tests.e2e.test_cold_start_journey::test_stage_9_the_gate_accepts_the_evidence",
+          "message": "AssertionError: the gate did not accept the evidence stage 8 recorded; it exited 1. The verdict, verbatim:\n  FAIL  gate=landing  rule=TESTS_EXECUTED\n        tests-executed: blocking suite outcome(s): tests/e2e/test_confinement_real.py::test_goldens_carry_real_volatile_material (error), tests/e2e/test_confinement_real.py::test_sabotage_control_mutated_golden_diffs_dirty (error), tests/e2e/test_confinement_real.py::test_shell_constructed_descendants_die_and_the_layers_are_pinned (error), tests/e2e/test_confinement_real.py::test_strict_local_journey_matches_the_golden (error), tests/e2e/test_confinement_real.py::test_timeout_refusal_is_distinct_from_the_exit_code (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[entrypoint] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[loader] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[native-extension] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[runtime-data] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_each_runtime_class_tamper_refuses_before_output[shared-library] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[absolute-old-root] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_host_only_computed_dependency_refuses_without_survivor[host-only-module] (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_ordinary_runtime_semantics_match_governed_output (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_public_dynamic_run_binds_output_result_and_evidence_twice (error), tests/e2e/test_dynamic_runtime_closure_real.py::test_qualification_behaviorally_proves_verifier_isolation_and_drain (error), tests/e2e/test_host_workflow_real.py::test_named_host_drift_refuses_from_a_different_delegated_scope (failed), tests/e2e/test_host_workflow_real.py::test_real_missing_session_bus_is_named_and_retained (failed), tests/e2e/test_host_workflow_real.py::test_v1_real_workflow_records_delegated_cgroup_and_run_record (failed), tests/e2e/test_host_workflow_real.py::test_v2_real_workflow_uses_paired_input_and_toolchain_selectors (failed), tests/e2e/test_host_workflow_real.py::test_v3_real_workflow_records_runtime_result_binding_when_published (failed), tests/e2e/test_run_produces_evidence.py::test_real_catalog_qualification_runs_on_host_and_gates_live_state (failed), tests/e2e/test_strict_local_io_real.py::test_arbitrary_real_code_matches_ordinary_io_and_collected_hashes (failed), tests/integration/test_slice017_native_launcher.py::test_gate4_controller_execveat_survives_a_real_pathname_swap (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[extra-response-field] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[malformed-response] (failed), tests/integration/test_slice017_native_launcher.py::test_gate8_controller_refuses_invalid_launcher_output_without_report[oversized-response] (failed)\n        subject=sha256:ff6b1297f79b72c04ee7fe804cdc2d300ebeb0121f258917daa5261b69a29cc8\nassert 1 == 0"
+        }
+      ],
+      "skips": []
+    },
+    "qualified-fixed.xml": {
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 7,
+      "failures_and_errors": [],
+      "skips": []
+    },
+    "journal-burst.xml": {
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "passed": 1,
+      "failures_and_errors": [],
+      "skips": []
+    },
+    "external-0": {
+      "kernel": {
+        "commit": "edf1a98605beb7b351b31ada3877f5ec510da1f7",
+        "elapsed_s": 1.3,
+        "src_tree": "eacefa3146b2233ba06ac9341324c119d743c379",
+        "version": "0.1.0"
+      },
+      "cases": 26,
+      "verified": 18,
+      "gaps": 8,
+      "exit": 1,
+      "repeatability": "All 26/27 case statuses also matched the preceding confirmation run; only the finalized receipts are archived."
+    },
+    "external-1": {
+      "kernel": {
+        "commit": "274a62de163a8c3db4cc6a3e83ae1300d1ca3c4d",
+        "elapsed_s": 1.4,
+        "src_tree": "fb60370205247d7c9f7ee30c0b740ce8cbf9d07f",
+        "version": "0.1.0"
+      },
+      "cases": 27,
+      "verified": 19,
+      "gaps": 8,
+      "exit": 1,
+      "repeatability": "All 26/27 case statuses also matched the preceding confirmation run; only the finalized receipts are archived."
+    },
+    "receiver": {
+      "cases": 16,
+      "verified": 9,
+      "gaps": 7,
+      "exit": 1,
+      "source_at": "274a62de163a8c3db4cc6a3e83ae1300d1ca3c4d",
+      "source_note": "Receiver product bytes unchanged from audit start; final probe adds six positive boundary controls. All 16 case statuses reproduced on a second complete run."
+    },
+    "dogfood": {
+      "result": "43/43 scenarios pass, each checked twice",
+      "role": "Supplementary algebra/property and artifact coverage; not a substitute for the external real-CLI probes."
+    },
+    "runtime_matrix": {
+      "result": "Python 3.12.3 and 3.13.14: each 34 passed, 1 skipped. Python 3.11.15 before fix: 29 passed, 1 skipped, 5 errors; post-fix execution family: 7 passed.",
+      "limitation": "Initial matrix clones moving local HEAD per iteration and does not retain each SHA; those runs are informational. python311-fixed.json pins its exact corrected SHA."
+    },
+    "osv": {
+      "version": "2.5.0",
+      "binary_sha256": "edcfc41d257db36148f065055655fe3fcfc434b0b423ea67468a84c207524e0c",
+      "command": "/tmp/ranex-audit-osv-scanner --lockfile=uv.lock --format=sarif --output=.local/release-audit/osv.sarif",
+      "packages": 34,
+      "findings": 0,
+      "exit": 0,
+      "scope": "Known advisories returned by scanner on this date; not a proof of vulnerability absence."
+    },
+    "github_ci": {
+      "head": "48f3a98e48cf10bc0a4ce24fae7862726b82b1c7",
+      "url": "https://github.com/anthonykewl20/ranex/actions/runs/33929054390",
+      "result": "success; two runs each 1666 passed, 129 skipped",
+      "scope": "Existing CI evidence read from GitHub; not a claim that current unpushed commits passed CI."
+    },
+    "typecheck_ci": {
+      "command": "uv run --frozen --with pyrefly==1.2.0 pyrefly check src/ranex --project-excludes '**/verdict.py'",
+      "exit": 0,
+      "result": "0 errors, 6 suppressed, 24 warnings not shown",
+      "scope": "Exact CI product-code gate; byte-pinned verdict.py excluded by CI policy."
+    },
+    "typecheck_broad": {
+      "command": "uv run --frozen --with pyrefly==1.2.0 pyrefly check",
+      "result": "494 errors, 45 suppressed, 41 warnings not shown",
+      "classification": "Broader configured src+tests check fails. This includes test harness typing and the frozen verdict file; it is not the scope checked by CI. Retained separately from runtime proof."
+    }
+  },
+  "finding_index": [
+    {
+      "id": "F-001",
+      "kind": "diagnostic API mismatch",
+      "scope": "Journal API raises for non-JSON corruption; real CLI fails closed without traceback."
+    },
+    {
+      "id": "F-002",
+      "kind": "existing environment reproducibility boundary",
+      "scope": "Passing/skipped partition varies with host and checkout context."
+    },
+    {
+      "id": "F-003",
+      "kind": "external integration prerequisite",
+      "scope": "External governance needs a vendored CLI plus pinned external test tooling."
+    },
+    {
+      "id": "F-004",
+      "kind": "diagnostic mismatch",
+      "scope": "Executed collection errors can become absence instead of recorded execution failure."
+    },
+    {
+      "id": "F-005",
+      "kind": "disclosed unanchored-history/replay boundary",
+      "scope": "Partial edits refuse; suffix/all-history deletion and fully recomputed chain verify. Ordinary evidence replay remains deferred."
+    },
+    {
+      "id": "F-007",
+      "kind": "receiver reliability defect",
+      "scope": "Failed delivery deduped before retry; restart forgets persisted delivery IDs."
+    },
+    {
+      "id": "F-008",
+      "kind": "receiver availability defect",
+      "scope": "Idle, incomplete, and negative-length requests monopolize the listener during the bounded real probe."
+    },
+    {
+      "id": "F-009",
+      "kind": "receiver diagnostic defect",
+      "scope": "Authenticated malformed JSON/PR number closes connection with traceback."
+    },
+    {
+      "id": "F-010",
+      "kind": "spec mismatch",
+      "scope": "Real non-strict XPASS gets PASS on release and HEAD; strict XPASS blocks."
+    },
+    {
+      "id": "F-011",
+      "kind": "post-release integration gap",
+      "scope": "Retired principal metadata does not enforce run/gate admission; ADR-047 acknowledges standalone-loader scope."
+    },
+    {
+      "id": "F-012",
+      "kind": "disclosed trust boundary",
+      "scope": "A hostile pytest reporting hook gets authentic signed PASS for real broken code; no cryptographic forgery."
+    },
+    {
+      "id": "F-013",
+      "kind": "fixed runtime regression",
+      "scope": "Resolved interpreter argv[0] removes Python 3.11 startup warning while retaining verified-fd execution."
+    },
+    {
+      "id": "F-014",
+      "kind": "benchmark validation defect",
+      "scope": "Extra tooling test reports two ambiguous archived false blocks; archive not rewritten."
+    },
+    {
+      "id": "F-015",
+      "kind": "historical subject bootstrap failure",
+      "scope": "Live pinned historical Ranex suite fails its bind-mount identity check; not attributed to current code."
+    },
+    {
+      "id": "F-016",
+      "kind": "release host integration failure",
+      "scope": "Isolated delegated-host cold start reproduces 8 passed, 1 failed; its gate fails closed. Complete root cause remains UNVERIFIED."
+    },
+    {
+      "id": "F-017",
+      "kind": "fixed acceptance-harness defect",
+      "scope": "Host workflow tests selected the parent CLI instead of the provisioned clone. Correct routing, unchanged assertions: 7 passed, no skips."
+    },
+    {
+      "id": "F-018",
+      "kind": "intermittent journal observation",
+      "scope": "Eight-writer burst timed out during exploratory release aggregate; unchanged implementation passed all 4000 appends in isolation. Standalone failure trigger UNVERIFIED."
+    }
+  ],
+  "release_compatibility": {
+    "cross_gate_replay": "v0.1.0 accepts same-command sibling-gate reuse; corrected HEAD refuses through post-release ADR-048 policy context. This measures an added feature, not an assertion that v0.1.0 promised ADR-048."
+  },
+  "unverified": [
+    "Live GitHub App JWT/token exchange, published check runs, real PR/ruleset enforcement, and production reverse-proxy behavior. No external check was published.",
+    "Live credentialed kogg/model-provider journeys and signing-key-dependent first-delegation branches; absence is not called PASS.",
+    "Other kernels, operating systems, CPU architectures, hostile same-UID host compromise, and all unexecuted host prerequisite branches.",
+    "Universal code correctness, arbitrary hostile reporter truth, unbounded replay prevention, externally authenticated journal completeness, or statistical population error rates.",
+    "Provenance formats outside the 52 unambiguous raw-source mappings, and independent license re-audit of all 192 prior-art files. All 52 refetched sources exactly match local bytes.",
+    "Complete root cause of delegated-host nested-suite failures and kernel attribution of the two benchmark archive false blocks."
+  ],
+  "priority_order": [
+    "Receiver bounded reads plus durable retry/dedupe state (F-007/008/009).",
+    "Wire principal policy into real admission and reconcile XPASS/collection claims (F-010/011/F-004).",
+    "Repair historical bootstrap/benchmark/qualified-host integration (F-014/015/016).",
+    "Treat independent test trust and anchored freshness/history as explicit threat-model work (F-005/012)."
+  ],
+  "final_commit_validation": {
+    "evidence_location": "The single closing comment on issue #81 records the exact final SHA and full-suite command/result. Local final JUnit/transcript and coverage remain under .local/release-audit/.",
+    "reason": "An exact-commit validation result cannot be inserted into that same commit without changing its identity."
+  },
+  "integrity_note": "SHA-256 in files.json detects accidental artifact changes; it is not a signature or external authenticity anchor.",
+  "test_harness_fix": {
+    "path": "tests/e2e/test_host_workflow_real.py",
+    "sha256": "ba030077875d53def1d33dd4b183d15937224c7118d096cc607159abdef7da3b",
+    "evidence": "qualified-remaining.xml is red (5 passed, 2 failed); qualified-fixed.xml is green (7 passed); assertions and manifest IDs unchanged."
+  }
+}
