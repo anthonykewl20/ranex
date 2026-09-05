@@ -26,7 +26,7 @@ Cold start: 9 passed. Direct qualified host: 29 passed, zero skipped.
 Live historical Ranex bootstrap: 1 passed, including its full child suite.
 Original config/semver patches: bare GREEN, gate PASS. OSV: 34 packages, zero findings.
 Real candidate builds exercise padded versions and refusal of unsupported tags.
-Six executable journey: 185 passed, 10 real mounted-alias refusals, 185 passed again.
+Six executable journey: 185 passed, 10 mounted + 10 unreadable refusals, 185 passed again.
 Evidence: tools/dogfood/audits/2026-09-05-remediation/.
 
 ## Release and remaining limits

@@ -296,11 +296,12 @@ audit records receiver, principal-policy, suite-outcome, journal, bootstrap,
 and host-integration gaps, plus the corrected Python 3.11 guardian startup.
 
 The executable admission journey uses upstream Six and the installed system
-pytest artifact, with 185-test passing runs surrounding ten real bind mounts:
+pytest artifact, with 185-test passing runs surrounding ten real bind mounts
+and ten unreadable-directory refusals:
 
 ```sh
 uv run --frozen python tools/dogfood/executable_journey.py --out .local/executable-journey
 ```
 
-Each refusal must name the executable's shared file identity. An unrelated
+Each refusal must name the shared identity or unreadable search. An unrelated
 namespace/tooling failure is a failed check, never proof of identity enforcement.

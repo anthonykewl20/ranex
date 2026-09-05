@@ -485,15 +485,16 @@ def test_run_refuses_when_the_identity_scan_cannot_read_the_worktree(
 
     marker = tmp_path / "in-repo-bytes-ran"
     inside = script(repo / "tools" / "pytest", f'touch "{marker}"\nexit 0')
+    outside = tmp_path / "bin"
+    command = [str(outside / "pytest"), "-q"]
     (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["pytest", "-q"]), encoding="utf-8"
+        build_gates("tests-executed", command), encoding="utf-8"
     )
     commit_all(repo)
 
     # The second name, taken while the directory is still open to everyone. An
     # ordinary hard link: no namespace, no privilege, and nothing the scan has
     # not already been shown to find when it is allowed to look.
-    outside = tmp_path / "bin"
     outside.mkdir()
     os.link(inside, outside / "pytest")
     assert (outside / "pytest").stat().st_ino == inside.stat().st_ino, (
@@ -521,7 +522,7 @@ def test_run_refuses_when_the_identity_scan_cannot_read_the_worktree(
         )
 
         completed = subprocess.run(
-            run_argv("pytest", "-q"),
+            run_argv(*command),
             cwd=repo,
             env=environment_for(
                 repo, tmp_path, key_path=keys["path"], path_prefix=outside
@@ -541,6 +542,10 @@ def test_run_refuses_when_the_identity_scan_cannot_read_the_worktree(
         "— untracked by git, unreported by `git status` — turned the in-repo "
         f"bytes into an outside tool: exit={completed.returncode} "
         f"stdout={completed.stdout!r} stderr={completed.stderr!r}"
+    )
+    assert "cannot be read" in completed.stderr and str(closed) in completed.stderr, (
+        "an unrelated refusal must not count as detecting the unreadable "
+        f"identity search: {completed.stderr}"
     )
     assert not marker.exists(), (
         "the in-repo bytes executed; the tree under observation chose the "

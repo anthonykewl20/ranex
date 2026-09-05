@@ -244,7 +244,10 @@ capability requirement was relaxed. The real upstream Six journey uses the
 installed system pytest artifact: 185 required tests passed, ten actual bind
 mounts were refused with equal device/inode and link count 1, and the 185 tests
 passed again after unmounting. The corrected existing regression file passed
-all 5 checks. CI now runs that same real Six executable journey.
+all 5 checks. The adjacent unreadable-directory regression had the same weak
+selection and now requires its named unreadable-directory refusal. The expanded
+real Six journey passed ten mounted and ten unreadable-directory refusals,
+then all 185 required tests again (`executable-journey-2/`). CI runs this journey.
 Receipts: `audits/2026-09-05-remediation/executable-journey-1/`,
 `bind-fix.xml` and the original `ci-source-failed.log` in the same archive.
 

@@ -1,7 +1,7 @@
-"""Run upstream Six with real pytest, refuse its mounted in-tree alias, recover.
+"""Run upstream Six with real pytest, refuse mounted and hidden aliases, recover.
 
 The executable is the installed system pytest artifact, never an authored test
-double. Each mounted refusal must identify the same file, not merely exit 2.
+double. Each refusal must name its identity/search failure, not merely exit 2.
 Run sequentially with other governed/confinement journeys.
 """
 
@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -94,10 +95,32 @@ def main() -> int:
             results.append(dict(phase='mounted', iteration=iteration, verified=ok, identities=identities))
             if not ok:
                 raise RuntimeError(response.stdout + response.stderr)
+        # A real hard link hidden behind directory permissions must refuse
+        # because the identity search cannot inspect that committed directory.
+        # Neither directory modes nor inode link counts change Git's content.
+        inside.unlink()
+        os.link(outside, inside)
+        if proof._git(repo, 'status', '--porcelain').stdout:
+            raise RuntimeError('the real hard link changed the governed content')
+        for iteration in range(10):
+            try:
+                inside.parent.chmod(0)
+                response = cli('run', '--producer', proof.PRODUCER, '--claim', 'tests-executed',
+                               '--', *command)
+                ok = (response.returncode == 2 and 'cannot be read' in response.stderr
+                      and str(inside.parent) in response.stderr and not evidence.exists())
+                results.append(dict(phase='unreadable', iteration=iteration, verified=ok))
+                if not ok:
+                    raise RuntimeError(response.stdout + response.stderr)
+            finally:
+                inside.parent.chmod(0o755)
+        inside.unlink()
+        shutil.copyfile(outside, inside)
+        inside.chmod(0o755)
         passing('recovered')
         receipt = dict(kernel=identity, external=external, baseline=baseline, results=results,
                        executable=dict(path=str(installed), sha256=hashlib.sha256(installed.read_bytes()).hexdigest()),
-                       scope='Real upstream tests and installed pytest; ten actual bind mounts with identity-specific refusal')
+                       scope='Real upstream tests and installed pytest; ten mounted and ten unreadable alias refusals with named causes')
         (out / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
         for name in ('producers.yaml', 'suite_manifest.json', 'gates.yaml'):
             shutil.copyfile(repo / 'governance' / name, out / name)
