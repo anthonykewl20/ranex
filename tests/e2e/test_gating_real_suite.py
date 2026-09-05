@@ -45,10 +45,10 @@ import sys
 from pathlib import Path
 
 import pytest
+from _host_evidence import record_host_qualification as record_live_host_qualification
 
-from ranex.cli.main import record_evidence, subject_digest_for
 from ranex.foundation.canonical import command_digest
-from ranex.foundation.signing import generate_keypair, sign_evidence
+from ranex.foundation.signing import generate_keypair
 from ranex.foundation.suite_results import load_manifest
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain import admission
@@ -518,75 +518,6 @@ def qualification_report(host_state: dict[str, object]) -> dict[str, object]:
         "host_state": host_state,
     }
 
-
-def committed_catalog_digest(repo: Path, name: str = "governance/gates.yaml") -> str:
-    """The catalog digest the gate will actually compute.
-
-    Read from the bytes git records at HEAD, not from the working tree, because
-    that is what `committed_trust_root` hands the evaluator. A SLICE-081 record
-    binds the rulebook it was produced under, so a hand-built qualification
-    record must name the same one or it is refused as policy-context-mismatch —
-    correctly, but for a reason these journeys do not mean to exercise.
-    """
-
-    import subprocess as _subprocess
-
-    from ranex.bootstrap.composition import catalog_digest_for
-
-    blob = _subprocess.run(
-        ["git", "-C", str(repo), "cat-file", "-p", f"HEAD:{name}"],
-        capture_output=True,
-        check=True,
-    )
-    return catalog_digest_for(blob.stdout)
-
-
-def record_live_host_qualification(
-    repo: Path, key_path: Path, *, producer_id: str = "worker"
-) -> None:
-    argv = (
-        "python",
-        "-m",
-        "ranex.cli.host_confinement",
-        "qualify",
-        "--profile",
-        "governance/confinement/strict-local-host-v1.json",
-        "--artifact",
-        ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
-        "--manifest",
-        "governance/confinement/native-launcher-build-v1.json",
-        "--report=.local/ranex/qualification/strict-local-v1.json",
-    )
-    host_state = copy.deepcopy(admission._read_live_durable_host_state())
-    host_state["delegation_identity"].update(
-        {
-            "cgroup_root": "/sys/fs/cgroup",
-            "cgroup_relative_path": "/session.scope",
-            "source": "direct",
-            "userns_state_source": "qualification-host-probe",
-        }
-    )
-    report = qualification_report(host_state)
-    content = {
-        "claim_id": "host-qualification",
-        "command": " ".join(argv),
-        "command_digest": command_digest(argv),
-        "executable_path": sys.executable,
-        "exit_code": 0,
-        "producer_id": producer_id,
-        "subject_digest": subject_digest_for(repo, "HEAD"),
-        "suite_results": report,
-        "confinement_result_digest": "sha256:" + "c" * 64,
-        "confinement_profile_digest": "sha256:" + "d" * 64,
-        "envelope_type": "ranex-evidence-envelope-v1",
-        "gate_id": "landing",
-        "catalog_digest": committed_catalog_digest(repo),
-    }
-    private_key = key_path.read_text(encoding="utf-8").strip()
-    record_evidence(
-        repo / "governance" / "evidence.json",
-        {**content, "signature": sign_evidence(content, private_key)},
-    )
 
 
 # --------------------------------------------------------------------------
@@ -1241,9 +1172,7 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
     from ranex.foundation.canonical import (
         canonical_json_bytes,
         canonical_sha256,
-        command_digest,
     )
-    from ranex.governed_execution.domain import admission
     from ranex.governed_execution.domain.verdict import Evidence
 
     # Red now on the qualification-specific shared admission contract, before

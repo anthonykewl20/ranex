@@ -199,7 +199,7 @@ def resolve_credential_reference(
     if not helper_available():
         raise RuntimeError("helper-unavailable")
     try:
-        completed = runner(("gh", "auth", "status"), capture_output=True, text=True, check=False,
+        completed = runner(("gh", "auth", "status", "--active", "--hostname", "github.com"), capture_output=True, text=True, check=False,
                             env=controller_environment(source), stdin=subprocess.DEVNULL, close_fds=True, timeout=5)
     except subprocess.TimeoutExpired as error:
         raise RuntimeError("credential profile command timed out: argv=('gh', 'auth', 'status')") from error

@@ -44,7 +44,7 @@ def build_closure_limitation() -> str | None:
         for item in traced:
             path = Path(item["path"])
             if not path.is_file():
-                continue
+                return f"pinned launcher build input is absent: {path}"
             expected = item["sha256"]
             if not isinstance(expected, str):
                 raise TypeError(f"build input {path} has no sha256 string")

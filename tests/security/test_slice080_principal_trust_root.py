@@ -478,10 +478,17 @@ def test_the_trust_keyring_loads_a_document_that_carries_the_catalog() -> None:
     """The real committed mixed catalog is parsed before legacy admission."""
 
     from ranex.policy.adapters.configuration.yaml.producer_keyring import (
+        KeyringError,
         load_trust_keyring_text,
     )
 
     text = LIVE_KEYRING.read_text(encoding="utf-8")
+    if "verdict_signer" not in live_document():
+        # Cold-start keygen prints a producer-only legacy root. It remains
+        # usable for evidence and must not invent a verdict signer.
+        with pytest.raises(KeyringError, match="producers and verdict_signer"):
+            load_trust_keyring_text(text, LIVE_KEYRING)
+        return
 
     assert load_trust_keyring_text(text, LIVE_KEYRING).verdict_signer_id == (
         "kernel-verdict-signer"

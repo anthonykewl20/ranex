@@ -25,7 +25,6 @@ of the product, and this is the only test that measures it.
 
 from __future__ import annotations
 
-import copy
 import os
 import subprocess
 import sys
@@ -33,11 +32,7 @@ from pathlib import Path
 
 import pytest
 import yaml
-
-from ranex.cli.main import record_evidence, subject_digest_for
-from ranex.foundation.canonical import command_digest
-from ranex.foundation.signing import sign_evidence
-from ranex.governed_execution.domain import admission
+from _host_evidence import record_host_qualification as record_live_host_qualification
 
 REAL_REPO = Path(__file__).resolve().parents[2]
 README = REAL_REPO / "README.md"
@@ -218,134 +213,6 @@ def git(repo: Path, *arguments: str) -> subprocess.CompletedProcess:
         capture_output=True,
         text=True,
         check=False,
-    )
-
-
-def qualification_report(host_state: dict[str, object]) -> dict[str, object]:
-    open_objects = {
-        name: {
-            "path": path,
-            "realpath": path,
-            "sha256": "sha256:" + digit * 64,
-            "device": 1,
-            "inode": inode,
-            "uid": 0,
-            "gid": 0,
-            "mode": 0o755,
-            "mount_id": 1,
-            "security_capability": False,
-            "filesystem": {
-                "device": "0:1",
-                "filesystem": "ext4",
-                "mount_id": 1,
-                "mount_point": "/",
-                "options": ["rw"],
-                "source": "/dev/root",
-            },
-        }
-        for name, path, digit, inode in (
-            ("bubblewrap", "/usr/bin/bwrap", "4", 2),
-            ("launcher", "/opt/ranex/ranex-worker-launcher", "3", 3),
-        )
-    }
-    return {
-        "schema": "ranex-strict-local-qualification-v1",
-        "qualified": True,
-        "refusal": None,
-        "kernel": {"release": "6.12.0", "architecture": "x86_64"},
-        "primitives": {
-            "landlock": {"available": True, "abi": 6},
-            "seccomp_filter": True,
-            "no_new_privs": True,
-            "namespaces": {
-                "user": True, "mount": True, "pid": True, "ipc": True, "network": True,
-            },
-            "openat2": True,
-        },
-        "cgroup": {
-            "cgroup_kill": True,
-            "mount": {"path": "/sys/fs/cgroup", "filesystem": "cgroup2"},
-            "root": "/sys/fs/cgroup",
-            "relative_path": "/session.scope",
-            "controllers": ["cpu", "memory", "pids"],
-            "probe_transcript": {"created": True},
-        },
-        "open_objects": open_objects,
-        "digests": {
-            "profile": "sha256:" + "1" * 64,
-            "build_manifest": "sha256:" + "2" * 64,
-            "artifact": "sha256:" + "3" * 64,
-        },
-        "delegation": {"broker": None, "existing_root": None, "source": "direct"},
-        "host_state": host_state,
-    }
-
-
-def committed_catalog_digest(repo: Path, name: str = "governance/gates.yaml") -> str:
-    """The catalog digest the gate will actually compute.
-
-    Read from the bytes git records at HEAD, not from the working tree, because
-    that is what `committed_trust_root` hands the evaluator. A SLICE-081 record
-    binds the rulebook it was produced under, so a hand-built qualification
-    record must name the same one or it is refused as policy-context-mismatch —
-    correctly, but for a reason these journeys do not mean to exercise.
-    """
-
-    import subprocess as _subprocess
-
-    from ranex.bootstrap.composition import catalog_digest_for
-
-    blob = _subprocess.run(
-        ["git", "-C", str(repo), "cat-file", "-p", f"HEAD:{name}"],
-        capture_output=True,
-        check=True,
-    )
-    return catalog_digest_for(blob.stdout)
-
-
-def record_live_host_qualification(repo: Path, key_path: Path) -> None:
-    argv = (
-        "python",
-        "-m",
-        "ranex.cli.host_confinement",
-        "qualify",
-        "--profile",
-        "governance/confinement/strict-local-host-v1.json",
-        "--artifact",
-        ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher",
-        "--manifest",
-        "governance/confinement/native-launcher-build-v1.json",
-        "--report=.local/ranex/qualification/strict-local-v1.json",
-    )
-    host_state = copy.deepcopy(admission._read_live_durable_host_state())
-    host_state["delegation_identity"].update(
-        {
-            "cgroup_root": "/sys/fs/cgroup",
-            "cgroup_relative_path": "/session.scope",
-            "source": "direct",
-            "userns_state_source": "qualification-host-probe",
-        }
-    )
-    report = qualification_report(host_state)
-    content = {
-        "claim_id": "host-qualification",
-        "command": " ".join(argv),
-        "command_digest": command_digest(argv),
-        "executable_path": sys.executable,
-        "exit_code": 0,
-        "producer_id": "worker",
-        "subject_digest": subject_digest_for(repo, "HEAD"),
-        "suite_results": report,
-        "confinement_result_digest": "sha256:" + "c" * 64,
-        "confinement_profile_digest": "sha256:" + "d" * 64,
-        "envelope_type": "ranex-evidence-envelope-v1",
-        "gate_id": "landing",
-        "catalog_digest": committed_catalog_digest(repo),
-    }
-    private_key = key_path.read_text(encoding="utf-8").strip()
-    record_evidence(
-        repo / "governance" / "evidence.json",
-        {**content, "signature": sign_evidence(content, private_key)},
     )
 
 

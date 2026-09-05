@@ -15,9 +15,10 @@ from __future__ import annotations
 
 import json
 import os
-import sys
 import tomllib
 from pathlib import Path
+
+from packaging.version import Version
 
 HERE = Path(__file__).resolve().parent
 REPO_ROOT = HERE.parents[2]
@@ -32,7 +33,7 @@ def main() -> int:
     state = json.loads((HERE / "state.json").read_text())
     version = current_version()
     benched = state.get("last_benched_version")
-    if benched == version:
+    if benched is not None and Version(benched) >= Version(version):
         print(f"UP-TO-DATE benched={benched} current={version}")
         return 0
     missing = []
