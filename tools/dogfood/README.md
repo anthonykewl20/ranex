@@ -294,3 +294,13 @@ frozen dependency provisioning. They complement the deterministic curriculum.
 See [FINDINGS.md](FINDINGS.md) for current open and closed findings. The release
 audit records receiver, principal-policy, suite-outcome, journal, bootstrap,
 and host-integration gaps, plus the corrected Python 3.11 guardian startup.
+
+The executable admission journey uses upstream Six and the installed system
+pytest artifact, with 185-test passing runs surrounding ten real bind mounts:
+
+```sh
+uv run --frozen python tools/dogfood/executable_journey.py --out .local/executable-journey
+```
+
+Each refusal must name the executable's shared file identity. An unrelated
+namespace/tooling failure is a failed check, never proof of identity enforcement.

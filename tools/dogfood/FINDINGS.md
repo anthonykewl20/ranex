@@ -229,6 +229,26 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
 
 ## Closed
 
+### F-027 — the bind-mount regression could pass on an unrelated refusal
+
+Hosted CI at 2b33dbc32 ran the real system pytest and returned 5 (no tests),
+while the same regression locally returned 2 because its nested namespace
+could not start. The test mounted an executable in ambient PATH but invoked
+bare `pytest`; Ranex intentionally resolves bare commands on its pinned system
+paths. Neither result established the claimed identity check. Installing system
+pytest in CI exposed the old test's incorrect refusal expectation.
+
+The regression now names the mounted executable explicitly and requires the
+`same file as` refusal. No production identity check, assertion, timeout or
+capability requirement was relaxed. The real upstream Six journey uses the
+installed system pytest artifact: 185 required tests passed, ten actual bind
+mounts were refused with equal device/inode and link count 1, and the 185 tests
+passed again after unmounting. The corrected existing regression file passed
+all 5 checks. CI now runs that same real Six executable journey.
+Receipts: `audits/2026-09-05-remediation/executable-journey-1/`,
+`bind-fix.xml` and the original `ci-source-failed.log` in the same archive.
+
+
 ### F-024 — relative journal API paths failed during real receipt verification
 
 Verification of the actual cold-start journal at fd13edbc0 raised

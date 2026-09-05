@@ -26,12 +26,15 @@ Cold start: 9 passed. Direct qualified host: 29 passed, zero skipped.
 Live historical Ranex bootstrap: 1 passed, including its full child suite.
 Original config/semver patches: bare GREEN, gate PASS. OSV: 34 packages, zero findings.
 Real candidate builds exercise padded versions and refusal of unsupported tags.
+Six executable journey: 185 passed, 10 real mounted-alias refusals, 185 passed again.
 Evidence: tools/dogfood/audits/2026-09-05-remediation/.
 
 ## Release and remaining limits
 
 Automated releases use vMAJOR.MINOR.PPP after explicit dogfood-fix trailers.
-Release publication requires a fresh frozen suite on the actual release commit.
+Hosted CI exposed F-027: an old PATH-based regression accepted unrelated refusals.
+It now selects the mounted executable and requires the identity-specific refusal.
+Release awaits fresh hosted CI and the frozen suite on the actual release commit.
 The GitHub release workflow needs the owner's RANEX_RELEASE_TOKEN secret.
 Live installed-App publication and Kogg qualification remain UNVERIFIED.
 Kogg's pinned npm build failed on Node 22 and 24; newer npm reached failing tests.

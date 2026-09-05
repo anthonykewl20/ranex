@@ -80,6 +80,7 @@ jobs:
             --out .local/ci-storage-stress
           uv run --frozen python tools/dogfood/release_check.py --out .local/ci-release-check
           uv run --frozen python tools/dogfood/collection_journey.py --out .local/ci-collection-journey
+          uv run --frozen python tools/dogfood/executable_journey.py --out .local/ci-executable-journey
           unset COVERAGE_PROCESS_START
           uv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage
           uv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml

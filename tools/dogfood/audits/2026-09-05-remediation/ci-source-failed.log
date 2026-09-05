@@ -1,0 +1,219 @@
+test	Run uv run --frozen pytest -q -rs	﻿2026-09-05T13:14:56.1991154Z ##[group]Run uv run --frozen pytest -q -rs
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:14:56.1991527Z ^[[36;1muv run --frozen pytest -q -rs^[[0m
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:14:56.2027084Z shell: /usr/bin/bash -e {0}
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:14:56.2027346Z env:
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:14:56.2027628Z   UV_PYTHON_INSTALL_DIR: /home/runner/work/_temp/uv-python-dir
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:14:56.2027972Z   UV_PYTHON: 3.14
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:14:56.2028223Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:14:56.2028530Z ##[endgroup]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:15:00.5987661Z ........................................................................ [  4%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:15:05.3721432Z ..........................sssssss....................................... [  8%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:15:05.5775084Z ........................................................................ [ 12%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:15:10.5531612Z ........................................................................ [ 16%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:15:49.2006505Z ........s.............................sssssssss..sssss.sss...ssssssssss. [ 20%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:16:10.2231265Z ssssssssss................................ssssssssssssssss.ssssss....... [ 24%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:16:46.3528923Z ................s..................ss..................ss............... [ 28%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:16:52.2185971Z ..ss...s..ssss.........s................................................ [ 32%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:16:56.1088338Z ......................................................sssssssssssssssss. [ 36%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:17:15.8846895Z ........................................................................ [ 40%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:17:23.9832390Z ....ssssssssssssssssss....................sss........................... [ 44%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:17:24.7490608Z ........................................................................ [ 48%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:17:38.5985936Z ........................................................................ [ 52%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:17:45.2399008Z ........................................................................ [ 56%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:17:56.4751867Z .....................................F.................................. [ 60%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:06.0240632Z ........................................................................ [ 64%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:10.5022433Z .........................ssss..............sss...........s.....ss....... [ 68%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:13.1638586Z ..........s............................................................. [ 72%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:13.6897622Z ........................................................................ [ 76%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:13.7625181Z ........................................................................ [ 80%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:14.4598131Z ........................................................................ [ 84%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:15.5670622Z ........................................................................ [ 88%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:15.7154191Z ........................................................................ [ 92%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:15.9518066Z ........................................................................ [ 96%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1643494Z ...................................................................      [100%]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1644382Z =================================== FAILURES ===================================
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1645139Z _______ test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file ________
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1645676Z 
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1646139Z repo = PosixPath('/tmp/pytest-of-runner/pytest-0/test_run_refuses_a_bind_mounte0/governed')
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1648005Z keys = {'private': 'ed25519:Dp4XAb0UmXPHvmzr9Xa3hQ2NMa8CBMRvQwLooT71yYI=', 'public': 'ed25519:R8LeMfFVYziWrfZqTmm3xbhpuNIv9/vh+sd/7hULy/4=', 'path': '/tmp/pytest-of-runner/pytest-0/test_run_refuses_a_bind_mounte0/worker.key'}
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1649835Z tmp_path = PosixPath('/tmp/pytest-of-runner/pytest-0/test_run_refuses_a_bind_mounte0')
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1650410Z 
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1650555Z     @needs_bind_mount
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1651071Z     def test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file(
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1652394Z         repo: Path,
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1652747Z         keys: dict[str, str],
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1653125Z         tmp_path: Path,
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1653481Z     ) -> None:
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1654303Z         """D9 — the second name a bind mount makes is one `st_nlink` cannot count.
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1654901Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1655409Z         `mount --bind <repo>/tools/pytest <outside>/bin/pytest` leaves the outside
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1656264Z         path reporting the same device and the same inode as the in-repo file, and a
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1657096Z         link count of one. Every location check then answers honestly and wrongly:
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1657890Z         the resolved path is outside the worktree, no component of the route lies
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1658701Z         inside it, and `/proc/self/fd` confirms the descriptor opened the outside
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1659472Z         name. Only identity sees it, and identity is asked only when the link count
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1660472Z         says a second name exists — which is exactly what a bind mount does not do.
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1661036Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1661468Z         An unprivileged worker running as the same uid as the tool can make this
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1662361Z         mount; it needs a user namespace and no privilege beyond that.
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1662867Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1663289Z         The required property is the one D8 stated and this shows unmet: the
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1664026Z         resolved executable must not BE a file inside the subject worktree, however
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1664778Z         the second name was obtained. `st_nlink` is a cheap answer to a different
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1665631Z         question — "does another *link* exist" — and the question that matters is
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1666216Z         "is this the same file".
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1666549Z         """
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1666801Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1667092Z         marker = tmp_path / "in-repo-bytes-ran"
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1667683Z         inside = script(repo / "tools" / "pytest", f'touch "{marker}"\nexit 0')
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1668281Z         (repo / "gates.yaml").write_text(
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1668836Z             build_gates("tests-executed", ["pytest", "-q"]), encoding="utf-8"
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1669370Z         )
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1669638Z         commit_all(repo)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1669962Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1670401Z         # The mount point. Its own bytes never run: the bind mount covers them, and
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1671132Z         # a distinct exit code makes that visible if it ever stops being true.
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1671699Z         outside = tmp_path / "bin"
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1672665Z         script(outside / "pytest", "exit 77")
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1673066Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1673317Z         wrapped = [
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1673595Z             "sh",
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1673871Z             "-c",
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1674310Z             f'stat -c "{IDENTITY_PREFIX} %d %i %h" "$1" "$2"; shift 2; exec "$@"',
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1674833Z             "sh",
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1675123Z             str(outside / "pytest"),
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1675493Z             str(inside),
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1675824Z             *run_argv("pytest", "-q"),
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1676185Z         ]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1676469Z         completed = subprocess.run(
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1677018Z             bind_mounted_argv(BIND_MOUNT_TOOL, inside, outside / "pytest", wrapped),
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1677581Z             cwd=repo,
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1677892Z             env=environment_for(
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1678358Z                 repo, tmp_path, key_path=keys["path"], path_prefix=outside
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1678870Z             ),
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1679152Z             capture_output=True,
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1679488Z             text=True,
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1679784Z             check=False,
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1680082Z         )
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1680574Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1680817Z         seen = [
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1681268Z             line for line in completed.stdout.splitlines()
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1681812Z             if line.startswith(IDENTITY_PREFIX)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1682393Z         ]
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1682711Z         assert len(seen) == 2 and seen[0] == seen[1], (
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1683275Z             "the bind mount did not give the outside path the in-repo file's "
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1683982Z             f"identity, so this test proves nothing: {seen} / {completed.stderr}"
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1684516Z         )
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1684800Z         assert seen[0].split()[3] == "1", (
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1685359Z             "the whole point is a second name the link count does not report; if it "
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1686065Z             f"reports one here, this reproduction is not D9: {seen[0]}"
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1686564Z         )
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1686813Z     
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1687136Z >       assert completed.returncode == EXIT_USAGE, (
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1687774Z             "a bind-mounted second name for a file inside the worktree was accepted "
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1688500Z             "as an outside binary. Identity was decided on the link count, and a "
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1689280Z             f"bind mount does not move it: exit={completed.returncode} "
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1689898Z             f"stdout={completed.stdout!r} stderr={completed.stderr!r}"
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1690381Z         )
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1692745Z E       AssertionError: a bind-mounted second name for a file inside the worktree was accepted as an outside binary. Identity was decided on the link count, and a bind mount does not move it: exit=5 stdout='IDENTITY 2049 2151071 1\nIDENTITY 2049 2151071 1\n\nno tests ran in 0.03s\nRECORDED  claim=tests-executed  producer=worker  exit=5\n          subject=sha256:6b94fc6408ba2b593ee1abdb1a811fb0c21ea9569fdef436f48b4537dfe2f9e4\n' stderr=''
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1695094Z E       assert 5 == 2
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1696647Z E        +  where 5 = CompletedProcess(args=['bwrap', '--dev-bind', '/', '/', '--bind', '/tmp/pytest-of-runner/pytest-0/test_run_refuses_a_b...orker  exit=5\n          subject=sha256:6b94fc6408ba2b593ee1abdb1a811fb0c21ea9569fdef436f48b4537dfe2f9e4\n', stderr='').returncode
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1698121Z 
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1698448Z tests/security/test_slice003_bind_mount_identity.py:359: AssertionError
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1699152Z =========================== short test summary info ============================
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1700196Z SKIPPED [1] tests/contract/test_plugin_lock.py:48: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1701646Z SKIPPED [1] tests/contract/test_plugin_lock.py:55: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1703484Z SKIPPED [1] tests/contract/test_plugin_lock.py:64: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1704933Z SKIPPED [1] tests/contract/test_plugin_lock.py:71: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1706360Z SKIPPED [1] tests/contract/test_plugin_lock.py:77: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1707807Z SKIPPED [1] tests/contract/test_plugin_lock.py:90: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1709255Z SKIPPED [1] tests/contract/test_plugin_lock.py:99: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1710677Z SKIPPED [1] tests/contract/test_trace_invariance.py:569: SLICE-054 real confinement unavailable: no delegated writable cgroup-v2 root
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1712511Z SKIPPED [9] tests/e2e/test_cold_start_journey.py:152: depends on resolver: the resolver in governance/deps.yaml is absent or does not match its digest; a new operator installs it first
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1715290Z SKIPPED [1] tests/e2e/test_confinement_real.py:608: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1718110Z SKIPPED [1] tests/e2e/test_confinement_real.py:1123: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1720917Z SKIPPED [1] tests/e2e/test_confinement_real.py:1273: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1723890Z SKIPPED [1] tests/e2e/test_confinement_real.py:1314: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1726695Z SKIPPED [1] tests/e2e/test_confinement_real.py:1330: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1730293Z SKIPPED [1] tests/e2e/test_delegated_probe_serialization.py:284: ranex-context:host-capability: pinned launcher build closure does not match this host — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here (the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1734751Z SKIPPED [2] tests/e2e/test_delegated_session_serialization.py:104: ranex-context:host-capability: pinned launcher build closure does not match this host — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here (the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1737400Z SKIPPED [1] tests/e2e/test_deps_real.py:778: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1738676Z SKIPPED [1] tests/e2e/test_deps_real.py:815: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1739958Z SKIPPED [1] tests/e2e/test_deps_real.py:842: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1741223Z SKIPPED [1] tests/e2e/test_deps_real.py:864: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1742893Z SKIPPED [1] tests/e2e/test_deps_real.py:878: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1744148Z SKIPPED [1] tests/e2e/test_deps_real.py:900: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1745422Z SKIPPED [1] tests/e2e/test_deps_real.py:961: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1746681Z SKIPPED [1] tests/e2e/test_deps_real.py:978: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1747942Z SKIPPED [1] tests/e2e/test_deps_real.py:994: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1749213Z SKIPPED [1] tests/e2e/test_deps_real.py:1016: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1751437Z SKIPPED [1] tests/e2e/test_dynamic_runtime_closure_real.py:343: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1754816Z SKIPPED [1] tests/e2e/test_dynamic_runtime_closure_real.py:356: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1757720Z SKIPPED [1] tests/e2e/test_dynamic_runtime_closure_real.py:426: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1760609Z SKIPPED [5] tests/e2e/test_dynamic_runtime_closure_real.py:465: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1763760Z SKIPPED [2] tests/e2e/test_dynamic_runtime_closure_real.py:491: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1765928Z SKIPPED [15] tests/e2e/test_gating_real_suite.py:221: depends on resolver: the resolver named in governance/deps.yaml is absent or its bytes do not match the pinned sha256
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1767309Z SKIPPED [1] tests/e2e/test_gating_real_suite.py:1010: the pinned resolver is absent or does not match its digest
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1768654Z SKIPPED [1] tests/e2e/test_gear_mesh_candidate_verdict.py:168: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1770930Z SKIPPED [1] tests/e2e/test_host_workflow_real.py:258: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1773887Z SKIPPED [1] tests/e2e/test_host_workflow_real.py:316: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1776611Z SKIPPED [1] tests/e2e/test_host_workflow_real.py:364: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1779334Z SKIPPED [1] tests/e2e/test_host_workflow_real.py:403: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1782651Z SKIPPED [1] tests/e2e/test_host_workflow_real.py:431: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1785503Z SKIPPED [1] tests/e2e/test_run_produces_evidence.py:558: SLICE-017 host qualification unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1787484Z SKIPPED [2] tests/e2e/test_run_real.py:650: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1789018Z SKIPPED [1] tests/e2e/test_slice055_fixture_consumption_a.py:21: ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1790824Z SKIPPED [1] tests/e2e/test_slice055_fixture_consumption_b.py:47: ranex-prereq:signing_key: RANEX_SIGNING_KEY is unset or empty; run keygen outside the repository and export its path
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1792552Z SKIPPED [1] tests/e2e/test_specification_subject_bootstrap.py:113: SLICE-035 Ranex real bootstrap: set RANEX_SLICE035_REAL=1
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1794000Z SKIPPED [1] tests/e2e/test_specification_subject_bootstrap.py:121: SLICE-035 kogg real bootstrap: set RANEX_SLICE035_REAL=1
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1796088Z SKIPPED [1] tests/e2e/test_strict_local_io_real.py:83: ranex-prereq:qualified_host: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1798020Z SKIPPED [1] tests/e2e/test_suite_freeze_real.py:421: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1799354Z SKIPPED [1] tests/e2e/test_suite_freeze_real.py:461: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1800677Z SKIPPED [1] tests/e2e/test_suite_freeze_real.py:476: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1802208Z SKIPPED [1] tests/e2e/test_suite_freeze_real.py:506: ranex-prereq:pinned_resolver: the pinned resolver is absent at /usr/local/bin/uv
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1804185Z SKIPPED [1] tests/e2e/test_task_real.py:957: ranex-context:fanout-gated: SLICE-036 (#19) has not closed; the fanout qualification assertions authored in this file stay skipped-with-name until a follow-up governed change enables them after #19 closes
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1806228Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:72: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1807764Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:78: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1809294Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:84: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1810838Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:98: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1812613Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:110: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1814140Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:126: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1815684Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:158: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1817231Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:177: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1818963Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:194: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1820464Z SKIPPED [1] tests/integration/test_fork_startup_bridge.py:200: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1821959Z SKIPPED [1] tests/integration/test_fork_trim_keep_set.py:93: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1823586Z SKIPPED [1] tests/integration/test_fork_trim_keep_set.py:105: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1825056Z SKIPPED [1] tests/integration/test_fork_trim_keep_set.py:110: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1826532Z SKIPPED [1] tests/integration/test_fork_trim_keep_set.py:115: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1827997Z SKIPPED [1] tests/integration/test_fork_trim_keep_set.py:123: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1829677Z SKIPPED [1] tests/integration/test_fork_trim_keep_set.py:142: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1831188Z SKIPPED [1] tests/integration/test_fork_trim_keep_set.py:163: harness fork not present at /home/runner/work/ranex/ranex-harness (set RANEX_HARNESS_DIR)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1833747Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:624: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1836655Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:639: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1839552Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:655: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1842578Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:671: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1845694Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:683: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1848575Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:699: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1851438Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:927: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1854007Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:950: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1855979Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:991: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1858099Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:1259: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1860006Z SKIPPED [2] tests/integration/test_slice017_native_launcher.py:1305: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1861915Z SKIPPED [2] tests/integration/test_slice017_native_launcher.py:1341: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1864000Z SKIPPED [1] tests/integration/test_slice017_native_launcher.py:1380: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1866065Z SKIPPED [3] tests/integration/test_slice017_native_launcher.py:1497: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1867429Z SKIPPED [1] tests/integration/test_slice018_confinement_session.py:390: SLICE-018 host qualification unavailable: no delegated writable cgroup-v2 root
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1868863Z SKIPPED [2] tests/launcher_host.py:71: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1870676Z SKIPPED [1] tests/security/test_slice017_host_qualification.py:1044: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1872834Z SKIPPED [1] tests/security/test_slice017_host_qualification.py:1060: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1874756Z SKIPPED [1] tests/security/test_slice017_host_qualification.py:1131: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1876674Z SKIPPED [1] tests/security/test_slice017_host_qualification.py:1162: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1878582Z SKIPPED [1] tests/security/test_slice017_host_qualification.py:1345: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1880487Z SKIPPED [1] tests/security/test_slice017_host_qualification.py:1368: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1882523Z SKIPPED [1] tests/security/test_slice017_host_qualification.py:1506: SLICE-017 build host unavailable: the pinned launcher build closure does not match this host (1 of 213 traced inputs differ, e.g. /etc/ld.so.cache) — launcher-build refuses E-C17-BUILD-INPUT-DRIFT here
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1884216Z SKIPPED [1] tests/security/test_slice018_cgroup_output_lifecycle.py:180: CAP_MKNOD unavailable — device-node output-tamper refusal is host-unverified
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1885252Z SKIPPED [2] tests/security/test_slice018_cgroup_output_lifecycle.py:244: SLICE-018 host qualification unavailable: delegated cgroup-v2 root is not writable
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1886986Z SKIPPED [1] tests/security/test_slice046_cmd_run_confinement.py:269: SLICE-046 real session unavailable: {"detail":"cannot open cgroup.kill at /sys/fs/cgroup/system.slice/hosted-compute-agent.service/cgroup.kill: [Errno 13] Permission denied: '/sys/fs/cgroup/system.slice/hosted-compute-agent.service/cgroup.kill'","refusal":"E-C17-CGROUP-DELEGATION"}
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.1888413Z 1 failed, 1665 passed, 129 skipped in 260.19s (0:04:20)
+test	Run uv run --frozen pytest -q -rs	2026-09-05T13:19:17.3548840Z ##[error]Process completed with exit code 1.

@@ -313,14 +313,15 @@ def test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file(
 
     marker = tmp_path / "in-repo-bytes-ran"
     inside = script(repo / "tools" / "pytest", f'touch "{marker}"\nexit 0')
+    outside = tmp_path / "bin"
+    command = [str(outside / "pytest"), "-q"]
     (repo / "gates.yaml").write_text(
-        build_gates("tests-executed", ["pytest", "-q"]), encoding="utf-8"
+        build_gates("tests-executed", command), encoding="utf-8"
     )
     commit_all(repo)
 
     # The mount point. Its own bytes never run: the bind mount covers them, and
     # a distinct exit code makes that visible if it ever stops being true.
-    outside = tmp_path / "bin"
     script(outside / "pytest", "exit 77")
 
     wrapped = [
@@ -330,7 +331,9 @@ def test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file(
         "sh",
         str(outside / "pytest"),
         str(inside),
-        *run_argv("pytest", "-q"),
+        # Bare commands resolve on the pinned toolchain, ignoring ambient PATH.
+        # Select the actual mounted name so this tests inode admission.
+        *run_argv(*command),
     ]
     completed = subprocess.run(
         bind_mounted_argv(BIND_MOUNT_TOOL, inside, outside / "pytest", wrapped),
@@ -361,6 +364,10 @@ def test_run_refuses_a_bind_mounted_second_name_for_an_in_repo_file(
         "as an outside binary. Identity was decided on the link count, and a "
         f"bind mount does not move it: exit={completed.returncode} "
         f"stdout={completed.stdout!r} stderr={completed.stderr!r}"
+    )
+    assert "same file as" in completed.stderr, (
+        "an unrelated tooling/namespace refusal must not count as detecting "
+        f"the bind-mounted identity: {completed.stderr}"
     )
     assert not marker.exists(), (
         "the in-repo bytes executed; the tree under observation chose the binary "

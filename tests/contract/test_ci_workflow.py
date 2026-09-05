@@ -123,6 +123,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
             '  --out .local/ci-storage-stress\n'
             'uv run --frozen python tools/dogfood/release_check.py --out .local/ci-release-check\n'
             'uv run --frozen python tools/dogfood/collection_journey.py --out .local/ci-collection-journey\n'
+            'uv run --frozen python tools/dogfood/executable_journey.py --out .local/ci-executable-journey\n'
             'unset COVERAGE_PROCESS_START\n'
             'uv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage\n'
             'uv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml\n'
