@@ -47,7 +47,7 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     assert set(jobs) == {"test", "osv-scan"}
     job = jobs["test"]
     assert set(job) == {"runs-on", "timeout-minutes", "permissions", "steps"}
-    assert job["timeout-minutes"] == 10
+    assert job["timeout-minutes"] == 120
     assert job["permissions"] == {"contents": "read"}
 
     steps = job["steps"]
@@ -104,10 +104,27 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
             )
         },
         "run": (
-            "uv run --frozen python -m coverage run --source=src/ranex -m pytest -q\n"
-            "uv run --frozen python -m coverage xml -o coverage.xml\n"
-            "uv run --frozen diff-cover coverage.xml "
-            '--compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100\n'
+            '# The documented subprocess hook includes the real CLI journeys.\n'
+            'export COVERAGE_PROCESS_START="$PWD/pyproject.toml"\n'
+            'export COVERAGE_FILE="$PWD/.coverage"\n'
+            'export PYTHONPATH="$PWD/src:$PWD/tests/e2e/coverage"\n'
+            'uv run --frozen pytest -q\n'
+            '# Exercise the actual receiver CLI with an archived upstream PR,\n'
+            '# real TCP/process failure, Git recovery and shared durable state.\n'
+            'COVERAGE_PROCESS_START="$PWD/pyproject.toml" \\\n'
+            'COVERAGE_FILE="$PWD/.coverage" \\\n'
+            'PYTHONPATH="$PWD/tests/e2e/coverage" \\\n'
+            '  uv run --frozen python tools/dogfood/receiver_stress.py \\\n'
+            '    --pull-request tools/dogfood/audits/2026-09-05-remediation/pr-72.json \\\n'
+            '    --out .local/ci-receiver-stress\n'
+            'uv run --frozen python tools/dogfood/storage_stress.py \\\n'
+            '  --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-config-parse-ba79feaa.sqlite3 \\\n'
+            '  --journal tools/dogfood/audits/2026-09-05-remediation/storage-inputs/py-semver-compare-bf46c069.sqlite3 \\\n'
+            '  --out .local/ci-storage-stress\n'
+            'unset COVERAGE_PROCESS_START\n'
+            'uv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage\n'
+            'uv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml\n'
+            'uv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100\n'
         ),
     }
 
