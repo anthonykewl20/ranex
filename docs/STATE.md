@@ -1,39 +1,33 @@
 # State
 
-<!-- Rewrite this file. Do not append to it. Keep it at most 50 lines. -->
-**Updated:** 2026-09-05 (owner-requested remediation, issue #82)
+**Updated:** 2026-09-05 (remediation, issue #82)
 **Active slice:** none
 
-## Work in progress
+Receiver retries failed attempts, retains durable completion across restart,
+bounds connections and reads, and refuses damaged receipts without crashing.
+Producer/signing admission now enforces existing principal retirement rules.
+Actual collection errors retain their observed module identity.
+Journal connections close; corrupt JSON returns false. --expected-head checks
+an independently retained head against deletion, truncation and rewrites.
+Real benchmark execution now sets pytest rootdir consistently.
 
-Issue #82 follows the preserved release audit in tools/dogfood/audits/2026-09-05/.
-Owner requests remediation of all findings, real-data end-to-end stress runs,
-and automated padded patch releases. No finding is closed by this checkpoint.
+## Measured evidence
 
-Receiver now bounds connections and request reads, durably records completion,
-and permits retry after failed fetch/API attempts; signed malformed events refuse.
-Principal catalog retirement/conflicts are checked by admission loaders.
-Collection-error records retain actual observed module IDs.
-Journal connections close deterministically; corrupt JSON verifies false.
-Optional journal --expected-head compares against an independently retained head.
-Benchmark collection fixes rootdir; old fault receipts remain unchanged.
-Real bootstrap pin advances to the clean audited be228ca revision and its lock.
+Two real storage stress runs: 20,000 appends each; all chains verified.
+Real public PR replay: 1,000 concurrent requests, restart and saturation;
+two receivers shared 200 deliveries; corrupt receipt recovery succeeded.
+Cold start: 9 passed with actual host evidence. Direct host checks:
+29 passed, zero skipped. Historical bootstrap rerun is still running.
+Original config-parse and semver agent patches: bare GREEN, gate PASS.
+Wheel installed outside checkout reports ranex v0.1.001; package version 0.1.1.
+Receipts: tools/dogfood/audits/2026-09-05-remediation/.
 
-## Evidence so far
+## Remaining before completion
 
-Both receiver probe reruns: 16 verified receiving-boundary controls each.
-Original config-parse and semver agent patches: real bare suites GREEN and
-governed gates PASS after the rootdir correction. Receipts currently in
-.local/remediation-82/; archive final evidence before completing this issue.
-These runs do not establish live GitHub App publication or exhaustive correctness.
-
-## Remaining
-
-Stress real sockets, Git recovery, storage concurrency, signed external execution;
-run sequential qualified-host/nested journeys and the updated real bootstrap.
-Validate release preparation/build/publication and complete frozen regression CI.
-Reconcile every finding with its actual evidence; keep residual limits explicit.
-Release workflow requires the owner's RANEX_RELEASE_TOKEN repository secret.
-Live installed App target/credentials have been requested from the owner.
-Reporter truth, non-strict XPASS lost by JUnit, and replay of unchanged evidence
-remain limitations; external-head verification requires a separately trusted anchor.
+Complete current external audit, real subject bootstraps and final frozen CI.
+Reconcile findings and archive final evidence. No release has been pushed.
+Automatic tags use vMAJOR.MINOR.PPP after explicit dogfood fix trailers.
+The release workflow needs the owner's RANEX_RELEASE_TOKEN secret.
+Live installed GitHub App publication remains UNVERIFIED without setup.
+Hostile reporter truth, non-strict XPASS lost by JUnit and unchanged-evidence
+reuse remain explicit boundaries. Journal anchors must be independently kept.

@@ -71,8 +71,9 @@ mutation authority.
 Tools like Replit, Lovable, and Base44 optimize **the throw** — better model,
 better prompt, faster loop. Ranex optimizes **the scoring**.
 
-**Ranex does not improve aim.** Not by one degree. It makes misses visible and
-cheap, and hits provable. Nothing here claims more than that.
+**Ranex does not improve aim.** It makes failed observations visible and binds
+reported outcomes to exact source trees. Correctness claims also depend on
+the acceptance checks and the independence of their reporters.
 
 ### Why this needs to exist at all
 
@@ -93,7 +94,8 @@ apparatus: the code, the inspector, and the record.
   deleted, or vanished test is absence, and absence blocks.
 - **Auditors, acquirers, and diligence teams.** Signed evidence pinned to
   exact tree digests plus a hash-chained journal is a record a third party
-  can recheck without trusting any participant — including Ranex.
+  can recheck with independently trusted keys and policy. Detecting journal
+  rollback also requires an independently retained head.
 - **Agent-harness and benchmark builders.** The kernel is provider-neutral
   (delegation launches an opaque adapter with a pinned environment and no
   provider credential), and this repository ships the two-arm false-claim

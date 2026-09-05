@@ -152,7 +152,7 @@ def broker_environment(source: Mapping[str, str] | None = None) -> dict[str, str
         key: value
         for key, value in source.items()
         if not key.startswith(("GH_", "GITHUB_", "GIT_", "SSH_", "RANEX_SUBJECT_"))
-        and key not in KOGG_MAILPIT_ENV
+        and key not in (*KOGG_MAILPIT_ENV, "RANEX_SLICE035_REAL")
     }
     environment.update({"GIT_CONFIG_NOSYSTEM": "1", "GIT_CONFIG_GLOBAL": os.devnull, "GIT_TERMINAL_PROMPT": "0"})
     return environment

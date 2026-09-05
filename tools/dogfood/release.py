@@ -127,7 +127,16 @@ def auto(expected_head: str) -> None:
         "The release workflow retains the validation logs. Source findings and their\n"
         "end-to-end receipts remain in tools/dogfood/FINDINGS.md and audits/.\n"
         "External services and host capabilities absent on the runner are UNVERIFIED.\n")
-    command("git", "add", "pyproject.toml", "uv.lock", "docs/STATE.md")
+    readme = ROOT / "README.md"
+    released, count = re.subn(
+        r"\*\*Current release: \[\`?v[0-9]+\.[0-9]+\.[0-9]+\`?\]\(https://github\.com/anthonykewl20/ranex/tree/v[0-9]+\.[0-9]+\.[0-9]+\)",
+        f"**Current release: [`{tag}`](https://github.com/{REPOSITORY}/tree/{tag})",
+        readme.read_text(),
+    )
+    if count != 1:
+        raise ValueError("README does not identify exactly one current release")
+    readme.write_text(released)
+    command("git", "add", "pyproject.toml", "uv.lock", "docs/STATE.md", "README.md")
     command("git", "-c", f"user.name={OWNER}", "-c", f"user.email={OWNER}@users.noreply.github.com",
             "commit", "-m", f"release: {tag}\n\nDogfood-source: {expected_head}")
     revision = command("git", "rev-parse", "HEAD")

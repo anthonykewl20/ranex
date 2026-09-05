@@ -8,7 +8,16 @@ match the kernel silently.
 
 ## Open
 
-### F-018 (OBSERVED, intermittent) — sustained journal writers can exhaust SQLite's wait
+### F-018 (OBSERVED, mitigated; attribution unverified) — sustained journal writers can exhaust SQLite's wait
+
+**Remediation 2026-09-05:** SQLite connections now close deterministically.
+Two real storage runs replayed original gate evaluations for 20,000 appends
+apiece, alternating eight-thread and eight-process contention. Every chain
+verified, and each process finished with the same descriptor count it started
+with. The original intermittent timeout has not recurred; this does not prove
+writer fairness or establish its original root cause. Evidence:
+`audits/2026-09-05-remediation/storage-stress-1/receipt.json` and
+`storage-stress-2/receipt.json`.
 
 - The exploratory released full suite raised `sqlite3.OperationalError:
   database is locked` at `Journal.append`'s `BEGIN IMMEDIATE` during the
@@ -35,85 +44,6 @@ match the kernel silently.
   shortcut, and the current real bind-mount control passes. The stale subject pin makes this claimed live bootstrap red on
   a host that can exercise the attack. No pin or frozen test was changed.
 
-### F-016 (CONFIRMED, release host integration) — delegated-host cold start does not reach PASS
-
-- In a clean v0.1.0 checkout under a real systemd user scope with delegated
-  `cpu`, `memory`, and `pids`, the cold-start walkthrough's stage 9 fails.
-  Its real governed child records 1534 passed, 97 skipped, 11 failed, and
-  15 errors; the gate correctly blocks those outcomes.
-- The failing child IDs include native-launcher, host-workflow, strict-local
-  I/O, and dynamic-runtime journeys. Running selected host journeys directly
-  at the corrected HEAD produces 22 passed with no skips. These are distinct
-  execution contexts, not contradictory verdicts about identical evidence.
-- The released full-run aggregate (1616 passed, 34 skipped, 7 failed) is
-  exploratory: its early phase overlapped the historical live bootstrap's
-  nested suite. A subsequent **isolated, sequential** cold-start module run
-  still produces 8 passed, 1 failed at stage 9. That rerun confirms the
-  cold-start failure independently of the overlap.
-- Two separate host-workflow failures were traced to test invocation routing
-  and fixed as F-017; they must not be counted as established kernel bugs.
-- This pins a self-hosting/environment integration failure, not a false
-  acceptance. Its complete root cause and portability to other delegated
-  hosts remain UNVERIFIED. The audit retains the released full-suite output
-  and the gate's exact diagnosis; it does not weaken the prerequisite checks.
-
-### F-014 (CONFIRMED, benchmark validation) — an extra tooling test fails outside the default suite
-
-- `uv run --frozen pytest -q tools/dogfood/test_harness_guards.py` produces
-  9 passed, 1 failed. `test_summary_excludes_committed_harness_faults`
-  assumes the entire growing archive has zero false blocks; the current
-  summary reports two. The default pytest testpaths exclude this module.
-- The two archived 2026-09-05 runs (`py-config-parse-ba79feaa` and
-  `py-semver-compare-bf46c069`) report green bare tests and governed exit 0,
-  but the gate refuses manifest IDs prefixed with the enclosing Ranex
-  checkout's `tools/dogfood/...` path. This is consistent with the existing
-  F-005 output/root-directory problem; attribution as a kernel false block
-  is not established by those receipts.
-- No archived evidence or expectations were rewritten to obtain green.
-  The failing tooling guard and archive-derived summary are retained as
-  audit evidence; this is separate from the kernel's frozen full suite.
-
-### F-007 (CONFIRMED, receiver reliability) — failed deliveries are deduped; restart forgets the spool
-
-- Reproduced at `48f3a98e48cf10bc0a4ce24fae7862726b82b1c7` over real TCP,
-  a real failing `git fetch`, and a receiver process restart. The first fetch
-  failure returns 500; the identical redelivery returns 200 without retrying.
-  A previously handled delivery is processed again after restart.
-- Anchor: `github_app/receiver.py:process_delivery` adds the ID to `seen`
-  before processing; `serve` starts a new empty set without reading the spool.
-  ADR-051 promises spooled delivery-ID deduplication. This is separate from
-  the deliberately deferred cryptographic anti-replay feature.
-- Pins: `tools/dogfood/receiver_audit.py`, cases
-  `retry-after-real-fetch-failure` and `dedupe-after-restart`.
-- Another incorrect premise in `process_delivery`: GitHub does **not**
-  automatically redeliver failed webhooks. Explicit redelivery automation or
-  an operator is needed ([GitHub documentation, checked 2026-09-05](https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries)).
-
-### F-008 (CONFIRMED, receiver availability) — an unauthenticated connection monopolizes the listener
-
-- Real socket probes: idle connection, incomplete body, and negative
-  `Content-Length` each make a second healthy client time out after two
-  seconds; releasing the first socket restores successful delivery.
-- Anchor: `github_app/receiver.py:build_handler` accepts negative lengths,
-  reads the body before authentication without a deadline, and runs on a
-  single-threaded `HTTPServer`. `read(-1)` waits for EOF; accepted sockets
-  have no timeout. The two-second observation is bounded; the missing
-  deadline is also established from source. No claim of a timed infinite run.
-- Pin: `receiver_audit.py`, `negative-content-length`, `incomplete-body`,
-  `idle-client`. Reachability depends on the operator's proxy configuration;
-  the default endpoint is localhost. No internet attack was attempted.
-
-### F-009 (CONFIRMED, receiver diagnostics) — malformed signed payloads escape named refusals
-
-- A correctly HMAC-signed invalid JSON body and a PR number of `"oops"`
-  both produce `RemoteDisconnected`; the receiver logs tracebacks instead
-  of a named permanent refusal in the delivery journal.
-- Anchors: `github_app/webhook.py:parse_pull_request_event` leaves
-  `json.loads` and integer conversion exceptions unwrapped;
-  `receiver.py:process_delivery` only catches `WebhookRefusal` there.
-- Pin: `receiver_audit.py`, `malformed-json` and `malformed-number`.
-  These probes use local audit credentials, not a GitHub installation.
-
 ### F-010 (CONFIRMED, specification mismatch) — ordinary non-strict XPASS receives gate PASS
 
 - Reproduced with released v0.1.0 (`edf1a98605`) and HEAD (`48f3a98e48`)
@@ -129,21 +59,6 @@ match the kernel silently.
   the XPASS test did execute and its assertion passed.
 - Pin: `release_audit.py`, `nonstrict-xpass` versus `strict-xpass`.
 
-### F-011 (CONFIRMED, policy integration) — principal retirement is not enforced by run/gate
-
-- On HEAD, mark the real producer key retired in the committed `principals`
-  block while retaining it in `producers`. `ranex run` still signs a fresh
-  successful 185-test external run; `gate evaluate` returns PASS.
-- Anchors: `principal_catalog.py` implements retirement and cross-block
-  validation, but `producer_keyring.py` does not invoke it and execution
-  loads the legacy producer keyring. The new metadata is not enforcement.
-- ADR-047 explicitly says the new loader is not yet wired. README's
-  completed SLICE-080 wording nevertheless says a retired key authorizes
-  none and the two blocks cannot disagree. Those properties currently hold
-  only for direct callers of the standalone catalog loader.
-- Pin: `release_audit.py`, `retired-principal-key`. Absent from v0.1.0;
-  this is a HEAD integration gap, not a released cryptographic break.
-
 ### F-012 (RECONFIRMED boundary) — authenticated test reports are not an independent correctness oracle
 
 - With real `six.integer_types` broken, an independent Python assertion
@@ -158,7 +73,15 @@ match the kernel silently.
   the independent Python assertion captured in the receipt. The protected
   A/B/C qualification path is a different scope and is not disproved by it.
 
-### F-005 (CONFIRMED, partially closed) — journal detects only partial edits; interval-honest wording for small samples
+### F-005 (PARTIALLY CLOSED) — journal needs an independent history anchor
+
+**Remediation 2026-09-05:** `journal verify --expected-head` compares the
+verified chain with a separately retained head. Actual CLI controls reject
+truncation, empty history, non-JSON corruption and a completely recomputed
+rewrite; the unchanged database passes. Without the anchor, internal chain
+consistency still cannot establish completeness. Ordinary reuse of unchanged
+valid evidence remains allowed; fresh nonces are not implemented. Evidence:
+`audits/2026-09-05-remediation/storage-stress-2/receipt.json`.
 
 - Source: the 2026-09-03 full adversarial audit of `tools/dogfood/**`
   (mutation testing, 18 mutants, 7 killed), committed as
@@ -279,7 +202,24 @@ match the kernel silently.
   explicit expected-skip declarations the freeze already supports, or have
   the e2e prereqs materialize the missing state in any checkout.
 
+## Closed
+
+### F-019 — positive host acceptance helpers fabricated qualification reports
+
+**Remediation 2026-09-05:** Removed the positive cold-start and gating helpers
+that assembled and signed successful host qualification reports. Their
+replacement builds and installs the actual launcher and executes the catalog's
+real host qualification command through `ranex run`. A host missing required
+capabilities records the observed reason; it never creates positive evidence.
+Cold start: nine passed. Direct capable-host checks: 29 passed, zero skipped.
+Evidence: `audits/2026-09-05-remediation/cold-3.xml` and `qualified-2.xml`.
+Negative forgery controls remain negative controls, not acceptance evidence.
+
 ### F-001 — `Journal.verify()` raises instead of returning False on non-JSON record corruption
+
+**Remediation 2026-09-05:** Closed by deterministic connection cleanup and malformed-record handling in the journal, plus named CLI diagnostics. Two real storage runs replayed actual external gate records for 20,000 appends each; the non-JSON copy returned API False and CLI exit 1. Evidence: `audits/2026-09-05-remediation/storage-stress-2/receipt.json`.
+
+Historical observation retained:
 
 - Anchor: `src/ranex/governed_execution/adapters/persistence/sqlite/journal.py:176`
   (`json.loads(row["record"])` inside `verify()`, unguarded).
@@ -299,7 +239,124 @@ match the kernel silently.
   traceback. The API still raises rather than returning False; the earlier
   CLI traceback claim above is superseded by this executed observation.
 
-## Closed
+### F-007 — failed deliveries are deduped; restart forgets the spool
+
+**Remediation 2026-09-05:** Closed by completion-only durable receipts, cross-process locking and retryable failures. The real public PR #72 replay recovered after a missing Git remote became available, retried an unavailable API, retained 100 completions across SIGKILL, rejected authenticated ID/body conflicts and handled 200 requests across two receiver processes. Evidence: `audits/2026-09-05-remediation/receiver-stress-4/receipt.json`. Live installed App publication remains UNVERIFIED; remote publication and local receipt completion cannot be one atomic transaction.
+
+Historical observation retained:
+
+- Reproduced at `48f3a98e48cf10bc0a4ce24fae7862726b82b1c7` over real TCP,
+  a real failing `git fetch`, and a receiver process restart. The first fetch
+  failure returns 500; the identical redelivery returns 200 without retrying.
+  A previously handled delivery is processed again after restart.
+- Anchor: `github_app/receiver.py:process_delivery` adds the ID to `seen`
+  before processing; `serve` starts a new empty set without reading the spool.
+  ADR-051 promises spooled delivery-ID deduplication. This is separate from
+  the deliberately deferred cryptographic anti-replay feature.
+- Pins: `tools/dogfood/receiver_audit.py`, cases
+  `retry-after-real-fetch-failure` and `dedupe-after-restart`.
+- Another incorrect premise in `process_delivery`: GitHub does **not**
+  automatically redeliver failed webhooks. Explicit redelivery automation or
+  an operator is needed ([GitHub documentation, checked 2026-09-05](https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries)).
+
+### F-008 — an unauthenticated connection monopolizes the listener
+
+**Remediation 2026-09-05:** Closed by bounded concurrent connections and a five-second request-read deadline. Real PR replay stress repeated five rounds of 32 held sockets: at most 33 threads including deadline timers, 22 descriptors, then HTTP 200 after recovery. A trickling socket disconnected after 5.107 seconds. Evidence: `audits/2026-09-05-remediation/receiver-stress-4/receipt.json`.
+
+Historical observation retained:
+
+- Real socket probes: idle connection, incomplete body, and negative
+  `Content-Length` each make a second healthy client time out after two
+  seconds; releasing the first socket restores successful delivery.
+- Anchor: `github_app/receiver.py:build_handler` accepts negative lengths,
+  reads the body before authentication without a deadline, and runs on a
+  single-threaded `HTTPServer`. `read(-1)` waits for EOF; accepted sockets
+  have no timeout. The two-second observation is bounded; the missing
+  deadline is also established from source. No claim of a timed infinite run.
+- Pin: `receiver_audit.py`, `negative-content-length`, `incomplete-body`,
+  `idle-client`. Reachability depends on the operator's proxy configuration;
+  the default endpoint is localhost. No internet attack was attempted.
+
+### F-009 — malformed signed payloads escape named refusals
+
+**Remediation 2026-09-05:** Closed by event shape validation and named refusals for malformed signed input, and validated durable receipt shapes. Both receiver boundary reruns verified all 16 controls. Actual PR replay also damaged and restored completion and legacy spool records: HTTP 500 while damaged and HTTP 200 after recovery. Evidence: `audits/2026-09-05-remediation/receiver-after-2/receipt.json` and `receiver-stress-4/receipt.json`.
+
+Historical observation retained:
+
+- A correctly HMAC-signed invalid JSON body and a PR number of `"oops"`
+  both produce `RemoteDisconnected`; the receiver logs tracebacks instead
+  of a named permanent refusal in the delivery journal.
+- Anchors: `github_app/webhook.py:parse_pull_request_event` leaves
+  `json.loads` and integer conversion exceptions unwrapped;
+  `receiver.py:process_delivery` only catches `WebhookRefusal` there.
+- Pin: `receiver_audit.py`, `malformed-json` and `malformed-number`.
+  These probes use local audit credentials, not a GitHub installation.
+
+### F-011 — principal retirement is not enforced by run/gate
+
+**Remediation 2026-09-05:** Closed by invoking the existing principal catalog consistency and retirement checks during producer and verdict-signer admission. The real external six replay now refuses both run and gate with exit 2 after retiring its actual producer key. Real host onboarding registers matching active worker principals; the 29 direct host checks pass with zero skips. Evidence: `audits/2026-09-05-remediation/external-1/0/receipt.json` and `qualified-2.xml`.
+
+Historical observation retained:
+
+- On HEAD, mark the real producer key retired in the committed `principals`
+  block while retaining it in `producers`. `ranex run` still signs a fresh
+  successful 185-test external run; `gate evaluate` returns PASS.
+- Anchors: `principal_catalog.py` implements retirement and cross-block
+  validation, but `producer_keyring.py` does not invoke it and execution
+  loads the legacy producer keyring. The new metadata is not enforcement.
+- ADR-047 explicitly says the new loader is not yet wired. README's
+  completed SLICE-080 wording nevertheless says a retired key authorizes
+  none and the two blocks cannot disagree. Those properties currently hold
+  only for direct callers of the standalone catalog loader.
+- Pin: `release_audit.py`, `retired-principal-key`. Absent from v0.1.0;
+  this is a HEAD integration gap, not a released cryptographic break.
+
+### F-014 — an extra tooling test fails outside the default suite
+
+**Remediation 2026-09-05:** Closed in the benchmark harness by fixing pytest rootdir for pristine collection, governed execution and bare execution. Both original agent-produced patches were rerun unchanged: bare GREEN, gate PASS and verified journals. The unchanged tooling guard now passes; historical receipts remain byte-identical and are classified by their observed harness fault. Evidence: `audits/2026-09-05-remediation/benchmark-rerun/divergence.json` and `tooling-check-2.log`.
+
+Historical observation retained:
+
+- `uv run --frozen pytest -q tools/dogfood/test_harness_guards.py` produces
+  9 passed, 1 failed. `test_summary_excludes_committed_harness_faults`
+  assumes the entire growing archive has zero false blocks; the current
+  summary reports two. The default pytest testpaths exclude this module.
+- The two archived 2026-09-05 runs (`py-config-parse-ba79feaa` and
+  `py-semver-compare-bf46c069`) report green bare tests and governed exit 0,
+  but the gate refuses manifest IDs prefixed with the enclosing Ranex
+  checkout's `tools/dogfood/...` path. This is consistent with the existing
+  F-005 output/root-directory problem; attribution as a kernel false block
+  is not established by those receipts.
+- No archived evidence or expectations were rewritten to obtain green.
+  The failing tooling guard and archive-derived summary are retained as
+  audit evidence; this is separate from the kernel's frozen full suite.
+
+### F-016 — delegated-host cold start does not reach PASS
+
+**Remediation 2026-09-05:** Closed in the real acceptance harness by probing the production namespace operation including UID mapping, checking missing build inputs, and executing actual host qualification. Cold start passes all nine stages; all 29 direct qualified-host checks pass without skips. The nested child reports real capability absence rather than claiming the outer host capabilities exist inside it. Evidence: `audits/2026-09-05-remediation/cold-3.xml`, `qualified-2.xml` and the preserved `nested-diagnosis` outputs. This is evidence for these execution contexts, not a portability proof for every host.
+
+Historical observation retained:
+
+- In a clean v0.1.0 checkout under a real systemd user scope with delegated
+  `cpu`, `memory`, and `pids`, the cold-start walkthrough's stage 9 fails.
+  Its real governed child records 1534 passed, 97 skipped, 11 failed, and
+  15 errors; the gate correctly blocks those outcomes.
+- The failing child IDs include native-launcher, host-workflow, strict-local
+  I/O, and dynamic-runtime journeys. Running selected host journeys directly
+  at the corrected HEAD produces 22 passed with no skips. These are distinct
+  execution contexts, not contradictory verdicts about identical evidence.
+- The released full-run aggregate (1616 passed, 34 skipped, 7 failed) is
+  exploratory: its early phase overlapped the historical live bootstrap's
+  nested suite. A subsequent **isolated, sequential** cold-start module run
+  still produces 8 passed, 1 failed at stage 9. That rerun confirms the
+  cold-start failure independently of the overlap.
+- Two separate host-workflow failures were traced to test invocation routing
+  and fixed as F-017; they must not be counted as established kernel bugs.
+- This pins a self-hosting/environment integration failure, not a false
+  acceptance. Its complete root cause and portability to other delegated
+  hosts remain UNVERIFIED. The audit retains the released full-suite output
+  and the gate's exact diagnosis; it does not weaken the prerequisite checks.
+
 
 ### F-017 — capable-host acceptance tests invoked the wrong checkout (fixed in release audit)
 

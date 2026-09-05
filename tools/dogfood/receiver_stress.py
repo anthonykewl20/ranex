@@ -13,6 +13,7 @@ import hmac
 import http.client
 import json
 import os
+import resource
 import secrets
 import signal
 import socket
@@ -55,10 +56,10 @@ def record(name, ok, facts):
         raise RuntimeError(name)
 
 
-def request(port, delivery, body=IGNORED, **headers):
+def request(port, delivery, body=IGNORED, *, path='/webhook', **headers):
     conn = http.client.HTTPConnection('127.0.0.1', port, timeout=5)
     try:
-        conn.request('POST', '/webhook', body, headers={
+        conn.request('POST', path, body, headers={
             'X-GitHub-Delivery': delivery, 'X-GitHub-Event': 'pull_request',
             'X-Hub-Signature-256': 'sha256=' + hmac.new(SECRET.encode(), body, hashlib.sha256).hexdigest(),
             **headers})
@@ -200,10 +201,27 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
             recovered = request(port, 'real-pr-0')
             record('damaged-receipt-recovery', refused == 500 and recovered == 200,
                    dict(damaged_bytes=mutation.decode(), refused=refused, recovered=recovered))
+        for name, changes, expected in (
+            ('wrong-endpoint', {'path': '/missing'}, 404),
+            ('negative-length', {'Content-Length': '-1'}, 400),
+            ('oversized-length', {'Content-Length': '1048577'}, 413),
+            ('ambiguous-transfer', {'Transfer-Encoding': 'chunked'}, 400),
+            ('wrong-signature', {'X-Hub-Signature-256': 'sha256=' + '0' * 64}, 401),
+            ('non-ascii-signature', {'X-Hub-Signature-256': 'é'}, 401),
+        ):
+            status = request(port, name, **changes)
+            record(name, status == expected, dict(expected=expected, actual=status))
+        record('malformed-delivery-id', request(port, 'invalid/id') == 400, 'HTTP 400')
+        for index, damaged in enumerate((BODY[:-1], b'\xff' + BODY[1:])):
+            status = request(port, f'damaged-pr-{index}', damaged)
+            observed = json.loads(journal.read_text().splitlines()[-1])
+            record('damaged-real-pr-payload', status == 200 and observed['outcome'] == 'E-GITHUB-BAD-EVENT',
+                   dict(status=status, receipt=observed))
         saved_journal = journal.read_bytes()
         marker = journal.parent / 'spool-v2.json'
         saved_marker = marker.read_bytes()
         marker.unlink()
+        receipt_path.unlink()  # Migration must rebuild a receipt from the actual legacy journal.
         journal.write_bytes(b'[]\n')
         refused = request(port, 'real-pr-0')
         journal.write_bytes(saved_journal)
@@ -225,4 +243,20 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                 statuses = list(pool.map(multi_process_delivery, range(200)))
             record('two-receivers-share-durable-state', all(s == 200 for s in statuses),
                    dict(requests=len(statuses), accepted=statuses.count(200)))
+    with server() as (port, process):
+        # Linux limits apply only to this receiver; no parent/other process limit changes.
+        original_limit = resource.prlimit(process.pid, resource.RLIMIT_NPROC)
+        time.sleep(.1)
+        resource.prlimit(process.pid, resource.RLIMIT_NPROC, (1, original_limit[1]))
+        refused = False
+        try:
+            try:
+                request(port, 'thread-exhaustion')
+            except (OSError, http.client.HTTPException):
+                refused = True
+        finally:
+            resource.prlimit(process.pid, resource.RLIMIT_NPROC, original_limit)
+        recovered = request(port, 'after-thread-exhaustion')
+        record('real-thread-exhaustion-recovery', refused and recovered == 200,
+               dict(refused=refused, recovered=recovered))
     (OUT / 'deliveries.jsonl').write_bytes(journal.read_bytes())
