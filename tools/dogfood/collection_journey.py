@@ -14,6 +14,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 import coverage
@@ -57,6 +58,7 @@ def main() -> int:
 
         tests = repo / 'test_six.py'
         original = tests.read_bytes()
+        manifest_ids = json.loads((repo / 'governance/suite_manifest.json').read_bytes())['suite']
         for phase in ('pristine', 'collection-failure', 'recovered'):
             if phase != 'pristine':
                 tests.write_bytes(b"raise RuntimeError('collection journey: interrupted module import')\n" + original
@@ -65,6 +67,21 @@ def main() -> int:
                     commit = proof._git(repo, *arguments)
                     if commit.returncode:
                         raise RuntimeError(commit.stderr)
+            collector_name = None
+            if phase == 'collection-failure':
+                # Retain the independent reporter's actual spelling. Pytest's
+                # collection testcase can name a module rather than a path.
+                artifact = out / 'independent-collection.xml'
+                argv = [proof.PINNED_PY, '-m', 'pytest', '-q', f'--junitxml={artifact}',
+                        *baseline['passing']]
+                bare = subprocess.run(argv, cwd=repo, capture_output=True, text=True,
+                                      timeout=300, check=False)
+                commands.append(dict(argv=argv, exit=bare.returncode, stdout=bare.stdout, stderr=bare.stderr))
+                collectors = [case.get('name') for case in ET.parse(artifact).iter('testcase')
+                              if not case.get('classname') and case.find('error') is not None]
+                if bare.returncode == 0 or len(collectors) != 1 or not collectors[0]:
+                    raise RuntimeError('independent pytest did not report the broken collection')
+                collector_name = collectors[0]
             observation = cli('run', '--producer', proof.PRODUCER, '--claim', 'tests-executed', '--', *setup['argv'])
             gate = cli('gate', 'evaluate', 'HEAD', '--approver', proof.APPROVER,
                        '--journal', 'governance/journal.sqlite3')
@@ -75,8 +92,8 @@ def main() -> int:
             ok = 'RECORDED' in observation.stdout
             if phase == 'collection-failure':
                 ok = ok and observation.returncode != 0 and gate.returncode == 1
-                ok = ok and summary['non_passed'] == [['test_six.py', 'error']]
-                ok = ok and len(summary['missing']) == setup['selected']
+                ok = ok and summary['non_passed'] == [[collector_name, 'error']]
+                ok = ok and summary['missing'] == manifest_ids
             else:
                 ok = ok and observation.returncode == gate.returncode == 0
                 ok = ok and summary['counts']['passed'] == setup['selected'] and not summary['missing']
