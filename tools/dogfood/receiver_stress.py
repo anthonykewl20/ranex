@@ -313,7 +313,21 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
             os.killpg(daemon.pid, signal.SIGSTOP)
             with server(remote_url=git_url, repository_root=paused_repo) as (port, process):
                 started = time.monotonic()
-                status = request(port, 'paused-real-git-server', BODY, timeout=40)
+                with concurrent.futures.ThreadPoolExecutor(max_workers=1) as fetcher:
+                    pending = fetcher.submit(request, port, 'paused-real-git-server', BODY, timeout=40)
+                    busy_id = None
+                    for attempt in range(100):
+                        delivery = f'busy-during-git-fetch-{attempt}'
+                        answer = request(port, delivery)
+                        if answer == 503:
+                            busy_id = delivery
+                            break
+                        if answer != 200 or pending.done():
+                            raise RuntimeError('could not observe the actual in-flight Git delivery')
+                        time.sleep(.01)
+                    if busy_id is None:
+                        raise RuntimeError('Git fetch did not hold the real receiver pipeline')
+                    status = pending.result(timeout=40)
                 elapsed = time.monotonic() - started
                 observed = json.loads(paused_journal.read_text().splitlines()[-1])
                 (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
@@ -326,6 +340,12 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                 (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
                 record('resumed-real-git-server', status == 500
                        and observed['outcome'] == 'E-GITHUB-API-REFUSED', dict(status=status, receipt=observed))
+                retried = request(port, busy_id)
+                observed = json.loads(paused_journal.read_text().splitlines()[-1])
+                (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
+                record('busy-delivery-redelivered-after-git-recovery', retried == 200
+                       and observed['delivery'] == busy_id and observed['outcome'] == 'ignored',
+                       dict(busy_status=503, redelivered_status=retried, receipt=observed))
         finally:
             os.killpg(daemon.pid, signal.SIGCONT)
             os.killpg(daemon.pid, signal.SIGTERM)

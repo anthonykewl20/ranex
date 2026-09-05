@@ -24,20 +24,39 @@ from ranex.governed_execution.domain.verdict import ClaimCause, Evaluation, Verd
 ROOT = Path(__file__).resolve().parents[2]
 
 
-def append_batch(args):
-    path, raw = args
+def evaluation_for(raw):
     value = json.loads(raw)
     value['verdict'] = Verdict(value['verdict'])
     value['causes'] = tuple(ClaimCause(**c) for c in value['causes'])
     for name in ('missing_claims', 'considered'):
         value[name] = tuple(value[name])
-    evaluation = Evaluation(**value)
+    return Evaluation(**value)
+
+
+def append_batch(args):
+    path, raw = args
+    evaluation = evaluation_for(raw)
     journal = Journal(Path(path))
     before = len(os.listdir('/proc/self/fd'))
     started = time.monotonic()
     for _ in range(500):
         journal.append(evaluation)
     return dict(seconds=time.monotonic()-started, fd_before=before, fd_after=len(os.listdir('/proc/self/fd')))
+
+
+def compare_and_append(args):
+    path, head, raw = args
+    journal = Journal(Path(path))
+    before = len(os.listdir('/proc/self/fd'))
+    try:
+        appended = journal.append_if_head(head, evaluation_for(raw))
+        outcome = dict(committed=True, position=appended.position, head=appended.head)
+    except ValueError as error:
+        if not str(error).startswith('E-BATCH-STALE-BASE:'):
+            raise
+        outcome = dict(committed=False, refusal=str(error))
+    return dict(outcome, pid=os.getpid(), fd_before=before,
+                fd_after=len(os.listdir('/proc/self/fd')))
 
 
 def main():
@@ -147,6 +166,29 @@ def main():
     save()
     if sum(errors.values()) != 1000 or peak != before or after != before:
         raise RuntimeError('failed journal opens must close their descriptors before returning')
+    cas = out / 'compare-and-append.sqlite3'
+    shutil.copyfile(path, cas)
+    for index in range(10):
+        journal = Journal(cas)
+        head = journal.head()
+        count = len(journal.entries())
+        executor = (concurrent.futures.ThreadPoolExecutor if index % 2 == 0
+                    else concurrent.futures.ProcessPoolExecutor)
+        with executor(max_workers=8) as pool:
+            attempts = list(pool.map(compare_and_append,
+                            [(str(cas), head, records[i % len(records)]) for i in range(8)]))
+        winners = sum(attempt['committed'] for attempt in attempts)
+        verified = journal.verify()
+        receipt['controls'].append(dict(mode='concurrent-compare-and-append', round=index,
+            executor=executor.__name__, attempts=attempts, committed=winners,
+            verified=verified, final_head=journal.head(), records_before=count,
+            records_after=len(journal.entries())))
+        save()
+        if winners != 1 or not verified or len(journal.entries()) != count + 1:
+            raise RuntimeError('one observed predecessor must permit exactly one concurrent append')
+        if executor is concurrent.futures.ProcessPoolExecutor and any(
+                a['fd_after'] != a['fd_before'] for a in attempts):
+            raise RuntimeError('compare-and-append must close successful and stale connections')
 
 
 if __name__ == '__main__':
