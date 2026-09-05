@@ -1,0 +1,100 @@
+........................................................................ [  4%]
+.......................ssssssssss....................................... [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........s.............................sssssssss..sssssssss...ssssss..ss. [ 20%]
+ssssssssss.................................................ssssss....... [ 24%]
+................s..................ss..................ss............... [ 28%]
+..ss...s...............s.s.............................................. [ 32%]
+...........................................ssssssssssssssssssssssssssss. [ 36%]
+........................................................................ [ 40%]
+..........................................sss........................... [ 44%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+........................................................................ [ 56%]
+.....................................s.................................. [ 60%]
+.......
+no tests ran in 0.00s
+..............ss.ssssssssssssssssssss..............F............. [ 64%]
+..........................ssssssssssssssss.ss............s.............. [ 68%]
+..........s............s................................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 80%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+...................................................................      [100%]
+=================================== FAILURES ===================================
+________ test_fanout_respects_bounded_pool_and_does_not_tick_queue_time ________
+
+tmp_path = PosixPath('/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0')
+
+    def test_fanout_respects_bounded_pool_and_does_not_tick_queue_time(
+        tmp_path: Path,
+    ) -> None:
+        target, _, _ = build_target(tmp_path)
+        outcome_dir = tmp_path / "outcomes"
+        outcome_dir.mkdir()
+        tasks = tmp_path / "tasks.jsonl"
+        task_data = [
+            {"task_id": f"T-008-BND-{idx}", "prompt": "perform work then emit", "worktree": str(tmp_path / f"worktree-{idx}")}
+            for idx in range(1, 6)
+        ]
+        tasks.write_text(
+            "\n".join(json.dumps(item) for item in task_data) + "\n",
+            encoding="utf-8",
+        )
+        counter_dir = tmp_path / "concurrency-state"
+        # rendezvous=2 makes the pool-of-two overlap deterministic instead of a
+        # scheduling coincidence. A 60-second rendezvous and timeout=180 give
+        # heavily contended materialised-suite runs headroom without making either
+        # timing value part of the property under test.
+        # The "queued time does not tick" proof no longer rests on this timeout
+        # being tight: test_fanout_pool_of_one_never_overlaps_and_embeds_the_bound
+        # (tests/integration/test_delegation_command.py) pins it structurally.
+        # Linked worktrees share Git config: each worker uses per-command identity
+        # so concurrent commits cannot race over that unrelated shared file.
+        harness = build_queued_harness(
+            tmp_path / "queued-harness.py",
+            counter_dir=counter_dir,
+            sleep_seconds=1.0,
+            rendezvous=2,
+        )
+        journal = tmp_path / "task-journal.sqlite3"
+    
+        result = run_fanout(
+            target=target,
+            tasks=tasks,
+            journal=journal,
+            harness=harness,
+            timeout=180,
+            outcome_dir=outcome_dir,
+            pool=2,
+        )
+>       assert result.returncode == EXIT_PASS, result.stdout + result.stderr
+E       AssertionError: FANOUT  task=T-008-BND-1  exit=2  logs=/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/outcomes/fanout.logs
+E         FANOUT  task=T-008-BND-2  exit=2  logs=/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/outcomes/fanout.logs
+E         FANOUT  task=T-008-BND-3  exit=2  logs=/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/outcomes/fanout.logs
+E         FANOUT  task=T-008-BND-4  exit=2  logs=/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/outcomes/fanout.logs
+E         FANOUT  task=T-008-BND-5  exit=2  logs=/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/outcomes/fanout.logs
+E         ERROR  refusing emission: cannot read /tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-ypc79291/emission.jsonl: [Errno 2] No such file or directory: '/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-ypc79291/emission.jsonl'
+E         
+E         ERROR  refusing emission: cannot read /tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-rxjlratt/emission.jsonl: [Errno 2] No such file or directory: '/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-rxjlratt/emission.jsonl'
+E         
+E         ERROR  refusing emission: cannot read /tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-qm0i4qok/emission.jsonl: [Errno 2] No such file or directory: '/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-qm0i4qok/emission.jsonl'
+E         
+E         ERROR  refusing emission: cannot read /tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-m25clr7z/emission.jsonl: [Errno 2] No such file or directory: '/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-m25clr7z/emission.jsonl'
+E         
+E         ERROR  refusing emission: cannot read /tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-fi6kd6_4/emission.jsonl: [Errno 2] No such file or directory: '/tmp/ranex-subject-0ssd4hv7/tmp/pytest-of-soultransit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-fi6kd6_4/emission.jsonl'
+E         
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/tmp/ranex-subject-0ssd4hv7/deps/env/bin/python', '-m', 'ranex.cli.main', 'task', 'fanout', '-...ansit/pytest-0/test_fanout_respects_bounded_p0/target/operator-fanout-tmp/ranex-delegate-fi6kd6_4/emission.jsonl'\n\n").returncode
+
+tests/security/test_slice008_execute_attest_separation.py:1335: AssertionError
+=========================== short test summary info ============================
+FAILED tests/security/test_slice008_execute_attest_separation.py::test_fanout_respects_bounded_pool_and_does_not_tick_queue_time
+1 failed, 1656 passed, 138 skipped in 253.75s (0:04:13)
+RECORDED  claim=tests-executed  producer=worker  exit=1
+          subject=sha256:77e4508b101d479778657bcabe1a84c4edc2f6278d7c5336ad961f4cc200ad65

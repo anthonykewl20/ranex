@@ -1,0 +1,35 @@
+........................................................................ [  4%]
+........................................................................ [  8%]
+........................................................................ [ 12%]
+........................................................................ [ 16%]
+........s.....................................F......................... [ 20%]
+...................................................
+=================================== FAILURES ===================================
+__________________ test_stage_9_the_gate_accepts_the_evidence __________________
+
+operator = <test_cold_start_journey.Operator object at 0x753c904a4440>
+
+    def test_stage_9_the_gate_accepts_the_evidence(operator: Operator) -> None:
+        operator.require("resolver", "clone", "fetch", "evidence")
+        record_live_host_qualification(operator.clone, operator.key)
+        code, out, err = ranex(
+            operator.clone,
+            ["gate", "evaluate", "HEAD", "--approver", "reviewer_alice"],
+        )
+>       assert code == 0, (
+            "the gate did not accept the evidence stage 8 recorded; it exited "
+            f"{code}. The verdict, verbatim:\n{(out + err).strip() or '(no output)'}"
+        )
+E       AssertionError: the gate did not accept the evidence stage 8 recorded; it exited 1. The verdict, verbatim:
+E         FAIL  gate=landing  rule=TESTS_EXECUTED
+E               tests-executed: blocking suite outcome(s): tests/security/test_slice008_execute_attest_separation.py::test_fanout_respects_bounded_pool_and_does_not_tick_queue_time (failed)
+E               subject=sha256:ec50b2fa57282131b5dbc496a5445bbe103f705ac1944dc895f9b212d16ab0b6
+E       assert 1 == 0
+
+tests/e2e/test_cold_start_journey.py:470: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_cold_start_journey.py::test_stage_9_the_gate_accepts_the_evidence
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! KeyboardInterrupt !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+/home/soultransit/.local/share/uv/python/cpython-3.14.6-linux-x86_64-gnu/lib/python3.14/selectors.py:398: KeyboardInterrupt
+(to show a full traceback on KeyboardInterrupt use --full-trace)
+1 failed, 409 passed, 1 skipped in 506.07s (0:08:26)

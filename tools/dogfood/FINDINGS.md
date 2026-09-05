@@ -19,7 +19,10 @@ then committed the actual Ranex source patch in all five worktrees and preserved
 the shared config. The existing harness now uses that per-command Git identity;
 pool bounds and timeouts are unchanged, and failures retain CLI diagnostics.
 The exact attribution of the original nested failure remains UNVERIFIED pending
-fresh complete regression. This is not a live-agent fanout correctness proof.
+fresh complete regression. The first repair introduced an indentation error in
+the generated worker script: the retained cold diagnostic shows all five workers
+without emissions. The indentation is corrected and generated Python syntax
+checked; acceptance rerun is pending. This is not a live-agent fanout correctness proof.
 Receipt: `audits/2026-09-05-remediation/git-identity-race.json`.
 
 ### F-022 — live Kogg subject qualification is unavailable in the measured runtime

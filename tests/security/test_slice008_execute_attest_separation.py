@@ -608,7 +608,7 @@ def build_queued_harness(
                 time.sleep(0.05)
 
         try:
-                    (worktree / "agent.txt").write_text("work from harness\\n", encoding="utf-8")
+            (worktree / "agent.txt").write_text("work from harness\\n", encoding="utf-8")
             subprocess.run(["/usr/bin/git", "-C", str(worktree), "add", "-A"], check=True)
             subprocess.run(
                 ["/usr/bin/git", "-C", str(worktree), "-c", "user.email=harness@example.invalid",
