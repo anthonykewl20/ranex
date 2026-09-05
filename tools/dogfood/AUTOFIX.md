@@ -96,7 +96,8 @@ Tags use `vMAJOR.MINOR.PPP`, starting at `v0.1.001` after the immutable
 999 rolls to the next minor's 000; major versions never advance automatically.
 The epoch-preserving re-lock is parsed and compared: only Ranex's version may
 change. Publication atomically pushes main fast-forward and a fresh annotated
-tag, then verifies both remote tips. Existing tags are never moved. A release
+tag, then verifies both remote tips. An existing next tag is refused before
+metadata edits; existing tags are never moved. A release
 commit has no fix trailers, so its CI completion cannot cause a release loop.
 
 `release.py version` prints the padded spelling of the current package

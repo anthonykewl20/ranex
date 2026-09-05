@@ -48,6 +48,13 @@ def prepare() -> str:
     tag_for(current)
     major, minor, patch = Version(current).release
     version = f"{major}.{minor + (patch == 999)}.{0 if patch == 999 else patch + 1}"
+    tag = tag_for(version)
+    # Check before editing metadata: an outdated checkout must refuse an
+    # already published version without leaving a misleading candidate diff.
+    exists = subprocess.run(["git", "show-ref", "--verify", "--quiet", f"refs/tags/{tag}"],
+                            cwd=ROOT, check=False)
+    if exists.returncode != 1:
+        raise ValueError(f"tag already exists or cannot be checked: {tag}")
     epoch = yaml.safe_load((ROOT / "governance/deps.yaml").read_text())["exclude_newer"]
     try:
         old = f'version = "{current}"'
@@ -66,7 +73,7 @@ def prepare() -> str:
         project.write_bytes(before_project)
         lock.write_bytes(before_lock)
         raise
-    return tag_for(version)
+    return tag
 
 
 def require_owner() -> None:
@@ -113,11 +120,6 @@ def auto(expected_head: str) -> None:
         if detail["number"] != int(issue):
             raise ValueError("fix does not identify a real repository issue")
     tag = prepare()
-    # `show-ref --verify` distinguishes a missing tag from wildcard matches.
-    exists = subprocess.run(["git", "show-ref", "--verify", "--quiet", f"refs/tags/{tag}"],
-                            cwd=ROOT, check=False)
-    if exists.returncode != 1:
-        raise ValueError(f"tag already exists or cannot be checked: {tag}")
     date = datetime.now(UTC).date().isoformat()
     (ROOT / "docs/STATE.md").write_text(
         f"# State\n\n**Updated:** {date}\n**Active slice:** none\n\n"
