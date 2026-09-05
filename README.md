@@ -12,7 +12,7 @@ external agent harness through the prototype delegation commands, but it does
 not contain or install an agent harness. Removing every model credential from
 the machine must not change a kernel verdict.
 
-**Current release: [`v0.1.001`](https://github.com/anthonykewl20/ranex/tree/v0.1.001)
+**Current release: [`v0.1.002`](https://github.com/anthonykewl20/ranex/tree/v0.1.002)
 — kernel-only, source-run, MIT.** See
 [Benchmarks and proofs](#benchmarks-and-proofs) for what that release has
 been proven to do — including judging a clean third-party repository and
