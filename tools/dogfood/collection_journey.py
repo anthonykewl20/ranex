@@ -119,10 +119,12 @@ def main() -> int:
                 raise RuntimeError('refusing coverage mapping from a different kernel source')
             destination = Path(os.environ['COVERAGE_FILE']).absolute()
             mapped = destination.with_name(destination.name + f'.six-collection-{os.getpid()}')
-            cov = coverage.Coverage(config_file=str(ROOT / 'pyproject.toml'), data_file=str(mapped))
+            combined = out / 'coverage/.coverage'
+            cov = coverage.Coverage(config_file=str(ROOT / 'pyproject.toml'), data_file=str(combined))
             cov.set_option('paths', {'ranex': [str(ROOT / 'src/ranex'), str(repo / 'src/ranex')]})
             cov.combine(data_paths=[str(out / 'coverage')], strict=True, keep=True)
             cov.save()
+            shutil.copyfile(combined, mapped)
             (out / 'coverage-mapping.json').write_text(json.dumps(dict(source_files=expected,
                 observed_root=str(repo / 'src/ranex'), mapped_root=str(ROOT / 'src/ranex'),
                 output=str(mapped)), indent=2) + '\n')
