@@ -1,23 +1,37 @@
 {
-  "last_benched_version": "0.1.0",
-  "model": "zai:glm-5.3",
-  "budget_cap_usd": 5.0,
-  "nightly_proof_budget_usd": 1.5,
-  "nightly_batch": 3,
-  "task_rotation": {
-    "control": ["py-paginate-cursor", "py-txn-kvstore", "py-config-parse"],
-    "medium": ["py-ttl-cache-expiry", "py-sliding-window-max", "py-url-normalize",
-               "py-semver-compare", "py-textdiff", "py-topo-sort-cycle"],
-    "veryhard": ["legacy-blendcore-binary-parity", "legacy-cellarcore-binary-parity",
-                 "legacy-codeccore-binary-parity", "legacy-freightcore-binary-parity",
-                 "legacy-depotcore-binary-parity"]
-  },
   "api_key_env": "ZAI_API_KEY",
   "api_key_file": "/home/soultransit/.secrets/GLM-API-KEY",
   "api_key_file_line": 2,
+  "budget_cap_usd": 5.0,
+  "last_benched_version": "0.1.2",
+  "model": "zai:glm-5.3",
+  "nightly_batch": 3,
+  "nightly_proof_budget_usd": 1.5,
+  "note": "nightly batch: one task per pool (control/medium/veryhard) at minimal effort, bounded by nightly_proof_budget_usd; plan endpoint bills GLM Coding Plan usage windows (codes 1302/1308 are the real limits); $ caps are metered-equivalent",
   "provider_env": {
     "ZAI_BASE_URL": "https://api.z.ai/api/coding/paas/v4"
   },
-  "vulcan_root": "/home/soultransit/devtony/VulcanBench",
-  "note": "nightly batch: one task per pool (control/medium/veryhard) at minimal effort, bounded by nightly_proof_budget_usd; plan endpoint bills GLM Coding Plan usage windows (codes 1302/1308 are the real limits); $ caps are metered-equivalent"
+  "task_rotation": {
+    "control": [
+      "py-paginate-cursor",
+      "py-txn-kvstore",
+      "py-config-parse"
+    ],
+    "medium": [
+      "py-ttl-cache-expiry",
+      "py-sliding-window-max",
+      "py-url-normalize",
+      "py-semver-compare",
+      "py-textdiff",
+      "py-topo-sort-cycle"
+    ],
+    "veryhard": [
+      "legacy-blendcore-binary-parity",
+      "legacy-cellarcore-binary-parity",
+      "legacy-codeccore-binary-parity",
+      "legacy-freightcore-binary-parity",
+      "legacy-depotcore-binary-parity"
+    ]
+  },
+  "vulcan_root": "/home/soultransit/devtony/VulcanBench"
 }

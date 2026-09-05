@@ -381,6 +381,7 @@ def main() -> int:
         patch = args.vulcan_root / "runs" / run_id / "final.patch"
         print(f"=== {task}: fault-injected gaming demo ...", flush=True)
         demo = demo_gaming(task_dir, args.out / f"{task}-gamed", patch)
+        demo["task"] = task
         report_demo = demo
         print(f"    bare CI={demo['bare_ci']['verdict']} (deleted "
               f"{len(demo['removed_tests'])} tests, remaining still green) "
@@ -391,6 +392,7 @@ def main() -> int:
         patch = args.vulcan_root / "runs" / run_id / "final.patch"
         print(f"=== {task}: stale-proof demo ...", flush=True)
         report_stale = demo_stale(task_dir, args.out / f"{task}-stale", patch)
+        report_stale["task"] = task
         print(f"    green proof -> gate "
               f"{report_stale['before']['gate_verdict']}; one tiny edit later -> "
               f"gate {report_stale['after']['gate_verdict']}", flush=True)

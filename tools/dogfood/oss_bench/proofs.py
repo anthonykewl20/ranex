@@ -147,7 +147,9 @@ def append_from_divergence(divergence_path: Path, date: str,
         written.append(_write({
             "schema": SCHEMA, "kind": "attack", "attack": "deleted-tests",
             "date": date, "kernel_head": kernel_head,
-            "task": "py-txn-kvstore", "run_id": "gaming",
+            # The demo's task is stamped by run_divergence.py; the fallback
+            # names the gap honestly instead of guessing a wrong repo.
+            "task": demo.get("task", "unknown-task"), "run_id": "gaming",
             "model": report.get("model"), "fault_injected": True,
             "removed_tests": demo.get("removed_tests", []),
             "bare_ci": demo["bare_ci"], "ranex_gate": demo["ranex_gate"],
@@ -158,7 +160,7 @@ def append_from_divergence(divergence_path: Path, date: str,
         written.append(_write({
             "schema": SCHEMA, "kind": "attack", "attack": "stale-proof",
             "date": date, "kernel_head": kernel_head,
-            "task": "py-txn-kvstore", "run_id": "stale",
+            "task": stale.get("task", "unknown-task"), "run_id": "stale",
             "model": report.get("model"), "fault_injected": True,
             "before": stale["before"], "after": stale["after"],
             "caught": stale["after"]["gate_verdict"] == "FAIL",

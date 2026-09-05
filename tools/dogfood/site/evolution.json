@@ -378,6 +378,294 @@
       "scenarios": 43,
       "sha": "7d413af48",
       "subject": "tools: dogfood artifacts - iteration 12"
+    },
+    {
+      "complexity": 5105,
+      "date": "2026-09-05",
+      "open_findings": 5,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "48f3a98e4",
+      "subject": "tools: proof pile - 2026-09-05 (3 runs)"
+    },
+    {
+      "complexity": 5105,
+      "date": "2026-09-05",
+      "open_findings": 11,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "274a62de1",
+      "subject": "audit: reproduce release trust-boundary gaps and correct gua"
+    },
+    {
+      "complexity": 5105,
+      "date": "2026-09-05",
+      "open_findings": 15,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "be228cace",
+      "subject": "audit: retain release evidence and repair real host acceptan"
+    },
+    {
+      "complexity": 5171,
+      "date": "2026-09-05",
+      "open_findings": 15,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "5d921504d",
+      "subject": "fix: remediate receiver and evidence boundaries for release "
+    },
+    {
+      "complexity": 5180,
+      "date": "2026-09-05",
+      "open_findings": 15,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "67536a370",
+      "subject": "fix: measure actual nested namespace capabilities and expose"
+    },
+    {
+      "complexity": 5180,
+      "date": "2026-09-05",
+      "open_findings": 15,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "19fddbb27",
+      "subject": "fix: replace fabricated positive host evidence with actual c"
+    },
+    {
+      "complexity": 5180,
+      "date": "2026-09-05",
+      "open_findings": 15,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "464f301d8",
+      "subject": "fix: register active principals in real host onboarding jour"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 15,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "5f3feec75",
+      "subject": "test: preserve real upstream replay and storage stress evide"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 8,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "2d45309f0",
+      "subject": "fix: keep live bootstrap opt-in controller-local and reconci"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 7,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "f96a4f122",
+      "subject": "fix: state publisher trust boundary and exercise receiver fa"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 8,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "3ada897fb",
+      "subject": "docs: record real Chock comparison and external subject qual"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 7,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "989ebcb59",
+      "subject": "test: close historical bootstrap finding with a real success"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 7,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "f269d8b9b",
+      "subject": "ci: validate actual receiver and gate-journal storage journe"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 7,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "e22a82e0a",
+      "subject": "test: register real journey keys consistently across produce"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 7,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "af9f40323",
+      "subject": "fix: make keygen onboarding satisfy current principal admiss"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 8,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "2cfbe2d08",
+      "subject": "test: preserve real onboarding state and remove shared Git c"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 8,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "fd13edbc0",
+      "subject": "fix: correct generated fanout worker indentation and preserv"
+    },
+    {
+      "complexity": 5187,
+      "date": "2026-09-05",
+      "open_findings": 10,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "15a5af5be",
+      "subject": "fix: verify relative journal paths and retain real recovery "
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 11,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "2322f93cc",
+      "subject": "fix: close failed journal initialization and automate real a"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 11,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "1cd211133",
+      "subject": "test: compare collection diagnosis with the real upstream JU"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 11,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "4156d45f5",
+      "subject": "fix: combine actual coverage using the recorded data-file pr"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 11,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "d36a1ddee",
+      "subject": "test: exercise real busy redelivery and competing journal pr"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 11,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "1d419fbdc",
+      "subject": "test: retain the real collection subjects and public trust r"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 11,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "10864ecd7",
+      "subject": "fix: refuse an existing release tag before modifying package"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 9,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "701258fbc",
+      "subject": "test: archive current real repository, recovery, and package"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 9,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "2b33dbc32",
+      "subject": "fix: ship verified dogfood remediation and padded release au"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 9,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "c79341e0f",
+      "subject": "fix: require real executable identity refusals in release va"
+    },
+    {
+      "complexity": 5183,
+      "date": "2026-09-05",
+      "open_findings": 9,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "f8c73b35b",
+      "subject": "fix: bind unreadable identity checks to their actual refusal"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-05",
+      "open_findings": 10,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "7e559bfbc",
+      "subject": "fix: avoid repeated journal schema writes and observe real f"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-05",
+      "open_findings": 10,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "738b4050a",
+      "subject": "fix: validate journal schema recovery and receiver fetch coo"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 10,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "2dad40961",
+      "subject": "fix: journal-nonjson-corruption pins the remediated F-001 co"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 10,
+      "pile": 23,
+      "scenarios": 43,
+      "sha": "c4d4744e5",
+      "subject": "tools: dogfood artifacts \u2014 iteration 14"
     }
   ]
 }

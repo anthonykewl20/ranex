@@ -1,0 +1,38 @@
+{
+  "agent_steps": 15,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_compare.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "28 passed in 0.02s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.0533,
+  "date": "2026-09-05",
+  "duration_s": 150.688,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "c4d4744e5",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.3,
+    "gate_output": "PASS  gate=landing  subject=sha256:0cad2bc10d414239891ccddc2bb673c184931aef8be738324a970beb5f6c200c",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/tmp/bench-agent/py-semver-compare-b8b2cc3d/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_compare.py::test_core_precedence test_compare.py::test_prerelease_is_lower_than_release test_compare.py::test_prerelease_precedence_chain test_compare.py::test_prerelease_identifier_rules test_compare.py::test_build_metadata_ignored test_compare.py::test_invalid_raises",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-semver-compare-b8b2cc3d",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "ifier rules (numeric vs lexical, numeric < alphanumeric, more identifiers wins), is antisymmetric and a total order, and raises `ValueError` on malformed input.",
+    "heuristic": true
+  },
+  "task": "py-semver-compare",
+  "tokens": 23830
+}
