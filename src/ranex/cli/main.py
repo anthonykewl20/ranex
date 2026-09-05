@@ -3805,20 +3805,27 @@ def cmd_keygen(args: argparse.Namespace) -> int:
         return EXIT_USAGE
 
     print(f"WROTE  {target}  mode 0600")
-    # The whole shape, not just the entry. This repository commits no keyring,
-    # so a first-time operator is CREATING the file, and the bare entry they
-    # used to be handed parses as a document with no `producers` mapping —
-    # the loader then refuses it, correctly, after telling them to write it.
-    # Printing both lines is right either way: appending to an existing
-    # keyring means taking the indented one, and that is said explicitly.
+    # Both blocks are required by current principal-aware catalogs. Preserve
+    # the legacy producer-only registration path without silently replacing
+    # the operator's existing trust roots or verdict signer.
     print(
-        f"       register the producer in the committed keyring "
-        f"({DEFAULT_PRODUCERS}). It is one `producers` mapping — create the "
-        "file with exactly this, or if it already exists add only the "
-        "indented line:"
+        f"       register this public key in {DEFAULT_PRODUCERS} and commit the change. "
+        "For a new keyring use both mappings below. For an existing keyring, "
+        "merge the producer entry; if it has a principals mapping, also merge "
+        "the matching active worker entry. Preserve all existing identities "
+        "and the verdict signer:"
     )
-    print("  producers:")
-    print(f"    {args.producer}: {public_key}")
+    import textwrap
+
+    import yaml
+
+    snippet = {
+        "producers": {args.producer: public_key},
+        "principals": {
+            args.producer: {"role": "worker", "keys": [{"key": public_key, "status": "active"}]}
+        },
+    }
+    print(textwrap.indent(yaml.safe_dump(snippet, sort_keys=False), "  "), end="")
     return EXIT_PASS
 
 

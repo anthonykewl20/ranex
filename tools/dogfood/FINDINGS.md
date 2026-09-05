@@ -365,6 +365,13 @@ Historical observation retained:
 
 ### F-011 — principal retirement is not enforced by run/gate
 
+Follow-through: real clone onboarding exposed producer-only registration
+in the CLI instructions and existing journeys. Keygen now prints both current
+trust-root entries, README describes merging them without replacing identities,
+and the journey helpers attribute their generated keys consistently. The
+original refusal is retained as `principal-onboarding-before.json`; the four
+real execution/dependency/keygen/gate families then passed 26 checks.
+
 **Remediation 2026-09-05:** Closed by invoking the existing principal catalog consistency and retirement checks during producer and verdict-signer admission. The real external six replay now refuses both run and gate with exit 2 after retiring its actual producer key. Real host onboarding registers matching active worker principals; the 29 direct host checks pass with zero skips. Evidence: `audits/2026-09-05-remediation/external-1/0/receipt.json` and `qualified-2.xml`.
 
 Historical observation retained:

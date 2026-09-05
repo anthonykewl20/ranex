@@ -110,8 +110,9 @@ RESPONSE_LIMIT = 65_536
 # `refuse_executables_inside`, and for `cmd_gate_evaluate` passing the gate and
 # catalog digest into `admit_records`. Same boundary, untouched.
 # Issue #82 adds external journal-head comparison, malformed-row diagnostics,
-# and the padded --version display. Launcher and confinement branches are unchanged.
-MAIN_PY_SHA256 = "348e6b95fec4c5571d2ebf5c96f9922a5245168d442a5d2181d8d1f948bfe5fc"
+# the padded --version display, and principal-aware keygen instructions.
+# Launcher and confinement branches are unchanged.
+MAIN_PY_SHA256 = "63c210178ecdf984e095bdb3e382064697827a134e4bcefced89cf593412021d"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

@@ -1322,16 +1322,25 @@ PYTHONPATH=src uv run --frozen python -m ranex.cli.main keygen --producer worker
 
 This repository commits the **public** keyring, `governance/producers.yaml` —
 it is the trust root, and review of it is the control on it. It holds public
-halves only; no private key is anywhere in the tree. It is a single
-`producers` mapping, and `keygen` prints the exact line to add (and the whole
-mapping, for a keyring being created from nothing):
+halves only; no private key is anywhere in the tree. `keygen` prints a valid
+new keyring with matching producer and active worker entries. In this checkout,
+merge those entries into the existing mappings; preserve the other identities
+and `verdict_signer`. Both mappings must attribute the same public key:
 
 ```yaml
 producers:
   worker: ed25519:<the key keygen printed>
+principals:
+  worker:
+    role: worker
+    keys:
+      - key: ed25519:<the key keygen printed>
+        status: active
 ```
 
-Commit the change.
+Commit the change. A historical keyring without `principals` can continue to
+register just the producer entry. Adding a principal catalog to such a keyring
+requires attributing every existing producer and verdict signer too.
 
 Next, provision dependencies. The bound command is `uv run pytest -q`, and the
 observation is built from committed blobs only — so `.venv` is not in it and the
