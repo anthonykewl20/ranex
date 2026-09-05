@@ -443,6 +443,11 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
         ],
         key=operator.key,
     )
+    # Preserve the actual nested command output before its materialisation is
+    # removed. The gate records the failing IDs; diagnosis also needs pytest's
+    # full assertion and the underlying CLI output.
+    (operator.clone.parent / "governed-suite.stdout").write_text(out, encoding="utf-8")
+    (operator.clone.parent / "governed-suite.stderr").write_text(err, encoding="utf-8")
     evidence = operator.clone / "governance" / "evidence.json"
     assert evidence.exists(), f"no evidence recorded: {err}"
     # Recorded, whichever way the suite went — stage 9 judges it, this stage
