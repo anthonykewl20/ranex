@@ -1,0 +1,208 @@
+{
+  "scope": "Real Leitir treehash tests, default hermetic observation, fresh local identities; no live GitHub App publication or merge enforcement.",
+  "source": "https://github.com/anthonykewl20/leitir",
+  "local_source": "/home/soultransit/devtony/leitir",
+  "upstream_commit": "bfcbcd83718ad1466ea9dd9d1d9ebb4915417517",
+  "observed_at": "2026-09-06T11:49:08.678800+00:00",
+  "steps": [
+    {
+      "case": "freeze-real-treehash-tests",
+      "command": [
+        "ranex",
+        "suite",
+        "freeze",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--artifact",
+        "governance/suite_results.xml",
+        "--",
+        "/usr/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "pythonpath=src",
+        "--junitxml=governance/suite_results.xml",
+        "tests/test_treehash.py"
+      ],
+      "exit": 0,
+      "stdout": "........................................................................ [ 91%]\n.......                                                                  [100%]\n- generated xml file: /tmp/ranex-subject-qrzhozcz/tree/governance/suite_results.xml -\n79 passed in 0.33s\nFROZEN  tests=79  expected_skips=0  run_exit=0  output=/tmp/ranex-leitir-pilot/governance/suite_manifest.json",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "passing-real-tests",
+      "command": [
+        "ranex",
+        "run",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--claim",
+        "tests-executed",
+        "--producer",
+        "worker",
+        "--",
+        "/usr/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "pythonpath=src",
+        "--junitxml=governance/suite_results.xml",
+        "tests/test_treehash.py"
+      ],
+      "exit": 0,
+      "stdout": "........................................................................ [ 91%]\n.......                                                                  [100%]\n- generated xml file: /tmp/ranex-subject-4o93dnlm/tree/governance/suite_results.xml -\n79 passed in 0.32s\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:241ef1ce8b52b030c9fb48867ee9a0a6ab21fccdc93a8517193a3a2f0ce55336",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "passing-signed-verdict",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 0,
+      "stdout": "PASS  gate=landing  subject=sha256:241ef1ce8b52b030c9fb48867ee9a0a6ab21fccdc93a8517193a3a2f0ce55336",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "reject-stale-source",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  gate=landing  rule=TREEHASH\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:0c14c1151c74d1724152789ca96e8cb329a17c5d7819a86f9e2a839cec6415e2",
+      "stderr": "",
+      "expected_exit": 1
+    },
+    {
+      "case": "observe-real-collection-failure",
+      "command": [
+        "ranex",
+        "run",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--claim",
+        "tests-executed",
+        "--producer",
+        "worker",
+        "--",
+        "/usr/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "pythonpath=src",
+        "--junitxml=governance/suite_results.xml",
+        "tests/test_treehash.py"
+      ],
+      "exit": 2,
+      "stdout": "==================================== ERRORS ====================================\n___________________ ERROR collecting tests/test_treehash.py ____________________\ntests/test_treehash.py:17: in <module>\n    from leitir import treehash\nsrc/leitir/treehash.py:688: in <module>\n    raise RuntimeError(\"Ranex pilot deliberately broken import\")\nE   RuntimeError: Ranex pilot deliberately broken import\n- generated xml file: /tmp/ranex-subject-a0mdmedg/tree/governance/suite_results.xml -\n=========================== short test summary info ============================\nERROR tests/test_treehash.py - RuntimeError: Ranex pilot deliberately broken ...\n!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!\n1 error in 0.08s\nRECORDED  claim=tests-executed  producer=worker  exit=2\n          subject=sha256:0c14c1151c74d1724152789ca96e8cb329a17c5d7819a86f9e2a839cec6415e2",
+      "stderr": "",
+      "expected_exit": 2
+    },
+    {
+      "case": "reject-failed-collection",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  gate=landing  rule=TREEHASH\n      tests-executed: missing test ID(s): tests/test_treehash.py::test_deterministic_across_invocations, tests/test_treehash.py::test_dirty_trailing_bits_base64_is_rejected_as_non_canonical, tests/test_treehash.py::test_empty_symlink_target_is_supported_by_record_format, tests/test_treehash.py::test_empty_tree_has_stable_digest, tests/test_treehash.py::test_empty_tree_is_full_scope, tests/test_treehash.py::test_fifo_or_special_file_is_rejected, tests/test_treehash.py::test_file_digest_map_excludes_only_the_root_manifest, tests/test_treehash.py::test_file_digest_map_is_deterministic_across_invocations, tests/test_treehash.py::test_file_digest_map_matches_contents_and_linknames, tests/test_treehash.py::test_file_digest_map_rejects_missing_directory, tests/test_treehash.py::test_file_digest_map_symlinked_directory_is_not_followed, tests/test_treehash.py::test_file_map_manifest_fields_helper, tests/test_treehash.py::test_full_coverage_digest_is_byte_identical_below_caps, tests/test_treehash.py::test_full_coverage_fields_pin_full_scope_above_caps, tests/test_treehash.py::test_full_coverage_fields_reject_missing_directory, tests/test_treehash.py::test_large_bytes_tree_sampled, tests/test_treehash.py::test_large_file_streamed_constant_memory, tests/test_treehash.py::test_legacy_full_digest_over_current_caps_verifies, tests/test_treehash.py::test_manifest_digest_fields_helper, tests/test_treehash.py::test_manifest_digest_fields_rejects_unknown_scope, tests/test_treehash.py::test_many_files_tree_sampled, tests/test_treehash.py::test_map_entry_points_wrap_unexpected_scan_failures, tests/test_treehash.py::test_missing_directory_raises, tests/test_treehash.py::test_nested_files_match_manual_spec, tests/test_treehash.py::test_non_utf8_filename_is_wrapped, tests/test_treehash.py::test_path_with_newline_is_rejected, tests/test_treehash.py::test_regular_file_swapped_to_symlink_between_lstat_and_open_is_rejected, tests/test_treehash.py::test_root_manifest_is_excluded, tests/test_treehash.py::test_sampled_rejects_full_verification, tests/test_treehash.py::test_sampled_selection_always_keeps_at_least_one_entry, tests/test_treehash.py::test_sampled_subset_is_deterministic_by_content, tests/test_treehash.py::test_sampled_verify_round_trip, tests/test_treehash.py::test_single_file_matches_manual_spec, tests/test_treehash.py::test_single_oversized_file_is_full, tests/test_treehash.py::test_small_tree_hashed_in_full, tests/test_treehash.py::test_sort_order_is_lexicographic_on_posix_paths, tests/test_treehash.py::test_subdir_named_manifest_is_included, tests/test_treehash.py::test_symlink_inside_tree_matches_extended_manual_format, tests/test_treehash.py::test_symlink_target_tampering_is_detected, tests/test_treehash.py::test_symlink_target_with_newline_is_rejected, tests/test_treehash.py::test_symlink_target_with_non_utf8_bytes_is_wrapped, tests/test_treehash.py::test_symlinked_directory_is_hashed_without_following_it, tests/test_treehash.py::test_unreadable_file_error_is_wrapped, tests/test_treehash.py::test_verify_accepts_clean_tree, tests/test_treehash.py::test_verify_detects_added_file, tests/test_treehash.py::test_verify_detects_byte_flip, tests/test_treehash.py::test_verify_detects_deleted_file, tests/test_treehash.py::test_verify_detects_truncation, tests/test_treehash.py::test_verify_file_digest_map_accepts_healthy_tree, tests/test_treehash.py::test_verify_file_digest_map_detects_added_and_deleted_files, tests/test_treehash.py::test_verify_file_digest_map_detects_corruption_naming_path, tests/test_treehash.py::test_verify_file_digest_map_detects_symlink_target_tampering, tests/test_treehash.py::test_verify_file_digest_map_detects_tampered_map_value, tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map0], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map10], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map11], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map1], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map2], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map3], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map4], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map5], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map6], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map7], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map8], tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map9], tests/test_treehash.py::test_verify_file_digest_map_rejects_map_made_consistent_with_tampered_bytes, tests/test_treehash.py::test_verify_file_digest_map_rejects_missing_directory, tests/test_treehash.py::test_verify_file_digest_map_rejects_tampered_aggregate, tests/test_treehash.py::test_verify_file_digest_map_requires_algorithm_and_full_scope, tests/test_treehash.py::test_verify_file_digest_map_requires_an_anchored_aggregate, tests/test_treehash.py::test_verify_file_digest_map_wraps_unreadable_tree, tests/test_treehash.py::test_verify_rejects_malformed_base64, tests/test_treehash.py::test_verify_rejects_missing_prefix, tests/test_treehash.py::test_verify_rejects_non_canonical_base64, tests/test_treehash.py::test_verify_rejects_non_string, tests/test_treehash.py::test_verify_rejects_none, tests/test_treehash.py::test_verify_rejects_unknown_algorithm, tests/test_treehash.py::test_verify_rejects_unknown_scope_value, tests/test_treehash.py::test_verify_rejects_wrong_but_well_formed_digest\n      subject=sha256:0c14c1151c74d1724152789ca96e8cb329a17c5d7819a86f9e2a839cec6415e2",
+      "stderr": "",
+      "expected_exit": 1
+    },
+    {
+      "case": "passing-tests-after-repair",
+      "command": [
+        "ranex",
+        "run",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--claim",
+        "tests-executed",
+        "--producer",
+        "worker",
+        "--",
+        "/usr/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "pythonpath=src",
+        "--junitxml=governance/suite_results.xml",
+        "tests/test_treehash.py"
+      ],
+      "exit": 0,
+      "stdout": "........................................................................ [ 91%]\n.......                                                                  [100%]\n- generated xml file: /tmp/ranex-subject-oh93dpic/tree/governance/suite_results.xml -\n79 passed in 0.37s\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:e86e27e41635ccd79a791129b750d7460ec3c392dc36c8284444648dbd34c3e0",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "fresh-signed-recovery",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 0,
+      "stdout": "PASS  gate=landing  subject=sha256:e86e27e41635ccd79a791129b750d7460ec3c392dc36c8284444648dbd34c3e0",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "verify-journal",
+      "command": [
+        "ranex",
+        "journal",
+        "verify",
+        "--external-repository",
+        "/tmp/ranex-leitir-pilot"
+      ],
+      "exit": 0,
+      "stdout": "PASS  journal=/tmp/ranex-leitir-pilot/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+      "stderr": "",
+      "expected_exit": 0
+    }
+  ],
+  "frozen_test_count": 79,
+  "github_reader": {
+    "code": "OK",
+    "subject": "sha256:241ef1ce8b52b030c9fb48867ee9a0a6ab21fccdc93a8517193a3a2f0ce55336",
+    "head": "72c821a7d5d97bd49ef392146a693989cc048399"
+  },
+  "status": "VERIFIED_WITHIN_STATED_SCOPE",
+  "live_app": "UNVERIFIED: App credentials unavailable",
+  "full_leitir_suite": "UNVERIFIED: bounded treehash module only",
+  "private_keys": "ephemeral; deleted at pilot exit",
+  "kernel_base_commit": "85037d1d901a205298deb1778503bb118ab88000",
+  "kernel_changed_source": {
+    "src/ranex/cli/main.py": "2504afaaa161bc3add3f7bb9ade7a480ea036d6f"
+  }
+}

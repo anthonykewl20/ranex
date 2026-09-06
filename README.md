@@ -75,8 +75,9 @@ Failures and unavailable prerequisites produce an error, not a fabricated PASS.
 
 The [operator guide](docs/OPERATIONS.md#running-it) covers installation, keys,
 public producer identities, dependency approval and host prerequisites.
-The CLI governs the repository containing its kernel source; the Six example
-shows the current vendoring setup for another repository.
+By default the CLI governs the checkout containing its kernel source. To
+govern another checkout without vendoring, add `--external-repository /path/to/repo`
+to the core commands; see the [external repository recipe](docs/OPERATIONS.md#governing-an-external-repository).
 
 After you have committed the policy, public keyring and frozen test manifest,
 provisioned dependencies and configured the signing key, the core loop is:

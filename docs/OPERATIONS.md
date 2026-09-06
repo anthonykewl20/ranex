@@ -32,9 +32,10 @@ uv sync --frozen
 console script into the checkout venv (CPython; dependency versions come from `uv.lock`). Invoke it as
 `.venv/bin/ranex` — it works from outside the checkout, with no `PYTHONPATH` —
 or as `uv run --frozen ranex` from inside one. The wheel is the shippable
-artifact, but governed subcommands anchor to the checkout containing the CLI
-(ADR-009): a wheel dropped into an arbitrary venv prints help and refuses
-everything governed. Install the checkout you govern.
+artifact. By default governed subcommands anchor to the checkout containing
+the CLI (ADR-009); the core observation/evaluation commands also accept an
+explicit external target (ADR-052), described below. Strict-local host runtime
+profiles still require a qualified kernel source checkout.
 
 **On a fresh clone `gate evaluate` fails, and that is correct.** Absence
 blocks: no evidence exists yet for `tests-executed`, so the verdict is FAIL
@@ -118,6 +119,40 @@ Once the tree moves past the digest the evidence was bound to, `tests-executed`
 stops counting too. A record that fails verification is reported as *refused*,
 with a reason — never as "no evidence", because an attack and an unfinished task
 are not the same event.
+
+### Governing an external repository
+
+`--external-repository PATH` selects an existing Git checkout root for `keygen`,
+`suite freeze`, `run`, `gate evaluate`, `journal verify`, `deps fetch` and
+`deps approve`. The installed kernel stays separate; an application's own
+`src/` is preserved. Do not combine this flag with a non-default `--repository`.
+All governance file arguments remain relative to, and confined within, the
+selected root. Private keys must be outside that repository and its worktrees.
+
+From the Ranex checkout, after committing the external repository's reviewed
+catalog, public keyring and frozen manifest, the core loop is:
+
+```sh
+uv run --frozen ranex run --external-repository /path/to/repo \
+  --claim tests-executed --producer worker -- /usr/bin/python3 -m pytest -q
+uv run --frozen ranex gate evaluate HEAD --external-repository /path/to/repo \
+  --approver reviewer_alice
+uv run --frozen ranex journal verify --external-repository /path/to/repo
+```
+
+Use the exact command bound in the target's catalog, including any results
+artifact flag. `suite freeze` accepts the same target selector and retains its
+existing `--artifact`, `--output` and expected-skip rules. `keygen` accepts the
+selector before writing the operator's externally stored signing key. Signed
+verdict publication uses the target's committed verdict signer and the same
+`RANEX_VERDICT_SIGNING_KEY`/`RANEX_VERDICT_DIR` configuration as the local loop.
+
+External targeting changes repository selection, not the acceptance policy or
+the execution trust boundary. It does not make candidate-controlled tests an
+independent oracle. Default hermetic runs need their runtime dependencies
+outside the target; inherited `PYTHONPATH` and arbitrary environment variables
+are not a provisioning mechanism. Strict-local runs retain their qualified
+host/runtime requirements. Live App setup and check scheduling are separate.
 
 ## The GitHub acceptance loop (Ranex GitHub App)
 

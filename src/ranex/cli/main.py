@@ -852,14 +852,34 @@ def record_evidence(path: Path, record: dict[str, object]) -> None:
     path.write_text(json.dumps(kept, indent=2) + "\n", encoding="utf-8")
 
 
+def _command_repository(args: argparse.Namespace) -> Path:
+    """Select an explicit operator target without changing legacy authority.
+
+    External selection never comes from cwd or an environment variable. All
+    command-local path, signing-key, committed-policy and executable checks
+    subsequently use this root. Kernel runtime profiles keep their own root.
+    """
+    external = getattr(args, "external_repository", None)
+    if external is not None:
+        if getattr(args, "repository", ".") != ".":
+            raise ValueError("cannot combine --external-repository with --repository")
+        if not external.strip():
+            raise ValueError("--external-repository must name a checkout root")
+        target = Path(external).resolve()
+        located = git(target, "rev-parse", "--show-toplevel")
+        if located.returncode != 0 or Path(located.stdout.strip()).resolve() != target:
+            raise ValueError("--external-repository must name an existing Git checkout root")
+        return target
+    governed_root = governed_repository_root()
+    root = resolve_within_repository(governed_root, getattr(args, "repository", "."))
+    if root != governed_root:
+        raise ValueError(f"second-repository targets are refused: {args.repository!r}")
+    return root
+
+
 def cmd_gate_evaluate(args: argparse.Namespace) -> int:
     try:
-        governed_root = governed_repository_root()
-        root = resolve_within_repository(governed_root, args.repository)
-        if root != governed_root:
-            raise ValueError(
-                f"second-repository targets are refused: {args.repository!r}"
-            )
+        governed_root = root = _command_repository(args)
         gate_catalog = resolve_within_repository(root, args.gate_catalog)
         evidence_path = resolve_within_repository(root, args.evidence)
         keyring_path = resolve_within_repository(root, args.producers)
@@ -1107,12 +1127,7 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
     """Recompute the journal chain without judging or changing an evaluation."""
 
     try:
-        governed_root = governed_repository_root()
-        root = resolve_within_repository(governed_root, args.repository)
-        if root != governed_root:
-            raise ValueError(
-                f"second-repository targets are refused: {args.repository!r}"
-            )
+        root = _command_repository(args)
         # The chain exists to expose out-of-band edits. Leaving it callable only
         # from tests made that evidence unavailable to operators, so this path
         # is confined exactly as evaluation's journal path is before it is read.
@@ -2129,12 +2144,7 @@ def cmd_deps_fetch(args: argparse.Namespace) -> int:
     descriptor: int | None = None
     scratch: str | None = None
     try:
-        governed_root = governed_repository_root()
-        root = resolve_within_repository(governed_root, args.repository)
-        if root != governed_root:
-            raise ValueError(
-                f"second-repository targets are refused: {args.repository!r}"
-            )
+        root = _command_repository(args)
         journal_path = resolve_within_repository(root, DEFAULT_JOURNAL)
         started_at = head_commit(root)
         provisioning = _provisioning_for(root, started_at, args.store)
@@ -2203,12 +2213,7 @@ def cmd_deps_approve(args: argparse.Namespace) -> int:
     """
 
     try:
-        governed_root = governed_repository_root()
-        root = resolve_within_repository(governed_root, args.repository)
-        if root != governed_root:
-            raise ValueError(
-                f"second-repository targets are refused: {args.repository!r}"
-            )
+        root = _command_repository(args)
         if not args.approver.strip():
             raise ValueError("--approver must be non-blank")
         journal_path = resolve_within_repository(root, DEFAULT_JOURNAL)
@@ -3351,14 +3356,11 @@ def cmd_run(args: argparse.Namespace) -> int:
 
     descriptor: int | None = None
     try:
-        governed_root = governed_repository_root()
-        root = Path(args.repository).resolve() if confinement == "strict-local" else resolve_within_repository(
-            governed_root, args.repository
-        )
-        if confinement != "strict-local" and root != governed_root:
-            raise ValueError(
-                f"second-repository targets are refused: {args.repository!r}"
-            )
+        if confinement == "strict-local" and getattr(args, "external_repository", None) is None:
+            governed_repository_root()
+            root = Path(args.repository).resolve()
+        else:
+            root = _command_repository(args)
         evidence_path = resolve_within_repository(root, args.evidence)
         keyring_path = resolve_within_repository(root, args.producers)
         # `run` never writes the journal. Knowing its constant path only keeps
@@ -3642,12 +3644,7 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
     """Run a committed tree hermetically and freeze its junitxml ID set."""
 
     try:
-        governed_root = governed_repository_root()
-        root = resolve_within_repository(governed_root, args.repository)
-        if root != governed_root:
-            raise ValueError(
-                f"second-repository targets are refused: {args.repository!r}"
-            )
+        root = _command_repository(args)
         artifact = resolve_within_repository(root, args.artifact)
         artifact_relative = artifact.relative_to(root)
         output = resolve_within_repository(root, args.output)
@@ -3734,7 +3731,7 @@ def cmd_keygen(args: argparse.Namespace) -> int:
     """
 
     try:
-        governed_root = governed_repository_root()
+        governed_root = _command_repository(args)
 
         raw_path = os.environ.get(SIGNING_KEY_VARIABLE)
         if not raw_path:
@@ -4219,6 +4216,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     ev.add_argument("--approver", required=True, help="identity approving")
     ev.add_argument("--journal", default=DEFAULT_JOURNAL, help="journal path")
+    ev.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     ev.set_defaults(func=cmd_gate_evaluate)
 
     journal = sub.add_parser("journal", help="journal operations").add_subparsers(
@@ -4228,6 +4226,7 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--repository", default=".", help="repository root")
     verify.add_argument("--journal", default=DEFAULT_JOURNAL, help="journal path")
     verify.add_argument("--expected-head", help="chain head retained outside this journal's trust boundary")
+    verify.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     verify.set_defaults(func=cmd_journal_verify)
 
     rn = sub.add_parser("run", help="run a command and record evidence of it")
@@ -4294,6 +4293,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs=argparse.REMAINDER,
         help="the command to run, after --",
     )
+    rn.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     rn.set_defaults(func=cmd_run)
 
     host = sub.add_parser("host", help="strict-local host operator workflow").add_subparsers(
@@ -4371,6 +4371,7 @@ def build_parser() -> argparse.ArgumentParser:
         nargs=argparse.REMAINDER,
         help="hermetic command to run, after --",
     )
+    freeze.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     freeze.set_defaults(func=cmd_suite_freeze)
 
     deps = sub.add_parser("deps", help="dependency provisioning").add_subparsers(
@@ -4385,15 +4386,18 @@ def build_parser() -> argparse.ArgumentParser:
         default=default_store(),
         help="operator wheel store, outside the repository",
     )
+    fe.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     fe.set_defaults(func=cmd_deps_fetch)
 
     ap = deps.add_parser("approve", help="approve the derived dependency delta")
     ap.add_argument("--repository", default=".", help="repository root")
     ap.add_argument("--approver", required=True, help="identity approving")
+    ap.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     ap.set_defaults(func=cmd_deps_approve)
 
     kg = sub.add_parser("keygen", help="generate a producer signing key")
     kg.add_argument("--producer", required=True, help="identity the key belongs to")
+    kg.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     kg.set_defaults(func=cmd_keygen)
 
     github = sub.add_parser(
@@ -4685,7 +4689,7 @@ def _dispatch_stage(args: argparse.Namespace) -> tuple[str, str] | None:
     return begin, end
 
 
-def _anchor_trace_admission_to_governed_root() -> None:
+def _anchor_trace_admission_to_governed_root(args: argparse.Namespace | None = None) -> None:
     """Anchor trace-target admission to the CLI's authoritative root (N2).
 
     ``governed_repository_root()`` resolves the checkout containing THIS
@@ -4694,7 +4698,9 @@ def _anchor_trace_admission_to_governed_root() -> None:
     and judges against the caller's cwd until anchored, so a CLI invoked
     from OUTSIDE its checkout would admit a ``RANEX_TRACE`` target inside
     the checkout before the command even runs. Resolution needs no command
-    context, so the anchor is set here, before the first stage emission;
+    context unless an operator explicitly selects an external repository;
+    that selection becomes the trace-admission root. The anchor is set here,
+    before the first stage emission;
     ``set_governed_root`` also drops any already-held conflicting target
     (one warning, fail closed). Off state: nothing runs — no extra
     subprocess, no behavior change. A trace problem never crashes the run:
@@ -4708,7 +4714,10 @@ def _anchor_trace_admission_to_governed_root() -> None:
     if not _observability.TRACING_ENABLED:
         return
     try:
-        set_governed_root(governed_repository_root())
+        set_governed_root(
+            _command_repository(args) if args is not None and
+            getattr(args, "external_repository", None) is not None else governed_repository_root()
+        )
     except Exception:  # noqa: BLE001 - never crash the run for a trace problem
         pass
 
@@ -4720,7 +4729,7 @@ def main(argv: list[str] | None = None) -> int:
         return import_module("ranex.cli." + "host_confinement").main(effective_argv)
     parser = build_parser()
     args = parser.parse_args(argv)
-    _anchor_trace_admission_to_governed_root()
+    _anchor_trace_admission_to_governed_root(args)
     stages = _dispatch_stage(args)
     if stages is not None:
         stage_begin(stages[0])
