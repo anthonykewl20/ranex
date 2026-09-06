@@ -6,7 +6,7 @@ Ranex is an open-source code-validation kernel for AI-assisted development.
 It binds test results to an exact Git tree, checks signed evidence against your
 acceptance policy, and records a deterministic verdict. No model decides PASS.
 
-**Current release: [`v0.1.004`](https://github.com/anthonykewl20/ranex/releases/tag/v0.1.004) — MIT.**
+**Current release: [`v0.1.005`](https://github.com/anthonykewl20/ranex/releases/tag/v0.1.005) — MIT.**
 
 [Quickstart](#quickstart) · [How it works](#how-it-works) ·
 [Architecture](#architecture) · [Proofs](https://ranex.dev/dogfood) ·

@@ -3,6 +3,9 @@
 **Updated:** 2026-09-06
 **Active slice:** none
 
+Integrated with release v0.1.005 (issue #85).
+Issue #88 is auditing production readiness; live acceptance is not established.
+
 Issue #86 adds explicit external-repository selection to run, suite freeze,
 gate evaluate, journal verify, deps fetch/approve and keygen (ADR-052).
 Existing default authority selection and path/key confinement remain intact.
