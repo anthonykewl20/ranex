@@ -8,6 +8,8 @@ gate evaluate, journal verify, deps fetch/approve and keygen (ADR-052).
 Existing default authority selection and path/key confinement remain intact.
 Vitest JUnit has explicit reporter/output binding and preserves its test IDs;
 pytest remains the default reporter and ID convention.
+The real freeze ceremony records 1,813 tests, adding 18 IDs with unchanged
+expected-skip declarations; the captured freeze transcript is refreshed.
 
 Real local pilots: Leitir's 79 treehash tests and Arxic's two version-policy
 Vitest tests passed under observation. Both signed verdicts verified; source
