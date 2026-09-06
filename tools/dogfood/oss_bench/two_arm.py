@@ -137,6 +137,13 @@ def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
             shutil.copy2(item, repo / item.name)
     copy_hidden_tests(task_dir / "tests", repo)
 
+    # The nested repository must exist BEFORE any patch is applied. `git apply`
+    # from a directory without its own .git discovers an enclosing worktree and
+    # — by documented git behavior — silently ignores patched paths outside the
+    # current directory, exiting 0 with nothing applied. With --out inside any
+    # checkout that fed the gold arm the EMPTY stub (issue #89, F-034).
+    assert _git(repo, "init", "-q").returncode == 0
+
     if patch is not None:
         patch_path = task_dir / "gold_patch.diff" if patch == "gold" else Path(patch)
         result = subprocess.run(
@@ -146,7 +153,6 @@ def build_governed_repo(task_dir: Path, out: Path, patch: str | Path | None,
         if result.returncode != 0:
             raise AssertionError(f"patch failed to apply: {result.stderr[:300]}")
 
-    assert _git(repo, "init", "-q").returncode == 0
     assert _git(repo, "add", "-A").returncode == 0
     label = "gold" if patch == "gold" else ("agent solution" if patch else "no patch")
     assert _git(repo, "commit", "-qm", f"task base (+{label})").returncode == 0

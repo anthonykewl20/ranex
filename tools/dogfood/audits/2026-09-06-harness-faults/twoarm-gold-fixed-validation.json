@@ -1,0 +1,84 @@
+{
+  "schema": "ranex-oss-bench-validation-v1",
+  "task": "py-semver-compare",
+  "arms": [
+    {
+      "arm": "gold",
+      "gate_verdict": "PASS",
+      "journal_verified": true,
+      "runs": [
+        {
+          "claim": "core_precedence",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "prerelease_lower",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "precedence_chain",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "identifier_rules",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "build_ignored",
+          "exit": 0,
+          "error": ""
+        },
+        {
+          "claim": "invalid_raises",
+          "exit": 0,
+          "error": ""
+        }
+      ],
+      "elapsed_s": 9.299,
+      "simulation": "gold-patch (no model) \u2014 NOT a model benchmark"
+    },
+    {
+      "arm": "empty",
+      "gate_verdict": "FAIL",
+      "journal_verified": true,
+      "runs": [
+        {
+          "claim": "core_precedence",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "prerelease_lower",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "precedence_chain",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "identifier_rules",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "build_ignored",
+          "exit": 1,
+          "error": ""
+        },
+        {
+          "claim": "invalid_raises",
+          "exit": 1,
+          "error": ""
+        }
+      ],
+      "elapsed_s": 9.477,
+      "simulation": "gold-patch (no model) \u2014 NOT a model benchmark"
+    }
+  ]
+}

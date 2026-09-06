@@ -316,6 +316,36 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
 
 ## Closed
 
+### F-034 — the two_arm gold arm silently shipped the empty stub inside a worktree
+
+`build_governed_repo` applied the task's gold patch BEFORE `git init`. With
+`--out` inside any git worktree, `git apply` from the repository-less directory
+discovers the enclosing repository and — documented git behavior — silently
+ignores patched paths outside the current directory, exiting 0 with nothing
+applied. The "task base (+gold)" commit then carried the 3-line empty stub,
+every governed run exited 1, and the gold arm's gate FAILed on bare-proven
+6/6-green code: a harness-produced FALSE REJECTION at v0.1.005
+(`.local/campaign/twoarm-v005-semver/validation.json`; kernel verdict honest on
+its inputs). Prior studies ran with `--out` outside any worktree, where
+no-index apply works — the fault only appears in the inside-checkout layout.
+Closed by initializing the nested repository before any patch application.
+Post-fix, the identical inside-checkout invocation reports bare gold 6/6 vs
+empty 0/6, gold gate PASS (journal verified, 9.299s) and empty gate FAIL —
+VALIDATION PASS. Receipts: `audits/2026-09-06-harness-faults/` (issue #89).
+
+### F-033 — storage_stress crashed on the repository's own mixed journal
+
+`tools/dogfood/storage_stress.py` selected `evaluations limit 1` and fed it to
+`evaluation_for`; the governance journal's first row is a depset record, so the
+replay KeyErrored on the missing `verdict` field and the tool exited 1 on the
+most canonical "actual gate journal" there is — reproduced directly at
+9b35392d4 and again from the campaign soak driver. Closed by selecting the
+first row that actually carries a verdict and refusing honestly when a journal
+has none. The fixed tool ran the full governance-journal load on this host:
+4000 appends verified, relative-path verification PASS, and all four tamper
+controls (nonjson/truncated/empty/rewritten) still refuse with exit 1.
+Receipt: `audits/2026-09-06-harness-faults/` (issue #89).
+
 ### F-031 — the docs cap swept gitignored `.local` receipts and failed the frozen suite on the qualified host
 
 At v0.1.004 (85037d1d9) the canonical `uv run --frozen pytest -q` failed on

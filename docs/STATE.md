@@ -4,7 +4,11 @@
 **Active slice:** none
 
 Version v0.1.005 follows dogfood fix e99cecf525e3e85c443930213daca50a14708e8a.
-Issues: #85. Findings: F-031, F-032.
+Issue #89 / F-033, F-034 repair dogfood harness faults: storage_stress
+replays an actual evaluation from mixed journals, and two_arm initializes its
+nested repository before applying gold patches so the gold arm can no longer
+silently ship the empty stub inside a worktree (a harness false rejection,
+caught with the kernel verdict honest on its inputs).
 
 Publication requires the frozen suite on this commit and a real wheel/sdist build.
 The release workflow retains the validation logs. Source findings and their
