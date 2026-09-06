@@ -765,6 +765,24 @@
       "scenarios": 43,
       "sha": "8f12ac7a8",
       "subject": "tools: dogfood artifacts \u2014 iteration 18"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 32,
+      "scenarios": 43,
+      "sha": "57927238c",
+      "subject": "tools: proof pile \u2014 2026-09-07 (1 run) \u2014 py-textdiff in-run "
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 32,
+      "scenarios": 43,
+      "sha": "d2803d391",
+      "subject": "tools: dogfood artifacts - iteration 19"
     }
   ]
 }
