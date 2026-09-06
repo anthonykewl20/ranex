@@ -3,19 +3,12 @@
 **Updated:** 2026-09-06
 **Active slice:** none
 
-Current release: v0.1.003 at 82cacd162adf022644ce3316783491153ac0bcf6.
-Issue #84 / F-030 repairs missing GitHub Release pages and the public README.
-The existing v0.1.003 page is published and Latest; wheel/sdist/checksum asset
-hashes match the verified fresh-clone build. Its original tag has not moved.
+Version v0.1.004 follows dogfood fix 3deb74459bd62d8475bc73d1b3c69610d0810288.
+Issues: #84. Findings: F-030.
 
-Automatic release now creates a matching Release page with verified assets and
-change notes after the existing frozen-test/build/tag/dispatch sequence.
-The README is shortened to a public introduction, real quickstart, core usage
-and current architecture; detailed recipes live in docs/OPERATIONS.md.
-Frozen developer entrypoint and completed-slice contracts remain enforced.
-The generated dogfood snapshot is preserved and explicitly dated.
-
-Hosted automatic publication, dispatched tag CI, fresh-clone quickstart and
-public asset download checks for this change are pending. Existing real
-built-in-token publication was verified in issue #83; no personal secret exists.
-Evidence and remaining trust/host boundaries: tools/dogfood/FINDINGS.md.
+Publication requires the frozen suite on this commit and a real wheel/sdist build.
+The release workflow retains the validation logs. Source findings and their
+end-to-end receipts remain in tools/dogfood/FINDINGS.md and audits/.
+Hosted releases use GITHUB_TOKEN and explicitly dispatch CI on the published tag.
+GitHub Releases carry the wheel, sdist and verified SHA256SUMS for that tag.
+External services and host capabilities absent on the runner are UNVERIFIED.
