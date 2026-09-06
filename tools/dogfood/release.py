@@ -5,12 +5,14 @@
 a release commit, runs the frozen suite ON that commit, builds real packages,
 and pushes main plus its immutable tag atomically. No force pushes or retags.
 The hosted job uses GITHUB_TOKEN and explicitly dispatches CI on the release tag.
+Publication also creates a GitHub Release with verified distribution assets.
 """
 
 from __future__ import annotations
 
 import argparse
 import copy
+import hashlib
 import json
 import os
 import re
@@ -112,6 +114,48 @@ def require_publisher() -> tuple[str, str]:
     return "github-actions[bot]", "41898282+github-actions[bot]@users.noreply.github.com"
 
 
+def publish_release(tag: str, previous_tag: str, revision: str, source: str,
+                    findings: list[str]) -> None:
+    """Publish the already verified tag and the actual built distribution files."""
+    version = package_version()
+    directory = ROOT / ".local/release/dist"
+    assets = [directory / f"ranex-{version}-py3-none-any.whl",
+              directory / f"ranex-{version}.tar.gz"]
+    hashes = {path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in assets}
+    checksums = directory / "SHA256SUMS"
+    checksums.write_text("".join(f"{digest}  {name}\n" for name, digest in hashes.items()))
+    assets.append(checksums)
+    hashes[checksums.name] = hashlib.sha256(checksums.read_bytes()).hexdigest()
+    notes = ROOT / ".local/release/notes.txt"
+    notes.write_text(
+        f"Dogfood fixes: {', '.join(findings)}. Source commit: {source}.\n\n"
+        f"Release commit: {revision}. `uv run --frozen pytest -q` passed on this "
+        "commit before publication; named skips remain unverified. Wheel and sdist "
+        "were built from this commit, and the remote branch/tag were verified.\n\n"
+        f"Install from a source checkout using the [quickstart](https://github.com/"
+        f"{REPOSITORY}/tree/{tag}#quickstart). Governed commands require a configured "
+        "checkout; installing the wheel alone is not a governance environment.\n\n"
+        f"The attached distributions use Python version {version}. SHA256SUMS "
+        "covers the wheel and sdist. Full tag CI runs separately; inspect its "
+        f"[result](https://github.com/{REPOSITORY}/actions/workflows/ci.yml) "
+        "before relying on capabilities absent from the publishing runner.\n"
+    )
+    command("gh", "release", "create", tag, *(str(path) for path in assets),
+            "--repo", REPOSITORY, "--verify-tag", "--title", tag,
+            "--notes-file", str(notes), "--generate-notes", "--notes-start-tag", previous_tag,
+            "--latest", capture=False)
+    detail = json.loads(command("gh", "api", f"repos/{REPOSITORY}/releases/tags/{tag}"))
+    latest = json.loads(command("gh", "api", f"repos/{REPOSITORY}/releases/latest"))
+    uploaded = {asset["name"]: asset for asset in detail.get("assets", [])}
+    if latest.get("tag_name") != tag or detail.get("draft") or detail.get("tag_name") != tag or any(
+        uploaded.get(name, {}).get("digest") != f"sha256:{digest}"
+        or uploaded.get(name, {}).get("state") != "uploaded"
+        for name, digest in hashes.items()
+    ):
+        raise ValueError("GitHub Release was created but asset verification failed")
+    print(f"GITHUB-RELEASE {detail['html_url']}; wheel/sdist/checksum digests verified")
+
+
 def auto(expected_head: str) -> None:
     if not re.fullmatch(r"[0-9a-f]{40}", expected_head):
         raise ValueError("expected head must be an exact commit SHA")
@@ -141,6 +185,7 @@ def auto(expected_head: str) -> None:
                                     "--json", "number"))
         if detail["number"] != int(issue):
             raise ValueError("fix does not identify a real repository issue")
+    previous_tag = tag_for(package_version())
     tag = prepare()
     date = datetime.now(UTC).date().isoformat()
     (ROOT / "docs/STATE.md").write_text(
@@ -151,11 +196,12 @@ def auto(expected_head: str) -> None:
         "The release workflow retains the validation logs. Source findings and their\n"
         "end-to-end receipts remain in tools/dogfood/FINDINGS.md and audits/.\n"
         "Hosted releases use GITHUB_TOKEN and explicitly dispatch CI on the published tag.\n"
+        "GitHub Releases carry the wheel, sdist and verified SHA256SUMS for that tag.\n"
         "External services and host capabilities absent on the runner are UNVERIFIED.\n")
     readme = ROOT / "README.md"
     released, count = re.subn(
-        r"\*\*Current release: \[\`?v[0-9]+\.[0-9]+\.[0-9]+\`?\]\(https://github\.com/anthonykewl20/ranex/tree/v[0-9]+\.[0-9]+\.[0-9]+\)",
-        f"**Current release: [`{tag}`](https://github.com/{REPOSITORY}/tree/{tag})",
+        r"\*\*Current release: \[\`?v[0-9]+\.[0-9]+\.[0-9]+\`?\]\(https://github\.com/anthonykewl20/ranex/(?:tree|releases/tag)/v[0-9]+\.[0-9]+\.[0-9]+\)",
+        f"**Current release: [`{tag}`](https://github.com/{REPOSITORY}/releases/tag/{tag})",
         readme.read_text(),
     )
     if count != 1:
@@ -188,6 +234,7 @@ def auto(expected_head: str) -> None:
         command("gh", "workflow", "run", "ci.yml", "--repo", REPOSITORY,
                 "--ref", tag, "--raw-field", f"compare_base={expected_head}", capture=False)
         print(f"CI-DISPATCHED {tag}; release validation must finish in that workflow run")
+    publish_release(tag, previous_tag, revision, expected_head, findings)
 
 
 def main() -> int:

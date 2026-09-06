@@ -60,6 +60,8 @@ _ALLOWED_EXACT = frozenset(
         "README.md",
         "docs/MAP.md",
         "docs/STATE.md",
+        # Owner-requested public README rewrite moves detailed recipes here.
+        "docs/OPERATIONS.md",
     }
 )
 

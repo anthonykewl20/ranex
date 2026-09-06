@@ -1,7 +1,8 @@
 """Contract arms for the README's GitHub acceptance loop documentation.
 
-The docs set is closed (`test_docs_discipline.py`), so the App creation
-recipe and the ruleset recipe live in README — and what an operator will
+The docs set is closed (`test_docs_discipline.py`); the owner-requested README
+rewrite moves the App and ruleset recipes to its linked operator guide.
+What an operator will
 copy from them is pinned here: the check context name, the App pinning,
 the permissions, the event subscription, and the listener command.
 """
@@ -14,7 +15,9 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
 def readme() -> str:
-    return (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    overview = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
+    assert "docs/OPERATIONS.md#the-github-acceptance-loop-ranex-github-app" in overview
+    return (REPO_ROOT / "docs/OPERATIONS.md").read_text(encoding="utf-8")
 
 
 def test_the_readme_carries_the_acceptance_loop_section() -> None:

@@ -8,6 +8,22 @@ match the kernel silently.
 
 ## Open
 
+### F-030 — version tags did not create GitHub Release pages
+
+The owner observed main at v0.1.003 while the GitHub Releases sidebar still
+listed v0.1.0. The release API confirmed only v0.1.0 existed: the helper pushed
+Git refs and built packages but never created a Release object. The already
+tested v0.1.003 now has a Latest release page with the fresh-clone wheel, sdist
+and checksums; all uploaded digests matched retained local receipts. Its tag
+remains 82cacd162adf022644ce3316783491153ac0bcf6.
+
+Automatic publication now creates the Release with actual build assets,
+provenance, generated change notes and Latest selection, then verifies GitHub's
+asset digests. The public README is shortened and links detailed operating
+recipes; its release link follows the release page. End-to-end hosted
+publication of this change and fresh public quickstart validation are pending
+under issue #84. The manual v0.1.003 repair alone does not prove the new automation.
+
 ### F-029 — dogfood releases required an unconfigured personal token
 
 The actual eligible workflow run 33976105531 failed at its owner-identity check
@@ -21,8 +37,11 @@ GitHub suppresses ordinary push-triggered workflows for built-in-token pushes,
 so the helper explicitly dispatches complete CI on the immutable release tag.
 Frozen tests on the release commit, package builds, atomic fast-forward push,
 remote-tip checks and immutable tag guards are preserved. Real eligible hosted
-publication and the dispatched CI are pending under issue #83; skipped release
-steps or fabricated credentials cannot establish closure.
+publication completed under issue #83: source CI 34021796323, release workflow
+34022370140 and dispatched tag CI 34022632883 all succeeded. The actual bot
+published v0.1.003 at 82cacd162adf022644ce3316783491153ac0bcf6; the publishing
+runner reported 1666 passed and 129 named skips. Those skipped capabilities
+remain UNVERIFIED. This repaired Git publication; missing Release pages are F-030.
 
 The first source CI (34021451447) reported 1 failed, 1665 passed, 129 skipped:
 the existing workflow contract allowlisted exactly push/PR/schedule and rejected

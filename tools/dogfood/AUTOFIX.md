@@ -109,6 +109,19 @@ tag, then verifies both remote tips. An existing next tag is refused before
 metadata edits; existing tags are never moved. A release
 commit has no fix trailers, so its CI completion cannot cause a release loop.
 
+After the push and hosted CI dispatch, `auto` creates a GitHub Release for the
+existing tag (`--verify-tag`) and explicitly marks it Latest. It attaches the
+actual wheel, sdist and `SHA256SUMS`, adds source/release provenance and generated
+change notes, then checks GitHub's uploaded asset digests against the local files.
+This release page drives the repository's Releases sidebar; pushing a tag alone
+does not update it. README's current-release link points to that page.
+
+If creation or upload fails after the Git refs were published, preserve the tag
+and build artifacts. Inspect the existing release/draft and recover the missing
+page or assets with `gh release create --verify-tag` or `gh release upload`.
+Never clobber a verified asset, move a tag or bump another version merely to
+repair release metadata. A created release still needs its dispatched CI result.
+
 Because built-in-token pushes do not trigger ordinary push CI, the helper
 explicitly dispatches `ci.yml` on the verified release tag, with its source
 commit as `compare_base`. This runs the same frozen suites, real dogfood
