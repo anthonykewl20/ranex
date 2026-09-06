@@ -19,6 +19,7 @@ from typing import Any
 import yaml
 
 from ranex.foundation.canonical import command_digest
+from ranex.foundation.suite_results import JUNIT_REPORTERS
 
 
 @dataclass(frozen=True, slots=True)
@@ -34,6 +35,7 @@ class SliceClaimDefinition:
     command: tuple[str, ...]
     results_artifact: str | None = None
     qualification_report: str | None = None
+    results_reporter: str = "pytest-junit"
 
     @property
     def command_digest(self) -> str:
@@ -73,7 +75,7 @@ _UniqueKeyLoader.add_constructor(  # type: ignore[no-untyped-call]
 )
 
 
-_CLAIM_KEYS = {"claim_id", "command", "results_artifact", "qualification_report"}
+_CLAIM_KEYS = {"claim_id", "command", "results_artifact", "results_reporter", "qualification_report"}
 
 _SHAPE = "{claim_id: <id>, command: [<argv>, ...]}"
 
@@ -132,6 +134,11 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
         )
 
     results_artifact: str | None = None
+    reporter = entry.get("results_reporter", "pytest-junit")
+    if not isinstance(reporter, str) or reporter not in JUNIT_REPORTERS:
+        raise ValueError("results_reporter must be pytest-junit or vitest-junit")
+    if "results_reporter" in entry and "results_artifact" not in entry:
+        raise ValueError("results_reporter requires results_artifact")
     if "results_artifact" in entry:
         candidate = entry["results_artifact"]
         if (
@@ -145,7 +152,21 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
                 "a non-empty relative path confined below the repository"
             )
         token = f"--junitxml={candidate}"
-        if token not in command:
+        if reporter == "vitest-junit":
+            # Vitest 4.1.11's actual CLI and JUnit writer were exercised by
+            # the Arxic pilot. Keep one canonical spelling, not a permissive
+            # reconstruction of cac's argument parser. The complete argv is
+            # still signed and bound by the reviewed catalog.
+            expected = {"--reporter=junit", f"--outputFile={candidate}"}
+            options = [part for part in command if part.startswith(
+                ("--reporter", "--outputFile", "--output-file")
+            )]
+            if "--" in command or len(options) != 2 or set(options) != expected:
+                raise ValueError(
+                    f"gate {gate_id!r}: claim {claim_id!r} Vitest JUnit requires exactly "
+                    f"--reporter=junit and --outputFile={candidate}, without overrides or --"
+                )
+        elif token not in command:
             raise ValueError(
                 f"gate {gate_id!r}: claim {claim_id!r} must bind results_artifact "
                 f"with the exact argv token {token!r}"
@@ -183,6 +204,7 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
         command=tuple(command),
         results_artifact=results_artifact,
         qualification_report=qualification_report,
+        results_reporter=reporter,
     )
 
 

@@ -1,0 +1,9 @@
+gates:
+  - gate_id: landing
+    rule_id: VERSION_POLICY
+    blocking: true
+    required_claims:
+      - claim_id: tests-executed
+        command: ["/home/soultransit/.local/bin/node", "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs", "run", "--root", ".", "--config", "/tmp/ranex-arxic-runtime/vitest.config.mjs", "--reporter=junit", "--outputFile=governance/suite_results.xml"]
+        results_artifact: governance/suite_results.xml
+        results_reporter: vitest-junit

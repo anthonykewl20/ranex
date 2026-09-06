@@ -17,7 +17,8 @@ source patches and receipts: tools/dogfood/audits/2026-09-06-external/.
 A separate wheel installation evaluated Leitir evidence and verified its journal.
 These bounded modules do not establish full application acceptance.
 
-Live App authentication, webhook delivery, automatic refresh, App-pinned merge
-enforcement, merge-candidate verification and Arxic's full distributed suite
+Live App authentication, webhook delivery and App-pinned merge enforcement
 remain UNVERIFIED. App credentials and a connected browser are unavailable.
-Issue #85's separate operator-host baseline repair is in progress.
+Automatic PR evaluation/refresh, merge-candidate handling and distributed
+shard aggregation remain unimplemented. Arxic's full suite is UNVERIFIED.
+Includes issue #85's operator documentation repair.

@@ -26,6 +26,15 @@ admission. Existing implementations perform these checks; the selector does
 not introduce another signing, digest or confinement implementation. Kernel
 runtime profiles still come from the installed kernel checkout.
 
+Arxic's actual Vitest 4.1.11 run exposed a second adoption boundary: the loader
+required pytest's output flag even for valid JUnit from another runner. Add
+explicit `results_reporter: vitest-junit`, with exactly one `--reporter=junit`
+and one matching `--outputFile=PATH`, refusing overrides and `--` separators.
+`suite freeze --results-reporter vitest-junit` preserves the report's real
+`classname::name` identifiers. Existing pytest normalization is unchanged and
+never selected by guessing from a filename extension. The catalog digest binds
+the reporter choice; manifest and result schemas and signing remain unchanged.
+
 ## Alternatives
 
 - Copy the kernel into every application's `src/`: rejected because it
@@ -54,3 +63,6 @@ the tests, verifies signed publication through the GitHub verdict reader,
 rejects signature tampering and stale source, observes a failed assertion,
 then verifies recovery and the journal. Its second arm exercises path escapes,
 conflicting roots, key confinement and the unchanged implicit refusal.
+The contract and suite-result tests reject conflicting Vitest output options,
+unknown reporters and missing test IDs. Retained pilot receipts distinguish
+bounded real repository checks from full application or live App acceptance.

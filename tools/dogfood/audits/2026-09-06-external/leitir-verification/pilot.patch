@@ -1,0 +1,56 @@
+diff --git a/.gitignore b/.gitignore
+index b58d9f5..8b32f53 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -33,3 +33,8 @@ tests/fixtures/.locks/
+ !.leitir-score/evidence/baseline-asv.json
+ !.leitir-score/evidence/candidate-asv.json
+ .leitir-calibration/
++
++governance/evidence.json
++governance/suite_results.xml
++governance/journal.sqlite3*
++governance/verdicts/
+diff --git a/governance/gates.yaml b/governance/gates.yaml
+new file mode 100644
+index 0000000..fb0e47c
+--- /dev/null
++++ b/governance/gates.yaml
+@@ -0,0 +1,8 @@
++gates:
++  - gate_id: landing
++    rule_id: TREEHASH
++    blocking: true
++    required_claims:
++      - claim_id: tests-executed
++        command: ["/usr/bin/python3", "-m", "pytest", "-q", "-o", "pythonpath=src", "--junitxml=governance/suite_results.xml", "tests/test_treehash.py"]
++        results_artifact: governance/suite_results.xml
+diff --git a/governance/producers.yaml b/governance/producers.yaml
+new file mode 100644
+index 0000000..5d2a41f
+--- /dev/null
++++ b/governance/producers.yaml
+@@ -0,0 +1,5 @@
++producers:
++  worker: ed25519:yN5HKAA0idTFdew6888cHhuI19Pi3qTObimh08zerR0=
++verdict_signer:
++  id: kernel-verdict-signer
++  public_key: ed25519:WE6bVIyvZUk9CP463A2i/C2aXYs9jZQDkdx9aeAygYs=
+diff --git a/governance/suite_manifest.json b/governance/suite_manifest.json
+new file mode 100644
+index 0000000..88d00d6
+--- /dev/null
++++ b/governance/suite_manifest.json
+@@ -0,0 +1 @@
++{"expected_skips":{},"suite":["tests/test_treehash.py::test_deterministic_across_invocations","tests/test_treehash.py::test_dirty_trailing_bits_base64_is_rejected_as_non_canonical","tests/test_treehash.py::test_empty_symlink_target_is_supported_by_record_format","tests/test_treehash.py::test_empty_tree_has_stable_digest","tests/test_treehash.py::test_empty_tree_is_full_scope","tests/test_treehash.py::test_fifo_or_special_file_is_rejected","tests/test_treehash.py::test_file_digest_map_excludes_only_the_root_manifest","tests/test_treehash.py::test_file_digest_map_is_deterministic_across_invocations","tests/test_treehash.py::test_file_digest_map_matches_contents_and_linknames","tests/test_treehash.py::test_file_digest_map_rejects_missing_directory","tests/test_treehash.py::test_file_digest_map_symlinked_directory_is_not_followed","tests/test_treehash.py::test_file_map_manifest_fields_helper","tests/test_treehash.py::test_full_coverage_digest_is_byte_identical_below_caps","tests/test_treehash.py::test_full_coverage_fields_pin_full_scope_above_caps","tests/test_treehash.py::test_full_coverage_fields_reject_missing_directory","tests/test_treehash.py::test_large_bytes_tree_sampled","tests/test_treehash.py::test_large_file_streamed_constant_memory","tests/test_treehash.py::test_legacy_full_digest_over_current_caps_verifies","tests/test_treehash.py::test_manifest_digest_fields_helper","tests/test_treehash.py::test_manifest_digest_fields_rejects_unknown_scope","tests/test_treehash.py::test_many_files_tree_sampled","tests/test_treehash.py::test_map_entry_points_wrap_unexpected_scan_failures","tests/test_treehash.py::test_missing_directory_raises","tests/test_treehash.py::test_nested_files_match_manual_spec","tests/test_treehash.py::test_non_utf8_filename_is_wrapped","tests/test_treehash.py::test_path_with_newline_is_rejected","tests/test_treehash.py::test_regular_file_swapped_to_symlink_between_lstat_and_open_is_rejected","tests/test_treehash.py::test_root_manifest_is_excluded","tests/test_treehash.py::test_sampled_rejects_full_verification","tests/test_treehash.py::test_sampled_selection_always_keeps_at_least_one_entry","tests/test_treehash.py::test_sampled_subset_is_deterministic_by_content","tests/test_treehash.py::test_sampled_verify_round_trip","tests/test_treehash.py::test_single_file_matches_manual_spec","tests/test_treehash.py::test_single_oversized_file_is_full","tests/test_treehash.py::test_small_tree_hashed_in_full","tests/test_treehash.py::test_sort_order_is_lexicographic_on_posix_paths","tests/test_treehash.py::test_subdir_named_manifest_is_included","tests/test_treehash.py::test_symlink_inside_tree_matches_extended_manual_format","tests/test_treehash.py::test_symlink_target_tampering_is_detected","tests/test_treehash.py::test_symlink_target_with_newline_is_rejected","tests/test_treehash.py::test_symlink_target_with_non_utf8_bytes_is_wrapped","tests/test_treehash.py::test_symlinked_directory_is_hashed_without_following_it","tests/test_treehash.py::test_unreadable_file_error_is_wrapped","tests/test_treehash.py::test_verify_accepts_clean_tree","tests/test_treehash.py::test_verify_detects_added_file","tests/test_treehash.py::test_verify_detects_byte_flip","tests/test_treehash.py::test_verify_detects_deleted_file","tests/test_treehash.py::test_verify_detects_truncation","tests/test_treehash.py::test_verify_file_digest_map_accepts_healthy_tree","tests/test_treehash.py::test_verify_file_digest_map_detects_added_and_deleted_files","tests/test_treehash.py::test_verify_file_digest_map_detects_corruption_naming_path","tests/test_treehash.py::test_verify_file_digest_map_detects_symlink_target_tampering","tests/test_treehash.py::test_verify_file_digest_map_detects_tampered_map_value","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map0]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map10]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map11]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map1]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map2]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map3]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map4]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map5]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map6]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map7]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map8]","tests/test_treehash.py::test_verify_file_digest_map_rejects_malformed_maps[bad_map9]","tests/test_treehash.py::test_verify_file_digest_map_rejects_map_made_consistent_with_tampered_bytes","tests/test_treehash.py::test_verify_file_digest_map_rejects_missing_directory","tests/test_treehash.py::test_verify_file_digest_map_rejects_tampered_aggregate","tests/test_treehash.py::test_verify_file_digest_map_requires_algorithm_and_full_scope","tests/test_treehash.py::test_verify_file_digest_map_requires_an_anchored_aggregate","tests/test_treehash.py::test_verify_file_digest_map_wraps_unreadable_tree","tests/test_treehash.py::test_verify_rejects_malformed_base64","tests/test_treehash.py::test_verify_rejects_missing_prefix","tests/test_treehash.py::test_verify_rejects_non_canonical_base64","tests/test_treehash.py::test_verify_rejects_non_string","tests/test_treehash.py::test_verify_rejects_none","tests/test_treehash.py::test_verify_rejects_unknown_algorithm","tests/test_treehash.py::test_verify_rejects_unknown_scope_value","tests/test_treehash.py::test_verify_rejects_wrong_but_well_formed_digest"]}
+\ No newline at end of file
+diff --git a/src/leitir/treehash.py b/src/leitir/treehash.py
+index a6e5835..91aeaff 100644
+--- a/src/leitir/treehash.py
++++ b/src/leitir/treehash.py
+@@ -684,3 +684,5 @@ if __name__ == "__main__":  # pragma: no cover - CLI smoke
+     target = Path(sys.argv[1])
+     digest, scope = compute_materialized_tree_hash(target)
+     print(digest, scope)
++
++# Ranex pilot: restored source after failure

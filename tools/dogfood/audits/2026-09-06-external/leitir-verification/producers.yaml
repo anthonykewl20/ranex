@@ -1,0 +1,5 @@
+producers:
+  worker: ed25519:yN5HKAA0idTFdew6888cHhuI19Pi3qTObimh08zerR0=
+verdict_signer:
+  id: kernel-verdict-signer
+  public_key: ed25519:WE6bVIyvZUk9CP463A2i/C2aXYs9jZQDkdx9aeAygYs=

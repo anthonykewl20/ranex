@@ -360,3 +360,54 @@ gates:
 
     assert result.verdict is Verdict.FAIL
     assert result.missing_claims == ("tests-executed",)
+
+
+@pytest.mark.parametrize("options", [
+    ["--reporter=junit", "--outputFile=artifacts/junit.xml"],
+    ["--outputFile=artifacts/junit.xml", "--reporter=junit"],
+])
+def test_vitest_junit_binds_the_exact_artifact(options: list[str]) -> None:
+    import yaml
+
+    from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+
+    catalog = yaml.safe_load(GOOD)
+    claim = catalog["gates"][0]["required_claims"][0]
+    claim.update(command=["node", "vitest.mjs", "run", *options],
+                 results_artifact="artifacts/junit.xml", results_reporter="vitest-junit")
+    loaded = load_gate_text(yaml.safe_dump(catalog), "landing")
+    assert loaded.required_claims[0].results_artifact == "artifacts/junit.xml"
+
+
+@pytest.mark.parametrize("options", [
+    ["--reporter=json", "--outputFile=artifacts/junit.xml"],
+    ["--reporter=junit", "--outputFile=other.xml"],
+    ["--reporter=junit", "--outputFile=artifacts/junit.xml", "--outputFile=other.xml"],
+    ["--reporter=junit", "--outputFile=artifacts/junit.xml", "--outputFile.junit=other.xml"],
+    ["--reporter=junit", "--outputFile=artifacts/junit.xml", "--output-file", "other.xml"],
+    ["--reporter=junit", "--outputFile=artifacts/junit.xml", "--reporter=json"],
+    ["--", "--reporter=junit", "--outputFile=artifacts/junit.xml"],
+])
+def test_vitest_artifact_binding_refuses_conflicting_or_missing_options(options: list[str]) -> None:
+    import yaml
+
+    from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+
+    catalog = yaml.safe_load(GOOD)
+    claim = catalog["gates"][0]["required_claims"][0]
+    claim.update(command=["node", "vitest.mjs", "run", *options],
+                 results_artifact="artifacts/junit.xml", results_reporter="vitest-junit")
+    with pytest.raises(ValueError, match="Vitest JUnit"):
+        load_gate_text(yaml.safe_dump(catalog), "landing")
+
+
+@pytest.mark.parametrize("reporter", ["unknown", "", None, [], "vitest-junit"])
+def test_reporter_without_results_artifact_is_refused(reporter: object) -> None:
+    import yaml
+
+    from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+
+    catalog = yaml.safe_load(GOOD)
+    catalog["gates"][0]["required_claims"][0]["results_reporter"] = reporter
+    with pytest.raises(ValueError, match="results_reporter"):
+        load_gate_text(yaml.safe_dump(catalog), "landing")

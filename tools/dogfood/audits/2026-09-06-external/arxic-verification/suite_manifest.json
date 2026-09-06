@@ -1,0 +1,1 @@
+{"expected_skips":{},"suite":["scripts/version-policy.test.mjs::rejects malformed or unsafe version counters","scripts/version-policy.test.mjs::uses the owner’s three-digit labels and +100 minor / +1 patch cadence"]}

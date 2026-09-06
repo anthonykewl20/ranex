@@ -112,7 +112,8 @@ RESPONSE_LIMIT = 65_536
 # Issue #82 adds external journal-head comparison, malformed-row diagnostics,
 # the padded --version display, and principal-aware keygen instructions.
 # Launcher and confinement branches are unchanged.
-MAIN_PY_SHA256 = "63c210178ecdf984e095bdb3e382064697827a134e4bcefced89cf593412021d"
+# Issue #86 adds explicit external targets and reporter selection; native launcher behavior is unchanged.
+MAIN_PY_SHA256 = "5a3c36a9b41e8d9dd6af95c577519a2620bf1653bc99c796c8c523fc976d8f77"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

@@ -1,0 +1,57 @@
+diff --git a/.gitignore b/.gitignore
+index ba0eccf..7a995a2 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -19,3 +19,8 @@ test-results
+ .worktrees/
+ sbom.cdx.json
+ .video_agent/
++
++governance/evidence.json
++governance/suite_results.xml
++governance/journal.sqlite3*
++governance/verdicts/
+diff --git a/governance/gates.yaml b/governance/gates.yaml
+new file mode 100644
+index 0000000..0504d5e
+--- /dev/null
++++ b/governance/gates.yaml
+@@ -0,0 +1,9 @@
++gates:
++  - gate_id: landing
++    rule_id: VERSION_POLICY
++    blocking: true
++    required_claims:
++      - claim_id: tests-executed
++        command: ["/home/soultransit/.local/bin/node", "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs", "run", "--root", ".", "--config", "/tmp/ranex-arxic-runtime/vitest.config.mjs", "--reporter=junit", "--outputFile=governance/suite_results.xml"]
++        results_artifact: governance/suite_results.xml
++        results_reporter: vitest-junit
+diff --git a/governance/producers.yaml b/governance/producers.yaml
+new file mode 100644
+index 0000000..a07b99f
+--- /dev/null
++++ b/governance/producers.yaml
+@@ -0,0 +1,5 @@
++producers:
++  worker: ed25519:WS/Vd81mfTNvLErkvrCPvDZD0yyhXL/9Hrv206jOpYU=
++verdict_signer:
++  id: kernel-verdict-signer
++  public_key: ed25519:ZFlJJIJxjAnO56aMQF1Jpq8ayxzp4Ms2PL3aEomfnEg=
+diff --git a/governance/suite_manifest.json b/governance/suite_manifest.json
+new file mode 100644
+index 0000000..dbb6b41
+--- /dev/null
++++ b/governance/suite_manifest.json
+@@ -0,0 +1 @@
++{"expected_skips":{},"suite":["scripts/version-policy.test.mjs::rejects malformed or unsafe version counters","scripts/version-policy.test.mjs::uses the owner’s three-digit labels and +100 minor / +1 patch cadence"]}
+\ No newline at end of file
+diff --git a/packages/contracts/src/version-policy.mjs b/packages/contracts/src/version-policy.mjs
+index 467c8d0..cf56c8f 100644
+--- a/packages/contracts/src/version-policy.mjs
++++ b/packages/contracts/src/version-policy.mjs
+@@ -18,3 +18,5 @@ export function bumpVersion(value, kind) {
+   const [major, line, counter] = canonicalVersion(value).split('.').map(Number);
+   return canonicalVersion(`${major}.${line}.${counter + (kind === 'minor' ? 100 : 1)}`);
+ }
++
++// Ranex pilot: restored source after failure

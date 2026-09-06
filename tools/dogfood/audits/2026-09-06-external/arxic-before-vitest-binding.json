@@ -1,0 +1,67 @@
+{
+  "scope": "Real Arxic version-policy tests, default hermetic observation, fresh local identities; no live GitHub App publication or merge enforcement.",
+  "source": "https://github.com/anthonykewl20/arxic",
+  "local_source": "/home/soultransit/devtony/arxic",
+  "upstream_commit": "2395041598cf2aab14da8708ac2b21dc08f40731",
+  "observed_at": "2026-09-06T11:56:25.553628+00:00",
+  "steps": [
+    {
+      "case": "freeze-real-version-policy-tests",
+      "command": [
+        "ranex",
+        "suite",
+        "freeze",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot",
+        "--artifact",
+        "governance/suite_results.xml",
+        "--",
+        "/home/soultransit/.local/bin/node",
+        "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs",
+        "run",
+        "--root",
+        ".",
+        "--config",
+        "/tmp/ranex-arxic-runtime/vitest.config.mjs",
+        "--reporter",
+        "junit",
+        "--outputFile",
+        "governance/suite_results.xml"
+      ],
+      "exit": 0,
+      "stdout": "JUNIT report written to /tmp/ranex-subject-d1v_26_d/tree/governance/suite_results.xml\nFROZEN  tests=2  expected_skips=0  run_exit=0  output=/tmp/ranex-arxic-pilot/governance/suite_manifest.json",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "passing-real-tests",
+      "command": [
+        "ranex",
+        "run",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot",
+        "--claim",
+        "tests-executed",
+        "--producer",
+        "worker",
+        "--",
+        "/home/soultransit/.local/bin/node",
+        "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs",
+        "run",
+        "--root",
+        ".",
+        "--config",
+        "/tmp/ranex-arxic-runtime/vitest.config.mjs",
+        "--reporter",
+        "junit",
+        "--outputFile",
+        "governance/suite_results.xml"
+      ],
+      "exit": 2,
+      "stdout": "",
+      "stderr": "ERROR  gate 'landing': claim 'tests-executed' must bind results_artifact with the exact argv token '--junitxml=governance/suite_results.xml'",
+      "expected_exit": 0
+    }
+  ],
+  "frozen_test_count": 2
+}

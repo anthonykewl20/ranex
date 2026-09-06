@@ -204,5 +204,17 @@
   "kernel_base_commit": "85037d1d901a205298deb1778503bb118ab88000",
   "kernel_changed_source": {
     "src/ranex/cli/main.py": "2504afaaa161bc3add3f7bb9ade7a480ea036d6f"
+  },
+  "verification_material": {
+    "directory": "tools/dogfood/audits/2026-09-06-external/leitir-verification",
+    "head": "0da9714fc91ae2c3d7c98928a63c0aeff9161d5d",
+    "tree": "b9cb0d98db8c1f47c3b9dd1c70481f3b7af51471",
+    "subject_digest": "sha256:e86e27e41635ccd79a791129b750d7460ec3c392dc36c8284444648dbd34c3e0",
+    "reconstruction": "Apply pilot.patch to the recorded upstream commit, git add -A, then git write-tree; compare with tree. Private keys are not required to verify the verdict."
+  },
+  "archive_verification": {
+    "reconstructed_tree_matches": true,
+    "verdict_state": "verified",
+    "verdict": "PASS"
   }
 }

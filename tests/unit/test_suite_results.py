@@ -54,6 +54,32 @@ EXECUTABLE = sys.executable
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 
+def test_vitest_preserves_real_javascript_ids_and_detects_a_missing_test() -> None:
+    from ranex.foundation.suite_results import freeze_manifest, suite_results_from_junitxml
+
+    raw = b'<testsuite><testcase classname="scripts/version-policy.test.mjs" name="rejects unsafe counters"/><testcase classname="scripts/version-policy.test.mjs" name="bumps versions"/></testsuite>'
+    manifest = freeze_manifest(raw, reporter="vitest-junit")
+    assert manifest["suite"] == [
+        "scripts/version-policy.test.mjs::bumps versions",
+        "scripts/version-policy.test.mjs::rejects unsafe counters",
+    ]
+    partial = b'<testsuite><testcase classname="scripts/version-policy.test.mjs" name="rejects unsafe counters"/></testsuite>'
+    result = suite_results_from_junitxml(partial, manifest, reporter="vitest-junit")
+    assert result["missing"] == ["scripts/version-policy.test.mjs::bumps versions"]
+    assert result["counts"]["passed"] == 1
+    assert suite_results_from_junitxml(raw, manifest, reporter="vitest-junit")["missing"] == []
+
+
+def test_reporter_selection_is_explicit_and_unknown_reporters_refuse() -> None:
+    from ranex.foundation.suite_results import freeze_manifest
+
+    raw = b'<testsuite><testcase classname="tests.ts" name="test_one"/></testsuite>'
+    assert freeze_manifest(raw)["suite"] == ["tests/ts.py::test_one"]
+    assert freeze_manifest(raw, reporter="vitest-junit")["suite"] == ["tests.ts::test_one"]
+    with pytest.raises(ValueError, match="reporter"):
+        freeze_manifest(raw, reporter="unknown")
+
+
 @pytest.fixture()
 def domain() -> SimpleNamespace:
     from ranex.foundation import signing

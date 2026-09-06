@@ -78,6 +78,8 @@ public producer identities, dependency approval and host prerequisites.
 By default the CLI governs the checkout containing its kernel source. To
 govern another checkout without vendoring, add `--external-repository /path/to/repo`
 to the core commands; see the [external repository recipe](docs/OPERATIONS.md#governing-an-external-repository).
+JUnit evidence supports pytest and an explicit Vitest reporter binding, with
+frozen expected test IDs and rejection of missing results.
 
 After you have committed the policy, public keyring and frozen test manifest,
 provisioned dependencies and configured the signing key, the core loop is:

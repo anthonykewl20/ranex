@@ -1,0 +1,8 @@
+gates:
+  - gate_id: landing
+    rule_id: TREEHASH
+    blocking: true
+    required_claims:
+      - claim_id: tests-executed
+        command: ["/usr/bin/python3", "-m", "pytest", "-q", "-o", "pythonpath=src", "--junitxml=governance/suite_results.xml", "tests/test_treehash.py"]
+        results_artifact: governance/suite_results.xml

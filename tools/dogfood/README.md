@@ -2,6 +2,22 @@
 
 ## Release audit probes
 
+The first-party external-repository receipts in `audits/2026-09-06-external/`
+retain the source patch, public policy/keyring, frozen manifest and signed
+verdict. Verify an archive against an existing local source repository:
+
+```sh
+uv run --frozen python tools/dogfood/verify_repository_pilot.py \
+  --receipt tools/dogfood/audits/2026-09-06-external/leitir.json \
+  --repository /path/to/leitir
+```
+
+Use `arxic.json` and the local Arxic checkout for its archive. The verifier
+reconstructs the exact tree using a temporary Git index, compares the archived
+policy files with that tree and uses Ranex's verdict reader. It changes no
+checkout or branch. Signature validity under an included key does not establish
+independent trust in that identity, rerun the tests or prove GitHub enforcement.
+
 The owner-requested 2026-09-05 audit adds real subprocess and socket probes.
 The retained [audit summary](audits/2026-09-05/audit.json) links the measured
 revisions, outcomes, scope limits, and artifact inventory; [FINDINGS.md](FINDINGS.md)

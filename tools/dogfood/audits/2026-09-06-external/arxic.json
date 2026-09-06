@@ -1,0 +1,229 @@
+{
+  "scope": "Real Arxic version-policy tests, default hermetic observation, fresh local identities; no live GitHub App publication or merge enforcement.",
+  "source": "https://github.com/anthonykewl20/arxic",
+  "local_source": "/home/soultransit/devtony/arxic",
+  "upstream_commit": "2395041598cf2aab14da8708ac2b21dc08f40731",
+  "observed_at": "2026-09-06T12:03:48.721610+00:00",
+  "steps": [
+    {
+      "case": "freeze-real-version-policy-tests",
+      "command": [
+        "ranex",
+        "suite",
+        "freeze",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--artifact",
+        "governance/suite_results.xml",
+        "--results-reporter",
+        "vitest-junit",
+        "--",
+        "/home/soultransit/.local/bin/node",
+        "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs",
+        "run",
+        "--root",
+        ".",
+        "--config",
+        "/tmp/ranex-arxic-runtime/vitest.config.mjs",
+        "--reporter=junit",
+        "--outputFile=governance/suite_results.xml"
+      ],
+      "exit": 0,
+      "stdout": "JUNIT report written to /tmp/ranex-subject-uccx3hmj/tree/governance/suite_results.xml\nFROZEN  tests=2  expected_skips=0  run_exit=0  output=/tmp/ranex-arxic-pilot-v3/governance/suite_manifest.json",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "passing-real-tests",
+      "command": [
+        "ranex",
+        "run",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--claim",
+        "tests-executed",
+        "--producer",
+        "worker",
+        "--",
+        "/home/soultransit/.local/bin/node",
+        "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs",
+        "run",
+        "--root",
+        ".",
+        "--config",
+        "/tmp/ranex-arxic-runtime/vitest.config.mjs",
+        "--reporter=junit",
+        "--outputFile=governance/suite_results.xml"
+      ],
+      "exit": 0,
+      "stdout": "JUNIT report written to /tmp/ranex-subject-w8mf4mb_/tree/governance/suite_results.xml\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:27f88c9d4e7d75a4f705965d530927cea2811db96255b8b9b7ae2fa68752a4fa",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "passing-signed-verdict",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 0,
+      "stdout": "PASS  gate=landing  subject=sha256:27f88c9d4e7d75a4f705965d530927cea2811db96255b8b9b7ae2fa68752a4fa",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "reject-stale-source",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  gate=landing  rule=VERSION_POLICY\n      evidence bound to a different subject digest: tests-executed\n      subject=sha256:74c30d78172c66cd2bf7fdd6912bf9c868814592fc740a8e8c92032a748d52ce",
+      "stderr": "",
+      "expected_exit": 1
+    },
+    {
+      "case": "observe-real-collection-failure",
+      "command": [
+        "ranex",
+        "run",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--claim",
+        "tests-executed",
+        "--producer",
+        "worker",
+        "--",
+        "/home/soultransit/.local/bin/node",
+        "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs",
+        "run",
+        "--root",
+        ".",
+        "--config",
+        "/tmp/ranex-arxic-runtime/vitest.config.mjs",
+        "--reporter=junit",
+        "--outputFile=governance/suite_results.xml"
+      ],
+      "exit": 1,
+      "stdout": "JUNIT report written to /tmp/ranex-subject-xzo6df03/tree/governance/suite_results.xml\nRECORDED  claim=tests-executed  producer=worker  exit=1\n          subject=sha256:74c30d78172c66cd2bf7fdd6912bf9c868814592fc740a8e8c92032a748d52ce",
+      "stderr": "",
+      "expected_exit": 1
+    },
+    {
+      "case": "reject-failed-collection",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 1,
+      "stdout": "FAIL  gate=landing  rule=VERSION_POLICY\n      tests-executed: missing test ID(s): scripts/version-policy.test.mjs::rejects malformed or unsafe version counters, scripts/version-policy.test.mjs::uses the owner\u2019s three-digit labels and +100 minor / +1 patch cadence\n      subject=sha256:74c30d78172c66cd2bf7fdd6912bf9c868814592fc740a8e8c92032a748d52ce",
+      "stderr": "",
+      "expected_exit": 1
+    },
+    {
+      "case": "passing-tests-after-repair",
+      "command": [
+        "ranex",
+        "run",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--claim",
+        "tests-executed",
+        "--producer",
+        "worker",
+        "--",
+        "/home/soultransit/.local/bin/node",
+        "/home/soultransit/devtony/arxic/node_modules/vitest/vitest.mjs",
+        "run",
+        "--root",
+        ".",
+        "--config",
+        "/tmp/ranex-arxic-runtime/vitest.config.mjs",
+        "--reporter=junit",
+        "--outputFile=governance/suite_results.xml"
+      ],
+      "exit": 0,
+      "stdout": "JUNIT report written to /tmp/ranex-subject-ftfsjscs/tree/governance/suite_results.xml\nRECORDED  claim=tests-executed  producer=worker  exit=0\n          subject=sha256:a68b22142c3b6d7e3797023505a997d9e16fbb31cd4331e9a5db66e396befd90",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "fresh-signed-recovery",
+      "command": [
+        "ranex",
+        "gate",
+        "evaluate",
+        "HEAD",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3",
+        "--approver",
+        "pilot-owner"
+      ],
+      "exit": 0,
+      "stdout": "PASS  gate=landing  subject=sha256:a68b22142c3b6d7e3797023505a997d9e16fbb31cd4331e9a5db66e396befd90",
+      "stderr": "",
+      "expected_exit": 0
+    },
+    {
+      "case": "verify-journal",
+      "command": [
+        "ranex",
+        "journal",
+        "verify",
+        "--external-repository",
+        "/tmp/ranex-arxic-pilot-v3"
+      ],
+      "exit": 0,
+      "stdout": "PASS  journal=/tmp/ranex-arxic-pilot-v3/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+      "stderr": "",
+      "expected_exit": 0
+    }
+  ],
+  "frozen_test_count": 2,
+  "github_reader": {
+    "code": "OK",
+    "subject": "sha256:27f88c9d4e7d75a4f705965d530927cea2811db96255b8b9b7ae2fa68752a4fa",
+    "head": "1e3bf6c988057a6ae2967447a8fba0648ce33c44"
+  },
+  "status": "VERIFIED_WITHIN_STATED_SCOPE",
+  "live_app": "UNVERIFIED: App credentials unavailable",
+  "full_arxic_suite": "UNVERIFIED: bounded version-policy module only; not the four-shard/browser/Docker suite",
+  "runtime_limit": "Node 24.18.0 and existing Vitest 4.1.11 dependencies outside the target, with explicit pilot config; not an immutable strict-local runtime closure",
+  "private_keys": "ephemeral; deleted at pilot exit",
+  "verification_material": {
+    "directory": "tools/dogfood/audits/2026-09-06-external/arxic-verification",
+    "head": "24bfbb342b31f8ee40fcc5de8fbf7cfa305ea487",
+    "tree": "a29292585b79a415d641fe74d9b7e9144665e989",
+    "subject_digest": "sha256:a68b22142c3b6d7e3797023505a997d9e16fbb31cd4331e9a5db66e396befd90",
+    "reconstruction": "Apply pilot.patch to the recorded upstream commit, git add -A, then git write-tree; compare with tree. Private keys are not required to verify the verdict."
+  },
+  "kernel_changed_source": {
+    "src/ranex/cli/main.py": "4c6e6a599fdb7c5617a12f1a01b3ecfe04899871",
+    "src/ranex/foundation/suite_results.py": "f83afd1cf07e53c4d1be0b26c8afd1808e6fd738",
+    "src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py": "2cbd9f078b39837793ecf74321e237f4d2fc2ba2"
+  },
+  "kernel_base_commit": "cc3d31018b7da8e76f8d791540024e9a5b17c9e1",
+  "archive_verification": {
+    "reconstructed_tree_matches": true,
+    "verdict_state": "verified",
+    "verdict": "PASS"
+  }
+}

@@ -80,6 +80,7 @@ from ranex.foundation.signing import (
 )
 from ranex.foundation.static_executable import inspect_self_contained_static_executable
 from ranex.foundation.suite_results import (
+    JUNIT_REPORTERS,
     freeze_manifest,
     load_manifest_bytes,
     manifest_digest,
@@ -3419,6 +3420,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         results_artifact: str | None = None
         qualification_report: str | None = None
         suite_manifest: dict[str, object] | None = None
+        results_reporter = "pytest-junit"
         catalog_source: bytes | None = None
         catalog_name = named_within_repository(root, args.gate_catalog)
         if committed_bytes(root, started_at, catalog_name) is not None:
@@ -3442,6 +3444,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 )
                 suite_manifest = load_manifest_bytes(manifest_source)
                 results_artifact = selected_claim.results_artifact
+                results_reporter = selected_claim.results_reporter
             if selected_claim is not None:
                 qualification_report = selected_claim.qualification_report
 
@@ -3532,7 +3535,9 @@ def cmd_run(args: argparse.Namespace) -> int:
         if results_artifact is not None:
             if suite_manifest is None:
                 raise ValueError("suite-results claim has no loaded manifest")
-            artifact_reader = lambda path: parse_results_artifact(path, suite_manifest)
+            artifact_reader = lambda path: parse_results_artifact(
+                path, suite_manifest, reporter=results_reporter
+            )
         elif qualification_report is not None:
             artifact_reader = lambda path: json.loads(path.read_bytes())
         if qualification_report is not None:
@@ -3694,6 +3699,7 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
         manifest = freeze_manifest(
             observation.artifact,
             expected_skips=expected_skips,
+            reporter=args.results_reporter,
         )
         completed = observation.completed
         output.parent.mkdir(parents=True, exist_ok=True)
@@ -4372,6 +4378,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="hermetic command to run, after --",
     )
     freeze.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
+    freeze.add_argument("--results-reporter", choices=sorted(JUNIT_REPORTERS),
+                        default="pytest-junit", help="JUnit test ID convention to freeze")
     freeze.set_defaults(func=cmd_suite_freeze)
 
     deps = sub.add_parser("deps", help="dependency provisioning").add_subparsers(

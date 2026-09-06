@@ -154,6 +154,18 @@ outside the target; inherited `PYTHONPATH` and arbitrary environment variables
 are not a provisioning mechanism. Strict-local runs retain their qualified
 host/runtime requirements. Live App setup and check scheduling are separate.
 
+For Vitest JUnit, the claim must explicitly set `results_reporter: vitest-junit`
+and bind the exact tokens `--reporter=junit` and `--outputFile=PATH`, where
+`PATH` equals `results_artifact`. Duplicate/overriding reporter or output options
+and a `--` separator in that bound argv are refused. This spelling was verified
+with installed Vitest 4.1.11; it avoids assuming pytest flags work with another
+runner. Freeze its manifest using `suite freeze --results-reporter vitest-junit`.
+Vitest IDs preserve `classname::name`; pytest's existing ID mapping stays the
+default. A manifest frozen with the wrong convention cannot satisfy the gate.
+Both reporters use the same JUnit safety, duplicate-ID, missing-ID and outcome
+checks. This supports one results artifact per claim; distributed collection
+and shard aggregation are not implied.
+
 ## The GitHub acceptance loop (Ranex GitHub App)
 
 Ranex can answer pull requests the way GitHub natively understands: a check

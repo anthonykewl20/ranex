@@ -15,6 +15,7 @@ from typing import Any, TypedDict, cast
 from ranex.foundation.canonical import canonical_json_bytes
 
 MAX_RESULTS_BYTES = 50 * 1024 * 1024
+JUNIT_REPORTERS = frozenset({"pytest-junit", "vitest-junit"})
 
 _DIGEST = re.compile(r"^sha256:[0-9a-f]{64}$")
 _MANIFEST_KEYS = {"suite", "expected_skips"}
@@ -118,7 +119,7 @@ def validate_suite_results(value: object) -> dict[str, object]:
     return value
 
 
-def _test_id(testcase: ET.Element) -> str:
+def _test_id(testcase: ET.Element, reporter: str) -> str:
     classname = testcase.get("classname")
     name = testcase.get("name")
     if not classname and name and _outcome(testcase) == "error":
@@ -128,6 +129,8 @@ def _test_id(testcase: ET.Element) -> str:
         return name
     if not classname or not name:
         raise ValueError("junitxml testcase must carry classname and name")
+    if reporter == "vitest-junit":
+        return f"{classname}::{name}"
     parts = classname.split(".")
     if "tests" in parts:
         parts = parts[parts.index("tests") :]
@@ -163,7 +166,9 @@ def _outcome(testcase: ET.Element) -> str:
     return "skipped"
 
 
-def _outcomes(junitxml_bytes: bytes) -> dict[str, str]:
+def _outcomes(junitxml_bytes: bytes, reporter: str = "pytest-junit") -> dict[str, str]:
+    if not isinstance(reporter, str) or reporter not in JUNIT_REPORTERS:
+        raise ValueError("unsupported JUnit reporter")
     if not isinstance(junitxml_bytes, bytes):
         raise TypeError("junitxml_bytes must be bytes")
     try:
@@ -193,7 +198,7 @@ def _outcomes(junitxml_bytes: bytes) -> dict[str, str]:
     for testcase in root.iter():
         if testcase.tag.rsplit("}", 1)[-1] != "testcase":
             continue
-        test_id = _test_id(testcase)
+        test_id = _test_id(testcase, reporter)
         if test_id in outcomes:
             raise ValueError(f"duplicate test ID in junitxml: {test_id}")
         outcomes[test_id] = _outcome(testcase)
@@ -204,10 +209,11 @@ def freeze_manifest(
     junitxml_bytes: bytes,
     *,
     expected_skips: Mapping[str, str] | None = None,
+    reporter: str = "pytest-junit",
 ) -> dict[str, object]:
     """Freeze only the observed ID set; test outcomes never enter the manifest."""
 
-    outcomes = _outcomes(junitxml_bytes)
+    outcomes = _outcomes(junitxml_bytes, reporter)
     manifest: dict[str, object] = {
         "suite": sorted(outcomes),
         "expected_skips": {} if expected_skips is None else dict(expected_skips),
@@ -244,11 +250,13 @@ def manifest_digest(manifest: Mapping[str, object]) -> str:
 def suite_results_from_junitxml(
     junitxml_bytes: bytes,
     manifest: Mapping[str, object],
+    *,
+    reporter: str = "pytest-junit",
 ) -> dict[str, object]:
     """Summarise one junitxml artifact against a previously frozen manifest."""
 
     validated_manifest = _validate_manifest(dict(manifest))
-    outcomes = _outcomes(junitxml_bytes)
+    outcomes = _outcomes(junitxml_bytes, reporter)
     expected_ids = set(validated_manifest["suite"])
     observed_ids = set(outcomes)
     counts = {
@@ -278,11 +286,13 @@ def suite_results_from_junitxml(
 def parse_results_artifact(
     path: str | Path,
     manifest: Mapping[str, object],
+    *,
+    reporter: str = "pytest-junit",
 ) -> dict[str, object]:
     """Read a present junitxml artifact no larger than 50 MiB and summarise it."""
 
     raw = read_results_artifact(path)
-    return suite_results_from_junitxml(raw, manifest)
+    return suite_results_from_junitxml(raw, manifest, reporter=reporter)
 
 
 def read_results_artifact(path: str | Path) -> bytes:
