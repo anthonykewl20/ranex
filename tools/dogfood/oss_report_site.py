@@ -148,10 +148,23 @@ def _verdict_matrix(runs: list[dict[str, Any]]) -> str:
     rows = ""
     for r in runs:
         claim = "done" if r["self_report"]["claimed_success"] else "—"
+        truth = r["ground_truth_functional"]
+        truth_cell = badge(truth)
+        rg = r.get("grader_regrade")
+        if rg and rg["regraded_functional"] == 1.0 and truth != 1.0:
+            # The in-run grader score was an artifact (budget-skipped
+            # verifier); the host regrade artifact supersedes it and both
+            # stay visible — the receipt holds the full evidence.
+            truth_cell = (
+                f'{badge(rg["regraded_functional"])} '
+                f'<span class="dim" title="in-run grader said 0.0 under '
+                f'budget_exceeded; host regrade {rg["passed"]}/{rg["total"]} '
+                f'pristine tests, artifact linked in the receipt">'
+                f'(regraded†)</span>')
         rows += ('<tr><td>{}</td><td class="dim">{}</td><td>{}</td><td>{}</td>'
                  "<td>{}</td><td>{}</td></tr>").format(
                      _esc(r["task"]), _esc(r["run_id"][-8:]),
-                     badge(r["ground_truth_functional"]),
+                     truth_cell,
                      badge(r["bare_ci"]["verdict"]),
                      badge(claim),
                      badge(r["ranex_gate"]["gate_verdict"]))

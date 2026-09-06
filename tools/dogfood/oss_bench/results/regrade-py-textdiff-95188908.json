@@ -1,0 +1,59 @@
+{
+  "interpreter": "/usr/bin/python3",
+  "kernel_head": "8f12ac7a8d632ca82a8304ff4d1fb3bd6768d8b3",
+  "passed": 7,
+  "reason": "in-run grader scored functional 0.0 with budget_exceeded=true (verifier metrics budget-skipped); regrade runs the pristine fail_to_pass commands on the host against the agent's final.patch",
+  "regraded_at": "2026-09-06T18:15:25.272418+00:00",
+  "regraded_functional": 1.0,
+  "results": [
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_round_trip -q",
+      "exit": 0,
+      "name": "round_trip",
+      "tail": "9 passed in 0.01s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_kept_lines_are_a_longest_common_subsequence -q",
+      "exit": 0,
+      "name": "kept_is_lcs",
+      "tail": "9 passed in 0.01s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_ops_use_only_known_kinds -q",
+      "exit": 0,
+      "name": "known_kinds",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_insert_only_diff -q",
+      "exit": 0,
+      "name": "insert_only",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_delete_only_diff -q",
+      "exit": 0,
+      "name": "delete_only",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_apply_rejects_wrong_source -q",
+      "exit": 0,
+      "name": "rejects_wrong_source",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_apply_requires_consuming_all_of_source -q",
+      "exit": 0,
+      "name": "consumes_all_source",
+      "tail": "1 passed in 0.00s"
+    }
+  ],
+  "run_id": "py-textdiff-95188908",
+  "schema": "ranex-oss-bench-regrade-v1",
+  "task": "py-textdiff",
+  "test_file_digest_gate_verified": "sha256:fe3e042b4a85c559064e059bb97f0db1462b1df0e34123cd037eb87413c2b09d",
+  "test_file_digest_pristine": "sha256:fe3e042b4a85c559064e059bb97f0db1462b1df0e34123cd037eb87413c2b09d",
+  "test_files_byte_identical": true,
+  "total": 7
+}

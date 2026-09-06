@@ -130,15 +130,36 @@ def append_from_divergence(divergence_path: Path, date: str,
         fault = harness_fault_reason(entry)
         if fault:
             entry["harness_fault"] = fault
+        # A regrade (results/regrade-<run_id>.json, schema
+        # ranex-oss-bench-regrade-v1) supersedes an in-run grader score that
+        # was an artifact: the divergence row carries a pointer and the
+        # artifact carries the host re-run of the pristine fail_to_pass
+        # commands. Both scores stay visible in the entry; only the
+        # classification uses the regraded one.
+        truth = row["ground_truth_functional"]
+        regrade = row.get("grader_regrade")
+        if regrade:
+            artifact = ARCHIVE.parent / "results" / f"regrade-{row['run_id']}.json"
+            if artifact.is_file():
+                payload = json.loads(artifact.read_text())
+                if payload.get("run_id") == row["run_id"]:
+                    entry["grader_regrade"] = {
+                        "artifact": f"tools/dogfood/oss_bench/results/{artifact.name}",
+                        "in_run_functional": truth,
+                        "regraded_functional": payload["regraded_functional"],
+                        "passed": payload["passed"], "total": payload["total"],
+                        "test_files_byte_identical": payload["test_files_byte_identical"],
+                    }
+                    truth = payload["regraded_functional"]
         entry["false_pass"] = (
             not fault
             and gate.get("gate_verdict") == "PASS"
-            and row["ground_truth_functional"] != 1.0
+            and truth != 1.0
         )
         entry["false_block"] = (
             not fault
             and gate.get("gate_verdict") == "FAIL"
-            and row["ground_truth_functional"] == 1.0
+            and truth == 1.0
         )
         written.append(_write(entry))
 
@@ -178,6 +199,11 @@ def corpus() -> list[dict[str, Any]]:
 def _hidden_score(entry: dict[str, Any]) -> float | None:
     if entry.get("external") or entry.get("agentless"):
         return None
+    # A regrade artifact supersedes an in-run grader score that was an
+    # artifact (budget-skipped verifier); both stay recorded on the entry.
+    rg = entry.get("grader_regrade")
+    if rg and isinstance(rg.get("regraded_functional"), (int, float)):
+        return rg["regraded_functional"]
     score = entry.get("ground_truth_functional")
     return score if isinstance(score, (int, float)) else None
 

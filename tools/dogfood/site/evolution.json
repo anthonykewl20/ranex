@@ -738,6 +738,33 @@
       "scenarios": 43,
       "sha": "e3b2ccfad",
       "subject": "fix: dogfood harness no longer misfeeds the kernel from insi"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 31,
+      "scenarios": 43,
+      "sha": "c88ed0fb4",
+      "subject": "bench: v0.1.006 two-arm study \u2014 validation gates gold PASS /"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 10,
+      "pile": 31,
+      "scenarios": 43,
+      "sha": "a88582f84",
+      "subject": "docs: reconcile findings with release receipts; dogfood repo"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 31,
+      "scenarios": 43,
+      "sha": "8f12ac7a8",
+      "subject": "tools: dogfood artifacts \u2014 iteration 18"
     }
   ]
 }
