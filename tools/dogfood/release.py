@@ -4,6 +4,7 @@
 `auto` runs from a clean, current main checkout after CI succeeds. It prepares
 a release commit, runs the frozen suite ON that commit, builds real packages,
 and pushes main plus its immutable tag atomically. No force pushes or retags.
+The hosted job uses GITHUB_TOKEN and explicitly dispatches CI on the release tag.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from __future__ import annotations
 import argparse
 import copy
 import json
+import os
 import re
 import subprocess
 import tomllib
@@ -90,6 +92,26 @@ def require_owner() -> None:
         raise ValueError("release requires the anthonykewl20 GitHub identity")
 
 
+def require_publisher() -> tuple[str, str]:
+    """Use the job token in the owner-authorized workflow, the owner locally."""
+    if os.environ.get("GITHUB_ACTIONS") != "true":
+        require_owner()
+        return OWNER, f"{OWNER}@users.noreply.github.com"
+    expected = {
+        "GITHUB_REPOSITORY": REPOSITORY,
+        "GITHUB_EVENT_NAME": "workflow_run",
+        "GITHUB_WORKFLOW_REF": (
+            f"{REPOSITORY}/.github/workflows/dogfood-release.yml@refs/heads/main"
+        ),
+    }
+    if any(os.environ.get(key) != value for key, value in expected.items()):
+        raise ValueError("job-token publication requires the upstream Dogfood release workflow")
+    repository = json.loads(command("gh", "api", f"repos/{REPOSITORY}"))
+    if repository.get("full_name") != REPOSITORY:
+        raise ValueError("release token does not identify the Ranex repository")
+    return "github-actions[bot]", "41898282+github-actions[bot]@users.noreply.github.com"
+
+
 def auto(expected_head: str) -> None:
     if not re.fullmatch(r"[0-9a-f]{40}", expected_head):
         raise ValueError("expected head must be an exact commit SHA")
@@ -103,7 +125,7 @@ def auto(expected_head: str) -> None:
     if not findings or not issues:
         print("NO-RELEASE: commit has no Dogfood-Fixes and Fixes #issue trailers")
         return
-    require_owner()
+    publisher, email = require_publisher()
     # Restrict publication to this project's actual upstream, never a PR fork.
     remote = command("git", "remote", "get-url", "origin")
     if remote not in {f"https://github.com/{REPOSITORY}.git",
@@ -128,6 +150,7 @@ def auto(expected_head: str) -> None:
         "Publication requires the frozen suite on this commit and a real wheel/sdist build.\n"
         "The release workflow retains the validation logs. Source findings and their\n"
         "end-to-end receipts remain in tools/dogfood/FINDINGS.md and audits/.\n"
+        "Hosted releases use GITHUB_TOKEN and explicitly dispatch CI on the published tag.\n"
         "External services and host capabilities absent on the runner are UNVERIFIED.\n")
     readme = ROOT / "README.md"
     released, count = re.subn(
@@ -139,7 +162,7 @@ def auto(expected_head: str) -> None:
         raise ValueError("README does not identify exactly one current release")
     readme.write_text(released)
     command("git", "add", "pyproject.toml", "uv.lock", "docs/STATE.md", "README.md")
-    command("git", "-c", f"user.name={OWNER}", "-c", f"user.email={OWNER}@users.noreply.github.com",
+    command("git", "-c", f"user.name={publisher}", "-c", f"user.email={email}",
             "commit", "-m", f"release: {tag}\n\nDogfood-source: {expected_head}")
     revision = command("git", "rev-parse", "HEAD")
     # Run only after committing: metadata-only changes do not waive the owner gate.
@@ -149,8 +172,9 @@ def auto(expected_head: str) -> None:
             "--out-dir", ".local/release/dist", capture=False)
     if command("git", "status", "--porcelain") or command("git", "rev-parse", "HEAD") != revision:
         raise ValueError("validation changed the release checkout")
-    require_owner()
-    command("git", "-c", f"user.name={OWNER}", "-c", f"user.email={OWNER}@users.noreply.github.com",
+    if require_publisher() != (publisher, email):
+        raise ValueError("release publisher changed during validation")
+    command("git", "-c", f"user.name={publisher}", "-c", f"user.email={email}",
             "tag", "-a", tag, "-m", f"{tag}: {', '.join(findings)}")
     command("git", "push", "--atomic", "origin", f"{revision}:refs/heads/main", f"refs/tags/{tag}",
             capture=False)
@@ -158,6 +182,12 @@ def auto(expected_head: str) -> None:
     if len(tips.splitlines()) != 2 or any(row.split()[0] != revision for row in tips.splitlines()):
         raise ValueError("remote branch/tag verification failed")
     print(f"RELEASED {tag} {revision}; uv run --frozen pytest -q exit 0; wheel/sdist built")
+    if publisher == "github-actions[bot]":
+        # A built-in-token push deliberately does not cause another push run.
+        # Dispatch the existing complete CI on the exact published tag instead.
+        command("gh", "workflow", "run", "ci.yml", "--repo", REPOSITORY,
+                "--ref", tag, "--raw-field", f"compare_base={expected_head}", capture=False)
+        print(f"CI-DISPATCHED {tag}; release validation must finish in that workflow run")
 
 
 def main() -> int:

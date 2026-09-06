@@ -3,6 +3,14 @@ name: CI
 on:
   push:
   pull_request:
+  # GITHUB_TOKEN pushes do not trigger push CI. The release helper dispatches
+  # this workflow explicitly on the published immutable tag.
+  workflow_dispatch:
+    inputs:
+      compare_base:
+        description: Commit to compare changed-line coverage against
+        required: false
+        type: string
   # New advisories can affect static pins between pushes; scan weekly to keep
   # the Security tab truthful.
   # (GitHub disables scheduled workflows after 60 days of repo inactivity — a missing weekly run is the failure mode.)
@@ -59,7 +67,7 @@ jobs:
         env:
           # A PR is judged from its base branch's merge-base; a push is judged
           # from the state immediately before that push.
-          DIFF_COVER_COMPARE_BRANCH: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before != '0000000000000000000000000000000000000000' && github.event.before || format('origin/{0}', github.event.repository.default_branch) }}
+          DIFF_COVER_COMPARE_BRANCH: ${{ github.event_name == 'workflow_dispatch' && inputs.compare_base || github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before != '0000000000000000000000000000000000000000' && github.event.before || format('origin/{0}', github.event.repository.default_branch) }}
         run: |
           # The documented subprocess hook includes the real CLI journeys.
           export COVERAGE_PROCESS_START="$PWD/pyproject.toml"

@@ -78,10 +78,19 @@ Fixes #82
 ```
 
 `.github/workflows/dogfood-release.yml` runs after successful push CI on
-upstream main. It ignores PRs and commits without those trailers. Configure
-`RANEX_RELEASE_TOKEN` as a repository secret for `anthonykewl20`; the workflow
-refuses a missing or different identity. The token needs permission to push
-main and release tags; branch protection still applies.
+upstream main. It ignores PRs and commits without those trailers. The workflow
+uses GitHub's built-in, repository-scoped `GITHUB_TOKEN`; no personal token or
+`RANEX_RELEASE_TOKEN` secret is needed. Its release job grants `contents: write`
+for publication, `issues: read` for fix references, and `actions: write` to
+dispatch release CI. Branch protection still applies.
+
+The owner explicitly authorized the GitHub Actions identity for this workflow
+on 2026-09-06. Release commits and tags made there identify `github-actions[bot]`.
+The helper requires the upstream repository, the `workflow_run` event and the
+Dogfood release workflow on main, then checks repository access using the job
+token. Local commands retain the standing `anthonykewl20` identity requirement.
+Workflow context checks route the supported automation; they are not an
+independent credential sandbox for a hostile runner.
 
 The workflow calls `uv run --frozen python tools/dogfood/release.py auto
 --expected-head <successful-CI-SHA>`. The same command works on the operator
@@ -99,6 +108,17 @@ change. Publication atomically pushes main fast-forward and a fresh annotated
 tag, then verifies both remote tips. An existing next tag is refused before
 metadata edits; existing tags are never moved. A release
 commit has no fix trailers, so its CI completion cannot cause a release loop.
+
+Because built-in-token pushes do not trigger ordinary push CI, the helper
+explicitly dispatches `ci.yml` on the verified release tag, with its source
+commit as `compare_base`. This runs the same frozen suites, real dogfood
+journeys and dependency scan. The dispatch event cannot start another release.
+A successful dispatch is not a passing CI result: inspect the resulting run.
+GitHub documents the [built-in token](https://docs.github.com/en/actions/concepts/security/github_token)
+and the [dispatch exception](https://docs.github.com/en/actions/how-tos/write-workflows/choose-when-workflows-run/trigger-a-workflow).
+If dispatch fails after publication, the immutable release remains published;
+retry CI with `gh workflow run ci.yml --ref <release-tag> -f compare_base=<source-SHA>`.
+Do not bump another version or move the tag to retry validation.
 
 `release.py version` prints the padded spelling of the current package
 version; `release.py prepare` prepares the next version and lock without

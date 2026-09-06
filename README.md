@@ -146,7 +146,9 @@ Fix releases use tags `vMAJOR.MINOR.PPP`: `v0.1.001`, `v0.1.002`, and so on.
 Python package metadata uses the equivalent normalized `0.1.1`, `0.1.2`.
 `ranex --version` displays the padded release spelling.
 The published `v0.1.0` stays unchanged. Dogfood fixes with explicit issue and
-finding trailers trigger the release workflow after CI succeeds; see
+finding trailers trigger the release workflow after CI succeeds. Automated
+releases use GitHub's built-in token and explicitly start CI on the published
+tag; no personal release-token secret is required. See
 [the release protocol](tools/dogfood/AUTOFIX.md#automated-versioning-after-successful-fixes).
 
 ---

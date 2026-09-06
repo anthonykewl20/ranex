@@ -8,6 +8,22 @@ match the kernel silently.
 
 ## Open
 
+### F-029 — dogfood releases required an unconfigured personal token
+
+The actual eligible workflow run 33976105531 failed at its owner-identity check
+because `RANEX_RELEASE_TOKEN` was absent. Later green runs skipped publication;
+they did not verify the release path. The owner requested the built-in token
+on 2026-09-06. The workflow now uses that repository-scoped job token with
+publication, issue-read and CI-dispatch permissions. The helper uses the GitHub
+Actions identity only in the upstream release workflow; local owner checks stay.
+
+GitHub suppresses ordinary push-triggered workflows for built-in-token pushes,
+so the helper explicitly dispatches complete CI on the immutable release tag.
+Frozen tests on the release commit, package builds, atomic fast-forward push,
+remote-tip checks and immutable tag guards are preserved. Real eligible hosted
+publication and the dispatched CI are pending under issue #83; skipped release
+steps or fabricated credentials cannot establish closure.
+
 ### F-028 — the paused-fetch driver raced its own ignored probe
 
 The immutable v0.1.001 tag's hosted CI completed its instrumented regression,
