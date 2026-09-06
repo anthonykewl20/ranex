@@ -14,10 +14,12 @@ failure with a `contracts-validated` requirement that SLICE-003 had already
 removed. Three defects, all invisible to a suite whose fixtures begin
 configured.
 
-So the stages also assert that the commands they run **appear in README.md**.
-A step deleted from the docs, or changed without the docs, fails here. That is
-the cheapest available defence against the documentation drifting away from
-the product again.
+So the stages also assert that the commands they run **appear in the
+documentation a new operator actually follows**: README.md plus the operator
+guide it links (docs/OPERATIONS.md "Running it" has carried the detailed
+recipes since the public README was shortened). A step deleted from both, or
+changed without the docs, fails here. That is the cheapest available defence
+against the documentation drifting away from the product again.
 
 MAP §4.6: the gauge must be applied to the part. A person's first hour is part
 of the product, and this is the only test that measures it.
@@ -37,6 +39,9 @@ from _host_evidence import record_host_qualification as record_live_host_qualifi
 REAL_REPO = Path(__file__).resolve().parents[2]
 README = REAL_REPO / "README.md"
 PINS = REAL_REPO / "governance" / "deps.yaml"
+# The operator guide README links for the detailed setup recipes; a new
+# operator is sent here by README's "Use it in your repository" section.
+GUIDE = REAL_REPO / "docs" / "OPERATIONS.md"
 
 # A stage that spawns the governed command runs this suite again inside the
 # observation. Without a guard the clone below would be made recursively.
@@ -82,22 +87,25 @@ pytestmark = [
 
 
 def documented(*fragments: str) -> None:
-    """Refuse a stage whose command the README does not actually tell anyone.
+    """Refuse a stage whose command the documentation does not actually tell
+    anyone. README.md and the linked operator guide are read as one body,
+    because that union is what a new operator follows.
 
     Whitespace is collapsed and shell line-continuations dropped, because the
-    README wraps its blocks; the comparison is about the instruction existing,
+    docs wrap their blocks; the comparison is about the instruction existing,
     not about where the author broke the line.
     """
 
     def normalise(value: str) -> str:
         return " ".join(token for token in value.split() if token != "\\")
 
-    text = normalise(README.read_text())
+    text = normalise(README.read_text() + "\n" + GUIDE.read_text())
     for fragment in fragments:
         wanted = normalise(fragment)
         assert wanted in text, (
-            f"README.md does not document {wanted!r}. Either the step is "
-            "undocumented, or the docs changed without this journey."
+            f"neither README.md nor docs/OPERATIONS.md documents {wanted!r}. "
+            "Either the step is undocumented, or the docs changed without "
+            "this journey."
         )
 
 

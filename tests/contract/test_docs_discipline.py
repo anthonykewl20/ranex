@@ -29,6 +29,11 @@ _SKIP_DIRS = {
     "node_modules",
     ".worktrees",
     "legacy",
+    # Gitignored operator territory: the documented workflow retains real
+    # receipts under `.local/` (release-validation clones carry their own full
+    # docs trees). The cap governs documents this repository ships; operator
+    # scratch the tree does not carry is not that (F-031).
+    ".local",
 }
 
 _SLICE_NAME = re.compile(r"^SLICE-\d{3}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")

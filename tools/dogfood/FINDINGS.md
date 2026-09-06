@@ -316,6 +316,49 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
 
 ## Closed
 
+### F-031 — the docs cap swept gitignored `.local` receipts and failed the frozen suite on the qualified host
+
+At v0.1.004 (85037d1d9) the canonical `uv run --frozen pytest -q` failed on
+the qualified operator host with 9 failures while release CI reported green:
+`_tracked_markdown()` (tests/contract/test_docs_discipline.py:117) walks the
+filesystem with `REPO_ROOT.rglob("*.md")`, and `_SKIP_DIRS` (line 24) omitted
+`.local`. The documented workflow retains real receipts under gitignored
+`.local/` — the #84 release-validation clones under
+`.local/public-release/quickstart*/**` carry full documentation trees — so the
+operator's own evidence failed the cap. CI has no `.local` and stayed green;
+the cap's docstring scope is "every markdown file we are responsible for",
+which gitignored operator scratch is not.
+
+Closed by adding `.local` to `_SKIP_DIRS` with the scope comment naming this
+finding. Controls on the fixed tree: a stray `CAMPAIGN-SCRATCH.md` at the
+repository root still fails the cap (1 failed, 2026-09-06), and the same file
+under `.local/` passes (1 passed). No repository document left the cap's
+scope; no assertion was weakened. Evidence: issue #85 and the baseline run
+receipt in `.local/campaign/baseline-pytest.log` (9 failed, 1750 passed,
+36 skipped at 85037d1d9, 1559.86s).
+
+### F-032 — the cold-start journey pinned the pre-rewrite README and failed on the qualified host
+
+The same baseline run failed `tests/e2e/test_cold_start_journey.py` stages
+2–9: `documented()` (test file line 84) asserted the setup steps appear in
+README.md, but 3deb74459 (#84) deliberately moved the detailed operator
+recipes to docs/OPERATIONS.md and shortened README. Every pinned fragment
+(`python -m ranex.cli.main gate evaluate|keygen|deps fetch|deps approve|run …`,
+the `producers:` keyring merge snippet) still exists in the guide's "Running
+it" section — the documentation did not drift from the product; the journey
+had not followed the restructure. CI skips this host-gated journey (129 named
+skips), so the release shipped without seeing it.
+
+Closed by reading README.md plus the linked operator guide as one body in
+`documented()`, matching what a new operator follows. Controls on the fixed
+tree: the full journey passes twice with real nested governed runs
+(1655 passed / 140 skipped in 251.34s, evidence signed for the clone's tree
+digest); removing the `gate evaluate` module-path line from
+docs/OPERATIONS.md makes stage 2 fail naming both files (2026-09-06), and
+restoring it is green. Stage 9 skips honestly on the missing delegated `cpu`
+controller in that session's scope — a declared host limit, not a pass.
+Evidence: issue #85.
+
 ### F-027 — the bind-mount regression could pass on an unrelated refusal
 
 Hosted CI at 2b33dbc32 ran the real system pytest and returned 5 (no tests),
