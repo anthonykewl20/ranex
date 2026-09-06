@@ -24,6 +24,13 @@ remote-tip checks and immutable tag guards are preserved. Real eligible hosted
 publication and the dispatched CI are pending under issue #83; skipped release
 steps or fabricated credentials cannot establish closure.
 
+The first source CI (34021451447) reported 1 failed, 1665 passed, 129 skipped:
+the existing workflow contract allowlisted exactly push/PR/schedule and rejected
+the new dispatch trigger. The contract now requires the explicit dispatch input
+and coverage comparison as well; its job permissions, action pins, full-suite
+commands and failure gates remain unchanged. Original failure retained in
+`audits/2026-09-06-builtin-release/source-ci-attempt-1.log`.
+
 ### F-028 — the paused-fetch driver raced its own ignored probe
 
 The immutable v0.1.001 tag's hosted CI completed its instrumented regression,

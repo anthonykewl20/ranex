@@ -39,8 +39,17 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
     # ``on`` becomes True. Accept only that parser normalization or the literal.
     triggers = workflow.get("on", workflow.get(True))
     assert isinstance(triggers, dict)
-    assert set(triggers) == {"push", "pull_request", "schedule"}
+    assert set(triggers) == {"push", "pull_request", "schedule", "workflow_dispatch"}
     assert triggers["schedule"] == [{"cron": "0 9 * * 1"}]
+    assert triggers["workflow_dispatch"] == {
+        "inputs": {
+            "compare_base": {
+                "description": "Commit to compare changed-line coverage against",
+                "required": False,
+                "type": "string",
+            },
+        },
+    }
 
     jobs = workflow.get("jobs")
     assert isinstance(jobs, dict)
@@ -96,7 +105,8 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
         "name": "Require coverage for changed lines",
         "env": {
             "DIFF_COVER_COMPARE_BRANCH": (
-                "${{ github.event_name == 'pull_request' && "
+                "${{ github.event_name == 'workflow_dispatch' && inputs.compare_base || "
+                "github.event_name == 'pull_request' && "
                 "github.event.pull_request.base.sha || github.event.before != "
                 "'0000000000000000000000000000000000000000' && "
                 "github.event.before || format('origin/{0}', "

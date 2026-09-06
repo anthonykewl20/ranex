@@ -9,6 +9,8 @@ The owner authorized GitHub's built-in token and the Actions publisher identity.
 The release job grants repository contents write, issues read and actions write.
 It explicitly dispatches full CI on the verified published tag because built-in
 token pushes do not trigger ordinary push workflows. Local owner checks remain.
+First source CI failed the old three-trigger contract (1 failed, 1665 passed,
+129 skipped); its allowlist now requires the authorized dispatch configuration.
 
 Real eligible hosted publication and its dispatched CI are pending. A skipped
 release job or successful dispatch alone is not release validation. Frozen tests
