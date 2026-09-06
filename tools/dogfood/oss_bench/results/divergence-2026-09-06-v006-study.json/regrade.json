@@ -1,0 +1,24 @@
+{
+  "run_dir": "runs/py-semver-compare-06271620",
+  "run_id": "py-semver-compare-06271620",
+  "task_id": "py-semver-compare",
+  "model": "zai:glm-5.3",
+  "old_functional": 0.0,
+  "new_functional": 1.0,
+  "delta": 1.0,
+  "fail_to_pass": {
+    "core_precedence": true,
+    "prerelease_lower": true,
+    "precedence_chain": true,
+    "identifier_rules": true,
+    "build_ignored": true,
+    "invalid_raises": true
+  },
+  "pass_to_pass": {
+    "imports": true
+  },
+  "old_task_hash": "9d4fca95b67adbbf707316a9c606e21b21d410ca451ce1f202bd1999a6d89649",
+  "new_task_hash": "9d4fca95b67adbbf707316a9c606e21b21d410ca451ce1f202bd1999a6d89649",
+  "regraded_at": "2026-09-06T15:20:35.546286+00:00",
+  "sandbox": "docker"
+}
