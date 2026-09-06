@@ -717,3 +717,112 @@ refused at construction — `verdict.py:208`), `Journal.append` takes structured
 records with `.as_record()` (not dicts), and junitxml test IDs are synthesised
 as `classname.py::name` (`suite_results.py:129`). Recorded because it is the
 loop working as designed: assumptions die when they meet the parser.
+
+## Production verification — issue #88 (2026-09-06)
+
+**Decision: NO-GO for a claim of verified production operation.**
+**Evidence directory:** `tools/dogfood/audits/2026-09-06-production/`.
+**Observed:** 2026-09-06. **Tracking:** [issue #88](https://github.com/anthonykewl20/ranex/issues/88).
+
+The kernel has substantial passing evidence. The live App acceptance loop has
+not been demonstrated, neither pilot repository requires Ranex's check, and
+the tested full-repository workflows did not complete under Ranex. Passing
+ordinary application suites or fake-GitHub tests does not close those gaps.
+
+### What actually ran
+
+| Check | Observed result | Scope |
+|---|---|---|
+| GitHub integration/refusal tests | 45 passed, 16.10s | Local fake API; real Git and HTTP |
+| Acceptance mapping, payload, binding and external-repository tests | 22 passed, 7.90s | Local tests; no live App |
+| External CLI coverage repair | 2 passed, 8.65s; all previously missing lines 865–873 measured | Same tests, CI-style subprocess coverage; not an additional 2 distinct tests |
+| Leitir ordinary full suite | 3,742 passed, 159 skipped, 4 warnings, 930.67s | Python 3.12.3, pytest 9.0.3; offline/default suite |
+| Arxic ordinary full suite | 1,974 passed, 234 files, 1434.31s | Node 24.18.0, pnpm 11.17.0, Vitest 4.1.11, Playwright 1.62.1; Docker available |
+| Arxic lint and type checks | Lint, root typecheck and recursive package typechecks exited 0 | Same disposable checkout |
+| Leitir full suite under Ranex | 22 failed, 3,735 passed, 144 skipped; freeze exit 2 | External-venv command; runtime changed and the JUnit reader refused a collection-skip record |
+| Arxic full suite under Ranex | Startup refusal; freeze exit 2 | Committed Vitest config could not resolve `vitest` in the materialized tree; no results artifact |
+| Final integrated Ranex regression/CI | Exact final SHA and result recorded in issue #88's closing evidence | The earlier PR's tests passed but its changed-line coverage gate failed; that failure is retained |
+
+The ordinary repositories were copied **locally** into disposable checkouts.
+The original working files were not changed. Source identities:
+
+- Leitir: `bfcbcd83718ad1466ea9dd9d1d9ebb4915417517`.
+- Arxic: `2395041598cf2aab14da8708ac2b21dc08f40731`.
+- Runtime code observed by the probes: `7cc4ce7ae2daf0de8f062af59e87900d316119a3`,
+  integrating the external-repository change with `v0.1.005`.
+
+Arxic was tested on Node 24, not its CI-pinned Node 22.22.0. Its separate
+packaging, worker-image build and all hosted CI jobs are not established by
+the local Vitest result. Leitir's skipped optional parser/auth/MCP and live
+provider cases are not counted as passes. These are application baselines,
+not signed full-suite Ranex acceptance verdicts.
+
+### Release blockers and operational limits
+
+| Area | Evidence | Requirement before sign-off |
+|---|---|---|
+| Live App identity and installation | App ID/key/secret environment variables absent; browser discovery empty; OAuth installation discovery refused | Identify the actual App, authenticate as it, verify its permissions and installations on both repositories |
+| Merge enforcement | Both repositories have no rulesets and no required `ranex/acceptance` check; no Ranex check at the tested heads | App-pinned rule; demonstrate blocked missing/failing/wrong-source checks and accepted valid evidence on an isolated test branch |
+| Webhook response deadline | Injected 11s publication delay produced a real HTTP response after >11s | Acknowledge durably within GitHub's deadline and process independently of remote latency; verify crash recovery |
+| Verdict arriving after event | Initial `action_required`; same-delivery replay remains unchanged; a fresh event publishes success | Demonstrate automatic evaluation/refresh or a documented, tested operator refresh contract |
+| Retry after publication | Injected completion-write failure followed by retry created two successful checks | Document at-least-once behavior and demonstrate reconciliation/idempotent publication; no exactly-once claim |
+| Python runtime preservation | Requested venv reports pytest 9.0.3 normally; governed probe reports `/usr/bin/python3.12`, `/usr`, pytest 7.4.4 | Reviewed dependency/runtime provisioning and a successful full-suite run; do not treat the two environments as equivalent |
+| Full-repository execution inputs | Leitir failures include subprocess imports and history-dependent changelog checks; Arxic config cannot find installed Node dependencies | Declare/provision the necessary execution inputs without weakening source, command or result binding; rerun full acceptance |
+| JUnit collection skips | Actual pytest output contains `classname=""`, `name="tests.test_query_probe_live"`, with a collection skip; Ranex rejects it | Define and test collection-skip identity semantics while preserving missing-test and undeclared-skip refusal |
+| App credential file permissions | A temporary mode-0644 App key was accepted and minted a verifiable JWT | Verify production key ownership, directory access and permissions; no claim that App key loading enforces mode 0600 |
+| Merge candidates and distributed evidence | PR-head publisher; no merge-group evaluation or shard aggregation demonstrated | Implement/test these before advertising them; head-only evidence cannot establish merge-candidate acceptance |
+| Deployment operations | No accessible receiver deployment or live delivery history | Verify TLS, supervised restart, durable-state backup/restore, secret/token rotation, redelivery, monitoring and a representative soak |
+
+GitHub requires webhook responses within 10 seconds and recommends asynchronous
+processing when needed. Failed deliveries require redelivery; same-delivery
+deduplication is not a late-verdict refresh mechanism.
+[GitHub webhook guidance](https://docs.github.com/en/webhooks/using-webhooks/best-practices-for-using-webhooks).
+App-pinned required-check fields are documented in the
+[versioned rules API](https://docs.github.com/en/rest/repos/rules?apiVersion=2026-03-10).
+
+The permission probe used only a disposable fixture key. Mode bits alone do
+not establish effective exposure through restrictive parent directories or
+ACLs. No production credential was read or emitted by these probes.
+
+### Controls that passed in local fault injection
+
+`fault-probes.json` records actual statuses and observations, with the fake API
+and injected faults explicitly identified:
+
+- Unsigned/tampered deliveries: 401; invalid delivery ID: 400; wrong endpoint:
+  404; oversized declared body: 413. No check was published.
+- Held receiver file lock: 503; retry after release: 200 and one publication.
+- Conflicting body for a completed ID: 409. Restarted-state replay: 200,
+  retaining one publication.
+- Sixteen incomplete requests occupied the connection limit; overflow was
+  rejected; all sixteen slots recovered after the read deadlines.
+
+These controls prove the exercised local paths, not production uptime or
+GitHub-origin delivery. A focused 45-test coverage measurement covered 83%
+of the GitHub modules; it is not a claim of exhaustive branch coverage.
+
+### Reproduction and retained material
+
+From the Ranex checkout:
+
+```sh
+uv run --frozen python tools/dogfood/probe_github_production.py --output /tmp/ranex-production-probes.json
+```
+
+The probe uses the repository's existing fake-GitHub fixture and real local
+Git/HTTP. Its successful exit means observations were collected, not that
+production readiness passed. It requires no production credentials.
+
+`github-preflight.json` retains read-only live configuration responses.
+`repository-runs.json` retains exact commands, source and runtime identities,
+exit codes and scope. `junit-compatibility.json` retains the actual refused
+collection record. Compressed logs and JUnit documents retain the ordinary
+full-suite results and governed failures. `archive-index.json` records raw
+and compressed SHA-256 digests. The prior PR's failed CI log is retained;
+the repair preserves the existing 100% changed-line coverage threshold.
+
+**Investor-demo boundary:** the current defensible demonstration is the
+bounded signed-evidence/refusal/recovery workflow already retained in the
+external pilots. A live, automatically refreshed, enforced full-repository
+GitHub App demonstration remains unverified. This assessment does not
+authorize describing that workflow as production verified.

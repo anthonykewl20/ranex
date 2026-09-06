@@ -154,6 +154,12 @@ outside the target; inherited `PYTHONPATH` and arbitrary environment variables
 are not a provisioning mechanism. Strict-local runs retain their qualified
 host/runtime requirements. Live App setup and check scheduling are separate.
 
+Full-repository production acceptance is not established by the small external
+pilots. The [production audit](../tools/dogfood/FINDINGS.md)
+records full baseline and governed attempts, runtime/provisioning differences,
+JUnit collection-skip refusal and the live App requirements still unverified.
+Do not use those baseline test counts as signed Ranex acceptance results.
+
 For Vitest JUnit, the claim must explicitly set `results_reporter: vitest-junit`
 and bind the exact tokens `--reporter=junit` and `--outputFile=PATH`, where
 `PATH` equals `results_artifact`. Duplicate/overriding reporter or output options

@@ -1,0 +1,488 @@
+{
+  "observed_at": "2026-09-06T13:33:04.376462+00:00",
+  "scope": "read-only GitHub configuration; no live Ranex publication or merge attempt",
+  "repositories": {
+    "anthonykewl20/leitir": {
+      "local_head": "bfcbcd83718ad1466ea9dd9d1d9ebb4915417517",
+      "local_source": "/home/soultransit/devtony/leitir",
+      "metadata": {
+        "exit_code": 0,
+        "full_name": "anthonykewl20/leitir",
+        "default_branch": "main",
+        "private": false,
+        "archived": false,
+        "permissions": {
+          "admin": true,
+          "maintain": true,
+          "push": true,
+          "triage": true,
+          "pull": true
+        }
+      },
+      "rulesets": {
+        "exit_code": 0,
+        "response": []
+      },
+      "branch_protection": {
+        "exit_code": 0,
+        "response": {
+          "url": "https://api.github.com/repos/anthonykewl20/leitir/branches/main/protection",
+          "required_status_checks": {
+            "url": "https://api.github.com/repos/anthonykewl20/leitir/branches/main/protection/required_status_checks",
+            "strict": true,
+            "contexts": [
+              "CodeQL",
+              "required checks pass"
+            ],
+            "contexts_url": "https://api.github.com/repos/anthonykewl20/leitir/branches/main/protection/required_status_checks/contexts",
+            "checks": [
+              {
+                "context": "CodeQL",
+                "app_id": null
+              },
+              {
+                "context": "required checks pass",
+                "app_id": 15368
+              }
+            ]
+          },
+          "required_signatures": {
+            "url": "https://api.github.com/repos/anthonykewl20/leitir/branches/main/protection/required_signatures",
+            "enabled": false
+          },
+          "enforce_admins": {
+            "url": "https://api.github.com/repos/anthonykewl20/leitir/branches/main/protection/enforce_admins",
+            "enabled": false
+          },
+          "required_linear_history": {
+            "enabled": false
+          },
+          "allow_force_pushes": {
+            "enabled": false
+          },
+          "allow_deletions": {
+            "enabled": false
+          },
+          "block_creations": {
+            "enabled": false
+          },
+          "required_conversation_resolution": {
+            "enabled": false
+          },
+          "lock_branch": {
+            "enabled": false
+          },
+          "allow_fork_syncing": {
+            "enabled": false
+          }
+        }
+      },
+      "branch_rules": {
+        "exit_code": 0,
+        "response": []
+      },
+      "checks_at_local_head": {
+        "exit_code": 0,
+        "total_count": 29,
+        "checks": [
+          {
+            "name": "calibrate",
+            "status": "completed",
+            "conclusion": "failure",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34009155781/job/101421785648"
+          },
+          {
+            "name": "Summarize all live canary surfaces",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34008816289/job/101421044650"
+          },
+          {
+            "name": "Index vs exhaustive-scan recall (pinned CPython fixture)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34008816289/job/101420867495"
+          },
+          {
+            "name": "Additional allowlisted live tests",
+            "status": "completed",
+            "conclusion": "skipped",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34008816289/job/101420867473"
+          },
+          {
+            "name": "Truncated-tree recovery (pinned Linux fixture)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34008816289/job/101420867285"
+          },
+          {
+            "name": "Streamed and SHA-verified >2 MiB blob (pinned Linux fixture)",
+            "status": "completed",
+            "conclusion": "skipped",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34008816289/job/101420867174"
+          },
+          {
+            "name": "Baseline live search",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34008816289/job/101420866778"
+          },
+          {
+            "name": "Check live canary opt-in and feature gates",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/34008816289/job/101420853633"
+          },
+          {
+            "name": "required checks pass",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101339045582"
+          },
+          {
+            "name": "test (ubuntu-latest, 3.13)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337244013"
+          },
+          {
+            "name": "tree-sitter-extra (3.12)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243969"
+          },
+          {
+            "name": "test (windows-latest, 3.12)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243944"
+          },
+          {
+            "name": "test (ubuntu-latest, 3.12)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243935"
+          },
+          {
+            "name": "test (macos-latest, 3.13)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243898"
+          },
+          {
+            "name": "determinism (seed 42, TZ UTC, LC_ALL C.UTF-8)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243870"
+          },
+          {
+            "name": "test (ubuntu-latest, 3.12.3)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243866"
+          },
+          {
+            "name": "determinism (seed 0, TZ UTC, LC_ALL C.UTF-8)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243863"
+          },
+          {
+            "name": "determinism (seed 1, TZ Asia/Kathmandu, LC_ALL C)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243861"
+          },
+          {
+            "name": "test (ubuntu-latest, 3.11)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243853"
+          },
+          {
+            "name": "determinism (seed 0, TZ Asia/Kathmandu, LC_ALL C)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243831"
+          },
+          {
+            "name": "tree-sitter-extra (3.14)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243826"
+          },
+          {
+            "name": "determinism (seed 1, TZ UTC, LC_ALL C.UTF-8)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243818"
+          },
+          {
+            "name": "determinism (seed 42, TZ Asia/Kathmandu, LC_ALL C)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243817"
+          },
+          {
+            "name": "test (ubuntu-latest, 3.14)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243811"
+          },
+          {
+            "name": "coverage",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243787"
+          },
+          {
+            "name": "package",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243779"
+          },
+          {
+            "name": "lint",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243775"
+          },
+          {
+            "name": "auth-tests",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713211/job/101337243721"
+          },
+          {
+            "name": "analyze (python)",
+            "status": "completed",
+            "conclusion": "success",
+            "app": {
+              "id": 15368,
+              "slug": "github-actions"
+            },
+            "url": "https://github.com/anthonykewl20/leitir/actions/runs/33977713169/job/101337243350"
+          }
+        ]
+      },
+      "repository_hooks": {
+        "exit_code": 0,
+        "response": [],
+        "limitation": "Repository hooks do not enumerate GitHub App webhooks."
+      }
+    },
+    "anthonykewl20/arxic": {
+      "local_head": "2395041598cf2aab14da8708ac2b21dc08f40731",
+      "local_source": "/home/soultransit/devtony/arxic",
+      "metadata": {
+        "exit_code": 0,
+        "full_name": "anthonykewl20/arxic",
+        "default_branch": "main",
+        "private": false,
+        "archived": false,
+        "permissions": {
+          "admin": true,
+          "maintain": true,
+          "push": true,
+          "triage": true,
+          "pull": true
+        }
+      },
+      "rulesets": {
+        "exit_code": 0,
+        "response": []
+      },
+      "branch_protection": {
+        "exit_code": 0,
+        "response": {
+          "url": "https://api.github.com/repos/anthonykewl20/arxic/branches/main/protection",
+          "required_status_checks": {
+            "url": "https://api.github.com/repos/anthonykewl20/arxic/branches/main/protection/required_status_checks",
+            "strict": true,
+            "contexts": [
+              "ci"
+            ],
+            "contexts_url": "https://api.github.com/repos/anthonykewl20/arxic/branches/main/protection/required_status_checks/contexts",
+            "checks": [
+              {
+                "context": "ci",
+                "app_id": 15368
+              }
+            ]
+          },
+          "required_pull_request_reviews": {
+            "url": "https://api.github.com/repos/anthonykewl20/arxic/branches/main/protection/required_pull_request_reviews",
+            "dismiss_stale_reviews": false,
+            "require_code_owner_reviews": false,
+            "require_last_push_approval": false,
+            "required_approving_review_count": 0
+          },
+          "required_signatures": {
+            "url": "https://api.github.com/repos/anthonykewl20/arxic/branches/main/protection/required_signatures",
+            "enabled": false
+          },
+          "enforce_admins": {
+            "url": "https://api.github.com/repos/anthonykewl20/arxic/branches/main/protection/enforce_admins",
+            "enabled": true
+          },
+          "required_linear_history": {
+            "enabled": true
+          },
+          "allow_force_pushes": {
+            "enabled": false
+          },
+          "allow_deletions": {
+            "enabled": false
+          },
+          "block_creations": {
+            "enabled": false
+          },
+          "required_conversation_resolution": {
+            "enabled": false
+          },
+          "lock_branch": {
+            "enabled": false
+          },
+          "allow_fork_syncing": {
+            "enabled": false
+          }
+        }
+      },
+      "branch_rules": {
+        "exit_code": 0,
+        "response": []
+      },
+      "checks_at_local_head": {
+        "exit_code": 0,
+        "total_count": 0,
+        "checks": []
+      },
+      "repository_hooks": {
+        "exit_code": 0,
+        "response": [],
+        "limitation": "Repository hooks do not enumerate GitHub App webhooks."
+      }
+    }
+  },
+  "installation_discovery": {
+    "exit_code": 1,
+    "response": {
+      "message": "You must authenticate with an access token authorized to a GitHub App in order to list installations",
+      "documentation_url": "https://docs.github.com/rest/apps/installations#list-app-installations-accessible-to-the-user-access-token",
+      "status": "403"
+    },
+    "limitation": "A refused OAuth request cannot establish that no installation exists."
+  }
+}

@@ -3,27 +3,28 @@
 **Updated:** 2026-09-06
 **Active slice:** none
 
-Integrated with release v0.1.005 (issue #85).
-Issue #88 is auditing production readiness; live acceptance is not established.
+Integrated external-repository/Vitest onboarding (#86, PR #87) with v0.1.005.
+Issue #88 production assessment: NO-GO for verified production operation.
+Assessment: tools/dogfood/FINDINGS.md (issue #88).
+Evidence: tools/dogfood/audits/2026-09-06-production/.
 
-Issue #86 adds explicit external-repository selection to run, suite freeze,
-gate evaluate, journal verify, deps fetch/approve and keygen (ADR-052).
-Existing default authority selection and path/key confinement remain intact.
-Vitest JUnit has explicit reporter/output binding and preserves its test IDs;
-pytest remains the default reporter and ID convention.
-The real freeze ceremony records 1,813 tests, adding 18 IDs with unchanged
-expected-skip declarations; the captured freeze transcript is refreshed.
+Ordinary full baselines: Leitir 3,742 passed / 159 skipped; Arxic 1,974
+passed across 234 files. Arxic lint and both typecheck commands passed.
+These are not signed Ranex full-suite acceptance results.
+Leitir's external-venv governed attempt had 22 failures and a collection-skip
+JUnit refusal; its interpreter context changed. Arxic's governed attempt
+could not resolve Vitest from the materialized repository. Reviewed complete
+runtime/input provisioning and full governed acceptance remain UNVERIFIED.
 
-Real local pilots: Leitir's 79 treehash tests and Arxic's two version-policy
-Vitest tests passed under observation. Both signed verdicts verified; source
-changes and actual collection failures were rejected, followed by fresh
-passing recovery and verified journal chains. Public verification material,
-source patches and receipts: tools/dogfood/audits/2026-09-06-external/.
-A separate wheel installation evaluated Leitir evidence and verified its journal.
-These bounded modules do not establish full application acceptance.
+67 App-surface tests passed locally. Real HTTP/state probes verified refusal,
+replay conflict, restart dedupe, lock recovery and bounded connections.
+They also reproduced delayed acknowledgement, no late-verdict replay refresh,
+duplicate publication after completion-write failure and mode-0644 App key use.
+CI's external-CLI subprocess coverage gap is repaired; the 100% changed-line
+threshold remains intact. Final-commit regression evidence is recorded in #88.
 
-Live App authentication, webhook delivery and App-pinned merge enforcement
-remain UNVERIFIED. App credentials and a connected browser are unavailable.
-Automatic PR evaluation/refresh, merge-candidate handling and distributed
-shard aggregation remain unimplemented. Arxic's full suite is UNVERIFIED.
-Includes issue #85's operator documentation repair.
+Both pilot repositories lack required Ranex checks. Live App authentication,
+installation, HTTPS delivery, App-pinned merge refusal, deployment recovery
+and production load are UNVERIFIED; credentials and browser access are absent.
+Automatic evaluation/refresh, merge-candidate and shard aggregation behavior
+remain unimplemented. No production-readiness sign-off has been issued.

@@ -1,0 +1,86 @@
+[
+  {
+    "file": "leitir-baseline.log.gz",
+    "source_bytes": 21441,
+    "source_sha256": "4dd8720b5551d08e6f6493a248ef97fada52c29f16e25ae4f1661f43503c5dab",
+    "archive_sha256": "3abe51dd667889f771e6ab7d3cc695fc4c74ad7e8f35aecce437b1fe0cf59973"
+  },
+  {
+    "file": "leitir-baseline.junit.xml.gz",
+    "source_bytes": 567844,
+    "source_sha256": "1ab3c369112188fc10d819c06c65a6b3ed72ab4afe4926d0dff063381a740bc3",
+    "archive_sha256": "8e93cb94f9fd0e567f13b9000ab199b922a1c12468a41ade08063a3d04f9649d"
+  },
+  {
+    "file": "leitir-governed.log.gz",
+    "source_bytes": 188711,
+    "source_sha256": "eb7f97afd1dd5faf00aed0fe83f939f31d94a62516f3ff93753acafbc18d6bec",
+    "archive_sha256": "dddefcbc36274c3f52a49ed1474130ef0caa88489da060384501ae25635fe6d5"
+  },
+  {
+    "file": "leitir-runtime-probe.log",
+    "source_bytes": 248,
+    "source_sha256": "81aad5d52e20ad201c903627bbec787157c08c8a4d97d93c4014a0a6837929d0",
+    "archive_sha256": "81aad5d52e20ad201c903627bbec787157c08c8a4d97d93c4014a0a6837929d0"
+  },
+  {
+    "file": "arxic-governed.log",
+    "source_bytes": 1197,
+    "source_sha256": "3817b28c87aaf1fe0a5dc8d3cd043a64e5f675cead2d3e81cc0fb2a82c429dbd",
+    "archive_sha256": "3817b28c87aaf1fe0a5dc8d3cd043a64e5f675cead2d3e81cc0fb2a82c429dbd"
+  },
+  {
+    "file": "app-tests.junit.xml",
+    "source_bytes": 6395,
+    "source_sha256": "91b7643903e478e13a5e1087bcb85d4c6fcd1c5a704f7ef97ef732d8517cf105",
+    "archive_sha256": "91b7643903e478e13a5e1087bcb85d4c6fcd1c5a704f7ef97ef732d8517cf105"
+  },
+  {
+    "file": "app-additional.junit.xml",
+    "source_bytes": 3373,
+    "source_sha256": "2a455f9a53724f564ac27722392361277f5b86f2501df0bec5b68545ea767aa8",
+    "archive_sha256": "2a455f9a53724f564ac27722392361277f5b86f2501df0bec5b68545ea767aa8"
+  },
+  {
+    "file": "pr87-ci-failure.log.gz",
+    "source_bytes": 80416,
+    "source_sha256": "983aa9f7a3c72348e4e28ca91ecc26f45fb62390b7fe51a7d096e920f3dc4e3c",
+    "archive_sha256": "d98a75083457b4fd10b976b7e8eea89822213cc04b6bd90d7a22d9dca9ed538d"
+  },
+  {
+    "file": "arxic-baseline.log.gz",
+    "source_bytes": 185738,
+    "source_sha256": "a2e227a57512277bef89562b5dcf6adcef8294232becf7abd2ca0b45d5390252",
+    "archive_sha256": "4898b9a7a088f90a0338a0da6b7408ef518dcce1e4133808c0e88602af865321"
+  },
+  {
+    "file": "arxic-baseline.junit.xml.gz",
+    "source_bytes": 621455,
+    "source_sha256": "8c2c8f7ef8a4f90b30c2c6db0e8520bea62afa60d39784f6e84d6142193e2af4",
+    "archive_sha256": "8221164bc36238f1f6bce3c9c712d5edd8903a1999b0d00fa8eb9ecd772072a8"
+  },
+  {
+    "file": "arxic-lint.log",
+    "source_bytes": 11,
+    "source_sha256": "050c69da23536758722729aeda55a8d0fb9d557495ef6d33d70873a3b64a71c1",
+    "archive_sha256": "050c69da23536758722729aeda55a8d0fb9d557495ef6d33d70873a3b64a71c1"
+  },
+  {
+    "file": "arxic-typecheck.log",
+    "source_bytes": 32,
+    "source_sha256": "38ac890c60e7f38d59ddfb410325cdfb5fca83c9411765c5481754e01c021630",
+    "archive_sha256": "38ac890c60e7f38d59ddfb410325cdfb5fca83c9411765c5481754e01c021630"
+  },
+  {
+    "file": "arxic-typecheck-packages.log",
+    "source_bytes": 3320,
+    "source_sha256": "76ab1cec2c9a3899049753fa5d316796ba13c796e94984bf665dc7cb4abe743d",
+    "archive_sha256": "76ab1cec2c9a3899049753fa5d316796ba13c796e94984bf665dc7cb4abe743d"
+  },
+  {
+    "file": "external-coverage-repair.log",
+    "source_bytes": 98,
+    "source_sha256": "4327774c9b82a2c099768d9a1ab9b63c98912b7a9fc5daf015f3fd64d79668ec",
+    "archive_sha256": "4327774c9b82a2c099768d9a1ab9b63c98912b7a9fc5daf015f3fd64d79668ec"
+  }
+]

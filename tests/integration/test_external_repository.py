@@ -42,8 +42,18 @@ def invoke(repo: Path, *args: str, key: Path | None = None,
     if verdict_key is not None:
         environment["RANEX_VERDICT_SIGNING_KEY"] = str(verdict_key)
         environment["RANEX_VERDICT_DIR"] = "governance/verdicts"
+    prefix = [sys.executable]
+    if environment.get("COVERAGE_PROCESS_START") or environment.get("COVERAGE_PROCESS_CONFIG"):
+        # This child runs from an external application's cwd. The standard
+        # hook's relative src/ranex filter would measure that application's
+        # nonexistent kernel. Use the installed coverage CLI and the real
+        # kernel source, retaining the repo's parallel-file configuration.
+        environment.pop("COVERAGE_PROCESS_START", None)
+        environment.pop("COVERAGE_PROCESS_CONFIG", None)
+        prefix += ["-m", "coverage", "run", f"--rcfile={KERNEL / 'pyproject.toml'}",
+                   f"--source={KERNEL / 'src/ranex'}"]
     return subprocess.run(
-        [sys.executable, "-m", "ranex.cli.main", *args], cwd=repo,
+        [*prefix, "-m", "ranex.cli.main", *args], cwd=repo,
         env=environment, capture_output=True, text=True, check=False, timeout=60,
     )
 
@@ -156,6 +166,8 @@ def test_external_target_does_not_relax_paths_keys_or_implicit_authority(applica
     conflict = invoke(repo, "journal", "verify", "--external-repository", str(repo),
                       "--repository", "other")
     assert conflict.returncode == 2 and "cannot combine" in conflict.stderr
+    blank = invoke(repo, "journal", "verify", "--external-repository", " ")
+    assert blank.returncode == 2 and "checkout root" in blank.stderr
     nested = invoke(repo, "journal", "verify", "--external-repository", str(repo / "src"))
     assert nested.returncode == 2 and "checkout root" in nested.stderr
     escape = invoke(repo, "journal", "verify", "--external-repository", str(repo),

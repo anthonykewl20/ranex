@@ -1,0 +1,2 @@
+{"executable": "/usr/bin/python3.12", "prefix": "/usr", "pytest_version": "7.4.4", "pytest_file": "/usr/lib/python3/dist-packages/pytest/__init__.py"}
+ERROR  results artifact is absent: /tmp/ranex-subject-1loarh72/tree/governance/runtime-probe.xml

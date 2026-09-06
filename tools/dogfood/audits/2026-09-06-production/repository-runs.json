@@ -1,0 +1,153 @@
+{
+  "scope": "Ordinary full-repository baselines and explicit governed attempts; no live App acceptance",
+  "leitir": {
+    "source": "bfcbcd83718ad1466ea9dd9d1d9ebb4915417517",
+    "ordinary": {
+      "cwd": "/tmp/ranex-production-leitir",
+      "environment": {
+        "PYTHONPATH": "src"
+      },
+      "argv": [
+        "/tmp/ranex-production-leitir-runtime/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "--tb=short",
+        "--junitxml=/tmp/ranex-production-leitir-results.xml"
+      ],
+      "exit_code": 0,
+      "passed": 3742,
+      "skipped": 159,
+      "warnings": 4,
+      "seconds": 930.67,
+      "python": "3.12.3",
+      "pytest": "9.0.3"
+    },
+    "governed": {
+      "cwd": "/tmp/ranex-external-repository",
+      "argv": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "suite",
+        "freeze",
+        "--external-repository",
+        "/tmp/ranex-production-leitir-governed",
+        "--artifact",
+        "governance/suite_results.xml",
+        "--",
+        "/tmp/ranex-production-leitir-runtime/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "-o",
+        "pythonpath=src",
+        "--junitxml=governance/suite_results.xml"
+      ],
+      "exit_code": 2,
+      "passed": 3735,
+      "failed": 22,
+      "skipped": 144,
+      "warnings": 4,
+      "test_seconds": 878.15,
+      "runtime_probe": {
+        "executable": "/usr/bin/python3.12",
+        "prefix": "/usr",
+        "pytest_version": "7.4.4"
+      },
+      "limitations": [
+        "The tested external-venv path was not preserved; this was not a configured Ranex wheel-store provisioning run.",
+        "The baseline and governed environments are not equivalent.",
+        "The subprocess PYTHONPATH and Git history requirements were not supplied as declared execution inputs.",
+        "The results parser also refused an actual module-level collection skip."
+      ]
+    }
+  },
+  "arxic": {
+    "source": "2395041598cf2aab14da8708ac2b21dc08f40731",
+    "install": {
+      "argv": [
+        "pnpm",
+        "install",
+        "--frozen-lockfile"
+      ],
+      "exit_code": 0,
+      "pnpm": "11.17.0"
+    },
+    "ordinary": {
+      "cwd": "/tmp/ranex-production-arxic",
+      "argv": [
+        "pnpm",
+        "exec",
+        "vitest",
+        "run",
+        "--reporter=default",
+        "--reporter=junit",
+        "--outputFile.junit=/tmp/ranex-production-arxic-results.xml"
+      ],
+      "exit_code": 0,
+      "passed": 1974,
+      "test_files_passed": 234,
+      "seconds": 1434.31,
+      "node": "24.18.0",
+      "vitest": "4.1.11",
+      "playwright": "1.62.1",
+      "docker_server": "29.7.2"
+    },
+    "governed": {
+      "cwd": "/tmp/ranex-external-repository",
+      "argv": [
+        "uv",
+        "run",
+        "--frozen",
+        "ranex",
+        "suite",
+        "freeze",
+        "--external-repository",
+        "/tmp/ranex-production-arxic-governed",
+        "--artifact",
+        "governance/suite_results.xml",
+        "--results-reporter",
+        "vitest-junit",
+        "--",
+        "/home/soultransit/.local/bin/node",
+        "/tmp/ranex-production-arxic/node_modules/vitest/vitest.mjs",
+        "run",
+        "--reporter=junit",
+        "--outputFile=governance/suite_results.xml"
+      ],
+      "exit_code": 2,
+      "test_collection_completed": false,
+      "refusal": "Committed Vitest config cannot resolve package vitest in the materialized tree; results artifact absent."
+    },
+    "limitations": [
+      "Node differs from CI-pinned 22.22.0.",
+      "Local Vitest does not establish the separate packaging and worker-image build jobs.",
+      "No full-suite signed Ranex acceptance verdict was produced."
+    ],
+    "static_checks": [
+      {
+        "argv": [
+          "pnpm",
+          "lint"
+        ],
+        "exit_code": 0
+      },
+      {
+        "argv": [
+          "pnpm",
+          "typecheck"
+        ],
+        "exit_code": 0
+      },
+      {
+        "argv": [
+          "pnpm",
+          "typecheck:packages"
+        ],
+        "exit_code": 0
+      }
+    ]
+  }
+}

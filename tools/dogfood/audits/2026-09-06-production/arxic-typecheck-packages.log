@@ -1,0 +1,64 @@
+$ pnpm -r typecheck
+Scope: 31 of 32 workspace projects
+packages/contracts typecheck$ tsc -p tsconfig.json --noEmit
+packages/fs-safe typecheck$ tsc -p tsconfig.json --noEmit
+test-fixtures/reference-auth-app typecheck$ tsc --noEmit
+test-fixtures/vulnerable-auth-app typecheck$ tsc --noEmit
+packages/fs-safe typecheck: Done
+test-fixtures/vulnerable-auth-app typecheck: Done
+packages/contracts typecheck: Done
+test-fixtures/reference-auth-app typecheck: Done
+packages/ast-grep-adapter typecheck$ tsc -p tsconfig.json --noEmit
+packages/environment typecheck$ tsc -p tsconfig.json --noEmit
+packages/fixture-otplib typecheck$ tsc -p tsconfig.json --noEmit
+packages/playwright-screenshot-privacy typecheck$ tsc -p tsconfig.json --noEmit
+packages/fixture-otplib typecheck: Done
+packages/policy-engine typecheck$ tsc -p tsconfig.json --noEmit
+packages/ast-grep-adapter typecheck: Done
+packages/real-world-testkit typecheck$ tsc -p tsconfig.json --noEmit
+packages/environment typecheck: Done
+packages/source-ua-adapter typecheck$ tsc -p tsconfig.json --noEmit
+packages/playwright-screenshot-privacy typecheck: Done
+packages/policy-engine typecheck: Done
+packages/real-world-testkit typecheck: Done
+packages/source-ua-adapter typecheck: Done
+packages/model-adapter typecheck$ tsc -p tsconfig.json --noEmit
+packages/playwright-trace-sanitizer typecheck$ tsc -p tsconfig.json --noEmit
+packages/model-adapter typecheck: Done
+packages/playwright-trace-sanitizer typecheck: Done
+packages/playwright-agent-adapter typecheck$ tsc -p tsconfig.json --noEmit
+packages/playwright-agent-adapter typecheck: Done
+packages/playwright-compiler typecheck$ tsc -p tsconfig.json --noEmit
+packages/playwright-compiler typecheck: Done
+packages/verifier typecheck$ tsc -p tsconfig.json --noEmit
+packages/verifier typecheck: Done
+packages/bundle-promoter typecheck$ tsc -p tsconfig.json --noEmit
+packages/crawlee-adapter typecheck$ tsc -p tsconfig.json --noEmit
+packages/bundle-promoter typecheck: Done
+packages/crawlee-adapter typecheck: Done
+packages/m0-pipeline typecheck$ tsc -p tsconfig.json --noEmit
+packages/m0-pipeline typecheck: Done
+packages/auth-domain-pack typecheck$ tsc -p tsconfig.json --noEmit
+packages/domain-inventory-spike typecheck$ tsc -p tsconfig.json --noEmit
+packages/intent-proposal-spike typecheck$ tsc -p tsconfig.json --noEmit
+packages/intent typecheck$ tsc -p tsconfig.json --noEmit
+packages/intent typecheck: Done
+packages/auth-domain-pack typecheck: Done
+packages/domain-inventory-spike typecheck: Done
+packages/intent-proposal-spike typecheck: Done
+apps/web typecheck$ tsc -p tsconfig.json --noEmit
+packages/evidence-graph typecheck$ tsc -p tsconfig.json --noEmit
+packages/verification-spike typecheck$ tsc -p tsconfig.json --noEmit
+packages/evidence-graph typecheck: Done
+packages/verification-spike typecheck: Done
+apps/web typecheck: Done
+packages/orchestrator-langgraph typecheck$ tsc -p tsconfig.json --noEmit
+packages/orchestrator-langgraph typecheck: Done
+apps/worker typecheck$ tsc -p tsconfig.json --noEmit
+packages/reconciler typecheck$ tsc -p tsconfig.json --noEmit
+packages/fixture-mailpit typecheck$ tsc -p tsconfig.json --noEmit
+apps/worker typecheck: Done
+packages/fixture-mailpit typecheck: Done
+packages/reconciler typecheck: Done
+apps/cli typecheck$ tsc -p tsconfig.json --noEmit
+apps/cli typecheck: Done

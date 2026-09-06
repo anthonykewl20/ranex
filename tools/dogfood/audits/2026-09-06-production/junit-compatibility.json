@@ -1,0 +1,16 @@
+{
+  "accepted": false,
+  "refusal": "junitxml testcase must carry classname and name",
+  "observed_collection_records": [
+    {
+      "attributes": {
+        "classname": "",
+        "name": "tests.test_query_probe_live",
+        "time": "0.000"
+      },
+      "skip": {
+        "message": "collection skipped"
+      }
+    }
+  ]
+}
