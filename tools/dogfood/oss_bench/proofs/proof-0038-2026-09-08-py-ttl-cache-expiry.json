@@ -1,0 +1,38 @@
+{
+  "agent_steps": 16,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_expiry.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "2 passed in 0.01s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.026066,
+  "date": "2026-09-08",
+  "duration_s": 92.402,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "3e84337220f1b4da6a7120de3c5adf4c8e223578",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.4,
+    "gate_output": "PASS  gate=landing  subject=sha256:7addcfef47cbb2877ac3c79cc90e5c28ea9ce14075a5405f8925d54d7a8f3013",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-08.json/py-ttl-cache-expiry-8f60cf47/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_expiry.py::test_get_returns_none_after_expiry test_expiry.py::test_expired_entry_is_evicted",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-ttl-cache-expiry-8f60cf47",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "ped (including for multiple entries), re-setting a key refreshes its expiry, missing keys stay `None`, and non-positive `ttl_seconds` still raises `ValueError`.",
+    "heuristic": true
+  },
+  "task": "py-ttl-cache-expiry",
+  "tokens": 12475
+}

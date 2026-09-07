@@ -1,0 +1,105 @@
+{
+  "schema": "ranex-oss-bench-divergence-v1",
+  "model": "zai:glm-5.3",
+  "rows": [
+    {
+      "task": "py-config-parse",
+      "run_id": "py-config-parse-fc431523",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 14,
+      "tokens": 40226,
+      "cost_usd": 0.09945,
+      "duration_s": 195.252,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "apart from the one edited file.\n\nFINISH: Implemented `parse_config` in `confkit/parse.py` following every rule in the issue; all manual verification tests pass.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_parse.py",
+        "output_tail": "27 passed in 0.02s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.2
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_parse.py::test_comments_and_blanks test_parse.py::test_basic_and_whitespace test_parse.py::test_quoting test_parse.py::test_escapes_in_quotes test_parse.py::test_inline_comments test_parse.py::test_bool_null_coercion test_parse.py::test_int_coercion test_parse.py::test_float_coercion test_parse.py::test_empty_and_duplicate test_parse.py::test_invalid_raises",
+        "run_exit": 0,
+        "run_error": "",
+        "gate_verdict": "PASS",
+        "gate_output": "PASS  gate=landing  subject=sha256:b4ce799854b71d34a0933eb623015fb5fc6419f3133a66ba43fedb3d2184ee9c",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-08.json/py-config-parse-fc431523/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.2
+      }
+    },
+    {
+      "task": "py-ttl-cache-expiry",
+      "run_id": "py-ttl-cache-expiry-8f60cf47",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 16,
+      "tokens": 12475,
+      "cost_usd": 0.026066,
+      "duration_s": 92.402,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "ped (including for multiple entries), re-setting a key refreshes its expiry, missing keys stay `None`, and non-positive `ttl_seconds` still raises `ValueError`.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_expiry.py",
+        "output_tail": "2 passed in 0.01s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.2
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_expiry.py::test_get_returns_none_after_expiry test_expiry.py::test_expired_entry_is_evicted",
+        "run_exit": 0,
+        "run_error": "",
+        "gate_verdict": "PASS",
+        "gate_output": "PASS  gate=landing  subject=sha256:7addcfef47cbb2877ac3c79cc90e5c28ea9ce14075a5405f8925d54d7a8f3013",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-08.json/py-ttl-cache-expiry-8f60cf47/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.4
+      }
+    },
+    {
+      "task": "legacy-depotcore-binary-parity",
+      "run_id": "legacy-depotcore-binary-parity-1403c551",
+      "ground_truth_functional": 0.0,
+      "agent_steps": 70,
+      "tokens": 247185,
+      "cost_usd": 0.505815,
+      "duration_s": 891.477,
+      "cost_capped": true,
+      "self_report": {
+        "claimed_success": false,
+        "final_words": "I'll start by exploring the repository structure to understand what we're working with.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+        "output_tail": "14 failed in 0.23s",
+        "exit": 1,
+        "verdict": "RED",
+        "elapsed_s": 0.4
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_lift oss_tests.py::test_notch oss_tests.py::test_wear_drag oss_tests.py::test_short_round oss_tests.py::test_shelve_blocks oss_tests.py::test_ledge_return oss_tests.py::test_sag oss_tests.py::test_distrust oss_tests.py::test_held_grouping oss_tests.py::test_square_rebuild oss_tests.py::test_square_wear oss_tests.py::test_square_chain oss_tests.py::test_square_resurrect oss_tests.py::test_full_corpus_parity",
+        "run_exit": 1,
+        "run_error": "",
+        "gate_verdict": "FAIL",
+        "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_distrust (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_held_grouping (failed), oss_tests.py::test_ledge_return (failed), oss_tests.py::test_lift (failed), oss_tests.py::test_notch (failed), oss_tests.py::test_sag (failed), oss_tests.py::test_shelve_blocks (failed), oss_tests.py::test_short_round (failed), oss_tests.py::test_square_chain (failed), oss_tests.py::test_square_rebuild (failed), oss_tests.py::test_square_resurrect (failed), oss_tests.py::test_square_wear (failed), oss_tests.py::test_wear_drag (failed)\n      subject=sha256:df8afde425e1851e983975eb1857a5c251f3ab7a939d904a7ba10e74e0aa69aa",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-08.json/legacy-depotcore-binary-parity-1403c551/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.6
+      }
+    }
+  ],
+  "gaming_demo": null,
+  "stale_demo": null,
+  "note": "four positions: pristine grader / bare CI on the patched tree / parsed self-report / manifest-bound gate"
+}

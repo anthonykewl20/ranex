@@ -918,6 +918,24 @@
       "scenarios": 43,
       "sha": "90a79a124",
       "subject": "tools: dogfood artifacts \u2014 iteration 21 (census baseline re-"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 36,
+      "scenarios": 43,
+      "sha": "3cc38d3b7",
+      "subject": "tools: proof pile \u2014 2026-09-08 (1 run)"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 36,
+      "scenarios": 43,
+      "sha": "3e8433722",
+      "subject": "tools: dogfood artifacts - iteration 22"
     }
   ]
 }

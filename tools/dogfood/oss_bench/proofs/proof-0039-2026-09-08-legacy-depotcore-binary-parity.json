@@ -1,0 +1,38 @@
+{
+  "agent_steps": 70,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+    "elapsed_s": 0.4,
+    "exit": 1,
+    "output_tail": "14 failed in 0.23s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.505815,
+  "date": "2026-09-08",
+  "duration_s": 891.477,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "3e84337220f1b4da6a7120de3c5adf4c8e223578",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.6,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_distrust (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_held_grouping (failed), oss_tests.py::test_ledge_return (failed), oss_tests.py::test_lift (failed), oss_tests.py::test_notch (failed), oss_tests.py::test_sag (failed), oss_tests.py::test_shelve_blocks (failed), oss_tests.py::test_short_round (failed), oss_tests.py::test_square_chain (failed), oss_tests.py::test_square_rebuild (failed), oss_tests.py::test_square_resurrect (failed), oss_tests.py::test_square_wear (failed), oss_tests.py::test_wear_drag (failed)\n      subject=sha256:df8afde425e1851e983975eb1857a5c251f3ab7a939d904a7ba10e74e0aa69aa",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-08.json/legacy-depotcore-binary-parity-1403c551/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_lift oss_tests.py::test_notch oss_tests.py::test_wear_drag oss_tests.py::test_short_round oss_tests.py::test_shelve_blocks oss_tests.py::test_ledge_return oss_tests.py::test_sag oss_tests.py::test_distrust oss_tests.py::test_held_grouping oss_tests.py::test_square_rebuild oss_tests.py::test_square_wear oss_tests.py::test_square_chain oss_tests.py::test_square_resurrect oss_tests.py::test_full_corpus_parity",
+    "run_error": "",
+    "run_exit": 1
+  },
+  "run_id": "legacy-depotcore-binary-parity-1403c551",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "I'll start by exploring the repository structure to understand what we're working with.",
+    "heuristic": true
+  },
+  "task": "legacy-depotcore-binary-parity",
+  "tokens": 247185
+}

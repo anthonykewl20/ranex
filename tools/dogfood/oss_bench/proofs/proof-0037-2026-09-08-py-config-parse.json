@@ -1,0 +1,38 @@
+{
+  "agent_steps": 14,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_parse.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "27 passed in 0.02s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.09945,
+  "date": "2026-09-08",
+  "duration_s": 195.252,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "3e84337220f1b4da6a7120de3c5adf4c8e223578",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.2,
+    "gate_output": "PASS  gate=landing  subject=sha256:b4ce799854b71d34a0933eb623015fb5fc6419f3133a66ba43fedb3d2184ee9c",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-08.json/py-config-parse-fc431523/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_parse.py::test_comments_and_blanks test_parse.py::test_basic_and_whitespace test_parse.py::test_quoting test_parse.py::test_escapes_in_quotes test_parse.py::test_inline_comments test_parse.py::test_bool_null_coercion test_parse.py::test_int_coercion test_parse.py::test_float_coercion test_parse.py::test_empty_and_duplicate test_parse.py::test_invalid_raises",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-config-parse-fc431523",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "apart from the one edited file.\n\nFINISH: Implemented `parse_config` in `confkit/parse.py` following every rule in the issue; all manual verification tests pass.",
+    "heuristic": true
+  },
+  "task": "py-config-parse",
+  "tokens": 40226
+}
