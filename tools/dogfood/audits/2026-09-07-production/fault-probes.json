@@ -1,10 +1,10 @@
 {
-  "source_commit": "c854ff0e92632bf0577967b01256040d875f892b",
+  "source_commit": "9ab1caaf1a2d4543b7364cfedfe55e12f2ba186c",
   "scope": "Real local Git/HTTP, fake GitHub API; NOT live production verification",
   "slow_publication": {
     "injection": "11-second check-publication delay",
     "http_status": 202,
-    "response_seconds": 8.00661456992384,
+    "response_seconds": 8.009003359009512,
     "within_github_10_second_deadline": true,
     "published_checks": 1,
     "completed_after_acknowledgement": true
