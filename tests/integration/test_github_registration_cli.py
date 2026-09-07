@@ -272,7 +272,16 @@ def test_the_credential_store_refuses_every_malformed_conversion(tmp_path: Path)
         store_credentials(keys, lacking, repository_root=repo)
     assert not keys.exists() or not any(keys.iterdir())
 
-    with patch.object(registration.os, "readlink", side_effect=OSError("no proc")):
+    real_readlink = os.readlink
+
+    def no_proc(path, *args, **kwargs):
+        # Only the descriptor confirmation fails; Path.resolve keeps working
+        # (on 3.12 it calls readlink for every path component).
+        if str(path).startswith("/proc/self/fd/"):
+            raise OSError("no proc")
+        return real_readlink(path, *args, **kwargs)
+
+    with patch.object(registration.os, "readlink", side_effect=no_proc):
         with pytest.raises(ClientRefusal, match="E-GITHUB-KEY-UNREADABLE"):
             store_credentials(keys, _conversion(), repository_root=repo)
 
