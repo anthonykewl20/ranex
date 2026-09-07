@@ -760,6 +760,40 @@ completions` 503). Contract-tested in the existing durability and refresh
 arms (the race and the demand yield both pinned); `receiver_stress.py` rerun
 locally, receipt retained in `audits/2026-09-08-receiver/`.
 
+## Live App verification — issue #88 (2026-09-08)
+
+**Evidence directory:** `tools/dogfood/audits/2026-09-08-live-app/`.
+**App:** `ranex-gate` (4863198), owner `anthonykewl20`, installation 159825611,
+created through `ranex github register`'s manifest handshake and installed by
+the owner. All observations below are against **real GitHub** — no mock.
+
+- **Authentication**: App JWT accepted by `GET /app` (live identity confirmed).
+- **HTTPS delivery**: GitHub → smee.io (public HTTPS) → listener; HMAC
+  verified on every delivery; real delivery ids journal and stamp `external_id`.
+- **Live PR journey**: PR → `ranex/acceptance` `action_required` → gate run →
+  signed PASS verdict → periodic pass `refreshed:success` → GitHub check
+  `success` (stamped `refresh:<head>`).
+- **App-pinned merge refusal**: ruleset (`required_status_checks`,
+  `integration_id` 4863198, `refs/heads/main`) blocks the merge with HTTP 405
+  while the required check is `action_required`.
+- **Wrong-source attack defeated**: a GitHub Actions job literally named
+  `ranex/acceptance` reporting `success` does NOT satisfy the rule — the pin
+  requires the check from this App. Merge stayed 405 until the App's own
+  check turned `success` behind a signed verdict, then the merge succeeded.
+- **Redelivery replay**: GitHub's own `POST /app/hook/deliveries/{id}/attempts`
+  → listener journaled `replayed`, no duplicate check published.
+- Operational notes: the first App (4863112, slug `ranex-acceptance`) was
+  created under TonyGarces because the browser profile used for the Create
+  click was logged in as that account; it is unused and can be deleted.
+  Rulesets require a public repo on a free plan — the probe repo was made
+  public. A private-repo/Pro deployment keeps the same pin semantics.
+
+Still UNVERIFIED: a multi-hour production soak (the 20-delivery live soak ran
+at ~1.4 s/delivery), supervised-deploy restart under real traffic, secret
+rotation, and full Leitir/Arxic governed acceptance. Automatic evaluation,
+merge-candidate checks and shard aggregation remain unimplemented (the App
+still publishes only what `gate evaluate` produced).
+
 ## Live App calibration — issue #88 (2026-09-07, pre-App)
 
 **Evidence directory:** `tools/dogfood/audits/2026-09-07-live-app/`.

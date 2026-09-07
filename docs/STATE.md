@@ -1,25 +1,20 @@
 # State
 
-**Updated:** 2026-09-07
+**Updated:** 2026-09-08
 **Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
 
 Version v0.1.006. Issues: #88. Findings: F-033–F-037.
-Live calibration landed (F-035 fix): awaiting heads survive refused
-action_required publications. F-037: live deliveries outrank startup/periodic
-passes; failed spool/awaiting attempts back off across restarts. Evidence: tools/dogfood/audits/
-2026-09-07-live-app/ — real smee.io HTTPS deliveries, real api.github.com
-refusals, real fetch/bind/verdict resolution, SIGKILL recovery, replay
-no-op, connection bound. No mock GitHub in that pass.
+Live App verification COMPLETE for the App surface: App ranex-gate (4863112's
+replacement, owner anthonykewl20, installation 159825611) authenticates,
+receives real GitHub webhooks over HTTPS (smee), publishes ranex/acceptance,
+refreshes late verdicts, enforces the App-pinned ruleset (HTTP 405), defeats
+a same-named forged Actions check, merges only behind a signed verdict, and
+redeliveries replay as no-ops. Evidence: tools/dogfood/audits/
+2026-09-08-live-app/ (no mock GitHub).
 
-Governed probe repo anthonykewl20/ranex-app-live-probe runs the real
-ceremony (keys, freeze, run, PASS verdicts, journal verified).
+F-035/F-037 fixes and pre-App live calibration: audits/2026-09-07-live-app/.
 
-Still blocked on the owner: GitHub App creation is web-only; no
-anthonykewl20 browser session exists on this host. The manifest form is
-staged at http://127.0.0.1:8081/ with the catcher armed; after that one
-click: install, App-pinned ruleset, live PR journey, merge enforcement.
-
-Live authentication, installation, HTTPS delivery from GitHub, App-pinned
-merge refusal, deployment recovery and production load stay UNVERIFIED.
-Automatic evaluation, merge-candidate checks and shard aggregation stay
-unimplemented. No production sign-off has been issued.
+Remaining UNVERIFIED: multi-hour soak, supervised deploy under traffic,
+secret rotation, full Leitir/Arxic governed acceptance. Automatic
+evaluation, merge-candidate checks, shard aggregation: unimplemented.
+No production sign-off has been issued.

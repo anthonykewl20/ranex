@@ -1,0 +1,45 @@
+{
+  "observed_at": "2026-09-07T17:17:29Z",
+  "app": {
+    "app_id": 4863198,
+    "slug": "ranex-gate",
+    "owner": "anthonykewl20",
+    "installation_id": 159825611,
+    "created_via": "ranex github register manifest flow (owner click)"
+  },
+  "repo": "anthonykewl20/ranex-app-live-probe (made public: rulesets require public or Pro)",
+  "journey": [
+    "PR #1 opened -> REAL GitHub webhook via smee.io HTTPS -> listener -> REAL check published: ranex/acceptance action_required (external_id = GitHub delivery id)",
+    "gate run + verdict PASS for PR head -> periodic pass -> journal refreshed:success -> GitHub check conclusion=success (external_id refresh:<head>)",
+    "ruleset created via ranex github ruleset: required_status_checks ranex/acceptance pinned to integration_id 4863198 on refs/heads/main",
+    "PR #2 merge attempt with our check action_required -> HTTP 405 'Required status check \"ranex/acceptance\" is action required.'",
+    "WRONG-SOURCE ATTACK: GitHub Actions job NAMED ranex/acceptance succeeded (app=github-actions) alongside our action_required -> merge STILL 405 (pin ignores the forged green)",
+    "verdict for PR #2 head -> refreshed:success -> merge SUCCEEDED (merged 64abf91a)",
+    "GitHub redelivery API (POST /app/hook/deliveries/{id}/attempts) -> listener journaled 'replayed', check count unchanged (no duplicate)"
+  ],
+  "heads": {
+    "pr1": "4c38813b60e2d4b8fcd2b2ff2a8d1dfc0bf2e53a",
+    "pr2_initial": "7d8acd5228f2bc18a822f4d77446863366fd1e08",
+    "pr2_final": "3a248e1b8fd59f6403358a6a39349f7b6a6ee396",
+    "merge_commit": "64abf91a58be98287cf37c1e0b8edb42a22b2b32"
+  },
+  "wrong_source_checks_on_pr2_head": [
+    {
+      "app": "github-actions",
+      "name": "ranex/acceptance",
+      "conclusion": "success",
+      "satisfies_ruleset": false
+    },
+    {
+      "app": "ranex-gate",
+      "name": "ranex/acceptance",
+      "conclusion": "success",
+      "satisfies_ruleset": true
+    }
+  ],
+  "operational_notes": [
+    "the first App (4863112, slug ranex-acceptance) was accidentally created under TonyGarces (browser profile was logged in as TonyGarces at the Create click); archived under /tmp/ranex-live/wrong-owner-app \u2014 delete it in GitHub UI when convenient",
+    "rulesets API requires a public repo (or GitHub Pro): the probe repo was made public",
+    "live webhook payloads verified: check_suite events are journaled-ignored; pull_request handled"
+  ]
+}
