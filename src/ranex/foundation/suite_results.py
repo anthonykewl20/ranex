@@ -119,13 +119,29 @@ def validate_suite_results(value: object) -> dict[str, object]:
     return value
 
 
+def _is_collection_skip(testcase: ET.Element) -> bool:
+    """Pytest's real collection-skip record: `classname` empty, one `skipped`
+    child whose message is exactly `collection skipped`."""
+
+    children = list(testcase)
+    return (
+        len(children) == 1
+        and children[0].tag.rsplit("}", 1)[-1] == "skipped"
+        and children[0].get("message") == "collection skipped"
+    )
+
+
 def _test_id(testcase: ET.Element, reporter: str) -> str:
     classname = testcase.get("classname")
     name = testcase.get("name")
-    if not classname and name and _outcome(testcase) == "error":
+    if not classname and name and (
+        _outcome(testcase) == "error" or _is_collection_skip(testcase)
+    ):
         # Pytest's real CollectReport names the module in `name` and leaves
-        # `classname` empty. Retain that observed collection failure as its
-        # own ID; never manufacture outcomes for tests that did not execute.
+        # `classname` empty, for a collector that errored or that skipped
+        # itself. Retain that observed record as its own ID — a skipped
+        # collector is a skip the manifest must declare, never a pass — and
+        # never manufacture outcomes for tests that did not execute.
         return name
     if not classname or not name:
         raise ValueError("junitxml testcase must carry classname and name")

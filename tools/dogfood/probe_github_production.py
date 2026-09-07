@@ -28,7 +28,7 @@ sys.path.insert(0, str(ROOT / "tests"))
 import _github_fake  # noqa: E402
 
 from ranex.github_app import receiver  # noqa: E402
-from ranex.github_app.client import AppCredentials, mint_app_jwt  # noqa: E402
+from ranex.github_app.client import AppCredentials, ClientRefusal, mint_app_jwt  # noqa: E402
 
 
 def delayed_publication(root: Path) -> dict[str, object]:
@@ -65,10 +65,15 @@ def delayed_publication(root: Path) -> dict[str, object]:
             server.shutdown()
             thread.join()
             server.server_close()
+        deadline = time.monotonic() + 30
+        while len(env.fake.check_requests) < 1 and time.monotonic() < deadline:
+            time.sleep(0.1)
         return {"injection": "11-second check-publication delay",
                 "http_status": status, "response_seconds": elapsed,
                 "within_github_10_second_deadline": elapsed < 10,
-                "published_checks": len(env.fake.check_requests)}
+                "published_checks": len(env.fake.check_requests),
+                "completed_after_acknowledgement": (
+                    env.config.state_dir / "completed" / "slow-publication.json").exists()}
 
 
 def late_verdict(root: Path) -> dict[str, object]:
@@ -231,11 +236,17 @@ def credential_file_mode(root: Path) -> dict[str, object]:
         "RANEX_GITHUB_WEBHOOK_SECRET": _github_fake.WEBHOOK_SECRET,
     }):
         credentials = AppCredentials.from_environment(repository)
-        token = mint_app_jwt(credentials)
-        claims = _github_fake.verify_jwt(token, public)
+        refusal = None
+        claims = None
+        try:
+            token = mint_app_jwt(credentials)
+            claims = _github_fake.verify_jwt(token, public)
+        except ClientRefusal as error:
+            refusal = error.code
     return {"key_mode": oct(path.stat().st_mode & 0o777),
             "jwt_signature_verified": bool(claims),
-            "group_or_other_readable_key_refused": False,
+            "group_or_other_readable_key_refused": refusal == "E-GITHUB-KEY-EXPOSED",
+            "refusal": refusal,
             "scope": "Temporary fixture key only; no production credentials"}
 
 

@@ -12,8 +12,10 @@ from __future__ import annotations
 import base64
 import json
 import os
+import stat
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -97,8 +99,24 @@ class AppCredentials:
 
 
 def load_private_key(path: Path):
-    """Parse the App's PEM key, refusing anything unreadable."""
+    """Parse the App's PEM key, refusing anything unreadable or exposed.
 
+    The key is the App's identity. A regular file that group or others can
+    read is refused before a byte of it is parsed: mode bits are the one
+    exposure the loader can see, so it insists on them (0600 or tighter).
+    """
+
+    try:
+        status = os.stat(path)
+    except OSError as exc:
+        raise ClientRefusal("E-GITHUB-KEY-UNREADABLE", f"{path}: {exc}") from exc
+    if not stat.S_ISREG(status.st_mode):
+        raise ClientRefusal("E-GITHUB-KEY-UNREADABLE", f"{path}: not a regular file")
+    if status.st_mode & 0o077:
+        raise ClientRefusal(
+            "E-GITHUB-KEY-EXPOSED",
+            f"{path}: mode {oct(status.st_mode & 0o777)} is readable beyond its owner",
+        )
     try:
         key_bytes = Path(path).read_bytes()
         return serialization.load_pem_private_key(key_bytes, password=None)
@@ -161,16 +179,15 @@ class GitHubClient:
 
     def _request(self, method: str, path: str, *, token: str, body: Any = None):
         payload = None if body is None else json.dumps(body).encode("utf-8")
+        headers = {
+            "Authorization": f"Bearer {token}",
+            "Accept": MEDIA_TYPE,
+            "X-GitHub-Api-Version": API_VERSION,
+        }
+        if payload is not None:
+            headers["Content-Type"] = MEDIA_TYPE
         request = urllib.request.Request(
-            f"{self._api_root}{path}",
-            data=payload,
-            method=method,
-            headers={
-                "Authorization": f"Bearer {token}",
-                "Accept": MEDIA_TYPE,
-                "Content-Type": MEDIA_TYPE,
-                "X-GitHub-Api-Version": API_VERSION,
-            },
+            f"{self._api_root}{path}", data=payload, method=method, headers=headers,
         )
         try:
             with urllib.request.urlopen(request, timeout=self._timeout) as response:
@@ -226,6 +243,35 @@ class GitHubClient:
             token=self.installation_token(installation_id),
             body=body,
         )
+
+    def list_check_runs(
+        self, installation_id: int, repository: str, head_sha: str, *, check_name: str
+    ) -> list[dict[str, Any]]:
+        """This App's check runs of one name on one commit, for reconciliation.
+
+        GitHub filters by `check_name` and `app_id`; the caller matches the
+        `external_id` it stamped at publication. Nothing here decides.
+        """
+
+        owner, separator, name = repository.partition("/")
+        if not owner or not separator or not name:
+            raise ClientRefusal(
+                "E-GITHUB-BAD-REPO", f"expected owner/name: {repository!r}"
+            )
+        query = urllib.parse.urlencode(
+            {"check_name": check_name, "app_id": self._credentials.app_id, "per_page": 100}
+        )
+        response = self._request(
+            "GET",
+            f"/repos/{owner}/{name}/commits/{head_sha}/check-runs?{query}",
+            token=self.installation_token(installation_id),
+        )
+        runs = response.get("check_runs") if isinstance(response, dict) else None
+        if not isinstance(runs, list) or not all(isinstance(run, dict) for run in runs):
+            raise ClientRefusal(
+                "E-GITHUB-API-REFUSED", "check-runs listing lacked a check_runs list"
+            )
+        return runs
 
 
 def api_root_from_environment() -> str:

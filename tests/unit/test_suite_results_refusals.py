@@ -125,3 +125,32 @@ def test_results_artifact_reports_an_os_read_failure(
 
     with pytest.raises(ValueError, match="cannot read results artifact.*read denied"):
         suite_results.read_results_artifact(artifact)
+
+
+def test_junitxml_retains_a_collection_skip_under_its_module_id() -> None:
+    artifact = (
+        b'<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest">'
+        b'<testcase classname="" name="tests.test_query_probe_live" time="0.000">'
+        b'<skipped type="pytest.skip" message="collection skipped"/></testcase>'
+        b'<testcase classname="tests.unit.test_x" name="test_a" time="0.000"/>'
+        b"</testsuite></testsuites>"
+    )
+    manifest = suite_results.freeze_manifest(
+        artifact, expected_skips={"tests.test_query_probe_live": "collection skipped"}
+    )
+    assert manifest["suite"] == ["tests.test_query_probe_live", "tests/unit/test_x.py::test_a"]
+    results = suite_results.suite_results_from_junitxml(artifact, manifest)
+    assert results["counts"]["skipped"] == 1
+    assert results["non_passed"] == [["tests.test_query_probe_live", "skipped"]]
+    assert results["missing"] == []
+
+
+def test_junitxml_still_refuses_an_unnamed_skip_that_is_not_a_collection_skip() -> None:
+    artifact = (
+        b'<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest">'
+        b'<testcase classname="" name="tests.test_x" time="0.000">'
+        b'<skipped type="pytest.skip" message="unconditional skip"/></testcase>'
+        b"</testsuite></testsuites>"
+    )
+    with pytest.raises(ValueError, match="testcase must carry classname and name"):
+        suite_results.freeze_manifest(artifact)

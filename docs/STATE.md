@@ -7,8 +7,11 @@ Version v0.1.006 follows dogfood fix e3b2ccfadcb94fcbfdfe2921dfeffe2f0fc0e96a.
 Issues: #89. Findings: F-033, F-034.
 Integrated external-repository/Vitest onboarding (#86, PR #87) with v0.1.006.
 Issue #88 production assessment: NO-GO for verified production operation.
-Assessment: tools/dogfood/FINDINGS.md (issue #88).
-Evidence: tools/dogfood/audits/2026-09-06-production/.
+Assessment: tools/dogfood/FINDINGS.md (issue #88, 2026-09-06 and 09-07).
+Evidence: tools/dogfood/audits/2026-09-0{6,7}-production/.
+2026-09-07 (ADR-053): receiver spools before work and answers ≤8 s (202 past
+it), reconciles retries via attempt record + check external_id, refuses
+group/other-readable App keys; JUnit collection skips keep their module ID.
 
 Ordinary full baselines: Leitir 3,742 passed / 159 skipped; Arxic 1,974
 passed across 234 files. Arxic lint and both typecheck commands passed.
@@ -20,8 +23,9 @@ runtime/input provisioning and full governed acceptance remain UNVERIFIED.
 
 67 App-surface tests passed locally. Real HTTP/state probes verified refusal,
 replay conflict, restart dedupe, lock recovery and bounded connections.
-They also reproduced delayed acknowledgement, no late-verdict replay refresh,
-duplicate publication after completion-write failure and mode-0644 App key use.
+Delayed acknowledgement, duplicate publication after completion-write failure
+and mode-0644 key acceptance are repaired and re-probed; late-verdict refresh
+remains UNIMPLEMENTED (operator redelivery is the documented contract).
 CI's external-CLI subprocess coverage gap is repaired; the 100% changed-line
 threshold remains intact. Final-commit regression evidence is recorded in #88.
 

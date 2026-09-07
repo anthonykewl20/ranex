@@ -225,11 +225,29 @@ about the exact bytes a merge would land.
    a busy delivery pipeline answers 503. Every delivery proves its
    `X-Hub-Signature-256` HMAC before a byte of it is parsed; replays are
    no-ops after durable completion; failures remain retryable after restart.
+   A proven delivery is spooled to disk before any work starts. The answer
+   waits at most eight seconds for the pipeline (GitHub abandons a delivery
+   after ten): a delivery that finishes in time answers its real status
+   (200 done, 400 malformed id, 409 conflicting replay, 5xx retry); one that
+   does not answers 202 and completes from the spool, which the listener
+   drains at startup and every five minutes until each entry completes.
    The diagnostic journal is `deliveries.jsonl`; atomic completion receipts
-   live in `completed/` under the state dir (`.local/ranex/github` by default).
-   Preserve both on upgrades. GitHub does not automatically retry failed
-   deliveries: request redelivery in GitHub or through its API. A crash after
-   remote publication but before local completion can still duplicate a check.
+   live in `completed/`, publication attempts in `attempted/` and pending
+   deliveries in `spool/`, all under the state dir (`.local/ranex/github` by
+   default). Preserve them on upgrades. GitHub does not automatically retry a
+   delivery answered 5xx: request redelivery in GitHub or through its API.
+   Publication is at-least-once by construction, never exactly-once: a crash
+   between the API call and the local receipt is reconciled on retry, which
+   asks GitHub for this App's `ranex/acceptance` run stamped with the
+   delivery id and republishes nothing if it exists. Two checks remain
+   possible only if that reconciliation itself cannot reach GitHub.
+   The App private key must be a regular file readable by its owner alone
+   (mode 0600 or tighter); a key group- or world-readable is refused as
+   `E-GITHUB-KEY-EXPOSED` before it is parsed. Mode bits are what the loader
+   can see; parent-directory and ACL exposure remain the operator's audit.
+   A verdict that lands after the event has been answered is not noticed:
+   there is no automatic refresh. Redeliver the event, or publish once with
+   `ranex github check publish`.
    Credentials, trusted keys and the allowlist are loaded at startup; restart
    the listener after changing them.
 

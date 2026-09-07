@@ -13,6 +13,7 @@ from __future__ import annotations
 import base64
 import json
 import os
+import re
 import subprocess
 import sys
 import threading
@@ -20,6 +21,7 @@ import time
 from contextlib import contextmanager
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import parse_qs
 
 from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import padding, rsa
@@ -40,6 +42,7 @@ def write_app_key(directory: Path) -> tuple[Path, bytes]:
     ).decode("ascii")
     path = directory / "app.pem"
     path.write_text(private, encoding="ascii")
+    path.chmod(0o600)
     public = key.public_key().public_bytes(
         serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo
     )
@@ -125,6 +128,28 @@ class FakeGitHub:
                                status=201)
                     return
                 self._json({"message": "not found"}, status=404)
+
+            def do_GET(self) -> None:  # noqa: N802 — stdlib naming
+                path, _, query = self.path.partition("?")
+                outer.requests.append({"path": self.path,
+                                       "authorization": self.headers.get("Authorization", ""),
+                                       "body": None})
+                match = re.fullmatch(r"/repos/[^/]+/[^/]+/commits/([0-9a-f]{40})/check-runs", path)
+                if match is None:
+                    self._json({"message": "not found"}, status=404)
+                    return
+                parameters = parse_qs(query)
+                wanted_name = parameters.get("check_name", [None])[0]
+                runs = [
+                    {"id": 424242 + index, "name": request["body"]["name"],
+                     "head_sha": request["body"]["head_sha"],
+                     "external_id": request["body"].get("external_id"),
+                     "status": "completed", "conclusion": request["body"]["conclusion"]}
+                    for index, request in enumerate(outer.check_requests)
+                    if request["body"]["head_sha"] == match.group(1)
+                    and (wanted_name is None or request["body"]["name"] == wanted_name)
+                ]
+                self._json({"total_count": len(runs), "check_runs": runs})
 
             def _json(self, payload: dict[str, object], status: int = 200) -> None:
                 raw = json.dumps(payload).encode("utf-8")

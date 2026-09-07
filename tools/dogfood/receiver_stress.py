@@ -191,7 +191,8 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
             recovered = request(port, f'recovered-{iteration}')
             for client in sockets:
                 client.close()
-            record(f'saturation-{iteration}', threads <= 33 and descriptors < 80 and recovered == 200,
+            # main + serve loop's 16 handlers + their 16 read-deadline timers + the spool drainer.
+            record(f'saturation-{iteration}', threads <= 34 and descriptors < 80 and recovered == 200,
                    dict(opened=32, threads=threads, descriptors=descriptors, recovered=recovered))
         client = socket.create_connection(('127.0.0.1', port), timeout=2)
         start = time.monotonic()
@@ -346,17 +347,29 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                         raise RuntimeError('Git fetch did not hold the real receiver pipeline')
                     status = pending.result(timeout=40)
                 elapsed = time.monotonic() - started
+                # ADR-053: the answer leaves within GitHub's deadline (202) while
+                # the real fetch keeps running from the spool; its refusal lands
+                # in the journal when Git's own transport deadline expires.
+                spooled = paused_repo / '.local/ranex/github/spool/paused-real-git-server.json'
+                for _ in range(400):
+                    if paused_journal.exists() and 'paused-real-git-server' in paused_journal.read_text():
+                        break
+                    time.sleep(.1)
+                completed = time.monotonic() - started
                 observed = json.loads(paused_journal.read_text().splitlines()[-1])
                 (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
-                record('paused-real-git-fetch-deadline', status == 500
+                record('paused-real-git-fetch-deadline', status == 202 and elapsed < 10
                        and observed['outcome'] == 'E-GITHUB-UNFETCHABLE-HEAD'
-                       and 29 <= elapsed < 38, dict(status=status, seconds=elapsed, receipt=observed))
+                       and 29 <= completed < 38 and spooled.exists(),
+                       dict(status=status, acknowledged_seconds=elapsed, completed_seconds=completed,
+                            still_spooled=spooled.exists(), receipt=observed))
                 os.killpg(daemon.pid, signal.SIGCONT)
                 status = request(port, 'paused-real-git-server', BODY, timeout=40)
                 observed = json.loads(paused_journal.read_text().splitlines()[-1])
                 (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
                 record('resumed-real-git-server', status == 500
-                       and observed['outcome'] == 'E-GITHUB-API-REFUSED', dict(status=status, receipt=observed))
+                       and observed['outcome'] == 'E-GITHUB-API-REFUSED' and not spooled.exists(),
+                       dict(status=status, receipt=observed, still_spooled=spooled.exists()))
                 retried = request(port, busy_id)
                 observed = json.loads(paused_journal.read_text().splitlines()[-1])
                 (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())

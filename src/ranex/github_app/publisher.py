@@ -91,10 +91,15 @@ def check_run_body(
     *,
     started_at: float,
     completed_at: float,
+    external_id: str | None = None,
 ) -> dict[str, Any]:
-    """The exact payload `POST /repos/{owner}/{repo}/check-runs` receives."""
+    """The exact payload `POST /repos/{owner}/{repo}/check-runs` receives.
 
-    return {
+    `external_id` is the webhook delivery that caused the publication, so a
+    retry can recognise its own check on GitHub instead of publishing twice.
+    """
+
+    body: dict[str, Any] = {
         "name": CHECK_NAME,
         "head_sha": binding.head_sha,
         "status": "completed",
@@ -107,6 +112,9 @@ def check_run_body(
         "started_at": _timestamp(started_at),
         "completed_at": _timestamp(completed_at),
     }
+    if external_id is not None:
+        body["external_id"] = external_id
+    return body
 
 
 def publish_check(
@@ -118,6 +126,7 @@ def publish_check(
     *,
     started_at: float,
     completed_at: float,
+    external_id: str | None = None,
 ) -> tuple[CheckDecision, Mapping[str, Any]]:
     """Publish one check and return the decision that produced it."""
 
@@ -126,7 +135,8 @@ def publish_check(
         installation_id,
         repository,
         check_run_body(
-            binding, decision, started_at=started_at, completed_at=completed_at
+            binding, decision, started_at=started_at, completed_at=completed_at,
+            external_id=external_id,
         ),
     )
     return decision, response

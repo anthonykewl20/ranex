@@ -195,6 +195,7 @@ def test_a_malformed_key_file_refuses_cleanly(tmp_path: Path) -> None:
     clone, head = _github_fake.seeded_governed_clone(tmp_path / "clone")
     key_path = tmp_path / "not-a-key.pem"
     key_path.write_text("this is not a PEM key\n", encoding="ascii")
+    key_path.chmod(0o600)
     with _github_fake.FakeGitHub(b"unused") as fake:
         result = subprocess.run(
             [
@@ -210,3 +211,60 @@ def test_a_malformed_key_file_refuses_cleanly(tmp_path: Path) -> None:
     assert result.returncode == 2
     assert "E-GITHUB-KEY-UNREADABLE" in result.stderr
     assert "Traceback" not in result.stderr
+
+
+def test_a_key_readable_by_group_or_others_is_refused(tmp_path: Path) -> None:
+    from ranex.github_app.client import load_private_key
+
+    path, _ = _github_fake.write_app_key(tmp_path / "keys")
+    assert (path.stat().st_mode & 0o777) == 0o600
+    load_private_key(path)
+    for mode in (0o640, 0o604, 0o644, 0o660, 0o666):
+        path.chmod(mode)
+        try:
+            load_private_key(path)
+        except ClientRefusal as refusal:
+            assert refusal.code == "E-GITHUB-KEY-EXPOSED"
+            assert oct(mode) in refusal.detail
+        else:
+            raise AssertionError(f"mode {oct(mode)} must refuse")
+    path.chmod(0o400)
+    load_private_key(path)
+
+
+def test_a_key_that_is_not_a_regular_readable_file_is_unreadable(tmp_path: Path) -> None:
+    from ranex.github_app.client import load_private_key
+
+    for path in (tmp_path / "absent.pem", tmp_path):
+        try:
+            load_private_key(path)
+        except ClientRefusal as refusal:
+            assert refusal.code == "E-GITHUB-KEY-UNREADABLE"
+        else:
+            raise AssertionError(f"{path} must refuse")
+
+
+def test_listing_check_runs_refuses_bad_repositories_and_shapeless_answers(
+    tmp_path: Path,
+) -> None:
+    from unittest.mock import patch
+
+    from ranex.github_app.client import GitHubClient
+
+    key_path, _ = _github_fake.write_app_key(tmp_path / "keys")
+    client = GitHubClient(AppCredentials("1", key_path, "s"), api_root="http://127.0.0.1:9")
+    try:
+        client.list_check_runs(1, "no-slash", "0" * 40, check_name="ranex/acceptance")
+    except ClientRefusal as refusal:
+        assert refusal.code == "E-GITHUB-BAD-REPO"
+    else:
+        raise AssertionError("a repository without owner/name must refuse")
+    with patch.object(client, "installation_token", return_value="t"), patch.object(
+        client, "_request", return_value={"total_count": 0}
+    ):
+        try:
+            client.list_check_runs(1, "owner/name", "0" * 40, check_name="ranex/acceptance")
+        except ClientRefusal as refusal:
+            assert refusal.code == "E-GITHUB-API-REFUSED"
+        else:
+            raise AssertionError("a listing without check_runs must refuse")

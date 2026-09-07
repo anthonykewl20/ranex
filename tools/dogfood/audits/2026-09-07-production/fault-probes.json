@@ -1,0 +1,95 @@
+{
+  "source_commit": "c854ff0e92632bf0577967b01256040d875f892b",
+  "scope": "Real local Git/HTTP, fake GitHub API; NOT live production verification",
+  "slow_publication": {
+    "injection": "11-second check-publication delay",
+    "http_status": 202,
+    "response_seconds": 8.00661456992384,
+    "within_github_10_second_deadline": true,
+    "published_checks": 1,
+    "completed_after_acknowledgement": true
+  },
+  "late_verdict": {
+    "initial_status": 200,
+    "initial_conclusions": [
+      "action_required"
+    ],
+    "same_delivery_status": 200,
+    "after_same_delivery": [
+      "action_required"
+    ],
+    "fresh_event_status": 200,
+    "after_fresh_event": [
+      "action_required",
+      "success"
+    ],
+    "automatic_refresh": false
+  },
+  "completion_failure": {
+    "injection": "injected completion persistence failure",
+    "checks_before_retry": 1,
+    "retry_status": 200,
+    "checks_after_retry": 1,
+    "conclusions": [
+      "success"
+    ]
+  },
+  "persisted_state": {
+    "busy_status": 503,
+    "after_lock_release": 200,
+    "conflicting_body_status": 409,
+    "restart_replay_status": 200,
+    "published_checks": 1,
+    "control_passed": true
+  },
+  "http_refusals": {
+    "cases": [
+      {
+        "case": "unsigned",
+        "expected": 401,
+        "actual": 401,
+        "control_passed": true
+      },
+      {
+        "case": "tampered",
+        "expected": 401,
+        "actual": 401,
+        "control_passed": true
+      },
+      {
+        "case": "invalid-id",
+        "expected": 400,
+        "actual": 400,
+        "control_passed": true
+      },
+      {
+        "case": "wrong-endpoint",
+        "expected": 404,
+        "actual": 404,
+        "control_passed": true
+      },
+      {
+        "case": "oversized",
+        "expected": 413,
+        "actual": 413,
+        "control_passed": true
+      }
+    ],
+    "published_checks": 0,
+    "control_passed": true
+  },
+  "connection_bound": {
+    "held_incomplete_requests": 16,
+    "overflow_connection_rejected": true,
+    "available_slots_after_read_deadlines": 16,
+    "published_checks": 0,
+    "control_passed": true
+  },
+  "credential_file_mode": {
+    "key_mode": "0o644",
+    "jwt_signature_verified": false,
+    "group_or_other_readable_key_refused": true,
+    "refusal": "E-GITHUB-KEY-EXPOSED",
+    "scope": "Temporary fixture key only; no production credentials"
+  }
+}

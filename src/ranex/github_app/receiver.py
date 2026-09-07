@@ -4,6 +4,13 @@ The repo's first long-running process, bounded on purpose (ADR-051): a
 stdlib `http.server` listener on localhost — TLS is the terminator's job —
 that turns each validated delivery into at most one check publication. It
 never evaluates; it publishes what verified verdicts already say.
+
+Two durability arms sit around the pipeline. Every proven delivery is spooled
+to disk before it is worked on, and the HTTP answer waits at most
+`ACK_DEADLINE_SECONDS` for the pipeline: past that it answers 202 and the
+spool carries the delivery to completion or to a restart. And a publication
+is stamped with its delivery id, so a retry after a lost completion receipt
+reconciles against the check GitHub already holds instead of publishing twice.
 """
 
 from __future__ import annotations
@@ -15,7 +22,7 @@ import re
 import socket
 import threading
 import time
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
@@ -34,13 +41,21 @@ from ranex.github_app.binding import (
     revalidate_pr_head,
 )
 from ranex.github_app.client import ClientRefusal, GitHubClient
-from ranex.github_app.publisher import publish_check
+from ranex.github_app.publisher import CHECK_NAME, publish_check
 
 MAX_BODY_BYTES = 1_048_576
 MAX_CONNECTIONS = 16
 READ_DEADLINE_SECONDS = 5.0
+# GitHub abandons a delivery it has not heard back from in ten seconds; the
+# answer goes out before that, whatever the pipeline is still doing.
+ACK_DEADLINE_SECONDS = 8.0
+# How often a running listener re-drains deliveries it acknowledged with 202
+# but could not complete (a remote that was unreachable, an API refusal).
+SPOOL_RETRY_SECONDS = 300.0
 _DELIVERY_ID_PATTERN = re.compile(r"^[A-Za-z0-9-]+$")
 _DELIVERY_JOURNAL = "deliveries.jsonl"
+_SPOOL_DIR = "spool"
+_ATTEMPTED_DIR = "attempted"
 
 
 @dataclass(frozen=True, slots=True)
@@ -102,6 +117,80 @@ def _journal(config: ReceiverConfig, entry: Mapping[str, Any]) -> None:
         os.fsync(handle.fileno())
 
 
+def _valid_delivery_id(delivery_id: str) -> bool:
+    return bool(_DELIVERY_ID_PATTERN.fullmatch(delivery_id)) and len(delivery_id) <= 128
+
+
+def spool_delivery(
+    config: ReceiverConfig, body: bytes, delivery_id: str, event_name: str,
+) -> int:
+    """Durably retain one proven delivery before any work is done on it.
+
+    Returns 400 for an id that cannot name a file; 202 once the entry is on
+    disk. An entry already present for the id is left as it was: the first
+    body spooled is the one the pipeline judges, and a conflicting redelivery
+    is answered by the completion receipt when it is processed.
+    """
+    if not _valid_delivery_id(delivery_id):
+        return 400
+    target = config.state_dir / _SPOOL_DIR / f"{delivery_id}.json"
+    if not target.exists():
+        config.state_dir.mkdir(parents=True, exist_ok=True)
+        write_atomic(
+            target,
+            canonical_json_bytes({"body": body.hex(), "event": event_name}),
+            root=config.state_dir,
+        )
+    return 202
+
+
+def _unspool(config: ReceiverConfig, delivery_id: str) -> None:
+    with suppress(FileNotFoundError):
+        (config.state_dir / _SPOOL_DIR / f"{delivery_id}.json").unlink()
+
+
+def _read_spool_entry(path: Path) -> tuple[bytes, str]:
+    entry = json.loads(path.read_bytes())
+    if (
+        not isinstance(entry, dict)
+        or set(entry) != {"body", "event"}
+        or not isinstance(entry["body"], str)
+        or not isinstance(entry["event"], str)
+    ):
+        raise ValueError("invalid spool entry")
+    return bytes.fromhex(entry["body"]), entry["event"]
+
+
+def drain_spool(config: ReceiverConfig, state: _ReceiverState) -> dict[str, int]:
+    """Run every spooled delivery through the pipeline; return each status.
+
+    Called at listener start (crash recovery) and on a timer. A delivery that
+    completes — accepted, refused as malformed, or in conflict — leaves the
+    spool; one that cannot (5xx) stays for the next pass. A damaged entry is
+    journaled and left for the operator: the receiver never guesses at bytes.
+    """
+    statuses: dict[str, int] = {}
+    spool = config.state_dir / _SPOOL_DIR
+    if not spool.is_dir():
+        return statuses
+    for path in sorted(spool.glob("*.json"), key=lambda p: (p.stat().st_mtime, p.name)):
+        delivery_id = path.stem
+        try:
+            body, event_name = _read_spool_entry(path)
+        except (OSError, ValueError):
+            _journal(config, {"delivery": delivery_id, "outcome": "spool-unreadable"})
+            statuses[delivery_id] = 500
+            continue
+        try:
+            status = process_delivery(config, state, body, delivery_id, event_name)
+        except (OSError, ValueError):
+            status = 500
+        if status < 500:
+            _unspool(config, delivery_id)
+        statuses[delivery_id] = status
+    return statuses
+
+
 def process_delivery(
     config: ReceiverConfig,
     state: _ReceiverState,
@@ -111,11 +200,13 @@ def process_delivery(
 ) -> int:
     """Persist completed deliveries; failed attempts remain retryable.
 
-    A 5xx requires operator/API redelivery: GitHub does not retry automatically.
-    Completion cannot be atomic with GitHub's remote check creation. A crash
-    after publication but before local completion can still duplicate a check.
+    A 5xx answered synchronously requires operator/API redelivery: GitHub does
+    not retry automatically. Completion cannot be atomic with GitHub's remote
+    check creation, so publication is at-least-once by construction; the
+    attempt record and the check's `external_id` let a retry reconcile against
+    what GitHub already holds instead of publishing a second check.
     """
-    if not _DELIVERY_ID_PATTERN.fullmatch(delivery_id) or len(delivery_id) > 128:
+    if not _valid_delivery_id(delivery_id):
         return 400
     if not state.lock.acquire(blocking=False):
         return 503
@@ -190,6 +281,18 @@ def _process_delivery(
         )
         return 200
     try:
+        reconciled = _reconcile_attempt(config, event, delivery_id)
+        if reconciled is not None:
+            _journal(
+                config,
+                {
+                    "delivery": delivery_id,
+                    "event": event_name,
+                    "outcome": f"reconciled:{reconciled}",
+                    "head_sha": event.head_sha,
+                },
+            )
+            return 200
         fetch_pr_head(config.repo_root, config.remote, event.head_sha)
         binding = bind_pr_head(config.repo_root, event.head_sha)
         acceptance = resolve_acceptance(
@@ -201,6 +304,13 @@ def _process_delivery(
             approver_id=config.approver_id,
         )
         revalidate_pr_head(config.repo_root, binding)
+        # The attempt record goes down before the API call: a crash between
+        # the two leaves a retry able to ask GitHub what it already holds.
+        write_atomic(
+            config.state_dir / _ATTEMPTED_DIR / f"{delivery_id}.json",
+            canonical_json_bytes({"head_sha": event.head_sha}),
+            root=config.state_dir,
+        )
         moment = time.time()
         decision, _ = publish_check(
             config.client,
@@ -210,6 +320,7 @@ def _process_delivery(
             acceptance,
             started_at=moment,
             completed_at=moment,
+            external_id=delivery_id,
         )
         outcome = f"published:{decision.conclusion}"
     except (BindingRefusal, ClientRefusal) as refusal:
@@ -237,6 +348,30 @@ def _process_delivery(
         },
     )
     return 200
+
+
+def _reconcile_attempt(
+    config: ReceiverConfig, event: webhook.PullRequestEvent, delivery_id: str,
+) -> str | None:
+    """The conclusion GitHub already holds for this delivery, if any.
+
+    Only an attempt record naming this event's head counts; a record for
+    another head is a stale artefact, not evidence. GitHub is asked for this
+    App's `ranex/acceptance` runs on the head and the one stamped with this
+    delivery id is the earlier publication. Nothing is republished.
+    """
+    record_path = config.state_dir / _ATTEMPTED_DIR / f"{delivery_id}.json"
+    if not record_path.exists():
+        return None
+    record = json.loads(record_path.read_bytes())
+    if not isinstance(record, dict) or record.get("head_sha") != event.head_sha:
+        return None
+    for run in config.client.list_check_runs(
+        event.installation_id, event.repository, event.head_sha, check_name=CHECK_NAME,
+    ):
+        if run.get("external_id") == delivery_id and isinstance(run.get("conclusion"), str):
+            return run["conclusion"]
+    return None
 
 
 def build_handler(config: ReceiverConfig, state: _ReceiverState):
@@ -292,16 +427,45 @@ def build_handler(config: ReceiverConfig, state: _ReceiverState):
                 self._answer(401, "delivery did not prove itself")
                 return
             delivery_id = self.headers.get(webhook.DELIVERY_HEADER, "")
+            event_name = self.headers.get(webhook.EVENT_HEADER, "")
             self._deadline.cancel()
             self._deadline.join()
             try:
-                status = process_delivery(
-                    config, state, body, delivery_id,
-                    self.headers.get(webhook.EVENT_HEADER, ""),
-                )
-            except (OSError, ValueError):
+                spooled = spool_delivery(config, body, delivery_id, event_name)
+            except OSError:
                 self._answer(500, "delivery state unavailable")
                 return
+            if spooled == 400:
+                self._answer(400, "malformed delivery id")
+                return
+            outcome: dict[str, int] = {}
+            answer_lock = threading.Lock()
+
+            def run() -> None:
+                try:
+                    status = process_delivery(config, state, body, delivery_id, event_name)
+                except (OSError, ValueError):
+                    status = 500
+                with answer_lock:
+                    outcome["status"] = status
+                    answered = outcome.get("answered")
+                # Answered 202 already: the spool keeps anything that did not
+                # complete for the drain, and releases what did.
+                if answered == 202 and status < 500:
+                    _unspool(config, delivery_id)
+
+            worker = threading.Thread(target=run, daemon=True)
+            worker.start()
+            worker.join(ACK_DEADLINE_SECONDS)
+            with answer_lock:
+                status = outcome.get("status")
+                outcome["answered"] = 202 if status is None else status
+            if status is None:
+                self._answer(202, "queued")
+                return
+            # Answered synchronously, the answer is the truth GitHub holds and
+            # the spool has nothing left to say about this delivery.
+            _unspool(config, delivery_id)
             self._answer(status, "accepted" if status == 200 else
                          "malformed delivery id" if status == 400 else "retry later")
 
@@ -349,12 +513,36 @@ class _BoundedServer(ThreadingMixIn, HTTPServer):
             self._slots.release()
 
 
-def serve(config: ReceiverConfig, bind: tuple[str, int]) -> None:
-    """Listen with bounded connections and a serialized delivery pipeline."""
+def serve(
+    config: ReceiverConfig,
+    bind: tuple[str, int],
+    *,
+    on_listen: Callable[[HTTPServer], None] | None = None,
+) -> None:
+    """Listen with bounded connections and a serialized delivery pipeline.
+
+    `on_listen` receives the bound server before it serves: a test's handle
+    on the ephemeral port and on `shutdown()`. Production passes nothing.
+    """
 
     state = _ReceiverState()
+    stop = threading.Event()
+
+    def redrain() -> None:
+        # Crash recovery first, then the periodic pass for what 202'd and
+        # could not complete. Damaged state is journaled, never fatal here.
+        while not stop.is_set():
+            with suppress(OSError, ValueError):
+                drain_spool(config, state)
+            stop.wait(SPOOL_RETRY_SECONDS)
+
+    drainer = threading.Thread(target=redrain, daemon=True)
+    drainer.start()
     server = _BoundedServer(bind, build_handler(config, state))
+    if on_listen is not None:
+        on_listen(server)
     try:
         server.serve_forever()
     finally:
+        stop.set()
         server.server_close()
