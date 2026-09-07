@@ -3,9 +3,10 @@
 **Updated:** 2026-09-07
 **Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
 
-Version v0.1.006. Issues: #88. Findings: F-033–F-036.
+Version v0.1.006. Issues: #88. Findings: F-033–F-037.
 Live calibration landed (F-035 fix): awaiting heads survive refused
-action_required publications. Evidence: tools/dogfood/audits/
+action_required publications. F-037: live deliveries outrank startup/periodic
+passes; failed spool/awaiting attempts back off across restarts. Evidence: tools/dogfood/audits/
 2026-09-07-live-app/ — real smee.io HTTPS deliveries, real api.github.com
 refusals, real fetch/bind/verdict resolution, SIGKILL recovery, replay
 no-op, connection bound. No mock GitHub in that pass.

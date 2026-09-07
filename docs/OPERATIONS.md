@@ -246,6 +246,15 @@ about the exact bytes a merge would land.
    (200 done, 400 malformed id, 409 conflicting replay, 5xx retry); one that
    does not answers 202 and completes from the spool, which the listener
    drains at startup and every five minutes until each entry completes.
+   An entry (or a waiting head, below) whose attempt failed is not retried
+   until five minutes have passed, restart or not: a `.failed` marker beside
+   it carries the last attempt time, so stuck entries cannot hold the
+   pipeline against live deliveries; never-attempted entries drain at once.
+   Live deliveries outrank those passes: a delivery arriving while a pass
+   holds the pipeline waits for it (within the acknowledgement deadline)
+   instead of answering 503, and the pass steps aside after the entry in
+   flight and resumes once the delivery is through. Two live deliveries
+   still never wait for each other: the second answers 503 as before.
    The diagnostic journal is `deliveries.jsonl`; atomic completion receipts
    live in `completed/`, publication attempts in `attempted/` and pending
    deliveries in `spool/`, all under the state dir (`.local/ranex/github` by

@@ -86,7 +86,11 @@ def test_a_refresh_interrupted_after_publication_reconciles_on_the_next_pass(
         assert _conclusions(env) == ["action_required", "success"]
         assert awaiting.exists() and awaiting.read_bytes() == record
 
-        assert refresh_awaiting(env.config, env.state) == {env.head: "success"}
+        # The failed pass backs off; after the window it reconciles.
+        assert refresh_awaiting(env.config, env.state) == {}
+        with patch.object(receiver, "SPOOL_RETRY_SECONDS", 0):
+            assert refresh_awaiting(env.config, env.state) == {env.head: "success"}
+        assert not awaiting.with_suffix(".failed").exists()
         assert _conclusions(env) == ["action_required", "success"]
         assert not awaiting.exists()
         assert "reconciled-refresh:success" in (tmp_path / "state" / "deliveries.jsonl").read_text()
@@ -106,6 +110,19 @@ def test_a_busy_pipeline_and_damaged_records_leave_the_wait_in_place(tmp_path: P
 
         damaged = tmp_path / "state" / "awaiting" / f"{'9' * 40}.json"
         damaged.write_bytes(b'{"delivery": 1}')
+        assert env.state.lock.acquire(blocking=False)
+        try:
+            # 503 is not a failure of the entry: no backoff marker is written.
+            assert refresh_awaiting(env.config, env.state) == {"9" * 40: 500, env.head: 503}
+        finally:
+            env.state.lock.release()
+        assert not (tmp_path / "state" / "awaiting" / f"{env.head}.failed").exists()
+        (tmp_path / "state" / "awaiting" / f"{'9' * 40}.failed").unlink()
+        env.state.demand = 1
+        assert refresh_awaiting(env.config, env.state) == {}
+        assert env.state.yielded is True
+        env.state.demand = 0
+        env.state.yielded = False
         misnamed = tmp_path / "state" / "awaiting" / "not-a-head.json"
         misnamed.write_bytes(
             b'{"delivery": "d-x", "installation_id": 1, "repository": "owner/name"}'

@@ -733,6 +733,33 @@ records with `.as_record()` (not dicts), and junitxml test IDs are synthesised
 as `classname.py::name` (`suite_results.py:129`). Recorded because it is the
 loop working as designed: assumptions die when they meet the parser.
 
+## Receiver retry storm after restart — F-037 (2026-09-08)
+
+**Observed in hosted CI** on `45a842d80` (`receiver_stress.py`,
+`restored-reviewed-catalog`: HTTP 503 on the first delivery after a restart;
+passed locally on a faster host). Since F-035 every delivery without a
+verdict leaves an awaiting head; the startup pass (ADR-053/054) re-bound and
+re-published each of them, refused by the API each time, holding the
+pipeline while the live delivery arrived. The same held for spool entries
+that answer 5xx: each restart and each periodic pass re-ran a real Git
+fetch per stuck entry.
+
+**Fix, two parts.** (1) Priority: a live delivery that finds the pipeline
+held by a startup/periodic pass waits for it, bounded by the acknowledgement
+deadline, instead of answering 503; the pass yields after the entry in
+flight (a waiting delivery, or its own 503 against a live holder) and
+resumes 0.1 s after that delivery instead of resting the full interval. Two
+live deliveries still never wait for each other. (2) Backoff: a failed
+attempt writes a `.failed` marker beside the entry (spool or awaiting);
+both passes skip entries whose marker is younger than `SPOOL_RETRY_SECONDS`,
+restart or not. 503 writes no marker. Never-attempted entries still drain
+at startup, so crash recovery is unchanged; markers leave with their entry.
+Backoff alone did not fix the stress run: the first attempt after a restart
+still blocked the 100 post-restart replays (`sigkill-restart-retains-100-
+completions` 503). Contract-tested in the existing durability and refresh
+arms (the race and the demand yield both pinned); `receiver_stress.py` rerun
+locally, receipt retained in `audits/2026-09-08-receiver/`.
+
 ## Live App calibration — issue #88 (2026-09-07, pre-App)
 
 **Evidence directory:** `tools/dogfood/audits/2026-09-07-live-app/`.

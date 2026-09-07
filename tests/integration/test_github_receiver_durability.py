@@ -124,8 +124,16 @@ def test_a_spooled_delivery_that_cannot_complete_stays_spooled(tmp_path: Path) -
             env.config, event_body("9" * 40), "d-unfetchable", "pull_request"
         )
         assert drain_spool(env.config, env.state) == {"d-unfetchable": 500}
-        assert (tmp_path / "state" / "spool" / "d-unfetchable.json").exists()
+        spool = tmp_path / "state" / "spool"
+        assert (spool / "d-unfetchable.json").exists()
         assert env.fake.check_requests == []
+        # A failed attempt backs off: the next pass (and a restart's startup
+        # pass) leaves it alone until SPOOL_RETRY_SECONDS have elapsed, so a
+        # stuck entry cannot hold the pipeline against live deliveries.
+        assert (spool / "d-unfetchable.failed").exists()
+        assert drain_spool(env.config, env.state) == {}
+        with patch.object(receiver, "SPOOL_RETRY_SECONDS", 0):
+            assert drain_spool(env.config, env.state) == {"d-unfetchable": 500}
 
 
 def test_a_damaged_spool_entry_is_journaled_and_left_for_the_operator(tmp_path: Path) -> None:
@@ -135,6 +143,8 @@ def test_a_damaged_spool_entry_is_journaled_and_left_for_the_operator(tmp_path: 
         (spool / "d-damaged.json").write_bytes(b"{not json")
         assert drain_spool(env.config, env.state) == {"d-damaged": 500}
         assert (spool / "d-damaged.json").exists()
+        # Journaled once per backoff window, not once per pass.
+        assert drain_spool(env.config, env.state) == {}
         rows = [json.loads(line) for line in (tmp_path / "state" / "deliveries.jsonl").read_text().splitlines()]
         assert rows[-1] == {"delivery": "d-damaged", "outcome": "spool-unreadable"}
         assert env.fake.check_requests == []
@@ -204,9 +214,17 @@ def test_reconciliation_never_trusts_a_check_for_another_head(tmp_path: Path) ->
 
 def test_the_listener_drains_its_spool_at_start_and_then_serves(tmp_path: Path) -> None:
     with receiver_environment(tmp_path) as env:
-        receiver.spool_delivery(env.config, event_body(env.head), "d-before-start", "pull_request")
+        for index in range(3):
+            receiver.spool_delivery(
+                env.config, event_body(env.head), f"d-before-start-{index}", "pull_request",
+            )
         servers: list = []
         listening = threading.Event()
+        original = env.config.client.create_check_run
+
+        def slow(*args, **kwargs):
+            time.sleep(0.6)
+            return original(*args, **kwargs)
 
         def on_listen(server) -> None:
             servers.append(server)
@@ -216,19 +234,36 @@ def test_the_listener_drains_its_spool_at_start_and_then_serves(tmp_path: Path) 
             target=receiver.serve, args=(env.config, ("127.0.0.1", 0)),
             kwargs={"on_listen": on_listen}, daemon=True,
         )
-        thread.start()
-        assert listening.wait(10)
-        try:
-            _wait_for(lambda: (tmp_path / "state" / "completed" / "d-before-start.json").exists())
-            assert not (tmp_path / "state" / "spool" / "d-before-start.json").exists()
-            port = servers[0].server_address[1]
-            with urlopen(_signed(port, event_body(env.head), "d-live"), timeout=10) as response:
-                assert response.status == 200
-        finally:
-            servers[0].shutdown()
-            thread.join(10)
+        with patch.object(env.config.client, "create_check_run", slow):
+            thread.start()
+            assert listening.wait(10)
+            try:
+                # The startup pass holds the pipeline; a live delivery waits
+                # for it instead of being refused 503, and the pass yields to
+                # it after the entry in flight.
+                port = servers[0].server_address[1]
+                started = time.monotonic()
+                with urlopen(_signed(port, event_body(env.head), "d-live"), timeout=10) as response:
+                    assert response.status == 200
+                assert time.monotonic() - started < receiver.ACK_DEADLINE_SECONDS
+                journal = (tmp_path / "state" / "deliveries.jsonl").read_text()
+                assert journal.count("published:success") < 4
+                try:
+                    _wait_for(lambda: all(
+                        (tmp_path / "state" / "completed" / f"d-before-start-{i}.json").exists()
+                        for i in range(3)
+                    ), seconds=30)
+                except AssertionError as error:
+                    raise AssertionError(
+                        (tmp_path / "state" / "deliveries.jsonl").read_text()
+                        + str(sorted(p.name for p in (tmp_path / "state" / "spool").iterdir()))
+                    ) from error
+                assert not any((tmp_path / "state" / "spool").glob("*.json"))
+            finally:
+                servers[0].shutdown()
+                thread.join(10)
         assert not thread.is_alive()
-        assert len(env.fake.check_requests) == 2
+        assert len(env.fake.check_requests) == 4
 
 
 def test_the_handler_names_state_failures_and_bad_ids(
@@ -275,6 +310,13 @@ def test_spool_bookkeeping_refuses_bad_ids_shapes_and_absent_state(tmp_path: Pat
         spool = tmp_path / "state" / "spool"
         spool.mkdir(parents=True)
         (spool / "d-shape.json").write_bytes(b'{"body": "00"}')
+        # A live delivery waiting for the pipeline stops the pass before it
+        # touches an entry; the pass resumes right after that delivery.
+        env.state.demand = 1
+        assert drain_spool(env.config, env.state) == {}
+        assert env.state.yielded is True
+        env.state.demand = 0
+        env.state.yielded = False
         assert drain_spool(env.config, env.state) == {"d-shape": 500}
         assert (spool / "d-shape.json").exists()
 
@@ -292,8 +334,11 @@ def test_a_drain_that_hits_damaged_state_keeps_the_entry(tmp_path: Path) -> None
         with patch.object(receiver, "write_atomic", fail_completion):
             assert drain_spool(env.config, env.state) == {"d-keep": 500}
         assert (tmp_path / "state" / "spool" / "d-keep.json").exists()
-        # The next pass reconciles the check that already reached GitHub.
-        assert drain_spool(env.config, env.state) == {"d-keep": 200}
+        # Once the backoff has elapsed, the next pass reconciles the check
+        # that already reached GitHub, and the failure marker goes with it.
+        with patch.object(receiver, "SPOOL_RETRY_SECONDS", 0):
+            assert drain_spool(env.config, env.state) == {"d-keep": 200}
+        assert not (tmp_path / "state" / "spool" / "d-keep.failed").exists()
         assert len(env.fake.check_requests) == 1
         assert "reconciled:success" in (tmp_path / "state" / "deliveries.jsonl").read_text()
 

@@ -57,6 +57,7 @@ _DELIVERY_JOURNAL = "deliveries.jsonl"
 _SPOOL_DIR = "spool"
 _ATTEMPTED_DIR = "attempted"
 _AWAITING_DIR = "awaiting"
+_FAILED_SUFFIX = ".failed"
 _HEAD_SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
@@ -79,9 +80,23 @@ class ReceiverConfig:
 
 @dataclass(slots=True)
 class _ReceiverState:
-    """Serialize the Git/publication pipeline; receipt state lives on disk."""
+    """Serialize the Git/publication pipeline; receipt state lives on disk.
+
+    `background` is set while a startup or periodic pass holds the pipeline;
+    `demand` counts live deliveries waiting for it. A live delivery waits
+    (bounded) for a background holder and never for another delivery; a
+    background pass yields between entries as soon as demand appears.
+    """
 
     lock: Any = field(default_factory=threading.Lock)
+    background: Any = field(default_factory=threading.Event)
+    demand: int = 0
+    demand_lock: Any = field(default_factory=threading.Lock)
+    yielded: bool = False
+
+    def wanting(self) -> bool:
+        with self.demand_lock:
+            return self.demand > 0
 
 
 def _migrate_legacy_spool(config: ReceiverConfig) -> None:
@@ -147,8 +162,28 @@ def spool_delivery(
 
 
 def _unspool(config: ReceiverConfig, delivery_id: str) -> None:
-    with suppress(FileNotFoundError):
-        (config.state_dir / _SPOOL_DIR / f"{delivery_id}.json").unlink()
+    for suffix in (".json", _FAILED_SUFFIX):
+        with suppress(FileNotFoundError):
+            (config.state_dir / _SPOOL_DIR / f"{delivery_id}{suffix}").unlink()
+
+
+def _backing_off(path: Path) -> bool:
+    """A failed attempt is not repeated until SPOOL_RETRY_SECONDS have passed.
+
+    A restart is not a reason to retry what failed seconds ago; without this
+    every stuck entry would hold the pipeline through a fresh Git fetch on
+    each start and each pass, and a live delivery arriving meanwhile would
+    be answered 503. Never-attempted entries carry no marker and drain at once.
+    """
+    try:
+        last = path.with_suffix(_FAILED_SUFFIX).stat().st_mtime
+    except FileNotFoundError:
+        return False
+    return time.time() - last < SPOOL_RETRY_SECONDS
+
+
+def _note_failure(config: ReceiverConfig, path: Path) -> None:
+    write_atomic(path.with_suffix(_FAILED_SUFFIX), b"{}", root=config.state_dir)
 
 
 def _read_spool_entry(path: Path) -> tuple[bytes, str]:
@@ -176,19 +211,31 @@ def drain_spool(config: ReceiverConfig, state: _ReceiverState) -> dict[str, int]
     if not spool.is_dir():
         return statuses
     for path in sorted(spool.glob("*.json"), key=lambda p: (p.stat().st_mtime, p.name)):
+        if state.wanting():
+            state.yielded = True  # a live delivery is waiting; resume right after it
+            break
         delivery_id = path.stem
+        if _backing_off(path):
+            continue
         try:
             body, event_name = _read_spool_entry(path)
         except (OSError, ValueError):
             _journal(config, {"delivery": delivery_id, "outcome": "spool-unreadable"})
+            _note_failure(config, path)
             statuses[delivery_id] = 500
             continue
         try:
-            status = process_delivery(config, state, body, delivery_id, event_name)
+            status = process_delivery(
+                config, state, body, delivery_id, event_name, background=True,
+            )
         except (OSError, ValueError):
             status = 500
         if status < 500:
             _unspool(config, delivery_id)
+        elif status == 503:
+            state.yielded = True  # a live delivery holds the pipeline; resume after it
+        else:
+            _note_failure(config, path)
         statuses[delivery_id] = status
     return statuses
 
@@ -199,6 +246,9 @@ def process_delivery(
     body: bytes,
     delivery_id: str,
     event_name: str,
+    *,
+    background: bool = False,
+    wait: float = 0.0,
 ) -> int:
     """Persist completed deliveries; failed attempts remain retryable.
 
@@ -210,7 +260,7 @@ def process_delivery(
     """
     if not _valid_delivery_id(delivery_id):
         return 400
-    with _pipeline(config, state) as held:
+    with _pipeline(config, state, background=background, wait=wait) as held:
         if not held:
             return 503
         _migrate_legacy_spool(config)
@@ -239,15 +289,30 @@ def process_delivery(
 
 
 @contextmanager
-def _pipeline(config: ReceiverConfig, state: _ReceiverState) -> Iterator[bool]:
+def _pipeline(
+    config: ReceiverConfig, state: _ReceiverState, *, background: bool = False, wait: float = 0.0,
+) -> Iterator[bool]:
     """Hold the one delivery pipeline, in-process and across processes.
 
-    Yields False without waiting when either lock is taken: the caller
-    answers 503 (or, on a periodic pass, tries again next time).
+    Yields False when either lock is taken: the caller answers 503 (or, on a
+    periodic pass, tries again next time). A live caller (`wait` > 0) first
+    waits up to `wait` seconds when the holder is a background pass — that
+    pass yields between entries — but never for another live delivery.
     """
-    if not state.lock.acquire(blocking=False):
+    acquired = state.lock.acquire(blocking=False)
+    if not acquired and wait > 0 and state.background.is_set():
+        with state.demand_lock:
+            state.demand += 1
+        try:
+            acquired = state.lock.acquire(timeout=wait)
+        finally:
+            with state.demand_lock:
+                state.demand -= 1
+    if not acquired:
         yield False
         return
+    if background:
+        state.background.set()
     try:
         config.state_dir.mkdir(parents=True, exist_ok=True)
         # Also serialize distinct receiver processes sharing a state directory.
@@ -259,6 +324,8 @@ def _pipeline(config: ReceiverConfig, state: _ReceiverState) -> Iterator[bool]:
                 return
             yield True
     finally:
+        if background:
+            state.background.clear()
         state.lock.release()
 
 
@@ -414,8 +481,9 @@ def _remember_awaiting(
 
 
 def _forget_awaiting(config: ReceiverConfig, head_sha: str) -> None:
-    with suppress(FileNotFoundError):
-        (config.state_dir / _AWAITING_DIR / f"{head_sha}.json").unlink()
+    for suffix in (".json", _FAILED_SUFFIX):
+        with suppress(FileNotFoundError):
+            (config.state_dir / _AWAITING_DIR / f"{head_sha}{suffix}").unlink()
 
 
 def _read_awaiting(path: Path) -> tuple[str, int, str]:
@@ -446,17 +514,24 @@ def refresh_awaiting(config: ReceiverConfig, state: _ReceiverState) -> dict[str,
     if not awaiting.is_dir():
         return statuses
     for path in sorted(awaiting.glob("*.json")):
+        if state.wanting():
+            state.yielded = True  # a live delivery is waiting; resume right after it
+            break
         head_sha = path.stem
+        if _backing_off(path):
+            continue
         try:
             delivery_id, installation_id, repository = _read_awaiting(path)
             if not _HEAD_SHA_PATTERN.fullmatch(head_sha):
                 raise ValueError("invalid awaiting head")
         except (OSError, ValueError):
             _journal(config, {"head_sha": head_sha, "outcome": "awaiting-unreadable"})
+            _note_failure(config, path)
             statuses[head_sha] = 500
             continue
-        with _pipeline(config, state) as held:
+        with _pipeline(config, state, background=True) as held:
             if not held:
+                state.yielded = True  # a live delivery holds the pipeline; resume after it
                 statuses[head_sha] = 503
                 continue
             try:
@@ -464,6 +539,7 @@ def refresh_awaiting(config: ReceiverConfig, state: _ReceiverState) -> dict[str,
             except (BindingRefusal, ClientRefusal, OSError, ValueError) as error:
                 _journal(config, {"head_sha": head_sha, "outcome": "refresh-failed",
                                   "detail": type(error).__name__})
+                _note_failure(config, path)
                 statuses[head_sha] = 500
                 continue
         if conclusion is not None:
@@ -572,7 +648,9 @@ def build_handler(config: ReceiverConfig, state: _ReceiverState):
 
             def run() -> None:
                 try:
-                    status = process_delivery(config, state, body, delivery_id, event_name)
+                    status = process_delivery(
+                        config, state, body, delivery_id, event_name, wait=ACK_DEADLINE_SECONDS,
+                    )
                 except (OSError, ValueError):
                     status = 500
                 with answer_lock:
@@ -661,11 +739,14 @@ def serve(
         # Crash recovery first, then the periodic pass for what 202'd and
         # could not complete. Damaged state is journaled, never fatal here.
         while not stop.is_set():
+            state.yielded = False
             with suppress(OSError, ValueError):
                 drain_spool(config, state)
             with suppress(OSError, ValueError):
                 refresh_awaiting(config, state)
-            stop.wait(SPOOL_RETRY_SECONDS)
+            # A pass that stepped aside for a live delivery picks up again as
+            # soon as that delivery is through; a complete pass rests.
+            stop.wait(0.1 if state.yielded else SPOOL_RETRY_SECONDS)
 
     drainer = threading.Thread(target=redrain, daemon=True)
     drainer.start()
