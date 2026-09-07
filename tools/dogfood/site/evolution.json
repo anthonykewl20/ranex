@@ -731,6 +731,33 @@
       "subject": "fix: keep the frozen suite green on a qualified operator hos"
     },
     {
+      "complexity": 5187,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "71e63761d",
+      "subject": "feat: explicitly govern external repositories without kernel"
+    },
+    {
+      "complexity": 5200,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "55d57b093",
+      "subject": "feat: admit explicit Vitest JUnit evidence and retain verifi"
+    },
+    {
+      "complexity": 5200,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "19e25681e",
+      "subject": "verify: retain production readiness evidence and fix externa"
+    },
+    {
       "complexity": 5184,
       "date": "2026-09-06",
       "open_findings": 12,
@@ -783,6 +810,114 @@
       "scenarios": 43,
       "sha": "d2803d391",
       "subject": "tools: dogfood artifacts - iteration 19"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "8c895f35e",
+      "subject": "tools: proof pile - 2026-09-07 (3 runs)"
+    },
+    {
+      "complexity": 5200,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "c854ff0e9",
+      "subject": "merge: integrate external repository support with v0.1.006"
+    },
+    {
+      "complexity": 5261,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "9ab1caaf1",
+      "subject": "fix: receiver acknowledges within GitHub's deadline, reconci"
+    },
+    {
+      "complexity": 5261,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "2d19f6371",
+      "subject": "tools: retain 2026-09-07 fault-probe, receiver audit and str"
+    },
+    {
+      "complexity": 5285,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "9275af4d9",
+      "subject": "feat: refresh a head's check from the listener's periodic pa"
+    },
+    {
+      "complexity": 5285,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "a754c96ec",
+      "subject": "test: refreeze the observed suite after the late-verdict ref"
+    },
+    {
+      "complexity": 5416,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "c581b54bc",
+      "subject": "feat: register the GitHub App, store its credentials, and pi"
+    },
+    {
+      "complexity": 5417,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "45a842d80",
+      "subject": "fix: remember an absent-verdict head before publication so a"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "47e1731c6",
+      "subject": "fix: live deliveries outrank the receiver's startup and peri"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "a6ca6518c",
+      "subject": "verify: live GitHub App journey \u2014 auth, HTTPS delivery, chec"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "3ab4d3ddc",
+      "subject": "tools: dogfood artifacts \u2014 iteration 20 (concurrent session'"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 35,
+      "scenarios": 43,
+      "sha": "90a79a124",
+      "subject": "tools: dogfood artifacts \u2014 iteration 21 (census baseline re-"
     }
   ]
 }

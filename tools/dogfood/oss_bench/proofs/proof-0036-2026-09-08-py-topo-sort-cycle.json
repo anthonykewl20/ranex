@@ -1,0 +1,38 @@
+{
+  "agent_steps": 9,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_order.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "6 passed in 0.01s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.015606,
+  "date": "2026-09-08",
+  "duration_s": 58.7,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "90a79a124",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 2.0,
+    "gate_output": "PASS  gate=landing  subject=sha256:289443319d6dc11016aced96541c45e407002173bac2bcf041cba49becee672f",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/tmp/nightly-batch5/py-topo-sort-cycle-63afe74c/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_order.py::test_ready_nodes_emitted_smallest_first test_order.py::test_diamond_is_deterministic test_order.py::test_two_cycle_raises test_order.py::test_self_loop_raises test_order.py::test_cycle_with_tail_raises",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-topo-sort-cycle-63afe74c",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "turns `[]`; isolated nodes come out sorted; and mixed-tie cases (e.g. `[3, 2, 4, 5, 1]` with edges 5\u21921, 3\u21922) emit the smallest ready node at each step.\n\nFINISH:",
+    "heuristic": true
+  },
+  "task": "py-topo-sort-cycle",
+  "tokens": 8128
+}
