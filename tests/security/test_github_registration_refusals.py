@@ -26,6 +26,13 @@ def clean_env(**extra: str) -> dict[str, str]:
         "PYTHONPATH": "src",
         "LC_ALL": "C",
     }
+    # CI measures the real CLI journeys through the documented subprocess
+    # hook; forward it so these children count toward changed-line coverage.
+    for name in ("COVERAGE_PROCESS_START", "COVERAGE_PROCESS_CONFIG", "COVERAGE_FILE"):
+        if os.environ.get(name):
+            env[name] = os.environ[name]
+    if env.get("COVERAGE_PROCESS_START") or env.get("COVERAGE_PROCESS_CONFIG"):
+        env["PYTHONPATH"] = os.pathsep.join(["src", os.path.join("tests", "e2e", "coverage")])
     env.update(extra)
     return env
 

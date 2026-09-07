@@ -263,6 +263,11 @@ class FakeGitHub:
             serialization.PrivateFormat.PKCS8,
             serialization.NoEncryption(),
         ).decode("ascii")
+        # Lets a test authenticate with the credentials `register` stored:
+        # point `public_pem` here and the App JWT check accepts that key.
+        self.conversion_public_pem = conversion_key.public_key().public_bytes(
+            serialization.Encoding.PEM, serialization.PublicFormat.SubjectPublicKeyInfo
+        )
         self._server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
         self.thread = threading.Thread(
             target=self._server.serve_forever, daemon=True
