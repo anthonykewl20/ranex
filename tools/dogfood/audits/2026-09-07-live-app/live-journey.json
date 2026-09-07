@@ -1,0 +1,103 @@
+{
+  "observed_at": "2026-09-07T15:07:53Z",
+  "scope": "REAL network paths: smee.io public HTTPS channel, api.github.com, github.com git fetches; real listener process; pre-App credentials (App id 000000) so live publication is refused by design. No live GitHub App identity existed on this host at observation time.",
+  "heads": {
+    "governed_base": "1d8304ac215a43e5c21aec7df34f798d724a9638",
+    "absent_verdict": "bb20d1762e37502702e366fa2922cffb0c7b8017",
+    "refresh_arm": "4e0968bd7777f28ab05fb1cffeac567fab307c5d"
+  },
+  "journey": [
+    "hermetic run -> RECORDED (real materialisation /tmp/ranex-subject-*)",
+    "gate evaluate -> PASS, verdict signed by kernel-verdict-signer",
+    "journal verify -> chain=verified",
+    "signed compact delivery via smee.io -> HMAC ok -> real git fetch -> bind -> verdict resolved -> publish to api.github.com REFUSED (fake App id 000000) -> E-GITHUB-API-REFUSED journaled, HTTP 500",
+    "unsigned and tampered deliveries -> 401, nothing journaled",
+    "wrong endpoint -> 404; oversized declared Content-Length -> 413",
+    "foreign repository (signed) -> 200 journaled not-allowlisted; same-delivery-id replay -> replayed no-op",
+    "SIGKILL mid-pipeline -> durable spool (mode 0444) -> restart -> startup drain completed the delivery",
+    "connection bound: 16 held sockets, 17th rejected, slots recovered after read deadlines",
+    "absent-verdict head remembered in awaiting/ despite refused action_required publication (post-fix)",
+    "verdict landed for refresh head -> periodic pass fired -> refresh-failed (ClientRefusal, fake App) -> marker kept"
+  ],
+  "findings": [
+    {
+      "id": "F-035",
+      "title": "a head whose action_required publication was refused was never remembered for refresh",
+      "fix": "receiver.py remembers the awaiting head before publish_check; regression test added",
+      "live_reproduced": "live-absent-verdict-1"
+    },
+    {
+      "id": "F-036",
+      "title": "receiver state dir inside the governed clone dirties the tree once tracked; ranex run refuses",
+      "operator_rule": "keep the listener state dir untracked and gitignored in the operator clone"
+    },
+    {
+      "note": "smee-client re-serializes JSON bodies; only compact (JSON.stringify-shaped) deliveries keep a valid HMAC. GitHub itself always posts compact JSON."
+    }
+  ],
+  "blocked_on_owner": "GitHub App creation is web-only and no anthonykewl20 browser session exists on this host (all local Chrome profiles are TonyGarces). The manifest form is staged at http://127.0.0.1:8081/ with the conversion catcher armed; one owner click completes registration.",
+  "delivery_journal": [
+    {
+      "delivery": "live-smee-compact-1",
+      "event": "pull_request",
+      "outcome": "E-GITHUB-API-REFUSED",
+      "head_sha": "1d8304ac215a43e5c21aec7df34f798d724a9638"
+    },
+    {
+      "delivery": "live-kill-recovery-1",
+      "event": "pull_request",
+      "outcome": "E-GITHUB-API-REFUSED",
+      "head_sha": "1d8304ac215a43e5c21aec7df34f798d724a9638"
+    },
+    {
+      "delivery": "live-absent-verdict-1",
+      "event": "pull_request",
+      "outcome": "E-GITHUB-API-REFUSED",
+      "head_sha": "bb20d1762e37502702e366fa2922cffb0c7b8017"
+    },
+    {
+      "delivery": "live-kill-recovery-1",
+      "event": "pull_request",
+      "outcome": "E-GITHUB-API-REFUSED",
+      "head_sha": "1d8304ac215a43e5c21aec7df34f798d724a9638"
+    },
+    {
+      "delivery": "live-absent-verdict-2-fixed",
+      "event": "pull_request",
+      "outcome": "E-GITHUB-API-REFUSED",
+      "head_sha": "bb20d1762e37502702e366fa2922cffb0c7b8017"
+    },
+    {
+      "delivery": "live-refresh-arm-1",
+      "event": "pull_request",
+      "outcome": "E-GITHUB-API-REFUSED",
+      "head_sha": "4e0968bd7777f28ab05fb1cffeac567fab307c5d"
+    },
+    {
+      "delivery": "live-kill-recovery-1",
+      "event": "pull_request",
+      "outcome": "E-GITHUB-API-REFUSED",
+      "head_sha": "1d8304ac215a43e5c21aec7df34f798d724a9638"
+    },
+    {
+      "head_sha": "4e0968bd7777f28ab05fb1cffeac567fab307c5d",
+      "outcome": "refresh-failed",
+      "detail": "ClientRefusal"
+    },
+    {
+      "head_sha": "bb20d1762e37502702e366fa2922cffb0c7b8017",
+      "outcome": "refresh-failed",
+      "detail": "ClientRefusal"
+    },
+    {
+      "delivery": "live-p4-compact",
+      "event": "pull_request",
+      "outcome": "not-allowlisted",
+      "repository": "someone/else"
+    },
+    {
+      "delivery": "live-p4-compact",
+      "outcome": "replayed"
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+...                                                                      [100%]
+- generated xml file: /tmp/ranex-subject-7cg698ev/tree/governance/suite_results.xml -
+3 passed in 0.01s
+RECORDED  claim=tests-executed  producer=worker  exit=0
+          subject=sha256:371a0e09721945b6fc8e5da64f1250e33198082d153d1729ece52f4cae90364a

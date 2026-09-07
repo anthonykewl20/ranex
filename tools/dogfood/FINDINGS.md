@@ -733,6 +733,44 @@ records with `.as_record()` (not dicts), and junitxml test IDs are synthesised
 as `classname.py::name` (`suite_results.py:129`). Recorded because it is the
 loop working as designed: assumptions die when they meet the parser.
 
+## Live App calibration — issue #88 (2026-09-07, pre-App)
+
+**Evidence directory:** `tools/dogfood/audits/2026-09-07-live-app/`.
+**Scope:** real network paths — the public smee.io HTTPS channel, real
+`api.github.com` publication attempts, real `git fetch` from GitHub, the
+real listener process — with pre-App credentials (App id 000000), so live
+publication is refused by GitHub by design. **No mock GitHub anywhere in
+this pass.** No live App identity existed on the host at observation time.
+
+- **F-035 (fixed, live-reproduced):** a head whose `action_required`
+  publication was refused (API outage at event time) was never written to
+  `awaiting/`, silently losing ADR-054's refresh. Reproduced live as
+  `live-absent-verdict-1` (journal `E-GITHUB-API-REFUSED`, no marker);
+  fixed by remembering the head before `publish_check`
+  (`src/ranex/github_app/receiver.py`), regression-tested red-first in
+  `tests/integration/test_github_awaiting_survives_refusal.py`, and
+  re-verified live (`live-absent-verdict-2-fixed`: marker present).
+- **F-036 (operational):** the receiver's state dir lives inside the
+  operator clone; once tracked, every `deliveries.jsonl` append dirties the
+  governed tree and `ranex run` refuses to record evidence. Keep the state
+  dir untracked and gitignored in any clone that runs the listener.
+- The full pipeline ran live to the publication boundary: HMAC-verified
+  delivery through smee → real head fetch → binding → verdict resolution →
+  real `api.github.com` POST → refused (fake App id) → journaled refusal.
+- Verified live: 401 unsigned/tampered, 404 wrong endpoint, 413 oversized,
+  foreign-repo ignore + same-id replay no-op, SIGKILL crash recovery with
+  startup spool drain, 16-connection bound with rejection and recovery,
+  and the ADR-054 refresh loop (verdict lands → periodic pass fires →
+  `refresh-failed` while the App is fake → marker kept for retry).
+- Probe harness note: smee-client re-serializes JSON bodies; only compact
+  (JSON.stringify-shaped) deliveries keep a valid HMAC. GitHub itself
+  always posts compact JSON.
+- **Still blocked on the owner:** GitHub App creation is web-only and no
+  anthonykewl20 browser session exists on this host. The manifest form is
+  staged at `http://127.0.0.1:8081/` with the conversion catcher armed;
+  one owner click completes registration, after which installation, the
+  App-pinned ruleset, the live PR journey and merge enforcement proceed.
+
 ## Production verification follow-up — issue #88 (2026-09-07)
 
 **Decision unchanged: NO-GO for a claim of verified production operation.**

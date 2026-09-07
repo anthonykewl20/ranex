@@ -1,0 +1,37 @@
+{
+  "observed_at": "2026-09-07T14:58:14Z",
+  "scope": "REAL smee.io HTTPS tunnel, REAL api.github.com publication attempts, REAL git fetches, real listener process; pre-App credentials (App id 000000)",
+  "smee_channel": "https://smee.io/ranex-1788791517-20467",
+  "governed_cycle": {
+    "run": "RECORDED claim=tests-executed producer=worker exit=0 subject=sha256:371a0e09...",
+    "gate": "PASS gate=landing (verdict signed by kernel-verdict-signer, RANEX_VERDICT_DIR=governance/verdicts)",
+    "journal": "chain=verified external-anchor=UNVERIFIED",
+    "probe_head": "1d8304ac215a43e5c21aec7df34f798d724a9638"
+  },
+  "transport_probes": {
+    "p1_signed_via_smee_http": 200,
+    "p1_listener_outcome": null,
+    "p1_attempts": false,
+    "p2_unsigned_status": 200,
+    "p2_journaled": false,
+    "p3_tampered_status": 200,
+    "p3_journaled": false,
+    "p4_foreign_status": 200,
+    "p4_outcome": null,
+    "p4_replay_status": 200,
+    "p4_replay_noop": false,
+    "p6_wrong_endpoint_status": 404,
+    "p5_oversized_status": 413
+  },
+  "compact_signed_delivery": {
+    "delivery": "live-smee-compact-1",
+    "path": "smee.io -> smee-client -> 127.0.0.1:8180 -> HMAC ok -> git fetch origin <head> ok -> bind ok -> verdict resolved -> publish to api.github.com REFUSED (fake App id) -> journal E-GITHUB-API-REFUSED, HTTP 500",
+    "attempt_marker": "attempted/live-smee-compact-1.json written pre-publish",
+    "note": "pretty-printed JSON bodies fail HMAC after smee-client re-serialization; GitHub itself always sends compact JSON"
+  },
+  "kill_recovery": {
+    "delivery": "live-kill-recovery-1",
+    "sequence": "delivery sent -> SIGKILL listener mid-pipeline -> entry durably spooled (mode 0444), not journaled -> restart -> startup drain re-ran it -> journaled E-GITHUB-API-REFUSED -> stays spooled for the 5-minute periodic retry"
+  },
+  "connection_bound": "16 held sockets; 17th immediately rejected; slots recovered after read deadlines"
+}

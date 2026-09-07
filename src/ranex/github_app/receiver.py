@@ -328,6 +328,11 @@ def _process_delivery(
             canonical_json_bytes({"head_sha": event.head_sha}),
             root=config.state_dir,
         )
+        # Remembered before the publication attempt, not after it: a refused
+        # or crashed `action_required` publication must not lose the head —
+        # the periodic refresh (ADR-054) is the recovery for exactly that.
+        if acceptance.code == ABSENT_CODE:
+            _remember_awaiting(config, event, delivery_id)
         moment = time.time()
         decision, _ = publish_check(
             config.client,
@@ -339,11 +344,9 @@ def _process_delivery(
             completed_at=moment,
             external_id=delivery_id,
         )
-        outcome = f"published:{decision.conclusion}"
-        if acceptance.code == ABSENT_CODE:
-            _remember_awaiting(config, event, delivery_id)
-        else:
+        if acceptance.code != ABSENT_CODE:
             _forget_awaiting(config, event.head_sha)
+        outcome = f"published:{decision.conclusion}"
     except (BindingRefusal, ClientRefusal) as refusal:
         _journal(
             config,

@@ -1,0 +1,6 @@
+{
+  "flipped_verdict_kept_signature": "E-GITHUB-VERDICT-REJECTED:bad-signature",
+  "unknown_signer": "E-GITHUB-VERDICT-REJECTED:unknown-signer",
+  "restored": "OK",
+  "files_are_mode_0444": true
+}
