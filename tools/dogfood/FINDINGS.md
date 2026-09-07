@@ -8,48 +8,6 @@ match the kernel silently.
 
 ## Open
 
-### F-030 — version tags did not create GitHub Release pages
-
-The owner observed main at v0.1.003 while the GitHub Releases sidebar still
-listed v0.1.0. The release API confirmed only v0.1.0 existed: the helper pushed
-Git refs and built packages but never created a Release object. The already
-tested v0.1.003 now has a Latest release page with the fresh-clone wheel, sdist
-and checksums; all uploaded digests matched retained local receipts. Its tag
-remains 82cacd162adf022644ce3316783491153ac0bcf6.
-
-Automatic publication now creates the Release with actual build assets,
-provenance, generated change notes and Latest selection, then verifies GitHub's
-asset digests. The public README is shortened and links detailed operating
-recipes; its release link follows the release page. End-to-end hosted
-publication of this change and fresh public quickstart validation are pending
-under issue #84. The manual v0.1.003 repair alone does not prove the new automation.
-
-### F-029 — dogfood releases required an unconfigured personal token
-
-The actual eligible workflow run 33976105531 failed at its owner-identity check
-because `RANEX_RELEASE_TOKEN` was absent. Later green runs skipped publication;
-they did not verify the release path. The owner requested the built-in token
-on 2026-09-06. The workflow now uses that repository-scoped job token with
-publication, issue-read and CI-dispatch permissions. The helper uses the GitHub
-Actions identity only in the upstream release workflow; local owner checks stay.
-
-GitHub suppresses ordinary push-triggered workflows for built-in-token pushes,
-so the helper explicitly dispatches complete CI on the immutable release tag.
-Frozen tests on the release commit, package builds, atomic fast-forward push,
-remote-tip checks and immutable tag guards are preserved. Real eligible hosted
-publication completed under issue #83: source CI 34021796323, release workflow
-34022370140 and dispatched tag CI 34022632883 all succeeded. The actual bot
-published v0.1.003 at 82cacd162adf022644ce3316783491153ac0bcf6; the publishing
-runner reported 1666 passed and 129 named skips. Those skipped capabilities
-remain UNVERIFIED. This repaired Git publication; missing Release pages are F-030.
-
-The first source CI (34021451447) reported 1 failed, 1665 passed, 129 skipped:
-the existing workflow contract allowlisted exactly push/PR/schedule and rejected
-the new dispatch trigger. The contract now requires the explicit dispatch input
-and coverage comparison as well; its job permissions, action pins, full-suite
-commands and failure gates remain unchanged. Original failure retained in
-`audits/2026-09-06-builtin-release/source-ci-attempt-1.log`.
-
 ### F-028 — the paused-fetch driver raced its own ignored probe
 
 The immutable v0.1.001 tag's hosted CI completed its instrumented regression,
@@ -62,12 +20,11 @@ Two real-PR repeats at 7e559bfbc0e4852665ec3611d4dcdb4ac94119f7 passed
 all 41 controls on Python 3.14.7, with two-CPU and one-CPU affinity. Both
 observed actual fetch admission, 503 backpressure, the unchanged fetch timeout
 and successful redelivery after recovery. Receipts: `receiver-f028-1/receipt.json`
-and `receiver-f028-2/receipt.json` in the remediation archive. Fresh hosted CI
-and release-commit validation remain pending. Original hosted failure:
-`audits/2026-09-05-remediation/ci-release-tag-failed.log`.
-
-
-
+and `receiver-f028-2/receipt.json` in the remediation archive. Original hosted
+failure: `audits/2026-09-05-remediation/ci-release-tag-failed.log`. Fresh
+hosted validation has since completed on every padded release: dispatched tag
+CI runs 34024985822 (v0.1.004), 34035352146 (v0.1.005) and 34041099936
+(v0.1.006) all passed, including the receiver journeys on the release commits.
 
 ### F-025 — a shared receiver stress pass did not complete every request
 
@@ -158,7 +115,10 @@ CAS races produced exactly ten winners and 70 named stale refusals. Receipt:
 `audits/2026-09-05-remediation/storage-100k-3147/receipt.json`. The existing
 journal regression also passed 22 checks on that runtime. Repeated appends
 measure storage contention, not independent code correctness observations.
-Fresh hosted CI and release-commit validation remain pending. SQLite documents
+Fresh hosted validation has since completed on the padded releases: dispatched
+tag CI runs 34024985822 (v0.1.004), 34035352146 (v0.1.005) and 34041099936
+(v0.1.006) all passed the frozen suites and the storage/journal journeys on
+the release commits. SQLite documents
 [write intent and lock upgrades](https://www.sqlite.org/lang_transaction.html)
 and [busy-handler limits](https://www.sqlite.org/c3ref/busy_handler.html).
 The exact scheduling cause of the old intermittent failure remains unverified.
@@ -315,6 +275,61 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   the e2e prereqs materialize the missing state in any checkout.
 
 ## Closed
+
+### F-030 — version tags did not create GitHub Release pages
+
+The owner observed main at v0.1.003 while the GitHub Releases sidebar still
+listed v0.1.0: the helper pushed Git refs and built packages but never created
+a Release object. Closed with receipts: the repaired automation published
+v0.1.004 (85037d1d9, issue #84 — wheel/sdist/SHA256SUMS uploaded, digests
+matched GitHub's asset hashes, fresh public clone quickstart and the external
+Six demo passed), then v0.1.005 (9b35392d4, 2026-09-06T13:11:47Z) and v0.1.006
+(fae7ee94, 2026-09-06T15:03:33Z) without manual repair — each with a Latest
+Release page, verified assets and an explicitly dispatched green tag CI
+(34024985822, 34035352146, 34041099936). The manual v0.1.003 page remains at
+its original tag 82cacd162adf022644ce3316783491153ac0bcf6.
+
+### F-029 — dogfood releases required an unconfigured personal token
+
+The eligible workflow run 33976105531 failed its owner-identity check because
+`RANEX_RELEASE_TOKEN` was absent; later green runs skipped publication. Closed
+by the owner-authorized built-in GITHUB_TOKEN workflow (2026-09-06): real
+eligible hosted publication completed under issue #83 (source CI 34021796323,
+release workflow 34022370140, dispatched tag CI 34022632883) and has repeated
+for v0.1.004, v0.1.005 and v0.1.006 without any personal secret. The workflow
+contract's first dispatch attempt (34021451447, 1 failed) is retained in
+`audits/2026-09-06-builtin-release/source-ci-attempt-1.log`; the contract now
+requires the explicit dispatch input and coverage comparison.
+
+### F-034 — the two_arm gold arm silently shipped the empty stub inside a worktree
+
+`build_governed_repo` applied the task's gold patch BEFORE `git init`. With
+`--out` inside any git worktree, `git apply` from the repository-less directory
+discovers the enclosing repository and — documented git behavior — silently
+ignores patched paths outside the current directory, exiting 0 with nothing
+applied. The "task base (+gold)" commit then carried the 3-line empty stub,
+every governed run exited 1, and the gold arm's gate FAILed on bare-proven
+6/6-green code: a harness-produced FALSE REJECTION at v0.1.005
+(`.local/campaign/twoarm-v005-semver/validation.json`; kernel verdict honest on
+its inputs). Prior studies ran with `--out` outside any worktree, where
+no-index apply works — the fault only appears in the inside-checkout layout.
+Closed by initializing the nested repository before any patch application.
+Post-fix, the identical inside-checkout invocation reports bare gold 6/6 vs
+empty 0/6, gold gate PASS (journal verified, 9.299s) and empty gate FAIL —
+VALIDATION PASS. Receipts: `audits/2026-09-06-harness-faults/` (issue #89).
+
+### F-033 — storage_stress crashed on the repository's own mixed journal
+
+`tools/dogfood/storage_stress.py` selected `evaluations limit 1` and fed it to
+`evaluation_for`; the governance journal's first row is a depset record, so the
+replay KeyErrored on the missing `verdict` field and the tool exited 1 on the
+most canonical "actual gate journal" there is — reproduced directly at
+9b35392d4 and again from the campaign soak driver. Closed by selecting the
+first row that actually carries a verdict and refusing honestly when a journal
+has none. The fixed tool ran the full governance-journal load on this host:
+4000 appends verified, relative-path verification PASS, and all four tamper
+controls (nonjson/truncated/empty/rewritten) still refuse with exit 1.
+Receipt: `audits/2026-09-06-harness-faults/` (issue #89).
 
 ### F-031 — the docs cap swept gitignored `.local` receipts and failed the frozen suite on the qualified host
 

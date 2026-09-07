@@ -1,0 +1,38 @@
+{
+  "agent_steps": 12,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_pagination.py",
+    "elapsed_s": 0.1,
+    "exit": 0,
+    "output_tail": "8 passed in 0.01s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.026333,
+  "date": "2026-09-07",
+  "duration_s": 80.637,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "d2803d3916d546290d4af29ac7401db7d0551740",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.3,
+    "gate_output": "PASS  gate=landing  subject=sha256:59dcfc0f94745fcb24d5a41554079e0ef0165168f604da266c48ad42ae6931f8",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-07.json/py-paginate-cursor-b1b2490c/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-paginate-cursor-b1b2490c",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": true,
+    "final_words": "ate-`ts` tie cases) across many page sizes: every record appears exactly once, in `(ts, id)` order, with no repeats, no gaps, and termination on the final page.",
+    "heuristic": true
+  },
+  "task": "py-paginate-cursor",
+  "tokens": 12929
+}

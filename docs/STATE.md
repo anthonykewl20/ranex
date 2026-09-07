@@ -1,9 +1,11 @@
 # State
 
-**Updated:** 2026-09-06
+**Updated:** 2026-09-07
 **Active slice:** none
 
-Integrated external-repository/Vitest onboarding (#86, PR #87) with v0.1.005.
+Version v0.1.006 follows dogfood fix e3b2ccfadcb94fcbfdfe2921dfeffe2f0fc0e96a.
+Issues: #89. Findings: F-033, F-034.
+Integrated external-repository/Vitest onboarding (#86, PR #87) with v0.1.006.
 Issue #88 production assessment: NO-GO for verified production operation.
 Assessment: tools/dogfood/FINDINGS.md (issue #88).
 Evidence: tools/dogfood/audits/2026-09-06-production/.

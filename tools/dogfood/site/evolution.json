@@ -684,6 +684,105 @@
       "scenarios": 43,
       "sha": "c2c744cec",
       "subject": "tools: dogfood artifacts - iteration 15"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 10,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "ba5647f71",
+      "subject": "tools: proof pile - 2026-09-06 (3 runs)"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 11,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "7cf9dba3f",
+      "subject": "fix: publish dogfood releases with the built-in GitHub token"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 11,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "ae9e3e3d6",
+      "subject": "fix: require explicit release dispatch in the CI workflow co"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "3deb74459",
+      "subject": "fix: publish verified GitHub Releases and simplify the publi"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 29,
+      "scenarios": 43,
+      "sha": "e99cecf52",
+      "subject": "fix: keep the frozen suite green on a qualified operator hos"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 31,
+      "scenarios": 43,
+      "sha": "e3b2ccfad",
+      "subject": "fix: dogfood harness no longer misfeeds the kernel from insi"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 12,
+      "pile": 31,
+      "scenarios": 43,
+      "sha": "c88ed0fb4",
+      "subject": "bench: v0.1.006 two-arm study \u2014 validation gates gold PASS /"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-06",
+      "open_findings": 10,
+      "pile": 31,
+      "scenarios": 43,
+      "sha": "a88582f84",
+      "subject": "docs: reconcile findings with release receipts; dogfood repo"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 31,
+      "scenarios": 43,
+      "sha": "8f12ac7a8",
+      "subject": "tools: dogfood artifacts \u2014 iteration 18"
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 32,
+      "scenarios": 43,
+      "sha": "57927238c",
+      "subject": "tools: proof pile \u2014 2026-09-07 (1 run) \u2014 py-textdiff in-run "
+    },
+    {
+      "complexity": 5184,
+      "date": "2026-09-07",
+      "open_findings": 10,
+      "pile": 32,
+      "scenarios": 43,
+      "sha": "d2803d391",
+      "subject": "tools: dogfood artifacts - iteration 19"
     }
   ]
 }

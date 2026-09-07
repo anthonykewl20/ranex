@@ -1,0 +1,38 @@
+{
+  "agent_steps": 54,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+    "elapsed_s": 0.4,
+    "exit": 1,
+    "output_tail": "9 failed in 0.29s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.52951,
+  "date": "2026-09-07",
+  "duration_s": 840.882,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "d2803d3916d546290d4af29ac7401db7d0551740",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.6,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_dim_divisor (failed), oss_tests.py::test_dim_rounding (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_low_class_floor (failed), oss_tests.py::test_remote_zone (failed), oss_tests.py::test_svc_order (failed), oss_tests.py::test_x_fuel_band (failed), oss_tests.py::test_zero_weight (failed)\n      subject=sha256:395f655f2746c7f5ce9ec14cb395634fd0b0885a3eba390d0fc5c433400a150d",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-07.json/legacy-freightcore-binary-parity-49970a65/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_x_fuel_band oss_tests.py::test_low_class_floor oss_tests.py::test_dim_divisor oss_tests.py::test_dim_rounding oss_tests.py::test_svc_order oss_tests.py::test_remote_zone oss_tests.py::test_zero_weight oss_tests.py::test_lenient_tokens oss_tests.py::test_full_corpus_parity",
+    "run_error": "",
+    "run_exit": 1
+  },
+  "run_id": "legacy-freightcore-binary-parity-49970a65",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Let me analyze the P and X surcharge with large values to pin the exact multiplier.",
+    "heuristic": true
+  },
+  "task": "legacy-freightcore-binary-parity",
+  "tokens": 266581
+}

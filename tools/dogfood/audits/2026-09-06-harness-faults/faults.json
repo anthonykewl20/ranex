@@ -1,0 +1,29 @@
+{
+  "schema": "ranex-harness-fault-receipt-v1",
+  "date": "2026-09-06",
+  "issue": 89,
+  "kernel_head": "9b35392d4236a790b974b6e0b56f4c9ac95b9b84",
+  "faults": [
+    {
+      "id": "F-034",
+      "tool": "tools/dogfood/oss_bench/two_arm.py",
+      "root_cause": "build_governed_repo applied the gold patch before `git init`; with --out inside any git worktree, git apply discovered the enclosing repository and silently ignored patched paths outside the current directory (exit 0, nothing applied)",
+      "observed": "gold arm committed the 3-line empty stub; every governed claim exited 1; gate FAIL on bare-proven 6/6 gold (harness false rejection)",
+      "fix": "git init before patch application; patch-failure assertion retained",
+      "evidence": {
+        "before": "twoarm-gold-false-fail-validation.json (gold gate_verdict=FAIL, journal_verified=true)",
+        "after": "twoarm-gold-fixed-validation.json (gold gate PASS 9.299s, empty gate FAIL 9.477s, bare 6/6 vs 0/6)"
+      }
+    },
+    {
+      "id": "F-033",
+      "tool": "tools/dogfood/storage_stress.py",
+      "root_cause": "`select record from evaluations limit 1` returned the governance journal's first row, a depset record; evaluation_for KeyErrored on the missing verdict field",
+      "observed": "storage_stress exits 1 with KeyError on governance/journal.sqlite3 (reproduced directly and from the campaign soak driver)",
+      "fix": "select the first row carrying a verdict; refuse honestly when a journal has no evaluation records",
+      "evidence": {
+        "after": "storage-stress-governance-journal-receipt.json (4000 appends verified, relative-path PASS, all four tamper controls still FAIL correctly)"
+      }
+    }
+  ]
+}

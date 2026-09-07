@@ -75,7 +75,14 @@ def main():
     records = []
     for source in args.journal:
         with closing(sqlite3.connect(f"{source.resolve().as_uri()}?mode=ro", uri=True)) as connection:
-            records.append(connection.execute('select record from evaluations limit 1').fetchone()[0])
+            # A real journal can carry other row kinds (the governance journal's
+            # first row is a depset record); replay an actual gate evaluation.
+            row = connection.execute(
+                'select record from evaluations where record like \'%"verdict"%\' limit 1'
+            ).fetchone()
+            if row is None:
+                parser.error(f'{source} carries no gate-evaluation records to replay')
+            records.append(row[0])
     receipt = dict(kernel=subprocess.check_output(['git', '-C', str(ROOT), 'rev-parse', 'HEAD'], text=True).strip(),
                    runtime=dict(python=sys.version, sqlite=sqlite3.sqlite_version,
                                 cpu_affinity=sorted(os.sched_getaffinity(0))),
