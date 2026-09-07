@@ -249,16 +249,20 @@ def test_the_listener_drains_its_spool_at_start_and_then_serves(tmp_path: Path) 
                 journal = (tmp_path / "state" / "deliveries.jsonl").read_text()
                 assert journal.count("published:success") < 4
                 try:
+                    # The drain's observable end state is receipts present AND
+                    # the spool released: a receipt is written inside the
+                    # pipeline while _unspool runs after it returns, so under
+                    # load the two lag each other by a real window.
                     _wait_for(lambda: all(
                         (tmp_path / "state" / "completed" / f"d-before-start-{i}.json").exists()
                         for i in range(3)
-                    ), seconds=30)
+                    ) and not any((tmp_path / "state" / "spool").glob("*.json")),
+                        seconds=30)
                 except AssertionError as error:
                     raise AssertionError(
                         (tmp_path / "state" / "deliveries.jsonl").read_text()
                         + str(sorted(p.name for p in (tmp_path / "state" / "spool").iterdir()))
                     ) from error
-                assert not any((tmp_path / "state" / "spool").glob("*.json"))
             finally:
                 servers[0].shutdown()
                 thread.join(10)
