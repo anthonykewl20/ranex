@@ -737,7 +737,7 @@ loop working as designed: assumptions die when they meet the parser.
 
 **Decision unchanged: NO-GO for a claim of verified production operation.**
 **Evidence directory:** `tools/dogfood/audits/2026-09-07-production/`.
-**Design note:** [ADR-053](../../docs/adr/ADR-053-receiver-durable-ack-and-reconciliation.md).
+**Design notes:** [ADR-053](../../docs/adr/ADR-053-receiver-durable-ack-and-reconciliation.md), [ADR-054](../../docs/adr/ADR-054-late-verdict-refresh.md).
 
 Four of the 2026-09-06 blockers were local product gaps, reproducible without
 credentials. They are repaired and re-probed with the same script against the
@@ -749,7 +749,7 @@ same fake API; the rest need the live App and stay UNVERIFIED or UNIMPLEMENTED.
 | Retry after publication | Attempt record + `external_id` on the check; a retry asks GitHub for its own run and republishes nothing | Injected completion-write failure, then retry: 200, **one** check (was two); journal `reconciled:success` |
 | App credential file permissions | `load_private_key` refuses group/other-readable or non-regular keys before parsing | Mode 0644 fixture key: `E-GITHUB-KEY-EXPOSED`, no JWT minted |
 | JUnit collection skips | A `classname=""` testcase whose only child is `skipped` with message `collection skipped` is retained under its module name, outcome `skipped`; any other unnamed skip is still refused | Unit-tested against the retained Leitir record shape; the Leitir full suite was not rerun |
-| Verdict arriving after event | Not implemented; documented as operator redelivery or `ranex github check publish` | Unchanged: fresh event publishes, same-delivery replay does not |
+| Verdict arriving after event | Implemented (ADR-054): a head answered `action_required` is remembered; the periodic pass re-reads the verdict store and publishes once a verdict exists, stamped `refresh:<head>` and reconciled if interrupted | Verdict copied after the event: `refresh_awaiting` publishes `success`, the head is forgotten; same-delivery replay still publishes nothing |
 
 Controls that passed on 2026-09-06 passed again: refusals 401/400/404/413,
 lock busy 503 → 200, conflicting replay 409, restart replay 200 with one
@@ -761,8 +761,8 @@ tests in the security and unit suites.
 Still UNVERIFIED (needs the live App, its credentials and a deployment):
 authentication, installation, HTTPS delivery, App-pinned merge refusal,
 deployment recovery, production load. Still UNIMPLEMENTED: automatic
-evaluation/refresh, merge-candidate evaluation, distributed shard
-aggregation. Full Leitir/Arxic governed acceptance remains unverified: the
+evaluation (the App still publishes only what a gate run produced),
+merge-candidate evaluation, distributed shard aggregation. Full Leitir/Arxic governed acceptance remains unverified: the
 runtime/input provisioning gap is unchanged by this follow-up.
 
 ## Production verification — issue #88 (2026-09-06)

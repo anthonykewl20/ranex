@@ -22,8 +22,8 @@ import re
 import socket
 import threading
 import time
-from collections.abc import Callable, Mapping
-from contextlib import suppress
+from collections.abc import Callable, Iterator, Mapping
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
@@ -33,7 +33,7 @@ from typing import Any
 from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
 from ranex.github_app import webhook
-from ranex.github_app.acceptance import resolve_acceptance
+from ranex.github_app.acceptance import ABSENT_CODE, resolve_acceptance
 from ranex.github_app.binding import (
     BindingRefusal,
     bind_pr_head,
@@ -56,6 +56,8 @@ _DELIVERY_ID_PATTERN = re.compile(r"^[A-Za-z0-9-]+$")
 _DELIVERY_JOURNAL = "deliveries.jsonl"
 _SPOOL_DIR = "spool"
 _ATTEMPTED_DIR = "attempted"
+_AWAITING_DIR = "awaiting"
+_HEAD_SHA_PATTERN = re.compile(r"^[0-9a-f]{40}$")
 
 
 @dataclass(frozen=True, slots=True)
@@ -208,8 +210,44 @@ def process_delivery(
     """
     if not _valid_delivery_id(delivery_id):
         return 400
+    with _pipeline(config, state) as held:
+        if not held:
+            return 503
+        _migrate_legacy_spool(config)
+        target = config.state_dir / "completed" / f"{delivery_id}.json"
+        fingerprint = canonical_sha256({"body": body.hex(), "event": event_name})
+        if target.exists():
+            stored = json.loads(target.read_bytes())
+            if not isinstance(stored, dict) or set(stored) != {"fingerprint"}:
+                raise ValueError("invalid completion receipt")
+            previous = stored["fingerprint"]
+            if previous is not None and (
+                not isinstance(previous, str)
+                or re.fullmatch(r"[0-9a-f]{64}", previous) is None
+            ):
+                raise ValueError("invalid completion fingerprint")
+            if previous is not None and previous != fingerprint:
+                _journal(config, {"delivery": delivery_id, "outcome": "delivery-conflict"})
+                return 409
+            _journal(config, {"delivery": delivery_id, "outcome": "replayed"})
+            return 200
+        status = _process_delivery(config, body, delivery_id, event_name)
+        if status == 200:
+            write_atomic(target, canonical_json_bytes({"fingerprint": fingerprint}),
+                         root=config.state_dir)
+        return status
+
+
+@contextmanager
+def _pipeline(config: ReceiverConfig, state: _ReceiverState) -> Iterator[bool]:
+    """Hold the one delivery pipeline, in-process and across processes.
+
+    Yields False without waiting when either lock is taken: the caller
+    answers 503 (or, on a periodic pass, tries again next time).
+    """
     if not state.lock.acquire(blocking=False):
-        return 503
+        yield False
+        return
     try:
         config.state_dir.mkdir(parents=True, exist_ok=True)
         # Also serialize distinct receiver processes sharing a state directory.
@@ -217,30 +255,9 @@ def process_delivery(
             try:
                 fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
             except BlockingIOError:
-                return 503
-            _migrate_legacy_spool(config)
-            target = config.state_dir / "completed" / f"{delivery_id}.json"
-            fingerprint = canonical_sha256({"body": body.hex(), "event": event_name})
-            if target.exists():
-                stored = json.loads(target.read_bytes())
-                if not isinstance(stored, dict) or set(stored) != {"fingerprint"}:
-                    raise ValueError("invalid completion receipt")
-                previous = stored["fingerprint"]
-                if previous is not None and (
-                    not isinstance(previous, str)
-                    or re.fullmatch(r"[0-9a-f]{64}", previous) is None
-                ):
-                    raise ValueError("invalid completion fingerprint")
-                if previous is not None and previous != fingerprint:
-                    _journal(config, {"delivery": delivery_id, "outcome": "delivery-conflict"})
-                    return 409
-                _journal(config, {"delivery": delivery_id, "outcome": "replayed"})
-                return 200
-            status = _process_delivery(config, body, delivery_id, event_name)
-            if status == 200:
-                write_atomic(target, canonical_json_bytes({"fingerprint": fingerprint}),
-                             root=config.state_dir)
-            return status
+                yield False
+                return
+            yield True
     finally:
         state.lock.release()
 
@@ -323,6 +340,10 @@ def _process_delivery(
             external_id=delivery_id,
         )
         outcome = f"published:{decision.conclusion}"
+        if acceptance.code == ABSENT_CODE:
+            _remember_awaiting(config, event, delivery_id)
+        else:
+            _forget_awaiting(config, event.head_sha)
     except (BindingRefusal, ClientRefusal) as refusal:
         _journal(
             config,
@@ -372,6 +393,111 @@ def _reconcile_attempt(
         if run.get("external_id") == delivery_id and isinstance(run.get("conclusion"), str):
             return run["conclusion"]
     return None
+
+
+def _remember_awaiting(
+    config: ReceiverConfig, event: webhook.PullRequestEvent, delivery_id: str,
+) -> None:
+    """The head has no verdict yet; the periodic pass will look again."""
+    write_atomic(
+        config.state_dir / _AWAITING_DIR / f"{event.head_sha}.json",
+        canonical_json_bytes({
+            "delivery": delivery_id,
+            "installation_id": event.installation_id,
+            "repository": event.repository,
+        }),
+        root=config.state_dir,
+    )
+
+
+def _forget_awaiting(config: ReceiverConfig, head_sha: str) -> None:
+    with suppress(FileNotFoundError):
+        (config.state_dir / _AWAITING_DIR / f"{head_sha}.json").unlink()
+
+
+def _read_awaiting(path: Path) -> tuple[str, int, str]:
+    record = json.loads(path.read_bytes())
+    if (
+        not isinstance(record, dict)
+        or set(record) != {"delivery", "installation_id", "repository"}
+        or not isinstance(record["delivery"], str)
+        or not isinstance(record["installation_id"], int)
+        or not isinstance(record["repository"], str)
+    ):
+        raise ValueError("invalid awaiting record")
+    return record["delivery"], record["installation_id"], record["repository"]
+
+
+def refresh_awaiting(config: ReceiverConfig, state: _ReceiverState) -> dict[str, str | int]:
+    """Publish for heads answered `action_required` whose verdict has since landed.
+
+    Runs on the listener's periodic pass under the same pipeline lock a
+    delivery holds. Per head: the conclusion published, 503 when the pipeline
+    was busy, 500 when the record or publication failed. A head whose verdict
+    is still absent is left waiting and does not appear. The refresh check is
+    stamped `refresh:<head>` so an interrupted pass reconciles instead of
+    publishing twice; nothing here evaluates anything.
+    """
+    statuses: dict[str, str | int] = {}
+    awaiting = config.state_dir / _AWAITING_DIR
+    if not awaiting.is_dir():
+        return statuses
+    for path in sorted(awaiting.glob("*.json")):
+        head_sha = path.stem
+        try:
+            delivery_id, installation_id, repository = _read_awaiting(path)
+            if not _HEAD_SHA_PATTERN.fullmatch(head_sha):
+                raise ValueError("invalid awaiting head")
+        except (OSError, ValueError):
+            _journal(config, {"head_sha": head_sha, "outcome": "awaiting-unreadable"})
+            statuses[head_sha] = 500
+            continue
+        with _pipeline(config, state) as held:
+            if not held:
+                statuses[head_sha] = 503
+                continue
+            try:
+                conclusion = _refresh_head(config, head_sha, delivery_id, installation_id, repository)
+            except (BindingRefusal, ClientRefusal, OSError, ValueError) as error:
+                _journal(config, {"head_sha": head_sha, "outcome": "refresh-failed",
+                                  "detail": type(error).__name__})
+                statuses[head_sha] = 500
+                continue
+        if conclusion is not None:
+            statuses[head_sha] = conclusion
+    return statuses
+
+
+def _refresh_head(
+    config: ReceiverConfig, head_sha: str, delivery_id: str, installation_id: int, repository: str,
+) -> str | None:
+    external_id = f"refresh:{head_sha}"
+    for run in config.client.list_check_runs(
+        installation_id, repository, head_sha, check_name=CHECK_NAME,
+    ):
+        if run.get("external_id") == external_id and isinstance(run.get("conclusion"), str):
+            # A previous pass published and was interrupted before forgetting.
+            _forget_awaiting(config, head_sha)
+            _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
+                              "outcome": f"reconciled-refresh:{run['conclusion']}"})
+            return run["conclusion"]
+    binding = bind_pr_head(config.repo_root, head_sha)
+    acceptance = resolve_acceptance(
+        config.verdicts_dir, binding, config.keyring, gate_id=config.gate_id,
+        catalog_digest=config.catalog_digest, approver_id=config.approver_id,
+    )
+    if acceptance.code == ABSENT_CODE:
+        return None
+    revalidate_pr_head(config.repo_root, binding)
+    moment = time.time()
+    decision, _ = publish_check(
+        config.client, installation_id, repository, binding, acceptance,
+        started_at=moment, completed_at=moment, external_id=external_id,
+    )
+    _forget_awaiting(config, head_sha)
+    _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
+                      "outcome": f"refreshed:{decision.conclusion}"})
+    return decision.conclusion
 
 
 def build_handler(config: ReceiverConfig, state: _ReceiverState):
@@ -534,6 +660,8 @@ def serve(
         while not stop.is_set():
             with suppress(OSError, ValueError):
                 drain_spool(config, state)
+            with suppress(OSError, ValueError):
+                refresh_awaiting(config, state)
             stop.wait(SPOOL_RETRY_SECONDS)
 
     drainer = threading.Thread(target=redrain, daemon=True)

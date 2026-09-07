@@ -92,12 +92,17 @@ def late_verdict(root: Path) -> dict[str, object]:
             (env.config.verdicts_dir / path.name).write_bytes(path.read_bytes())
         replay = deliver("late-verdict")
         after_replay = [r["body"]["conclusion"] for r in env.fake.check_requests]
+        refreshed = receiver.refresh_awaiting(env.config, env.state)
+        after_refresh = [r["body"]["conclusion"] for r in env.fake.check_requests]
         fresh = deliver("late-verdict-fresh-event")
         return {"initial_status": first, "initial_conclusions": before,
                 "same_delivery_status": replay, "after_same_delivery": after_replay,
+                "periodic_refresh": refreshed, "after_refresh": after_refresh,
                 "fresh_event_status": fresh,
                 "after_fresh_event": [r["body"]["conclusion"] for r in env.fake.check_requests],
-                "automatic_refresh": False}
+                "automatic_refresh": after_refresh == ["action_required", "success"]
+                and (env.config.state_dir / "awaiting").exists()
+                and not any((env.config.state_dir / "awaiting").iterdir())}
 
 
 def completion_failure(root: Path) -> dict[str, object]:

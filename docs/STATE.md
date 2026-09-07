@@ -12,6 +12,8 @@ Evidence: tools/dogfood/audits/2026-09-0{6,7}-production/.
 2026-09-07 (ADR-053): receiver spools before work and answers ≤8 s (202 past
 it), reconciles retries via attempt record + check external_id, refuses
 group/other-readable App keys; JUnit collection skips keep their module ID.
+ADR-054: heads answered action_required are refreshed from the same periodic
+pass once their verdict lands (stamped refresh:<head>, reconciled).
 
 Ordinary full baselines: Leitir 3,742 passed / 159 skipped; Arxic 1,974
 passed across 234 files. Arxic lint and both typecheck commands passed.
@@ -24,13 +26,12 @@ runtime/input provisioning and full governed acceptance remain UNVERIFIED.
 67 App-surface tests passed locally. Real HTTP/state probes verified refusal,
 replay conflict, restart dedupe, lock recovery and bounded connections.
 Delayed acknowledgement, duplicate publication after completion-write failure
-and mode-0644 key acceptance are repaired and re-probed; late-verdict refresh
-remains UNIMPLEMENTED (operator redelivery is the documented contract).
+mode-0644 key acceptance and late-verdict refresh are repaired and re-probed.
 CI's external-CLI subprocess coverage gap is repaired; the 100% changed-line
 threshold remains intact. Final-commit regression evidence is recorded in #88.
 
 Both pilot repositories lack required Ranex checks. Live App authentication,
 installation, HTTPS delivery, App-pinned merge refusal, deployment recovery
 and production load are UNVERIFIED; credentials and browser access are absent.
-Automatic evaluation/refresh, merge-candidate and shard aggregation behavior
+Automatic evaluation, merge-candidate and shard aggregation behavior
 remain unimplemented. No production-readiness sign-off has been issued.

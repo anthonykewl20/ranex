@@ -245,9 +245,13 @@ about the exact bytes a merge would land.
    (mode 0600 or tighter); a key group- or world-readable is refused as
    `E-GITHUB-KEY-EXPOSED` before it is parsed. Mode bits are what the loader
    can see; parent-directory and ACL exposure remain the operator's audit.
-   A verdict that lands after the event has been answered is not noticed:
-   there is no automatic refresh. Redeliver the event, or publish once with
-   `ranex github check publish`.
+   A head answered `action_required` (no verdict yet) is remembered in
+   `awaiting/`; the same periodic pass re-reads the verdict store and, once
+   a verdict for that head exists, publishes it (stamped `refresh:<head>`,
+   reconciled if the pass is interrupted) and forgets the head. A fresh
+   event for the head does the same immediately. A verdict that never
+   lands leaves the head waiting; `ranex github check publish` remains the
+   one-shot operator path.
    Credentials, trusted keys and the allowlist are loaded at startup; restart
    the listener after changing them.
 

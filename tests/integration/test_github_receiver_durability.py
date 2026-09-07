@@ -296,3 +296,33 @@ def test_a_drain_that_hits_damaged_state_keeps_the_entry(tmp_path: Path) -> None
         assert drain_spool(env.config, env.state) == {"d-keep": 200}
         assert len(env.fake.check_requests) == 1
         assert "reconciled:success" in (tmp_path / "state" / "deliveries.jsonl").read_text()
+
+
+def test_completion_receipts_guard_replays_conflicts_and_damage(tmp_path: Path) -> None:
+    import fcntl
+
+    with receiver_environment(tmp_path) as env:
+        body = event_body(env.head)
+        assert process_delivery(env.config, env.state, body, "d-1", "pull_request") == 200
+        assert process_delivery(env.config, env.state, body + b" ", "d-1", "pull_request") == 409
+        assert len(env.fake.check_requests) == 1
+
+        # The in-process pipeline lock and the cross-process file lock each
+        # answer 503 without touching the receipt store.
+        assert env.state.lock.acquire(blocking=False)
+        try:
+            assert process_delivery(env.config, env.state, body, "d-2", "pull_request") == 503
+        finally:
+            env.state.lock.release()
+        with (tmp_path / "state" / "receiver.lock").open("a") as held:
+            fcntl.flock(held, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            assert process_delivery(env.config, env.state, body, "d-2", "pull_request") == 503
+        assert len(env.fake.check_requests) == 1
+
+        completed = tmp_path / "state" / "completed"
+        for name, damage in (("d-shape", b"[]"), ("d-digest", b'{"fingerprint": "nope"}')):
+            path = completed / f"{name}.json"
+            path.write_bytes(damage)
+            with pytest.raises(ValueError):
+                process_delivery(env.config, env.state, body, name, "pull_request")
+        assert len(env.fake.check_requests) == 1
