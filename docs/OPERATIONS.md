@@ -197,20 +197,35 @@ about the exact bytes a merge would land.
 
 ### Creating the App (one time)
 
-1. GitHub → Settings → Developer settings → GitHub Apps → New GitHub App.
-   Name it (e.g. `ranex`), set a webhook URL (HTTPS; for local development
-   a smee.io tunnel forwards to the receiver's localhost bind), content
-   type `application/json`, and generate a webhook secret.
-2. Permissions: **Checks: Read & write**, **Contents: Read-only**,
-   **Pull requests: Read-only**. Subscribe to events: **Pull request**.
-   Generate and download the App private key (PEM); keep it outside the
-   repository, like every Ranex key.
+1. Terminate TLS in front of the listener (reverse proxy, or a smee.io
+   tunnel in development). The webhook URL must be `https://`.
+2. Create the App from the frozen manifest. Permissions: **Checks: Read & write**,
+   **Contents: Read-only**, **Pull requests: Read-only**. Subscribe to events:
+   **Pull request**. The PEM and webhook secret are exclusive-created 0600
+   outside the repository and never printed:
+
+   ```console
+   uv run --frozen ranex github register \
+     --credentials-dir /var/lib/ranex/github-app \
+     --webhook-url https://receiver.example/webhook
+   ```
+
+   Open the printed localhost URL, submit the form, and GitHub redirects
+   back with a one-hour `code`. Rerun with `--code` if the catcher is not
+   used. Then export `RANEX_GITHUB_APP_ID`, `RANEX_GITHUB_APP_PRIVATE_KEY`
+   (the `app.pem` path) and `RANEX_GITHUB_WEBHOOK_SECRET` from that
+   directory. A GitHub Enterprise host can be named with
+   `RANEX_GITHUB_API_ROOT` / `RANEX_GITHUB_WEB_ROOT`.
 3. Install the App on the repository. Note the installation ID (visible in
-   the installation's URL) and the App ID (the App settings page).
-4. On the operator host, export `RANEX_GITHUB_APP_ID`,
-   `RANEX_GITHUB_APP_PRIVATE_KEY` (path to the PEM, outside the repo) and
-   `RANEX_GITHUB_WEBHOOK_SECRET`. A GitHub Enterprise host can be named
-   with `RANEX_GITHUB_API_ROOT`.
+   the installation's URL). `ranex github status` authenticates as the App
+   and lists installations.
+4. Pin the check so only this App's `ranex/acceptance` satisfies the
+   default-branch ruleset (`RANEX_GITHUB_OPERATOR_TOKEN` or `GITHUB_TOKEN`):
+
+   ```console
+   uv run --frozen ranex github ruleset --repo owner/name --branch main
+   uv run --frozen ranex github status --repo owner/name
+   ```
 5. Run the receiver beside a clone of the repository:
 
    ```console
@@ -323,6 +338,9 @@ keygen
 github bind
 github check publish
 github listen
+github register
+github status
+github ruleset
 host launcher-build | launcher-install | host-probe | qualify | launcher-identity | strict-local
 task dispatch | judge | merge | delegate | fanout
 task batch qualify | verify

@@ -760,10 +760,14 @@ tests in the security and unit suites.
 
 Still UNVERIFIED (needs the live App, its credentials and a deployment):
 authentication, installation, HTTPS delivery, App-pinned merge refusal,
-deployment recovery, production load. Still UNIMPLEMENTED: automatic
-evaluation (the App still publishes only what a gate run produced),
-merge-candidate evaluation, distributed shard aggregation. Full Leitir/Arxic governed acceptance remains unverified: the
-runtime/input provisioning gap is unchanged by this follow-up.
+deployment recovery, production load. SLICE-085 / ADR-055 made App
+creation, 0600 credential storage and the App-pinned ruleset operable
+from `ranex github register|status|ruleset`; those commands are tested
+against the fake API only. Still UNIMPLEMENTED: automatic evaluation
+(the App still publishes only what a gate run produced), merge-candidate
+evaluation, distributed shard aggregation. Full Leitir/Arxic governed
+acceptance remains unverified: the runtime/input provisioning gap is
+unchanged by this follow-up.
 
 ## Production verification — issue #88 (2026-09-06)
 

@@ -28,6 +28,10 @@ from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 INSTALLATION_TOKEN = "ghs_integration-fake"
 APP_ID = "123456"
+APP_ID_INT = 123456
+CONVERSION_PEM = ""
+WEBHOOK_SECRET_CONVERTED = "converted-webhook-secret"
+OPERATOR_TOKEN = "gho_operator-fake"
 
 
 def write_app_key(directory: Path) -> tuple[Path, bytes]:
@@ -79,6 +83,16 @@ class FakeGitHub:
         self.token_requests = 0
         self.check_requests: list[dict[str, object]] = []
         self.fail_check_runs_with: int | None = None
+        self.conversion_code = "manifest-code-1"
+        self.conversion_requests: list[dict[str, object]] = []
+        self.fail_conversion_with: int | None = None
+        self.app_requests: list[dict[str, object]] = []
+        self.installation_list = [
+            {"id": 99, "account": {"login": "owner"}, "repository_selection": "selected"}
+        ]
+        self.rulesets: list[dict[str, object]] = []
+        self.ruleset_requests: list[dict[str, object]] = []
+        self.fail_rulesets_with: int | None = None
         outer = self
 
         class _Handler(BaseHTTPRequestHandler):
@@ -97,6 +111,29 @@ class FakeGitHub:
                         "body": json.loads(body) if body else None,
                     }
                 )
+                if "/app-manifests/" in self.path and self.path.endswith("/conversions"):
+                    outer.conversion_requests.append(outer.requests[-1])
+                    if outer.fail_conversion_with is not None:
+                        self._json({"message": "faked conversion failure"},
+                                   status=outer.fail_conversion_with)
+                        return
+                    code = self.path.rsplit("/", 2)[-2]
+                    if code != outer.conversion_code:
+                        self._json({"message": "not found"}, status=404)
+                        return
+                    self._json(
+                        {
+                            "id": APP_ID_INT,
+                            "slug": "ranex",
+                            "html_url": "https://github.com/apps/ranex",
+                            "pem": outer.private_pem,
+                            "webhook_secret": WEBHOOK_SECRET_CONVERTED,
+                            "client_id": "Iv1.fake",
+                            "client_secret": "fake-client-secret",
+                        },
+                        status=201,
+                    )
+                    return
                 if self.path.endswith("/access_tokens"):
                     outer.token_requests += 1
                     outer.jwt_claims.append(
@@ -127,6 +164,17 @@ class FakeGitHub:
                     self._json({"id": 424242, "html_url": "https://example.invalid"},
                                status=201)
                     return
+                if self.path.endswith("/rulesets"):
+                    outer.ruleset_requests.append(outer.requests[-1])
+                    if outer.fail_rulesets_with is not None:
+                        self._json({"message": "faked ruleset failure"},
+                                   status=outer.fail_rulesets_with)
+                        return
+                    created = dict(outer.requests[-1]["body"] or {})
+                    created.setdefault("id", 7)
+                    outer.rulesets.append(created)
+                    self._json(created, status=201)
+                    return
                 self._json({"message": "not found"}, status=404)
 
             def do_GET(self) -> None:  # noqa: N802 — stdlib naming
@@ -134,6 +182,45 @@ class FakeGitHub:
                 outer.requests.append({"path": self.path,
                                        "authorization": self.headers.get("Authorization", ""),
                                        "body": None})
+                if path == "/app":
+                    outer.app_requests.append(outer.requests[-1])
+                    verify_jwt(
+                        self.headers.get("Authorization", "").removeprefix("Bearer "),
+                        outer.public_pem,
+                    )
+                    self._json(
+                        {
+                            "id": APP_ID_INT,
+                            "slug": "ranex",
+                            "html_url": "https://github.com/apps/ranex",
+                        }
+                    )
+                    return
+                if path == "/app/installations":
+                    verify_jwt(
+                        self.headers.get("Authorization", "").removeprefix("Bearer "),
+                        outer.public_pem,
+                    )
+                    self._json_list(outer.installation_list)
+                    return
+                detail = re.fullmatch(r"/repos/[^/]+/[^/]+/rulesets/([0-9]+)", path)
+                if detail is not None:
+                    outer.ruleset_requests.append(outer.requests[-1])
+                    wanted = int(detail.group(1))
+                    for ruleset in outer.rulesets:
+                        if ruleset.get("id") == wanted:
+                            self._json(ruleset)
+                            return
+                    self._json({"message": "not found"}, status=404)
+                    return
+                if re.fullmatch(r"/repos/[^/]+/[^/]+/rulesets", path):
+                    outer.ruleset_requests.append(outer.requests[-1])
+                    if outer.fail_rulesets_with is not None:
+                        self._json({"message": "faked ruleset failure"},
+                                   status=outer.fail_rulesets_with)
+                        return
+                    self._json_list(outer.rulesets)
+                    return
                 match = re.fullmatch(r"/repos/[^/]+/[^/]+/commits/([0-9a-f]{40})/check-runs", path)
                 if match is None:
                     self._json({"message": "not found"}, status=404)
@@ -159,9 +246,23 @@ class FakeGitHub:
                 self.end_headers()
                 self.wfile.write(raw)
 
+            def _json_list(self, payload: list[object], status: int = 200) -> None:
+                raw = json.dumps(payload).encode("utf-8")
+                self.send_response(status)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(raw)))
+                self.end_headers()
+                self.wfile.write(raw)
+
             def log_message(self, format: str, *args: object) -> None:
                 return
 
+        conversion_key = rsa.generate_private_key(public_exponent=65537, key_size=2048)
+        self.private_pem = conversion_key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        ).decode("ascii")
         self._server = ThreadingHTTPServer(("127.0.0.1", 0), _Handler)
         self.thread = threading.Thread(
             target=self._server.serve_forever, daemon=True

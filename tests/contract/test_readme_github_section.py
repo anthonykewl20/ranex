@@ -49,6 +49,9 @@ def test_the_listener_recipe_is_the_shipped_command() -> None:
     assert "ranex github listen" in text
     assert "smee.io" in text
     assert "X-Hub-Signature-256" in text
+    assert "ranex github register" in text
+    assert "ranex github status" in text
+    assert "ranex github ruleset" in text
 
 
 def test_the_publisher_never_evaluates_is_stated() -> None:

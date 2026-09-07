@@ -37,6 +37,8 @@ API_ROOT_VARIABLE = "RANEX_GITHUB_API_ROOT"
 APP_ID_VARIABLE = "RANEX_GITHUB_APP_ID"
 APP_KEY_VARIABLE = "RANEX_GITHUB_APP_PRIVATE_KEY"
 WEBHOOK_SECRET_VARIABLE = "RANEX_GITHUB_WEBHOOK_SECRET"
+OPERATOR_TOKEN_VARIABLE = "RANEX_GITHUB_OPERATOR_TOKEN"
+OPERATOR_TOKEN_FALLBACK = "GITHUB_TOKEN"
 
 # GitHub rejects an `exp` more than ten minutes ahead; the documented examples
 # use iat = now − 60 (clock drift) and exp = now + 600.
@@ -53,6 +55,146 @@ class ClientRefusal(ValueError):
         super().__init__(f"{code} {detail}")
         self.code = code
         self.detail = detail
+
+
+def split_repository(repository: str) -> tuple[str, str]:
+    """`owner/name`, or a named refusal."""
+
+    owner, separator, name = repository.partition("/")
+    if not owner or not separator or not name or "/" in name:
+        raise ClientRefusal("E-GITHUB-BAD-REPO", f"expected owner/name: {repository!r}")
+    return owner, name
+
+
+def _api_headers(*, token: str | None = None, body: bool = False) -> dict[str, str]:
+    headers = {"Accept": MEDIA_TYPE, "X-GitHub-Api-Version": API_VERSION}
+    if token is not None:
+        headers["Authorization"] = f"Bearer {token}"
+    if body:
+        headers["Content-Type"] = MEDIA_TYPE
+    return headers
+
+
+def _api_request(
+    method: str,
+    url: str,
+    *,
+    token: str | None = None,
+    body: Any = None,
+    timeout_seconds: float = 30.0,
+) -> Any:
+    payload = None if body is None else json.dumps(body).encode("utf-8")
+    request = urllib.request.Request(
+        url,
+        data=payload,
+        method=method,
+        headers=_api_headers(token=token, body=payload is not None),
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            raw = response.read()
+    except urllib.error.HTTPError as exc:
+        detail = exc.read()[:200].decode("utf-8", "replace").strip()
+        raise ClientRefusal(
+            "E-GITHUB-API-REFUSED", f"{method} {url}: HTTP {exc.code} {detail}"
+        ) from exc
+    except (urllib.error.URLError, OSError) as exc:
+        raise ClientRefusal("E-GITHUB-API-REFUSED", f"{method} {url}: {exc}") from exc
+    return json.loads(raw) if raw else {}
+
+
+def convert_app_manifest(code: str, *, api_root: str = API_ROOT) -> dict[str, Any]:
+    """Trade GitHub's one-hour manifest `code` for App id, PEM and webhook secret.
+
+    Anonymous: GitHub already proved the operator via the form POST. The
+    response carries secrets; callers store them, they never print them.
+    """
+
+    response = _api_request(
+        "POST", f"{api_root.rstrip('/')}/app-manifests/{code}/conversions"
+    )
+    if not isinstance(response, dict):
+        raise ClientRefusal("E-GITHUB-API-REFUSED", "conversion response was not an object")
+    return response
+
+
+def operator_token_from_environment() -> str:
+    """The user token that authors a ruleset. The App JWT cannot."""
+
+    token = os.environ.get(OPERATOR_TOKEN_VARIABLE) or os.environ.get(OPERATOR_TOKEN_FALLBACK)
+    if not token:
+        raise ClientRefusal(
+            "E-GITHUB-OPERATOR-TOKEN-ABSENT",
+            f"unset: {OPERATOR_TOKEN_VARIABLE} (or {OPERATOR_TOKEN_FALLBACK})",
+        )
+    return token
+
+
+def list_repository_rulesets(
+    token: str, repository: str, *, api_root: str = API_ROOT
+) -> list[dict[str, Any]]:
+    owner, name = split_repository(repository)
+    response = _api_request(
+        "GET",
+        f"{api_root.rstrip('/')}/repos/{owner}/{name}/rulesets",
+        token=token,
+    )
+    if not isinstance(response, list) or not all(isinstance(item, dict) for item in response):
+        raise ClientRefusal("E-GITHUB-API-REFUSED", "rulesets listing was not a list of objects")
+    return response
+
+
+def create_repository_ruleset(
+    token: str,
+    repository: str,
+    body: dict[str, Any],
+    *,
+    api_root: str = API_ROOT,
+) -> dict[str, Any]:
+    owner, name = split_repository(repository)
+    response = _api_request(
+        "POST",
+        f"{api_root.rstrip('/')}/repos/{owner}/{name}/rulesets",
+        token=token,
+        body=body,
+    )
+    if not isinstance(response, dict):
+        raise ClientRefusal("E-GITHUB-API-REFUSED", "ruleset create response was not an object")
+    return response
+
+
+def get_repository_ruleset(
+    token: str, repository: str, ruleset_id: int, *, api_root: str = API_ROOT
+) -> dict[str, Any]:
+    owner, name = split_repository(repository)
+    response = _api_request(
+        "GET",
+        f"{api_root.rstrip('/')}/repos/{owner}/{name}/rulesets/{ruleset_id}",
+        token=token,
+    )
+    if not isinstance(response, dict):
+        raise ClientRefusal("E-GITHUB-API-REFUSED", "ruleset get response was not an object")
+    return response
+
+
+def complete_repository_rulesets(
+    token: str, repository: str, summaries: list[dict[str, Any]], *, api_root: str = API_ROOT
+) -> list[dict[str, Any]]:
+    """List payloads often omit `rules`; fetch each id so the pin can be read."""
+
+    completed: list[dict[str, Any]] = []
+    for summary in summaries:
+        if isinstance(summary.get("rules"), list):
+            completed.append(summary)
+            continue
+        ruleset_id = summary.get("id")
+        if type(ruleset_id) is not int:
+            completed.append(summary)
+            continue
+        completed.append(
+            get_repository_ruleset(token, repository, ruleset_id, api_root=api_root)
+        )
+    return completed
 
 
 def _b64url(raw: bytes) -> str:
@@ -178,34 +320,13 @@ class GitHubClient:
         return self._credentials
 
     def _request(self, method: str, path: str, *, token: str, body: Any = None):
-        payload = None if body is None else json.dumps(body).encode("utf-8")
-        headers = {
-            "Authorization": f"Bearer {token}",
-            "Accept": MEDIA_TYPE,
-            "X-GitHub-Api-Version": API_VERSION,
-        }
-        if payload is not None:
-            headers["Content-Type"] = MEDIA_TYPE
-        request = urllib.request.Request(
-            f"{self._api_root}{path}", data=payload, method=method, headers=headers,
+        return _api_request(
+            method,
+            f"{self._api_root}{path}",
+            token=token,
+            body=body,
+            timeout_seconds=self._timeout,
         )
-        try:
-            with urllib.request.urlopen(request, timeout=self._timeout) as response:
-                raw = response.read()
-        except urllib.error.HTTPError as exc:
-            # The body may name the reason (bad credentials, missing
-            # permission); surface its first bytes, never a secret — the
-            # request's own headers are not echoed into the refusal.
-            detail = exc.read()[:200].decode("utf-8", "replace").strip()
-            raise ClientRefusal(
-                "E-GITHUB-API-REFUSED",
-                f"{method} {path}: HTTP {exc.code} {detail}",
-            ) from exc
-        except (urllib.error.URLError, OSError) as exc:
-            raise ClientRefusal(
-                "E-GITHUB-API-REFUSED", f"{method} {path}: {exc}"
-            ) from exc
-        return json.loads(raw) if raw else {}
 
     def installation_token(self, installation_id: int) -> str:
         cached = self._tokens.get(installation_id)
@@ -232,11 +353,7 @@ class GitHubClient:
     def create_check_run(
         self, installation_id: int, repository: str, body: dict[str, Any]
     ) -> dict[str, Any]:
-        owner, separator, name = repository.partition("/")
-        if not owner or not separator or not name:
-            raise ClientRefusal(
-                "E-GITHUB-BAD-REPO", f"expected owner/name: {repository!r}"
-            )
+        owner, name = split_repository(repository)
         return self._request(
             "POST",
             f"/repos/{owner}/{name}/check-runs",
@@ -253,11 +370,7 @@ class GitHubClient:
         `external_id` it stamped at publication. Nothing here decides.
         """
 
-        owner, separator, name = repository.partition("/")
-        if not owner or not separator or not name:
-            raise ClientRefusal(
-                "E-GITHUB-BAD-REPO", f"expected owner/name: {repository!r}"
-            )
+        owner, name = split_repository(repository)
         query = urllib.parse.urlencode(
             {"check_name": check_name, "app_id": self._credentials.app_id, "per_page": 100}
         )
@@ -272,6 +385,26 @@ class GitHubClient:
                 "E-GITHUB-API-REFUSED", "check-runs listing lacked a check_runs list"
             )
         return runs
+
+    def app_identity(self) -> dict[str, Any]:
+        """Who this JWT is, from GitHub: id, slug, html_url."""
+
+        response = self._request("GET", "/app", token=mint_app_jwt(self._credentials, now=self._now()))
+        if not isinstance(response, dict) or type(response.get("id")) is not int:
+            raise ClientRefusal("E-GITHUB-API-REFUSED", "GET /app lacked an integer id")
+        return response
+
+    def list_installations(self) -> list[dict[str, Any]]:
+        """Every installation of this App the JWT can see."""
+
+        response = self._request(
+            "GET", "/app/installations", token=mint_app_jwt(self._credentials, now=self._now())
+        )
+        if not isinstance(response, list) or not all(isinstance(item, dict) for item in response):
+            raise ClientRefusal(
+                "E-GITHUB-API-REFUSED", "GET /app/installations was not a list of objects"
+            )
+        return response
 
 
 def api_root_from_environment() -> str:

@@ -208,12 +208,12 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
+**Active slice:** [SLICE-085-github-app-production-registration](docs/slices/SLICE-085-github-app-production-registration.md)
+
 ## Completed slices
 
 <details>
 <summary>Implementation history</summary>
-
-**Active slice:** none
 
 - [SLICE-084-github-webhook-receiver-v1](docs/slices/done/SLICE-084-github-webhook-receiver-v1.md)
 - [SLICE-083-github-check-publisher-v1](docs/slices/done/SLICE-083-github-check-publisher-v1.md)

@@ -83,6 +83,9 @@ CLI_DISPATCH_GROUPS = (
     "github.bind",
     "github.check.publish",
     "github.listen",
+    "github.register",
+    "github.status",
+    "github.ruleset",
 )
 
 SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve")

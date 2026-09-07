@@ -113,7 +113,9 @@ RESPONSE_LIMIT = 65_536
 # the padded --version display, and principal-aware keygen instructions.
 # Launcher and confinement branches are unchanged.
 # Issue #86 adds explicit external targets and reporter selection; native launcher behavior is unchanged.
-MAIN_PY_SHA256 = "5a3c36a9b41e8d9dd6af95c577519a2620bf1653bc99c796c8c523fc976d8f77"
+# SLICE-085 (#88) adds `github register|status|ruleset`; launcher and confinement
+# branches are unchanged.
+MAIN_PY_SHA256 = "88d9b30c03063a8619c7f6763a5bc6239df3677b028393f579f8a2f8d5773c39"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

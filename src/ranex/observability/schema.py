@@ -20,6 +20,8 @@ from pathlib import Path
 # Later (ADR-045) the ``specification.approve`` action pair extended the
 # stage vocabulary in place under evt 4: action-derived pairs grow by
 # frozen-contract test edit; no new event shape or field shipped.
+# SLICE-085 adds ``github.register``, ``github.status`` and ``github.ruleset``
+# the same way.
 SCHEMA_NUMBER = 4
 
 # The frozen eleven-field set, in canonical serialization order. Every event
@@ -90,6 +92,9 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "github.bind",
     "github.check.publish",
     "github.listen",
+    "github.register",
+    "github.status",
+    "github.ruleset",
 )
 
 _SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve")

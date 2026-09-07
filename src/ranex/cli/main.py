@@ -4001,6 +4001,204 @@ def cmd_github_listen(args: argparse.Namespace) -> int:
     return EXIT_PASS
 
 
+def _github_credentials_from_store(directory: Path, repository_root: Path):
+    from ranex.github_app.client import AppCredentials, ClientRefusal
+    from ranex.github_app.registration import credentials_paths, load_stored_identity
+
+    key_path, secret_path, _identity_path = credentials_paths(directory)
+    identity = load_stored_identity(directory)
+    resolved = Path(key_path).resolve()
+    root = Path(repository_root).resolve()
+    if resolved == root or root in resolved.parents:
+        raise ClientRefusal(
+            "E-GITHUB-KEY-INSIDE-REPO",
+            f"{str(key_path)!r} resolves inside the governed repository",
+        )
+    return AppCredentials(
+        app_id=str(identity["app_id"]),
+        private_key_path=resolved,
+        webhook_secret=secret_path.read_text(encoding="utf-8").rstrip("\n"),
+    )
+
+
+def cmd_github_register(args: argparse.Namespace) -> int:
+    """Create the Ranex GitHub App from GitHub's manifest handshake.
+
+    Without `--code` this prints (and optionally serves) the frozen form
+    GitHub's settings page posts. With `--code` it converts and exclusive-creates
+    the PEM, webhook secret and public identity outside the repository. Secrets
+    never reach stdout.
+    """
+
+    from ranex.github_app.client import ClientRefusal, api_root_from_environment
+    from ranex.github_app.registration import (
+        app_manifest,
+        convert_and_store,
+        manifest_form_html,
+        new_manifest_state,
+        serve_manifest_redirect,
+        web_root_from_environment,
+    )
+
+    try:
+        root = Path(args.repository).resolve()
+        if not args.code and not args.webhook_url:
+            raise ClientRefusal(
+                "E-GITHUB-WEBHOOK-NOT-HTTPS",
+                "--webhook-url is required unless --code is converting an existing handshake",
+            )
+        if args.code:
+            stored = convert_and_store(
+                args.code,
+                Path(args.credentials_dir),
+                repository_root=root,
+                api_root=api_root_from_environment(),
+            )
+            identity_path = stored / "identity.json"
+            identity = json.loads(identity_path.read_bytes())
+            print(f"REGISTERED  app_id={identity['app_id']}  slug={identity.get('slug', '')}")
+            print(f"            credentials={stored}  (PEM and webhook secret never printed)")
+            print(
+                "            export RANEX_GITHUB_APP_ID, RANEX_GITHUB_APP_PRIVATE_KEY "
+                "and RANEX_GITHUB_WEBHOOK_SECRET from that directory, then install the App."
+            )
+            return EXIT_PASS
+        state = new_manifest_state()
+        host, _, port = args.bind.partition(":")
+        if not host or not port or not port.isdigit():
+            raise ValueError(f"--bind expects host:port: {args.bind!r}")
+        redirect = f"http://{host}:{port}/redirect"
+        manifest = app_manifest(
+            name=args.name,
+            homepage=args.homepage,
+            webhook_url=args.webhook_url,
+            redirect_url=redirect,
+        )
+        form = manifest_form_html(manifest, state=state, web_root=web_root_from_environment())
+        print(f"REGISTER  open http://{host}:{port}/  state={state}")
+        print("          GitHub redirects here with ?code=; then rerun with --code.")
+        if args.print_form:
+            print(form)
+            return EXIT_PASS
+        capture = serve_manifest_redirect((host, int(port)), state=state, form_html=form)
+        if capture.error or not capture.code:
+            print(f"ERROR  E-GITHUB-BAD-MANIFEST-CODE {capture.error or 'no code'}", file=sys.stderr)
+            return EXIT_USAGE
+        stored = convert_and_store(
+            capture.code,
+            Path(args.credentials_dir),
+            repository_root=root,
+            api_root=api_root_from_environment(),
+        )
+        identity = json.loads((stored / "identity.json").read_bytes())
+        print(f"REGISTERED  app_id={identity['app_id']}  slug={identity.get('slug', '')}")
+        print(f"            credentials={stored}  (PEM and webhook secret never printed)")
+        return EXIT_PASS
+    except (ClientRefusal, ValueError, TypeError, OSError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+
+def cmd_github_status(args: argparse.Namespace) -> int:
+    """Authenticate as the App and report identity, installations, ruleset pin."""
+
+    from ranex.github_app.client import (
+        AppCredentials,
+        ClientRefusal,
+        GitHubClient,
+        api_root_from_environment,
+        complete_repository_rulesets,
+        list_repository_rulesets,
+        operator_token_from_environment,
+    )
+    from ranex.github_app.registration import acceptance_pin, load_stored_identity
+
+    try:
+        root = Path(args.repository).resolve()
+        if args.credentials_dir:
+            client = GitHubClient(
+                _github_credentials_from_store(Path(args.credentials_dir), root),
+                api_root=api_root_from_environment(),
+            )
+            stored = load_stored_identity(Path(args.credentials_dir))
+            app_id = stored["app_id"]
+        else:
+            client = GitHubClient(
+                AppCredentials.from_environment(root),
+                api_root=api_root_from_environment(),
+            )
+            app_id = int(client.credentials.app_id)
+        identity = client.app_identity()
+        installations = client.list_installations()
+        slug = identity.get("slug") or ""
+        print(f"APP  id={identity['id']}  slug={slug}  url={identity.get('html_url', '')}")
+        if not installations:
+            print("     installations=none")
+        for installation in installations:
+            account = installation.get("account")
+            login = account.get("login") if isinstance(account, dict) else ""
+            print(
+                f"     installation={installation.get('id')}  account={login}  "
+                f"repos={installation.get('repository_selection', '')}"
+            )
+        if args.repo:
+            token = operator_token_from_environment()
+            pin = None
+            summaries = list_repository_rulesets(
+                token, args.repo, api_root=api_root_from_environment()
+            )
+            for ruleset in complete_repository_rulesets(
+                token, args.repo, summaries, api_root=api_root_from_environment()
+            ):
+                found = acceptance_pin(ruleset)
+                if found is not None:
+                    pin = found
+                    break
+            if pin == app_id:
+                print(f"     ruleset={args.repo}  ranex/acceptance pinned to this App")
+            elif pin is None:
+                print(f"     ruleset={args.repo}  ranex/acceptance not required")
+                return EXIT_FAIL
+            else:
+                print(f"     ruleset={args.repo}  ranex/acceptance pinned to integration_id={pin}")
+                return EXIT_FAIL
+        return EXIT_PASS
+    except (ClientRefusal, ValueError, TypeError, OSError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+
+
+def cmd_github_ruleset(args: argparse.Namespace) -> int:
+    """Pin `ranex/acceptance` to this App as a required repository check."""
+
+    from ranex.github_app.client import (
+        AppCredentials,
+        ClientRefusal,
+        api_root_from_environment,
+        operator_token_from_environment,
+    )
+    from ranex.github_app.registration import load_stored_identity, pin_acceptance_ruleset
+
+    try:
+        root = Path(args.repository).resolve()
+        if args.credentials_dir:
+            app_id = load_stored_identity(Path(args.credentials_dir))["app_id"]
+        else:
+            app_id = int(AppCredentials.from_environment(root).app_id)
+        outcome = pin_acceptance_ruleset(
+            operator_token_from_environment(),
+            args.repo,
+            app_id,
+            branch=args.branch,
+            api_root=api_root_from_environment(),
+        )
+    except (ClientRefusal, ValueError, TypeError, OSError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
+    print(f"RULESET  {args.repo}  ranex/acceptance  {outcome}  app_id={app_id}")
+    return EXIT_PASS
+
+
 def cmd_task_batch_qualify(args: argparse.Namespace) -> int:
     """Qualify one closed signed batch; never dispatch or publish children."""
 
@@ -4454,6 +4652,36 @@ def build_parser() -> argparse.ArgumentParser:
         "--state-dir", default=".local/ranex/github", help="delivery journal directory"
     )
     glisten.set_defaults(func=cmd_github_listen)
+
+    gregister = github.add_parser(
+        "register", help="create the Ranex GitHub App from the frozen manifest"
+    )
+    gregister.add_argument("--credentials-dir", required=True, help="absolute directory outside the repository")
+    gregister.add_argument("--webhook-url", help="https webhook URL GitHub will POST to")
+    gregister.add_argument("--homepage", default="https://ranex.dev", help="App homepage URL")
+    gregister.add_argument("--name", default="ranex", help="App name GitHub will offer")
+    gregister.add_argument("--code", help="one-hour conversion code from GitHub's redirect")
+    gregister.add_argument("--bind", default="127.0.0.1:8081", help="localhost catcher for the redirect")
+    gregister.add_argument("--print-form", action="store_true", help="print the form HTML and exit")
+    gregister.add_argument("--repository", default=".", help="operator clone root")
+    gregister.set_defaults(func=cmd_github_register, trace_dispatch_group="github.register")
+
+    gstatus = github.add_parser(
+        "status", help="authenticate as the App and report installations / ruleset pin"
+    )
+    gstatus.add_argument("--credentials-dir", help="directory written by github register")
+    gstatus.add_argument("--repo", help="owner/name to inspect for the App-pinned ruleset")
+    gstatus.add_argument("--repository", default=".", help="operator clone root")
+    gstatus.set_defaults(func=cmd_github_status, trace_dispatch_group="github.status")
+
+    gruleset = github.add_parser(
+        "ruleset", help="require ranex/acceptance from this App on a branch"
+    )
+    gruleset.add_argument("--repo", required=True, help="owner/name of the repository")
+    gruleset.add_argument("--branch", default="main", help="branch the ruleset targets")
+    gruleset.add_argument("--credentials-dir", help="directory written by github register")
+    gruleset.add_argument("--repository", default=".", help="operator clone root")
+    gruleset.set_defaults(func=cmd_github_ruleset, trace_dispatch_group="github.ruleset")
 
     specification = sub.add_parser(
         "specification", help="specification lifecycle operations"
