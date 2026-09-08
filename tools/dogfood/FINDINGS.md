@@ -275,7 +275,7 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   contention artifacts of the unserialized window, not location semantics;
   the serialized session-shape runs are the evidence of record.
 
-### F-010 (CLOSED 2026-09-08) — ordinary non-strict XPASS received gate PASS
+### F-010 (PARTIALLY CLOSED 2026-09-09) — non-strict XPASS received gate PASS
 
 - Original observation, unchanged: reproduced with released v0.1.0
   (`edf1a98605`) and HEAD (`48f3a98e48`) on the pinned external
@@ -308,6 +308,26 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   pair placed after a `--`.
 - `governance/gates.yaml` now carries the binding, so the repository's own
   landing gate no longer has the finding.
+- **STILL OPEN, measured 2026-09-09 on real pytest — the argv reaches only the
+  ini DEFAULT.** `@pytest.mark.xfail(strict=False, reason=...)` sets `strict`
+  on the marker, and a marker-level kwarg overrides the `xfail_strict` ini, so
+  `-o xfail_strict=true` does not reach it: the XPASS is still written as a bare
+  `<testcase/>`. Two markers in one real run, one command:
+
+      test_ordinary   (no strict kwarg)   -> <failure>   visible, blocks
+      test_explicit   (strict=False)      -> bare pass   invisible
+
+  This is **not** the hostile-tree boundary: `strict=False` is an ordinary,
+  legitimate pytest idiom, so an honest repository writing it gets no XPASS
+  detection. Nothing in argv can override a kwarg written in the tree; closing
+  it needs a kernel-owned reporter that reads `report.wasxfail`, which is
+  separate product work.
+- Real-data status, `release_audit.py --refs v0.1.0 HEAD` against
+  `benjaminp/six@c8e394065c` (kernel 22a46a9eb): `nonstrict-xpass` is **GAP at
+  both refs** — that arm injects an explicit `strict=False` marker, so the fix
+  does not move it. `strict-xpass`, `xfail`, `undeclared-skip` and
+  `deselected-test` are VERIFIED at both. The audit's gap_detail now names this
+  cause instead of implying the arm was closed.
 - Pins: `tests/security/test_slice009_strict_xfail_binding.py` (the refusals)
   and `tests/unit/test_suite_results.py::test_a_non_strict_xpass_is_only_visible_when_the_argv_asks_for_it`
   (the reporter half, run against the installed pytest, not a hand-written XML

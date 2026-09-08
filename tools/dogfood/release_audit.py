@@ -259,9 +259,12 @@ class Audit:
                             "    items[0].add_marker(pytest.mark.xfail(strict=True, reason='audit'))\n")
         self.plugin_variant("nonstrict-xpass", "import pytest\ndef pytest_collection_modifyitems(items):\n"
                             "    items[0].add_marker(pytest.mark.xfail(strict=False, reason='audit'))\n",
-                            gap_detail="F-010: pytest's real non-strict XPASS XML looks passed. ADR-056 "
-                            "makes the onboarded claim carry -o xfail_strict=true, so the outcome exists "
-                            "to be read; this arm measures whether it does on the external subject.")
+                            gap_detail="F-010 REMAINING: this arm sets strict=False on the marker itself. "
+                            "Measured against real pytest: a marker-level strict kwarg overrides the "
+                            "xfail_strict ini, so ADR-056's -o xfail_strict=true does NOT reach it and the "
+                            "XPASS is still written as a bare passing testcase. ADR-056 closes only the "
+                            "ordinary marker that states no strict; nothing in argv can override a kwarg "
+                            "written in the tree. Closing this needs a kernel-owned reporter.")
         self.plugin_variant("collection-error", "raise RuntimeError('audit collection failure')\n",
                             gap_detail="Inspect run/error output: failed collection may leave no evidence (F-004).")
         self.restore()

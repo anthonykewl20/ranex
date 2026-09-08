@@ -107,10 +107,40 @@ no non-strict spelling to close.
 Qualification claims are unaffected: they report no test outcomes, and demanding
 a pytest option there would be cargo cult.
 
+## What this does NOT close — measured, not predicted
+
+`-o xfail_strict=true` supplies the **ini default** for markers that state no
+`strict`. A marker-level kwarg overrides it. Measured against the installed
+pytest, one run, one command, both markers in the same file:
+
+```
+@pytest.mark.xfail(reason=...)                 -> <failure>   visible, blocks
+@pytest.mark.xfail(strict=False, reason=...)   -> bare pass   invisible
+```
+
+So a suite that writes `strict=False` explicitly still receives gate PASS on an
+XPASS. This is **not** the hostile-`conftest.py` boundary: `strict=False` is an
+ordinary, legitimate pytest idiom, and an honest repository using it gets no
+detection. Nothing in a digest-bound argv can override a kwarg written in the
+tree under test.
+
+This was found by `release_audit.py` against the real external subject, after
+the change was already committed and its unit-level pin was green — the arm
+injects an explicit `strict=False` marker and is **GAP at both v0.1.0 and
+HEAD**, unmoved by this ADR. Recorded rather than quietly narrowed: the earlier
+revision of this document claimed sad path 5 was now true of an ordinary suite
+without stating which markers "ordinary" excludes.
+
+Closing the remainder needs a kernel-owned reporter that reads
+`report.wasxfail` — which pytest sets on exactly this case and `junitxml`'s
+`append_pass` discards — and that is separate product work, not a tightening of
+this rule.
+
 ## Consequences
 
-- Good: ADR-011 sad path 5 is now true of an ordinary suite, not only of one
-  whose author happened to write `strict=True` on every marker.
+- Good: ADR-011 sad path 5 holds for a marker that states no `strict`, which is
+  the case F-010 originally measured on `benjaminp/six`'s own suite — no longer
+  only for one whose author wrote `strict=True` everywhere.
 - Good: the two ways of blinding the reporter that a hostile-but-committed argv
   could use are named refusals with the measured reason attached.
 - Good: historical catalogs still parse, so delegated judging of a pre-existing
