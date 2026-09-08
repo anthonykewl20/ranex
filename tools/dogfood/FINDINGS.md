@@ -187,6 +187,26 @@ writer fairness or establish its original root cause. Evidence:
 
 ## Closed
 
+### F-039 (CLOSED same run, 2026-09-09) — oss_bench bound pytest claims without the F-010 strict-xfail pair
+
+- Anchor: `tools/dogfood/oss_bench/run_divergence.py:102` built the governed
+  claim command as `pytest -q --rootdir=. --junitxml=… <ids>` with no
+  `-o xfail_strict=true`; the kernel's `reject_pytest_xfail_blindness`
+  (`src/ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:147`,
+  the F-010 hardening) refuses exactly that shape, so every governed arm of
+  the 2026-09-09 batch returned `gate=ERROR` (`ranex run` exit 2) instead of
+  a verdict.
+- Behaviour (verified): all three fresh runs (two truth=1.0, one truth=0.0)
+  errored identically at gate construction; journals unverified; the bare and
+  ground-truth arms were unaffected — a harness non-compliance, not a kernel
+  bug. No ERROR row was appended to the proof pile.
+- How closed: the claim argv now carries the required adjacent pair
+  (`-o`, `xfail_strict=true`); the whole batch was re-verified through
+  `--row-task` reuse of the same patches (zero new agent spend): gate PASS on
+  both truth=1.0 tasks, gate FAIL on the truth=0.0 task, all journals
+  verified — proofs 0040–0042. No kernel file touched; the loader's refusal
+  stands as designed.
+
 ### F-038 (CLOSED same run, 2026-09-09) — census baseline drift from the PR trusted-evidence feature
 
 - Anchor: `e0aee9359` "feat: automatically evaluate trusted evidence for
