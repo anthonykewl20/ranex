@@ -109,8 +109,8 @@ from ranex.governed_execution.domain.task import (
     TaskMergeOutcome,
 )
 from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
-from ranex.governed_execution.verdict_reader import ReadState, read_verdict_unbound
 from ranex.governed_execution.verdict_publication import publish_verdict
+from ranex.governed_execution.verdict_reader import ReadState, read_verdict_unbound
 from ranex.observability import TRACE_VARIABLES, stage_begin, stage_end
 from ranex.observability import schema as trace_schema
 from ranex.policy.adapters.configuration.yaml.producer_keyring import (
@@ -4058,8 +4058,22 @@ def cmd_github_listen(args: argparse.Namespace) -> int:
             )
         )
         host, _, port = args.bind.partition(":")
-        if not host or not port or not port.isdigit():
+        if not host or not port or not port.isdigit() or not 0 <= int(port) <= 65535:
             raise ValueError(f"--bind expects host:port: {args.bind!r}")
+        evaluator = None
+        if getattr(args, "evaluate_evidence", False):
+            from ranex.github_app.evaluation import EvidenceEvaluator
+
+            private_key = private_signing_key(root, variable=VERDICT_SIGNING_KEY_VARIABLE)
+            if public_key_for(private_key) != trust_keyring.verdict_signer_public_key:
+                raise ValueError("verdict signing key does not match the committed verdict signer")
+            evaluator = EvidenceEvaluator(
+                root, args.evidence, args.gate, args.gate_catalog, args.producers,
+                args.suite_manifest, args.approver,
+                resolve_within_repository(root, args.verdicts_dir),
+                Path(os.environ[VERDICT_SIGNING_KEY_VARIABLE]),
+                resolve_within_repository(root, args.state_dir),
+            )
         config = ReceiverConfig(
             repo_root=root,
             remote=args.remote,
@@ -4074,14 +4088,21 @@ def cmd_github_listen(args: argparse.Namespace) -> int:
             allowlist=frozenset({(args.installation, args.repo)}),
             client=client,
             state_dir=resolve_within_repository(root, args.state_dir),
+            evaluator=evaluator,
         )
     except (ClientRefusal, ValueError, TypeError, OSError) as exc:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
-    print(f"LISTENING  {host}:{port}  repository={args.repo}  gate={args.gate}")
-    print("           TLS is the terminator's job; this binds as given.")
-    serve(config, (host, int(port)))
+    def listening(server: Any) -> None:
+        print(f"LISTENING  {host}:{server.server_port}  repository={args.repo}  gate={args.gate}", flush=True)
+        print("           TLS is the terminator's job; this binds as given.", flush=True)
+
+    try:
+        serve(config, (host, int(port)), on_listen=listening)
+    except (OSError, ValueError, OverflowError) as exc:
+        print(f"ERROR  {exc}", file=sys.stderr)
+        return EXIT_USAGE
     return EXIT_PASS
 
 
@@ -4149,7 +4170,7 @@ def cmd_github_register(args: argparse.Namespace) -> int:
             return EXIT_PASS
         state = new_manifest_state()
         host, _, port = args.bind.partition(":")
-        if not host or not port or not port.isdigit():
+        if not host or not port or not port.isdigit() or not 0 <= int(port) <= 65535:
             raise ValueError(f"--bind expects host:port: {args.bind!r}")
         redirect = f"http://{host}:{port}/redirect"
         manifest = app_manifest(
@@ -4741,6 +4762,11 @@ def build_parser() -> argparse.ArgumentParser:
     glisten.add_argument("--gate-catalog", default=DEFAULT_GATE_CATALOG, help="committed gate catalog")
     glisten.add_argument("--producers", default=DEFAULT_PRODUCERS, help="committed producer keyring")
     glisten.add_argument("--approver", required=True, help="approver identity the verdict names")
+    glisten.add_argument("--evaluate-evidence", action="store_true",
+                         help="automatically judge signed evidence; never execute PR code")
+    glisten.add_argument("--evidence", default=DEFAULT_EVIDENCE, help="observer evidence file")
+    glisten.add_argument("--suite-manifest", default=DEFAULT_SUITE_MANIFEST,
+                         help="committed expected test IDs")
     glisten.add_argument(
         "--state-dir", default=".local/ranex/github", help="delivery journal directory"
     )

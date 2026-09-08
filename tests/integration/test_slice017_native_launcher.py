@@ -117,7 +117,8 @@ RESPONSE_LIMIT = 65_536
 # branches are unchanged.
 # Issue #88 audit: GitHub status ignores inactive/non-branch rulesets.
 # Only that status-reporting branch changed; confinement is unchanged.
-MAIN_PY_SHA256 = "f8bfe83fafc5414f8f2359dbf3dbc5743b30620f8278bb2931c82786ca9da0e9"
+# SLICE-086 adds evidence evaluation and safe listener startup; confinement is unchanged.
+MAIN_PY_SHA256 = "c3c44cffb64ed809383846a28587fbbcef7ffd68690e32fbe067f749ebb75fe5"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

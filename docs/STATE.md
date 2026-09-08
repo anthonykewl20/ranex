@@ -3,47 +3,41 @@
 **Updated:** 2026-09-09
 **Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
 
-Version v0.1.006. Open: #88 (production readiness, slice 085), #90 (dogfood
-publication), #94 (F-010 remainder).
+Version v0.1.006. Open: #88 production readiness, #90 dogfood publication,
+#94 explicit non-strict XPASS reporting. No production sign-off is issued.
+Completed slice 086: opt-in automatic judgment of signed PR evidence.
+`github listen --evaluate-evidence` pins operator policy, evaluates the exact
+PR SHA, verifies its signed verdict and publishes. It never runs contributor
+code. Late evidence refreshes every 15 seconds; failed publication reconciles.
 
-Findings this pass, each pinned by a test asserting the defect. F-010 is
-PARTIAL — the real external audit found the remainder (#94) after the fix
-was committed and its pins were green.
+Real GitHub PR #6 in anthonykewl20/ranex-app-live-probe completed:
+GitHub-origin webhook → missing-evidence merge refusal → upstream Six
+observation (185 pass, 15 declared skips) → automatic signed PASS → source
+break (5 failing tests) and merge refusal → repair, fresh observation, PASS
+and merge ddfa81ae59f707d2ec8f8aca0f793e31f6183816.
+The driver explicitly invokes observation; unattended execution is not proven.
+Receipts: tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/.
+The final signed v2 verdict matches the retained journal anchor.
+ADR-058 records the boundary; foreign same-name check availability is UNVERIFIED.
 
-- **F-010 PARTIAL (#92, ADR-056).** Non-strict XPASS is byte-identical to a
-  pass in JUnit, so a `pytest-junit` claim must carry `-o xfail_strict=true`;
-  `--runxfail` and `-p no:skipping` refuse by name. Refused where the **Gate is
-  constructed** — all four `results_artifact` consumers, including
-  `cmd_task_judge`'s duplicated `Gate(...)`. **Still open:** argv supplies only
-  the ini DEFAULT, so `@pytest.mark.xfail(strict=False)` — a legitimate idiom,
-  not a hostile edit — still passes invisibly (#94). `release_audit.py`'s
-  `nonstrict-xpass` arm is GAP at both v0.1.0 and HEAD.
-- **F-005 item 1 (#93, ADR-057).** The verdict signs its journal head
-  (`journal_head`, domain `ranex-verdict-v2`); `journal verify
-  --against-verdict` refuses the complete rewrite `verify()` accepts. v1 stays
-  verifiable (archived receipts) but cannot anchor — a first cut refusing v1
-  outright broke archive verification; pinned on the real receipts.
-- **F-002 (#91, parallel session).** Two session-dependent gating arms declared
-  `ranex-context:host-capability:` (expected_skips 166 → 168).
+F-010 is PARTIAL (#94, ADR-056): `-o xfail_strict=true` sets only the default.
+An explicit `@pytest.mark.xfail(strict=False)` still hides XPASS in JUnit.
+The real Six release audit records this as GAP; it is not claimed repaired.
+A hostile conftest/plugin can also forge JUnit (F-012); argv admission does
+not inspect PYTEST_ADDOPTS. Signed evidence does not remove these boundaries.
+F-005 (#93, ADR-057): v2 verdicts sign journal_head; `journal verify
+--against-verdict` checks it. Archived v1 stays readable but cannot anchor.
+There is no external witness against an operator controlling both keys.
+F-002 (#91): 168 skip declarations retain the session/host prerequisites.
 
-Unchanged boundaries, not claimed closed: a hostile tree can forge the JUnit
-artifact via `conftest.py`/approved `pytest11` plugin (ADR-007, ADR-011 c.10,
-F-012); the xfail rule reads argv, not `PYTEST_ADDOPTS`. The journal anchor
-has no external witness — an operator holding both keys can still rewrite.
-
-App review (#88): nine receiver/App repairs; stress 41/41; live recovery one
-real check, no duplicate. Receipts: tools/dogfood/audits/2026-09-08-*.
-App ranex-gate: 4863198, owner anthonykewl20, installation 159825611.
-
-UNVERIFIED: multi-hour soak, supervised production traffic, secret rotation,
-operational backup/restore, full Leitir/Arxic governed acceptance.
-UNIMPLEMENTED: automatic evaluation, merge-candidate checks, shard aggregation,
-Chock-equivalent policy compiler/catalog, compliance-framework coverage
-reporting, a DSSE / in-toto `test-result` projection, a transparency-log
-witness for the journal anchor. No production sign-off has been issued.
-
-Host note: two agents cannot verify concurrently here — a 12.7 GB `uvicorn`
-plus two full suites exhausts 62 GB and OOM-kills freezes. Serialise.
-
-Dogfood publishing (#90): web hourly sync consumes benchmarks, proof pile and
-committed audit sessions from one checkout; local sessions need commit + push.
+Earlier App repairs retained: durable delivery, allowlists, pagination,
+check reconciliation, effective ruleset validation and API refusal handling.
+UNIMPLEMENTED: isolated automatic observer scheduling, merge-candidate/group
+checks, shard aggregation, multi-agent policy compiler/catalog, compliance
+coverage, standard DSSE/in-toto attestations and an external journal witness.
+UNVERIFIED: production hosting, sustained traffic/soak, credential rotation,
+backup/restore and full external-harness governed acceptance.
+Host note: concurrent full suites plus the large uvicorn service have exhausted
+62 GB and OOM-killed freezes. Serialise full-suite verification on this host.
+Dogfood publishing (#90) consumes committed/pushed audit sessions from a checkout.
+No general zero-bug or market-leadership claim is made.

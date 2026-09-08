@@ -1,0 +1,285 @@
+{
+  "scope": "Real GitHub-origin webhooks and fresh upstream Six evidence.\n\nRequires an explicitly prepared probe branch containing Six's source/tests,\ncommitted governance and a frozen suite with declared platform skips. Observes\nthat trusted upstream code via the actual Ranex CLI; this is NOT unattended\nexecution of arbitrary contributor code. Never constructs or signs a webhook.\n",
+  "records": [
+    {
+      "phase": "pull-request",
+      "number": 5,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/pull/5",
+      "head": "2dfbd17c1d83f2bbf0b47dbffaf02d63f1744dad"
+    },
+    {
+      "phase": "check",
+      "head": "2dfbd17c1d83f2bbf0b47dbffaf02d63f1744dad",
+      "conclusion": "action_required",
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102191699521",
+      "matching_checks": 1
+    },
+    {
+      "phase": "merge-refused-before-evidence",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is action required.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "observation",
+      "head": "2dfbd17c1d83f2bbf0b47dbffaf02d63f1744dad",
+      "exit": 0,
+      "suite": {
+        "passed": 185,
+        "skipped": 15,
+        "failed": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      }
+    },
+    {
+      "phase": "check",
+      "head": "2dfbd17c1d83f2bbf0b47dbffaf02d63f1744dad",
+      "conclusion": "success",
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102191744789",
+      "matching_checks": 1
+    },
+    {
+      "phase": "check",
+      "head": "ee9658dc8615abc2a6b35961d02f687e00e6aa2e",
+      "conclusion": "failure",
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102191793045",
+      "matching_checks": 1
+    },
+    {
+      "phase": "observation",
+      "head": "ee9658dc8615abc2a6b35961d02f687e00e6aa2e",
+      "exit": 1,
+      "suite": {
+        "passed": 180,
+        "skipped": 15,
+        "failed": 5,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      }
+    },
+    {
+      "phase": "check",
+      "head": "ee9658dc8615abc2a6b35961d02f687e00e6aa2e",
+      "conclusion": "failure",
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102191793045",
+      "matching_checks": 1
+    },
+    {
+      "phase": "merge-refused-broken-source",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is failing.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "check",
+      "head": "fd80c2a4f350ee6ef5daa256c6460171e7129d67",
+      "conclusion": "failure",
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102191869387",
+      "matching_checks": 1
+    },
+    {
+      "phase": "observation",
+      "head": "fd80c2a4f350ee6ef5daa256c6460171e7129d67",
+      "exit": 0,
+      "suite": {
+        "passed": 185,
+        "skipped": 15,
+        "failed": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      }
+    },
+    {
+      "phase": "check",
+      "head": "fd80c2a4f350ee6ef5daa256c6460171e7129d67",
+      "conclusion": "success",
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102191946877",
+      "matching_checks": 1
+    },
+    {
+      "phase": "github-origin-deliveries",
+      "deliveries": [
+        {
+          "guid": "7c231420-abb5-11f1-8fcf-7660b0715f61",
+          "event": "pull_request",
+          "status_code": 200
+        },
+        {
+          "guid": "7b86d420-abb5-11f1-8141-8f05540cd2fb",
+          "event": "check_suite",
+          "status_code": 200
+        },
+        {
+          "guid": "74569e60-abb5-11f1-9616-843f788527ed",
+          "event": "pull_request",
+          "status_code": 200
+        },
+        {
+          "guid": "746851a0-abb5-11f1-8c16-abedca650c07",
+          "event": "check_suite",
+          "status_code": 200
+        },
+        {
+          "guid": "6a3f2730-abb5-11f1-9387-625cd061e93c",
+          "event": "pull_request",
+          "status_code": 200
+        },
+        {
+          "guid": "69386590-abb5-11f1-8171-857d39cb1aa0",
+          "event": "check_suite",
+          "status_code": 200
+        }
+      ]
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "merge-propagation-wait",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is queued.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "restored-development-receiver",
+      "pid": 1256198
+    }
+  ],
+  "driver_exit": 1,
+  "unresolved": "GitHub continued reporting a queued same-name foreign Actions check after 120 seconds; final merge was not verified in this pass."
+}

@@ -1,0 +1,67 @@
+......................................................sssssssssssssss... [ 36%]
+........................................................................ [ 72%]
+............................F...FFFF....................                 [100%]
+=================================== FAILURES ===================================
+____________________________________ test_b ____________________________________
+
+    def test_b():
+        data = six.b("\xff")
+        assert isinstance(data, bytes)
+>       assert len(data) == 1
+E       AssertionError: assert 6 == 1
+E        +  where 6 = len(b'broken')
+
+test_six.py:492: AssertionError
+________________________________ test_int2byte _________________________________
+
+    def test_int2byte():
+>       assert six.int2byte(3) == six.b("\x03")
+E       AssertionError: assert b'\x03' == b'broken'
+E         At index 0 diff: b'\x03' != b'b'
+E         Use -v to get more diff
+
+test_six.py:527: AssertionError
+________________________________ test_byte2int _________________________________
+
+    def test_byte2int():
+>       assert six.byte2int(six.b("\x03")) == 3
+E       AssertionError: assert 98 == 3
+E        +  where 98 = operator.itemgetter(0)(b'broken')
+E        +    where operator.itemgetter(0) = six.byte2int
+E        +    and   b'broken' = <function b at 0x7fcd53c57920>('\x03')
+E        +      where <function b at 0x7fcd53c57920> = six.b
+
+test_six.py:532: AssertionError
+_______________________________ test_bytesindex ________________________________
+
+    def test_bytesindex():
+>       assert six.indexbytes(six.b("hello"), 3) == ord("l")
+E       AssertionError: assert 107 == 108
+E        +  where 107 = <built-in function getitem>(b'broken', 3)
+E        +    where <built-in function getitem> = six.indexbytes
+E        +    and   b'broken' = <function b at 0x7fcd53c57920>('hello')
+E        +      where <function b at 0x7fcd53c57920> = six.b
+E        +  and   108 = ord('l')
+
+test_six.py:538: AssertionError
+________________________________ test_bytesiter ________________________________
+
+    def test_bytesiter():
+        it = six.iterbytes(six.b("hi"))
+>       assert six.next(it) == ord("h")
+E       AssertionError: assert 98 == 104
+E        +  where 98 = <built-in function next>(<bytes_iterator object at 0x7fcd53f7db40>)
+E        +    where <built-in function next> = six.next
+E        +  and   104 = ord('h')
+
+test_six.py:543: AssertionError
+- generated xml file: /tmp/ranex-subject-564loh2r/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_six.py::test_b - AssertionError: assert 6 == 1
+FAILED test_six.py::test_int2byte - AssertionError: assert b'\x03' == b'broken'
+FAILED test_six.py::test_byte2int - AssertionError: assert 98 == 3
+FAILED test_six.py::test_bytesindex - AssertionError: assert 107 == 108
+FAILED test_six.py::test_bytesiter - AssertionError: assert 98 == 104
+5 failed, 180 passed, 15 skipped in 0.41s
+RECORDED  claim=tests-executed  producer=worker  exit=1
+          subject=sha256:b9dd878be2039f4add9a1aae8789cc8cefbd6a08bc9b74ba910eec370c354551

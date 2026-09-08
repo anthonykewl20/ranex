@@ -2,8 +2,9 @@
 
 The repo's first long-running process, bounded on purpose (ADR-051): a
 stdlib `http.server` listener on localhost — TLS is the terminator's job —
-that turns each validated delivery into at most one check publication. It
-never evaluates; it publishes what verified verdicts already say.
+that turns each validated delivery into at most one check publication. By default it
+publishes existing verified verdicts. Opt-in evidence evaluation runs only the
+trusted kernel, never contributor code.
 
 Two durability arms sit around the pipeline. Every proven delivery is spooled
 to disk before it is worked on, and the HTTP answer waits at most
@@ -36,12 +37,13 @@ from ranex.github_app import webhook
 from ranex.github_app.acceptance import ABSENT_CODE, resolve_acceptance
 from ranex.github_app.binding import (
     BindingRefusal,
+    PrHeadBinding,
     bind_pr_head,
     fetch_pr_head,
     revalidate_pr_head,
 )
 from ranex.github_app.client import ClientRefusal, GitHubClient
-from ranex.github_app.publisher import CHECK_NAME, publish_check
+from ranex.github_app.publisher import CHECK_NAME, decide_check, publish_check
 
 MAX_BODY_BYTES = 1_048_576
 MAX_CONNECTIONS = 16
@@ -52,6 +54,7 @@ ACK_DEADLINE_SECONDS = 8.0
 # How often a running listener re-drains deliveries it acknowledged with 202
 # but could not complete (a remote that was unreachable, an API refusal).
 SPOOL_RETRY_SECONDS = 300.0
+EVIDENCE_REFRESH_SECONDS = 15.0
 _DELIVERY_ID_PATTERN = re.compile(r"^[A-Za-z0-9-]+$")
 _DELIVERY_JOURNAL = "deliveries.jsonl"
 _SPOOL_DIR = "spool"
@@ -76,6 +79,7 @@ class ReceiverConfig:
     allowlist: frozenset[tuple[int, str]]
     client: GitHubClient
     state_dir: Path
+    evaluator: Callable[[PrHeadBinding], None] | None = None
 
 
 @dataclass(slots=True)
@@ -379,6 +383,8 @@ def _process_delivery(
             return 200
         fetch_pr_head(config.repo_root, config.remote, event.head_sha)
         binding = bind_pr_head(config.repo_root, event.head_sha)
+        if config.evaluator is not None:
+            config.evaluator(binding)
         acceptance = resolve_acceptance(
             config.verdicts_dir,
             binding,
@@ -398,7 +404,7 @@ def _process_delivery(
         # Remembered before the publication attempt, not after it: a refused
         # or crashed `action_required` publication must not lose the head —
         # the periodic refresh (ADR-054) is the recovery for exactly that.
-        if acceptance.code == ABSENT_CODE:
+        if acceptance.code == ABSENT_CODE or config.evaluator is not None:
             _remember_awaiting(config, event, delivery_id)
         moment = time.time()
         decision, _ = publish_check(
@@ -411,7 +417,9 @@ def _process_delivery(
             completed_at=moment,
             external_id=delivery_id,
         )
-        if acceptance.code != ABSENT_CODE:
+        if acceptance.code != ABSENT_CODE and (
+            config.evaluator is None or decision.conclusion == "success"
+        ):
             _forget_awaiting(config, event.head_sha)
         outcome = f"published:{decision.conclusion}"
     except (BindingRefusal, ClientRefusal) as refusal:
@@ -507,7 +515,7 @@ def refresh_awaiting(config: ReceiverConfig, state: _ReceiverState) -> dict[str,
     was busy, 500 when the record or publication failed. A head whose verdict
     is still absent is left waiting and does not appear. The refresh check is
     stamped `refresh:<head>` so an interrupted pass reconciles instead of
-    publishing twice; nothing here evaluates anything.
+    publishing twice; opt-in receivers also judge newly arrived signed evidence.
     """
     statuses: dict[str, str | int] = {}
     awaiting = config.state_dir / _AWAITING_DIR
@@ -555,6 +563,8 @@ def _refresh_head(
                           "repository": repository, "outcome": "not-allowlisted"})
         _forget_awaiting(config, head_sha)
         return "not-allowlisted"
+    if config.evaluator is not None:
+        return _refresh_evaluated_head(config, head_sha, delivery_id, installation_id, repository)
     external_id = f"refresh:{head_sha}"
     for run in config.client.list_check_runs(
         installation_id, repository, head_sha, check_name=CHECK_NAME,
@@ -581,6 +591,54 @@ def _refresh_head(
     _forget_awaiting(config, head_sha)
     _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
                       "outcome": f"refreshed:{decision.conclusion}"})
+    return decision.conclusion
+
+
+def _refresh_evaluated_head(
+    config: ReceiverConfig, head_sha: str, delivery_id: str, installation_id: int, repository: str,
+) -> str | None:
+    """Rejudge changed evidence, with a separate idempotency key per verdict."""
+    binding = bind_pr_head(config.repo_root, head_sha)
+    assert config.evaluator is not None
+    config.evaluator(binding)
+    acceptance = resolve_acceptance(
+        config.verdicts_dir, binding, config.keyring, gate_id=config.gate_id,
+        catalog_digest=config.catalog_digest, approver_id=config.approver_id,
+    )
+    if acceptance.code == ABSENT_CODE:
+        return None
+    expected = decide_check(binding, acceptance).conclusion
+    external_id = f"evaluation:{head_sha}:{canonical_sha256({'code': acceptance.code, 'record': dict(acceptance.record or {})})}"
+    completed = config.state_dir / "evaluations" / f"{canonical_sha256(external_id)}.json"
+    if completed.exists():
+        receipt = json.loads(completed.read_bytes())
+        if receipt != {"conclusion": expected}:
+            raise ValueError("E-GITHUB-EVALUATION-RECEIPT-INVALID")
+        conclusion = receipt["conclusion"]
+        if conclusion == "success":
+            _forget_awaiting(config, head_sha)
+        return None
+    for run in config.client.list_check_runs(
+        installation_id, repository, head_sha, check_name=CHECK_NAME,
+    ):
+        if run.get("external_id") == external_id and run.get("conclusion") == expected:
+            write_atomic(completed, canonical_json_bytes({"conclusion": run["conclusion"]}),
+                         root=config.state_dir)
+            if run["conclusion"] == "success":
+                _forget_awaiting(config, head_sha)
+            return None
+    revalidate_pr_head(config.repo_root, binding)
+    moment = time.time()
+    decision, _ = publish_check(
+        config.client, installation_id, repository, binding, acceptance,
+        started_at=moment, completed_at=moment, external_id=external_id,
+    )
+    write_atomic(completed, canonical_json_bytes({"conclusion": decision.conclusion}),
+                 root=config.state_dir)
+    if decision.conclusion == "success":
+        _forget_awaiting(config, head_sha)
+    _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
+                      "outcome": f"evaluated:{decision.conclusion}"})
     return decision.conclusion
 
 
@@ -757,14 +815,15 @@ def serve(
                 refresh_awaiting(config, state)
             # A pass that stepped aside for a live delivery picks up again as
             # soon as that delivery is through; a complete pass rests.
-            stop.wait(0.1 if state.yielded else SPOOL_RETRY_SECONDS)
+            interval = EVIDENCE_REFRESH_SECONDS if config.evaluator is not None else SPOOL_RETRY_SECONDS
+            stop.wait(0.1 if state.yielded else interval)
 
     drainer = threading.Thread(target=redrain, daemon=True)
-    drainer.start()
     server = _BoundedServer(bind, build_handler(config, state))
-    if on_listen is not None:
-        on_listen(server)
     try:
+        if on_listen is not None:
+            on_listen(server)
+        drainer.start()
         server.serve_forever()
     finally:
         stop.set()

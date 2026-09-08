@@ -11,7 +11,6 @@ from typing import Any
 
 from ranex.foundation.canonical import canonical_sha256
 from ranex.foundation.verdict_signing import (
-    PAYLOAD_TYPE,
     VERSIONS,
     signed_fields_for,
     verify_verdict,

@@ -1,0 +1,10 @@
+{
+  "scope": "sealed full-suite freeze on a556d65",
+  "tests": 1895,
+  "passed": 1755,
+  "skipped": 140,
+  "expected_skip_declarations": 168,
+  "exit": 0,
+  "elapsed_seconds": 377.84,
+  "declarations_changed": false
+}

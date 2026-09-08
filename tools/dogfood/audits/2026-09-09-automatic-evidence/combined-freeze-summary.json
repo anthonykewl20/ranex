@@ -1,0 +1,11 @@
+{
+  "scope": "sealed combined-source full-suite freeze",
+  "source_commit": "f09484217465ef6b752b6e346f9abf8f437309c2",
+  "tests": 1908,
+  "passed": 1768,
+  "skipped": 140,
+  "expected_skip_declarations": 168,
+  "exit": 0,
+  "elapsed_seconds": 393.21,
+  "declarations_changed": false
+}

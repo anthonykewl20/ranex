@@ -213,6 +213,8 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 ## Completed slices
 
+- [SLICE-086 — Automatic signed-evidence evaluation](docs/slices/done/SLICE-086-automatic-evidence-evaluation.md): `github listen --evaluate-evidence` judges fresh evidence without executing PR code.
+
 <details>
 <summary>Implementation history</summary>
 

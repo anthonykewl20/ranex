@@ -1151,3 +1151,70 @@ attributes cleanup to the exact materialisation obtained from its real pytest
 descendant, retaining process, scratch and evidence assertions. A global
 temporary-directory delta is not evidence that this invocation leaked a tree.
 This repair changes only the test observer, not lifecycle cleanup behavior.
+
+
+### 2026-09-09 — Automatic signed-evidence judgment (issue #88)
+
+Shipped opt-in `github listen --evaluate-evidence`: trusted policy snapshot,
+exact-head evaluation, late-evidence refresh, durable verdict-specific
+publication and restart reconciliation. The App does not run contributor code.
+
+Real GitHub PR #4 in `anthonykewl20/ranex-app-live-probe` completed the
+GitHub-origin webhook, absent-evidence merge refusal, actual upstream Six
+observation (185 passed, 15 explicitly declared platform skips), signed PASS,
+source mutation (5 real upstream failures), merge refusal, repair and merge.
+The test driver invokes observation explicitly. Artifacts are retained in
+`tools/dogfood/audits/2026-09-09-automatic-evidence/`.
+
+The first pass exposed lag between the Checks API and merge enforcement: an
+immediate same-SHA merge was refused as queued, while a later unchanged
+retry succeeded. The second fresh PR completed with bounded same-SHA retries
+and no ruleset relaxation. Receiver startup key refusal, immutable policy,
+stale evidence, late evidence, storage corruption and publication recovery
+are also exercised by integration tests using actual kernel subprocesses.
+
+Competitive source review: Chock at
+`09047fd598705e4434c29d8fc78c5682a3e10ec1`,
+`src/chock/review/evidence.py` lines 134–235, already binds reviewer evidence
+to a diff and reruns named checks. Stale-evidence rejection is not a unique
+Ranex claim. Its multi-agent compiler is inspected as reference, not copied
+or installed. No competitive runtime benchmark or superiority is claimed.
+
+Still unimplemented: isolated automatic observers, merge-candidate/group
+coverage, multi-agent policy compilation and standard attestations. Production
+soak, rotation and backup/restore remain UNVERIFIED.
+
+The coverage-enabled final run exposed a CI hygiene defect: parallel
+`.coverage.*` files were not ignored, making the checkout dirty for clean-tree
+journeys. The ignore rule now covers the parallel files as well as `.coverage`.
+The final suite is rerun after this correction.
+
+Startup review also found that an out-of-range bind port escaped as a traceback
+and that the background drainer started before the socket was bound. Both
+are repaired: invalid/occupied ports return usage errors, startup callbacks
+close sockets on refusal, and no drainer starts before a successful bind.
+
+A third fresh live journey confirmed passing/failing upstream observations
+and App checks, but merge enforcement remained queued for more than 120
+seconds with the foreign same-name Actions check present. The earlier
+propagation explanation is therefore insufficient. This case is retained
+as UNVERIFIED availability, not a successful merge or a fixed platform bug;
+see `third-pass-collision.json`.
+
+The combined implementation completed live PR #6 after removal of the earlier
+adversarial same-name workflow fixture, with unchanged App-bound protection.
+The driver now requires a distinct newer failure receipt after failing evidence
+arrives, preventing stale rejection from satisfying that assertion. Missing and
+failing evidence blocked merges; fresh repaired-code evidence permitted merge
+`ddfa81ae59f707d2ec8f8aca0f793e31f6183816`. The final v2 signed verdict
+also verified the retained journal head. See `fifth-pass/`; the separate collision
+remains UNVERIFIED. Post-rebase lint found and fixed an import-order error and
+one unused import in the integrated journal-anchor code.
+
+The push-wide coverage review found unexercised journal-anchor CLI refusal
+paths in the integrated F-005 work. CI now replays the retained live v2
+verdict, rejects missing/tampered/ambiguous anchors and readable-but-unanchored
+v1 history, without private keys or network access. Installed coverage 7.15.3
+`cmdline.py` also confirms reporting automatically combines and deletes parallel
+inputs unless `--keep-combined` is supplied; CI XML reporting now retains them.
+These are verification repairs, not new journal security claims.

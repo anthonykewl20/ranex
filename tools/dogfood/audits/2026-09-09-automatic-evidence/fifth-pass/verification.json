@@ -1,0 +1,9 @@
+{
+  "driver_exit": 0,
+  "journal_anchor_verification": {
+    "command": "uv run --frozen ranex journal verify --external-repository /tmp/ranex-live-auto-evidence-r5 --against-verdict governance/verdicts/5d185f19fa7e67d063e4dd954f464aa7a01ab1ae64319ef49b2a20ad4560acb6.json",
+    "exit": 0,
+    "result": "PASS chain=verified external-anchor=matched(signed-verdict)"
+  },
+  "note": "Older verdict anchors predate legitimate journal extension and do not match its final tip. No arbitrary PR code was executed automatically. Foreign same-name check collision remains separately UNVERIFIED."
+}

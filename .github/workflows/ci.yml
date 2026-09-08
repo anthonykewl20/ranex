@@ -89,9 +89,10 @@ jobs:
           uv run --frozen python tools/dogfood/release_check.py --out .local/ci-release-check
           uv run --frozen python tools/dogfood/collection_journey.py --out .local/ci-collection-journey
           uv run --frozen python tools/dogfood/executable_journey.py --out .local/ci-executable-journey
+          uv run --frozen python tools/dogfood/journal_anchor_journey.py --out .local/ci-journal-anchor-journey
           unset COVERAGE_PROCESS_START
           uv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage
-          uv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml
+          uv run --frozen python -m coverage xml --keep-combined --include="$PWD/src/ranex/*" -o coverage.xml
           uv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100
 
   osv-scan:

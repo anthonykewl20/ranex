@@ -134,9 +134,10 @@ def test_ci_workflow_runs_the_full_suite_on_every_push_and_pull_request() -> Non
             'uv run --frozen python tools/dogfood/release_check.py --out .local/ci-release-check\n'
             'uv run --frozen python tools/dogfood/collection_journey.py --out .local/ci-collection-journey\n'
             'uv run --frozen python tools/dogfood/executable_journey.py --out .local/ci-executable-journey\n'
+            'uv run --frozen python tools/dogfood/journal_anchor_journey.py --out .local/ci-journal-anchor-journey\n'
             'unset COVERAGE_PROCESS_START\n'
             'uv run --frozen python -m coverage combine --keep . .local/ranex-e2e/coverage\n'
-            'uv run --frozen python -m coverage xml --include="$PWD/src/ranex/*" -o coverage.xml\n'
+            'uv run --frozen python -m coverage xml --keep-combined --include="$PWD/src/ranex/*" -o coverage.xml\n'
             'uv run --frozen diff-cover coverage.xml --compare-branch="$DIFF_COVER_COMPARE_BRANCH" --fail-under=100\n'
         ),
     }

@@ -319,9 +319,38 @@ Ranex App published `ranex/acceptance` as `success` on the PR head — and
 the App only says `success` when a verified, signed verdict for that exact
 tree says PASS.
 
+### Automatic evidence evaluation
+
+Add `--evaluate-evidence` to `github listen` and set
+`RANEX_VERDICT_SIGNING_KEY` to the absolute path of the external private key
+matching the committed verdict signer. `--evidence` defaults to
+`governance/evidence.json`; `--suite-manifest` defaults to
+`governance/suite_manifest.json`. The observer must deliver signed evidence
+through the existing evidence format and atomic publication path.
+
+The receiver pins the gate catalog, producer keyring and test manifest from the
+operator checkout at startup. PRs that change them refuse evaluation; review
+policy changes independently before restarting against an approved checkout.
+The receiver checks late evidence every 15 seconds, retaining the existing
+300-second failure backoff. Missing evidence produces an action-required check;
+failing evidence stays blocked and can recover when fresh evidence arrives.
+Unchanged inputs reuse the judgment, and completed refreshes avoid repeated API
+queries. Failed or interrupted publication reconciles using the verdict's ID.
+
+Reserve `ranex/acceptance` for the App. A live adversarial probe with a
+foreign Actions job using that name remained merge-blocked despite an App
+success; collision availability is UNVERIFIED. Keep the required check bound
+to the App integration; do not remove protection to work around a collision.
+
+This automates judgment and publication. It does not schedule test execution.
+Use a separately controlled observer; do not put arbitrary PR execution beside
+the receiver or its credentials. See [ADR-058](adr/ADR-058-automatic-evidence-evaluation.md).
+
 ### Limits, stated plainly
 
-The App publishes; it never evaluates. The receiver host and App credentials
+By default the App publishes existing verdicts. With `--evaluate-evidence` it
+also invokes the trusted kernel to judge signed evidence, without executing
+contributor code. The receiver host and App credentials
 are part of the trust boundary: control of them permits publishing a green
 GitHub check directly. GitHub authenticates the publishing App; it does not
 verify Ranex's verdict signature. An independent reader can verify the signed
