@@ -12,7 +12,7 @@
         "lines_executed": 1
       },
       {
-        "M": 44,
+        "M": 45,
         "function": "ranex/cli/main.py:cmd_run",
         "lines_executed": 1
       },
@@ -32,8 +32,13 @@
         "lines_executed": 1
       },
       {
-        "M": 32,
+        "M": 33,
         "function": "ranex/cli/delegation.py:cmd_task_delegate",
+        "lines_executed": 1
+      },
+      {
+        "M": 32,
+        "function": "ranex/cli/main.py:cmd_task_judge",
         "lines_executed": 1
       },
       {
@@ -42,13 +47,13 @@
         "lines_executed": 6
       },
       {
-        "M": 29,
-        "function": "ranex/cli/main.py:cmd_task_judge",
+        "M": 28,
+        "function": "ranex/cli/process_supervisor.py:_guardian_session",
         "lines_executed": 1
       },
       {
-        "M": 28,
-        "function": "ranex/cli/process_supervisor.py:_guardian_session",
+        "M": 27,
+        "function": "ranex/governed_execution/verdict_reader.py:_read",
         "lines_executed": 1
       },
       {
@@ -95,14 +100,9 @@
         "M": 20,
         "function": "ranex/foundation/specification_abc.py:_json_escape_failures",
         "lines_executed": 1
-      },
-      {
-        "M": 19,
-        "function": "ranex/cli/main.py:_strict_local_sources",
-        "lines_executed": 1
       }
     ],
-    "measured_functions": 414,
+    "measured_functions": 422,
     "never_touched_high_M": {
       "ranex/cli/host_confinement.py:_elf_facts_from_descriptor": 27,
       "ranex/cli/host_confinement.py:_real_cgroup_probe": 33,
@@ -118,11 +118,11 @@
       "ranex/governed_execution/application/specification_batch.py:_validate_descriptor_rows": 49,
       "ranex/governed_execution/application/specification_batch.py:_verify_qualification_facts": 32,
       "ranex/governed_execution/application/specification_batch.py:qualify_batch": 47,
+      "ranex/governed_execution/application/specification_batch.py:verify_qualification": 25,
       "ranex/governed_execution/domain/specification_approval.py:intersect_capabilities": 27,
       "ranex/governed_execution/domain/specification_events.py:evaluate_use": 27,
       "ranex/governed_execution/domain/specification_trace.py:_projection_descriptors": 26,
       "ranex/governed_execution/domain/specification_trace.py:verify_trace_coverage": 59,
-      "ranex/governed_execution/verdict_reader.py:read_verdict": 26,
       "ranex/specification_generation/scenario.py:parse_scenario": 39
     },
     "note": "in-process scenarios only; subprocess scenarios excluded",
