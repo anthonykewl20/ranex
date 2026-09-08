@@ -936,6 +936,114 @@
       "scenarios": 43,
       "sha": "3e8433722",
       "subject": "tools: dogfood artifacts - iteration 22"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "2fcde242e",
+      "subject": "tools: proof pile - 2026-09-08 (3 runs)"
+    },
+    {
+      "complexity": 5435,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "460f00227",
+      "subject": "docs: define complete dogfood website publication contract"
+    },
+    {
+      "complexity": 5455,
+      "date": "2026-09-08",
+      "open_findings": 10,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "f6c739d4e",
+      "subject": "fix: preserve GitHub delivery recovery and verify effective "
+    },
+    {
+      "complexity": 5478,
+      "date": "2026-09-08",
+      "open_findings": 9,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "37d484e68",
+      "subject": "fix: bind a pytest suite claim to the XPASS outcome it judge"
+    },
+    {
+      "complexity": 5478,
+      "date": "2026-09-09",
+      "open_findings": 8,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "c6f43484e",
+      "subject": "governance: declare the session-dependent gating skip arms ("
+    },
+    {
+      "complexity": 5501,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "0c99f6299",
+      "subject": "fix: anchor the journal head in the signed verdict"
+    },
+    {
+      "complexity": 5501,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "22a46a9eb",
+      "subject": "tools: dogfood artifacts - iteration 23"
+    },
+    {
+      "complexity": 5501,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "0618d4fc1",
+      "subject": "docs: F-010 is partially closed \u2014 an explicit strict=False s"
+    },
+    {
+      "complexity": 5540,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "e0aee9359",
+      "subject": "feat: automatically evaluate trusted evidence for GitHub pul"
+    },
+    {
+      "complexity": 5540,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "d0f3277af",
+      "subject": "tools: dogfood artifacts - iteration 24 (census drift findin"
+    },
+    {
+      "complexity": 5540,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "fa775a023",
+      "subject": "fix: F-038 - re-baseline census drift from the PR trusted-ev"
+    },
+    {
+      "complexity": 5540,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "692f3f707",
+      "subject": "tools: dogfood artifacts - iteration 25"
     }
   ]
 }

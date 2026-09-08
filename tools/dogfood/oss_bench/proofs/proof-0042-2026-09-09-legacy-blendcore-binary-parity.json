@@ -1,0 +1,38 @@
+{
+  "agent_steps": 48,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+    "elapsed_s": 0.3,
+    "exit": 1,
+    "output_tail": "9 failed in 0.14s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.594769,
+  "date": "2026-09-09",
+  "duration_s": 986.213,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "692f3f7072ed69d985b939b5010ac4896f37a2ea",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.4,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_book_vs_physical (failed), oss_tests.py::test_case_fold (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_near_dry_partial (failed), oss_tests.py::test_overfill_cap (failed), oss_tests.py::test_reconcile_feedback (failed), oss_tests.py::test_white_bulk (failed), oss_tests.py::test_writeoff (failed)\n      subject=sha256:7c8d4878b336e13ad65afd51bce59f19a9ea60d458a1b1a9eb25a6da487052e4",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-09b.json/legacy-blendcore-binary-parity-923b5876/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q -o xfail_strict=true --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_book_vs_physical oss_tests.py::test_writeoff oss_tests.py::test_white_bulk oss_tests.py::test_near_dry_partial oss_tests.py::test_overfill_cap oss_tests.py::test_case_fold oss_tests.py::test_lenient_tokens oss_tests.py::test_reconcile_feedback oss_tests.py::test_full_corpus_parity",
+    "run_error": "",
+    "run_exit": 1
+  },
+  "run_id": "legacy-blendcore-binary-parity-923b5876",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Let me now systematically test character validation and other parsing rules:",
+    "heuristic": true
+  },
+  "task": "legacy-blendcore-binary-parity",
+  "tokens": 258605
+}
