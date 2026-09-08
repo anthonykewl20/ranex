@@ -234,32 +234,53 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   is unchanged kernel behaviour, so the finding stays open as the recorded
   prerequisite, now with a supported path instead of folklore.
 
-### F-002 (CONFIRMED) — suite outcome split is checkout-environment-dependent; expected_skips are not location-reproducible
-
-- Verified 2026-09-03 (~04:30), paired sequential runs at commit edf1a98605:
-  - main checkout:   1657 collected, 1623 passed,  34 skipped, exit 0 (green)
-  - fresh worktree:  1657 collected, 1598 passed,  59 skipped, exit 0 (green)
-- Same commit, identical collected ID set, both green — but 25 tests pass in
-  the main checkout and skip in a fresh worktree. The outcome split depends
-  on untracked local state (e.g. `.local/**` scratch, host qualification
-  material), so a frozen `expected_skips` set cannot be reproduced from an
-  arbitrary clone location.
-- Also observed, NOT interpreted (the freeze accounting was not read):
-  the committed golden (`governance/suite_manifest.json`) expects 166 skips
-  while both runs produced 34 / 59 — how expected_skips are counted by the
-  freeze tool vs pytest is UNVERIFIED here.
-- Methodology note: two earlier PARALLEL runs of the same suites produced
-  failures/errors in the confinement/cgroup tests in both locations; the
-  repo's own ADR-046 requires serialized cgroup probes. Sequential runs are
-  mandatory for any suite comparison on one machine — parallel full-suite
-  runs on this repo are invalid by construction.
-- Severity: LOW (green preserved everywhere; reproducibility of the frozen
-  skip set across checkout locations is the weak point). Candidate fix
-  direction (not attempted): make the location/state-dependent skip arms
-  explicit expected-skip declarations the freeze already supports, or have
-  the e2e prereqs materialize the missing state in any checkout.
-
 ## Closed
+
+### F-002 (CLOSED 2026-09-08) — session/location-dependent skip arms are now explicitly declared
+
+**Remediation 2026-09-08 (issue #91):** the disposition the findings review
+named — making the skip list explicit — is delivered as two new context-tier
+declarations plus the paired measurement that verified coverage. Full-suite
+runs of the same commit from different launch contexts on one host split the
+outcome set exactly as the 2026-09-03 observation recorded: a delegated
+systemd scope (cpu/memory/pids controllers) ran the host-gated arms green
+(retained operator logs: 1812 passed / 62 skipped, fresh clone and main
+checkout), while a plain non-delegated shell skipped them — and two of those
+skips were UNDECLARED:
+`tests/e2e/test_gating_real_suite.py::test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts`
+and
+`tests/e2e/test_gating_real_suite.py::test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted`
+skip mid-test at `record_host_qualification`'s `qualified_host` probe when
+the session's delegated cgroup lacks a controller (observed live: "the
+delegated cgroup is missing required controllers: cpu"). Both arms are now
+declared `ranex-context:host-capability:` (166 → 168 declarations) — the
+tier the cross-check reports but never byte-compares — so a plain shell, a
+delegated scope, a fresh worktree and the sealed freeze all observe declared
+skips only. The finding's open counting question is answered: `suite freeze`
+never counts observed skips — `freeze_manifest` freezes the observed junitxml
+ID set and carries the `--expected-skip` declarations verbatim — so the
+manifest's total is the declaration count across contexts (host-capability
+71, hermetic-freeze 87, delegated-scope 4, fanout-gated 1, operator-action 2,
+probe-backed signing_key 3), never one run's skip count; the historical
+166-vs-34/59 divergence was the manifest describing several contexts at
+once, which is its design. Final-commit verification in both session shapes
+is recorded in issue #91. No kernel file changed.
+
+Historical observation retained (2026-09-03, commit edf1a98605):
+
+- main checkout: 1657 collected, 1623 passed, 34 skipped, exit 0; fresh
+  worktree: 1657 collected, 1598 passed, 59 skipped, exit 0 — 25 tests
+  passed in the main checkout and skipped in the fresh worktree, attributed
+  to untracked local state.
+- Methodology note (binding): ADR-046 serialized cgroup probes; parallel
+  full-suite runs on one repo remain invalid by construction. The 2026-09-08
+  measurement additionally observed five confinement-journey setup ERRORS in
+  a contended worktree run: a concurrent session's host-probe mutations
+  moved shared session cgroup placement inside the journey's probe window
+  (the frame probe said qualified; the session command then refused
+  E-C18-GATE "delegated cgroup lacks controllers: cpu"). Those are
+  contention artifacts of the unserialized window, not location semantics;
+  the serialized session-shape runs are the evidence of record.
 
 ### F-010 (CLOSED 2026-09-08) — ordinary non-strict XPASS received gate PASS
 

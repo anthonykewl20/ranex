@@ -40,6 +40,10 @@ coverage reporting, and a standard attestation envelope (DSSE / in-toto
 `test-result`) — every surveyed competitor ships at least one of the last three.
 No production sign-off or general zero-bug claim has been issued.
 
+Findings ledger: F-002 closed (#91) — the gating journey's two session-dependent
+qualified_host arms are declared host-capability skips (166 → 168), so plain
+non-delegated shells and delegated scopes observe declared skips only.
+
 Dogfood publishing (#90): web hourly sync consumes benchmarks, proof pile and
 committed audit sessions from one kernel checkout. Local-only sessions require
 commit + push before publication.
