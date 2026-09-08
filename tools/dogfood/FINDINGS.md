@@ -187,6 +187,22 @@ writer fairness or establish its original root cause. Evidence:
 
 ## Closed
 
+### F-038 (CLOSED same run, 2026-09-09) — census baseline drift from the PR trusted-evidence feature
+
+- Anchor: `e0aee9359` "feat: automatically evaluate trusted evidence for
+  GitHub pull requests" — `src/ranex/github_app/receiver.py` (+79 lines) and
+  three more files, +196/−17 across `src/ranex`, landed after the census
+  baseline was re-recorded at iteration 21 (`90a79a124`).
+- Behaviour (verified): the 2026-09-09 06:00 unattended iterate flagged
+  baseline-drift on `evolve-blind-spot-census` alone (exit 1); the scenario's
+  property assertions passed and `backlog.json` was byte-identical — only the
+  census totals (`kernel_functions`, `total_independent_paths`) moved with the
+  new kernel code, which no proof scenario executes yet.
+- How closed: drift reviewed against the intended owner change; baseline
+  deliberately re-recorded — only the census digest changed
+  (`c607c6ad…` → `ca166616…`); re-iterate 0 findings (iteration-025).
+  No assertion weakened, no kernel file touched.
+
 ### F-005 (CLOSED 2026-09-09, item 1; item 2 unchanged) — journal needs an independent history anchor
 
 - **Item 1 closed by ADR-057 (#93).** `Journal.verify()` concedes in its own
