@@ -18,3 +18,8 @@ Remaining UNVERIFIED: multi-hour soak, supervised deploy under traffic,
 secret rotation, full Leitir/Arxic governed acceptance. Automatic
 evaluation, merge-candidate checks, shard aggregation: unimplemented.
 No production sign-off has been issued.
+
+Dogfood publishing (#90): web hourly sync now consumes benchmarks, proof pile,
+and committed audit sessions from one kernel checkout. Production verification
+checks the benchmark fingerprint, proof HTML bytes, and audit snapshot.
+Local-only sessions require commit + push before publication.

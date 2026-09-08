@@ -116,3 +116,20 @@ yesterday's `git_head` is correct behavior.
 - Every public number on the page comes from `benchmarks.json`. If a desired
   claim is not in the data, the fix is to add a benchmark in the kernel repo —
   not to type a number into the web repo.
+
+## Automatic website publication
+
+`ranex-web/.github/workflows/sync-dogfood.yml` runs hourly and on manual
+workflow dispatch. It checks out one kernel `main` snapshot and runs all
+three website sync scripts against it: `sync:benchmarks`, `sync:proof-pile`,
+and `sync:sessions`. The last indexes committed `tools/dogfood/audits/`
+directories with links pinned to their evidence commits; it does not infer
+PASS from a directory name or promote unverified work to a result.
+
+Commit and push session results and regenerated artifacts to kernel `main`
+to publish them. Uncommitted local sessions are not public inputs. The web
+workflow commits changed generated files, uses the existing Dokploy deploy
+path, and checks the live page's benchmark fingerprint, proof HTML digest,
+and audit snapshot even on a no-change sync. A stale deployment fails the
+workflow rather than being reported as a successful sync. Benchmark time,
+proof history date, and audit session names are separate provenance fields.
