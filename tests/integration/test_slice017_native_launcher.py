@@ -117,7 +117,7 @@ RESPONSE_LIMIT = 65_536
 # branches are unchanged.
 # Issue #88 audit: GitHub status ignores inactive/non-branch rulesets.
 # Only that status-reporting branch changed; confinement is unchanged.
-MAIN_PY_SHA256 = "caabe4f2e220edfca377f3dfa9af5c09b0eedad6d3551b7ea1ad6f70f869d564"
+MAIN_PY_SHA256 = "e5feaecbdfd85fee7489d07a766eec233fecae259c4f0a305ec0846f6b6499bd"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

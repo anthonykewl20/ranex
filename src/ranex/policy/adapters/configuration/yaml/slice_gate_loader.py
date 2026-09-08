@@ -79,6 +79,73 @@ _CLAIM_KEYS = {"claim_id", "command", "results_artifact", "results_reporter", "q
 
 _SHAPE = "{claim_id: <id>, command: [<argv>, ...]}"
 
+# Pytest represents a *non-strict* XPASS as a bare `<testcase>` with no outcome
+# child — byte-identical to an ordinary pass (measured against the pinned
+# reporter; FINDINGS F-010). ADR-011 sad path 5 requires XPASS to block, and no
+# parser can recover an outcome the artifact never carried. The information has
+# to exist before the artifact is written, so the digest-bound argv must ask
+# pytest for it: `-o xfail_strict=true` turns XPASS into a `<failure>` the
+# existing summariser already classifies as `xpassed`.
+#
+# Refused when the `Gate` is CONSTRUCTED (the composition root, and delegation's
+# suite branch) rather than when this YAML is parsed. The invariant names gate
+# construction, and this module is a parser: a catalog is also read to look up
+# unrelated claims, and to judge historical base commits a delegated run reads
+# from the dispatch base (ADR-011). Refusing the parse would make every
+# pre-existing commit's catalog unloadable for reasons that have nothing to do
+# with the claim being used. The guarantee is unchanged — `results_artifact` has
+# exactly two consumers, and both call this before a suite claim can decide
+# anything.
+_STRICT_XFAIL_OVERRIDE = ("-o", "xfail_strict=true")
+
+# Two argv shapes switch the observation back off even with the override set.
+# Both were measured against the installed pytest, not assumed:
+#
+#   --runxfail      reports an xfail-marked test as if it were not marked, so the
+#                   XPASS is written as a bare passing testcase again.
+#   -p no:skipping  unloads the plugin implementing xfail *and skip*, so a
+#                   declared `@pytest.mark.skip` also becomes a bare pass — that
+#                   one defeats "a skip is absence" outright, not only the XPASS
+#                   arm.
+#
+# `-p` is matched on the *substring*, not on a spelling list. pytest ships no
+# long form, but the value may be attached (`-pno:skipping`) or repeated, and a
+# guard that has to enumerate spellings is the `/bin/true` denylist mistake
+# again. Nothing legitimate names that plugin.
+_RUNXFAIL = "--runxfail"
+_SKIPPING_DISABLED = "no:skipping"
+
+
+def reject_pytest_xfail_blindness(gate_id: str, claim_id: str, command: list[str]) -> None:
+    """Refuse a pytest suite claim whose argv cannot report XPASS."""
+
+    def refuse(detail: str) -> None:
+        raise ValueError(
+            f"gate {gate_id!r}: claim {claim_id!r} pytest JUnit requires the exact "
+            f"adjacent tokens {list(_STRICT_XFAIL_OVERRIDE)} so an XPASS is reported "
+            f"instead of being written as an ordinary pass: {detail}"
+        )
+
+    for part in command:
+        if part == _RUNXFAIL or _SKIPPING_DISABLED in part:
+            refuse(f"{part!r} makes pytest blind to the outcome")
+
+    # `--` ends option parsing, so an override after it is a file path.
+    end = command.index("--") if "--" in command else len(command)
+    options = command[:end]
+
+    mentions = [part for part in command if "xfail_strict" in part]
+    if [part for part in mentions if part != "xfail_strict=true"]:
+        refuse(f"conflicting xfail_strict overrides {mentions!r}")
+
+    pairs = [
+        index
+        for index in range(len(options) - 1)
+        if tuple(options[index : index + 2]) == _STRICT_XFAIL_OVERRIDE
+    ]
+    if len(pairs) != len(mentions) or not pairs:
+        refuse(f"argv {command!r} does not carry it as an option pair")
+
 
 def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
     """One `required_claims` entry, or raise.

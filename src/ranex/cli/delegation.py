@@ -31,7 +31,10 @@ from ranex.execution.retained_logs import (
 from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.suite_results import load_manifest_bytes, parse_results_artifact
-from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
+    load_gate_text,
+    reject_pytest_xfail_blindness,
+)
 
 BRIDGE_TASK_VARIABLE = "RANEX_TASK_ID"
 BRIDGE_EMIT_VARIABLE = "RANEX_EMIT"
@@ -475,6 +478,19 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 None,
             )
         if selected_claim is not None and selected_claim.results_artifact is not None:
+            # `getattr` with the enforcing default, matching this function's
+            # existing style: a claim shape that cannot name its reporter is
+            # treated as pytest, never as exempt.
+            if getattr(selected_claim, "results_reporter", "pytest-junit") == "pytest-junit":
+                # ADR-056: the second and last consumer of results_artifact. A
+                # dispatch-time suite claim that cannot report an XPASS is
+                # refused here, so parsing a historical catalog to look up an
+                # unrelated claim stays possible.
+                reject_pytest_xfail_blindness(
+                    getattr(args, "gate", "landing"),
+                    selected_claim.claim_id,
+                    list(selected_claim.command),
+                )
             suite_command = shlex.split(args.suite)
             if tuple(suite_command) != selected_claim.command:
                 raise ValueError(

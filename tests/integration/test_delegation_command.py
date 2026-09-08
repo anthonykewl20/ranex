@@ -183,7 +183,7 @@ def test_candidate_manifest_edit_cannot_change_delegated_judgement(
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: [\"/usr/bin/true\", \"--junitxml=artifacts/junit.xml\"]
+        command: [\"/usr/bin/true\", \"-o\", \"xfail_strict=true\", \"--junitxml=artifacts/junit.xml\"]
         results_artifact: artifacts/junit.xml
 """,
         encoding="utf-8",
@@ -1111,8 +1111,9 @@ def test_delegate_refuses_suite_command_that_differs_from_dispatch_claim(
     args.gate_catalog = "governance/gates.yaml"
     claim = argparse.Namespace(
         claim_id="tests-executed",
-        command=("/usr/bin/false",),
+        command=("/usr/bin/false", "-o", "xfail_strict=true"),
         results_artifact="artifacts/junit.xml",
+        results_reporter="pytest-junit",
     )
     monkeypatch.setattr(
         "ranex.cli.delegation.verified_blob_at_path",
@@ -1143,11 +1144,15 @@ def test_delegate_refuses_dispatch_base_without_suite_manifest(
     )
     args.gate_catalog = "governance/gates.yaml"
     args.suite_manifest = "governance/suite_manifest.json"
+    # ADR-056: a dispatch-time suite claim must be able to report an XPASS, and
+    # `args.suite` must still equal it or the mismatch guard fires first.
     claim = argparse.Namespace(
         claim_id="tests-executed",
-        command=("/usr/bin/true",),
+        command=("/usr/bin/true", "-o", "xfail_strict=true"),
         results_artifact="artifacts/junit.xml",
+        results_reporter="pytest-junit",
     )
+    args.suite = "/usr/bin/true -o xfail_strict=true"
 
     def fake_verified_blob(
         _worktree: Path, _commit: str, path: str, _git: object
@@ -1182,11 +1187,15 @@ def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
     )
     args.gate_catalog = "governance/gates.yaml"
     args.suite_manifest = "governance/suite_manifest.json"
+    # ADR-056: a dispatch-time suite claim must be able to report an XPASS, and
+    # `args.suite` must still equal it or the mismatch guard fires first.
     claim = argparse.Namespace(
         claim_id="tests-executed",
-        command=("/usr/bin/true",),
+        command=("/usr/bin/true", "-o", "xfail_strict=true"),
         results_artifact="artifacts/junit.xml",
+        results_reporter="pytest-junit",
     )
+    args.suite = "/usr/bin/true -o xfail_strict=true"
     manifest = {"suite": ["tests/test_example.py::test_pass"]}
     suite_results = {"counts": {"passed": 1}}
     calls: dict[str, object] = {}
@@ -1230,7 +1239,7 @@ def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
     assert calls["suite"] == {
         "worktree": worktree,
         "commit": emitted_commit,
-        "suite": "/usr/bin/true",
+        "suite": "/usr/bin/true -o xfail_strict=true",
         "results_artifact": "artifacts/junit.xml",
         "manifest": manifest,
         "streams": {"stdout": "", "stderr": ""},

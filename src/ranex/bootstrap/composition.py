@@ -28,6 +28,7 @@ from ranex.governed_execution.api import (
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
     SliceClaimDefinition,
     load_gate_text,
+    reject_pytest_xfail_blindness,
 )
 
 
@@ -80,6 +81,16 @@ class GateEvaluator:
             if self.suite_manifest is None:
                 raise ValueError("suite-results claim requires a committed suite manifest")
             manifest = load_manifest_bytes(self.suite_manifest)
+        for claim in definition.required_claims:
+            if claim.results_artifact is not None and claim.results_reporter == "pytest-junit":
+                # ADR-056. A suite claim whose argv cannot report an XPASS is a
+                # gate that cannot block one of its own declared sad paths, so
+                # it is refused where the Gate is built rather than where the
+                # catalog is parsed — see the loader's note on historical base
+                # commits.
+                reject_pytest_xfail_blindness(
+                    definition.gate_id, claim.claim_id, list(claim.command)
+                )
         gate = Gate(
             gate_id=definition.gate_id,
             rule_id=definition.rule_id,

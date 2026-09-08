@@ -704,6 +704,8 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
         "run",
         "pytest",
         "-q",
+        "-o",
+        "xfail_strict=true",
         "--junitxml=governance/suite_results.xml",
     )
     gate_catalog = (subject / "governance" / "gates.yaml").read_text(encoding="utf-8")
@@ -767,7 +769,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
                     (
                         pid
                         for pid in observed_pids
-                        if "pytest -q --junitxml=governance/suite_results.xml"
+                        if "pytest -q -o xfail_strict=true --junitxml=governance/suite_results.xml"
                         in rows[pid][2]
                     ),
                     None,

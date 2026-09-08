@@ -441,6 +441,8 @@ def run_argv(store: Path, *command: str) -> list[str]:
                 "run",
                 "pytest",
                 "-q",
+                "-o",
+                "xfail_strict=true",
                 "--junitxml=governance/suite_results.xml",
             )
         ),
@@ -810,7 +812,7 @@ def test_stage_08a_the_real_suite_really_runs_under_governance(
     evidence = json.loads(evidence_path.read_text())
     assert evidence[0]["claim_id"] == "tests-executed"
     assert evidence[0]["command"] == (
-        "uv run pytest -q --junitxml=governance/suite_results.xml"
+        "uv run pytest -q -o xfail_strict=true --junitxml=governance/suite_results.xml"
     )
     # Verbatim, whichever way the suite went: a failing command is honest
     # evidence of failure, and `run` exits with the command's own code.
@@ -967,7 +969,7 @@ def test_stage_11_the_gated_run_is_offline_with_a_sealed_root(
     command = json.dumps(["uv", "run", "--no-project", "python", "-c", probe])
     gates.write_text(
         original.replace(
-            'command: ["uv", "run", "pytest", "-q", '
+            'command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", '
             '"--junitxml=governance/suite_results.xml"]\n'
             "        results_artifact: governance/suite_results.xml",
             f"command: {command}",
@@ -1048,6 +1050,8 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
             "run",
             "pytest",
             "-q",
+            "-o",
+            "xfail_strict=true",
             "--junitxml=governance/suite_results.xml",
         ],
         Path(key),
@@ -1233,7 +1237,7 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
         admission._read_live_durable_host_state = original_reader
     assert admitted.rejections == ()
 
-    tests_argv = ("uv", "run", "pytest", "-q", "--junitxml=governance/suite_results.xml")
+    tests_argv = ("uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=governance/suite_results.xml")
     manifest_value = {
         "expected_skips": {},
         "suite": ["tests/test_real.py::test_real"],

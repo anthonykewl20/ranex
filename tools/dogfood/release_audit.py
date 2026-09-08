@@ -259,7 +259,9 @@ class Audit:
                             "    items[0].add_marker(pytest.mark.xfail(strict=True, reason='audit'))\n")
         self.plugin_variant("nonstrict-xpass", "import pytest\ndef pytest_collection_modifyitems(items):\n"
                             "    items[0].add_marker(pytest.mark.xfail(strict=False, reason='audit'))\n",
-                            gap_detail="ADR-011 promises XPASS refusal; pytest's real non-strict XPASS XML looks passed.")
+                            gap_detail="F-010: pytest's real non-strict XPASS XML looks passed. ADR-056 "
+                            "makes the onboarded claim carry -o xfail_strict=true, so the outcome exists "
+                            "to be read; this arm measures whether it does on the external subject.")
         self.plugin_variant("collection-error", "raise RuntimeError('audit collection failure')\n",
                             gap_detail="Inspect run/error output: failed collection may leave no evidence (F-004).")
         self.restore()

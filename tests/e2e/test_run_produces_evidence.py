@@ -387,7 +387,10 @@ def test_suite_freeze_refuses_when_execution_returns_no_artifact(
 
 def test_run_reads_suite_results_before_materialisation_teardown(repo: Path) -> None:
     test_id = "tests/test_sample.py::test_pass"
-    command = ["sh", "write-results.sh", "--junitxml=artifacts/junit.xml"]
+    # ADR-056: a pytest-junit suite claim must ask for the XPASS outcome it
+    # judges, whatever program actually writes the artifact.
+    command = ["sh", "write-results.sh", "-o", "xfail_strict=true",
+               "--junitxml=artifacts/junit.xml"]
     (repo / "write-results.sh").write_text(
         "mkdir -p artifacts\n"
         "printf '%s' '<testsuites><testsuite><testcase "
@@ -672,7 +675,8 @@ def test_run_refuses_a_suite_results_claim_without_a_loaded_manifest(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    command = ["sh", "-c", "exit 0", "--junitxml=artifacts/junit.xml"]
+    command = ["sh", "-c", "exit 0", "-o", "xfail_strict=true",
+               "--junitxml=artifacts/junit.xml"]
     (repo / "gates.yaml").write_text(
         "gates:\n"
         "  - gate_id: landing\n"

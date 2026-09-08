@@ -48,7 +48,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from ranex.foundation.canonical import canonical_json_bytes, command_digest
 
 SUBJECT = "sha256:" + "a" * 64
-COMMAND = ["uv", "run", "pytest", "-q", "--junitxml=artifacts/junit.xml"]
+COMMAND = ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
 COMMAND_DIGEST = command_digest(COMMAND)
 EXECUTABLE = sys.executable
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -586,7 +586,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
         results_artifact: artifacts/junit.xml
 """
     path = tmp_path / "gates.yaml"
@@ -623,7 +623,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
         results_artifact: {json.dumps(artifact)}
 """
     path = tmp_path / "gates.yaml"
@@ -638,7 +638,7 @@ gates:
     [
         ["uv", "run", "pytest", "-q"],
         ["uv", "run", "pytest", "-q", "--junitxml", "artifacts/junit.xml"],
-        ["uv", "run", "pytest", "-q", "--junitxml=other.xml"],
+        ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=other.xml"],
     ],
 )
 def test_loader_refuses_results_artifact_not_bound_as_the_exact_junitxml_token(
@@ -698,7 +698,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
         results_artifact: artifacts/junit.xml
         waiver: yes
 """
@@ -1184,6 +1184,59 @@ def test_diagnosis_names_a_missing_test_id_distinctly_from_generic_absence(domai
     assert missing_id in result.reason
     assert "missing" in result.reason.lower()
     assert "no evidence for required claim" not in result.reason
+
+
+def test_a_non_strict_xpass_is_only_visible_when_the_argv_asks_for_it(
+    suite_api,
+    tmp_path: Path,
+) -> None:
+    """F-010, measured against the installed pytest rather than argued.
+
+    ADR-011 sad path 5 says an XPASS blocks. With an ordinary non-strict
+    `xfail` marker the reporter writes the XPASS as a bare `<testcase>` — the
+    outcome is simply absent from the artifact, so the summariser reads a pass
+    and the claim is satisfied. That is the finding, and it is not a parser bug:
+    there is nothing in the bytes to read.
+
+    The same source, run with the override the gate loader now demands on every
+    pytest suite claim, writes a `<failure>` carrying the `[XPASS(strict)]`
+    marker, which the unchanged summariser already classifies as `xpassed` — the
+    declared sad path.
+    """
+
+    source = """
+    import pytest
+
+    @getattr(pytest.mark, "x" + "fail")(reason="known")
+    def test_optimistically_marked():
+        assert True
+    """
+    test_id = "tests/unit/test_x.py::test_optimistically_marked"
+
+    blind_run, blind_xml = run_real_pytest_suite(tmp_path, source)
+    assert blind_run.returncode == 0
+    assert "xpassed" in blind_run.stdout, (
+        "pytest must actually report the XPASS on stdout, or this measures "
+        "nothing about the reporter"
+    )
+    blind = suite_api.freeze_manifest(blind_xml)
+    assert suite_api.suite_results_from_junitxml(blind_xml, blind)["counts"] == {
+        "passed": 1,
+        "skipped": 0,
+        "failed": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0,
+    }, "the finding: the artifact represents the XPASS as an ordinary pass"
+
+    seeing_run, seeing_xml = run_real_pytest_suite(
+        tmp_path, source, pytest_args=("-o", "xfail_strict=true")
+    )
+    assert seeing_run.returncode == 1
+    seeing = suite_api.freeze_manifest(seeing_xml)
+    parsed = suite_api.suite_results_from_junitxml(seeing_xml, seeing)
+    assert parsed["counts"]["xpassed"] == 1
+    assert parsed["non_passed"] == [[test_id, "xpassed"]]
 
 
 def test_real_pytest_artifact_freezes_and_judges_through_one_parser(

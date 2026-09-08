@@ -118,7 +118,10 @@ from ranex.policy.adapters.configuration.yaml.producer_keyring import (
     load_keyring_text,
     load_trust_keyring_text,
 )
-from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
+    load_gate_text,
+    reject_pytest_xfail_blindness,
+)
 from ranex.provisioning.approval import depset_digest, package_delta
 from ranex.provisioning.derivation import derive_lock, refuse_mismatch
 from ranex.provisioning.errors import ProvisioningError
@@ -1378,6 +1381,15 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
                 "suite manifest",
             )
             manifest = load_manifest_bytes(manifest_source)
+        for claim in definition.required_claims:
+            if claim.results_artifact is not None and claim.results_reporter == "pytest-junit":
+                # ADR-056. `task judge` builds its own Gate rather than going
+                # through the composition root, so the refusal has to be here
+                # too — a second construction site is a second way for an
+                # XPASS-blind claim to reach a verdict.
+                reject_pytest_xfail_blindness(
+                    definition.gate_id, claim.claim_id, list(claim.command)
+                )
         gate = Gate(
             gate_id=definition.gate_id,
             rule_id=definition.rule_id,
@@ -3434,6 +3446,15 @@ def cmd_run(args: argparse.Namespace) -> int:
             )
             selected_claim = claim_definition_for(catalog_source, args.gate, args.claim)
             if selected_claim is not None and selected_claim.results_artifact is not None:
+                if selected_claim.results_reporter == "pytest-junit":
+                    # Refuse before signing, not only at the gate: evidence
+                    # produced under an XPASS-blind argv can never satisfy the
+                    # claim, and observing it anyway wastes a real suite run.
+                    reject_pytest_xfail_blindness(
+                        getattr(args, "gate", "landing"),
+                        selected_claim.claim_id,
+                        list(selected_claim.command),
+                    )
                 manifest_path = resolve_within_repository(root, args.suite_manifest)
                 manifest_source = committed_trust_root(
                     root,

@@ -143,21 +143,6 @@ writer fairness or establish its original root cause. Evidence:
   precise load attribution remain UNVERIFIED. No timeout or assertion was
   changed to conceal the observation.
 
-### F-010 (CONFIRMED, specification mismatch) — ordinary non-strict XPASS receives gate PASS
-
-- Reproduced with released v0.1.0 (`edf1a98605`) and HEAD (`48f3a98e48`)
-  on the pinned external `benjaminp/six` repository: the actual pytest run
-  reports **184 passed, 1 xpassed**, then Ranex records exit 0 and gate PASS.
-  Strict XPASS, XFAIL, undeclared skip, and deselection controls all block.
-- Anchor: `foundation/suite_results.py:_outcome` treats a testcase without
-  outcome children as passed. Installed pytest 7.4.4's JUnit reporter emits
-  this shape for non-strict XPASS; the kernel's pinned pytest 9.1.1 reporter
-  has the same pass branch. No malicious XML writer is required.
-- Contradicts ADR-011's unqualified XPASS-refusal claim and README's
-  completed SLICE-009 description. This is a policy/diagnosis mismatch;
-  the XPASS test did execute and its assertion passed.
-- Pin: `release_audit.py`, `nonstrict-xpass` versus `strict-xpass`.
-
 ### F-012 (RECONFIRMED boundary) — authenticated test reports are not an independent correctness oracle
 
 - With real `six.integer_types` broken, an independent Python assertion
@@ -275,6 +260,50 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   the e2e prereqs materialize the missing state in any checkout.
 
 ## Closed
+
+### F-010 (CLOSED 2026-09-08) — ordinary non-strict XPASS received gate PASS
+
+- Original observation, unchanged: reproduced with released v0.1.0
+  (`edf1a98605`) and HEAD (`48f3a98e48`) on the pinned external
+  `benjaminp/six` repository — the actual pytest run reports **184 passed,
+  1 xpassed**, then Ranex recorded exit 0 and gate PASS. Strict XPASS, XFAIL,
+  undeclared skip and deselection controls all blocked.
+- Re-measured 2026-09-08 against the installed pytest to find the cause in the
+  bytes rather than in the parser. A non-strict XPASS is written as
+  `<testcase classname="test_xp" name="test_nonstrict_xpass" time="0.001" />`
+  — a bare element with no outcome child, byte-identical to an ordinary pass.
+  The enclosing `<testsuite>` carries `failures="0" errors="0"` and does not
+  count it in `skipped` either. `foundation/suite_results._outcome` reads
+  `passed` because the outcome is absent from the artifact, not because the
+  branch is wrong. No parser change could have closed this.
+- Closed by ADR-056: the outcome has to be requested before the artifact is
+  written, so it is required in the one thing the kernel already binds and
+  digests — the claim's argv. A `pytest-junit` suite claim must carry the exact
+  adjacent tokens `-o xfail_strict=true`, and the gate loader refuses at
+  construction otherwise. The same XPASS is then written as
+  `<failure message="[XPASS(strict)] ...">`, which the **unchanged** summariser
+  already classifies as `xpassed`. `evaluate()` did not move; `KERNEL_DIGEST`
+  did not move; no stdout heuristic and no fabricated outcome were added.
+- Also refused by name, each measured rather than assumed, because each makes
+  the reporter blind again with the override still set: `--runxfail`;
+  `-p no:skipping` in any spelling, matched on the plugin name rather than an
+  enumerated list (this one unloads xfail **and skip**, so a declared
+  `@pytest.mark.skip` becomes a bare pass and "a skip is absence" fails
+  outright); `-o xfail_strict=false`; a second,
+  later override; a bare `xfail_strict=true` with no preceding `-o`; and the
+  pair placed after a `--`.
+- `governance/gates.yaml` now carries the binding, so the repository's own
+  landing gate no longer has the finding.
+- Pins: `tests/security/test_slice009_strict_xfail_binding.py` (the refusals)
+  and `tests/unit/test_suite_results.py::test_a_non_strict_xpass_is_only_visible_when_the_argv_asks_for_it`
+  (the reporter half, run against the installed pytest, not a hand-written XML
+  fixture). `release_audit.py`'s `nonstrict-xpass` versus `strict-xpass`
+  scenarios remain the external-subject arm.
+- Boundary restated, not closed: a hostile tree can still forge the artifact via
+  `conftest.py` or an approved `pytest11` plugin (ADR-007, ADR-011 criterion 10,
+  F-012). This closes an honest-process blind spot; it moves no trust boundary.
+- `vitest-junit` claims are unaffected and are not asked for an equivalent:
+  Vitest's `test.fails` already fails a test that unexpectedly passes.
 
 ### F-030 — version tags did not create GitHub Release pages
 

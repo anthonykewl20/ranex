@@ -377,6 +377,7 @@ def test_stage_5_run_before_provisioning_refuses_and_names_the_next_command(
         [
             "run", "--claim", "tests-executed", "--producer", "worker",
             "--store", str(operator.store), "--", "uv", "run", "pytest", "-q",
+            "-o", "xfail_strict=true",
             "--junitxml=governance/suite_results.xml",
         ],
         key=operator.key,
@@ -447,6 +448,7 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
         [
             "run", "--claim", "tests-executed", "--producer", "worker",
             "--store", str(operator.store), "--", "uv", "run", "pytest", "-q",
+            "-o", "xfail_strict=true",
             "--junitxml=governance/suite_results.xml",
         ],
         key=operator.key,
@@ -465,7 +467,7 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
 
     records = json.loads(evidence.read_text())
     assert records[0]["command"] == (
-        "uv run pytest -q --junitxml=governance/suite_results.xml"
+        "uv run pytest -q -o xfail_strict=true --junitxml=governance/suite_results.xml"
     )
     assert records[0]["exit_code"] == code
     # It really ran: a recorded exit code with no suite behind it is the
