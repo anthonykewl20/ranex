@@ -4150,6 +4150,8 @@ def cmd_github_status(args: argparse.Namespace) -> int:
             for ruleset in complete_repository_rulesets(
                 token, args.repo, summaries, api_root=api_root_from_environment()
             ):
+                if ruleset.get("enforcement") != "active" or ruleset.get("target") != "branch":
+                    continue
                 found = acceptance_pin(ruleset)
                 if found is not None:
                     pin = found

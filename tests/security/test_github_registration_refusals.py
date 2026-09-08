@@ -164,3 +164,13 @@ def test_stored_key_mode_is_owner_only(tmp_path: Path) -> None:
         convert_and_store(fake.conversion_code, keys, repository_root=repo, api_root=fake.url)
     mode = stat.S_IMODE((keys / "app.pem").stat().st_mode)
     assert mode & 0o077 == 0
+
+
+def test_matching_rule_does_not_hide_a_later_foreign_pin(tmp_path: Path) -> None:
+    from ranex.github_app.registration import ruleset_body
+
+    with _github_fake.FakeGitHub(b"") as fake:
+        fake.rulesets = [ruleset_body(123, "main"), ruleset_body(999, "main")]
+        with pytest.raises(ClientRefusal, match="E-GITHUB-RULESET-CONFLICT"):
+            pin_acceptance_ruleset("token", "owner/name", 123, branch="main", api_root=fake.url)
+        assert len(fake.rulesets) == 2

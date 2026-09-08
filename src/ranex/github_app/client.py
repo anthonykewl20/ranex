@@ -20,11 +20,12 @@ import urllib.request
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import datetime
+from http.client import HTTPException
 from pathlib import Path
 from typing import Any
 
 from cryptography.hazmat.primitives import hashes, serialization
-from cryptography.hazmat.primitives.asymmetric import padding
+from cryptography.hazmat.primitives.asymmetric import padding, rsa
 
 API_ROOT = "https://api.github.com"
 # The pinned API version of the docs this client was written against
@@ -94,13 +95,21 @@ def _api_request(
         with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             raw = response.read()
     except urllib.error.HTTPError as exc:
-        detail = exc.read()[:200].decode("utf-8", "replace").strip()
+        try:
+            detail = exc.read(200).decode("utf-8", "replace").strip()
+        except (HTTPException, OSError):
+            detail = "response body unavailable"
         raise ClientRefusal(
             "E-GITHUB-API-REFUSED", f"{method} {url}: HTTP {exc.code} {detail}"
         ) from exc
-    except (urllib.error.URLError, OSError) as exc:
+    except (urllib.error.URLError, HTTPException, OSError) as exc:
         raise ClientRefusal("E-GITHUB-API-REFUSED", f"{method} {url}: {exc}") from exc
-    return json.loads(raw) if raw else {}
+    try:
+        return json.loads(raw) if raw else {}
+    except (ValueError, UnicodeError, RecursionError) as exc:
+        raise ClientRefusal(
+            "E-GITHUB-API-REFUSED", f"{method} {url}: response was not valid JSON"
+        ) from exc
 
 
 def convert_app_manifest(code: str, *, api_root: str = API_ROOT) -> dict[str, Any]:
@@ -134,14 +143,33 @@ def list_repository_rulesets(
     token: str, repository: str, *, api_root: str = API_ROOT
 ) -> list[dict[str, Any]]:
     owner, name = split_repository(repository)
-    response = _api_request(
-        "GET",
-        f"{api_root.rstrip('/')}/repos/{owner}/{name}/rulesets",
-        token=token,
+    return _paged_objects(
+        lambda query: _api_request(
+            "GET", f"{api_root.rstrip('/')}/repos/{owner}/{name}/rulesets?{query}",
+            token=token,
+        ),
     )
-    if not isinstance(response, list) or not all(isinstance(item, dict) for item in response):
-        raise ClientRefusal("E-GITHUB-API-REFUSED", "rulesets listing was not a list of objects")
-    return response
+
+
+def _paged_objects(
+    fetch: Callable[[str], Any], *, parameters: dict[str, Any] | None = None,
+    field: str | None = None,
+) -> list[dict[str, Any]]:
+    """Walk GitHub's numbered pages; never report a truncated list as complete."""
+    result: list[dict[str, Any]] = []
+    for page in range(1, 1001):
+        response = fetch(urllib.parse.urlencode(
+            {**(parameters or {}), "per_page": 100, "page": page},
+        ))
+        items = response
+        if field is not None:
+            items = response.get(field) if isinstance(response, dict) else None
+        if not isinstance(items, list) or not all(isinstance(item, dict) for item in items):
+            raise ClientRefusal("E-GITHUB-API-REFUSED", "listing was not a list of objects")
+        result.extend(items)
+        if len(items) < 100:
+            return result
+    raise ClientRefusal("E-GITHUB-API-REFUSED", "listing exceeded 1000 pages")
 
 
 def create_repository_ruleset(
@@ -261,7 +289,10 @@ def load_private_key(path: Path):
         )
     try:
         key_bytes = Path(path).read_bytes()
-        return serialization.load_pem_private_key(key_bytes, password=None)
+        key = serialization.load_pem_private_key(key_bytes, password=None)
+        if not isinstance(key, rsa.RSAPrivateKey):
+            raise ValueError("GitHub App signing requires an RSA private key")
+        return key
     except (OSError, ValueError, TypeError) as exc:
         raise ClientRefusal("E-GITHUB-KEY-UNREADABLE", f"{path}: {exc}") from exc
 
@@ -371,20 +402,15 @@ class GitHubClient:
         """
 
         owner, name = split_repository(repository)
-        query = urllib.parse.urlencode(
-            {"check_name": check_name, "app_id": self._credentials.app_id, "per_page": 100}
+        return _paged_objects(
+            lambda query: self._request(
+                "GET", f"/repos/{owner}/{name}/commits/{head_sha}/check-runs?{query}",
+                token=self.installation_token(installation_id),
+            ),
+            parameters={"check_name": check_name, "app_id": self._credentials.app_id,
+                        "filter": "all"},
+            field="check_runs",
         )
-        response = self._request(
-            "GET",
-            f"/repos/{owner}/{name}/commits/{head_sha}/check-runs?{query}",
-            token=self.installation_token(installation_id),
-        )
-        runs = response.get("check_runs") if isinstance(response, dict) else None
-        if not isinstance(runs, list) or not all(isinstance(run, dict) for run in runs):
-            raise ClientRefusal(
-                "E-GITHUB-API-REFUSED", "check-runs listing lacked a check_runs list"
-            )
-        return runs
 
     def app_identity(self) -> dict[str, Any]:
         """Who this JWT is, from GitHub: id, slug, html_url."""
@@ -397,14 +423,12 @@ class GitHubClient:
     def list_installations(self) -> list[dict[str, Any]]:
         """Every installation of this App the JWT can see."""
 
-        response = self._request(
-            "GET", "/app/installations", token=mint_app_jwt(self._credentials, now=self._now())
+        return _paged_objects(
+            lambda query: self._request(
+                "GET", f"/app/installations?{query}",
+                token=mint_app_jwt(self._credentials, now=self._now()),
+            ),
         )
-        if not isinstance(response, list) or not all(isinstance(item, dict) for item in response):
-            raise ClientRefusal(
-                "E-GITHUB-API-REFUSED", "GET /app/installations was not a list of objects"
-            )
-        return response
 
 
 def api_root_from_environment() -> str:

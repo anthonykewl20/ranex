@@ -1,0 +1,16 @@
+{
+  "kernel": "2fcde242e21d1a5af21dfc4eca99a596881a12e1",
+  "scope": "Replay a real GitHub PR through HTTP, restart recovery and live App publication.\n\nUses an existing operator clone and its trusted signed verdicts. Publishes one\ncheck on the explicitly selected repository/head. The HTTP payload is assembled\nfrom the current GitHub PR response and locally HMAC-signed: this is not proof\nof a fresh GitHub-originated webhook or a new governed test observation.\n",
+  "repo": "anthonykewl20/ranex-app-live-probe",
+  "head": "4c38813b60e2d4b8fcd2b2ff2a8d1dfc0bf2e53a",
+  "app_id": 4863198,
+  "app_owner": "anthonykewl20",
+  "delivery": "audit-recovery-b2af20b4-4d9b-4949-ba35-430db79a1fdf",
+  "http_status": 503,
+  "recovery_status": 200,
+  "check_id": 102017776260,
+  "check_url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102017776260",
+  "conclusion": "success",
+  "second_drain_duplicate_count": 0,
+  "verified": true
+}

@@ -368,7 +368,7 @@ with tempfile.TemporaryDirectory(prefix='ranex-real-pr-replay-') as directory, s
                 observed = json.loads(paused_journal.read_text().splitlines()[-1])
                 (OUT / 'paused-git-deliveries.jsonl').write_bytes(paused_journal.read_bytes())
                 record('resumed-real-git-server', status == 500
-                       and observed['outcome'] == 'E-GITHUB-API-REFUSED' and not spooled.exists(),
+                       and observed['outcome'] == 'E-GITHUB-API-REFUSED' and spooled.exists(),
                        dict(status=status, receipt=observed, still_spooled=spooled.exists()))
                 retried = request(port, busy_id)
                 observed = json.loads(paused_journal.read_text().splitlines()[-1])

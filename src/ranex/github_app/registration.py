@@ -367,6 +367,16 @@ def acceptance_pin(ruleset: Mapping[str, Any]) -> int | None:
     return None
 
 
+def _strict_acceptance_rule(rule: Any, app_id: int) -> bool:
+    if not isinstance(rule, dict) or acceptance_pin({"rules": [rule]}) != app_id:
+        return False
+    parameters = rule["parameters"]
+    return (
+        parameters.get("strict_required_status_checks_policy") is True
+        and parameters.get("do_not_enforce_on_create", False) is False
+    )
+
+
 def pin_acceptance_ruleset(
     token: str,
     repository: str,
@@ -381,7 +391,9 @@ def pin_acceptance_ruleset(
     """
 
     split_repository(repository)
+    desired = ruleset_body(app_id, branch)
     summaries = list_repository_rulesets(token, repository, api_root=api_root)
+    reusable = False
     for ruleset in complete_repository_rulesets(
         token, repository, summaries, api_root=api_root
     ):
@@ -389,13 +401,26 @@ def pin_acceptance_ruleset(
         if pinned is None:
             continue
         if pinned == app_id:
-            return "existing"
+            # A pin alone proves neither enforcement nor branch coverage.
+            # Reuse only the exact scope and strict policy we would create;
+            # broader/custom rules remain untouched alongside the new rule.
+            if (
+                ruleset.get("target") == desired["target"]
+                and ruleset.get("enforcement") == "active"
+                and ruleset.get("conditions") == desired["conditions"]
+                and not ruleset.get("bypass_actors")
+                and any(_strict_acceptance_rule(rule, app_id) for rule in ruleset.get("rules", []))
+            ):
+                reusable = True
+            continue
         raise ClientRefusal(
             "E-GITHUB-RULESET-CONFLICT",
             f"{repository} already requires {CHECK_NAME} from integration_id {pinned}",
         )
+    if reusable:
+        return "existing"
     create_repository_ruleset(
-        token, repository, ruleset_body(app_id, branch), api_root=api_root
+        token, repository, desired, api_root=api_root
     )
     return "created"
 

@@ -259,7 +259,8 @@ about the exact bytes a merge would land.
    live in `completed/`, publication attempts in `attempted/` and pending
    deliveries in `spool/`, all under the state dir (`.local/ranex/github` by
    default). Preserve them on upgrades. GitHub does not automatically retry a
-   delivery answered 5xx: request redelivery in GitHub or through its API.
+   delivery answered 5xx. The listener retains these failures in its spool
+   and retries them too; manual GitHub/API redelivery remains available.
    Publication is at-least-once by construction, never exactly-once: a crash
    between the API call and the local receipt is reconciled on retry, which
    asks GitHub for this App's `ranex/acceptance` run stamped with the
@@ -626,3 +627,9 @@ milestone's proof artifacts: a real invocation transcript and a real
 per-file, per-line coverage report a human can read at a pinned commit.
 The entrypoint never logs key material; the transcript carries suite output
 and line numbers only.
+
+GitHub audit follow-up: [2026-09-08 App review](../tools/dogfood/FINDINGS.md#github-app-audit--2026-09-08).
+Ruleset setup reuses only an active, strict rule for the exact requested branch
+without bypass actors. Other same-App rules are preserved and a matching rule
+is created. Status ignores disabled and non-branch rules; a reported pin is
+not evidence that every branch or actor is protected.

@@ -179,3 +179,124 @@ def test_the_cli_publishes_from_a_verified_verdict(tmp_path: Path) -> None:
     assert len(fake.check_requests) == 1
     assert fake.check_requests[0]["body"]["conclusion"] == "success"
     assert fake.check_requests[0]["body"]["head_sha"] == head
+
+
+def test_lists_include_later_pages_and_reconciliation_requests_all_runs(tmp_path: Path) -> None:
+    from urllib.parse import parse_qs, urlsplit
+
+    from ranex.github_app.client import list_repository_rulesets
+
+    key_path, public = _github_fake.write_app_key(tmp_path)
+    with _github_fake.FakeGitHub(public) as fake:
+        client = GitHubClient(AppCredentials(_github_fake.APP_ID, key_path, "secret"), api_root=fake.url)
+        fake.installation_list = [{"id": i} for i in range(105)]
+        fake.rulesets = [{"id": i, "rules": []} for i in range(105)]
+        assert client.list_installations() == fake.installation_list
+        assert list_repository_rulesets("operator", "owner/name", api_root=fake.url) == fake.rulesets
+        binding = binding_for("b" * 40)
+        for i in range(105):
+            client.create_check_run(1, "owner/name", check_run_body(
+                binding, decide_check(binding, verified_acceptance(binding)),
+                started_at=time.time(), completed_at=time.time(), external_id=f"delivery-{i}",
+            ))
+        runs = client.list_check_runs(1, "owner/name", binding.head_sha, check_name="ranex/acceptance")
+        assert [run["external_id"] for run in runs] == [f"delivery-{i}" for i in range(105)]
+        listings = [parse_qs(urlsplit(r["path"]).query) for r in fake.requests if "/commits/" in r["path"]]
+        assert [q["page"] for q in listings] == [["1"], ["2"]]
+        assert all(q["filter"] == ["all"] for q in listings)
+
+
+def test_non_rsa_private_key_is_a_named_refusal(tmp_path: Path) -> None:
+    import pytest
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric import ed25519
+
+    from ranex.github_app.client import ClientRefusal
+
+    path = tmp_path / "wrong-key.pem"
+    path.write_bytes(ed25519.Ed25519PrivateKey.generate().private_bytes(
+        serialization.Encoding.PEM, serialization.PrivateFormat.PKCS8, serialization.NoEncryption(),
+    ))
+    path.chmod(0o600)
+    with pytest.raises(ClientRefusal, match="RSA private key"):
+        mint_app_jwt(AppCredentials("123", path, "secret"))
+
+
+def test_invalid_api_json_is_a_named_refusal() -> None:
+    import io
+    from unittest.mock import patch
+
+    import pytest
+
+    from ranex.github_app.client import ClientRefusal, _api_request
+
+    for body in (b'<html>upstream unavailable</html>', b'\xff', b'[' * 2000):
+        with patch('urllib.request.urlopen', return_value=io.BytesIO(body)):
+            with pytest.raises(ClientRefusal, match='response was not valid JSON'):
+                _api_request('GET', 'https://api.github.com/app', token='private')
+
+
+def test_pagination_refuses_malformed_later_pages_and_missing_envelopes() -> None:
+    from unittest.mock import Mock
+
+    import pytest
+
+    from ranex.github_app.client import ClientRefusal, _paged_objects
+
+    for bad in ([], {"check_runs": None}, {"check_runs": ["invalid"]}):
+        with pytest.raises(ClientRefusal):
+            _paged_objects(Mock(return_value=bad), field="check_runs")
+    with pytest.raises(ClientRefusal):
+        _paged_objects(Mock(side_effect=[[{"id": i} for i in range(100)], {}]))
+    with pytest.raises(ClientRefusal, match="exceeded 1000 pages"):
+        _paged_objects(Mock(return_value=[{"id": i} for i in range(100)]))
+
+
+def test_truncated_http_response_is_a_retryable_client_refusal() -> None:
+    import threading
+    from http.server import BaseHTTPRequestHandler, HTTPServer
+
+    import pytest
+
+    from ranex.github_app.client import ClientRefusal, _api_request
+
+    class Truncated(BaseHTTPRequestHandler):
+        def do_GET(self):
+            self.send_response(200)
+            self.send_header("Content-Length", "100")
+            self.end_headers()
+            self.wfile.write(b"{}")
+            self.close_connection = True
+
+        def log_message(self, *args):
+            pass
+
+    server = HTTPServer(("127.0.0.1", 0), Truncated)
+    thread = threading.Thread(target=server.serve_forever)
+    thread.start()
+    try:
+        with pytest.raises(ClientRefusal, match="E-GITHUB-API-REFUSED"):
+            _api_request("GET", f"http://127.0.0.1:{server.server_port}/app", token="test-only")
+    finally:
+        server.shutdown()
+        thread.join()
+        server.server_close()
+
+
+def test_error_response_with_reset_body_preserves_http_status() -> None:
+    import io
+    from unittest.mock import patch
+    from urllib.error import HTTPError
+
+    import pytest
+
+    from ranex.github_app.client import ClientRefusal, _api_request
+
+    class ResetBody(io.BytesIO):
+        def read(self, *args, **kwargs):
+            raise ConnectionResetError("peer reset the error body")
+
+    error = HTTPError("https://api.github.com/app", 503, "unavailable", {}, ResetBody())
+    with patch("urllib.request.urlopen", side_effect=error):
+        with pytest.raises(ClientRefusal, match="HTTP 503 response body unavailable"):
+            _api_request("GET", "https://api.github.com/app", token="test-only")

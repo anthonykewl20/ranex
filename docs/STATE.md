@@ -3,21 +3,29 @@
 **Updated:** 2026-09-08
 **Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
 
-Version v0.1.006. Issues: #88. Findings: F-033–F-037.
-Live App verification COMPLETE for the App surface: App ranex-gate (4863112's
-replacement, owner anthonykewl20, installation 159825611) authenticates,
-receives real GitHub webhooks over HTTPS (smee), publishes ranex/acceptance,
-refreshes late verdicts, enforces the App-pinned ruleset (HTTP 405), defeats
-a same-named forged Actions check, merges only behind a signed verdict, and
-redeliveries replay as no-ops. Evidence: tools/dogfood/audits/
-2026-09-08-live-app/ (no mock GitHub).
+Version v0.1.006. Production-readiness issue: #88, still open.
+[App review](../tools/dogfood/FINDINGS.md#github-app-audit--2026-09-08): repaired fast-failure spool
+loss, revoked-allowlist refresh, truncated API lists, latest-only reconciliation,
+weak-ruleset reuse,
+non-RSA credential crashes, malformed API responses and false fake-API receipts.
+Full-suite review also repaired unlocked session delegation snapshots racing qualification.
+Freeze artifacts regenerated; lifecycle E2E cleanup checks attribute scratch to their own run.
 
-F-035/F-037 fixes and pre-App live calibration: audits/2026-09-07-live-app/.
+Fresh real-PR receiver stress: 41/41 checks. Live App recovery: HTTP 503,
+retained queue, fresh receiver state, one successful real App check, no duplicate.
+Receipts: tools/dogfood/audits/2026-09-08-app-review/.
+Live recovery reuses an existing signed verdict; it does not rerun its tests.
+Final-commit frozen pytest evidence is recorded in the issue closing comment.
 
-Remaining UNVERIFIED: multi-hour soak, supervised deploy under traffic,
-secret rotation, full Leitir/Arxic governed acceptance. Automatic
-evaluation, merge-candidate checks, shard aggregation: unimplemented.
-No production sign-off has been issued.
+Prior live HTTPS delivery, App-pinned merge refusal, wrong-source check refusal,
+late verdict refresh and successful merge: audits/2026-09-08-live-app/.
+App ranex-gate: 4863198, owner anthonykewl20, installation 159825611.
+
+UNVERIFIED: multi-hour soak, supervised production traffic, secret rotation,
+operational backup/restore, full Leitir/Arxic governed acceptance.
+UNIMPLEMENTED: automatic evaluation, merge-candidate checks, shard aggregation,
+Chock-equivalent multi-agent policy compiler/catalog.
+No production sign-off or general zero-bug claim has been issued.
 
 Dogfood publishing (#90): web hourly sync now consumes benchmarks, proof pile,
 and committed audit sessions from one kernel checkout. Production verification

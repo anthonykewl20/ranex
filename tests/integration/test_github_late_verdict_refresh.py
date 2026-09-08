@@ -132,3 +132,16 @@ def test_a_busy_pipeline_and_damaged_records_leave_the_wait_in_place(tmp_path: P
         assert damaged.exists() and misnamed.exists()
         rows = (tmp_path / "state" / "deliveries.jsonl").read_text()
         assert '"outcome": "awaiting-unreadable"' in rows
+
+
+def test_refresh_does_not_publish_after_repository_is_removed_from_allowlist(tmp_path: Path) -> None:
+    from dataclasses import replace
+
+    with _github_fake.receiver_environment(tmp_path, with_verdict=False) as env:
+        process_delivery(env.config, env.state, event_body(env.head), "d-revoked", "pull_request")
+        _land_verdicts(tmp_path, env)
+        before = len(env.fake.requests)
+        revoked = replace(env.config, allowlist=frozenset())
+        assert refresh_awaiting(revoked, env.state) == {env.head: "not-allowlisted"}
+        assert len(env.fake.requests) == before
+        assert not (env.config.state_dir / "awaiting" / f"{env.head}.json").exists()

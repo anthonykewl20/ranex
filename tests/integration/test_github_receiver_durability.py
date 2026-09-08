@@ -15,6 +15,7 @@ import time
 from http.server import HTTPServer
 from pathlib import Path
 from unittest.mock import patch
+from urllib.error import HTTPError
 from urllib.request import Request, urlopen
 
 import _github_fake
@@ -299,8 +300,8 @@ def test_the_handler_names_state_failures_and_bad_ids(
             with pytest.raises(Exception) as damaged_state:
                 urlopen(_signed(port, body, "d-damaged"), timeout=10)
             assert damaged_state.value.code == 500
-            # Answered synchronously, the spool has nothing left to say.
-            assert not (tmp_path / "state" / "spool" / "d-damaged.json").exists()
+            # A synchronous failure still needs durable recovery.
+            assert (tmp_path / "state" / "spool" / "d-damaged.json").exists()
             assert env.fake.check_requests == []
         finally:
             server.shutdown()
@@ -375,3 +376,36 @@ def test_completion_receipts_guard_replays_conflicts_and_damage(tmp_path: Path) 
             with pytest.raises(ValueError):
                 process_delivery(env.config, env.state, body, name, "pull_request")
         assert len(env.fake.check_requests) == 1
+
+
+@pytest.mark.parametrize("busy", [False, True])
+def test_fast_failure_recovers_without_github_redelivery(tmp_path: Path, busy: bool) -> None:
+    """Real HTTP and Git, with an explicit local API outage or busy pipeline."""
+
+    with receiver_environment(tmp_path) as env:
+        config = env.config
+        if busy:
+            env.state.lock.acquire()
+        else:
+            env.fake.fail_check_runs_with = 503
+        server = HTTPServer(("127.0.0.1", 0), build_handler(config, env.state))
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            with pytest.raises(HTTPError) as error:
+                urlopen(_signed(server.server_address[1], event_body(env.head), "d-recover"), timeout=10)
+            assert error.value.code == (503 if busy else 500)
+            assert (config.state_dir / "spool" / "d-recover.json").exists()
+        finally:
+            if busy:
+                env.state.lock.release()
+            server.shutdown()
+            thread.join()
+            server.server_close()
+        env.fake.fail_check_runs_with = None
+        # Fresh process state; no second HTTP request and no mocked publication.
+        with patch.object(receiver, "SPOOL_RETRY_SECONDS", 0):
+            assert drain_spool(config, receiver._ReceiverState()) == {"d-recover": 200}
+        assert len(env.fake.check_requests) == (1 if busy else 2)
+        assert not (config.state_dir / "spool" / "d-recover.json").exists()
+        assert drain_spool(config, receiver._ReceiverState()) == {}

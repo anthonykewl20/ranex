@@ -1,0 +1,50 @@
+{
+  "repository": "anthonykewl20/ranex-app-live-probe",
+  "rulesets": [
+    {
+      "id": 22468775,
+      "name": "ranex-acceptance",
+      "target": "branch",
+      "source_type": "Repository",
+      "source": "anthonykewl20/ranex-app-live-probe",
+      "enforcement": "active",
+      "conditions": {
+        "ref_name": {
+          "exclude": [],
+          "include": [
+            "refs/heads/main"
+          ]
+        }
+      },
+      "rules": [
+        {
+          "type": "required_status_checks",
+          "parameters": {
+            "strict_required_status_checks_policy": true,
+            "do_not_enforce_on_create": false,
+            "required_status_checks": [
+              {
+                "context": "ranex/acceptance",
+                "integration_id": 4863198
+              }
+            ]
+          }
+        }
+      ],
+      "node_id": "RRS_lACqUmVwb3NpdG9yec5RFP9YzgFW2Kc",
+      "created_at": "2026-09-07T17:12:06.303Z",
+      "updated_at": "2026-09-07T17:12:06.348Z",
+      "current_user_can_bypass": "never",
+      "_links": {
+        "self": {
+          "href": "https://api.github.com/repos/anthonykewl20/ranex-app-live-probe/rulesets/22468775"
+        },
+        "html": {
+          "href": "https://github.com/anthonykewl20/ranex-app-live-probe/rules/22468775"
+        }
+      }
+    }
+  ],
+  "pin_result": "existing",
+  "scope": "Live GET responses and idempotent setup; no rule mutation or merge attempt."
+}

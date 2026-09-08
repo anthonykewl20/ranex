@@ -196,24 +196,6 @@ def _materialisation_from_cwd(cwd: Path | None) -> Path | None:
     return None
 
 
-def _scratch_identities() -> dict[Path, tuple[int, int]]:
-    """Snapshot real direct scratch roots without trusting their names alone."""
-
-    identities: dict[Path, tuple[int, int]] = {}
-    for parent in (Path("/tmp"), Path("/var/tmp")):
-        try:
-            candidates = tuple(parent.glob("ranex-subject-*"))
-        except OSError:
-            continue
-        for candidate in candidates:
-            try:
-                facts = candidate.lstat()
-            except OSError:
-                continue
-            identities[candidate] = (facts.st_dev, facts.st_ino)
-    return identities
-
-
 def _namespace_pids(pid: int) -> tuple[int, ...]:
     try:
         line = next(
@@ -731,7 +713,6 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     env = {name: value for name, value in os.environ.items() if name not in _STRIPPED_ENV}
     env.update({"PYTHONPATH": str(subject / "src"), "RANEX_SIGNING_KEY": str(key)})
     evidence = subject / "governance" / "evidence.json"
-    scratch_before = _scratch_identities()
     stdout_log = tmp_path / "kernel.stdout"
     stderr_log = tmp_path / "kernel.stderr"
     process: subprocess.Popen[str] | None = None
@@ -741,7 +722,6 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
     scratch_survived = False
     evidence_survived = False
     namespace_init_pid: int | None = None
-    new_scratch: dict[Path, tuple[int, int]] = {}
     try:
         with stdout_log.open("w", encoding="utf-8") as stdout, stderr_log.open(
             "w", encoding="utf-8"
@@ -839,12 +819,6 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
                     break
                 time.sleep(0.05)
             evidence_survived = evidence.exists()
-            scratch_after = _scratch_identities()
-            new_scratch = {
-                path: identity
-                for path, identity in scratch_after.items()
-                if scratch_before.get(path) != identity
-            }
     finally:
         if process is not None:
             try:
@@ -868,16 +842,19 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
 
             _remove_materialisation(materialisation)
 
+    # Attribute cleanup to the materialisation observed from this run's
+    # actual pytest descendant. A global /tmp inventory also sees unrelated
+    # runs starting concurrently and cannot establish ownership of a leak.
+    # The exact scratch path, descendants and evidence must all disappear.
     assert (
         namespace_init_pid is not None
         and not survivors
         and not scratch_survived
         and not evidence_survived
-        and not new_scratch
     ), (
         f"SIGKILL of the {kill_target} violated lifecycle containment: "
         f"namespace init={namespace_init_pid}, "
         f"surviving real landing descendants={sorted(survivors)}, "
         f"exact materialisation={materialisation} survived={scratch_survived}, "
-        f"evidence survived={evidence_survived}, new scratch={new_scratch}"
+        f"evidence survived={evidence_survived}"
     )

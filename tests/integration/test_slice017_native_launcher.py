@@ -115,7 +115,9 @@ RESPONSE_LIMIT = 65_536
 # Issue #86 adds explicit external targets and reporter selection; native launcher behavior is unchanged.
 # SLICE-085 (#88) adds `github register|status|ruleset`; launcher and confinement
 # branches are unchanged.
-MAIN_PY_SHA256 = "88d9b30c03063a8619c7f6763a5bc6239df3677b028393f579f8a2f8d5773c39"
+# Issue #88 audit: GitHub status ignores inactive/non-branch rulesets.
+# Only that status-reporting branch changed; confinement is unchanged.
+MAIN_PY_SHA256 = "caabe4f2e220edfca377f3dfa9af5c09b0eedad6d3551b7ea1ad6f70f869d564"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

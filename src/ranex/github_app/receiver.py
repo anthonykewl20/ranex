@@ -252,8 +252,8 @@ def process_delivery(
 ) -> int:
     """Persist completed deliveries; failed attempts remain retryable.
 
-    A 5xx answered synchronously requires operator/API redelivery: GitHub does
-    not retry automatically. Completion cannot be atomic with GitHub's remote
+    The HTTP handler retains spooled 5xx failures for automatic retry; GitHub
+    itself does not retry automatically. Completion cannot be atomic with GitHub's remote
     check creation, so publication is at-least-once by construction; the
     attempt record and the check's `external_id` let a retry reconcile against
     what GitHub already holds instead of publishing a second check.
@@ -550,6 +550,11 @@ def refresh_awaiting(config: ReceiverConfig, state: _ReceiverState) -> dict[str,
 def _refresh_head(
     config: ReceiverConfig, head_sha: str, delivery_id: str, installation_id: int, repository: str,
 ) -> str | None:
+    if (installation_id, repository) not in config.allowlist:
+        _journal(config, {"head_sha": head_sha, "delivery": delivery_id,
+                          "repository": repository, "outcome": "not-allowlisted"})
+        _forget_awaiting(config, head_sha)
+        return "not-allowlisted"
     external_id = f"refresh:{head_sha}"
     for run in config.client.list_check_runs(
         installation_id, repository, head_sha, check_name=CHECK_NAME,
@@ -670,9 +675,15 @@ def build_handler(config: ReceiverConfig, state: _ReceiverState):
             if status is None:
                 self._answer(202, "queued")
                 return
-            # Answered synchronously, the answer is the truth GitHub holds and
-            # the spool has nothing left to say about this delivery.
-            _unspool(config, delivery_id)
+            # GitHub does not retry failed deliveries. Retain even fast
+            # failures (including a busy pipeline) for the periodic drain.
+            if status < 500:
+                _unspool(config, delivery_id)
+            elif status != 503:
+                with suppress(OSError):
+                    _note_failure(
+                        config, config.state_dir / _SPOOL_DIR / f"{delivery_id}.json",
+                    )
             self._answer(status, "accepted" if status == 200 else
                          "malformed delivery id" if status == 400 else "retry later")
 

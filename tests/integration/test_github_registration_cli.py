@@ -102,7 +102,7 @@ def test_stored_credentials_drive_status_and_ruleset(tmp_path: Path) -> None:
         )
         # A ruleset without the check is walked past; a foreign pin is reported.
         fake.rulesets.append({"id": 1, "name": "other", "rules": []})
-        fake.rulesets.append({"id": 2, "name": "foreign", "rules": [{
+        fake.rulesets.append({"id": 2, "name": "foreign", "target": "branch", "enforcement": "active", "rules": [{
             "type": "required_status_checks",
             "parameters": {"required_status_checks": [{"context": CHECK_NAME, "integration_id": 4242}]},
         }]})

@@ -82,6 +82,7 @@ class FakeGitHub:
         self.jwt_claims: list[dict[str, object]] = []
         self.token_requests = 0
         self.check_requests: list[dict[str, object]] = []
+        self.published_checks: list[dict[str, object]] = []
         self.fail_check_runs_with: int | None = None
         self.conversion_code = "manifest-code-1"
         self.conversion_requests: list[dict[str, object]] = []
@@ -161,6 +162,7 @@ class FakeGitHub:
                             status=outer.fail_check_runs_with,
                         )
                         return
+                    outer.published_checks.append(outer.requests[-1])
                     self._json({"id": 424242, "html_url": "https://example.invalid"},
                                status=201)
                     return
@@ -179,6 +181,10 @@ class FakeGitHub:
 
             def do_GET(self) -> None:  # noqa: N802 — stdlib naming
                 path, _, query = self.path.partition("?")
+                parameters = parse_qs(query)
+                page = int(parameters.get("page", ["1"])[0])
+                size = int(parameters.get("per_page", ["30"])[0])
+                page_slice = slice((page - 1) * size, page * size)
                 outer.requests.append({"path": self.path,
                                        "authorization": self.headers.get("Authorization", ""),
                                        "body": None})
@@ -201,7 +207,7 @@ class FakeGitHub:
                         self.headers.get("Authorization", "").removeprefix("Bearer "),
                         outer.public_pem,
                     )
-                    self._json_list(outer.installation_list)
+                    self._json_list(outer.installation_list[page_slice])
                     return
                 detail = re.fullmatch(r"/repos/[^/]+/[^/]+/rulesets/([0-9]+)", path)
                 if detail is not None:
@@ -219,7 +225,7 @@ class FakeGitHub:
                         self._json({"message": "faked ruleset failure"},
                                    status=outer.fail_rulesets_with)
                         return
-                    self._json_list(outer.rulesets)
+                    self._json_list(outer.rulesets[page_slice])
                     return
                 match = re.fullmatch(r"/repos/[^/]+/[^/]+/commits/([0-9a-f]{40})/check-runs", path)
                 if match is None:
@@ -232,11 +238,11 @@ class FakeGitHub:
                      "head_sha": request["body"]["head_sha"],
                      "external_id": request["body"].get("external_id"),
                      "status": "completed", "conclusion": request["body"]["conclusion"]}
-                    for index, request in enumerate(outer.check_requests)
+                    for index, request in enumerate(outer.published_checks)
                     if request["body"]["head_sha"] == match.group(1)
                     and (wanted_name is None or request["body"]["name"] == wanted_name)
                 ]
-                self._json({"total_count": len(runs), "check_runs": runs})
+                self._json({"total_count": len(runs), "check_runs": runs[page_slice]})
 
             def _json(self, payload: dict[str, object], status: int = 200) -> None:
                 raw = json.dumps(payload).encode("utf-8")

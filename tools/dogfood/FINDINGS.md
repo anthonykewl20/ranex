@@ -976,3 +976,115 @@ bounded signed-evidence/refusal/recovery workflow already retained in the
 external pilots. A live, automatically refreshed, enforced full-repository
 GitHub App demonstration remains unverified. This assessment does not
 authorize describing that workflow as production verified.
+
+## GitHub App audit — 2026-09-08
+
+Issue: #88. Scope: the eight `src/ranex/github_app` modules, GitHub CLI
+integration, existing security/durability tests, operator documentation,
+real-PR receiver stress, and live App publication/recovery.
+This is an evidence-backed review, not proof that all possible bugs are absent.
+
+### Findings repaired
+
+| Finding | Failure | Repair and regression evidence |
+|---|---|---|
+| Revoked refresh authorization | A queued late verdict could publish after its repository was removed from the allowlist | Recheck the current allowlist before any refresh API call; journal and forget revoked work; regression proves no network request |
+| Durable retry loss | Fast HTTP 500/503 deleted the spool; GitHub does not automatically retry | Retain failed entries; back off failed attempts; HTTP outage/contention/restart regression in `test_github_receiver_durability.py` |
+| Incomplete API listings | Installations/rulesets stopped at 30, checks at 100 | Numbered pagination, 100 per page; refuse beyond a bounded 1000 pages instead of silently returning partial results; 105-item HTTP tests |
+| Reconciliation filter | Default `latest` can hide the delivery's earlier check | Request `filter=all` with App/name filters on every page |
+| Ruleset false assurance | Same App ID credited disabled, evaluation-only, wrong-branch, excluded-branch, bypassable or non-strict rules | Reuse only matching active strict scope without bypasses; preserve custom rules and create the requested rule; status ignores disabled/non-branch rules; later foreign pins still refuse |
+| Wrong signing key | Valid non-RSA PEM loaded, then signing raised an unclassified TypeError | Validate RSA key type with installed cryptography 50.0.0; named credential refusal |
+| Malformed API response | Invalid/deep JSON and truncated HTTP bodies escaped the retryable-error boundary | Convert parser and HTTP protocol errors to named API refusals; bound error-body reads; real truncated-HTTP regression |
+| False test evidence | Fake API listed failed POSTs as completed checks | Track successful publication separately from attempted requests |
+
+The stress harness's old expectation that HTTP 500 deletes the spool was also
+corrected. The first audit run stopped at that obsolete assertion; the rerun
+passed all 41 cases. No runtime dependency was added.
+
+### Fresh evidence
+
+Retained receipts: `tools/dogfood/audits/2026-09-08-app-review/`.
+
+- `receiver_stress.py`: 41/41 checks; actual PR #72 data, 1000 replay requests,
+  restart, two-process state sharing, signature/framing attacks, resource
+  saturation, paused Git fetch, and recovery. Local signing credentials and
+  a real unavailable API endpoint; this alone does not prove live publication.
+- `live_receiver_recovery.py`: current GitHub PR #1 in the dedicated
+  `anthonykewl20/ranex-app-live-probe` repository, real App 4863198 and
+  installation 159825611. HTTP 503 under actual lock contention; queued body
+  survives server shutdown; fresh receiver state publishes one successful
+  App check; a second drain produces no duplicate.
+- Live ruleset GET and setup reuse: `live-ruleset.json`; verified `existing`
+  with GitHub's actual added default fields, no mutation or merge attempt.
+- Live check: https://github.com/anthonykewl20/ranex-app-live-probe/runs/102017776260.
+  Uses an existing verified signed verdict. The replay is locally HMAC-signed
+  from actual API data; it is not a fresh GitHub-originated webhook or a new
+  governed test observation.
+- These initial receipts identify the pre-change base commit; they exercised
+  the working-tree patch. They must not be attributed to the base commit alone.
+- Mandatory final-commit `uv run --frozen pytest -q` evidence belongs in the
+  single issue closing comment. Skipped host/optional cases are UNVERIFIED.
+
+### Chock comparison and remaining work
+
+Compared with the [published Marketplace description](https://github.com/marketplace/actions/chock-governance-check),
+not with an executed Chock installation. Chock advertises policy compilation
+into agent/git/CI hooks, a policy catalog, lock/evaluation tooling and coverage
+reporting. Ranex's implemented App publishes signed, tree-bound verdicts and
+can pin the check's App identity in a ruleset. Those are different capabilities;
+this audit does not establish overall superiority or feature parity.
+
+Still UNIMPLEMENTED: automatic App-side evaluation, merge-group/candidate
+checks, distributed shard aggregation, and a Chock-equivalent multi-agent
+policy compiler/catalog. These require separately specified product work.
+Still UNVERIFIED: supervised production deployment under traffic, multi-hour
+soak, credential rotation, operational backup/restore, and full governed
+Leitir/Arxic acceptance. Prior live HTTPS/merge-enforcement evidence remains in
+`audits/2026-09-08-live-app/`; it was not repeated by this recovery probe.
+No production sign-off is issued; slice 085 and issue #88 remain open.
+
+### API and implementation references
+
+- [Failed delivery behavior](https://docs.github.com/en/webhooks/using-webhooks/handling-failed-webhook-deliveries).
+- [Checks API, 2026-03-10](https://docs.github.com/en/rest/checks/runs?apiVersion=2026-03-10#list-check-runs-for-a-git-reference): `filter`, `page`, `per_page`, `app_id`.
+- [App installations API, 2026-03-10](https://docs.github.com/en/rest/apps/apps?apiVersion=2026-03-10#list-installations-for-the-authenticated-app).
+- [Rulesets API, 2026-03-10](https://docs.github.com/en/rest/repos/rules?apiVersion=2026-03-10).
+- Installed cryptography 50.0.0: `hazmat/primitives/asymmetric/rsa.py`,
+  `RSAPrivateKey.sign`; existing serialization loader and RSA type reused.
+
+The first final-revision full run exposed the frozen `main.py` integrity pin:
+its governed child reported 1 failed, 1729 passed, 140 skipped. The sole failure
+was `test_gate10_production_entrypoint_adr_and_risk_remain_frozen`. Review of
+the CLI diff confirmed only the two-line inactive-ruleset status filter changed;
+the recorded SHA-256 was refreshed using the established pin-update convention.
+The integrity assertion and confinement implementation remain intact. The
+focused gate9/gate10 checks then passed; final full-suite evidence remains in
+the issue closing comment.
+
+A later full run exposed an intermittent delegated-session admission failure:
+`test_session_and_qualify_concurrently_in_one_fresh_delegated_scope_both_succeed`
+refused `E-C18-HOST-DRIFT` while qualification succeeded. Session admission read
+the current cgroup before taking the shared host-probe lock, allowing it to
+observe qualification's temporary controller leaf. Both admission snapshots now
+take the existing lock. A deterministic regression models temporary relocation
+and verifies that actual delegation drift still refuses before launch. The
+isolated pre-fix concurrency rerun passed, so that rerun alone was not credited
+as a fix. This repair changes session admission synchronization; it does not
+change the frozen evaluation kernel or weaken host identity validation.
+
+The subsequent full run completed with 1835 passed, 37 skipped and two stale
+freeze-artifact failures: the regression additions changed the inventory from
+1861 to 1874 tests. The existing real sealed `suite freeze` journey regenerated
+the canonical manifest and normalized transcript with `run_exit=0`; all 166
+expected-skip declarations were preserved verbatim. No freeze assertion was
+relaxed. Final-commit full-suite results supersede this intermediate run and
+are recorded in the issue closing comment.
+
+Concurrent validation also exposed a lifecycle-test attribution error: both
+SIGKILL arms observed their own descendants gone, their exact materialisation
+removed and no evidence published, but failed because a different run created
+another `/tmp/ranex-subject-*` tree during the observation window. The test now
+attributes cleanup to the exact materialisation obtained from its real pytest
+descendant, retaining process, scratch and evidence assertions. A global
+temporary-directory delta is not evidence that this invocation leaked a tree.
+This repair changes only the test observer, not lifecycle cleanup behavior.

@@ -148,6 +148,14 @@ def test_github_status_and_ruleset_against_the_fake_api(tmp_path: Path) -> None:
         assert again.returncode == 0, again.stderr
         assert "existing" in again.stdout
         assert len(fake.rulesets) == 1
+        fake.rulesets[0]["enforcement"] = "disabled"
+        disabled = invoke(
+            "github", "status", "--repo", "owner/name", "--repository", str(repo), env=env,
+        )
+        assert disabled.returncode == 1, disabled.stdout + disabled.stderr
+        assert "not required" in disabled.stdout
+        fake.rulesets[0]["enforcement"] = "active"
+
 
         pinned = invoke(
             "github", "status", "--repo", "owner/name", "--repository", str(repo), env=env,
@@ -214,3 +222,41 @@ def test_status_authenticates_as_the_app_with_a_stored_key(tmp_path: Path) -> No
         assert identity["id"] == _github_fake.APP_ID_INT
         assert client.list_installations()[0]["id"] == 99
     assert fake.app_requests
+
+
+def test_ruleset_pin_does_not_credit_disabled_or_wrong_scope_rules(tmp_path: Path) -> None:
+    from copy import deepcopy
+
+    from ranex.github_app.registration import pin_acceptance_ruleset, ruleset_body
+
+    desired = ruleset_body(_github_fake.APP_ID_INT, "main")
+    weak = []
+    for field, value in (("enforcement", "disabled"), ("enforcement", "evaluate"),
+                         ("target", "tag"), ("bypass_actors", [{"actor_id": 1, "actor_type": "Integration", "bypass_mode": "always"}])):
+        item = deepcopy(desired)
+        item[field] = value
+        weak.append(item)
+    item = deepcopy(desired)
+    item["conditions"]["ref_name"]["include"] = ["refs/heads/other"]
+    weak.append(item)
+    item = deepcopy(desired)
+    item["conditions"]["ref_name"]["exclude"] = ["refs/heads/main"]
+    weak.append(item)
+    item = deepcopy(desired)
+    item["rules"][0]["parameters"]["strict_required_status_checks_policy"] = False
+    weak.append(item)
+    item = deepcopy(desired)
+    item["rules"][0]["parameters"]["do_not_enforce_on_create"] = True
+    weak.append(item)
+    with _github_fake.FakeGitHub(b"") as fake:
+        for existing in weak:
+            fake.rulesets = [existing]
+            assert pin_acceptance_ruleset("operator", "owner/name", _github_fake.APP_ID_INT,
+                                          branch="main", api_root=fake.url) == "created"
+            assert fake.rulesets == [existing, {**desired, "id": 7}]
+            # GitHub adds this default to the GET response; preserve idempotency.
+            fake.rulesets[-1]["rules"][0]["parameters"]["do_not_enforce_on_create"] = False
+            # Other valid requirements must not prevent reuse of this rule.
+            fake.rulesets[-1]["rules"].insert(0, {"type": "required_linear_history"})
+            assert pin_acceptance_ruleset("operator", "owner/name", _github_fake.APP_ID_INT,
+                                          branch="main", api_root=fake.url) == "existing"

@@ -4186,9 +4186,12 @@ def confinement_session(
     if recorded.get("unprivileged_userns_sysctls") != _unprivileged_userns_sysctls():
         _refuse(E_C18_HOST_DRIFT, "user namespace state drifted since qualification")
     delegation = _mapping(recorded.get("delegation_identity"), "delegation identity", E_C18_HOST_DRIFT)
-    cgroup_root, relative = _current_cgroup_root()
-    if delegation.get("cgroup_root") != str(cgroup_root) or delegation.get("cgroup_relative_path") != relative:
-        _refuse(E_C18_HOST_DRIFT, "cgroup delegation drifted since qualification")
+    # Qualification temporarily relocates scope processes while probing.
+    # Read the restored identity under the same lock as those mutations.
+    with _host_probe_lock():
+        cgroup_root, relative = _current_cgroup_root()
+        if delegation.get("cgroup_root") != str(cgroup_root) or delegation.get("cgroup_relative_path") != relative:
+            _refuse(E_C18_HOST_DRIFT, "cgroup delegation drifted since qualification")
     # Full launch is possible only on a qualified delegated host.  Validate all
     # pins before creating a process; there is intentionally no local fallback.
     profile_path = resolve_within_repository(root, profile_arg)
@@ -4234,7 +4237,8 @@ def confinement_session(
     ):
         _refuse(E_C18_GATE, "qualification lacks a mandatory runtime primitive")
     _probe_openat2()
-    parent = _session_cgroup_parent()
+    with _host_probe_lock():
+        parent = _session_cgroup_parent()
     launcher: OpenedObject | None = None
     command: OpenedObject | None = None
     repository_fd = -1
