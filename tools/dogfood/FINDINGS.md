@@ -157,55 +157,6 @@ writer fairness or establish its original root cause. Evidence:
   the independent Python assertion captured in the receipt. The protected
   A/B/C qualification path is a different scope and is not disproved by it.
 
-### F-005 (PARTIALLY CLOSED) — journal needs an independent history anchor
-
-**Remediation 2026-09-05:** `journal verify --expected-head` compares the
-verified chain with a separately retained head. Actual CLI controls reject
-truncation, empty history, non-JSON corruption and a completely recomputed
-rewrite; the unchanged database passes. Without the anchor, internal chain
-consistency still cannot establish completeness. Ordinary reuse of unchanged
-valid evidence remains allowed; fresh nonces are not implemented. Evidence:
-`audits/2026-09-05-remediation/storage-stress-2/receipt.json`.
-
-- Source: the 2026-09-03 full adversarial audit of `tools/dogfood/**`
-  (mutation testing, 18 mutants, 7 killed), committed as
-  `tools/dogfood/AUDIT-2026-09-03.md` at 85ed1f1cf and removed from the tree
-  the same day by the docs cap (`test_no_document_exists_outside_the_allowed_set`);
-  the full analysis is preserved verbatim in git history at that commit.
-- Still open, re-anchored against the tree:
-  1. Journal chain: hash-linking detects partial edits only. A full rewrite
-     that forges a self-consistent chain (or a truncation from a fresh head)
-     verifies clean — nothing anchors the chain head to committed state.
-     Every "tamper-evident" claim should read "partial-edit-evident" until
-     the head is signed/anchored. Pinned partially by
-     `journal-tamper-detected` (UPDATE refusal) and
-     `proof-journal-tamper-propagation`; full-rewrite/truncation/splice
-     scenarios are the missing pins.
-     **2026-09-05:** those missing pins now exist in `release_audit.py`:
-     suffix truncation of a multi-row real gate journal, deletion of all
-     rows, and a complete independently rehashed replacement history all
-     return `chain=verified` on v0.1.0 and HEAD. An isolated partial edit
-     refuses. The anti-replay probe also accepts old evidence unchanged.
-  2. The "0 false verdicts" agreement claims are point estimates with no
-     interval; at this sample size the honest wording is Clopper-Pearson
-     upper bounds, not zeroes.
-- Closed in the harness-audit fix:
-  - Canonical-JSON disagreement (was item 2): dogfood's independent layer
-    and `math_proofs._independent_canonical` now use `ensure_ascii=False`
-    with the kernel; `proof-canonical-agreement` includes a non-ASCII
-    sample (`café`).
-  - `argv[3]` misparse (was item 3): oss_bench now uses `cmdparse.parse_cmd`
-    (same node-id grammar as the trainer) and refuses a cmd with no node
-    ids. Relative `--out` paths are resolved before the child cwd is set.
-    Existing pile rows that judged the kernel journal or ran
-    `pytest pytest pytest` are still in the append-only archive but are
-    classified `harness_fault` by `proofs.summary()` and excluded from
-    kernel false-block / false-pass counts.
-- Audit items already closed by earlier commits: report-site numbers now all
-  derived from the archive (corpus-driven page), admission taxonomy and
-  boundary/pigeonhole/fixed-point scenarios landed with the blind-spot
-  mathematics hardening.
-
 ### F-003 (CONFIRMED, environmental prerequisite) — governing third-party repos needs a vendored CLI and root-installed test tooling
 
 - Verified 2026-09-03 while building the OSS two-arm benchmark:
@@ -235,6 +186,48 @@ valid evidence remains allowed; fresh nonces are not implemented. Evidence:
   prerequisite, now with a supported path instead of folklore.
 
 ## Closed
+
+### F-005 (CLOSED 2026-09-09, item 1; item 2 unchanged) — journal needs an independent history anchor
+
+- **Item 1 closed by ADR-057 (#93).** `Journal.verify()` concedes in its own
+  docstring that it detects inconsistent edits, not a complete replacement or
+  truncation of a self-consistent chain. Pinned as an executable assertion:
+  `test_a_complete_rewrite_still_passes_plain_chain_verification` — a fully
+  rehashed replacement history and a truncated prefix both return
+  `chain=verified`. That test must keep passing; if it fails, the chain gained
+  a property it does not claim.
+- The anchor: `Journal.append` already returned the chain link it created and
+  `GateEvaluator.evaluate` discarded it. The published verdict now signs it as
+  `journal_head`, so the anchor lives *outside* the journal in a record signed
+  by the **verdict signer** — a different key from the journal writer.
+  `journal verify --against-verdict <path>` reads the head from a verdict it
+  **verifies**, never from raw bytes; an attacker who can rewrite the journal
+  can edit an unsigned file beside it, and that would anchor the chain to
+  itself. The rewrite the chain accepts is refused against the anchor.
+- **A defect introduced and repaired inside this fix, on the record:** the
+  first cut bumped the signing domain and refused every older payload type,
+  citing ADR-011's evidence v2→v3 precedent. Measured against the real
+  Leitir/Arxic pilot receipts under `audits/2026-09-06-external/`, that made
+  `tools/dogfood/verify_repository_pilot.py` refuse signed archived verdicts
+  that cannot honestly be re-signed — destroying the audit trail the anchor
+  was meant to protect. Repaired with version-aware verification: v1 verifies
+  against its own domain and field set and reports **no anchor**; it cannot be
+  used by `--against-verdict` or check publication. Reading is allowed;
+  deciding is not; a downgrade buys nothing. Regression pinned against the
+  real committed receipts:
+  `test_a_real_archived_v1_verdict_still_verifies_and_carries_no_anchor`.
+- Residual, stated not glossed: an operator holding both the journal and the
+  verdict signing key can still rewrite consistently. No external witness.
+  That is where a transparency-log anchor attaches; it is not claimed closed.
+- Prior art: sigstore-python 3.6.1 `_internal/rekor/checkpoint.py`
+  (`LogCheckpoint`, `SignedNote`, `verify_checkpoint`) — the signed-tree-head
+  shape, adopted. Its `verify_checkpoint` trusts `rekor_keyring`, the log's own
+  key; Ranex signs the head with a different key and retains it outside the log.
+- **Item 2 unchanged:** the "0 false verdicts" agreement claims remain point
+  estimates; the honest wording is a Clopper-Pearson upper bound.
+- Earlier history retained: 2026-09-05 `--expected-head` (operator-retained
+  anchor), the 2026-09-03 audit source, the closed canonical-JSON and
+  `argv[3]` items.
 
 ### F-002 (CLOSED 2026-09-08) — session/location-dependent skip arms are now explicitly declared
 

@@ -21,11 +21,12 @@ def test_projection_matches_extended_kernel_first_wire_shape() -> None:
     from ranex.governed_execution.verdict_projection import project_verdict
 
     rejection = Rejection(0, RejectionReason.BAD_SIGNATURE, "bad", "worker", "tests")
-    record = project_verdict(evaluation(), Admission((), (rejection,)), required_claims=("tests",))
+    record = project_verdict(evaluation(), Admission((), (rejection,)), required_claims=("tests",), journal_head=None)
     assert set(record) == {
         "verdict", "gate_id", "subject_digest", "subject_lane", "catalog_digest",
         "approver_id", "failing_rule", "missing_claims", "considered", "causes",
         "rejections", "self_approval", "reason", "record_digest",
+        "journal_head",
     }
     assert record["self_approval"] is False
     assert record["rejections"] == [{
@@ -41,7 +42,8 @@ def test_projection_preserves_an_unattributable_rejection_as_a_null_cause() -> N
 
     rejection = Rejection(0, RejectionReason.MALFORMED_RECORD, "bad", None, None)
     record = project_verdict(
-        evaluation(), Admission((), (rejection,)), required_claims=("tests",)
+        evaluation(), Admission((), (rejection,)), required_claims=("tests",),
+        journal_head=None,
     )
 
     assert {"claim_id": None, "cause": "unattributable"} in record["causes"]
@@ -84,6 +86,7 @@ def test_projection_refuses_cross_language_values_before_digest(
     )
     with pytest.raises(ValueError):
         verdict_projection.project_verdict(
-            evaluation(), Admission((), (rejection,)), required_claims=("tests",)
+            evaluation(), Admission((), (rejection,)), required_claims=("tests",),
+            journal_head=None,
         )
     assert digest_called is False

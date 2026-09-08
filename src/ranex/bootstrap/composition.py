@@ -71,6 +71,35 @@ class GateEvaluator:
         subject_digest: str,
         approver_id: str,
     ) -> Evaluation:
+        """The verdict alone, for the callers that do not publish one."""
+
+        evaluation, _head = self.evaluate_anchored(
+            gate_id,
+            evidence,
+            subject_digest=subject_digest,
+            approver_id=approver_id,
+        )
+        return evaluation
+
+    def evaluate_anchored(
+        self,
+        gate_id: str,
+        evidence: tuple[Evidence, ...],
+        *,
+        subject_digest: str,
+        approver_id: str,
+    ) -> tuple[Evaluation, str | None]:
+        """Evaluate, and return the journal chain link this evaluation created.
+
+        ADR-057. `Journal.append` already computes and returns that link; it was
+        simply discarded here. The link is what a published verdict signs as its
+        anchor, so rewriting the journal afterwards means forging a head that a
+        retained, separately signed record already fixed.
+
+        `None` when no journal is configured — there is genuinely nothing to
+        anchor to, and the published record says so explicitly rather than
+        omitting the field.
+        """
         catalog_digest = catalog_digest_for(self.gate_catalog)
         definition = load_gate_text(self.gate_catalog.decode("utf-8"), gate_id)
         requires_results = any(
@@ -126,9 +155,14 @@ class GateEvaluator:
             catalog_digest=catalog_digest,
             approver_id=approver_id,
         )
-        if self.journal_path is not None:
+        head = (
             Journal(self.journal_path).append(result)
-        return result
+            if self.journal_path is not None
+            else None
+        )
+        return result, head
+
+
 
 
 def build_gate_evaluator(

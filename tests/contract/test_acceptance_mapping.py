@@ -53,6 +53,7 @@ def record_content(binding: PrHeadBinding) -> dict[str, object]:
         "rejections": [],
         "self_approval": False,
         "reason": "unit binding contract",
+        "journal_head": "sha256:" + "1" * 64,  # ADR-057
     }
 
 

@@ -22,6 +22,7 @@ def record() -> dict[str, object]:
         "causes": [{"claim_id": "tests", "cause": "absent"}],
         "rejections": [], "self_approval": False,
         "reason": "no evidence for required claim: tests",
+        "journal_head": "sha256:" + "c" * 64,
     }
     return {**body, "record_digest": "sha256:" + canonical_sha256(body)}
 

@@ -36,7 +36,13 @@ def validate_projection(record: Mapping[str, Any], *, required_claims: Sequence[
             seen.add(claim_id)
 
 
-def project_verdict(evaluation: Evaluation, admission: Admission, *, required_claims: Sequence[str]) -> dict[str, Any]:
+def project_verdict(
+    evaluation: Evaluation,
+    admission: Admission,
+    *,
+    required_claims: Sequence[str],
+    journal_head: str | None,
+) -> dict[str, Any]:
     missing = set(evaluation.missing_claims)
     refused = {
         item.claim_id for item in admission.rejections
@@ -63,6 +69,10 @@ def project_verdict(evaluation: Evaluation, admission: Admission, *, required_cl
         "failing_rule": evaluation.failing_rule, "missing_claims": list(evaluation.missing_claims),
         "considered": list(evaluation.considered), "causes": causes, "rejections": rejections,
         "self_approval": evaluation.self_approval, "reason": evaluation.reason,
+        # ADR-057: the anchor. Keyword-only and required, with no default —
+        # a caller that forgets it fails loudly rather than publishing an
+        # unanchored verdict that looks anchored.
+        "journal_head": journal_head,
     }
     validate_projection(body, required_claims=required_claims)
     validate_publication_value(body)

@@ -109,6 +109,7 @@ from ranex.governed_execution.domain.task import (
     TaskMergeOutcome,
 )
 from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
+from ranex.governed_execution.verdict_reader import ReadState, read_verdict_unbound
 from ranex.governed_execution.verdict_publication import publish_verdict
 from ranex.observability import TRACE_VARIABLES, stage_begin, stage_end
 from ranex.observability import schema as trace_schema
@@ -941,7 +942,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             journal_path,
             suite_manifest_source,
         )
-        result = evaluator.evaluate(
+        result, journal_head = evaluator.evaluate_anchored(
             args.gate,
             admission.evidence,
             subject_digest=subject,
@@ -950,6 +951,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         projected = project_verdict(
             result, admission,
             required_claims=tuple(claim.claim_id for claim in definition.required_claims),
+            journal_head=journal_head,
         )
         verdict_key_path = os.environ.get(VERDICT_SIGNING_KEY_VARIABLE)
         verdict_dir_value = os.environ.get(VERDICT_DIR_VARIABLE)
@@ -1127,6 +1129,48 @@ def _journal_first_broken_row(journal_path: Path) -> tuple[int, int, int] | None
     return None
 
 
+def _verified_verdict_journal_head(
+    root: Path, verdict_path: str, args: argparse.Namespace
+) -> str:
+    """The anchor a signed verdict fixed, or a refusal (ADR-057).
+
+    Read from a verdict this function VERIFIES, never from its raw bytes. An
+    attacker who can rewrite the journal can also edit an unsigned file beside
+    it, and taking the head out of that would anchor the chain to itself — the
+    exact circularity F-005 records as the open half of "tamper-evident".
+    """
+
+    path = resolve_within_repository(root, verdict_path)
+    if not path.is_file():
+        raise ValueError(f"verdict does not exist: {path}")
+    producers = getattr(args, "producers", DEFAULT_PRODUCERS)
+    keyring_source = resolve_within_repository(root, producers)
+    if not keyring_source.is_file():
+        raise ValueError(f"producer keyring does not exist: {keyring_source}")
+    trust_keyring = load_trust_keyring_text(
+        keyring_source.read_text(encoding="utf-8"), producers
+    )
+    result = read_verdict_unbound(
+        path,
+        {trust_keyring.verdict_signer_id: trust_keyring.verdict_signer_public_key},
+    )
+    if result.state is not ReadState.VERIFIED or result.record is None:
+        raise ValueError(
+            f"refusing anchor: verdict at {path} did not verify ({result.state})"
+        )
+    head = result.journal_head
+    if head is None:
+        # Two ways to get here and one consequence: a v1 record predating the
+        # anchor, or a v2 record signed with no journal configured. Neither
+        # fixes a chain head, so neither may be used as one — reading an old
+        # verdict is allowed, deciding with it is not.
+        raise ValueError(
+            f"refusing anchor: verdict at {path} is UNANCHORED "
+            f"(payload_type={result.payload_type}) — it fixes no chain head"
+        )
+    return head
+
+
 def cmd_journal_verify(args: argparse.Namespace) -> int:
     """Recompute the journal chain without judging or changing an evaluation."""
 
@@ -1146,6 +1190,23 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         if not journal_path.is_file():
             raise ValueError(f"journal does not exist: {journal_path}")
         expected_head = getattr(args, "expected_head", None)
+        against_verdict = getattr(args, "against_verdict", None)
+        if expected_head is not None and against_verdict is not None:
+            raise ValueError(
+                "--expected-head and --against-verdict are mutually exclusive: "
+                "the anchor comes from the operator or from a signed verdict, "
+                "and silently preferring one would hide which was checked"
+            )
+        anchor_source = "operator"
+        if against_verdict is not None:
+            # ADR-057. The anchor is read from a verdict this command VERIFIES,
+            # never from its unsigned bytes: an attacker who can rewrite the
+            # journal can also edit an unverified file next to it, and reading
+            # the head out of that would anchor the chain to itself.
+            expected_head = _verified_verdict_journal_head(
+                root, against_verdict, args
+            )
+            anchor_source = "signed-verdict"
         if expected_head is not None and re.fullmatch(r"sha256:[0-9a-f]{64}", expected_head) is None:
             raise ValueError("--expected-head must be a canonical sha256 digest")
         verified = Journal(journal_path).verify(expected_head=expected_head)
@@ -1164,7 +1225,9 @@ def cmd_journal_verify(args: argparse.Namespace) -> int:
         return EXIT_USAGE
 
     if verified:
-        anchor = "matched" if expected_head is not None else "UNVERIFIED"
+        anchor = (
+            f"matched({anchor_source})" if expected_head is not None else "UNVERIFIED"
+        )
         print(f"PASS  journal={journal_path}  chain=verified  external-anchor={anchor}")
         return EXIT_PASS
     # Sad path 3's demand (issue #36): the refusal names WHICH row broke the
@@ -4453,6 +4516,13 @@ def build_parser() -> argparse.ArgumentParser:
     verify.add_argument("--repository", default=".", help="repository root")
     verify.add_argument("--journal", default=DEFAULT_JOURNAL, help="journal path")
     verify.add_argument("--expected-head", help="chain head retained outside this journal's trust boundary")
+    verify.add_argument(
+        "--against-verdict",
+        help="anchor the chain to the head a signed verdict fixed (ADR-057)",
+    )
+    verify.add_argument(
+        "--producers", default=DEFAULT_PRODUCERS, help="producer keyring for --against-verdict"
+    )
     verify.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     verify.set_defaults(func=cmd_journal_verify)
 

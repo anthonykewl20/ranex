@@ -361,6 +361,9 @@ def seeded_governed_clone(path: Path) -> tuple[Path, str]:
         "rejections": [],
         "self_approval": False,
         "reason": "publisher integration",
+        # ADR-057: a fresh verdict is v2 and carries the journal head it was
+        # evaluated at. The App refuses an anchorless record.
+        "journal_head": "sha256:" + "1" * 64,
     }
     record = {**content, "record_digest": "sha256:" + canonical_sha256(content)}
     verdicts = governance / "verdicts"

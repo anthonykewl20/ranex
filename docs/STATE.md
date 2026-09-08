@@ -1,49 +1,48 @@
 # State
 
-**Updated:** 2026-09-08
+**Updated:** 2026-09-09
 **Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
 
-Version v0.1.006. Open issues: #88 (production readiness, slice 085),
-#90 (dogfood publication), #91 (F-002 explicit skip list).
+Version v0.1.006. Open issues: #88 (production readiness, slice 085), #90
+(dogfood publication).
 
-F-010 is closed (#92, ADR-056). A non-strict XPASS was written to the JUnit
-artifact as a bare `<testcase/>`, byte-identical to a pass, so ADR-011 sad path
-5 did not hold. Read at source in pinned pytest 9.1.1: `skipping.py` sets
-`outcome="passed"` and keeps the fact only on `rep.wasxfail`; `junitxml.py`'s
-`append_pass` never reads it. No parser could recover it, so the outcome is now
-*requested* — a `pytest-junit` suite claim must carry the adjacent tokens
-`-o xfail_strict=true`, and the gate loader refuses at construction otherwise.
-`--runxfail` and `-p no:skipping` (which also turns a declared skip into a bare
-pass) are refused by name. `evaluate()` and `KERNEL_DIGEST` did not move; the
-summariser is unchanged. Suite manifest re-frozen: tests 1874 → 1890,
-expected_skips 166 preserved verbatim, `run_exit=0`.
+Findings closed this pass — each pinned by a test that asserts the defect, so
+regressions surface as a failing pin rather than a silent return:
 
-Unchanged boundary, not claimed closed: a hostile tree can still forge the
-artifact via `conftest.py` or an approved `pytest11` plugin (ADR-007, ADR-011
-criterion 10, F-012). The rule reads argv, not `PYTEST_ADDOPTS`/`PYTEST_PLUGINS`.
+- **F-010 (#92, ADR-056).** Non-strict XPASS is byte-identical to a pass in
+  JUnit (pinned pytest drops `rep.wasxfail` in `append_pass`), so a
+  `pytest-junit` claim must carry `-o xfail_strict=true`; `--runxfail` and
+  `-p no:skipping` refuse by name. Refused where the **Gate is constructed** —
+  all four `results_artifact` consumers, including `cmd_task_judge`'s duplicated
+  `Gate(...)` — not at parse, so historical base commits still load.
+- **F-005 item 1 (#93, ADR-057).** The verdict signs its journal head
+  (`journal_head`, domain `ranex-verdict-v2`); `journal verify
+  --against-verdict` refuses the complete rewrite `verify()` accepts. v1 stays
+  verifiable (archived Leitir/Arxic receipts) but cannot anchor or gate — a
+  first cut refusing v1 outright broke archive verification; pinned on real receipts.
+- **F-002 (#91, parallel session).** Two session-dependent gating arms declared
+  `ranex-context:host-capability:` (expected_skips 166 → 168).
 
-Earlier App review (#88): repaired fast-failure spool loss, revoked-allowlist
-refresh, truncated API lists, latest-only reconciliation, weak-ruleset reuse,
-non-RSA credential crashes, malformed API responses, false fake-API receipts,
-and unlocked session delegation snapshots racing qualification.
-Fresh real-PR receiver stress: 41/41. Live App recovery: HTTP 503, retained
-queue, one successful real App check, no duplicate.
-Receipts: tools/dogfood/audits/2026-09-08-app-review/. Prior live HTTPS
-delivery, App-pinned merge refusal and merge: audits/2026-09-08-live-app/.
+Unchanged boundaries, not claimed closed: a hostile tree can forge the JUnit
+artifact via `conftest.py`/approved `pytest11` plugin (ADR-007, ADR-011 c.10,
+F-012); the xfail rule reads argv, not `PYTEST_ADDOPTS`. The journal anchor
+has no external witness — an operator holding both keys can still rewrite.
+
+App review (#88): nine receiver/App repairs (spool loss, allowlist refresh,
+truncated lists, reconciliation, ruleset reuse, non-RSA keys, malformed
+responses, fake receipts, delegation race). Stress 41/41; live recovery one
+real check, no duplicate. Receipts: tools/dogfood/audits/2026-09-08-*.
 App ranex-gate: 4863198, owner anthonykewl20, installation 159825611.
 
 UNVERIFIED: multi-hour soak, supervised production traffic, secret rotation,
 operational backup/restore, full Leitir/Arxic governed acceptance.
 UNIMPLEMENTED: automatic evaluation, merge-candidate checks, shard aggregation,
-Chock-equivalent multi-agent policy compiler/catalog, compliance-framework
-coverage reporting, and a standard attestation envelope (DSSE / in-toto
-`test-result`) — every surveyed competitor ships at least one of the last three.
-No production sign-off or general zero-bug claim has been issued.
+Chock-equivalent policy compiler/catalog, compliance-framework coverage
+reporting, a DSSE / in-toto `test-result` projection, a transparency-log
+witness for the journal anchor. No production sign-off has been issued.
 
-Findings ledger: F-002 closed (#91) — the gating journey's two session-dependent
-qualified_host arms are declared host-capability skips (166 → 168), so plain
-non-delegated shells and delegated scopes observe declared skips only.
+Host note: two agents cannot verify concurrently here — a 12.7 GB `uvicorn`
+plus two full suites exhausts 62 GB and OOM-kills freezes. Serialise.
 
 Dogfood publishing (#90): web hourly sync consumes benchmarks, proof pile and
-committed audit sessions from one kernel checkout. Local-only sessions require
-commit + push before publication.
+committed audit sessions from one checkout; local sessions need commit + push.
