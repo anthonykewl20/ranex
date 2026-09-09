@@ -109,7 +109,9 @@ def main() -> None:
                                 env=environment, capture_output=True, text=True, timeout=120, check=False)
         (output / f'observe-{len(records)}.log').write_text(result.stdout + result.stderr)
         assert result.returncode == expected, result.stdout + result.stderr
-        evidence = json.loads((root / 'governance/evidence.json').read_bytes())[-1]
+        evidence_bytes = (root / 'governance/evidence.json').read_bytes()
+        (output / f'evidence-{len(records)}.json').write_bytes(evidence_bytes)
+        evidence = json.loads(evidence_bytes)[-1]
         if expected == 1 and args.mutation == 'explicit-xpass':
             assert evidence['suite_results']['counts']['xpassed'] == 1
         record('observation', head=git('rev-parse', 'HEAD'), exit=result.returncode,
