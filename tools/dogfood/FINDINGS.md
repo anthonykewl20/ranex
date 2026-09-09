@@ -252,6 +252,15 @@ writer fairness or establish its original root cause. Evidence:
   deciding is not; a downgrade buys nothing. Regression pinned against the
   real committed receipts:
   `test_a_real_archived_v1_verdict_still_verifies_and_carries_no_anchor`.
+- **Measured on a real external subject 2026-09-09.** `release_audit.py` now
+  configures a verdict signer, publishes a signed verdict and asserts the pair
+  on the SAME journal: `journal-anchor-published`,
+  `journal-anchor-accepts-the-true-chain` and
+  `journal-anchor-refuses-a-truncation-plain-verify-accepts` are all VERIFIED.
+  The plain-verify arms (`suffix-truncation`, `whole-history-deletion`,
+  `full-history-rewrite`) remain GAP and that is the honest answer for plain
+  verification — the anchor is what closes them, and the audit previously had
+  no way to show it.
 - Residual, stated not glossed: an operator holding both the journal and the
   verdict signing key can still rewrite consistently. No external witness.
   That is where a transparency-log anchor attaches; it is not claimed closed.
@@ -311,7 +320,7 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   contention artifacts of the unserialized window, not location semantics;
   the serialized session-shape runs are the evidence of record.
 
-### F-010 (PARTIALLY CLOSED 2026-09-09) — non-strict XPASS received gate PASS
+### F-010 (CLOSED 2026-09-09) — non-strict XPASS received gate PASS
 
 - Original observation, unchanged: reproduced with released v0.1.0
   (`edf1a98605`) and HEAD (`48f3a98e48`) on the pinned external
@@ -358,10 +367,29 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   detection. Nothing in argv can override a kwarg written in the tree; closing
   it needs a kernel-owned reporter that reads `report.wasxfail`, which is
   separate product work.
-- Real-data status, `release_audit.py --refs v0.1.0 HEAD` against
-  `benjaminp/six@c8e394065c` (kernel 22a46a9eb): `nonstrict-xpass` is **GAP at
-  both refs** — that arm injects an explicit `strict=False` marker, so the fix
-  does not move it. `strict-xpass`, `xfail`, `undeclared-skip` and
+- **Remainder closed (#94).** `ranex.foundation.pytest_xpass` is a kernel-owned
+  reporter named in the digest-bound argv. It reads `report.wasxfail` — the
+  field pytest sets on exactly this case and `junitxml`'s `append_pass`
+  discards — and converts the pass into a failure spelled as pytest spells a
+  strict XPASS, so the unchanged summariser classifies it `xpassed`.
+  `release_audit.py` against `benjaminp/six@c8e394065c` now reports
+  **`VERIFIED nonstrict-xpass`**, having been GAP at both v0.1.0 and the
+  ADR-056 commit.
+- Three defects were found and fixed between the ADR-056 commit and that flip,
+  every one by the real external audit while the unit pins stayed green:
+  the reporter was wrongly added to `measure_baseline` (the PRISTINE six run,
+  executed before the kernel is vendored, where `ranex` is not importable —
+  read as "pristine suite is red"); `ranex run`'s hermetic environment declared
+  no `PYTHONPATH`, so the vendored kernel's reporter could not be imported by
+  the governed child at all; and the audit provisions the kernel from the
+  COMMITTED ref, so an uncommitted fix is invisible to it.
+- Measured boundaries: a `trylast` conftest cannot undo the reporter (it is
+  registered `tryfirst`, so its wrapper resumes last); a `tryfirst` conftest
+  can, which is the disclosed forgery boundary (ADR-007, ADR-011 c.10) and is
+  pinned as a PASSING test so it is not mistaken for a regression. An
+  unimportable reporter writes no artifact at all, so absence blocks.
+- Historical status for comparison, `--refs v0.1.0 HEAD` at kernel 22a46a9eb:
+  `nonstrict-xpass` was **GAP at both refs**. `strict-xpass`, `xfail`, `undeclared-skip` and
   `deselected-test` are VERIFIED at both. The audit's gap_detail now names this
   cause instead of implying the arm was closed.
 - Pins: `tests/security/test_slice009_strict_xfail_binding.py` (the refusals)
