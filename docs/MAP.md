@@ -1650,10 +1650,10 @@ Those are the two forces that would eventually overturn local-first.
 
 | Boundary | Rule | Status |
 |---|---|---|
-| Producer ↔ gauge | The gauge is external to the producer and unalterable by it | **`CONFIRMED` for the bound command** — ADR-006 (`accepted 2026-08-15`) confines it (SLICE-046; `RISK-06` closed); the controller subprocess remains same-uid trusted (ADR-023 standing limit) |
-| Producer ↔ approver | The identity producing evidence cannot approve it | `CONFIRMED` as a comparison; `UNRESOLVED` as a control (`RISK-07`) |
-| Model ↔ authority | A model verdict is evidence, never authority | `CONFIRMED` for the kernel |
-| Enforcement ↔ inference | No enforcement check invokes a model. Removing model access changes no verdict | `CONFIRMED` for the kernel path |
+| Producer ↔ gauge | The gauge is external to the producer and unalterable by it | **`CONFIRMED` for the bound command** — ADR-006 (`accepted 2026-08-15`) confines it (SLICE-046; `RISK-06` closed); the controller subprocess remains same-uid trusted (ADR-023 standing limit); tests/security/test_slice004_hermetic_observation.py, tests/e2e/test_confinement_real.py |
+| Producer ↔ approver | The identity producing evidence cannot approve it | `CONFIRMED` as a comparison; `UNRESOLVED` as a control (`RISK-07`); tests/unit/test_gate_verdict.py |
+| Model ↔ authority | A model verdict is evidence, never authority | `CONFIRMED` for the kernel; tests/unit/test_gate_verdict.py |
+| Enforcement ↔ inference | No enforcement check invokes a model. Removing model access changes no verdict | `CONFIRMED` for the kernel path; the credential-removal control is executed by tools/dogfood/release_audit.py |
 | Ranex ↔ its own confinement | Ranex writes the journal, so it cannot be confined by the domain it applies to the worker | standing limit; ADR-006 is accepted and the worker is confined, but the signer/controller remains same-uid trusted infrastructure (ADR-023) |
 
 ### 8.2 Determinism — `CONFIRMED` for the kernel
@@ -2311,17 +2311,20 @@ concern by concern.
         ▼
  [1] BUILT  the bound command is re-executed against a materialisation of
             the subject commit, every blob checked against the tree's
-            object id (SLICE-004)
- [2] BUILT  exit code + subject digest signed Ed25519 (SLICE-001, SLICE-002)
+            object id (SLICE-004; tests/security/test_slice004_hermetic_observation.py)
+ [2] BUILT  exit code + subject digest signed Ed25519 (SLICE-001, SLICE-002;
+            tests/e2e/test_run_produces_evidence.py)
  [3] BUILT  signature verified against the committed keyring; keyring and
-            catalog read from the commit, never the worktree (SLICE-002)
+            catalog read from the commit, never the worktree (SLICE-002;
+            tests/security/test_slice002_trust_root_reopened.py)
  [4] BUILT  the record's argv digest is compared with the claim's bound
             command — a signed record of `true` cannot satisfy
-            `tests-executed` (SLICE-003)
+            `tests-executed` (SLICE-003;
+            tests/security/test_slice003_command_binding.py)
  [5] BUILT  absence, contradiction and self-approval each FAIL — never a
-            default, never a skip (kernel)
+            default, never a skip (kernel; tests/unit/test_gate_verdict.py)
  [6] BUILT  verdict + rule + subject + approver appended to the
-            hash-chained journal
+            hash-chained journal (tests/integration/test_journal.py)
         │
         ▼
  PASS only if every required claim is satisfied by admitted evidence
@@ -2337,11 +2340,13 @@ concern by concern.
  a change lands
         ▼
  [1] BUILT  evidence binds the post-change subject digest — a passing
-            record for the OLD tree stops counting automatically (kernel)
+            record for the OLD tree stops counting automatically (kernel;
+            tests/unit/test_gate_verdict.py)
  [2] BUILT  the gate's bound command IS the full suite
             (governance/gates.yaml: `uv run pytest -q`), provisioned and
             run sealed — SLICE-006 + ADR-007 landed, and SLICE-009 judges
-            the manifest diff, not the exit code (RISK-08 closed)
+            the manifest diff, not the exit code (RISK-08 closed;
+            tests/e2e/test_gating_real_suite.py)
  [3] ABSENT VP-06, the regression viewpoint, governs no view (§14.1) —
             "still works" has no definition and no measurement yet
         │
@@ -2385,8 +2390,10 @@ Its supervisor owns wall-clock and spend bounds, cancellation, and
  what actually happened
         ▼
  [1] BUILT  every verdict recorded with its rule, subject digest and
-            approver; model self-assertion is never recorded as fact (§8.3)
+            approver; model self-assertion is never recorded as fact (§8.3;
+            tests/contract/test_verdict_presentation.py)
  [2] BUILT  `ranex journal verify` recomputes the chain for the operator
+            (tests/e2e/test_journal_verify_cli.py)
  [3] ABSENT the translator — no plain-language projection of run state or
             proof (RISK-12)
  [4] ABSENT the production-configuration record — model, harness version,
