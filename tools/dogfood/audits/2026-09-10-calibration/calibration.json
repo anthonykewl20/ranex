@@ -1,0 +1,218 @@
+{
+  "cases": [
+    {
+      "control": "gate-blocks-a-failing-bound-command",
+      "duration_s": 6.301,
+      "expectation": "the gate PASSes a clean subject and FAILs one the bound scanner refuses",
+      "negative": {
+        "digests": [
+          "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c",
+          "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c",
+          "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c"
+        ],
+        "facts": [
+          {
+            "evidence": true,
+            "exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evidence": true,
+            "exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evidence": true,
+            "exit": 1,
+            "verdict": "FAIL"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617",
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617",
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617"
+        ],
+        "facts": [
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "control": "absence-blocks",
+      "duration_s": 4.452,
+      "expectation": "a required claim with no evidence FAILs; it is never a default or a skip",
+      "negative": {
+        "digests": [
+          "ec667da8bf7a33b3df428642e1a1fe04eeee2bec1d3d4f8f2407eb7a1768a13c",
+          "ec667da8bf7a33b3df428642e1a1fe04eeee2bec1d3d4f8f2407eb7a1768a13c",
+          "ec667da8bf7a33b3df428642e1a1fe04eeee2bec1d3d4f8f2407eb7a1768a13c"
+        ],
+        "facts": [
+          {
+            "evidence": false,
+            "exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evidence": false,
+            "exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evidence": false,
+            "exit": 1,
+            "verdict": "FAIL"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617",
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617",
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617"
+        ],
+        "facts": [
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "control": "self-approval-refused",
+      "duration_s": 6.979,
+      "expectation": "a producer cannot approve its own evidence",
+      "negative": {
+        "digests": [
+          "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c",
+          "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c",
+          "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c"
+        ],
+        "facts": [
+          {
+            "evidence": true,
+            "exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evidence": true,
+            "exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evidence": true,
+            "exit": 1,
+            "verdict": "FAIL"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617",
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617",
+          "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617"
+        ],
+        "facts": [
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evidence": true,
+            "exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    }
+  ],
+  "journal_head": null,
+  "repeats": 3,
+  "schema": "ranex-calibration-v1",
+  "worst": "VERIFIED"
+}

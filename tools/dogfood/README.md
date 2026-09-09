@@ -280,6 +280,48 @@ digests). Everything else is out of scope by evidence, not by omission.
   value that cannot serialise deterministically was never evidence.
 - Random material (keys) is behaviour-tested but never recorded in facts.
 
+## Calibration — negative controls and recall (MAP §8.4, issue #95)
+
+`calibration.py` runs **controls**, not checks. An expectation is a pair: a
+positive that must hold and a negative that must be refused, each executed
+`--repeats` times on identical input against a real governed repository — real
+Git, real Ed25519 keys, real `ranex run`, real `gate evaluate`.
+
+| Status | Means |
+|---|---|
+| `VERIFIED` | the positive held and the negative was refused, in every repeat |
+| `GAP` | the positive was refused, or the control has no executable negative |
+| `FALSE-PASS` | the negative was **accepted** — the check cannot block what it exists to refuse |
+| `NON-DETERMINISTIC` | identical input produced different results across repeats |
+| `UNVERIFIED` | not executable in this environment; named, never implied |
+
+`PASS` is deliberately absent: that word belongs to a verdict, and a
+measurement borrowing it invites being read as one. **GAP is not VERIFIED** —
+a control with no negative has never been shown capable of failing, so its
+green says nothing.
+
+A `FALSE-PASS` carries a **recall window**: §8.4's rule is that when a gauge is
+found out of calibration, every part it *passed* since its last good check is
+suspect. The receipt names those evaluations by journal position. With no prior
+VERIFIED record the window is the whole chain, and the receipt says so rather
+than narrowing to look tidy.
+
+```sh
+uv run --frozen python tools/dogfood/calibration.py --out /tmp/cal --repeats 3 \
+  --journal governance/journal.sqlite3 --history tools/dogfood/audits
+```
+
+Retained receipts, `audits/2026-09-10-calibration/`:
+
+* `calibration.json` — three kernel properties, each with its negative:
+  a failing bound command blocks, absence blocks, self-approval is refused.
+  All VERIFIED over three repeats.
+* `alarm-proof/calibration.json` — **FALSE-PASS by construction, and that is
+  the point.** A fourth control binds a real gate to a scanner that always
+  exits 0, so the violating tree earns a PASS. It is the instrument proving its
+  own alarm fires against the real kernel; it is not a defect in Ranex. Run it
+  with `--prove-alarms`.
+
 ## Realness policy — no mocks, no fakes, no synthetic data
 
 A scenario that JUDGES kernel behaviour must exercise real artifacts:
