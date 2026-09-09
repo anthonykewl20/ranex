@@ -443,6 +443,8 @@ def run_argv(store: Path, *command: str) -> list[str]:
                 "-q",
                 "-o",
                 "xfail_strict=true",
+                "-p",
+                "ranex.foundation.pytest_xpass",
                 "--junitxml=governance/suite_results.xml",
             )
         ),
@@ -812,7 +814,7 @@ def test_stage_08a_the_real_suite_really_runs_under_governance(
     evidence = json.loads(evidence_path.read_text())
     assert evidence[0]["claim_id"] == "tests-executed"
     assert evidence[0]["command"] == (
-        "uv run pytest -q -o xfail_strict=true --junitxml=governance/suite_results.xml"
+        "uv run pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --junitxml=governance/suite_results.xml"
     )
     # Verbatim, whichever way the suite went: a failing command is honest
     # evidence of failure, and `run` exits with the command's own code.
@@ -1052,6 +1054,8 @@ def test_stage_12_ranex_gates_its_own_repository(tmp_path: Path) -> None:
             "-q",
             "-o",
             "xfail_strict=true",
+            "-p",
+            "ranex.foundation.pytest_xpass",
             "--junitxml=governance/suite_results.xml",
         ],
         Path(key),

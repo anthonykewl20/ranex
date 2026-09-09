@@ -706,6 +706,8 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
         "-q",
         "-o",
         "xfail_strict=true",
+        "-p",
+        "ranex.foundation.pytest_xpass",
         "--junitxml=governance/suite_results.xml",
     )
     gate_catalog = (subject / "governance" / "gates.yaml").read_text(encoding="utf-8")
