@@ -3261,6 +3261,10 @@ def _execute_hermetically(
                 observer_environment = pytest_observer_environment(materialisation.root)
                 if "PYTHONPATH" in environment:
                     observer_environment["PYTHONPATH"] += os.pathsep + environment["PYTHONPATH"]
+                # Optional -p loading can import the controller's canonical
+                # reporter without requiring the application to install Ranex.
+                # Materialised source stays first for tests of vendored code.
+                observer_environment["PYTHONPATH"] += os.pathsep + str(Path(__file__).resolve().parents[2])
                 environment.update(observer_environment)
             deny_network = False
             if provisioning is not None and deps_environment is not None:

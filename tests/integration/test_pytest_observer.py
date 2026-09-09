@@ -22,7 +22,8 @@ def test_explicit_xpass_blocks_signed_acceptance_and_recovers(application):
     repo, worker, signer, _public = application
     command = yaml.safe_load((repo / 'governance/gates.yaml').read_bytes())['gates'][0]['required_claims'][0]['command']
     frozen = invoke(repo, 'suite', 'freeze', '--external-repository', str(repo),
-                    '--artifact', 'governance/suite_results.xml', '--', *command)
+                    '--artifact', 'governance/suite_results.xml', '--', *command,
+                    '-p', 'ranex.foundation.pytest_xpass')
     assert frozen.returncode == 0, frozen.stdout + frozen.stderr
     commit(repo)
     source = (repo / 'test_application.py').read_text()

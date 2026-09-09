@@ -9,6 +9,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
 import threading
@@ -183,7 +184,7 @@ def test_candidate_manifest_edit_cannot_change_delegated_judgement(
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: [\"/usr/bin/true\", \"-o\", \"xfail_strict=true\", \"--junitxml=artifacts/junit.xml\"]
+        command: [\"/usr/bin/true\", \"-o\", \"xfail_strict=true\", \"-p\", \"ranex.foundation.pytest_xpass\", \"--junitxml=artifacts/junit.xml\"]
         results_artifact: artifacts/junit.xml
 """,
         encoding="utf-8",
@@ -1081,7 +1082,7 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
     assert observed["manifest"] is manifest
     assert observed["environment"] == {
         "PATH": observed["environment"]["PATH"],
-        "PYTHONPATH": str(tmp_path / "pytest-observer"),
+        "PYTHONPATH": str(tmp_path / "pytest-observer") + os.pathsep + str(Path(__file__).resolve().parents[2] / "src"),
         "PYTEST_PLUGINS": "_ranex_pytest_observer_v1",
         "HOME": str(tmp_path / "home"),
         "TMPDIR": str(tmp_path / "tmp"),
