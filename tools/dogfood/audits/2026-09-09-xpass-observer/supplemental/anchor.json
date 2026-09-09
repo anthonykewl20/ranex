@@ -1,0 +1,124 @@
+[
+  {
+    "case": "live-signed-anchor",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "ranex",
+      "journal",
+      "verify",
+      "--journal",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/journal.sqlite3",
+      "--against-verdict",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/verdicts/5d185f19fa7e67d063e4dd954f464aa7a01ab1ae64319ef49b2a20ad4560acb6.json",
+      "--producers",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/producers.yaml"
+    ],
+    "exit": 0,
+    "stdout": "PASS  journal=/tmp/ranex-xpass94/tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/journal.sqlite3  chain=verified  external-anchor=matched(signed-verdict)\n",
+    "stderr": ""
+  },
+  {
+    "case": "missing-verdict",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "ranex",
+      "journal",
+      "verify",
+      "--journal",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/journal.sqlite3",
+      "--against-verdict",
+      ".local/xpass94-anchor/absent.json",
+      "--producers",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/producers.yaml"
+    ],
+    "exit": 2,
+    "stdout": "",
+    "stderr": "ERROR  verdict does not exist: /tmp/ranex-xpass94/.local/xpass94-anchor/absent.json\n"
+  },
+  {
+    "case": "missing-keyring",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "ranex",
+      "journal",
+      "verify",
+      "--journal",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/journal.sqlite3",
+      "--against-verdict",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/verdicts/5d185f19fa7e67d063e4dd954f464aa7a01ab1ae64319ef49b2a20ad4560acb6.json",
+      "--producers",
+      ".local/xpass94-anchor/absent.yaml"
+    ],
+    "exit": 2,
+    "stdout": "",
+    "stderr": "ERROR  producer keyring does not exist: /tmp/ranex-xpass94/.local/xpass94-anchor/absent.yaml\n"
+  },
+  {
+    "case": "tampered-anchor",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "ranex",
+      "journal",
+      "verify",
+      "--journal",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/journal.sqlite3",
+      "--against-verdict",
+      ".local/xpass94-anchor/tampered.json",
+      "--producers",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/producers.yaml"
+    ],
+    "exit": 2,
+    "stdout": "",
+    "stderr": "ERROR  refusing anchor: verdict at /tmp/ranex-xpass94/.local/xpass94-anchor/tampered.json did not verify (bad-signature)\n"
+  },
+  {
+    "case": "archived-v1-unanchored",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "ranex",
+      "journal",
+      "verify",
+      "--journal",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/journal.sqlite3",
+      "--against-verdict",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/verdicts/292b30a32162cee62c65ad5a3cd6737909abbee2e227646bdec6041bb577f8d7.json",
+      "--producers",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/producers.yaml"
+    ],
+    "exit": 2,
+    "stdout": "",
+    "stderr": "ERROR  refusing anchor: verdict at /tmp/ranex-xpass94/tools/dogfood/audits/2026-09-09-automatic-evidence/verdicts/292b30a32162cee62c65ad5a3cd6737909abbee2e227646bdec6041bb577f8d7.json is UNANCHORED (payload_type=application/vnd.ranex.verdict.v1+json) \u2014 it fixes no chain head\n"
+  },
+  {
+    "case": "ambiguous-anchor",
+    "command": [
+      "uv",
+      "run",
+      "--frozen",
+      "ranex",
+      "journal",
+      "verify",
+      "--journal",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/journal.sqlite3",
+      "--against-verdict",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/verdicts/5d185f19fa7e67d063e4dd954f464aa7a01ab1ae64319ef49b2a20ad4560acb6.json",
+      "--producers",
+      "tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/producers.yaml",
+      "--expected-head",
+      "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+    ],
+    "exit": 2,
+    "stdout": "",
+    "stderr": "ERROR  --expected-head and --against-verdict are mutually exclusive: the anchor comes from the operator or from a signed verdict, and silently preferring one would hide which was checked\n"
+  }
+]

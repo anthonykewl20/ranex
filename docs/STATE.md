@@ -27,6 +27,8 @@ were independently signature-verified by OpenSSL. GitHub confirmed delivery GUID
 The driver invokes observation explicitly; unattended execution is not proven.
 Receipts: tools/dogfood/audits/2026-09-09-xpass-observer/.
 The 30-case real Six audit has 25 VERIFIED and 5 GAP outcomes, not an overall PASS.
+Supplemental checks: 41 receiver controls, 20,000 concurrent journal appends,
+19 storage controls and real collection/executable recovery journeys.
 Combined governed freeze: 1776 passed, 140 skipped; 1916 IDs, 168 declarations.
 Release acceptance requires `uv run --frozen pytest -q` on the final commit;
 the closing issue comment records that result. Focused changed-line coverage: 57/57.

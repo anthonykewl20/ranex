@@ -38,6 +38,16 @@ hostile pytest plugin trustworthy. See ADR-059 for activation and confinement.
   subprocess and integration tests. The final full-suite result belongs to the
   closing validation comment on issue #94, not this checkpoint measurement.
 
+Supplemental checks are retained under `supplemental/`: 41/41 receiver
+fault-injection controls, 20,000 concurrent journal appends over five rounds,
+19 storage controls, real Six collection-failure/recovery and executable-alias
+journeys, six signed-anchor input checks, and installed-package release checks.
+The initial receiver replay exposed a probe race: a journal entry was visible
+before the pipeline lock was released. Bounded redelivery now handles the
+specified 503 response and still requires the real recovered fetch/API result.
+The failed and repaired receipts are both retained. These local fault-injection
+checks are separate from the live GitHub App publication in PR #9.
+
 The five GAP cases are same-subject evidence reuse, hostile result production,
 and suffix truncation, whole-history deletion and rewriting under **unanchored**
 verification. Signed anchoring is measured separately; an external witness,
