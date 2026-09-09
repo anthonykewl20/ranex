@@ -332,6 +332,47 @@ fails, because a selftest that quietly starts passing has stopped proving
 anything. Only a genuine FALSE-PASS carries a recall window; nothing was
 approved by a selftest's.
 
+## Drivers read committed state — commit before you believe a re-run
+
+Every governed and dogfood driver here reads the **committed** tree and anchors
+to the **CLI's own checkout**, not to your working copy and not to your cwd.
+That is correct — a governed observation must not be able to see uncommitted
+edits — and it is also the single most expensive trap in this directory. Five
+instances were hit in one evening (2026-09-09/10) by two sessions working in
+parallel:
+
+1. **`release_audit.py` provisions the kernel from the committed ref.** An
+   uncommitted fix is invisible to it. Two full runs were spent re-verifying
+   against an old kernel before anyone noticed.
+2. **The argparse sweep clones the repository.** It verified `HEAD`, not the
+   working tree, so a fix that existed only as an unstaged edit appeared to
+   have failed — the same twelve defects reported back, identically.
+3. **The freeze journey refuses a dirty tree.** Editing the very file the
+   journey reads errored four tests for a reason unrelated to the change.
+4. **A governed subcommand without `--external-repository` judges Ranex.**
+   `governed_repository_root()` anchors to the checkout holding the CLI
+   (ADR-038), so a driver running from inside a scratch subject still read
+   *this* repository's `gates.yaml` and `producers.yaml`. Every control came
+   back GAP with a refusal naming a producer the scratch repo had registered.
+5. **That flag must precede `--`.** `run` takes everything after the separator
+   as the command it executes (`argparse.REMAINDER`), so a flag appended at the
+   end is swallowed into the observed argv instead of being parsed — and the
+   symptom is identical to instance 4.
+
+The shape is one property with five faces: **what a driver measures is the
+committed tree of the repository it was explicitly pointed at.** So:
+
+- commit before you believe a re-run, including a re-run that *fails*;
+- name the subject explicitly with `--external-repository`, and put the flag
+  before any `--`;
+- when a driver's result contradicts an edit you are certain you made, check
+  `git status` before you debug the code.
+
+Instances 4 and 5 were hit by a session that had documented instance 4 in
+`CLAUDE.md` the same morning. Knowing the rule is not the same as applying it,
+which is why it is written here beside the drivers rather than only in
+orientation.
+
 ## Realness policy — no mocks, no fakes, no synthetic data
 
 A scenario that JUDGES kernel behaviour must exercise real artifacts:
