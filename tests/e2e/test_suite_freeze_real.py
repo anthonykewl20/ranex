@@ -168,6 +168,13 @@ class FreezeJourney:
     frozen_line: str | None
     produced_bytes: bytes | None
     committed_bytes: bytes
+    #: The ceremony's own stdout tail. Retained because a freeze whose inner
+    #: suite goes red can otherwise say THAT it failed and never WHY: the
+    #: junitxml lives inside the sealed materialisation and is destroyed with
+    #: it. Measured 2026-09-09 — a `run_exit=1` here cost two sessions an
+    #: evening to attribute, and the answer (contention, not a regression) was
+    #: only reachable by re-running the journey alone.
+    transcript: str = ""
 
 
 @pytest.fixture(scope="module")
@@ -182,7 +189,8 @@ def journey(
         # module's honest pass; provisioning a nested cycle is neither
         # possible nor meaningful here.
         return FreezeJourney(
-            boundary=True, frozen_line=None, produced_bytes=None, committed_bytes=None
+            boundary=True, frozen_line=None, produced_bytes=None,
+            committed_bytes=None, transcript="",
         )
 
     dirty = subprocess.run(
@@ -273,6 +281,7 @@ def journey(
             frozen_line=lines[0],
             produced_bytes=produced.read_bytes(),
             committed_bytes=committed_bytes,
+            transcript=completed.stdout[-4000:] + completed.stderr[-2000:],
         )
     finally:
         if produced.exists():
@@ -468,7 +477,13 @@ def test_frozen_transcript_matches_the_golden(journey: FreezeJourney) -> None:
     assert frozen_line is not None
     assert frozen_line.startswith("FROZEN"), frozen_line
     assert "run_exit=0" in frozen_line, (
-        f"the ceremony's own suite run must be green sealed: {frozen_line}"
+        f"the ceremony's own suite run must be green sealed: {frozen_line}\n"
+        "The sealed materialisation is destroyed with its junitxml, so the tail "
+        "of the ceremony's own output is the only record of WHICH tests failed "
+        "inside. It follows; read it before assuming a regression — this "
+        "journey runs a full suite nested inside a full suite and has been "
+        "observed going red under host contention while passing alone.\n"
+        f"--- ceremony transcript tail ---\n{journey.transcript}"
     )
     compare_golden(frozen_line, _GOLDEN)
 
