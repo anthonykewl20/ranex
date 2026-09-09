@@ -1044,6 +1044,195 @@
       "scenarios": 43,
       "sha": "692f3f707",
       "subject": "tools: dogfood artifacts - iteration 25"
+    },
+    {
+      "complexity": 5540,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 39,
+      "scenarios": 43,
+      "sha": "03d266685",
+      "subject": "fix: F-039 - oss_bench binds the strict-xfail pair the F-010"
+    },
+    {
+      "complexity": 5540,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "f8452b6b9",
+      "subject": "tools: proof pile - 2026-09-09 (3 runs; gate ERRORs from the"
+    },
+    {
+      "complexity": 5548,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "501edc1e0",
+      "subject": "fix: a kernel-owned reporter catches the XPASS the ini canno"
+    },
+    {
+      "complexity": 5549,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "254eb6339",
+      "subject": "fix: declare the vendored kernel on the hermetic run's PYTHO"
+    },
+    {
+      "complexity": 5549,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "72f90b931",
+      "subject": "tools: the external audit measures the ADR-057 anchor, not o"
+    },
+    {
+      "complexity": 5549,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "05afc2af1",
+      "subject": "docs: F-010 closed and the journal anchor measured on the ex"
+    },
+    {
+      "complexity": 5566,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "a3f2fc040",
+      "subject": "fix: isolate pytest observer activation and normalize distri"
+    },
+    {
+      "complexity": 5570,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "d2f1ea9ea",
+      "subject": "merge: reconcile XPASS fixes with controller reporting and e"
+    },
+    {
+      "complexity": 5570,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "c76b62f5c",
+      "subject": "test: retain each signed live observation for independent re"
+    },
+    {
+      "complexity": 5570,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "1c45b8f10",
+      "subject": "test: retain real XPASS merge refusals, signed observations "
+    },
+    {
+      "complexity": 5570,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "4ba6e573e",
+      "subject": "test: verify recovery after receiver backpressure and retain"
+    },
+    {
+      "complexity": 5573,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "efae93098",
+      "subject": "fix: isolate installed reporter imports from subject depende"
+    },
+    {
+      "complexity": 5573,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "e4ae64121",
+      "subject": "test: support installed-wheel live probes and reporter flag "
+    },
+    {
+      "complexity": 5573,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "8d3048a28",
+      "subject": "docs: retain installed-wheel live validation and audit evide"
+    },
+    {
+      "complexity": 5573,
+      "date": "2026-09-09",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "fd3d61f54",
+      "subject": "docs: keep audit context within the existing findings docume"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "2b28b72aa",
+      "subject": "e2e: negative controls and calibration recall"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "84ae6c4c6",
+      "subject": "e2e: a deliberately red receipt must declare itself"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "79f4c6777",
+      "subject": "tools: dogfood artifacts - iteration 26"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "82e352c82",
+      "subject": "docs: drivers read committed state \u2014 commit before you belie"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "2e048a0c4",
+      "subject": "tools: dogfood artifacts \u2014 iteration 27 (census baseline re-"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 42,
+      "scenarios": 43,
+      "sha": "cc945667b",
+      "subject": "tools: dogfood artifacts - iteration 28"
     }
   ]
 }

@@ -1,0 +1,105 @@
+{
+  "schema": "ranex-oss-bench-divergence-v1",
+  "model": "zai:glm-5.3",
+  "rows": [
+    {
+      "task": "py-paginate-cursor",
+      "run_id": "py-paginate-cursor-f9bacffb",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 15,
+      "tokens": 16763,
+      "cost_usd": 0.033122,
+      "duration_s": 82.925,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "s; cursor encode/decode round-trip unchanged; empty repo; single-record repo; and paginating with the final record's cursor (empty page, `next_cursor is None`).",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_pagination.py",
+        "output_tail": "8 passed in 0.01s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.1
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --rootdir=. --junitxml=governance/suite_results.xml test_pagination.py::test_is_after_is_strict test_pagination.py::test_last_page_has_no_next_cursor test_pagination.py::test_full_walk_no_dupes_no_gaps test_pagination.py::test_pages_are_contiguous_no_boundary_repeat test_pagination.py::test_tie_break_on_id_within_same_timestamp test_pagination.py::test_limit_larger_than_dataset",
+        "run_exit": 0,
+        "run_error": "",
+        "gate_verdict": "PASS",
+        "gate_output": "PASS  gate=landing  subject=sha256:d920a9f84b3f48d2f4decc3b99307f950e131c53ae369a0375ed53e8cb2775e0",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-10.json/py-paginate-cursor-f9bacffb/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.2
+      }
+    },
+    {
+      "task": "py-url-normalize",
+      "run_id": "py-url-normalize-4d8063a7",
+      "ground_truth_functional": 1.0,
+      "agent_steps": 15,
+      "tokens": 29261,
+      "cost_usd": 0.078549,
+      "duration_s": 186.191,
+      "cost_capped": false,
+      "self_report": {
+        "claimed_success": true,
+        "final_words": "hich the issue mandates, and `//` paths, which `urllib` treats as an authority).\n- Malformed inputs (`%`, `a%`, `a%2`, `%G2`, `abc%zz`, \u00e2\u0080\u00a6) raise `ValueError`.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_normalize.py",
+        "output_tail": "32 passed in 0.02s",
+        "exit": 0,
+        "verdict": "GREEN",
+        "elapsed_s": 0.2
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --rootdir=. --junitxml=governance/suite_results.xml test_normalize.py::test_dot_segments test_normalize.py::test_percent_unreserved_is_decoded test_normalize.py::test_percent_reserved_is_uppercased_not_decoded test_normalize.py::test_percent_dot_interaction test_normalize.py::test_malformed_percent_raises",
+        "run_exit": 0,
+        "run_error": "",
+        "gate_verdict": "PASS",
+        "gate_output": "PASS  gate=landing  subject=sha256:a5b9f098030657ac0a2006b909852023a8892b004854581cf5b6b41ce1710750",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-10.json/py-url-normalize-4d8063a7/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.4
+      }
+    },
+    {
+      "task": "legacy-cellarcore-binary-parity",
+      "run_id": "legacy-cellarcore-binary-parity-e9f0a9af",
+      "ground_truth_functional": 0.0,
+      "agent_steps": 47,
+      "tokens": 198205,
+      "cost_usd": 0.521489,
+      "duration_s": 1076.436,
+      "cost_capped": true,
+      "self_report": {
+        "claimed_success": false,
+        "final_words": "The behavior is intricate. Let me enumerate systematically over event sequences.",
+        "heuristic": true
+      },
+      "bare_ci": {
+        "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+        "output_tail": "14 failed in 0.24s",
+        "exit": 1,
+        "verdict": "RED",
+        "elapsed_s": 0.4
+      },
+      "ranex_gate": {
+        "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_mull oss_tests.py::test_creel oss_tests.py::test_haul oss_tests.py::test_grain oss_tests.py::test_stale oss_tests.py::test_pip oss_tests.py::test_quell oss_tests.py::test_swale oss_tests.py::test_brand oss_tests.py::test_keel oss_tests.py::test_wake oss_tests.py::test_hale oss_tests.py::test_revenant oss_tests.py::test_full_corpus_parity",
+        "run_exit": 1,
+        "run_error": "",
+        "gate_verdict": "FAIL",
+        "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_brand (failed), oss_tests.py::test_creel (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_grain (failed), oss_tests.py::test_hale (failed), oss_tests.py::test_haul (failed), oss_tests.py::test_keel (failed), oss_tests.py::test_mull (failed), oss_tests.py::test_pip (failed), oss_tests.py::test_quell (failed), oss_tests.py::test_revenant (failed), oss_tests.py::test_stale (failed), oss_tests.py::test_swale (failed), oss_tests.py::test_wake (failed)\n      subject=sha256:f4ea20fc2f09457bbfadbcf571083331165e8ab5145eb51bec32a9810d683bca",
+        "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-10.json/legacy-cellarcore-binary-parity-e9f0a9af/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+        "journal_verified": true,
+        "elapsed_s": 1.6
+      }
+    }
+  ],
+  "gaming_demo": null,
+  "stale_demo": null,
+  "note": "four positions: pristine grader / bare CI on the patched tree / parsed self-report / manifest-bound gate"
+}

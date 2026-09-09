@@ -1,0 +1,38 @@
+{
+  "agent_steps": 47,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+    "elapsed_s": 0.4,
+    "exit": 1,
+    "output_tail": "14 failed in 0.24s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.521489,
+  "date": "2026-09-10",
+  "duration_s": 1076.436,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "cc945667b7f6bc6eb5a43088db2d9ca98301fb01",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.6,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_brand (failed), oss_tests.py::test_creel (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_grain (failed), oss_tests.py::test_hale (failed), oss_tests.py::test_haul (failed), oss_tests.py::test_keel (failed), oss_tests.py::test_mull (failed), oss_tests.py::test_pip (failed), oss_tests.py::test_quell (failed), oss_tests.py::test_revenant (failed), oss_tests.py::test_stale (failed), oss_tests.py::test_swale (failed), oss_tests.py::test_wake (failed)\n      subject=sha256:f4ea20fc2f09457bbfadbcf571083331165e8ab5145eb51bec32a9810d683bca",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-10.json/legacy-cellarcore-binary-parity-e9f0a9af/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_mull oss_tests.py::test_creel oss_tests.py::test_haul oss_tests.py::test_grain oss_tests.py::test_stale oss_tests.py::test_pip oss_tests.py::test_quell oss_tests.py::test_swale oss_tests.py::test_brand oss_tests.py::test_keel oss_tests.py::test_wake oss_tests.py::test_hale oss_tests.py::test_revenant oss_tests.py::test_full_corpus_parity",
+    "run_error": "",
+    "run_exit": 1
+  },
+  "run_id": "legacy-cellarcore-binary-parity-e9f0a9af",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "The behavior is intricate. Let me enumerate systematically over event sequences.",
+    "heuristic": true
+  },
+  "task": "legacy-cellarcore-binary-parity",
+  "tokens": 198205
+}
