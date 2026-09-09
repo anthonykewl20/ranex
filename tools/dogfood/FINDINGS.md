@@ -402,6 +402,26 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   copying now preserves dependencies in automatic and both explicit -p forms.
   Installed GitHub PR #10 completed the full refusal/repair/merge journey;
   the release helper now repeats dependency-isolation checks on built wheels.
+- Final source measurement: `e4ae64121ca454a93f01a9fb499df9db763801cd`,
+  source tree `d2de9068b41ab06d6dcdbc4815a3002aa35c3bdf`.
+  Archive `external-six-final/receipt.json` records 25 VERIFIED / 5 GAP;
+  `installed-live/` retains PR #10's three signed observations, public key,
+  OpenSSL verification and GitHub delivery receipts. Its repaired merge is
+  `5d108f53c58c34cff7e16a7d383d598703a2e774`. The wheel's Python sources
+  match the checkout (`installed-wheel.json`); no private keys are archived.
+  The driver explicitly invokes observation; unattended execution is unproven.
+- Archive `installed-dependency-before.json` and `installed-dependency-after.json`
+  retain the identical failing/repaired dependency probe. Installed release
+  checks exercise three loading forms on two package candidates. Supplemental
+  receipts record 41 receiver controls, 20,000 journal appends, 19 storage
+  controls, and collection/executable recovery. The first receiver probe
+  raced journal visibility against lock release; bounded retries now respect
+  its documented 503 response. Failed measurements remain in the archive.
+- Replay: `uv run --frozen python tools/dogfood/release_audit.py --refs HEAD
+  --out .local/xpass-replay`. A nonzero audit result is not PASS. The archived
+  `xdist_probe.py` runs with ephemeral `pytest-xdist==3.8.0`; the live driver
+  exposes `--mutation explicit-xpass --installed-kernel` for prepared probe
+  repositories. Live runs require configured credentials and create/merge PRs.
 - Historical status for comparison, `--refs v0.1.0 HEAD` at kernel 22a46a9eb:
   `nonstrict-xpass` was **GAP at both refs**. `strict-xpass`, `xfail`, `undeclared-skip` and
   `deselected-test` are VERIFIED at both. The audit's gap_detail now names this
