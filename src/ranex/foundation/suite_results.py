@@ -182,7 +182,10 @@ def _outcome(testcase: ET.Element) -> str:
     return "skipped"
 
 
-def _outcomes(junitxml_bytes: bytes, reporter: str = "pytest-junit") -> dict[str, str]:
+def _outcomes(
+    junitxml_bytes: bytes, reporter: str = "pytest-junit", *,
+    require_pytest_observer: bool = False,
+) -> dict[str, str]:
     if not isinstance(reporter, str) or reporter not in JUNIT_REPORTERS:
         raise ValueError("unsupported JUnit reporter")
     if not isinstance(junitxml_bytes, bytes):
@@ -210,6 +213,17 @@ def _outcomes(junitxml_bytes: bytes, reporter: str = "pytest-junit") -> dict[str
     except ET.ParseError as exc:
         raise ValueError(f"cannot parse junitxml: {exc}") from exc
 
+    if require_pytest_observer and reporter == "pytest-junit":
+        suites = [node for node in root.iter() if node.tag == "testsuite"]
+        if not suites or any(
+            [(prop.get("name"), prop.get("value"))
+             for prop in suite.findall("./properties/property")
+             if prop.get("name") == "ranex.pytest_observer"]
+            != [("ranex.pytest_observer", "1")]
+            for suite in suites
+        ):
+            raise ValueError("E-PYTEST-OBSERVER-ABSENT: JUnit lacks the controller reporter")
+
     outcomes: dict[str, str] = {}
     for testcase in root.iter():
         if testcase.tag.rsplit("}", 1)[-1] != "testcase":
@@ -226,10 +240,11 @@ def freeze_manifest(
     *,
     expected_skips: Mapping[str, str] | None = None,
     reporter: str = "pytest-junit",
+    require_pytest_observer: bool = False,
 ) -> dict[str, object]:
     """Freeze only the observed ID set; test outcomes never enter the manifest."""
 
-    outcomes = _outcomes(junitxml_bytes, reporter)
+    outcomes = _outcomes(junitxml_bytes, reporter, require_pytest_observer=require_pytest_observer)
     manifest: dict[str, object] = {
         "suite": sorted(outcomes),
         "expected_skips": {} if expected_skips is None else dict(expected_skips),
@@ -268,11 +283,12 @@ def suite_results_from_junitxml(
     manifest: Mapping[str, object],
     *,
     reporter: str = "pytest-junit",
+    require_pytest_observer: bool = False,
 ) -> dict[str, object]:
     """Summarise one junitxml artifact against a previously frozen manifest."""
 
     validated_manifest = _validate_manifest(dict(manifest))
-    outcomes = _outcomes(junitxml_bytes, reporter)
+    outcomes = _outcomes(junitxml_bytes, reporter, require_pytest_observer=require_pytest_observer)
     expected_ids = set(validated_manifest["suite"])
     observed_ids = set(outcomes)
     counts = {
@@ -304,11 +320,14 @@ def parse_results_artifact(
     manifest: Mapping[str, object],
     *,
     reporter: str = "pytest-junit",
+    require_pytest_observer: bool = False,
 ) -> dict[str, object]:
     """Read a present junitxml artifact no larger than 50 MiB and summarise it."""
 
     raw = read_results_artifact(path)
-    return suite_results_from_junitxml(raw, manifest, reporter=reporter)
+    return suite_results_from_junitxml(
+        raw, manifest, reporter=reporter, require_pytest_observer=require_pytest_observer
+    )
 
 
 def read_results_artifact(path: str | Path) -> bytes:

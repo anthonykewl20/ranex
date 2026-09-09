@@ -3085,6 +3085,7 @@ def _execute_hermetically(
     preliminary: Resolution | None,
     provisioned_resolver: bool,
     *,
+    pytest_observer: bool = False,
     artifact_relative: Path | None = None,
     artifact_reader: Callable[[Path], object] | None = None,
     confinement: str | None = None,
@@ -3092,6 +3093,12 @@ def _execute_hermetically(
     dynamic_runtime_sources: DynamicRuntimeSources | None = None,
 ) -> CommandObservation:
     """Run once inside the shared verified, offline, sealed execution boundary."""
+
+    if pytest_observer and confinement is not None:
+        raise ValueError(
+            "E-PYTEST-OBSERVER-CONFINEMENT: this confinement runtime does not "
+            "carry the controller pytest reporter"
+        )
 
     if artifact_reader is not None and confinement is None and artifact_relative is None:
         raise ValueError("artifact reader has no confined artifact path")
@@ -3244,6 +3251,10 @@ def _execute_hermetically(
                 "GIT_CONFIG_NOSYSTEM": "1",
                 "GIT_ATTR_NOSYSTEM": "1",
             }
+            if pytest_observer:
+                from ranex.cli.suite_observer import pytest_observer_environment
+
+                environment.update(pytest_observer_environment(materialisation.root))
             deny_network = False
             if provisioning is not None and deps_environment is not None:
                 environment["PATH"] = (
@@ -3620,7 +3631,8 @@ def cmd_run(args: argparse.Namespace) -> int:
             if suite_manifest is None:
                 raise ValueError("suite-results claim has no loaded manifest")
             artifact_reader = lambda path: parse_results_artifact(
-                path, suite_manifest, reporter=results_reporter
+                path, suite_manifest, reporter=results_reporter,
+                require_pytest_observer=True,
             )
         elif qualification_report is not None:
             artifact_reader = lambda path: json.loads(path.read_bytes())
@@ -3644,6 +3656,7 @@ def cmd_run(args: argparse.Namespace) -> int:
                 artifacts,
                 preliminary,
                 provisioned_resolver,
+                pytest_observer=results_artifact is not None and results_reporter == "pytest-junit",
                 artifact_relative=artifact_relative,
                 artifact_reader=artifact_reader,
                 confinement=confinement,
@@ -3777,6 +3790,7 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             provisioned_resolver,
             artifact_relative=artifact_relative,
             artifact_reader=read_results_artifact,
+            pytest_observer=args.results_reporter == "pytest-junit",
         )
         if not isinstance(observation.artifact, bytes):
             raise ValueError("freeze run produced no readable results artifact")
@@ -3784,6 +3798,7 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             observation.artifact,
             expected_skips=expected_skips,
             reporter=args.results_reporter,
+            require_pytest_observer=True,
         )
         completed = observation.completed
         output.parent.mkdir(parents=True, exist_ok=True)

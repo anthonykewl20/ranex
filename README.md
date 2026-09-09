@@ -211,6 +211,12 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 **Active slice:** [SLICE-085-github-app-production-registration](docs/slices/SLICE-085-github-app-production-registration.md)
 
+Pytest suite observations and freezes automatically load Ranex's controller
+reporter. Explicit non-strict XPASS remains a failure; disabled reporting
+refuses evidence. This reporter currently uses the standard observation path;
+strict-local runtime carriers refuse pytest suite observation until they carry
+this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
+
 ## Completed slices
 
 - [SLICE-086 — Automatic signed-evidence evaluation](docs/slices/done/SLICE-086-automatic-evidence-evaluation.md): `github listen --evaluate-evidence` judges fresh evidence without executing PR code.

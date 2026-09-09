@@ -169,6 +169,7 @@ def _run_suite_with_results(
     suite: str,
     *,
     results_artifact: str,
+    results_reporter: str = "pytest-junit",
     manifest: dict[str, object],
     streams: dict[str, str] | None = None,
 ) -> tuple[int, str, dict[str, object]]:
@@ -186,6 +187,10 @@ def _run_suite_with_results(
             "GIT_CONFIG_NOSYSTEM": "1",
             "GIT_ATTR_NOSYSTEM": "1",
         }
+        if results_reporter == "pytest-junit":
+            from ranex.cli.suite_observer import pytest_observer_environment
+
+            environment.update(pytest_observer_environment(materialisation.root))
         completed = subprocess.run(
             command,
             check=False,
@@ -197,6 +202,8 @@ def _run_suite_with_results(
         suite_results = parse_results_artifact(
             materialisation.tree / results_artifact,
             manifest,
+            reporter=results_reporter,
+            require_pytest_observer=True,
         )
     stdout = completed.stdout or ""
     stderr = completed.stderr or ""
@@ -518,6 +525,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 commit=commit,
                 suite=args.suite,
                 results_artifact=selected_claim.results_artifact,
+                results_reporter=getattr(selected_claim, "results_reporter", "pytest-junit"),
                 manifest=manifest,
                 streams=suite_streams,
             )
