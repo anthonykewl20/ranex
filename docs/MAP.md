@@ -10,9 +10,9 @@ this map.
 
 | | |
 |---|---|
-| Version | `3.7.0` |
+| Version | `3.8.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-09-02 — operator-signed approval and independent batch verification (issue #65); see §0.39 |
+| Last revised | 2026-09-09 — the producer evidence plane, seams named and measured (issue #96, ADR-059); see §0.40 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -791,6 +791,27 @@ result authorizes nothing. No new crypto and no schema-number bump; the
 `approve` stage pair derives from the frozen action enumeration. Residual:
 the e2e journey keeps a known skip where fixture ancestry is absent, and
 verification proves the surface, not payload semantics.
+
+### 0.40 What changed in `3.8.0` — the producer evidence plane
+
+Issue #96 / ADR-059 (`accepted`) names where a new *kind* of observation may
+enter the trust chain, so three pending proposals — a second results format,
+worker guidance, and recorded findings — extend one chain instead of growing
+three. Five seams are named (policy loader, foundation normaliser,
+committed-trust-root pinning, publisher rendering, dogfood measurement) with
+six rules, of which the load-bearing one is that a new artifact kind is a new
+`results_reporter` reduced to the existing suite-summary shape: `verdict.py`
+does not move. Four properties were **measured**, not asserted, against the
+installed kernel on a real throwaway governed repository: an exit-code-only
+claim already blocks on an arbitrary program; advisory evidence is recorded in
+`considered` and cannot decide; a suite record with a missing expected ID fails
+deterministically, so the frozen manifest is the counter-metric for any
+smaller-is-better rule; and containment refuses an `argv[0]` inside the subject
+but inspects `argv[0]` **only** — a system interpreter plus an in-tree script
+reached `PASS` with a violating file still in the tree (F-012 family, now a
+design constraint on every scanner). §6.4 records the plane; the features that
+will use the seams do not exist yet, and `task delegate` remains a prototype
+whose worker instructions are retained in no artifact (issue #111).
 
 ---
 
@@ -1576,6 +1597,31 @@ ranex gate evaluate HEAD --approver A
   → absence blocks; contradiction blocks; self-approval blocks
   → verdict + reason + journal append
 ```
+
+### 6.4 The producer evidence plane — `CONFIRMED` for the seams, `PROVISIONAL` for their users
+
+ADR-059. One chain, extended at named seams; no second verdict path.
+
+```
+gates.yaml -> [A policy loader] -> ranex run -> [B normaliser] -> signed envelope
+   -> gate evaluate -> [C trust-root pinning] -> admit -> evaluate -> journal -> verdict
+   -> [D publisher] -> check run        [E dogfood: measures, never decides]
+```
+
+| Seam | Owner | What may enter | What may never |
+|---|---|---|---|
+| A | `policy/…/slice_gate_loader.py` | new `results_reporter` kinds, per-claim manifests | a claim with no defined satisfaction |
+| B | `foundation/suite_results.py` | a new artifact kind reduced to the closed summary | a second verdict rule |
+| C | `committed_trust_root` in `run`, `gate evaluate`, `EvidenceEvaluator` | a new policy file, pinned in all three | a policy file pinned in only some |
+| D | `github_app/publisher.py` | richer rendering of `causes[].detail` | computing a conclusion |
+| E | `tools/dogfood/` | measurement, receipts, calibration recall | authority of any kind |
+
+Measured 2026-09-09 (real CLI, real keys, real journal): an exit-code-only
+claim blocks on an arbitrary program (exit 0 → PASS, exit 1 → FAIL, absent →
+FAIL); advisory evidence for a non-required claim is recorded in `considered`
+and does not block; a `missing` expected ID fails deterministically; and
+containment refuses an in-subject `argv[0]` yet admitted a system interpreter
+running an in-tree script that returned PASS over a violating tree.
 
 ---
 
