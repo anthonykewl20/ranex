@@ -1,0 +1,2 @@
+LISTENING  127.0.0.1:8180  repository=anthonykewl20/ranex-app-live-probe  gate=landing
+           TLS is the terminator's job; this binds as given.

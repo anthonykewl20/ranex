@@ -1,0 +1,15 @@
+-------------
+Diff Coverage
+Diff: f8452b6b9...HEAD, staged and unstaged changes
+-------------
+src/ranex/cli/delegation.py (100%)
+src/ranex/cli/main.py (100%)
+src/ranex/cli/suite_observer.py (100%)
+src/ranex/foundation/pytest_xpass.py (100%)
+src/ranex/foundation/suite_results.py (100%)
+-------------
+Total:   57 lines
+Missing: 0 lines
+Coverage: 100%
+-------------
+

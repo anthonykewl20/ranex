@@ -1,0 +1,651 @@
+........................................................................ [  3%]
+.....................................ssssssssss......................... [  7%]
+........................................................................ [ 11%]
+........................................................................ [ 15%]
+......................s.............................sssssssss..sssssssss [ 18%]
+...ssssss..ss.ssssssssss................................................ [ 22%]
+.ssssss..............F......F.s..................ss..................ss. [ 26%]
+................ss...s...............s.s................................ [ 30%]
+......F...F..............................................sssssssssss.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-8ygcnzhp/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-34nqnmuf/tree/governance/suite_results.xml -
+1 passed in 0.01s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-6_z22l42/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.02s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-ef2w7tq7/tree/governance/suite_results.xml -
+1 passed in 0.01s
+..ss [ 33%]
+sssssssssssssss.......................                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-fcgcf3my/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-8nc3axws/tree/governance/suite_results.xml -
+1 passed in 0.01s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-0u58fyti/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-dnqhpj5p/tree/governance/suite_results.xml -
+1 passed in 0.01s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-jf6wig3c/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-nk2s0m_u/tree/governance/suite_results.xml -
+1 passed in 0.00s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-sshqjwcw/tree/governance/suite_results.xml -
+1 passed in 0.00s
+................................. [ 37%]
+..............................................................                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-xqap8wlq/tree/governance/suite_results.xml -
+1 passed in 0.01s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+[XPASS(strict)] known issue
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-6e69c9t6/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value
+1 failed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-oon_mom1/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-udiat370/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-7se5e21w/tree/governance/suite_results.xml -
+1 passed in 0.01s
+ERROR: E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled
+
+F..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-jynengqz/tree/governance/suite_results.xml -
+1 passed in 0.01s
+......... [ 41%]
+...................F..................sss............................... [ 45%]
+........................................................................ [ 48%]
+........................................................................ [ 52%]
+........................................................................ [ 56%]
+......................................F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-edx0_cn_/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)
+........s......................... [ 60%]
+............F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-bs0luhfv/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
+.F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-6hiqvu7q/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
+...
+no tests ran in 0.00s
+..............ss..............ssssssssssssssssssss...... [ 64%]
+.................................................................sssssss [ 67%]
+sssssssss.ss............s.....ss.................s............s......... [ 71%]
+........................................................................ [ 75%]
+........................................................................ [ 79%]
+........................................................................ [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 90%]
+........................................................................ [ 94%]
+...........................................................F............ [ 97%]
+.......................................                                  [100%]
+=================================== FAILURES ===================================
+______ test_suite_freeze_command_writes_canonical_outcome_blind_manifest _______
+
+repo = PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_suite_freeze_command_writ0/governed')
+
+    def test_suite_freeze_command_writes_canonical_outcome_blind_manifest(
+        repo: Path,
+    ) -> None:
+        (repo / "freeze-report.sh").write_text(
+            "printf '%s' '<testsuites><testsuite><testcase "
+            "classname=\"tests.test_sample\" name=\"test_skip\"><failure />"
+            "</testcase></testsuite></testsuites>' > report.xml\n",
+            encoding="utf-8",
+        )
+        subprocess.run(["git", "-C", str(repo), "add", "freeze-report.sh"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repo), "commit", "-q", "-m", "freeze command"],
+            check=True,
+        )
+    
+>       assert invoke(
+            repo,
+            [
+                "suite",
+                "freeze",
+                "--artifact",
+                "report.xml",
+                "--output",
+                "suite_manifest.json",
+                "--expected-skip",
+                "tests/test_sample.py::test_skip=credential-gated",
+                "--",
+                "sh",
+                "freeze-report.sh",
+            ],
+        ) == 0
+E       AssertionError: assert 2 == 0
+E        +  where 2 = invoke(PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_suite_freeze_command_writ0/governed'), ['suite', 'freeze', '--artifact', 'report.xml', '--output', 'suite_manifest.json', ...])
+
+tests/e2e/test_run_produces_evidence.py:245: AssertionError
+----------------------------- Captured stderr call -----------------------------
+ERROR  E-PYTEST-OBSERVER-ABSENT: JUnit lacks the controller reporter
+_________ test_run_reads_suite_results_before_materialisation_teardown _________
+
+repo = PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_run_reads_suite_results_b0/governed')
+
+    def test_run_reads_suite_results_before_materialisation_teardown(repo: Path) -> None:
+        test_id = "tests/test_sample.py::test_pass"
+        # ADR-056: a pytest-junit suite claim must ask for the XPASS outcome it
+        # judges, whatever program actually writes the artifact.
+        command = ["sh", "write-results.sh", "-o", "xfail_strict=true",
+                   "--junitxml=artifacts/junit.xml"]
+        (repo / "write-results.sh").write_text(
+            "mkdir -p artifacts\n"
+            "printf '%s' '<testsuites><testsuite><testcase "
+            "classname=\"tests.test_sample\" name=\"test_pass\" />"
+            "</testsuite></testsuites>' > artifacts/junit.xml\n",
+            encoding="utf-8",
+        )
+        (repo / "gates.yaml").write_text(
+            "gates:\n"
+            "  - gate_id: landing\n"
+            "    rule_id: TESTS_EXECUTED\n"
+            "    blocking: true\n"
+            "    required_claims:\n"
+            "      - claim_id: tests-executed\n"
+            f"        command: {json.dumps(command)}\n"
+            "        results_artifact: artifacts/junit.xml\n",
+            encoding="utf-8",
+        )
+        manifest = {"suite": [test_id], "expected_skips": {}}
+        (repo / "suite_manifest.json").write_bytes(canonical_json_bytes(manifest))
+        subprocess.run(["git", "-C", str(repo), "add", "-A"], check=True)
+        subprocess.run(
+            ["git", "-C", str(repo), "commit", "-q", "-m", "bind suite results"],
+            check=True,
+        )
+    
+>       assert invoke(
+            repo,
+            [
+                "run",
+                "--claim",
+                "tests-executed",
+                "--producer",
+                "worker",
+                "--evidence",
+                "evidence.json",
+                "--producers",
+                "producers.yaml",
+                "--gate-catalog",
+                "gates.yaml",
+                "--suite-manifest",
+                "suite_manifest.json",
+                "--",
+                *command,
+            ],
+            producer="worker",
+        ) == 0
+E       AssertionError: assert 2 == 0
+E        +  where 2 = invoke(PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_run_reads_suite_results_b0/governed'), ['run', '--claim', 'tests-executed', '--producer', 'worker', '--evidence', ...], producer='worker')
+
+tests/e2e/test_run_produces_evidence.py:420: AssertionError
+----------------------------- Captured stderr call -----------------------------
+ERROR  E-PYTEST-OBSERVER-ABSENT: JUnit lacks the controller reporter
+__________ test_run_suite_with_results_reads_artifact_before_teardown __________
+
+tmp_path = PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_run_suite_with_results_re0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ab25b4058e0>
+
+    def test_run_suite_with_results_reads_artifact_before_teardown(
+        tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ) -> None:
+        active = False
+    
+        class FakeMaterialisation:
+            def __init__(self) -> None:
+                self.tree = tmp_path / "tree"
+                self.home = tmp_path / "home"
+                self.temporary = tmp_path / "tmp"
+                self.tree.mkdir()
+                self.home.mkdir()
+                self.temporary.mkdir()
+    
+            def __enter__(self) -> FakeMaterialisation:
+                nonlocal active
+                active = True
+                return self
+    
+            def __exit__(self, _exc_type, _exc, _tb) -> bool | None:
+                nonlocal active
+                active = False
+                return None
+    
+        manifest = {"suite": ["tests/test_example.py::test_pass"]}
+        observed: dict[str, object] = {}
+    
+        def fake_run(
+            command: list[str], **kwargs: object
+        ) -> subprocess.CompletedProcess[str]:
+            observed["command"] = command
+            observed["cwd"] = kwargs["cwd"]
+            observed["environment"] = kwargs["env"]
+            return subprocess.CompletedProcess(command, 3, stdout="out", stderr="err")
+    
+        def fake_parse(path: Path, pinned: dict[str, object]) -> dict[str, object]:
+            assert active, "results must be read before materialisation teardown"
+            observed["artifact"] = path
+            observed["manifest"] = pinned
+            return {"counts": {"passed": 1}}
+    
+        monkeypatch.setattr(
+            "ranex.cli.delegation.materialise_subject",
+            lambda *_args, **_kwargs: FakeMaterialisation(),
+        )
+        monkeypatch.setattr("ranex.cli.delegation.subprocess.run", fake_run)
+        monkeypatch.setattr("ranex.cli.delegation.parse_results_artifact", fake_parse)
+    
+        streams: dict[str, str] = {}
+>       suite_exit, output_tail, results = _run_suite_with_results(
+            tmp_path / "repo",
+            "a" * 40,
+            "python -c 'print(1)'",
+            results_artifact="artifacts/junit.xml",
+            manifest=manifest,
+            streams=streams,
+        )
+
+tests/integration/test_delegation_command.py:1062: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+worktree = PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_run_suite_with_results_re0/repo')
+commit = 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa'
+suite = "python -c 'print(1)'", results_artifact = 'artifacts/junit.xml'
+results_reporter = 'pytest-junit'
+manifest = {'suite': ['tests/test_example.py::test_pass']}, streams = {}
+
+    def _run_suite_with_results(
+        worktree: Path,
+        commit: str,
+        suite: str,
+        *,
+        results_artifact: str,
+        results_reporter: str = "pytest-junit",
+        manifest: dict[str, object],
+        streams: dict[str, str] | None = None,
+    ) -> tuple[int, str, dict[str, object]]:
+        """Run against the candidate, reading results before materialisation teardown."""
+    
+        command = shlex.split(suite)
+        if not command:
+            raise ValueError("refusing suite command: no arguments")
+        with materialise_subject(worktree, commit, git) as materialisation:
+            environment = {
+                "PATH": pinned_path_value(),
+                "HOME": str(materialisation.home),
+                "TMPDIR": str(materialisation.temporary),
+                "LANG": "C.UTF-8",
+                "GIT_CONFIG_NOSYSTEM": "1",
+                "GIT_ATTR_NOSYSTEM": "1",
+            }
+            if results_reporter == "pytest-junit":
+                from ranex.cli.suite_observer import pytest_observer_environment
+    
+>               environment.update(pytest_observer_environment(materialisation.root))
+                                                               ^^^^^^^^^^^^^^^^^^^^
+E               AttributeError: 'FakeMaterialisation' object has no attribute 'root'
+
+src/ranex/cli/delegation.py:193: AttributeError
+_____ test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite _____
+
+tmp_path = PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_delegate_uses_dispatch_ca0')
+monkeypatch = <_pytest.monkeypatch.MonkeyPatch object at 0x7ab25ab28da0>
+capsys = <_pytest.capture.CaptureFixture object at 0x7ab25ab28440>
+
+    def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
+        tmp_path: Path,
+        monkeypatch: pytest.MonkeyPatch,
+        capsys: pytest.CaptureFixture[str],
+    ) -> None:
+        args, worktree, base_commit, emitted_commit = configure_truthful_delegate(
+            tmp_path, monkeypatch, task_id="T-9-RESULTS"
+        )
+        args.gate_catalog = "governance/gates.yaml"
+        args.suite_manifest = "governance/suite_manifest.json"
+        # ADR-056: a dispatch-time suite claim must be able to report an XPASS, and
+        # `args.suite` must still equal it or the mismatch guard fires first.
+        claim = argparse.Namespace(
+            claim_id="tests-executed",
+            command=("/usr/bin/true", "-o", "xfail_strict=true"),
+            results_artifact="artifacts/junit.xml",
+            results_reporter="pytest-junit",
+        )
+        args.suite = "/usr/bin/true -o xfail_strict=true"
+        manifest = {"suite": ["tests/test_example.py::test_pass"]}
+        suite_results = {"counts": {"passed": 1}}
+        calls: dict[str, object] = {}
+    
+        def fake_verified_blob(
+            received_worktree: Path,
+            received_commit: str,
+            path: str,
+            _git: object,
+        ) -> bytes:
+            assert received_worktree == worktree
+            assert received_commit == base_commit
+            return b"gate catalog" if path == args.gate_catalog else b"manifest"
+    
+        def fake_load_manifest(source: bytes) -> dict[str, object]:
+            calls["manifest_source"] = source
+            return manifest
+    
+        def fake_results_suite(**kwargs: object) -> tuple[int, str, dict[str, object]]:
+            calls["suite"] = kwargs
+            return 0, "suite output", suite_results
+    
+        monkeypatch.setattr(
+            "ranex.cli.delegation.verified_blob_at_path", fake_verified_blob
+        )
+        monkeypatch.setattr(
+            "ranex.cli.delegation.load_gate_text",
+            lambda source, gate: argparse.Namespace(required_claims=(claim,)),
+        )
+        monkeypatch.setattr("ranex.cli.delegation.load_manifest_bytes", fake_load_manifest)
+        monkeypatch.setattr(
+            "ranex.cli.delegation._run_suite_with_results", fake_results_suite
+        )
+    
+        result = cmd_task_delegate(args)
+        captured = capsys.readouterr()
+    
+        assert result == EXIT_PASS
+        assert "DELEGATED" in captured.out
+        assert calls["manifest_source"] == b"manifest"
+>       assert calls["suite"] == {
+            "worktree": worktree,
+            "commit": emitted_commit,
+            "suite": "/usr/bin/true -o xfail_strict=true",
+            "results_artifact": "artifacts/junit.xml",
+            "manifest": manifest,
+            "streams": {"stdout": "", "stderr": ""},
+        }
+E       AssertionError: assert {'worktree': ...nit.xml', ...} == {'worktree': ...nit.xml', ...}
+E         
+E         Omitting 6 identical items, use -vv to show
+E         Left contains 1 more item:
+E         {'results_reporter': 'pytest-junit'}
+E         Use -v to get more diff
+
+tests/integration/test_delegation_command.py:1239: AssertionError
+__________ test_explicit_xpass_blocks_signed_acceptance_and_recovers ___________
+
+application = (PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_explicit_xpass_blocks_sig0/application...transit/pytest-0/test_explicit_xpass_blocks_sig0/verdict.key'), 'ed25519:H1DiCiHC/Erai3XvPW1SBJYN/lG0qzZLrBFRXa/xdDE=')
+
+    def test_explicit_xpass_blocks_signed_acceptance_and_recovers(application):
+        repo, worker, signer, _public = application
+        command = yaml.safe_load((repo / 'governance/gates.yaml').read_bytes())['gates'][0]['required_claims'][0]['command']
+        frozen = invoke(repo, 'suite', 'freeze', '--external-repository', str(repo),
+                        '--artifact', 'governance/suite_results.xml', '--', *command)
+        assert frozen.returncode == 0, frozen.stdout + frozen.stderr
+        commit(repo)
+        source = (repo / 'test_application.py').read_text()
+        (repo / 'test_application.py').write_text(
+            'import pytest\n' + source.replace('def test_value():',
+            '@pytest.mark.xfail(strict=False, reason="known issue")\ndef test_value():'))
+        commit(repo)
+        observed = invoke(repo, 'run', '--external-repository', str(repo), '--producer', 'worker',
+                          '--claim', 'tests-executed', '--', *command, key=worker)
+        assert observed.returncode == 1, observed.stdout + observed.stderr
+        records = json.loads((repo / 'governance/evidence.json').read_bytes())
+        assert records[-1]['suite_results']['counts']['xpassed'] == 1
+        judged = invoke(repo, 'gate', 'evaluate', 'HEAD', '--external-repository', str(repo),
+                        '--approver', 'pilot', verdict_key=signer)
+        assert judged.returncode == 1 and '(xpassed)' in judged.stdout, judged.stdout + judged.stderr
+        (repo / 'test_application.py').write_text(source)
+        commit(repo)
+        assert invoke(repo, 'run', '--external-repository', str(repo), '--producer', 'worker',
+                      '--claim', 'tests-executed', '--', *command, key=worker).returncode == 0
+        assert invoke(repo, 'gate', 'evaluate', 'HEAD', '--external-repository', str(repo),
+                      '--approver', 'pilot', verdict_key=signer).returncode == 0
+        # An ordinary pytest configuration can disable an environment-loaded plugin.
+        # A passing exit without the marker must not replace the signed evidence.
+        evidence = (repo / 'governance/evidence.json').read_bytes()
+        (repo / 'pytest.ini').write_text(f'[pytest]\naddopts = -p no:{PLUGIN}\n')
+        commit(repo)
+        refused = invoke(repo, 'run', '--external-repository', str(repo), '--producer', 'worker',
+                         '--claim', 'tests-executed', '--', *command, key=worker)
+        assert refused.returncode == 2 and 'E-PYTEST-OBSERVER-ABSENT' in refused.stderr
+        assert (repo / 'governance/evidence.json').read_bytes() == evidence
+        frozen = invoke(repo, 'suite', 'freeze', '--external-repository', str(repo),
+                        '--artifact', 'governance/suite_results.xml', '--', *command)
+        assert frozen.returncode == 2 and 'E-PYTEST-OBSERVER-ABSENT' in frozen.stderr
+        for addopts in ('--runxfail', '-p no:skipping'):
+            (repo / 'pytest.ini').write_text(f'[pytest]\naddopts = {addopts}\n')
+            commit(repo)
+            refused = invoke(repo, 'run', '--external-repository', str(repo), '--producer', 'worker',
+                             '--claim', 'tests-executed', '--', *command, key=worker)
+            assert refused.returncode == 2
+>           assert 'E-PYTEST-XFAIL-DISABLED' in refused.stdout + refused.stderr
+E           AssertionError: assert 'E-PYTEST-XFAIL-DISABLED' in ('' + 'ERROR  results artifact is absent: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-duxiamge/tree/governance/suite_results.xml\n')
+E            +  where '' = CompletedProcess(args=['/tmp/ranex-subject-6x4xn4oh/deps/env/bin/python', '-m', 'ranex.cli.main', 'run', '--external-r...esults artifact is absent: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-duxiamge/tree/governance/suite_results.xml\n').stdout
+E            +  and   'ERROR  results artifact is absent: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-duxiamge/tree/governance/suite_results.xml\n' = CompletedProcess(args=['/tmp/ranex-subject-6x4xn4oh/deps/env/bin/python', '-m', 'ranex.cli.main', 'run', '--external-r...esults artifact is absent: /tmp/ranex-subject-6x4xn4oh/tmp/ranex-subject-duxiamge/tree/governance/suite_results.xml\n').stderr
+
+tests/integration/test_pytest_observer.py:65: AssertionError
+___ test_gate9_slice017_files_have_no_test_bypass_and_keep_the_frozen_count ____
+
+    def test_gate9_slice017_files_have_no_test_bypass_and_keep_the_frozen_count() -> None:
+        files = {
+            "tests/integration/test_slice017_native_launcher.py": 26,
+            "tests/security/test_slice017_host_qualification.py": 21,
+        }
+        forbidden = (
+            "unittest." + "mock",
+            "Magic" + "Mock",
+            "monkey" + "patch",
+            "pytest." + "skip",
+            "skip" + "if",
+            "x" + "fail",
+        )
+        for relative in files:
+            source = (REPOSITORY / relative).read_text(encoding="utf-8")
+            for token in forbidden:
+                assert token not in source, f"{relative} contains forbidden test bypass {token!r}"
+    
+        environment = _controller_environment()
+        environment.pop("PYTEST_ADDOPTS", None)
+        environment["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+        environment["PYTHONDONTWRITEBYTECODE"] = "1"
+        completed = subprocess.run(
+            [
+                sys.executable,
+                "-m",
+                "pytest",
+                "-p",
+                "no:cacheprovider",
+                "-q",
+                *files,
+                "--collect-only",
+            ],
+            cwd=REPOSITORY,
+            env=environment,
+            capture_output=True,
+            text=True,
+            check=False,
+            timeout=60,
+        )
+>       assert completed.returncode == 0, completed.stdout + completed.stderr
+E       AssertionError: Traceback (most recent call last):
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 913, in import_plugin
+E             mod = importlib.import_module(importspec)
+E                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+E             return _bootstrap._gcd_import(name[level:], package, level)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+E           File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+E           File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+E         ModuleNotFoundError: No module named '_ranex_pytest_observer_v1'
+E         
+E         The above exception was the direct cause of the following exception:
+E         
+E         Traceback (most recent call last):
+E           File "<frozen runpy>", line 198, in _run_module_as_main
+E           File "<frozen runpy>", line 88, in _run_code
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/pytest/__main__.py", line 9, in <module>
+E             raise SystemExit(_console_main())
+E                              ^^^^^^^^^^^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 253, in _console_main
+E             code = _main(prog=_get_prog_name(sys.argv))
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 223, in _main
+E             config = _prepareconfig(new_args, plugins, prog=prog)
+E                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 410, in _prepareconfig
+E             config: Config = pluginmanager.hook.pytest_cmdline_parse(
+E                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/pluggy/_hooks.py", line 512, in __call__
+E             return self._hookexec(self.name, self._hookimpls.copy(), kwargs, firstresult)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/pluggy/_manager.py", line 120, in _hookexec
+E             return self._inner_hookexec(hook_name, methods, kwargs, firstresult)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/pluggy/_callers.py", line 167, in _multicall
+E             raise exception
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/pluggy/_callers.py", line 139, in _multicall
+E             teardown.throw(exception)
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/helpconfig.py", line 124, in pytest_cmdline_parse
+E             config = yield
+E                      ^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/pluggy/_callers.py", line 121, in _multicall
+E             res = hook_impl.function(*args)
+E                   ^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1232, in pytest_cmdline_parse
+E             self.parse(args)
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 1586, in parse
+E             self.pluginmanager.consider_env()
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 874, in consider_env
+E             self._import_plugin_specs(os.environ.get("PYTEST_PLUGINS"))
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 885, in _import_plugin_specs
+E             self.import_plugin(import_spec)
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 920, in import_plugin
+E             raise ImportError(
+E           File "/tmp/ranex-subject-6x4xn4oh/deps/env/lib/python3.12/site-packages/_pytest/config/__init__.py", line 913, in import_plugin
+E             mod = importlib.import_module(importspec)
+E                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+E             return _bootstrap._gcd_import(name[level:], package, level)
+E                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+E           File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+E           File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+E           File "<frozen importlib._bootstrap>", line 1324, in _find_and_load_unlocked
+E         ImportError: Error importing plugin "_ranex_pytest_observer_v1": No module named '_ranex_pytest_observer_v1'
+E         
+E       assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/tmp/ranex-subject-6x4xn4oh/deps/env/bin/python', '-m', 'pytest', '-p', 'no:cacheprovider', '-...ked\nImportError: Error importing plugin "_ranex_pytest_observer_v1": No module named \'_ranex_pytest_observer_v1\'\n').returncode
+
+tests/integration/test_slice017_native_launcher.py:1601: AssertionError
+______ test_a_non_strict_xpass_is_only_visible_when_the_argv_asks_for_it _______
+
+suite_api = <module 'ranex.foundation.suite_results' from '/tmp/ranex-subject-6x4xn4oh/tree/src/ranex/foundation/suite_results.py'>
+tmp_path = PosixPath('/tmp/ranex-subject-6x4xn4oh/tmp/pytest-of-soultransit/pytest-0/test_a_non_strict_xpass_is_onl0')
+
+    def test_a_non_strict_xpass_is_only_visible_when_the_argv_asks_for_it(
+        suite_api,
+        tmp_path: Path,
+    ) -> None:
+        """F-010, measured against the installed pytest rather than argued.
+    
+        ADR-011 sad path 5 says an XPASS blocks. With an ordinary non-strict
+        `xfail` marker the reporter writes the XPASS as a bare `<testcase>` — the
+        outcome is simply absent from the artifact, so the summariser reads a pass
+        and the claim is satisfied. That is the finding, and it is not a parser bug:
+        there is nothing in the bytes to read.
+    
+        The same source, run with the override the gate loader now demands on every
+        pytest suite claim, writes a `<failure>` carrying the `[XPASS(strict)]`
+        marker, which the unchanged summariser already classifies as `xpassed` — the
+        declared sad path.
+        """
+    
+        source = """
+        import pytest
+    
+        @getattr(pytest.mark, "x" + "fail")(reason="known")
+        def test_optimistically_marked():
+            assert True
+        """
+        test_id = "tests/unit/test_x.py::test_optimistically_marked"
+    
+        blind_run, blind_xml = run_real_pytest_suite(tmp_path, source)
+>       assert blind_run.returncode == 0
+E       AssertionError: assert 1 == 0
+E        +  where 1 = CompletedProcess(args=['/tmp/ranex-subject-6x4xn4oh/deps/env/bin/python', '-m', 'pytest', '-q', 'tests', '--junitxml=r...====\nFAILED tests/unit/test_x.py::test_optimistically_marked - [XPASS(strict)] known\n1 failed in 0.01s\n', stderr='').returncode
+
+tests/unit/test_suite_results.py:1217: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_run_produces_evidence.py::test_suite_freeze_command_writes_canonical_outcome_blind_manifest
+FAILED tests/e2e/test_run_produces_evidence.py::test_run_reads_suite_results_before_materialisation_teardown
+FAILED tests/integration/test_delegation_command.py::test_run_suite_with_results_reads_artifact_before_teardown
+FAILED tests/integration/test_delegation_command.py::test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite
+FAILED tests/integration/test_pytest_observer.py::test_explicit_xpass_blocks_signed_acceptance_and_recovers
+FAILED tests/integration/test_slice017_native_launcher.py::test_gate9_slice017_files_have_no_test_bypass_and_keep_the_frozen_count
+FAILED tests/unit/test_suite_results.py::test_a_non_strict_xpass_is_only_visible_when_the_argv_asks_for_it
+7 failed, 1764 passed, 140 skipped in 390.57s (0:06:30)
+FROZEN  tests=1911  expected_skips=168  run_exit=1  output=/tmp/ranex-xpass94/.local/xpass94-suite.json

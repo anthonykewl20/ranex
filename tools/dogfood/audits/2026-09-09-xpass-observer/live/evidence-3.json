@@ -1,0 +1,93 @@
+[
+  {
+    "claim_id": "tests-executed",
+    "subject_digest": "sha256:1d6342336aac910c659fe91c8d38c6778a272f56bb240d4b9ddec190ec4e5d95",
+    "producer_id": "worker",
+    "command": "/usr/bin/python3 -m pytest -q -o xfail_strict=true --junitxml=governance/suite_results.xml test_six.py",
+    "command_digest": "sha256:6d7bb6ad37f48c667dc757a5d4fd14f80b01994b81313cd92a9a24cec6dfa65b",
+    "executable_path": "/usr/bin/python3.12",
+    "exit_code": 0,
+    "suite_results": {
+      "manifest_digest": "sha256:e1edb231b647fc5f21831f8176cb626ffbfec15e9c167f925a0ea9b39cffaed4",
+      "counts": {
+        "passed": 185,
+        "skipped": 15,
+        "failed": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      },
+      "non_passed": [
+        [
+          "test_six.py::test_move_items[tkinter]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_colorchooser]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_commondialog]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_constants]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_dialog]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_dnd]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_filedialog]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_font]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_messagebox]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_scrolledtext]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_simpledialog]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_tix]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_tkfiledialog]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_tksimpledialog]",
+          "skipped"
+        ],
+        [
+          "test_six.py::test_move_items[tkinter_ttk]",
+          "skipped"
+        ]
+      ],
+      "missing": [],
+      "extra_count": 0,
+      "outcome_digest": "sha256:12325df620b71afa1b5a9960a9df8f5d5b06284343baed0f0bdae7479b2eeac2"
+    },
+    "confinement_result_digest": null,
+    "confinement_profile_digest": null,
+    "envelope_type": "ranex-evidence-envelope-v1",
+    "gate_id": "landing",
+    "catalog_digest": "sha256:a6087f8afb60942a3096f5b7f04897f401d71bdd706a5a077462e615f2e24c95",
+    "signature": "ed25519:kMeXL04KXpf2yCmNRIUDE1kWX+zTijOoKnlO1qUEkei4NN42lUbsAhuvyFJA+39Gae/wHpu2Zx/yndzVqo/uDw=="
+  }
+]

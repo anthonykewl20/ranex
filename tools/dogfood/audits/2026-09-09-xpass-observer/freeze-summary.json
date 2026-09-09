@@ -1,0 +1,16 @@
+{
+  "checkpoint": "d2f1ea9ea9dd0c62f672506b17e9d3db2e1ceb9e",
+  "observed": "FROZEN  tests=1916  expected_skips=168  run_exit=0  output=/tmp/ranex-xpass94/.local/xpass94-suite-combined.json",
+  "result": "1776 passed, 140 skipped in 365.26s",
+  "added_ids": [
+    "tests/integration/test_pytest_observer.py::test_delegation_reports_explicit_xpass_before_materialisation_cleanup",
+    "tests/integration/test_pytest_observer.py::test_explicit_xpass_blocks_signed_acceptance_and_recovers",
+    "tests/integration/test_pytest_observer.py::test_real_pytest_outcome_matrix_preserves_all_outcomes",
+    "tests/security/test_slice009_strict_xfail_binding.py::test_a_tryfirst_conftest_does_defeat_the_reporter",
+    "tests/security/test_slice009_strict_xfail_binding.py::test_a_trylast_conftest_cannot_undo_the_reporter",
+    "tests/security/test_slice009_strict_xfail_binding.py::test_an_unimportable_reporter_writes_no_artifact_so_absence_blocks",
+    "tests/unit/test_suite_results.py::test_a_marker_level_strict_false_is_caught_only_by_the_kernel_reporter",
+    "tests/unit/test_suite_results.py::test_the_kernel_reporter_leaves_genuine_xfail_and_declared_skip_alone"
+  ],
+  "expected_skip_declarations": 168
+}

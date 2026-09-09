@@ -353,7 +353,7 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   pair placed after a `--`.
 - `governance/gates.yaml` now carries the binding, so the repository's own
   landing gate no longer has the finding.
-- **STILL OPEN, measured 2026-09-09 on real pytest — the argv reaches only the
+- **Pre-reporter observation, 2026-09-09 — the argv reaches only the
   ini DEFAULT.** `@pytest.mark.xfail(strict=False, reason=...)` sets `strict`
   on the marker, and a marker-level kwarg overrides the `xfail_strict` ini, so
   `-o xfail_strict=true` does not reach it: the XPASS is still written as a bare
@@ -368,7 +368,8 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   it needs a kernel-owned reporter that reads `report.wasxfail`, which is
   separate product work.
 - **Remainder closed (#94).** `ranex.foundation.pytest_xpass` is a kernel-owned
-  reporter named in the digest-bound argv. It reads `report.wasxfail` — the
+  reporter supplied automatically by the controller (ADR-059), with explicit
+  `-p` loading also supported. It reads completed reports' `wasxfail` — the
   field pytest sets on exactly this case and `junitxml`'s `append_pass`
   discards — and converts the pass into a failure spelled as pytest spells a
   strict XPASS, so the unchanged summariser classifies it `xpassed`.
@@ -383,11 +384,19 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   no `PYTHONPATH`, so the vendored kernel's reporter could not be imported by
   the governed child at all; and the audit provisions the kernel from the
   COMMITTED ref, so an uncommitted fix is invisible to it.
-- Measured boundaries: a `trylast` conftest cannot undo the reporter (it is
-  registered `tryfirst`, so its wrapper resumes last); a `tryfirst` conftest
-  can, which is the disclosed forgery boundary (ADR-007, ADR-011 c.10) and is
-  pinned as a PASSING test so it is not mistaken for a regression. An
-  unimportable reporter writes no artifact at all, so absence blocks.
+- The combined implementation normalizes in `pytest_runtest_logreport`, so
+  local and distributed reports reach the failure counter and JUnit writer.
+  Consuming only its own PYTEST_PLUGINS activation avoids breaking nested
+  pytest processes. Missing/disabled reporting refuses instead of signing.
+  A hostile logreport hook can still erase wasxfail before observation, and
+  ordinary failed assertions can still be forged (F-012). The security tests
+  retain that measured boundary; no independent truth oracle is claimed.
+- Real GitHub PR #9 retained each signed observation and verified it with
+  OpenSSL: missing evidence blocked merging, explicit XPASS blocked merging,
+  and repaired source merged only after fresh passing evidence. The final
+  external audit records 25 VERIFIED and 5 GAP cases. Receipts and the initial
+  failing/full green governed runs are retained under
+  `tools/dogfood/audits/2026-09-09-xpass-observer/`.
 - Historical status for comparison, `--refs v0.1.0 HEAD` at kernel 22a46a9eb:
   `nonstrict-xpass` was **GAP at both refs**. `strict-xpass`, `xfail`, `undeclared-skip` and
   `deselected-test` are VERIFIED at both. The audit's gap_detail now names this

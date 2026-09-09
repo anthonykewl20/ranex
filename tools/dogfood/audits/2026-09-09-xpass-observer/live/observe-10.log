@@ -1,0 +1,7 @@
+......................................................sssssssssssssss... [ 36%]
+........................................................................ [ 72%]
+........................................................                 [100%]
+- generated xml file: /tmp/ranex-subject-21xkeuoq/tree/governance/suite_results.xml -
+185 passed, 15 skipped in 0.30s
+RECORDED  claim=tests-executed  producer=worker  exit=0
+          subject=sha256:ec34c28456d0f9bc609e27362142d290484ce4ad525a47433b936345e1384fee

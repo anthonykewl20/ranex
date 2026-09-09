@@ -1,0 +1,48 @@
+bringing up nodes...
+bringing up nodes...
+
+.F                                                                       [100%]
+=================================== FAILURES ===================================
+__________________________________ test_xpass __________________________________
+[gw1] linux -- Python 3.14.7 /home/soultransit/.cache/uv/builds-v0/.tmplikn0y/bin/python
+[XPASS(strict)] 
+=========================== short test summary info ============================
+FAILED test_dist.py::test_xpass - [XPASS(strict)] 
+1 failed, 1 passed in 2.95s
+ 
+{
+  "pytest": "9.1.1",
+  "pytest-xdist": "3.8.0",
+  "command": [
+    "/home/soultransit/.cache/uv/builds-v0/.tmplikn0y/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "-n",
+    "2",
+    "-o",
+    "xfail_strict=true",
+    "--junitxml=result.xml"
+  ],
+  "exit": 1,
+  "summary": {
+    "manifest_digest": "sha256:f2ef58f7bd7cf16a21e9b2fc560b4ee8d2993d84a4d6685bfed56b8cb2e7c6a6",
+    "counts": {
+      "passed": 1,
+      "skipped": 0,
+      "failed": 0,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 1
+    },
+    "non_passed": [
+      [
+        "test_dist.py::test_xpass",
+        "xpassed"
+      ]
+    ],
+    "missing": [],
+    "extra_count": 0,
+    "outcome_digest": "sha256:6804c615ad85fd5377664bd5f6fe630ff2df95618b3ff25e12dd23f378aecafe"
+  }
+}

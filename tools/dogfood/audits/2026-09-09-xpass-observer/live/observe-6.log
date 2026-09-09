@@ -1,0 +1,12 @@
+F.....................................................sssssssssssssss... [ 36%]
+........................................................................ [ 72%]
+........................................................                 [100%]
+=================================== FAILURES ===================================
+_________________________________ test_add_doc _________________________________
+[XPASS(strict)] live audit
+- generated xml file: /tmp/ranex-subject-2jyzzqga/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_six.py::test_add_doc
+1 failed, 184 passed, 15 skipped in 0.30s
+RECORDED  claim=tests-executed  producer=worker  exit=1
+          subject=sha256:ec4b10c7516a07ac449e952e6acdb8e9887678ab7db0a201a5c7ddd801972f1e

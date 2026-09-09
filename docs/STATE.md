@@ -3,44 +3,43 @@
 **Updated:** 2026-09-09
 **Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
 
-Version v0.1.006. Open: #88 production readiness, #90 dogfood publication,
-#94 explicit non-strict XPASS reporting. No production sign-off is issued.
-Completed slice 086: opt-in automatic judgment of signed PR evidence.
+Version v0.1.006. Open: #88 production readiness and #90 dogfood publication.
+No production sign-off or zero-bug claim is issued.
+Slice 086 supplies opt-in automatic judgment of signed PR evidence:
 `github listen --evaluate-evidence` pins operator policy, evaluates the exact
-PR SHA, verifies its signed verdict and publishes. It never runs contributor
+PR SHA, verifies the signed verdict and publishes. It never runs contributor
 code. Late evidence refreshes every 15 seconds; failed publication reconciles.
 
-Real GitHub PR #6 in anthonykewl20/ranex-app-live-probe completed:
-GitHub-origin webhook → missing-evidence merge refusal → upstream Six
-observation (185 pass, 15 declared skips) → automatic signed PASS → source
-break (5 failing tests) and merge refusal → repair, fresh observation, PASS
-and merge ddfa81ae59f707d2ec8f8aca0f793e31f6183816.
-The driver explicitly invokes observation; unattended execution is not proven.
-Receipts: tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/.
-The final signed v2 verdict matches the retained journal anchor.
-ADR-058 records the boundary; foreign same-name check availability is UNVERIFIED.
+F-010 (#94, ADR-059): the controller supplies the canonical pytest reporter.
+Explicit strict=False XPASS is retained as xpassed and blocks acceptance.
+Missing/disabled reporting refuses observation. Nested pytest activation is
+isolated; real pytest-xdist 3.8.0 workers preserve XPASS centrally.
+Explicit -p loading remains supported, including separate applications;
+materialised source precedes the controller import path.
+Strict-local pytest observation refuses until its runtime carries this hook.
 
-F-010 reporter validation is IN PROGRESS (#94, ADR-059). The canonical
-controller reporter catches explicit strict=False XPASS and refuses absent
-reporting. Concurrent fixes and anchor-audit improvements are now combined.
-GitHub PR #7 refused the XPASS merge, then merged repaired source with fresh
-passing evidence (c45dad008f657da3ceb864cd80316a89e5b05615).
-Combined final-commit regression and evidence archival remain pending.
-A hostile conftest/plugin can also forge JUnit (F-012); argv admission does
-not inspect PYTEST_ADDOPTS. Signed evidence does not remove these boundaries.
-F-005 (#93, ADR-057): v2 verdicts sign journal_head; `journal verify
---against-verdict` checks it. Archived v1 stays readable but cannot anchor.
-There is no external witness against an operator controlling both keys.
-F-002 (#91): 168 skip declarations retain the session/host prerequisites.
+Real GitHub PRs #7, #8 and #9 in anthonykewl20/ranex-app-live-probe completed
+missing-evidence refusal → fresh Six PASS → explicit XPASS and merge refusal
+→ repair → fresh PASS and merge. PR #9 merged
+842983261fadc3dbd0c9bb5a46540b9560f613ca. All three retained observations
+(185 pass; 184 pass + 1 xpassed; 185 pass, each with 15 declared skips)
+were independently signature-verified by OpenSSL. GitHub confirmed delivery GUIDs.
+The driver invokes observation explicitly; unattended execution is not proven.
+Receipts: tools/dogfood/audits/2026-09-09-xpass-observer/.
+The 30-case real Six audit has 25 VERIFIED and 5 GAP outcomes, not an overall PASS.
+Combined governed freeze: 1776 passed, 140 skipped; 1916 IDs, 168 declarations.
+Release acceptance requires `uv run --frozen pytest -q` on the final commit;
+the closing issue comment records that result. Focused changed-line coverage: 57/57.
 
-Earlier App repairs retained: durable delivery, allowlists, pagination,
-check reconciliation, effective ruleset validation and API refusal handling.
+Remaining audit boundaries: same-subject evidence reuse, hostile report
+producers (F-012), and three attacks against unanchored journal verification.
+F-005 (#93, ADR-057): signed v2 verdict anchors detect truncation; the external
+Six audit verifies the true-chain/rewritten-chain differential. No independent
+witness protects an operator controlling both signing keys.
 UNIMPLEMENTED: isolated automatic observer scheduling, merge-candidate/group
-checks, shard aggregation, multi-agent policy compiler/catalog, compliance
-coverage, standard DSSE/in-toto attestations and an external journal witness.
+checks, shard aggregation, policy compiler/catalog, standard DSSE/in-toto
+attestations, compliance coverage and an external journal witness.
 UNVERIFIED: production hosting, sustained traffic/soak, credential rotation,
-backup/restore and full external-harness governed acceptance.
-Host note: concurrent full suites plus the large uvicorn service have exhausted
-62 GB and OOM-killed freezes. Serialise full-suite verification on this host.
+backup/restore, foreign same-name check availability and external-harness acceptance.
+Serialise full suites on this host; concurrent runs have exhausted its memory.
 Dogfood publishing (#90) consumes committed/pushed audit sessions from a checkout.
-No general zero-bug or market-leadership claim is made.
