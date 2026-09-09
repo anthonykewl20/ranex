@@ -21,8 +21,6 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, NoReturn
 
-from ranex.cli.confinement import resolve_within_repository
-from ranex.cli.repository import governed_repository_root
 from ranex.execution.log_redaction import collect_redaction_literals
 from ranex.execution.retained_logs import (
     DEFAULT_LOG_MAX_BYTES,
@@ -519,32 +517,39 @@ def run_workflow(
     return finish("confined" if step.exit_code == 0 else "refused", step.exit_code, checks, scope)
 
 
-def _confined_result_dir(args: Any) -> str | None:
-    """Refuse a `--result-dir` that escapes the repository, or is unusable.
+def _usable_result_dir(args: Any) -> str | None:
+    """Refuse a `--result-dir` the filesystem cannot use, and nothing more.
 
-    Every other path-taking flag goes through `resolve_within_repository`;
-    this one did not, so `--result-dir ../../../etc/passwd`, an absolute path
-    and a 4000-character name each reached `write_run_report` and raised
-    NotADirectoryError / OSError [Errno 36] out of the CLI as a traceback.
+    `--result-dir` is an operator output location, not a governed path. It is
+    the same shape as `--store`, which defaults outside the repository, and
+    `--credentials-dir`, which must be outside it (E-GITHUB-KEY-INSIDE-REPO) —
+    so `--result-dir /var/log/ranex` is legitimate and confinement is the wrong
+    instrument. An earlier fix routed this through `resolve_within_repository`
+    and banned every absolute path, which broke four contract tests that
+    encode the shipped operator surface.
 
-    A traceback is the worst refusal shape available here: an operator cannot
-    tell it from a crash, and it prints a stack where a reason belongs. The
-    guard already existed and this flag simply never reached it.
+    What was actually measured was an unhandled OSError reaching the operator
+    as a traceback: `../../../etc/passwd`, `/etc/passwd` and a 4000-character
+    name each raised NotADirectoryError / ENAMETOOLONG out of the CLI. A
+    traceback is the worst refusal shape available — an operator cannot tell it
+    from a crash, and it prints a stack where a reason belongs. Creating the
+    directory answers all three with the filesystem's own reason: the first two
+    are ENOTDIR because `/etc/passwd` is not a directory, the third
+    ENAMETOOLONG. Unusable, which is true, rather than "outside the
+    repository", which is not.
     """
 
     candidate = getattr(args, "result_dir", None)
     if candidate is None:
         return None
-    root = governed_repository_root()
-    try:
-        resolved = resolve_within_repository(root, candidate)
-    except ValueError as exc:
-        raise ValueError(f"refusing --result-dir: {exc}") from exc
+    if not candidate.strip():
+        # argparse's default is a real path, so an empty value is always an
+        # operator error; left alone it becomes the current directory.
+        raise ValueError("refusing --result-dir: an empty path names nothing")
+    resolved = Path(candidate)
     try:
         resolved.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
-        # A name the filesystem itself refuses (too long, a component that is
-        # not a directory) is an operator error, not a kernel fault.
         # Echo a bounded prefix: the value that provokes ENAMETOOLONG is by
         # definition too long to print, and a 4000-character wall buries the
         # reason it was printed for.
@@ -557,7 +562,7 @@ def main(args: Any) -> int:
     """Dispatch the ``ranex host`` argparse namespace."""
     action = args.action
     try:
-        confined = _confined_result_dir(args)
+        confined = _usable_result_dir(args)
     except ValueError as exc:
         print(f"ERROR  {exc}", file=os.sys.stderr)
         return 2

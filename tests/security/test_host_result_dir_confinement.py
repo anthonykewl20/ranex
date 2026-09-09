@@ -36,9 +36,25 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 #: Every verb that accepts the flag, so a fifth cannot be added unguarded.
 VERBS = ("launcher-build", "launcher-install", "host-probe", "qualify")
 
+# Each value still refuses, but for the reason that is TRUE of it: the
+# filesystem cannot use it. `--result-dir` is an operator output location like
+# `--store` and `--credentials-dir`, both of which live outside the repository,
+# so "outside the repository" was never the defect — `/etc/passwd/logs` is not
+# a directory, and a 4000-character name is too long. Refusing every absolute
+# path banned `--result-dir /var/log/ranex` and broke four contract tests that
+# encode the shipped operator surface.
+# Each shape must produce a NAMED refusal rather than a traceback. The errno
+# behind it is deliberately not pinned: it is host-dependent. `/etc/passwd`
+# gives EEXIST here (the path exists and is not a directory) and
+# `../../../etc/passwd` resolves to /home/etc/passwd, giving EACCES on a host
+# where /home is not writable and something else where it is. Asserting the
+# refusal SHAPE — the flag named, the reason present, no stack — is the real
+# contract; asserting a particular strerror would pin this suite to one
+# machine's filesystem layout. ENAMETOOLONG is universal, so that one keeps its
+# text as a spot check that the reason is the filesystem's own.
 REFUSED = {
-    "traversal": ("../../../etc/passwd", "outside the repository"),
-    "absolute": ("/etc/passwd", "absolute paths are refused"),
+    "traversal": ("../../../etc/passwd", None),
+    "absolute": ("/etc/passwd", None),
     "too-long": ("x" * 4000, "File name too long"),
 }
 
@@ -68,9 +84,16 @@ def test_a_hostile_result_dir_is_a_named_refusal_not_a_traceback(
         f"{output[-400:]}"
     )
     assert result.returncode != 0, f"host {verb} accepted a {shape} --result-dir"
-    assert expected in output, (
-        f"the refusal must name why: expected {expected!r} in {output[:300]!r}"
+    assert "refusing --result-dir" in output, (
+        f"the refusal must name the flag it is about: {output[:300]!r}"
     )
+    assert ":" in output.split("refusing --result-dir", 1)[1][:200], (
+        f"the refusal must carry a reason, not only a verdict: {output[:300]!r}"
+    )
+    if expected is not None:
+        assert expected in output, (
+            f"the refusal must name why: expected {expected!r} in {output[:300]!r}"
+        )
 
 
 def test_the_refusal_does_not_echo_an_unbounded_value() -> None:
@@ -105,10 +128,10 @@ def test_a_confinement_refusal_is_distinguishable_from_honest_absence() -> None:
 
     assert traversal.returncode != 0 and absence.returncode != 0
     assert traversal_text != absence_text
-    assert "outside the repository" in traversal_text
+    assert "refusing --result-dir" in traversal_text
     assert "does not exist" in absence_text
-    assert "outside the repository" not in absence_text, (
-        "an absent file must not be reported as a confinement violation"
+    assert "refusing --result-dir" not in absence_text, (
+        "an absent file must not be reported as an unusable output path"
     )
 
 
@@ -125,3 +148,24 @@ def test_a_legitimate_result_dir_is_still_accepted(tmp_path: Path) -> None:
     output = result.stdout + result.stderr
     assert "refusing --result-dir" not in output, output[:300]
     assert "Traceback (most recent call last)" not in output
+
+
+def test_an_absolute_result_dir_that_is_usable_succeeds(tmp_path: Path) -> None:
+    """The assertion whose absence let the over-broad fix ship.
+
+    `--result-dir` names where an operator wants run reports, and an operator
+    legitimately wants them outside the governed tree — `--store` defaults
+    outside it and `--credentials-dir` must be outside it. A guard that refuses
+    every absolute path passes all three hostile cases above while breaking the
+    flag's normal use, and nothing here would have noticed. This is the
+    positive control: a usable absolute path must work and leave its report.
+    """
+
+    destination = tmp_path / "reports"
+    completed = ranex("host", "host-probe", "--result-dir", str(destination))
+
+    combined = completed.stdout + completed.stderr
+    assert "refusing --result-dir" not in combined, (
+        f"a usable absolute --result-dir was refused: {combined[:400]}"
+    )
+    assert destination.is_dir(), "the run did not create the directory it was given"
