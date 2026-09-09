@@ -34,6 +34,7 @@ def main() -> None:
     parser.add_argument('--pull-request', type=int, help='resume an open probe PR on this branch')
     parser.add_argument('--port', type=int, required=True)
     parser.add_argument('--replace-listener-pid', type=int)
+    parser.add_argument('--mutation', choices=('six-bytes', 'explicit-xpass'), default='six-bytes')
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
     root = args.repository.resolve()
@@ -109,6 +110,8 @@ def main() -> None:
         (output / f'observe-{len(records)}.log').write_text(result.stdout + result.stderr)
         assert result.returncode == expected, result.stdout + result.stderr
         evidence = json.loads((root / 'governance/evidence.json').read_bytes())[-1]
+        if expected == 1 and args.mutation == 'explicit-xpass':
+            assert evidence['suite_results']['counts']['xpassed'] == 1
         record('observation', head=git('rev-parse', 'HEAD'), exit=result.returncode,
                suite=evidence['suite_results']['counts'])
 
@@ -162,18 +165,26 @@ def main() -> None:
         observe(0)
         wait_for(head, 'success')
         original = (root / 'six.py').read_text()
-        # Break a real upstream API without changing its tests or policy.
-        assert 'return s.encode("latin-1")' in original
-        (root / 'six.py').write_text(original.replace('return s.encode("latin-1")', 'return b"broken"', 1))
-        git('add', 'six.py')
-        git('commit', '-qm', 'test: break Six bytes conversion to verify merge refusal')
+        if args.mutation == 'explicit-xpass':
+            assert not (root / 'conftest.py').exists()
+            (root / 'conftest.py').write_text(
+                'import pytest\ndef pytest_collection_modifyitems(items):\n'
+                '    items[0].add_marker(pytest.mark.xfail(strict=False, reason="live audit"))\n')
+            git('add', 'conftest.py')
+        else:
+            assert 'return s.encode("latin-1")' in original
+            (root / 'six.py').write_text(original.replace('return s.encode("latin-1")', 'return b"broken"', 1))
+            git('add', 'six.py')
+        git('commit', '-qm', f'test: {args.mutation} must block merge')
         head = push()
         stale = wait_for(head, 'failure')  # old source's passing evidence must fail
         observe(1)
         wait_for(head, 'failure', after_id=stale['id'])
         code, refusal = api('PUT', f'repos/{args.repo}/pulls/{number}/merge', {'sha': head})
         assert code != 0 and not refusal.get('merged'), refusal
-        record('merge-refused-broken-source', response=refusal)
+        record('merge-refused-broken-source', mutation=args.mutation, response=refusal)
+        if args.mutation == 'explicit-xpass':
+            git('rm', 'conftest.py')
         (root / 'six.py').write_text(original + '\n# Live acceptance recovery: source restored.\n')
         git('add', 'six.py')
         git('commit', '-qm', 'test: restore Six and require fresh evidence')

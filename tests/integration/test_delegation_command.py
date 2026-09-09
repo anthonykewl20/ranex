@@ -1017,6 +1017,7 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
 
     class FakeMaterialisation:
         def __init__(self) -> None:
+            self.root = tmp_path
             self.tree = tmp_path / "tree"
             self.home = tmp_path / "home"
             self.temporary = tmp_path / "tmp"
@@ -1045,8 +1046,9 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
         observed["environment"] = kwargs["env"]
         return subprocess.CompletedProcess(command, 3, stdout="out", stderr="err")
 
-    def fake_parse(path: Path, pinned: dict[str, object]) -> dict[str, object]:
+    def fake_parse(path: Path, pinned: dict[str, object], *, reporter: str, require_pytest_observer: bool) -> dict[str, object]:
         assert active, "results must be read before materialisation teardown"
+        assert reporter == "pytest-junit" and require_pytest_observer
         observed["artifact"] = path
         observed["manifest"] = pinned
         return {"counts": {"passed": 1}}
@@ -1079,6 +1081,8 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
     assert observed["manifest"] is manifest
     assert observed["environment"] == {
         "PATH": observed["environment"]["PATH"],
+        "PYTHONPATH": str(tmp_path / "pytest-observer"),
+        "PYTEST_PLUGINS": "_ranex_pytest_observer_v1",
         "HOME": str(tmp_path / "home"),
         "TMPDIR": str(tmp_path / "tmp"),
         "LANG": "C.UTF-8",
@@ -1241,6 +1245,7 @@ def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
         "commit": emitted_commit,
         "suite": "/usr/bin/true -o xfail_strict=true",
         "results_artifact": "artifacts/junit.xml",
+        "results_reporter": "pytest-junit",
         "manifest": manifest,
         "streams": {"stdout": "", "stderr": ""},
     }

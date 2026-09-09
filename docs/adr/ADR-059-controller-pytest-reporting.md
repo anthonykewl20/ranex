@@ -21,7 +21,10 @@ through a fixed PYTEST_PLUGINS/PYTHONPATH environment. It adds no target package
 does not change the digest-bound command, and does not inherit operator plugin
 or Python startup settings. Existing command admission remains in place.
 
-An outer pytest_runtest_makereport wrapper observes pytest's completed report.
+An outer pytest_runtest_logreport wrapper normalizes completed reports before
+JUnit and failure-counting hooks. It consumes its environment activation so
+nested pytest processes do not inherit an unavailable or unintended plugin.
+Distributed worker reports are normalized in the controller as well.
 A passed report carrying wasxfail becomes pytest's own strict-XPASS failure
 shape: failed outcome, `[XPASS(strict)]` longrepr, and no wasxfail attribute.
 The normal JUnit writer then records it as a failure, the process exits red,

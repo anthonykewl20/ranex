@@ -5,13 +5,23 @@ by the controller. Uses the installed pytest 7.4.4/9.1.1 reporting hooks and
 JUnit stash interface. It does not make a hostile pytest plugin trustworthy.
 """
 
+import os
+
 import pytest
 from _pytest.junitxml import xml_key
 
 
 @pytest.hookimpl(trylast=True)
 def pytest_configure(config):
-    if config.option.runxfail or not config.pluginmanager.hasplugin("skipping"):
+    # Activation belongs to this observation, not arbitrary subprocess tests.
+    # Distributed worker reports are normalized centrally by logreport below.
+    plugins = [name for name in os.environ.get("PYTEST_PLUGINS", "").split(",")
+               if name and name != __name__]
+    if plugins:
+        os.environ["PYTEST_PLUGINS"] = ",".join(plugins)
+    else:
+        os.environ.pop("PYTEST_PLUGINS", None)
+    if not config.pluginmanager.hasplugin("skipping") or config.option.runxfail:
         raise pytest.UsageError("E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled")
     reporter = config.stash.get(xml_key, None)
     if reporter is not None:
@@ -19,13 +29,11 @@ def pytest_configure(config):
 
 
 @pytest.hookimpl(hookwrapper=True, tryfirst=True)
-def pytest_runtest_makereport(item, call):
-    # Outermost wrapper: observe the report after pytest's skipping hook has
-    # applied marker-level strict=False. Match pytest's own strict-XPASS shape
-    # so both its exit status and its existing JUnit writer retain the failure.
-    outcome = yield
-    report = outcome.get_result()
+def pytest_runtest_logreport(report):
+    # Normalize completed local or distributed reports before normal hooks
+    # count failures and serialize JUnit. Match pytest's strict-XPASS shape.
     if report.passed and hasattr(report, "wasxfail"):
         report.outcome = "failed"
         report.longrepr = "[XPASS(strict)] " + str(report.wasxfail)
         del report.wasxfail
+    yield

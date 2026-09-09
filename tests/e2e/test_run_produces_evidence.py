@@ -230,13 +230,9 @@ def test_subject_matches_what_gate_evaluate_computes(repo: Path) -> None:
 def test_suite_freeze_command_writes_canonical_outcome_blind_manifest(
     repo: Path,
 ) -> None:
-    (repo / "freeze-report.sh").write_text(
-        "printf '%s' '<testsuites><testsuite><testcase "
-        "classname=\"tests.test_sample\" name=\"test_skip\"><failure />"
-        "</testcase></testsuite></testsuites>' > report.xml\n",
-        encoding="utf-8",
-    )
-    subprocess.run(["git", "-C", str(repo), "add", "freeze-report.sh"], check=True)
+    (repo / "tests").mkdir()
+    (repo / "tests/test_sample.py").write_text("def test_skip(): assert False\n")
+    subprocess.run(["git", "-C", str(repo), "add", "tests"], check=True)
     subprocess.run(
         ["git", "-C", str(repo), "commit", "-q", "-m", "freeze command"],
         check=True,
@@ -254,8 +250,8 @@ def test_suite_freeze_command_writes_canonical_outcome_blind_manifest(
             "--expected-skip",
             "tests/test_sample.py::test_skip=credential-gated",
             "--",
-            "sh",
-            "freeze-report.sh",
+            "/usr/bin/python3", "-m", "pytest", "-q",
+            "-o", "xfail_strict=true", "--junitxml=report.xml",
         ],
     ) == 0
     expected = {
@@ -387,17 +383,10 @@ def test_suite_freeze_refuses_when_execution_returns_no_artifact(
 
 def test_run_reads_suite_results_before_materialisation_teardown(repo: Path) -> None:
     test_id = "tests/test_sample.py::test_pass"
-    # ADR-056: a pytest-junit suite claim must ask for the XPASS outcome it
-    # judges, whatever program actually writes the artifact.
-    command = ["sh", "write-results.sh", "-o", "xfail_strict=true",
+    command = ["/usr/bin/python3", "-m", "pytest", "-q", "-o", "xfail_strict=true",
                "--junitxml=artifacts/junit.xml"]
-    (repo / "write-results.sh").write_text(
-        "mkdir -p artifacts\n"
-        "printf '%s' '<testsuites><testsuite><testcase "
-        "classname=\"tests.test_sample\" name=\"test_pass\" />"
-        "</testsuite></testsuites>' > artifacts/junit.xml\n",
-        encoding="utf-8",
-    )
+    (repo / "tests").mkdir()
+    (repo / "tests/test_sample.py").write_text("def test_pass(): pass\n")
     (repo / "gates.yaml").write_text(
         "gates:\n"
         "  - gate_id: landing\n"
