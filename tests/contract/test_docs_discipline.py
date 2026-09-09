@@ -12,6 +12,7 @@ import hashlib
 import json
 import os
 import re
+from collections import defaultdict
 import subprocess
 import sys
 from pathlib import Path
@@ -1324,3 +1325,74 @@ def test_map_records_owner_build_order() -> None:
         "build order: milestone 4 first as P0's proof substrate, then "
         "milestone 3, then milestone 2."
     )
+
+
+# --- one number, one document ---------------------------------------------
+#
+# Two ADRs really did share number 059 on 2026-09-09: ADR-059-controller-pytest-
+# reporting.md and ADR-059-producer-evidence-plane.md, written concurrently by
+# two sessions. A person caught it; nothing in this file did. Every check above
+# — status line, prior-art claims, link resolution, the total cap, placeholders
+# — passes happily with a duplicate present.
+#
+# The filename is the least of it. The whole cross-reference scheme is numeric:
+# STATE.md says "ADR-059", commit messages say "ADR-059", and vendored sources
+# live under `docs/adr/prior-art/ADR-059/`. With two documents holding the
+# number every one of those references is ambiguous, and the prior-art
+# directory belongs to whichever the reader guesses.
+
+_ADR_NUMBER = re.compile(r"^ADR-(\d{3})-")
+_SLICE_NUMBER = re.compile(r"^SLICE-(\d{3})-")
+
+
+def _numbered(paths: list[Path], pattern: re.Pattern[str]) -> dict[str, list[str]]:
+    found: dict[str, list[str]] = defaultdict(list)
+    for path in paths:
+        match = pattern.match(path.name)
+        if match:
+            found[match.group(1)].append(path.name)
+    return found
+
+
+def _duplicates(paths: list[Path], pattern: re.Pattern[str]) -> dict[str, list[str]]:
+    return {
+        number: sorted(names)
+        for number, names in _numbered(paths, pattern).items()
+        if len(names) > 1
+    }
+
+
+def test_no_two_adrs_share_a_number() -> None:
+    duplicates = _duplicates(_adr_files(), _ADR_NUMBER)
+    assert not duplicates, (
+        "two ADRs share a number, so every 'ADR-NNN' reference is ambiguous and "
+        f"prior-art/ADR-NNN/ belongs to neither in particular: {duplicates}"
+    )
+
+
+def test_no_two_slices_share_a_number() -> None:
+    """README and STATE.md both address slices by number, open and archived."""
+
+    duplicates = _duplicates(_slice_files(done=False) + _slice_files(done=True), _SLICE_NUMBER)
+    assert not duplicates, f"two slices share a number: {duplicates}"
+
+
+def test_every_prior_art_directory_names_an_adr_that_exists() -> None:
+    """The naming direction, which `test_nothing_sits_in_prior_art…` leaves open.
+
+    That test checks something claims each directory. This checks the directory
+    names an ADR that exists — a renumber which moves the document but not the
+    directory leaves vendored sources attributed to a decision that no longer
+    holds the number, which is the mistake a duplicate forces in a hurry.
+    """
+
+    numbers = set(_numbered(_adr_files(), _ADR_NUMBER))
+    prior_art = REPO_ROOT / "docs" / "adr" / "prior-art"
+    orphans = sorted(
+        directory.name
+        for directory in (prior_art.iterdir() if prior_art.is_dir() else [])
+        if directory.is_dir()
+        and directory.name.startswith("ADR-")
+        and directory.name.removeprefix("ADR-") not in numbers
+    )
+    assert not orphans, f"prior-art directories name ADRs that do not exist: {orphans}"
