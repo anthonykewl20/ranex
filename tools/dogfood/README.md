@@ -332,6 +332,54 @@ fails, because a selftest that quietly starts passing has stopped proving
 anything. Only a genuine FALSE-PASS carries a recall window; nothing was
 approved by a selftest's.
 
+## Lanes — run in parallel, bounded, without taking turns
+
+This host runs three legitimate kinds of heavy work at once. They are not rivals
+and should not be serialised:
+
+| lane | what it is | needs |
+|---|---|---|
+| `dogfood` | the iterate loop | a checkout it can WRITE to — `evolve_proofs.py` writes `backlog.json` and `dogfood.py` writes `iterations/`, both at repo-relative paths, by design |
+| `verify` | a full suite or freeze ceremony | a checkout that stays CLEAN — `test_suite_freeze_real.py` and `ranex run` both refuse a dirty tree |
+| `soak` | `.local/campaign/soak/soak.py` | memory and CPU; its scratch is campaign-owned and outside repo code |
+
+In one checkout the first two cannot both be right, and that is the whole
+collision: on 2026-09-09/10 it produced a freeze that returned `run_exit=1`
+with no failure list, a 37-minute suite whose four freeze-journey tests errored
+at setup, and two stashes holding nothing but the same regenerated metrics
+file. Taking turns would fix it and waste the machine.
+
+`lane.py` separates the two resources they actually contend for instead:
+
+```sh
+# a verification lane, isolated from whatever the loop is writing right now
+uv run --frozen python tools/dogfood/lane.py run --kind verify --commit HEAD -- \
+  uv run --frozen pytest -q
+
+uv run --frozen python tools/dogfood/lane.py status
+```
+
+A `verify` lane leases a worktree at a pinned commit, so the loop — which
+writes to the checkout it was started in — cannot dirty the tree being judged.
+Every lane also takes a slot from a host semaphore sized by free memory,
+because concurrent full suites have exhausted 62 GB here and been OOM-killed.
+
+Two properties it keeps deliberately, both learned by losing runs to their
+absence:
+
+* **an acquire refuses**, it does not warn and continue. An advisory check a
+  caller may ignore reproduces the failure it exists to prevent — which is how
+  a second suite launched into a running freeze.
+* **a holder is pid AND boot id.** Pids are reused across boots, and an OOM
+  kill is this host's expected death, so a lock that cannot break itself would
+  wedge the machine on the first kill.
+
+It also replaces pattern-matching on `ps` output, which failed three ways in one
+evening: too narrow (an anchored `pytest -q$` missed the freeze's inner run),
+too broad (a bare `pytest` matched 13 dead watcher shells), and self-matching
+(the checking shell's own command line contains the pattern). A pattern over
+`ps` cannot distinguish the thing from a description of the thing; a lease can.
+
 ## Drivers read committed state — commit before you believe a re-run
 
 Every governed and dogfood driver here reads the **committed** tree and anchors
