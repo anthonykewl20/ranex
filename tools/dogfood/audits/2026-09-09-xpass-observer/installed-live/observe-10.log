@@ -1,0 +1,7 @@
+......................................................sssssssssssssss... [ 36%]
+........................................................................ [ 72%]
+........................................................                 [100%]
+- generated xml file: /tmp/ranex-subject-ectd_mrg/tree/governance/suite_results.xml -
+185 passed, 15 skipped in 0.32s
+RECORDED  claim=tests-executed  producer=worker  exit=0
+          subject=sha256:66da64ff9df8090e1822ba042e29aaefa3d67cd23ced94504a51a65d3b06e882

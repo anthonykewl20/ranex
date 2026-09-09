@@ -7,7 +7,27 @@ hostile pytest plugin trustworthy. See ADR-059 for activation and confinement.
 
 ## Retained measurements
 
-- `external-six/receipt.json`: kernel `b0f1cb6741e41a6fc5b7475d517c147094b37e9b`,
+The final transport repair was measured at kernel
+`e4ae64121ca454a93f01a9fb499df9db763801cd`, source tree
+`d2de9068b41ab06d6dcdbc4815a3002aa35c3bdf`. `external-six-final/receipt.json`
+again records 25 VERIFIED / 5 GAP cases. `installed-live/receipt.json` records
+real GitHub PR #10 from a built and installed wheel, with source-path injection
+disabled. It refused the explicit XPASS merge, then merged repaired source at
+`5d108f53c58c34cff7e16a7d383d598703a2e774`. Its three signed observations
+were independently verified with OpenSSL. `installed-wheel.json` binds the
+wheel hash and confirms that every packaged Python source matches the checkout.
+
+`installed-dependency-before.json` retains a real packaging regression: adding
+the controller's site-packages replaced system pytest 7.4.4 with controller
+pytest 9.1.1. The reporter now supplies only its private module; explicit
+loading uses a namespace portion that preserves real materialised packages.
+`installed-dependency-after.json` runs the identical probe successfully in
+automatic, separate `-p`, and combined `-p` modes. The installed release checks
+repeat all three modes for two package candidates. No dependency version or
+controller site-packages path leaks into the subject. Latest focused changed-line
+coverage is 63/63 (`focused-diff-coverage-final.log`).
+
+- `external-six/receipt.json` (earlier checkpoint): kernel `b0f1cb6741e41a6fc5b7475d517c147094b37e9b`,
   source tree `bfe864e605bd5b9d6be10900469ad7552a3076f9`, real
   `benjaminp/six@c8e394065cd541a16c040515dc0afb85cf22a7c3`.
   30 cases: **25 VERIFIED, 5 GAP**. The audit exits 1 because gaps remain.
@@ -64,4 +84,5 @@ repeats the distributed outcome control without changing the project lockfile.
 
 `tools/dogfood/live_evidence_evaluation.py --help` describes the credentials and
 prepared probe branch needed to repeat the GitHub journey with `--mutation
-explicit-xpass`. It creates and merges probe PRs after verifying the exact SHA.
+explicit-xpass`. `--installed-kernel` requires an installed wheel and disables
+source-path injection. It creates and merges probe PRs after verifying the exact SHA.

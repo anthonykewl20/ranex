@@ -1,0 +1,77 @@
+[
+  {
+    "command": [
+      "/tmp/ranex-xpass94-installed-probe/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-xpass94-installed-app",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml"
+    ],
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-gpcyr2i6/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-xpass94-installed-app/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/tmp/ranex-xpass94-installed-probe/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-xpass94-installed-app",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml",
+      "-p",
+      "ranex.foundation.pytest_xpass"
+    ],
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-8nwyl0gx/tree/result.xml --------\n1 passed in 0.00s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-xpass94-installed-app/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "command": [
+      "/tmp/ranex-xpass94-installed-probe/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-xpass94-installed-app",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml",
+      "-pranex.foundation.pytest_xpass"
+    ],
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-982i_bx1/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-xpass94-installed-app/suite_manifest.json\n",
+    "stderr": ""
+  }
+]

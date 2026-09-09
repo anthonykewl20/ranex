@@ -1,0 +1,8 @@
+{
+  "expected_pytest": "7.4.4",
+  "control_exit": 0,
+  "control_stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-xpass94-installed-app/result.xml --------\n1 passed in 0.01s\n",
+  "installed_freeze_exit": 0,
+  "installed_stdout": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________________ test_runtime_version_is_preserved _______________________\n\n    def test_runtime_version_is_preserved():\n>       assert pytest.__version__ == '7.4.4'\nE       AssertionError: assert '9.1.1' == '7.4.4'\nE         \nE         - 7.4.4\nE         + 9.1.1\n\ntest_environment.py:3: AssertionError\n=========================== short test summary info ============================\nFAILED test_environment.py::test_runtime_version_is_preserved - AssertionErro...\n1 failed in 0.02s\nFROZEN  tests=1  expected_skips=0  run_exit=1  output=/tmp/ranex-xpass94-installed-app/suite_manifest.json\n",
+  "installed_stderr": ""
+}

@@ -18,12 +18,13 @@ Explicit -p loading remains supported, including separate applications;
 a private module copy preserves materialised source and dependency versions.
 Strict-local pytest observation refuses until its runtime carries this hook.
 
-Real GitHub PRs #7, #8 and #9 in anthonykewl20/ranex-app-live-probe completed
+Real GitHub PRs #7, #8, #9 and #10 in anthonykewl20/ranex-app-live-probe completed
 missing-evidence refusal → fresh Six PASS → explicit XPASS and merge refusal
-→ repair → fresh PASS and merge. PR #9 merged
-842983261fadc3dbd0c9bb5a46540b9560f613ca. All three retained observations
+→ repair → fresh PASS and merge. PR #10 merged
+5d108f53c58c34cff7e16a7d383d598703a2e774. Its three retained observations
 (185 pass; 184 pass + 1 xpassed; 185 pass, each with 15 declared skips)
 were independently signature-verified by OpenSSL. GitHub confirmed delivery GUIDs.
+PR #10 ran the rebuilt installed wheel without source-path injection.
 The driver invokes observation explicitly; unattended execution is not proven.
 Receipts: tools/dogfood/audits/2026-09-09-xpass-observer/.
 The 30-case real Six audit has 25 VERIFIED and 5 GAP outcomes, not an overall PASS.
@@ -31,7 +32,7 @@ Supplemental checks: 41 receiver controls, 20,000 concurrent journal appends,
 19 storage controls and real collection/executable recovery journeys.
 Combined governed freeze: 1776 passed, 140 skipped; 1916 IDs, 168 declarations.
 Release acceptance requires `uv run --frozen pytest -q` on the final commit;
-the closing issue comment records that result. Focused changed-line coverage: 57/57.
+the closing issue comment records that result. Focused changed-line coverage: 63/63.
 
 Remaining audit boundaries: same-subject evidence reuse, hostile report
 producers (F-012), and three attacks against unanchored journal verification.

@@ -1,0 +1,72 @@
+{
+  "kernel": "e4ae64121ca454a93f01a9fb499df9db763801cd",
+  "scope": "Real candidate builds and installed CLI, with byte-verified source coverage",
+  "results": [
+    {
+      "candidate": "0.1.7rc1",
+      "installed_version": "ranex 0.1.7rc1",
+      "source_matches": true,
+      "observer_modes": [
+        {
+          "plugin": [],
+          "subject_pytest": "7.4.4",
+          "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-58warle9/tree/result.xml --------\n1 passed in 0.00s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1/suite_manifest.json"
+        },
+        {
+          "plugin": [
+            "-p",
+            "ranex.foundation.pytest_xpass"
+          ],
+          "subject_pytest": "7.4.4",
+          "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-5ru0tqgg/tree/result.xml --------\n1 passed in 0.00s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1/suite_manifest.json"
+        },
+        {
+          "plugin": [
+            "-pranex.foundation.pytest_xpass"
+          ],
+          "subject_pytest": "7.4.4",
+          "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-hs5m3wgq/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1/suite_manifest.json"
+        }
+      ],
+      "release_refusal": "RELEASE-REFUSED: release requires a three-part final package version",
+      "artifacts": {
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "ranex-0.1.7rc1-py3-none-any.whl": "e0d69a7a2e3f25f692585189e00105184d36fe3b0a965918cfea0e3d679690a3",
+        "ranex-0.1.7rc1.tar.gz": "aa58af117e1cca9cc689bd06abda74fd09b20bfd9ef9858dca269407901a2b5a"
+      }
+    },
+    {
+      "candidate": "0.1.1000",
+      "installed_version": "ranex 0.1.1000",
+      "source_matches": true,
+      "observer_modes": [
+        {
+          "plugin": [],
+          "subject_pytest": "7.4.4",
+          "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-pt8qx2dw/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000/suite_manifest.json"
+        },
+        {
+          "plugin": [
+            "-p",
+            "ranex.foundation.pytest_xpass"
+          ],
+          "subject_pytest": "7.4.4",
+          "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-p43wx9nw/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000/suite_manifest.json"
+        },
+        {
+          "plugin": [
+            "-pranex.foundation.pytest_xpass"
+          ],
+          "subject_pytest": "7.4.4",
+          "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-83k9997h/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000/suite_manifest.json"
+        }
+      ],
+      "release_refusal": "RELEASE-REFUSED: patch field exceeds three digits; choose a new minor release",
+      "artifacts": {
+        ".gitignore": "684888c0ebb17f374298b65ee2807526c066094c701bcc7ebbe1c1095f494fc1",
+        "ranex-0.1.1000-py3-none-any.whl": "b669bb9ccdb7626902a3f51875c3ef832ee2ab82b8651d9dfa5aac09f6696168",
+        "ranex-0.1.1000.tar.gz": "e7e409998dfbf726a88429241ee67d8f523fc4ee48bb9e64c3e26c15d86dd759"
+      }
+    }
+  ]
+}

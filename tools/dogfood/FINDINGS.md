@@ -397,6 +397,11 @@ Historical observation retained (2026-09-03, commit edf1a98605):
   external audit records 25 VERIFIED and 5 GAP cases. Receipts and the initial
   failing/full green governed runs are retained under
   `tools/dogfood/audits/2026-09-09-xpass-observer/`.
+- Installed-wheel testing found an additional import leak: the controller's
+  site-packages replaced the subject's pytest 7.4.4 with 9.1.1. Private module
+  copying now preserves dependencies in automatic and both explicit -p forms.
+  Installed GitHub PR #10 completed the full refusal/repair/merge journey;
+  the release helper now repeats dependency-isolation checks on built wheels.
 - Historical status for comparison, `--refs v0.1.0 HEAD` at kernel 22a46a9eb:
   `nonstrict-xpass` was **GAP at both refs**. `strict-xpass`, `xfail`, `undeclared-skip` and
   `deselected-test` are VERIFIED at both. The audit's gap_detail now names this

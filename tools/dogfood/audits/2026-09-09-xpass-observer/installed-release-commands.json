@@ -1,0 +1,554 @@
+[
+  {
+    "argv": [
+      "git",
+      "rev-parse",
+      "HEAD"
+    ],
+    "cwd": "/tmp/ranex-xpass94",
+    "exit": 0,
+    "stdout": "e4ae64121ca454a93f01a9fb499df9db763801cd\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "clone",
+      "--quiet",
+      "--no-hardlinks",
+      "/tmp/ranex-xpass94",
+      "/tmp/ranex-release-check-0pf3dqmi/repo"
+    ],
+    "cwd": "/tmp/ranex-xpass94",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "sync",
+      "--frozen"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "warning: `VIRTUAL_ENV=/tmp/ranex-xpass94/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\nUsing CPython 3.14.7\nCreating virtual environment at: .venv\n   Building ranex @ file:///tmp/ranex-release-check-0pf3dqmi/repo\n      Built ranex @ file:///tmp/ranex-release-check-0pf3dqmi/repo\nPrepared 1 package in 387ms\nInstalled 32 packages in 10ms\n + cffi==2.1.1\n + chardet==7.4.3\n + click==8.4.2\n + coverage==7.15.3\n + cryptography==50.0.0\n + diff-cover==9.7.2\n + hatchling==1.31.0\n + iniconfig==2.3.0\n + jinja2==3.1.6\n + libcst==1.9.0\n + linkify-it-py==2.1.0\n + markdown-it-py==4.2.0\n + markupsafe==3.0.3\n + mdit-py-plugins==0.6.1\n + mdurl==0.1.2\n + mutmut==3.5.0\n + packaging==26.2\n + pathspec==1.1.1\n + platformdirs==4.11.0\n + pluggy==1.6.0\n + pycparser==3.0\n + pyelftools==0.32\n + pygments==2.20.0\n + pytest==9.1.1\n + pyyaml==6.0.3\n + ranex==0.1.6 (from file:///tmp/ranex-release-check-0pf3dqmi/repo)\n + rich==15.0.0\n + setproctitle==1.3.7\n + textual==8.2.8\n + trove-classifiers==2026.6.1.19\n + typing-extensions==4.16.0\n + uc-micro-py==2.0.0\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "lock",
+      "--exclude-newer",
+      "2026-08-04T00:00:00Z"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Resolved 34 packages in 34ms\nUpdated ranex v0.1.6 -> v0.1.7rc1\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "sync",
+      "--frozen"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "warning: `VIRTUAL_ENV=/tmp/ranex-xpass94/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n   Building ranex @ file:///tmp/ranex-release-check-0pf3dqmi/repo\n      Built ranex @ file:///tmp/ranex-release-check-0pf3dqmi/repo\nPrepared 1 package in 306ms\nUninstalled 1 package in 0.49ms\nInstalled 1 package in 0.87ms\n - ranex==0.1.6 (from file:///tmp/ranex-release-check-0pf3dqmi/repo)\n + ranex==0.1.7rc1 (from file:///tmp/ranex-release-check-0pf3dqmi/repo)\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "build",
+      "--no-build-isolation",
+      "--exclude-newer",
+      "2026-08-04T00:00:00Z",
+      "--out-dir",
+      "/tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.7rc1"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Building source distribution...\nBuilding wheel from source distribution...\nSuccessfully built /tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.7rc1/ranex-0.1.7rc1.tar.gz\nSuccessfully built /tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.7rc1/ranex-0.1.7rc1-py3-none-any.whl\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/python",
+      "--no-deps",
+      "--reinstall",
+      "/tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.7rc1/ranex-0.1.7rc1-py3-none-any.whl"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Resolved 1 package in 1ms\nPrepared 1 package in 10ms\nUninstalled 1 package in 0.35ms\nInstalled 1 package in 3ms\n - ranex==0.1.7rc1 (from file:///tmp/ranex-release-check-0pf3dqmi/repo)\n + ranex==0.1.7rc1 (from file:///tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.7rc1/ranex-0.1.7rc1-py3-none-any.whl)\n"
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "--version"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi",
+    "exit": 0,
+    "stdout": "ranex 0.1.7rc1\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/usr/bin/python3",
+      "-c",
+      "import pytest; print(pytest.__version__)"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": "7.4.4\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/python",
+      "-c",
+      "from pathlib import Path; import ranex; print(Path(ranex.__file__).parent.parent)"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/lib/python3.14/site-packages\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "init",
+      "-q"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "config",
+      "user.name",
+      "Installed probe"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "config",
+      "user.email",
+      "probe@example.invalid"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "."
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "pin the actual subject runtime"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n- generated xml file: /tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1/result.xml -\n1 passed in 0.01s\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-58warle9/tree/result.xml --------\n1 passed in 0.00s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml",
+      "-p",
+      "ranex.foundation.pytest_xpass"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-5ru0tqgg/tree/result.xml --------\n1 passed in 0.00s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml",
+      "-pranex.foundation.pytest_xpass"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-hs5m3wgq/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.7rc1/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "--version"
+    ],
+    "cwd": "/tmp/ranex-xpass94",
+    "exit": 0,
+    "stdout": "ranex 0.1.7rc1\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/python",
+      "/tmp/ranex-release-check-0pf3dqmi/repo/tools/dogfood/release.py",
+      "version"
+    ],
+    "cwd": "/tmp/ranex-xpass94",
+    "exit": 1,
+    "stdout": "RELEASE-REFUSED: release requires a three-part final package version\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "uv",
+      "lock",
+      "--exclude-newer",
+      "2026-08-04T00:00:00Z"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Resolved 34 packages in 18ms\nUpdated ranex v0.1.7rc1 -> v0.1.1000\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "sync",
+      "--frozen"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "warning: `VIRTUAL_ENV=/tmp/ranex-xpass94/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead\n   Building ranex @ file:///tmp/ranex-release-check-0pf3dqmi/repo\n      Built ranex @ file:///tmp/ranex-release-check-0pf3dqmi/repo\nPrepared 1 package in 254ms\nUninstalled 1 package in 4ms\nInstalled 1 package in 1ms\n - ranex==0.1.7rc1 (from file:///tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.7rc1/ranex-0.1.7rc1-py3-none-any.whl)\n + ranex==0.1.1000 (from file:///tmp/ranex-release-check-0pf3dqmi/repo)\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "build",
+      "--no-build-isolation",
+      "--exclude-newer",
+      "2026-08-04T00:00:00Z",
+      "--out-dir",
+      "/tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.1000"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Building source distribution...\nBuilding wheel from source distribution...\nSuccessfully built /tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.1000/ranex-0.1.1000.tar.gz\nSuccessfully built /tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.1000/ranex-0.1.1000-py3-none-any.whl\n"
+  },
+  {
+    "argv": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/python",
+      "--no-deps",
+      "--reinstall",
+      "/tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.1000/ranex-0.1.1000-py3-none-any.whl"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/repo",
+    "exit": 0,
+    "stdout": "",
+    "stderr": "Resolved 1 package in 1ms\nPrepared 1 package in 13ms\nUninstalled 1 package in 0.51ms\nInstalled 1 package in 5ms\n - ranex==0.1.1000 (from file:///tmp/ranex-release-check-0pf3dqmi/repo)\n + ranex==0.1.1000 (from file:///tmp/ranex-xpass94/.local/xpass94-installed-all-modes/0.1.1000/ranex-0.1.1000-py3-none-any.whl)\n"
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "--version"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi",
+    "exit": 0,
+    "stdout": "ranex 0.1.1000\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/usr/bin/python3",
+      "-c",
+      "import pytest; print(pytest.__version__)"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": "7.4.4\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/python",
+      "-c",
+      "from pathlib import Path; import ranex; print(Path(ranex.__file__).parent.parent)"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/lib/python3.14/site-packages\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "init",
+      "-q"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "config",
+      "user.name",
+      "Installed probe"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "config",
+      "user.email",
+      "probe@example.invalid"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "add",
+      "."
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "git",
+      "commit",
+      "-qm",
+      "pin the actual subject runtime"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n- generated xml file: /tmp/ranex-release-check-0pf3dqmi/application-0.1.1000/result.xml -\n1 passed in 0.01s\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-pt8qx2dw/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml",
+      "-p",
+      "ranex.foundation.pytest_xpass"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-p43wx9nw/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "suite",
+      "freeze",
+      "--external-repository",
+      "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+      "--artifact",
+      "result.xml",
+      "--output",
+      "suite_manifest.json",
+      "--",
+      "/usr/bin/python3",
+      "-m",
+      "pytest",
+      "-q",
+      "-o",
+      "xfail_strict=true",
+      "--junitxml=result.xml",
+      "-pranex.foundation.pytest_xpass"
+    ],
+    "cwd": "/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000",
+    "exit": 0,
+    "stdout": ".                                                                        [100%]\n------- generated xml file: /tmp/ranex-subject-83k9997h/tree/result.xml --------\n1 passed in 0.01s\nFROZEN  tests=1  expected_skips=0  run_exit=0  output=/tmp/ranex-release-check-0pf3dqmi/application-0.1.1000/suite_manifest.json\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/ranex",
+      "--version"
+    ],
+    "cwd": "/tmp/ranex-xpass94",
+    "exit": 0,
+    "stdout": "ranex 0.1.1000\n",
+    "stderr": ""
+  },
+  {
+    "argv": [
+      "/tmp/ranex-release-check-0pf3dqmi/repo/.venv/bin/python",
+      "/tmp/ranex-release-check-0pf3dqmi/repo/tools/dogfood/release.py",
+      "version"
+    ],
+    "cwd": "/tmp/ranex-xpass94",
+    "exit": 1,
+    "stdout": "RELEASE-REFUSED: patch field exceeds three digits; choose a new minor release\n",
+    "stderr": ""
+  }
+]

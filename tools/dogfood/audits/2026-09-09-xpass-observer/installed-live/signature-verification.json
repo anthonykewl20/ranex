@@ -1,0 +1,86 @@
+[
+  {
+    "evidence": "evidence-10.json",
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-keyform",
+      "DER",
+      "-inkey",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/worker-public.der",
+      "-rawin",
+      "-in",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/evidence-10.payload",
+      "-sigfile",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/evidence-10.sig"
+    ],
+    "exit": 0,
+    "stdout": "Signature Verified Successfully\n",
+    "counts": {
+      "passed": 185,
+      "skipped": 15,
+      "failed": 0,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 0
+    }
+  },
+  {
+    "evidence": "evidence-3.json",
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-keyform",
+      "DER",
+      "-inkey",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/worker-public.der",
+      "-rawin",
+      "-in",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/evidence-3.payload",
+      "-sigfile",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/evidence-3.sig"
+    ],
+    "exit": 0,
+    "stdout": "Signature Verified Successfully\n",
+    "counts": {
+      "passed": 185,
+      "skipped": 15,
+      "failed": 0,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 0
+    }
+  },
+  {
+    "evidence": "evidence-6.json",
+    "command": [
+      "openssl",
+      "pkeyutl",
+      "-verify",
+      "-pubin",
+      "-keyform",
+      "DER",
+      "-inkey",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/worker-public.der",
+      "-rawin",
+      "-in",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/evidence-6.payload",
+      "-sigfile",
+      "tools/dogfood/audits/2026-09-09-xpass-observer/installed-live/evidence-6.sig"
+    ],
+    "exit": 0,
+    "stdout": "Signature Verified Successfully\n",
+    "counts": {
+      "passed": 184,
+      "skipped": 15,
+      "failed": 0,
+      "errors": 0,
+      "xfailed": 0,
+      "xpassed": 1
+    }
+  }
+]

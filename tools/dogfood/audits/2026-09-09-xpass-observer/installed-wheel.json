@@ -1,0 +1,12 @@
+{
+  "source_commit": "e4ae64121ca454a93f01a9fb499df9db763801cd",
+  "source_tree": "d2de9068b41ab06d6dcdbc4815a3002aa35c3bdf",
+  "wheel": "ranex-0.1.6-py3-none-any.whl",
+  "wheel_sha256": "74ec64b18aed4bab9eb7be26638a5321502da5a3d0d4429a4f174cd95e5877aa",
+  "source_matches": true,
+  "runtime": {
+    "version": "0.1.6",
+    "module_file": "/tmp/ranex-xpass94-installed-probe/.venv/lib/python3.14/site-packages/ranex/__init__.py",
+    "installed_mode": true
+  }
+}

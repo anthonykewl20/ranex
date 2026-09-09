@@ -1,0 +1,178 @@
+{
+  "scope": "Real GitHub-origin webhooks and fresh upstream Six evidence.\n\nRequires an explicitly prepared probe branch containing Six's source/tests,\ncommitted governance and a frozen suite with declared platform skips. Observes\nthat trusted upstream code via the actual Ranex CLI; this is NOT unattended\nexecution of arbitrary contributor code. Never constructs or signs a webhook.\n",
+  "kernel": {
+    "version": "0.1.6",
+    "module_file": "/tmp/ranex-xpass94-installed-probe/.venv/lib/python3.14/site-packages/ranex/__init__.py",
+    "installed_mode": true
+  },
+  "records": [
+    {
+      "phase": "pull-request",
+      "number": 10,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/pull/10",
+      "head": "9580159486a6bdac7bb7fee95d2108c8dd261040"
+    },
+    {
+      "phase": "check",
+      "head": "9580159486a6bdac7bb7fee95d2108c8dd261040",
+      "conclusion": "action_required",
+      "id": 102443775305,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102443775305",
+      "matching_checks": 1
+    },
+    {
+      "phase": "merge-refused-before-evidence",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is action required.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "observation",
+      "head": "9580159486a6bdac7bb7fee95d2108c8dd261040",
+      "exit": 0,
+      "suite": {
+        "passed": 185,
+        "skipped": 15,
+        "failed": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      }
+    },
+    {
+      "phase": "check",
+      "head": "9580159486a6bdac7bb7fee95d2108c8dd261040",
+      "conclusion": "success",
+      "id": 102443841474,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102443841474",
+      "matching_checks": 1
+    },
+    {
+      "phase": "check",
+      "head": "a273174df2378bda740e951d499412c3cf2fe6b1",
+      "conclusion": "failure",
+      "id": 102443894427,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102443894427",
+      "matching_checks": 1
+    },
+    {
+      "phase": "observation",
+      "head": "a273174df2378bda740e951d499412c3cf2fe6b1",
+      "exit": 1,
+      "suite": {
+        "passed": 184,
+        "skipped": 15,
+        "failed": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 1
+      }
+    },
+    {
+      "phase": "check",
+      "head": "a273174df2378bda740e951d499412c3cf2fe6b1",
+      "conclusion": "failure",
+      "id": 102443919676,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102443919676",
+      "matching_checks": 1
+    },
+    {
+      "phase": "merge-refused-broken-source",
+      "mutation": "explicit-xpass",
+      "response": {
+        "message": "Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is failing.\n\n",
+        "documentation_url": "https://docs.github.com/rest/pulls/pulls#merge-a-pull-request",
+        "status": "405"
+      }
+    },
+    {
+      "phase": "check",
+      "head": "1bb928e46c7ea9fa20f56041bebc348bb6978701",
+      "conclusion": "failure",
+      "id": 102443983412,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102443983412",
+      "matching_checks": 1
+    },
+    {
+      "phase": "observation",
+      "head": "1bb928e46c7ea9fa20f56041bebc348bb6978701",
+      "exit": 0,
+      "suite": {
+        "passed": 185,
+        "skipped": 15,
+        "failed": 0,
+        "errors": 0,
+        "xfailed": 0,
+        "xpassed": 0
+      }
+    },
+    {
+      "phase": "check",
+      "head": "1bb928e46c7ea9fa20f56041bebc348bb6978701",
+      "conclusion": "success",
+      "id": 102444107197,
+      "url": "https://github.com/anthonykewl20/ranex-app-live-probe/runs/102444107197",
+      "matching_checks": 1
+    },
+    {
+      "phase": "github-origin-deliveries",
+      "deliveries": [
+        {
+          "guid": "4eca4800-ac40-11f1-9377-193a2d14d60c",
+          "event": "pull_request",
+          "status_code": 200
+        },
+        {
+          "guid": "4eb623c0-ac40-11f1-8233-2b134c6d2d47",
+          "event": "check_suite",
+          "status_code": 200
+        },
+        {
+          "guid": "35e7bca0-ac40-11f1-9bfd-05a34fa93270",
+          "event": "pull_request",
+          "status_code": 200
+        },
+        {
+          "guid": "35b031e0-ac40-11f1-86bf-e4b6c388fe89",
+          "event": "check_suite",
+          "status_code": 200
+        },
+        {
+          "guid": "29e1bbe0-ac40-11f1-8846-6a881ab969b4",
+          "event": "pull_request",
+          "status_code": 200
+        },
+        {
+          "guid": "29bf18b0-ac40-11f1-9578-d3ed9f02ec32",
+          "event": "check_suite",
+          "status_code": 200
+        },
+        {
+          "guid": "1ae4e950-ac40-11f1-9bd3-5372b565b770",
+          "event": "pull_request",
+          "status_code": 200
+        },
+        {
+          "guid": "17e89940-ac40-11f1-99a3-048c1e14283b",
+          "event": "check_suite",
+          "status_code": 200
+        }
+      ]
+    },
+    {
+      "phase": "merge-accepted",
+      "response": {
+        "sha": "5d108f53c58c34cff7e16a7d383d598703a2e774",
+        "merged": true,
+        "message": "Pull Request successfully merged"
+      },
+      "verified": true
+    },
+    {
+      "phase": "restored-development-receiver",
+      "pid": 4143252
+    }
+  ]
+}
