@@ -47,6 +47,11 @@ def test_explicit_xpass_blocks_signed_acceptance_and_recovers(application):
     # An ordinary pytest configuration can disable an environment-loaded plugin.
     # A passing exit without the marker must not replace the signed evidence.
     evidence = (repo / 'governance/evidence.json').read_bytes()
+    confined = invoke(repo, 'run', '--external-repository', str(repo), '--producer', 'worker',
+                      '--claim', 'tests-executed', '--confinement', 'strict-local', '--', *command,
+                      key=worker)
+    assert confined.returncode == 2 and 'E-PYTEST-OBSERVER-CONFINEMENT' in confined.stderr
+    assert (repo / 'governance/evidence.json').read_bytes() == evidence
     (repo / 'pytest.ini').write_text(f'[pytest]\naddopts = -p no:{PLUGIN}\n')
     commit(repo)
     refused = invoke(repo, 'run', '--external-repository', str(repo), '--producer', 'worker',
