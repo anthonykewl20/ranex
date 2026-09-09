@@ -3253,9 +3253,18 @@ def _execute_hermetically(
             # (`host_confinement.py`'s `--setenv=PYTHONPATH={root}/src`); this
             # is that line's non-confined twin, and it is the MATERIALISATION's
             # own vendored tree, never the operator's ambient PYTHONPATH.
+            # The kernel's OWN source root as well as the subject's vendored
+            # copy. A subject that does not vendor the kernel (the App
+            # evaluation path, a separate-src application) still has to be able
+            # to import the reporter its bound argv names, and the qualification
+            # path already sets this precedent (`source_root` above). Both are
+            # deterministic paths the kernel chooses, never the operator's
+            # ambient PYTHONPATH, so hermetic observation stays sealed.
+            entries = [str(Path(__file__).resolve().parents[2])]
             vendored = materialisation.tree / "src"
             if vendored.is_dir():
-                environment["PYTHONPATH"] = str(vendored)
+                entries.insert(0, str(vendored))
+            environment["PYTHONPATH"] = os.pathsep.join(entries)
             deny_network = False
             if provisioning is not None and deps_environment is not None:
                 environment["PATH"] = (
