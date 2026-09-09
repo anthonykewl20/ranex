@@ -685,11 +685,22 @@ class TestRunRefusals:
                 assert environment["UV_OFFLINE"] == "1"
                 assert environment["UV_NO_CONFIG"] == "1"
                 assert environment["UV_FROZEN"] == "1"
+                import os
+
+                from ranex.cli.suite_observer import PLUGIN
+
+                assert environment["PYTEST_PLUGINS"] == PLUGIN
+                observer = Path(environment["PYTHONPATH"].split(os.pathsep)[0]) / f"{PLUGIN}.py"
+                assert observer.read_bytes() == (
+                    Path(cli.__file__).parents[1] / "foundation" / "pytest_xpass.py"
+                ).read_bytes()
                 dependency_root = Path(environment["UV_PROJECT_ENVIRONMENT"])
                 assert Path(environment["VIRTUAL_ENV"]) == dependency_root
                 assert stat.S_IMODE(dependency_root.stat().st_mode) & 0o222 == 0
                 (Path(cwd) / "report.xml").write_text(
-                    '<testsuites><testsuite><testcase '
+                    '<testsuites><testsuite><properties>'
+                    '<property name="ranex.pytest_observer" value="1" />'
+                    '</properties><testcase '
                     'classname="tests.test_sample" name="test_one" />'
                     '</testsuite></testsuites>',
                     encoding="utf-8",
