@@ -15,7 +15,7 @@ Explicit strict=False XPASS is retained as xpassed and blocks acceptance.
 Missing/disabled reporting refuses observation. Nested pytest activation is
 isolated; real pytest-xdist 3.8.0 workers preserve XPASS centrally.
 Explicit -p loading remains supported, including separate applications;
-materialised source precedes the controller import path.
+a private module copy preserves materialised source and dependency versions.
 Strict-local pytest observation refuses until its runtime carries this hook.
 
 Real GitHub PRs #7, #8 and #9 in anthonykewl20/ranex-app-live-probe completed

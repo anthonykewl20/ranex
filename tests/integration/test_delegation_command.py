@@ -9,7 +9,6 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
-import os
 import re
 import subprocess
 import threading
@@ -1082,7 +1081,7 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
     assert observed["manifest"] is manifest
     assert observed["environment"] == {
         "PATH": observed["environment"]["PATH"],
-        "PYTHONPATH": str(tmp_path / "pytest-observer") + os.pathsep + str(Path(__file__).resolve().parents[2] / "src"),
+        "PYTHONPATH": str(tmp_path / "pytest-observer"),
         "PYTEST_PLUGINS": "_ranex_pytest_observer_v1",
         "HOME": str(tmp_path / "home"),
         "TMPDIR": str(tmp_path / "tmp"),

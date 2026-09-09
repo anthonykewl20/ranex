@@ -73,11 +73,41 @@ def main() -> int:
             require(run(['uv', 'pip', 'install', '--python', clone / '.venv/bin/python',
                          '--no-deps', '--reinstall', wheel], clone))
             clean = dict(os.environ)
-            for name in ('PYTHONPATH', 'COVERAGE_PROCESS_START', 'COVERAGE_FILE'):
+            for name in ('PYTHONPATH', 'PYTEST_PLUGINS', 'PYTEST_ADDOPTS',
+                         'COVERAGE_PROCESS_START', 'COVERAGE_PROCESS_CONFIG', 'COVERAGE_FILE'):
                 clean.pop(name, None)
             installed = require(run([clone / '.venv/bin/ranex', '--version'], Path(directory), clean))
             if installed != f'ranex {candidate}':
                 raise RuntimeError('installed candidate version does not match its package')
+            # Exercise the installed artifact against a different interpreter.
+            # Declaring the controller's site-packages as PYTHONPATH silently
+            # replaced system pytest 7.4.4 with controller pytest 9.1.1.
+            subject = Path(directory) / f'application-{candidate}'
+            subject.mkdir()
+            subject_pytest = require(run(['/usr/bin/python3', '-c',
+                'import pytest; print(pytest.__version__)'], subject, clean))
+            controller_site = require(run([clone / '.venv/bin/python', '-c',
+                'from pathlib import Path; import ranex; print(Path(ranex.__file__).parent.parent)'],
+                subject, clean))
+            (subject / 'test_environment.py').write_text(
+                'import pytest, sys\ndef test_runtime_dependencies_are_preserved():\n'
+                f'    assert pytest.__version__ == {subject_pytest!r}\n'
+                f'    assert {controller_site!r} not in sys.path\n')
+            (subject / '.gitignore').write_text('*.xml\nsuite_manifest.json\n__pycache__/\n.pytest_cache/\n')
+            for command in (['git', 'init', '-q'], ['git', 'config', 'user.name', 'Installed probe'],
+                            ['git', 'config', 'user.email', 'probe@example.invalid'],
+                            ['git', 'add', '.'], ['git', 'commit', '-qm', 'pin the actual subject runtime']):
+                require(run(command, subject, clean))
+            suite = ['/usr/bin/python3', '-m', 'pytest', '-q', '-o', 'xfail_strict=true', '--junitxml=result.xml']
+            require(run(suite, subject, clean))
+            observer_modes = []
+            for plugin in ([], ['-p', 'ranex.foundation.pytest_xpass']):
+                output = require(run([clone / '.venv/bin/ranex', 'suite', 'freeze',
+                    '--external-repository', subject, '--artifact', 'result.xml', '--output',
+                    'suite_manifest.json', '--', *suite, *plugin], subject, clean))
+                if 'run_exit=0' not in output:
+                    raise RuntimeError('installed observer changed the subject runtime: ' + output)
+                observer_modes.append(dict(plugin=plugin, subject_pytest=subject_pytest, stdout=output))
             measured = dict(os.environ, PYTHONPATH=os.pathsep.join((str(ROOT / 'src'),
                                       str(ROOT / 'tests/e2e/coverage'))))
             observed = require(run([clone / '.venv/bin/ranex', '--version'], ROOT, measured))
@@ -86,7 +116,7 @@ def main() -> int:
             if observed != installed or refusal.returncode != 1 or 'RELEASE-REFUSED:' not in refusal.stdout:
                 raise RuntimeError('candidate release admission did not refuse the unsupported tag')
             results.append(dict(candidate=candidate, installed_version=installed,
-                                source_matches=source_matches, release_refusal=refusal.stdout.strip(),
+                                source_matches=source_matches, observer_modes=observer_modes, release_refusal=refusal.stdout.strip(),
                                 artifacts={p.name: hashlib.sha256(p.read_bytes()).hexdigest()
                                            for p in (out / candidate).iterdir() if p.is_file()}))
         receipt = dict(kernel=kernel, scope='Real candidate builds and installed CLI, with byte-verified source coverage',

@@ -22,9 +22,15 @@ through a fixed PYTEST_PLUGINS/PYTHONPATH environment. The canonical hook is
 The controller copy also protects applications without an installed Ranex
 package, so explicit `-p` is supported but not required by claim admission.
 When both activation paths load, they emit one JUnit observer property.
-Only pytest observations declare the controller's source path for optional
-explicit loading; materialised source precedes it so vendored-code tests
-still exercise the subject. Ambient operator PYTHONPATH is never inherited. It adds no target package,
+An explicitly bound `-p ranex.foundation.pytest_xpass` receives a private
+namespace portion containing only that module. Real materialised Ranex
+packages retain import precedence. Automatic activation does not create a
+Ranex namespace. The controller's source/site-packages directory is never
+added to the subject's import path: an installed-wheel probe demonstrated
+that doing so silently replaced system pytest 7.4.4 with controller pytest
+9.1.1. The installed release check now exercises both activation modes and
+asserts the subject's dependency version and import path remain intact.
+It adds no target package,
 does not change the digest-bound command, and does not inherit operator plugin
 or Python startup settings. Existing command admission remains in place.
 
