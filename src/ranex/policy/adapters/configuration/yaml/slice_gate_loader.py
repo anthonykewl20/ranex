@@ -115,6 +115,10 @@ _STRICT_XFAIL_OVERRIDE = ("-o", "xfail_strict=true")
 _RUNXFAIL = "--runxfail"
 _SKIPPING_DISABLED = "no:skipping"
 
+# Marker-level strict=False is retained by the controller-supplied reporter
+# (ADR-059), including applications that do not install Ranex. Explicit -p
+# loading remains supported; it is not an application dependency requirement.
+
 
 def reject_pytest_xfail_blindness(gate_id: str, claim_id: str, command: list[str]) -> None:
     """Refuse a pytest suite claim whose argv cannot report XPASS."""

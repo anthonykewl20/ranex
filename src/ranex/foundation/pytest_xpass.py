@@ -24,7 +24,7 @@ def pytest_configure(config):
     if not config.pluginmanager.hasplugin("skipping") or config.option.runxfail:
         raise pytest.UsageError("E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled")
     reporter = config.stash.get(xml_key, None)
-    if reporter is not None:
+    if reporter is not None and ("ranex.pytest_observer", "1") not in reporter.global_properties:
         reporter.add_global_property("ranex.pytest_observer", "1")
 
 

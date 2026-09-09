@@ -98,7 +98,7 @@ def test_strict_xpass(): pass
 ''')
     kernel = test_external_repository.KERNEL
     environment = {**os.environ, "PYTHONPATH": str(kernel / "src"),
-                   "PYTEST_PLUGINS": "ranex.cli.pytest_reporter"}
+                   "PYTEST_PLUGINS": "ranex.foundation.pytest_xpass"}
     prefix = [sys.executable]
     if environment.get("COVERAGE_PROCESS_START") or environment.get("COVERAGE_PROCESS_CONFIG"):
         environment.pop("COVERAGE_PROCESS_START", None)
@@ -120,7 +120,7 @@ def test_strict_xpass(): pass
     other = subprocess.run([*prefix, '-m', 'pytest', '-q', '-k', 'test_strict_xpass'],
                            cwd=tmp_path, capture_output=True, text=True, check=False,
                            env={**environment, 'PYTHONPATH': str(kernel / 'src') + os.pathsep + str(tmp_path),
-                                'PYTEST_PLUGINS': 'ranex.cli.pytest_reporter,other_plugin'})
+                                'PYTEST_PLUGINS': 'ranex.foundation.pytest_xpass,other_plugin'})
     assert other.returncode == 1, other.stdout + other.stderr
     assert (tmp_path / 'activation.txt').read_text() == 'other_plugin'
     raw = (tmp_path / 'result.xml').read_bytes()

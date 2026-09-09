@@ -102,7 +102,7 @@ def build_manifest_governed_repo(task_dir: Path, out: Path, patch: Path | None
     # The kernel's pytest-claim loader refuses an argv without the adjacent
     # strict-xfail pair (slice_gate_loader.py: reject_pytest_xfail_blindness,
     # the F-010 hardening) — carry it so an XPASS is reported, never hidden.
-    junit_cmd = [PY, "-m", "pytest", "-q", "-o", "xfail_strict=true",
+    junit_cmd = [PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass",
                  "--rootdir=.", "--junitxml=governance/suite_results.xml", *node_ids]
     probe_xml = out / "freeze-probe.xml"
     probe_cmd = [PY, "-m", "pytest", "-q", "--rootdir=.", f"--junitxml={probe_xml}", *node_ids]

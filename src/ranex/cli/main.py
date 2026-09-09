@@ -3251,10 +3251,17 @@ def _execute_hermetically(
                 "GIT_CONFIG_NOSYSTEM": "1",
                 "GIT_ATTR_NOSYSTEM": "1",
             }
+            # Only the materialised source is visible, never ambient PYTHONPATH.
+            vendored = materialisation.tree / "src"
+            if vendored.is_dir():
+                environment["PYTHONPATH"] = str(vendored)
             if pytest_observer:
                 from ranex.cli.suite_observer import pytest_observer_environment
 
-                environment.update(pytest_observer_environment(materialisation.root))
+                observer_environment = pytest_observer_environment(materialisation.root)
+                if "PYTHONPATH" in environment:
+                    observer_environment["PYTHONPATH"] += os.pathsep + environment["PYTHONPATH"]
+                environment.update(observer_environment)
             deny_network = False
             if provisioning is not None and deps_environment is not None:
                 environment["PATH"] = (

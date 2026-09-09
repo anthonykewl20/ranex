@@ -20,10 +20,12 @@ Receipts: tools/dogfood/audits/2026-09-09-automatic-evidence/fifth-pass/.
 The final signed v2 verdict matches the retained journal anchor.
 ADR-058 records the boundary; foreign same-name check availability is UNVERIFIED.
 
-F-010 reporter repair is IN PROGRESS (#94, ADR-059). Baseline (ADR-056): `-o xfail_strict=true` sets only the default.
-An explicit `@pytest.mark.xfail(strict=False)` still hides XPASS in JUnit.
-The controller reporter prototype blocks it; real Six audit and release checks
-are pending. No closure is claimed from the prototype alone.
+F-010 reporter validation is IN PROGRESS (#94, ADR-059). The canonical
+controller reporter catches explicit strict=False XPASS and refuses absent
+reporting. Concurrent fixes and anchor-audit improvements are now combined.
+GitHub PR #7 refused the XPASS merge, then merged repaired source with fresh
+passing evidence (c45dad008f657da3ceb864cd80316a89e5b05615).
+Combined final-commit regression and evidence archival remain pending.
 A hostile conftest/plugin can also forge JUnit (F-012); argv admission does
 not inspect PYTEST_ADDOPTS. Signed evidence does not remove these boundaries.
 F-005 (#93, ADR-057): v2 verdicts sign journal_head; `journal verify

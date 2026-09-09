@@ -195,7 +195,7 @@ export COVERAGE_FILE="$PWD/.local/ranex-e2e/coverage/.coverage"
 PYTHONPATH="src:tests/e2e/coverage" \
   uv run --frozen pytest -q tests/unit tests/integration tests/contract \
     tests/security tests/e2e \
-    -o xfail_strict=true \
+    -o xfail_strict=true -p ranex.foundation.pytest_xpass \
     --junitxml=.local/ranex-e2e/results.xml 2>&1 \
   | tee .local/ranex-e2e/transcript.txt \
 && uv run --frozen python -m coverage combine --keep \

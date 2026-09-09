@@ -664,7 +664,7 @@ def test_run_refuses_a_suite_results_claim_without_a_loaded_manifest(
     monkeypatch: pytest.MonkeyPatch,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    command = ["sh", "-c", "exit 0", "-o", "xfail_strict=true",
+    command = ["sh", "-c", "exit 0", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass",
                "--junitxml=artifacts/junit.xml"]
     (repo / "gates.yaml").write_text(
         "gates:\n"

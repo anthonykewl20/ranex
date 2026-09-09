@@ -13,7 +13,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=governance/suite_results.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=governance/suite_results.xml"]
         results_artifact: governance/suite_results.xml
       - claim_id: host-qualification
         command: ["python", "-m", "ranex.cli.host_confinement", "qualify", "--profile", "governance/confinement/strict-local-host-v1.json", "--artifact", ".local/ranex/libexec/strict-local-v1/ranex-worker-launcher", "--manifest", "governance/confinement/native-launcher-build-v1.json", "--report=.local/ranex/qualification/strict-local-v1.json"]

@@ -377,7 +377,7 @@ def test_stage_5_run_before_provisioning_refuses_and_names_the_next_command(
         [
             "run", "--claim", "tests-executed", "--producer", "worker",
             "--store", str(operator.store), "--", "uv", "run", "pytest", "-q",
-            "-o", "xfail_strict=true",
+            "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass",
             "--junitxml=governance/suite_results.xml",
         ],
         key=operator.key,
@@ -448,7 +448,7 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
         [
             "run", "--claim", "tests-executed", "--producer", "worker",
             "--store", str(operator.store), "--", "uv", "run", "pytest", "-q",
-            "-o", "xfail_strict=true",
+            "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass",
             "--junitxml=governance/suite_results.xml",
         ],
         key=operator.key,

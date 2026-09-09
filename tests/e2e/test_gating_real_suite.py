@@ -969,7 +969,7 @@ def test_stage_11_the_gated_run_is_offline_with_a_sealed_root(
     command = json.dumps(["uv", "run", "--no-project", "python", "-c", probe])
     gates.write_text(
         original.replace(
-            'command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", '
+            'command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", '
             '"--junitxml=governance/suite_results.xml"]\n'
             "        results_artifact: governance/suite_results.xml",
             f"command: {command}",
@@ -1237,7 +1237,7 @@ def test_slice019_qualification_then_approval_passes_until_host_state_moves(
         admission._read_live_durable_host_state = original_reader
     assert admitted.rejections == ()
 
-    tests_argv = ("uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=governance/suite_results.xml")
+    tests_argv = ("uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=governance/suite_results.xml")
     manifest_value = {
         "expected_skips": {},
         "suite": ["tests/test_real.py::test_real"],

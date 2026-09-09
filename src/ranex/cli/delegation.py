@@ -190,7 +190,11 @@ def _run_suite_with_results(
         if results_reporter == "pytest-junit":
             from ranex.cli.suite_observer import pytest_observer_environment
 
-            environment.update(pytest_observer_environment(materialisation.root))
+            observer_environment = pytest_observer_environment(materialisation.root)
+            vendored = materialisation.tree / "src"
+            if vendored.is_dir():
+                observer_environment["PYTHONPATH"] += os.pathsep + str(vendored)
+            environment.update(observer_environment)
         completed = subprocess.run(
             command,
             check=False,

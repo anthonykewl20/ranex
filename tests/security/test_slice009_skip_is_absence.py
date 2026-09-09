@@ -24,7 +24,7 @@ from ranex.foundation.canonical import command_digest
 from ranex.governed_execution.domain.verdict import Claim, Evidence, Gate, Verdict, evaluate
 
 SUBJECT = "sha256:" + "a" * 64
-COMMAND = ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
+COMMAND = ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"]
 COMMAND_DIGEST = command_digest(COMMAND)
 
 

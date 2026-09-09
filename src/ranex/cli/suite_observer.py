@@ -11,5 +11,5 @@ def pytest_observer_environment(root: Path) -> dict[str, str]:
     directory = root / "pytest-observer"
     directory.mkdir()
     write_atomic(directory / f"{PLUGIN}.py",
-                 Path(__file__).with_name("pytest_reporter.py").read_bytes(), root=root)
+                 (Path(__file__).parents[1] / "foundation" / "pytest_xpass.py").read_bytes(), root=root)
     return {"PYTHONPATH": str(directory), "PYTEST_PLUGINS": PLUGIN}

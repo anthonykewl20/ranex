@@ -17,7 +17,11 @@ release despite the exact `-o xfail_strict=true` command binding.
 
 The controller copies its pytest reporting hook into each disposable
 observation root, outside the materialised contributor tree, and selects it
-through a fixed PYTEST_PLUGINS/PYTHONPATH environment. It adds no target package,
+through a fixed PYTEST_PLUGINS/PYTHONPATH environment. The canonical hook is
+`ranex.foundation.pytest_xpass`; an explicitly bound `-p` uses the same source.
+The controller copy also protects applications without an installed Ranex
+package, so explicit `-p` is supported but not required by claim admission.
+When both activation paths load, they emit one JUnit observer property. It adds no target package,
 does not change the digest-bound command, and does not inherit operator plugin
 or Python startup settings. Existing command admission remains in place.
 
@@ -60,6 +64,10 @@ environment): `_pytest/skipping.py::pytest_runtest_makereport`,
 `_NodeReporter.append_failure`, `LogXML.add_global_property`, and `xml_key`.
 Both versions set wasxfail for a non-strict XPASS. append_failure treats a
 remaining wasxfail as skipped, which is why the conversion removes it.
+Real pytest-xdist 3.8.0 with two workers retained the failure centrally. Its
+registry sdist was inspected via Leitir (SHA256
+7e578125ec9bc6050861aa93f2d59f1d8d085595d6551c2c90b6f4fad8d3a9f1);
+registry/Git parity reported drift, so no byte-identical Git claim is made.
 The hook uses pytest's hookwrapper protocol and its version-matched JUnit
 stash interface. No new project dependency or upstream code transplant.
 
