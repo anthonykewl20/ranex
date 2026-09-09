@@ -334,7 +334,15 @@ def test_an_unimportable_reporter_writes_no_artifact_so_absence_blocks(
     pinned = "/usr/bin/python3"
     if not Path(pinned).exists():
         pytest.skip("ranex-prereq:pinned-interpreter: /usr/bin/python3 is absent")
-    probe = subprocess.run([pinned, "-c", "import ranex"], capture_output=True)
+    # The guard must probe the SAME environment the test body creates, which is
+    # `vendored=False` — PYTHONPATH cleared. Probing the inherited environment
+    # instead made this skip whenever the caller happened to export a path to
+    # the kernel, and `ranex run` now exports exactly that (it declares its own
+    # source root so a governed child can load the reporter). The result was an
+    # UNDECLARED skip under the governed suite, which ADR-011 correctly blocks.
+    bare = dict(os.environ)
+    bare["PYTHONPATH"] = ""
+    probe = subprocess.run([pinned, "-c", "import ranex"], capture_output=True, env=bare)
     if probe.returncode == 0:
         pytest.skip("ranex-prereq:vendored-kernel: ranex is importable under the pinned interpreter")
 

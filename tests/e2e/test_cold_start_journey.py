@@ -467,7 +467,7 @@ def test_stage_8_the_governed_run_executes_the_real_suite(
 
     records = json.loads(evidence.read_text())
     assert records[0]["command"] == (
-        "uv run pytest -q -o xfail_strict=true --junitxml=governance/suite_results.xml"
+        "uv run pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --junitxml=governance/suite_results.xml"
     )
     assert records[0]["exit_code"] == code
     # It really ran: a recorded exit code with no suite behind it is the
