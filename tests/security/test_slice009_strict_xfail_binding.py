@@ -28,6 +28,7 @@ reporter half of the measurement lives in
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import pytest
@@ -271,4 +272,127 @@ def test_every_consumer_of_results_artifact_refuses_a_blind_claim() -> None:
     assert not unguarded, (
         f"{unguarded} read results_artifact without refusing an XPASS-blind "
         "claim; ADR-056's guarantee is that every consumer refuses"
+    )
+
+
+# --- what the kernel-owned reporter does and does not survive (#94) ----------
+#
+# Measured with real pytest subprocesses. The plugin's own docstring claims the
+# tree can still refuse to honour it; these pin exactly where that line falls,
+# so the claim is evidence rather than modesty.
+
+import subprocess  # noqa: E402
+import sys  # noqa: E402
+import textwrap  # noqa: E402
+
+PLUGIN = "ranex.foundation.pytest_xpass"
+XPASS_SOURCE = """
+import pytest
+
+@getattr(pytest.mark, "x" + "fail")(reason="explicit", strict=False)
+def test_explicitly_non_strict_xpass():
+    assert True
+"""
+
+
+def _run(tmp_path: Path, *, conftest: str | None, interpreter: str = sys.executable,
+         vendored: bool = True) -> tuple[int, Path]:
+    root = tmp_path / f"case-{len(list(tmp_path.iterdir()))}"
+    (root / "tests").mkdir(parents=True)
+    (root / "tests" / "test_x.py").write_text(textwrap.dedent(XPASS_SOURCE), encoding="utf-8")
+    (root / "pytest.ini").write_text("[pytest]\n", encoding="utf-8")
+    if conftest is not None:
+        (root / "conftest.py").write_text(textwrap.dedent(conftest), encoding="utf-8")
+    report = root / "report.xml"
+    env = dict(os.environ)
+    env["PYTEST_DISABLE_PLUGIN_AUTOLOAD"] = "1"
+    # BOTH knobs matter, and each was measured after the other alone failed to
+    # produce the condition: the repo venv installs ranex editable, so clearing
+    # PYTHONPATH does not hide it from `sys.executable`; and pointing
+    # PYTHONPATH at src makes it visible even to the pinned interpreter. Only a
+    # foreign interpreter with no vendored path cannot import the reporter.
+    env["PYTHONPATH"] = str(REPO_ROOT / "src") if vendored else ""
+    completed = subprocess.run(
+        [interpreter, "-m", "pytest", "-q", "tests", "-o", "xfail_strict=true",
+         "-p", PLUGIN, f"--junitxml={report.name}"],
+        cwd=root, capture_output=True, text=True, env=env,
+    )
+    return completed.returncode, report
+
+
+def test_an_unimportable_reporter_writes_no_artifact_so_absence_blocks(
+    tmp_path: Path,
+) -> None:
+    """Fail-closed: the claim cannot be satisfied by a run that never reported.
+
+    If the reporter cannot be imported, pytest exits on a usage error before
+    collecting, so no junitxml exists at all. ADR-011's rule then applies
+    unchanged — an absent artifact blocks — rather than the suite quietly
+    running without the control the argv asked for.
+    """
+
+    pinned = "/usr/bin/python3"
+    if not Path(pinned).exists():
+        pytest.skip("ranex-prereq:pinned-interpreter: /usr/bin/python3 is absent")
+    probe = subprocess.run([pinned, "-c", "import ranex"], capture_output=True)
+    if probe.returncode == 0:
+        pytest.skip("ranex-prereq:vendored-kernel: ranex is importable under the pinned interpreter")
+
+    code, report = _run(tmp_path, conftest=None, interpreter=pinned, vendored=False)
+    assert code != 0
+    assert not report.is_file(), (
+        "a run that could not load the reporter must not leave an artifact; a "
+        "present one would satisfy the claim without the control"
+    )
+
+
+def test_a_trylast_conftest_cannot_undo_the_reporter(tmp_path: Path) -> None:
+    """The reporter is registered `tryfirst`, so its wrapper resumes LAST."""
+
+    import ranex.foundation.suite_results as suite_api
+
+    code, report = _run(tmp_path, conftest="""
+        import pytest
+        @pytest.hookimpl(hookwrapper=True, trylast=True)
+        def pytest_runtest_makereport(item, call):
+            outcome = yield
+            r = outcome.get_result()
+            if r.when == "call" and "XPASS(strict)" in str(getattr(r, "longrepr", "")):
+                r.outcome = "passed"
+                r.longrepr = None
+    """)
+    assert code == 1
+    outcomes = suite_api._outcomes(report.read_bytes())
+    assert set(outcomes.values()) == {"xpassed"}, outcomes
+
+
+def test_a_tryfirst_conftest_does_defeat_the_reporter(tmp_path: Path) -> None:
+    """The disclosed boundary, measured rather than asserted as modesty.
+
+    ADR-007 and ADR-011 criterion 10 state that a planted `conftest.py` can
+    forge the artifact; ADR-056's addendum repeats it for this reporter. This
+    is that statement's evidence: a conftest registered `tryfirst` resumes
+    after the reporter and puts the XPASS back to `passed`.
+
+    It is pinned as PASSING so nobody mistakes the boundary for a regression.
+    If this test ever fails, the trust boundary moved and the documents that
+    describe it are stale.
+    """
+
+    import ranex.foundation.suite_results as suite_api
+
+    code, report = _run(tmp_path, conftest="""
+        import pytest
+        @pytest.hookimpl(hookwrapper=True, tryfirst=True)
+        def pytest_runtest_makereport(item, call):
+            outcome = yield
+            r = outcome.get_result()
+            if r.when == "call" and "XPASS(strict)" in str(getattr(r, "longrepr", "")):
+                r.outcome = "passed"
+                r.longrepr = None
+    """)
+    assert code == 0
+    outcomes = suite_api._outcomes(report.read_bytes())
+    assert set(outcomes.values()) == {"passed"}, (
+        f"the hostile-conftest boundary is documented as OPEN; got {outcomes}"
     )

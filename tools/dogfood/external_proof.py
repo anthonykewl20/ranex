@@ -201,7 +201,12 @@ def measure_baseline(repo: Path, scratch: Path) -> dict[str, Any]:
         raise StepFailure("baseline-collect",
                           collected.stdout[-300:] + collected.stderr[-300:])
     probe = scratch / "baseline.xml"
-    full = _run([PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", f"--junitxml={probe}"],
+    # Deliberately NOT carrying `-p ranex.foundation.pytest_xpass`: this is the
+    # subject's own suite measured BEFORE the kernel is vendored, so `ranex` is
+    # not importable here and naming it makes pytest exit on a usage error that
+    # reads as "pristine suite is red". The governed argv (onboard_governance)
+    # carries the reporter; the baseline must stay bare.
+    full = _run([PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", f"--junitxml={probe}"],
                 cwd=repo, timeout=600)
     tail = full.stdout.strip().splitlines()[-1] if full.stdout.strip() else ""
     if full.returncode != 0:

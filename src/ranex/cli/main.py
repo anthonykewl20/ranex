@@ -3244,6 +3244,18 @@ def _execute_hermetically(
                 "GIT_CONFIG_NOSYSTEM": "1",
                 "GIT_ATTR_NOSYSTEM": "1",
             }
+            # The bound argv may name a kernel-owned pytest reporter
+            # (`-p ranex.foundation.pytest_xpass`, #94), and a plugin the
+            # interpreter cannot import makes pytest exit before it writes an
+            # artifact — which blocks correctly but makes the control
+            # unusable for the vendored-kernel integration F-003 documents.
+            # The confined path already declares the same thing
+            # (`host_confinement.py`'s `--setenv=PYTHONPATH={root}/src`); this
+            # is that line's non-confined twin, and it is the MATERIALISATION's
+            # own vendored tree, never the operator's ambient PYTHONPATH.
+            vendored = materialisation.tree / "src"
+            if vendored.is_dir():
+                environment["PYTHONPATH"] = str(vendored)
             deny_network = False
             if provisioning is not None and deps_environment is not None:
                 environment["PATH"] = (
