@@ -34,6 +34,7 @@ class Audit:
         self.kernel = root / "kernel"
         self.repo = root / "external"
         self.key = root / "external-proof.key"
+        self.verdict_key = root / "verdict-signer.key"
 
     def command(self, name: str, argv: list[str], *, env: dict | None = None) -> dict:
         result = subprocess.run(
@@ -45,7 +46,8 @@ class Audit:
         self.commands.append(row)
         return row
 
-    def cli(self, name: str, *args: str, credentials: bool = True) -> dict:
+    def cli(self, name: str, *args: str, credentials: bool = True,
+            extra_env: dict | None = None) -> dict:
         # An allowlist avoids pretending that a list of provider names covers
         # every possible credential. The empty HOME carries no auth stores.
         (self.root / "home").mkdir(exist_ok=True)
@@ -53,12 +55,28 @@ class Audit:
         env["PYTHONPATH"] = str(self.repo / "src")
         if credentials:
             env["RANEX_SIGNING_KEY"] = str(self.key)
+        env.update(extra_env or {})
         return self.command(name, [str(self.kernel / ".venv/bin/python"),
                                   "-m", "ranex.cli.main", *args], env=env)
 
     def gate(self, name: str, approver: str = proof.APPROVER) -> dict:
         return self.cli(name, "gate", "evaluate", "HEAD", "--approver", approver,
                         "--journal", "governance/journal.sqlite3", credentials=False)
+
+    def signed_gate(self, name: str) -> dict:
+        """Evaluate while publishing a SIGNED verdict, so an anchor exists.
+
+        ADR-057 puts the journal head inside the signed verdict. Without a
+        verdict signer configured there is nothing to anchor against, which is
+        why the plain-verify scenarios below can only report the gap and never
+        the mitigation.
+        """
+        return self.cli(name, "gate", "evaluate", "HEAD", "--approver", proof.APPROVER,
+                        "--journal", "governance/journal.sqlite3", credentials=False,
+                        extra_env={
+                            "RANEX_VERDICT_SIGNING_KEY": str(self.verdict_key),
+                            "RANEX_VERDICT_DIR": "governance/verdicts",
+                        })
 
     def run(self, name: str, argv: list[str] | None = None) -> dict:
         return self.cli(name, "run", "--producer", proof.PRODUCER,
@@ -126,6 +144,22 @@ class Audit:
         setup = proof.onboard_governance(self.kernel, self.repo, self.root, self.ref,
                                          self.baseline["passing"], 0)
         self.argv = setup["argv"]
+        # ADR-057 needs a verdict signer before any anchor can exist. Written
+        # into the committed keyring so the kernel's own trust-root check
+        # accepts it, exactly as an operator would configure it.
+        from ranex.foundation.signing import generate_keypair
+
+        signer_private, signer_public = generate_keypair()
+        self.verdict_key.write_text(signer_private + "\n")
+        self.verdict_key.chmod(0o600)
+        keyring = self.repo / "governance" / "producers.yaml"
+        keyring.write_text(
+            keyring.read_text()
+            + f"verdict_signer:\n  id: kernel-verdict-signer\n  public_key: {signer_public}\n"
+        )
+        self.git("add", "governance/producers.yaml")
+        self.git("-c", "user.email=audit@example.invalid", "-c", "user.name=Audit",
+                 "commit", "-q", "-m", "audit: configure the verdict signer")
         self.base = self.git("rev-parse", "HEAD")
         self.external["selected_ids"] = setup["selected"]
         self.external["vendored_src_tree"] = setup["vendored_src_tree"]
@@ -339,7 +373,56 @@ class Audit:
         checked = self.cli("full-rewrite:journal", "journal", "verify", "--journal",
                            "governance/journal.sqlite3", credentials=False)
         self.record("full-history-rewrite", "rewritten history refused", checked["exit"] != 0, checked,
-                    detail="F-005: a self-consistent replacement chain has no external authenticity anchor.")
+                    detail="F-005: plain verify has no external anchor; a self-consistent replacement "
+                           "chain passes. ADR-057's mitigation is measured by the anchored arm below.")
+
+        # ADR-057, the mitigation the plain-verify scenarios above cannot show.
+        # A signed verdict carries the journal head it was evaluated at, so the
+        # very rewrite that passes `journal verify` must fail
+        # `journal verify --against-verdict`. Run on the REAL external subject,
+        # not on the kernel's own repository.
+        self.restore()
+        signed = self.signed_gate("anchored:gate")
+        verdicts = sorted((self.repo / "governance/verdicts").glob("*.json")) \
+            if (self.repo / "governance/verdicts").is_dir() else []
+        if not verdicts:
+            self.record("journal-anchor-published", "a signed verdict carries an anchor",
+                        False, signed,
+                        detail="no verdict was published, so the anchor could not be measured")
+            return
+        relative = f"governance/verdicts/{verdicts[0].name}"
+        record = json.loads(verdicts[0].read_text())["record"]
+        anchor = record.get("journal_head")
+        self.record("journal-anchor-published", "the signed verdict carries the journal head",
+                    isinstance(anchor, str) and anchor.startswith("sha256:"), signed,
+                    detail=f"payload_type={json.loads(verdicts[0].read_text())['payload_type']}")
+
+        anchored_good = self.cli("anchored:true-chain", "journal", "verify", "--journal",
+                                 "governance/journal.sqlite3", "--against-verdict", relative,
+                                 credentials=False)
+        self.record("journal-anchor-accepts-the-true-chain",
+                    "the anchor matches the history that actually happened",
+                    anchored_good["exit"] == 0 and "matched(signed-verdict)" in anchored_good["stdout"],
+                    anchored_good)
+
+        good_journal = (self.repo / "governance/journal.sqlite3").read_bytes()
+        with sqlite3.connect(self.repo / "governance/journal.sqlite3") as connection:
+            connection.execute("DROP TRIGGER IF EXISTS evaluations_no_update")
+            connection.execute("DROP TRIGGER IF EXISTS evaluations_no_delete")
+            connection.execute(
+                "DELETE FROM evaluations WHERE seq=(SELECT MAX(seq) FROM evaluations)")
+        plain = self.cli("anchored:plain-after-rewrite", "journal", "verify", "--journal",
+                         "governance/journal.sqlite3", credentials=False)
+        anchored_bad = self.cli("anchored:refuses-rewrite", "journal", "verify", "--journal",
+                                "governance/journal.sqlite3", "--against-verdict", relative,
+                                credentials=False)
+        self.record("journal-anchor-refuses-a-truncation-plain-verify-accepts",
+                    "same journal: plain verify accepts, the anchor refuses",
+                    plain["exit"] == 0 and anchored_bad["exit"] != 0,
+                    plain, anchored_bad,
+                    detail="ADR-057. If plain verify ever REFUSES here the chain gained a "
+                           "property it does not claim and the anchor is no longer what blocks.")
+        (self.repo / "governance/journal.sqlite3").write_bytes(good_journal)
 
 
 def main() -> int:
