@@ -10,7 +10,15 @@ push, or full-suite run:
 
 - `git status -sb` — commits ahead of `origin` mean another session owns this
   lane and has not finished;
-- `pgrep -af pytest` — a running suite means one is mid-verification.
+- `ps -eo comm,args --no-headers | awk '$1 ~ /^(python|pytest)/ && /pytest/'` —
+  any line means a suite is mid-verification. Match the **executable**, not the
+  command line. Three ways to get this wrong were each measured on 2026-09-09:
+  an anchored `pytest -q$` misses `suite freeze`'s inner run and reports clear
+  while a freeze is live; a bare `pytest` also counts long-dead `while pgrep …`
+  watcher shells and cries wolf until nobody reads it; and any `pgrep -f`
+  pattern matches the shell running the check, because that shell's own command
+  line contains the pattern. Matching `comm` excludes the checker structurally
+  — a shell's executable is bash, not python.
 
 If either shows another writer, stay read-only until it clears. Never start a
 second full suite on this host while one is running: concurrent suites have
