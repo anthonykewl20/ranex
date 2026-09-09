@@ -201,7 +201,7 @@ def measure_baseline(repo: Path, scratch: Path) -> dict[str, Any]:
         raise StepFailure("baseline-collect",
                           collected.stdout[-300:] + collected.stderr[-300:])
     probe = scratch / "baseline.xml"
-    full = _run([PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", f"--junitxml={probe}"],
+    full = _run([PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", f"--junitxml={probe}"],
                 cwd=repo, timeout=600)
     tail = full.stdout.strip().splitlines()[-1] if full.stdout.strip() else ""
     if full.returncode != 0:
@@ -245,7 +245,7 @@ def onboard_governance(kernel: Path, repo: Path, scratch: Path, tag: str,
     # ADR-056: the suite claim has to ask pytest for the outcome it judges, or
     # a non-strict XPASS is written as an ordinary pass (F-010). The loader
     # refuses a catalog without this pair, so the vendored onboarding writes it.
-    argv = [PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true",
+    argv = [PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass",
             "--junitxml=governance/suite_results.xml", *selected]
 
     if (repo / "src").exists():
@@ -292,7 +292,7 @@ def onboard_governance(kernel: Path, repo: Path, scratch: Path, tag: str,
     # The manifest is frozen by the RELEASED kernel's own code, serialised in
     # its own canonical form — never a re-implementation (F-005 item 2).
     probe = scratch / "freeze.xml"
-    probe_argv = [PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", f"--junitxml={probe}", *selected]
+    probe_argv = [PINNED_PY, "-m", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", f"--junitxml={probe}", *selected]
     program = (
         "import pathlib, subprocess, sys\n"
         "from ranex.foundation.suite_results import freeze_manifest, canonical_json_bytes\n"

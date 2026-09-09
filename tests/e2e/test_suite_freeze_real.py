@@ -246,7 +246,7 @@ def journey(
     ]
     for declaration in declarations:
         argv += ["--expected-skip", declaration]
-    argv += ["--", "uv", "run", "pytest", "-q", "-o", "xfail_strict=true", f"--junitxml={ARTIFACT}"]
+    argv += ["--", "uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", f"--junitxml={ARTIFACT}"]
 
     completed = ranex_real(
         argv,

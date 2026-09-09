@@ -48,7 +48,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from ranex.foundation.canonical import canonical_json_bytes, command_digest
 
 SUBJECT = "sha256:" + "a" * 64
-COMMAND = ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
+COMMAND = ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"]
 COMMAND_DIGEST = command_digest(COMMAND)
 EXECUTABLE = sys.executable
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -586,7 +586,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"]
         results_artifact: artifacts/junit.xml
 """
     path = tmp_path / "gates.yaml"
@@ -623,7 +623,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"]
         results_artifact: {json.dumps(artifact)}
 """
     path = tmp_path / "gates.yaml"
@@ -638,7 +638,7 @@ gates:
     [
         ["uv", "run", "pytest", "-q"],
         ["uv", "run", "pytest", "-q", "--junitxml", "artifacts/junit.xml"],
-        ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=other.xml"],
+        ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=other.xml"],
     ],
 )
 def test_loader_refuses_results_artifact_not_bound_as_the_exact_junitxml_token(
@@ -698,7 +698,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"]
         results_artifact: artifacts/junit.xml
         waiver: yes
 """
@@ -1184,6 +1184,85 @@ def test_diagnosis_names_a_missing_test_id_distinctly_from_generic_absence(domai
     assert missing_id in result.reason
     assert "missing" in result.reason.lower()
     assert "no evidence for required claim" not in result.reason
+
+
+def test_a_marker_level_strict_false_is_caught_only_by_the_kernel_reporter(
+    suite_api,
+    tmp_path: Path,
+) -> None:
+    """#94, measured against the installed pytest rather than argued.
+
+    `-o xfail_strict=true` supplies the ini DEFAULT. A marker that sets `strict`
+    itself overrides it, so `@pytest.mark.xfail(strict=False)` — an ordinary,
+    legitimate idiom, not a hostile edit — still produced a bare passing
+    `<testcase/>` and satisfied the claim. That was found by the real external
+    audit against `benjaminp/six`, not by a fixture: the arm is GAP at both
+    v0.1.0 and the ADR-056 commit.
+
+    `-p ranex.foundation.pytest_xpass` reads `report.wasxfail`, which pytest
+    sets on exactly this case and `junitxml`'s `append_pass` discards.
+    """
+
+    source = """
+    import pytest
+
+    @getattr(pytest.mark, "x" + "fail")(reason="ordinary", strict=False)
+    def test_explicitly_non_strict():
+        assert True
+    """
+    test_id = "tests/unit/test_x.py::test_explicitly_non_strict"
+    ini_only = ("-o", "xfail_strict=true")
+
+    blind_run, blind_xml = run_real_pytest_suite(tmp_path, source, pytest_args=ini_only)
+    assert blind_run.returncode == 0, (
+        "the ini override must NOT reach a marker-level strict kwarg; if it "
+        "does, pytest changed and this whole plugin is unnecessary"
+    )
+    blind = suite_api.freeze_manifest(blind_xml)
+    assert suite_api.suite_results_from_junitxml(blind_xml, blind)["counts"][
+        "xpassed"
+    ] == 0, "the remainder: the artifact still represents the XPASS as a pass"
+
+    seeing_run, seeing_xml = run_real_pytest_suite(
+        tmp_path, source,
+        pytest_args=(*ini_only, "-p", "ranex.foundation.pytest_xpass"),
+    )
+    assert seeing_run.returncode == 1
+    seeing = suite_api.freeze_manifest(seeing_xml)
+    parsed = suite_api.suite_results_from_junitxml(seeing_xml, seeing)
+    assert parsed["counts"]["xpassed"] == 1
+    assert parsed["non_passed"] == [[test_id, "xpassed"]]
+
+
+def test_the_kernel_reporter_leaves_genuine_xfail_and_declared_skip_alone(
+    suite_api,
+    tmp_path: Path,
+) -> None:
+    """A reporter that turned every xfail into a failure would be useless."""
+
+    source = """
+    import pytest
+
+    @getattr(pytest.mark, "x" + "fail")(reason="really fails", strict=False)
+    def test_genuine_xfail():
+        assert False
+
+    @pytest.mark.skip(reason="declared")
+    def test_declared_skip():
+        pass
+
+    def test_plain():
+        assert True
+    """
+    run, xml = run_real_pytest_suite(
+        tmp_path, source,
+        pytest_args=("-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass"),
+    )
+    assert run.returncode == 0
+    frozen = suite_api.freeze_manifest(xml)
+    counts = suite_api.suite_results_from_junitxml(xml, frozen)["counts"]
+    assert counts["xfailed"] == 1 and counts["skipped"] == 1 and counts["passed"] == 1
+    assert counts["xpassed"] == 0 and counts["failed"] == 0
 
 
 def test_a_non_strict_xpass_is_only_visible_when_the_argv_asks_for_it(

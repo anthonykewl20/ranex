@@ -94,7 +94,7 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
         f"producers:\n  worker: {public}\n"
         f"verdict_signer:\n  id: kernel-verdict-signer\n  public_key: {verifying}\n"
     )
-    command = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true",
+    command = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass",
                "--junitxml=governance/suite_results.xml", "test_application.py"]
     (repo / "governance/gates.yaml").write_text(
         "gates:\n  - gate_id: landing\n    rule_id: TESTS\n    blocking: true\n"
@@ -108,7 +108,7 @@ def application(tmp_path: Path) -> tuple[Path, Path, Path, str]:
 
 def test_separate_src_application_freeze_observe_sign_reject_and_recover(application) -> None:
     repo, worker, signer, verifying = application
-    command = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true",
+    command = [str(PYTEST_PYTHON), "-m", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass",
                "--junitxml=governance/suite_results.xml", "test_application.py"]
     frozen = invoke(repo, "suite", "freeze", "--external-repository", str(repo),
                     "--artifact", "governance/suite_results.xml", "--", *command)

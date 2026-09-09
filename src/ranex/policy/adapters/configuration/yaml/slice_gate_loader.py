@@ -115,6 +115,17 @@ _STRICT_XFAIL_OVERRIDE = ("-o", "xfail_strict=true")
 _RUNXFAIL = "--runxfail"
 _SKIPPING_DISABLED = "no:skipping"
 
+# The ini override reaches only pytest's DEFAULT strictness. A marker-level
+# `strict` kwarg beats it, so `@pytest.mark.xfail(strict=False)` — an ordinary,
+# legitimate idiom, not a hostile edit — still wrote a bare passing testcase
+# (F-010 remainder, #94; measured GAP at both v0.1.0 and HEAD by
+# `release_audit.py` against real benjaminp/six). Nothing in argv can override a
+# kwarg written in the tree, so the argv instead loads a kernel-owned reporter
+# that reads `report.wasxfail` — the field pytest sets on exactly this case and
+# junitxml's `append_pass` discards.
+_XPASS_PLUGIN = "ranex.foundation.pytest_xpass"
+_XPASS_PLUGIN_TOKENS = ("-p", _XPASS_PLUGIN)
+
 
 def reject_pytest_xfail_blindness(gate_id: str, claim_id: str, command: list[str]) -> None:
     """Refuse a pytest suite claim whose argv cannot report XPASS."""
@@ -145,6 +156,21 @@ def reject_pytest_xfail_blindness(gate_id: str, claim_id: str, command: list[str
     ]
     if len(pairs) != len(mentions) or not pairs:
         refuse(f"argv {command!r} does not carry it as an option pair")
+
+    # `-p no:<plugin>` is already refused above, so a disabling spelling of the
+    # reporter cannot slip past; here only its presence is required.
+    loaded = [
+        index
+        for index in range(len(options) - 1)
+        if tuple(options[index : index + 2]) == _XPASS_PLUGIN_TOKENS
+    ]
+    if not loaded and f"-p{_XPASS_PLUGIN}" not in options:
+        raise ValueError(
+            f"gate {gate_id!r}: claim {claim_id!r} pytest JUnit requires "
+            f"{list(_XPASS_PLUGIN_TOKENS)} so an XPASS reaches the artifact even "
+            "when the marker sets strict=False, which the xfail_strict ini "
+            f"cannot override (#94): argv {command!r} does not load it"
+        )
 
 
 def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:

@@ -769,7 +769,7 @@ def test_kernel_sigkill_cannot_orphan_real_landing_command(
                     (
                         pid
                         for pid in observed_pids
-                        if "pytest -q -o xfail_strict=true --junitxml=governance/suite_results.xml"
+                        if "pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --junitxml=governance/suite_results.xml"
                         in rows[pid][2]
                     ),
                     None,

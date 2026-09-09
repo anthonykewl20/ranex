@@ -73,6 +73,10 @@ BOUND = [
     "-q",
     "-o",
     "xfail_strict=true",
+    # ADR-056 addendum / #94: the ini reaches only the default, so the argv also
+    # loads the kernel-owned reporter that catches a marker-level strict=False.
+    "-p",
+    "ranex.foundation.pytest_xpass",
     "--junitxml=artifacts/junit.xml",
 ]
 
@@ -124,7 +128,8 @@ def test_a_pytest_suite_claim_without_the_override_is_refused() -> None:
 )
 def test_an_override_that_does_not_take_effect_is_refused(override: list[str]) -> None:
     with pytest.raises(ValueError, match="xfail_strict"):
-        build(["uv", "run", "pytest", "-q", *override, "--junitxml=artifacts/junit.xml"])
+        build(["uv", "run", "pytest", "-q", *override,
+               "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"])
 
 
 @pytest.mark.parametrize(

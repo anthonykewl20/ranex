@@ -313,7 +313,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"]
         results_artifact: artifacts/junit.xml
 """
 
@@ -341,7 +341,7 @@ gates:
     blocking: true
     required_claims:
       - claim_id: tests-executed
-        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "--junitxml=artifacts/junit.xml"]
+        command: ["uv", "run", "pytest", "-q", "-o", "xfail_strict=true", "-p", "ranex.foundation.pytest_xpass", "--junitxml=artifacts/junit.xml"]
         results_artifact: artifacts/junit.xml
 """
     manifest = (
