@@ -1,4 +1,4 @@
-# ADR-059 — the producer evidence plane: one trust chain, extended at named seams
+# ADR-060 — the producer evidence plane: one trust chain, extended at named seams
 
 **Status:** accepted
 

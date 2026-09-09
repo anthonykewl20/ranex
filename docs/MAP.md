@@ -12,7 +12,7 @@ this map.
 |---|---|
 | Version | `3.8.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-09-09 — the producer evidence plane, seams named and measured (issue #96, ADR-059); see §0.40 |
+| Last revised | 2026-09-09 — the producer evidence plane, seams named and measured (issue #96, ADR-060); see §0.40 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -794,7 +794,7 @@ verification proves the surface, not payload semantics.
 
 ### 0.40 What changed in `3.8.0` — the producer evidence plane
 
-Issue #96 / ADR-059 (`accepted`) names where a new *kind* of observation may
+Issue #96 / ADR-060 (`accepted`) names where a new *kind* of observation may
 enter the trust chain, so three pending proposals — a second results format,
 worker guidance, and recorded findings — extend one chain instead of growing
 three. Five seams are named (policy loader, foundation normaliser,
@@ -1600,7 +1600,7 @@ ranex gate evaluate HEAD --approver A
 
 ### 6.4 The producer evidence plane — `CONFIRMED` for the seams, `PROVISIONAL` for their users
 
-ADR-059. One chain, extended at named seams; no second verdict path.
+ADR-060. One chain, extended at named seams; no second verdict path.
 
 ```
 gates.yaml -> [A policy loader] -> ranex run -> [B normaliser] -> signed envelope
