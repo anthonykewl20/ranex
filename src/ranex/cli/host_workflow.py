@@ -21,6 +21,8 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any, NoReturn
 
+from ranex.cli.confinement import resolve_within_repository
+from ranex.cli.repository import governed_repository_root
 from ranex.execution.log_redaction import collect_redaction_literals
 from ranex.execution.retained_logs import (
     DEFAULT_LOG_MAX_BYTES,
@@ -517,9 +519,50 @@ def run_workflow(
     return finish("confined" if step.exit_code == 0 else "refused", step.exit_code, checks, scope)
 
 
+def _confined_result_dir(args: Any) -> str | None:
+    """Refuse a `--result-dir` that escapes the repository, or is unusable.
+
+    Every other path-taking flag goes through `resolve_within_repository`;
+    this one did not, so `--result-dir ../../../etc/passwd`, an absolute path
+    and a 4000-character name each reached `write_run_report` and raised
+    NotADirectoryError / OSError [Errno 36] out of the CLI as a traceback.
+
+    A traceback is the worst refusal shape available here: an operator cannot
+    tell it from a crash, and it prints a stack where a reason belongs. The
+    guard already existed and this flag simply never reached it.
+    """
+
+    candidate = getattr(args, "result_dir", None)
+    if candidate is None:
+        return None
+    root = governed_repository_root()
+    try:
+        resolved = resolve_within_repository(root, candidate)
+    except ValueError as exc:
+        raise ValueError(f"refusing --result-dir: {exc}") from exc
+    try:
+        resolved.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        # A name the filesystem itself refuses (too long, a component that is
+        # not a directory) is an operator error, not a kernel fault.
+        # Echo a bounded prefix: the value that provokes ENAMETOOLONG is by
+        # definition too long to print, and a 4000-character wall buries the
+        # reason it was printed for.
+        shown = candidate if len(candidate) <= 80 else candidate[:77] + "..."
+        raise ValueError(f"refusing --result-dir {shown!r}: {exc.strerror}") from exc
+    return str(resolved)
+
+
 def main(args: Any) -> int:
     """Dispatch the ``ranex host`` argparse namespace."""
     action = args.action
+    try:
+        confined = _confined_result_dir(args)
+    except ValueError as exc:
+        print(f"ERROR  {exc}", file=os.sys.stderr)
+        return 2
+    if confined is not None:
+        args.result_dir = confined
     if action == "launcher-build":
         return run_operator(args, [action, "--manifest", args.manifest, "--source", args.source, "--output", args.output], "BUILT", args.output)
     if action == "launcher-install":
