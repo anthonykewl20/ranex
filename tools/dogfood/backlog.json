@@ -12,7 +12,7 @@
         "lines_executed": 1
       },
       {
-        "M": 45,
+        "M": 46,
         "function": "ranex/cli/main.py:cmd_run",
         "lines_executed": 1
       },
@@ -37,14 +37,14 @@
         "lines_executed": 1
       },
       {
+        "M": 39,
+        "function": "ranex/cli/main.py:_execute_hermetically",
+        "lines_executed": 7
+      },
+      {
         "M": 32,
         "function": "ranex/cli/main.py:cmd_task_judge",
         "lines_executed": 1
-      },
-      {
-        "M": 34,
-        "function": "ranex/cli/main.py:_execute_hermetically",
-        "lines_executed": 6
       },
       {
         "M": 28,
