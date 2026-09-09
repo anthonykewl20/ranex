@@ -8,6 +8,7 @@ execution of arbitrary contributor code. Never constructs or signs a webhook.
 from __future__ import annotations
 
 import argparse
+import importlib.metadata
 import json
 import os
 import signal
@@ -19,6 +20,7 @@ from pathlib import Path
 
 import yaml
 
+import ranex
 from ranex.github_app.client import AppCredentials, GitHubClient, mint_app_jwt
 from ranex.github_app.registration import load_stored_identity
 
@@ -34,9 +36,19 @@ def main() -> None:
     parser.add_argument('--pull-request', type=int, help='resume an open probe PR on this branch')
     parser.add_argument('--port', type=int, required=True)
     parser.add_argument('--replace-listener-pid', type=int)
+    parser.add_argument('--installed-kernel', action='store_true',
+                        help='require and run the installed wheel without source PYTHONPATH')
     parser.add_argument('--mutation', choices=('six-bytes', 'explicit-xpass'), default='six-bytes')
     parser.add_argument('--out', type=Path, required=True)
     args = parser.parse_args()
+    module_file = Path(ranex.__file__).resolve()
+    installed_file = Path(importlib.metadata.distribution('ranex').locate_file('ranex/__init__.py')).resolve()
+    if args.installed_kernel and module_file != installed_file:
+        parser.error('--installed-kernel requires an installed wheel, not an editable source checkout')
+    kernel = dict(version=importlib.metadata.version('ranex'), module_file=str(module_file),
+                  installed_mode=args.installed_kernel)
+    source_environment = {} if args.installed_kernel else {
+        'PYTHONPATH': str(Path(__file__).resolve().parents[2] / 'src')}
     root = args.repository.resolve()
     args.out.mkdir(parents=True, exist_ok=False)
     output = args.out.resolve()
@@ -49,7 +61,7 @@ def main() -> None:
 
     def record(phase, **values):
         records.append({'phase': phase, **values})
-        (output / 'receipt.json').write_text(json.dumps({'scope': __doc__, 'records': records}, indent=2) + '\n')
+        (output / 'receipt.json').write_text(json.dumps({'scope': __doc__, 'kernel': kernel, 'records': records}, indent=2) + '\n')
         print(phase, json.dumps(values), flush=True)
 
     def operator_environment():
@@ -101,7 +113,7 @@ def main() -> None:
     def observe(expected):
         command = yaml.safe_load((root / 'governance/gates.yaml').read_bytes())['gates'][0]['required_claims'][0]['command']
         environment = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8',
-                       'PYTHONPATH': str(Path(__file__).resolve().parents[2] / 'src'),
+                       **source_environment,
                        'RANEX_SIGNING_KEY': str(args.worker_key)}
         result = subprocess.run([sys.executable, '-m', 'ranex.cli.main', 'run',
                                  '--external-repository', str(root), '--producer', 'worker',
@@ -132,7 +144,7 @@ def main() -> None:
         time.sleep(2)
     try:
         environment = {'PATH': '/usr/bin:/bin', 'LANG': 'C.UTF-8',
-                       'PYTHONPATH': str(Path(__file__).resolve().parents[2] / 'src'),
+                       **source_environment,
                        'RANEX_GITHUB_APP_ID': str(identity['app_id']),
                        'RANEX_GITHUB_APP_PRIVATE_KEY': str(credentials.private_key_path),
                        'RANEX_GITHUB_WEBHOOK_SECRET': credentials.webhook_secret,

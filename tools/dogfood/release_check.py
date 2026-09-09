@@ -101,7 +101,7 @@ def main() -> int:
             suite = ['/usr/bin/python3', '-m', 'pytest', '-q', '-o', 'xfail_strict=true', '--junitxml=result.xml']
             require(run(suite, subject, clean))
             observer_modes = []
-            for plugin in ([], ['-p', 'ranex.foundation.pytest_xpass']):
+            for plugin in ([], ['-p', 'ranex.foundation.pytest_xpass'], ['-pranex.foundation.pytest_xpass']):
                 output = require(run([clone / '.venv/bin/ranex', 'suite', 'freeze',
                     '--external-repository', subject, '--artifact', 'result.xml', '--output',
                     'suite_manifest.json', '--', *suite, *plugin], subject, clean))
