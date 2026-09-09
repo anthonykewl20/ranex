@@ -1,9 +1,11 @@
 {
   "cases": [
     {
+      "as_expected": false,
       "control": "gate-blocks-a-failing-bound-command",
-      "duration_s": 7.593,
+      "duration_s": 5.64,
       "expectation": "the gate PASSes a clean subject and FAILs one the bound scanner refuses",
+      "expected_outcome": null,
       "negative": {
         "digests": [
           "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c",
@@ -71,9 +73,11 @@
       "status": "VERIFIED"
     },
     {
+      "as_expected": false,
       "control": "absence-blocks",
-      "duration_s": 3.45,
+      "duration_s": 3.29,
       "expectation": "a required claim with no evidence FAILs; it is never a default or a skip",
+      "expected_outcome": null,
       "negative": {
         "digests": [
           "ec667da8bf7a33b3df428642e1a1fe04eeee2bec1d3d4f8f2407eb7a1768a13c",
@@ -141,9 +145,11 @@
       "status": "VERIFIED"
     },
     {
+      "as_expected": false,
       "control": "self-approval-refused",
-      "duration_s": 9.155,
+      "duration_s": 5.041,
       "expectation": "a producer cannot approve its own evidence",
+      "expected_outcome": null,
       "negative": {
         "digests": [
           "09bc33ff62119ae15b7f46e8f68e39d48f7fe1474c35a233deb317698a431d9c",
@@ -211,9 +217,11 @@
       "status": "VERIFIED"
     },
     {
+      "as_expected": true,
       "control": "a-blunted-gauge-is-caught-as-false-pass",
-      "duration_s": 7.207,
+      "duration_s": 4.449,
       "expectation": "a gate whose bound command cannot fail is reported FALSE-PASS, not VERIFIED",
+      "expected_outcome": "FALSE-PASS",
       "negative": {
         "digests": [
           "944f2bfa16ac9bc8215c767a5b47e316486e8bcb5088a95872c3777c4c041617",
@@ -277,64 +285,11 @@
         "runs": 3
       },
       "reason": "the negative control was ACCEPTED in 3/3 repeats; this check cannot block what it exists to refuse",
-      "recall": {
-        "detail": "no prior VERIFIED run of this control is on record, so every evaluation in the chain is suspect",
-        "determinable": true,
-        "suspect_count": 45,
-        "suspect_from": null,
-        "suspect_positions": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-          17,
-          18,
-          19,
-          20,
-          21,
-          22,
-          23,
-          24,
-          25,
-          26,
-          27,
-          28,
-          29,
-          30,
-          31,
-          32,
-          33,
-          34,
-          35,
-          36,
-          37,
-          38,
-          39,
-          40,
-          41,
-          42,
-          43,
-          44,
-          45
-        ]
-      },
       "repeats": 3,
       "status": "FALSE-PASS"
     }
   ],
-  "journal_head": 45,
+  "journal_head": null,
   "repeats": 3,
   "schema": "ranex-calibration-v1",
   "worst": "FALSE-PASS"

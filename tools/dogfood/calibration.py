@@ -89,6 +89,15 @@ class Control:
     positive: Callable[[], Observation]
     negative: Callable[[], Observation] | None = None
     deterministic: bool = True
+    #: The outcome a SELFTEST control is built to produce. Set only when the
+    #: control exists to prove an alarm fires — its red is the evidence, not a
+    #: finding. A genuine failure never carries this, which is what keeps the
+    #: two distinguishable: scan for an unmarked FALSE-PASS and you have found
+    #: a real one. Declaring it also inverts the check that matters most — if
+    #: the alarm ever stops firing, actual and expected disagree and the run
+    #: fails, because a selftest that silently started passing has stopped
+    #: proving anything.
+    expected: Status | None = None
 
 
 @dataclass
@@ -119,9 +128,13 @@ class Calibration:
             "repeats": self.repeats,
             "positive": _side(positive),
             "negative": _side(negative) if control.negative is not None else None,
+            "expected_outcome": str(control.expected) if control.expected else None,
+            "as_expected": control.expected is not None and status is control.expected,
             "duration_s": round(time.time() - started, 3),
         }
-        if status is Status.FALSE_PASS:
+        if status is Status.FALSE_PASS and control.expected is not Status.FALSE_PASS:
+            # A genuine false pass recalls what the bad gauge approved. A
+            # selftest's does not: nothing was approved by it.
             case["recall"] = self.recall_window(control.name)
         self.cases.append(case)
         print(f"{status} {control.name}: {reason}", flush=True)
@@ -289,8 +302,16 @@ class Calibration:
         negative, so its green says nothing.
         """
 
-        blocking = {Status.FALSE_PASS, Status.NON_DETERMINISTIC, Status.GAP}
-        return 1 if any(case["status"] in {str(s) for s in blocking} for case in self.cases) else 0
+        blocking = {str(s) for s in (Status.FALSE_PASS, Status.NON_DETERMINISTIC, Status.GAP)}
+        for case in self.cases:
+            if case.get("expected_outcome") is not None:
+                # A selftest fails when it stops matching its declared outcome,
+                # not when it produces it.
+                if not case["as_expected"]:
+                    return 1
+            elif case["status"] in blocking:
+                return 1
+        return 0
 
 
 def _side(observations: list[Observation]) -> dict[str, Any]:
@@ -484,6 +505,7 @@ def _blunted_control(subject: Subject) -> Control:
         expectation="a gate whose bound command cannot fail is reported FALSE-PASS, not VERIFIED",
         positive=lambda: subject.observe(subject.good),
         negative=lambda: _inverted(subject.observe(subject.bad)),
+        expected=Status.FALSE_PASS,
     )
 
 

@@ -72,7 +72,14 @@ def _violations(receipt: dict) -> list[str]:
                     f"{name}: VERIFIED while its negative control was ACCEPTED — "
                     "that is a FALSE-PASS wearing a green label"
                 )
-        if status == "FALSE-PASS" and "recall" not in case:
+        expected = case.get("expected_outcome")
+        if expected is not None and not case.get("as_expected"):
+            problems.append(
+                f"{name}: declares expected_outcome={expected!r} but is {status!r}. A "
+                "selftest that stopped matching its declared outcome has stopped "
+                "proving anything, and its green is the failure"
+            )
+        if status == "FALSE-PASS" and expected is None and "recall" not in case:
             problems.append(
                 f"{name}: FALSE-PASS without a recall window; §8.4 recalls what a bad "
                 "gauge approved, and a receipt that does not name it recalls nothing"
@@ -172,12 +179,19 @@ def test_the_happy_path_still_reaches_verified() -> None:
         ({"control": "c", "status": "FALSE-PASS", "repeats": 3,
           "negative": {"runs": 3, "ok": [True, True, True]}}, "recall window"),
         (
+            {"control": "c", "status": "VERIFIED", "repeats": 3,
+             "negative": {"runs": 3, "ok": [False, False, False]},
+             "expected_outcome": "FALSE-PASS", "as_expected": False},
+            "stopped proving anything",
+        ),
+        (
             {"control": "c", "status": "VERIFIED", "repeats": 1,
              "negative": {"runs": 1, "ok": [False]}},
             "fewer than 3",
         ),
     ],
-    ids=["missing-negative", "negative-accepted", "no-recall-window", "too-few-repeats"],
+    ids=["missing-negative", "negative-accepted", "no-recall-window",
+         "too-few-repeats", "selftest-stopped-firing"],
 )
 def test_the_receipt_checker_catches_each_overclaim(case: dict, expected: str) -> None:
     problems = _violations({"repeats": case.get("repeats"), "cases": [case]})
@@ -200,3 +214,35 @@ def test_a_well_formed_receipt_passes_the_checker() -> None:
             ],
         }
     )
+
+
+def test_a_declared_selftest_red_is_not_mistaken_for_a_finding() -> None:
+    """A committed FALSE-PASS must say whether it was built to be one.
+
+    The property this whole evening kept turning on: a signal must be
+    distinguishable from the thing it resembles. A confinement refusal that
+    read like honest absence, a contention red that read like a regression —
+    and a deliberately red receipt that reads like a real false pass is the
+    same shape. `expected_outcome` makes the distinction machine-readable, so a
+    genuine one cannot hide beside an intentional one: scan for an UNMARKED
+    FALSE-PASS and what you find is real.
+    """
+
+    intentional = {
+        "control": "alarm", "status": "FALSE-PASS", "repeats": 3,
+        "negative": {"runs": 3, "ok": [True, True, True]},
+        "expected_outcome": "FALSE-PASS", "as_expected": True,
+    }
+    genuine = {
+        "control": "real", "status": "FALSE-PASS", "repeats": 3,
+        "negative": {"runs": 3, "ok": [True, True, True]},
+        "recall": {"determinable": True, "suspect_count": 2},
+    }
+    assert not _violations({"repeats": 3, "cases": [intentional]}), (
+        "a declared selftest red is evidence, not a violation"
+    )
+    assert not _violations({"repeats": 3, "cases": [genuine]}), (
+        "a genuine FALSE-PASS carrying its recall window is a finding, not a violation"
+    )
+    unmarked = [case for case in (intentional, genuine) if case.get("expected_outcome") is None]
+    assert unmarked == [genuine], "an unmarked FALSE-PASS must be exactly the genuine one"

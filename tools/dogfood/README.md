@@ -322,6 +322,16 @@ Retained receipts, `audits/2026-09-10-calibration/`:
   own alarm fires against the real kernel; it is not a defect in Ranex. Run it
   with `--prove-alarms`.
 
+A deliberately red receipt must not be able to hide a real one, so the
+distinction is machine-readable rather than a note someone remembers: a
+selftest control declares `expected_outcome`, and `as_expected` records whether
+it still produces it. **Scan for a FALSE-PASS with no `expected_outcome` and
+what you find is genuine.** The declaration also inverts the check that matters
+most — if the alarm ever stops firing, actual and expected disagree and the run
+fails, because a selftest that quietly starts passing has stopped proving
+anything. Only a genuine FALSE-PASS carries a recall window; nothing was
+approved by a selftest's.
+
 ## Realness policy — no mocks, no fakes, no synthetic data
 
 A scenario that JUDGES kernel behaviour must exercise real artifacts:
