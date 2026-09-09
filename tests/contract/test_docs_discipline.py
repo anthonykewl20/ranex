@@ -356,8 +356,11 @@ def test_readme_lists_exactly_the_finished_slices() -> None:
 
 # --- ADRs: no slice without a researched decision ---------------------------
 #
-# CLAUDE.md requires an ADR before a slice is opened, and requires it to cite
-# prior art and enumerate sad paths. A rule an agent can read is a suggestion.
+# CLAUDE.md makes ADRs optional, and what is enforced is their SHAPE: a status
+# line from the closed vocabulary, the line cap, no unfilled placeholder, and a
+# link that resolves. A rule an agent can read is a suggestion; these four are
+# not. (This comment claimed ADRs were mandatory before a slice — they are not,
+# and no test here ever checked that.)
 
 
 def test_every_adr_declares_a_status() -> None:
