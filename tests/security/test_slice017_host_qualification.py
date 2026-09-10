@@ -1333,9 +1333,15 @@ def test_gate6_positive_host_probe_succeeds_on_the_qualified_host() -> None:
     completed, _ = _run_in_delegated_unit("host-probe")
     if completed.returncode != 0:
         # The controller truthfully reporting an unqualified host is contract
-        # behavior. Only this known hosted-runner signature is that absence.
+        # behavior. Two signatures are that absence and no others: the known
+        # hosted-runner uid map, and a host with no installed launcher at all —
+        # this arm does not install one (`installed_launcher` removes it again
+        # on teardown), so it must state what an uninstalled host looks like
+        # rather than inherit whichever object a previous test left behind.
         refusal = _refusal(completed, E_FACT)
-        assert "map-user:13" in refusal["detail"]
+        assert "map-user:13" in refusal["detail"] or (
+            str(INSTALLED_ARTIFACT) in refusal["detail"] and "absent" in refusal["detail"]
+        ), refusal["detail"]
         return
     assert completed.returncode == 0, _diagnostic(completed)
     facts = _json_stdout(completed)
@@ -1521,3 +1527,32 @@ def test_gate8_cleanup_failure_refuses_and_test_removes_its_blocker(
         assert not (ROOT / REPORT).exists()
     finally:
         blocker.finish()
+
+
+def test_an_absent_object_is_missing_not_drifted(tmp_path: Path) -> None:
+    """Absence is not drift, and the refusal has to say which one happened.
+
+    Every code `_open_verified` is handed names a way an object CHANGED — its
+    bytes, its mode, its owner. Answering "the executable drifted" for a file
+    that was never installed sends an operator to diff a binary that does not
+    exist; it also cost this repository three red journeys on 2026-09-10, where
+    one uninstalled launcher inside a materialisation read as an attack on the
+    exec object (F-035). The closed set already has the honest word for it.
+    """
+
+    from ranex.cli import host_confinement
+
+    absent = tmp_path / "never-installed"
+    with pytest.raises(host_confinement.HostConfinementError) as refusal:
+        host_confinement._open_verified(absent, "0" * 64, code=host_confinement.E_EXEC)
+    assert refusal.value.code == host_confinement.E_FACT, "absence must not report as drift"
+    assert str(absent) in refusal.value.detail and "absent" in refusal.value.detail
+
+    # The control: an object that IS there and whose bytes disagree with the pin
+    # still drifts, under the caller's own code.
+    present = tmp_path / "installed"
+    present.write_bytes(b"real bytes\n")
+    present.chmod(0o555)
+    with pytest.raises(host_confinement.HostConfinementError) as drifted:
+        host_confinement._open_verified(present, "0" * 64, code=host_confinement.E_EXEC)
+    assert drifted.value.code == host_confinement.E_EXEC, "a changed object is still drift"

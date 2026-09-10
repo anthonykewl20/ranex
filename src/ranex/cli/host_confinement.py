@@ -702,6 +702,16 @@ def _open_verified(
     flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC
     try:
         descriptor = os.open(path, flags)
+    except FileNotFoundError as exc:
+        # Absence is not drift. Every `code` a caller passes here names a way an
+        # object CHANGED — its bytes, its mode, its owner — and answering "the
+        # executable drifted" for a file that was never installed sends an
+        # operator to diff a binary that does not exist. What actually happened
+        # is that this host is missing a fact the qualification needs, which is
+        # the one code in the closed set that says so.
+        raise HostConfinementError(
+            E_FACT, f"{path} is absent, so this host carries no such object"
+        ) from exc
     except OSError as exc:
         raise HostConfinementError(
             code, f"cannot open {path} without following links: {exc}"
