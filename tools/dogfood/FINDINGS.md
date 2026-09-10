@@ -8,6 +8,36 @@ match the kernel silently.
 
 ## Open
 
+### F-040 (OPEN, BLOCKED on owner re-qualification) — census baseline drift from the SARIF/absence-semantics slices
+
+- Anchor: three committed slices since the iteration-27 baseline
+  (`2e048a0c4`), most visibly `54b622288` (arm 8 — SARIF 2.1.0 scan claim)
+  and the absence-semantics fixes — +926 lines of intended `src/ranex`
+  growth; drift carried open since iteration 29.
+- Diagnosis (verified two consecutive runs): `evolve-blind-spot-census`
+  baseline-drift with all property assertions passing and `backlog.json`
+  byte-identical — only the census totals (`kernel_functions`,
+  `total_independent_paths`) moved with the new, proof-untouched code. The
+  re-record itself is mechanical (both blocked runs confirmed only the
+  census digest would change, `dd653cec…` → `0c123294…`).
+- BLOCKED by the full suite, red in this environment on 2026-09-11
+  (1937 passed, 63 skipped, 2 failed):
+  1. `test_slice046_cmd_run_confinement.py::test_real_strict_local_session_is_host_gated_and_binds_its_result`
+     — `E-C17-BUILD-INPUT-DRIFT: traced input bytes drifted: /etc/ld.so.cache`;
+     the same host re-qualification matter iteration 29 hit; the launcher's
+     refusal is correct behaviour, the fix is an owner re-trace, not a patch.
+  2. `test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted`
+     — the live freeze carries undeclared environment skips in the new
+     `tests/e2e/test_scan_claim_real.py` (arm 8): `skipped_ids ⊄
+     declared_skip_ids` on this host — the F-002 checkout-environment
+     split; declaring them is a frozen-manifest owner act.
+- What the 2026-09-11 run tried: targeted re-check of the two
+  ld.so.cache-referencing files (green, 57/5 — misleading: the strict-launch
+  assertion lives in a third file), one deliberate baseline re-record
+  (locally reverted unpushed when the full suite came back red), re-iterate
+  confirming the re-record would have closed the drift. Left open for the
+  owner exactly as iteration 29 did.
+
 ### F-028 — the paused-fetch driver raced its own ignored probe
 
 The immutable v0.1.001 tag's hosted CI completed its instrumented regression,
