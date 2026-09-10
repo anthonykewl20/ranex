@@ -840,6 +840,42 @@ Historical observation retained:
   and the gate's exact diagnosis; it does not weaken the prerequisite checks.
 
 
+### F-035 — the nested host probe drifts, and the entrypoint's three failures are one failure
+
+Measured 2026-09-10, twice on `58968da33` and once on the control commit
+`282bf6577`. The full-suite entrypoint exits 1 with three failures:
+
+    tests/e2e/test_gating_real_suite.py::test_stage_08b_criterion_14_...
+    tests/e2e/test_gating_real_suite.py::test_slice009_repository_gate_fails_...
+    tests/e2e/test_suite_freeze_real.py::test_frozen_transcript_matches_the_golden
+
+All three are one failure wearing three hats. Inside the materialisation, the
+suite's own copy of
+`tests/security/test_slice017_host_qualification.py::test_gate6_positive_host_probe_succeeds_on_the_qualified_host`
+gets `E-C17-EXEC-OBJECT-DRIFT` where the arm admits only
+`E-C17-HOST-FACT-MISSING`; the refusal detail names
+`<tree>/.local/ranex/libexec/strict-local-v1/ranex-worker-launcher`. That one red
+makes the nested run exit 1, which fails the freeze golden (`run_exit=0` is
+frozen into it) and both gating stages that require the nested gate to accept.
+
+**Not caused by the SARIF work (#97).** The control settles it: the same
+journey, run on `282bf6577` — the commit before that work — fails identically,
+`FROZEN tests=1961 ... run_exit=1`, in 8m19s. Two hypotheses were tested and
+discarded along the way: the `soak` campaign sharing `.local/ranex/` build state
+(the failure reproduced with soak stopped, so it is deterministic, not a race),
+and the host inotify ceiling (the refusal is a drift code, not `Errno 24`).
+
+What is true and unexplained: the same journeys passed at 17:19-18:00 on this
+host (1924 passed, 37 skipped, exit 0), and `.local/ranex/libexec/strict-local-v1/`
+and `.local/ranex/qualification/` are now **empty**. The tree itself is green —
+the freeze ceremony ran all 2001 tests with `run_exit=0` twenty minutes before
+the first red entrypoint. So this is host qualification state, measured but not
+yet explained, and it is recorded rather than worked around.
+
+Receipts: the two post-#97 entrypoint transcripts and the pre-#97 control are
+retained in this session's scratch; the FROZEN lines and the failing arm are
+quoted above.
+
 ### F-017 — capable-host acceptance tests invoked the wrong checkout (fixed in release audit)
 
 - Sequential execution of the current host-workflow, live qualification,
