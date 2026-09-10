@@ -1,50 +1,50 @@
 # State
 
-**Updated:** 2026-09-09
+**Updated:** 2026-09-10
 **Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
 
 Version v0.1.006. Open: #88 production readiness and #90 dogfood publication.
-No production sign-off or zero-bug claim is issued.
-Slice 086: `github listen --evaluate-evidence` pins operator policy, judges the
-exact PR SHA, verifies the signed verdict and publishes, never running
-contributor code. Late evidence refreshes every 15s; failures reconcile.
+No production sign-off or zero-bug claim is issued. Slice 086's receiver pins
+operator policy, judges the exact PR SHA and publishes a verified verdict,
+never running contributor code.
 
-F-010 (#94, ADR-059): the controller supplies the canonical pytest reporter.
-Explicit strict=False XPASS is retained as xpassed and blocks acceptance.
-Missing/disabled reporting refuses observation; nested activation is isolated;
-pytest-xdist 3.8.0 workers preserve XPASS centrally.
+Suite: 2001 tests, 168 expected skips, ceremony `run_exit=0` (2026-09-10).
+A refreeze runs the freeze journey's own recipe — clone the committed tree,
+fresh HOME, `deps fetch` + `deps approve`, then `suite freeze` over the pinned
+pytest argv — and takes about ten minutes here, not the hour once budgeted.
 
-Real GitHub PRs #7-#10 in anthonykewl20/ranex-app-live-probe ran refusal → Six
-PASS → XPASS refusal → repair → merge (PR #10: 5d108f53c); the three retained
-observations were independently OpenSSL signature-verified. The driver invokes
-observation explicitly; unattended execution is not proven. Receipts:
-tools/dogfood/audits/2026-09-09-xpass-observer/. The 30-case Six audit has 25
-VERIFIED and 5 GAP, not an overall PASS.
+Lanes — `tools/dogfood/lane.py`. The dogfood loop, verification suites and the
+soak campaign run here at once, and the first two cannot share a checkout: the
+loop writes `backlog.json` and `iterations/` by design, and both the freeze
+journey and `ranex run` refuse a dirty tree. A `verify` lane leases a worktree
+at a pinned commit; every lane takes a slot from a memory-sized host semaphore.
+An acquire REFUSES rather than warning, and a holder is pid AND boot id, so an
+OOM kill self-heals. Run every suite and ceremony through it —
+`lane.py run --kind verify -- <cmd>`. It replaces pattern-matching on `ps`,
+which failed three ways in one evening.
 
-ADR-060 (#96): the producer evidence plane — five seams, one chain,
-`verdict.py` unmoved. Measured on a real governed repository: an exit-code-only
-claim already blocks on an arbitrary program; advisory evidence is recorded and
-cannot decide; a missing manifest ID fails deterministically; and **containment
-inspects argv[0] only** — a system interpreter running an in-tree script
-reached PASS over a violating tree (F-012 family, now a constraint on every
-scanner). A delegated worker's instructions are retained in NO artifact (#111).
-MAP is 3.8.0, §6.4.
-MAP §16 BUILT steps and §8.1 CONFIRMED boundaries now cite a test or receipt
-(tests/contract/test_map_cites_its_evidence.py; red at 10/10 and 4/4 uncited).
-CLAUDE.md and AGENTS.md are re-synced; AGENTS.md gains the lane rule (check for
-another writer before writing, committing, pushing or starting a suite) and the
-refreeze rule. Three sessions wrote this host today; both collisions were lane
-failures — an uncommitted file collides exactly like a landed one.
+#97 landed — `sarif-2.1.0`, the evidence plane's first non-JUnit producer
+(ADR-060 seams A/B/C; MAP §6.4). A scan claim names its own frozen manifest
+(`scope`, `rules`, `blocking_levels`, `accepted`), pinned in `run`, `gate
+evaluate` and the App receiver. A blocking finding fails the scope path
+carrying it — an ID nobody could freeze is one `evaluate()` would skip — and
+the finding ID rides beside it, signed. Regions are checked against the
+materialised subject, so a forged region is refused and absence blocks. Two
+boundaries recorded, not closed: ruff 0.16.2 emits no coverage witness, so a
+scanner exiting 0 having read nothing is caught by its exit code alone; and
+`Evidence.satisfies` wants exit 0 first, so `accepted` is reachable only under
+a `--exit-zero` argv. Receipt: tools/dogfood/audits/2026-09-10-sarif-reporter/.
+
 Next, in order — milestone 8 (#113, #110, #111, #112, #114, #115), milestone 7
 (#107 approver auth, #108 witness, #109 observation log), then milestone 6's
-remainder (#95, #97, #100, #102, #105).
+remainder (#100, #102, #105, #106).
 
 Remaining boundaries: same-subject evidence reuse, hostile report producers
-(F-012), unanchored journal verification. F-005 (#93, ADR-057): signed v2
-anchors detect truncation; no witness protects an operator holding both keys.
+(F-012 — narrowed for scanners by region validation, open elsewhere),
+unanchored journal verification. F-005 (#93, ADR-057): signed v2 anchors detect
+truncation; no witness protects an operator holding both keys.
 UNIMPLEMENTED: isolated observer scheduling, merge-group checks, shard
-aggregation, policy compiler/catalog, DSSE/in-toto attestations, compliance
-coverage, external journal witness.
-UNVERIFIED: production hosting, soak, credential rotation, backup/restore,
-foreign same-name check availability, external-harness acceptance. Serialise
-full suites here; concurrent runs have exhausted this host's memory.
+aggregation, policy compiler/catalog, DSSE/in-toto attestations, external
+journal witness. UNVERIFIED: production hosting, soak, credential rotation,
+backup/restore, foreign same-name check availability, external-harness
+acceptance. The 30-case Six audit stands at 25 VERIFIED and 5 GAP.
