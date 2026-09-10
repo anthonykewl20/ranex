@@ -12,11 +12,11 @@ not at import time.
 from __future__ import annotations
 
 import hashlib
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, field
 from pathlib import Path
-from typing import cast
 
-from ranex.foundation.suite_results import load_manifest_bytes, manifest_digest
+from ranex.foundation.scan_results import claim_expectations
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.api import (
     Claim,
@@ -62,6 +62,13 @@ class GateEvaluator:
     gate_catalog: bytes
     journal_path: Path | None
     suite_manifest: bytes | None
+    scan_manifests: Mapping[str, bytes] = field(default_factory=dict)
+    """Committed scan-manifest bytes, keyed by the claim's `results_manifest`.
+
+    Bytes and not paths, for the reason `committed_trust_root` exists: what was
+    checked and what decides must be one read. A scan claim names its own
+    manifest, so this is a mapping rather than the single suite manifest above.
+    """
 
     def evaluate(
         self,
@@ -102,14 +109,22 @@ class GateEvaluator:
         """
         catalog_digest = catalog_digest_for(self.gate_catalog)
         definition = load_gate_text(self.gate_catalog.decode("utf-8"), gate_id)
-        requires_results = any(
-            claim.results_artifact is not None for claim in definition.required_claims
-        )
-        manifest = None
-        if requires_results:
-            if self.suite_manifest is None:
+        expectations: dict[str, tuple[str, tuple[str, ...], dict[str, str]]] = {}
+        for claim in definition.required_claims:
+            if claim.results_artifact is None:
+                continue
+            if claim.results_manifest is not None:
+                raw = self.scan_manifests.get(claim.results_manifest)
+                if raw is None:
+                    raise ValueError(
+                        f"claim {claim.claim_id!r} requires the committed bytes of "
+                        f"{claim.results_manifest}"
+                    )
+            elif self.suite_manifest is None:
                 raise ValueError("suite-results claim requires a committed suite manifest")
-            manifest = load_manifest_bytes(self.suite_manifest)
+            else:
+                raw = self.suite_manifest
+            expectations[claim.claim_id] = claim_expectations(raw, claim.results_reporter)
         for claim in definition.required_claims:
             if claim.results_artifact is not None and claim.results_reporter == "pytest-junit":
                 # ADR-056. A suite claim whose argv cannot report an XPASS is a
@@ -128,21 +143,15 @@ class GateEvaluator:
                     claim_id=claim.claim_id,
                     command_digest=claim.command_digest,
                     results_required=claim.results_artifact is not None,
-                    manifest_digest=(
-                        manifest_digest(manifest)
-                        if claim.results_artifact is not None and manifest is not None
-                        else None
-                    ),
-                    expected_ids=(
-                        tuple(cast(list[str], manifest["suite"]))
-                        if claim.results_artifact is not None and manifest is not None
-                        else None
-                    ),
-                    expected_skips=(
-                        dict(cast(dict[str, str], manifest["expected_skips"]))
-                        if claim.results_artifact is not None and manifest is not None
-                        else None
-                    ),
+                    manifest_digest=expectations[claim.claim_id][0]
+                    if claim.claim_id in expectations
+                    else None,
+                    expected_ids=expectations[claim.claim_id][1]
+                    if claim.claim_id in expectations
+                    else None,
+                    expected_skips=expectations[claim.claim_id][2]
+                    if claim.claim_id in expectations
+                    else None,
                 )
                 for claim in definition.required_claims
             ),
@@ -169,6 +178,7 @@ def build_gate_evaluator(
     gate_catalog: bytes,
     journal_path: Path | None = None,
     suite_manifest: bytes | None = None,
+    scan_manifests: Mapping[str, bytes] | None = None,
 ) -> GateEvaluator:
     """Select and wire the concrete implementations. The only place that may.
 
@@ -181,4 +191,7 @@ def build_gate_evaluator(
         gate_catalog=bytes(gate_catalog),
         journal_path=Path(journal_path) if journal_path is not None else None,
         suite_manifest=(bytes(suite_manifest) if suite_manifest is not None else None),
+        scan_manifests={
+            name: bytes(raw) for name, raw in (scan_manifests or {}).items()
+        },
     )

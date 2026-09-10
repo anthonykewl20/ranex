@@ -411,3 +411,49 @@ def test_reporter_without_results_artifact_is_refused(reporter: object) -> None:
     catalog["gates"][0]["required_claims"][0]["results_reporter"] = reporter
     with pytest.raises(ValueError, match="results_reporter"):
         load_gate_text(yaml.safe_dump(catalog), "landing")
+
+
+@pytest.mark.parametrize("reporter", ["sarif-2.1", "SARIF-2.1.0", "sarif", "semgrep", "junit"])
+def test_the_reporter_set_is_closed(reporter: str) -> None:
+    """A reporter nobody wrote a normaliser for must not reach the kernel.
+
+    The set is closed because each member names a real reduction: a value the
+    loader accepted but nothing could reduce would surface as an artifact error
+    at run time, which is the wrong end of the pipeline to learn that policy
+    named a format the kernel cannot read.
+    """
+
+    import yaml
+
+    from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+
+    catalog = yaml.safe_load(GOOD)
+    catalog["gates"][0]["required_claims"][0].update(
+        command=["ruff", "check", "--output-format=sarif",
+                 "--output-file=artifacts/scan.sarif", "src"],
+        results_artifact="artifacts/scan.sarif",
+        results_reporter=reporter,
+        results_manifest="governance/scan.json",
+    )
+    with pytest.raises(ValueError, match="results_reporter"):
+        load_gate_text(yaml.safe_dump(catalog), "landing")
+
+
+def test_a_sarif_claim_binds_its_scanner_and_its_manifest() -> None:
+    """The accepted member of that closed set, in the shape review will read."""
+
+    import yaml
+
+    from ranex.policy.adapters.configuration.yaml.slice_gate_loader import load_gate_text
+
+    catalog = yaml.safe_load(GOOD)
+    catalog["gates"][0]["required_claims"][0].update(
+        command=["ruff", "check", "--output-format=sarif",
+                 "--output-file=artifacts/scan.sarif", "src"],
+        results_artifact="artifacts/scan.sarif",
+        results_reporter="sarif-2.1.0",
+        results_manifest="governance/scan.json",
+    )
+    claim = load_gate_text(yaml.safe_dump(catalog), "landing").required_claims[0]
+    assert claim.results_reporter == "sarif-2.1.0"
+    assert claim.results_manifest == "governance/scan.json"

@@ -71,6 +71,15 @@ from ranex.cli.toolchain import (
 from ranex.foundation.approval import candidate_row_hash, verify_approval
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
 from ranex.foundation.confinement_result import validate_confinement_result
+from ranex.foundation.scan_results import (
+    SCAN_REPORTERS,
+    claim_expectations,
+    freeze_scan_manifest,
+    load_scan_manifest_bytes,
+    observed_findings,
+    parse_scan_artifact,
+    validate_scan_manifest,
+)
 from ranex.foundation.signing import (
     CATALOG_ABSENT,
     ENVELOPE_TYPE,
@@ -83,7 +92,6 @@ from ranex.foundation.suite_results import (
     JUNIT_REPORTERS,
     freeze_manifest,
     load_manifest_bytes,
-    manifest_digest,
     parse_results_artifact,
     read_results_artifact,
 )
@@ -912,7 +920,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
         suite_manifest_source: bytes | None = None
         if any(
-            claim.results_artifact is not None
+            claim.results_artifact is not None and claim.results_manifest is None
             for claim in definition.required_claims
         ):
             manifest_path = resolve_within_repository(root, args.suite_manifest)
@@ -924,6 +932,19 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
                 "suite manifest",
             )
             load_manifest_bytes(suite_manifest_source)
+        # A scan claim's manifest is trust root exactly as the suite manifest
+        # is: it fixes the scope that decides and the findings review has
+        # already answered for, so it is read from the ref being judged and
+        # never from whatever the working tree holds.
+        scan_manifest_sources: dict[str, bytes] = {}
+        for claim in definition.required_claims:
+            name = claim.results_manifest
+            if name is None or name in scan_manifest_sources:
+                continue
+            scan_manifest_sources[name] = committed_trust_root(
+                root, args.ref, name, resolve_within_repository(root, name), "scan manifest"
+            )
+            load_scan_manifest_bytes(scan_manifest_sources[name])
         keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
         # The root is passed so the containment decision `run` made about
         # argv[0] is taken again here, from the signed path in the record. The
@@ -941,6 +962,7 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
             catalog_source,
             journal_path,
             suite_manifest_source,
+            scan_manifest_sources,
         )
         result, journal_head = evaluator.evaluate_anchored(
             args.gate,
@@ -1432,18 +1454,16 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
         keyring = load_keyring_text(keyring_source.decode("utf-8"), args.producers)
         admission = admit_records(evidence_path, keyring, worktree)
         definition = load_gate_text(catalog_source.decode("utf-8"), args.gate)
-        manifest = None
-        if any(
-            claim.results_artifact is not None
-            for claim in definition.required_claims
-        ):
-            manifest_source = _task_committed_blob(
-                worktree,
-                base_commit,
-                args.suite_manifest,
-                "suite manifest",
+        expectations: dict[str, tuple[str, tuple[str, ...], dict[str, str]]] = {}
+        for claim in definition.required_claims:
+            if claim.results_artifact is None:
+                continue
+            name = claim.results_manifest or args.suite_manifest
+            description = "scan manifest" if claim.results_manifest else "suite manifest"
+            expectations[claim.claim_id] = claim_expectations(
+                _task_committed_blob(worktree, base_commit, name, description),
+                claim.results_reporter,
             )
-            manifest = load_manifest_bytes(manifest_source)
         for claim in definition.required_claims:
             if claim.results_artifact is not None and claim.results_reporter == "pytest-junit":
                 # ADR-056. `task judge` builds its own Gate rather than going
@@ -1461,21 +1481,15 @@ def cmd_task_judge(args: argparse.Namespace) -> int:
                     claim_id=claim.claim_id,
                     command_digest=claim.command_digest,
                     results_required=claim.results_artifact is not None,
-                    manifest_digest=(
-                        manifest_digest(manifest)
-                        if claim.results_artifact is not None and manifest is not None
-                        else None
-                    ),
-                    expected_ids=(
-                        tuple(cast(list[str], manifest["suite"]))
-                        if claim.results_artifact is not None and manifest is not None
-                        else None
-                    ),
-                    expected_skips=(
-                        dict(cast(dict[str, str], manifest["expected_skips"]))
-                        if claim.results_artifact is not None and manifest is not None
-                        else None
-                    ),
+                    manifest_digest=expectations[claim.claim_id][0]
+                    if claim.claim_id in expectations
+                    else None,
+                    expected_ids=expectations[claim.claim_id][1]
+                    if claim.claim_id in expectations
+                    else None,
+                    expected_skips=expectations[claim.claim_id][2]
+                    if claim.claim_id in expectations
+                    else None,
                 )
                 for claim in definition.required_claims
             ),
@@ -3432,6 +3446,45 @@ def _host_qualification_resolution(root: Path, command: Sequence[str]) -> Resolu
     return Resolution(executable=executable, route=walked_route(executable))
 
 
+def _scan_freeze_reader(artifact_relative: Path) -> Callable[[Path], object]:
+    """Read a SARIF artifact and its findings inside the materialisation.
+
+    The freeze needs the finding IDs a real run produced, and an ID is bound to
+    the subject's bytes at the reported region — which exist only while the
+    materialised tree does. So the IDs are taken here, beside the artifact,
+    rather than reconstructed afterwards from a tree that has been torn down.
+    """
+
+    depth = len(artifact_relative.parts) - 1
+
+    def read(path: Path) -> object:
+        raw = read_results_artifact(path)
+        return observed_findings(raw, path.parents[depth])
+
+    return read
+
+
+def _scan_artifact_reader(
+    manifest: Mapping[str, object], artifact_relative: Path
+) -> Callable[[Path], object]:
+    """Reduce a SARIF artifact where it was produced: inside the materialisation.
+
+    Region validation is only worth anything against the tree the scanner
+    actually read, and that tree exists only while the run is materialised. The
+    artifact's own path is what locates it: the reader is handed
+    `<tree>/<artifact_relative>`, so walking back the artifact's own components
+    lands on the subject root without threading the materialiser's private
+    scratch path through the command.
+    """
+
+    depth = len(artifact_relative.parts) - 1
+
+    def read(path: Path) -> object:
+        return parse_scan_artifact(path, manifest, subject_root=path.parents[depth])
+
+    return read
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Run a command and record what was observed. Never judge it.
 
@@ -3513,6 +3566,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         results_artifact: str | None = None
         qualification_report: str | None = None
         suite_manifest: dict[str, object] | None = None
+        scan_manifest: dict[str, object] | None = None
         results_reporter = "pytest-junit"
         catalog_source: bytes | None = None
         catalog_name = named_within_repository(root, args.gate_catalog)
@@ -3536,15 +3590,34 @@ def cmd_run(args: argparse.Namespace) -> int:
                         selected_claim.claim_id,
                         list(selected_claim.command),
                     )
-                manifest_path = resolve_within_repository(root, args.suite_manifest)
-                manifest_source = committed_trust_root(
-                    root,
-                    started_at,
-                    args.suite_manifest,
-                    manifest_path,
-                    "suite manifest",
-                )
-                suite_manifest = load_manifest_bytes(manifest_source)
+                if selected_claim.results_manifest is not None:
+                    # The scan's own frozen universe, read from the commit
+                    # being judged. `run` reduces the artifact here so that the
+                    # evidence it signs is the summary a gate will decide on,
+                    # rather than a blob re-parsed later under other bytes.
+                    scan_manifest = validate_scan_manifest(
+                        load_scan_manifest_bytes(
+                            committed_trust_root(
+                                root,
+                                started_at,
+                                selected_claim.results_manifest,
+                                resolve_within_repository(
+                                    root, selected_claim.results_manifest
+                                ),
+                                "scan manifest",
+                            )
+                        )
+                    )
+                else:
+                    manifest_path = resolve_within_repository(root, args.suite_manifest)
+                    manifest_source = committed_trust_root(
+                        root,
+                        started_at,
+                        args.suite_manifest,
+                        manifest_path,
+                        "suite manifest",
+                    )
+                    suite_manifest = load_manifest_bytes(manifest_source)
                 results_artifact = selected_claim.results_artifact
                 results_reporter = selected_claim.results_reporter
             if selected_claim is not None:
@@ -3634,7 +3707,11 @@ def cmd_run(args: argparse.Namespace) -> int:
         carrier_path = results_artifact or qualification_report
         artifact_relative = Path(carrier_path) if carrier_path is not None else None
         artifact_reader: Callable[[Path], object] | None = None
-        if results_artifact is not None:
+        if results_artifact is not None and results_reporter in SCAN_REPORTERS:
+            if scan_manifest is None or artifact_relative is None:
+                raise ValueError("scan claim has no loaded manifest")
+            artifact_reader = _scan_artifact_reader(scan_manifest, artifact_relative)
+        elif results_artifact is not None:
             if suite_manifest is None:
                 raise ValueError("suite-results claim has no loaded manifest")
             artifact_reader = lambda path: parse_results_artifact(
@@ -3762,8 +3839,13 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             command = command[1:]
         if not command:
             raise ValueError("a freeze command is required after --")
+        scan_reporter = args.results_reporter in SCAN_REPORTERS
         expected_skips: dict[str, str] = {}
         for declaration in args.expected_skip:
+            if scan_reporter:
+                raise ValueError(
+                    "--expected-skip declares a test; a scan declares --accepted"
+                )
             test_id, separator, reason = declaration.partition("=")
             if not separator or not test_id or not reason.strip():
                 raise ValueError(
@@ -3772,6 +3854,31 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             if test_id in expected_skips:
                 raise ValueError(f"duplicate --expected-skip declaration for {test_id}")
             expected_skips[test_id] = reason
+        accepted: dict[str, str] = {}
+        for declaration in args.accepted:
+            finding, separator, reason = declaration.partition("=")
+            if not separator or not finding or not reason.strip():
+                raise ValueError(
+                    "--accepted must be FINDING_ID=REASON with a non-empty reason"
+                )
+            if finding in accepted:
+                raise ValueError(f"duplicate --accepted declaration for {finding}")
+            accepted[finding] = reason
+        scan_declarations = bool(
+            args.scan_scope or args.scan_rule or args.blocking_level or accepted
+        )
+        if scan_declarations and not scan_reporter:
+            # A flag that is parsed and then ignored reads in review like a
+            # policy that is in force.
+            raise ValueError(
+                "--scan-scope/--scan-rule/--blocking-level/--accepted require "
+                f"--results-reporter {sorted(SCAN_REPORTERS)[0]}"
+            )
+        if scan_reporter and not args.scan_scope:
+            raise ValueError(
+                "--scan-scope is required: a scan manifest with no scope freezes a "
+                "claim about nothing, and a gate that cannot block is refused"
+            )
         started_at = head_commit(root)
         provisioning = _provisioning_for(root, started_at, args.store)
         preliminary, provisioned_resolver = _command_resolution(
@@ -3796,17 +3903,33 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             preliminary,
             provisioned_resolver,
             artifact_relative=artifact_relative,
-            artifact_reader=read_results_artifact,
+            artifact_reader=(
+                _scan_freeze_reader(artifact_relative)
+                if scan_reporter
+                else read_results_artifact
+            ),
             pytest_observer=args.results_reporter == "pytest-junit",
         )
-        if not isinstance(observation.artifact, bytes):
-            raise ValueError("freeze run produced no readable results artifact")
-        manifest = freeze_manifest(
-            observation.artifact,
-            expected_skips=expected_skips,
-            reporter=args.results_reporter,
-            require_pytest_observer=True,
-        )
+        manifest: dict[str, object]
+        if scan_reporter:
+            if not isinstance(observation.artifact, tuple):
+                raise ValueError("freeze run produced no readable scan artifact")
+            manifest = freeze_scan_manifest(
+                observation.artifact,
+                scope=list(args.scan_scope),
+                rules=list(args.scan_rule),
+                blocking_levels=list(args.blocking_level) or ["error"],
+                accepted=accepted,
+            )
+        else:
+            if not isinstance(observation.artifact, bytes):
+                raise ValueError("freeze run produced no readable results artifact")
+            manifest = freeze_manifest(
+                observation.artifact,
+                expected_skips=expected_skips,
+                reporter=args.results_reporter,
+                require_pytest_observer=True,
+            )
         completed = observation.completed
         output.parent.mkdir(parents=True, exist_ok=True)
         output.write_bytes(canonical_json_bytes(manifest))
@@ -3824,11 +3947,19 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
         print(f"ERROR  {exc}", file=sys.stderr)
         return EXIT_USAGE
 
-    print(
-        f"FROZEN  tests={len(cast(list[str], manifest['suite']))}  "
-        f"expected_skips={len(cast(dict[str, str], manifest['expected_skips']))}  "
-        f"run_exit={completed.returncode}  output={output}"
-    )
+    if args.results_reporter in SCAN_REPORTERS:
+        print(
+            f"FROZEN  scope={len(cast(list[str], manifest['scope']))}  "
+            f"rules={len(cast(list[str], manifest['rules']))}  "
+            f"accepted={len(cast(dict[str, str], manifest['accepted']))}  "
+            f"run_exit={completed.returncode}  output={output}"
+        )
+    else:
+        print(
+            f"FROZEN  tests={len(cast(list[str], manifest['suite']))}  "
+            f"expected_skips={len(cast(dict[str, str], manifest['expected_skips']))}  "
+            f"run_exit={completed.returncode}  output={output}"
+        )
     return EXIT_PASS
 
 
@@ -4712,8 +4843,32 @@ def build_parser() -> argparse.ArgumentParser:
         help="hermetic command to run, after --",
     )
     freeze.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
-    freeze.add_argument("--results-reporter", choices=sorted(JUNIT_REPORTERS),
-                        default="pytest-junit", help="JUnit test ID convention to freeze")
+    freeze.add_argument("--results-reporter", choices=sorted(JUNIT_REPORTERS | SCAN_REPORTERS),
+                        default="pytest-junit", help="results convention to freeze")
+    freeze.add_argument(
+        "--scan-scope",
+        action="append",
+        default=[],
+        help="sarif-2.1.0: a path this scan claim covers; repeat for each",
+    )
+    freeze.add_argument(
+        "--scan-rule",
+        action="append",
+        default=[],
+        help="sarif-2.1.0: a reviewed rule ID; repeat for each",
+    )
+    freeze.add_argument(
+        "--blocking-level",
+        action="append",
+        default=[],
+        help="sarif-2.1.0: a SARIF level that decides (default: error)",
+    )
+    freeze.add_argument(
+        "--accepted",
+        action="append",
+        default=[],
+        help="sarif-2.1.0: operator declaration FINDING_ID=REASON; repeat for each",
+    )
     freeze.set_defaults(func=cmd_suite_freeze)
 
     deps = sub.add_parser("deps", help="dependency provisioning").add_subparsers(

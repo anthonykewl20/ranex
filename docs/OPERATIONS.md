@@ -172,6 +172,55 @@ Both reporters use the same JUnit safety, duplicate-ID, missing-ID and outcome
 checks. This supports one results artifact per claim; distributed collection
 and shard aggregation are not implied.
 
+### A scan claim (SARIF 2.1.0)
+
+A deterministic scanner — ruff, semgrep, govulncheck, bandit — satisfies a claim
+by emitting SARIF 2.1.0. The claim sets `results_reporter: sarif-2.1.0`, binds
+the exact tokens `--output-format=sarif` and `--output-file=PATH` where `PATH`
+equals `results_artifact` (no overrides, no `--`), and names its **own** frozen
+manifest with `results_manifest`. JUnit claims keep using the repository's one
+suite manifest; a scan freezes a different universe and must not share that file.
+
+Freeze that universe from a real run, on a clean tree:
+
+```sh
+uv run --frozen ranex suite freeze --external-repository /path/to/repo \
+  --artifact governance/scan.sarif --output governance/scan-manifest.json \
+  --results-reporter sarif-2.1.0 \
+  --scan-scope src/app.py --scan-rule F401 --blocking-level error \
+  -- /usr/bin/ruff check --output-format=sarif \
+     --output-file=governance/scan.sarif src
+```
+
+`--scan-scope` is required and repeatable: those paths are the IDs that pass and
+fail, exactly as test IDs are for a suite. `--scan-rule` is the reviewed rule
+universe — a finding outside it still blocks, but nothing outside it may be
+accepted. `--blocking-level` defaults to `error`. `--accepted FINDING_ID=REASON`
+declares a known finding, and the freeze refuses an ID the run did not actually
+observe. Commit the manifest: it decides the verdict, so review is the control
+on it, and `run`, `gate evaluate` and the App receiver all read the committed
+bytes.
+
+Two limits to know before binding one:
+
+- **The scanner's exit code decides first.** A claim is unsatisfied unless the
+  bound command exited 0, so under a scanner that exits nonzero on any finding
+  (ruff's default) an `accepted` declaration can never be reached. A claim that
+  wants acceptance to mean anything binds a scanner that reports through its
+  artifact and exits 0 — for ruff, `--exit-zero`. What blocks is then the frozen
+  manifest, which is the point.
+- **Coverage is only as witnessed as the producer makes it.** `missing` is
+  computed from `runs[].artifacts[]` when a producer emits it; ruff 0.16.2 emits
+  neither `artifacts[]` nor `invocations[]`, so a scope path is proved to exist
+  in the subject and nothing more. A scanner that exits 0 having scanned nothing
+  is caught by its exit code alone. Prefer a producer that witnesses coverage.
+
+Every reported region is checked against the materialised subject while the run
+is still standing: a region past the end of a file, or a snippet the file does
+not carry there, makes the artifact malformed — refused, and absence blocks.
+Nothing is relocated. A SARIF `invocations[]` entry that reports
+`executionSuccessful: false` is refused even with zero findings.
+
 ## The GitHub acceptance loop (Ranex GitHub App)
 
 Ranex can answer pull requests the way GitHub natively understands: a check

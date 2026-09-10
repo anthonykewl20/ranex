@@ -31,16 +31,57 @@ class EvidenceEvaluator:
     signing_key: Path
     state_dir: Path
     _policy: tuple[bytes, ...] = field(init=False, repr=False)
+    _policy_names: tuple[str, ...] = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         from ranex.cli.confinement import resolve_within_repository
         from ranex.cli.main import committed_trust_root
+        from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
+            load_gate_text,
+            reject_pytest_xfail_blindness,
+        )
 
-        object.__setattr__(self, "_policy", tuple(
-            committed_trust_root(self.repository, "HEAD", name,
-                                 resolve_within_repository(self.repository, name), name)
-            for name in (self.gate_catalog, self.producers, self.suite_manifest)
-        ))
+        def trusted(name: str, ref: str = "HEAD") -> bytes:
+            return committed_trust_root(
+                self.repository, ref, name,
+                resolve_within_repository(self.repository, name), name,
+            )
+
+        # A scan claim's manifest carries its scope and its accepted findings,
+        # so it decides as much as the catalog does: a head that quietly widens
+        # `accepted` has changed the policy, and the receiver must refuse it
+        # exactly as it refuses a rewritten catalog.
+        definition = load_gate_text(trusted(self.gate_catalog).decode("utf-8"), self.gate)
+        for claim in definition.required_claims:
+            if claim.results_artifact is not None and claim.results_reporter == "pytest-junit":
+                # ADR-056: every consumer of `results_artifact` refuses an
+                # XPASS-blind claim. The receiver became one when it started
+                # reading claims to decide which manifests are policy, so it
+                # takes the same refusal — and takes it at start-up, before a
+                # listener is accepting deliveries it could never publish.
+                reject_pytest_xfail_blindness(
+                    definition.gate_id, claim.claim_id, list(claim.command)
+                )
+        scans = sorted({
+            claim.results_manifest
+            for claim in definition.required_claims
+            if claim.results_manifest is not None
+        })
+        # The suite manifest is pinned when it decides something. A gate whose
+        # only results claim is a scan is judged entirely by that scan's own
+        # manifest, and demanding a suite manifest such a repository has no
+        # reason to carry would refuse it for holding nothing.
+        suite = (
+            (self.suite_manifest,)
+            if any(
+                claim.results_artifact is not None and claim.results_manifest is None
+                for claim in definition.required_claims
+            )
+            else ()
+        )
+        names = (self.gate_catalog, self.producers, *suite, *scans)
+        object.__setattr__(self, "_policy_names", names)
+        object.__setattr__(self, "_policy", tuple(trusted(name) for name in names))
 
     def __call__(self, binding: PrHeadBinding) -> None:
         # Use the exact same confinement and committed-policy admission as the
@@ -48,8 +89,7 @@ class EvidenceEvaluator:
         from ranex.cli.confinement import resolve_within_repository
         from ranex.cli.main import committed_trust_root
 
-        for name, trusted in zip((self.gate_catalog, self.producers, self.suite_manifest),
-                                 self._policy, strict=True):
+        for name, trusted in zip(self._policy_names, self._policy, strict=True):
             path = resolve_within_repository(self.repository, name)
             actual = committed_trust_root(self.repository, binding.head_sha, name, path, name)
             if actual != trusted:

@@ -19,6 +19,7 @@ from typing import Any
 import yaml
 
 from ranex.foundation.canonical import command_digest
+from ranex.foundation.scan_results import SCAN_REPORTERS
 from ranex.foundation.suite_results import JUNIT_REPORTERS
 
 
@@ -36,6 +37,16 @@ class SliceClaimDefinition:
     results_artifact: str | None = None
     qualification_report: str | None = None
     results_reporter: str = "pytest-junit"
+    results_manifest: str | None = None
+    """The committed manifest this claim's artifact is reduced against.
+
+    A JUnit claim leaves it `None` and uses the repository's one suite
+    manifest: every such claim is about the same suite, and a second name for
+    it would only be a second thing to keep in step. A scan claim must name
+    its own, because `scope` and `accepted` are the claim's subject matter —
+    two scanners over the same tree freeze different universes, and sharing
+    one file between them would let a rule accepted for one silence the other.
+    """
 
     @property
     def command_digest(self) -> str:
@@ -75,7 +86,14 @@ _UniqueKeyLoader.add_constructor(  # type: ignore[no-untyped-call]
 )
 
 
-_CLAIM_KEYS = {"claim_id", "command", "results_artifact", "results_reporter", "qualification_report"}
+_CLAIM_KEYS = {
+    "claim_id",
+    "command",
+    "results_artifact",
+    "results_reporter",
+    "results_manifest",
+    "qualification_report",
+}
 
 _SHAPE = "{claim_id: <id>, command: [<argv>, ...]}"
 
@@ -206,8 +224,9 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
 
     results_artifact: str | None = None
     reporter = entry.get("results_reporter", "pytest-junit")
-    if not isinstance(reporter, str) or reporter not in JUNIT_REPORTERS:
-        raise ValueError("results_reporter must be pytest-junit or vitest-junit")
+    known = JUNIT_REPORTERS | SCAN_REPORTERS
+    if not isinstance(reporter, str) or reporter not in known:
+        raise ValueError(f"results_reporter must be one of {sorted(known)}")
     if "results_reporter" in entry and "results_artifact" not in entry:
         raise ValueError("results_reporter requires results_artifact")
     if "results_artifact" in entry:
@@ -223,7 +242,25 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
                 "a non-empty relative path confined below the repository"
             )
         token = f"--junitxml={candidate}"
-        if reporter == "vitest-junit":
+        if reporter in SCAN_REPORTERS:
+            # ruff 0.16.2's real CLI. One canonical spelling, as for Vitest:
+            # a permissive reconstruction of a scanner's argument parser is a
+            # second parser to keep correct, and the complete argv is signed
+            # and compared by digest anyway. `--output-file` is required
+            # because a scanner writing its report to stdout leaves the
+            # governed run nothing to bind a digest to.
+            expected = {"--output-format=sarif", f"--output-file={candidate}"}
+            options = [
+                part for part in command
+                if part.startswith(("--output-format", "--output-file"))
+            ]
+            if "--" in command or len(options) != 2 or set(options) != expected:
+                raise ValueError(
+                    f"gate {gate_id!r}: claim {claim_id!r} SARIF requires exactly "
+                    f"--output-format=sarif and --output-file={candidate}, without "
+                    "overrides or --"
+                )
+        elif reporter == "vitest-junit":
             # Vitest 4.1.11's actual CLI and JUnit writer were exercised by
             # the Arxic pilot. Keep one canonical spelling, not a permissive
             # reconstruction of cac's argument parser. The complete argv is
@@ -243,6 +280,35 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
                 f"with the exact argv token {token!r}"
             )
         results_artifact = candidate
+
+    results_manifest: str | None = None
+    if "results_manifest" in entry:
+        if reporter not in SCAN_REPORTERS:
+            raise ValueError(
+                f"gate {gate_id!r}: claim {claim_id!r} declares results_manifest under "
+                f"{reporter!r}; JUnit claims are reduced against the repository's one "
+                "committed suite manifest, and a second name for it would be a second "
+                "thing to keep in step"
+            )
+        candidate = entry["results_manifest"]
+        if (
+            not isinstance(candidate, str)
+            or not candidate
+            or Path(candidate).is_absolute()
+            or any(part == ".." for part in Path(candidate).parts)
+        ):
+            raise ValueError(
+                f"gate {gate_id!r}: claim {claim_id!r} results_manifest must be "
+                "a non-empty relative path confined below the repository"
+            )
+        results_manifest = candidate
+    elif reporter in SCAN_REPORTERS:
+        raise ValueError(
+            f"gate {gate_id!r}: claim {claim_id!r} declares {reporter!r} without a "
+            "results_manifest; a scan with no frozen scope decides nothing, so the "
+            "claim is refused where it is written rather than passing on an empty "
+            "universe"
+        )
 
     qualification_report: str | None = None
     if "qualification_report" in entry:
@@ -276,6 +342,7 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
         results_artifact=results_artifact,
         qualification_report=qualification_report,
         results_reporter=reporter,
+        results_manifest=results_manifest,
     )
 
 

@@ -12,7 +12,7 @@ this map.
 |---|---|
 | Version | `3.8.0` |
 | Created | 2026-07-31, as `MASTER_ARCHITECTURE_SPECIFICATION.md` in the pre-reset tree |
-| Last revised | 2026-09-09 — the producer evidence plane, seams named and measured (issue #96, ADR-060); see §0.40 |
+| Last revised | 2026-09-10 — the plane's first user: a `sarif-2.1.0` scan claim, its frozen scope and its two recorded boundaries (issue #97); see §6.4 |
 | Status | Working document. **Not digest-pinned**, deliberately — see §0.3 |
 | Structure | [arc42](https://arc42.org/overview) §1–12, plus §13–§17. See §0.4 for licensing |
 | Authority | **None.** This document grants nothing, gates nothing, and supersedes no ADR |
@@ -1622,6 +1622,31 @@ FAIL); advisory evidence for a non-required claim is recorded in `considered`
 and does not block; a `missing` expected ID fails deterministically; and
 containment refuses an in-subject `argv[0]` yet admitted a system interpreter
 running an in-tree script that returned PASS over a violating tree.
+
+Measured 2026-09-10 (#97, the plane's first user): `sarif-2.1.0` is the first
+reporter to enter seam B, and it enters as a reduction to the same closed
+summary — `verdict.py` is byte-identical. A scan claim names its own frozen
+manifest (`scope`, the reviewed `rules`, the `blocking_levels` that decide, and
+`accepted` findings), pinned at seam C in `run`, `gate evaluate` **and**
+`EvidenceEvaluator`, so a head that widens `accepted` is refused exactly as a
+rewritten catalog is. A blocking finding fails the scope path carrying it —
+an ID nobody could have frozen is not an ID a frozen universe can be compared
+against — and the finding's own ID rides beside it in the signed summary. Every
+reported region is checked against the materialised subject, so a producer that
+names a line it never read is refused rather than believed (the F-012 family,
+now with a scanner-shaped answer).
+
+Two boundaries measured and **recorded rather than closed**: SARIF's coverage
+witnesses (`runs[].artifacts[]`, `runs[].invocations[]`) are optional and ruff
+0.16.2 emits neither, so a scanner that exits 0 having read nothing is caught
+by its exit code and by nothing in the artifact; and `Evidence.satisfies`
+requires exit 0 before any summary is read, so manifest-level acceptance is
+reachable only where the bound argv makes the scanner report through its
+artifact (`--exit-zero`). Both are pinned by test rather than left to be
+rediscovered: tests/e2e/test_scan_claim_real.py,
+tests/contract/test_scan_results_sarif.py,
+tests/integration/test_scan_manifest_policy_pin.py, and the field receipt
+tools/dogfood/audits/2026-09-10-sarif-reporter/sarif.json.
 
 ---
 

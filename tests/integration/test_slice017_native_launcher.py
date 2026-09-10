@@ -118,7 +118,12 @@ RESPONSE_LIMIT = 65_536
 # Issue #88 audit: GitHub status ignores inactive/non-branch rulesets.
 # Only that status-reporting branch changed; confinement is unchanged.
 # SLICE-086 adds evidence evaluation and safe listener startup; confinement is unchanged.
-MAIN_PY_SHA256 = "b5ecea26dd7da4268ec4a682f82e329b76655a57e167730fdc465445ca72fcda"
+# Issue #97 adds the sarif-2.1.0 reporter: a scan claim reads its own committed
+# manifest in `cmd_run` and `cmd_gate_evaluate`, `suite freeze` grows the scan
+# declarations, and the artifact reducers gain a subject-root reader. The
+# launcher boundary, the strict-local controller branch and every confinement
+# call site are untouched.
+MAIN_PY_SHA256 = "47faeb24d97ee5992dc4aff60b816f58d1feceec5388ecf5ff64ac0772073a46"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

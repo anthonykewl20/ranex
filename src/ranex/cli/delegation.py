@@ -30,6 +30,7 @@ from ranex.execution.retained_logs import (
 )
 from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.scan_results import SCAN_REPORTERS
 from ranex.foundation.suite_results import load_manifest_bytes, parse_results_artifact
 from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
     load_gate_text,
@@ -501,6 +502,16 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                     getattr(args, "gate", "landing"),
                     selected_claim.claim_id,
                     list(selected_claim.command),
+                )
+            if getattr(selected_claim, "results_reporter", "pytest-junit") in SCAN_REPORTERS:
+                # A delegated worker's suite is shell-split from a string, and
+                # a scan claim's argv is bound to a scanner and an output file
+                # this path never materialises a subject root for. Refuse it in
+                # its own words rather than failing later inside a JUnit parser
+                # that was handed SARIF (#102 is where delegation grows this).
+                raise ValueError(
+                    "refusing suite: a scan claim is not delegated; run it with "
+                    "`ranex run`"
                 )
             suite_command = shlex.split(args.suite)
             if tuple(suite_command) != selected_claim.command:
