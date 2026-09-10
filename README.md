@@ -151,7 +151,7 @@ rollback requires an independently retained head. See the
 <summary>Last recorded dogfood run (may predate the current release)</summary>
 
 <!-- dogfood-status:start -->
-**43/43 deterministic proofs pass** · iteration 29 · kernel v0.1.6 (54b62228827c) · last run 2026-09-10T18:32:46Z · open findings: F-028, F-025, F-023, F-022, F-018, F-012, F-003
+**43/43 deterministic proofs pass** · iteration 31 · kernel v0.1.6 (a3d60fc3093f) · last run 2026-09-10T22:38:47Z · open findings: F-040, F-028, F-025, F-023, F-022, F-018, F-012, F-003
 
 - Live benchmark page: https://ranex.dev/dogfood
 - Raw data: `tools/dogfood/site/benchmarks.json` (its sha256 fingerprint is printed on the page)
