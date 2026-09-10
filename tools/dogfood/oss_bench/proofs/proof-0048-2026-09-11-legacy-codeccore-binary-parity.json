@@ -1,0 +1,38 @@
+{
+  "agent_steps": 67,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. oss_tests.py",
+    "elapsed_s": 0.3,
+    "exit": 1,
+    "output_tail": "10 failed in 0.17s",
+    "verdict": "RED"
+  },
+  "cost_usd": 0.50887,
+  "date": "2026-09-11",
+  "duration_s": 887.869,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 0.0,
+  "kernel_head": "c1478212669192d9eafc182733dbc6e5c16b8a49",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.5,
+    "gate_output": "FAIL  gate=landing  rule=TASK_TESTS\n      tests-executed: blocking suite outcome(s): oss_tests.py::test_acct_padding_leniency (failed), oss_tests.py::test_check_override (failed), oss_tests.py::test_comma_memo_padding (failed), oss_tests.py::test_full_corpus_parity (failed), oss_tests.py::test_january_audit_flag (failed), oss_tests.py::test_lenient_tokens (failed), oss_tests.py::test_memo_squeeze (failed), oss_tests.py::test_null_date_decode (failed), oss_tests.py::test_prefix_case_leniency (failed), oss_tests.py::test_round_trips (failed)\n      subject=sha256:120449b74a109c375a2e9ba1a4741626647cbb25737b5862e7b8d09ffc203cc7",
+    "gate_verdict": "FAIL",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-11.json/legacy-codeccore-binary-parity-83f8d828/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --rootdir=. --junitxml=governance/suite_results.xml oss_tests.py::test_memo_squeeze oss_tests.py::test_january_audit_flag oss_tests.py::test_prefix_case_leniency oss_tests.py::test_acct_padding_leniency oss_tests.py::test_null_date_decode oss_tests.py::test_comma_memo_padding oss_tests.py::test_check_override oss_tests.py::test_lenient_tokens oss_tests.py::test_round_trips oss_tests.py::test_full_corpus_parity",
+    "run_error": "",
+    "run_exit": 1
+  },
+  "run_id": "legacy-codeccore-binary-parity-83f8d828",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": "Let me probe account stripping, check order, and byte-level behavior.",
+    "heuristic": true
+  },
+  "task": "legacy-codeccore-binary-parity",
+  "tokens": 263900
+}

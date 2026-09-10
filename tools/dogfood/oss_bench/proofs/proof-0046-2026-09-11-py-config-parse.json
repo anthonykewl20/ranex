@@ -1,0 +1,38 @@
+{
+  "agent_steps": 19,
+  "bare_ci": {
+    "command": "/usr/bin/python3 -m pytest -q --rootdir=. test_parse.py",
+    "elapsed_s": 0.2,
+    "exit": 0,
+    "output_tail": "27 passed in 0.02s",
+    "verdict": "GREEN"
+  },
+  "cost_usd": 0.099413,
+  "date": "2026-09-11",
+  "duration_s": 286.967,
+  "false_block": false,
+  "false_pass": false,
+  "ground_truth_functional": 1.0,
+  "kernel_head": "c1478212669192d9eafc182733dbc6e5c16b8a49",
+  "kind": "run",
+  "model": "zai:glm-5.3",
+  "ranex_gate": {
+    "elapsed_s": 1.5,
+    "gate_output": "PASS  gate=landing  subject=sha256:3dc131889ce535bee50a8e20d62b2745a95687e84e05b37df90dbb8fb494c521",
+    "gate_verdict": "PASS",
+    "journal_output": "PASS  journal=/home/soultransit/devtony/ranex/tools/dogfood/oss_bench/results/divergence-2026-09-11.json/py-config-parse-5789669c/repo/governance/journal.sqlite3  chain=verified  external-anchor=UNVERIFIED",
+    "journal_verified": true,
+    "run_command": "ranex run --claim tests-executed --producer oss-bench-producer -- /usr/bin/python3 -m pytest -q -o xfail_strict=true -p ranex.foundation.pytest_xpass --rootdir=. --junitxml=governance/suite_results.xml test_parse.py::test_comments_and_blanks test_parse.py::test_basic_and_whitespace test_parse.py::test_quoting test_parse.py::test_escapes_in_quotes test_parse.py::test_inline_comments test_parse.py::test_bool_null_coercion test_parse.py::test_int_coercion test_parse.py::test_float_coercion test_parse.py::test_empty_and_duplicate test_parse.py::test_invalid_raises",
+    "run_error": "",
+    "run_exit": 0
+  },
+  "run_id": "py-config-parse-5789669c",
+  "schema": "ranex-oss-proof-entry-v1",
+  "self_report": {
+    "claimed_success": false,
+    "final_words": ". Empty result \u00e2\u0086\u0092 `\"\"`.\n\nVerified with 50+ hand-written cases (CRLF, comments, escapes, all coercions and error paths) \u00e2\u0080\u0094 all pass, and `ruff check` is clean.",
+    "heuristic": true
+  },
+  "task": "py-config-parse",
+  "tokens": 39610
+}

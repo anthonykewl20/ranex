@@ -1233,6 +1233,96 @@
       "scenarios": 43,
       "sha": "cc945667b",
       "subject": "tools: dogfood artifacts - iteration 28"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "df8d16ef2",
+      "subject": "tools: proof pile - 2026-09-10 (3 runs)"
+    },
+    {
+      "complexity": 5580,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "dd661f44f",
+      "subject": "tools: bounded parallel lanes so the loop and a suite can bo"
+    },
+    {
+      "complexity": 5768,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "b21116bfb",
+      "subject": "kernel: a SARIF 2.1.0 scan claim, reduced to the summary the"
+    },
+    {
+      "complexity": 5768,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "a3f12c5d3",
+      "subject": "tools: the SARIF field proof, and the three ways its first r"
+    },
+    {
+      "complexity": 5768,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "4973ccde7",
+      "subject": "tools: F-035 \u2014 the entrypoint's three failures are one failu"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-10",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "54b622288",
+      "subject": "tools: arm 8 \u2014 a SARIF scan claim decides a real GitHub chec"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-11",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "5a81f75bd",
+      "subject": "tools: dogfood artifacts \u2014 iteration 29 (census drift diagno"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-11",
+      "open_findings": 7,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "1f0fc3746",
+      "subject": "tools: dogfood artifacts - iteration 30 (census drift findin"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-11",
+      "open_findings": 8,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "a3d60fc30",
+      "subject": "tools: dogfood artifacts - iteration 31 (census drift remain"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-11",
+      "open_findings": 8,
+      "pile": 45,
+      "scenarios": 43,
+      "sha": "c14782126",
+      "subject": "tools: dogfood artifacts - iteration 31 report"
     }
   ]
 }
