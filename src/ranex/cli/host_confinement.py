@@ -696,21 +696,31 @@ def _open_verified(
     expected_digest: str,
     *,
     code: str,
+    absent_code: str,
     exact_mode: int | None = None,
     required_owner: int | None = None,
 ) -> OpenedObject:
+    """Open a pinned object, or refuse — and say which of the two happened.
+
+    `code` names a way the object CHANGED: its bytes, its mode, its owner.
+    `absent_code` names what it means that there is no object at all, and the
+    two are never the same word. Which one absence deserves depends on what the
+    caller was doing: a qualification asking whether this host carries the
+    launcher gets `HOST-FACT-MISSING`, while an install told to publish an
+    artifact that is not there gets `INSTALL-REFUSED`. Both are required
+    arguments so that the choice is made where the context exists, and is
+    visible to review rather than inherited from a default.
+    """
+
     flags = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC
     try:
         descriptor = os.open(path, flags)
     except FileNotFoundError as exc:
-        # Absence is not drift. Every `code` a caller passes here names a way an
-        # object CHANGED — its bytes, its mode, its owner — and answering "the
-        # executable drifted" for a file that was never installed sends an
-        # operator to diff a binary that does not exist. What actually happened
-        # is that this host is missing a fact the qualification needs, which is
-        # the one code in the closed set that says so.
+        # Absence is not drift: answering "the executable drifted" for a file
+        # that was never installed sends an operator to diff a binary that does
+        # not exist (F-035, which cost three red journeys).
         raise HostConfinementError(
-            E_FACT, f"{path} is absent, so this host carries no such object"
+            absent_code, f"{path} is absent, so there is no object to verify"
         ) from exc
     except OSError as exc:
         raise HostConfinementError(
@@ -1630,6 +1640,7 @@ def launcher_install(
         artifact_path,
         expected,
         code=E_INSTALL,
+        absent_code=E_INSTALL,
         exact_mode=0o555,
         required_owner=os.geteuid(),
     )
@@ -2677,7 +2688,9 @@ def _run_broker_probe(
     if systemd_path != SYSTEMD_RUN:
         _refuse(E_DELEGATION, "profile does not pin the frozen systemd-run path")
     try:
-        systemd_object = _open_verified(systemd_path, systemd_digest, code=E_EXEC)
+        systemd_object = _open_verified(
+            systemd_path, systemd_digest, code=E_EXEC, absent_code=E_FACT
+        )
     except HostConfinementError as exc:
         raise HostConfinementError(E_DELEGATION, exc.detail) from exc
     systemd_filesystem = _mount_provenance(systemd_path, systemd_object.descriptor, E_DELEGATION)
@@ -3155,6 +3168,7 @@ def _validate_profile_and_objects(
         artifact_path,
         profile_artifact_digest,
         code=E_EXEC,
+        absent_code=E_FACT,
         exact_mode=0o555,
         required_owner=os.geteuid(),
     )
@@ -3163,7 +3177,9 @@ def _validate_profile_and_objects(
         _refuse(E_EXEC, "profile and manifest artifact digests differ")
     bubblewrap_path, bubblewrap_digest = _helper_pin(profile, "bubblewrap")
     try:
-        bubblewrap = _open_verified(bubblewrap_path, bubblewrap_digest, code=E_EXEC)
+        bubblewrap = _open_verified(
+            bubblewrap_path, bubblewrap_digest, code=E_EXEC, absent_code=E_FACT
+        )
     except (OSError, HostConfinementError):
         os.close(launcher.descriptor)
         raise
@@ -3173,7 +3189,9 @@ def _validate_profile_and_objects(
         systemd_path, systemd_digest = _helper_pin(profile, "systemd_run")
         if systemd_path != SYSTEMD_RUN:
             _refuse(E_EXEC, "profile does not pin the frozen systemd-run path")
-        systemd_object = _open_verified(systemd_path, systemd_digest, code=E_EXEC)
+        systemd_object = _open_verified(
+            systemd_path, systemd_digest, code=E_EXEC, absent_code=E_FACT
+        )
         os.close(systemd_object.descriptor)
         try:
             if _elf_facts_from_descriptor(launcher.descriptor, artifact_path) != _mapping(

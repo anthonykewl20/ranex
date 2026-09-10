@@ -1544,9 +1544,22 @@ def test_an_absent_object_is_missing_not_drifted(tmp_path: Path) -> None:
 
     absent = tmp_path / "never-installed"
     with pytest.raises(host_confinement.HostConfinementError) as refusal:
-        host_confinement._open_verified(absent, "0" * 64, code=host_confinement.E_EXEC)
+        host_confinement._open_verified(
+            absent, "0" * 64,
+            code=host_confinement.E_EXEC, absent_code=host_confinement.E_FACT,
+        )
     assert refusal.value.code == host_confinement.E_FACT, "absence must not report as drift"
     assert str(absent) in refusal.value.detail and "absent" in refusal.value.detail
+
+    # Absence means different things to different callers, so the code is the
+    # call site's decision: an install told to publish an artifact that is not
+    # there is refusing an install, not reporting a fact about this host.
+    with pytest.raises(host_confinement.HostConfinementError) as install:
+        host_confinement._open_verified(
+            absent, "0" * 64,
+            code=host_confinement.E_INSTALL, absent_code=host_confinement.E_INSTALL,
+        )
+    assert install.value.code == host_confinement.E_INSTALL
 
     # The control: an object that IS there and whose bytes disagree with the pin
     # still drifts, under the caller's own code.
@@ -1554,5 +1567,8 @@ def test_an_absent_object_is_missing_not_drifted(tmp_path: Path) -> None:
     present.write_bytes(b"real bytes\n")
     present.chmod(0o555)
     with pytest.raises(host_confinement.HostConfinementError) as drifted:
-        host_confinement._open_verified(present, "0" * 64, code=host_confinement.E_EXEC)
+        host_confinement._open_verified(
+            present, "0" * 64,
+            code=host_confinement.E_EXEC, absent_code=host_confinement.E_FACT,
+        )
     assert drifted.value.code == host_confinement.E_EXEC, "a changed object is still drift"
