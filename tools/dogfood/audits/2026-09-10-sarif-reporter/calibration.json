@@ -1,0 +1,488 @@
+{
+  "cases": [
+    {
+      "as_expected": false,
+      "control": "a-scan-claim-decides-a-real-gate",
+      "duration_s": 11.6,
+      "expectation": "a clean scan of the pinned subject PASSes; one real F401 does not",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "cddf809b76b6b8c949b998e40cff886963464c8675477a7be47a203ab453951f",
+          "cddf809b76b6b8c949b998e40cff886963464c8675477a7be47a203ab453951f",
+          "cddf809b76b6b8c949b998e40cff886963464c8675477a7be47a203ab453951f"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 1,
+            "evidence": true,
+            "run_exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": true,
+            "run_exit": 1,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": true,
+            "run_exit": 1,
+            "verdict": "FAIL"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "absence-blocks-a-scan-claim",
+      "duration_s": 8.273,
+      "expectation": "evidence decides; a gate with no scan recorded cannot PASS",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "ea31f743f4ec7d88084729c94e75c24efe5ed6aa9327d86f1e7bed90c34a8413",
+          "ea31f743f4ec7d88084729c94e75c24efe5ed6aa9327d86f1e7bed90c34a8413",
+          "ea31f743f4ec7d88084729c94e75c24efe5ed6aa9327d86f1e7bed90c34a8413"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": null,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": null,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": null,
+            "verdict": "FAIL"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "a-widened-manifest-does-not-carry-old-evidence",
+      "duration_s": 8.991,
+      "expectation": "accepted findings added after the freeze do not rescue a run",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "21677b0c435f98778f78a56e22246ec35197311f9607e37bfd2ecc827b0ea3ae",
+          "21677b0c435f98778f78a56e22246ec35197311f9607e37bfd2ecc827b0ea3ae",
+          "21677b0c435f98778f78a56e22246ec35197311f9607e37bfd2ecc827b0ea3ae"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 2,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "ERROR"
+          },
+          {
+            "evaluate_exit": 2,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "ERROR"
+          },
+          {
+            "evaluate_exit": 2,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "ERROR"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "a-forged-region-is-refused",
+      "duration_s": 10.256,
+      "expectation": "a report naming a line the subject does not carry is not evidence",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "afb4a15643402c1f457d5450a59acaf33d295a156f33150585315c5be588d87b",
+          "afb4a15643402c1f457d5450a59acaf33d295a156f33150585315c5be588d87b",
+          "afb4a15643402c1f457d5450a59acaf33d295a156f33150585315c5be588d87b"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "FAIL"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "the-journal-anchors-to-the-signed-verdict",
+      "duration_s": 12.855,
+      "expectation": "the chain verifies against the head its signed verdict fixed, and a rewritten chain does not",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "0f70e54fc2e2e2140199c14338898ade81386c9cd6c78cd4ea37e7b465e9451d",
+          "0f70e54fc2e2e2140199c14338898ade81386c9cd6c78cd4ea37e7b465e9451d",
+          "0f70e54fc2e2e2140199c14338898ade81386c9cd6c78cd4ea37e7b465e9451d"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS",
+            "verdicts": 1,
+            "verify_exit": 1
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS",
+            "verdicts": 1,
+            "verify_exit": 1
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS",
+            "verdicts": 1,
+            "verify_exit": 1
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "721bec5e80626dd2e5032fe8d366ba747757f8e3ed0f6837edecdde2d19ed888",
+          "721bec5e80626dd2e5032fe8d366ba747757f8e3ed0f6837edecdde2d19ed888",
+          "721bec5e80626dd2e5032fe8d366ba747757f8e3ed0f6837edecdde2d19ed888"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS",
+            "verdicts": 1,
+            "verify_exit": 0
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS",
+            "verdicts": 1,
+            "verify_exit": 0
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS",
+            "verdicts": 1,
+            "verify_exit": 0
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "a-scanner-that-declares-failure-is-refused",
+      "duration_s": 12.51,
+      "expectation": "executionSuccessful=false with zero findings never reads as clean",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "afb4a15643402c1f457d5450a59acaf33d295a156f33150585315c5be588d87b",
+          "afb4a15643402c1f457d5450a59acaf33d295a156f33150585315c5be588d87b",
+          "afb4a15643402c1f457d5450a59acaf33d295a156f33150585315c5be588d87b"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "FAIL"
+          },
+          {
+            "evaluate_exit": 1,
+            "evidence": false,
+            "run_exit": 2,
+            "verdict": "FAIL"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac",
+          "4bd452262f34cb114ef841ec153385e52c690addf63205f7ffddf5f959e63bac"
+        ],
+        "facts": [
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          },
+          {
+            "evaluate_exit": 0,
+            "evidence": true,
+            "run_exit": 0,
+            "verdict": "PASS"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    }
+  ],
+  "journal_head": null,
+  "repeats": 3,
+  "schema": "ranex-calibration-v1",
+  "worst": "VERIFIED"
+}

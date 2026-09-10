@@ -14,7 +14,7 @@ rather than counted.
 
     uv run --frozen python tools/dogfood/sarif_proof.py
 
-Writes `tools/dogfood/audits/<date>-sarif-reporter/sarif.json` and exits
+Writes `tools/dogfood/audits/<date>-sarif-reporter/calibration.json` and exits
 nonzero if any control is not VERIFIED.
 """
 
@@ -47,8 +47,11 @@ ARTIFACT = "governance/scan.sarif"
 MANIFEST = "governance/scan-manifest.json"
 VIOLATION = "import os  # a real unused import, added on a scratch commit\n"
 
-#: A producer that emits a supplied SARIF under a scanner's argv shape. It is
-#: how a hostile report is measured without pretending ruff would produce one.
+#: A producer that emits a supplied SARIF under a scanner's argv shape, and the
+#: argv that binds it. It is how a hostile report is measured without
+#: pretending a real scanner would ever produce one.
+FORGER_ARGV = ["/usr/bin/python3", "forge.py", "--output-format=sarif",
+               f"--output-file={ARTIFACT}"]
 FORGER = (
     "import sys\n"
     "out = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\n"
@@ -88,8 +91,17 @@ def ranex(repo: Path, *args: str, key: Path | None = None, verdict_key: Path | N
     if verdict_key is not None:
         environment["RANEX_VERDICT_SIGNING_KEY"] = str(verdict_key)
         environment["RANEX_VERDICT_DIR"] = "governance/verdicts"
+    # The selector goes BEFORE any `--`, or it is not a flag at all: it becomes
+    # another word of the bound command and the CLI anchors to the checkout
+    # holding itself (ADR-038) — that is, this repository rather than the
+    # subject. The first run of this driver did exactly that and was refused by
+    # the Ranex checkout's own provisioning, which is the only reason it was
+    # not a measurement of the wrong tree.
+    argv = list(args)
+    selector = ["--external-repository", str(repo)]
+    separator = argv.index("--") if "--" in argv else len(argv)
     return subprocess.run(
-        [str(RANEX), *args, "--external-repository", str(repo)],
+        [str(RANEX), *argv[:separator], *selector, *argv[separator:]],
         cwd=str(repo), env=environment, capture_output=True, text=True,
         check=False, timeout=timeout,
     )
@@ -123,8 +135,14 @@ def minted(repo: Path, identity: str, key: Path) -> str:
     )
 
 
-def governed(workspace: Path, source: Path, command: list[str] | None = None) -> tuple[Path, Path, Path]:
-    """A fresh governed clone of the pinned subject, frozen and committed."""
+def governed(workspace: Path, source: Path) -> tuple[Path, Path, Path]:
+    """A fresh governed clone of the pinned subject, frozen over a real scan.
+
+    The freeze always runs the real scanner, because that is what an operator
+    freezes: a manifest is a record of what a genuine run observed. A hostile
+    producer is bound afterwards, which is also the real shape of the attack —
+    policy names a producer, and the producer lies.
+    """
 
     repo = workspace / "subject"
     shutil.copytree(source, repo)
@@ -138,9 +156,7 @@ def governed(workspace: Path, source: Path, command: list[str] | None = None) ->
         f"verdict_signer:\n  id: {SIGNER}\n  public_key: {signer}\n",
         encoding="utf-8",
     )
-    (repo / "governance" / "gates.yaml").write_text(
-        catalog(command or scan_argv()), encoding="utf-8"
-    )
+    (repo / "governance" / "gates.yaml").write_text(catalog(scan_argv()), encoding="utf-8")
     git(repo, "add", "-A")
     git(repo, "commit", "-qm", "governance: producer keyring and a scan-bound gate")
 
@@ -151,7 +167,7 @@ def governed(workspace: Path, source: Path, command: list[str] | None = None) ->
         "--results-reporter", "sarif-2.1.0",
         "--scan-scope", SCOPE,
         "--scan-rule", "F401",
-        "--", *(command or scan_argv()),
+        "--", *scan_argv(),
     )
     if frozen.returncode != 0:
         raise SystemExit(f"freeze failed: {frozen.stdout[-400:]}{frozen.stderr[-400:]}")
@@ -201,16 +217,31 @@ def gate(repo: Path, key: Path, verdict_key: Path, *, observe: bool = True,
 def anchored(repo: Path, *, truncate: bool) -> dict[str, object]:
     """Does the journal still verify against the head its signed verdict fixed?
 
-    ADR-057: a signed verdict fixes a chain head, so a journal that has been
-    rewritten since cannot be anchored to it. Deleting the last row is the
-    cheapest real rewrite there is.
+    ADR-057: a signed verdict fixes a chain head, so a journal rewritten since
+    cannot be anchored to it. Dropping the last row is the cheapest real
+    rewrite there is — and the journal's own triggers refuse it, so the control
+    has to reach past them to measure the anchor at all.
     """
 
     verdicts = sorted((repo / "governance" / "verdicts").glob("*.json"))
     if not verdicts:
         return {"verdicts": 0, "verify_exit": None}
     if truncate:
+        # The journal refuses the easy path itself: `DELETE` raises
+        # "evaluations is append-only" from its own trigger. So the control
+        # tampers the way anyone with the file would have to — drop the
+        # triggers, then truncate — because a negative control that only
+        # proves the first layer says nothing about the second, and the
+        # anchor exists precisely for an attacker who got past the first.
         with sqlite3.connect(repo / "governance" / "journal.sqlite3") as connection:
+            triggers = [
+                name
+                for (name,) in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'trigger'"
+                ).fetchall()
+            ]
+            for name in triggers:
+                connection.execute(f'DROP TRIGGER "{name}"')
             connection.execute(
                 "DELETE FROM evaluations WHERE rowid = (SELECT MAX(rowid) FROM evaluations)"
             )
@@ -234,7 +265,7 @@ def measured(source: Path, prepare=None, *, observe: bool = True,
     """
 
     with tempfile.TemporaryDirectory(prefix="ranex-sarif-") as scratch:
-        repo, key, verdict_key = governed(Path(scratch), source, command=command)
+        repo, key, verdict_key = governed(Path(scratch), source)
         if prepare is not None:
             prepare(repo)
         facts = gate(repo, key, verdict_key, observe=observe, command=command)
@@ -275,6 +306,9 @@ def forged(document: dict[str, object]):
     def prepare(repo: Path) -> None:
         (repo / "forge.py").write_text(FORGER, encoding="utf-8")
         (repo / "forged.json").write_text(json.dumps(document), encoding="utf-8")
+        (repo / "governance" / "gates.yaml").write_text(
+            catalog(FORGER_ARGV), encoding="utf-8"
+        )
         git(repo, "add", "-A")
         git(repo, "commit", "-qm", "bind a report producer that does not scan")
 
@@ -296,15 +330,13 @@ def forged_document(line: int, results: bool = True, **run_fields: object) -> di
     }
 
 
-FORGER_ARGV = ["/usr/bin/python3", "forge.py", "--output-format=sarif",
-               f"--output-file={ARTIFACT}"]
-
-
 def main() -> int:
     if not RANEX.is_file():
         raise SystemExit("the installed console script is absent: run `uv sync --frozen`")
-    out = TOOL_DIR / "audits" / f"{date.today().isoformat()}-sarif-reporter" / "sarif.json"
-    out.parent.mkdir(parents=True, exist_ok=True)
+    # `Calibration.out` is the receipt DIRECTORY; it writes `calibration.json`
+    # inside it, beside whatever else an audit retains.
+    out = TOOL_DIR / "audits" / f"{date.today().isoformat()}-sarif-reporter"
+    out.mkdir(parents=True, exist_ok=True)
 
     with tempfile.TemporaryDirectory(prefix="ranex-six-") as cache:
         source = Path(cache) / "six"

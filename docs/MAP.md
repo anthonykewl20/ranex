@@ -1646,7 +1646,7 @@ artifact (`--exit-zero`). Both are pinned by test rather than left to be
 rediscovered: tests/e2e/test_scan_claim_real.py,
 tests/contract/test_scan_results_sarif.py,
 tests/integration/test_scan_manifest_policy_pin.py, and the field receipt
-tools/dogfood/audits/2026-09-10-sarif-reporter/sarif.json.
+tools/dogfood/audits/2026-09-10-sarif-reporter/calibration.json.
 
 ---
 
