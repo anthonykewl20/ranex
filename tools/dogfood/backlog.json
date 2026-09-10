@@ -12,8 +12,13 @@
         "lines_executed": 1
       },
       {
-        "M": 46,
+        "M": 51,
         "function": "ranex/cli/main.py:cmd_run",
+        "lines_executed": 1
+      },
+      {
+        "M": 50,
+        "function": "ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:_claim_definition",
         "lines_executed": 1
       },
       {
@@ -27,12 +32,7 @@
         "lines_executed": 1
       },
       {
-        "M": 36,
-        "function": "ranex/policy/adapters/configuration/yaml/slice_gate_loader.py:_claim_definition",
-        "lines_executed": 1
-      },
-      {
-        "M": 33,
+        "M": 34,
         "function": "ranex/cli/delegation.py:cmd_task_delegate",
         "lines_executed": 1
       },
@@ -42,8 +42,28 @@
         "lines_executed": 7
       },
       {
-        "M": 32,
+        "M": 33,
+        "function": "ranex/foundation/scan_results.py:_findings",
+        "lines_executed": 1
+      },
+      {
+        "M": 31,
         "function": "ranex/cli/main.py:cmd_task_judge",
+        "lines_executed": 1
+      },
+      {
+        "M": 30,
+        "function": "ranex/cli/main.py:cmd_gate_evaluate",
+        "lines_executed": 1
+      },
+      {
+        "M": 30,
+        "function": "ranex/cli/main.py:cmd_suite_freeze",
+        "lines_executed": 1
+      },
+      {
+        "M": 30,
+        "function": "ranex/foundation/scan_results.py:validate_scan_manifest",
         "lines_executed": 1
       },
       {
@@ -54,11 +74,6 @@
       {
         "M": 27,
         "function": "ranex/governed_execution/verdict_reader.py:_read",
-        "lines_executed": 1
-      },
-      {
-        "M": 26,
-        "function": "ranex/cli/main.py:cmd_gate_evaluate",
         "lines_executed": 1
       },
       {
@@ -85,24 +100,9 @@
         "M": 21,
         "function": "ranex/cli/main.py:RanexArgumentParser.parse_args",
         "lines_executed": 1
-      },
-      {
-        "M": 20,
-        "function": "ranex/cli/process_supervisor.py:KillSafeSupervisor.__exit__",
-        "lines_executed": 1
-      },
-      {
-        "M": 20,
-        "function": "ranex/foundation/specification_abc.py:_collect_manifest_candidates",
-        "lines_executed": 1
-      },
-      {
-        "M": 20,
-        "function": "ranex/foundation/specification_abc.py:_json_escape_failures",
-        "lines_executed": 1
       }
     ],
-    "measured_functions": 422,
+    "measured_functions": 441,
     "never_touched_high_M": {
       "ranex/cli/host_confinement.py:_elf_facts_from_descriptor": 27,
       "ranex/cli/host_confinement.py:_real_cgroup_probe": 33,
