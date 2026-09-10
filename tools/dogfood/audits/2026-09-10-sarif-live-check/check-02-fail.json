@@ -1,0 +1,1 @@
+{"conclusion":"failure","summary":"FAIL  gate=landing  rule=TASK_TESTS","text":"missing_claims=['scan']\nrecord_digest=sha256:be60aed4ffd7f1c07fff728011711e16876cb78fd254ff2eba0454b9eb4b6521\nsubject=sha256:24e2a5a28dccc4e462fdbe7bf07f7525cd52fea551338b53151e1a6a84b199da  tree=d53368d12f8c3dc37f9ebafa1485e4b4a7cc0c7c","title":"FAIL"}

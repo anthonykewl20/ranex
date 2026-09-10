@@ -1,0 +1,79 @@
+{
+  "scope": "Issue #97 arm 8 \u2014 a sarif-2.1.0 scan claim decides a real GitHub check on anthonykewl20/ranex-app-live-probe. Real App, real webhooks, real ruff, real Ed25519 keys. The receiver never executes contributor code: evidence is produced by the operator against the exact head, and the receiver verifies and publishes.",
+  "pull_request": "https://github.com/anthonykewl20/ranex-app-live-probe/pull/11",
+  "gate": "landing requires BOTH claims: tests-executed (pytest-junit) and scan (sarif-2.1.0)",
+  "scan_claim": {
+    "results_reporter": "sarif-2.1.0",
+    "results_manifest": "governance/scan-manifest.json",
+    "manifest": {
+      "accepted": {},
+      "blocking_levels": [
+        "error"
+      ],
+      "rules": [
+        "F401"
+      ],
+      "scope": [
+        "six.py"
+      ]
+    },
+    "argv": [
+      "/home/soultransit/.local/bin/ruff",
+      "check",
+      "--no-cache",
+      "--isolated",
+      "--select=F401",
+      "--output-format=sarif",
+      "--output-file=governance/scan.sarif",
+      "six.py"
+    ]
+  },
+  "phases": [
+    {
+      "phase": "absence-blocks",
+      "head": "30d400ac13642dd3966e7c06205b3b38b67e68e9",
+      "check": "action_required",
+      "title": "No verdict for this head",
+      "meaning": "no evidence exists for this subject, so nothing may merge"
+    },
+    {
+      "phase": "both-claims-satisfied",
+      "head": "30d400ac13642dd3966e7c06205b3b38b67e68e9",
+      "check": "success",
+      "run_exits": {
+        "tests-executed": 0,
+        "scan": 0
+      }
+    },
+    {
+      "phase": "real-violation",
+      "head": "2cb109acbf926bc057f956fd9ec79f96cf43ae67",
+      "check": "failure",
+      "missing_claims": [
+        "scan"
+      ],
+      "run_exits": {
+        "tests-executed": 0,
+        "scan": 1
+      },
+      "isolation": "the suite still passes; the scanner alone blocks. The first injection was placed above six.py's `from __future__` line and broke collection too, which would have made the control prove nothing; it was moved below that line and re-run.",
+      "finding_id": "six.py::F401::1f85c8bd443af22afa1cb91ab0d581996e2904301da46dddfb9722ef6928e6be"
+    },
+    {
+      "phase": "merge-refused-by-github",
+      "head": "2cb109acbf926bc057f956fd9ec79f96cf43ae67",
+      "response": "405 Required status check \"ranex/acceptance\" is failing"
+    },
+    {
+      "phase": "repaired",
+      "head": "422328cb94efd9651a33cc47f24618320a0c1d2f",
+      "check": "success",
+      "receiver_outcome": "published:success"
+    }
+  ],
+  "boundaries": [
+    "The check TEXT names the failing claim, not the finding id. The id and its fingerprint are in the signed evidence (see scan-evidence.json and the FAIL phase above). Rendering findings into the check body is the annotation work #97 deferred.",
+    "F-036: the first repair restored six.py byte-identically, so its subject digest matched an already-verified tree. The receiver deduplicates on subject and published nothing, leaving the PR head with no check and unmergeable. Correct for evidence, which binds a tree; wrong for GitHub, which gates on the head SHA.",
+    "F-037: a days-old smee client had stopped relaying while GitHub still reported OK 200 for every delivery. The receiver looked idle and was never asked. Its own deliveries.jsonl is what located the break; restarting the tunnel restored it."
+  ]
+}

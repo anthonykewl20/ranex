@@ -840,6 +840,37 @@ Historical observation retained:
   and the gate's exact diagnosis; it does not weaken the prerequisite checks.
 
 
+### F-036 — a byte-identical repair leaves the head with no check at all
+
+Measured live 2026-09-10 on `ranex-app-live-probe` PR #11 (issue #97 arm 8).
+The injected F401 was removed, restoring `six.py` byte-for-byte. The tree, and
+therefore the subject digest, matched a tree the receiver had already verified,
+so its `evaluated/<subject>.json` stamp short-circuited and it published
+nothing. Evidence binds a tree, not a commit, so that is correct for evidence —
+and wrong for the merge rule, which gates on the **head SHA**. The PR sat with
+a green history and an unverifiable head, unmergeable, with nothing to retry.
+
+A repair that reverts a bad commit is exactly the shape that produces this, so
+it is not an exotic case. Not fixed here: the arm was completed with a repair
+that also touched README, giving the head its own subject. What a fix would
+have to decide is whether a stamped subject still owes a publication to a head
+that has never carried one.
+
+### F-037 — a stale tunnel is indistinguishable from a quiet receiver
+
+Same run. Four pushes produced no evaluation, and the receiver looked idle. The
+App's own delivery history said every webhook was `OK 200`: GitHub had
+delivered to smee.io, which answers 200 whether or not any client is listening.
+The days-old `smee-client` had stopped relaying, so the receiver was never
+asked and had nothing to say.
+
+What located it was the receiver's own `deliveries.jsonl`: 33 entries, the most
+recent for a different repository and correctly refused `not-allowlisted`, and
+none for the probe. A receiver that records what it was asked can be
+distinguished from one that was never asked; without that file the evidence
+would have pointed at the receiver, which was innocent. Restarting the tunnel
+restored delivery immediately.
+
 ### F-035 — the nested host probe drifts, and the entrypoint's three failures are one failure
 
 Measured 2026-09-10, twice on `58968da33` and once on the control commit

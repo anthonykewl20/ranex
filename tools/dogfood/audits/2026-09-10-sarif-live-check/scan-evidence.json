@@ -1,0 +1,32 @@
+[
+ {
+  "claim_id": "scan",
+  "subject_digest": "sha256:db243c5fe22be668dbd27ff5f049dd9084fb922ee5797f25d7a03204d162f93b",
+  "producer_id": "worker",
+  "command": "/home/soultransit/.local/bin/ruff check --no-cache --isolated --select=F401 --output-format=sarif --output-file=governance/scan.sarif six.py",
+  "command_digest": "sha256:f7e3c18149a24f2c97d89459adc79874ab8617971be117a0d03cea06b39d5ab0",
+  "executable_path": "/home/soultransit/.local/share/uv/tools/ruff/bin/ruff",
+  "exit_code": 0,
+  "suite_results": {
+   "manifest_digest": "sha256:dc851b30c9bc0c4de38d219bd821ecbac42150b6ad5518043a2234703a659bce",
+   "counts": {
+    "passed": 1,
+    "skipped": 0,
+    "failed": 0,
+    "errors": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "non_passed": [],
+   "missing": [],
+   "extra_count": 0,
+   "outcome_digest": "sha256:dfa4d7299e1cb1180254d94e4c8caead051ead2f4a2ca9d38d89dd0fcf9c1d92"
+  },
+  "confinement_result_digest": null,
+  "confinement_profile_digest": null,
+  "envelope_type": "ranex-evidence-envelope-v1",
+  "gate_id": "landing",
+  "catalog_digest": "sha256:81315c0fec2d0666c055075a666fbaacce65789483ea09b56525e90f67157fa8",
+  "signature": "ed25519:WQom1mxD/midCUpNdPfd3OmHpo1PEVeOIALhZWRbRM8bfhqO6mRz7U+4q3GIdiYYjv9iBJcfoGq9xYKfh0CWBQ=="
+ }
+]

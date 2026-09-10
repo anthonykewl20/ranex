@@ -1,0 +1,3 @@
+{"message":"Repository rule violations found\n\nRequired status check \"ranex/acceptance\" is failing.\n\n","documentation_url":"https://docs.github.com/rest/pulls/pulls#merge-a-pull-request","status":"405"}gh: Repository rule violations found
+
+Required status check "ranex/acceptance" is failing.
