@@ -8,7 +8,34 @@ match the kernel silently.
 
 ## Open
 
-### F-040 (OPEN, BLOCKED on owner re-qualification) — census baseline drift from the SARIF/absence-semantics slices
+### F-040 — census baseline drift; both blockers answered 2026-09-11 (was OPEN on the owner)
+
+Both causes this finding was blocked on have been addressed by the session that
+wrote the code it was blocked by, so it no longer waits on the owner.
+
+Cause 2, the undeclared environment skips in `tests/e2e/test_scan_claim_real.py`,
+is fixed rather than declared. The loop's reading — "declaring them is a frozen
+manifest owner act" — would have frozen the wrong thing: the arms were skipping
+because a hermetic run pins `PATH` to `/usr/bin:/bin` AND redirects `HOME`, so
+both the PATH lookup and a `Path.home()` fallback missed ruff. Declaring that as
+an expected skip would have made a suite that stops running inside the
+materialisation look intended. The binary is now resolved from the passwd
+database, which neither variable can move, and the arms run there: verified
+`PATH=/usr/bin:/bin HOME=<scratch> pytest tests/e2e/test_scan_claim_real.py` ->
+14 passed. `tests/e2e/test_gating_real_suite.py` is green end to end,
+15 passed 4 skipped, with `skipped_ids <= declared_skip_ids` holding.
+
+Cause 1, the `/etc/ld.so.cache` build-input drift in the strict-local session
+arm, does not reproduce here: that arm now **skips** rather than failing, because
+F-035 made an absent launcher refuse as `HOST-FACT-MISSING` instead of
+`EXEC-OBJECT-DRIFT`, and an unqualified host is a declared skip rather than a
+red. The underlying re-trace question is real and unchanged — a traced input
+that moves does require a deliberate re-trace — but it is not currently blocking
+a green suite, so the census re-record is no longer gated on it.
+
+Original entry follows.
+
+### F-040 (as filed by the loop) — census baseline drift from the SARIF/absence-semantics slices
 
 - Anchor: three committed slices since the iteration-27 baseline
   (`2e048a0c4`), most visibly `54b622288` (arm 8 — SARIF 2.1.0 scan claim)
