@@ -15,6 +15,7 @@ that declares its own failure while exiting 0.
 from __future__ import annotations
 
 import json
+import os
 import shutil
 import subprocess
 from pathlib import Path
@@ -42,10 +43,29 @@ FORGER = (
 
 
 def ruff_binary() -> str:
-    found = shutil.which("ruff")
-    if found is None:
-        pytest.skip("ranex-prereq:ruff: no ruff on PATH, so no real SARIF producer")
-    return found
+    """The real scanner, found by absolute path and not by an inherited PATH.
+
+    A hermetic run pins `PATH` to `/usr/bin:/bin`, which is the whole point of
+    it — so `shutil.which` finds nothing there and every arm below would skip.
+    A skipped arm inside a materialisation is an UNDECLARED skip against the
+    frozen manifest, which `test_slice009_repository_gate_fails_when_a_manifest_
+    test_is_deleted` refuses, and it should: a suite that quietly stops running
+    where it is being trusted most is exactly what that journey guards.
+
+    So the binary is resolved the way the bound argv resolves it — absolutely,
+    against the real filesystem the materialisation still sees.
+    """
+
+    candidates = [shutil.which("ruff")]
+    candidates += [
+        str(Path.home() / ".local/bin/ruff"),
+        "/usr/local/bin/ruff",
+        "/usr/bin/ruff",
+    ]
+    for candidate in candidates:
+        if candidate and os.access(candidate, os.X_OK):
+            return candidate
+    pytest.skip("ranex-prereq:ruff: no ruff on this host, so no real SARIF producer")
 
 
 def catalog(command: list[str]) -> str:
