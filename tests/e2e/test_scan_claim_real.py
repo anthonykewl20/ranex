@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import json
 import os
+import pwd
 import shutil
 import subprocess
 from pathlib import Path
@@ -56,9 +57,15 @@ def ruff_binary() -> str:
     against the real filesystem the materialisation still sees.
     """
 
+    # `Path.home()` reads HOME, and a hermetic run redirects HOME into its own
+    # scratch tree — so the first version of this fallback pointed at a home
+    # that had never seen ruff, and the arms went on skipping exactly where
+    # they were needed. The account's real home comes from the passwd database,
+    # which the environment cannot move.
+    account = pwd.getpwuid(os.getuid()).pw_dir
     candidates = [shutil.which("ruff")]
     candidates += [
-        str(Path.home() / ".local/bin/ruff"),
+        f"{account}/.local/bin/ruff",
         "/usr/local/bin/ruff",
         "/usr/bin/ruff",
     ]
