@@ -1323,6 +1323,51 @@
       "scenarios": 43,
       "sha": "c14782126",
       "subject": "tools: dogfood artifacts - iteration 31 report"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-11",
+      "open_findings": 8,
+      "pile": 48,
+      "scenarios": 43,
+      "sha": "ff750a036",
+      "subject": "tools: proof pile - 2026-09-11 (3 runs)"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-11",
+      "open_findings": 9,
+      "pile": 48,
+      "scenarios": 43,
+      "sha": "919a2ad47",
+      "subject": "tools: F-040's two blockers are answered, and one of them wa"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-12",
+      "open_findings": 9,
+      "pile": 48,
+      "scenarios": 43,
+      "sha": "544d9cf9d",
+      "subject": "tools: dogfood artifacts \u2014 iteration 32 (census drift remain"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-12",
+      "open_findings": 9,
+      "pile": 48,
+      "scenarios": 43,
+      "sha": "a0624d324",
+      "subject": "tools: dogfood artifacts - iteration 33 (census drift remain"
+    },
+    {
+      "complexity": 5769,
+      "date": "2026-09-12",
+      "open_findings": 9,
+      "pile": 48,
+      "scenarios": 43,
+      "sha": "c1ca06f01",
+      "subject": "tools: dogfood artifacts - iteration 33 report"
     }
   ]
 }

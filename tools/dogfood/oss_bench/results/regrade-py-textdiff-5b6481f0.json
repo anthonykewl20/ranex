@@ -1,0 +1,55 @@
+{
+  "interpreter": "/usr/bin/python3",
+  "kernel_head": "c1ca06f01b718b75fd38a07d6da296974762e341",
+  "passed": 7,
+  "reason": "in-run grader scored functional 0.0 with budget_exceeded=true (verifier metrics budget-skipped); regrade runs the pristine fail_to_pass commands on the host against the agent's final.patch",
+  "regraded_at": "2026-09-11T22:28:34.475583+00:00",
+  "regraded_functional": 1.0,
+  "results": [
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_round_trip -q",
+      "exit": 0,
+      "name": "round_trip",
+      "tail": "9 passed in 0.01s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_kept_lines_are_a_longest_common_subsequence -q",
+      "exit": 0,
+      "name": "kept_is_lcs",
+      "tail": "9 passed in 0.01s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_ops_use_only_known_kinds -q",
+      "exit": 0,
+      "name": "known_kinds",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_insert_only_diff -q",
+      "exit": 0,
+      "name": "insert_only",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_delete_only_diff -q",
+      "exit": 0,
+      "name": "delete_only",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_apply_rejects_wrong_source -q",
+      "exit": 0,
+      "name": "rejects_wrong_source",
+      "tail": "1 passed in 0.00s"
+    },
+    {
+      "cmd": "/usr/bin/python3 -m pytest test_textdiff.py::test_apply_requires_consuming_all_of_source -q",
+      "exit": 0,
+      "name": "consumes_all_source",
+      "tail": "1 passed in 0.00s"
+    }
+  ],
+  "run_id": "py-textdiff-5b6481f0",
+  "total": 7,
+  "test_files_byte_identical": true
+}
