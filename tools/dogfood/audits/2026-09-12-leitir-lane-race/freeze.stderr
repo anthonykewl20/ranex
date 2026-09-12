@@ -1,0 +1,43 @@
+ERROR: E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled
+
+ERROR: E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled
+
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-r791390a/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-545gk5b0/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-70sy6d1u/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
