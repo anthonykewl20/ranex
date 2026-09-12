@@ -218,7 +218,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** [SLICE-087-frozen-executable-probe-bundles](docs/slices/SLICE-087-frozen-executable-probe-bundles.md)
+**Active slice:** none — live observer is next under ADR-061.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -227,6 +227,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-087 — Frozen executable probe bundles](docs/slices/done/SLICE-087-frozen-executable-probe-bundles.md): freeze/check actual probe bytes, membership, modes and argv against A/B identity.
 
 - [SLICE-086 — Automatic signed-evidence evaluation](docs/slices/done/SLICE-086-automatic-evidence-evaluation.md): `github listen --evaluate-evidence` judges fresh evidence without executing PR code.
 

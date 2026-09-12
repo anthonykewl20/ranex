@@ -1,6 +1,6 @@
 # SLICE-087 — Frozen executable probe bundles
 
-**Status:** open
+**Status:** done
 **Issue:** #116
 **ADR:** docs/adr/ADR-061-live-acceptance-before-completion.md
 
@@ -35,3 +35,11 @@ exits are named in ADR-061, not declared complete by this slice.
 Real CLI journeys in tests/integration/test_probe_bundle_cli.py. New cases were
 observed red before implementation; candidate and bundle mode attacks included.
 Full suite and committed-tree refreeze are required before the closing comment.
+
+The live journal experiment freezes a real CLI probe before committing a
+verification-bypass mutation to Ranex. Three baseline journeys matched and
+three mutants failed the named tamper-detection assertion with unchanged probes.
+Raw observations: tools/dogfood/audits/2026-09-12-probe-bundles/.
+The full-suite closing result is recorded on issue #116; the first committed
+freeze found the entrypoint's structural digest pin and that pin was updated
+to the reviewed CLI registration change without weakening its assertion.

@@ -123,7 +123,7 @@ RESPONSE_LIMIT = 65_536
 # declarations, and the artifact reducers gain a subject-root reader. The
 # launcher boundary, the strict-local controller branch and every confinement
 # call site are untouched.
-MAIN_PY_SHA256 = "47faeb24d97ee5992dc4aff60b816f58d1feceec5388ecf5ff64ac0772073a46"
+MAIN_PY_SHA256 = "121e3d6ce66c7c24ad89513b4ff9ead6f5cd2e7cac1827f64121da9986ac4248"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

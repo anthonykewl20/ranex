@@ -713,6 +713,23 @@ is created. Status ignores disabled and non-branch rules; a reported pin is
 not evidence that every branch or actor is protected.
 # Frozen executable probe bundles
 
+To reproduce the bounded live journal experiment, run:
+
+```sh
+uv run --frozen python tools/dogfood/probe_bundle_proof.py \
+  --output /tmp/ranex-probe-experiment
+```
+
+Use a new output path. This clones committed Ranex, freezes the public-CLI
+journal journey, commits a known-bad product mutation, and runs three baseline
+and three mutant observations. Each journey creates a real SQLite journal
+through `gate evaluate`, verifies it, alters a recorded digest, and requires
+`journal verify` to reject the altered record. `receipt.json` retains each
+observation; `commands.json` retains raw commands, exit codes and output. The
+experiment deliberately does not issue verdict evidence or claim process
+confinement. A baseline mismatch, missing setup or wrong mutant failure blocks
+its experiment-success record. No existing checkout is mutated by the control.
+
 The artifact-freeze commands implement the first stage of ADR-061. They do not
 run the product, classify a probe as genuinely black-box, sign an approval, or
 issue verdict evidence. The operator owns the source A packet and the complete

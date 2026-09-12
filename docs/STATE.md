@@ -1,17 +1,19 @@
 # State
 
 **Updated:** 2026-09-12
-**Active slice:** [docs/slices/SLICE-087-frozen-executable-probe-bundles.md](slices/SLICE-087-frozen-executable-probe-bundles.md)
+**Active slice:** none — live observer is next under ADR-061.
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
 ADR-061 defines the whole program, required exits and trust boundaries.
 Do not stop at artifact integrity or describe it as product acceptance.
 
-Current issue #116: external executable probe bundles, reusing A/B identity,
+SLICE-087 / #116: external executable probe bundles, reusing A/B identity,
 canonical bytes and verified Git object readers. New CLI freeze-probes and
-check-probes have focused real CLI positive/negative coverage. Full-suite and
-committed-tree manifest refreeze are pending. verdict.py is unchanged.
+check-probes preserve artifact integrity, not product PASS. Manifest: 2014 IDs;
+168 expected skips. Closing full-suite evidence is on #116. verdict.py unchanged.
+Live journal experiment: three baseline matches and three named mutant failures;
+raw output in tools/dogfood/audits/2026-09-12-probe-bundles/.
 
 Next: independent live HTTP/database observer, approved known-bad calibration,
 persisted task authority/three misses/reapproval, exact integration candidate,
