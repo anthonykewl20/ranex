@@ -5016,6 +5016,9 @@ def build_parser() -> argparse.ArgumentParser:
     approve.add_argument("--output", required=True, help="new approval envelope path")
     approve.set_defaults(func=cmd_specification_approve)
 
+    from ranex.cli.probe_bundle import register as register_probe_commands
+    register_probe_commands(specification)
+
     task = sub.add_parser("task", help="dispatch and materialise task candidates")
     task_actions = task.add_subparsers(dest="action", required=True)
     dispatch = task_actions.add_parser("dispatch", help="create a task worktree")

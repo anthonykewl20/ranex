@@ -1,11 +1,14 @@
 # SLICE-085 — GitHub App production registration
 
-**Status:** open
+**Status:** blocked
 **Opened:** 2026-09-07
 **Priority:** P0 — issue #88 production-readiness remaining product gap
 **ADR:** docs/adr/ADR-055-github-app-operator-registration.md
 **Issue:** #88
 **Follows:** SLICE-084 (webhook receiver); ADR-053/054 durability follow-ups
+
+Owner reprioritised live acceptance on 2026-09-12 (ADR-061). Production evidence
+remains unverified; this slice is parked while the acceptance pivot is built.
 
 ## Contract
 

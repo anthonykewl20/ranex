@@ -711,3 +711,49 @@ Ruleset setup reuses only an active, strict rule for the exact requested branch
 without bypass actors. Other same-App rules are preserved and a matching rule
 is created. Status ignores disabled and non-branch rules; a reported pin is
 not evidence that every branch or actor is protected.
+# Frozen executable probe bundles
+
+The artifact-freeze commands implement the first stage of ADR-061. They do not
+run the product, classify a probe as genuinely black-box, sign an approval, or
+issue verdict evidence. The operator owns the source A packet and the complete
+support-input selection. Include fixtures, parent conftest/config files, launch
+recipes and runtime/dependency declarations as additional `--root` arguments.
+Only selected committed inputs are frozen; implicit external inputs are not
+discovered. A separate qualified observer is still required for live acceptance.
+
+Start with a canonical A `spec-packet-v1` file and a canonical JSON argv file,
+for example the exact bytes `["python","acceptance/probe.py"]` (no trailing
+newline). Commit the actual executable probes and their support inputs first.
+Then, using an external destination whose parent already exists:
+
+```sh
+uv run --frozen ranex specification freeze-probes \
+  --external-repository /path/to/product \
+  --spec-packet /operator/A.json --invocation /operator/argv.json \
+  --root acceptance --root pyproject.toml --root uv.lock \
+  --output /operator/frozen-order-probes
+```
+
+The bundle holds `spec-packet.json`, `manifest.json` (existing B contract),
+`probe-contract.json` and `probes/` containing the original relative files.
+The descriptor pins the base commit, exact root membership, executable modes
+and argv. B binds A and every copied artifact. Existing C approval binds the
+reported `a_digest` and `manifest_digest`; freezing itself is not approval.
+The output must be new and outside the candidate repository and linked
+worktrees. A directory outside the checkout is not isolation against its owner.
+
+Retain the manifest digest in independently controlled policy/approval state.
+After committing product changes, check against that retained identity:
+
+```sh
+uv run --frozen ranex specification check-probes \
+  --external-repository /path/to/product \
+  --bundle /operator/frozen-order-probes \
+  --manifest-digest "$APPROVED_B_DIGEST"
+```
+
+Exit 0 reports `PROBES-UNCHANGED`; exit 2 refuses. Changed probe bodies, helper
+additions, deletions, executable-mode changes, bundle substitutions, invocation
+changes and known projection placeholders refuse. Product changes outside the
+selected roots are permitted. Do not obtain the expected digest from a mutable
+candidate-supplied manifest and treat that circular check as independent approval.

@@ -97,7 +97,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "github.ruleset",
 )
 
-_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve")
+_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes")
 
 STAGES: frozenset[str] = frozenset(
     {

@@ -99,6 +99,15 @@ For pull requests, the [GitHub App guide](docs/OPERATIONS.md#the-github-acceptan
 explains the listener and the `ranex/acceptance` check. The App publishes a
 verified verdict produced by the kernel; it does not run the judge itself.
 
+### Freeze executable probe artifacts
+
+`ranex specification freeze-probes` copies complete committed probe roots into
+an external A/B-bound bundle. `specification check-probes` checks that bundle
+and the candidate against an independently trusted manifest digest, including
+file membership, bytes and executable modes. These commands verify artifact
+integrity; they do not execute the application or issue a product PASS.
+See the [probe bundle recipe](docs/OPERATIONS.md#frozen-executable-probe-bundles).
+
 ## How it works
 
 1. **Define acceptance.** Commit required claims, command bindings, trusted
@@ -209,7 +218,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** [SLICE-085-github-app-production-registration](docs/slices/SLICE-085-github-app-production-registration.md)
+**Active slice:** [SLICE-087-frozen-executable-probe-bundles](docs/slices/SLICE-087-frozen-executable-probe-bundles.md)
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting

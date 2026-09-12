@@ -1,50 +1,36 @@
 # State
 
-**Updated:** 2026-09-10
-**Active slice:** [docs/slices/SLICE-085-github-app-production-registration.md](slices/SLICE-085-github-app-production-registration.md)
+**Updated:** 2026-09-12
+**Active slice:** [docs/slices/SLICE-087-frozen-executable-probe-bundles.md](slices/SLICE-087-frozen-executable-probe-bundles.md)
 
-Version v0.1.006. Open: #88 production readiness and #90 dogfood publication.
-No production sign-off or zero-bug claim is issued. Slice 086's receiver pins
-operator policy, judges the exact PR SHA and publishes a verified verdict,
-never running contributor code.
+Owner pivot: idea → approved map → frozen executable probes → scoped AI build
+→ independent live evidence → deterministic verdict → exact-candidate merge.
+ADR-061 defines the whole program, required exits and trust boundaries.
+Do not stop at artifact integrity or describe it as product acceptance.
 
-Suite: 2002 tests, 168 expected skips, ceremony `run_exit=0` (2026-09-10).
-A refreeze runs the freeze journey's own recipe — clone the committed tree,
-fresh HOME, `deps fetch` + `deps approve`, then `suite freeze` over the pinned
-pytest argv — and takes about ten minutes here, not the hour once budgeted.
+Current issue #116: external executable probe bundles, reusing A/B identity,
+canonical bytes and verified Git object readers. New CLI freeze-probes and
+check-probes have focused real CLI positive/negative coverage. Full-suite and
+committed-tree manifest refreeze are pending. verdict.py is unchanged.
 
-Lanes — `tools/dogfood/lane.py`. The dogfood loop, verification suites and the
-soak campaign run here at once, and the first two cannot share a checkout. A
-`verify` lane leases a worktree at a pinned commit; every lane takes a slot
-from a memory-sized host semaphore. An acquire REFUSES rather than warning,
-and a holder is pid AND boot id, so an OOM kill self-heals. Run every suite
-and ceremony through it — `lane.py run --kind verify -- <cmd>`.
+Next: independent live HTTP/database observer, approved known-bad calibration,
+persisted task authority/three misses/reapproval, exact integration candidate,
+then real application and browser release journeys. No ranex prove exists yet.
+Existing SLICE-031 placeholder projections are refused by executable freeze.
+Operator-supplied probes still require review; integrity cannot prove adequacy.
 
-#97 landed — `sarif-2.1.0`, the plane's first non-JUnit producer (ADR-060
-seams A/B/C; MAP §6.4). A scan claim names its own frozen manifest (`scope`,
-`rules`, `blocking_levels`, `accepted`), pinned in `run`, `gate evaluate` and
-the receiver. A blocking finding fails the scope path carrying it — an ID
-nobody could freeze is one `evaluate()` skips — and the finding ID rides
-beside it, signed. Regions are checked against the materialised subject.
-Two boundaries recorded, not closed: ruff 0.16.2 emits no coverage witness,
-and `accepted` is reachable only under an argv that exits 0.
-Receipt: tools/dogfood/audits/2026-09-10-sarif-reporter/.
+SLICE-085 / #88 production registration is parked under the owner pivot.
+Prior queue is retained: milestone 8 (#113, #110, #111, #112, #114, #115),
+then milestone 7 (#107, #108, #109), then #100, #102, #105, #106.
+No production sign-off, zero-bug claim or universal deterministic-runtime claim.
 
-Next, in order — milestone 8 (#113, #110, #111, #112, #114, #115), milestone 7
-(#107 approver auth, #108 witness, #109 observation log), then milestone 6's
-remainder (#100, #102, #105, #106).
+Lanes: check git status and executable-matched pytest processes before writing,
+committing, pushing or full-suite runs. Use tools/dogfood/lane.py for suites and
+freeze ceremonies; never overlap full suites. Refreeze on a committed tree;
+load_manifest must accept the result before committing it.
 
-F-035 closed: an object never installed refused as `EXEC-OBJECT-DRIFT`, so one
-uninstalled launcher inside a materialisation reddened three journeys. Absence
-now refuses as `HOST-FACT-MISSING`; `absent_code` is required beside `code`, so
-each site says what absence means there.
-
-Remaining boundaries: same-subject evidence reuse, hostile report producers
-(F-012 — narrowed for scanners by region validation, open elsewhere),
-unanchored journal verification. F-005 (#93, ADR-057): signed v2 anchors detect
-truncation; no witness protects an operator holding both keys.
-UNIMPLEMENTED: isolated observer scheduling, merge-group checks, shard
-aggregation, policy compiler/catalog, DSSE/in-toto attestations, external
-journal witness. UNVERIFIED: production hosting, soak, credential rotation,
-backup/restore, foreign same-name check availability, external-harness
-acceptance. The 30-case Six audit stands at 25 VERIFIED and 5 GAP.
+Remaining boundaries: same-subject evidence reuse; hostile report producers
+(F-012); same-UID trusted controller; no external witness against an operator
+holding both keys. Ordinary run is non-confined. Full installed harness
+mediation, independent observer scheduling, merge-group checks and production
+hosting/rotation/backup are UNVERIFIED or UNIMPLEMENTED as detailed in MAP.
