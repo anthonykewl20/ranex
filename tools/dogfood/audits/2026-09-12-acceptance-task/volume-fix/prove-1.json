@@ -1,0 +1,5 @@
+{
+  "exit": 1,
+  "stdout": "{\"candidate\":\"b72ac36d04c2d16381dae2f6222575c4bf040a62\",\"failed_assertion\":\"tenant-isolation\",\"journal_head\":\"sha256:284b3192c8c421ff548fe2c6213e19078fb2997ae32de330eea683ce4e61ccd5\",\"misses\":1,\"status\":\"MISS\",\"verdict\":\"/tmp/ranex-119-public-workflow/volume-green/state/verdict.json\"}\n",
+  "stderr": ""
+}

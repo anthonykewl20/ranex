@@ -129,7 +129,7 @@ unit tests do not determine this task's verdict. Three observed misses revoke
 its grant. `specification reapprove-task` takes the same bundle/profile options
 with `--task` in place of `--state`, and requires a newer operator-approved map.
 Integration requires the exact passing candidate and unchanged target base.
-See the [task contract](docs/slices/SLICE-089-approved-live-task-loop.md) for
+See the [task contract](docs/slices/done/SLICE-089-approved-live-task-loop.md) for
 qualification limits. A PASS covers the frozen observations, not every bug.
 
 ## How it works
@@ -250,7 +250,7 @@ and requires named product mutations to fail the specified assertions across
 frozen repetitions. Results are observations, not approval or a product PASS.
 See `docs/OPERATIONS.md` for the supported profile and qualification command.
 
-**Active slice:** docs/slices/SLICE-089-approved-live-task-loop.md (#119).
+**Active slice:** none — real application, AI harness and browser qualification remain under ADR-061.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -259,6 +259,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-089 — Approved live acceptance task loop](docs/slices/done/SLICE-089-approved-live-task-loop.md): signed authority, scoped builds, three misses, reapproval and exact integration.
 
 - [SLICE-088 — Calibrated live HTTP observer](docs/slices/done/SLICE-088-calibrated-live-http-observer.md): real pinned service/database, Git candidates and named mutation calibration.
 

@@ -1,0 +1,6 @@
+{
+  "red": "real worker receipt exposed an inherited writable anonymous volume",
+  "fix": "mask image-declared volumes with bounded read-only tmpfs; remove containers with anonymous-volume cleanup",
+  "latest": "summary.json",
+  "boundaries": "full AI harness and browser remain unqualified"
+}

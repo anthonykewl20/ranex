@@ -1,0 +1,15 @@
+{
+  "status": "EXPERIMENT-MATCH",
+  "candidate": "e8917d012b0248be94ad790af1c32685f6d61d00",
+  "misses": [
+    1,
+    2,
+    3
+  ],
+  "fourth_attempt": "REFUSED",
+  "reapproved_misses": 0,
+  "integrated_tree": "6e453fd41eff1fd4328255759eb7959a60fde109",
+  "product_sha256": "a0ce4a07244e6ca0ad79ff120dab8cecaaeed5bcd1dd04d6b62a2f8a65a7aa6b",
+  "controller_sha256": "5d555e933553b241fbefc6a463d5d1567fa60dd0c79eb4b2f5299ee14180f6c6",
+  "worker": "deterministic SQL-writing fixture, not a qualified AI harness"
+}

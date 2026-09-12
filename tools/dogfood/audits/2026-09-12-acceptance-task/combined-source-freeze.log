@@ -1,0 +1,167 @@
+........................................................................ [  3%]
+........................................................................ [  7%]
+...ssssssssss........................................................... [ 10%]
+........................................................................ [ 14%]
+........................................................................ [ 17%]
+....s.............................sssssssss..sssssssss...ssssss..ss.ssss [ 21%]
+ssssss.................................................ssssss........... [ 24%]
+...F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_skip ___________________________________
+
+>   def test_skip(): assert False
+E   assert False
+
+tests/test_sample.py:1: AssertionError
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-1p9kzkli/tree/report.xml -
+=========================== short test summary info ============================
+FAILED tests/test_sample.py::test_skip - assert False
+1 failed in 0.02s
+........                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-7gw61ipe/tree/artifacts/junit.xml -
+1 passed in 0.01s
+..s..................ss................................ss..... [ 28%]
+............ss...s...............s....s...s............................. [ 31%]
+............................................................sssssssssss.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-91elnbf6/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-148xjdqr/tree/governance/suite_results.xml -
+1 passed in 0.01s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-b4jx2usf/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.02s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-s78v91si/tree/governance/suite_results.xml -
+1 passed in 0.01s
+. [ 35%]
+.sssssssssssssssss.......................                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-20edbgy8/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-ndo6la7w/tree/governance/suite_results.xml -
+1 passed in 0.01s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-xuvkwl5e/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.02s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-gyz_rhfq/tree/governance/suite_results.xml -
+1 passed in 0.01s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-n8psok8v/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-cu4iib5i/tree/governance/suite_results.xml -
+1 passed in 0.00s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-eke42iuv/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.............................. [ 38%]
+...........................................s............................ [ 42%]
+.................                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-pxe7rnla/tree/governance/suite_results.xml -
+1 passed in 0.00s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+[XPASS(strict)] known issue
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-40q9x7vs/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value
+1 failed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-87nbyh8i/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-ys9y591m/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-pjpry4ym/tree/governance/suite_results.xml -
+1 passed in 0.02s
+ERROR: E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled
+
+ERROR: E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled
+
+...                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-oje90mgk/tmp/ranex-subject-0f_utcx8/tree/governance/suite_results.xml -
+1 passed in 0.00s
+............ssssssssssssssssss....................sss. [ 45%]
+........................................................................ [ 49%]
+........................................................................ [ 53%]
+........................................................................ [ 56%]
+........................................................................ [ 60%]
+............F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-oje90mgk/tmp/ranex-subject-_7ifio8g/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.000s
+
+FAILED (failures=1)
+........s.....................................F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-oje90mgk/tmp/ranex-subject-80fehlju/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)
+.F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-oje90mgk/tmp/ranex-subject-sopuxei5/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)
+...
+no tests ran in 0.00s
+.......... [ 63%]
+....ss..............ssssssssssssssssssss................................ [ 67%]
+.........................................sssssssssssssssss.sss.......... [ 70%]
+..s.....ss.................s............s............................... [ 74%]
+........................................................................ [ 77%]
+........................................................................ [ 81%]
+........................................................................ [ 84%]
+........................................................................ [ 88%]
+........................................................................ [ 91%]
+........................................................................ [ 95%]
+........................................................................ [ 99%]
+...................                                                      [100%]
+1873 passed, 162 skipped in 445.91s (0:07:25)
+FROZEN  tests=2035  expected_skips=170  run_exit=0  output=/tmp/ranex-verify-329669-31a63334/.local/probe-pivot-manifest.json

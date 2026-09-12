@@ -1,7 +1,7 @@
 # State
 
 **Updated:** 2026-09-12
-**Active slice:** docs/slices/SLICE-089-approved-live-task-loop.md (#119).
+**Active slice:** none — real application, AI harness and browser qualification remain.
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
@@ -16,7 +16,7 @@ SLICE-088 / #118 implements the trusted declarative PostgREST/PostgreSQL
 observer. Real CLI qualification: 12 passed, including mutation calibration
 and surviving/unrelated-control refusal. Final regression exposed a network
 probe that checked one CDN address; it now tries all resolved addresses.
-Full final verification is pending. No release claim precedes its result.
+Final full-suite evidence is recorded in the closing #118/#119 comments.
 
 SLICE-089 composes existing signed C, grants, journal CAS and pure verdict.
 Public commands: approve-task, build-task, ranex prove, reapprove-task,
@@ -25,7 +25,10 @@ three persisted misses, explicit new-revision approval and exact Git integration
 Real fixture produced misses 1/2/3, refusal on attempt 4, reapproval, calibrated
 PASS and matching integration; stale candidates and moved targets refuse.
 Worker is a deterministic SQL-writing fixture, not a qualified AI harness.
-Manifest refreeze and final full suite remain required before closing #119.
+Combined manifest freeze: 2035 IDs, 170 expected skips; 1873 passed, 162 skipped.
+Inherited worker volumes are masked after a real receipt exposed extra writes.
+Volume-fixed live CLI: 7 passed. Four concurrent prove processes produced
+misses 1/2/3 and one revocation refusal; reapproval and integration still worked.
 
 SLICE-085 / #88 production registration remains parked under the owner pivot.
 Next work: real AI harnesses, broader application/browser journeys, production

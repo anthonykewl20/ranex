@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"candidate\":\"e8917d012b0248be94ad790af1c32685f6d61d00\",\"failed_assertion\":null,\"journal_head\":\"sha256:e5ddd30378c95fad0c30ea00fedb9208635031775cb5e78837ffd72147e2e722\",\"misses\":0,\"status\":\"PASS\",\"verdict\":\"/tmp/ranex-119-public-workflow/volume-green/state/verdict.json\"}\n",
+  "stderr": ""
+}

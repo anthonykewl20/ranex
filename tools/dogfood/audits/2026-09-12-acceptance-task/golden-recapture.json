@@ -1,0 +1,8 @@
+{
+  "source_commit": "31a63334",
+  "raw": "FROZEN  tests=2035  expected_skips=170  run_exit=0  output=/tmp/ranex-verify-329669-31a63334/.local/probe-pivot-manifest.json",
+  "before": "FROZEN  tests=2026  expected_skips=169  run_exit=0  output=<ABS-PATH>",
+  "after": "FROZEN  tests=2035  expected_skips=170  run_exit=0  output=<ABS-PATH>",
+  "red": "golden transcript mismatch (golden family 'suite-freeze-manifest') \u2014 first differing hunk, untruncated:\n--- expected (golden)\n+++ actual (run)\n@@ -1 +1 @@\n-FROZEN  tests=2026  expected_skips=169  run_exit=0  output=<ABS-PATH>\n+FROZEN  tests=2035  expected_skips=170  run_exit=0  output=<ABS-PATH>",
+  "comparison_after": "MATCH"
+}

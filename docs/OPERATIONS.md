@@ -855,7 +855,8 @@ The independently checked manifest digest is part of what the operator approves.
 `specification build-task --task PATH` runs the approved worker in a fresh
 container. The verified subject is read-only; only declared product directories
 are writable. Controller state, keys, Git metadata and Docker socket are absent.
-The controller bounds and checks outputs before making the candidate commit.
+Image-declared volumes are masked with bounded read-only tmpfs. The controller
+bounds and checks outputs before making the candidate commit.
 Worker stdout is untrusted and may contain credentials, so build receipts retain
 its hashes; live acceptance retains actual HTTP observations separately.
 

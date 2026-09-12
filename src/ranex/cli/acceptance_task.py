@@ -267,7 +267,7 @@ def build(args):
         commands=[]
         def docker(*argv,timeout=30,required=True):
             result=subprocess.run(['/usr/bin/docker',*argv],env=env,capture_output=True,text=True,timeout=timeout)
-            commands.append({'argv':list(argv),'exit':result.returncode,'stdout':None if argv[0]=='inspect' else result.stdout,'stderr':result.stderr})
+            commands.append({'argv':list(argv),'exit':result.returncode,'stdout':None if 'inspect' in argv[:2] else result.stdout,'stderr':result.stderr})
             require(not required or result.returncode==0,'WORKER: '+result.stderr.strip())
             return result
         base=checked_git(task.candidate,'rev-parse','HEAD')
@@ -295,12 +295,24 @@ def build(args):
                     fd=os.open(environment_file,os.O_WRONLY|os.O_CREAT|os.O_EXCL,0o600)
                     with os.fdopen(fd,'w') as stream:stream.writelines(lines)
                     env_args=['--env-file',str(environment_file)]
+                image=json.loads(docker('image','inspect',profile['image']).stdout)[0]
+                require(image['Id']==profile['image'],'WORKER: image identity changed')
+                declared=image['Config'].get('Volumes') or {}
+                require(len(declared)<=16,'WORKER: too many image-declared volumes')
+                volume_args=[]
+                for destination in declared:
+                    require(destination.startswith('/'),'WORKER: absolute image volume required')
+                    relative=_path(destination[1:])
+                    require(not any(_selected(relative,[name]) or _selected(name,[relative]) for name in ('workspace','tmp','proc','sys','dev')),'WORKER: image volume overlaps a controller mount')
+                    # Docker otherwise creates writable anonymous volumes even
+                    # with --read-only. Mask image declarations explicitly.
+                    volume_args+=['--tmpfs',destination+':ro,noexec,nosuid,size=1048576']
                 docker('create','--pull=never','--name',name,'--network','bridge' if profile['network'] else 'none',
                     '--user',str(os.getuid())+':'+str(os.getgid()),'--read-only','--cap-drop','ALL',
                     '--security-opt','no-new-privileges','--memory','512m','--pids-limit','128','--cpus','2',
                     '--tmpfs','/tmp:rw,noexec,nosuid,size=67108864','--log-driver','local','--log-opt','max-size=1m',
                     '--log-opt','max-file=2','--workdir','/workspace','--entrypoint',profile['argv'][0],
-                    *mounts,*env_args,profile['image'],*profile['argv'][1:])
+                    *mounts,*volume_args,*env_args,profile['image'],*profile['argv'][1:])
                 identity=json.loads(docker('inspect',name).stdout)[0]
                 require(identity['Image']==profile['image'],'WORKER: image identity changed')
                 # Retain only configuration fields without injected secret values.
@@ -311,7 +323,7 @@ def build(args):
                 # Worker output is untrusted and may contain secrets; retain hashes only.
                 logs=subprocess.run(['/usr/bin/docker','logs',name],env=env,capture_output=True,timeout=30)
                 log_hash={'stdout_sha256':hashlib.sha256(logs.stdout).hexdigest(),'stderr_sha256':hashlib.sha256(logs.stderr).hexdigest()}
-                docker('rm','-f',name)
+                docker('rm','-fv',name)
                 environment_file.unlink(missing_ok=True)
                 require(code==0,'WORKER-EXIT: '+str(code))
                 for relative,mutable in copies:
@@ -331,7 +343,7 @@ def build(args):
                 return {'status':'BUILT','candidate':candidate,'receipt':str(output/'receipt.json')}
         except BaseException as exc:
             (output/'worker.env').unlink(missing_ok=True)
-            docker('rm','-f',name,required=False)
+            docker('rm','-fv',name,required=False)
             atomic_writer.write_atomic(output/'failure.json',canonical_payload_bytes({'error':str(exc),'commands':commands}),root=output)
             task.append({'type':'acceptance-build-error','c_digest':task.c_digest,'run':run_id,'error':str(exc)})
             raise

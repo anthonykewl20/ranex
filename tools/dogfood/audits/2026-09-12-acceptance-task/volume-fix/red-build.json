@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"candidate\":\"61ed01570bc24c0e599a5dd67fb60fb2502c9c34\",\"receipt\":\"/tmp/ranex-119-public-workflow/volume-red/state/build-30a0c936d2554ed5afa56937bd3db152/receipt.json\",\"status\":\"BUILT\"}\n",
+  "stderr": ""
+}

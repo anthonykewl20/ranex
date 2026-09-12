@@ -1,7 +1,7 @@
 """Real public CLI workflow experiment; private fixture keys remain outside Git."""
 import ast,sys,json,hashlib,argparse,subprocess,os
 from pathlib import Path
-ROOT=Path(__file__).resolve().parents[2]
+ROOT=Path('/home/soultransit/devtony/ranex-acceptance-loop')
 sys.path.insert(0,str(ROOT/'tests/integration'))
 from test_acceptance_task_cli import invoke,git,PG
 from test_http_observer_cli import setup,profile
@@ -24,17 +24,18 @@ worker=dict(version='docker-worker-v1',image=PG,argv=['/bin/sh','-c',boundary+"c
 frozen=base/'task-bundle'
 r=invoke('specification','freeze-probes','--external-repository',root,'--spec-packet',base/'A.json','--invocation',base/'argv.json','--root','acceptance','--output',frozen);require(r.returncode==0,r.stderr)
 pin=json.loads(r.stdout)['manifest_digest'];private,_=generate_keypair();key=base/'owner.key';key.write_text(private);key.chmod(0o600);state=base/'state'
-steps=[('approve',['specification','approve-task','--external-repository',root,'--bundle',frozen,'--manifest-digest',pin,'--worker-profile','acceptance/worker.json','--state',state]),('build',['specification','build-task','--task',state])]+[('prove-'+str(i),['prove','--task',state]) for i in range(1,5)]
+steps=[('approve',['specification','approve-task','--external-repository',root,'--bundle',frozen,'--manifest-digest',pin,'--worker-profile','acceptance/worker.json','--state',state]),('build',['specification','build-task','--task',state])]
 for name,args in steps:
- r=invoke(*args,key=key if name=='approve' else None);(base/(name+'.json')).write_text(json.dumps({'exit':r.returncode,'stdout':r.stdout,'stderr':r.stderr},indent=2));print(name,r.returncode,r.stdout,r.stderr,flush=True)
- if name=='build' and r.returncode==0:
-  build_receipt=json.loads(Path(json.loads(r.stdout)['receipt']).read_bytes())
-  require(not any(m['Type']=='volume' for m in build_receipt['container']['Mounts']),'worker inherited an unapproved image volume')
- expected=0 if name in ('approve','build') else 2 if name=='prove-4' else 1
- require(r.returncode==expected,name+': wrong exit '+r.stderr)
- if name.startswith('prove-') and name!='prove-4':
-  value=json.loads(r.stdout);require(value['misses']==int(name[-1]) and value['failed_assertion']=='tenant-isolation','wrong persisted miss')
- if name=='prove-4':require('E-TASK-REVOKED' in r.stderr,'fourth attempt not revoked')
+ r=invoke(*args,key=key if name=='approve' else None);require(r.returncode==0,r.stderr)
+ (base/(name+'.json')).write_text(json.dumps({'exit':r.returncode,'stdout':r.stdout,'stderr':r.stderr},indent=2))
+from concurrent.futures import ThreadPoolExecutor
+with ThreadPoolExecutor(max_workers=4) as pool:
+ results=list(pool.map(lambda i:invoke('prove','--task',state),range(4)))
+for i,r in enumerate(results):
+ (base/('parallel-'+str(i)+'.json')).write_text(json.dumps({'exit':r.returncode,'stdout':r.stdout,'stderr':r.stderr},indent=2))
+misses=sorted(json.loads(r.stdout)['misses'] for r in results if r.returncode==1)
+require(misses==[1,2,3] and sum(r.returncode==2 and 'E-TASK-REVOKED' in r.stderr for r in results)==1,'concurrent attempts escaped miss budget')
+print(json.dumps({'parallel_misses':misses,'revoked':1}),flush=True)
 
 packet=json.loads((base/'A.json').read_bytes());packet['revision']+=1
 (base/'A2.json').write_bytes(canonical_payload_bytes(packet))

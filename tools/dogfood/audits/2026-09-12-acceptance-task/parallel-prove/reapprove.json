@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"base_commit\":\"92c95e916705dabc260aed06b06bbb70d279ccea\",\"c_digest\":\"sha256:20841f2aec379c1e4a03292930f2037364b916fc4415f261ca6dc46a771b52ae\",\"status\":\"APPROVED\",\"task\":\"/tmp/ranex-119-public-workflow/parallel-qualified/state\"}\n",
+  "stderr": ""
+}

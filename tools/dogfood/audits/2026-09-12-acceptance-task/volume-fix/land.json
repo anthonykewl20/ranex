@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"candidate\":\"e8917d012b0248be94ad790af1c32685f6d61d00\",\"journal_head\":\"sha256:ecfa6e97b1c145862819954f7122784096b7cc75745ab12c573d0c3e506a1925\",\"status\":\"LANDED\",\"target_ref\":\"refs/heads/master\"}\n",
+  "stderr": ""
+}

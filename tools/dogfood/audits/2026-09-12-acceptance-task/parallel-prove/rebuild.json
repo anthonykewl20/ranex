@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"candidate\":\"40ac52ffaa64569fe96cab68f55004ff8549979e\",\"receipt\":\"/tmp/ranex-119-public-workflow/parallel-qualified/state/build-23560f63cb2c46588acdd28416ad37b9/receipt.json\",\"status\":\"BUILT\"}\n",
+  "stderr": ""
+}

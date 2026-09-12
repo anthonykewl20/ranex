@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"base_commit\":\"32fa43c2d3972e5eb38e6ef3846ee85f71e6c124\",\"c_digest\":\"sha256:22f1459fdb75bb74b85f83d2b2b67260d3036a086fdb2ec255a8c05305ed5364\",\"status\":\"APPROVED\",\"task\":\"/tmp/ranex-119-public-workflow/volume-green/state\"}\n",
+  "stderr": ""
+}
