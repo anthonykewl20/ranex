@@ -1,0 +1,16 @@
+{
+  "source": "parallel-freeze.stdout",
+  "raw_frozen_line": "FROZEN  tests=2016  expected_skips=168  run_exit=0  output=/tmp/ranex-leitir-lane-proof-xQ9Svj/parallel-freeze/freeze-subject/.local/leitir-lane-manifest.json",
+  "before": "FROZEN  tests=2014  expected_skips=168  run_exit=0  output=<ABS-PATH>",
+  "after": "FROZEN  tests=2016  expected_skips=168  run_exit=0  output=<ABS-PATH>",
+  "red": "golden transcript mismatch (golden family 'suite-freeze-manifest') \u2014 first differing hunk, untruncated:\n--- expected (golden)\n+++ actual (run)\n@@ -1 +1 @@\n-FROZEN  tests=2014  expected_skips=168  run_exit=0  output=<ABS-PATH>\n+FROZEN  tests=2016  expected_skips=168  run_exit=0  output=<ABS-PATH>",
+  "normalizer": "tests/e2e/_prereqs.py:normalize_transcript",
+  "comparison_after": "PASS",
+  "sabotage_control": "PASS",
+  "added_test_ids": [
+    "tests/contract/test_lane_parallelism.py::test_simultaneous_processes_respect_capacity[soak-1]",
+    "tests/contract/test_lane_parallelism.py::test_simultaneous_processes_respect_capacity[verify-2]"
+  ],
+  "removed_test_ids": [],
+  "expected_skips_unchanged": true
+}

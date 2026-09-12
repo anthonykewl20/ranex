@@ -10,8 +10,8 @@ Do not stop at artifact integrity or describe it as product acceptance.
 
 SLICE-087 / #116: external executable probe bundles, reusing A/B identity,
 canonical bytes and verified Git object readers. New CLI freeze-probes and
-check-probes preserve artifact integrity, not product PASS. Manifest: 2014 IDs;
-168 expected skips. Closing full-suite evidence is on #116. verdict.py unchanged.
+check-probes preserve artifact integrity, not product PASS. Closing full-suite
+evidence is on #116; verdict.py is unchanged.
 Live journal experiment: three baseline matches and three named mutant failures;
 499 unit tests pass on that same known-bad commit; live probe rejects it.
 Raw output: tools/dogfood/audits/2026-09-12-probe-bundles/.
@@ -32,7 +32,9 @@ A persistent directory flock now serializes registry transactions, not workloads
 Leitir supplied pinned filelock source evidence; existing Ranex locking was reused.
 Current two-slot baseline admitted 5/5/5 contenders; fixed runs admitted 2/2/2
 and refused 14 each. One-slot runs admitted 1 each. All 49 focused checks pass.
-Integrated manifest refreeze/full verification remain pending. No dependency added.
+Loaded manifest: 2016 IDs, 168 expected-skip declarations. Hermetic refreeze:
+1856 passed / 160 skipped, run_exit=0. Golden captured from that real output.
+Final host-suite evidence is bound to its commit in #117. No dependency added.
 Evidence: tools/dogfood/audits/2026-09-12-leitir-lane-race/.
 
 Parallel work and overlapping verification are owner-authorized (2026-09-12).
