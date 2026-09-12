@@ -1,0 +1,3 @@
+{"repeat": 0, "kind": "soak", "capacity": 1, "ADMITTED": 4, "REFUSED": 12, "ERROR": 0}
+{"repeat": 1, "kind": "soak", "capacity": 1, "ADMITTED": 8, "REFUSED": 8, "ERROR": 0}
+{"repeat": 2, "kind": "soak", "capacity": 1, "ADMITTED": 3, "REFUSED": 13, "ERROR": 0}

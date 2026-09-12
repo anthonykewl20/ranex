@@ -8,6 +8,8 @@ leave one comment, push.
 Parallel implementation and overlapping verification are authorized. The owner
 revoked the previous single-writer/read-only and no-overlapping-suite rules.
 A running suite or commits ahead of origin do not block independent work.
+Each agent owns one branch and one worktree. Use `git worktree` to share Git
+objects; never stash, reset, or commit another agent's changes.
 
 Use separate Git worktrees and branches for concurrent writers, and pinned
 isolated worktrees for verification. Coordinate edits to the same files; do

@@ -1,0 +1,39 @@
+Using CPython 3.14.7
+Creating virtual environment at: .venv
+   Building ranex @ file:///tmp/ranex-verify-2106814-b07a2507
+      Built ranex @ file:///tmp/ranex-verify-2106814-b07a2507
+Installed 32 packages in 10ms
+Traceback (most recent call last):
+  File "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py", line 280, in <module>
+    raise SystemExit(main())
+                     ~~~~^^
+  File "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py", line 272, in main
+    return subprocess.run(command, cwd=cwd, check=False).returncode
+           ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/subprocess.py", line 557, in run
+    stdout, stderr = process.communicate(input, timeout=timeout)
+                     ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/subprocess.py", line 1213, in communicate
+    self.wait()
+    ~~~~~~~~~^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/subprocess.py", line 1279, in wait
+    return self._wait(timeout=timeout)
+           ~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/subprocess.py", line 2084, in _wait
+    (pid, sts) = self._try_wait(0)
+                 ~~~~~~~~~~~~~~^^^
+  File "/home/soultransit/.local/share/uv/python/cpython-3.14.7-linux-x86_64-gnu/lib/python3.14/subprocess.py", line 2042, in _try_wait
+    (pid, sts) = os.waitpid(self.pid, wait_flags)
+                 ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+KeyboardInterrupt
+Traceback (most recent call last):
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/bin/pytest", line 10, in <module>
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py", line 253, in _console_main
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/_pytest/config/__init__.py", line 229, in _main
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/pluggy/_hooks.py", line 512, in __call__
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/pluggy/_manager.py", line 120, in _hookexec
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/pluggy/_callers.py", line 167, in _multicall
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/pluggy/_callers.py", line 121, in _multicall
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/_pytest/main.py", line 377, in pytest_cmdline_main
+  File "/tmp/ranex-verify-2106814-b07a2507/.venv/lib/python3.14/site-packages/_pytest/main.py", line 362, in wrap_session
+FileNotFoundError: [Errno 2] No such file or directory: '/tmp/ranex-verify-2106814-b07a2507'

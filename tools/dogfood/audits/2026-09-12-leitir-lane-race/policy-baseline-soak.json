@@ -1,0 +1,257 @@
+[
+  {
+    "repeat": 0,
+    "kind": "soak",
+    "capacity": 1,
+    "ADMITTED": 4,
+    "REFUSED": 12,
+    "ERROR": 0,
+    "rows": [
+      {
+        "worker": 0,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 1,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 10,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 11,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 12,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 13,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 14,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 15,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (2/1). Held by pid 2519698 for 0s (lightweight race worker 7), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 2,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 3,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 4,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 5,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 6,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 7,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 8,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 9,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519693 for 0s (lightweight race worker 2), pid 2519698 for 0s (lightweight race worker 7), pid 2519701 for 0s (lightweight race worker 10), pid 2519702 for 0s (lightweight race worker 11).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      }
+    ]
+  },
+  {
+    "repeat": 1,
+    "kind": "soak",
+    "capacity": 1,
+    "ADMITTED": 8,
+    "REFUSED": 8,
+    "ERROR": 0,
+    "rows": [
+      {
+        "worker": 0,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (8/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519748 for 0s (lightweight race worker 4), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519753 for 0s (lightweight race worker 9), pid 2519754 for 0s (lightweight race worker 10), pid 2519757 for 0s (lightweight race worker 13), pid 2519759 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 1,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (8/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519748 for 0s (lightweight race worker 4), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519753 for 0s (lightweight race worker 9), pid 2519754 for 0s (lightweight race worker 10), pid 2519757 for 0s (lightweight race worker 13), pid 2519759 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 10,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 11,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (8/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519748 for 0s (lightweight race worker 4), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519753 for 0s (lightweight race worker 9), pid 2519754 for 0s (lightweight race worker 10), pid 2519757 for 0s (lightweight race worker 13), pid 2519759 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 12,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (8/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519748 for 0s (lightweight race worker 4), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519753 for 0s (lightweight race worker 9), pid 2519754 for 0s (lightweight race worker 10), pid 2519757 for 0s (lightweight race worker 13), pid 2519759 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 13,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 14,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519757 for 0s (lightweight race worker 13).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 15,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 2,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 3,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (4/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519757 for 0s (lightweight race worker 13).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 4,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 5,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 6,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 7,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (5/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519748 for 0s (lightweight race worker 4), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519757 for 0s (lightweight race worker 13).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 8,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (7/1). Held by pid 2519746 for 0s (lightweight race worker 2), pid 2519748 for 0s (lightweight race worker 4), pid 2519749 for 0s (lightweight race worker 5), pid 2519750 for 0s (lightweight race worker 6), pid 2519753 for 0s (lightweight race worker 9), pid 2519754 for 0s (lightweight race worker 10), pid 2519757 for 0s (lightweight race worker 13).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 9,
+        "status": "ADMITTED"
+      }
+    ]
+  },
+  {
+    "repeat": 2,
+    "kind": "soak",
+    "capacity": 1,
+    "ADMITTED": 3,
+    "REFUSED": 13,
+    "ERROR": 0,
+    "rows": [
+      {
+        "worker": 0,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 1,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 10,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 11,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 12,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 13,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 14,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 15,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 2,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 3,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 4,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 5,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 6,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 7,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 8,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 9,
+        "status": "REFUSED",
+        "reason": "REFUSED: the soak lane is full (3/1). Held by pid 2519764 for 0s (lightweight race worker 4), pid 2519767 for 0s (lightweight race worker 7), pid 2519781 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      }
+    ]
+  }
+]

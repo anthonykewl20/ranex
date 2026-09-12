@@ -30,8 +30,9 @@ No production sign-off, zero-bug claim or universal deterministic-runtime claim.
 #117: the host lane check/write race reproduced with real concurrent processes.
 A persistent directory flock now serializes registry transactions, not workloads.
 Leitir supplied pinned filelock source evidence; existing Ranex locking was reused.
-Initial one-slot controls passed; integration with the two-slot owner policy and
-its full verification are pending. No runtime dependency was added.
+Current two-slot baseline admitted 5/5/5 contenders; fixed runs admitted 2/2/2
+and refused 14 each. One-slot runs admitted 1 each. All 49 focused checks pass.
+Integrated manifest refreeze/full verification remain pending. No dependency added.
 Evidence: tools/dogfood/audits/2026-09-12-leitir-lane-race/.
 
 Parallel work and overlapping verification are owner-authorized (2026-09-12).

@@ -11,8 +11,6 @@ parser = argparse.ArgumentParser()
 parser.add_argument('module', type=Path)
 parser.add_argument('output', type=Path)
 parser.add_argument('--worker', type=int)
-parser.add_argument('--kind', choices=('soak', 'verify'), default='soak')
-parser.add_argument('--capacity', type=int, default=1)
 a = parser.parse_args()
 a.output.mkdir(parents=True, exist_ok=True)
 if a.worker is not None:
@@ -29,7 +27,7 @@ if a.worker is not None:
         time.sleep(.001)
     held = None
     try:
-        held = lane.acquire(a.kind, detail=f'lightweight race worker {a.worker}')
+        held = lane.acquire('soak', detail=f'lightweight race worker {a.worker}')
         result = {'worker': a.worker, 'status': 'ADMITTED'}
     except SystemExit as exc:
         result = {'worker': a.worker, 'status': 'REFUSED', 'reason': str(exc)}
@@ -52,7 +50,7 @@ reports = []
 for repeat in range(3):
     run = a.output / str(repeat)
     run.mkdir()
-    children = [subprocess.Popen([sys.executable, __file__, str(a.module), str(run), '--kind', a.kind, '--capacity', str(a.capacity), '--worker', str(i)], stdout=subprocess.PIPE, stderr=subprocess.PIPE) for i in range(16)]
+    children = [subprocess.Popen([sys.executable, __file__, str(a.module), str(run), '--worker', str(i)], stdout=subprocess.PIPE, stderr=subprocess.PIPE) for i in range(16)]
     def wait_for(pattern):
         deadline = time.monotonic() + 25
         while len(list(run.glob(pattern))) != len(children):
@@ -65,8 +63,8 @@ for repeat in range(3):
         wait_for('result-*.json')
         rows = [json.loads(p.read_text()) for p in sorted(run.glob('result-*.json'))]
         counts = {status: sum(r['status'] == status for r in rows) for status in ('ADMITTED', 'REFUSED', 'ERROR')}
-        reports.append({'repeat': repeat, 'kind': a.kind, 'capacity': a.capacity, **counts, 'rows': rows})
-        print(json.dumps({'repeat': repeat, 'kind': a.kind, 'capacity': a.capacity, **counts}), flush=True)
+        reports.append({'repeat': repeat, **counts, 'rows': rows})
+        print(json.dumps({'repeat': repeat, **counts}), flush=True)
     finally:
         (run / 'release').touch()
         for child in children:
@@ -75,4 +73,4 @@ for repeat in range(3):
                 print(stderr.decode(), file=sys.stderr)
                 raise RuntimeError(child.returncode)
 (a.output / 'summary.json').write_text(json.dumps(reports, indent=2) + '\n')
-sys.exit(0 if all(r['ADMITTED'] == a.capacity and r['REFUSED'] == 16-a.capacity and r['ERROR'] == 0 for r in reports) else 1)
+sys.exit(0 if all(r['ADMITTED'] == 1 and r['ERROR'] == 0 for r in reports) else 1)

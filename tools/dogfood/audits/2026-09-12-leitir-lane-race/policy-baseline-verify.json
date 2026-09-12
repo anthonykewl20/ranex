@@ -1,0 +1,257 @@
+[
+  {
+    "repeat": 0,
+    "kind": "verify",
+    "capacity": 2,
+    "ADMITTED": 5,
+    "REFUSED": 11,
+    "ERROR": 0,
+    "rows": [
+      {
+        "worker": 0,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 1,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 10,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (4/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 11,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 12,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 13,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 14,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 15,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 2,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 3,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 4,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 5,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 6,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 7,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 8,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519866 for 0s (lightweight race worker 3), pid 2519870 for 0s (lightweight race worker 7), pid 2519872 for 0s (lightweight race worker 9), pid 2519877 for 0s (lightweight race worker 14), pid 2519878 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 9,
+        "status": "ADMITTED"
+      }
+    ]
+  },
+  {
+    "repeat": 1,
+    "kind": "verify",
+    "capacity": 2,
+    "ADMITTED": 5,
+    "REFUSED": 11,
+    "ERROR": 0,
+    "rows": [
+      {
+        "worker": 0,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 1,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 10,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 11,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 12,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 13,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (4/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 14,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 15,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (3/2). Held by pid 2519884 for 0s (lightweight race worker 2), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 2,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 3,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 4,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 5,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (3/2). Held by pid 2519884 for 0s (lightweight race worker 2), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 6,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 7,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 8,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 9,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519882 for 0s (lightweight race worker 0), pid 2519884 for 0s (lightweight race worker 2), pid 2519890 for 0s (lightweight race worker 8), pid 2519893 for 0s (lightweight race worker 11), pid 2519894 for 0s (lightweight race worker 12).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      }
+    ]
+  },
+  {
+    "repeat": 2,
+    "kind": "verify",
+    "capacity": 2,
+    "ADMITTED": 5,
+    "REFUSED": 11,
+    "ERROR": 0,
+    "rows": [
+      {
+        "worker": 0,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 1,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 10,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (2/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519913 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 11,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 12,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 13,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 14,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 15,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 2,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 3,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (2/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519913 for 0s (lightweight race worker 14).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 4,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 5,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 6,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 7,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      },
+      {
+        "worker": 8,
+        "status": "ADMITTED"
+      },
+      {
+        "worker": 9,
+        "status": "REFUSED",
+        "reason": "REFUSED: the verify lane is full (5/2). Held by pid 2519900 for 0s (lightweight race worker 1), pid 2519907 for 0s (lightweight race worker 8), pid 2519910 for 0s (lightweight race worker 11), pid 2519913 for 0s (lightweight race worker 14), pid 2519914 for 0s (lightweight race worker 15).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+      }
+    ]
+  }
+]
