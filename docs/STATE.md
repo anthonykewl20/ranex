@@ -1,7 +1,7 @@
 # State
 
 **Updated:** 2026-09-12
-**Active slice:** docs/slices/SLICE-088-calibrated-live-http-observer.md (#118).
+**Active slice:** none — durable task authority is next under ADR-061.
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
@@ -10,8 +10,8 @@ Do not stop at artifact integrity or describe it as product acceptance.
 
 SLICE-087 / #116: external executable probe bundles, reusing A/B identity,
 canonical bytes and verified Git object readers. New CLI freeze-probes and
-check-probes preserve artifact integrity, not product PASS. Manifest: 2014 IDs;
-168 expected skips. Closing full-suite evidence is on #116. verdict.py unchanged.
+check-probes preserve artifact integrity, not product PASS. Manifest: 2026 IDs;
+169 expected skips. Closing full-suite evidence is on #116. verdict.py unchanged.
 Live journal experiment: three baseline matches and three named mutant failures;
 499 unit tests pass on that same known-bad commit; live probe rejects it.
 Raw output: tools/dogfood/audits/2026-09-12-probe-bundles/.
@@ -19,8 +19,9 @@ Raw output: tools/dogfood/audits/2026-09-12-probe-bundles/.
 SLICE-088 implements the trusted declarative PostgREST/PostgreSQL observer.
 Frozen JSON owns HTTP assertions, lifecycle steps, repetitions and named SQL
 mutation controls. Candidate SQL is Git-materialized; observer imports no
-candidate code. Real CLI qualification: 12 passed, including named mutation detection and
-surviving/unrelated-control refusal; raw receipts in the live-observer audit. No approval, verdict admission, harness mediation or merge claim.
+candidate code. Real CLI qualification: 12 passed, including named mutation
+detection and surviving/unrelated-control refusal; raw receipts in the
+live-observer audit. No approval, verdict admission, harness or merge claim.
 
 Next: persisted task authority/three misses/reapproval, exact integration
 candidate, real application and browser release journeys. No ranex prove yet.

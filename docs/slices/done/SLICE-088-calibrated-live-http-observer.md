@@ -1,6 +1,6 @@
 # SLICE-088 — Calibrated live HTTP observer
 
-**Status:** open
+**Status:** done
 **Issue:** #118
 **ADR:** docs/adr/ADR-061-live-acceptance-before-completion.md
 
@@ -42,3 +42,7 @@ No general arbitrary-server, browser, hostile-host or production claim. The
 result is OBSERVED-MATCH / OBSERVED-MISMATCH / execution or calibration error,
 not C approval, evidence admission, product PASS or merge. Remaining ADR-061
 exits retain their own implementation and real-execution requirements.
+
+Source freeze at b903e53: 1865 passed, 161 skipped; 2026 IDs and 169 expected
+skips, run_exit=0. Live CLI: 12 passed in 70.65s. Full final-commit evidence
+is recorded in the closing issue comment; no release claim precedes that run.

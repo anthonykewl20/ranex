@@ -226,7 +226,7 @@ and requires named product mutations to fail the specified assertions across
 frozen repetitions. Results are observations, not approval or a product PASS.
 See `docs/OPERATIONS.md` for the supported profile and qualification command.
 
-**Active slice:** docs/slices/SLICE-088-calibrated-live-http-observer.md (#118).
+**Active slice:** none — durable task authority is next under ADR-061.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -235,6 +235,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-088 — Calibrated live HTTP observer](docs/slices/done/SLICE-088-calibrated-live-http-observer.md): real pinned service/database, Git candidates and named mutation calibration.
 
 - [SLICE-087 — Frozen executable probe bundles](docs/slices/done/SLICE-087-frozen-executable-probe-bundles.md): freeze/check actual probe bytes, membership, modes and argv against A/B identity.
 
