@@ -80,7 +80,7 @@ def test_observer_requires_frozen_command_identity(tmp_path):
     assert not (tmp_path/'has,comma').exists()
 
 
-@pytest.mark.skipif(os.environ.get('RANEX_LIVE_HTTP_EXPERIMENT') != '1', reason='requires explicit live Docker HTTP experiment')
+@pytest.mark.skipif(os.environ.get('RANEX_LIVE_HTTP_EXPERIMENT') != '1', reason='ranex-context:live-http-experiment: requires RANEX_LIVE_HTTP_EXPERIMENT=1 and local Docker images')
 def test_real_http_observer_matches_good_and_rejects_committed_authorization_defect(tmp_path):
     p=profile()
     def request(id,method,path,role,body,expect,capture=None):
