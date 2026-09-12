@@ -33,7 +33,8 @@ integration and fault/recovery qualification against retained real outputs.
 
 Parallel work and overlapping verification are owner-authorized (2026-09-12).
 Use separate writer and pinned verification worktrees. The lane helper admits
-two verification runs with memory checks. Refreeze on a committed tree and
+two verification runs with memory checks and persistent admission locking.
+The parallel-lane race fixes from main are included. Refreeze on a committed tree and
 load_manifest before committing the manifest. Do not claim skipped runs passed.
 
 Trust boundaries: controller/host/Docker daemon trusted; PostgREST SQL profile

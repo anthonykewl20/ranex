@@ -1,0 +1,3 @@
+{"repeat": 0, "kind": "verify", "capacity": 2, "ADMITTED": 5, "REFUSED": 11, "ERROR": 0}
+{"repeat": 1, "kind": "verify", "capacity": 2, "ADMITTED": 5, "REFUSED": 11, "ERROR": 0}
+{"repeat": 2, "kind": "verify", "capacity": 2, "ADMITTED": 5, "REFUSED": 11, "ERROR": 0}

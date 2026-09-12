@@ -152,3 +152,20 @@ def test_status_reports_holders_without_taking_a_slot(lane) -> None:
         assert lane._holders() == holders, "observing must not consume"
     finally:
         lane.release(held)
+
+
+@pytest.mark.parametrize(("kind", "capacity"), (("soak", 1), ("verify", 2)))
+def test_simultaneous_processes_respect_capacity(tmp_path, kind, capacity) -> None:
+    """Real contenders respect both the one-slot and owner-approved two-slot limits."""
+
+    probe = REPO_ROOT / "tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py"
+    completed = subprocess.run(
+        [sys.executable, str(probe), str(MODULE), str(tmp_path / "race"),
+         "--kind", kind, "--capacity", str(capacity)],
+        capture_output=True, text=True, check=False, timeout=120,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    rows = json.loads((tmp_path / "race/summary.json").read_text())
+    assert len(rows) == 3
+    assert all((row["ADMITTED"], row["REFUSED"], row["ERROR"]) == (capacity, 16-capacity, 0)
+               for row in rows)

@@ -1,0 +1,107 @@
+{
+  "baseline_commit": "36441b17825f7201b89c8e84c4deeaab87e5d91a",
+  "host": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "python": "3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]",
+  "historical_probe_snapshot": "race-initial.py",
+  "historical_fixed_source_snapshot": "lane-initial-source.txt",
+  "superseded_host_run": {
+    "commit": "b07a25077d97cd35753c59fc4c33a64c637c596a",
+    "exit_code": 130,
+    "status": "UNVERIFIED",
+    "reason": "Reconcile the concurrently committed two-verification-slot owner policy."
+  },
+  "runs": [
+    {
+      "label": "baseline",
+      "kind": "soak",
+      "capacity": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/parallel-policy-baseline.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/policy-baseline-soak",
+        "--kind",
+        "soak",
+        "--capacity",
+        "1"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789212557.3315742,
+      "elapsed_seconds": 0.4589524269104004,
+      "exit_code": 1,
+      "module_sha256": "199cd4b297106054ef232ad83ad6f456e513567a60d25245a7d713e07f3bed2a",
+      "probe_sha256": "ec59e4ea578b6181750611ae6d04daffca610552aa89a103da59f5171e7c0773",
+      "stdout_sha256": "a21f6dfce2188433a635a02d23cd587e31e89e202ac7485b504a19de9e1cf89c",
+      "results_sha256": "5566cfcfc5bfa3d4bdd1e33e3cf8f553f85a311a67624a208ad7c645460fde57"
+    },
+    {
+      "label": "baseline",
+      "kind": "verify",
+      "capacity": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/parallel-policy-baseline.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/policy-baseline-verify",
+        "--kind",
+        "verify",
+        "--capacity",
+        "2"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789212557.7908561,
+      "elapsed_seconds": 0.44327569007873535,
+      "exit_code": 1,
+      "module_sha256": "199cd4b297106054ef232ad83ad6f456e513567a60d25245a7d713e07f3bed2a",
+      "probe_sha256": "ec59e4ea578b6181750611ae6d04daffca610552aa89a103da59f5171e7c0773",
+      "stdout_sha256": "a6aac481f414c4e62cd45a8f3c96af32e98e96cf0e11019c69de3978806c828a",
+      "results_sha256": "a7770eaf2179623e21f734071a1edc25085bafea997194b8cb0feab60be54079"
+    },
+    {
+      "label": "fixed",
+      "kind": "soak",
+      "capacity": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/policy-fixed-soak",
+        "--kind",
+        "soak",
+        "--capacity",
+        "1"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789212558.2344456,
+      "elapsed_seconds": 0.4434340000152588,
+      "exit_code": 0,
+      "module_sha256": "0ed7b11bcf215de8689870bcb6d7f796d142c04b26912f19a32e21f8956ac8a6",
+      "probe_sha256": "ec59e4ea578b6181750611ae6d04daffca610552aa89a103da59f5171e7c0773",
+      "stdout_sha256": "26342f2089712fc8bd64e50c282f38cd06ed9fc5b2dc09eff4b8d2a8f16fe147",
+      "results_sha256": "502bd4282ceaabb92d7a121d8b6f192ded36a715ed68f3dcefa05e477f9457d4"
+    },
+    {
+      "label": "fixed",
+      "kind": "verify",
+      "capacity": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/policy-fixed-verify",
+        "--kind",
+        "verify",
+        "--capacity",
+        "2"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789212558.6782508,
+      "elapsed_seconds": 0.45378851890563965,
+      "exit_code": 0,
+      "module_sha256": "0ed7b11bcf215de8689870bcb6d7f796d142c04b26912f19a32e21f8956ac8a6",
+      "probe_sha256": "ec59e4ea578b6181750611ae6d04daffca610552aa89a103da59f5171e7c0773",
+      "stdout_sha256": "1d1932ad0be70b87b47deb30731ca40c77a3cbe61eea8e747ff973f419136d98",
+      "results_sha256": "9ed741ad10be59615bdf46006b96f702bd171071a6f05b6c8b53628cf221de44"
+    }
+  ]
+}

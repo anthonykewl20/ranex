@@ -1,0 +1,13 @@
+{
+  "source_blob_sha1": "4ae1fbe916f95762418cd62251f91f74ba35fc8c",
+  "source_sha256": "f855cfd2d8c89c11d463280e94ca69e2d694983f3b40e92b0ffe326e0fe24fb4",
+  "license_sha256": "88d9b4eb60579c191ec391ca04c16130572d7eedc4a86daa58bf28c6e14c9bcd",
+  "source_matches_search_blob": true,
+  "source_matches_manifest_digest": true,
+  "license_bytes_preserved": true,
+  "leitir_automatic_license_identifier": null,
+  "leitir_automatic_license_confidence": "low",
+  "manual_license_observation": "LICENSE explicitly dedicates the software to the public domain (Unlicense).",
+  "source_role": "Reference only; Ranex directory-flock implementation reused from its own host_confinement.py.",
+  "upstream_code_imported_or_executed": false
+}

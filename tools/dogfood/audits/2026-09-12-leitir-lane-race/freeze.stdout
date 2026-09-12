@@ -1,0 +1,123 @@
+........................................................................ [  3%]
+........................................................................ [  7%]
+..ssssssssss............................................................ [ 10%]
+........................................................................ [ 14%]
+........................................................................ [ 17%]
+...s.............................sssssssss..sssssssss...ssssss..ss.sssss [ 21%]
+sssss.................................................ssssss............ [ 25%]
+..F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_skip ___________________________________
+
+>   def test_skip(): assert False
+E   assert False
+
+tests/test_sample.py:1: AssertionError
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-np2gjeoe/tree/report.xml -
+=========================== short test summary info ============================
+FAILED tests/test_sample.py::test_skip - assert False
+1 failed in 0.01s
+........                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-hup4iuas/tree/artifacts/junit.xml -
+1 passed in 0.00s
+..s..................ss................................ss...... [ 28%]
+...........ss...s...............s.s..................................... [ 32%]
+....................................................sssssssssss.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-ljbu8_kj/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-ywb6ux2p/tree/governance/suite_results.xml -
+1 passed in 0.00s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-bt2qhdy7/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-rldtimbj/tree/governance/suite_results.xml -
+1 passed in 0.01s
+..sssssss [ 35%]
+ssssssssss.......................                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-l2a2bieh/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-h_fygkyv/tree/governance/suite_results.xml -
+1 passed in 0.00s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-ufurwpy7/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-41jc70mk/tree/governance/suite_results.xml -
+1 passed in 0.00s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-0o2t8wuw/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-7kk29cy_/tree/governance/suite_results.xml -
+1 passed in 0.00s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-zk3j0qg0/tree/governance/suite_results.xml -
+1 passed in 0.00s
+...................................... [ 39%]
+.........................................................                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-ujk4scr6/tree/governance/suite_results.xml -
+1 passed in 0.00s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+[XPASS(strict)] known issue
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-ngsvyrit/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value
+1 failed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-i0x3bmp3/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-tb02irok/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-v12oarb7/tree/governance/suite_results.xml -
+1 passed in 0.01s
+...                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-ikpifgg5/tmp/ranex-subject-a7elmj52/tree/governance/suite_results.xml -
+1 passed in 0.01s
+............ss [ 43%]
+ssssssssssssssss....................sss................................. [ 46%]
+........................................................................ [ 50%]
+........................................................................ [ 53%]
+........................................................................ [ 57%]
+............................................................s........... [ 61%]
+..............................
+no tests ran in 0.00s
+..............ss..............ssssssssssss [ 64%]
+ssssssss................................................................ [ 68%]
+.........sssssssssssssssss.sss............s.....ss.................s.... [ 71%]
+........s............................................................... [ 75%]
+........................................................................ [ 79%]
+........................................................................ [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 89%]
+........................................................................ [ 93%]
+........................................................................ [ 97%]
+...........................................................              [100%]
+1843 passed, 160 skipped in 306.53s (0:05:06)
+FROZEN  tests=2003  expected_skips=168  run_exit=0  output=/tmp/ranex-leitir-lane-proof-xQ9Svj/freeze-subject/.local/leitir-lane-manifest.json

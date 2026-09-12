@@ -1,0 +1,55 @@
+{
+  "baseline_commit": "5d34138cb39f14ade44990e7de57fee37894c1de",
+  "host": "Linux-7.0.0-30-generic-x86_64-with-glibc2.39",
+  "python": "3.14.7 (main, Sep  1 2026, 14:18:09) [Clang 22.1.3 ]",
+  "runs": [
+    {
+      "name": "baseline",
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/baseline-lane.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/baseline"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "start_unix": 1789207602.2491837,
+      "elapsed_seconds": 0.42315173149108887,
+      "exit_code": 1,
+      "module_sha256": "8ca63d7b38cfa7e9a98842f6d4c2ef37ec37d60b27fb251a872975dc83e3dddf",
+      "probe_sha256": "fb4d5551ad59995104a89ccbc6dab97706e5c67b6a0ae3cbf16c33ea4cf214b8",
+      "stdout_sha256": "c6347513b08973a31c9c7b90251397202f0cceb1b5c753f10451b4ed566e4152",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "results_sha256": "5d80aba7c168bb0d847398ae332917f776f140ae829072b583b99087fb9fde7e"
+    },
+    {
+      "name": "fixed",
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/fixed"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "start_unix": 1789207602.6727295,
+      "elapsed_seconds": 0.42019176483154297,
+      "exit_code": 0,
+      "module_sha256": "cff19ced9c109285545d4b9145aab626a3a34d92d383935c15408c6ef7522816",
+      "probe_sha256": "fb4d5551ad59995104a89ccbc6dab97706e5c67b6a0ae3cbf16c33ea4cf214b8",
+      "stdout_sha256": "da1b37ee37cfb6453251d00330d05bbaeb678346f6a32e55b8d86576cb2a2ed5",
+      "stderr_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "results_sha256": "86a683c9b4978e003e952cda4b93b6bc6327f4f43abdb2214bc97fd967401f13"
+    }
+  ],
+  "upstream": {
+    "repository": "tox-dev/filelock",
+    "commit": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+    "file": "src/filelock/_unix.py",
+    "license_file": "filelock-LICENSE.txt",
+    "donor_executed": false
+  },
+  "limits": [
+    "No randomized controlled comparison against agents without Leitir.",
+    "Winner process and diagnostic timestamps vary; the slot cardinality is the invariant.",
+    "The first reproduction preceded upstream research. Leitir supplied implementation evidence, not discovery of the race."
+  ]
+}
