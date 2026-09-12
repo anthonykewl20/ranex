@@ -21,7 +21,9 @@ Frozen JSON owns HTTP assertions, lifecycle steps, repetitions and named SQL
 mutation controls. Candidate SQL is Git-materialized; observer imports no
 candidate code. Real CLI qualification: 12 passed, including named mutation
 detection and surviving/unrelated-control refusal; raw receipts in the
-live-observer audit. No approval, verdict admission, harness or merge claim.
+live-observer audit. Final verification also exposed a single-address network
+probe that skipped repair after wheel quarantine; it now tries all addresses.
+No approval, verdict admission, harness or merge claim.
 
 Next: persisted task authority/three misses/reapproval, exact integration
 candidate, real application and browser release journeys. No ranex prove yet.
