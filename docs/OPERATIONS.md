@@ -817,3 +817,77 @@ RANEX_LIVE_HTTP_EXPERIMENT=1 uv run --frozen pytest -q \
 Execution errors and calibration failures exit 2. Receipts and per-trial raw
 commands/responses remain under the external output directory. These are live
 observations, not approval, an admitted kernel verdict, or permission to merge.
+
+### Approved live acceptance tasks
+
+The Linux `docker-worker-v1` / `postgrest-http-v1` path implements the owner
+workflow using independently frozen HTTP observations. The controller and local
+Docker daemon are trusted; start with a disposable product repository and keep
+all controller state and signing keys outside it. Images must already exist
+locally under their exact `sha256:` image IDs. No image is pulled during proof.
+
+Freeze a committed `acceptance/http.json` profile and
+`acceptance/worker.json`, together with the literal invocation
+`["ranex","specification","observe-http","--profile","acceptance/http.json"]`.
+The HTTP profile schema is the closed contract in
+`src/ranex/cli/http_observer.py:validate_profile`; the public live fixture in
+`tests/integration/test_http_observer_cli.py` is an executable example including
+persistence, invalid credentials, forbidden writes and dependency failure.
+The worker JSON has exactly these fields:
+
+| Field | Meaning |
+|---|---|
+| `version` | `docker-worker-v1` |
+| `image` | Installed immutable Docker image ID, `sha256:` plus 64 hex digits |
+| `argv` | Literal command array with an absolute executable as its first item |
+| `product_roots` | Existing relative directories, disjoint from frozen roots |
+| `timeout_seconds` | Integer from 1 through 1800 |
+| `network` | Explicit boolean; true authorizes broad worker network access |
+| `environment` | Names of operator-provided variables for the worker only |
+
+Use `specification approve-task` with `--external-repository`, `--bundle`,
+`--manifest-digest`, `--worker-profile` and a new external `--state` directory.
+`RANEX_SIGNING_KEY` must identify the operator's private key; the command issues
+existing C authority and stores its public identity, not the operator key.
+The target is the source repository's current attached branch and committed tip.
+The independently checked manifest digest is part of what the operator approves.
+
+`specification build-task --task PATH` runs the approved worker in a fresh
+container. The verified subject is read-only; only declared product directories
+are writable. Controller state, keys, Git metadata and Docker socket are absent.
+The controller bounds and checks outputs before making the candidate commit.
+Worker stdout is untrusted and may contain credentials, so build receipts retain
+its hashes; live acceptance retains actual HTTP observations separately.
+
+`ranex prove --task PATH` observes the committed candidate, calibrates against
+named product defects and publishes the existing signed verdict format. No
+worker test report is accepted as a substitute. Exit 0 is PASS, exit 1 is an
+observed MISS, and exit 2 is refusal/execution/calibration error. After three
+observed misses, the existing grant is revoked. Restarting the CLI preserves
+that count; infrastructure errors do not consume it or produce a PASS.
+
+`specification reapprove-task` uses the approval options with `--task` instead
+of `--state`. It requires the original operator, a strictly newer map revision
+and a newly frozen bundle. Old journal entries and revisions remain. The new
+approval starts its own miss count; it cannot inherit an old PASS.
+
+`specification land-task --task PATH` requires the latest completed proof for
+the exact candidate, verifies its retained receipt and requires an unchanged
+target base. It fast-forwards with Git's expected-old ref update and synchronizes
+a clean checked-out target. Changed candidates, moved targets, dirty checkouts
+and repeat integration refuse. Interrupted publication or partial checkout
+synchronization requires operator recovery; inspect the retained journal and
+named repair information before changing state. Do not delete a task to hide
+its failures or treat a partial integration as success.
+
+Run the real fixture experiment on a prepared host with:
+
+```sh
+uv run --frozen python tools/dogfood/acceptance_task_proof.py \
+  --output /outside/repo/new-experiment
+```
+
+It records public CLI exits, real service observations and exact integration.
+Its worker writes SQL deterministically; it does not establish qualification of
+an AI harness, a browser journey or production deployment. Retain those as
+separate release requirements until they have their own real outputs.
