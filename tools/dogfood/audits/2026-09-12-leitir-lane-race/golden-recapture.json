@@ -1,0 +1,13 @@
+{
+  "source": "freeze.stdout",
+  "raw_frozen_line": "FROZEN  tests=2003  expected_skips=168  run_exit=0  output=/tmp/ranex-leitir-lane-proof-xQ9Svj/freeze-subject/.local/leitir-lane-manifest.json",
+  "normalizer": "tests/e2e/_prereqs.py:normalize_transcript",
+  "before": "FROZEN  tests=2002  expected_skips=168  run_exit=0  output=<ABS-PATH>",
+  "after": "FROZEN  tests=2003  expected_skips=168  run_exit=0  output=<ABS-PATH>",
+  "red": "golden transcript mismatch (golden family 'suite-freeze-manifest') \u2014 first differing hunk, untruncated:\n--- expected (golden)\n+++ actual (run)\n@@ -1 +1 @@\n-FROZEN  tests=2002  expected_skips=168  run_exit=0  output=<ABS-PATH>\n+FROZEN  tests=2003  expected_skips=168  run_exit=0  output=<ABS-PATH>",
+  "comparison_after": "PASS",
+  "sabotage_control": "PASS",
+  "interrupted_full_suite_commit": "5b01c165e680f9ce26800676a0376e8f119ad006",
+  "interrupted_full_suite_exit": 130,
+  "interrupted_full_suite_status": "UNVERIFIED"
+}
