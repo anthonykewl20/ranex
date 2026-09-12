@@ -13,7 +13,8 @@ canonical bytes and verified Git object readers. New CLI freeze-probes and
 check-probes preserve artifact integrity, not product PASS. Manifest: 2014 IDs;
 168 expected skips. Closing full-suite evidence is on #116. verdict.py unchanged.
 Live journal experiment: three baseline matches and three named mutant failures;
-raw output in tools/dogfood/audits/2026-09-12-probe-bundles/.
+499 unit tests pass on that same known-bad commit; live probe rejects it.
+Raw output: tools/dogfood/audits/2026-09-12-probe-bundles/.
 
 Next: independent live HTTP/database observer, approved known-bad calibration,
 persisted task authority/three misses/reapproval, exact integration candidate,
@@ -26,9 +27,9 @@ Prior queue is retained: milestone 8 (#113, #110, #111, #112, #114, #115),
 then milestone 7 (#107, #108, #109), then #100, #102, #105, #106.
 No production sign-off, zero-bug claim or universal deterministic-runtime claim.
 
-Lanes: check git status and executable-matched pytest processes before writing,
-committing, pushing or full-suite runs. Use tools/dogfood/lane.py for suites and
-freeze ceremonies; never overlap full suites. Refreeze on a committed tree;
+Parallel work and overlapping verification are owner-authorized (2026-09-12).
+Use separate writer worktrees and pinned verification worktrees. The lane helper
+admits two verification runs with memory checks. Refreeze on a committed tree;
 load_manifest must accept the result before committing it.
 
 Remaining boundaries: same-subject evidence reuse; hostile report producers

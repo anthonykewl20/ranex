@@ -58,9 +58,9 @@ from pathlib import Path
 LANE_DIR = Path(os.environ.get("RANEX_LANE_DIR", "/tmp/ranex-lanes"))
 
 #: Slots per kind. `verify` is the memory-hungry one — a full suite plus its
-#: hermetic materialisations — so it is the one held to a single slot until the
-#: numbers below say otherwise.
-SLOTS = {"verify": 1, "dogfood": 1, "soak": 1}
+#: hermetic materialisations — so two concurrent runs are admitted under the owner
+#: parallel-work policy, with the available-memory check retained.
+SLOTS = {"verify": 2, "dogfood": 1, "soak": 1}
 
 #: A full suite with its materialisations has been measured needing headroom;
 #: below this the correct answer is to wait, not to start and be killed.

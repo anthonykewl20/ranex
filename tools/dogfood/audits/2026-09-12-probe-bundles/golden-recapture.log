@@ -1,0 +1,104 @@
+................................ [ 67%]
+....................ssss..............sss............s.....ss........... [ 71%]
+......s................................................................. [ 75%]
+........................................................................ [ 78%]
+........................................................................ [ 82%]
+........................................................................ [ 85%]
+........................................................................ [ 89%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+......................................................................   [100%]
+=================================== FAILURES ===================================
+__________________ test_frozen_transcript_matches_the_golden ___________________
+
+journey = FreezeJourney(boundary=False, frozen_line='FROZEN  tests=2014  expected_skips=168  run_exit=0  output=/tmp/pytest-of-s...----------------------------------------------------------------------\nRan 1 test in 0.000s\n\nFAILED (failures=1)\n')
+
+    def test_frozen_transcript_matches_the_golden(journey: FreezeJourney) -> None:
+        """The FROZEN line of the real cycle, byte-frozen against its golden."""
+    
+        _assert_not_nested(journey)
+        if journey.boundary:
+            return
+        frozen_line = journey.frozen_line
+        assert frozen_line is not None
+        assert frozen_line.startswith("FROZEN"), frozen_line
+        assert "run_exit=0" in frozen_line, (
+            f"the ceremony's own suite run must be green sealed: {frozen_line}\n"
+            "The sealed materialisation is destroyed with its junitxml, so the tail "
+            "of the ceremony's own output is the only record of WHICH tests failed "
+            "inside. It follows; read it before assuming a regression — this "
+            "journey runs a full suite nested inside a full suite and has been "
+            "observed going red under host contention while passing alone.\n"
+            f"--- ceremony transcript tail ---\n{journey.transcript}"
+        )
+>       compare_golden(frozen_line, _GOLDEN)
+
+tests/e2e/test_suite_freeze_real.py:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+tests/e2e/test_suite_freeze_real.py:298: in compare_golden
+    _prereqs.compare_transcript(
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+actual = 'FROZEN  tests=2014  expected_skips=168  run_exit=0  output=<ABS-PATH>'
+expected = 'FROZEN  tests=2002  expected_skips=168  run_exit=0  output=<ABS-PATH>'
+family = 'suite-freeze-manifest'
+
+    def compare_transcript(actual: str, expected: str, family: str | None = None) -> None:
+        """Byte-exact compare; on mismatch the AssertionError carries the diff.
+    
+        Remediation R5c: ``family`` names the golden's family label, and the
+        failure carries EXACTLY the first hunk of the unified diff — every line
+        of it, untruncated, the second hunk absent (one hunk names the first
+        divergence; the whole diff would bury it) — never a bare ``assert
+        False`` (ADR-032 sad path 3). A difference that survives splitlines()
+        (trailing newline only) is named exactly, family named too. Returns
+        None on a clean diff so same-class different live values provably pass.
+        """
+    
+        family_note = (
+            f"golden family {family!r}" if family else "golden family (none named)"
+        )
+        if actual == expected:
+            return None
+        diff = list(
+            difflib.unified_diff(
+                expected.splitlines(),
+                actual.splitlines(),
+                fromfile="expected (golden)",
+                tofile="actual (run)",
+                lineterm="",
+            )
+        )
+        if not diff:
+            # Only reachable when the inputs differ in nothing splitlines() keeps —
+            # a trailing-newline difference. Name it exactly instead of emitting a
+            # hunk-less failure.
+            raise AssertionError(
+                f"golden transcript mismatch ({family_note}) — "
+                "trailing-newline difference only: "
+                f"actual={actual!r} expected={expected!r}"
+            )
+        hunk: list[str] = []
+        seen_hunk_header = False
+        for line in diff:
+            if line.startswith("@@"):
+                if seen_hunk_header:
+                    break  # the second hunk header ends the first differing hunk
+                seen_hunk_header = True
+            hunk.append(line)
+>       raise AssertionError(
+            f"golden transcript mismatch ({family_note}) — first differing "
+            "hunk, untruncated:\n" + "\n".join(hunk)
+        )
+E       AssertionError: golden transcript mismatch (golden family 'suite-freeze-manifest') — first differing hunk, untruncated:
+E       --- expected (golden)
+E       +++ actual (run)
+E       @@ -1 +1 @@
+E       -FROZEN  tests=2002  expected_skips=168  run_exit=0  output=<ABS-PATH>
+E       +FROZEN  tests=2014  expected_skips=168  run_exit=0  output=<ABS-PATH>
+
+tests/e2e/_prereqs.py:786: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_suite_freeze_real.py::test_frozen_transcript_matches_the_golden
+1 failed, 1921 passed, 92 skipped in 2017.80s (0:33:37)
+
