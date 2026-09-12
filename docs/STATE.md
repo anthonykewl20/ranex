@@ -27,6 +27,13 @@ Prior queue is retained: milestone 8 (#113, #110, #111, #112, #114, #115),
 then milestone 7 (#107, #108, #109), then #100, #102, #105, #106.
 No production sign-off, zero-bug claim or universal deterministic-runtime claim.
 
+#117: the host lane check/write race reproduced with real concurrent processes.
+A persistent directory flock now serializes registry transactions, not workloads.
+Leitir supplied pinned filelock source evidence; existing Ranex locking was reused.
+Initial one-slot controls passed; integration with the two-slot owner policy and
+its full verification are pending. No runtime dependency was added.
+Evidence: tools/dogfood/audits/2026-09-12-leitir-lane-race/.
+
 Parallel work and overlapping verification are owner-authorized (2026-09-12).
 Use separate writer worktrees and pinned verification worktrees. The lane helper
 admits two verification runs with memory checks. Refreeze on a committed tree;

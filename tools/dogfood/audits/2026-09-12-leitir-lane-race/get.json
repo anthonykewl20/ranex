@@ -1,0 +1,12 @@
+{
+  "results": [
+    {
+      "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+      "path": "/tmp/ranex-leitir-lane-proof-xQ9Svj/corpus/repos/github.com/tox-dev/filelock/c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+      "source": "git-commit",
+      "spec": "github:tox-dev/filelock@c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+      "verified": true
+    }
+  ],
+  "schema_version": 1
+}

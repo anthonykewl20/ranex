@@ -1,0 +1,665 @@
+{
+  "module_sha256": "cff19ced9c109285545d4b9145aab626a3a34d92d383935c15408c6ef7522816",
+  "runs": [
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207660.6456783,
+      "elapsed_seconds": 0.04655003547668457,
+      "exit_code": 0,
+      "stdout": "[\n  {\n    \"kind\": \"soak\",\n    \"pid\": 1018393,\n    \"held_s\": 0,\n    \"detail\": \"/home/soultransit/.local/bin/python -c from pathlib import P\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('must-not-run')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207660.6922543,
+      "elapsed_seconds": 0.03963923454284668,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "REFUSED: the soak lane is full (1/1). Held by pid 1018393 for 0s (/home/soultransit/.local/bin/python -c from pathlib import P).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "dogfood",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('parallel-kind-ran')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207660.7318997,
+      "elapsed_seconds": 0.05506706237792969,
+      "exit_code": 0,
+      "stdout": "[lane] dogfood: running in /home/soultransit/devtony/ranex-leitir-lane\nparallel-kind-ran\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "from pathlib import Path; import sys,time; Path(sys.argv[1]).touch();\nwhile not Path(sys.argv[2]).exists(): time.sleep(.01)",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/0/ready",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/0/stop"
+      ],
+      "killed": false,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('recovered')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207660.7978408,
+      "elapsed_seconds": 0.048627614974975586,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\nrecovered\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207660.846473,
+      "elapsed_seconds": 0.04270339012145996,
+      "exit_code": 0,
+      "stdout": "[]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207660.9404116,
+      "elapsed_seconds": 0.044846534729003906,
+      "exit_code": 0,
+      "stdout": "[\n  {\n    \"kind\": \"soak\",\n    \"pid\": 1018483,\n    \"held_s\": 0,\n    \"detail\": \"/home/soultransit/.local/bin/python -c from pathlib import P\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('must-not-run')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207660.9852767,
+      "elapsed_seconds": 0.03886818885803223,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "REFUSED: the soak lane is full (1/1). Held by pid 1018483 for 0s (/home/soultransit/.local/bin/python -c from pathlib import P).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "dogfood",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('parallel-kind-ran')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.0241528,
+      "elapsed_seconds": 0.05671334266662598,
+      "exit_code": 0,
+      "stdout": "[lane] dogfood: running in /home/soultransit/devtony/ranex-leitir-lane\nparallel-kind-ran\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "from pathlib import Path; import sys,time; Path(sys.argv[1]).touch();\nwhile not Path(sys.argv[2]).exists(): time.sleep(.01)",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/0/ready",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/0/stop"
+      ],
+      "killed": true,
+      "exit_code": -9,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('recovered')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.0820408,
+      "elapsed_seconds": 0.050733089447021484,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\nrecovered\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 0,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.1327798,
+      "elapsed_seconds": 0.04651165008544922,
+      "exit_code": 0,
+      "stdout": "[]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.2359984,
+      "elapsed_seconds": 0.045180320739746094,
+      "exit_code": 0,
+      "stdout": "[\n  {\n    \"kind\": \"soak\",\n    \"pid\": 1018552,\n    \"held_s\": 0,\n    \"detail\": \"/home/soultransit/.local/bin/python -c from pathlib import P\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('must-not-run')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.2811966,
+      "elapsed_seconds": 0.03815412521362305,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "REFUSED: the soak lane is full (1/1). Held by pid 1018552 for 0s (/home/soultransit/.local/bin/python -c from pathlib import P).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "dogfood",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('parallel-kind-ran')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.3193574,
+      "elapsed_seconds": 0.05606579780578613,
+      "exit_code": 0,
+      "stdout": "[lane] dogfood: running in /home/soultransit/devtony/ranex-leitir-lane\nparallel-kind-ran\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "from pathlib import Path; import sys,time; Path(sys.argv[1]).touch();\nwhile not Path(sys.argv[2]).exists(): time.sleep(.01)",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/1/ready",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/1/stop"
+      ],
+      "killed": false,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('recovered')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.3952105,
+      "elapsed_seconds": 0.04817080497741699,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\nrecovered\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.4433858,
+      "elapsed_seconds": 0.04256772994995117,
+      "exit_code": 0,
+      "stdout": "[]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.5373104,
+      "elapsed_seconds": 0.04716086387634277,
+      "exit_code": 0,
+      "stdout": "[\n  {\n    \"kind\": \"soak\",\n    \"pid\": 1018580,\n    \"held_s\": 0,\n    \"detail\": \"/home/soultransit/.local/bin/python -c from pathlib import P\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('must-not-run')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.5844922,
+      "elapsed_seconds": 0.04651904106140137,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "REFUSED: the soak lane is full (1/1). Held by pid 1018580 for 0s (/home/soultransit/.local/bin/python -c from pathlib import P).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "dogfood",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('parallel-kind-ran')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.6310172,
+      "elapsed_seconds": 0.05336785316467285,
+      "exit_code": 0,
+      "stdout": "[lane] dogfood: running in /home/soultransit/devtony/ranex-leitir-lane\nparallel-kind-ran\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "from pathlib import Path; import sys,time; Path(sys.argv[1]).touch();\nwhile not Path(sys.argv[2]).exists(): time.sleep(.01)",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/1/ready",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/1/stop"
+      ],
+      "killed": true,
+      "exit_code": -9,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('recovered')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.6858127,
+      "elapsed_seconds": 0.05406379699707031,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\nrecovered\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 1,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.7398815,
+      "elapsed_seconds": 0.04608345031738281,
+      "exit_code": 0,
+      "stdout": "[]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.8374138,
+      "elapsed_seconds": 0.04286766052246094,
+      "exit_code": 0,
+      "stdout": "[\n  {\n    \"kind\": \"soak\",\n    \"pid\": 1018593,\n    \"held_s\": 0,\n    \"detail\": \"/home/soultransit/.local/bin/python -c from pathlib import P\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('must-not-run')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.8803027,
+      "elapsed_seconds": 0.04147648811340332,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "REFUSED: the soak lane is full (1/1). Held by pid 1018593 for 0s (/home/soultransit/.local/bin/python -c from pathlib import P).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "dogfood",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('parallel-kind-ran')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.9217854,
+      "elapsed_seconds": 0.05742979049682617,
+      "exit_code": 0,
+      "stdout": "[lane] dogfood: running in /home/soultransit/devtony/ranex-leitir-lane\nparallel-kind-ran\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "from pathlib import Path; import sys,time; Path(sys.argv[1]).touch();\nwhile not Path(sys.argv[2]).exists(): time.sleep(.01)",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/2/ready",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/2/stop"
+      ],
+      "killed": false,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('recovered')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207661.9980044,
+      "elapsed_seconds": 0.047626495361328125,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\nrecovered\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207662.045636,
+      "elapsed_seconds": 0.04474639892578125,
+      "exit_code": 0,
+      "stdout": "[]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207662.141627,
+      "elapsed_seconds": 0.042218923568725586,
+      "exit_code": 0,
+      "stdout": "[\n  {\n    \"kind\": \"soak\",\n    \"pid\": 1018620,\n    \"held_s\": 0,\n    \"detail\": \"/home/soultransit/.local/bin/python -c from pathlib import P\"\n  }\n]\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('must-not-run')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207662.1838648,
+      "elapsed_seconds": 0.043686628341674805,
+      "exit_code": 1,
+      "stdout": "",
+      "stderr": "REFUSED: the soak lane is full (1/1). Held by pid 1018620 for 0s (/home/soultransit/.local/bin/python -c from pathlib import P).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "dogfood",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('parallel-kind-ran')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207662.227556,
+      "elapsed_seconds": 0.05541110038757324,
+      "exit_code": 0,
+      "stdout": "[lane] dogfood: running in /home/soultransit/devtony/ranex-leitir-lane\nparallel-kind-ran\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "from pathlib import Path; import sys,time; Path(sys.argv[1]).touch();\nwhile not Path(sys.argv[2]).exists(): time.sleep(.01)",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/2/ready",
+        "/tmp/ranex-leitir-lane-proof-xQ9Svj/lifecycle/2/stop"
+      ],
+      "killed": true,
+      "exit_code": -9,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "run",
+        "--kind",
+        "soak",
+        "--",
+        "/home/soultransit/.local/bin/python",
+        "-c",
+        "print('recovered')"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207662.2854922,
+      "elapsed_seconds": 0.05232596397399902,
+      "exit_code": 0,
+      "stdout": "[lane] soak: running in /home/soultransit/devtony/ranex-leitir-lane\nrecovered\n",
+      "stderr": ""
+    },
+    {
+      "repeat": 2,
+      "argv": [
+        "/home/soultransit/.local/bin/python",
+        "/home/soultransit/devtony/ranex-leitir-lane/tools/dogfood/lane.py",
+        "status",
+        "--json"
+      ],
+      "cwd": "/home/soultransit/devtony/ranex-leitir-lane",
+      "started": 1789207662.337823,
+      "elapsed_seconds": 0.04485464096069336,
+      "exit_code": 0,
+      "stdout": "[]\n",
+      "stderr": ""
+    }
+  ]
+}

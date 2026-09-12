@@ -44,11 +44,13 @@ Two properties this deliberately keeps, both learned the hard way:
 from __future__ import annotations
 
 import argparse
+import fcntl
 import json
 import os
 import subprocess
 import sys
 import time
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -111,7 +113,35 @@ class Holder:
         return True
 
 
+@contextmanager
+def _lane_lock():
+    """Serialize registry transactions, never the workloads they admit.
+
+    Reuses the directory-flock pattern in cli/host_confinement.py. Keep the
+    directory inode: unlinking a lock lets waiters and newcomers lock different
+    objects. Source evidence: tox-dev/filelock src/filelock/_unix.py at
+    c2c43e456b4369ecac8c932115e41b3addc5c3d6 (Unlicense); retained with its notice
+    in audits/2026-09-12-leitir-lane-race/. No upstream runtime is imported.
+    """
+
+    LANE_DIR.mkdir(parents=True, exist_ok=True)
+    descriptor = os.open(LANE_DIR, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        fcntl.flock(descriptor, fcntl.LOCK_EX)
+        yield
+    finally:
+        os.close(descriptor)
+
+
 def _holders() -> list[Holder]:
+    if not LANE_DIR.is_dir():
+        return []
+    with _lane_lock():
+        return _holders_locked()
+
+
+def _holders_locked() -> list[Holder]:
+    """Read and clean the registry while the caller holds its directory lock."""
     if not LANE_DIR.is_dir():
         return []
     found: list[Holder] = []
@@ -137,33 +167,34 @@ def acquire(kind: str, detail: str = "") -> Path:
 
     if kind not in SLOTS:
         raise SystemExit(f"unknown lane {kind!r}; known lanes: {sorted(SLOTS)}")
-    LANE_DIR.mkdir(parents=True, exist_ok=True)
-    live = _holders()
-    same = [h for h in live if h.kind == kind]
-    if len(same) >= SLOTS[kind]:
-        held = ", ".join(f"pid {h.pid} for {int(time.time() - h.started)}s ({h.detail})" for h in same)
-        raise SystemExit(
-            f"REFUSED: the {kind} lane is full ({len(same)}/{SLOTS[kind]}). Held by {held}.\n"
-            "Wait for it, or run a different lane. This refuses rather than degrading "
-            "a run someone else is already relying on."
-        )
-    have, need = available_gb(), MIN_AVAILABLE_GB[kind]
-    if have < need:
-        raise SystemExit(
-            f"REFUSED: {have} GB available, {kind} needs {need} GB. Concurrent heavy "
-            "runs have exhausted this host and been OOM-killed; a run started here "
-            "would produce a result nobody could trust."
-        )
-    path = LANE_DIR / f"{kind}-{os.getpid()}.json"
-    path.write_text(json.dumps({
-        "kind": kind, "pid": os.getpid(), "boot": boot_id(),
-        "started": time.time(), "detail": detail,
-    }), encoding="utf-8")
-    return path
+    with _lane_lock():
+        live = _holders_locked()
+        same = [h for h in live if h.kind == kind]
+        if len(same) >= SLOTS[kind]:
+            held = ", ".join(f"pid {h.pid} for {int(time.time() - h.started)}s ({h.detail})" for h in same)
+            raise SystemExit(
+                f"REFUSED: the {kind} lane is full ({len(same)}/{SLOTS[kind]}). Held by {held}.\n"
+                "Wait for it, or run a different lane. This refuses rather than degrading "
+                "a run someone else is already relying on."
+            )
+        have, need = available_gb(), MIN_AVAILABLE_GB[kind]
+        if have < need:
+            raise SystemExit(
+                f"REFUSED: {have} GB available, {kind} needs {need} GB. Concurrent heavy "
+                "runs have exhausted this host and been OOM-killed; a run started here "
+                "would produce a result nobody could trust."
+            )
+        path = LANE_DIR / f"{kind}-{os.getpid()}.json"
+        path.write_text(json.dumps({
+            "kind": kind, "pid": os.getpid(), "boot": boot_id(),
+            "started": time.time(), "detail": detail,
+        }), encoding="utf-8")
+        return path
 
 
 def release(path: Path) -> None:
-    path.unlink(missing_ok=True)
+    with _lane_lock():
+        path.unlink(missing_ok=True)
 
 
 def _git(*args: str, cwd: Path | None = None) -> str:

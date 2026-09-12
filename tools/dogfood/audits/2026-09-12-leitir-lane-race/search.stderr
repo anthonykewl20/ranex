@@ -1,0 +1,11 @@
+corpus_status=complete_for_declared_universe coverage=complete_for_declared_universe shelves_declared_total=1 shelves_searched=1 shelves_excluded=0 eligible=13 indexed=13 excluded=0 matches=10
+  src/filelock/_unix.py:18-18 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  src/filelock/_unix.py:35-35 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  src/filelock/_unix.py:46-46 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  src/filelock/_unix.py:50-50 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  src/filelock/_unix.py:58-58 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  src/filelock/_unix.py:61-61 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  src/filelock/asyncio.py:329-329 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  tests/test_filelock.py:601-601 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  tests/test_filelock.py:602-602 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43
+  tests/test_filelock.py:603-603 score=1.0 [exact_text] tox-dev/filelock@c2c43e456b43

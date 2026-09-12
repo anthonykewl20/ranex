@@ -152,3 +152,18 @@ def test_status_reports_holders_without_taking_a_slot(lane) -> None:
         assert lane._holders() == holders, "observing must not consume"
     finally:
         lane.release(held)
+
+
+def test_simultaneous_processes_cannot_share_one_slot(tmp_path) -> None:
+    """Three real races must each admit one holder out of sixteen contenders."""
+
+    probe = REPO_ROOT / "tools/dogfood/audits/2026-09-12-leitir-lane-race/race.py"
+    completed = subprocess.run(
+        [sys.executable, str(probe), str(MODULE), str(tmp_path / "race")],
+        capture_output=True, text=True, check=False, timeout=120,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    rows = json.loads((tmp_path / "race/summary.json").read_text())
+    assert len(rows) == 3
+    assert all((row["ADMITTED"], row["REFUSED"], row["ERROR"]) == (1, 15, 0)
+               for row in rows)

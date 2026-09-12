@@ -1,0 +1,188 @@
+{
+  "spec_digest": "78461a15a3ce75b989b71bc1c3a2009d6d0b97c04560a00e999855df7d1363b7",
+  "corpus_status": "complete_for_declared_universe",
+  "coverage": {
+    "status": "complete_for_declared_universe",
+    "files_eligible": 13,
+    "files_indexed": 13,
+    "files_excluded": 0,
+    "incomplete_results": false,
+    "exclusions": {}
+  },
+  "matches": [
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "src/filelock/_unix.py",
+        "blob_sha": "4ae1fbe916f95762418cd62251f91f74ba35fc8c",
+        "start_line": 18,
+        "end_line": 18,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/src/filelock/_unix.py#L18-L18"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "src/filelock/_unix.py",
+        "blob_sha": "4ae1fbe916f95762418cd62251f91f74ba35fc8c",
+        "start_line": 35,
+        "end_line": 35,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/src/filelock/_unix.py#L35-L35"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "src/filelock/_unix.py",
+        "blob_sha": "4ae1fbe916f95762418cd62251f91f74ba35fc8c",
+        "start_line": 46,
+        "end_line": 46,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/src/filelock/_unix.py#L46-L46"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "src/filelock/_unix.py",
+        "blob_sha": "4ae1fbe916f95762418cd62251f91f74ba35fc8c",
+        "start_line": 50,
+        "end_line": 50,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/src/filelock/_unix.py#L50-L50"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "src/filelock/_unix.py",
+        "blob_sha": "4ae1fbe916f95762418cd62251f91f74ba35fc8c",
+        "start_line": 58,
+        "end_line": 58,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/src/filelock/_unix.py#L58-L58"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "src/filelock/_unix.py",
+        "blob_sha": "4ae1fbe916f95762418cd62251f91f74ba35fc8c",
+        "start_line": 61,
+        "end_line": 61,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/src/filelock/_unix.py#L61-L61"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "src/filelock/asyncio.py",
+        "blob_sha": "0fdd8f79c3fa742d8342cec01e98be6c0dfaf353",
+        "start_line": 329,
+        "end_line": 329,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/src/filelock/asyncio.py#L329-L329"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "tests/test_filelock.py",
+        "blob_sha": "8808bf6fc5108c8816a3ecc9f56c30b8dadba3bd",
+        "start_line": 601,
+        "end_line": 601,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/tests/test_filelock.py#L601-L601"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "tests/test_filelock.py",
+        "blob_sha": "8808bf6fc5108c8816a3ecc9f56c30b8dadba3bd",
+        "start_line": 602,
+        "end_line": 602,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/tests/test_filelock.py#L602-L602"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    },
+    {
+      "source": {
+        "slug": "tox-dev/filelock",
+        "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6",
+        "path": "tests/test_filelock.py",
+        "blob_sha": "8808bf6fc5108c8816a3ecc9f56c30b8dadba3bd",
+        "start_line": 603,
+        "end_line": 603,
+        "permalink": "https://github.com/tox-dev/filelock/blob/c2c43e456b4369ecac8c932115e41b3addc5c3d6/tests/test_filelock.py#L603-L603"
+      },
+      "score": 1.0,
+      "matched_kinds": [
+        "exact_text"
+      ],
+      "method": "heuristic"
+    }
+  ],
+  "resolution": {
+    "strategy": "declared_scope",
+    "as_of": "2026-09-12T10:01:53.161851Z"
+  },
+  "shelves_searched": [
+    {
+      "host": "github.com",
+      "owner": "tox-dev",
+      "repo": "filelock",
+      "commit_sha": "c2c43e456b4369ecac8c932115e41b3addc5c3d6"
+    }
+  ],
+  "shelves_excluded": [],
+  "shelves_declared_total": 1
+}
