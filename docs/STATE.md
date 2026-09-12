@@ -1,7 +1,7 @@
 # State
 
 **Updated:** 2026-09-12
-**Active slice:** none — live observer is next under ADR-061.
+**Active slice:** docs/slices/SLICE-088-calibrated-live-http-observer.md (#118).
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
@@ -16,11 +16,15 @@ Live journal experiment: three baseline matches and three named mutant failures;
 499 unit tests pass on that same known-bad commit; live probe rejects it.
 Raw output: tools/dogfood/audits/2026-09-12-probe-bundles/.
 
-Next: independent live HTTP/database observer, approved known-bad calibration,
-persisted task authority/three misses/reapproval, exact integration candidate,
-then real application and browser release journeys. No ranex prove exists yet.
-Existing SLICE-031 placeholder projections are refused by executable freeze.
-Operator-supplied probes still require review; integrity cannot prove adequacy.
+SLICE-088 implements the trusted declarative PostgREST/PostgreSQL observer.
+Frozen JSON owns HTTP assertions, lifecycle steps, repetitions and named SQL
+mutation controls. Candidate SQL is Git-materialized; observer imports no
+candidate code. Real CLI qualification: 12 passed, including named mutation detection and
+surviving/unrelated-control refusal; raw receipts in the live-observer audit. No approval, verdict admission, harness mediation or merge claim.
+
+Next: persisted task authority/three misses/reapproval, exact integration
+candidate, real application and browser release journeys. No ranex prove yet.
+Existing SLICE-031 placeholders remain refused by executable freeze.
 
 SLICE-085 / #88 production registration is parked under the owner pivot.
 Prior queue is retained: milestone 8 (#113, #110, #111, #112, #114, #115),

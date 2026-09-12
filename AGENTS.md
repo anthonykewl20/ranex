@@ -23,9 +23,10 @@ Operate as `anthonykewl20`. Before any `gh` operation or `git push`, if the
 active account is not `anthonykewl20`, run
 `gh auth switch -h github.com -u anthonykewl20` and proceed.
 
-## One issue, one pass
-- Work one issue at a time to completion. Add the `in-progress` label when you
-  start; remove it before ending a session unless the issue closed in it.
+## Issue ownership
+- Independent issues may proceed concurrently in separate worktrees. Track
+  evidence and commits per issue. Add `in-progress` when starting each issue;
+  remove it before ending a session unless the issue closed in it.
 - Do not post progress or status comments.
 - After 3 failed fix attempts: remove the label, post ONE comment naming the
   blocker and what you tried, then move to the next issue.

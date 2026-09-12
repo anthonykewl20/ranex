@@ -218,7 +218,15 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none — live observer is next under ADR-061.
+`ranex specification observe-http --external-repository REPO --bundle BUNDLE
+--manifest-digest DIGEST --profile acceptance/http.json --output OUTPUT` runs a
+frozen declarative HTTP journey against real pinned PostgREST/PostgreSQL images.
+It materializes the Git candidate, records responses and process identities,
+and requires named product mutations to fail the specified assertions across
+frozen repetitions. Results are observations, not approval or a product PASS.
+See `docs/OPERATIONS.md` for the supported profile and qualification command.
+
+**Active slice:** docs/slices/SLICE-088-calibrated-live-http-observer.md (#118).
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting

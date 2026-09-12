@@ -228,6 +228,8 @@ def cmd_probes(args: argparse.Namespace) -> int:
 
 
 def register(commands: argparse._SubParsersAction) -> None:
+    from ranex.cli.http_observer import register as register_observer
+    register_observer(commands)
     freeze = commands.add_parser("freeze-probes", help="freeze committed probe bytes; no execution")
     freeze.add_argument("--spec-packet", required=True)
     freeze.add_argument("--invocation", required=True, help="canonical JSON argv file")
