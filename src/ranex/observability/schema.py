@@ -70,6 +70,7 @@ MODULES: frozenset[str] = frozenset({"cli", "observability"})
 # CLI group is a deliberate edit of that frozen test.
 CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "run",
+    "prove",
     "gate.evaluate",
     "journal.verify",
     "suite.freeze",
@@ -97,7 +98,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "github.ruleset",
 )
 
-_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http")
+_SPECIFICATION_ACTIONS: tuple[str, ...] = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http", "approve-task", "build-task", "reapprove-task", "land-task")
 
 STAGES: frozenset[str] = frozenset(
     {

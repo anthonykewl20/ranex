@@ -5018,6 +5018,8 @@ def build_parser() -> argparse.ArgumentParser:
 
     from ranex.cli.probe_bundle import register as register_probe_commands
     register_probe_commands(specification)
+    from ranex.cli.acceptance_task import register as register_acceptance_task
+    register_acceptance_task(sub, specification)
 
     task = sub.add_parser("task", help="dispatch and materialise task candidates")
     task_actions = task.add_subparsers(dest="action", required=True)

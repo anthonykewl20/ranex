@@ -1,46 +1,42 @@
 # State
 
 **Updated:** 2026-09-12
-**Active slice:** none — durable task authority is next under ADR-061.
+**Active slice:** docs/slices/SLICE-089-approved-live-task-loop.md (#119).
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
-ADR-061 defines the whole program, required exits and trust boundaries.
-Do not stop at artifact integrity or describe it as product acceptance.
+ADR-061 defines the program and trust boundaries. No universal bug-free claim.
 
-SLICE-087 / #116: external executable probe bundles, reusing A/B identity,
-canonical bytes and verified Git object readers. New CLI freeze-probes and
-check-probes preserve artifact integrity, not product PASS. Manifest: 2026 IDs;
-169 expected skips. Closing full-suite evidence is on #116. verdict.py unchanged.
-Live journal experiment: three baseline matches and three named mutant failures;
-499 unit tests pass on that same known-bad commit; live probe rejects it.
-Raw output: tools/dogfood/audits/2026-09-12-probe-bundles/.
+SLICE-087 / #116 shipped external A/B-bound executable probe bundles. A known
+bad journal verifier passes 499 unit tests but fails the frozen live probe;
+three baseline matches and three named mutant failures are retained in
+tools/dogfood/audits/2026-09-12-probe-bundles/.
 
-SLICE-088 implements the trusted declarative PostgREST/PostgreSQL observer.
-Frozen JSON owns HTTP assertions, lifecycle steps, repetitions and named SQL
-mutation controls. Candidate SQL is Git-materialized; observer imports no
-candidate code. Real CLI qualification: 12 passed, including named mutation
-detection and surviving/unrelated-control refusal; raw receipts in the
-live-observer audit. Final verification also exposed a single-address network
-probe that skipped repair after wheel quarantine; it now tries all addresses.
-No approval, verdict admission, harness or merge claim.
+SLICE-088 / #118 implements the trusted declarative PostgREST/PostgreSQL
+observer. Real CLI qualification: 12 passed, including mutation calibration
+and surviving/unrelated-control refusal. Final regression exposed a network
+probe that checked one CDN address; it now tries all resolved addresses.
+Full final verification is pending. No release claim precedes its result.
 
-Next: persisted task authority/three misses/reapproval, exact integration
-candidate, real application and browser release journeys. No ranex prove yet.
-Existing SLICE-031 placeholders remain refused by executable freeze.
+SLICE-089 composes existing signed C, grants, journal CAS and pure verdict.
+Public commands: approve-task, build-task, ranex prove, reapprove-task,
+land-task. Private per-task authority, scoped Docker worker, fresh observations,
+three persisted misses, explicit new-revision approval and exact Git integration.
+Real fixture produced misses 1/2/3, refusal on attempt 4, reapproval, calibrated
+PASS and matching integration; stale candidates and moved targets refuse.
+Worker is a deterministic SQL-writing fixture, not a qualified AI harness.
+Manifest refreeze and final full suite remain required before closing #119.
 
-SLICE-085 / #88 production registration is parked under the owner pivot.
-Prior queue is retained: milestone 8 (#113, #110, #111, #112, #114, #115),
-then milestone 7 (#107, #108, #109), then #100, #102, #105, #106.
-No production sign-off, zero-bug claim or universal deterministic-runtime claim.
+SLICE-085 / #88 production registration remains parked under the owner pivot.
+Next work: real AI harnesses, broader application/browser journeys, production
+integration and fault/recovery qualification against retained real outputs.
 
 Parallel work and overlapping verification are owner-authorized (2026-09-12).
-Use separate writer worktrees and pinned verification worktrees. The lane helper
-admits two verification runs with memory checks. Refreeze on a committed tree;
-load_manifest must accept the result before committing it.
+Use separate writer and pinned verification worktrees. The lane helper admits
+two verification runs with memory checks. Refreeze on a committed tree and
+load_manifest before committing the manifest. Do not claim skipped runs passed.
 
-Remaining boundaries: same-subject evidence reuse; hostile report producers
-(F-012); same-UID trusted controller; no external witness against an operator
-holding both keys. Ordinary run is non-confined. Full installed harness
-mediation, independent observer scheduling, merge-group checks and production
-hosting/rotation/backup are UNVERIFIED or UNIMPLEMENTED as detailed in MAP.
+Trust boundaries: controller/host/Docker daemon trusted; PostgREST SQL profile
+only. Interrupted publication or checkout synchronization fails closed and
+needs operator recovery. Native host repinning was an external experiment,
+not a tracked production-pin change. No zero-bug or universal-runtime claim.

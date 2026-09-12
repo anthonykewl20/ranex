@@ -1,0 +1,5 @@
+{
+  "exit": 0,
+  "stdout": "{\"base_commit\":\"9e2de6b49915ada9eace0e5a668ced0b79afdab7\",\"c_digest\":\"sha256:368574220d135539ead0c526c628ef6d2d202a798c9223eb44d898999ee8da59\",\"status\":\"APPROVED\",\"task\":\"/tmp/ranex-119-public-workflow/qualified-controls/state\"}\n",
+  "stderr": ""
+}

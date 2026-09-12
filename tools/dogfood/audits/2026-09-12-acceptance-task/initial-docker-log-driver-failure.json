@@ -1,0 +1,5 @@
+{
+  "exit": 2,
+  "stdout": "",
+  "stderr": "E-TASK-REFUSED: E-TASK-WORKER: Error response from daemon: failed to create task for container: failed to initialize logging driver: compression cannot be enabled when max file count is 1\nfailed to start containers: ranex-build-6dc4252112744dd18bd3d96d28e5891c\n"
+}

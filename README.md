@@ -108,6 +108,30 @@ file membership, bytes and executable modes. These commands verify artifact
 integrity; they do not execute the application or issue a product PASS.
 See the [probe bundle recipe](docs/OPERATIONS.md#frozen-executable-probe-bundles).
 
+### Run an approved live acceptance task
+
+The initial live profile supports pinned local PostgreSQL/PostgREST images.
+After freezing the HTTP and worker profiles, the operator signs the bundle:
+
+```sh
+RANEX_SIGNING_KEY=/outside/repo/owner.key uv run --frozen ranex specification approve-task \
+  --external-repository /path/to/product --bundle /outside/repo/bundle \
+  --manifest-digest sha256:YOUR_INDEPENDENT_PIN \
+  --worker-profile acceptance/worker.json --state /outside/repo/task
+uv run --frozen ranex specification build-task --task /outside/repo/task
+uv run --frozen ranex prove --task /outside/repo/task
+uv run --frozen ranex specification land-task --task /outside/repo/task
+```
+
+The worker writes approved product directories. The controller runs frozen
+HTTP assertions and named product mutation controls against fresh real services;
+unit tests do not determine this task's verdict. Three observed misses revoke
+its grant. `specification reapprove-task` takes the same bundle/profile options
+with `--task` in place of `--state`, and requires a newer operator-approved map.
+Integration requires the exact passing candidate and unchanged target base.
+See the [task contract](docs/slices/SLICE-089-approved-live-task-loop.md) for
+qualification limits. A PASS covers the frozen observations, not every bug.
+
 ## How it works
 
 1. **Define acceptance.** Commit required claims, command bindings, trusted
@@ -226,7 +250,7 @@ and requires named product mutations to fail the specified assertions across
 frozen repetitions. Results are observations, not approval or a product PASS.
 See `docs/OPERATIONS.md` for the supported profile and qualification command.
 
-**Active slice:** none — durable task authority is next under ADR-061.
+**Active slice:** docs/slices/SLICE-089-approved-live-task-loop.md (#119).
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting

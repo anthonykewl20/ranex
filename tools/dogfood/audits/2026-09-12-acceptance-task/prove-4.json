@@ -1,0 +1,5 @@
+{
+  "exit": 2,
+  "stdout": "",
+  "stderr": "E-TASK-REFUSED: E-TASK-REVOKED: three misses, revocation or expiry requires new operator approval\n"
+}

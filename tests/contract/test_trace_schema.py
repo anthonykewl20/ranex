@@ -61,6 +61,7 @@ EXPECTED_VERSION_ONLY_FIELDS = ("evt", "exe")
 # removing a CLI group is a deliberate edit here.
 CLI_DISPATCH_GROUPS = (
     "run",
+    "prove",
     "gate.evaluate",
     "journal.verify",
     "suite.freeze",
@@ -88,7 +89,7 @@ CLI_DISPATCH_GROUPS = (
     "github.ruleset",
 )
 
-SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http")
+SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http", "approve-task", "build-task", "reapprove-task", "land-task")
 
 EXPECTED_STAGES = (
     {
