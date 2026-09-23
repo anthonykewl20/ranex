@@ -12,9 +12,9 @@ import hashlib
 import json
 import os
 import re
-from collections import defaultdict
 import subprocess
 import sys
+from collections import defaultdict
 from pathlib import Path
 
 import pytest

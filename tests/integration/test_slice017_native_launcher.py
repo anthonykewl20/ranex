@@ -123,7 +123,10 @@ RESPONSE_LIMIT = 65_536
 # declarations, and the artifact reducers gain a subject-root reader. The
 # launcher boundary, the strict-local controller branch and every confinement
 # call site are untouched.
-MAIN_PY_SHA256 = "121e3d6ce66c7c24ad89513b4ff9ead6f5cd2e7cac1827f64121da9986ac4248"
+# The CI unblock (2026-09-23) is type-only: `cmd_run` declares scan_manifest as
+# ScanManifest | None instead of dict[str, object] | None (validate_scan_manifest
+# returns the TypedDict). No runtime branch changed.
+MAIN_PY_SHA256 = "1a17d855f77fc320be0ba0363d6a828a25561592d6257f7e57758ddc87a48c3b"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7
