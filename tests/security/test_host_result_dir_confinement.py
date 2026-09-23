@@ -66,7 +66,7 @@ def ranex(*args: str) -> subprocess.CompletedProcess[str]:
         environment.pop(variable, None)
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", *args],
-        cwd=REPO_ROOT, capture_output=True, text=True, env=environment, timeout=180,
+        cwd=REPO_ROOT, capture_output=True, text=True, env=environment, timeout=180, check=False,
     )
 
 

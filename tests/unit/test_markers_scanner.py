@@ -13,8 +13,6 @@ import subprocess
 import sys
 from pathlib import Path
 
-import pytest
-
 from ranex.foundation.markers import (
     RULE_MALFORMED,
     RULE_NO_TRIGGER,
@@ -127,9 +125,9 @@ def test_upstream_exclusion_directories_are_not_walked(tmp_path: Path) -> None:
         "ok.py": f"{WELL_FORMED}\n",
         ".git/config.py": f"{NO_TRIGGER}\n",
         "node_modules/pkg/index.js": f"{WELL_FORMED_SLASH}\n",
-        "build/out.c": f"// ranex: c; t\n",
+        "build/out.c": "// ranex: c; t\n",
         "dist/bundle.js": f"{WELL_FORMED_SLASH}\n",
-        "target/main.rs": f"// ranex: c; t\n",
+        "target/main.rs": "// ranex: c; t\n",
         "__pycache__/m.py": f"{NO_TRIGGER}\n",
     })
     assert scanned_files(tmp_path) == ("ok.py",)

@@ -16,7 +16,7 @@ REPO = Path(__file__).resolve().parents[2]
 
 
 def git(root: Path, *args: str) -> str:
-    result = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
+    result = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True, check=False)
     assert result.returncode == 0, result.stderr
     return result.stdout.strip()
 
@@ -25,7 +25,7 @@ def cli(*args: str) -> subprocess.CompletedProcess[str]:
     return subprocess.run(
         [sys.executable, "-m", "ranex.cli.main", "specification", *args],
         cwd=REPO, env={**os.environ, "PYTHONPATH": str(REPO / "src")},
-        capture_output=True, text=True,
+        capture_output=True, text=True, check=False,
     )
 
 
