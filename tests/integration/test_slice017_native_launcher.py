@@ -123,7 +123,10 @@ RESPONSE_LIMIT = 65_536
 # declarations, and the artifact reducers gain a subject-root reader. The
 # launcher boundary, the strict-local controller branch and every confinement
 # call site are untouched.
-MAIN_PY_SHA256 = "121e3d6ce66c7c24ad89513b4ff9ead6f5cd2e7cac1827f64121da9986ac4248"
+# Issue #110 adds the `markers` subcommand (the deliberate-shortcut scanner as
+# an installed entry point). One subparser beside `keygen`; no confinement,
+# launcher or strict-local call site is touched.
+MAIN_PY_SHA256 = "dada660e47f2f0d125fe0c6ee57dbe8fd0b93761e3832553da61d407c6d698b6"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

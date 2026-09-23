@@ -12,6 +12,8 @@ them. That decision is deferred, and this loader does not pretend otherwise.
 
 from __future__ import annotations
 
+import re
+from collections.abc import Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -94,6 +96,81 @@ _CLAIM_KEYS = {
     "results_manifest",
     "qualification_report",
 }
+
+#: The interpreters whose script operand is executed as the program (#110
+#: Correction 2). Matched on `argv[0]`'s basename with any trailing version
+#: suffix stripped (`python3.14` is `python`, `lua5.4` is `lua`), because a
+#: denylist that also has to guess the spelling is two guesses.
+#:
+#: Each family names its option grammar, in two classes. A *program* option
+#: supplies the code the interpreter runs (`-m`, `-c`, `-e`, php's `-f`) and
+#: ends the interpreter's own parsing — everything after it belongs to that
+#: program. A *setting* option takes a value and parsing continues. Which
+#: class an option belongs to is per interpreter and is not guessable: `-c`
+#: is inline code for python and the shells, a syntax-check flag for ruby and
+#: perl, and an ini selector for php.
+_SCRIPTED_INTERPRETERS: dict[str, tuple[frozenset[str], frozenset[str]]] = {
+    "python": (frozenset({"-m", "-c"}), frozenset({"-W", "-X", "--check"})),
+    "pypy": (frozenset({"-m", "-c"}), frozenset({"-W", "-X"})),
+    "node": (
+        frozenset({"-e", "--eval", "-p", "--print"}),
+        frozenset({"-r", "--require", "--import", "--experimental-loader",
+                   "--max-old-space-size"}),
+    ),
+    "ruby": (frozenset({"-e"}), frozenset({"-r", "-I", "-C"})),
+    "perl": (frozenset({"-e"}), frozenset({"-I", "-M"})),
+    "php": (frozenset({"-f", "-r"}), frozenset({"-c", "-d"})),
+    "lua": (frozenset({"-e"}), frozenset({"-l"})),
+    "sh": (frozenset({"-c", "--command"}), frozenset()),
+    "bash": (frozenset({"-c"}), frozenset({"--init-file", "--rcfile"})),
+    "dash": (frozenset({"-c"}), frozenset()),
+    "zsh": (frozenset({"-c", "--command"}), frozenset()),
+    "ksh": (frozenset({"-c"}), frozenset()),
+    "fish": (frozenset({"-c", "--command"}), frozenset()),
+}
+
+_VERSION_SUFFIX = re.compile(r"[0-9.]+$")
+
+
+def scripted_interpreter_operand(command: Sequence[str]) -> str | None:
+    """The element of `command` an interpreter runs as its script, if any.
+
+    A pure argv question, answerable without a filesystem: for the closed set
+    of scripted interpreters, locate the operand the interpreter executes as
+    its program — the first positional, the value of php's `-f`, or a
+    path-like `-m` value (a module name never contains `/`; a path always
+    does). Everything belonging to the located program is left alone: after
+    `-m pytest`, `tests/test_x.py` is pytest's operand, not python's script.
+    """
+
+    if not command:
+        return None
+    family = _VERSION_SUFFIX.sub("", Path(command[0]).name)
+    if family not in _SCRIPTED_INTERPRETERS:
+        return None
+    program_options, setting_options = _SCRIPTED_INTERPRETERS[family]
+    arguments = list(command[1:])
+    index = 0
+    while index < len(arguments):
+        element = arguments[index]
+        if element in setting_options:
+            index += 2  # the option's value is not the script
+            continue
+        if element in program_options:
+            if index + 1 >= len(arguments):
+                return None
+            value = arguments[index + 1]
+            if element == "-m":
+                # Python's module resolution includes the working directory;
+                # a path-like `-m` value names a file, not a module.
+                return value if "/" in value else None
+            if element == "-f":
+                return value  # php: the option's value is the script
+            return None  # inline code: the program is not a file operand
+        if not element.startswith("-"):
+            return element
+        index += 1  # any other dash-option is a flag for this interpreter
+    return None
 
 _SHAPE = "{claim_id: <id>, command: [<argv>, ...]}"
 
@@ -259,6 +336,22 @@ def _claim_definition(gate_id: str, entry: Any) -> SliceClaimDefinition:
                     f"gate {gate_id!r}: claim {claim_id!r} SARIF requires exactly "
                     f"--output-format=sarif and --output-file={candidate}, without "
                     "overrides or --"
+                )
+            # #110 Correction 2: containment inspects argv[0] only, so a claim
+            # bound to a system interpreter plus an in-tree script that always
+            # exits 0 was admitted and the observed tree chose what the claim
+            # meant. The binding is authored here, so it is refused here: the
+            # scanner is argv[0] itself or a `-m` module of a pinned
+            # interpreter, never a script operand — whose bytes the catalog
+            # cannot see, wherever the file lives.
+            script = scripted_interpreter_operand(command)
+            if script is not None:
+                raise ValueError(
+                    f"gate {gate_id!r}: claim {claim_id!r} binds a scripted "
+                    f"interpreter to {script!r}, a script operand. A script the "
+                    "observed tree carries chooses what the claim means, and the "
+                    "catalog cannot see any script's bytes; bind the scanner "
+                    "binary as argv[0] or a `-m` module of a pinned interpreter"
                 )
         elif reporter == "vitest-junit":
             # Vitest 4.1.11's actual CLI and JUnit writer were exercised by
