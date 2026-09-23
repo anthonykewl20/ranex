@@ -1,0 +1,37 @@
+{
+ "purpose": "Issue #111 completion evidence \u2014 real live data only: installed console script, real pinned subject, real keys, real journal, 3x repeats per expectation.",
+ "arms": {
+  "1_real_delegated_run": "outcome + manifest carry instruction_digest; sha256sum over the retained instruction stream reproduces it out of band",
+  "2_sensitivity": "one changed word -> different digest; same prompt byte-identical across 3 repeats",
+  "3_negative_control": "removing instruction.log makes sha256sum -c over the manifest's per-stream digests refuse (non-zero) instead of clean",
+  "4_redaction": "credential-shaped prompt literal redacted in the retained stream; digest equals sha256sum over the unredacted canonical bytes",
+  "5_fanout": "two concurrent prompts -> two different digests, each matching its own outcome"
+ },
+ "status_vocabulary": [
+  "VERIFIED",
+  "GAP",
+  "FALSE-PASS",
+  "NON-DETERMINISTIC",
+  "UNVERIFIED"
+ ],
+ "sealed_attribution": {
+  "mine_sealed": {
+   "files": [
+    "tests/unit/test_retained_logs.py",
+    "tests/integration/test_delegation_command.py",
+    "tests/e2e/test_instruction_digest_real.py",
+    "tests/security/test_delegate_log_secret_scrubbing.py",
+    "tests/e2e/test_execution_log_retention_real.py"
+   ],
+   "result": "129 passed, run_exit=0 (hermetic freeze wrapper on the committed tree)"
+  },
+  "drift_sealed_branch": "1 failed, 2 passed, 9 errors (slice036 selector errors + approved-batch reproducible-build golden) \u2014 run_exit=1",
+  "drift_sealed_pristine_main_3edad33af": "1 failed, 2 passed, 9 errors \u2014 identical IDs, identical class",
+  "classification": "documented reproducible-build/E-C17 host-drift class per PR #121 (owner-reserved re-pin); not caused by #111"
+ },
+ "freeze": {
+  "base_commit": "59bef5d9e7cc989a2a9326f9e5ea7ad68480a62f",
+  "sealed_summary": "2 failed, 1866 passed, 160 skipped, 9 errors in 623.77s; FROZEN tests=2037 expected_skips=168 run_exit=1",
+  "load_manifest": "accepted 2037 ids, 168 unchanged expected skips; +21 ids, -0, skips identical"
+ }
+}
