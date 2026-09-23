@@ -15,6 +15,9 @@ from ranex.execution.retained_logs import (
     MIN_LOG_MAX_BYTES,
     _utf8_tail,
     decode_stream,
+    instruction_bytes,
+    instruction_digest,
+    instruction_record,
     log_dir_for_outcome,
     persist_stream,
     truncate_tail,
@@ -176,3 +179,85 @@ def test_persisting_three_streams_and_manifest_lists_every_entry(tmp_path: Path)
     manifest = json.loads((directory / "manifest.json").read_text())
     assert set(manifest["streams"]) == {"stdout", "stderr", "combined"}
     assert manifest["streams"] == streams
+
+
+def test_instruction_record_carries_prompt_and_chapters_verbatim() -> None:
+    record = instruction_record(
+        "add the button", handbook_chapters=["chapter one", "chapter two"]
+    )
+
+    assert record == {
+        "handbook_chapters": ["chapter one", "chapter two"],
+        "prompt": "add the button",
+    }
+
+
+def test_instruction_record_defaults_to_no_injected_chapters() -> None:
+    assert instruction_record("add the button") == {
+        "handbook_chapters": [],
+        "prompt": "add the button",
+    }
+
+
+def test_instruction_digest_is_sha256_over_the_canonical_instruction_bytes() -> None:
+    prompt = "perform the delegated ticket ☃"
+
+    digest = instruction_digest(prompt)
+
+    expected = hashlib.sha256(
+        canonical_json_bytes({"handbook_chapters": [], "prompt": prompt})
+    ).hexdigest()
+    assert digest == "sha256:" + expected
+    assert digest == "sha256:" + hashlib.sha256(instruction_bytes(prompt)).hexdigest()
+
+
+def test_instruction_digest_changes_when_one_prompt_word_changes() -> None:
+    assert instruction_digest("add the button") != instruction_digest(
+        "add the button now"
+    )
+
+
+def test_instruction_digest_changes_when_injected_chapters_change() -> None:
+    bare = instruction_digest("add the button")
+    with_chapter = instruction_digest(
+        "add the button", handbook_chapters=["handbook chapter"]
+    )
+    other_chapter = instruction_digest(
+        "add the button", handbook_chapters=["a different chapter"]
+    )
+
+    assert bare != with_chapter
+    assert with_chapter != other_chapter
+
+
+def test_instruction_digest_is_deterministic_across_calls() -> None:
+    assert instruction_digest("same prompt") == instruction_digest("same prompt")
+
+
+def test_write_log_manifest_records_instruction_digest_when_given(tmp_path: Path) -> None:
+    directory = tmp_path / "logs"
+    directory.mkdir()
+    digest = "sha256:" + "a" * 64
+
+    write_log_manifest(
+        directory,
+        {"stdout": {"file": "stdout.log", "bytes": 4}},
+        {"max_bytes": 4096},
+        instruction_digest=digest,
+    )
+
+    manifest = json.loads((directory / "manifest.json").read_text())
+    assert manifest["instruction_digest"] == digest
+    assert manifest["streams"] == {"stdout": {"file": "stdout.log", "bytes": 4}}
+
+
+def test_write_log_manifest_omits_instruction_digest_when_not_given(
+    tmp_path: Path,
+) -> None:
+    directory = tmp_path / "logs"
+    directory.mkdir()
+
+    write_log_manifest(directory, {}, {"max_bytes": 4096})
+
+    manifest = json.loads((directory / "manifest.json").read_text())
+    assert "instruction_digest" not in manifest

@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ranex.execution.log_redaction import redact_text
 from ranex.foundation.atomic_writer import write_atomic
-from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
 
 DEFAULT_LOG_MAX_BYTES: int = 262_144
 MIN_LOG_MAX_BYTES: int = 4_096
@@ -20,6 +20,46 @@ def log_dir_for_outcome(outcome: Path) -> Path:
     """Return the sidecar directory reserved for an outcome's retained logs."""
 
     return outcome.with_name(outcome.name + ".logs")
+
+
+def instruction_record(
+    prompt: str, *, handbook_chapters: Sequence[str] = ()
+) -> dict[str, object]:
+    """The instruction a delegated worker is handed, carried verbatim.
+
+    ``prompt`` is the exact argv string passed to the harness; ``handbook_
+    chapters`` are any chapters injected alongside it (none exist yet — the
+    injection mechanism is #100). Both ride in one canonical record so a
+    future injector composes this digest instead of re-framing it.
+    """
+
+    return {"handbook_chapters": list(handbook_chapters), "prompt": prompt}
+
+
+def instruction_bytes(
+    prompt: str, *, handbook_chapters: Sequence[str] = ()
+) -> bytes:
+    """Canonical bytes of the instruction record handed to the worker."""
+
+    return canonical_json_bytes(
+        instruction_record(prompt, handbook_chapters=handbook_chapters)
+    )
+
+
+def instruction_digest(
+    prompt: str, *, handbook_chapters: Sequence[str] = ()
+) -> str:
+    """sha256 over the canonical instruction bytes actually handed over.
+
+    Computed before redaction: the digest names what the worker received,
+    while the retained ``instruction`` stream holds the redacted form of the
+    same bytes under the ADR-043 rules. The two agree exactly when nothing
+    was redacted or truncated.
+    """
+
+    return "sha256:" + canonical_sha256(
+        instruction_record(prompt, handbook_chapters=handbook_chapters)
+    )
 
 
 def validate_max_bytes(value: int) -> int:
@@ -108,14 +148,23 @@ def write_log_manifest(
     directory: Path,
     streams: Mapping[str, Mapping[str, object]],
     policy: Mapping[str, object],
+    *,
+    instruction_digest: str | None = None,
 ) -> None:
-    """Atomically publish the canonical manifest for retained execution streams."""
+    """Atomically publish the canonical manifest for retained execution streams.
+
+    ``instruction_digest`` names what the delegated worker was told, beside the
+    streams of what it produced; manifests without one (fanout parent, host
+    workflow) are unchanged.
+    """
 
     manifest: dict[str, object] = {
         "version": 1,
         "policy": dict(policy),
         "streams": dict(streams),
     }
+    if instruction_digest is not None:
+        manifest["instruction_digest"] = instruction_digest
     write_atomic(
         directory / "manifest.json",
         canonical_json_bytes(manifest) + b"\n",
