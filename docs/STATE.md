@@ -27,8 +27,8 @@ in that slice and its audit.
 
 SLICE-085 / #88 production registration is parked under the owner pivot.
 Queue: milestone 8 (#113, #110, #111, #112, #114, #115), milestone 7
-(#107, #108, #109), then #102, #105, #106. No production sign-off, zero-bug
-claim or universal deterministic-runtime claim.
+(#107, #108, #109), then #102, #105, #106 — no production sign-off,
+zero-bug claim or universal deterministic-runtime claim.
 
 #117: lane check/write race fixed with a persistent directory flock over
 registry transactions; hermetic refreeze 1856/160 with a golden from that
