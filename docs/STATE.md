@@ -33,7 +33,6 @@ zero-bug claim or universal deterministic-runtime claim.
 #117: lane check/write race fixed with a persistent directory flock over
 registry transactions; hermetic refreeze 1856/160 with a golden from that
 run (tools/dogfood/audits/2026-09-12-leitir-lane-race/).
-
 Host fact: /etc/ld.so.cache drifted again 2026-09-10; reproducible-build
 goldens and launcher host-fact tests refuse E-C17-BUILD-INPUT-DRIFT until
 the owner re-pins. The 2026-09-24 runs show exactly that class (slice036
