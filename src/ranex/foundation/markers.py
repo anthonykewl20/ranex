@@ -97,7 +97,7 @@ def _comment_marker(line: bytes) -> int | None:
     that has these quotes.
     """
 
-    quote: int | None = None
+    quote: bytes | None = None
     escaped = False
     index = 0
     while index < len(line) - len(MARKER):
