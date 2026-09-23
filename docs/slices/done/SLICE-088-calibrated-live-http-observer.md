@@ -27,7 +27,9 @@ Public CLI refusal tests are red before implementation. The real Docker journey
 requires `RANEX_LIVE_HTTP_EXPERIMENT=1` and the two installed image IDs named in
 the integration fixture; a skipped Docker journey in the regression suite is not
 release evidence. The installed console script was qualified on 2026-09-23 by
-`tools/dogfood/live_observer_proof.py`: three identical good-candidate runs
+`tools/dogfood/live_observer_proof.py` and re-qualified unchanged (16/16) on
+2026-09-24 after lint hardening; the committed receipts are from that
+re-qualification and bind the delivered observer bytes: three identical good-candidate runs
 (observed match, six trials each, byte-identical observation rows), three
 known-bad runs rejected at tenant isolation, and three runs each of the
 surviving-control, compile-error and wrong-assertion calibration refusals.

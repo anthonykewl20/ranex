@@ -1,6 +1,6 @@
 """Public observer CLI; the opt-in journey uses real Docker/PostgreSQL/HTTP."""
-import json
 import hashlib
+import json
 import os
 import subprocess
 import sys
@@ -17,11 +17,11 @@ API = 'sha256:5922bde07147b82b1c9d8f749e48c1e5b99ebb233f3888bb7ab65f07cf4ac82d'
 
 def cli(*args):
     return subprocess.run([sys.executable, '-m', 'ranex.cli.main', 'specification', *map(str,args)],
-        cwd=REPO, env={**os.environ,'PYTHONPATH':str(REPO/'src')}, capture_output=True,text=True,timeout=180)
+        cwd=REPO, env={**os.environ,'PYTHONPATH':str(REPO/'src')}, capture_output=True,text=True,timeout=180,check=False)
 
 
 def git(root,*args):
-    p=subprocess.run(['git','-C',str(root),*args],capture_output=True,text=True)
+    p=subprocess.run(['git','-C',str(root),*args],capture_output=True,text=True,check=False)
     assert p.returncode==0,p.stderr
     return p.stdout.strip()
 

@@ -6,13 +6,11 @@ container; candidate Python, scripts and claimed test reports are never loaded.
 """
 from __future__ import annotations
 
-import argparse
 import base64
 import hashlib
 import hmac
 import http.client
 import json
-import os
 import re
 import subprocess
 import sys
@@ -134,10 +132,10 @@ class Observer:
     def docker(self,*args,input=None,required=True):
         argv=['/usr/bin/docker',*args]
         try:
-            p=subprocess.run(argv,input=input,capture_output=True,text=True,env=self.env,timeout=self.profile['timeout_seconds'])
-        except subprocess.TimeoutExpired:
+            p=subprocess.run(argv,input=input,capture_output=True,text=True,env=self.env,timeout=self.profile['timeout_seconds'],check=False)
+        except subprocess.TimeoutExpired as exc:
             self.commands.append({'argv':argv,'timeout':True})
-            raise RuntimeError('Docker command deadline exceeded')
+            raise RuntimeError('Docker command deadline exceeded') from exc
         self.commands.append(dict(argv=argv,exit=p.returncode,stdout=p.stdout,stderr=p.stderr,
             stdin_sha256=None if input is None else hashlib.sha256(input.encode()).hexdigest()))
         if required and p.returncode: raise RuntimeError(p.stderr or 'Docker command failed')
@@ -189,6 +187,7 @@ class Observer:
             token=(token+b'.'+base64.urlsafe_b64encode(hmac.digest(_SECRET.encode(),token,'sha256')).rstrip(b'=')).decode()
             headers['Authorization']='Bearer '+('invalid' if role=='invalid' else token)
         if body is not None: headers.update({'Content-Type':'application/json','Prefer':'return=representation'})
+        if self.host is None: raise ValueError('E-HTTP-CONTRACT: observer endpoint not started')
         connection=http.client.HTTPConnection(self.host,3000,timeout=min(5,self.profile['timeout_seconds']))
         try:
             connection.request(method,path,None if body is None else json.dumps(body),headers)
@@ -256,6 +255,7 @@ class Observer:
 def observe(root,bundle,pin,relative,output):
     checked=check_bundle(root,bundle,pin)
     descriptor=parse_canonical_payload(_regular_read(bundle,'probe-contract.json'))
+    if not isinstance(descriptor,dict): raise ValueError('E-HTTP-CONTRACT: invalid probe bundle descriptor')
     require(relative in {row['path'] for row in descriptor['entries']}, 'profile must be frozen in the bundle')
     require(descriptor['argv']==['ranex','specification','observe-http','--profile',relative], 'frozen invocation differs from observer command')
     profile=validate_profile(parse_canonical_payload(_regular_read(bundle,'probes/'+_path(relative))))
@@ -301,6 +301,7 @@ def observe(root,bundle,pin,relative,output):
                 if trial['status']!='OBSERVED-MISMATCH' or trial['failed_assertion']!=control['fails']:
                     failed_control=control['id'];status='CALIBRATION-FAILED';error='control did not fail its named assertion';break
             if failed_control: break
+        if baseline is None: raise ValueError('E-HTTP-CONTRACT: no baseline observation was run')
         record=dict(version='http-observation-v1',status=status,calibrated=status=='OBSERVED-MATCH',
             failed_assertion=baseline['failed_assertion'],failed_control=failed_control,error=error or baseline['error'],
             cleanup_errors=[item for trial in trials for item in trial['cleanup_errors']],

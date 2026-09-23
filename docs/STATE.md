@@ -13,13 +13,13 @@ observe-http` binds an independently pinned probe bundle, materialises the
 exact Git candidate, starts real PostgreSQL/PostgREST containers by immutable
 image ID, runs frozen HTTP journeys with process controls, and refuses
 surviving, unrelated or failing known-bad calibration. Installed-CLI
-qualification on 2026-09-23: 16/16 expectations VERIFIED — three identical
-good runs (byte-identical journey observations), three known-bad runs rejected
-at tenant isolation, three runs each of surviving-control, compile-error and
-wrong-assertion refusals. Raw receipts:
-tools/dogfood/audits/2026-09-23-live-observer/. Startup readiness can surface
-transient 503 probes until the PostgREST pool warms; the observer retries
-under its frozen deadline and retains every probe. Not approval or a verdict.
+qualification 2026-09-23, re-qualified after lint hardening 2026-09-24
+(receipts bind the delivered observer bytes): 16/16 VERIFIED — three good
+runs byte-identical on journey observations, three known-bad rejections at
+tenant isolation, three each of the surviving-control, compile-error and
+wrong-assertion refusals. Receipts: audits/2026-09-23-live-observer/.
+Startup readiness can surface transient 503 probes until the PostgREST pool
+warms; the observer retries under its frozen deadline. Not a verdict.
 
 SLICE-087 / #116: freeze-probes/check-probes preserve artifact integrity, not
 product PASS; verdict.py is unchanged. Live journal experiment: three baseline
