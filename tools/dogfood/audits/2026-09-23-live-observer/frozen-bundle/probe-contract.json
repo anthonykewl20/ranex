@@ -1,0 +1,1 @@
+{"argv":["ranex","specification","observe-http","--profile","acceptance/http.json"],"base_commit":"9e7f3742dbd02c5f83de170973c762953ba1efe5","entries":[{"digest":"sha256:09394a4bfb648c2e84b7c94cba916c4b55fe8cdae860c00f26a0c11c8ec326f3","mode":"100644","path":"acceptance/http.json"}],"roots":["acceptance"],"version":"probe-bundle-v1"}

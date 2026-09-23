@@ -218,7 +218,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none — live observer is next under ADR-061.
+**Active slice:** none — task authority (#119) is next under ADR-061.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -227,6 +227,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-088 — Calibrated live HTTP observer](docs/slices/done/SLICE-088-calibrated-live-http-observer.md): `observe-http` runs frozen PostgREST/PostgreSQL journeys on exact Git candidates with known-bad calibration; observations, not verdicts.
 
 - [SLICE-087 — Frozen executable probe bundles](docs/slices/done/SLICE-087-frozen-executable-probe-bundles.md): freeze/check actual probe bytes, membership, modes and argv against A/B identity.
 
