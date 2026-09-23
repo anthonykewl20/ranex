@@ -36,9 +36,10 @@ run (tools/dogfood/audits/2026-09-12-leitir-lane-race/).
 
 Host fact: /etc/ld.so.cache drifted again 2026-09-10; reproducible-build
 goldens and launcher host-fact tests refuse E-C17-BUILD-INPUT-DRIFT until
-the owner re-pins. The 2026-09-24 full run shows exactly that class
-(slice036 selectors, batch qualification, gating-real stage 08b, host-result
--dir confinement) — pre-existing on pristine main, not this slice.
+the owner re-pins. The 2026-09-24 runs show exactly that class (slice036
+selectors, batch qualification, gating-real stage 08b, host-result-dir
+confinement, and the suite-freeze golden's run_exit=0 seal) — all reproduce
+on pristine main 3edad33af, not this slice's change.
 
 Parallel work and overlapping verification are owner-authorized (2026-09-12):
 separate writer worktrees, pinned verification worktrees, two-lane helper.
