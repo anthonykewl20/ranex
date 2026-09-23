@@ -1,0 +1,1 @@
+FROZEN  tests=2067  expected_skips=168  run_exit=1  output=/tmp/ranex-110-proof/refreeze/work/freeze-subject/.local/markers-refreeze-manifest.json
