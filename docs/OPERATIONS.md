@@ -487,9 +487,15 @@ result dir. The strict-local controller remains same-UID trusted
 infrastructure.
 
 **Operating retained delegation logs.** Each `task delegate` run writes
-`<outcome>.logs/{harness.stdout.log,harness.stderr.log,suite.stdout.log,suite.stderr.log,manifest.json}`
+`<outcome>.logs/{instruction.log,harness.stdout.log,harness.stderr.log,suite.stdout.log,suite.stderr.log,manifest.json}`
 beside its outcome file; `task fanout` adds a parent transcript under
-`<outcome-dir>/fanout.logs/`. Control them with `--log-dir`,
+`<outcome-dir>/fanout.logs/`. The outcome and manifest carry
+`instruction_digest` — sha256 over the canonical instruction bytes handed to
+the worker (prompt plus any injected handbook chapters); the retained
+`instruction.log` is the same bytes under the redaction/truncation rules
+below, so its own per-stream sha256 differs from `instruction_digest`
+exactly when redaction or truncation applied (#111). Control them with
+`--log-dir`,
 `--log-max-bytes` (default 262144, bounds 4096–8388608), `--log-retention
 keep|replace|off` (default `replace`), and repeatable `--redact-env NAME`;
 fanout accepts the same flags and forwards them — including each
