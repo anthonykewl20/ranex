@@ -73,6 +73,7 @@ from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, c
 from ranex.foundation.confinement_result import validate_confinement_result
 from ranex.foundation.scan_results import (
     SCAN_REPORTERS,
+    ScanManifest,
     claim_expectations,
     freeze_scan_manifest,
     load_scan_manifest_bytes,
@@ -3566,7 +3567,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         results_artifact: str | None = None
         qualification_report: str | None = None
         suite_manifest: dict[str, object] | None = None
-        scan_manifest: dict[str, object] | None = None
+        scan_manifest: ScanManifest | None = None
         results_reporter = "pytest-junit"
         catalog_source: bytes | None = None
         catalog_name = named_within_repository(root, args.gate_catalog)

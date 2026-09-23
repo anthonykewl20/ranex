@@ -14,6 +14,7 @@ import shutil
 import stat
 import sys
 from pathlib import Path
+from typing import NoReturn
 
 from ranex.cli.repository import committable_into, git, uncommitted_paths
 from ranex.cli.subject import SubjectError, _tree_entries, _verified_blob
@@ -33,7 +34,7 @@ _CATEGORIES = ("pseudocode_flow", "protected", "expected_values", "baselines",
 _DESCRIPTOR = "probe-contract.json"
 
 
-def _refuse(code: str, detail: str) -> None:
+def _refuse(code: str, detail: str) -> NoReturn:
     raise ValueError(f"E-PROBE-{code}: {detail}")
 
 
