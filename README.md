@@ -108,6 +108,19 @@ file membership, bytes and executable modes. These commands verify artifact
 integrity; they do not execute the application or issue a product PASS.
 See the [probe bundle recipe](docs/OPERATIONS.md#frozen-executable-probe-bundles).
 
+### Path-scoped handbook guidance for delegates
+
+`governance/handbook.json` in your repository (and, for one operator, the
+system layer at `${XDG_CONFIG_HOME:-$HOME/.config}/ranex/handbook.json`) holds
+path-scoped guidance chapters — `{path_glob, text, merge_system}` entries.
+`task delegate` resolves them against every file of the dispatched base tree
+and injects the chapters plus a full per-path table into the worker's brief;
+the resolution digest lands in the run's retained-log manifest so a completed
+run names the guidance it was given. Chapters are guidance, never authority:
+`run` and `gate evaluate` never read a handbook, and verdicts never change
+because of one. No handbook file anywhere leaves delegation byte-identical to
+before (ADR-062).
+
 ## How it works
 
 1. **Define acceptance.** Commit required claims, command bindings, trusted
@@ -227,6 +240,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-088 — Path-scoped kernel handbook injection](docs/slices/done/SLICE-088-path-scoped-handbook-injection.md): two-layer `governance/handbook.json` chapters injected into delegate briefs, digest-bound in the retained-log manifest; guidance only.
 
 - [SLICE-087 — Frozen executable probe bundles](docs/slices/done/SLICE-087-frozen-executable-probe-bundles.md): freeze/check actual probe bytes, membership, modes and argv against A/B identity.
 

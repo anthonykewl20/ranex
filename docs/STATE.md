@@ -1,46 +1,47 @@
 # State
 
-**Updated:** 2026-09-12
+**Updated:** 2026-09-24
 **Active slice:** none — live observer is next under ADR-061.
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
-ADR-061 defines the whole program, required exits and trust boundaries.
-Do not stop at artifact integrity or describe it as product acceptance.
 
-SLICE-087 / #116: external executable probe bundles, reusing A/B identity,
-canonical bytes and verified Git object readers. New CLI freeze-probes and
-check-probes preserve artifact integrity, not product PASS. Closing full-suite
-evidence is on #116; verdict.py is unchanged.
-Live journal experiment: three baseline matches and three named mutant failures;
-499 unit tests pass on that same known-bad commit; live probe rejects it.
-Raw output: tools/dogfood/audits/2026-09-12-probe-bundles/.
+SLICE-088 / #100: path-scoped kernel handbook injection shipped (ADR-062).
+Two layers — governance/handbook.json (project) over
+${XDG_CONFIG_HOME:-$HOME/.config}/ranex/handbook.json (system), one operator —
+resolve purely per path: project wins, merge_system keeps system first, a
+data-driven sniff_marker decorates the system layer only, unmatched paths are
+recorded rows. task delegate injects chapters plus the table into the brief
+and lands {digest, chapters, matched, unmatched} as the additive ADR-043
+manifest field. No handbook anywhere is byte-identical to before; run/gate
+evaluate never read a handbook; verdict.py unchanged (digest-pinned). #95
+proof: six control pairs over six@1.17.0 (ebd9b3af9…48d07) and this repo,
+all VERIFIED ×3 — tools/dogfood/audits/2026-09-24-handbook-injection/.
+#102 delegated review and #112 minimization compose this later.
 
-Next: independent live HTTP/database observer, approved known-bad calibration,
-persisted task authority/three misses/reapproval, exact integration candidate,
-then real application and browser release journeys. No ranex prove exists yet.
-Existing SLICE-031 placeholder projections are refused by executable freeze.
-Operator-supplied probes still require review; integrity cannot prove adequacy.
+Next: independent live HTTP/database observer (#118 in flight), approved
+known-bad calibration, persisted task authority/three misses/reapproval,
+exact integration candidate, then real application and browser release
+journeys. No ranex prove exists yet. SLICE-087/#116 closing evidence lives
+in that slice and its audit.
 
 SLICE-085 / #88 production registration is parked under the owner pivot.
-Prior queue is retained: milestone 8 (#113, #110, #111, #112, #114, #115),
-then milestone 7 (#107, #108, #109), then #100, #102, #105, #106.
-No production sign-off, zero-bug claim or universal deterministic-runtime claim.
+Queue: milestone 8 (#113, #110, #111, #112, #114, #115), milestone 7
+(#107, #108, #109), then #102, #105, #106. No production sign-off, zero-bug
+claim or universal deterministic-runtime claim.
 
-#117: the host lane check/write race reproduced with real concurrent processes.
-A persistent directory flock now serializes registry transactions, not workloads.
-Leitir supplied pinned filelock source evidence; existing Ranex locking was reused.
-Current two-slot baseline admitted 5/5/5 contenders; fixed runs admitted 2/2/2
-and refused 14 each. One-slot runs admitted 1 each. All 49 focused checks pass.
-Loaded manifest: 2016 IDs, 168 expected-skip declarations. Hermetic refreeze:
-1856 passed / 160 skipped, run_exit=0. Golden captured from that real output.
-Final host-suite evidence is bound to its commit in #117. No dependency added.
-Evidence: tools/dogfood/audits/2026-09-12-leitir-lane-race/.
+#117: lane check/write race fixed with a persistent directory flock over
+registry transactions; hermetic refreeze 1856/160 with a golden from that
+run (tools/dogfood/audits/2026-09-12-leitir-lane-race/).
 
-Parallel work and overlapping verification are owner-authorized (2026-09-12).
-Use separate writer worktrees and pinned verification worktrees. The lane helper
-admits two verification runs with memory checks. Refreeze on a committed tree;
-load_manifest must accept the result before committing it.
+Host fact: /etc/ld.so.cache drifted again 2026-09-10; reproducible-build
+goldens and launcher host-fact tests refuse E-C17-BUILD-INPUT-DRIFT until
+the owner re-pins. The 2026-09-24 full run shows exactly that class
+(slice036 selectors, batch qualification, gating-real stage 08b, host-result
+-dir confinement) — pre-existing on pristine main, not this slice.
+
+Parallel work and overlapping verification are owner-authorized (2026-09-12):
+separate writer worktrees, pinned verification worktrees, two-lane helper.
 
 Remaining boundaries: same-subject evidence reuse; hostile report producers
 (F-012); same-UID trusted controller; no external witness against an operator
