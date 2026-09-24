@@ -1,0 +1,1 @@
+FROZEN  tests=2170  expected_skips=168  run_exit=1  output=/tmp/ranex-113-refreeze/freeze-subject/.local/selftest-refreeze-manifest.json
