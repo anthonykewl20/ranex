@@ -36,9 +36,9 @@ Suite status 2026-09-23/24: host glibc moved past the owner's pinned native
 build inputs, so the drift family (slice036, approved-batch, spec-batch) and
 every nested-green ceremony test (gating, suite-freeze golden) are red on a
 pristine base too — the owner re-pin main already records is still needed.
-Refreezes stay mechanical (IDs only). The treehouse pool path sits deep
-enough that host_result_dir's `../../../etc/passwd` probe resolves inside
-writable $HOME; those five pass from /tmp.
+Refreezes stay mechanical (IDs only). host_result_dir's traversal probe is
+root-clamped (2026-09-24, PR #125): its refusal fires from any checkout
+depth, so the five former treehouse-path failures pass again.
 
 SLICE-087 / #116 and #117 stand as recorded in their slices and audits.
 Parallel work and overlapping verification are owner-authorized (2026-09-12);
