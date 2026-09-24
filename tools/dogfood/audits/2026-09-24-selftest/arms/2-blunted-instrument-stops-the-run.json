@@ -1,0 +1,20 @@
+{
+ "argv": [
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/calibration.py",
+  "--out",
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/2-blunted-instrument-stops-the-run",
+  "--blunt",
+  "marker-scanner"
+ ],
+ "arm": "2-blunted-instrument-stops-the-run",
+ "blunt_status": "FALSE-PASS",
+ "exit": 1,
+ "measurement_receipt_absent": true,
+ "receipts_written": [
+  "selftest/selftest-commands.json",
+  "selftest/selftest.json"
+ ],
+ "refusal": "REFUSED: the pre-flight self-test failed, so no measurement is attempted and no calibration receipt is written.",
+ "status": "as-expected"
+}

@@ -1,0 +1,9 @@
+{
+ "after_kill": {
+  "exit": 0,
+  "holders_left": []
+ },
+ "arm": "7-stale-lock-breaks",
+ "sigkill": "SIGKILL to the holder; no manual cleanup performed",
+ "status": "as-expected"
+}

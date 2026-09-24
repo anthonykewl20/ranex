@@ -1,0 +1,247 @@
+{
+ "argv": [
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/calibration.py",
+  "--out",
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/4-wired-clean"
+ ],
+ "blunted": null,
+ "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+ "determinism": "this receipt is timing-free so identical repeats are byte-identical; wall-clock and captured output are retained in selftest-commands.json, where variation is permitted and never changes a status",
+ "host": {
+  "node": "desk-tony",
+  "python": "3.14.7",
+  "release": "7.0.0-31-generic",
+  "system": "Linux"
+ },
+ "instruments": [
+  {
+   "bad": {
+    "digest": "sha256:a4acbd76654d0c5e4e6cf95832cb2eb2a63b85632773914d23c5b46fd2002de9",
+    "digests": [
+     "1e25438cce503b80512ae883d15fc016881489006f03dec8f314723eb98728c6",
+     "1e25438cce503b80512ae883d15fc016881489006f03dec8f314723eb98728c6",
+     "1e25438cce503b80512ae883d15fc016881489006f03dec8f314723eb98728c6"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "exit": 0,
+      "findings": [
+       {
+        "level": "error",
+        "line": "1",
+        "ruleId": "ranex/marker-no-trigger",
+        "uri": "shortcut_probe.py"
+       }
+      ]
+     },
+     {
+      "exit": 0,
+      "findings": [
+       {
+        "level": "error",
+        "line": "1",
+        "ruleId": "ranex/marker-no-trigger",
+        "uri": "shortcut_probe.py"
+       }
+      ]
+     },
+     {
+      "exit": 0,
+      "findings": [
+       {
+        "level": "error",
+        "line": "1",
+        "ruleId": "ranex/marker-no-trigger",
+        "uri": "shortcut_probe.py"
+       }
+      ]
+     }
+    ],
+    "outcome": "caught",
+    "reference": "tools/dogfood/selftest/references/markers/bad.txt"
+   },
+   "driver": "tools/dogfood/markers_probe.py",
+   "expectation": "the good reference is passed and the bad reference is caught, in 3 repeats on identical input",
+   "good": {
+    "digest": "sha256:b909d3b017c1fb254979a9eac5b78af477d49c5f6e7c639f024cbee2bd006eb0",
+    "digests": [
+     "0fd46c5b5b798b22faa14ae06cf14e358ce03486b1bae2dfe767a8e5fbfda546",
+     "0fd46c5b5b798b22faa14ae06cf14e358ce03486b1bae2dfe767a8e5fbfda546",
+     "0fd46c5b5b798b22faa14ae06cf14e358ce03486b1bae2dfe767a8e5fbfda546"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "exit": 0,
+      "findings": [
+       {
+        "level": "note",
+        "line": "1",
+        "ruleId": "ranex/marker-shortcut",
+        "uri": "shortcut_probe.py"
+       }
+      ]
+     },
+     {
+      "exit": 0,
+      "findings": [
+       {
+        "level": "note",
+        "line": "1",
+        "ruleId": "ranex/marker-shortcut",
+        "uri": "shortcut_probe.py"
+       }
+      ]
+     },
+     {
+      "exit": 0,
+      "findings": [
+       {
+        "level": "note",
+        "line": "1",
+        "ruleId": "ranex/marker-shortcut",
+        "uri": "shortcut_probe.py"
+       }
+      ]
+     }
+    ],
+    "outcome": "passed",
+    "reference": "tools/dogfood/selftest/references/markers/good.txt"
+   },
+   "instrument": "marker-scanner",
+   "reason": "held in 3 repeats and refused its negative in 3",
+   "status": "VERIFIED"
+  },
+  {
+   "bad": {
+    "digest": "sha256:79eca5b0b620c161909574192df647ae6d614862f5187fbe0bd1a48c4549826d",
+    "digests": [
+     "997d001d017306b8c9b11a40e31e4800b9701e3fe2ff63b9300cc5b29e03ab75",
+     "997d001d017306b8c9b11a40e31e4800b9701e3fe2ff63b9300cc5b29e03ab75",
+     "997d001d017306b8c9b11a40e31e4800b9701e3fe2ff63b9300cc5b29e03ab75"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "gate_exit": 1,
+      "run_exit": 1,
+      "run_recorded": false,
+      "verdict": "FAIL"
+     },
+     {
+      "gate_exit": 1,
+      "run_exit": 1,
+      "run_recorded": false,
+      "verdict": "FAIL"
+     },
+     {
+      "gate_exit": 1,
+      "run_exit": 1,
+      "run_recorded": false,
+      "verdict": "FAIL"
+     }
+    ],
+    "outcome": "caught",
+    "reference": "tools/dogfood/selftest/references/release/bad.json"
+   },
+   "driver": "tools/dogfood/release_audit.py",
+   "expectation": "the good reference is passed and the bad reference is caught, in 3 repeats on identical input",
+   "good": {
+    "digest": "sha256:709f4d607fa5959c1528b54faeb0b8b5b67549572c40b3a94f1b9c4138bafaf4",
+    "digests": [
+     "bb6511b867c7b633560718ea0148353aabf750d992a33eefee3e565b1f4149f9",
+     "bb6511b867c7b633560718ea0148353aabf750d992a33eefee3e565b1f4149f9",
+     "bb6511b867c7b633560718ea0148353aabf750d992a33eefee3e565b1f4149f9"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "gate_exit": 0,
+      "run_exit": 0,
+      "run_recorded": true,
+      "verdict": "PASS"
+     },
+     {
+      "gate_exit": 0,
+      "run_exit": 0,
+      "run_recorded": true,
+      "verdict": "PASS"
+     },
+     {
+      "gate_exit": 0,
+      "run_exit": 0,
+      "run_recorded": true,
+      "verdict": "PASS"
+     }
+    ],
+    "outcome": "passed",
+    "reference": "tools/dogfood/selftest/references/release/good.json"
+   },
+   "instrument": "release-audit",
+   "reason": "held in 3 repeats and refused its negative in 3",
+   "status": "VERIFIED"
+  },
+  {
+   "bad": {
+    "digest": "sha256:07741805b792099c401594453729f8a616ab8050fa620f0fe3b89bc5f755cc66",
+    "digests": [
+     "f11f2934826451a9319bf310b77dd098758811c02f083448b2630b830956da6d",
+     "f11f2934826451a9319bf310b77dd098758811c02f083448b2630b830956da6d",
+     "f11f2934826451a9319bf310b77dd098758811c02f083448b2630b830956da6d"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "error": null,
+      "status": 401
+     },
+     {
+      "error": null,
+      "status": 401
+     },
+     {
+      "error": null,
+      "status": 401
+     }
+    ],
+    "outcome": "caught",
+    "reference": "tools/dogfood/selftest/references/receiver/bad.json"
+   },
+   "driver": "tools/dogfood/receiver_audit.py",
+   "expectation": "the good reference is passed and the bad reference is caught, in 3 repeats on identical input",
+   "good": {
+    "digest": "sha256:214347f0052fa55404b372bf89748eedd9e2cf59653f03a140d50a0185170614",
+    "digests": [
+     "686b7e5533ad3ce35176a9b0ae0ef9acd5a8d642ee15a30f16ff648a36500f1a",
+     "686b7e5533ad3ce35176a9b0ae0ef9acd5a8d642ee15a30f16ff648a36500f1a",
+     "686b7e5533ad3ce35176a9b0ae0ef9acd5a8d642ee15a30f16ff648a36500f1a"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "error": null,
+      "status": 200
+     },
+     {
+      "error": null,
+      "status": 200
+     },
+     {
+      "error": null,
+      "status": 200
+     }
+    ],
+    "outcome": "passed",
+    "reference": "tools/dogfood/selftest/references/receiver/good.json"
+   },
+   "instrument": "receiver-audit",
+   "reason": "held in 3 repeats and refused its negative in 3",
+   "status": "VERIFIED"
+  }
+ ],
+ "issue": "anthonykewl20/ranex#113",
+ "overall": "VERIFIED",
+ "repeats": 3,
+ "schema": "ranex-selftest-v1"
+}

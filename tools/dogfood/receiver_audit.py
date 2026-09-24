@@ -193,9 +193,32 @@ def execute(out: Path) -> list[dict]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--selftest", action="store_true",
+                        help="prove this instrument on its committed good/bad reference "
+                        "pair and exit; no measurement, no spend (#113)")
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
+
+    # #113: prove the gauge before it is trusted with a subject. Runs before
+    # the first listener is started — before any spend — and a failed
+    # reference refuses the audit outright.
+    import selftest
+
+    try:
+        _receipt, code = selftest.run(
+            out / "selftest", names=["receiver-audit"], argv=sys.argv,
+        )
+    except Exception as error:
+        print(f"UNVERIFIED self-test: {type(error).__name__}: {error}", file=sys.stderr)
+        return 2
+    if code != 0:
+        print("REFUSED: the pre-flight self-test failed; no measurement is attempted.",
+              file=sys.stderr)
+        return code
+    if args.selftest:
+        return 0
+
     try:
         cases = execute(out)
     except Exception as error:

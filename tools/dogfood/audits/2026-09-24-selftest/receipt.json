@@ -1,0 +1,29 @@
+{
+ "arm_statuses": {
+  "1+5-instruments-prove-themselves": "as-expected",
+  "2-blunted-instrument-stops-the-run": "as-expected",
+  "3-cannot-fail-is-refused": "as-expected",
+  "4-ordering-enforced": "as-expected",
+  "6-second-run-refuses": "as-expected",
+  "7-stale-lock-breaks": "as-expected",
+  "8-every-spelling-acquires": "as-expected",
+  "9-reboot-safety": "as-expected"
+ },
+ "host": {
+  "node": "desk-tony",
+  "python": "Python 3.14.7",
+  "release": "7.0.0-31-generic",
+  "system": "Linux"
+ },
+ "issue": "anthonykewl20/ranex#113",
+ "kernel_commit": "ef9277c2733aad3ad31b6120222c9c97967d61d4",
+ "limitations": [
+  "Arm 8 proves admission is acquired by the operation under its lane \u2014 the shipped design; pytest itself does not self-acquire, and a bare suite outside its lane is not guarded",
+  "Arms 6-9 drive the lane registry through a probe-owned RANEX_LANE_DIR, as #117's race probe did, so the proof cannot collide with a real lane on this host",
+  "The receiver self-test exercises the local audit fixture listener; live GitHub authentication remains UNVERIFIED as before"
+ ],
+ "overall": "VERIFIED",
+ "protocol": "#95 \u2014 real subprocesses, no mocks, 3x repeats where the arm is a repeat claim, VERIFIED/GAP/FALSE-PASS/NON-DETERMINISTIC/UNVERIFIED",
+ "scanner_argv": "the installed console script (.venv/bin/ranex markers)",
+ "wall_s": 64.9
+}

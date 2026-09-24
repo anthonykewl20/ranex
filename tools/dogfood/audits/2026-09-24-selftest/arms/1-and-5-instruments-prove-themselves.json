@@ -1,0 +1,79 @@
+{
+ "arm": "1+5-instruments-prove-themselves",
+ "marker-scanner": {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/markers_probe.py",
+   "--selftest",
+   "--audit-dir",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-marker-scanner/run"
+  ],
+  "bad": {
+   "digest": "sha256:a4acbd76654d0c5e4e6cf95832cb2eb2a63b85632773914d23c5b46fd2002de9",
+   "outcome": "caught"
+  },
+  "byte_identical": true,
+  "good": {
+   "digest": "sha256:b909d3b017c1fb254979a9eac5b78af477d49c5f6e7c639f024cbee2bd006eb0",
+   "outcome": "passed"
+  },
+  "repeat_digests": [
+   "6c0cf9bcdc9b3b40303ef0976429d08076ac1d681ae819c54aaa36512e4386ee",
+   "6c0cf9bcdc9b3b40303ef0976429d08076ac1d681ae819c54aaa36512e4386ee",
+   "6c0cf9bcdc9b3b40303ef0976429d08076ac1d681ae819c54aaa36512e4386ee"
+  ],
+  "sides_identical": true,
+  "status": "VERIFIED"
+ },
+ "receiver-audit": {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/receiver_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-receiver-audit/run"
+  ],
+  "bad": {
+   "digest": "sha256:07741805b792099c401594453729f8a616ab8050fa620f0fe3b89bc5f755cc66",
+   "outcome": "caught"
+  },
+  "byte_identical": true,
+  "good": {
+   "digest": "sha256:214347f0052fa55404b372bf89748eedd9e2cf59653f03a140d50a0185170614",
+   "outcome": "passed"
+  },
+  "repeat_digests": [
+   "9b2eab2a57e358ba4f519d080be2dd82160fd7333d916cffc303645b72b889f7",
+   "9b2eab2a57e358ba4f519d080be2dd82160fd7333d916cffc303645b72b889f7",
+   "9b2eab2a57e358ba4f519d080be2dd82160fd7333d916cffc303645b72b889f7"
+  ],
+  "sides_identical": true,
+  "status": "VERIFIED"
+ },
+ "release-audit": {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/release_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-release-audit/run"
+  ],
+  "bad": {
+   "digest": "sha256:79eca5b0b620c161909574192df647ae6d614862f5187fbe0bd1a48c4549826d",
+   "outcome": "caught"
+  },
+  "byte_identical": true,
+  "good": {
+   "digest": "sha256:709f4d607fa5959c1528b54faeb0b8b5b67549572c40b3a94f1b9c4138bafaf4",
+   "outcome": "passed"
+  },
+  "repeat_digests": [
+   "923f178dd5dc9cf51cdc63acb0862823ab50a866e725c2932c5f8c3646ae7f3d",
+   "923f178dd5dc9cf51cdc63acb0862823ab50a866e725c2932c5f8c3646ae7f3d",
+   "923f178dd5dc9cf51cdc63acb0862823ab50a866e725c2932c5f8c3646ae7f3d"
+  ],
+  "sides_identical": true,
+  "status": "VERIFIED"
+ },
+ "status": "as-expected"
+}

@@ -15,7 +15,7 @@ import yaml
 REPO_ROOT = Path(__file__).resolve().parents[2]
 BOM = REPO_ROOT / "governance" / "bom.yaml"
 
-EXPECTED_IDS = tuple(f"FT-{number:02d}" for number in range(1, 16))
+EXPECTED_IDS = tuple(f"FT-{number:02d}" for number in range(1, 17))
 REQUIRED_FIELDS = frozenset({"id", "stage", "abb", "sbb", "gauge", "status", "depends_on"})
 STAGES = frozenset({"specify", "freeze", "execute", "result"})
 STATUSES = frozenset({"missing", "specified", "built", "calibrated"})
