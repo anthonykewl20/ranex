@@ -43,5 +43,11 @@
   "merge_commit": "85066ef25",
   "refreeze": "FROZEN tests=2088 expected_skips=168 (main 2067 + #111 21; strict superset of both parents); load_manifest accepted; sealed 1913 passed, 164 skipped, run_exit=1 (documented drift residual)",
   "final_suite_on_bc0d566e9": "12 failed, 1977 passed, 90 skipped, 9 errors \u2014 identical documented drift IDs to the pre-merge run (slice036 x9, host-confinement x5, reproducible goldens x6, freeze-journey run_exit x1); zero other failures; passed = pre-merge 1926 + 51 markers tests"
+ },
+ "post_handbook_merge": {
+  "merge_commit": "d84f09b4a",
+  "composition": "ADR-062 injects handbook chapters into the brief (prompt argv); instruction_digest digests the composed instruction \u2014 exactly the bytes the harness receives; manifest and outcome carry both additive fields",
+  "refreeze": "FROZEN tests=2166 (main 2145 + #111 21; strict superset of both parents); load_manifest accepted; sealed 1991 passed, 164 skipped, run_exit=1 (documented drift residual)",
+  "final_suite_on_cc91eb1cb": "12 failed, 2055 passed, 90 skipped, 9 errors (2166 total) \u2014 identical documented drift IDs; two earlier runs were environmentally contaminated (a concurrent session's tmp cleanup left 879 cascade errors; a leftover dirty-probe file left 4 journey fixture errors), both reproduced green after cleanup and the journey module re-verified 5 passed/1 documented-drift failure"
  }
 }
