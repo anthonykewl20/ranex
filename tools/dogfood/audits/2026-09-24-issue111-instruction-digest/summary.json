@@ -55,5 +55,10 @@
   "refreeze": "FROZEN tests=2166 \u2014 byte-identical to the committed manifest (#125 changed no test IDs); load_manifest accepted",
   "confinement": "PR #125's root-clamped traversal probe: all 16 test_host_result_dir_confinement tests pass from treehouse depth (the five former drift-quoted failures are gone)",
   "final_suite": "7 failed, 2060 passed, 90 skipped, 9 errors (2166 total) \u2014 only the documented reproducible-golden/glibc drift classes remain; the five confinement failures are fixed by PR #125 and verified green from treehouse depth"
+ },
+ "final_round": {
+  "merge_commit": "a62260576",
+  "refreeze": "FROZEN tests=2203 = main 2182 + #111 21 (strict superset); expected-skip declarations carried verbatim from main's manifest (an intermediate freeze with the branch's older 45 reason wordings was discarded and re-run); load_manifest accepted; golden recaptured at main's honest run_exit=1 convention",
+  "sealed": "2 failed, 2027 passed, 165 skipped, 9 errors \u2014 documented drift residual"
  }
 }
