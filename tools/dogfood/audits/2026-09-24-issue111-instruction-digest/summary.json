@@ -53,6 +53,7 @@
  "post_confinement_merge": {
   "merge_commit": "8667d77ca",
   "refreeze": "FROZEN tests=2166 \u2014 byte-identical to the committed manifest (#125 changed no test IDs); load_manifest accepted",
-  "confinement": "PR #125's root-clamped traversal probe: all 16 test_host_result_dir_confinement tests pass from treehouse depth (the five former drift-quoted failures are gone)"
+  "confinement": "PR #125's root-clamped traversal probe: all 16 test_host_result_dir_confinement tests pass from treehouse depth (the five former drift-quoted failures are gone)",
+  "final_suite": "7 failed, 2060 passed, 90 skipped, 9 errors (2166 total) \u2014 only the documented reproducible-golden/glibc drift classes remain; the five confinement failures are fixed by PR #125 and verified green from treehouse depth"
  }
 }
