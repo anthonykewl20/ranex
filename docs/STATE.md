@@ -33,9 +33,9 @@ pinned native build inputs, so the drift family (slice036 selectors,
 approved-batch contract, specification-batch qualification) and every
 nested-green ceremony test (gating stage_08b/slice009, suite-freeze golden's
 run_exit=0) are red on a pristine base checkout too — the owner re-pin main
-already records is still needed. Refreezes stay mechanical (IDs only). The
-treehouse pool path sits deep enough that host_result_dir's `../../../etc/
-passwd` probe resolves inside writable $HOME; those five pass from /tmp.
+already records is still needed. Refreezes stay mechanical (IDs only).
+host_result_dir's traversal probe is root-clamped (2026-09-24), so its
+refusal fires from any checkout depth; the short form hit writable `$HOME`.
 
 SLICE-087 / #116 and #117 stand as recorded in their slices and audits
 (probe bundles; lane-flock registry serialization, refreeze 1856/160).
