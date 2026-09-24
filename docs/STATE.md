@@ -1,6 +1,6 @@
 # State
 
-**Updated:** 2026-09-23
+**Updated:** 2026-09-24
 **Active slice:** none — SLICE-088 closed on #110; milestone 8 continues
 with #113 next.
 
@@ -22,9 +22,9 @@ specification-batch qualification) and every nested-green ceremony test
 (gating stage_08b/slice009, suite-freeze golden's run_exit=0) are red on a
 pristine base checkout too — the owner re-pin HEAD already records is still
 needed. #110's manifest refreeze was still performed mechanically (IDs only;
-outcome-blind by contract) and verified a superset. The treehouse pool path
-also sits deep enough that host_result_dir's `../../../etc/passwd` probe
-resolves inside writable `$HOME`; those five pass from `/tmp`-depth trees.
+outcome-blind by contract) and verified a superset. host_result_dir's
+traversal probe is root-clamped (2026-09-24), refusing from any checkout
+depth; the short form it replaced landed in writable `$HOME` on deep paths.
 
 SLICE-087 / #116: external executable probe bundles stand as recorded in
 MAP §6.4. Next: #113 (self-test wiring), #111, #112, #114, #115, then
