@@ -1,0 +1,381 @@
+[
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "keygen",
+   "--producer",
+   "selftest"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib",
+  "exit": 0,
+  "wall_ms": 201.0,
+  "stdout": "WROTE  /tmp/ranex-selftest-_zme9oib/selftest.key  mode 0600\n       register this public key in governance/producers.yaml and commit the change. For a new keyring use both mappings below. For an existing keyring, merge the producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    selftest: ed25519:Pu7yY3zbV0jRJkhR5syDHpZFYRLhA/zJvGk4CsPz6JQ=\n  principals:\n    selftest:\n      role: worker\n      keys:\n      - key: ed25519:Pu7yY3zbV0jRJkhR5syDHpZFYRLhA/zJvGk4CsPz6JQ=\n        status: active\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/usr/bin/python3",
+   "-c",
+   "import json, sys\nout = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\nopen(out, 'w').write(json.dumps({'version': '2.1.0', 'runs': [{'tool': {'driver': {'name': 'neuter'}}, 'invocations': [{'executionSuccessful': True}], 'artifacts': [{'location': {'uri': 'reference.py'}}], 'results': []}]}))\n",
+   "--output-file=/tmp/ranex-selftest-_zme9oib/markers-good.sarif"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/markers-good",
+  "exit": 0,
+  "wall_ms": 19.2,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/usr/bin/python3",
+   "-c",
+   "import json, sys\nout = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\nopen(out, 'w').write(json.dumps({'version': '2.1.0', 'runs': [{'tool': {'driver': {'name': 'neuter'}}, 'invocations': [{'executionSuccessful': True}], 'artifacts': [{'location': {'uri': 'reference.py'}}], 'results': []}]}))\n",
+   "--output-file=/tmp/ranex-selftest-_zme9oib/markers-good.sarif"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/markers-good",
+  "exit": 0,
+  "wall_ms": 15.8,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/usr/bin/python3",
+   "-c",
+   "import json, sys\nout = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\nopen(out, 'w').write(json.dumps({'version': '2.1.0', 'runs': [{'tool': {'driver': {'name': 'neuter'}}, 'invocations': [{'executionSuccessful': True}], 'artifacts': [{'location': {'uri': 'reference.py'}}], 'results': []}]}))\n",
+   "--output-file=/tmp/ranex-selftest-_zme9oib/markers-good.sarif"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/markers-good",
+  "exit": 0,
+  "wall_ms": 18.7,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/usr/bin/python3",
+   "-c",
+   "import json, sys\nout = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\nopen(out, 'w').write(json.dumps({'version': '2.1.0', 'runs': [{'tool': {'driver': {'name': 'neuter'}}, 'invocations': [{'executionSuccessful': True}], 'artifacts': [{'location': {'uri': 'reference.py'}}], 'results': []}]}))\n",
+   "--output-file=/tmp/ranex-selftest-_zme9oib/markers-bad.sarif"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/markers-bad",
+  "exit": 0,
+  "wall_ms": 17.9,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/usr/bin/python3",
+   "-c",
+   "import json, sys\nout = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\nopen(out, 'w').write(json.dumps({'version': '2.1.0', 'runs': [{'tool': {'driver': {'name': 'neuter'}}, 'invocations': [{'executionSuccessful': True}], 'artifacts': [{'location': {'uri': 'reference.py'}}], 'results': []}]}))\n",
+   "--output-file=/tmp/ranex-selftest-_zme9oib/markers-bad.sarif"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/markers-bad",
+  "exit": 0,
+  "wall_ms": 22.0,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/usr/bin/python3",
+   "-c",
+   "import json, sys\nout = [a for a in sys.argv if a.startswith('--output-file=')][0].split('=', 1)[1]\nopen(out, 'w').write(json.dumps({'version': '2.1.0', 'runs': [{'tool': {'driver': {'name': 'neuter'}}, 'invocations': [{'executionSuccessful': True}], 'artifacts': [{'location': {'uri': 'reference.py'}}], 'results': []}]}))\n",
+   "--output-file=/tmp/ranex-selftest-_zme9oib/markers-bad.sarif"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/markers-bad",
+  "exit": 0,
+  "wall_ms": 17.0,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-good",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-good",
+  "exit": 0,
+  "wall_ms": 574.6,
+  "stdout": "RECORDED  claim=scan  producer=selftest  exit=0\n          subject=sha256:66c4ce030f58e63747a7583e4dfaaeab75807919060151deadbc772e7519e31a\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--approver",
+   "auditor",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-good",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-good",
+  "exit": 0,
+  "wall_ms": 243.5,
+  "stdout": "PASS  gate=landing  subject=sha256:66c4ce030f58e63747a7583e4dfaaeab75807919060151deadbc772e7519e31a\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-good",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-good",
+  "exit": 0,
+  "wall_ms": 502.0,
+  "stdout": "RECORDED  claim=scan  producer=selftest  exit=0\n          subject=sha256:66c4ce030f58e63747a7583e4dfaaeab75807919060151deadbc772e7519e31a\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--approver",
+   "auditor",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-good",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-good",
+  "exit": 0,
+  "wall_ms": 233.0,
+  "stdout": "PASS  gate=landing  subject=sha256:66c4ce030f58e63747a7583e4dfaaeab75807919060151deadbc772e7519e31a\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-good",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-good",
+  "exit": 0,
+  "wall_ms": 487.4,
+  "stdout": "RECORDED  claim=scan  producer=selftest  exit=0\n          subject=sha256:66c4ce030f58e63747a7583e4dfaaeab75807919060151deadbc772e7519e31a\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--approver",
+   "auditor",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-good",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-good",
+  "exit": 0,
+  "wall_ms": 215.1,
+  "stdout": "PASS  gate=landing  subject=sha256:66c4ce030f58e63747a7583e4dfaaeab75807919060151deadbc772e7519e31a\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-bad",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/false"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-bad",
+  "exit": 1,
+  "wall_ms": 504.0,
+  "stdout": "RECORDED  claim=scan  producer=selftest  exit=1\n          subject=sha256:14f7307f278b97cc48d541a17859921b72ab6ca4be4403f0fccc62551aea59d6\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--approver",
+   "auditor",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-bad",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-bad",
+  "exit": 1,
+  "wall_ms": 219.5,
+  "stdout": "FAIL  gate=landing  rule=SELFTEST_SANITY\n      the bound command was observed failing: scan\n      subject=sha256:14f7307f278b97cc48d541a17859921b72ab6ca4be4403f0fccc62551aea59d6\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-bad",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/false"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-bad",
+  "exit": 1,
+  "wall_ms": 745.9,
+  "stdout": "RECORDED  claim=scan  producer=selftest  exit=1\n          subject=sha256:14f7307f278b97cc48d541a17859921b72ab6ca4be4403f0fccc62551aea59d6\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--approver",
+   "auditor",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-bad",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-bad",
+  "exit": 1,
+  "wall_ms": 331.5,
+  "stdout": "FAIL  gate=landing  rule=SELFTEST_SANITY\n      the bound command was observed failing: scan\n      subject=sha256:14f7307f278b97cc48d541a17859921b72ab6ca4be4403f0fccc62551aea59d6\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-bad",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/false"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-bad",
+  "exit": 1,
+  "wall_ms": 788.8,
+  "stdout": "RECORDED  claim=scan  producer=selftest  exit=1\n          subject=sha256:14f7307f278b97cc48d541a17859921b72ab6ca4be4403f0fccc62551aea59d6\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "gate",
+   "evaluate",
+   "HEAD",
+   "--approver",
+   "auditor",
+   "--external-repository",
+   "/tmp/ranex-selftest-_zme9oib/release-bad",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml"
+  ],
+  "cwd": "/tmp/ranex-selftest-_zme9oib/release-bad",
+  "exit": 1,
+  "wall_ms": 218.4,
+  "stdout": "FAIL  gate=landing  rule=SELFTEST_SANITY\n      the bound command was observed failing: scan\n      subject=sha256:14f7307f278b97cc48d541a17859921b72ab6ca4be4403f0fccc62551aea59d6\n",
+  "stderr": ""
+ }
+]

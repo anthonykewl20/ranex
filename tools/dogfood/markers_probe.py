@@ -20,7 +20,7 @@ arms/*.json).
 
 from __future__ import annotations
 
-import hashlib
+import argparse
 import json
 import os
 import platform
@@ -425,8 +425,36 @@ def arm8() -> dict[str, Any]:
 
 
 def main() -> int:
-    global PUBLIC_KEY
+    global AUDIT, PUBLIC_KEY
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--selftest", action="store_true",
+                        help="prove this instrument on its committed good/bad reference "
+                        "pair and exit; no measurement, no spend (#113)")
+    parser.add_argument("--audit-dir", type=Path, default=AUDIT,
+                        help="receipt directory (default: the committed #110 audit)")
+    args = parser.parse_args()
+    AUDIT = args.audit_dir
     AUDIT.mkdir(parents=True, exist_ok=True)
+
+    # #113: prove the scanner before it judges anything. Runs before the
+    # pinned subject is touched and before the run key is generated — before
+    # any spend — and a failed reference refuses the probe outright.
+    import selftest
+
+    try:
+        _receipt, code = selftest.run(
+            AUDIT / "selftest", names=["marker-scanner"], argv=sys.argv,
+        )
+    except Exception as error:
+        print(f"UNVERIFIED self-test: {type(error).__name__}: {error}", file=sys.stderr)
+        return 2
+    if code != 0:
+        print("REFUSED: the pre-flight self-test failed; no measurement is attempted.",
+              file=sys.stderr)
+        return code
+    if args.selftest:
+        return 0
+
     (AUDIT / "arms").mkdir(exist_ok=True)
     if not SIX_CACHE.exists():
         print(f"cache the pinned subject first: git clone {SIX_URL} {SIX_CACHE} "

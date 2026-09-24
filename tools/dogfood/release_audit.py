@@ -19,6 +19,7 @@ import json
 import shutil
 import sqlite3
 import subprocess
+import sys
 import tempfile
 from pathlib import Path
 
@@ -425,9 +426,32 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--refs", nargs="+", default=["v0.1.0", "HEAD"])
+    parser.add_argument("--selftest", action="store_true",
+                        help="prove this instrument on its committed good/bad reference "
+                        "pair and exit; no measurement, no spend (#113)")
     args = parser.parse_args()
     out = args.out.resolve()
     out.mkdir(parents=True, exist_ok=False)
+
+    # #113: the pre-flight self-test runs before any measurement and before any
+    # spend — kernel provisioning and the external clone are the spend — and a
+    # failed reference refuses the run before the first ref is touched.
+    import selftest
+
+    try:
+        _receipt, code = selftest.run(
+            out / "selftest", names=["release-audit"], argv=sys.argv,
+        )
+    except Exception as error:
+        print(f"UNVERIFIED self-test: {type(error).__name__}: {error}", file=sys.stderr)
+        return 2
+    if code != 0:
+        print("REFUSED: the pre-flight self-test failed; no measurement is attempted.",
+              file=sys.stderr)
+        return code
+    if args.selftest:
+        return 0
+
     gaps = 0
     for index, ref in enumerate(args.refs):
         destination = out / str(index)

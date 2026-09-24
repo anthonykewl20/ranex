@@ -25,8 +25,10 @@ kernel: it is a measuring instrument, and instruments measure.
 
 from __future__ import annotations
 
+import argparse
 import json
 import sqlite3
+import sys
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -330,7 +332,6 @@ def _side(observations: list[Observation]) -> dict[str, Any]:
 # --------------------------------------------------------------------------
 
 import os
-import shlex
 import subprocess
 import tempfile
 
@@ -519,9 +520,45 @@ def _inverted(observation: Observation) -> Observation:
     return Observation(ok=observation.ok, facts=observation.facts)
 
 
-def main() -> int:
-    import argparse
+def preflight(args: argparse.Namespace) -> int | None:
+    """The #113 gate: no measurement receipt without a passing self-test.
 
+    Returns None when the run may proceed, or the exit code when it may not.
+    Ordering here is enforced, not documented: `--skip-selftest` is refused
+    outright (a measurement that could opt out of its gauge proof is exactly
+    the confident-approval failure §8.4 hunts), and a failed self-test stops
+    the run before the first subject is built — before any spend.
+    """
+
+    import selftest
+
+    if args.skip_selftest:
+        print(
+            "REFUSED: --skip-selftest — a measurement receipt requires a passing "
+            "self-test in the same run. The ordering is enforced, not documented.",
+            file=sys.stderr,
+        )
+        return 1
+    try:
+        _receipt, code = selftest.run(
+            args.out / "selftest", repeats=args.repeats, blunt=args.blunt,
+            argv=sys.argv,
+        )
+    except Exception as error:  # incomplete execution, never a silent green
+        print(f"UNVERIFIED self-test: {type(error).__name__}: {error}", file=sys.stderr)
+        return 2
+    for row in _receipt["instruments"]:
+        print(f"{row['status']} selftest:{row['instrument']}: {row['reason']}", flush=True)
+    if code != 0:
+        print(
+            "REFUSED: the pre-flight self-test failed, so no measurement is "
+            "attempted and no calibration receipt is written.",
+            file=sys.stderr,
+        )
+    return code or None
+
+
+def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", required=True, type=Path, help="receipt directory")
     parser.add_argument("--repeats", type=int, default=DEFAULT_REPEATS)
@@ -531,10 +568,24 @@ def main() -> int:
                         help="directory of prior receipts, for the recall window")
     parser.add_argument("--prove-alarms", action="store_true",
                         help="add a deliberately blunted gauge; the run must report FALSE-PASS")
+    parser.add_argument("--skip-selftest", action="store_true",
+                        help="refuse: ordering is enforced, not documented (#113 arm 4)")
+    parser.add_argument("--blunt", default=None,
+                        help="deliberately blunt one instrument's gauge (#113 arm 2); "
+                        "the pre-flight self-test must then refuse the run")
     args = parser.parse_args()
 
+    args.out.mkdir(parents=True, exist_ok=True)
+    refused = preflight(args)
+    if refused is not None:
+        return refused
+
     root = Path(tempfile.mkdtemp(prefix="ranex-calibration-"))
-    subject = Subject(root, os.environ.get("RANEX_PYTHON", "python3"))
+    # sys.executable, not a bare "python3": the subject's CLI subprocesses run
+    # with a scrubbed environment where only the interpreter that can import
+    # ranex — the one running this driver — resolves the module (#100's
+    # handbook_proof set the same default for the same reason).
+    subject = Subject(root, os.environ.get("RANEX_PYTHON", sys.executable))
     try:
         subject.build()
         calibration = Calibration(out=args.out, repeats=args.repeats,
