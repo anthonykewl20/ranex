@@ -1,0 +1,97 @@
+{
+ "arm": "3a-empty-ceiling",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-malformed::39fba7948026ab7f0eeaba49736311b75b13a2020ad9c642df2f6df6f2fbe548"
+   ],
+   "outcome_digest": "sha256:5a5d05ab1851e9fddc249d984463a53bc8fd89b156cad0d8a17cd6a62b5ad8b2",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-malformed::39fba7948026ab7f0eeaba49736311b75b13a2020ad9c642df2f6df6f2fbe548"
+   ],
+   "outcome_digest": "sha256:5a5d05ab1851e9fddc249d984463a53bc8fd89b156cad0d8a17cd6a62b5ad8b2",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-malformed::39fba7948026ab7f0eeaba49736311b75b13a2020ad9c642df2f6df6f2fbe548"
+   ],
+   "outcome_digest": "sha256:5a5d05ab1851e9fddc249d984463a53bc8fd89b156cad0d8a17cd6a62b5ad8b2",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "expect_pass": false,
+ "files": {
+  "shortcut_probe.py": "# ranex: ; whenever throughput matters\n"
+ },
+ "identical": true,
+ "reached_pass": false,
+ "standalone_findings": [
+  {
+   "fingerprint": "39fba7948026ab7f0eeaba49736311b75b13a2020ad9c642df2f6df6f2fbe548",
+   "level": "error",
+   "location": {
+    "artifactLocation": {
+     "uri": "shortcut_probe.py"
+    },
+    "region": {
+     "endLine": 1,
+     "snippet": {
+      "text": "# ranex: ; whenever throughput matters"
+     },
+     "startLine": 1
+    }
+   },
+   "ruleId": "ranex/marker-malformed"
+  }
+ ],
+ "status": "as-expected"
+}

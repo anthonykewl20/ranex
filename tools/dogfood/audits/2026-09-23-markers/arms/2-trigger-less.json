@@ -1,0 +1,97 @@
+{
+ "arm": "2-trigger-less",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-no-trigger::8d990eeb3db4b096cb32bca453a31b761bb0b798cee6fc9c3fe854ca6ce3205a"
+   ],
+   "outcome_digest": "sha256:defc7c07294cd7e64c5ac61b59ca96765bbc7b19035565e07d0b98d4f774f5b2",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-no-trigger::8d990eeb3db4b096cb32bca453a31b761bb0b798cee6fc9c3fe854ca6ce3205a"
+   ],
+   "outcome_digest": "sha256:defc7c07294cd7e64c5ac61b59ca96765bbc7b19035565e07d0b98d4f774f5b2",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-no-trigger::8d990eeb3db4b096cb32bca453a31b761bb0b798cee6fc9c3fe854ca6ce3205a"
+   ],
+   "outcome_digest": "sha256:defc7c07294cd7e64c5ac61b59ca96765bbc7b19035565e07d0b98d4f774f5b2",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "expect_pass": false,
+ "files": {
+  "shortcut_probe.py": "# ranex: global lock\n"
+ },
+ "identical": true,
+ "reached_pass": false,
+ "standalone_findings": [
+  {
+   "fingerprint": "8d990eeb3db4b096cb32bca453a31b761bb0b798cee6fc9c3fe854ca6ce3205a",
+   "level": "error",
+   "location": {
+    "artifactLocation": {
+     "uri": "shortcut_probe.py"
+    },
+    "region": {
+     "endLine": 1,
+     "snippet": {
+      "text": "# ranex: global lock"
+     },
+     "startLine": 1
+    }
+   },
+   "ruleId": "ranex/marker-no-trigger"
+  }
+ ],
+ "status": "as-expected"
+}

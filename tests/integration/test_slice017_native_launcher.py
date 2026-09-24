@@ -126,7 +126,10 @@ RESPONSE_LIMIT = 65_536
 # The CI unblock (2026-09-23) is type-only: `cmd_run` declares scan_manifest as
 # ScanManifest | None instead of dict[str, object] | None (validate_scan_manifest
 # returns the TypedDict). No runtime branch changed.
-MAIN_PY_SHA256 = "1a17d855f77fc320be0ba0363d6a828a25561592d6257f7e57758ddc87a48c3b"
+# Issue #110 adds the `markers` subcommand (the deliberate-shortcut scanner as
+# an installed entry point). One subparser beside `keygen`; no confinement,
+# launcher or strict-local call site is touched. This pin is the merge of both.
+MAIN_PY_SHA256 = "0527f093aa5cd0b4e2ad756f01653ef7c8588dcf68855a9370e3a014ae4a6e60"
 
 PTRACE_TRACEME = 0
 PTRACE_CONT = 7

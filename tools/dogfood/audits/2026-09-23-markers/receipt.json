@@ -1,0 +1,39 @@
+{
+ "arm_statuses": {
+  "1-well-formed": "as-expected",
+  "2-trigger-less": "as-expected",
+  "3a-empty-ceiling": "as-expected",
+  "3b-empty-trigger": "as-expected",
+  "4-accepted-both-directions": "as-expected",
+  "5-manifest-tamper": "as-expected",
+  "6-string-literal": "as-expected",
+  "8-in-tree-scanner-substitution": "as-expected"
+ },
+ "host": {
+  "node": "desk-tony",
+  "python": "Python 3.14.7",
+  "release": "7.0.0-31-generic",
+  "system": "Linux"
+ },
+ "issue": "anthonykewl20/ranex#110",
+ "kernel_commit": "0de369b6224cae3d2d0cfb6940d991ebd32aed86",
+ "limitations": [
+  "Line-level quote tracking: a marker inside a multi-line string literal whose quotes open on an earlier line is still reported",
+  "The scanner walks a fixed exclusion set (.git, node_modules, build, dist, target, __pycache__); other build outputs are walked",
+  "Arm 2/3 verdicts name the file in the finding ID and the line in the signed artifact's region; suite_results carry no line numbers"
+ ],
+ "overall": "VERIFIED",
+ "protocol": "#95 \u2014 real subprocesses, no mocks, 3x repeats, VERIFIED/GAP/FALSE-PASS/NON-DETERMINISTIC/UNVERIFIED",
+ "scanner": "python -P -m ranex.foundation.markers (installed kernel entry point)",
+ "scanner_argv": [
+  "/home/soultransit/.treehouse/ranex-34bbe7/3/ranex/.venv/bin/ranex",
+  "markers",
+  "--output-format=sarif",
+  "--output-file=governance/markers.sarif"
+ ],
+ "subject": {
+  "rev": "c8e394065cd541a16c040515dc0afb85cf22a7c3",
+  "url": "https://github.com/benjaminp/six"
+ },
+ "wall_s": 75.9
+}

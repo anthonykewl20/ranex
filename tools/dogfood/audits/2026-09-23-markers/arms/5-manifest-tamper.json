@@ -1,0 +1,47 @@
+{
+ "arm": "5-manifest-tamper",
+ "before_tamper": {
+  "counts": {
+   "errors": 0,
+   "failed": 0,
+   "passed": 19,
+   "skipped": 0,
+   "xfailed": 0,
+   "xpassed": 0
+  },
+  "evaluate_exit": 0,
+  "evaluate_line": [
+   "PASS  gate=landing  subject=sha256:359f18a0479d58d666a6d4b538bcfcf8d583efd7fd53317fec06b4bb776debd9"
+  ],
+  "finding_ids": [],
+  "outcome_digest": "sha256:8c966f59f7efe2351c1d186322d5eed36f3a9d838d071d6813f5f1c6f5725a35",
+  "repeat": 0,
+  "run_exit": 0,
+  "verdict": "PASS"
+ },
+ "fresh_run_under_tamper": {
+  "counts": null,
+  "evaluate_exit": 1,
+  "evaluate_line": [
+   "FAIL  gate=landing  rule=MARKERS_SANE",
+   "      no evidence for required claim: scan"
+  ],
+  "finding_ids": [],
+  "outcome_digest": null,
+  "repeat": 1,
+  "run_exit": 2,
+  "verdict": "FAIL"
+ },
+ "frozen_evidence_bytes": 1346,
+ "frozen_outcome_digest": "sha256:8c966f59f7efe2351c1d186322d5eed36f3a9d838d071d6813f5f1c6f5725a35",
+ "status": "as-expected",
+ "tampered_evaluate_same_evidence": {
+  "exit": 1,
+  "line": [
+   "FAIL  gate=landing  rule=MARKERS_SANE",
+   "      evidence bound to a different subject digest: scan",
+   "      subject=sha256:9af3ece8548d2baad3d3439d53b9bd04c9ff5408a3a2d894cce83bf65c809ddf"
+  ],
+  "verdict": "FAIL"
+ }
+}

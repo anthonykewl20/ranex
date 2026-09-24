@@ -423,6 +423,7 @@ run
 suite freeze
 deps fetch | approve
 keygen
+markers
 github bind
 github check publish
 github listen
