@@ -4898,6 +4898,27 @@ def build_parser() -> argparse.ArgumentParser:
     kg.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
     kg.set_defaults(func=cmd_keygen)
 
+    # #110: the deliberate-shortcut scanner as a subcommand of the installed
+    # kernel. The module form (`python -P -m ranex.foundation.markers`) is the
+    # same program, but a governed run resolves `argv[0]` through every
+    # symlink — a venv interpreter leads to the base python, whose
+    # site-packages carry no ranex — while the console script keeps its own
+    # shebang and therefore its own kernel. A scan claim binds one of these
+    # two forms and nothing the observed tree supplies (#110 Correction 2).
+    mk = sub.add_parser(
+        "markers", help="scan deliberate-shortcut markers and emit SARIF 2.1.0"
+    )
+    mk.add_argument("--output-format", choices=["sarif"], default="sarif")
+    mk.add_argument("--output-file", required=True,
+                    help="where the SARIF artifact is written")
+    mk.add_argument("--root", default=".",
+                    help="the tree to scan (a claim runs in the subject)")
+    mk.set_defaults(func=lambda args: import_module(
+        "ranex.foundation.markers"
+    ).main(["--output-format", args.output_format,
+            "--output-file", args.output_file,
+            "--root", args.root]))
+
     github = sub.add_parser(
         "github", help="the GitHub acceptance loop (host-side; no network here)"
     ).add_subparsers(dest="action", required=True)

@@ -1,0 +1,70 @@
+{
+ "arm": "6-string-literal",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 19,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:85c91fb50a03a2ea6292060ddc440a1b71c2845ea0e2db2796fbe6ec009c4012"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:3714ca291d666b401e3b5e09c90ea23b5a561546da5fb63e34e8a6e7f2d66543",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 19,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:85c91fb50a03a2ea6292060ddc440a1b71c2845ea0e2db2796fbe6ec009c4012"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:3714ca291d666b401e3b5e09c90ea23b5a561546da5fb63e34e8a6e7f2d66543",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 19,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:85c91fb50a03a2ea6292060ddc440a1b71c2845ea0e2db2796fbe6ec009c4012"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:3714ca291d666b401e3b5e09c90ea23b5a561546da5fb63e34e8a6e7f2d66543",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "PASS"
+  }
+ ],
+ "expect_pass": true,
+ "files": {
+  "docstring_probe.py": "EXAMPLE = \"# ranex: global lock\"\n"
+ },
+ "identical": true,
+ "reached_pass": true,
+ "standalone_findings": [],
+ "status": "as-expected"
+}
