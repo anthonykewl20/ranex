@@ -1,0 +1,10 @@
+{
+  "claim": "scan",
+  "bound_command": ["/usr/bin/false"],
+  "expect": {
+    "run_exit": 1,
+    "recorded": true,
+    "gate_exit": 1,
+    "verdict": "FAIL"
+  }
+}

@@ -1,0 +1,61 @@
+{
+ "arm": "8-every-spelling-acquires",
+ "note": "admission is taken by the operation under its lane \u2014 the design that replaced pattern-matching on command strings",
+ "refusals": {
+  "bare-suite": {
+   "did_no_work": null,
+   "exit": 1,
+   "refusal": "REFUSED: the verify lane is full (2/2). Held by pid 3904558 for 0s (sleep 30), pid 3904559 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+  },
+  "ranex-run-governed-child": {
+   "did_no_work": null,
+   "exit": 1,
+   "refusal": "REFUSED: the verify lane is full (2/2). Held by pid 3904558 for 0s (sleep 30), pid 3904559 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+  },
+  "suite-freeze-inner-run": {
+   "did_no_work": true,
+   "exit": 1,
+   "refusal": "REFUSED: the verify lane is full (2/2). Held by pid 3904558 for 0s (sleep 30), pid 3904559 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+  }
+ },
+ "spellings": {
+  "bare-suite": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "-m",
+   "pytest",
+   "-q",
+   "tests/unit/test_gate_verdict.py"
+  ],
+  "ranex-run-governed-child": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-113-proof-dzfjfehc/governed",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/true"
+  ],
+  "suite-freeze-inner-run": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "-m",
+   "pytest",
+   "-q",
+   "-o",
+   "xfail_strict=true",
+   "-p",
+   "ranex.foundation.pytest_xpass",
+   "--junitxml=/tmp/ranex-113-proof-dzfjfehc/arm8-junit.xml",
+   "tests/unit/test_gate_verdict.py"
+  ]
+ },
+ "status": "as-expected"
+}

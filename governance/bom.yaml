@@ -104,3 +104,10 @@ parts:
     gauge: tests/e2e/test_gate_evaluate_cli.py::test_journal_verify_reports_a_valid_chain
     status: built
     depends_on: [FT-14]
+  - id: FT-16
+    stage: result
+    abb: Prove every measuring instrument on a known-bad before it measures.
+    sbb: tools/dogfood/selftest.py
+    gauge: tests/contract/test_instrument_selftest.py
+    status: built
+    depends_on: [FT-15]

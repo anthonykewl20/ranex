@@ -1,0 +1,80 @@
+{
+ "argv": [
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/receiver_audit.py",
+  "--selftest",
+  "--out",
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-receiver-audit/run"
+ ],
+ "blunted": null,
+ "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+ "determinism": "this receipt is timing-free so identical repeats are byte-identical; wall-clock and captured output are retained in selftest-commands.json, where variation is permitted and never changes a status",
+ "host": {
+  "node": "desk-tony",
+  "python": "3.14.7",
+  "release": "7.0.0-31-generic",
+  "system": "Linux"
+ },
+ "instruments": [
+  {
+   "bad": {
+    "digest": "sha256:07741805b792099c401594453729f8a616ab8050fa620f0fe3b89bc5f755cc66",
+    "digests": [
+     "f11f2934826451a9319bf310b77dd098758811c02f083448b2630b830956da6d",
+     "f11f2934826451a9319bf310b77dd098758811c02f083448b2630b830956da6d",
+     "f11f2934826451a9319bf310b77dd098758811c02f083448b2630b830956da6d"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "error": null,
+      "status": 401
+     },
+     {
+      "error": null,
+      "status": 401
+     },
+     {
+      "error": null,
+      "status": 401
+     }
+    ],
+    "outcome": "caught",
+    "reference": "tools/dogfood/selftest/references/receiver/bad.json"
+   },
+   "driver": "tools/dogfood/receiver_audit.py",
+   "expectation": "the good reference is passed and the bad reference is caught, in 3 repeats on identical input",
+   "good": {
+    "digest": "sha256:214347f0052fa55404b372bf89748eedd9e2cf59653f03a140d50a0185170614",
+    "digests": [
+     "686b7e5533ad3ce35176a9b0ae0ef9acd5a8d642ee15a30f16ff648a36500f1a",
+     "686b7e5533ad3ce35176a9b0ae0ef9acd5a8d642ee15a30f16ff648a36500f1a",
+     "686b7e5533ad3ce35176a9b0ae0ef9acd5a8d642ee15a30f16ff648a36500f1a"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "error": null,
+      "status": 200
+     },
+     {
+      "error": null,
+      "status": 200
+     },
+     {
+      "error": null,
+      "status": 200
+     }
+    ],
+    "outcome": "passed",
+    "reference": "tools/dogfood/selftest/references/receiver/good.json"
+   },
+   "instrument": "receiver-audit",
+   "reason": "held in 3 repeats and refused its negative in 3",
+   "status": "VERIFIED"
+  }
+ ],
+ "issue": "anthonykewl20/ranex#113",
+ "overall": "VERIFIED",
+ "repeats": 3,
+ "schema": "ranex-selftest-v1"
+}

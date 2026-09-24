@@ -1,0 +1,24 @@
+# Pristine base commit 0de369b622cae3d2d0cfb6940d991ebd32aed86 (origin/main tip, no #118 changes)
+# Command: uv run --frozen pytest -q <the six files that failed on the #118 tree>
+# Result: 7 failed, 31 passed, 9 errors in 794.36s (same host, 2026-09-23)
+# Proves: the drift failures pre-date and are independent of #118's changes.
+# Treehouse-path note: test_host_result_dir_confinement additionally fails from
+# any worktree under /home/soultransit/.treehouse (traversal mkdir succeeds there);
+# reproduced on a pristine base worktree at that path (5 failed, 11 passed).
+
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[digest-drift]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dirty]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dynamic-elf]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[final-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[held-object-overlap]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[intermediate-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[manifest-drift]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[untracked]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[wrong-base]
+FAILED tests/e2e/test_gating_real_suite.py::test_slice009_repository_gate_fails_when_a_manifest_test_is_deleted
+FAILED tests/e2e/test_gating_real_suite.py::test_stage_08b_criterion_14_the_suite_passes_and_the_gate_accepts
+FAILED tests/e2e/test_specification_batch_qualification.py::test_real_cli_qualifies_both_orders_and_independently_proves_no_publication
+FAILED tests/e2e/test_specification_batch_qualification.py::test_static_worker_twice_built_bytes_have_required_elf_properties
+FAILED tests/e2e/test_suite_freeze_real.py::test_frozen_transcript_matches_the_golden
+FAILED tests/integration/test_approved_batch_qualification_contract.py::test_static_worker_build_is_reproducible_and_bound
+FAILED tests/integration/test_approved_batch_qualification_contract.py::test_static_worker_succeeds_with_stdout_closed_and_only_exact_output_file

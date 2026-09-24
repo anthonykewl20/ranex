@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** none — live observer is next under ADR-061.
+**Active slice:** none — #111 closed on PR #124; #112/#114/#115 then task authority (#119) follow the milestone-8 queue.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting
@@ -243,6 +243,10 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-091 — Calibrated live HTTP observer](docs/slices/done/SLICE-091-calibrated-live-http-observer.md): `observe-http` runs frozen PostgREST/PostgreSQL journeys on exact Git candidates with known-bad calibration; observations, not verdicts.
+
+- [SLICE-090 — Instrument self-test](docs/slices/done/SLICE-090-instrument-selftest.md): every dogfood gauge proves itself on a committed good/bad reference pair before any measurement; a measurement receipt cannot exist without a passing self-test in the same run.
 
 - [SLICE-088 — Deliberate-shortcut markers as deterministic evidence](docs/slices/done/SLICE-088-marker-evidence.md): `ranex markers` greps `ranex:` comments into SARIF; trigger-less and malformed markers are errors a gate can refuse, and a scan claim never binds a script operand.
 

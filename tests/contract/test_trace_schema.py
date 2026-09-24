@@ -89,7 +89,7 @@ CLI_DISPATCH_GROUPS = (
     "github.ruleset",
 )
 
-SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes")
+SPECIFICATION_ACTIONS = ("draft", "advance", "questions", "status", "approve", "freeze-probes", "check-probes", "observe-http")
 
 EXPECTED_STAGES = (
     {

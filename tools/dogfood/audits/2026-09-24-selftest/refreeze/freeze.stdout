@@ -1,0 +1,597 @@
+........................................................................ [  3%]
+........................................................................ [  6%]
+.................................ssssssssss............................. [  9%]
+........................................................................ [ 13%]
+........................................................................ [ 16%]
+...............................................................s........ [ 19%]
+.....................sssssssss..sssssssss...ssssss..ss.ssssssssss....... [ 23%]
+..........................................s.........sssss.........ssss.. [ 26%]
+...F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_skip ___________________________________
+
+>   def test_skip(): assert False
+E   assert False
+
+tests/test_sample.py:1: AssertionError
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-a8wkkkhp/tree/report.xml -
+=========================== short test summary info ============================
+FAILED tests/test_sample.py::test_skip - assert False
+1 failed in 0.02s
+........                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-sb4bseet/tree/artifacts/junit.xml -
+1 passed in 0.01s
+..s..................ss................................ssF.... [ 29%]
+............ss...s...............s.sF................................... [ 33%]
+.....................................................sssssssssss.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-u4m2fsq0/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-brl_lyu0/tree/governance/suite_results.xml -
+1 passed in 0.00s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-v0c7kqj4/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.02s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-c34avuz8/tree/governance/suite_results.xml -
+1 passed in 0.01s
+..ssssss [ 36%]
+sssssssssss.......................                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-vku3dd96/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-516a7_ey/tree/governance/suite_results.xml -
+1 passed in 0.00s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+
+    def test_value():
+>       assert VALUE == 42
+E       assert 41 == 42
+
+test_application.py:4: AssertionError
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-bt0y5yfi/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value - assert 41 == 42
+1 failed in 0.02s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-hvpbzu16/tree/governance/suite_results.xml -
+1 passed in 0.01s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-lu224y1f/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-m67xuhmf/tree/governance/suite_results.xml -
+1 passed in 0.00s
+..                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-iinq85zs/tree/governance/suite_results.xml -
+1 passed in 0.01s
+..................................... [ 39%]
+........................................................................ [ 43%]
+....                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-6rrsxi6_/tree/governance/suite_results.xml -
+1 passed in 0.01s
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__________________________________ test_value __________________________________
+[XPASS(strict)] known issue
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-wzgtl1vv/tree/governance/suite_results.xml -
+=========================== short test summary info ============================
+FAILED test_application.py::test_value
+1 failed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-l00l2gk7/tree/governance/suite_results.xml -
+1 passed in 0.00s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-x2veep32/tree/governance/suite_results.xml -
+1 passed in 0.01s
+.                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-tg4fcl9o/tree/governance/suite_results.xml -
+1 passed in 0.01s
+...                                                                        [100%]
+- generated xml file: /tmp/ranex-subject-hnlcxrfy/tmp/ranex-subject-w1f63j10/tree/governance/suite_results.xml -
+1 passed in 0.02s
+............ssssssssssssssssss....................sss.............. [ 46%]
+........................................................................ [ 49%]
+........................................................................ [ 53%]
+........................................................................ [ 56%]
+........................................................................ [ 59%]
+.......s.........................................
+no tests ran in 0.00s
+..............ss....... [ 63%]
+.......ssssssssssssssssssss............................................. [ 66%]
+............................sssssssssssssssss.sss............s.....ss..E [ 69%]
+EEEEEEEE......s............s............................................ [ 72%]
+........................................................................ [ 76%]
+........................................................................ [ 79%]
+........................................................................ [ 82%]
+........................................................................ [ 86%]
+........................................................................ [ 89%]
+........................................................................ [ 92%]
+........................................................................ [ 96%]
+........................................................................ [ 99%]
+..........                                                               [100%]
+==================================== ERRORS ====================================
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[final-symlink] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[intermediate-symlink] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[untracked] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dirty] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[wrong-base] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[held-object-overlap] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dynamic-elf] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[manifest-drift] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+_ ERROR at setup of test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[digest-drift] _
+
+tmp_path_factory = TempPathFactory(_given_basetemp=None, _trace=<pluggy._tracing.TagTracerSub object at 0x700f5e2b8c80>, _basetemp=PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0'), _retention_count=3, _retention_policy='all')
+
+    @pytest.fixture(scope="module")
+    def selector_repo_template(tmp_path_factory: pytest.TempPathFactory) -> Path:
+        root = tmp_path_factory.mktemp("slice036-selector-template") / "governed"
+        root.mkdir()
+        for flow_id in ("a-before-b", "b-before-a"):
+            for attempt in (0, 1):
+                destination = root / TASK_ROOT / flow_id / f"attempt-{attempt}" / "task.json"
+                destination.parent.mkdir(parents=True)
+                destination.write_bytes(task_record(flow_id=flow_id, attempt=attempt))
+    
+        worker_root = root / TOOLCHAIN
+        worker_root.mkdir(parents=True)
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest_source = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        shutil.copyfile(source, worker_root / "slice036-worker.c")
+        shutil.copyfile(manifest_source, worker_root / "slice036-worker-build-v1.json")
+        manifest = json.loads(manifest_source.read_bytes())
+        worker = worker_root / "slice036-worker"
+        flags = [
+            token.replace("<ABS_REPO_ROOT>", str(root.resolve()))
+            .replace("<output>", str(worker))
+            .replace("<source>", str(worker_root / "slice036-worker.c"))
+            for token in manifest["build"]["flags"]
+        ]
+        built = subprocess.run(
+            [manifest["build"]["compiler"]["path"], *flags],
+            cwd=root,
+            env=manifest["build"]["environment"],
+            capture_output=True,
+            check=False,
+            text=True,
+        )
+        assert built.returncode == 0, built.stderr
+>       assert hashlib.sha256(worker.read_bytes()).hexdigest() == manifest["artifact"]["sha256"]
+E       AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E         
+E         - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E         + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/security/test_slice036_run_source_selectors.py:159: AssertionError
+=================================== FAILURES ===================================
+______ test_static_worker_twice_built_bytes_have_required_elf_properties _______
+
+tmp_path = PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0/test_static_worker_twice_built0')
+
+    def test_static_worker_twice_built_bytes_have_required_elf_properties(
+        tmp_path: Path,
+    ) -> None:
+        """Claims in the manifest do not substitute for inspecting both artifacts."""
+    
+        manifest_path = ROOT / "tests/e2e/fixtures/slice036-worker-build-v1.json"
+        source = ROOT / "tests/e2e/fixtures/slice036-worker.c"
+        manifest = json.loads(manifest_path.read_bytes())
+        artifacts: list[bytes] = []
+        for index in range(2):
+            output = tmp_path / f"slice036-worker-{index}"
+            flags = [
+                token.replace("<ABS_REPO_ROOT>", str(ROOT.resolve()))
+                .replace("<output>", str(output))
+                .replace("<source>", str(source))
+                for token in manifest["build"]["flags"]
+            ]
+            built = run(
+                manifest["build"]["compiler"]["path"],
+                *flags,
+                cwd=ROOT,
+                env=manifest["build"]["environment"],
+            )
+            assert built.returncode == 0, built.stderr
+            image = output.read_bytes()
+>           assert hashlib.sha256(image).hexdigest() == manifest["artifact"]["sha256"]
+E           AssertionError: assert '9b535d1b7b2e...263790acb73e0' == 'ce7b793cf940...af8b04662bfc9'
+E             
+E             - ce7b793cf9404eb1ca227339a3c19103dcc035cc3c04ddb5aebaf8b04662bfc9
+E             + 9b535d1b7b2e3e6d0f25647f8679d736ac498897a14fdb243f1263790acb73e0
+
+tests/e2e/test_specification_batch_qualification.py:509: AssertionError
+______________ test_static_worker_build_is_reproducible_and_bound ______________
+
+tmp_path = PosixPath('/tmp/ranex-subject-hnlcxrfy/tmp/pytest-of-soultransit/pytest-0/test_static_worker_build_is_re0')
+
+    def test_static_worker_build_is_reproducible_and_bound(tmp_path: Path) -> None:
+        static = EXPECTED_VALUES["static_worker"]
+        assert static["stdout"] == "closed-no-authority"
+        assert static["observable_output"] == "/ranex/output/result.json"
+        assert static["success_exit_code"] == 0
+        assert static["input_refusal_exit_code"] == 92
+        assert static["output_failure_exit_code"] == 95
+        manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
+        source = ROOT / static["source"]
+        assert file_digest(source) == static["source_sha256"]
+        compiler = Path(manifest["build"]["compiler"]["path"])
+        assert file_digest(compiler) == "sha256:" + manifest["build"]["compiler"]["sha256"]
+        for item in manifest["build"]["inputs"]:
+>           assert file_digest(Path(item["path"])) == "sha256:" + item["sha256"]
+E           AssertionError: assert 'sha256:a40c7...55bdee4ac9621' == 'sha256:d2a01...7456def86ff2f'
+E             
+E             - sha256:d2a01bdb5e0443c6213f96f7ed90dd13006cc6913ee1cd306de7456def86ff2f
+E             + sha256:a40c7eae7581f977b65eddb81cbc799213a695749e039d966db55bdee4ac9621
+
+tests/integration/test_approved_batch_qualification_contract.py:619: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_specification_batch_qualification.py::test_static_worker_twice_built_bytes_have_required_elf_properties
+FAILED tests/integration/test_approved_batch_qualification_contract.py::test_static_worker_build_is_reproducible_and_bound
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[final-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[intermediate-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[untracked]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dirty]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[wrong-base]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[held-object-overlap]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dynamic-elf]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[manifest-drift]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[digest-drift]
+2 failed, 1995 passed, 164 skipped, 9 errors in 509.28s (0:08:29)
+FROZEN  tests=2170  expected_skips=168  run_exit=1  output=/tmp/ranex-113-refreeze/freeze-subject/.local/selftest-refreeze-manifest.json
+FREEZE_EXIT=0
