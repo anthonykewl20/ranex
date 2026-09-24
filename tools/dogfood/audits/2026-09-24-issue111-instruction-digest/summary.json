@@ -38,5 +38,10 @@
   "result": "12 failed, 1926 passed, 90 skipped, 9 errors in 2771.85s",
   "reconciliation": "every failure is PR #121's documented host-drift class: test_host_result_dir_confinement (5, E-C17 host-fact refusals), approved_batch_qualification_contract (2, reproducible-build golden), specification_batch_qualification (2), gating_real_suite (2), suite_freeze_real frozen-transcript (1, journey run_exit under drift), slice036_run_source_selectors (9 errors). Identical IDs to main's documented set; none in files touched by #111; the touched files are 129/129 green sealed and green in this final run.",
   "delta_vs_main": "passed 1905 -> 1926 (+21 = #111's new tests); skipped 90 unchanged; the pre-refreeze named-red (manifest stale) is resolved."
+ },
+ "post_merge": {
+  "merge_commit": "85066ef25",
+  "refreeze": "FROZEN tests=2088 expected_skips=168 (main 2067 + #111 21; strict superset of both parents); load_manifest accepted; sealed 1913 passed, 164 skipped, run_exit=1 (documented drift residual)",
+  "final_suite_on_bc0d566e9": "12 failed, 1977 passed, 90 skipped, 9 errors \u2014 identical documented drift IDs to the pre-merge run (slice036 x9, host-confinement x5, reproducible goldens x6, freeze-journey run_exit x1); zero other failures; passed = pre-merge 1926 + 51 markers tests"
  }
 }
