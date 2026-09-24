@@ -1,48 +1,46 @@
 # State
 
-**Updated:** 2026-09-24
-**Active slice:** none — #111 (instruction digest) is next; task authority (#119) under ADR-061 follows the milestone-8 queue.
+**Updated:** 2026-09-25
+**Active slice:** SLICE-092 (repair envelope at the read channel, C1+C6).
 
-Owner pivot: idea → approved map → frozen executable probes → scoped AI build
-→ independent live evidence → deterministic verdict → exact-candidate merge;
-ADR-061 defines the whole program, required exits and trust boundaries. Do
-not stop at artifact integrity or describe it as product acceptance.
+Captain DIRECT 004: first captain-ordered promotion ship from the
+oracle-science program (report §3.1/§3.6/§8 SLICE-A). Ships C1+C6 together,
+harness-side; `verdict.py`/KERNEL_DIGEST untouched. DIRECT 008 lens: the
+loop is fully autonomous across a 3-miss budget (deterministic stop), the
+envelope is machine-consumable structured bytes, and freeze authoring
+stays with promote ships — the graded run never mints its own freeze.
 
-SLICE-091 / #118: calibrated live HTTP observer. `ranex specification
-observe-http` binds an independently pinned probe bundle, materialises the
-exact Git candidate, starts real PostgreSQL/PostgREST containers by immutable
-image ID, runs frozen HTTP journeys with process controls, and refuses
-surviving, unrelated or failing known-bad calibration. Qualification and the
-lint-hardening re-run: 16/16 VERIFIED, receipts bind the delivered observer
-bytes (audits/2026-09-23-live-observer/). Transient 503 readiness probes
-retry under the frozen deadline. Not a verdict.
+Landed in SLICE-092: `governed_execution/repair_envelope.py` renders the
+bounded advisory packet (failing IDs, assertion text, file:line, repro
+argv, L0/L1/L2 next-rung pointers; causes compose verbatim at the
+projection, never recomputed). `ranex run` retains the junit one seam
+longer into the gitignored verdict channel (`<subject>.junit.xml`);
+`gate evaluate` publishes `<subject>.envelope.json` beside the signed
+verdict, bound by `record_digest`, unsigned, never evidence. The ADR-043
+retained-log manifest gains the `envelope` field for delegate captures.
+`ranex task stop-hook [--mode stop|pretooluse]` is the C6 attachment:
+runs the governed cycle observer-side in-process, reads verdict +
+envelope from the read channel, answers the harness in JSON, and stops
+deterministically at `--budget` (default 3) misses. Without a credential
+it fabricates nothing — delegation.py:93, main.py:798 and keyring
+admission remain the walls, re-proven live in the receipt.
 
-SLICE-090 / #113: instrument self-test. tools/dogfood/selftest.py
-pre-flights every dogfood gauge on a committed good/bad reference pair
-before any measurement; calibration.py writes no calibration.json without a
-passing self-test in the same run; --blunt must read FALSE-PASS. Nine arms
-as-expected ×3 (audits/2026-09-24-selftest/); verdict.py untouched.
-
-SLICE-089 / #100 and SLICE-088 / #110 stand as recorded (path-scoped
-handbook injection ADR-062; markers SARIF evidence). Queue: #111
-(instruction digest), #112 (minimization ladder), #114, #115, milestone 7
+SLICE-091 / #118 and SLICE-090 / #113 stand as recorded (live HTTP
+observer; instrument self-test). SLICE-085 stays blocked. Queue after
+this ship: #111 (instruction digest), #112 (minimization ladder = C2
+orchestrator over the shipped pointers), #114, #115, milestone 7
 (#107-#109), then #102, #105, #106, #119.
 
-Suite status, measured 2026-09-23/24: host glibc moved past the owner's
-pinned native build inputs, so the drift family (slice036 selectors,
-approved-batch contract, specification-batch qualification) and every
-nested-green ceremony test (gating stage_08b/slice009, suite-freeze golden's
-run_exit=0) are red on a pristine base checkout too — the owner re-pin main
-already records is still needed; detail at
-audits/2026-09-23-live-observer/base-failures.log. Refreezes stay
-mechanical (IDs only, outcome-blind). host_result_dir's traversal probe is
-root-clamped (2026-09-24), so its refusal fires from any checkout depth.
+Suite status: the 2026-09-23/24 host-glibc drift note still stands — the
+reproducible-build goldens are red on a pristine base checkout until the
+owner re-pin lands; counts for this ship are quoted in its PR. Refreezes
+stay mechanical (IDs only, outcome-blind) on a committed tree, verified
+by load_manifest before committing.
 
-Parallel work and overlapping verification are owner-authorized (2026-09-12);
-use separate writer worktrees and pinned verification worktrees. Refreeze on
-a committed tree; load_manifest must accept the result before committing it.
-
-Remaining boundaries: same-subject evidence reuse; hostile report producers
-(F-012); same-UID trusted controller; no external witness against an operator
-holding both keys. Harness mediation, observer scheduling, merge-group checks
-and production hosting are UNVERIFIED or UNIMPLEMENTED as detailed in MAP.
+Parallel work and overlapping verification remain owner-authorized
+(2026-09-12); separate writer worktrees, pinned verification worktrees.
+Remaining boundaries unchanged: same-subject evidence reuse; hostile
+report producers (F-012); same-UID trusted controller; no external
+witness against an operator holding both keys. Harness mediation,
+observer scheduling, merge-group checks and production hosting stay
+UNVERIFIED or UNIMPLEMENTED as detailed in MAP.

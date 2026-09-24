@@ -83,6 +83,7 @@ CLI_DISPATCH_NAMES: tuple[str, ...] = (
     "task.delegate",
     "task.fanout",
     "task.batch.qualify",
+    "task.stop-hook",
     "specification",
     "host.launcher-build",
     "host.launcher-install",

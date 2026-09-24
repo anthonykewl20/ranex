@@ -44,6 +44,7 @@ from ranex.foundation.canonical import canonical_json_bytes, command_digest
 from ranex.foundation.signing import generate_keypair, sign_evidence
 from ranex.governed_execution.adapters.persistence.sqlite.journal import Journal
 from ranex.governed_execution.domain.task import TaskDispatch
+from ranex.governed_execution.repair_envelope import envelope_from_suite
 
 
 def build_harness(path: Path) -> Path:
@@ -1076,10 +1077,24 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
         observed["environment"] = kwargs["env"]
         return subprocess.CompletedProcess(command, 3, stdout="out", stderr="err")
 
-    def fake_parse(path: Path, pinned: dict[str, object], *, reporter: str, require_pytest_observer: bool) -> dict[str, object]:
+    junit_payload = (
+        b'<testsuite name="pytest" tests="1" failures="1">'
+        b'<testcase classname="tests.test_example" name="test_pass">'
+        b'<failure message="assert False">tests/test_example.py:1: AssertionError'
+        b"</failure></testcase></testsuite>"
+    )
+
+    def fake_read(path: Path) -> bytes:
         assert active, "results must be read before materialisation teardown"
-        assert reporter == "pytest-junit" and require_pytest_observer
         observed["artifact"] = path
+        return junit_payload
+
+    def fake_summarize(
+        raw: bytes, pinned: dict[str, object], *, reporter: str, require_pytest_observer: bool
+    ) -> dict[str, object]:
+        assert active, "summary must be computed before materialisation teardown"
+        assert raw is junit_payload
+        assert reporter == "pytest-junit" and require_pytest_observer
         observed["manifest"] = pinned
         return {"counts": {"passed": 1}}
 
@@ -1088,10 +1103,13 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
         lambda *_args, **_kwargs: FakeMaterialisation(),
     )
     monkeypatch.setattr("ranex.cli.delegation.subprocess.run", fake_run)
-    monkeypatch.setattr("ranex.cli.delegation.parse_results_artifact", fake_parse)
+    monkeypatch.setattr("ranex.cli.delegation.read_results_artifact", fake_read)
+    monkeypatch.setattr(
+        "ranex.cli.delegation.suite_results_from_junitxml", fake_summarize
+    )
 
     streams: dict[str, str] = {}
-    suite_exit, output_tail, results = _run_suite_with_results(
+    suite_exit, output_tail, results, envelope = _run_suite_with_results(
         tmp_path / "repo",
         "a" * 40,
         "python -c 'print(1)'",
@@ -1105,6 +1123,12 @@ def test_run_suite_with_results_reads_artifact_before_teardown(
         "outerr",
         {"counts": {"passed": 1}},
     )
+    # SLICE-092: the retained junit renders the repair envelope from the
+    # same seam the summary was computed at — no verdict, no causes, and
+    # the failure detail the closed summary cannot carry.
+    assert envelope["verdict"] is None and envelope["causes"] == []
+    assert envelope["failures"][0]["id"] == "tests/test_example.py::test_pass"
+    assert envelope["failures"][0]["at"] == "tests/test_example.py:1"
     assert observed["command"] == ["python", "-c", "print(1)"]
     assert observed["cwd"] == tmp_path / "tree"
     assert observed["artifact"] == tmp_path / "tree" / "artifacts/junit.xml"
@@ -1248,9 +1272,11 @@ def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
         calls["manifest_source"] = source
         return manifest
 
-    def fake_results_suite(**kwargs: object) -> tuple[int, str, dict[str, object]]:
+    def fake_results_suite(**kwargs: object) -> tuple[int, str, dict[str, object], dict[str, object]]:
         calls["suite"] = kwargs
-        return 0, "suite output", suite_results
+        return 0, "suite output", suite_results, envelope_from_suite(
+            repro_argv=str(kwargs["suite"]), junit_bytes=None
+        )
 
     monkeypatch.setattr(
         "ranex.cli.delegation.verified_blob_at_path", fake_verified_blob
@@ -1260,6 +1286,9 @@ def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
         lambda source, gate: argparse.Namespace(required_claims=(claim,)),
     )
     monkeypatch.setattr("ranex.cli.delegation.load_manifest_bytes", fake_load_manifest)
+    monkeypatch.setattr(
+        "ranex.cli.delegation.collect_redaction_literals", lambda *_a, **_k: []
+    )
     monkeypatch.setattr(
         "ranex.cli.delegation._run_suite_with_results", fake_results_suite
     )
@@ -1278,6 +1307,7 @@ def test_delegate_uses_dispatch_catalog_manifest_and_results_aware_suite(
         "results_reporter": "pytest-junit",
         "manifest": manifest,
         "streams": {"stdout": "", "stderr": ""},
+        "redaction_literals": [],
     }
     assert json.loads(Path(args.outcome).read_text(encoding="utf-8"))[
         "suite_results"

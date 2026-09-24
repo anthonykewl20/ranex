@@ -104,11 +104,31 @@ def persist_stream(
     }
 
 
+def persist_envelope(directory: Path, envelope_bytes: bytes) -> dict[str, object]:
+    """Atomically retain the repair envelope beside the execution streams.
+
+    SLICE-092. The record is the ADR-043 stream shape (file, bytes, sha256
+    of the bytes exactly as retained — the caller redacts before calling,
+    so the digest is a promise about what a reader will see).
+    """
+
+    directory.mkdir(parents=True, exist_ok=True)
+    write_atomic(
+        directory / "repair-envelope.json", envelope_bytes, root=directory
+    )
+    return {
+        "file": "repair-envelope.json",
+        "bytes": len(envelope_bytes),
+        "sha256": "sha256:" + hashlib.sha256(envelope_bytes).hexdigest(),
+    }
+
+
 def write_log_manifest(
     directory: Path,
     streams: Mapping[str, Mapping[str, object]],
     policy: Mapping[str, object],
     handbook: Mapping[str, object] | None = None,
+    envelope: Mapping[str, object] | None = None,
 ) -> None:
     """Atomically publish the canonical manifest for retained execution streams.
 
@@ -117,6 +137,10 @@ def write_log_manifest(
     chapter ids, and the matched/unmatched counts, so a completed run records
     the guidance it was given. It is omitted entirely when no handbook layer
     was in play, and it never appears in any evidence envelope or verdict.
+
+    ``envelope`` is the additive SLICE-092 field: the retained repair
+    envelope's stream record. Omitted when the run retained none, and it
+    too never appears in any evidence envelope or verdict.
     """
 
     manifest: dict[str, object] = {
@@ -126,6 +150,8 @@ def write_log_manifest(
     }
     if handbook is not None:
         manifest["handbook"] = dict(handbook)
+    if envelope is not None:
+        manifest["envelope"] = dict(envelope)
     write_atomic(
         directory / "manifest.json",
         canonical_json_bytes(manifest) + b"\n",
