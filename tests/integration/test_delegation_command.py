@@ -126,8 +126,13 @@ def configure_truthful_delegate(
     )
 
     def fake_git(
-        _root: Path, *arguments: object, **_kwargs: object
+        _root: Path, *arguments: object, **kwargs: object
     ) -> subprocess.CompletedProcess[str]:
+        # ADR-062: the handbook's verified blob read asks git for
+        # bytes; an empty bytes tree means no project layer, so no
+        # injection happens and this fake's text answers stand.
+        if kwargs.get("text", True) is False:
+            return subprocess.CompletedProcess(arguments, 0, b"", "")
         tree = "emitted-tree" if emitted_commit in str(arguments) else "base-tree"
         return subprocess.CompletedProcess(arguments, 0, f"{tree}\n", "")
 
@@ -608,7 +613,12 @@ def test_refuses_emitted_commit_with_identical_tree_before_materialisation(
         harness=harness,
     )
 
-    def fake_git(_root, *arguments: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_git(_root, *arguments: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        # ADR-062: the handbook's verified blob read asks git for
+        # bytes; an empty bytes tree means no project layer, so no
+        # injection happens and this fake's text answers stand.
+        if kwargs.get("text", True) is False:
+            return subprocess.CompletedProcess(arguments, 0, b"", "")
         if arguments == ("rev-parse", f"{emitted_commit}^{{tree}}"):
             return subprocess.CompletedProcess(arguments, 0, "tree-id\n", "")
         if arguments == ("rev-parse", f"{base_commit}^{{tree}}"):
@@ -671,7 +681,12 @@ def test_subject_with_new_tree_proceeds_to_materialisation(
         suite_calls.append((worktree, commit))
         return 0, ""
 
-    def fake_git(_root, *arguments: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_git(_root, *arguments: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        # ADR-062: the handbook's verified blob read asks git for
+        # bytes; an empty bytes tree means no project layer, so no
+        # injection happens and this fake's text answers stand.
+        if kwargs.get("text", True) is False:
+            return subprocess.CompletedProcess(arguments, 0, b"", "")
         if arguments == ("rev-parse", f"{emitted_commit}^{{tree}}"):
             return subprocess.CompletedProcess(arguments, 0, "tree-emitted\n", "")
         if arguments == ("rev-parse", f"{base_commit}^{{tree}}"):
@@ -737,8 +752,13 @@ def test_truthful_emission_uses_dispatched_worktree_and_commit_for_outcome(
         return 0, ""
 
     def fake_git(
-        _root, *arguments: object, **_kwargs: object
+        _root, *arguments: object, **kwargs: object
     ) -> subprocess.CompletedProcess[str]:
+        # ADR-062: the handbook's verified blob read asks git for
+        # bytes; an empty bytes tree means no project layer, so no
+        # injection happens and this fake's text answers stand.
+        if kwargs.get("text", True) is False:
+            return subprocess.CompletedProcess(arguments, 0, b"", "")
         if arguments == ("rev-parse", f"{dispatched_commit}^{{tree}}"):
             return subprocess.CompletedProcess(arguments, 0, "tree-dispatched\n", "")
         if arguments == ("rev-parse", f"{base_commit}^{{tree}}"):
@@ -789,7 +809,12 @@ def test_refuses_when_emitted_tree_is_not_reachable(
         harness=harness,
     )
 
-    def fake_git(_root, *arguments: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_git(_root, *arguments: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        # ADR-062: the handbook's verified blob read asks git for
+        # bytes; an empty bytes tree means no project layer, so no
+        # injection happens and this fake's text answers stand.
+        if kwargs.get("text", True) is False:
+            return subprocess.CompletedProcess(arguments, 0, b"", "")
         if arguments == ("rev-parse", f"{emitted_commit}^{{tree}}"):
             return subprocess.CompletedProcess(arguments, 1, "", "bad emitted")
         if arguments == ("rev-parse", f"{base_commit}^{{tree}}"):
@@ -838,7 +863,12 @@ def test_refuses_when_base_tree_is_not_reachable(
         harness=harness,
     )
 
-    def fake_git(_root, *arguments: object, **_kwargs: object) -> subprocess.CompletedProcess[str]:
+    def fake_git(_root, *arguments: object, **kwargs: object) -> subprocess.CompletedProcess[str]:
+        # ADR-062: the handbook's verified blob read asks git for
+        # bytes; an empty bytes tree means no project layer, so no
+        # injection happens and this fake's text answers stand.
+        if kwargs.get("text", True) is False:
+            return subprocess.CompletedProcess(arguments, 0, b"", "")
         if arguments == ("rev-parse", f"{emitted_commit}^{{tree}}"):
             return subprocess.CompletedProcess(arguments, 0, "emitted-tree\n", "")
         if arguments == ("rev-parse", f"{base_commit}^{{tree}}"):

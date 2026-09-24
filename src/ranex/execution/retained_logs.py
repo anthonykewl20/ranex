@@ -108,14 +108,24 @@ def write_log_manifest(
     directory: Path,
     streams: Mapping[str, Mapping[str, object]],
     policy: Mapping[str, object],
+    handbook: Mapping[str, object] | None = None,
 ) -> None:
-    """Atomically publish the canonical manifest for retained execution streams."""
+    """Atomically publish the canonical manifest for retained execution streams.
+
+    ``handbook`` is the additive ADR-062 field: when a delegate packet carried
+    kernel-handbook chapters, the manifest names the resolution digest, the
+    chapter ids, and the matched/unmatched counts, so a completed run records
+    the guidance it was given. It is omitted entirely when no handbook layer
+    was in play, and it never appears in any evidence envelope or verdict.
+    """
 
     manifest: dict[str, object] = {
         "version": 1,
         "policy": dict(policy),
         "streams": dict(streams),
     }
+    if handbook is not None:
+        manifest["handbook"] = dict(handbook)
     write_atomic(
         directory / "manifest.json",
         canonical_json_bytes(manifest) + b"\n",

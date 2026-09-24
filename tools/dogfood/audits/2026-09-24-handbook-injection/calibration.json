@@ -1,0 +1,536 @@
+{
+  "cases": [
+    {
+      "as_expected": false,
+      "control": "arm1-resolution-determinism",
+      "duration_s": 0.095,
+      "expectation": "resolving every path in six@1.17.0 and in Ranex yields one stable resolution-table digest per repository; one perturbed chapter byte changes it",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "43b6eba5256cc6a4ae6b4416a965178938ed48a1e201ac2a7e9c5f155cfbc67e",
+          "43b6eba5256cc6a4ae6b4416a965178938ed48a1e201ac2a7e9c5f155cfbc67e",
+          "43b6eba5256cc6a4ae6b4416a965178938ed48a1e201ac2a7e9c5f155cfbc67e"
+        ],
+        "facts": [
+          {
+            "base_digest": "sha256:caf315c5220f0b770bf1167d31ca917dd9816d8c3ae099be96db8f105cd186a2",
+            "perturbed_digest": "sha256:0bf32df122b964e9e4c6dad732f397d1bc9e57710bba9b03af7d803af5300acf"
+          },
+          {
+            "base_digest": "sha256:caf315c5220f0b770bf1167d31ca917dd9816d8c3ae099be96db8f105cd186a2",
+            "perturbed_digest": "sha256:0bf32df122b964e9e4c6dad732f397d1bc9e57710bba9b03af7d803af5300acf"
+          },
+          {
+            "base_digest": "sha256:caf315c5220f0b770bf1167d31ca917dd9816d8c3ae099be96db8f105cd186a2",
+            "perturbed_digest": "sha256:0bf32df122b964e9e4c6dad732f397d1bc9e57710bba9b03af7d803af5300acf"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "b99e5eff900913b4fb49ae9ab6c1492fc7f395daf160417eddc76221c4136754",
+          "b99e5eff900913b4fb49ae9ab6c1492fc7f395daf160417eddc76221c4136754",
+          "b99e5eff900913b4fb49ae9ab6c1492fc7f395daf160417eddc76221c4136754"
+        ],
+        "facts": [
+          {
+            "ranex": {
+              "chapters": [
+                "project:**/*.py",
+                "system:**/*.rst"
+              ],
+              "digest": "sha256:0618a94903ac55a4e4802185c91bba6133c615c2b051be916debd964e896665e",
+              "matched": 358,
+              "paths": 1481,
+              "repository": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+              "unmatched": 1123
+            },
+            "six": {
+              "chapters": [
+                "system:**/*.rst",
+                "project:**/*.py"
+              ],
+              "digest": "sha256:caf315c5220f0b770bf1167d31ca917dd9816d8c3ae099be96db8f105cd186a2",
+              "matched": 6,
+              "paths": 16,
+              "repository": "/tmp/ranex-handbook-proof-3zgh_0vn/six",
+              "unmatched": 10
+            }
+          },
+          {
+            "ranex": {
+              "chapters": [
+                "project:**/*.py",
+                "system:**/*.rst"
+              ],
+              "digest": "sha256:0618a94903ac55a4e4802185c91bba6133c615c2b051be916debd964e896665e",
+              "matched": 358,
+              "paths": 1481,
+              "repository": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+              "unmatched": 1123
+            },
+            "six": {
+              "chapters": [
+                "system:**/*.rst",
+                "project:**/*.py"
+              ],
+              "digest": "sha256:caf315c5220f0b770bf1167d31ca917dd9816d8c3ae099be96db8f105cd186a2",
+              "matched": 6,
+              "paths": 16,
+              "repository": "/tmp/ranex-handbook-proof-3zgh_0vn/six",
+              "unmatched": 10
+            }
+          },
+          {
+            "ranex": {
+              "chapters": [
+                "project:**/*.py",
+                "system:**/*.rst"
+              ],
+              "digest": "sha256:0618a94903ac55a4e4802185c91bba6133c615c2b051be916debd964e896665e",
+              "matched": 358,
+              "paths": 1481,
+              "repository": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+              "unmatched": 1123
+            },
+            "six": {
+              "chapters": [
+                "system:**/*.rst",
+                "project:**/*.py"
+              ],
+              "digest": "sha256:caf315c5220f0b770bf1167d31ca917dd9816d8c3ae099be96db8f105cd186a2",
+              "matched": 6,
+              "paths": 16,
+              "repository": "/tmp/ranex-handbook-proof-3zgh_0vn/six",
+              "unmatched": 10
+            }
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "arm2-project-beats-system",
+      "duration_s": 0.021,
+      "expectation": "a project rule and a system rule on the same glob: the project rule wins and the row records both matches; with the project rule removed the system rule wins",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "b40943fbe26b67295446a401413f610d808b30170a7e086b902f97d8e2cc5414",
+          "b40943fbe26b67295446a401413f610d808b30170a7e086b902f97d8e2cc5414",
+          "b40943fbe26b67295446a401413f610d808b30170a7e086b902f97d8e2cc5414"
+        ],
+        "facts": [
+          {
+            "row": {
+              "layer": "system",
+              "path": "documentation/conf.py",
+              "pattern": "**/*.py",
+              "system_pattern": "**/*.py",
+              "text": "SYSTEM chapter"
+            }
+          },
+          {
+            "row": {
+              "layer": "system",
+              "path": "documentation/conf.py",
+              "pattern": "**/*.py",
+              "system_pattern": "**/*.py",
+              "text": "SYSTEM chapter"
+            }
+          },
+          {
+            "row": {
+              "layer": "system",
+              "path": "documentation/conf.py",
+              "pattern": "**/*.py",
+              "system_pattern": "**/*.py",
+              "text": "SYSTEM chapter"
+            }
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "8d068216832e31331ebb65fa496d83d6cae68ec83cce7656b32bca92d779454d",
+          "8d068216832e31331ebb65fa496d83d6cae68ec83cce7656b32bca92d779454d",
+          "8d068216832e31331ebb65fa496d83d6cae68ec83cce7656b32bca92d779454d"
+        ],
+        "facts": [
+          {
+            "row": {
+              "layer": "project",
+              "path": "documentation/conf.py",
+              "pattern": "**/*.py",
+              "system_pattern": "**/*.py",
+              "text": "PROJECT chapter"
+            }
+          },
+          {
+            "row": {
+              "layer": "project",
+              "path": "documentation/conf.py",
+              "pattern": "**/*.py",
+              "system_pattern": "**/*.py",
+              "text": "PROJECT chapter"
+            }
+          },
+          {
+            "row": {
+              "layer": "project",
+              "path": "documentation/conf.py",
+              "pattern": "**/*.py",
+              "system_pattern": "**/*.py",
+              "text": "PROJECT chapter"
+            }
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "arm3-sniffer-cannot-override-project",
+      "duration_s": 3.658,
+      "expectation": "a path whose content sniffs Objective-C AND matches a project rule resolves to the project chapter; the sniff selects a system chapter only where no project rule matched",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "b55604afdc138e28f5c09139e2197b6a99497408d4eeaa511696bd36b60710ee",
+          "b55604afdc138e28f5c09139e2197b6a99497408d4eeaa511696bd36b60710ee",
+          "b55604afdc138e28f5c09139e2197b6a99497408d4eeaa511696bd36b60710ee"
+        ],
+        "facts": [
+          {
+            "exit": 0,
+            "stderr": ""
+          },
+          {
+            "exit": 0,
+            "stderr": ""
+          },
+          {
+            "exit": 0,
+            "stderr": ""
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "b55604afdc138e28f5c09139e2197b6a99497408d4eeaa511696bd36b60710ee",
+          "b55604afdc138e28f5c09139e2197b6a99497408d4eeaa511696bd36b60710ee",
+          "b55604afdc138e28f5c09139e2197b6a99497408d4eeaa511696bd36b60710ee"
+        ],
+        "facts": [
+          {
+            "exit": 0,
+            "stderr": ""
+          },
+          {
+            "exit": 0,
+            "stderr": ""
+          },
+          {
+            "exit": 0,
+            "stderr": ""
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "arm4a-digest-in-manifest",
+      "duration_s": 5.543,
+      "expectation": "the delegate outcome's retained-log manifest carries the handbook digest and it equals the engine digest over the same inputs; one changed handbook byte changes it",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "14d33bc27e407856f5bc12a72a613cc75ae164530cea85e0d1981f7a03aa9aee",
+          "14d33bc27e407856f5bc12a72a613cc75ae164530cea85e0d1981f7a03aa9aee",
+          "14d33bc27e407856f5bc12a72a613cc75ae164530cea85e0d1981f7a03aa9aee"
+        ],
+        "facts": [
+          {
+            "base_digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+            "changed_digest": "sha256:e68a082da9fbce144f24281c05f429efb9affd9497db5eca015c1b79b79fbd36"
+          },
+          {
+            "base_digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+            "changed_digest": "sha256:e68a082da9fbce144f24281c05f429efb9affd9497db5eca015c1b79b79fbd36"
+          },
+          {
+            "base_digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+            "changed_digest": "sha256:e68a082da9fbce144f24281c05f429efb9affd9497db5eca015c1b79b79fbd36"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "314b4b28d3cd7107a5e8d826ba116f10bce8649b1d2f9a3258051db94dd81c9d",
+          "314b4b28d3cd7107a5e8d826ba116f10bce8649b1d2f9a3258051db94dd81c9d",
+          "314b4b28d3cd7107a5e8d826ba116f10bce8649b1d2f9a3258051db94dd81c9d"
+        ],
+        "facts": [
+          {
+            "engine_digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+            "exit": 0,
+            "manifest": {
+              "chapters": [
+                "project:legacy/*.m",
+                "project:src/**",
+                "system:**/*.m"
+              ],
+              "digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+              "matched": 3,
+              "unmatched": 2
+            },
+            "paths": 5
+          },
+          {
+            "engine_digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+            "exit": 0,
+            "manifest": {
+              "chapters": [
+                "project:legacy/*.m",
+                "project:src/**",
+                "system:**/*.m"
+              ],
+              "digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+              "matched": 3,
+              "unmatched": 2
+            },
+            "paths": 5
+          },
+          {
+            "engine_digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+            "exit": 0,
+            "manifest": {
+              "chapters": [
+                "project:legacy/*.m",
+                "project:src/**",
+                "system:**/*.m"
+              ],
+              "digest": "sha256:bbc5fbb271ec7b06bc4af3e27b215b05a1e9dc0d38cb0b97dc4a426618fd7243",
+              "matched": 3,
+              "unmatched": 2
+            },
+            "paths": 5
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "arm4b-digest-absent-from-evidence",
+      "duration_s": 9.122,
+      "expectation": "a real governed run and gate evaluate are identical with and without a system handbook, no handbook bytes in evidence or verdict; a doctored evidence file carrying the digest is caught",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "8788c7e8e14c7f6ebda1185cfcd284bcbb371f014bf4f8edaa7c4ade798430d1",
+          "8788c7e8e14c7f6ebda1185cfcd284bcbb371f014bf4f8edaa7c4ade798430d1",
+          "8788c7e8e14c7f6ebda1185cfcd284bcbb371f014bf4f8edaa7c4ade798430d1"
+        ],
+        "facts": [
+          {
+            "doctored_bytes": 1180
+          },
+          {
+            "doctored_bytes": 1180
+          },
+          {
+            "doctored_bytes": 1180
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "dd800ccf44f6668a0e5bba95c8f66587bdef9edef4dbe8d3fdf1912af86e3d75",
+          "dd800ccf44f6668a0e5bba95c8f66587bdef9edef4dbe8d3fdf1912af86e3d75",
+          "dd800ccf44f6668a0e5bba95c8f66587bdef9edef4dbe8d3fdf1912af86e3d75"
+        ],
+        "facts": [
+          {
+            "evidence_sha256": "610d7a5e7ec990577ecca604b03564f5a79173563c151cd8e340a715ff356b10",
+            "handbook_named": false,
+            "identical": true,
+            "verdict_first_line": "PASS  gate=landing  subject=sha256:57cb4a0a2c6d8622f8e6ed6cbdbbb3a9e6fc76bfb44295bbca6aec74de84d681"
+          },
+          {
+            "evidence_sha256": "610d7a5e7ec990577ecca604b03564f5a79173563c151cd8e340a715ff356b10",
+            "handbook_named": false,
+            "identical": true,
+            "verdict_first_line": "PASS  gate=landing  subject=sha256:57cb4a0a2c6d8622f8e6ed6cbdbbb3a9e6fc76bfb44295bbca6aec74de84d681"
+          },
+          {
+            "evidence_sha256": "610d7a5e7ec990577ecca604b03564f5a79173563c151cd8e340a715ff356b10",
+            "handbook_named": false,
+            "identical": true,
+            "verdict_first_line": "PASS  gate=landing  subject=sha256:57cb4a0a2c6d8622f8e6ed6cbdbbb3a9e6fc76bfb44295bbca6aec74de84d681"
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    },
+    {
+      "as_expected": false,
+      "control": "arm5-unmatched-recorded",
+      "duration_s": 2.712,
+      "expectation": "every path in scope appears in the brief's resolution table, matched or unmatched; a brief with a path silently dropped is caught",
+      "expected_outcome": null,
+      "negative": {
+        "digests": [
+          "d904cb151101fc967631b2e92047f867b112581e1adc751089c3af3d4a5cb5ad",
+          "d904cb151101fc967631b2e92047f867b112581e1adc751089c3af3d4a5cb5ad",
+          "d904cb151101fc967631b2e92047f867b112581e1adc751089c3af3d4a5cb5ad"
+        ],
+        "facts": [
+          {
+            "doctored_table": 4,
+            "scope": 5
+          },
+          {
+            "doctored_table": 4,
+            "scope": 5
+          },
+          {
+            "doctored_table": 4,
+            "scope": 5
+          }
+        ],
+        "identical": true,
+        "ok": [
+          false,
+          false,
+          false
+        ],
+        "runs": 3
+      },
+      "positive": {
+        "digests": [
+          "ba7375ed039e51ff6bbe08b67d6cca72ecc5634cda8b127d6454589ccc04173a",
+          "ba7375ed039e51ff6bbe08b67d6cca72ecc5634cda8b127d6454589ccc04173a",
+          "ba7375ed039e51ff6bbe08b67d6cca72ecc5634cda8b127d6454589ccc04173a"
+        ],
+        "facts": [
+          {
+            "exit": 0,
+            "scope": 5,
+            "stderr": "",
+            "table": 5
+          },
+          {
+            "exit": 0,
+            "scope": 5,
+            "stderr": "",
+            "table": 5
+          },
+          {
+            "exit": 0,
+            "scope": 5,
+            "stderr": "",
+            "table": 5
+          }
+        ],
+        "identical": true,
+        "ok": [
+          true,
+          true,
+          true
+        ],
+        "runs": 3
+      },
+      "reason": "held in 3 repeats and refused its negative in 3",
+      "repeats": 3,
+      "status": "VERIFIED"
+    }
+  ],
+  "journal_head": null,
+  "repeats": 3,
+  "schema": "ranex-calibration-v1",
+  "worst": "VERIFIED"
+}
