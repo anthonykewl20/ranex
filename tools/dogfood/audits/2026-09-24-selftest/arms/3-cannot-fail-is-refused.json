@@ -1,0 +1,16 @@
+{
+ "arm": "3-cannot-fail-is-refused",
+ "receiver-audit": {
+  "bad_outcome": "accepted",
+  "exit": 1,
+  "overall": "FALSE-PASS",
+  "status": "FALSE-PASS"
+ },
+ "release-audit": {
+  "bad_outcome": "accepted",
+  "exit": 1,
+  "overall": "FALSE-PASS",
+  "status": "FALSE-PASS"
+ },
+ "status": "as-expected"
+}

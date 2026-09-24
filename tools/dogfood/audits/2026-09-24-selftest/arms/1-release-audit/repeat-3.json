@@ -1,0 +1,92 @@
+{
+ "argv": [
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/release_audit.py",
+  "--selftest",
+  "--out",
+  "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-release-audit/run"
+ ],
+ "blunted": null,
+ "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+ "determinism": "this receipt is timing-free so identical repeats are byte-identical; wall-clock and captured output are retained in selftest-commands.json, where variation is permitted and never changes a status",
+ "host": {
+  "node": "desk-tony",
+  "python": "3.14.7",
+  "release": "7.0.0-31-generic",
+  "system": "Linux"
+ },
+ "instruments": [
+  {
+   "bad": {
+    "digest": "sha256:79eca5b0b620c161909574192df647ae6d614862f5187fbe0bd1a48c4549826d",
+    "digests": [
+     "997d001d017306b8c9b11a40e31e4800b9701e3fe2ff63b9300cc5b29e03ab75",
+     "997d001d017306b8c9b11a40e31e4800b9701e3fe2ff63b9300cc5b29e03ab75",
+     "997d001d017306b8c9b11a40e31e4800b9701e3fe2ff63b9300cc5b29e03ab75"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "gate_exit": 1,
+      "run_exit": 1,
+      "run_recorded": false,
+      "verdict": "FAIL"
+     },
+     {
+      "gate_exit": 1,
+      "run_exit": 1,
+      "run_recorded": false,
+      "verdict": "FAIL"
+     },
+     {
+      "gate_exit": 1,
+      "run_exit": 1,
+      "run_recorded": false,
+      "verdict": "FAIL"
+     }
+    ],
+    "outcome": "caught",
+    "reference": "tools/dogfood/selftest/references/release/bad.json"
+   },
+   "driver": "tools/dogfood/release_audit.py",
+   "expectation": "the good reference is passed and the bad reference is caught, in 3 repeats on identical input",
+   "good": {
+    "digest": "sha256:709f4d607fa5959c1528b54faeb0b8b5b67549572c40b3a94f1b9c4138bafaf4",
+    "digests": [
+     "bb6511b867c7b633560718ea0148353aabf750d992a33eefee3e565b1f4149f9",
+     "bb6511b867c7b633560718ea0148353aabf750d992a33eefee3e565b1f4149f9",
+     "bb6511b867c7b633560718ea0148353aabf750d992a33eefee3e565b1f4149f9"
+    ],
+    "identical": true,
+    "observed": [
+     {
+      "gate_exit": 0,
+      "run_exit": 0,
+      "run_recorded": true,
+      "verdict": "PASS"
+     },
+     {
+      "gate_exit": 0,
+      "run_exit": 0,
+      "run_recorded": true,
+      "verdict": "PASS"
+     },
+     {
+      "gate_exit": 0,
+      "run_exit": 0,
+      "run_recorded": true,
+      "verdict": "PASS"
+     }
+    ],
+    "outcome": "passed",
+    "reference": "tools/dogfood/selftest/references/release/good.json"
+   },
+   "instrument": "release-audit",
+   "reason": "held in 3 repeats and refused its negative in 3",
+   "status": "VERIFIED"
+  }
+ ],
+ "issue": "anthonykewl20/ranex#113",
+ "overall": "VERIFIED",
+ "repeats": 3,
+ "schema": "ranex-selftest-v1"
+}

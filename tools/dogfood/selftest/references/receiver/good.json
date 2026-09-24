@@ -1,0 +1,5 @@
+{
+  "event": "ping",
+  "body": "{}",
+  "signed": true
+}

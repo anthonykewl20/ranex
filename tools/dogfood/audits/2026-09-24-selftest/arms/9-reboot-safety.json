@@ -1,0 +1,10 @@
+{
+ "after_attempt": {
+  "exit": 0,
+  "forged_still_present": false
+ },
+ "arm": "9-reboot-safety",
+ "forged_holder": "cleaned",
+ "live_pid_was_alive": true,
+ "status": "as-expected"
+}

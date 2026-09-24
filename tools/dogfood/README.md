@@ -332,6 +332,56 @@ fails, because a selftest that quietly starts passing has stopped proving
 anything. Only a genuine FALSE-PASS carries a recall window; nothing was
 approved by a selftest's.
 
+## Instrument self-test — no gauge is trusted until it has caught a known-bad (#113)
+
+The calibration section judges the *kernel*; this one judges the gauges
+themselves. Every dogfood instrument ships a **committed good reference** it
+must pass and a **committed bad reference** it must catch, and `selftest.py`
+runs both *before any measurement and before any spend*. A run refuses to
+proceed when either expectation fails — a bad gauge does not produce visible
+errors, it produces confident approvals, so the cheap time to notice is before
+it is trusted with a subject.
+
+| Instrument | Driver | Good reference must | Bad reference must |
+|---|---|---|---|
+| marker-scanner | `markers_probe.py` | scan clean (note-level declarations allowed) | be caught as `ranex/marker-no-trigger` |
+| release-audit | `release_audit.py` | record a satisfied claim and PASS the gate | catch a failing bound command (gate FAIL) |
+| receiver-audit | `receiver_audit.py` | earn 200 for a signed ping | earn 401 for the same body unsigned |
+
+References are committed data under `tools/dogfood/selftest/references/`
+(the marker bytes are `.txt`, copied into a scratch `.py` at run time, so
+committing the trigger-less bad reference never plants a live violation in
+this tree). Statuses are the #95 vocabulary above; a bad reference that is
+*accepted* is reported **FALSE-PASS**, never VERIFIED — the check that cannot
+block is the thing being hunted.
+
+Exit contract, shared by the standalone runner and every driver that embeds
+the pre-flight:
+
+* `0` — every instrument proved (good passed, bad caught, deterministic);
+* `1` — an instrument failed its own reference, and **no measurement is
+  attempted**;
+* `2` — incomplete execution (a reference, interpreter or service was
+  missing); never a silent green.
+
+```sh
+.venv/bin/python tools/dogfood/selftest.py --out /tmp/selftest          # all three
+.venv/bin/python tools/dogfood/release_audit.py --out /tmp/a --selftest # one driver
+```
+
+The #95 driver gates its measurement on the same proof: `calibration.py`
+runs the self-test into `<out>/selftest/` **before the first subject is
+built**, and no `calibration.json` can exist without a preceding passing
+self-test in the same run. `--skip-selftest` is refused outright — ordering
+is enforced, not documented — and `--blunt <instrument>` is the negative
+control that breaks one gauge on purpose so the refusal itself is proven
+(audit `2026-09-24-selftest/`, arms 2-4).
+
+The receipt (`selftest.json`) is deliberately **timing-free**: identical
+repeats are byte-identical, which is the anti-flake rule made checkable.
+Wall-clock and captured output are retained in `selftest-commands.json`,
+where variation is permitted and never changes a status.
+
 ## Handbook injection proof — issue #100's five arms as control pairs
 
 `tools/dogfood/handbook_proof.py` runs the kernel-handbook injection's five

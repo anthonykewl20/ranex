@@ -1,0 +1,25 @@
+{
+ "arm": "6-second-run-refuses",
+ "holders_named": [
+  {
+   "detail": "sleep 30",
+   "held_s": 0,
+   "kind": "verify",
+   "pid": 3903702
+  },
+  {
+   "detail": "sleep 30",
+   "held_s": 0,
+   "kind": "verify",
+   "pid": 3903703
+  }
+ ],
+ "refused": {
+  "exit": 1,
+  "output": "REFUSED: the verify lane is full (2/2). Held by pid 3903702 for 0s (sleep 30), pid 3903703 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on."
+ },
+ "status": "as-expected",
+ "without_the_lock": {
+  "exit": 0
+ }
+}

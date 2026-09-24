@@ -44,16 +44,32 @@ VERBS = ("launcher-build", "launcher-install", "host-probe", "qualify")
 # path banned `--result-dir /var/log/ranex` and broke four contract tests that
 # encode the shipped operator surface.
 # Each shape must produce a NAMED refusal rather than a traceback. The errno
-# behind it is deliberately not pinned: it is host-dependent. `/etc/passwd`
-# gives EEXIST here (the path exists and is not a directory) and
-# `../../../etc/passwd` resolves to /home/etc/passwd, giving EACCES on a host
-# where /home is not writable and something else where it is. Asserting the
-# refusal SHAPE — the flag named, the reason present, no stack — is the real
-# contract; asserting a particular strerror would pin this suite to one
-# machine's filesystem layout. ENAMETOOLONG is universal, so that one keeps its
-# text as a spot check that the reason is the filesystem's own.
+# behind it is deliberately not pinned: it is host-dependent. Both path shapes
+# resolve onto the real `/etc/passwd`, which exists as a regular file on every
+# host this suite runs on, so the guard's `mkdir` fails EEXIST wherever the
+# checkout sits. Asserting the refusal SHAPE — the flag named, the reason
+# present, no stack — is the real contract; asserting a particular strerror
+# would pin this suite to one machine's filesystem layout. ENAMETOOLONG is
+# universal, so that one keeps its text as a spot check that the reason is the
+# filesystem's own.
+#: The traversal walks out of ANY checkout — more `..` components than any
+#: plausible repository depth, so the path clamps at the filesystem root
+#: (POSIX: `/..` is `/`) and lands on the real `/etc/passwd`. A short
+#: traversal does not: `../../../etc/passwd` from a checkout under writable
+#: `$HOME` (GitHub runners: /home/runner/work/ranex/ranex; this repo's
+#: treehouse pool paths) resolves to a location the guard legitimately
+#: creates — an operator output path outside the governed tree — so the verb
+#: then runs and fails closed on host facts (E-C17-*), and the named-refusal
+#: contract this file pins is never exercised. That is a property of the
+#: checkout's depth, not of the host's qualification, so qualified-host
+#: gating cannot predict it (STATE.md records the same hazard for treehouse
+#: depths). Root-clamping keeps the shape hostile on every host: the guard
+#: runs before any host-fact check, so this refusal is reachable wherever
+#: the suite itself is.
+_ROOT_CLAMPED_TRAVERSAL = "/".join([".."] * 32) + "/etc/passwd"
+
 REFUSED = {
-    "traversal": ("../../../etc/passwd", None),
+    "traversal": (_ROOT_CLAMPED_TRAVERSAL, None),
     "absolute": ("/etc/passwd", None),
     "too-long": ("x" * 4000, "File name too long"),
 }
@@ -113,14 +129,14 @@ def test_a_confinement_refusal_is_distinguishable_from_honest_absence() -> None:
     """A refusal that reads like absence is a reporting defect one layer out.
 
     ADR-011's whole point is that absence blocks *visibly*. If `--result-dir
-    ../../../etc/passwd` and a genuinely missing artifact produced the same
-    words, an operator could not tell "you pointed outside the repository"
-    from "the thing you asked about is not there" — and would debug the wrong
-    one. Raised in peer review of the sweep; worth pinning rather than
-    assuming.
+    <a traversal the filesystem cannot use>` and a genuinely missing artifact
+    produced the same words, an operator could not tell "you pointed at an
+    unusable output path" from "the thing you asked about is not there" — and
+    would debug the wrong one. Raised in peer review of the sweep; worth
+    pinning rather than assuming.
     """
 
-    traversal = ranex("host", "host-probe", "--result-dir", "../../../etc/passwd")
+    traversal = ranex("host", "host-probe", "--result-dir", _ROOT_CLAMPED_TRAVERSAL)
     absence = ranex("journal", "verify", "--journal", "governance/absent.sqlite3")
 
     traversal_text = (traversal.stdout + traversal.stderr).strip()

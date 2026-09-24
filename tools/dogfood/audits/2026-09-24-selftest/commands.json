@@ -1,0 +1,444 @@
+[
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/markers_probe.py",
+   "--selftest",
+   "--audit-dir",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-marker-scanner/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 1340.9,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/markers_probe.py",
+   "--selftest",
+   "--audit-dir",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-marker-scanner/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 1270.6,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/markers_probe.py",
+   "--selftest",
+   "--audit-dir",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-marker-scanner/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 1298.0,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/release_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-release-audit/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 6180.7,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/release_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-release-audit/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 4934.7,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/release_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-release-audit/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 5384.3,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/receiver_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-receiver-audit/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 720.8,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/receiver_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-receiver-audit/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 704.2,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/receiver_audit.py",
+   "--selftest",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/1-receiver-audit/run"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 712.4,
+  "stdout": "",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/calibration.py",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/2-blunted-instrument-stops-the-run",
+   "--blunt",
+   "marker-scanner"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 6059.9,
+  "stdout": "FALSE-PASS selftest:marker-scanner: the negative control was ACCEPTED in 3/3 repeats; this check cannot block what it exists to refuse\nVERIFIED selftest:release-audit: held in 3 repeats and refused its negative in 3\nVERIFIED selftest:receiver-audit: held in 3 repeats and refused its negative in 3\n",
+  "stderr": "REFUSED: the pre-flight self-test failed, so no measurement is attempted and no calibration receipt is written.\n"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/selftest.py",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/3-false-pass-release-audit",
+   "--blunt",
+   "release-audit"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 6638.1,
+  "stdout": "VERIFIED selftest:marker-scanner: held in 3 repeats and refused its negative in 3\nFALSE-PASS selftest:release-audit: the negative control was ACCEPTED in 3/3 repeats; this check cannot block what it exists to refuse\nVERIFIED selftest:receiver-audit: held in 3 repeats and refused its negative in 3\noverall: FALSE-PASS  receipt: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/3-false-pass-release-audit/selftest.json\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/selftest.py",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/3-false-pass-receiver-audit",
+   "--blunt",
+   "receiver-audit"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 7721.7,
+  "stdout": "VERIFIED selftest:marker-scanner: held in 3 repeats and refused its negative in 3\nVERIFIED selftest:release-audit: held in 3 repeats and refused its negative in 3\nFALSE-PASS selftest:receiver-audit: the negative control was ACCEPTED in 3/3 repeats; this check cannot block what it exists to refuse\noverall: FALSE-PASS  receipt: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/3-false-pass-receiver-audit/selftest.json\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/calibration.py",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/4-skip-refused",
+   "--skip-selftest"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 83.3,
+  "stdout": "",
+  "stderr": "REFUSED: --skip-selftest \u2014 a measurement receipt requires a passing self-test in the same run. The ordering is enforced, not documented.\n"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/calibration.py",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/4-wired-clean"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 20486.4,
+  "stdout": "VERIFIED selftest:marker-scanner: held in 3 repeats and refused its negative in 3\nVERIFIED selftest:release-audit: held in 3 repeats and refused its negative in 3\nVERIFIED selftest:receiver-audit: held in 3 repeats and refused its negative in 3\nVERIFIED gate-blocks-a-failing-bound-command: held in 3 repeats and refused its negative in 3\nVERIFIED absence-blocks: held in 3 repeats and refused its negative in 3\nVERIFIED self-approval-refused: held in 3 repeats and refused its negative in 3\n\nworst: VERIFIED  receipt: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/4-wired-clean/calibration.json\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "run",
+   "--kind",
+   "verify",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 51.6,
+  "stdout": "[lane] verify: running in /home/soultransit/.treehouse/ranex-34bbe7/1/ranex\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "status",
+   "--json"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 44.4,
+  "stdout": "[\n  {\n    \"kind\": \"verify\",\n    \"pid\": 3903702,\n    \"held_s\": 0,\n    \"detail\": \"sleep 30\"\n  },\n  {\n    \"kind\": \"verify\",\n    \"pid\": 3903703,\n    \"held_s\": 0,\n    \"detail\": \"sleep 30\"\n  }\n]\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "run",
+   "--kind",
+   "verify",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 45.2,
+  "stdout": "",
+  "stderr": "REFUSED: the verify lane is full (2/2). Held by pid 3903702 for 0s (sleep 30), pid 3903703 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "status",
+   "--json"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 44.5,
+  "stdout": "[\n  {\n    \"kind\": \"verify\",\n    \"pid\": 3903702,\n    \"held_s\": 0,\n    \"detail\": \"sleep 30\"\n  },\n  {\n    \"kind\": \"verify\",\n    \"pid\": 3903703,\n    \"held_s\": 0,\n    \"detail\": \"sleep 30\"\n  }\n]\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "status",
+   "--json"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 57.0,
+  "stdout": "[]\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "status",
+   "--json"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 74.6,
+  "stdout": "[\n  {\n    \"kind\": \"verify\",\n    \"pid\": 3903781,\n    \"held_s\": 0,\n    \"detail\": \"sleep 30\"\n  }\n]\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "run",
+   "--kind",
+   "verify",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 76.2,
+  "stdout": "[lane] verify: running in /home/soultransit/.treehouse/ranex-34bbe7/1/ranex\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "status",
+   "--json"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 67.6,
+  "stdout": "[]\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "keygen",
+   "--producer",
+   "selftest"
+  ],
+  "cwd": "/tmp/ranex-113-proof-dzfjfehc",
+  "exit": 0,
+  "wall_ms": 271.0,
+  "stdout": "WROTE  /tmp/ranex-113-proof-dzfjfehc/arm8.key  mode 0600\n       register this public key in governance/producers.yaml and commit the change. For a new keyring use both mappings below. For an existing keyring, merge the producer entry; if it has a principals mapping, also merge the matching active worker entry. Preserve all existing identities and the verdict signer:\n  producers:\n    selftest: ed25519:TO1jyZXGaIm9bsGt3RF2k+wuq3mhL3VOQo1+6Hvx7hs=\n  principals:\n    selftest:\n      role: worker\n      keys:\n      - key: ed25519:TO1jyZXGaIm9bsGt3RF2k+wuq3mhL3VOQo1+6Hvx7hs=\n        status: active\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "status",
+   "--json"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 56.3,
+  "stdout": "[]\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "status",
+   "--json"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 69.1,
+  "stdout": "[\n  {\n    \"kind\": \"verify\",\n    \"pid\": 3904558,\n    \"held_s\": 0,\n    \"detail\": \"sleep 30\"\n  },\n  {\n    \"kind\": \"verify\",\n    \"pid\": 3904559,\n    \"held_s\": 0,\n    \"detail\": \"sleep 30\"\n  }\n]\n",
+  "stderr": ""
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "run",
+   "--kind",
+   "verify",
+   "--",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "-m",
+   "pytest",
+   "-q",
+   "tests/unit/test_gate_verdict.py"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 45.0,
+  "stdout": "",
+  "stderr": "REFUSED: the verify lane is full (2/2). Held by pid 3904558 for 0s (sleep 30), pid 3904559 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "run",
+   "--kind",
+   "verify",
+   "--",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "-m",
+   "pytest",
+   "-q",
+   "-o",
+   "xfail_strict=true",
+   "-p",
+   "ranex.foundation.pytest_xpass",
+   "--junitxml=/tmp/ranex-113-proof-dzfjfehc/arm8-junit.xml",
+   "tests/unit/test_gate_verdict.py"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 61.2,
+  "stdout": "",
+  "stderr": "REFUSED: the verify lane is full (2/2). Held by pid 3904558 for 0s (sleep 30), pid 3904559 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "run",
+   "--kind",
+   "verify",
+   "--",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/ranex",
+   "run",
+   "--claim",
+   "scan",
+   "--producer",
+   "selftest",
+   "--external-repository",
+   "/tmp/ranex-113-proof-dzfjfehc/governed",
+   "--evidence",
+   "governance/evidence.json",
+   "--producers",
+   "governance/producers.yaml",
+   "--gate-catalog",
+   "governance/gates.yaml",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 1,
+  "wall_ms": 51.3,
+  "stdout": "",
+  "stderr": "REFUSED: the verify lane is full (2/2). Held by pid 3904558 for 0s (sleep 30), pid 3904559 for 0s (sleep 30).\nWait for it, or run a different lane. This refuses rather than degrading a run someone else is already relying on.\n"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/lane.py",
+   "run",
+   "--kind",
+   "verify",
+   "--",
+   "/usr/bin/true"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 62.3,
+  "stdout": "[lane] verify: running in /home/soultransit/.treehouse/ranex-34bbe7/1/ranex\n",
+  "stderr": ""
+ }
+]

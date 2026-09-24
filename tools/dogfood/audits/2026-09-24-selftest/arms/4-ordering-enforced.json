@@ -1,0 +1,28 @@
+{
+ "arm": "4-ordering-enforced",
+ "skip": {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/calibration.py",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/4-skip-refused",
+   "--skip-selftest"
+  ],
+  "directory_empty": true,
+  "exit": 1,
+  "refusal": "REFUSED: --skip-selftest \u2014 a measurement receipt requires a passing self-test in the same run. The ordering is enforced, not documented."
+ },
+ "status": "as-expected",
+ "wired_clean": {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/calibration.py",
+   "--out",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/audits/2026-09-24-selftest/arms/4-wired-clean"
+  ],
+  "exit": 0,
+  "measurement_receipt": "calibration.json",
+  "selftest_overall": "VERIFIED",
+  "worst": "VERIFIED"
+ }
+}
