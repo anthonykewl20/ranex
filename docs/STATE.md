@@ -1,41 +1,42 @@
 # State
 
 **Updated:** 2026-09-25
-**Active slice:** SLICE-092 (repair envelope at the read channel, C1+C6).
+**Active slice:** none — #111 (instruction digest) is next; task authority
+(#119) under ADR-061 follows the milestone-8 queue.
 
-Captain DIRECT 004: first captain-ordered promotion ship from the
-oracle-science program (report §3.1/§3.6/§8 SLICE-A). Ships C1+C6 together,
-harness-side; `verdict.py`/KERNEL_DIGEST untouched. DIRECT 008 lens: the
-loop is fully autonomous across a 3-miss budget (deterministic stop), the
-envelope is machine-consumable structured bytes, and freeze authoring
-stays with promote ships — the graded run never mints its own freeze.
-
-Landed in SLICE-092: `governed_execution/repair_envelope.py` renders the
-bounded advisory packet (failing IDs, assertion text, file:line, repro
-argv, L0/L1/L2 next-rung pointers; causes compose verbatim at the
-projection, never recomputed). `ranex run` retains the junit one seam
-longer into the gitignored verdict channel (`<subject>.junit.xml`);
+SLICE-092 / P0 envelope (DONE, shipped as the first captain-ordered
+promotion from the oracle-science program, DIRECT 004+008): the repair
+envelope at the read channel. `governed_execution/repair_envelope.py`
+renders the bounded advisory packet — failing IDs, assertion text,
+file:line, repro argv, L0/L1/L2 next-rung pointers — with causes composed
+verbatim at the ADR-019/020 projection, never recomputed. `ranex run`
+retains the junit one seam longer into the gitignored verdict channel;
 `gate evaluate` publishes `<subject>.envelope.json` beside the signed
-verdict, bound by `record_digest`, unsigned, never evidence. The ADR-043
-retained-log manifest gains the `envelope` field for delegate captures.
+verdict, bound by `record_digest`, unsigned, never evidence (offering
+envelope bytes as evidence is refused, receipt-proven). The ADR-043
+retained-log manifest gained the `envelope` field for delegate captures.
 `ranex task stop-hook [--mode stop|pretooluse]` is the C6 attachment:
-runs the governed cycle observer-side in-process, reads verdict +
-envelope from the read channel, answers the harness in JSON, and stops
-deterministically at `--budget` (default 3) misses. Without a credential
-it fabricates nothing — delegation.py:93, main.py:798 and keyring
-admission remain the walls, re-proven live in the receipt.
+governed cycle observer-side, verdict + envelope from the read channel,
+machine-consumable JSON, fully autonomous 3-miss budget with a
+deterministic stop. Walls untouched and re-proven live: delegation.py:93,
+main.py:798, keyring admission. Receipt: audits/2026-09-25-p0-envelope/
+(nine arms VERIFIED on pinned six@1.17.0; measured bytes 19,782 → 1,045,
+−94.7%; verdict.py/KERNEL_DIGEST unmoved).
 
-SLICE-091 / #118 and SLICE-090 / #113 stand as recorded (live HTTP
-observer; instrument self-test). SLICE-085 stays blocked. Queue after
-this ship: #111 (instruction digest), #112 (minimization ladder = C2
-orchestrator over the shipped pointers), #114, #115, milestone 7
-(#107-#109), then #102, #105, #106, #119.
+SLICE-091 / #118: calibrated live HTTP observer stands as recorded, as do
+SLICE-090 / #113 (instrument self-test) and SLICE-088/089. SLICE-085
+stays blocked. Queue: #111 (instruction digest), #112 (minimization
+ladder = the C2 orchestrator over SLICE-092's shipped rung pointers),
+#114, #115, milestone 7 (#107-#109), then #102, #105, #106, #119.
 
-Suite status: the 2026-09-23/24 host-glibc drift note still stands — the
-reproducible-build goldens are red on a pristine base checkout until the
-owner re-pin lands; counts for this ship are quoted in its PR. Refreezes
-stay mechanical (IDs only, outcome-blind) on a committed tree, verified
-by load_manifest before committing.
+Suite status, measured 2026-09-25 on this branch: 2104 passed / 91
+skipped, red only in the five files of the standing host-glibc /
+reproducible-build drift family (slice036 selectors, approved-batch
+contract, specification-batch qualification, gating stage_08b/slice009,
+suite-freeze goldens) — the same set as the pristine base checkout
+(audits/2026-09-23-live-observer/base-failures.log); the owner re-pin
+main already records is still needed. Suite manifest refrozen to 2217
+IDs on the committed tree, load_manifest verified.
 
 Parallel work and overlapping verification remain owner-authorized
 (2026-09-12); separate writer worktrees, pinned verification worktrees.

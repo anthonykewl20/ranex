@@ -1,6 +1,6 @@
 # SLICE-092 — Repair envelope at the read channel (C1+C6)
 
-**Status:** open
+**Status:** done
 **Origin:** oracle-science report §3.1/§3.6/§8 SLICE-A; captain DIRECT 004.
 
 ## Contract
@@ -67,11 +67,24 @@ is unsigned advisory bytes; the signed verdict beside it is the authority).
 
 Red-first unit/contract tests (`test_repair_envelope.py`,
 `test_repair_envelope_flow.py`, delegate/run/projection/stop-hook rows in
-the existing suites). Real-data receipts under
-`tools/dogfood/audits/2026-09-25-p0-envelope/`: pinned six@1.17.0 subject
-with a real failing test; envelope carries its ID, assertion and
-file:line from the real junit; 3× byte-identical envelope digests;
-negative controls — envelope bytes offered as evidence refused, unsigned
-governed cycle refused, delegated environment + credential refused;
-measured bytes-ingested delta quoted from this host, never copied from
-the report. Suite manifest refrozen on the committed tree.
+the existing suites) — all green; suite manifest refrozen to 2217 IDs on
+the committed tree (`835c4163a`), load_manifest verified before commit.
+
+Real-data receipt, all nine arms VERIFIED (audits/2026-09-25-p0-envelope/,
+bound to `edbc390a0`): pinned six@1.17.0 (ebd9b3af) under the F-003
+vendored-kernel lab, 15 platform skips operator-approved at freeze; a
+planted real defect (`struct.Struct(">B")` → `">H"` in six.py) FAILs
+`test_six.py::test_int2byte` and the envelope carries exactly
+`AssertionError: assert b'\x00\x03' == b'\x03'` at `test_six.py:527`
+from the run's own junit, bound to the signed verdict by record digest.
+Measured on this host: agent-ingested bytes 19,782 (raw junit) → 1,045
+(envelope) = −94.7%. Identical-input re-renders are byte-identical ×3
+(both seams); whole-cycle re-evaluations differ only by the ADR-057
+journal anchor, recorded as the expected move. The stop-hook loop ran
+block(1) block(2) STOP-at-budget(3) then approved the real repair's
+PASS. Negative controls: envelope-as-evidence refused (malformed),
+credential-less cycle refuses and writes nothing, delegated environment +
+credential refused at delegation.py:93. `test_kernel_unchanged.py` green.
+Full suite 2104 passed / 91 skipped with the five files of the standing
+host-glibc drift family red exactly as on the pristine base checkout
+(audits/2026-09-23-live-observer/base-failures.log).
