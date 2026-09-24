@@ -1,0 +1,79 @@
+{
+ "arm": "8-in-tree-scanner-substitution",
+ "bound_command": [
+  "/usr/bin/python3",
+  "neuter.py",
+  "--output-format=sarif",
+  "--output-file=governance/markers.sarif"
+ ],
+ "catalog_bound": {
+  "evaluate_exit": 2,
+  "reached_pass": false,
+  "run_exit": 2,
+  "run_refusal": "ERROR  gate 'landing': claim 'scan' binds a scripted interpreter to 'neuter.py', a script operand. A script the observed tree carries chooses what the claim means, and the catalog cannot see any script's bytes; bind the scanner binary as argv[0] or a `-m` module of a pinned interpreter"
+ },
+ "honest_catalog_neuter_argv": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 20,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      evidence describes a command the claim does not bind: scan"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:b9761dbe568b474e59532bd7f9d7232604a802291c7ccaf11e79cfb6f2aeca93",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 20,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      evidence describes a command the claim does not bind: scan"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:b9761dbe568b474e59532bd7f9d7232604a802291c7ccaf11e79cfb6f2aeca93",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 20,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      evidence describes a command the claim does not bind: scan"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:b9761dbe568b474e59532bd7f9d7232604a802291c7ccaf11e79cfb6f2aeca93",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "neuter_behaviour": "committed in-tree script; always exits 0 and writes a clean SARIF",
+ "status": "as-expected"
+}

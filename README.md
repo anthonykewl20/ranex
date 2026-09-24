@@ -79,7 +79,10 @@ By default the CLI governs the checkout containing its kernel source. To
 govern another checkout without vendoring, add `--external-repository /path/to/repo`
 to the core commands; see the [external repository recipe](docs/OPERATIONS.md#governing-an-external-repository).
 JUnit evidence supports pytest and an explicit Vitest reporter binding, with
-frozen expected test IDs and rejection of missing results.
+frozen expected test IDs and rejection of missing results. Scan evidence
+reduces any SARIF 2.1.0 reporter against a frozen scope and accepted-findings
+map; `ranex markers` is the kernel's own scanner for `ranex:` deliberate-
+shortcut markers — a cut corner may be taken, but it may not be silent.
 
 After you have committed the policy, public keyring and frozen test manifest,
 provisioned dependencies and configured the signing key, the core loop is:
@@ -227,6 +230,8 @@ strict-local runtime carriers refuse pytest suite observation until they carry
 this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.md).
 
 ## Completed slices
+
+- [SLICE-088 — Deliberate-shortcut markers as deterministic evidence](docs/slices/done/SLICE-088-marker-evidence.md): `ranex markers` greps `ranex:` comments into SARIF; trigger-less and malformed markers are errors a gate can refuse, and a scan claim never binds a script operand.
 
 - [SLICE-087 — Frozen executable probe bundles](docs/slices/done/SLICE-087-frozen-executable-probe-bundles.md): freeze/check actual probe bytes, membership, modes and argv against A/B identity.
 

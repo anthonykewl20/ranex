@@ -1,0 +1,88 @@
+{
+ "arm": "1-well-formed",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 19,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:359f18a0479d58d666a6d4b538bcfcf8d583efd7fd53317fec06b4bb776debd9"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:8c966f59f7efe2351c1d186322d5eed36f3a9d838d071d6813f5f1c6f5725a35",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 19,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:359f18a0479d58d666a6d4b538bcfcf8d583efd7fd53317fec06b4bb776debd9"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:8c966f59f7efe2351c1d186322d5eed36f3a9d838d071d6813f5f1c6f5725a35",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 19,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:359f18a0479d58d666a6d4b538bcfcf8d583efd7fd53317fec06b4bb776debd9"
+   ],
+   "finding_ids": [],
+   "outcome_digest": "sha256:8c966f59f7efe2351c1d186322d5eed36f3a9d838d071d6813f5f1c6f5725a35",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "PASS"
+  }
+ ],
+ "expect_pass": true,
+ "files": {
+  "shortcut_probe.py": "# ranex: global lock; per-account locks if throughput matters\n"
+ },
+ "identical": true,
+ "reached_pass": true,
+ "standalone_findings": [
+  {
+   "fingerprint": "00e6d57f6b3f121b3bc6c0fedff147dbcbe410fbed6db1e1cd8c5c6736aaa539",
+   "level": "note",
+   "location": {
+    "artifactLocation": {
+     "uri": "shortcut_probe.py"
+    },
+    "region": {
+     "endLine": 1,
+     "snippet": {
+      "text": "# ranex: global lock; per-account locks if throughput matters"
+     },
+     "startLine": 1
+    }
+   },
+   "ruleId": "ranex/marker-shortcut"
+  }
+ ],
+ "status": "as-expected"
+}

@@ -325,11 +325,17 @@ def test_a_freeze_refuses_to_accept_what_the_run_did_not_observe(repo: Path, cap
 
 
 def forging_repo(repo: Path, document: dict[str, object]) -> list[str]:
-    """Bind a producer that writes `document` under a scanner's argv shape."""
+    """Bind a producer that writes `document` under a scanner's argv shape.
 
-    (repo / "forge.py").write_text(FORGER, encoding="utf-8")
+    #110 Correction 2 refuses a scan claim bound to an in-tree script, so the
+    forger rides inline `-c` bytes: catalog-supplied, review-visible, exactly
+    the hostile-report vehicle these tests need. The tree still supplies
+    `forged.json` — a scanner reading planted data is the threat being tested,
+    and the kernel's region validation is what must catch it.
+    """
+
     (repo / "forged.json").write_text(json.dumps(document), encoding="utf-8")
-    command = ["/usr/bin/python3", "forge.py", "--output-format=sarif",
+    command = ["/usr/bin/python3", "-c", FORGER, "--output-format=sarif",
                f"--output-file={ARTIFACT}"]
     (repo / "gates.yaml").write_text(catalog(command), encoding="utf-8")
     return command
