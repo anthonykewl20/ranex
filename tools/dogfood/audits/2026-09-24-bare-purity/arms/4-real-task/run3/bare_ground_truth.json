@@ -1,0 +1,92 @@
+{
+  "schema": "ranex-oss-bench-bare-v1",
+  "task": "py-txn-kvstore",
+  "gold": [
+    {
+      "name": "autocommit",
+      "exit": 0
+    },
+    {
+      "name": "rollback_value_and_absence",
+      "exit": 0
+    },
+    {
+      "name": "rollback_deleted_key",
+      "exit": 0
+    },
+    {
+      "name": "commit_keeps_changes",
+      "exit": 0
+    },
+    {
+      "name": "nested_commit_outer_rollback",
+      "exit": 0
+    },
+    {
+      "name": "nested_inner_rollback",
+      "exit": 0
+    },
+    {
+      "name": "rollback_reverse_order",
+      "exit": 0
+    },
+    {
+      "name": "commit_without_txn",
+      "exit": 0
+    },
+    {
+      "name": "keys_reflects_txn",
+      "exit": 0
+    }
+  ],
+  "empty": [
+    {
+      "name": "autocommit",
+      "exit": 1
+    },
+    {
+      "name": "rollback_value_and_absence",
+      "exit": 1
+    },
+    {
+      "name": "rollback_deleted_key",
+      "exit": 1
+    },
+    {
+      "name": "commit_keeps_changes",
+      "exit": 1
+    },
+    {
+      "name": "nested_commit_outer_rollback",
+      "exit": 1
+    },
+    {
+      "name": "nested_inner_rollback",
+      "exit": 1
+    },
+    {
+      "name": "rollback_reverse_order",
+      "exit": 1
+    },
+    {
+      "name": "commit_without_txn",
+      "exit": 1
+    },
+    {
+      "name": "keys_reflects_txn",
+      "exit": 1
+    }
+  ],
+  "environment": {
+    "probe": "in-child canary (two_arm.BARE_CANARY) before every command; the receipt records the environment used",
+    "probes": 18,
+    "child_env": {
+      "HOME": "/home/soultransit",
+      "LANG": "en_US.UTF-8",
+      "PATH": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+      "TERM": "tmux-256color"
+    },
+    "child_env_sha256": "436b7e681e499397d869ca00c8eec22c513e60b736f48633f8baa8bae51ef023",
+    "contamination_findings": []
+  }
+}

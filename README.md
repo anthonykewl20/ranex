@@ -244,6 +244,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
+- [SLICE-091 — Bare-arm purity](docs/slices/done/SLICE-091-bare-arm-purity.md): the two-arm benchmark's bare arm runs from a declared environment allowlist, an in-child canary proves every command received it, contamination fails the run loudly, and each channel has a negative control; prior two-arm numbers are re-labelled UNVERIFIED (F-041).
+
 - [SLICE-090 — Instrument self-test](docs/slices/done/SLICE-090-instrument-selftest.md): every dogfood gauge proves itself on a committed good/bad reference pair before any measurement; a measurement receipt cannot exist without a passing self-test in the same run.
 
 - [SLICE-088 — Deliberate-shortcut markers as deterministic evidence](docs/slices/done/SLICE-088-marker-evidence.md): `ranex markers` greps `ranex:` comments into SARIF; trigger-less and malformed markers are errors a gate can refuse, and a scan claim never binds a script operand.

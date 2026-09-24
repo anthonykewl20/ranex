@@ -5,25 +5,25 @@
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
-SLICE-090 / #113: instrument self-test. `tools/dogfood/selftest.py`
-pre-flights every dogfood gauge on a committed good/bad reference pair
-(markers/release/receiver under tools/dogfood/selftest/references/) before
-any measurement or spend; exit 0/1/2, #95 vocabulary, timing-free receipts
-that are byte-identical across repeats. All three drivers pre-flight their
-own instrument; the #95 driver (calibration.py) writes no calibration.json
-without a passing self-test in the same run — --skip-selftest is refused,
---blunt breaks one gauge on purpose and must read FALSE-PASS. Nine arms
-as-expected ×3 (tools/dogfood/audits/2026-09-24-selftest/), including the
-added lock arms proven against lane.py (refusal, SIGKILL self-heal, all
-three spellings admitted through the lane, forged boot-id staleness).
-verdict.py untouched. calibration's subject python now defaults to
-sys.executable (a bare "python3" could not import ranex in the scrubbed
-subject env).
+SLICE-091 / #114: bare-arm purity. The two-arm adapter's bare arm now runs
+from a DECLARED allowlist (BARE_ENV_PASSTHROUGH + an asserted venv-on-PATH
+entry over BARE_SYSTEM_PATH — never dict(os.environ)); an in-child canary
+measures the environment every command actually receives, and any RANEX_*
+variable, kernel-naming PYTHONPATH, vendored kernel on PATH, or
+constructed-vs-observed deviation fails the run loudly (exit 3, no ground
+truth written). --contaminate {pythonpath,ranex-var,vendored-path} is the
+caught negative control; prior two-arm numbers are re-labelled UNVERIFIED
+(F-041). Five ceremony arms VERIFIED, outputs byte-identical ×3
+(tools/dogfood/audits/2026-09-24-bare-purity/): probe clean, each channel
+caught 3/3, governed arm byte-identical before/after the change (elapsed
+zeroed), real task both arms with journals verified, environment digests
+stable per arm. verdict.py untouched.
 
-SLICE-088 / #110 and SLICE-089 / #100 stand as recorded (markers SARIF
-evidence; path-scoped handbook injection, ADR-062).
-Next: #111 (instruction digest), #112 (minimization ladder), #114, #115,
-then milestone 7 (#107, #108, #109), then #102, #105, #106, #119. Live
+SLICE-090 / #113 stands as recorded: instrument self-test; every dogfood
+driver pre-flights its gauge on a committed good/bad pair; calibration
+refuses --skip-selftest and writes no receipt without a passing self-test.
+Next: #111 (instruction digest), #112 (minimization ladder), #115, then
+milestone 7 (#107, #108, #109), then #102, #105, #106, #119. Live
 observer under ADR-061 remains the program's next exit; no ranex prove
 exists yet.
 

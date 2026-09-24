@@ -1,0 +1,308 @@
+[
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-before-1-yjp6_db8/out"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 30415.0,
+  "stdout": "[gold ] bare 9/9\n[empty] bare 0/9\n[gold ] gate PASS \u00b7 journal verified \u00b7 13.029s\n[empty] gate FAIL \u00b7 journal verified \u00b7 12.633s\nVALIDATION PASS\n",
+  "stderr": "",
+  "driver_sha256": "12f2236721b43947a55a8c0ceb43b8f89de9edcaa619fc2bc0a7b48e8a3dd9cd"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-before-2-cxra8agv/out"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 28022.6,
+  "stdout": "[gold ] bare 9/9\n[empty] bare 0/9\n[gold ] gate PASS \u00b7 journal verified \u00b7 12.058s\n[empty] gate FAIL \u00b7 journal verified \u00b7 11.936s\nVALIDATION PASS\n",
+  "stderr": "",
+  "driver_sha256": "12f2236721b43947a55a8c0ceb43b8f89de9edcaa619fc2bc0a7b48e8a3dd9cd"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-before-3-emzt8fkk/out"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 28056.7,
+  "stdout": "[gold ] bare 9/9\n[empty] bare 0/9\n[gold ] gate PASS \u00b7 journal verified \u00b7 11.738s\n[empty] gate FAIL \u00b7 journal verified \u00b7 12.196s\nVALIDATION PASS\n",
+  "stderr": "",
+  "driver_sha256": "12f2236721b43947a55a8c0ceb43b8f89de9edcaa619fc2bc0a7b48e8a3dd9cd"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-pythonpath-635aow3x/out",
+   "--contaminate",
+   "pythonpath"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 287.4,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 PYTHONPATH names a ranex source root: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/src\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-pythonpath-u2asnhaf/out",
+   "--contaminate",
+   "pythonpath"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 211.7,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 PYTHONPATH names a ranex source root: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/src\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-pythonpath-w5f5_h6e/out",
+   "--contaminate",
+   "pythonpath"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 227.4,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 PYTHONPATH names a ranex source root: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/src\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-ranex-var-2gjeq91k/out",
+   "--contaminate",
+   "ranex-var"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 228.2,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 RANEX_* variable present: RANEX_SIGNING_KEY\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-ranex-var-7lt5sz14/out",
+   "--contaminate",
+   "ranex-var"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 212.8,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 RANEX_* variable present: RANEX_SIGNING_KEY\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-ranex-var-5nj6ctyr/out",
+   "--contaminate",
+   "ranex-var"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 195.8,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 RANEX_* variable present: RANEX_SIGNING_KEY\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-vendored-path-woq5sjff/out",
+   "--contaminate",
+   "vendored-path"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 211.5,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 PATH names a ranex source root: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/src\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-vendored-path-wxzepoqe/out",
+   "--contaminate",
+   "vendored-path"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 183.3,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 PATH names a ranex source root: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/src\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-negative-vendored-path-do5u3tir/out",
+   "--contaminate",
+   "vendored-path"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 3,
+  "wall_ms": 185.2,
+  "stdout": "",
+  "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 PATH names a ranex source root: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/src\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.\n",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-after-1-1u5h0i2h/out"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 36359.4,
+  "stdout": "[gold ] bare 9/9\n[empty] bare 0/9\n[gold ] gate PASS \u00b7 journal verified \u00b7 19.033s\n[empty] gate FAIL \u00b7 journal verified \u00b7 13.119s\nVALIDATION PASS\n",
+  "stderr": "",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-after-1-g52wx0nj/out"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 26094.0,
+  "stdout": "[gold ] bare 9/9\n[empty] bare 0/9\n[gold ] gate PASS \u00b7 journal verified \u00b7 10.708s\n[empty] gate FAIL \u00b7 journal verified \u00b7 11.329s\nVALIDATION PASS\n",
+  "stderr": "",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-after-2-uq8r5wa8/out"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 26085.3,
+  "stdout": "[gold ] bare 9/9\n[empty] bare 0/9\n[gold ] gate PASS \u00b7 journal verified \u00b7 10.935s\n[empty] gate FAIL \u00b7 journal verified \u00b7 11.217s\nVALIDATION PASS\n",
+  "stderr": "",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ {
+  "argv": [
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/.venv/bin/python",
+   "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex/tools/dogfood/oss_bench/two_arm.py",
+   "--task",
+   "py-txn-kvstore",
+   "--mode",
+   "tasks",
+   "--out",
+   "/tmp/ranex-114-after-3-6i2p29dv/out"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/1/ranex",
+  "exit": 0,
+  "wall_ms": 26060.6,
+  "stdout": "[gold ] bare 9/9\n[empty] bare 0/9\n[gold ] gate PASS \u00b7 journal verified \u00b7 10.886s\n[empty] gate FAIL \u00b7 journal verified \u00b7 11.175s\nVALIDATION PASS\n",
+  "stderr": "",
+  "driver_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ }
+]

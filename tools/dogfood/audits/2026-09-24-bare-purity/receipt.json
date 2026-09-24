@@ -1,0 +1,28 @@
+{
+ "issue": "anthonykewl20/ranex#114",
+ "protocol": "#95 \u2014 real subprocesses of the real driver on the real pinned VulcanBench task, no mocks, 3x repeats, VERIFIED/GAP/FALSE-PASS/NON-DETERMINISTIC/UNVERIFIED",
+ "task": "py-txn-kvstore",
+ "driver": {
+  "before_sha256": "12f2236721b43947a55a8c0ceb43b8f89de9edcaa619fc2bc0a7b48e8a3dd9cd",
+  "after_sha256": "c745ac5c3dc26c7e712d2bbf249143d0f950f32c68c873d8a2932f96efd0cbe6"
+ },
+ "arm_statuses": {
+  "1-contamination-probe": "VERIFIED",
+  "2-negative-control": "VERIFIED",
+  "3-governed-unaffected": "VERIFIED",
+  "4-real-task-both-arms": "VERIFIED",
+  "5-env-digests-stable": "VERIFIED"
+ },
+ "overall": "VERIFIED",
+ "host": {
+  "node": "desk-tony",
+  "python": "3.14.7",
+  "release": "7.0.0-31-generic",
+  "system": "Linux"
+ },
+ "kernel_commit": "ba4181b6a4f76ea8499d51c25a0df950280473f9",
+ "limitations": [
+  "The venv interpreter stays first on the bare PATH by design (the deliberate bare-agent choice from the adapter's origin); the control proves it carries no RANEX_* variable, no kernel-naming PYTHONPATH, and no vendored kernel directory on PATH",
+  "governed_environment.json retains variable NAMES plus the two governance values and a digest, not full ambient values, so no operator secret is committed"
+ ]
+}
