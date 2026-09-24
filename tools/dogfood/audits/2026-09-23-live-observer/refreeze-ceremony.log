@@ -1,0 +1,121 @@
+clone HEAD=7addfa75194faf1de0cf762e1e0413c39987e1cf
+$ deps fetch --repository .... exit=0 4s
+FETCHED  packages=29  downloaded=29  reused=0
+         depset=sha256:8ea09328d28a4f6647398e4bc6f7a55bf4bcebbfaaf0cc02a27e51d4cac0f499
+         not yet approved: run `ranex deps approve --approver <id>`
+
+
+$ deps approve --repository . --approver refreeze-118... exit=0 1s
+no prior approval; the full set is the delta:
+  + cffi 2.1.1
+  + chardet 7.4.3
+  + click 8.4.2
+  + coverage 7.15.3
+  + cryptography 50.0.0
+  + diff-cover 9.7.2
+  + hatchling 1.31.0
+  + iniconfig 2.3.0
+  + jinja2 3.1.6
+  + libcst 1.9.0
+  + markdown-it-py 4.2.0
+  + markupsafe 3.0.3
+  + mdit-py-plugins 0.6.1
+  + mdurl 0.1.2
+  + mutmut 3.5.0
+  + packaging 26.2
+  + pathspec 1.1.1
+  + platformdirs 4.11.0
+  + pluggy 1.6.0
+  + pycparser 3.0
+  + pyelftools 0.32
+  + pygments 2.20.0
+  + pytest 9.1.1
+  + pyyaml 6.0.3
+  + rich 15.0.0
+  + setproctitle 1.3.7
+  + textual 8.2.8
+  + trove-classifiers 2026.6.1.19
+  + typing-extensions 4.16.0
+APPROVED  packages=29  approver=refreeze-118
+          depset=sha256:8ea09328d28a4f6647398e4bc6f7a55bf4bcebbfaaf0cc02a27e51d4cac0f499
+          approval reduces hidden change; the approved code still chooses its own behaviour inside the gated command
+
+
+$ suite freeze --artifact governance/suite_results.xml --output .local/ranex-118-refreeze.json... exit=0 797s
+tic["stdout"] == "closed-no-authority"
+        assert static["observable_output"] == "/ranex/output/result.json"
+        assert static["success_exit_code"] == 0
+        assert static["input_refusal_exit_code"] == 92
+        assert static["output_failure_exit_code"] == 95
+        manifest = json.loads((ROOT / static["build_manifest"]).read_bytes())
+        source = ROOT / static["source"]
+        assert file_digest(source) == static["source_sha256"]
+        compiler = Path(manifest["build"]["compiler"]["path"])
+        assert file_digest(compiler) == "sha256:" + manifest["build"]["compiler"]["sha256"]
+        for item in manifest["build"]["inputs"]:
+>           assert file_digest(Path(item["path"])) == "sha256:" + item["sha256"]
+E           AssertionError: assert 'sha256:a40c7...55bdee4ac9621' == 'sha256:d2a01...7456def86ff2f'
+E             
+E             - sha256:d2a01bdb5e0443c6213f96f7ed90dd13006cc6913ee1cd306de7456def86ff2f
+E             + sha256:a40c7eae7581f977b65eddb81cbc799213a695749e039d966db55bdee4ac9621
+
+tests/integration/test_approved_batch_qualification_contract.py:619: AssertionError
+=========================== short test summary info ============================
+FAILED tests/e2e/test_specification_batch_qualification.py::test_static_worker_twice_built_bytes_have_required_elf_properties
+FAILED tests/integration/test_approved_batch_qualification_contract.py::test_static_worker_build_is_reproducible_and_bound
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[final-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[intermediate-symlink]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[untracked]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dirty]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[wrong-base]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[held-object-overlap]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[dynamic-elf]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[manifest-drift]
+ERROR tests/security/test_slice036_run_source_selectors.py::test_public_cmd_run_selector_refusal_is_exact_and_precedes_every_side_effect[digest-drift]
+2 failed, 1856 passed, 161 skipped, 9 errors in 774.44s (0:12:54)
+FROZEN  tests=2028  expected_skips=168  run_exit=1  output=/tmp/ranex-118-freeze/ranex-subject/.local/ranex-118-refreeze.json
+
+ERROR: E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled
+
+ERROR: E-PYTEST-XFAIL-DISABLED: xfail/skip reporting must remain enabled
+
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-tetw4ed3/tmp/ranex-subject-9sua8xga/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-tetw4ed3/tmp/ranex-subject-t3fd2gt4/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)
+F
+======================================================================
+FAIL: test_it_works (test_truth.TheProduct.test_it_works)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/ranex-subject-tetw4ed3/tmp/ranex-subject-23nwukle/tree/tests/test_truth.py", line 6, in test_it_works
+    self.assertEqual(1, 2, 'the product is broken')
+AssertionError: 1 != 2 : the product is broken
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)
+
