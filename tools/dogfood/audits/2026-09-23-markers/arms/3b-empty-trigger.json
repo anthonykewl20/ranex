@@ -1,0 +1,97 @@
+{
+ "arm": "3b-empty-trigger",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-malformed::306ba7687fbd76e8dbdc3197f6783b95881d8cc89cc431c2cd5f7a662e899ea5"
+   ],
+   "outcome_digest": "sha256:b9873b7e9975c25fb3f17d4e16cf90369b64d5b60a4c8b651d7e1c868c1ece92",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-malformed::306ba7687fbd76e8dbdc3197f6783b95881d8cc89cc431c2cd5f7a662e899ea5"
+   ],
+   "outcome_digest": "sha256:b9873b7e9975c25fb3f17d4e16cf90369b64d5b60a4c8b651d7e1c868c1ece92",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 2,
+    "passed": 18,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=MARKERS_SANE",
+    "      scan: blocking suite outcome(s): shortcut_probe.py (failed)"
+   ],
+   "finding_ids": [
+    "shortcut_probe.py::ranex/marker-malformed::306ba7687fbd76e8dbdc3197f6783b95881d8cc89cc431c2cd5f7a662e899ea5"
+   ],
+   "outcome_digest": "sha256:b9873b7e9975c25fb3f17d4e16cf90369b64d5b60a4c8b651d7e1c868c1ece92",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "expect_pass": false,
+ "files": {
+  "shortcut_probe.py": "# ranex: global lock ;\n"
+ },
+ "identical": true,
+ "reached_pass": false,
+ "standalone_findings": [
+  {
+   "fingerprint": "306ba7687fbd76e8dbdc3197f6783b95881d8cc89cc431c2cd5f7a662e899ea5",
+   "level": "error",
+   "location": {
+    "artifactLocation": {
+     "uri": "shortcut_probe.py"
+    },
+    "region": {
+     "endLine": 1,
+     "snippet": {
+      "text": "# ranex: global lock ;"
+     },
+     "startLine": 1
+    }
+   },
+   "ruleId": "ranex/marker-malformed"
+  }
+ ],
+ "status": "as-expected"
+}

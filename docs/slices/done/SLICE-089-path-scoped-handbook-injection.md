@@ -1,4 +1,4 @@
-# SLICE-088 — Path-scoped kernel handbook injection
+# SLICE-089 — Path-scoped kernel handbook injection
 
 **Status:** done
 **Issue:** #100
