@@ -59,6 +59,7 @@
  "final_round": {
   "merge_commit": "a62260576",
   "refreeze": "FROZEN tests=2203 = main 2182 + #111 21 (strict superset); expected-skip declarations carried verbatim from main's manifest (an intermediate freeze with the branch's older 45 reason wordings was discarded and re-run); load_manifest accepted; golden recaptured at main's honest run_exit=1 convention",
-  "sealed": "2 failed, 2027 passed, 165 skipped, 9 errors \u2014 documented drift residual"
+  "sealed": "2 failed, 2027 passed, 165 skipped, 9 errors \u2014 documented drift residual",
+  "suite": "7 failed, 2096 passed, 91 skipped, 9 errors (2203 total) \u2014 only the documented drift classes, identical IDs to the prior rounds"
  }
 }
