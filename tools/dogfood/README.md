@@ -332,6 +332,38 @@ fails, because a selftest that quietly starts passing has stopped proving
 anything. Only a genuine FALSE-PASS carries a recall window; nothing was
 approved by a selftest's.
 
+## Handbook injection proof — issue #100's five arms as control pairs
+
+`tools/dogfood/handbook_proof.py` runs the kernel-handbook injection's five
+real-data arms through the calibration machinery above — six controls, each
+a positive that must hold and a negative that must be refused, repeated on
+identical input:
+
+    uv run --frozen python tools/dogfood/handbook_proof.py \
+        --out tools/dogfood/audits/2026-09-24-handbook-injection --repeats 3
+
+1. resolving every path of `benjaminp/six@1.17.0` (pinned to
+   `ebd9b3af90247b8858d415a05e96e9ee61e48d07`) and of this repository yields
+   a stable resolution-table digest per repository; one perturbed chapter
+   byte changes it (negative);
+2. project rule over system rule on the same glob, the row recording both
+   matches; the project rule removed, the system rule wins (negative);
+3. a content-sniffed path that also matches a project rule resolves to the
+   project chapter — proved on a real delegate subprocess's brief, where
+   the sniff selects a system chapter only where no project rule matched;
+4. the delegate outcome's retained-log manifest carries the handbook digest
+   equal to the engine's over the same inputs, one changed handbook byte
+   refused; and a governed `ranex run` + `gate evaluate` on a real subject
+   are identical with and without a system handbook, no handbook bytes in
+   evidence or verdict, a doctored evidence file caught;
+5. every path in scope appears in the brief's table, matched or `unmatched`;
+   a brief with one path silently dropped is caught.
+
+Real subprocesses on real repositories throughout; network is required for
+the six clone and nothing else. Retained receipt:
+`audits/2026-09-24-handbook-injection/` (`calibration.json` + the pinned
+`environment.json` naming the six commit and the Ranex HEAD it judged).
+
 ## Lanes — run in parallel, bounded, without taking turns
 
 This host runs three legitimate kinds of heavy work at once. They are not rivals

@@ -1,4 +1,4 @@
-# SLICE-089 — Calibrated live HTTP observer
+# SLICE-090 — Calibrated live HTTP observer
 
 **Status:** done
 **Issue:** #118

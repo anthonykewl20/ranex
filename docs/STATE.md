@@ -9,7 +9,7 @@ Owner pivot: idea → approved map → frozen executable probes → scoped AI bu
 ADR-061 defines the whole program, required exits and trust boundaries. Do
 not stop at artifact integrity or describe it as product acceptance.
 
-SLICE-089 / #118: calibrated live HTTP observer. `ranex specification
+SLICE-090 / #118: calibrated live HTTP observer. `ranex specification
 observe-http` binds an independently pinned probe bundle, materialises the
 exact Git candidate, starts real PostgreSQL/PostgREST containers by immutable
 image ID, runs frozen HTTP journeys with process controls, and refuses
@@ -19,6 +19,14 @@ observer bytes): 16/16 VERIFIED — good runs byte-identical, known-bad
 rejected at tenant isolation, all three calibration refusals held. Receipts:
 audits/2026-09-23-live-observer/. Transient 503 readiness probes retry
 under the frozen deadline. Not a verdict.
+
+SLICE-089 / #100: path-scoped kernel handbook injection (ADR-062). Two
+layers — governance/handbook.json (project) over the XDG system layer —
+resolve purely per path; task delegate injects chapters plus the table into
+the brief and lands the additive ADR-043 manifest field. run/gate evaluate
+never read a handbook; verdict.py unchanged. #95 proof: six control pairs
+over six@1.17.0 and this repo, all VERIFIED ×3:
+audits/2026-09-24-handbook-injection/.
 
 SLICE-088 / #110: deliberate-shortcut markers as deterministic evidence —
 `ranex markers` into SARIF via #97's reducer; malformed markers error; scan
@@ -36,7 +44,7 @@ The treehouse pool path makes host_result_dir's `../../../etc/passwd` probe
 resolve inside writable `$HOME`; those five pass from `/tmp`-depth trees.
 
 SLICE-087 / #116 stands as recorded in MAP §6.4. Queue: #113, #111, #112,
-#114, #115, then milestone 7 (#107-#109), then #100, #102, #105, #106.
+#114, #115, then milestone 7 (#107-#109), then #102, #105, #106.
 
 #117: lane check/write race fixed by a persistent directory flock (5/5/5 admitted, fixed 2/2/2).
 

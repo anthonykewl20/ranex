@@ -1,0 +1,36 @@
+exit=0
+brief:
+perform the real handbook acceptance work
+
+## Kernel handbook — guidance, never authority
+
+These chapters are guidance for the files in scope. Only the kernel
+enforces; no chapter can widen, narrow or replace a gate, claim,
+verdict or journal rule.
+
+### Chapter project:legacy/*.m
+(layer=project pattern=legacy/*.m merged=no sniffed=no)
+
+PROJECT legacy guidance: do not modernise blind.
+
+### Chapter project:src/**
+(layer=project pattern=src/** merged=no sniffed=no)
+
+PROJECT src guidance: keep modules pure.
+
+### Chapter system:**/*.m
+(layer=system pattern=**/*.m merged=no sniffed=yes)
+
+SYSTEM objc-flavoured guidance.
+
+### Resolution table
+
+- <REL-PATH> → unmatched
+- <REL-PATH> → unmatched
+- <REL-PATH> → project:legacy/*.m
+- <REL-PATH> → project:src/**
+- <REL-PATH> → system:**/*.m
+manifest:
+digest=<DIGEST>
+chapters=project:legacy/*.m,project:src/**,system:**/*.m
+matched=3 unmatched=2
