@@ -27,10 +27,12 @@ def instruction_record(
 ) -> dict[str, object]:
     """The instruction a delegated worker is handed, carried verbatim.
 
-    ``prompt`` is the exact argv string passed to the harness; ``handbook_
-    chapters`` are any chapters injected alongside it (none exist yet — the
-    injection mechanism is #100). Both ride in one canonical record so a
-    future injector composes this digest instead of re-framing it.
+    ``prompt`` is the exact argv string passed to the harness — since ADR-062
+    (#100) that is the operator's words with any injected handbook chapters
+    already composed into them, so the digest covers the chapters by covering
+    the composed string. ``handbook_chapters`` remains the composition point
+    for a mechanism that hands chapters alongside the prompt instead of
+    inside it; it is empty today.
     """
 
     return {"handbook_chapters": list(handbook_chapters), "prompt": prompt}
@@ -150,12 +152,17 @@ def write_log_manifest(
     policy: Mapping[str, object],
     *,
     instruction_digest: str | None = None,
+    handbook: Mapping[str, object] | None = None,
 ) -> None:
     """Atomically publish the canonical manifest for retained execution streams.
 
-    ``instruction_digest`` names what the delegated worker was told, beside the
-    streams of what it produced; manifests without one (fanout parent, host
-    workflow) are unchanged.
+    Two additive fields, both omitted when not in play (fanout parent, host
+    workflow): ``instruction_digest`` names what the delegated worker was
+    told — sha256 over the canonical bytes of the composed instruction —
+    beside the streams of what it produced (#111); ``handbook`` records the
+    ADR-062 handbook resolution — resolution digest, chapter ids, and
+    matched/unmatched counts — when a delegate packet carried kernel-handbook
+    chapters. Neither appears in any evidence envelope or verdict.
     """
 
     manifest: dict[str, object] = {
@@ -165,6 +172,8 @@ def write_log_manifest(
     }
     if instruction_digest is not None:
         manifest["instruction_digest"] = instruction_digest
+    if handbook is not None:
+        manifest["handbook"] = dict(handbook)
     write_atomic(
         directory / "manifest.json",
         canonical_json_bytes(manifest) + b"\n",

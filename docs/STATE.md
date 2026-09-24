@@ -1,50 +1,50 @@
 # State
 
 **Updated:** 2026-09-24
-**Active slice:** none — live observer is next under ADR-061; #111 closed on PR #124; #113 is next.
+**Active slice:** none — live observer is next under ADR-061.
 
 Owner pivot: idea → approved map → frozen executable probes → scoped AI build
 → independent live evidence → deterministic verdict → exact-candidate merge.
-ADR-061 defines the whole program, required exits and trust boundaries.
-Do not stop at artifact integrity or describe it as product acceptance.
+ADR-061 defines the program, exits and trust boundaries; no ranex prove
+exists; do not stop at artifact integrity or call it acceptance.
 
-#111 shipped: `task delegate` now records what shaped the work. The outcome
-and the ADR-043 log manifest carry `instruction_digest` (sha256 over the
-canonical instruction bytes handed to the worker: prompt plus any injected
-handbook chapters, composed so #100 extends it), and the resolved instruction
-is retained as a redacted `instruction` stream under the unchanged ADR-043
-bounded/truncating/redacting rules. Signed envelope untouched (EVIDENCE_DOMAIN
-v6 is PR-07/ADR-016). Evidence:
-tools/dogfood/audits/2026-09-24-issue111-instruction-digest/.
+SLICE-089 / #100: path-scoped kernel handbook injection (ADR-062): project
+layer governance/handbook.json over the system layer (one operator),
+resolved purely per path. task delegate injects the chapters into the brief
+and lands {digest, chapters, matched, unmatched} as the additive ADR-043
+manifest field. No handbook anywhere is byte-identical to before; run/gate
+evaluate never read a handbook; verdict.py unchanged. Six #95 control pairs
+VERIFIED ×3 (tools/dogfood/audits/2026-09-24-handbook-injection/).
 
-Suite status, measured 2026-09-23/24: the host glibc moved past the owner's
-pinned native build inputs (libc, libm, libz, ld-linux, ld.so.cache, libc.a),
-so the drift family (slice036 selectors, approved-batch contract,
-specification-batch qualification) and every nested-green ceremony test
-(gating stage_08b/slice009, suite-freeze golden's run_exit=0) are red on a
-pristine base checkout too — the owner re-pin HEAD already records is still
-needed. Refreezes stay mechanical (IDs only; outcome-blind by contract). The
-treehouse pool path also sits deep enough that host_result_dir's
-`../../../etc/passwd` probe resolves inside writable `$HOME`; those five pass
-from `/tmp`-depth trees.
+SLICE-088 / #110: deliberate-shortcut markers as deterministic evidence —
+`ranex markers` into SARIF 2.1.0, trigger-less/half-empty markers are
+errors, acceptance rides the committed `accepted` map; 8 arms VERIFIED ×3
+over pinned benjaminp/six (2026-09-23-markers/).
 
-SLICE-087 / #116: external executable probe bundles stand as recorded in
-MAP §6.4. Next: #113 (self-test wiring), #112, #114, #115, milestone 7
-(#107, #108, #109), then #100 (handbook injection), #102, #105, #106.
+#111 shipped: `task delegate` records what shaped the work. Outcome and
+ADR-043 manifest carry `instruction_digest` — sha256 over the canonical
+composed instruction (since ADR-062, the prompt with injected chapters in
+it) — and the instruction is retained as a redacted `instruction` stream
+under the unchanged ADR-043 rules; signed envelope untouched (v6 is
+PR-07/ADR-016). Evidence: 2026-09-24-issue111-instruction-digest/.
 
-Live journal experiment: three baseline matches, three named mutant
-failures, live probe rejects the known-bad commit (2026-09-12-probe-bundles/).
+Next: #113 (self-test wiring), #112, #114, #115, milestone 7 (#107, #108,
+#109), then #102, #105, #106; #102 review and #112 minimization compose the
+handbook and digest records later.
 
-#117: the host lane check/write race reproduced with real concurrent
-processes; a persistent directory flock now serializes registry transactions
-(two-slot fixed runs admitted 2/2/2, one-slot 1 each).
+Suite status 2026-09-23/24: host glibc moved past the owner's pinned native
+build inputs, so the drift family (slice036, approved-batch, spec-batch) and
+every nested-green ceremony test (gating, suite-freeze golden) are red on a
+pristine base too — the owner re-pin main already records is still needed.
+Refreezes stay mechanical (IDs only). The treehouse pool path sits deep
+enough that host_result_dir's `../../../etc/passwd` probe resolves inside
+writable $HOME; those five pass from /tmp.
 
+SLICE-087 / #116 and #117 stand as recorded in their slices and audits.
 Parallel work and overlapping verification are owner-authorized (2026-09-12);
-use separate writer worktrees and pinned verification worktrees. Refreeze on
-a committed tree; load_manifest must accept the result before committing it.
+refreeze on a committed tree and load_manifest before committing it.
 
 Remaining boundaries: same-subject evidence reuse; hostile report producers
 (F-012); same-UID trusted controller; no external witness against an operator
-holding both keys. Ordinary run is non-confined. Full installed harness
-mediation, independent observer scheduling, merge-group checks and production
-hosting/rotation/backup are UNVERIFIED or UNIMPLEMENTED as detailed in MAP.
+holding both keys. Ordinary run is non-confined; harness mediation, observer
+scheduling, merge-group checks and production hosting are UNVERIFIED (MAP).

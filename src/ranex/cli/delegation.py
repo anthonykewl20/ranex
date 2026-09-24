@@ -12,7 +12,7 @@ import sqlite3
 import subprocess
 import sys
 import tempfile
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import cast
 
@@ -38,11 +38,30 @@ from ranex.policy.adapters.configuration.yaml.slice_gate_loader import (
     load_gate_text,
     reject_pytest_xfail_blindness,
 )
+from ranex.policy.handbook import (
+    PROJECT_LAYER,
+    SYSTEM_LAYER,
+    HandbookEntry,
+    glob_matches,
+    parse_handbook_bytes,
+    render_brief,
+    resolve_handbook,
+)
 
 BRIDGE_TASK_VARIABLE = "RANEX_TASK_ID"
 BRIDGE_EMIT_VARIABLE = "RANEX_EMIT"
 SIGNING_KEY_VARIABLE = "RANEX_SIGNING_KEY"
 VERDICT_SIGNING_KEY_VARIABLE = "RANEX_VERDICT_SIGNING_KEY"
+
+#: The project layer's designated location in the dispatched base tree, and
+#: the system layer's designated location for the one operator (ADR-062,
+#: MAP §17.6 knob 3: handbook additions in a designated directory).
+HANDBOOK_PROJECT_PATH = "governance/handbook.json"
+HANDBOOK_SYSTEM_CONFIG_DIRECTORY = ("ranex", "handbook.json")
+
+#: The content peek bound: the sniffer only ever reads a path's first
+#: non-blank line, and never more bytes than this from it.
+_PEEK_LINE_LIMIT = 256
 
 _OUTPUT_TAIL_LIMIT = 4000
 
@@ -230,6 +249,7 @@ def _retained_logs(
     literals: list[tuple[str, str]],
     max_bytes: int,
     instruction_digest: str | None = None,
+    handbook: Mapping[str, object] | None = None,
 ) -> dict[str, object]:
     if retention == "off":
         return {"version": 1, "retained": False, "reason": "operator-disabled"}
@@ -260,6 +280,7 @@ def _retained_logs(
         streams,
         policy,
         instruction_digest=instruction_digest,
+        handbook=handbook,
     )
     return {
         "version": 1,
@@ -267,6 +288,139 @@ def _retained_logs(
         "streams": streams,
         "policy": policy,
     }
+
+
+def system_handbook_path(environment: Mapping[str, str]) -> Path:
+    """The one operator-level handbook location: two layers, one operator.
+
+    ``XDG_CONFIG_HOME`` when set, else ``$HOME/.config``, then
+    ``ranex/handbook.json`` — the same resolution an operator's other local
+    tools use, so the system layer is a designated directory (§17.6 knob 3),
+    never a flag and never a second location.
+    """
+
+    config_home = environment.get("XDG_CONFIG_HOME") or ""
+    if not config_home:
+        home = environment.get("HOME") or ""
+        if not home:
+            raise ValueError(
+                "refusing handbook system layer: neither XDG_CONFIG_HOME nor "
+                "HOME is set; cannot locate the designated directory"
+            )
+        config_home = str(Path(home) / ".config")
+    return Path(config_home, *HANDBOOK_SYSTEM_CONFIG_DIRECTORY)
+
+
+def _handbook_layers(
+    environment: Mapping[str, str],
+    worktree: Path,
+    base_commit: str,
+    paths: Sequence[str],
+) -> tuple[tuple[HandbookEntry, ...], tuple[HandbookEntry, ...]]:
+    """Load both handbook layers; absent layers are empty, malformed refuse.
+
+    The project layer is read as a verified blob only when the scope listing
+    already names its path, so a repository without a handbook pays one
+    `git ls-tree` and nothing else.
+    """
+
+    system_path = system_handbook_path(environment)
+    try:
+        system_data = system_path.read_bytes()
+    except FileNotFoundError:
+        system_entries: tuple[HandbookEntry, ...] = ()
+    except OSError as exc:
+        raise ValueError(
+            f"refusing handbook system layer: cannot read {system_path}: {exc}"
+        ) from exc
+    else:
+        system_entries = parse_handbook_bytes(SYSTEM_LAYER, system_data)
+
+    project_entries: tuple[HandbookEntry, ...] = ()
+    if HANDBOOK_PROJECT_PATH in paths:
+        project_data = verified_blob_at_path(
+            worktree, base_commit, HANDBOOK_PROJECT_PATH, git
+        )
+        if project_data is not None:
+            project_entries = parse_handbook_bytes(PROJECT_LAYER, project_data)
+    return system_entries, project_entries
+
+
+def _scope_paths(worktree: Path, base_commit: str) -> list[str]:
+    """Every file path in the dispatched base tree, in git's sorted order."""
+
+    listing = git(worktree, "ls-tree", "-r", "--name-only", "-z", base_commit)
+    if listing.returncode != 0:
+        raise ValueError(
+            "refusing handbook scope: cannot list the dispatch base tree: "
+            f"{listing.stderr.strip()}"
+        )
+    return [name for name in listing.stdout.split("\0") if name]
+
+
+def _content_peeks(
+    worktree: Path,
+    base_commit: str,
+    paths: Sequence[str],
+    system_entries: tuple[HandbookEntry, ...],
+) -> dict[str, str]:
+    """First non-blank line for exactly the paths a sniff-marker entry covers.
+
+    The sniffer pays for one bounded `git show` per path its globs name and
+    nothing for any other path; a path that cannot be read as text simply has
+    no peek, which leaves the plain path match in place.
+    """
+
+    sniff_globs = {
+        entry.path_glob for entry in system_entries if entry.sniff_marker is not None
+    }
+    if not sniff_globs:
+        return {}
+    peeks: dict[str, str] = {}
+    for path in paths:
+        if not any(glob_matches(glob, path) for glob in sniff_globs):
+            continue
+        try:
+            shown = git(worktree, "show", f"{base_commit}:{path}")
+        except (OSError, UnicodeDecodeError):
+            continue
+        if shown.returncode != 0:
+            continue
+        for line in shown.stdout.splitlines():
+            stripped = line.lstrip()
+            if stripped:
+                peeks[path] = stripped[:_PEEK_LINE_LIMIT]
+                break
+    return peeks
+
+
+def _delegate_handbook(
+    environment: Mapping[str, str],
+    worktree: Path,
+    base_commit: str,
+) -> tuple[str, dict[str, object] | None]:
+    """Resolve the handbook for a dispatch, or report that none was in play.
+
+    Returns the brief addendum (empty when no layer exists) and the additive
+    manifest record (None when no layer exists, so nothing changes for
+    handbook-free repositories).
+    """
+
+    paths = _scope_paths(worktree, base_commit)
+    system_entries, project_entries = _handbook_layers(
+        environment, worktree, base_commit, paths
+    )
+    if not system_entries and not project_entries:
+        return "", None
+    peeks = _content_peeks(worktree, base_commit, paths, system_entries)
+    resolution = resolve_handbook(system_entries, project_entries, paths, peeks)
+    record: dict[str, object] = {
+        "digest": resolution.digest,
+        "chapters": [chapter.chapter_id for chapter in resolution.chapters],
+        "matched": sum(1 for row in resolution.rows if row.status == "matched"),
+        "unmatched": sum(1 for row in resolution.rows if row.status == "unmatched"),
+    }
+    return render_brief(resolution), record
 
 
 def _run_harness(
@@ -350,12 +504,6 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
         if (not harness.is_file()) or (not os.access(harness, os.X_OK)):
             raise ValueError(f"refusing harness executable {harness}")
 
-        # What the worker is handed is fixed the moment we are invoked: digest
-        # and retain the resolved instruction before anything runs, so every
-        # outcome — timeout included — names what shaped the work.
-        resolved_instruction_digest = instruction_digest(args.prompt)
-        instruction_stream_text = instruction_bytes(args.prompt).decode("utf-8")
-
         from ranex.cli.main import (
             Journal,
             _latest_task_dispatch,
@@ -369,6 +517,38 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             raw_worktree=args.worktree,
             raw_journal=args.journal,
         )
+
+        # ADR-062: resolve the kernel handbook for the dispatched base tree
+        # before the harness runs, so the worker's brief carries the chapters
+        # for exactly the files in scope. No layer anywhere → no injection and
+        # no manifest field; this delegate's behaviour is then byte-identical
+        # to a pre-handbook run. The record was just appended by dispatch, so
+        # a miss here cannot happen in a real run; when it does (coverage
+        # doubles), injection is simply skipped and the post-harness dispatch
+        # chain refuses exactly as it always has.
+        handbook_dispatch = _latest_task_dispatch(
+            Journal(Path(args.journal).resolve()).entries(),
+            args.task_id,
+        )
+        if handbook_dispatch is None:
+            brief_addendum, handbook_record = "", None
+        else:
+            brief_addendum, handbook_record = _delegate_handbook(
+                os.environ, worktree, cast(str, handbook_dispatch["base_commit"])
+            )
+        prompt = (
+            args.prompt
+            if not brief_addendum
+            else f"{args.prompt}\n\n{brief_addendum}"
+        )
+
+        # What the worker is handed is fixed here: the composed prompt — the
+        # operator's words plus any handbook chapters ADR-062 injected into
+        # the brief — is exactly the argv string the harness receives. Digest
+        # and retain the resolved instruction before anything runs, so every
+        # outcome — timeout included — names what shaped the work.
+        resolved_instruction_digest = instruction_digest(prompt)
+        instruction_stream_text = instruction_bytes(prompt).decode("utf-8")
 
         scratch = Path(tempfile.mkdtemp(prefix="ranex-delegate-"))
         emit = scratch / "emission.jsonl"
@@ -384,7 +564,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 harness=harness,
                 worktree=worktree,
                 model=args.model,
-                prompt=args.prompt,
+                prompt=prompt,
                 timeout=args.timeout,
                 environment=execution_environment,
             )
@@ -417,6 +597,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                 literals=literals,
                 max_bytes=max_bytes,
                 instruction_digest=resolved_instruction_digest,
+                handbook=handbook_record,
             )
             _write_outcome(
                 outcome_path,
@@ -597,6 +778,7 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
             literals=literals,
             max_bytes=max_bytes,
             instruction_digest=resolved_instruction_digest,
+            handbook=handbook_record,
         )
         _write_outcome(
             outcome_path,
