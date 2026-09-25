@@ -146,6 +146,25 @@ def persist_stream(
     }
 
 
+def persist_envelope(directory: Path, envelope_bytes: bytes) -> dict[str, object]:
+    """Atomically retain the repair envelope beside the execution streams.
+
+    SLICE-092. The record is the ADR-043 stream shape (file, bytes, sha256
+    of the bytes exactly as retained — the caller redacts before calling,
+    so the digest is a promise about what a reader will see).
+    """
+
+    directory.mkdir(parents=True, exist_ok=True)
+    write_atomic(
+        directory / "repair-envelope.json", envelope_bytes, root=directory
+    )
+    return {
+        "file": "repair-envelope.json",
+        "bytes": len(envelope_bytes),
+        "sha256": "sha256:" + hashlib.sha256(envelope_bytes).hexdigest(),
+    }
+
+
 def write_log_manifest(
     directory: Path,
     streams: Mapping[str, Mapping[str, object]],
@@ -153,16 +172,19 @@ def write_log_manifest(
     *,
     instruction_digest: str | None = None,
     handbook: Mapping[str, object] | None = None,
+    envelope: Mapping[str, object] | None = None,
 ) -> None:
     """Atomically publish the canonical manifest for retained execution streams.
 
-    Two additive fields, both omitted when not in play (fanout parent, host
+    Three additive fields, all omitted when not in play (fanout parent, host
     workflow): ``instruction_digest`` names what the delegated worker was
     told — sha256 over the canonical bytes of the composed instruction —
     beside the streams of what it produced (#111); ``handbook`` records the
     ADR-062 handbook resolution — resolution digest, chapter ids, and
     matched/unmatched counts — when a delegate packet carried kernel-handbook
-    chapters. Neither appears in any evidence envelope or verdict.
+    chapters; ``envelope`` records the SLICE-092 retained repair envelope's
+    stream record when the run retained one. None appears in any evidence
+    envelope or verdict.
     """
 
     manifest: dict[str, object] = {
@@ -174,6 +196,8 @@ def write_log_manifest(
         manifest["instruction_digest"] = instruction_digest
     if handbook is not None:
         manifest["handbook"] = dict(handbook)
+    if envelope is not None:
+        manifest["envelope"] = dict(envelope)
     write_atomic(
         directory / "manifest.json",
         canonical_json_bytes(manifest) + b"\n",

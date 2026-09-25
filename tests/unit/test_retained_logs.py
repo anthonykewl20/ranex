@@ -19,6 +19,7 @@ from ranex.execution.retained_logs import (
     instruction_digest,
     instruction_record,
     log_dir_for_outcome,
+    persist_envelope,
     persist_stream,
     truncate_tail,
     validate_max_bytes,
@@ -261,3 +262,41 @@ def test_write_log_manifest_omits_instruction_digest_when_not_given(
 
     manifest = json.loads((directory / "manifest.json").read_text())
     assert "instruction_digest" not in manifest
+
+
+def test_persist_envelope_retains_advisory_bytes_and_manifest_field(tmp_path: Path) -> None:
+    # SLICE-092: the ADR-043 manifest gains the envelope field; the retained
+    # file's digest is a promise about the post-redaction bytes on disk.
+    from ranex.governed_execution.repair_envelope import (
+        envelope_from_suite,
+        envelope_packet_bytes,
+    )
+
+    directory = tmp_path / "T-2.json.logs"
+    envelope = envelope_from_suite(
+        repro_argv="/usr/bin/python3 -m pytest -q", junit_bytes=None
+    )
+    raw = envelope_packet_bytes(envelope)
+
+    record = persist_envelope(directory, raw)
+
+    retained = directory / "repair-envelope.json"
+    assert retained.read_bytes() == raw
+    assert record == {
+        "file": "repair-envelope.json",
+        "bytes": len(raw),
+        "sha256": "sha256:" + hashlib.sha256(raw).hexdigest(),
+    }
+    streams = {
+        name: persist_stream(directory, name, "", literals=(), max_bytes=100)
+        for name in ("suite.stdout", "suite.stderr")
+    }
+    write_log_manifest(
+        directory, streams, {"max_bytes": 100, "retention": "replace"},
+        envelope=record,
+    )
+    manifest = json.loads((directory / "manifest.json").read_text())
+    assert manifest["envelope"] == record
+    # Omitted entirely when no envelope was retained: additive, like handbook.
+    write_log_manifest(directory, streams, {"max_bytes": 100, "retention": "replace"})
+    assert "envelope" not in json.loads((directory / "manifest.json").read_text())

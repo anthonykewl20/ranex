@@ -244,6 +244,8 @@ this reporting hook. See [ADR-059](docs/adr/ADR-059-controller-pytest-reporting.
 
 ## Completed slices
 
+- [SLICE-092 — Repair envelope at the read channel](docs/slices/done/SLICE-092-repair-envelope-read-channel.md): a FAIL now carries a bounded advisory packet (failing IDs, assertion text, file:line, repro argv, L0/L1/L2 rung pointers) beside the signed verdict; `task stop-hook` runs the governed cycle observer-side and gates an autonomous 3-miss loop. Envelope bytes are never evidence.
+
 - [SLICE-091 — Calibrated live HTTP observer](docs/slices/done/SLICE-091-calibrated-live-http-observer.md): `observe-http` runs frozen PostgREST/PostgreSQL journeys on exact Git candidates with known-bad calibration; observations, not verdicts.
 
 - [SLICE-090 — Instrument self-test](docs/slices/done/SLICE-090-instrument-selftest.md): every dogfood gauge proves itself on a committed good/bad reference pair before any measurement; a measurement receipt cannot exist without a passing self-test in the same run.

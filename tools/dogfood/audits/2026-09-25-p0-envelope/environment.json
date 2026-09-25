@@ -1,0 +1,40 @@
+{
+  "argv": [
+    "tools/dogfood/p0_envelope_proof.py"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex",
+  "host": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+  "python": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/python3",
+  "kernel_python": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/python",
+  "ranex_head": "edbc390a027814147e893ed86a722ce93cdcc5ff",
+  "six_tag": "1.17.0",
+  "six_commit": "ebd9b3af90247b8858d415a05e96e9ee61e48d07",
+  "suite_command": [
+    "/usr/bin/python3",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "xfail_strict=true",
+    "-p",
+    "ranex.foundation.pytest_xpass",
+    "--junitxml=governance/suite_results.xml",
+    "test_six.py"
+  ],
+  "planted_defect": {
+    "from": "int2byte = struct.Struct(\">B\").pack",
+    "to": "int2byte = struct.Struct(\">H\").pack"
+  },
+  "expected_failure": {
+    "id": "test_six.py::test_int2byte",
+    "at": "test_six.py:527"
+  },
+  "console_script": {
+    "argv": [
+      "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/ranex",
+      "--version"
+    ],
+    "exit": 0,
+    "stdout": "ranex v0.1.006"
+  }
+}
