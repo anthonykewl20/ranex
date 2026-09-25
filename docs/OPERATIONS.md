@@ -450,6 +450,7 @@ currently exposes:
 ```text
 gate evaluate
 journal verify
+promotion evaluate
 run
 suite freeze
 deps fetch | approve

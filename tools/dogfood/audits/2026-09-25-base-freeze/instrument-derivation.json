@@ -1,0 +1,66 @@
+{
+  "schema": "ranex-base-freeze-derivation-v1",
+  "controls": [
+    {
+      "control": "arm-instrument-shape",
+      "expectation": "the pinned six suite freezes to 200 IDs with 15 operator-approved platform skips, as the scout measured",
+      "facts": {
+        "suite_ids": 200,
+        "approved_platform_skips": 15
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-instrument-derivation",
+      "expectation": "three independent freezes of the same pinned tree produce one byte-identical manifest digest; the governed cycle PASSes; the journal chain verifies",
+      "facts": {
+        "freeze": {
+          "iterations": [
+            {
+              "expected_skips": 0,
+              "evaluate_exit": 1
+            },
+            {
+              "expected_skips": 15,
+              "evaluate_exit": 0
+            }
+          ],
+          "approved_skips": [
+            "test_six.py::test_move_items[tkinter]",
+            "test_six.py::test_move_items[tkinter_colorchooser]",
+            "test_six.py::test_move_items[tkinter_commondialog]",
+            "test_six.py::test_move_items[tkinter_constants]",
+            "test_six.py::test_move_items[tkinter_dialog]",
+            "test_six.py::test_move_items[tkinter_dnd]",
+            "test_six.py::test_move_items[tkinter_filedialog]",
+            "test_six.py::test_move_items[tkinter_font]",
+            "test_six.py::test_move_items[tkinter_messagebox]",
+            "test_six.py::test_move_items[tkinter_scrolledtext]",
+            "test_six.py::test_move_items[tkinter_simpledialog]",
+            "test_six.py::test_move_items[tkinter_tix]",
+            "test_six.py::test_move_items[tkinter_tkfiledialog]",
+            "test_six.py::test_move_items[tkinter_tksimpledialog]",
+            "test_six.py::test_move_items[tkinter_ttk]"
+          ]
+        },
+        "suite_manifest_digest": "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+        "derivation_digests": [
+          "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+          "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+          "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86"
+        ],
+        "derivation_byte_identical": true,
+        "suite_ids": 200,
+        "approved_platform_skips": 15,
+        "cycle_exit": 0,
+        "journal_chain": true,
+        "journal_head_at_freeze": "sha256:3c68c47090f8ada4245aa85bac75ee8f16315904636eb9d13ca158267d43cbe9"
+      },
+      "status": "VERIFIED"
+    }
+  ],
+  "mint_values": {
+    "suite_manifest_digest": "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+    "journal_head_at_freeze": "sha256:3c68c47090f8ada4245aa85bac75ee8f16315904636eb9d13ca158267d43cbe9"
+  }
+}

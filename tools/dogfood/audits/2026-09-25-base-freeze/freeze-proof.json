@@ -1,0 +1,170 @@
+{
+  "schema": "ranex-base-freeze-proof-v1",
+  "freeze_digest": "sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a",
+  "controls": [
+    {
+      "control": "arm-instrument-shape",
+      "expectation": "the pinned six suite freezes to 200 IDs with 15 operator-approved platform skips, as the scout measured",
+      "facts": {
+        "suite_ids": 200,
+        "approved_platform_skips": 15
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-instrument-derivation",
+      "expectation": "three independent freezes of the same pinned tree produce one byte-identical manifest digest; the governed cycle PASSes; the journal chain verifies",
+      "facts": {
+        "freeze": {
+          "iterations": [
+            {
+              "expected_skips": 0,
+              "evaluate_exit": 1
+            },
+            {
+              "expected_skips": 15,
+              "evaluate_exit": 0
+            }
+          ],
+          "approved_skips": [
+            "test_six.py::test_move_items[tkinter]",
+            "test_six.py::test_move_items[tkinter_colorchooser]",
+            "test_six.py::test_move_items[tkinter_commondialog]",
+            "test_six.py::test_move_items[tkinter_constants]",
+            "test_six.py::test_move_items[tkinter_dialog]",
+            "test_six.py::test_move_items[tkinter_dnd]",
+            "test_six.py::test_move_items[tkinter_filedialog]",
+            "test_six.py::test_move_items[tkinter_font]",
+            "test_six.py::test_move_items[tkinter_messagebox]",
+            "test_six.py::test_move_items[tkinter_scrolledtext]",
+            "test_six.py::test_move_items[tkinter_simpledialog]",
+            "test_six.py::test_move_items[tkinter_tix]",
+            "test_six.py::test_move_items[tkinter_tkfiledialog]",
+            "test_six.py::test_move_items[tkinter_tksimpledialog]",
+            "test_six.py::test_move_items[tkinter_ttk]"
+          ]
+        },
+        "suite_manifest_digest": "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+        "derivation_digests": [
+          "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+          "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+          "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86"
+        ],
+        "derivation_byte_identical": true,
+        "suite_ids": 200,
+        "approved_platform_skips": 15,
+        "cycle_exit": 0,
+        "journal_chain": true,
+        "journal_head_at_freeze": "sha256:0afa25404235092fe37b1d663efe9f6591f26fb9728fa94d4ad8bfb27373173d"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-freeze-committed",
+      "expectation": "the committed freeze validates as ranex-base-freeze-v1, its exact committed bytes are digest-bound here, and its kernel_digest is verdict.py's bytes at this HEAD",
+      "facts": {
+        "freeze_digest": "sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a",
+        "freeze_id": "base-freeze-v1",
+        "kernel_digest_frozen": "sha256:2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6",
+        "kernel_digest_actual": "sha256:2969aa74adc8ac40393fb4f782e05be8f29f34d2ab0f594051906f4e6a5b5ed6",
+        "kernel_commit_frozen": "638f7d8613fe5cbdeed96b89c103d5185ce39866"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-instrument-reproduces",
+      "expectation": "the manifest digest frozen in v1 is reproduced by this run's independent derivation",
+      "facts": {
+        "frozen": "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86",
+        "derived": "sha256:74f4321bd18f6ef585912da78e3e84ebdaf9447673a242c001fbf2ae0903ba86"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-kernel-unchanged",
+      "expectation": "tests/contract/test_kernel_unchanged.py passes: verdict.py and KERNEL_DIGEST never moved",
+      "facts": {
+        "exit": 0,
+        "tail": "1 passed in 0.01s"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-gate-refuses-no-freeze",
+      "expectation": "REFUSED with cause no-freeze-citation",
+      "facts": {
+        "exit": 1,
+        "stdout_tail": "{\"axes\":[\"ranex-handbook.false_pass\",\"six.raw_false_pass\"],\"causes\":[{\"axis\":null,\"cause\":\"no-freeze-citation\",\"detail\":\"the claim names no base freeze; an improvement claim is gradable only against a committed freeze\"}],\"claim_id\":\"c4-differential-composed\",\"freeze_digest\":null,\"freeze_id\":null,\"schema\":\"ranex-promotion-decision-v1\",\"verdict\":\"REFUSED\"}",
+        "stderr_tail": ""
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-gate-refuses-tau",
+      "expectation": "REFUSED with cause tau-not-derived-from-freeze",
+      "facts": {
+        "exit": 1,
+        "stdout_tail": "\",\"cause\":\"tau-not-derived-from-freeze\",\"detail\":\"tau cites 'six.tau_max_honest_kill_rate' with 0.8; the freeze's value is 0.6 \u2014 \u03c4 must be derived from the freeze, never a constant\"}],\"claim_id\":\"c4-differential-composed\",\"freeze_digest\":\"sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a\",\"freeze_id\":\"base-freeze-v1\",\"schema\":\"ranex-promotion-decision-v1\",\"verdict\":\"REFUSED\"}",
+        "stderr_tail": ""
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-gate-refuses-baseline",
+      "expectation": "REFUSED with cause unpaired-baseline",
+      "facts": {
+        "exit": 1,
+        "stdout_tail": "\":[{\"axis\":\"six.raw_false_pass\",\"cause\":\"unpaired-baseline\",\"detail\":\"axis 'six.raw_false_pass': claim baseline 0.5 != freeze 0.625; the baseline is the freeze's, never the claim's\"}],\"claim_id\":\"c4-differential-composed\",\"freeze_digest\":\"sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a\",\"freeze_id\":\"base-freeze-v1\",\"schema\":\"ranex-promotion-decision-v1\",\"verdict\":\"REFUSED\"}",
+        "stderr_tail": ""
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-gate-admits-positive",
+      "expectation": "ADMITTED with paired marginals on named axes",
+      "facts": {
+        "exit": 0,
+        "stdout_tail": "{\"axes\":[\"ranex-handbook.false_pass\",\"six.raw_false_pass\"],\"causes\":[],\"claim_id\":\"c4-differential-composed\",\"freeze_digest\":\"sha256:c20162a28b3bf043052b5cd2c5a232df3bb08a1f82e23d22b326e10d3c0e159a\",\"freeze_id\":\"base-freeze-v1\",\"schema\":\"ranex-promotion-decision-v1\",\"verdict\":\"ADMITTED\"}",
+        "stderr_tail": ""
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-determinism",
+      "expectation": "the ADMITTED decision bytes are identical across three evaluations of the same claim",
+      "facts": {
+        "decision_digests": [
+          "sha256:56c55598830c97e95ee2f12015b73cd29b4d2856f8eb1ad1d62d9ccafbda78bf",
+          "sha256:56c55598830c97e95ee2f12015b73cd29b4d2856f8eb1ad1d62d9ccafbda78bf",
+          "sha256:56c55598830c97e95ee2f12015b73cd29b4d2856f8eb1ad1d62d9ccafbda78bf"
+        ],
+        "byte_identical": true
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-tamper-refused",
+      "expectation": "an uncommitted edit to the freeze (a rewritten gauge) is refused before any judgment in a throwaway clone of this repository",
+      "facts": {
+        "clone_exit": 0,
+        "exit": 2,
+        "stderr_tail": "ERROR  refusing to evaluate: the base freeze at governance/calibration/base-freeze-v1.json differs from the version committed in HEAD, and it decides this verdict. Commit the change so review sees it, or revert it"
+      },
+      "status": "VERIFIED"
+    }
+  ],
+  "commands": [
+    {
+      "control": "arm-kernel-unchanged",
+      "argv": [
+        "pytest",
+        "tests/contract/test_kernel_unchanged.py"
+      ],
+      "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex",
+      "exit": 0,
+      "stdout_tail": ".                                                                        [100%]\n1 passed in 0.01s",
+      "stderr_tail": ""
+    }
+  ],
+  "elapsed_s": 14.248
+}

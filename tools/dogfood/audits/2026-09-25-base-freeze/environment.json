@@ -1,0 +1,25 @@
+{
+  "argv": [
+    "tools/dogfood/base_freeze_proof.py"
+  ],
+  "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex",
+  "host": "Linux-7.0.0-31-generic-x86_64-with-glibc2.39",
+  "python": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/python3",
+  "kernel_python": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex/.venv/bin/python",
+  "ranex_head": "d4f63079118277ce71332ae0a934c1ae756844a6",
+  "six_tag": "1.17.0",
+  "six_commit": "ebd9b3af90247b8858d415a05e96e9ee61e48d07",
+  "suite_command": [
+    "/usr/bin/python3",
+    "-m",
+    "pytest",
+    "-q",
+    "-o",
+    "xfail_strict=true",
+    "-p",
+    "ranex.foundation.pytest_xpass",
+    "--junitxml=governance/suite_results.xml",
+    "test_six.py"
+  ],
+  "freeze_relative": "governance/calibration/base-freeze-v1.json"
+}
