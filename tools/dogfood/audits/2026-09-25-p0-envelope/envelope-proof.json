@@ -1,0 +1,219 @@
+{
+  "schema": "ranex-p0-envelope-proof-v1",
+  "controls": [
+    {
+      "control": "arm-passing-subject",
+      "expectation": "the pinned six suite freezes, passes, and publishes a PASS verdict with an empty-failure envelope",
+      "facts": {
+        "freeze": {
+          "iterations": [
+            {
+              "expected_skips": 0,
+              "evaluate_exit": 1
+            },
+            {
+              "expected_skips": 15,
+              "evaluate_exit": 0
+            }
+          ],
+          "approved_skips": [
+            "test_six.py::test_move_items[tkinter]",
+            "test_six.py::test_move_items[tkinter_colorchooser]",
+            "test_six.py::test_move_items[tkinter_commondialog]",
+            "test_six.py::test_move_items[tkinter_constants]",
+            "test_six.py::test_move_items[tkinter_dialog]",
+            "test_six.py::test_move_items[tkinter_dnd]",
+            "test_six.py::test_move_items[tkinter_filedialog]",
+            "test_six.py::test_move_items[tkinter_font]",
+            "test_six.py::test_move_items[tkinter_messagebox]",
+            "test_six.py::test_move_items[tkinter_scrolledtext]",
+            "test_six.py::test_move_items[tkinter_simpledialog]",
+            "test_six.py::test_move_items[tkinter_tix]",
+            "test_six.py::test_move_items[tkinter_tkfiledialog]",
+            "test_six.py::test_move_items[tkinter_tksimpledialog]",
+            "test_six.py::test_move_items[tkinter_ttk]"
+          ]
+        },
+        "evaluate_exit": 0,
+        "verdict_published": true,
+        "envelope": {
+          "verdict": "PASS",
+          "failures": 0
+        },
+        "approved_platform_skips": 15
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-failing-envelope",
+      "expectation": "the FAIL envelope carries the failing test's ID, assertion text and file:line from the run's own junit, bound to the signed verdict by record digest",
+      "facts": {
+        "wall_clock_s": 1.683,
+        "checks": {
+          "verdict_fail": true,
+          "evaluate_exit_fail": true,
+          "junit_retained": true,
+          "failure_id": true,
+          "assertion_text": true,
+          "file_line": true,
+          "digest_binds": true,
+          "rung_pointers": true
+        },
+        "failure": {
+          "assertion": "AssertionError: assert b'\\x00\\x03' == b'\\x03' At index 0 diff: b'\\x00' != b'\\x03' Use -v to get more diff",
+          "at": "test_six.py:527",
+          "id": "test_six.py::test_int2byte"
+        }
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-bytes",
+      "expectation": "measured agent-ingested bytes: the raw junit an honest agent must read today vs the envelope; measured on this host, never copied from the report",
+      "facts": {
+        "raw_junit_bytes": 19782,
+        "envelope_bytes": 1045,
+        "reduction_pct": 94.7
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-determinism",
+      "expectation": "re-rendering the envelope from the same captured projection, evidence and junit yields byte-identical digests 3\u00d7; whole-cycle re-evaluations differ only by the journal anchor, recorded here as the expected move",
+      "facts": {
+        "projection_render_digests": [
+          "aa0e47481a1699f58fa622fc560112778c968d52f797f2bc57ffc1a2eb36dfcc",
+          "aa0e47481a1699f58fa622fc560112778c968d52f797f2bc57ffc1a2eb36dfcc",
+          "aa0e47481a1699f58fa622fc560112778c968d52f797f2bc57ffc1a2eb36dfcc"
+        ],
+        "delegate_render_digests": [
+          "84879618830a7b5b1189ff47865e0e85b87e90cf3f9c8769c2525253d4954fab",
+          "84879618830a7b5b1189ff47865e0e85b87e90cf3f9c8769c2525253d4954fab",
+          "84879618830a7b5b1189ff47865e0e85b87e90cf3f9c8769c2525253d4954fab"
+        ],
+        "whole_cycle_digests": [
+          "aa0e47481a1699f58fa622fc560112778c968d52f797f2bc57ffc1a2eb36dfcc",
+          "102b81fe247916b30d35d11de48a9083d3d91b847a139a791fcee16ac3189a3e",
+          "b0db8af0d30356f39b39f257e7ed9cf51d42c31f975536be9124df001c212abd"
+        ],
+        "identical_input_identical_bytes": true,
+        "whole_cycles_differ_by_journal_anchor": true
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-stop-hook-loop",
+      "expectation": "task stop-hook on the failing six subject: block(1) block(2) STOP at budget 3, then a real repair approves PASS and resets the budget",
+      "facts": {
+        "decisions": [
+          {
+            "decision": "block",
+            "misses": 1,
+            "envelope_verdict": "FAIL"
+          },
+          {
+            "decision": "block",
+            "misses": 2,
+            "envelope_verdict": "FAIL"
+          },
+          {
+            "decision": "approve",
+            "misses": 3,
+            "envelope_verdict": "FAIL"
+          },
+          {
+            "decision": "approve",
+            "misses": 0,
+            "envelope_verdict": "PASS"
+          }
+        ]
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-negative-unsigned",
+      "expectation": "the governed cycle without a signing credential does not run: the hook names the refusal, writes no evidence, and reports the published verdict exactly as found",
+      "facts": {
+        "decision": "approve",
+        "read_state": "verified",
+        "reason_names_credential": true,
+        "evidence_unchanged": true
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-negative-evidence",
+      "expectation": "envelope bytes offered as signed evidence are refused by admission, never silently accepted",
+      "facts": {
+        "exit": 1,
+        "mentions_malformed": true
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-negative-delegated",
+      "expectation": "execute_environment refuses to build a delegated environment holding a signing credential (the C6 wall, live)",
+      "facts": {
+        "exit": 0,
+        "refusal": "REFUSED: refusing to execute with signing credential in ambient: RANEX_SIGNING_KEY was present in the environment"
+      },
+      "status": "VERIFIED"
+    },
+    {
+      "control": "arm-kernel-unchanged",
+      "expectation": "tests/contract/test_kernel_unchanged.py passes: verdict.py and KERNEL_DIGEST never moved",
+      "facts": {
+        "exit": 0,
+        "tail": "1 passed in 0.01s"
+      },
+      "status": "VERIFIED"
+    }
+  ],
+  "commands": [
+    {
+      "control": "arm-passing-subject",
+      "argv": [
+        "gate",
+        "evaluate"
+      ],
+      "cwd": "/tmp/ranex-p0-envelope-g46yq2mn/six-governed",
+      "exit": 0,
+      "stdout_tail": "PASS  gate=landing  subject=sha256:6ce200dc555fff592f16ec95bf0c57f6fbc3c5f711996eda46ae5b5ae0b9ab5a",
+      "stderr_tail": ""
+    },
+    {
+      "control": "arm-failing-envelope",
+      "argv": [
+        "gate",
+        "evaluate"
+      ],
+      "cwd": "/tmp/ranex-p0-envelope-g46yq2mn/six-governed",
+      "exit": 1,
+      "stdout_tail": "FAIL  gate=landing  rule=TESTS\n      tests-executed: blocking suite outcome(s): test_six.py::test_int2byte (failed)\n      subject=sha256:3992bf6c39ecfbaca2a978018e4ebb00513c703e4710450b5d50bbb1a2ba7218",
+      "stderr_tail": ""
+    },
+    {
+      "control": "arm-negative-evidence",
+      "argv": [
+        "gate",
+        "evaluate"
+      ],
+      "cwd": "/tmp/ranex-p0-envelope-g46yq2mn/six-governed",
+      "exit": 1,
+      "stdout_tail": "FAIL  gate=landing  rule=TESTS\n      REFUSED record 0 [malformed-record] suite_results must contain exactly ['counts', 'extra_count', 'manifest_digest', 'missing', 'non_passed', 'outcome_digest']\n      1 record(s) were refused above; no verifying evidence remains for: tests-executed\n      subject=sha256:6ce200dc555fff592f16ec95bf0c57f6fbc3c5f711996eda46ae5b5ae0b9ab5a",
+      "stderr_tail": ""
+    },
+    {
+      "control": "arm-kernel-unchanged",
+      "argv": [
+        "pytest",
+        "tests/contract/test_kernel_unchanged.py"
+      ],
+      "cwd": "/home/soultransit/.treehouse/ranex-34bbe7/5/ranex",
+      "exit": 0,
+      "stdout_tail": ".                                                                        [100%]\n1 passed in 0.01s",
+      "stderr_tail": ""
+    }
+  ],
+  "elapsed_s": 18.677
+}

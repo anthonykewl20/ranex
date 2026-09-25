@@ -148,9 +148,10 @@ def test_delegation_reports_explicit_xpass_before_materialisation_cleanup(applic
         'def test_value():', '@pytest.mark.xfail(strict=False)\ndef test_value():'))
     commit(repo)
     import shlex
-    code, _tail, summary = _run_suite_with_results(
+    code, _tail, summary, envelope = _run_suite_with_results(
         repo, git(repo, 'rev-parse', 'HEAD'), shlex.join(command),
         results_artifact='governance/suite_results.xml',
         manifest=json.loads((repo / 'governance/suite_manifest.json').read_bytes()),
     )
     assert code == 1 and summary['counts']['xpassed'] == 1
+    assert envelope['failure_count'] == summary['counts']['failed'] + summary['counts']['xpassed']

@@ -69,6 +69,7 @@ from ranex.cli.toolchain import (
     resolve_tool,
 )
 from ranex.foundation.approval import candidate_row_hash, verify_approval
+from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
 from ranex.foundation.confinement_result import validate_confinement_result
 from ranex.foundation.scan_results import (
@@ -116,6 +117,10 @@ from ranex.governed_execution.domain.task import (
     TaskMergeCheck,
     TaskMergeIntent,
     TaskMergeOutcome,
+)
+from ranex.governed_execution.repair_envelope import (
+    envelope_from_projection,
+    envelope_packet_bytes,
 )
 from ranex.governed_execution.verdict_projection import presentation_partition, project_verdict
 from ranex.governed_execution.verdict_publication import publish_verdict
@@ -998,6 +1003,31 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
                 root=governed_root,
                 signer_id=trust_keyring.verdict_signer_id,
                 private_key=private_key,
+            )
+            # SLICE-092 (C1): compose the repair envelope at this, the
+            # ADR-019/020 projection boundary — the one place causes and
+            # junit detail can meet without either touching the kernel or
+            # the evidence plane. Causes travel verbatim from the projected
+            # record; failure detail renders from the run's retained junit
+            # when that channel exists. Published beside the verdict,
+            # unsigned, and bound to it by record digest: the signed verdict
+            # is the authority, the envelope is advisory repair guidance.
+            retained_junit = (
+                verdict_dir / f"{result.subject_digest.removeprefix('sha256:')}.junit.xml"
+            )
+            junit_bytes = (
+                read_results_artifact(retained_junit) if retained_junit.is_file() else None
+            )
+            write_atomic(
+                verdict_dir / f"{result.subject_digest.removeprefix('sha256:')}.envelope.json",
+                envelope_packet_bytes(
+                    envelope_from_projection(
+                        projected=projected,
+                        evidence=admission.evidence,
+                        junit_bytes=junit_bytes,
+                    )
+                ),
+                root=governed_root,
             )
     except (
         KeyringError,
@@ -2376,6 +2406,10 @@ class CommandObservation:
     confinement_result_digest: str | None = None
     confinement_profile_digest: str | None = None
     runtime_result: dict[str, object] | None = None
+    # SLICE-092 (C1): the raw results-artifact bytes, read at the same seam
+    # as the reduced summary — the one seam they still exist. Advisory read
+    # channel material only; never evidence, never signed.
+    results_bytes: bytes | None = None
 
 
 @dataclass(frozen=True, slots=True)
@@ -3106,6 +3140,7 @@ def _execute_hermetically(
     confinement: str | None = None,
     strict_local_sources: StrictLocalSources | None = None,
     dynamic_runtime_sources: DynamicRuntimeSources | None = None,
+    retain_results_bytes: bool = False,
 ) -> CommandObservation:
     """Run once inside the shared verified, offline, sealed execution boundary."""
 
@@ -3325,9 +3360,19 @@ def _execute_hermetically(
             os.close(descriptor)
 
         artifact: object | None = confined_artifact
+        results_bytes: bytes | None = None
         if artifact_reader is not None and confinement is None:
             assert artifact_relative is not None
             artifact = artifact_reader(materialisation.tree / artifact_relative)
+            if retain_results_bytes:
+                # SLICE-092 (C1): retain the artifact one seam longer — read
+                # the raw bytes here, inside the materialisation, where they
+                # still exist. The reduced summary above is what evidence
+                # carries; these bytes are what the repair envelope renders
+                # from, and nothing else may hold them past this point.
+                results_bytes = read_results_artifact(
+                    materialisation.tree / artifact_relative
+                )
 
         if head_commit(root) != started_at:
             raise ValueError(
@@ -3354,6 +3399,8 @@ def _execute_hermetically(
             artifact,
             confinement_result_digest,
             confinement_profile_digest,
+            None,
+            results_bytes,
         )
 
 
@@ -3747,12 +3794,30 @@ def cmd_run(args: argparse.Namespace) -> int:
                 confinement=confinement,
                 strict_local_sources=strict_local_sources,
                 dynamic_runtime_sources=dynamic_runtime_sources,
+                retain_results_bytes=(
+                    results_artifact is not None and results_reporter not in SCAN_REPORTERS
+                ),
             )
         completed = observation.completed
         executable = observation.executable
         observed_suite_results = (
             None if dynamic_runtime_sources is not None else observation.artifact
         )
+
+        if observation.results_bytes is not None:
+            # SLICE-092 (C1): retain the junit one seam past teardown, in the
+            # gitignored verdict channel, keyed by the subject it was produced
+            # for. Written before the evidence record exists so a retention
+            # failure refuses the run honestly instead of outliving its own
+            # record. These bytes are advisory read-channel material — the
+            # repair envelope renders from them; evidence never sees them.
+            verdict_channel = resolve_within_repository(
+                root,
+                os.environ.get(VERDICT_DIR_VARIABLE) or DEFAULT_VERDICT_DIR,
+            )
+            retained = verdict_channel / f"{subject.removeprefix('sha256:')}.junit.xml"
+            retained.parent.mkdir(parents=True, exist_ok=True)
+            write_atomic(retained, observation.results_bytes, root=root)
 
         # Cleanup completed before evidence becomes durable. A scratch tree we
         # cannot remove is an operational refusal, not a gate verdict.
@@ -5043,6 +5108,10 @@ def build_parser() -> argparse.ArgumentParser:
 
     task = sub.add_parser("task", help="dispatch and materialise task candidates")
     task_actions = task.add_subparsers(dest="action", required=True)
+
+    from ranex.cli.repair_loop import register as register_repair_loop
+
+    register_repair_loop(task_actions)
     dispatch = task_actions.add_parser("dispatch", help="create a task worktree")
     dispatch.add_argument("--task-id", required=True, help="task identifier")
     dispatch.add_argument("--target", required=True, help="external git repository")
