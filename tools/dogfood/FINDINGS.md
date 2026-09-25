@@ -8,6 +8,38 @@ match the kernel silently.
 
 ## Open
 
+### F-041 (MITIGATED 2026-09-24, issue #114) — the two-arm bare arm's environment was asserted, never proven
+
+- Anchor: `tools/dogfood/oss_bench/two_arm.py`, `mode_tasks` — the bare arm
+  built its environment as `env = dict(os.environ)` with the ranex venv
+  prepended to PATH, commented "ambient; exactly what a bare agent would
+  use". Defensible, but nothing proved it: an inherited `PYTHONPATH` naming
+  a ranex source root, an inherited `RANEX_*` variable, or a vendored kernel
+  directory on PATH would have made the bare arm quietly governed and the
+  comparison would report a difference that is not there. Upstream's
+  ponytail benchmark nearly published a false ~4% from exactly this shape
+  (a SessionStart hook firing on every arm).
+- Re-label (issue #114 Done clause): every two-arm number produced before
+  this control is **UNVERIFIED** with respect to bare-arm purity, not
+  silently kept — `oss_bench/results.json` (py-semver-compare row, bare vs
+  governed, `overhead_median_ms: 8105`), the `results/divergence-*.json`
+  batch series through 2026-09-12, and the adapter validation numbers
+  recorded 2026-09-03/06. Their verdicts and journals stand as kernel
+  behaviour; the *bareness of the bare arm* in those runs was never
+  measured. No re-measurement is claimed here.
+- How mitigated (verified, `audits/2026-09-24-bare-purity/`): the bare
+  environment is now constructed from a declared allowlist
+  (`BARE_ENV_PASSTHROUGH` + an asserted venv-on-PATH entry over
+  `BARE_SYSTEM_PATH`) — never `dict(os.environ)` — and an in-child canary
+  measures the environment every bare command actually receives, failing
+  the whole run (exit 3, no ground truth written) on any `RANEX_*`
+  variable, kernel-naming `PYTHONPATH`, vendored kernel on PATH, or
+  deviation between constructed and observed child environment. Each
+  channel has a `--contaminate` negative control that is caught 3/3; the
+  governed arm is byte-identical before and after the change (elapsed
+  zeroed) on the pinned task; environment digests are stable across 3
+  repeats per arm.
+
 ### F-040 — census baseline drift; both blockers answered 2026-09-11 (was OPEN on the owner)
 
 Both causes this finding was blocked on have been addressed by the session that

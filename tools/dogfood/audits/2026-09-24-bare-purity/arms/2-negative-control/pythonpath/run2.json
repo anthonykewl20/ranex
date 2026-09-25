@@ -1,0 +1,6 @@
+{
+ "argv_flavor": "pythonpath",
+ "exit": 3,
+ "stderr": "BARE-ARM-CONTAMINATED: refusing the bare arm \u2014 PYTHONPATH names a ranex source root: /home/soultransit/.treehouse/ranex-34bbe7/1/ranex/src\nNo ground truth is written; a contaminated bare arm fails loudly instead of reporting a cleaner diff.",
+ "ground_truth_written": false
+}
