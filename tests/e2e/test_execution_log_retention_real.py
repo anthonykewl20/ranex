@@ -17,6 +17,7 @@ from ranex.foundation.canonical import canonical_json_bytes
 
 REPOSITORY = Path(__file__).resolve().parents[2]
 STREAM_NAMES = (
+    "instruction",
     "harness.stdout",
     "harness.stderr",
     "suite.stdout",

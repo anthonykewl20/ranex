@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ranex.execution.log_redaction import redact_text
 from ranex.foundation.atomic_writer import write_atomic
-from ranex.foundation.canonical import canonical_json_bytes
+from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256
 
 DEFAULT_LOG_MAX_BYTES: int = 262_144
 MIN_LOG_MAX_BYTES: int = 4_096
@@ -20,6 +20,48 @@ def log_dir_for_outcome(outcome: Path) -> Path:
     """Return the sidecar directory reserved for an outcome's retained logs."""
 
     return outcome.with_name(outcome.name + ".logs")
+
+
+def instruction_record(
+    prompt: str, *, handbook_chapters: Sequence[str] = ()
+) -> dict[str, object]:
+    """The instruction a delegated worker is handed, carried verbatim.
+
+    ``prompt`` is the exact argv string passed to the harness — since ADR-062
+    (#100) that is the operator's words with any injected handbook chapters
+    already composed into them, so the digest covers the chapters by covering
+    the composed string. ``handbook_chapters`` remains the composition point
+    for a mechanism that hands chapters alongside the prompt instead of
+    inside it; it is empty today.
+    """
+
+    return {"handbook_chapters": list(handbook_chapters), "prompt": prompt}
+
+
+def instruction_bytes(
+    prompt: str, *, handbook_chapters: Sequence[str] = ()
+) -> bytes:
+    """Canonical bytes of the instruction record handed to the worker."""
+
+    return canonical_json_bytes(
+        instruction_record(prompt, handbook_chapters=handbook_chapters)
+    )
+
+
+def instruction_digest(
+    prompt: str, *, handbook_chapters: Sequence[str] = ()
+) -> str:
+    """sha256 over the canonical instruction bytes actually handed over.
+
+    Computed before redaction: the digest names what the worker received,
+    while the retained ``instruction`` stream holds the redacted form of the
+    same bytes under the ADR-043 rules. The two agree exactly when nothing
+    was redacted or truncated.
+    """
+
+    return "sha256:" + canonical_sha256(
+        instruction_record(prompt, handbook_chapters=handbook_chapters)
+    )
 
 
 def validate_max_bytes(value: int) -> int:
@@ -127,20 +169,22 @@ def write_log_manifest(
     directory: Path,
     streams: Mapping[str, Mapping[str, object]],
     policy: Mapping[str, object],
+    *,
+    instruction_digest: str | None = None,
     handbook: Mapping[str, object] | None = None,
     envelope: Mapping[str, object] | None = None,
 ) -> None:
     """Atomically publish the canonical manifest for retained execution streams.
 
-    ``handbook`` is the additive ADR-062 field: when a delegate packet carried
-    kernel-handbook chapters, the manifest names the resolution digest, the
-    chapter ids, and the matched/unmatched counts, so a completed run records
-    the guidance it was given. It is omitted entirely when no handbook layer
-    was in play, and it never appears in any evidence envelope or verdict.
-
-    ``envelope`` is the additive SLICE-092 field: the retained repair
-    envelope's stream record. Omitted when the run retained none, and it
-    too never appears in any evidence envelope or verdict.
+    Three additive fields, all omitted when not in play (fanout parent, host
+    workflow): ``instruction_digest`` names what the delegated worker was
+    told — sha256 over the canonical bytes of the composed instruction —
+    beside the streams of what it produced (#111); ``handbook`` records the
+    ADR-062 handbook resolution — resolution digest, chapter ids, and
+    matched/unmatched counts — when a delegate packet carried kernel-handbook
+    chapters; ``envelope`` records the SLICE-092 retained repair envelope's
+    stream record when the run retained one. None appears in any evidence
+    envelope or verdict.
     """
 
     manifest: dict[str, object] = {
@@ -148,6 +192,8 @@ def write_log_manifest(
         "policy": dict(policy),
         "streams": dict(streams),
     }
+    if instruction_digest is not None:
+        manifest["instruction_digest"] = instruction_digest
     if handbook is not None:
         manifest["handbook"] = dict(handbook)
     if envelope is not None:
