@@ -1,0 +1,74 @@
+{
+ "arm": "7-kg-comment-import",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:0d8cae78cd8eadcdbc6e1f5559fa7037e3bd875323d720836883a101aab06fee"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:0d8cae78cd8eadcdbc6e1f5559fa7037e3bd875323d720836883a101aab06fee"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:0d8cae78cd8eadcdbc6e1f5559fa7037e3bd875323d720836883a101aab06fee"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "PASS"
+  }
+ ],
+ "edits": {
+  "test_six.py": [
+   "import operator\n"
+  ]
+ },
+ "expect_pass": true,
+ "identical": true,
+ "reached_pass": true,
+ "status": "as-expected"
+}

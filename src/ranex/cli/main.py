@@ -68,6 +68,11 @@ from ranex.cli.toolchain import (
     pinned_path_value,
     resolve_tool,
 )
+from ranex.foundation.antislop_results import (
+    ANTISLOP_REPORTERS,
+    load_antislop_expectations_bytes,
+    parse_antislop_artifact,
+)
 from ranex.foundation.approval import candidate_row_hash, verify_approval
 from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes, canonical_sha256, command_digest
@@ -955,16 +960,28 @@ def cmd_gate_evaluate(args: argparse.Namespace) -> int:
         # A scan claim's manifest is trust root exactly as the suite manifest
         # is: it fixes the scope that decides and the findings review has
         # already answered for, so it is read from the ref being judged and
-        # never from whatever the working tree holds.
+        # never from whatever the working tree holds. An antislop claim's
+        # expectations are the same kind of root with a different vocabulary,
+        # validated by their own loader here and dispatched by reporter at
+        # Gate construction.
         scan_manifest_sources: dict[str, bytes] = {}
         for claim in definition.required_claims:
             name = claim.results_manifest
             if name is None or name in scan_manifest_sources:
                 continue
             scan_manifest_sources[name] = committed_trust_root(
-                root, args.ref, name, resolve_within_repository(root, name), "scan manifest"
+                root,
+                args.ref,
+                name,
+                resolve_within_repository(root, name),
+                "antislop expectations"
+                if claim.results_reporter in ANTISLOP_REPORTERS
+                else "scan manifest",
             )
-            load_scan_manifest_bytes(scan_manifest_sources[name])
+            if claim.results_reporter in ANTISLOP_REPORTERS:
+                load_antislop_expectations_bytes(scan_manifest_sources[name])
+            else:
+                load_scan_manifest_bytes(scan_manifest_sources[name])
         keyring = load_keyring_text(keyring_source.decode("utf-8"), keyring_path)
         # The root is passed so the containment decision `run` made about
         # argv[0] is taken again here, from the signed path in the record. The
@@ -3616,6 +3633,47 @@ def _scan_artifact_reader(
     return read
 
 
+def _antislop_artifact_reader(
+    expectations: Mapping[str, object], artifact_relative: Path
+) -> Callable[[Path], object]:
+    """Reduce an antislop artifact exactly where the scan family reduces its
+    own: inside the materialisation, against the subject's real bytes, with
+    the frozen expectations the governing commit carries."""
+
+    depth = len(artifact_relative.parts) - 1
+
+    def read(path: Path) -> object:
+        return parse_antislop_artifact(
+            path, expectations, subject_root=path.parents[depth]
+        )
+
+    return read
+
+
+def _antislop_freeze_reader(artifact_relative: Path) -> Callable[[Path], object]:
+    """Read an antislop artifact's census and witnesses inside the
+    materialisation, for the same reason the scan freeze reads findings
+    there: the frozen universe is bound to bytes that only exist while the
+    materialised tree does."""
+
+    depth = len(artifact_relative.parts) - 1
+
+    def read(path: Path) -> object:
+        from ranex.foundation.antislop_results import _parse
+        from ranex.foundation.suite_results import read_results_artifact
+
+        census, findings, witnessed = _parse(
+            read_results_artifact(path), path.parents[depth]
+        )
+        return {
+            "census": census,
+            "findings": findings,
+            "witnessed": witnessed,
+        }
+
+    return read
+
+
 def cmd_run(args: argparse.Namespace) -> int:
     """Run a command and record what was observed. Never judge it.
 
@@ -3698,6 +3756,7 @@ def cmd_run(args: argparse.Namespace) -> int:
         qualification_report: str | None = None
         suite_manifest: dict[str, object] | None = None
         scan_manifest: ScanManifest | None = None
+        antislop_expectations: dict[str, object] | None = None
         results_reporter = "pytest-junit"
         catalog_source: bytes | None = None
         catalog_name = named_within_repository(root, args.gate_catalog)
@@ -3723,22 +3782,29 @@ def cmd_run(args: argparse.Namespace) -> int:
                     )
                 if selected_claim.results_manifest is not None:
                     # The scan's own frozen universe, read from the commit
-                    # being judged. `run` reduces the artifact here so that the
+                    # being judged — a scan manifest or antislop expectations,
+                    # one dispatch. `run` reduces the artifact here so that the
                     # evidence it signs is the summary a gate will decide on,
                     # rather than a blob re-parsed later under other bytes.
-                    scan_manifest = validate_scan_manifest(
-                        load_scan_manifest_bytes(
-                            committed_trust_root(
-                                root,
-                                started_at,
-                                selected_claim.results_manifest,
-                                resolve_within_repository(
-                                    root, selected_claim.results_manifest
-                                ),
-                                "scan manifest",
-                            )
-                        )
+                    manifest_source = committed_trust_root(
+                        root,
+                        started_at,
+                        selected_claim.results_manifest,
+                        resolve_within_repository(
+                            root, selected_claim.results_manifest
+                        ),
+                        "antislop expectations"
+                        if selected_claim.results_reporter in ANTISLOP_REPORTERS
+                        else "scan manifest",
                     )
+                    if selected_claim.results_reporter in ANTISLOP_REPORTERS:
+                        antislop_expectations = load_antislop_expectations_bytes(
+                            manifest_source
+                        )
+                    else:
+                        scan_manifest = validate_scan_manifest(
+                            load_scan_manifest_bytes(manifest_source)
+                        )
                 else:
                     manifest_path = resolve_within_repository(root, args.suite_manifest)
                     manifest_source = committed_trust_root(
@@ -3838,7 +3904,13 @@ def cmd_run(args: argparse.Namespace) -> int:
         carrier_path = results_artifact or qualification_report
         artifact_relative = Path(carrier_path) if carrier_path is not None else None
         artifact_reader: Callable[[Path], object] | None = None
-        if results_artifact is not None and results_reporter in SCAN_REPORTERS:
+        if results_artifact is not None and results_reporter in ANTISLOP_REPORTERS:
+            if antislop_expectations is None or artifact_relative is None:
+                raise ValueError("antislop claim has no loaded expectations")
+            artifact_reader = _antislop_artifact_reader(
+                antislop_expectations, artifact_relative
+            )
+        elif results_artifact is not None and results_reporter in SCAN_REPORTERS:
             if scan_manifest is None or artifact_relative is None:
                 raise ValueError("scan claim has no loaded manifest")
             artifact_reader = _scan_artifact_reader(scan_manifest, artifact_relative)
@@ -3989,11 +4061,17 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
         if not command:
             raise ValueError("a freeze command is required after --")
         scan_reporter = args.results_reporter in SCAN_REPORTERS
+        antislop_reporter = args.results_reporter in ANTISLOP_REPORTERS
         expected_skips: dict[str, str] = {}
         for declaration in args.expected_skip:
             if scan_reporter:
                 raise ValueError(
                     "--expected-skip declares a test; a scan declares --accepted"
+                )
+            if antislop_reporter:
+                raise ValueError(
+                    "--expected-skip declares a suite exception; an antislop "
+                    "freeze has no acceptance vocabulary to declare against"
                 )
             test_id, separator, reason = declaration.partition("=")
             if not separator or not test_id or not reason.strip():
@@ -4023,10 +4101,12 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
                 "--scan-scope/--scan-rule/--blocking-level/--accepted require "
                 f"--results-reporter {sorted(SCAN_REPORTERS)[0]}"
             )
-        if scan_reporter and not args.scan_scope:
+        if scan_declarations and antislop_reporter:
             raise ValueError(
-                "--scan-scope is required: a scan manifest with no scope freezes a "
-                "claim about nothing, and a gate that cannot block is refused"
+                "an antislop freeze declares no universe by hand: it freezes "
+                "every test file and every test the run observed, and a flag "
+                "that could narrow it would be the narrowing slop the claim "
+                "exists to catch"
             )
         started_at = head_commit(root)
         provisioning = _provisioning_for(root, started_at, args.store)
@@ -4053,14 +4133,28 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             provisioned_resolver,
             artifact_relative=artifact_relative,
             artifact_reader=(
-                _scan_freeze_reader(artifact_relative)
+                _antislop_freeze_reader(artifact_relative)
+                if antislop_reporter
+                else _scan_freeze_reader(artifact_relative)
                 if scan_reporter
                 else read_results_artifact
             ),
             pytest_observer=args.results_reporter == "pytest-junit",
         )
         manifest: dict[str, object]
-        if scan_reporter:
+        if antislop_reporter:
+            if not isinstance(observation.artifact, dict):
+                raise ValueError("freeze run produced no readable antislop artifact")
+            from ranex.foundation.antislop_results import (
+                freeze_antislop_expectations_observed,
+            )
+
+            manifest = freeze_antislop_expectations_observed(
+                observation.artifact["census"],
+                observation.artifact["findings"],
+                observation.artifact["witnessed"],
+            )
+        elif scan_reporter:
             if not isinstance(observation.artifact, tuple):
                 raise ValueError("freeze run produced no readable scan artifact")
             manifest = freeze_scan_manifest(
@@ -4101,6 +4195,12 @@ def cmd_suite_freeze(args: argparse.Namespace) -> int:
             f"FROZEN  scope={len(cast(list[str], manifest['scope']))}  "
             f"rules={len(cast(list[str], manifest['rules']))}  "
             f"accepted={len(cast(dict[str, str], manifest['accepted']))}  "
+            f"run_exit={completed.returncode}  output={output}"
+        )
+    elif args.results_reporter in ANTISLOP_REPORTERS:
+        print(
+            f"FROZEN  scope={len(cast(list[str], manifest['scope']))}  "
+            f"tests={len(cast(dict[str, int], manifest['tests']))}  "
             f"run_exit={completed.returncode}  output={output}"
         )
     else:
@@ -5016,7 +5116,8 @@ def build_parser() -> argparse.ArgumentParser:
         help="hermetic command to run, after --",
     )
     freeze.add_argument("--external-repository", help="explicit external Git checkout root (no kernel vendoring)")
-    freeze.add_argument("--results-reporter", choices=sorted(JUNIT_REPORTERS | SCAN_REPORTERS),
+    freeze.add_argument("--results-reporter",
+                        choices=sorted(JUNIT_REPORTERS | SCAN_REPORTERS | ANTISLOP_REPORTERS),
                         default="pytest-junit", help="results convention to freeze")
     freeze.add_argument(
         "--scan-scope",
@@ -5087,6 +5188,25 @@ def build_parser() -> argparse.ArgumentParser:
                     help="the tree to scan (a claim runs in the subject)")
     mk.set_defaults(func=lambda args: import_module(
         "ranex.foundation.markers"
+    ).main(["--output-format", args.output_format,
+            "--output-file", args.output_file,
+            "--root", args.root]))
+
+    # The C3 anti-slop scanner, same binding discipline as markers: the
+    # console script is what a governed run binds (its shebang carries its
+    # kernel), the module form serves direct operator use, and a claim's argv
+    # is exactly --output-format=sarif + --output-file=<artifact>.
+    an = sub.add_parser(
+        "antislop",
+        help="census test assertions and grep anti-slop shapes; emit SARIF 2.1.0",
+    )
+    an.add_argument("--output-format", choices=["sarif"], default="sarif")
+    an.add_argument("--output-file", required=True,
+                    help="where the SARIF artifact is written")
+    an.add_argument("--root", default=".",
+                    help="the tree to scan (a claim runs in the subject)")
+    an.set_defaults(func=lambda args: import_module(
+        "ranex.foundation.antislop"
     ).main(["--output-format", args.output_format,
             "--output-file", args.output_file,
             "--root", args.root]))

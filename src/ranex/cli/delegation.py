@@ -31,6 +31,7 @@ from ranex.execution.retained_logs import (
     validate_max_bytes,
     write_log_manifest,
 )
+from ranex.foundation.antislop_results import ANTISLOP_REPORTERS
 from ranex.foundation.atomic_writer import write_atomic
 from ranex.foundation.canonical import canonical_json_bytes
 from ranex.foundation.scan_results import SCAN_REPORTERS
@@ -738,7 +739,9 @@ def cmd_task_delegate(args: argparse.Namespace) -> int:
                     selected_claim.claim_id,
                     list(selected_claim.command),
                 )
-            if getattr(selected_claim, "results_reporter", "pytest-junit") in SCAN_REPORTERS:
+            if getattr(selected_claim, "results_reporter", "pytest-junit") in (
+                SCAN_REPORTERS | ANTISLOP_REPORTERS
+            ):
                 # A delegated worker's suite is shell-split from a string, and
                 # a scan claim's argv is bound to a scanner and an output file
                 # this path never materialises a subject root for. Refuse it in

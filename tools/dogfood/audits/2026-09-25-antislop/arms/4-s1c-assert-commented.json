@@ -1,0 +1,92 @@
+{
+ "arm": "4-s1c-assert-commented",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 1,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py::test_integer_types (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py::test_integer_types",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:81d76ca8012d1662ffa2483530e5a7582897a7e000d912a5c2ccd5b4934860c6",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 1,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py::test_integer_types (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py::test_integer_types",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:81d76ca8012d1662ffa2483530e5a7582897a7e000d912a5c2ccd5b4934860c6",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 1,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 1,
+   "evaluate_line": [
+    "FAIL  gate=landing  rule=ANTISLOP_SANE",
+    "      antislop: blocking suite outcome(s): test_six.py::test_integer_types (failed)"
+   ],
+   "missing": [],
+   "non_passed": [
+    [
+     "test_six.py::test_integer_types",
+     "failed"
+    ]
+   ],
+   "outcome_digest": "sha256:81d76ca8012d1662ffa2483530e5a7582897a7e000d912a5c2ccd5b4934860c6",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "FAIL"
+  }
+ ],
+ "edits": {
+  "test_six.py": [
+   "    assert not isinstance(.1, six.integer_types)"
+  ]
+ },
+ "expect_pass": false,
+ "identical": true,
+ "reached_pass": false,
+ "status": "as-expected"
+}

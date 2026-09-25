@@ -234,7 +234,7 @@ PYTHONPATH="src:tests/e2e/coverage" \
 
 </details>
 
-**Active slice:** [SLICE-093 — the BASE freeze and the promotion gate](docs/slices/SLICE-093-base-freeze-promotion-gate.md) — the frozen measurement instrument (`governance/calibration/base-freeze-v1.json`, ADR-063) plus `ranex promotion evaluate`, which refuses any improvement claim not citing a committed freeze id with paired MARGINAL deltas on that freeze's named axes.
+**Active slice:** [SLICE-093 — the BASE freeze and the promotion gate](docs/slices/SLICE-093-base-freeze-promotion-gate.md) — P1 on PR #130.
 
 Pytest suite observations and freezes automatically load Ranex's controller
 reporter. Explicit non-strict XPASS remains a failure; disabled reporting

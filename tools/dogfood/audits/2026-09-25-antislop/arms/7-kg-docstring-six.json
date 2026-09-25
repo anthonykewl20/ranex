@@ -1,0 +1,74 @@
+{
+ "arm": "7-kg-docstring-six",
+ "cycles": [
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:a9e97a17b5f70995ea204c9a20798ee133537a9af47837f22f929c6b8b672a41"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 0,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:a9e97a17b5f70995ea204c9a20798ee133537a9af47837f22f929c6b8b672a41"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 1,
+   "run_exit": 0,
+   "verdict": "PASS"
+  },
+  {
+   "counts": {
+    "errors": 0,
+    "failed": 0,
+    "passed": 1,
+    "skipped": 0,
+    "xfailed": 0,
+    "xpassed": 0
+   },
+   "evaluate_exit": 0,
+   "evaluate_line": [
+    "PASS  gate=landing  subject=sha256:a9e97a17b5f70995ea204c9a20798ee133537a9af47837f22f929c6b8b672a41"
+   ],
+   "missing": [],
+   "non_passed": [],
+   "outcome_digest": "sha256:08fcdeef19414d49ca130daf57fc042c9ee260dee799e7210b16012128943622",
+   "repeat": 2,
+   "run_exit": 0,
+   "verdict": "PASS"
+  }
+ ],
+ "edits": {
+  "six.py": [
+   "\"\"\"Utilities for writing code that runs on Python 2 and 3\"\"\"\n"
+  ]
+ },
+ "expect_pass": true,
+ "identical": true,
+ "reached_pass": true,
+ "status": "as-expected"
+}
